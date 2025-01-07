@@ -177,6 +177,35 @@ public class RocksdbMergeOperatorTest {
         verify_merge(bvs12_out, bvs1, bvs2);
     }
 
+    @Test
+    public void testBooleanSegment2() throws Exception {
+
+        BooleanValueSegment bvs1 = new BooleanValueSegment();
+        for (int i = 0; i < 186; i++) {
+            bvs1.add(ValueUtility.getBooleanValue(false));
+        }
+        for (int i = 0; i < 14; i++) {
+            bvs1.add(ValueUtility.getBooleanValue(true));
+        }
+
+        byte[] data1 = SegmentEncoderDecoder.encode(bvs1);
+
+        BooleanValueSegment bvs2 = new BooleanValueSegment();
+        for (int i = 0; i < 200; i++) {
+            bvs2.add(ValueUtility.getBooleanValue(true));
+        }
+        byte[] data2 = SegmentEncoderDecoder.encode(bvs2);
+
+        var key = "a1".getBytes();
+        db.put(key, data1);
+        db.merge(key, data2);
+
+        var data12_out = db.get(key);
+        var bvs12_out = (BooleanValueSegment) SegmentEncoderDecoder.decode(data12_out, 0);
+
+        verify_merge(bvs12_out, bvs1, bvs2);
+    }
+
     /***** Double segment ****/
     @Test
     public void testDoubleSegment() throws Exception {
