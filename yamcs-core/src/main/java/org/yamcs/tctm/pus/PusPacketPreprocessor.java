@@ -56,20 +56,21 @@ import static org.yamcs.tctm.pus.Constants.*;
  * standards.
  * <p>
  * Example configuration:
+ * 
  * <pre>
  * dataLinks:
  * ...
  * - name: tm_realtime
  *   packetPreprocessorClassName: org.yamcs.tctm.pus.PusPacketPreprocessor
  *   packetPreprocessorArgs:
- *   errorDetection:
- *     type: CRC-16-CCIIT
- *   pktTimeOffset: 13
- *   timePktTimeOffset: 7
- *   timeEncoding:
- *      epoch: CUSTOM
- *      epochUTC: 1970-01-01T00:00:00Z
- *      timeIncludesLeapSeconds: false
+ *     errorDetection:
+ *       type: CRC-16-CCIIT
+ *     pktTimeOffset: 13
+ *     timePktTimeOffset: 7
+ *     timeEncoding:
+ *       epoch: CUSTOM
+ *       epochUTC: 1970-01-01T00:00:00Z
+ *       timeIncludesLeapSeconds: false
  * </pre>
  *
  * @author nm
