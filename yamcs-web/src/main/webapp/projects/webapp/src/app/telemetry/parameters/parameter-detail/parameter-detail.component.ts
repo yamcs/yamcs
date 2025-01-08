@@ -62,6 +62,7 @@ export class ParameterDetailComponent implements OnChanges {
           }
         }
       }
+      return alarm.defaultLevel;
     }
   }
 
@@ -72,5 +73,6 @@ export class ParameterDetailComponent implements OnChanges {
         return enumAlarm.level;
       }
     }
+    return alarm.defaultLevel;
   }
 }

@@ -82,7 +82,7 @@ export interface ParameterType {
   arrayInfo?: ArrayInfo;
   dataEncoding?: DataEncoding;
   unitSet?: UnitInfo[];
-  defaultAlarm: AlarmInfo;
+  defaultAlarm?: AlarmInfo;
   contextAlarm: ContextAlarmInfo[];
   enumValue: EnumValue[];
   absoluteTimeInfo: AbsoluteTimeInfo;
@@ -128,6 +128,7 @@ export interface AlarmInfo {
   minViolations: number;
   staticAlarmRanges: AlarmRange[];
   enumerationAlarms: EnumerationAlarm[];
+  defaultLevel?: AlarmLevelType;
 }
 
 export interface ContextAlarmInfo {
