@@ -35,6 +35,7 @@ export class ParameterTypeDetailComponent {
           }
         }
       }
+      return alarm.defaultLevel;
     }
   }
 
@@ -45,5 +46,6 @@ export class ParameterTypeDetailComponent {
         return enumAlarm.level;
       }
     }
+    return alarm.defaultLevel;
   }
 }

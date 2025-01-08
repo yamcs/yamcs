@@ -10,8 +10,20 @@ svg {
   fill: #00c752;
 }
 
+.inlimits.grayscale .r1,
+.inlimits.grayscale .r2,
+.inlimits.grayscale .r3,
+.inlimits.grayscale .r4,
+.inlimits.grayscale .r5 {
+  fill: #ccc;
+}
+
 .watch .r1 {
   fill: #ff8c00;
+}
+
+.watch.grayscale .r1 {
+  fill: #a0a0a0;
 }
 
 .watch .r2,
@@ -26,6 +38,11 @@ svg {
   fill: #ff8c00;
 }
 
+.warning.grayscale .r1,
+.warning.grayscale .r2 {
+  fill: #a0a0a0;
+}
+
 .warning .r3,
 .warning .r4,
 .warning .r5 {
@@ -36,6 +53,12 @@ svg {
 .distress .r2,
 .distress .r3 {
   fill: #f00;
+}
+
+.distress.grayscale .r1,
+.distress.grayscale .r2,
+.distress.grayscale .r3 {
+  fill: #a0a0a0;
 }
 
 .distress .r4,
@@ -50,6 +73,13 @@ svg {
   fill: #f00;
 }
 
+.critical.grayscale .r1,
+.critical.grayscale .r2,
+.critical.grayscale .r3,
+.critical.grayscale .r4 {
+  fill: #a0a0a0;
+}
+
 .critical .r5 {
   fill: #ccc;
 }
@@ -62,9 +92,12 @@ svg {
   fill: #f00;
 }
 
-.grayscale {
-  filter: grayscale(100%);
-  -webkit-filter: grayscale(100%);
+.severe.grayscale .r1,
+.severe.grayscale .r2,
+.severe.grayscale .r3,
+.severe.grayscale .r4,
+.severe.grayscale .r5 {
+  fill: #a0a0a0;
 }
 
 @media print {

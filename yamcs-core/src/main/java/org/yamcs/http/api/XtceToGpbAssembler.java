@@ -1276,9 +1276,7 @@ public class XtceToGpbAssembler {
             alarmInfob.addEnumerationAlarms(toEnumerationAlarm(item));
             alarmInfob.addEnumerationAlarm(toEnumerationAlarm(item));
         }
-        if (enumerationAlarm.getDefaultAlarmLevel() != AlarmLevels.NORMAL) {
-            alarmInfob.setDefaultLevel(toLevel(enumerationAlarm.getDefaultAlarmLevel()));
-        }
+        alarmInfob.setDefaultLevel(toLevel(enumerationAlarm.getDefaultAlarmLevel()));
         return alarmInfob.build();
     }
 

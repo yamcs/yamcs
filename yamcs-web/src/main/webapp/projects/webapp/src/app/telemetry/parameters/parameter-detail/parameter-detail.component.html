@@ -220,7 +220,7 @@
       </span>
       <br />
       <div class="meter-size-constrainer">
-        @if (pval?.monitoringResult) {
+        @if (pval?.monitoringResult && pval?.alarmRange) {
           <app-severity-meter [pval]="pval" />
         }
       </div>
@@ -293,6 +293,25 @@
           }
         </tr>
       }
+      <tr>
+        <td>Other</td>
+        <td>UNDEF</td>
+        <td>-</td>
+        <td>
+          @if (entry.type!.defaultAlarm?.defaultLevel; as level) {
+            <app-alarm-level [level]="level" [grayscale]="true" />
+            {{ level }}
+          }
+        </td>
+        @for (context of entry.type!.contextAlarm; track context) {
+          <td>
+            @if (context.alarm.defaultLevel; as level) {
+              <app-alarm-level [level]="level" [grayscale]="true" />
+              {{ level }}
+            }
+          </td>
+        }
+      </tr>
     </table>
   }
 }
