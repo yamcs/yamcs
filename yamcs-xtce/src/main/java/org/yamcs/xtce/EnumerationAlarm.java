@@ -8,8 +8,6 @@ import java.util.List;
  * Alarm conditions for Enumerations
  * An additional check needs to be performed to ensure that the enumeration values in the alarms are legal
  * enumeration values for the Parameter
- * 
- * @author nm
  *
  */
 public class EnumerationAlarm extends AlarmType implements Serializable {

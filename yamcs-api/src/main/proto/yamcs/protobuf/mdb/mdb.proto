@@ -241,6 +241,12 @@ message AlarmInfo {
   // Deprecated, use ``enumerationAlarms`` instead
   repeated EnumerationAlarm enumerationAlarm = 3 [deprecated=true];
   repeated EnumerationAlarm enumerationAlarms = 5;
+
+  // only used for enumeration alarms - defines the alarm state if none of the condition above applies
+  // as per XTCE description:
+  //   defaults to "normal", which is almost always the case.
+  //   Setting it to another alarm state permits a form of "inverted logic" where the alarm list can specify the normal states instead of the alarm states.
+  optional AlarmLevelType defaultLevel = 6;
 }
 
 message ContextAlarmInfo {
