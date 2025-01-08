@@ -65,6 +65,7 @@ import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.AbsoluteTimeParameterType;
 import org.yamcs.xtce.AggregateArgumentType;
 import org.yamcs.xtce.AggregateParameterType;
+import org.yamcs.xtce.AlarmLevels;
 import org.yamcs.xtce.AlarmRanges;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.AncillaryData;
@@ -1275,6 +1276,9 @@ public class XtceToGpbAssembler {
             alarmInfob.addEnumerationAlarms(toEnumerationAlarm(item));
             alarmInfob.addEnumerationAlarm(toEnumerationAlarm(item));
         }
+        if (enumerationAlarm.getDefaultAlarmLevel() != AlarmLevels.NORMAL) {
+            alarmInfob.setDefaultLevel(toLevel(enumerationAlarm.getDefaultAlarmLevel()));
+        }
         return alarmInfob.build();
     }
 
@@ -1289,29 +1293,20 @@ public class XtceToGpbAssembler {
     public static Mdb.EnumerationAlarm toEnumerationAlarm(EnumerationAlarmItem xtceAlarmItem) {
         Mdb.EnumerationAlarm.Builder resultb = Mdb.EnumerationAlarm.newBuilder();
         resultb.setLabel(xtceAlarmItem.getEnumerationLabel());
-        switch (xtceAlarmItem.getAlarmLevel()) {
-        case NORMAL:
-            resultb.setLevel(AlarmLevelType.NORMAL);
-            break;
-        case WATCH:
-            resultb.setLevel(AlarmLevelType.WATCH);
-            break;
-        case WARNING:
-            resultb.setLevel(AlarmLevelType.WARNING);
-            break;
-        case DISTRESS:
-            resultb.setLevel(AlarmLevelType.DISTRESS);
-            break;
-        case CRITICAL:
-            resultb.setLevel(AlarmLevelType.CRITICAL);
-            break;
-        case SEVERE:
-            resultb.setLevel(AlarmLevelType.SEVERE);
-            break;
-        default:
-            throw new IllegalStateException("Unexpected alarm level " + xtceAlarmItem.getAlarmLevel());
-        }
+        resultb.setLevel(toLevel(xtceAlarmItem.getAlarmLevel()));
         return resultb.build();
+    }
+
+    public static AlarmLevelType toLevel(AlarmLevels level) {
+        return switch (level) {
+        case NORMAL -> AlarmLevelType.NORMAL;
+        case WATCH -> AlarmLevelType.WATCH;
+        case WARNING -> AlarmLevelType.WARNING;
+        case DISTRESS -> AlarmLevelType.DISTRESS;
+        case CRITICAL -> AlarmLevelType.CRITICAL;
+        case SEVERE -> AlarmLevelType.SEVERE;
+        default -> throw new IllegalStateException("Unexpected alarm level " + level);
+        };
     }
 
     public static AlgorithmInfo toAlgorithmInfo(Algorithm a, DetailLevel detail) {
