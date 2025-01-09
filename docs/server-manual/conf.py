@@ -19,7 +19,6 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.doctest",
     "sphinx.ext.extlinks",
-    "sphinxcontrib.fulltoc",
     "sphinxcontrib.yamcs",
 ]
 
@@ -86,7 +85,7 @@ latex_elements = {
 latex_documents = [
     (
         "index",
-        "yamcs-server-manual.tex",
+        f"yamcs-server-manual-{release}.tex",
         "Yamcs Server Manual",
         "Space Applications Services",
         "manual",

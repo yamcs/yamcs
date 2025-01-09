@@ -16,7 +16,6 @@ pygments_style = "sphinx"
 
 extensions = [
     "sphinx.ext.extlinks",
-    "sphinxcontrib.fulltoc",
     "sphinxcontrib.yamcs",
 ]
 
@@ -45,7 +44,7 @@ latex_elements = {
 latex_documents = [
     (
         "index",
-        "yamcs-http-api.tex",
+        f"yamcs-http-api-{release}.tex",
         "Yamcs HTTP API",
         "Space Applications Services",
         "manual",
