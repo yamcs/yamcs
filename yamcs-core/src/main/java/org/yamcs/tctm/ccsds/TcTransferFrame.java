@@ -8,8 +8,7 @@ import org.yamcs.commanding.PreparedCommand;
  * 
  * TC Transfer Frame as per
  * <p>
- * CCSDS RECOMMENDED STANDARD FOR TC SPACE DATA LINK PROTOCOL
- * CCSDS 232.0-B-4 October 2021
+ * CCSDS RECOMMENDED STANDARD FOR TC SPACE DATA LINK PROTOCOL CCSDS 232.0-B-4 October 2021
  *
  * <p>
  * Frame structure:
@@ -29,9 +28,14 @@ import org.yamcs.commanding.PreparedCommand;
  * <li>Frame Length (10 bits, mandatory)</li>
  * <li>Frame Sequence Number (8 bits, mandatory)</li>
  * </ul>
+ * Segment Header (optional):
+ * <ul>
+ * <li>Sequence flags (2 bits, mandatory)</li>
+ * <li>Multiplexer Access Point (MAP) Identifier (6 bits, mandatory)</li>
+ * </ul>
  */
 public class TcTransferFrame {
-    private boolean cmdControl;
+    final private boolean cmdControl;
     private boolean bypass;
     final protected int spacecraftId;
     final protected int virtualChannelId;
@@ -43,18 +47,18 @@ public class TcTransferFrame {
     int dataStart;
     int dataEnd;
 
-    public TcTransferFrame(byte[] data, int spacecraftId, int virtualChannelId) {
+    // can be null if the Segment Header is not present
+    SegmentHeader segmentHeader;
+
+    public TcTransferFrame(byte[] data, int spacecraftId, int virtualChannelId, boolean cmdControl) {
         this.spacecraftId = spacecraftId;
         this.virtualChannelId = virtualChannelId;
         this.data = data;
+        this.cmdControl = cmdControl;
     }
 
     public boolean isCmdControl() {
         return cmdControl;
-    }
-
-    public void setCmdControl(boolean cmdControl) {
-        this.cmdControl = cmdControl;
     }
 
     public boolean isBypass() {
@@ -142,11 +146,25 @@ public class TcTransferFrame {
         return genTime;
     }
 
+    public SegmentHeader getSegmentHeader() {
+        return segmentHeader;
+    }
+
+    public void setSegmentHeader(SegmentHeader segmentHeader) {
+        this.segmentHeader = segmentHeader;
+    }
+
     @Override
     public String toString() {
         return "TcTransferFrame [masterChannelId=" + spacecraftId + ", virtualChannelId=" + virtualChannelId
                 + ", vcFrameSeq=" + vcFrameSeq + ", bypass=" + bypass + ", cmdControl=" + cmdControl
-                + ", numCommands: " + ((commands != null) ? commands.size() : 0) + "]";
+                + ", numCommands: " + ((commands != null) ? commands.size() : 0) + "segmentHeader=" + segmentHeader
+                + "]";
     }
 
+    public static record SegmentHeader(byte seqFlags, byte mapId) {
+        public byte get() {
+            return (byte) ((seqFlags << 6) | mapId);
+        }
+    }
 }

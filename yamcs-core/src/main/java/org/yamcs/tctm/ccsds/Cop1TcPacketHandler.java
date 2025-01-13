@@ -182,6 +182,9 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         this.t1Initial = 1000 * vmp.config.getInt("cop1T1", 3);
         this.txLimit = vmp.config.getInt("cop1TxLimit", 3);
         this.slidingWindowWidth = vmp.config.getInt("slidingWindowWidth", 10);
+        if (vmp.mapId >= 0) {
+            TcPacketHandler.addMapIdOption();
+        }
     }
 
     public void addMonitor(Cop1Monitor monitor) {
@@ -242,7 +245,14 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     }
 
     private void sendSingleTc(PreparedCommand pc, boolean bypass) {
-        TcTransferFrame tf = makeFrame(pc, bypass);
+        byte mapId = vmp.mapId;
+        if (mapId >= 0) {
+            var mapIdOverride = TcPacketHandler.getMapId(pc);
+            if (mapIdOverride != null) {
+                mapId = mapIdOverride;
+            }
+        }
+        TcTransferFrame tf = makeFrame(pc, bypass, mapId);
         if (tf != null) {
             boolean added = outQueue.offer(new QueuedFrame(tf));
             if (!added) {
@@ -253,13 +263,13 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         }
     }
 
-    private TcTransferFrame makeFrame(PreparedCommand pc, boolean bypassFlag) {
+    private TcTransferFrame makeFrame(PreparedCommand pc, boolean bypassFlag, byte mapId) {
         byte[] binary = postprocess(pc);
         if (binary == null) {
             return null;
         }
 
-        TcTransferFrame tf = frameFactory.makeFrame(vmp.vcId, binary.length, pc.getGenerationTime());
+        TcTransferFrame tf = frameFactory.makeDataFrame(binary.length, pc.getGenerationTime(), mapId);
         tf.setCommands(Arrays.asList(pc));
 
         byte[] data = tf.getData();
@@ -295,14 +305,30 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         int framingLength = frameFactory.getFramingLength(vmp.vcId);
         int dataLength = 0;
         List<PreparedCommand> l = new ArrayList<>();
+        byte mapId = vmp.mapId;
 
         while ((pc = waitQueue.poll()) != null) {
             if (isBypass(pc)) {
                 sendSingleTc(pc, true);
                 continue;
             }
+
             int pcLength = cmdPostProcessor.getBinaryLength(pc);
             if (framingLength + dataLength + pcLength <= vmp.maxFrameLength) {
+                if (mapId >= 0) {
+                    // MAP service for this VC. We need to check that all the commands are for the same MAP_ID
+                    var mapIdOverride = TcPacketHandler.getMapId(pc);
+                    if (mapIdOverride != null) {
+                        if (l.isEmpty()) {
+                            mapId = mapIdOverride;
+                        } else if (mapIdOverride != mapId) {
+                            // different MAP_ID -> new frame
+                            waitQueue.addFirst(pc);
+                            break;
+                        }
+                    }
+                }
+
                 l.add(pc);
                 dataLength += pcLength;
                 if (!vmp.multiplePacketsPerFrame) {
@@ -316,7 +342,8 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         if (l.isEmpty()) {
             return null;
         }
-        TcTransferFrame tf = frameFactory.makeFrame(vmp.vcId, dataLength, l.get(0).getGenerationTime());
+
+        TcTransferFrame tf = frameFactory.makeDataFrame(dataLength, l.get(0).getGenerationTime(), mapId);
         tf.setCommands(l);
 
         byte[] data = tf.getData();
@@ -435,9 +462,8 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
                 initialize();
                 vS = vR;
                 nnR = vR;
-                TcTransferFrame ttf = frameFactory.makeFrame(vcId, 3);
+                TcTransferFrame ttf = frameFactory.makeCtrlFrame(3);
                 ttf.setBypass(true);
-                ttf.setCmdControl(true);
                 byte[] data = ttf.getData();
                 // CCSDS 232.0-B-3 September 2015, Page 4-9
                 int offset = ttf.getDataStart();
@@ -468,9 +494,8 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
             if (bcOutReady) {// E25 Rev.B
                 traceEvent("E25 Rev.B");
                 initialize();
-                TcTransferFrame ttf = frameFactory.makeFrame(vcId, 1);
+                TcTransferFrame ttf = frameFactory.makeCtrlFrame(1);
                 ttf.setBypass(true);
-                ttf.setCmdControl(true);
                 byte[] data = ttf.getData();
                 // CCSDS 232.0-B-3 September 2015, Page 4-9
                 int offset = ttf.getDataStart();

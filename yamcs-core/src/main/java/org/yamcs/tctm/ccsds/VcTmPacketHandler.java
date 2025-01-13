@@ -17,9 +17,7 @@ import org.yamcs.time.TimeService;
 import org.yamcs.utils.YObjectLoader;
 
 /**
- * Handles packets from one VC
- *
- * @author nm
+ * Handles packets from one Virtual Channel (VC)
  *
  */
 public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
@@ -45,7 +43,8 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
         this.name = name;
         timeService = YamcsServer.getTimeService(yamcsInstance);
 
-        eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, this.getClass().getSimpleName(), 10000);
+        eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, "VcTmPacketHandler[VC" + vmp.vcId + "]",
+                10000);
         log = new Log(this.getClass(), yamcsInstance);
         log.setContext(name);
 

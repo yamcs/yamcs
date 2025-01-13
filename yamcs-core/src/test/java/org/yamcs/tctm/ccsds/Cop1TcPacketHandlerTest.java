@@ -76,9 +76,9 @@ public class Cop1TcPacketHandlerTest {
         dataAvailable = new Semaphore(0);
         fop1ph.setDataAvailableSemaphore(dataAvailable);
 
-        adf0 = tcFrameFactory.makeFrame(0, 100);
-        adf1 = tcFrameFactory.makeFrame(0, 101);
-        adf2 = tcFrameFactory.makeFrame(0, 102);
+        adf0 = tcFrameFactory.makeDataFrame(100, 0);
+        adf1 = tcFrameFactory.makeDataFrame(101, 0);
+        adf2 = tcFrameFactory.makeDataFrame(102, 0);
     }
 
     @AfterEach
