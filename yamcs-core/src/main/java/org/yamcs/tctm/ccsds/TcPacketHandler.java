@@ -6,11 +6,16 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Semaphore;
 
+import org.yamcs.CommandOption;
 import org.yamcs.ConfigurationException;
+import org.yamcs.YamcsServer;
+import org.yamcs.CommandOption.CommandOptionType;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.tctm.AbstractTcDataLink;
 import org.yamcs.tctm.ccsds.TcManagedParameters.TcVcManagedParameters;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.xtce.AncillaryData;
 
 /**
  * Assembles command packets into TC frames as per CCSDS 232.0-B-4.
@@ -25,12 +30,18 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
     boolean blockSenderOnQueueFull;
     private Semaphore dataAvailableSemaphore;
 
+    public static final CommandOption OPTION_CCSDS_MAP_ID = new CommandOption("ccsdsMapId", "CCSDS MAP ID",
+            CommandOptionType.NUMBER).withHelp("Override for the default MAP ID to be used in the CCSDS TC frames");
+
     public TcPacketHandler(String yamcsInstance, String linkName, TcVcManagedParameters vmp)
             throws ConfigurationException {
         super.init(yamcsInstance, linkName, vmp.config);
         this.vmp = vmp;
         this.frameFactory = vmp.getFrameFactory();
 
+        if (vmp.mapId >= 0) {
+            addMapIdOption();
+        }
         int queueSize = vmp.config.getInt("tcQueueSize", 10);
         blockSenderOnQueueFull = vmp.config.getBoolean("blockSenderOnQueueFull", false);
         commandQueue = new ArrayBlockingQueue<>(queueSize);
@@ -78,9 +89,24 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
         int dataLength = 0;
         List<PreparedCommand> l = new ArrayList<>();
         PreparedCommand pc;
+        byte mapId = vmp.mapId;
+
         while ((pc = commandQueue.peek()) != null) {
             int pcLength = cmdPostProcessor.getBinaryLength(pc);
             if (framingLength + dataLength + pcLength <= vmp.maxFrameLength) {
+                if (mapId >= 0) {
+                    // MAP service for this VC. We need to check that all the commands are for the same MAP_ID
+                    var mapIdOverride = getMapId(pc);
+                    if (mapIdOverride != null) {
+                        if (l.isEmpty()) {
+                            mapId = mapIdOverride;
+                        } else if (mapIdOverride != mapId) {
+                            // different MAP_ID -> new frame
+                            break;
+                        }
+                    }
+                }
+
                 pc = commandQueue.poll();
                 if (pc == null) {
                     break;
@@ -98,7 +124,8 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
         if (l.isEmpty()) {
             return null;
         }
-        TcTransferFrame tf = frameFactory.makeFrame(vmp.vcId, dataLength);
+        TcTransferFrame tf = frameFactory.makeDataFrame(dataLength, l.get(0).getGenerationTime(), mapId);
+
         tf.setBypass(true);
         tf.setCommands(l);
 
@@ -154,4 +181,39 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
     protected Status connectionStatus() {
         return Status.OK;
     }
+
+    /**
+     * returns MAP_ID override or null if not set
+     */
+    public static Byte getMapId(PreparedCommand pc) {
+        CommandHistoryAttribute cha = pc.getAttribute(OPTION_CCSDS_MAP_ID.getId());
+        if (cha == null) {
+            var adlist = pc.getMetaCommand().getAncillaryData();
+            if (adlist == null) {
+                return null;
+            }
+            return adlist.stream()
+                    .filter(ad -> AncillaryData.KEY_CCSDS_MAP_ID.equals(ad.getName()))
+                    .map(ad -> {
+                        try {
+                            return Byte.parseByte(ad.getValue());
+                        } catch (NumberFormatException e) {
+                            return null;
+                        }
+                    })
+                    .findFirst()
+                    .orElse(null);
+
+        } else {
+            return (byte) cha.getValue().getSint32Value();
+        }
+    }
+
+    public static void addMapIdOption() {
+        var yserver = YamcsServer.getServer();
+        if (yserver.getCommandOption(OPTION_CCSDS_MAP_ID.getId()) == null) {
+            YamcsServer.getServer().addCommandOption(OPTION_CCSDS_MAP_ID);
+        }
+    }
+
 }

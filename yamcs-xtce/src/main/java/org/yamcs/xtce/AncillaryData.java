@@ -28,6 +28,11 @@ public class AncillaryData implements Serializable {
      */
     public static final String PROP_USE_AS_ARCHIVING_PARTITION = "UseAsArchivingPartition";
 
+    /**
+     * Used to override default CCSDS MAP ID for commands
+     */
+    public static final String KEY_CCSDS_MAP_ID = "Yamcs:CcsdsMapId";
+
     private static final long serialVersionUID = 1L;
     private static final String DEFAULT_MIME_TYPE = "text/plain";
 

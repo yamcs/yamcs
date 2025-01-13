@@ -31,7 +31,7 @@ Yamcs supports to a certain extent all three of them. The main support is around
 
 The packets are inserted into frames which are sent as part of Virtual Channels (VC). The VCs can have different priority on-board, for example one VC can be used to transport low volume HK data, while another one to transport high volume science data.
 
-Note that The USLP frames (as well as the TC frames used for commanding) support a second level of multiplexing called Multiplexer Access Point (MAP) which allows multiplexing data inside a VC. The MAP service is not supported by Yamcs.
+Note that The USLP and TC frames support a second level of multiplexing called Multiplexer Access Point (MAP) which allows multiplexing data inside a VC. The MAP service is only supported for TC, not for USLP.
 
 Currently the built-in way to receive frame data inside Yamcs is by using the UdpTmFrameLink data link. The yamcs-sle project provides an implementation of the Space Link Extension (SLE) which allows receiving frame data from SLE-enabled Ground Stations (such as those from NASA Deep Space Network or :abbr:`ESA (European Space Agency)` :abbr:`ESTRACK (European Space Tracking)`). The options described below are valid for both link types.
 
@@ -198,7 +198,8 @@ An example of a UDP TC frame link specification is below:
       randomizeCltu: false
       virtualChannels:
           - vcId: 0
-            service: "PACKET" 
+            service: "PACKET"
+            mapId: 1
             priority: 1
             commandPostprocessorClassName: org.yamcs.tctm.IssCommandPostprocessor
             commandPostprocessorArgs:
@@ -301,7 +302,10 @@ tcQueueSize (integer)
 errorDetection (string)
     One of ``NONE`` or ``CRC16``. Specifies the error detection scheme used for the virtual channel, overriding the setting at link level. This is not according to the CCSDS standard which specifies the frame error detection shall be configured at physical channel level.
     If not specified (default), the setting at the link level will be used.
-   
+
+mapId (integer)
+    If specified and positive, use the MAP service. Supported for TC frames only (not for USLP). Each frame will contain an extra byte after the primary header. The first two bits of the byte are set to 1 (i.e. unsegmented) and the last 6 bits are the map id. The default id is the one specified in this configuration. It can be overridden in the MDB or via command attributes. The map id has to be between ``0`` and ``15``.
+    Default: ``-1`` (MAP service not used)
 
            
 Priority Schemes
