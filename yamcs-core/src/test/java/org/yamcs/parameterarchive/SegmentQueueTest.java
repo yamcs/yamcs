@@ -42,7 +42,6 @@ public class SegmentQueueTest {
 
         sq.getPVSegments(0, false);
         List<ParameterValueSegment> pvsegList = sq.getPVSegments(1, true);
-        System.out.println("pvsegList: " + pvsegList.get(0));
 
         testEquals(pvsegList, Arrays.asList(Arrays.asList(9l, 10l)));
 

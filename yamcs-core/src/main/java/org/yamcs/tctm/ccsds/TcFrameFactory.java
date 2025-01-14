@@ -26,7 +26,6 @@ public class TcFrameFactory {
     /**
      * Makes a new frame of the given length with the generation time set to the current wall clock time
      * 
-     * @param vcId
      * @param dataLength
      * @return
      */

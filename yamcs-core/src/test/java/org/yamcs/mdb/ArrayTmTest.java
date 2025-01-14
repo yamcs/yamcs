@@ -125,7 +125,6 @@ public class ArrayTmTest {
 
     @Test
     public void test1ElementArray() {
-        org.yamcs.LoggingUtils.enableTracing();
         ByteBuffer bb = ByteBuffer.allocate(8);
         bb.putInt(1);
         bb.putInt(5);
@@ -141,7 +140,6 @@ public class ArrayTmTest {
 
     @Test
     public void test1ElementArray4() {
-        org.yamcs.LoggingUtils.enableTracing();
         ByteBuffer bb = ByteBuffer.allocate(12);
         bb.putInt(1);
         bb.putInt(5);
