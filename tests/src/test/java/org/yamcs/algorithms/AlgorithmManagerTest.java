@@ -226,8 +226,6 @@ public class AlgorithmManagerTest {
 
         // little endian to host
         verifyEventMessage(q.poll(), Long.toString(0xF3F2F1F0l));
-
-        System.out.println(q.poll());
     }
 
     private void verifyEventMessage(Event evt, String message) {
