@@ -233,7 +233,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         ParameterRetrievalService prs = getParameterRetrievalService(ysi);
         ParameterRetrievalOptions opts = ParameterRetrievalOptions.newBuilder()
                 .withStartStop(start, stop)
-                .withRetrieveParameterStatus(false)
+                .withRetrieveRawValues(false)
                 .withNorealtime(request.getNorealtime())
                 .build();
 
@@ -311,8 +311,15 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         };
 
         replayListener.setNoRepeat(request.getNorepeat());
-        prs.retrieveSingle(requestedParamWithId, opts, replayListener);
-        observer.complete(resultb.build());
+        prs.retrieveSingle(requestedParamWithId, opts, replayListener)
+                .thenRun(() -> {
+                    observer.complete(resultb.build());
+                })
+                .exceptionally(e -> {
+                    log.warn("Received exception during parameter retrieval", e);
+                    observer.completeExceptionally(new InternalServerErrorException(e.toString()));
+                    return null;
+                });
     }
 
     private ParameterArchive getParameterArchive(YamcsServerInstance ysi) throws BadRequestException {

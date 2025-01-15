@@ -58,7 +58,7 @@ public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValu
         this.start = req.start();
         this.stop = req.stop();
         this.ascending = req.ascending();
-        this.retrieveEngValues = req.retrieveEngineeringValues();
+        this.retrieveEngValues = req.retrieveEngValues();
         this.retrieveRawValues = req.retrieveRawValues();
         this.retrieveParameterStatus = req.retrieveParameterStatus();
 

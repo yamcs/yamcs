@@ -78,7 +78,7 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
         this.start = req.start();
         this.stop = req.stop();
         this.ascending = req.ascending();
-        this.retrieveEngValues = req.retrieveEngineeringValues();
+        this.retrieveEngValues = req.retrieveEngValues();
         this.retrieveRawValues = (parameterId.getRawType() == null) ? false : req.retrieveRawValues();
         this.retrieveParameterStatus = req.retrieveParameterStatus();
 

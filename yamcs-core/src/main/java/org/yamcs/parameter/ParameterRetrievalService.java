@@ -22,6 +22,7 @@ import org.yamcs.ProcessorFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.archive.ReplayOptions;
+import org.yamcs.parameterarchive.ConsumerAbortException;
 import org.yamcs.parameterarchive.MultiParameterRetrieval;
 import org.yamcs.parameterarchive.MultipleParameterRequest;
 import org.yamcs.parameterarchive.ParameterArchive;
@@ -37,7 +38,6 @@ import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.MutableLong;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
-
 
 /**
  * Combines retrieval from different sources:
@@ -63,19 +63,28 @@ public class ParameterRetrievalService extends AbstractYamcsService {
         super.init(yamcsInstance, serviceName, config);
         this.procName = config.getString("processor", DEFAULT_PROCESSOR);
 
+
         int parallelRetrievals = config.getInt("parallelRetrievals", 2);
         this.executor = createExecutor(parallelRetrievals);
-        this.cacheConfig = null;
-
+        YConfiguration pcacheConfig = config.getConfigOrEmpty("parameterCache");
+        this.cacheConfig = new ParameterCacheConfig(pcacheConfig, log);
     }
 
     @Override
     protected void doStart() {
         var ysi = YamcsServer.getServer().getInstance(yamcsInstance);
-        var proc = ysi.getProcessor(procName);
         if (cacheConfig != null) {
             pcache = new ArrayParameterCache(yamcsInstance, cacheConfig);
+            var proc = ysi.getProcessor(procName);
+            proc.getParameterRequestManager()
+                    .subscribeAll((id, items) -> update(items));
         }
+
+        var l = ysi.getServices(ParameterArchive.class);
+        if (!l.isEmpty()) {
+            // parchive = l.get(0);
+        }
+
         notifyStarted();
     }
 
@@ -86,7 +95,9 @@ public class ParameterRetrievalService extends AbstractYamcsService {
     }
 
     // Called from the PRM
-    public void update(List<ParameterValue> pvlist) {
+    private void update(List<ParameterValue> pvlist) {
+        System.out.println(pcache + " update: " + pvlist);
+
         if (pcache != null) {
             pcache.update(pvlist);
         }
@@ -97,36 +108,43 @@ public class ParameterRetrievalService extends AbstractYamcsService {
      */
     public CompletableFuture<Void> retrieveScalar(ParameterWithId pid, ParameterRetrievalOptions opts,
             Consumer<ParameterValueArray> consumer) {
+        System.out.println("retrieve scalar opts: " + opts);
+        log.debug("retrieveSingle pid: {}, opts: {}", pid, opts);
+
         var cf = new CompletableFuture<Void>();
         executor.submit(() -> {
             try {
-                long coverageEnd = parchive.coverageEnd();
-                if (opts.ascending()) {
-                    // ascending case -> retrieve max possible from the parameter archive
-                    var tc = retrieveScalarParameterArchive(pid, opts, consumer);
-                    if (opts.stop() > tc.time && opts.stop() > coverageEnd) {
-                        var req1 = opts.withUpdatedStart(tc.time);
-                        // then from cache or via replay
-                        retrieveScalarReplayOrCache(pid, req1, consumer);
-                    }
+                if (parchive == null) {
+                    retrieveScalarReplayOrCache(pid, opts, consumer);
                 } else {
-                    // descending case
-                    // if the request is beyond parameter archive coverage, retrieve first by cache or replay
-                    if (opts.stop() > coverageEnd) {
-                        if (opts.start() >= coverageEnd) {
-                            // request does not overlap at all with the parameter archive coverage
-                            retrieveScalarReplayOrCache(pid, opts, consumer);
-                        } else {
-                            // request overlaps with the parameter archive coverage
-                            var req1 = opts.withUpdatedStart(coverageEnd);
+                    long coverageEnd = parchive.coverageEnd();
+                    if (opts.ascending()) {
+                        // ascending case -> retrieve max possible from the parameter archive
+                        var tc = retrieveScalarParameterArchive(pid, opts, consumer);
+                        if (opts.stop() > tc.time && opts.stop() > coverageEnd) {
+                            var req1 = opts.withUpdatedStart(tc.time);
+                            // then from cache or via replay
                             retrieveScalarReplayOrCache(pid, req1, consumer);
-                            var req2 = opts.withUpdatedStop(coverageEnd);
-                            retrieveScalarParameterArchive(pid, req2, consumer);
-
                         }
                     } else {
-                        // request can be satisfied only by parameter archive
-                        retrieveScalarParameterArchive(pid, opts, consumer);
+                        // descending case
+                        // if the request is beyond parameter archive coverage, retrieve first by cache or replay
+                        if (opts.stop() > coverageEnd) {
+                            if (opts.start() >= coverageEnd) {
+                                // request does not overlap at all with the parameter archive coverage
+                                retrieveScalarReplayOrCache(pid, opts, consumer);
+                            } else {
+                                // request overlaps with the parameter archive coverage
+                                var req1 = opts.withUpdatedStart(coverageEnd);
+                                retrieveScalarReplayOrCache(pid, req1, consumer);
+                                var req2 = opts.withUpdatedStop(coverageEnd);
+                                retrieveScalarParameterArchive(pid, req2, consumer);
+
+                            }
+                        } else {
+                            // request can be satisfied only by parameter archive
+                            retrieveScalarParameterArchive(pid, opts, consumer);
+                        }
                     }
                 }
                 cf.complete(null);
@@ -137,26 +155,38 @@ public class ParameterRetrievalService extends AbstractYamcsService {
         return cf;
     }
 
-    public void retrieveSingle(ParameterWithId requestedParamWithId, ParameterRetrievalOptions opts,
+    public CompletableFuture<Void> retrieveSingle(ParameterWithId pid, ParameterRetrievalOptions opts,
             Consumer<ParameterValueWithId> consumer) {
-        MultipleParameterRequest mpvr;
-        ParameterIdDb piddb = parchive.getParameterIdDb();
-        String qn = requestedParamWithId.getQualifiedName();
-        ParameterId[] pids = piddb.get(qn);
-        if (pids != null) {
-            mpvr = new MultipleParameterRequest(opts.start(), opts.stop(), pids, opts.ascending());
-        } else {
-            log.debug("No parameter id found in the parameter archive for {}", qn);
-            mpvr = null;
-        }
-
-        // do not use set limit because the data can be filtered down (e.g. noRepeat) and the limit applies the final
-        // filtered data not to the input
-        // one day the parameter archive will be smarter and do the filtering inside
-        // mpvr.setLimit(limit);
-
-        ParameterCache pcache = null;
-
+        log.debug("retrieveSingle requestedParamWithId: {}, opts: {}", pid, opts);
+        System.out.println("retrieve single pid:" + pid + " opts: " + opts);
+        var cf = new CompletableFuture<Void>();
+        executor.submit(() -> {
+            try {
+                if (parchive == null) {
+                    retrieveSingleReplayOrCache(pid, opts, consumer);
+                } else {
+                    MultipleParameterRequest mpvr;
+                    ParameterIdDb piddb = parchive.getParameterIdDb();
+                    String qn = pid.getQualifiedName();
+                    ParameterId[] pids = piddb.get(qn);
+                    if (pids != null) {
+                        mpvr = new MultipleParameterRequest(opts.start(), opts.stop(), pids, opts.ascending());
+                        retrieveParameterData(parchive, pcache, pid, mpvr, consumer);
+                    } else {
+                        log.debug("No parameter id found in the parameter archive for {}", qn);
+                        replay(Arrays.asList(pid), opts, pvList -> {
+                            for (var pv : pvList) {
+                                consumer.accept(pv);
+                            }
+                        });
+                    }
+                }
+                cf.complete(null);
+            } catch (Exception e) {
+                cf.completeExceptionally(e);
+            }
+        });
+        return cf;
     };
 
     public void retrieveMulti(ParameterWithId requestedParamWithId, ParameterRetrievalOptions opts,
@@ -168,14 +198,46 @@ public class ParameterRetrievalService extends AbstractYamcsService {
             Consumer<ParameterValueArray> consumer) throws Exception {
 
         return replay(Collections.singletonList(pid), opts, new Consumer<List<ParameterValueWithId>>() {
-            
+
             @Override
             public void accept(List<ParameterValueWithId> pvList) {
-                for(var pv: pvList) {
+                for (var pv : pvList) {
                     consumer.accept(toScalarPva(pv.getParameterValue(), opts));
                 }
-            }      
-        });        
+            }
+        });
+    }
+
+    TimeAndCount retrieveSingleReplayOrCache(ParameterWithId pid, ParameterRetrievalOptions opts,
+            Consumer<ParameterValueWithId> consumer) throws Exception {
+        System.out.println("retrieve single replay or cache ");
+        if (pcache != null) {
+            var pvList = pcache.getAllValues(pid.getParameter(), opts.start(), opts.stop());
+            long start = pcache.getCoverageStart(pid.getParameter());
+            if (start <= opts.start()) {
+                if (opts.ascending()) {
+                    for (var pv : pvList) {
+                        consumer.accept(new ParameterValueWithId(pv, pid.id));
+                    }
+                    return new TimeAndCount(pvList.get(pvList.size() - 1).getGenerationTime(), pvList.size());
+                } else {
+                    for (int i = pvList.size() - 1; i >= 0; i--) {
+                        var pv = pvList.get(i);
+                        consumer.accept(new ParameterValueWithId(pv, pid.id));
+                    }
+                    return new TimeAndCount(pvList.get(0).getGenerationTime(), pvList.size());
+                }
+            } // else it means the cache does not cover the requested interval, just send everything via replay
+        }
+
+        return replay(Collections.singletonList(pid), opts, new Consumer<List<ParameterValueWithId>>() {
+            @Override
+            public void accept(List<ParameterValueWithId> pvList) {
+                for (var pv : pvList) {
+                    consumer.accept(pv);
+                }
+            }
+        });
     }
 
     private TimeAndCount retrieveScalarParameterArchive(ParameterWithId pid, ParameterRetrievalOptions request,
@@ -195,47 +257,50 @@ public class ParameterRetrievalService extends AbstractYamcsService {
         return tc;
     }
 
-    private TimeAndCount replay(List<ParameterWithId> paramList,  ParameterRetrievalOptions opts,
+    private TimeAndCount replay(List<ParameterWithId> paramList, ParameterRetrievalOptions opts,
             Consumer<List<ParameterValueWithId>> consumer) throws Exception {
         ReplayOptions replayOpts = ReplayOptions.getAfapReplay(opts.start(), opts.stop(), !opts.ascending());
-        
+
         TimeAndCount tc = new TimeAndCount(Instant.MIN_INSTANT, 0);
-        
+
         Map<Parameter, List<NamedObjectId>> params = paramList.stream()
                 .collect(Collectors.groupingBy(
                         ParameterWithId::getParameter,
                         Collectors.mapping(ParameterWithId::getId, Collectors.toList())));
-            Processor processor = ProcessorFactory.create(yamcsInstance, "api_replay" + count.incrementAndGet(),
-                    "ArchiveRetrieval", "internal", replayOpts);
+        Processor processor = ProcessorFactory.create(yamcsInstance, "api_replay" + count.incrementAndGet(),
+                "ArchiveRetrieval", "internal", replayOpts);
 
-            ParameterConsumer prmConsumer = new ParameterConsumer() {
+        ParameterConsumer prmConsumer = new ParameterConsumer() {
+            @Override
+            public void updateItems(int subscriptionId, List<ParameterValue> pvalues) {
+                List<ParameterValueWithId> pvaluesWithIds = new ArrayList<>(params.size());
 
-                @Override
-                public void updateItems(int subscriptionId, List<ParameterValue> pvalues) {
-                    List<ParameterValueWithId> pvaluesWithIds = new ArrayList<>(params.size());
-
-                    for (ParameterValue pv : pvalues) {
-                        var ids = params.get(pv.getParameter());
-                        if (ids != null) {
-                            if(opts.ascending()) {
-                                tc.time = Math.max(pv.getGenerationTime(), tc.time);
-                            } else {
-                                tc.time = Math.min(pv.getGenerationTime(), tc.time);
-                            }
-                            for (var id : ids) {
-                                pvaluesWithIds.add(new ParameterValueWithId(pv, id));
-                            }
+                for (ParameterValue pv : pvalues) {
+                    var ids = params.get(pv.getParameter());
+                    if (ids != null) {
+                        if (opts.ascending()) {
+                            tc.time = Math.max(pv.getGenerationTime(), tc.time);
+                        } else {
+                            tc.time = Math.min(pv.getGenerationTime(), tc.time);
+                        }
+                        for (var id : ids) {
+                            pvaluesWithIds.add(new ParameterValueWithId(pv, id));
                         }
                     }
-                    consumer.accept(pvaluesWithIds);
                 }
-            };
-            processor.getParameterRequestManager().addRequest(params.keySet(), prmConsumer);
+                try {
+                    consumer.accept(pvaluesWithIds);
+                } catch (ConsumerAbortException e) {
+                    processor.quit();
+                };
+            }
+        };
+        processor.getParameterRequestManager().addRequest(params.keySet(), prmConsumer);
+        processor.startAsync();
+        processor.awaitRunning();
+        processor.awaitTerminated();
 
-            processor.awaitRunning();
-            processor.awaitTerminated();
-            
-            return tc;
+        return tc;
     }
 
     private void retrieveParameterData(ParameterArchive parchive, ParameterCache pcache, ParameterWithId pid,
@@ -325,17 +390,31 @@ public class ParameterRetrievalService extends AbstractYamcsService {
         consumer.accept(new ParameterValueWithId(pv1, pid.getId()));
     }
 
-    
     private ParameterValueArray toScalarPva(ParameterValue pv, ParameterRetrievalOptions opts) {
-        long[] timestamps = new long[] {pv.getGenerationTime()};
+        long[] timestamps = new long[] { pv.getGenerationTime() };
         ValueArray engValues = null;
+        
+        if (opts.retrieveEngValues() && pv.getEngValue() != null) {
+            engValues = new ValueArray(pv.getEngValue().getType(), 1);
+            engValues.setValue(0, pv.getEngValue());
+        }
+
         ValueArray rawValues = null;
-        org.yamcs.protobuf.Pvalue.ParameterStatus[] paramStatus = new org.yamcs.protobuf.Pvalue.ParameterStatus[] {pv.getStatus().toProtoBuf()};
-                 
+        if (opts.retrieveRawValues() && pv.getRawValue() != null) {
+            rawValues = new ValueArray(pv.getRawValue().getType(), 1);
+            rawValues.setValue(0, pv.getRawValue());
+        }
+
+        org.yamcs.protobuf.Pvalue.ParameterStatus[] paramStatus = null;
+
+        if (opts.retrieveParameterStatus()) {
+            paramStatus = new org.yamcs.protobuf.Pvalue.ParameterStatus[] {
+                pv.getStatus().toProtoBuf() };
+        }
+
         return new ParameterValueArray(timestamps, engValues, rawValues, paramStatus);
     }
-    
-    
+
     private ExecutorService createExecutor(int numThreads) {
         return Executors.newFixedThreadPool(numThreads, new ThreadFactory() {
             private int count = 1;

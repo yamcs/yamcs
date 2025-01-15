@@ -32,7 +32,7 @@ public class AggrrayIterator implements ParameterIterator {
         this.it = new MultiSegmentIterator(parchive, members, parameterGroupId, req);
         this.req = req;
         this.parameterId = parameterId;
-        if (req.retrieveEngineeringValues()) {
+        if (req.retrieveEngValues()) {
             engBuilder = new AggrrayBuilder(members);
         }
         if (req.retrieveRawValues() && parameterId.hasRawValue()) {

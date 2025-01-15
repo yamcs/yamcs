@@ -7,7 +7,7 @@ public record ParameterRetrievalOptions(
         long start,
         long stop,
         boolean ascending,
-        boolean retrieveEngineeringValues,
+        boolean retrieveEngValues,
         boolean retrieveRawValues,
         boolean retrieveParameterStatus,
         boolean norealtime) {
@@ -64,7 +64,7 @@ public record ParameterRetrievalOptions(
         return new Builder()
                 .withStartStop(this.start, this.stop)
                 .withAscending(this.ascending)
-                .withRetrieveEngineeringValues(this.retrieveEngineeringValues)
+                .withRetrieveEngineeringValues(this.retrieveEngValues)
                 .withRetrieveRawValues(this.retrieveRawValues)
                 .withRetrieveParameterStatus(this.retrieveParameterStatus);
     }

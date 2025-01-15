@@ -48,4 +48,10 @@ public class ParameterWithId {
         }
     }
 
+    @Override
+    public String toString() {
+        return "ParameterWithId [id=" + id + ", path=" + PathElement.pathToString(path) + ", p=" + p.getQualifiedName()
+                + "]";
+    }
+
 }

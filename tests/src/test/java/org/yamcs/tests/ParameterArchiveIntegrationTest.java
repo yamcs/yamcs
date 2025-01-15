@@ -187,13 +187,15 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         generatePkt13AndPps("2018-01-01T10:00:00", 2 * 3600);
 
         // first request before the consolidation, should return data from cache
-        Instant start = Instant.parse("2018-01-01T11:40:00Z");
+        Instant start = Instant.parse("2018-01-01T11:40:00.001Z");
         Instant stop = Instant.parse("2018-01-02T12:00:00Z");
 
         List<Range> ranges = archiveClient.getRanges("/REFMDB/SUBSYS1/FloatPara1_1_2", start, stop).get();
 
         assertEquals(1, ranges.size());
         Range r0 = ranges.get(0);
+        System.out.println("r0 start: " + TimeEncoding.toString(TimeEncoding.fromProtobufTimestamp(r0.getStart())));
+        System.out.println("r0 stop: " + TimeEncoding.toString(TimeEncoding.fromProtobufTimestamp(r0.getStop())));
         assertEquals(1199, r0.getCount());
         assertEquals(1199, r0.getCounts(0));
         assertEquals(0.167291805148, r0.getEngValues(0).getFloatValue(), 1e-5);

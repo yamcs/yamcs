@@ -55,4 +55,6 @@ public interface ParameterCache {
 
     boolean caching(ParameterWithId pid);
 
+    long getCoverageStart(Parameter parameter);
+
 }
