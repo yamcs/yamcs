@@ -2,8 +2,8 @@ package org.yamcs.yarch.rocksdb;
 
 import static org.yamcs.yarch.HistogramSegment.segmentStart;
 import static org.yamcs.yarch.rocksdb.RdbHistogramInfo.histoDbKey;
-
-import static org.yamcs.yarch.rocksdb.RdbStorageEngine.*;
+import static org.yamcs.yarch.rocksdb.RdbStorageEngine.TBS_INDEX_SIZE;
+import static org.yamcs.yarch.rocksdb.RdbStorageEngine.ZERO_BYTES;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -45,7 +45,7 @@ public class RdbHistogramIterator implements HistogramIterator {
     String colName;
     boolean stopReached = false;
     RdbPartitionManager partMgr;
-    
+
     public RdbHistogramIterator(String yamcsInstance, Tablespace tablespace, TableDefinition tblDef,
             String colName, TimeInterval interval) throws RocksDBException, IOException {
         this.interval = interval;
@@ -71,8 +71,7 @@ public class RdbHistogramIterator implements HistogramIterator {
         }
 
         PartitionManager.Interval intv = partitionIterator.next();
-        
-        
+
         RdbHistogramInfo hist = (RdbHistogramInfo) intv.getHistogram(colName);
         if (hist == null) {
             readNextPartition();
@@ -157,7 +156,7 @@ public class RdbHistogramIterator implements HistogramIterator {
             long start = sstart * HistogramSegment.GROUPING_FACTOR + vbb.getInt();
 
             long stop = sstart * HistogramSegment.GROUPING_FACTOR + vbb.getInt();
-            int num = vbb.getShort();
+            int num = vbb.getShort() & 0xFFFF;
             if ((interval.hasStart()) && (stop <= interval.getStart())) {
                 continue;
             }
@@ -226,7 +225,7 @@ public class RdbHistogramIterator implements HistogramIterator {
             long sstart1 = ByteArrayUtils.decodeLong(key, TBS_INDEX_SIZE);
             byte[] columnValue1 = new byte[key.length - TBS_INDEX_SIZE - 8];
             System.arraycopy(key, TBS_INDEX_SIZE + 8, columnValue1, 0, columnValue1.length);
-            
+
             if (sstart1 != sstart || !Arrays.equals(columnValue, columnValue1)) {
                 readNextSegments();
                 return;
