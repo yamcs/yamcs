@@ -1,6 +1,7 @@
 package org.yamcs.mdb;
 
-import static org.yamcs.mdb.DataEncodingUtils.*;
+import static org.yamcs.mdb.DataEncodingUtils.getRawFloatValue;
+import static org.yamcs.mdb.DataEncodingUtils.getRawIntegerValue;
 
 import java.nio.charset.Charset;
 
@@ -42,18 +43,8 @@ public class DataEncodingDecoder {
     }
 
     /**
-     * Extracts the raw uncalibrated parameter value from the buffer.
-     * 
-     * @return the extracted value or null if something went wrong - in this case the parameter will be marked with
-     *         aquisitionStatus = INVALID
-     */
-    public Value extractRaw(DataEncoding de) {
-        return extractRaw(de, null);
-    }
-
-    /**
      * Extract the raw, uncalibrated parameter value from the buffer, using the provider context to find referenced
-     * parameter values for variable- sized objects.
+     * parameter values for variably-sized objects.
      *
      * @param de
      *            the data encoding
@@ -62,8 +53,7 @@ public class DataEncodingDecoder {
      * @return the extracted value, or null if something went wrong - in this case the parameter will be marked with
      *         aquisitionStatus = INVALID
      */
-    public Value extractRaw(DataEncoding de,
-            ContainerProcessingContext pcontext) {
+    public Value extractRaw(DataEncoding de, ContainerProcessingContext pcontext) {
 
         if (de.getFromBinaryTransformAlgorithm() != null) { // custom algorithm
             DataDecoder dd = pdata.getDataDecoder(de);
@@ -71,9 +61,9 @@ public class DataEncodingDecoder {
         } else {
             Value rv;
             if (de instanceof IntegerDataEncoding) {
-                rv = extractRawInteger((IntegerDataEncoding) de);
+                rv = extractRawInteger((IntegerDataEncoding) de, pcontext);
             } else if (de instanceof FloatDataEncoding) {
-                rv = extractRawFloat((FloatDataEncoding) de);
+                rv = extractRawFloat((FloatDataEncoding) de, pcontext);
             } else if (de instanceof StringDataEncoding) {
                 rv = extractRawString((StringDataEncoding) de, pcontext);
             } else if (de instanceof BooleanDataEncoding) {
@@ -88,10 +78,10 @@ public class DataEncodingDecoder {
         }
     }
 
-    private Value extractRawInteger(IntegerDataEncoding ide) {
+    private Value extractRawInteger(IntegerDataEncoding ide, ContainerProcessingContext pcontext) {
         // Integer encoded as string, don't even try reading it as int
         if (ide.getEncoding() == Encoding.STRING) {
-            return extractRaw(ide.getStringEncoding());
+            return extractRaw(ide.getStringEncoding(), pcontext);
         }
 
         buffer.setByteOrder(ide.getByteOrder());
@@ -232,14 +222,14 @@ public class DataEncodingDecoder {
         return ValueUtility.getStringValue(new String(b, Charset.forName(sde.getEncoding())));
     }
 
-    private Value extractRawFloat(FloatDataEncoding de) {
+    private Value extractRawFloat(FloatDataEncoding de, ContainerProcessingContext pcontext) {
         switch (de.getEncoding()) {
         case IEEE754_1985:
             return extractRawIEEE754_1985(de);
         case MILSTD_1750A:
             return extractRawMILSTD_1750A(de);
         case STRING:
-            return extractRaw(de.getStringDataEncoding());
+            return extractRaw(de.getStringDataEncoding(), pcontext);
         default:
             throw new IllegalArgumentException("Float Encoding " + de.getEncoding() + " not implemented");
         }
