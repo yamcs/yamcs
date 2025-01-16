@@ -235,6 +235,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
                 .withStartStop(start, stop)
                 .withRetrieveRawValues(false)
                 .withNorealtime(request.getNorealtime())
+                // .withNoreplay(false)// TODO
                 .build();
 
         prs.retrieveScalar(pid, opts, ranger)

@@ -192,7 +192,7 @@ public class ArrayParameterCache implements ParameterCache {
                 }
             }
         }
-
+        System.out.println("numTables: " + numTables);
         // if values are retrieved from multiple tables, we need to sort them by generation time
         // (in reverse order such that the newest is first)
         if (numTables > 1) {
@@ -209,6 +209,8 @@ public class ArrayParameterCache implements ParameterCache {
      * <p>
      */
     public List<ParameterValue> getAllValuesIfCovered(Parameter pdef, long start, long stop) {
+        System.out.println("get all values if covered");
+
         List<ParameterId> pidlist = getParameterIds(pdef);
         List<ParameterValue> result = new ArrayList<>();
         int numTables = 0;
@@ -544,7 +546,8 @@ public class ArrayParameterCache implements ParameterCache {
         public boolean retrieveAllIfCovered(ParameterId p, long start, long stop, List<ParameterValue> result) {
             lock.readLock().lock();
             try {
-                if (generationTimeColumn[tail] < start) {
+                System.out.println("start+ " + start + " tail: " + generationTimeColumn[tail]);
+                if (start + 1 < generationTimeColumn[tail]) {
                     return false;
                 }
                 // col1 will be different than col2 when there are multiple values for the same parameter

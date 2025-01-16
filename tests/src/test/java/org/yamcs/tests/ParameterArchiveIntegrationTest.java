@@ -11,12 +11,12 @@ import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.yamcs.Processor;
 import org.yamcs.YamcsServer;
 import org.yamcs.client.Page;
 import org.yamcs.client.archive.ArchiveClient;
 import org.yamcs.client.archive.ArchiveClient.ListOptions;
 import org.yamcs.client.archive.ArchiveClient.RangeOptions;
+import org.yamcs.parameter.ParameterRetrievalService;
 import org.yamcs.parameterarchive.ParameterArchive;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
@@ -30,11 +30,16 @@ import com.google.protobuf.util.Timestamps;
 public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
 
     private ArchiveClient archiveClient;
+    ParameterRetrievalService prs;
 
     @BeforeEach
     public void cleanParameterCache() {
-        Processor p = YamcsServer.getServer().getProcessor(yamcsInstance, "realtime");
-        // p.getParameterCache().clear();
+        if (prs == null) {
+            var ysi = YamcsServer.getServer().getInstance(yamcsInstance);
+            List<ParameterRetrievalService> l = ysi.getServices(ParameterRetrievalService.class);
+            prs = l.get(0);
+        }
+        prs.getParameterCache().clear();
         archiveClient = yamcsClient.createArchiveClient(yamcsInstance);
     }
 
@@ -151,7 +156,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         page.iterator().forEachRemaining(values::add);
 
         assertEquals(7210, values.size());
-        t = TimeEncoding.parse("2015-01-02T11:59:50");
+        t = TimeEncoding.parse("2015-01-02T10:00:00");
         for (ParameterValue value : values) {
             assertEquals(t, TimeEncoding.fromProtobufTimestamp(value.getGenerationTime()));
             t += 1000;
@@ -194,8 +199,6 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
 
         assertEquals(1, ranges.size());
         Range r0 = ranges.get(0);
-        System.out.println("r0 start: " + TimeEncoding.toString(TimeEncoding.fromProtobufTimestamp(r0.getStart())));
-        System.out.println("r0 stop: " + TimeEncoding.toString(TimeEncoding.fromProtobufTimestamp(r0.getStop())));
         assertEquals(1199, r0.getCount());
         assertEquals(1199, r0.getCounts(0));
         assertEquals(0.167291805148, r0.getEngValues(0).getFloatValue(), 1e-5);
@@ -252,6 +255,11 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
 
     }
 
+    String toString(Range range) {
+        return Timestamps.toString(range.getStart()) + " - " + Timestamps.toString(range.getStop()) + ": "
+                + range.getCount();
+    }
+
     @Test
     public void testWithAggregateMembers() throws Exception {
         generatePkt7("2019-04-06T00:00:00", 2 * 3600);
@@ -268,6 +276,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(59, values.size());
         org.yamcs.protobuf.Pvalue.ParameterValue pv = values.get(0);
         Value engValue = pv.getEngValue();
+        System.out.println("engValue: " + engValue);
         assertEquals(packetGenerator.paggr1_member2, engValue.getUint32Value());
         assertFalse(pv.hasExpireMillis());
 
