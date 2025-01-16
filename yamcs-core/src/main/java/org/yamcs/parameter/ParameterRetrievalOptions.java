@@ -10,7 +10,8 @@ public record ParameterRetrievalOptions(
         boolean retrieveEngValues,
         boolean retrieveRawValues,
         boolean retrieveParameterStatus,
-        boolean norealtime) {
+        boolean norealtime,
+        boolean noreplay) {
 
     public static class Builder {
         private long start;
@@ -20,6 +21,7 @@ public record ParameterRetrievalOptions(
         private boolean retrieveRawValues = true;
         private boolean retrieveParameterStatus = true;
         private boolean norealtime = false;
+        private boolean noreplay = true;
 
         public Builder withStartStop(long start, long stop) {
             this.start = start;
@@ -34,6 +36,11 @@ public record ParameterRetrievalOptions(
 
         public Builder withNorealtime(boolean norealtime) {
             this.norealtime = norealtime;
+            return this;
+        }
+
+        public Builder withNoreplay(boolean noreplay) {
+            this.noreplay = noreplay;
             return this;
         }
 
@@ -56,7 +63,7 @@ public record ParameterRetrievalOptions(
             return new ParameterRetrievalOptions(
                     start, stop, ascending,
                     retrieveEngineeringValues, retrieveRawValues, retrieveParameterStatus,
-                    norealtime);
+                    norealtime, noreplay);
         }
     }
 

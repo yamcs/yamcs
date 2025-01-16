@@ -53,7 +53,7 @@ public class ParameterRetrievalService extends AbstractYamcsService {
     private static final String DEFAULT_PROCESSOR = "realtime";
 
     String procName = DEFAULT_PROCESSOR;
-    ParameterCache pcache;
+    ArrayParameterCache pcache;
     ParameterArchive parchive;
     ParameterCacheConfig cacheConfig;
     ExecutorService executor;
@@ -63,11 +63,12 @@ public class ParameterRetrievalService extends AbstractYamcsService {
         super.init(yamcsInstance, serviceName, config);
         this.procName = config.getString("processor", DEFAULT_PROCESSOR);
 
-
         int parallelRetrievals = config.getInt("parallelRetrievals", 2);
         this.executor = createExecutor(parallelRetrievals);
         YConfiguration pcacheConfig = config.getConfigOrEmpty("parameterCache");
-        this.cacheConfig = new ParameterCacheConfig(pcacheConfig, log);
+        if (pcacheConfig.getBoolean("enabled", true)) {
+            this.cacheConfig = new ParameterCacheConfig(pcacheConfig, log);
+        }
     }
 
     @Override
@@ -77,7 +78,7 @@ public class ParameterRetrievalService extends AbstractYamcsService {
             pcache = new ArrayParameterCache(yamcsInstance, cacheConfig);
             var proc = ysi.getProcessor(procName);
             proc.getParameterRequestManager()
-                    .subscribeAll((id, items) -> update(items));
+                    .subscribeAll((id, items) -> pcache.update(items));
         }
 
         var l = ysi.getServices(ParameterArchive.class);
@@ -92,15 +93,6 @@ public class ParameterRetrievalService extends AbstractYamcsService {
     protected void doStop() {
         executor.shutdown();
         notifyStopped();
-    }
-
-    // Called from the PRM
-    private void update(List<ParameterValue> pvlist) {
-        System.out.println(pcache + " update: " + pvlist);
-
-        if (pcache != null) {
-            pcache.update(pvlist);
-        }
     }
 
     /**
@@ -182,6 +174,8 @@ public class ParameterRetrievalService extends AbstractYamcsService {
                     }
                 }
                 cf.complete(null);
+            } catch (ConsumerAbortException e) {
+                cf.complete(null);
             } catch (Exception e) {
                 cf.completeExceptionally(e);
             }
@@ -210,34 +204,42 @@ public class ParameterRetrievalService extends AbstractYamcsService {
 
     TimeAndCount retrieveSingleReplayOrCache(ParameterWithId pid, ParameterRetrievalOptions opts,
             Consumer<ParameterValueWithId> consumer) throws Exception {
-        System.out.println("retrieve single replay or cache ");
-        if (pcache != null) {
-            var pvList = pcache.getAllValues(pid.getParameter(), opts.start(), opts.stop());
-            long start = pcache.getCoverageStart(pid.getParameter());
-            if (start <= opts.start()) {
+        System.out.println("retrieve single replay or cache pcache: " + pcache + " norplay: " + opts.noreplay());
+
+        if (pcache != null && !opts.norealtime()) {
+            var pvList = opts.noreplay() ? pcache.getAllValues(pid.getParameter(), opts.start(), opts.stop())
+                    : pcache.getAllValuesIfCovered(pid.getParameter(), opts.start(), opts.stop());
+            if (pvList != null) {
+                // parameter cache returns value in reverse order
                 if (opts.ascending()) {
-                    for (var pv : pvList) {
-                        consumer.accept(new ParameterValueWithId(pv, pid.id));
-                    }
-                    return new TimeAndCount(pvList.get(pvList.size() - 1).getGenerationTime(), pvList.size());
-                } else {
                     for (int i = pvList.size() - 1; i >= 0; i--) {
                         var pv = pvList.get(i);
                         consumer.accept(new ParameterValueWithId(pv, pid.id));
                     }
                     return new TimeAndCount(pvList.get(0).getGenerationTime(), pvList.size());
+                } else {
+                    for (var pv : pvList) {
+                        consumer.accept(new ParameterValueWithId(pv, pid.id));
+                    }
+                    return new TimeAndCount(pvList.get(pvList.size() - 1).getGenerationTime(), pvList.size());
                 }
-            } // else it means the cache does not cover the requested interval, just send everything via replay
+            } // else it means the cache does not cover the requested interval,
+              // send everything via replay if allowed
         }
 
-        return replay(Collections.singletonList(pid), opts, new Consumer<List<ParameterValueWithId>>() {
-            @Override
-            public void accept(List<ParameterValueWithId> pvList) {
-                for (var pv : pvList) {
-                    consumer.accept(pv);
+        if (!opts.noreplay()) {
+            return replay(Collections.singletonList(pid), opts, new Consumer<List<ParameterValueWithId>>() {
+                @Override
+                public void accept(List<ParameterValueWithId> pvList) {
+                    for (var pv : pvList) {
+                        consumer.accept(pv);
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            // noreplay is specified and no data has been found in the cache
+            return new TimeAndCount(Instant.MIN_INSTANT, 0);
+        }
     }
 
     private TimeAndCount retrieveScalarParameterArchive(ParameterWithId pid, ParameterRetrievalOptions request,
@@ -292,7 +294,8 @@ public class ParameterRetrievalService extends AbstractYamcsService {
                     consumer.accept(pvaluesWithIds);
                 } catch (ConsumerAbortException e) {
                     processor.quit();
-                };
+                }
+                ;
             }
         };
         processor.getParameterRequestManager().addRequest(params.keySet(), prmConsumer);
@@ -393,7 +396,7 @@ public class ParameterRetrievalService extends AbstractYamcsService {
     private ParameterValueArray toScalarPva(ParameterValue pv, ParameterRetrievalOptions opts) {
         long[] timestamps = new long[] { pv.getGenerationTime() };
         ValueArray engValues = null;
-        
+
         if (opts.retrieveEngValues() && pv.getEngValue() != null) {
             engValues = new ValueArray(pv.getEngValue().getType(), 1);
             engValues.setValue(0, pv.getEngValue());
@@ -409,7 +412,7 @@ public class ParameterRetrievalService extends AbstractYamcsService {
 
         if (opts.retrieveParameterStatus()) {
             paramStatus = new org.yamcs.protobuf.Pvalue.ParameterStatus[] {
-                pv.getStatus().toProtoBuf() };
+                    pv.getStatus().toProtoBuf() };
         }
 
         return new ParameterValueArray(timestamps, engValues, rawValues, paramStatus);

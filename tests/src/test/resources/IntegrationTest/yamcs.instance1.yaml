@@ -12,6 +12,13 @@ services:
       type: "realtime"
   - class: org.yamcs.archive.CommandHistoryRecorder
   - class: org.yamcs.timeline.TimelineService
+  - class: org.yamcs.parameter.ParameterRetrievalService
+    args:
+      parameterCache:
+         enabled: true
+         cacheAll: true
+         duration: 3600
+         maxNumEntries: 4096
 
 dataLinks:
   - name: tm_realtime

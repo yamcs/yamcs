@@ -90,7 +90,6 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         engValue = pv.getEngValue();
         assertEquals(0.167291805148, engValue.getFloatValue(), 1e-5);
         assertEquals(2850, pv.getExpireMillis());
-
         page = archiveClient.listValues("/REFMDB/SUBSYS1/FloatPara1_1_2", start, stop,
                 ListOptions.limit(10)).get();
         values = new ArrayList<>();
@@ -150,6 +149,9 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
                 ListOptions.ascending(true)).get();
         values = new ArrayList<>();
         page.iterator().forEachRemaining(values::add);
+        for (var pv1 : values) {
+            System.out.println(Timestamps.toString(pv1.getGenerationTime()));
+        }
         assertEquals(20, values.size());
         t = TimeEncoding.parse("2015-01-02T11:59:50");
         for (ParameterValue value : values) {

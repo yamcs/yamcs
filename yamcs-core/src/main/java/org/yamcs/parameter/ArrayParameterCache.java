@@ -23,9 +23,6 @@ import org.yamcs.xtce.Parameter;
 /**
  * This is another implementation of the parameter cache using arrays to store primitive values (instead of storing
  * {@link Value}).
- * <p>
- * It should consume less memory than {@link ParameterCacheImpl} in case of large number of parameter values.
- *
  */
 public class ArrayParameterCache implements ParameterCache {
     SimpleParameterIdMap pidMap = new SimpleParameterIdMap();
@@ -43,6 +40,7 @@ public class ArrayParameterCache implements ParameterCache {
 
     @Override
     public void update(Collection<ParameterValue> pvs) {
+
         Map<Long, SortedParameterList> m = new HashMap<>();
         for (ParameterValue pv : pvs) {
             long t = pv.getGenerationTime();
@@ -115,35 +113,6 @@ public class ArrayParameterCache implements ParameterCache {
 
         return result;
 
-    }
-
-    public ParameterValue getLastValue1(Parameter p) {
-        Map<Integer, Integer> m = pidMap.get(p);
-        if (m == null) {
-            return null;
-        }
-        ParameterValue pvr = null;
-        for (Map.Entry<Integer, Integer> me : m.entrySet()) {
-            int type = me.getKey();
-            int pid = me.getValue();
-
-            for (Map.Entry<SortedIntArray, ParameterValueTable> me1 : tables.entrySet()) {
-                SortedIntArray sai = me1.getKey();
-                int pos = sai.search(pid);
-                if (pos < 0) {
-                    continue;
-                }
-                ParameterValueTable table = me1.getValue();
-                long t = table.getLastTime();
-                if (pvr != null && pvr.getGenerationTime() >= t) {
-                    continue;
-                }
-                pvr = table.getLastValue(new ParameterId(p, pid,
-                        SimpleParameterIdMap.getRawType(type), SimpleParameterIdMap.getEngType(type)));
-            }
-        }
-
-        return pvr;
     }
 
     @Override
@@ -220,6 +189,37 @@ public class ArrayParameterCache implements ParameterCache {
                 if (sia.contains(p.id)) {
                     numTables++;
                     me.getValue().retrieveAll(p, start, stop, result);
+                }
+            }
+        }
+
+        // if values are retrieved from multiple tables, we need to sort them by generation time
+        // (in reverse order such that the newest is first)
+        if (numTables > 1) {
+            Collections.sort(result, (pv1, pv2) -> Long.compare(pv2.getGenerationTime(), pv1.getGenerationTime()));
+        }
+        if (result.isEmpty()) {
+            return null;
+        }
+        return result;
+    }
+
+    /**
+     * This is the same as above but returns null if the cache does not cover the interval starting with start.
+     * <p>
+     */
+    public List<ParameterValue> getAllValuesIfCovered(Parameter pdef, long start, long stop) {
+        List<ParameterId> pidlist = getParameterIds(pdef);
+        List<ParameterValue> result = new ArrayList<>();
+        int numTables = 0;
+        for (ParameterId p : pidlist) {
+            for (Map.Entry<SortedIntArray, ParameterValueTable> me : tables.entrySet()) {
+                SortedIntArray sia = me.getKey();
+                if (sia.contains(p.id)) {
+                    numTables++;
+                    if (!me.getValue().retrieveAllIfCovered(p, start, stop, result)) {
+                        return null;
+                    }
                 }
             }
         }
@@ -416,6 +416,7 @@ public class ArrayParameterCache implements ParameterCache {
         int tail = head;
         int maxNumEntries = MAX_NUM_ENTRIES;
         final SortedIntArray pids;
+        long coverageStart = TimeEncoding.INVALID_INSTANT;
 
         ReadWriteLock lock = new ReentrantReadWriteLock();
 
@@ -459,7 +460,7 @@ public class ArrayParameterCache implements ParameterCache {
                 } else if (_head == tail) {
                     long t0 = generationTimeColumn[_head];
                     if (t < t0) {
-                        // parameter older than the last one in the queue -> ignore
+                        // parameter older than the last one in the table -> ignore
                         return;
                     }
                     boolean doubled = false;
@@ -505,6 +506,7 @@ public class ArrayParameterCache implements ParameterCache {
         }
 
         public void retrieveAll(ParameterId p, long start, long stop, List<ParameterValue> result) {
+
             lock.readLock().lock();
             try {
                 // col1 will be different than col2 when there are multiple values for the same parameter
@@ -528,6 +530,46 @@ public class ArrayParameterCache implements ParameterCache {
             } finally {
                 lock.readLock().unlock();
             }
+        }
+
+        /**
+         * This is the same as above but returns false if the timestamp of the first entry in the table is older than
+         * start.
+         * <p>
+         * If this is the case, it means that the interval [start, stop) is not completely covered by this cache entry
+         * (so the code calling this may decide to perform a reply instead)
+         * <p>
+         * If the method returns false, the result will not be modified
+         */
+        public boolean retrieveAllIfCovered(ParameterId p, long start, long stop, List<ParameterValue> result) {
+            lock.readLock().lock();
+            try {
+                if (generationTimeColumn[tail] < start) {
+                    return false;
+                }
+                // col1 will be different than col2 when there are multiple values for the same parameter
+                int col2 = pids.higherBound(p.id);
+                int col1 = col2;
+                while (col1 > 0 && pids.get(col1 - 1) == p.id) {
+                    col1--;
+                }
+                int _tail = tail;
+                int _head = head;
+                int n = generationTimeColumn.length - 1;
+                int row = _head;
+                do {
+                    row = (row - 1) & n;
+                    for (int col = col2; col >= col1; col--) {
+                        if (generationTimeColumn[row] > start && generationTimeColumn[row] <= stop) {
+                            result.add(getParameterValue(row, col, p));
+                        }
+                    }
+                } while (row != _tail);
+                return true;
+            } finally {
+                lock.readLock().unlock();
+            }
+
         }
 
         private ParameterValue getParameterValue(int row, ParameterId p) {
