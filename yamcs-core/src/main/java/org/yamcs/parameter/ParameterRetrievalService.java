@@ -101,7 +101,7 @@ public class ParameterRetrievalService extends AbstractYamcsService {
     public CompletableFuture<Void> retrieveScalar(ParameterWithId pid, ParameterRetrievalOptions opts,
             Consumer<ParameterValueArray> consumer) {
         System.out.println("retrieve scalar opts: " + opts);
-        log.debug("retrieveSingle pid: {}, opts: {}", pid, opts);
+        log.debug("retrieveScalar pid: {}, opts: {}", pid, opts);
 
         var cf = new CompletableFuture<Void>();
         executor.submit(() -> {
@@ -191,15 +191,50 @@ public class ParameterRetrievalService extends AbstractYamcsService {
     TimeAndCount retrieveScalarReplayOrCache(ParameterWithId pid, ParameterRetrievalOptions opts,
             Consumer<ParameterValueArray> consumer) throws Exception {
 
-        return replay(Collections.singletonList(pid), opts, new Consumer<List<ParameterValueWithId>>() {
-
-            @Override
-            public void accept(List<ParameterValueWithId> pvList) {
-                for (var pv : pvList) {
-                    consumer.accept(toScalarPva(pv.getParameterValue(), opts));
-                }
+        if (pcache != null && !opts.norealtime()) {
+            long start = opts.start();
+            long stop = opts.stop();
+            // parameter cache returns value in reverse order in (start, stop]
+            // if ascending is required we have to retrieve [start, stop)
+            if (opts.ascending()) {
+                start--;
+                stop--;
             }
-        });
+
+            var pvList = opts.noreplay() ? pcache.getAllValues(pid.getParameter(), start, stop)
+                    : pcache.getAllValuesIfCovered(pid.getParameter(), start, stop);
+            if (pvList != null) {
+
+                if (opts.ascending()) {
+                    for (int i = pvList.size() - 1; i >= 0; i--) {
+                        var pv = pvList.get(i);
+                        consumer.accept(new ParameterValueWithId(pv, pid.id));
+                    }
+                    return new TimeAndCount(pvList.get(0).getGenerationTime(), pvList.size());
+                } else {
+                    for (var pv : pvList) {
+                        consumer.accept(new ParameterValueWithId(pv, pid.id));
+                    }
+                    return new TimeAndCount(pvList.get(pvList.size() - 1).getGenerationTime(), pvList.size());
+                }
+            } // else it means the cache does not cover the requested interval,
+              // send everything via replay if allowed
+        }
+
+        if (!opts.noreplay()) {
+            return replay(Collections.singletonList(pid), opts, new Consumer<List<ParameterValueWithId>>() {
+                @Override
+                public void accept(List<ParameterValueWithId> pvList) {
+                    for (var pv : pvList) {
+                        consumer.accept(pv);
+                    }
+                }
+            });
+        } else {
+            // noreplay is specified and no data has been found in the cache
+            return new TimeAndCount(Instant.MIN_INSTANT, 0);
+        }
+
     }
 
     TimeAndCount retrieveSingleReplayOrCache(ParameterWithId pid, ParameterRetrievalOptions opts,
@@ -207,10 +242,19 @@ public class ParameterRetrievalService extends AbstractYamcsService {
         System.out.println("retrieve single replay or cache pcache: " + pcache + " norplay: " + opts.noreplay());
 
         if (pcache != null && !opts.norealtime()) {
-            var pvList = opts.noreplay() ? pcache.getAllValues(pid.getParameter(), opts.start(), opts.stop())
-                    : pcache.getAllValuesIfCovered(pid.getParameter(), opts.start(), opts.stop());
+            long start = opts.start();
+            long stop = opts.stop();
+            // parameter cache returns value in reverse order in (start, stop]
+            // if ascending is required we have to retrieve [start, stop)
+            if (opts.ascending()) {
+                start--;
+                stop--;
+            }
+
+            var pvList = opts.noreplay() ? pcache.getAllValues(pid.getParameter(), start, stop)
+                    : pcache.getAllValuesIfCovered(pid.getParameter(), start, stop);
             if (pvList != null) {
-                // parameter cache returns value in reverse order
+
                 if (opts.ascending()) {
                     for (int i = pvList.size() - 1; i >= 0; i--) {
                         var pv = pvList.get(i);

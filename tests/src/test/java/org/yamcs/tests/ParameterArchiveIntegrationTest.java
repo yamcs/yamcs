@@ -143,16 +143,14 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(0, values.size());
 
         // ascending request combining archive with cache
-        start = Instant.parse("2015-01-02T11:59:50Z");
+        start = Instant.parse("2015-01-02T10:00:00Z");
         stop = Instant.parse("2015-01-03T11:59:00Z");
         page = archiveClient.listValues("/REFMDB/SUBSYS1/FloatPara1_1_2", start, stop,
-                ListOptions.ascending(true)).get();
+                ListOptions.ascending(true), ListOptions.limit(10000)).get();
         values = new ArrayList<>();
         page.iterator().forEachRemaining(values::add);
-        for (var pv1 : values) {
-            System.out.println(Timestamps.toString(pv1.getGenerationTime()));
-        }
-        assertEquals(20, values.size());
+
+        assertEquals(7210, values.size());
         t = TimeEncoding.parse("2015-01-02T11:59:50");
         for (ParameterValue value : values) {
             assertEquals(t, TimeEncoding.fromProtobufTimestamp(value.getGenerationTime()));
