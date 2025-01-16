@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.archive.IndexRequestListener.IndexType;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -20,7 +21,6 @@ import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.mdb.Mdb;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.ColumnSerializer;
 import org.yamcs.yarch.HistogramIterator;
@@ -364,7 +364,8 @@ public class IndexRequestProcessor implements Runnable {
                 res.put(ar.getId(), ar);
                 return null;
             }
-            long tdelta = Durations.toMillis(Timestamps.between(ar1.getFirst(), ar.getLast()));
+
+            long tdelta = Math.abs(Durations.toMillis(Timestamps.between(ar.getFirst(), ar1.getLast())));
             if (tdelta < mergeTime) {
                 ArchiveRecord ar2 = ArchiveRecord.newBuilder().setFirst(ar1.getFirst())
                         .setLast(ar.getLast()).setNum(ar1.getNum() + ar.getNum())
