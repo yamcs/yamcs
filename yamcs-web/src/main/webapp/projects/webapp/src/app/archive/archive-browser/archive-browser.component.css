@@ -47,6 +47,10 @@
   font-size: small;
 }
 
+.info span {
+  background: white;
+}
+
 label.legend {
   font-size: small;
   padding: 3px 5px;
