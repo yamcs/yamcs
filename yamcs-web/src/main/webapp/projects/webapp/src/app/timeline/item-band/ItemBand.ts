@@ -47,12 +47,12 @@ export class ItemBand extends DefaultItemBand {
     this.itemBorderWidth = properties.itemBorderWidth;
     this.itemCornerRadius = properties.itemCornerRadius;
     this.itemHeight = properties.itemHeight;
-    this.itemMarginLeft = properties.itemMarginLeft;
+    this.itemPaddingLeft = properties.itemMarginLeft;
     this.itemTextColor = properties.itemTextColor;
     this.itemTextOverflow = properties.itemTextOverflow;
     this.itemTextSize = properties.itemTextSize;
-    this.marginBottom = properties.marginBottom;
-    this.marginTop = properties.marginTop;
+    this.paddingBottom = properties.marginBottom;
+    this.paddingTop = properties.marginTop;
     this.multiline = properties.multiline;
     this.spaceBetween = properties.spaceBetweenItems;
     this.lineSpacing = properties.spaceBetweenLines;

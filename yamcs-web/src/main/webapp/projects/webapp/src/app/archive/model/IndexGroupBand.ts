@@ -1,8 +1,10 @@
-import { Item, ItemBand, Timeline } from '@fqqb/timeline';
+import { DefaultSidebar, Item, ItemBand, Timeline } from '@fqqb/timeline';
 import { Formatter, utils } from '@yamcs/webapp-sdk';
 import { TimelineTooltipComponent } from '../timeline-tooltip/timeline-tooltip.component';
 import { ArchiveRecordGroup } from './ArchiveRecordGroup';
 import { RGB } from './RGB';
+
+export const PADDING_TB = 2;
 
 export class IndexGroupBand extends ItemBand {
 
@@ -19,12 +21,23 @@ export class IndexGroupBand extends ItemBand {
     this.itemBorderWidth = 1;
     this.itemCornerRadius = 0;
     this.itemTextOverflow = 'hide';
-    this.itemHeight = 20;
+    this.itemTextSize = 10;
+    this.itemHeight = 14;
+    this.paddingBottom = PADDING_TB;
+    this.paddingTop = PADDING_TB;
     this.backgroundRGB = backgroundColor;
     this.itemBackground = this.backgroundRGB.toCssString();
     this.foregroundRGB = foregroundColor;
     this.itemTextColor = this.foregroundRGB.toCssString();
     this.formatter = formatter;
+    this.background = 'white';
+
+    this.addHeaderMouseEnterListener(ev => {
+      this.background = (timeline.sidebar! as DefaultSidebar).hoverOverlayColor;
+    });
+    this.addHeaderMouseLeaveListener(ev => {
+      this.background = 'white';
+    });
 
     this.addItemClickListener(clickEvent => {
       const { start, stop } = clickEvent.item;
@@ -45,8 +58,11 @@ export class IndexGroupBand extends ItemBand {
       if (data.count >= 0) {
         const sec = (stop! - start) / 1000;
         ttText += `Count: ${data.count}`;
-        if (data.count > 1) {
-          ttText += ` (${(data.count / sec).toFixed(3)} Hz)`;
+        const hz = data.count / sec;
+        if (hz >= 1000) {
+          ttText += ` (${(hz / 1000).toFixed(3)} kHz)`;
+        } else if (hz > 1) {
+          ttText += ` (${hz.toFixed(3)} Hz)`;
         }
       } else if (data.description) {
         ttText += data.description;
@@ -73,7 +89,9 @@ export class IndexGroupBand extends ItemBand {
       if (record.num > 1) {
         const sec = (stop - start) / 1000;
         const hz = record.num / sec;
-        if (hz >= 0.1) {
+        if (hz >= 1000) {
+          item.label = `${(hz / 1000).toFixed(1)} kHz`;
+        } else if (hz >= 0.1) {
           item.label = `${hz.toFixed(1)} Hz`;
         } else {
           item.label = '< 0.1 Hz';

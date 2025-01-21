@@ -272,7 +272,7 @@ export class TimelineChartComponent implements AfterViewInit, OnDestroy {
           item.cornerRadius = Number(properties.cornerRadius);
         }
         if ('marginLeft' in properties) {
-          item.marginLeft = Number(properties.marginLeft);
+          item.paddingLeft = Number(properties.marginLeft);
         }
         if ('textColor' in properties) {
           item.textColor = properties.textColor;

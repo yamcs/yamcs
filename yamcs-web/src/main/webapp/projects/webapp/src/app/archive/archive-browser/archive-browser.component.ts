@@ -16,21 +16,21 @@ import { StartReplayDialogComponent } from '../../shared/start-replay-dialog/sta
 import { DownloadDumpDialogComponent } from '../download-dump-dialog/download-dump-dialog.component';
 import { JumpToDialogComponent } from '../jump-to-dialog/jump-to-dialog.component';
 import { ArchiveRecordGroup } from '../model/ArchiveRecordGroup';
-import { IndexGroupBand } from '../model/IndexGroupBand';
+import { IndexGroupBand, PADDING_TB } from '../model/IndexGroupBand';
 import { RGB } from '../model/RGB';
 import { ReplayOverlay } from '../model/ReplayOverlay';
 import { TitleBand } from '../model/TitleBand';
 import { ModifyReplayDialogComponent } from '../modify-replay-dialog/modify-replay-dialog.component';
 import { TimelineTooltipComponent } from '../timeline-tooltip/timeline-tooltip.component';
 
-const COMMANDS_BG = new RGB(255, 204, 0);
-const COMMANDS_FG = new RGB(28, 75, 139);
+const PACKETS_BG = new RGB(141, 182, 194);
+const PACKETS_FG = new RGB(70, 70, 70);
 const COMPLETENESS_BG = new RGB(255, 165, 0);
 const COMPLETENESS_FG = new RGB(173, 94, 0);
 const EVENTS_BG = new RGB(255, 255, 102);
 const EVENTS_FG = new RGB(28, 75, 139);
-const PACKETS_BG = new RGB(238, 232, 170);
-const PACKETS_FG = new RGB(85, 85, 85);
+const COMMANDS_BG = new RGB(238, 232, 170);
+const COMMANDS_FG = new RGB(85, 85, 85);
 const PARAMETERS_BG = new RGB(255, 222, 173);
 const PARAMETERS_FG = new RGB(28, 75, 139);
 
@@ -253,7 +253,7 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
     axis.label = 'UTC';
     axis.timezone = 'UTC';
     axis.frozen = true;
-    axis.fullHeight = true;
+    axis.fullHeight = 'underlay';
 
     this.timeline.addViewportSelectionListener(evt => {
       if (evt.selection) {
@@ -507,7 +507,7 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
         const group = completenessGroups[i];
         const band = new IndexGroupBand(this.timeline, group.name, COMPLETENESS_BG, COMPLETENESS_FG, this.formatter);
         band.borderWidth = i === completenessGroups.length - 1 ? 1 : 0;
-        band.marginBottom = i === completenessGroups.length - 1 ? 20 : 0;
+        band.paddingBottom = i === completenessGroups.length - 1 ? 20 : PADDING_TB;
         band.setupTooltip(this.tooltipInstance);
         band.loadData(group);
       }
@@ -520,7 +520,7 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
           const packetName = this.packetNames[i];
           const band = new IndexGroupBand(this.timeline, packetName, PACKETS_BG, PACKETS_FG, this.formatter);
           band.borderWidth = i === this.packetNames.length - 1 ? 1 : 0;
-          band.marginBottom = i === this.packetNames.length - 1 ? 20 : 0;
+          band.paddingBottom = i === this.packetNames.length - 1 ? 20 : PADDING_TB;
           band.setupTooltip(this.tooltipInstance);
           const group = tmGroups.find(candidate => candidate.name === packetName);
           if (group) {
@@ -537,7 +537,7 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
         const group = parameterGroups[i];
         const band = new IndexGroupBand(this.timeline, group.name, PARAMETERS_BG, PARAMETERS_FG, this.formatter);
         band.borderWidth = i === parameterGroups.length - 1 ? 1 : 0;
-        band.marginBottom = i === parameterGroups.length - 1 ? 20 : 0;
+        band.paddingBottom = i === parameterGroups.length - 1 ? 20 : PADDING_TB;
         band.setupTooltip(this.tooltipInstance);
         band.loadData(group);
       }
@@ -550,7 +550,7 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
         const group = commandGroups[i];
         const band = new IndexGroupBand(this.timeline, group.name, COMMANDS_BG, COMMANDS_FG, this.formatter);
         band.borderWidth = i === commandGroups.length - 1 ? 1 : 0;
-        band.marginBottom = i === commandGroups.length - 1 ? 30 : 0;
+        band.paddingBottom = i === commandGroups.length - 1 ? 30 : PADDING_TB;
         band.setupTooltip(this.tooltipInstance);
         band.loadData(group);
       }
@@ -563,7 +563,7 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
         const group = eventGroups[i];
         const band = new IndexGroupBand(this.timeline, group.name, EVENTS_BG, EVENTS_FG, this.formatter);
         band.borderWidth = i === eventGroups.length - 1 ? 1 : 0;
-        band.marginBottom = i === eventGroups.length - 1 ? 20 : 0;
+        band.paddingBottom = i === eventGroups.length - 1 ? 20 : PADDING_TB;
         band.setupTooltip(this.tooltipInstance);
         band.loadData(group);
       }
