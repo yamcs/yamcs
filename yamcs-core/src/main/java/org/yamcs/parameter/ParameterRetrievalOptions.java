@@ -2,8 +2,6 @@ package org.yamcs.parameter;
 
 import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
 
-import com.google.protobuf.Timestamp;
-
 /**
  * Contains retrieval options used when retrieving parameters.
  */
@@ -64,17 +62,17 @@ public record ParameterRetrievalOptions(
             return this;
         }
 
-        public Builder withNorealtime(boolean norealtime) {
+        public Builder withoutRealtime(boolean norealtime) {
             this.norealtime = norealtime;
             return this;
         }
 
-        public Builder withNoparchive(boolean noparchive) {
+        public Builder withoutParchive(boolean noparchive) {
             this.noparchive = noparchive;
             return this;
         }
 
-        public Builder withNoreplay(boolean noreplay) {
+        public Builder withoutReplay(boolean noreplay) {
             this.noreplay = noreplay;
             return this;
         }

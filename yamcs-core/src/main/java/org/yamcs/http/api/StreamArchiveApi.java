@@ -108,9 +108,9 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
                 .withStartStop(start, stop)
                 .withAscending(ascending)
                 .withRetrieveParameterStatus(false)
-                .withNorealtime(request.getNorealtime())
-                .withNoparchive(replayRequested)
-                .withNoreplay(!replayRequested)
+                .withoutRealtime(request.getNorealtime())
+                .withoutParchive(replayRequested)
+                .withoutReplay(!replayRequested)
                 .build();
 
         ListParameterHistoryResponse.Builder resultb = ListParameterHistoryResponse.newBuilder();
@@ -193,9 +193,9 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         ParameterRetrievalOptions opts = ParameterRetrievalOptions.newBuilder()
                 .withStartStop(start, stop)
                 .withRetrieveParameterStatus(false)
-                .withNorealtime(request.getNorealtime())
-                .withNoparchive(replayRequested)
-                .withNoreplay(!replayRequested)
+                .withoutRealtime(request.getNorealtime())
+                .withoutParchive(replayRequested)
+                .withoutReplay(!replayRequested)
                 .build();
 
         PaginatedSingleParameterRetrievalConsumer replayListener = new PaginatedSingleParameterRetrievalConsumer() {
@@ -230,9 +230,9 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
         var optsb = ParameterRetrievalOptions.newBuilder()
                 .withRetrieveParameterStatus(false)
-                .withNoparchive(true)
-                .withNorealtime(true)
-                .withNoreplay(false);
+                .withoutParchive(true)
+                .withoutRealtime(true)
+                .withoutReplay(false);
 
         if (request.hasStart()) {
             optsb.withStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
@@ -434,9 +434,9 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
                 .withStartStop(start, stop)
                 .withRetrieveParameterStatus(false)
                 .withAscending(ascending)
-                .withNoparchive(true)
-                .withNorealtime(true)
-                .withNoreplay(false)
+                .withoutParchive(true)
+                .withoutRealtime(true)
+                .withoutReplay(false)
                 .build();
 
         var listener = new CsvParameterStreamer(observer, pos, limit, filename, ids, addRaw, addMonitoring,

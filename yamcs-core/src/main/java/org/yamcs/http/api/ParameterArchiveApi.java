@@ -181,8 +181,8 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
                 .withAscending(true)
                 .withRetrieveRawValues(useRawValue)
                 .withRetrieveEngineeringValues(!useRawValue)
-                .withNorealtime(request.getNorealtime())
-                .withNoparchive(request.hasSource() && isReplayAsked(request.getSource()))
+                .withoutRealtime(request.getNorealtime())
+                .withoutParchive(request.hasSource() && isReplayAsked(request.getSource()))
                 .build();
         prs.retrieveScalar(pid, opts, sampler)
                 .thenRun(() -> {
@@ -232,7 +232,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         ParameterRetrievalOptions opts = ParameterRetrievalOptions.newBuilder()
                 .withStartStop(start, stop)
                 .withRetrieveRawValues(false)
-                .withNorealtime(request.getNorealtime())
+                .withoutRealtime(request.getNorealtime())
                 // .withNoreplay(false)// TODO
                 .build();
 
@@ -288,10 +288,10 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
 
         if (request.hasSource() && isReplayAsked(request.getSource())) {
             optsb = optsb
-                    .withNoparchive(true)
-                    .withNoreplay(false);
+                    .withoutParchive(true)
+                    .withoutReplay(false);
         } else {
-            optsb = optsb.withNorealtime(request.getNorealtime());
+            optsb = optsb.withoutRealtime(request.getNorealtime());
         }
 
         ParameterRetrievalOptions opts = optsb.build();
