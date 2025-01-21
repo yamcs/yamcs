@@ -32,7 +32,6 @@ import org.yamcs.parameterarchive.ParameterIdDb;
 import org.yamcs.parameterarchive.ParameterValueArray;
 import org.yamcs.parameterarchive.SingleParameterRetrieval;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
-import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.AggregateUtil;
 import org.yamcs.utils.IntArray;
@@ -479,15 +478,15 @@ public class ParameterRetrievalService extends AbstractYamcsService {
                     for (var pid : pidMapping.get(pv.getParameter())) {
                         if (pid.getPath() != null) {
                             pv = AggregateUtil.extractMember(pv, pid.getPath());
-                       }
-                       pvidList.add(new ParameterValueWithId(pv, pid.getId()));
+                        }
+                        pvidList.add(new ParameterValueWithId(pv, pid.getId()));
                     }
                 }
                 consumer.accept(pvidList);
             }
 
             // else it means the cache does not cover the requested interval,
-              // send everything via replay if allowed
+            // send everything via replay if allowed
         }
 
         if (!opts.noreplay()) {
@@ -579,10 +578,9 @@ public class ParameterRetrievalService extends AbstractYamcsService {
 
         TimeAndCount tc = new TimeAndCount(Instant.MIN_INSTANT, 0);
 
-        Map<Parameter, List<NamedObjectId>> params = paramList.stream()
-                .collect(Collectors.groupingBy(
-                        ParameterWithId::getParameter,
-                        Collectors.mapping(ParameterWithId::getId, Collectors.toList())));
+        Map<Parameter, List<ParameterWithId>> params = paramList.stream()
+                .collect(Collectors.groupingBy(ParameterWithId::getParameter));
+
         Processor processor = ProcessorFactory.create(yamcsInstance, "api_replay" + count.incrementAndGet(),
                 "ArchiveRetrieval", "internal", replayOpts);
 
@@ -592,15 +590,18 @@ public class ParameterRetrievalService extends AbstractYamcsService {
                 List<ParameterValueWithId> pvaluesWithIds = new ArrayList<>(params.size());
 
                 for (ParameterValue pv : pvalues) {
-                    var ids = params.get(pv.getParameter());
-                    if (ids != null) {
+                    var pids = params.get(pv.getParameter());
+                    if (pids != null) {
                         if (opts.ascending()) {
                             tc.time = Math.max(pv.getGenerationTime(), tc.time);
                         } else {
                             tc.time = Math.min(pv.getGenerationTime(), tc.time);
                         }
-                        for (var id : ids) {
-                            pvaluesWithIds.add(new ParameterValueWithId(pv, id));
+                        for (var pid : pids) {
+                            if (pid.getPath() != null) {
+                                pv = AggregateUtil.extractMember(pv, pid.getPath());
+                            }
+                            pvaluesWithIds.add(new ParameterValueWithId(pv, pid.getId()));
                         }
                     }
                 }
@@ -675,7 +676,5 @@ public class ParameterRetrievalService extends AbstractYamcsService {
         public String toString() {
             return "TimeAndCount [time=" + TimeEncoding.toString(time) + ", count=" + count + "]";
         }
-
     }
-
 }

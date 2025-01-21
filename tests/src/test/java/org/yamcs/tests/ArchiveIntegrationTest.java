@@ -355,6 +355,22 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    public void testReplayAggregateParts() throws Exception {
+        generatePkt3("2025-01-21T11:16:00", 300);
+        List<ParameterValue> values = new ArrayList<>();
+        archiveClient
+                .streamValues(Arrays.asList("/REFMDB/SUBSYS1/aggregate_para2.member1"), params -> {
+                    values.addAll(params.values());
+                }, Instant.parse("2025-01-21T11:16:00Z"), Instant.parse("2025-01-21T12:16:00Z"))
+                .get();
+        assertEquals(300, values.size());
+        for (int i = 0; i < 300; i++) {
+            assertEquals(16, values.get(i).getRawValue().getUint32Value());
+            assertEquals(16, values.get(i).getEngValue().getUint32Value());
+        }
+    }
+
+    @Test
     public void testEmptyIndex() throws Exception {
         Instant start = Instant.parse("2035-01-02T00:00:00Z");
         Page<IndexGroup> page = archiveClient.listPacketIndex(start, null).get();

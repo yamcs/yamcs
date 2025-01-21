@@ -244,12 +244,8 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         List<ParameterWithId> pids = new ArrayList<>();
 
         for (NamedObjectId id : request.getIdsList()) {
-            Parameter p = mdb.getParameter(id);
-            if (p == null) {
-                throw new BadRequestException("Invalid parameter name specified " + id);
-            }
-            ctx.checkObjectPrivileges(ObjectPrivilegeType.ReadParameter, p.getQualifiedName());
-            pids.add(new ParameterWithId(p, id, null));
+            ParameterWithId paramWithId = MdbApi.verifyParameterWithId(ctx, mdb, id);
+            pids.add(paramWithId);
         }
 
         if (pids.isEmpty()) {

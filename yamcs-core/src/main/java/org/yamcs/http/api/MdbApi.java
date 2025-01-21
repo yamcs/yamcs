@@ -1188,6 +1188,19 @@ public class MdbApi extends AbstractMdbApi<Context> {
         return verifyParameterWithId(ctx, mdb, pathName).getParameter();
     }
 
+    static ParameterWithId verifyParameterWithId(Context ctx, Mdb mdb, NamedObjectId id) {
+        if (id.hasNamespace()) {
+            Parameter p = mdb.getParameter(id);
+            if (p == null) {
+                throw new BadRequestException("Invalid parameter name specified " + id);
+            }
+            ctx.checkObjectPrivileges(ObjectPrivilegeType.ReadParameter, p.getQualifiedName());
+            return new ParameterWithId(p, id, null);
+        } else {
+            return verifyParameterWithId(ctx, mdb, id.getName());
+        }
+    }
+
     static ParameterWithId verifyParameterWithId(Context ctx, Mdb mdb, String pathName) {
         int aggSep = AggregateUtil.findSeparator(pathName);
 
