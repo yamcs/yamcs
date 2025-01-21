@@ -61,8 +61,6 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
 
     private static final Log log = new Log(ParameterArchiveApi.class);
 
-    private StreamArchiveApi streamArchiveApi = new StreamArchiveApi();
-
     @Override
     public void rebuildRange(Context ctx, RebuildRangeRequest request, Observer<Empty> observer) {
         YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(request.getInstance());

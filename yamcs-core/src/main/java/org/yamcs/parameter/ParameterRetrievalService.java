@@ -13,7 +13,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import org.rocksdb.RocksDBException;
 import org.yamcs.AbstractYamcsService;
@@ -32,6 +31,7 @@ import org.yamcs.parameterarchive.ParameterIdDb;
 import org.yamcs.parameterarchive.ParameterValueArray;
 import org.yamcs.parameterarchive.SingleParameterRetrieval;
 import org.yamcs.protobuf.Pvalue.ParameterStatus;
+import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.AggregateUtil;
 import org.yamcs.utils.IntArray;
@@ -576,19 +576,24 @@ public class ParameterRetrievalService extends AbstractYamcsService {
             replayOpts.setPacketRequest(opts.packetReplayRequest());
         }
 
-        TimeAndCount tc = new TimeAndCount(Instant.MIN_INSTANT, 0);
+        var prrb = ParameterReplayRequest.newBuilder();
+        Map<Parameter, List<ParameterWithId>> params = new HashMap<>();
 
-        Map<Parameter, List<ParameterWithId>> params = paramList.stream()
-                .collect(Collectors.groupingBy(ParameterWithId::getParameter));
+        for (var pid : paramList) {
+            prrb.addNameFilter(pid.id);
+            params.computeIfAbsent(pid.getParameter(), k -> new ArrayList<>()).add(pid);
+        }
 
+        replayOpts.setParameterRequest(prrb.build());
         Processor processor = ProcessorFactory.create(yamcsInstance, "api_replay" + count.incrementAndGet(),
                 "ArchiveRetrieval", "internal", replayOpts);
+
+        TimeAndCount tc = new TimeAndCount(Instant.MIN_INSTANT, 0);
 
         ParameterConsumer prmConsumer = new ParameterConsumer() {
             @Override
             public void updateItems(int subscriptionId, List<ParameterValue> pvalues) {
                 List<ParameterValueWithId> pvaluesWithIds = new ArrayList<>(params.size());
-
                 for (ParameterValue pv : pvalues) {
                     var pids = params.get(pv.getParameter());
                     if (pids != null) {
