@@ -387,10 +387,6 @@ public class ParameterRetrievalService extends AbstractYamcsService {
                 @Override
                 public void accept(List<ParameterValueWithId> pvList) {
                     for (var pv : pvList) {
-                        if (pid.getPath() != null) {
-                            ParameterValue pv1 = AggregateUtil.extractMember(pv.getParameterValue(), pid.getPath());
-                            pv = new ParameterValueWithId(pv1, pid.getId());
-                        }
                         consumer.accept(pv);
                     }
                 }
