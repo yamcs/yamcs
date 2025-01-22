@@ -479,6 +479,9 @@ public class Processor extends AbstractService {
         if (paramPersistence != null) {
             paramPersistence.save(processorData.getValuesToBePersisted().iterator());
         }
+        if (parameterProcessorManager != null) {
+            parameterProcessorManager.stopAsync();
+        }
 
         if (getState() == ServiceState.RUNNING || getState() == ServiceState.STOPPING) {
             notifyStopped();

@@ -106,7 +106,7 @@
   }
 }
 
-@if (mayControl) {
+@if (mayControl && !alarm.readonly) {
   <div class="action-bar">
     @if (!alarm.shelveInfo && !alarm.acknowledged) {
       <ya-button (click)="acknowledgeAlarm.emit(alarm)" icon="notifications_off">

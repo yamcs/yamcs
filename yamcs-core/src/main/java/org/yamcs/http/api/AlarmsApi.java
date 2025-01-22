@@ -20,8 +20,11 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.yamcs.Processor;
 import org.yamcs.StandardTupleDefinitions;
+import org.yamcs.YamcsServerInstance;
+import org.yamcs.alarms.AbstractAlarmServer;
 import org.yamcs.alarms.ActiveAlarm;
 import org.yamcs.alarms.AlarmListener;
+import org.yamcs.alarms.AlarmMirrorService;
 import org.yamcs.alarms.AlarmSequenceException;
 import org.yamcs.alarms.AlarmServer;
 import org.yamcs.alarms.AlarmStreamer;
@@ -227,15 +230,27 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
                     .getParameterProcessorManager()
                     .getAlarmServer();
             for (ActiveAlarm<org.yamcs.parameter.ParameterValue> alarm : alarmServer.getActiveAlarms().values()) {
-                responseb.addAlarms(toAlarmData(AlarmNotificationType.ACTIVE, alarm, true));
+                responseb.addAlarms(toAlarmData(AlarmNotificationType.ACTIVE, alarm, false, true));
             }
         }
         EventAlarmServer eventAlarmServer = processor.getEventAlarmServer();
         if (eventAlarmServer != null) {
             for (ActiveAlarm<Db.Event> alarm : eventAlarmServer.getActiveAlarms().values()) {
-                responseb.addAlarms(toAlarmData(AlarmNotificationType.ACTIVE, alarm, true));
+                responseb.addAlarms(toAlarmData(AlarmNotificationType.ACTIVE, alarm, false, true));
             }
         }
+
+        AlarmMirrorService alarmMirrorService = getMirrorService(request.getInstance());
+        if (alarmMirrorService != null) {
+            for (var alarm : alarmMirrorService.getParameterServer().getActiveAlarms().values()) {
+                responseb.addAlarms(toAlarmData(AlarmNotificationType.ACTIVE, alarm, true /* readonly */, true));
+            }
+
+            for (var alarm : alarmMirrorService.getEventServer().getActiveAlarms().values()) {
+                responseb.addAlarms(toAlarmData(AlarmNotificationType.ACTIVE, alarm, true /* readonly */, true));
+            }
+        }
+
         observer.complete(responseb.build());
     }
 
@@ -456,7 +471,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         ctx.checkSystemPrivilege(SystemPrivilege.ReadAlarms);
         Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
 
-        List<AlarmServer<?, ?>> alarmServers = new ArrayList<>();
+        List<AbstractAlarmServer<?, ?>> alarmServers = new ArrayList<>();
         if (processor.hasAlarmServer()) {
             alarmServers.add(processor.getParameterProcessorManager().getAlarmServer());
         }
@@ -464,6 +479,11 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
             alarmServers.add(processor.getEventAlarmServer());
         }
 
+        AlarmMirrorService alarmMirrorService = getMirrorService(request.getInstance());
+        if (alarmMirrorService != null) {
+            alarmServers.add(alarmMirrorService.getParameterServer());
+            alarmServers.add(alarmMirrorService.getEventServer());
+        }
         boolean sendDetail = true;
 
         AlarmListener listener = new AlarmListener() {
@@ -471,19 +491,20 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
             @Override
             public void notifyUpdate(org.yamcs.alarms.AlarmNotificationType notificationType, ActiveAlarm activeAlarm) {
                 AlarmNotificationType type = protoNotificationType.get(notificationType);
-                AlarmData alarmData = toAlarmData(type, activeAlarm, sendDetail);
+                AlarmData alarmData = toAlarmData(type, activeAlarm, false, sendDetail);
                 observer.next(alarmData);
             }
 
             @Override
             public void notifySeverityIncrease(ActiveAlarm activeAlarm) {
-                AlarmData alarmData = toAlarmData(AlarmNotificationType.SEVERITY_INCREASED, activeAlarm, sendDetail);
+                AlarmData alarmData = toAlarmData(AlarmNotificationType.SEVERITY_INCREASED, activeAlarm, false,
+                        sendDetail);
                 observer.next(alarmData);
             }
 
             @Override
             public void notifyValueUpdate(ActiveAlarm activeAlarm) {
-                AlarmData alarmData = toAlarmData(AlarmNotificationType.VALUE_UPDATED, activeAlarm, sendDetail);
+                AlarmData alarmData = toAlarmData(AlarmNotificationType.VALUE_UPDATED, activeAlarm, false, sendDetail);
                 observer.next(alarmData);
             }
         };
@@ -491,9 +512,9 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         observer.setCancelHandler(() -> {
             alarmServers.forEach(alarmServer -> alarmServer.removeAlarmListener(listener));
         });
-        for (AlarmServer<?, ?> alarmServer : alarmServers) {
+        for (AbstractAlarmServer<?, ?> alarmServer : alarmServers) {
             for (ActiveAlarm<?> activeAlarm : alarmServer.getActiveAlarms().values()) {
-                AlarmData alarmData = toAlarmData(AlarmNotificationType.ACTIVE, activeAlarm, sendDetail);
+                AlarmData alarmData = toAlarmData(AlarmNotificationType.ACTIVE, activeAlarm, false, sendDetail);
                 observer.next(alarmData);
             }
             alarmServer.addAlarmListener(listener);
@@ -506,12 +527,18 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         ctx.checkSystemPrivilege(SystemPrivilege.ReadAlarms);
         Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
 
-        List<AlarmServer<?, ?>> alarmServers = new ArrayList<>();
+        List<AbstractAlarmServer<?, ?>> alarmServers = new ArrayList<>();
         if (processor.hasAlarmServer()) {
             alarmServers.add(processor.getParameterProcessorManager().getAlarmServer());
         }
         if (processor.getEventAlarmServer() != null) {
             alarmServers.add(processor.getEventAlarmServer());
+        }
+
+        var alarmMirrorService = getMirrorService(request.getInstance());
+        if (alarmMirrorService != null) {
+            alarmServers.add(alarmMirrorService.getParameterServer());
+            alarmServers.add(alarmMirrorService.getEventServer());
         }
 
         AtomicReference<GlobalAlarmStatus> oldStatusRef = new AtomicReference<>();
@@ -663,11 +690,12 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
     }
 
     public static final <T> AlarmData toAlarmData(AlarmNotificationType notificationType,
-            ActiveAlarm<T> activeAlarm, boolean detail) {
+            ActiveAlarm<T> activeAlarm, boolean readonly, boolean detail) {
         AlarmData.Builder alarmb = AlarmData.newBuilder();
 
         alarmb.setNotificationType(notificationType);
         alarmb.setSeqNum(activeAlarm.getId());
+        alarmb.setReadonly(readonly);
 
         alarmb.setAcknowledged(activeAlarm.isAcknowledged());
         alarmb.setProcessOK(activeAlarm.isProcessOK());
@@ -956,4 +984,14 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
             return Base64.getUrlEncoder().withoutPadding().encodeToString(json.getBytes());
         }
     }
+
+    public static AlarmMirrorService getMirrorService(String instance) {
+        YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(instance);
+        List<AlarmMirrorService> l = ysi.getServices(AlarmMirrorService.class);
+        if (l.size() == 0) {
+            return null;
+        }
+        return l.get(0);
+    }
+
 }

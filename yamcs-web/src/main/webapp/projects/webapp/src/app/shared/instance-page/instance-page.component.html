@@ -79,7 +79,10 @@
         }
 
         @if (showAlarmsItem()) {
-          @if ((connectionInfo$ | async)?.processor?.hasAlarms) {
+          @if (
+            (connectionInfo$ | async)?.processor?.hasAlarms ||
+            ((connectionInfo$ | async)?.instance?.capabilities | arrayContains: "alarm-mirror")
+          ) {
             <app-alarm-label />
           } @else {
             <ya-sidebar-nav-item routerLink="/alarms" [queryParams]="{ c: yamcs.context }">

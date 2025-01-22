@@ -1,5 +1,6 @@
 package org.yamcs.alarms;
 
+import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.slf4j.Logger;
@@ -20,18 +21,21 @@ public class ParameterAlarmServer extends AlarmServer<Parameter, ParameterValue>
         super(yamcsInstance, procConfig, timer);
     }
 
-    protected void addActiveAlarmFromTuple(Mdb mdb, Tuple tuple) {
+    protected void addActiveAlarmFromTuple(Mdb mdb, Tuple tuple, Map<Parameter, ActiveAlarm<ParameterValue>> alarms) {
         String pname = tuple.getColumn(StandardTupleDefinitions.PARAMETER_COLUMN);
         var parameter = mdb.getParameter(pname);
+
         if (parameter == null) {
             log.info("Not adding alarm for {} because parameter was not found in the MDB", pname);
             return;
         }
+        alarms.put(parameter, tupleToActiveAlarm(parameter, tuple));
+    }
 
+    protected static ActiveAlarm<ParameterValue> tupleToActiveAlarm(Parameter parameter, Tuple tuple) {
         var o = tuple.getColumn(CNAME_TRIGGER);
         if (o == null || !(o instanceof ParameterValue)) {
-            log.info("Not adding alarm from tuple because could not extract the triggered PV: {}", tuple);
-            return;
+            throw new RuntimeException("Cannot extract the triggered PV from the tuple: {}" + tuple);
         }
         var triggeredValue = (ParameterValue) o;
         triggeredValue.setParameter(parameter);
@@ -40,7 +44,13 @@ public class ParameterAlarmServer extends AlarmServer<Parameter, ParameterValue>
         var activeAlarm = new ActiveAlarm<ParameterValue>(triggeredValue, false, false, seqNum);
         activeAlarm.trigger();
 
-        activeAlarm.setViolations(tuple.getIntColumn(CNAME_VIOLATION_COUNT));
+        if (tuple.hasColumn(CNAME_VIOLATION_COUNT)) {
+            activeAlarm.setViolations(tuple.getIntColumn(CNAME_VIOLATION_COUNT));
+        }
+        if (tuple.hasColumn(CNAME_VALUE_COUNT)) {
+            activeAlarm.setValueCount(tuple.getIntColumn(CNAME_VALUE_COUNT));
+        }
+
         if (tuple.hasColumn(CNAME_ACK_TIME)) {
             long t = tuple.getTimestampColumn(CNAME_ACK_TIME);
             activeAlarm.acknowledge(tuple.getColumn(CNAME_ACK_BY), t, tuple.getColumn(CNAME_ACK_MSG));
@@ -51,6 +61,9 @@ public class ParameterAlarmServer extends AlarmServer<Parameter, ParameterValue>
             activeAlarm.shelve(t, tuple.getColumn(CNAME_SHELVED_BY), tuple.getColumn(CNAME_SHELVED_MSG),
                     tuple.getLongColumn(CNAME_SHELVE_DURATION));
         }
+        if (tuple.hasColumn(CNAME_LAST_VALUE)) {
+            activeAlarm.setCurrentValue((ParameterValue) tuple.getColumn(CNAME_LAST_VALUE));
+        }
 
         o = tuple.getColumn(CNAME_SEVERITY_INCREASED);
         if (o != null && !(o instanceof ParameterValue)) {
@@ -58,8 +71,7 @@ public class ParameterAlarmServer extends AlarmServer<Parameter, ParameterValue>
             pv.setParameter(parameter);
             activeAlarm.setMostSevereValue(pv);
         }
-
-        activeAlarms.put(parameter, activeAlarm);
+        return activeAlarm;
     }
 
     protected String alarmTableName() {
@@ -75,5 +87,4 @@ public class ParameterAlarmServer extends AlarmServer<Parameter, ParameterValue>
     protected String getColNameLastEvent() {
         return CNAME_LAST_EVENT;
     }
-
 }

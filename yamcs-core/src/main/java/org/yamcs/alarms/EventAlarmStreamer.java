@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.protobuf.Db.Event;
 
 /**
@@ -25,7 +26,7 @@ public class EventAlarmStreamer extends AlarmStreamer<Event> {
     }
 
     @Override
-    protected ArrayList<Object> getTupleKey(ActiveAlarm<Event> activeAlarm) {
+    protected ArrayList<Object> getTupleKey(AlarmNotificationType notificationType, ActiveAlarm<Event> activeAlarm) {
         ArrayList<Object> al = new ArrayList<>(7);
         Event triggerValue = activeAlarm.getTriggerValue();
 
@@ -35,8 +36,34 @@ public class EventAlarmStreamer extends AlarmStreamer<Event> {
         al.add(triggerValue.getSource());
         // seqNum
         al.add(activeAlarm.getId());
+        // event
+        al.add(notificationType.toString());
+
+        // event type
+        al.add(triggerValue.getType());
 
         return al;
+    }
+
+    /**
+     * generate a tuple with the violation/value counters and the last value to be saved in the database before shutdown
+     */
+    @Override
+    public void notifyShutdown(ActiveAlarm<Event> alarm) {
+        Tuple t = new Tuple();
+
+        // primary key
+        t.addTimestampColumn(AlarmStreamer.CNAME_TRIGGER_TIME, alarm.getTriggerValue().getGenerationTime());
+        t.addColumn(StandardTupleDefinitions.EVENT_SOURCE_COLUMN,
+                alarm.getTriggerValue().getSource());
+        t.addColumn(StandardTupleDefinitions.SEQNUM_COLUMN, alarm.getId());
+
+        // values we are interested in
+        t.addColumn(CNAME_VIOLATION_COUNT, alarm.getViolations());
+        t.addColumn(CNAME_VALUE_COUNT, alarm.getValueCount());
+        t.addColumn(CNAME_LAST_VALUE, EVENT_DATA_TYPE, alarm.getCurrentValue());
+
+        stream.emitTuple(t);
     }
 
     @Override

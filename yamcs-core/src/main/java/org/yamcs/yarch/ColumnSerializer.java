@@ -1,6 +1,5 @@
 package org.yamcs.yarch;
 
-import java.io.IOException;
 import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;

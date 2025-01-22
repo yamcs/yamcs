@@ -169,6 +169,19 @@ export class AlarmListComponent implements OnDestroy {
     return this.authService.getUser()!.hasSystemPrivilege('ControlAlarms');
   }
 
+  mayControlSelection() {
+    const { selected } = this.selection;
+    if (!selected.length) {
+      return false;
+    }
+    for (const alarm of selected) {
+      if (alarm.readonly) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   private updateURL() {
     this.router.navigate([], {
       replaceUrl: true,

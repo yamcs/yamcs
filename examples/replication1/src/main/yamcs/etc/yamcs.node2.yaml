@@ -15,7 +15,7 @@ services:
   - class: org.yamcs.ProcessorCreatorService
     args: 
       name: "realtime"
-      type: "realtime"
+      type: "realtime-without-alarm-server"
   - class: org.yamcs.archive.CommandHistoryRecorder
   - class: org.yamcs.parameterarchive.ParameterArchive
     args:
@@ -32,7 +32,8 @@ services:
         masterPort: 8099
         masterInstance: node1
         updateSimTime: true
-        streams: ["tm_realtime", "sys_param", "tm2_realtime", "proc_param -> node1_proc_param"]
+        streams: ["tm_realtime", "sys_param", "tm2_realtime", "proc_param -> node1_proc_param", "alarms_realtime", "event_alarms_realtime"]
+  - class: org.yamcs.alarms.AlarmMirrorService
 
 
 dataLinks:

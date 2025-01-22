@@ -1,5 +1,6 @@
 package org.yamcs.alarms;
 
+import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.slf4j.Logger;
@@ -92,17 +93,23 @@ public class EventAlarmServer extends AlarmServer<EventId, Event> {
         return new EventId(ev.getSource(), ev.hasType() ? ev.getType() : null);
     }
 
-    @Override
-    protected void addActiveAlarmFromTuple(Mdb mdb, Tuple tuple) {
+    protected void addActiveAlarmFromTuple(Mdb mdb, Tuple tuple, Map<EventId, ActiveAlarm<Event>> alarms) {
         var o = tuple.getColumn(CNAME_TRIGGER);
         if (o == null || !(o instanceof Event)) {
             log.info("Not adding alarm from tuple because could not extract the triggered Event: {}", tuple);
             return;
         }
-        var triggeredValue = (Event) o;
+        var triggerValue = (Event) o;
+        var activeAlarm = tupleToActiveAlarm(triggerValue, tuple);
+        alarms.put(getSubject(triggerValue), activeAlarm);
+    }
+
+    static ActiveAlarm<Event> tupleToActiveAlarm(Event triggerValue, Tuple tuple) {
+        var o = tuple.getColumn(CNAME_TRIGGER);
+
         int seqNum = tuple.getIntColumn(CNAME_SEQ_NUM);
 
-        var activeAlarm = new ActiveAlarm<Event>(triggeredValue, false, false, seqNum);
+        var activeAlarm = new ActiveAlarm<Event>(triggerValue, false, false, seqNum);
         activeAlarm.trigger();
 
         activeAlarm.setViolations(tuple.getIntColumn(CNAME_VIOLATION_COUNT));
@@ -121,8 +128,7 @@ public class EventAlarmServer extends AlarmServer<EventId, Event> {
             activeAlarm.setMostSevereValue((Event) o);
         }
 
-        activeAlarms.put(getSubject(triggeredValue), activeAlarm);
-
+        return activeAlarm;
     }
 
     @Override

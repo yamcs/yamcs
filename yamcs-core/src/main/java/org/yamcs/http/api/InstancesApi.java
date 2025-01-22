@@ -18,6 +18,7 @@ import org.yamcs.InstanceMetadata;
 import org.yamcs.Processor;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
+import org.yamcs.alarms.AlarmMirrorService;
 import org.yamcs.api.Observer;
 import org.yamcs.archive.CcsdsTmIndex;
 import org.yamcs.filetransfer.FileTransferService;
@@ -478,6 +479,9 @@ public class InstancesApi extends AbstractInstancesApi<Context> {
         }
         if (!ysi.getServicesWithConfig(ParameterListService.class).isEmpty()) {
             instanceb.addCapabilities("parameter-lists");
+        }
+        if (!ysi.getServicesWithConfig(AlarmMirrorService.class).isEmpty()) {
+            instanceb.addCapabilities("alarm-mirror");
         }
         return instanceb.build();
     }

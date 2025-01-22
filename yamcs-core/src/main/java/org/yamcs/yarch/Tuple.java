@@ -80,6 +80,9 @@ public class Tuple {
         return definition.getColumnIndex(colName);
     }
 
+    /**
+     * Returns the value of the column with the given name or null if there is no value
+     */
     @SuppressWarnings("unchecked")
     public <T> T getColumn(String colName) {
         int i = definition.getColumnIndex(colName);

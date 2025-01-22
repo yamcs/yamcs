@@ -10,6 +10,8 @@ import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.YConfiguration;
+import org.yamcs.alarms.EventAlarmStreamer;
+import org.yamcs.alarms.ParameterAlarmStreamer;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.YarchDatabase;
@@ -44,7 +46,8 @@ public class AlarmRecorder extends AbstractYamcsService {
                         + " table_format=compressed";
                 ydb.execute(query);
             }
-            setupRecording(yamcsInstance, PARAMETER_ALARM_TABLE_NAME, StandardStreamType.PARAMETER_ALARM);
+            setupRecording(yamcsInstance, PARAMETER_ALARM_TABLE_NAME, StandardStreamType.PARAMETER_ALARM,
+                    ParameterAlarmStreamer.CNAME_LAST_EVENT);
 
             if (ydb.getTable(EVENT_ALARM_TABLE_NAME) == null) {
                 String cols = StandardTupleDefinitions.EVENT_ALARM.getStringDefinition1();
@@ -54,13 +57,14 @@ public class AlarmRecorder extends AbstractYamcsService {
                 ydb.execute(query);
             }
 
-            setupRecording(yamcsInstance, EVENT_ALARM_TABLE_NAME, StandardStreamType.EVENT_ALARM);
+            setupRecording(yamcsInstance, EVENT_ALARM_TABLE_NAME, StandardStreamType.EVENT_ALARM,
+                    EventAlarmStreamer.CNAME_LAST_EVENT);
         } catch (ParseException | StreamSqlException e) {
             throw new InitException(e);
         }
     }
 
-    private void setupRecording(String yamcsInstance, String tblName, StandardStreamType stype)
+    private void setupRecording(String yamcsInstance, String tblName, StandardStreamType stype, String colNameLastEvent)
             throws StreamSqlException, ParseException {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         StreamConfig sc = StreamConfig.getInstance(yamcsInstance);
@@ -70,7 +74,9 @@ public class AlarmRecorder extends AbstractYamcsService {
             if (inputStream == null) {
                 throw new ConfigurationException("Cannot find stream '" + sce.getName() + "'");
             }
-            ydb.execute("upsert_append into " + tblName + " select * from " + sce.getName());
+            ydb.execute(
+                    "upsert_append into " + tblName + " select * from " + sce.getName()
+                            + " where " + colNameLastEvent + " != 'VALUE_UPDATED'");
         }
     }
 

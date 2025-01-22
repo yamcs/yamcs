@@ -115,6 +115,10 @@ message AlarmData {
 
   // Time when the alarm was last updated
   optional google.protobuf.Timestamp updateTime = 18;
+
+  // Whether this alarm may be updated by this processor.
+  // Set to false when the alarms are mirrored from another Yamcs instance.
+  optional bool readonly = 19;
 }
 
 message ParameterAlarmData {

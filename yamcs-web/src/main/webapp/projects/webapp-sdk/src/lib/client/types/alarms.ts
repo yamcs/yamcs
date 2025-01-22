@@ -61,6 +61,7 @@ export interface Alarm {
   shelveInfo: ShelveInfo;
   clearInfo: ClearInfo;
   severity: AlarmSeverity;
+  readonly: boolean;
 
   latching: boolean;
   processOK: boolean;

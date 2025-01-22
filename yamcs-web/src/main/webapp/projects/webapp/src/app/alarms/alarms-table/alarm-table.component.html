@@ -128,7 +128,7 @@
   <ng-container matColumnDef="actions">
     <th mat-header-cell *matHeaderCellDef style="width: 100%"></th>
     <td mat-cell *matCellDef="let alarm">
-      @if (mayControl) {
+      @if (mayControl && !alarm.readonly) {
         <ya-more>
           <button
             mat-menu-item

@@ -275,6 +275,10 @@ public class ActiveAlarm<T> {
         return valueCount;
     }
 
+    public void setValueCount(int valueCount) {
+        this.valueCount = valueCount;
+    }
+
     public void incrementViolations() {
         violations++;
     }
@@ -322,4 +326,5 @@ public class ActiveAlarm<T> {
     void setAcknowledged(boolean ack) {
         this.acknowledged = ack;
     }
+
 }

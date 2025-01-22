@@ -23,3 +23,4 @@ Instance Services
     cfdp
     file-listing
     cfs-event-decoder
+    alarm-mirror
