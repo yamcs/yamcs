@@ -86,6 +86,8 @@ public class ParameterRetrievalService extends AbstractYamcsService {
         var l = ysi.getServices(ParameterArchive.class);
         if (!l.isEmpty()) {
             parchive = l.get(0);
+        } else {
+            log.info("The parameter archive service has not been found");
         }
 
         notifyStarted();
@@ -111,6 +113,7 @@ public class ParameterRetrievalService extends AbstractYamcsService {
                     retrieveScalarReplayOrCache(pid, opts, consumer);
                 } else {
                     long coverageEnd = parchive.coverageEnd();
+
                     if (opts.ascending()) {
                         // ascending case -> retrieve max possible from the parameter archive
                         var tc = retrieveScalarParameterArchive(pid, opts, consumer);
@@ -303,7 +306,7 @@ public class ParameterRetrievalService extends AbstractYamcsService {
                 if (opts.ascending()) {
                     pvList = Lists.reverse(pvList);
                 }
-                splitAndSend(pvList, consumer);
+                return splitAndSend(pvList, consumer);
             } // else it means the cache does not cover the requested interval,
               // send everything via replay if allowed
         }
@@ -325,6 +328,8 @@ public class ParameterRetrievalService extends AbstractYamcsService {
 
     private TimeAndCount retrieveSingleParameterArchive(ParameterWithId pid, ParameterRetrievalOptions opts,
             Consumer<ParameterValueWithId> consumer) throws RocksDBException, IOException {
+
+        log.debug("retrieveSingleParameterArchive pid: {}, opts: {}", pid, opts);
 
         MultipleParameterRequest mpvr;
         ParameterIdDb piddb = parchive.getParameterIdDb();
@@ -468,21 +473,24 @@ public class ParameterRetrievalService extends AbstractYamcsService {
             if (opts.ascending()) {
                 pvListList = Lists.reverse(pvListList);
             }
-            for (var pvList : pvListList) {
-                var pvidList = new ArrayList<ParameterValueWithId>();
-                for (var pv : pvList) {
-                    for (var pid : pidMapping.get(pv.getParameter())) {
-                        if (pid.getPath() != null) {
-                            pv = AggregateUtil.extractMember(pv, pid.getPath());
+            if (!pvListList.isEmpty()) {
+                long t = 0;
+                for (var pvList : pvListList) {
+                    var pvidList = new ArrayList<ParameterValueWithId>();
+                    for (var pv : pvList) {
+                        for (var pid : pidMapping.get(pv.getParameter())) {
+                            if (pid.getPath() != null) {
+                                pv = AggregateUtil.extractMember(pv, pid.getPath());
+                            }
+                            pvidList.add(new ParameterValueWithId(pv, pid.getId()));
                         }
-                        pvidList.add(new ParameterValueWithId(pv, pid.getId()));
+                        t = pv.getGenerationTime();
                     }
+                    consumer.accept(pvidList);
                 }
-                consumer.accept(pvidList);
-            }
-
-            // else it means the cache does not cover the requested interval,
-            // send everything via replay if allowed
+                return new TimeAndCount(t, pvListList.size());
+            } // else it means the cache does not cover the requested interval,
+              // send everything via replay if allowed
         }
 
         if (!opts.noreplay()) {
@@ -491,6 +499,24 @@ public class ParameterRetrievalService extends AbstractYamcsService {
             // noreplay is specified and no data has been found in the cache
             return new TimeAndCount(Instant.MIN_INSTANT, 0);
         }
+    }
+
+    // splits the list in arrays of parameters having the same type
+    private TimeAndCount splitAndSend(List<ParameterValue> pvlist, Consumer<ParameterValueArray> consumer) {
+        int n = 0;
+        int m = pvlist.size();
+        ParameterValue pv0 = pvlist.get(n);
+
+        for (int j = 1; j < m; j++) {
+            ParameterValue pv = pvlist.get(j);
+            if (differentType(pv0, pv)) {
+                sendToConsumer(pvlist, n, j, consumer);
+                pv0 = pv;
+                n = j;
+            }
+        }
+        sendToConsumer(pvlist, n, m, consumer);
+        return new TimeAndCount(pvlist.get(0).getGenerationTime(), pvlist.size());
     }
 
     private void sendToConsumer(List<ParameterValue> pvlist, int n, int m, Consumer<ParameterValueArray> consumer) {
@@ -519,23 +545,6 @@ public class ParameterRetrievalService extends AbstractYamcsService {
         }
         ParameterValueArray pva = new ParameterValueArray(timestamps, engValues, rawValues, statuses);
         consumer.accept(pva);
-    }
-
-    // splits the list in arrays of parameters having the same type
-    private void splitAndSend(List<ParameterValue> pvlist, Consumer<ParameterValueArray> consumer) {
-        int n = 0;
-        int m = pvlist.size();
-        ParameterValue pv0 = pvlist.get(n);
-
-        for (int j = 1; j < m; j++) {
-            ParameterValue pv = pvlist.get(j);
-            if (differentType(pv0, pv)) {
-                sendToConsumer(pvlist, n, j, consumer);
-                pv0 = pv;
-                n = j;
-            }
-        }
-        sendToConsumer(pvlist, n, m, consumer);
     }
 
     private boolean differentType(ParameterValue pv0, ParameterValue pv1) {

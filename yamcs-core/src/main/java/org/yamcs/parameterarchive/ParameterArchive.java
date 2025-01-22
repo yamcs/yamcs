@@ -112,7 +112,7 @@ public class ParameterArchive extends AbstractYamcsService {
     boolean sparseGroups;
     double minimumGroupOverlap;
 
-    AtomicLong coverageEnd = new AtomicLong(TimeEncoding.MIN_INSTANT);
+    AtomicLong coverageEnd = new AtomicLong(TimeEncoding.NEGATIVE_INFINITY);
 
     @Override
     public Spec getSpec() {
@@ -131,7 +131,6 @@ public class ParameterArchive extends AbstractYamcsService {
     @Override
     public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
         super.init(yamcsInstance, serviceName, config);
-
         timeService = YamcsServer.getTimeService(yamcsInstance);
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         tablespace = RdbStorageEngine.getInstance().getTablespace(ydb);
@@ -238,11 +237,19 @@ public class ParameterArchive extends AbstractYamcsService {
         return parameterIdDb.getParameterGroupIdDb();
     }
 
+    public void updateCoverageEnd(long t) {
+        long t0 = coverageEnd.getAndUpdate(current -> Math.max(current, t));
+        if (t != t0 && log.isDebugEnabled()) {
+            log.debug("Updated coverageEnd from {} to {}", TimeEncoding.toString(t0), TimeEncoding.toString(t));
+        }
+    }
+
     public void writeToArchive(PGSegment pgs) throws RocksDBException, IOException {
         pgs.consolidate();
         Partition p = createAndGetPartition(pgs.getInterval());
         YRDB rdb = tablespace.getRdb(p.partitionDir, false);
         ColumnFamilyHandle cfh = cfh(rdb, p);
+
         try (WriteBatch writeBatch = new WriteBatch(); WriteOptions wo = new WriteOptions()) {
             if (p.version == 0) {
                 writeToBatchVersion0(cfh, writeBatch, pgs);
@@ -915,6 +922,10 @@ public class ParameterArchive extends AbstractYamcsService {
         }
     }
 
+    public long now() {
+        return timeService.getMissionTime();
+    }
+
     public static class Partition extends TimeInterval {
         final String partitionDir;
         final private String cfName;
@@ -947,6 +958,4 @@ public class ParameterArchive extends AbstractYamcsService {
             return partitionDir;
         }
     }
-
-
 }

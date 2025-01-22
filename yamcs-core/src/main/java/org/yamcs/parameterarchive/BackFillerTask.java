@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.rocksdb.RocksDBException;
 import org.yamcs.Processor;
-
+import org.yamcs.utils.TimeEncoding;
 
 import static org.yamcs.parameterarchive.ParameterArchive.*;
 
@@ -14,6 +14,7 @@ class BackFillerTask extends AbstractArchiveFiller {
     // ParameterGroup_id -> PGSegment
     protected Map<Integer, PGSegment> pgSegments = new HashMap<>();
     private Processor processor;
+    long coverageEnd = TimeEncoding.NEGATIVE_INFINITY;
 
     public BackFillerTask(ParameterArchive parameterArchive) {
         super(parameterArchive);
@@ -22,7 +23,12 @@ class BackFillerTask extends AbstractArchiveFiller {
     void flush() {
         for (PGSegment seg : pgSegments.values()) {
             writeToArchive(seg);
+            var segEnd = seg.getSegmentEnd();
+            if (segEnd <= parameterArchive.now()) {
+                coverageEnd = Math.max(coverageEnd, segEnd);
+            }
         }
+        parameterArchive.updateCoverageEnd(coverageEnd);
     }
 
     public void setProcessor(Processor proc) {
@@ -38,6 +44,10 @@ class BackFillerTask extends AbstractArchiveFiller {
         } catch (RocksDBException | IOException e) {
             log.error("Error writing segment to archive", e);
             throw new ParameterArchiveException("Error writing segment to arcive", e);
+        }
+        var segEnd = pgSegment.getSegmentEnd();
+        if (segEnd <= parameterArchive.now()) {
+            coverageEnd = Math.max(coverageEnd, segEnd);
         }
     }
 
@@ -71,7 +81,6 @@ class BackFillerTask extends AbstractArchiveFiller {
         } catch (RocksDBException e) {
             log.error("Error writing to the parameter archive", e);
         }
-
     }
 
     @Override
