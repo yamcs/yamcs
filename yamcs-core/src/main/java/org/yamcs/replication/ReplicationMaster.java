@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -87,6 +88,10 @@ public class ReplicationMaster extends AbstractYamcsService {
     int maxTupleSize;
     long timeMsgFreqMillis;
 
+    ScheduledFuture<?> closeUnusedFilesSchedule;
+    ScheduledFuture<?> deleteExpiredFilesSchedule;
+    ScheduledFuture<?> syncCurrentFileSchedule;
+
     @Override
     public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
         super.init(yamcsInstance, serviceName, config);
@@ -108,15 +113,17 @@ public class ReplicationMaster extends AbstractYamcsService {
         }
         this.filePattern = Pattern.compile(Pattern.quote(serviceName) + "_([0-9A-Fa-f]{16})\\.dat");
 
+        var exec = YamcsServer.getServer().getThreadPoolExecutor();
+
         fileCloseTime = config.getLong("fileCloseTimeSec", 300) * 1000;
-        YamcsServer.getServer().getThreadPoolExecutor().scheduleAtFixedRate(() -> closeUnusedFiles(), fileCloseTime,
+        closeUnusedFilesSchedule = exec.scheduleAtFixedRate(() -> closeUnusedFiles(), fileCloseTime,
                 fileCloseTime, TimeUnit.MILLISECONDS);
 
-        YamcsServer.getServer().getThreadPoolExecutor().scheduleAtFixedRate(() -> deleteExpiredFiles(), fileCloseTime,
+        deleteExpiredFilesSchedule = exec.scheduleAtFixedRate(() -> deleteExpiredFiles(), fileCloseTime,
                 fileCloseTime, TimeUnit.MILLISECONDS);
 
         fileSyncTime = config.getLong("fileSyncTime", 10) * 1000;
-        YamcsServer.getServer().getThreadPoolExecutor().scheduleAtFixedRate(() -> syncCurrentFile(), fileSyncTime,
+        syncCurrentFileSchedule = exec.scheduleAtFixedRate(() -> syncCurrentFile(), fileSyncTime,
                 fileSyncTime, TimeUnit.MILLISECONDS);
 
         if (tcpRole == TcpRole.SERVER) {
@@ -251,20 +258,31 @@ public class ReplicationMaster extends AbstractYamcsService {
 
     @Override
     protected void doStop() {
+        closeUnusedFilesSchedule.cancel(false);
+        deleteExpiredFilesSchedule.cancel(false);
+        syncCurrentFileSchedule.cancel(false);
+
         for (StreamToFile stf : translators) {
             stf.quit();
         }
+        translators.clear();
 
         for (ReplFileAccess rf : replFiles.values()) {
             if (rf.rf != null) {
                 rf.rf.close();
             }
         }
+        replFiles.clear();
+
         if (tcpRole == TcpRole.CLIENT) {
             for (SlaveServer sa : slaves) {
                 sa.client.stop();
             }
+            slaves.clear();
         }
+
+        toDeleteList.clear();
+        currentFile = null;
         notifyStopped();
     }
 
