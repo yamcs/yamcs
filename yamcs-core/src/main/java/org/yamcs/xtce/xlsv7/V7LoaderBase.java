@@ -360,6 +360,10 @@ public abstract class V7LoaderBase extends BaseSpreadsheetLoader {
         return r;
     }
 
+    static boolean isCommentedOut(Cell[] cells) {
+        return cells.length > 0 && cells[0].getContents().startsWith("#");
+    }
+
     static Position getPosition(SpreadsheetLoadContext ctx, String pos) {
         if (!pos.contains(":")) {
             return new Position(parseInt(ctx, pos), true);

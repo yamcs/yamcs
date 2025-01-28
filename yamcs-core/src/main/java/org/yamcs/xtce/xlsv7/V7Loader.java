@@ -1187,7 +1187,7 @@ public class V7Loader extends V7LoaderBase {
                 log.trace("Ignoring line {} because it's empty", ctx.row);
                 continue;
             }
-            if (cells[0].getContents().equals("") || cells[0].getContents().startsWith("#")) {
+            if (cells[0].getContents().equals("") || isCommentedOut(cells)) {
                 log.trace("Ignoring line {} because first cell is empty or starts with '#'", ctx.row);
                 continue;
             }
@@ -1278,6 +1278,10 @@ public class V7Loader extends V7LoaderBase {
             while (i < sheet.getRows()) {
                 // get the next row, containing a measurement/container reference
                 cells = jumpToRow(sheet, i);
+                if (isCommentedOut(cells)) {
+                    i++;
+                    continue;
+                }
                 // determine whether we have not reached the end of the packet definition.
                 if (!hasColumn(cells, CN_CONT_ENTRY)) {
                     break;
@@ -1499,7 +1503,7 @@ public class V7Loader extends V7LoaderBase {
                 log.trace("Ignoring line {} because it's empty", ctx.row);
                 continue;
             }
-            if (cells[0].getContents().equals("") || cells[0].getContents().startsWith("#")) {
+            if (cells[0].getContents().equals("") || isCommentedOut(cells)) {
                 log.trace("Ignoring line {} because first cell is empty or starts with '#'", ctx.row);
                 continue;
             }
@@ -1550,7 +1554,10 @@ public class V7Loader extends V7LoaderBase {
 
                 // get the next row, containing a measurement/container reference
                 cells = jumpToRow(sheet, i);
-
+                if (isCommentedOut(cells)) {
+                    i++;
+                    continue;
+                }
                 // determine whether we have not reached the end of the command definition.
                 if (!hasColumn(cells, CN_CMD_ARGNAME)) {
                     end = true;
