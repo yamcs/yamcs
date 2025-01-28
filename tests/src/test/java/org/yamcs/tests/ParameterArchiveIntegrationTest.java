@@ -31,9 +31,10 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
 
     private ArchiveClient archiveClient;
     ParameterRetrievalService prs;
+    ParameterArchive parameterArchive;
 
     @BeforeEach
-    public void cleanParameterCache() {
+    public void clearParameterCache() {
         if (prs == null) {
             var ysi = YamcsServer.getServer().getInstance(yamcsInstance);
             List<ParameterRetrievalService> l = ysi.getServices(ParameterRetrievalService.class);
@@ -41,6 +42,8 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         }
         prs.getParameterCache().clear();
         archiveClient = yamcsClient.createArchiveClient(yamcsInstance);
+        parameterArchive = YamcsServer.getServer().getService(yamcsInstance, ParameterArchive.class);
+        parameterArchive.resetCoverageEnd();
     }
 
     @Test
@@ -304,6 +307,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testWithArrayElements() throws Exception {
+        System.out.println("testing with array elements");
         generatePkt8("2019-04-06T20:00:00", 2 * 3600);
 
         // first two requests before the consolidation, should return data from cache
@@ -535,7 +539,6 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
     }
 
     private void buildParameterArchive(String start, String stop) throws InterruptedException, ExecutionException {
-        ParameterArchive parameterArchive = YamcsServer.getServer().getService(yamcsInstance, ParameterArchive.class);
         Future<?> f = parameterArchive.reprocess(TimeEncoding.parse(start), TimeEncoding.parse(stop));
         f.get();
     }

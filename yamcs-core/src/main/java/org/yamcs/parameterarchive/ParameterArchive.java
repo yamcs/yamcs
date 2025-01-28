@@ -244,6 +244,15 @@ public class ParameterArchive extends AbstractYamcsService {
         }
     }
 
+    /**
+     * Sets the {@link #coverageEnd} to negative infinity
+     * <p>
+     * This method is used mostly in unit tests
+     */
+    public void resetCoverageEnd() {
+        coverageEnd.set(TimeEncoding.NEGATIVE_INFINITY);
+    }
+
     public void writeToArchive(PGSegment pgs) throws RocksDBException, IOException {
         pgs.consolidate();
         Partition p = createAndGetPartition(pgs.getInterval());
