@@ -121,8 +121,7 @@ public abstract class AlarmServer<S, T> extends AbstractAlarmServer<S, T> {
     }
 
     /**
-     * Acknowledges an active alarm instance. If the alarm state is no longer applicable, the alarm is also cleared,
-     * otherwise the alarm will remain active.
+     * Clears an active alarm instance.
      * 
      * @param alarm
      *            the alarm to clear
@@ -133,13 +132,13 @@ public abstract class AlarmServer<S, T> extends AbstractAlarmServer<S, T> {
      * @return the updated alarm instance or null if the alarm was not found
      */
     public ActiveAlarm<T> clear(ActiveAlarm<T> alarm, String username, long clearTime, String message) {
-        if (!activeAlarms.containsValue(alarm)) {
+        S subject = getSubject(alarm.getTriggerValue());
+        if (!activeAlarms.remove(subject, alarm)) {
             return null;
         }
+
         alarm.clear(username, clearTime, message);
 
-        S subject = getSubject(alarm.getTriggerValue());
-        activeAlarms.remove(subject);
         alarmListeners.forEach(l -> l.notifyUpdate(AlarmNotificationType.CLEARED, alarm));
 
         return alarm;
