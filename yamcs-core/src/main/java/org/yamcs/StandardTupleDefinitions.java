@@ -36,6 +36,8 @@ public class StandardTupleDefinitions {
     public static final String EVENT_SOURCE_COLUMN = "eventSource";
     public static final String EVENT_TYPE_COLUMN = "eventType";
 
+    public static final String PENDING_COLUMN = "pending";
+
     public static final TupleDefinition TM = new TupleDefinition();
     public static final TupleDefinition INVALID_TM = new TupleDefinition();
     static {
@@ -98,6 +100,7 @@ public class StandardTupleDefinitions {
         PARAMETER_ALARM.addColumn(PARAMETER_COLUMN, DataType.STRING);
         PARAMETER_ALARM.addColumn(SEQNUM_COLUMN, DataType.INT);
         PARAMETER_ALARM.addColumn(ParameterAlarmStreamer.CNAME_LAST_EVENT, DataType.ENUM);
+        PARAMETER_ALARM.addColumn(AlarmStreamer.CNAME_PENDING, DataType.BOOLEAN);
     }
 
     public static final TupleDefinition EVENT_ALARM = new TupleDefinition();
@@ -108,6 +111,7 @@ public class StandardTupleDefinitions {
         EVENT_ALARM.addColumn(SEQNUM_COLUMN, DataType.INT);
         EVENT_ALARM.addColumn(EventAlarmStreamer.CNAME_LAST_EVENT, DataType.ENUM);
         EVENT_ALARM.addColumn(EVENT_TYPE_COLUMN, DataType.STRING);
+        EVENT_ALARM.addColumn(AlarmStreamer.CNAME_PENDING, DataType.BOOLEAN);
     }
 
 }

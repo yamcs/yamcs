@@ -34,15 +34,21 @@ public class ParameterAlarmServer extends AlarmServer<Parameter, ParameterValue>
 
     protected static ActiveAlarm<ParameterValue> tupleToActiveAlarm(Parameter parameter, Tuple tuple) {
         var o = tuple.getColumn(CNAME_TRIGGER);
+
         if (o == null || !(o instanceof ParameterValue)) {
-            throw new RuntimeException("Cannot extract the triggered PV from the tuple: {}" + tuple);
+            throw new RuntimeException("Cannot extract the triggered PV from the tuple: " + tuple);
         }
         var triggeredValue = (ParameterValue) o;
         triggeredValue.setParameter(parameter);
         int seqNum = tuple.getIntColumn(CNAME_SEQ_NUM);
 
         var activeAlarm = new ActiveAlarm<ParameterValue>(triggeredValue, false, false, seqNum);
-        activeAlarm.trigger();
+
+        if (tuple.hasColumn(CNAME_PENDING) && tuple.getBooleanColumn(CNAME_PENDING)) {
+            activeAlarm.setPending(true);
+        } else {
+            activeAlarm.trigger();
+        }
 
         if (tuple.hasColumn(CNAME_VIOLATION_COUNT)) {
             activeAlarm.setViolations(tuple.getIntColumn(CNAME_VIOLATION_COUNT));

@@ -31,6 +31,7 @@ public abstract class AlarmStreamer<T> implements AlarmListener<T> {
     public static final String CNAME_VIOLATION_COUNT = "violationCount";
 
     public static final String CNAME_LAST_VALUE = "lastValue";
+    public static final String CNAME_PENDING = "pending";
 
     public AlarmStreamer(Stream s, DataType dataType, TupleDefinition tdefTemplate) {
         this.stream = s;
@@ -72,6 +73,7 @@ public abstract class AlarmStreamer<T> implements AlarmListener<T> {
 
         switch (notificationType) {
         case TRIGGERED:
+        case TRIGGERED_PENDING:
             tdef.addColumn(getColNameTrigger(), dataType);
             al.add(activeAlarm.getTriggerValue());
             break;

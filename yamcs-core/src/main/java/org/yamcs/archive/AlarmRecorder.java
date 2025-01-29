@@ -76,7 +76,7 @@ public class AlarmRecorder extends AbstractYamcsService {
             }
             ydb.execute(
                     "upsert_append into " + tblName + " select * from " + sce.getName()
-                            + " where " + colNameLastEvent + " != 'VALUE_UPDATED'");
+                            + " where " + colNameLastEvent + " != 'VALUE_UPDATED' and pending is null");
         }
     }
 

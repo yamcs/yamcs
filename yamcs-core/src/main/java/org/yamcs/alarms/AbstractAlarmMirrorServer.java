@@ -26,7 +26,11 @@ abstract class AbstractAlarmMirrorServer<S, T> extends AbstractAlarmServer<S, T>
             activeAlarm = createNewAlarm(subject, tuple);
             if (activeAlarm != null) {
                 activeAlarms.put(subject, activeAlarm);
-                notifyUpdate(AlarmNotificationType.TRIGGERED, activeAlarm);
+                if (activeAlarm.isPending()) {
+                    notifyUpdate(AlarmNotificationType.TRIGGERED_PENDING, activeAlarm);
+                } else {
+                    notifyUpdate(AlarmNotificationType.TRIGGERED, activeAlarm);
+                }
             } else {
                 log.info("Ignoring tuple as no active or restored alarm has been found: {}", tuple);
             }
@@ -41,6 +45,9 @@ abstract class AbstractAlarmMirrorServer<S, T> extends AbstractAlarmServer<S, T>
             var notificationType = AlarmNotificationType.valueOf(
                     tuple.getColumn(getColNameLastEvent()));
             switch (notificationType) {
+            case TRIGGERED:
+                activeAlarm.trigger();
+                break;
             case ACKNOWLEDGED:
                 long ackTime = tuple.getTimestampColumn(AlarmStreamer.CNAME_ACK_TIME);
                 activeAlarm.acknowledge(tuple.getColumn(AlarmStreamer.CNAME_ACK_BY), ackTime,
@@ -56,12 +63,10 @@ abstract class AbstractAlarmMirrorServer<S, T> extends AbstractAlarmServer<S, T>
                 notifyUpdate(notificationType, activeAlarm);
                 break;
             case RESET:
-                System.out.println("RESET todo");
-                // activeAlarm.reset(pname, clearTime, clearMessage);
+                // TODO reset not yet implemented in the AlarmServer
                 notifyUpdate(notificationType, activeAlarm);
                 break;
             case RTN:
-                System.out.println("RTN todo");
                 notifyUpdate(notificationType, activeAlarm);
                 break;
             case SEVERITY_INCREASED:
@@ -84,10 +89,12 @@ abstract class AbstractAlarmMirrorServer<S, T> extends AbstractAlarmServer<S, T>
                 notifyValueUpdate(activeAlarm);
                 break;
             default:
+                log.warn("Unexpected alarm notification type {}", notificationType);
                 break;
 
             }
         } else {
+            // yamcs older than 5.11
             processValueUpdate(subject, activeAlarm, tuple);
             notifyValueUpdate(activeAlarm);
         }

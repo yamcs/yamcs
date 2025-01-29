@@ -116,6 +116,8 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.SHELVED, AlarmNotificationType.SHELVED);
         protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.TRIGGERED, AlarmNotificationType.TRIGGERED);
         protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.UNSHELVED, AlarmNotificationType.UNSHELVED);
+        protoNotificationType.put(org.yamcs.alarms.AlarmNotificationType.TRIGGERED_PENDING,
+                AlarmNotificationType.TRIGGERED_PENDING);
     }
 
     private AuditLog auditLog;
@@ -223,6 +225,8 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
     public void listProcessorAlarms(Context ctx, ListProcessorAlarmsRequest request,
             Observer<ListProcessorAlarmsResponse> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ReadAlarms);
+        boolean includePending = request.hasIncludePending() && request.getIncludePending();
+
         Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
         ListProcessorAlarmsResponse.Builder responseb = ListProcessorAlarmsResponse.newBuilder();
         if (processor.hasAlarmServer()) {
@@ -230,24 +234,32 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
                     .getParameterProcessorManager()
                     .getAlarmServer();
             for (ActiveAlarm<org.yamcs.parameter.ParameterValue> alarm : alarmServer.getActiveAlarms().values()) {
-                responseb.addAlarms(toAlarmData(AlarmNotificationType.ACTIVE, alarm, false, true));
+                if (includePending || !alarm.isPending()) {
+                    responseb.addAlarms(toAlarmData(AlarmNotificationType.ACTIVE, alarm, false, true));
+                }
             }
         }
         EventAlarmServer eventAlarmServer = processor.getEventAlarmServer();
         if (eventAlarmServer != null) {
             for (ActiveAlarm<Db.Event> alarm : eventAlarmServer.getActiveAlarms().values()) {
-                responseb.addAlarms(toAlarmData(AlarmNotificationType.ACTIVE, alarm, false, true));
+                if (includePending || !alarm.isPending()) {
+                    responseb.addAlarms(toAlarmData(AlarmNotificationType.ACTIVE, alarm, false, true));
+                }
             }
         }
 
         AlarmMirrorService alarmMirrorService = getMirrorService(request.getInstance());
         if (alarmMirrorService != null) {
             for (var alarm : alarmMirrorService.getParameterServer().getActiveAlarms().values()) {
-                responseb.addAlarms(toAlarmData(AlarmNotificationType.ACTIVE, alarm, true /* readonly */, true));
+                if (includePending || !alarm.isPending()) {
+                    responseb.addAlarms(toAlarmData(AlarmNotificationType.ACTIVE, alarm, true /* readonly */, true));
+                }
             }
 
             for (var alarm : alarmMirrorService.getEventServer().getActiveAlarms().values()) {
-                responseb.addAlarms(toAlarmData(AlarmNotificationType.ACTIVE, alarm, true /* readonly */, true));
+                if (includePending || !alarm.isPending()) {
+                    responseb.addAlarms(toAlarmData(AlarmNotificationType.ACTIVE, alarm, true /* readonly */, true));
+                }
             }
         }
 
@@ -469,6 +481,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public void subscribeAlarms(Context ctx, SubscribeAlarmsRequest request, Observer<AlarmData> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ReadAlarms);
+        boolean includePending = request.hasIncludePending() && request.getIncludePending();
         Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
 
         List<AbstractAlarmServer<?, ?>> alarmServers = new ArrayList<>();
@@ -490,22 +503,29 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
 
             @Override
             public void notifyUpdate(org.yamcs.alarms.AlarmNotificationType notificationType, ActiveAlarm activeAlarm) {
-                AlarmNotificationType type = protoNotificationType.get(notificationType);
-                AlarmData alarmData = toAlarmData(type, activeAlarm, false, sendDetail);
-                observer.next(alarmData);
+                if (includePending || !activeAlarm.isPending()) {
+                    AlarmNotificationType type = protoNotificationType.get(notificationType);
+                    AlarmData alarmData = toAlarmData(type, activeAlarm, false, sendDetail);
+                    observer.next(alarmData);
+                }
             }
 
             @Override
             public void notifySeverityIncrease(ActiveAlarm activeAlarm) {
-                AlarmData alarmData = toAlarmData(AlarmNotificationType.SEVERITY_INCREASED, activeAlarm, false,
-                        sendDetail);
-                observer.next(alarmData);
+                if (includePending || !activeAlarm.isPending()) {
+                    AlarmData alarmData = toAlarmData(AlarmNotificationType.SEVERITY_INCREASED, activeAlarm, false,
+                            sendDetail);
+                    observer.next(alarmData);
+                }
             }
 
             @Override
             public void notifyValueUpdate(ActiveAlarm activeAlarm) {
-                AlarmData alarmData = toAlarmData(AlarmNotificationType.VALUE_UPDATED, activeAlarm, false, sendDetail);
-                observer.next(alarmData);
+                if (includePending || !activeAlarm.isPending()) {
+                    AlarmData alarmData = toAlarmData(AlarmNotificationType.VALUE_UPDATED, activeAlarm, false,
+                            sendDetail);
+                    observer.next(alarmData);
+                }
             }
         };
 
@@ -704,6 +724,9 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         alarmb.setViolations(activeAlarm.getViolations());
         alarmb.setCount(activeAlarm.getValueCount());
         alarmb.setSeverity(getAlarmSeverity(activeAlarm));
+        if (activeAlarm.isPending()) {
+            alarmb.setPending(true);
+        }
 
         if (activeAlarm.getMostSevereValue() instanceof ParameterValue) {
             alarmb.setType(AlarmType.PARAMETER);

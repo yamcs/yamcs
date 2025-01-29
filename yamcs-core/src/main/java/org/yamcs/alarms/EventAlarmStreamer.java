@@ -42,6 +42,9 @@ public class EventAlarmStreamer extends AlarmStreamer<Event> {
         // event type
         al.add(triggerValue.getType());
 
+        // the AlarmRecorder checks for null
+        al.add(activeAlarm.isPending() ? Boolean.TRUE : null);
+
         return al;
     }
 

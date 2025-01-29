@@ -40,7 +40,9 @@ class ParameterAlarmMirrorServer extends AbstractAlarmMirrorServer<Parameter, Pa
             return null;
         }
 
-        if (AlarmNotificationType.valueOf(ev) == AlarmNotificationType.TRIGGERED) {
+        var notificationType = AlarmNotificationType.valueOf(ev);
+        if (notificationType == AlarmNotificationType.TRIGGERED
+                || notificationType == AlarmNotificationType.TRIGGERED_PENDING) {
             return ParameterAlarmServer.tupleToActiveAlarm(parameter, tuple);
         } else {
             return null;

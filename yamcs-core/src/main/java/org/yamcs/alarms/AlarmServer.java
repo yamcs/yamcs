@@ -38,7 +38,6 @@ public abstract class AlarmServer<S, T> extends AbstractAlarmServer<S, T> {
         }
     }
 
-
     /**
      * Returns the active alarm for the specified {@code subject} if it also matches the specified {@code id}.
      * 
@@ -51,14 +50,17 @@ public abstract class AlarmServer<S, T> extends AbstractAlarmServer<S, T> {
      *             when the specified id does not match the id of the active alarm
      */
     public ActiveAlarm<T> getActiveAlarm(S subject, int id) throws AlarmSequenceException {
-        ActiveAlarm<T> alarm = activeAlarms.get(subject);
-        if (alarm != null) {
-            if (alarm.getId() != id) {
-                throw new AlarmSequenceException(alarm.getId(), id);
+        var lock = getLock(subject);
+        synchronized (lock) {
+            ActiveAlarm<T> alarm = activeAlarms.get(subject);
+            if (alarm != null) {
+                if (alarm.getId() != id) {
+                    throw new AlarmSequenceException(alarm.getId(), id);
+                }
+                return alarm;
             }
-            return alarm;
+            return null;
         }
-        return null;
     }
 
     /**
@@ -87,20 +89,25 @@ public abstract class AlarmServer<S, T> extends AbstractAlarmServer<S, T> {
      * @return the updated alarm instance or null if the alarm was not found
      */
     public ActiveAlarm<T> acknowledge(ActiveAlarm<T> alarm, String username, long ackTime, String message) {
-        if (!activeAlarms.containsValue(alarm)) {
-            return null;
+        var subject = getSubject(alarm.getTriggerValue());
+
+        var lock = getLock(subject);
+        synchronized (lock) {
+
+            if (!activeAlarms.containsValue(subject)) {
+                return null;
+            }
+
+            alarm.acknowledge(username, ackTime, message);
+            notifyUpdate(AlarmNotificationType.ACKNOWLEDGED, alarm);
+
+            if (alarm.isNormal()) {
+                activeAlarms.remove(subject);
+                notifyUpdate(AlarmNotificationType.CLEARED, alarm);
+            }
+
+            return alarm;
         }
-
-        alarm.acknowledge(username, ackTime, message);
-        alarmListeners.forEach(l -> l.notifyUpdate(AlarmNotificationType.ACKNOWLEDGED, alarm));
-
-        if (alarm.isNormal()) {
-            S subject = getSubject(alarm.getTriggerValue());
-            activeAlarms.remove(subject);
-            alarmListeners.forEach(l -> l.notifyUpdate(AlarmNotificationType.CLEARED, alarm));
-        }
-
-        return alarm;
     }
 
     /**
@@ -113,16 +120,22 @@ public abstract class AlarmServer<S, T> extends AbstractAlarmServer<S, T> {
      * @return the updated alarm instance or null if the alarm was not found
      */
     public ActiveAlarm<T> reset(ActiveAlarm<T> alarm, String username, long resetTime, String message) {
-        if (!activeAlarms.containsValue(alarm)) {
-            return null;
+        S subject = getSubject(alarm.getTriggerValue());
+
+        var lock = getLock(subject);
+        synchronized (lock) {
+            var alarm1 = activeAlarms.get(subject);
+            if (alarm1 != alarm) {
+                return null;
+            }
+
+            alarm.reset(username, resetTime, message);
+            return alarm;
         }
-        alarm.reset(username, resetTime, message);
-        return alarm;
     }
 
     /**
-     * Acknowledges an active alarm instance. If the alarm state is no longer applicable, the alarm is also cleared,
-     * otherwise the alarm will remain active.
+     * Clears an active alarm instance.
      * 
      * @param alarm
      *            the alarm to clear
@@ -133,16 +146,18 @@ public abstract class AlarmServer<S, T> extends AbstractAlarmServer<S, T> {
      * @return the updated alarm instance or null if the alarm was not found
      */
     public ActiveAlarm<T> clear(ActiveAlarm<T> alarm, String username, long clearTime, String message) {
-        if (!activeAlarms.containsValue(alarm)) {
-            return null;
-        }
-        alarm.clear(username, clearTime, message);
-
         S subject = getSubject(alarm.getTriggerValue());
-        activeAlarms.remove(subject);
-        alarmListeners.forEach(l -> l.notifyUpdate(AlarmNotificationType.CLEARED, alarm));
+        var lock = getLock(subject);
+        synchronized (lock) {
+            if (!activeAlarms.remove(subject, alarm)) {
+                return null;
+            }
 
-        return alarm;
+            alarm.clear(username, clearTime, message);
+            notifyUpdate(AlarmNotificationType.CLEARED, alarm);
+
+            return alarm;
+        }
     }
 
     /**
@@ -158,28 +173,35 @@ public abstract class AlarmServer<S, T> extends AbstractAlarmServer<S, T> {
      */
     public ActiveAlarm<T> shelve(ActiveAlarm<T> alarm, String username, String message,
             long shelveDuration) {
-        if (!activeAlarms.containsValue(alarm)) {
-            return null;
-        }
-        alarm.shelve(username, message, shelveDuration);
-        alarmListeners.forEach(l -> l.notifyUpdate(AlarmNotificationType.SHELVED, alarm));
-        timer.schedule(this::checkShelved, shelveDuration, TimeUnit.MILLISECONDS);
+        S subject = getSubject(alarm.getTriggerValue());
+        var lock = getLock(subject);
 
-        return alarm;
+        synchronized (lock) {
+            var alarm1 = activeAlarms.get(subject);
+            if (alarm1 != alarm) {
+                return null;
+            }
+
+            alarm.shelve(username, message, shelveDuration);
+            notifyUpdate(AlarmNotificationType.SHELVED, alarm);
+            timer.schedule(this::checkShelved, shelveDuration, TimeUnit.MILLISECONDS);
+
+            return alarm;
+        }
     }
 
     private void checkShelved() {
         long t = TimeEncoding.getWallclockTime();
 
-        for (ActiveAlarm<T> aa : activeAlarms.values()) {
-            if (aa.isShelved()) {
-                long exp = aa.getShelveExpiration();
+        for (ActiveAlarm<T> alarm : activeAlarms.values()) {
+            if (alarm.isShelved()) {
+                long exp = alarm.getShelveExpiration();
                 if (exp == -1) {
                     continue;
                 }
                 if (exp <= t) {
-                    aa.unshelve();
-                    alarmListeners.forEach(l -> l.notifyUpdate(AlarmNotificationType.UNSHELVED, aa));
+                    alarm.unshelve();
+                    notifyUpdate(AlarmNotificationType.UNSHELVED, alarm);
                 }
             }
         }
@@ -193,18 +215,20 @@ public abstract class AlarmServer<S, T> extends AbstractAlarmServer<S, T> {
      * @return the updated alarm instance or null if the alarm was not found
      */
     public ActiveAlarm<T> unshelve(ActiveAlarm<T> alarm, String username) {
-        if (!activeAlarms.containsValue(alarm)) {
-            return null;
-        }
-        alarm.unshelve();
-        alarmListeners.forEach(l -> l.notifyUpdate(AlarmNotificationType.UNSHELVED, alarm));
-        return alarm;
-    }
+        S subject = getSubject(alarm.getTriggerValue());
 
-    @Override
-    public void doStart() {
-        timer.execute(this::checkShelved);
-        notifyStarted();
+        var lock = getLock(subject);
+        synchronized (lock) {
+
+            var alarm1 = activeAlarms.get(subject);
+            if (alarm1 != alarm) {
+                return null;
+            }
+
+            alarm.unshelve();
+            notifyUpdate(AlarmNotificationType.UNSHELVED, alarm);
+            return alarm;
+        }
     }
 
     public void update(T pv, int minViolations) {
@@ -212,73 +236,72 @@ public abstract class AlarmServer<S, T> extends AbstractAlarmServer<S, T> {
     }
 
     public void update(T value, int minViolations, boolean autoAck, boolean latching) {
-        S alarmId = getSubject(value);
-
-        ActiveAlarm<T> activeAlarm = activeAlarms.get(alarmId);
+        S subject = getSubject(value);
+        var lock = getLock(subject);
 
         boolean noAlarm = isOkNoAlarm(value);
+        if (noAlarm && !activeAlarms.containsKey(subject)) {
+            // fast return path for parameters in limits and not in an alarm state from a previous value
+            // no locking necessary
+            return;
+        }
 
-        if (noAlarm) {
-            if (activeAlarm == null) {
-                return;
-            }
-            if (activeAlarm.isNormal()) {
-                log.debug("Clearing glitch for {}", getName(alarmId));
-                activeAlarms.remove(alarmId);
-                return;
-            }
-            boolean updated = activeAlarm.processRTN(timeService.getMissionTime());
-
-            activeAlarm.setCurrentValue(value);
-            activeAlarm.incrementValueCount();
-            for (AlarmListener<T> l : alarmListeners) {
-                l.notifyValueUpdate(activeAlarm);
-            }
-
-            if (updated) {
-                for (AlarmListener<T> l : alarmListeners) {
-                    l.notifyUpdate(AlarmNotificationType.RTN, activeAlarm);
+        synchronized (lock) {
+            ActiveAlarm<T> activeAlarm = activeAlarms.get(subject);
+            if (noAlarm) {
+                if (activeAlarm == null) {
+                    // this check was already performed above but another thread may have removed the
+                    // alarm before the lock acquisition
+                    return;
                 }
-                if (activeAlarm.isNormal()) {
-                    activeAlarms.remove(alarmId);
+                if (activeAlarm.isPending()) {
+                    log.debug("Clearing glitch for {}", getName(subject));
+                    activeAlarms.remove(subject);
+                    notifyUpdate(AlarmNotificationType.CLEARED, activeAlarm);
+                    return;
+                }
+                boolean updated = activeAlarm.processRTN(timeService.getMissionTime());
+
+                activeAlarm.setCurrentValue(value);
+                activeAlarm.incrementValueCount();
+                notifyValueUpdate(activeAlarm);
+
+                if (updated) {
+                    notifyUpdate(AlarmNotificationType.RTN, activeAlarm);
+
                     if (activeAlarm.isNormal()) {
-                        for (AlarmListener<T> l : alarmListeners) {
-                            l.notifyUpdate(AlarmNotificationType.CLEARED, activeAlarm);
-                        }
+                        activeAlarms.remove(subject);
+                        notifyUpdate(AlarmNotificationType.CLEARED, activeAlarm);
                     }
                 }
-            }
-        } else { // alarm
-            boolean newAlarm;
-            if (activeAlarm == null) {
-                activeAlarm = new ActiveAlarm<>(value, autoAck, latching);
-                activeAlarms.put(alarmId, activeAlarm);
-                newAlarm = true;
-            } else {
-                activeAlarm.setCurrentValue(value);
-                activeAlarm.incrementViolations();
-                activeAlarm.incrementValueCount();
-                newAlarm = false;
-            }
-            if (activeAlarm.getViolations() < minViolations) {
-                return;
-            }
-            activeAlarm.trigger();
+            } else { // alarm
+                if (activeAlarm == null) {
+                    activeAlarm = new ActiveAlarm<>(value, autoAck, latching);
+                    activeAlarms.put(subject, activeAlarm);
 
-            if (newAlarm) {
-                activeAlarms.put(alarmId, activeAlarm);
-                for (AlarmListener<T> l : alarmListeners) {
-                    l.notifyUpdate(AlarmNotificationType.TRIGGERED, activeAlarm);
-                }
-            } else {
-                if (moreSevere(value, activeAlarm.getMostSevereValue())) {
-                    activeAlarm.setMostSevereValue(value);
-                    for (AlarmListener<T> l : alarmListeners) {
-                        l.notifySeverityIncrease(activeAlarm);
+                    if (activeAlarm.getViolations() >= minViolations) {
+                        activeAlarm.trigger();
+                        notifyUpdate(AlarmNotificationType.TRIGGERED, activeAlarm);
+                    } else {
+                        notifyUpdate(AlarmNotificationType.TRIGGERED_PENDING, activeAlarm);
                     }
                 } else {
-                    for (AlarmListener<T> l : alarmListeners) {
-                        l.notifyValueUpdate(activeAlarm);
+                    activeAlarm.setCurrentValue(value);
+                    activeAlarm.incrementViolations();
+                    activeAlarm.incrementValueCount();
+                    boolean notifySimpleUpdate = true;
+                    if (activeAlarm.isPending() && activeAlarm.getViolations() >= minViolations) {
+                        activeAlarm.trigger();
+                        notifyUpdate(AlarmNotificationType.TRIGGERED, activeAlarm);
+                        notifySimpleUpdate = false;
+                    }
+                    if (moreSevere(value, activeAlarm.getMostSevereValue())) {
+                        activeAlarm.setMostSevereValue(value);
+                        notifySeverityIncrease(activeAlarm);
+                        notifySimpleUpdate = false;
+                    }
+                    if (notifySimpleUpdate) {
+                        notifyValueUpdate(activeAlarm);
                     }
                 }
             }
@@ -327,6 +350,12 @@ public abstract class AlarmServer<S, T> extends AbstractAlarmServer<S, T> {
 
     protected static boolean moreSevere(EventSeverity es1, EventSeverity es2) {
         return es1.getNumber() > es2.getNumber();
+    }
+
+    @Override
+    public void doStart() {
+        timer.execute(this::checkShelved);
+        notifyStarted();
     }
 
     @Override

@@ -30,6 +30,10 @@ public abstract class AbstractAlarmServer<S, T> extends AbstractService {
 
     Map<Stream, StreamSubscriber> susbscribers = new HashMap<>();
 
+    // NUM_LOCKS has to be power of 2
+    static final int NUM_LOCKS = 32;
+    Object[] locks;
+
     protected Map<S, ActiveAlarm<T>> activeAlarms = new ConcurrentHashMap<>();
     protected CopyOnWriteArrayList<AlarmListener<T>> alarmListeners = new CopyOnWriteArrayList<>();
 
@@ -38,14 +42,21 @@ public abstract class AbstractAlarmServer<S, T> extends AbstractService {
         this.timeService = YamcsServer.getTimeService(yamcsInstance);
 
         log = new Log(getClass(), yamcsInstance);
+
+        locks = new Object[NUM_LOCKS];
+        for (int i = 0; i < NUM_LOCKS; i++) {
+            locks[i] = new Object();
+        }
     }
+
     /**
      * Returns the current set of active alarms
+     * <p>
+     * 
      */
     public Map<S, ActiveAlarm<T>> getActiveAlarms() {
         return activeAlarms;
     }
-
 
     /**
      * Register for alarm notices
@@ -61,17 +72,22 @@ public abstract class AbstractAlarmServer<S, T> extends AbstractService {
         alarmListeners.remove(listener);
     }
 
-
     void notifyUpdate(AlarmNotificationType notificationType, ActiveAlarm<T> alarm) {
-        alarmListeners.forEach(l -> l.notifyUpdate(notificationType, alarm));
+        if (alarm.getTriggerValue() != null) {
+            alarmListeners.forEach(l -> l.notifyUpdate(notificationType, alarm));
+        } // else the alarm has never been triggered probably due to the minViolatios not being met
     }
 
     void notifySeverityIncrease(ActiveAlarm<T> alarm) {
-        alarmListeners.forEach(l -> l.notifySeverityIncrease(alarm));
+        if (alarm.getTriggerValue() != null) {
+            alarmListeners.forEach(l -> l.notifySeverityIncrease(alarm));
+        } // else the alarm has never been triggered probably due to the minViolatios not being met
     }
 
     void notifyValueUpdate(ActiveAlarm<T> alarm) {
-        alarmListeners.forEach(l -> l.notifyValueUpdate(alarm));
+        if (alarm.getTriggerValue() != null) {
+            alarmListeners.forEach(l -> l.notifyValueUpdate(alarm));
+        } // else the alarm has never been triggered probably due to the minViolatios not being met
     }
 
     protected void loadAlarmsFromDb(double numDays, Map<S, ActiveAlarm<T>> alarms) {
@@ -112,6 +128,10 @@ public abstract class AbstractAlarmServer<S, T> extends AbstractService {
                 result.close();
             }
         }
+    }
+
+    protected Object getLock(S alarmId) {
+        return locks[alarmId.hashCode() & (NUM_LOCKS - 1)];
     }
 
     protected abstract void addActiveAlarmFromTuple(Mdb mdb, Tuple t, Map<S, ActiveAlarm<T>> alarms);

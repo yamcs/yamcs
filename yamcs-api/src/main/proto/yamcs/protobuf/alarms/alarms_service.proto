@@ -130,6 +130,8 @@ message ListAlarmsResponse {
 message ListProcessorAlarmsRequest {
   optional string instance = 1;
   optional string processor = 2;
+  // pending alarms are those for which the minimum number of violations has not been reached
+  optional bool includePending = 3;
 }
 
 message ListProcessorAlarmsResponse {
@@ -139,6 +141,8 @@ message ListProcessorAlarmsResponse {
 message SubscribeAlarmsRequest {
   optional string instance = 1;
   optional string processor = 2;
+  // pending alarms are those for which the minimum number of violations has not been reached
+  optional bool includePending = 3;
 }
 
 message EditAlarmRequest {

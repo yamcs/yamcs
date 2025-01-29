@@ -68,6 +68,11 @@ public class ActiveAlarm<T> {
     boolean shelved;
     private long shelveDuration;
 
+    /**
+     * Pending is when the minViolations has not been reached
+     */
+    boolean pending = true;
+
     ActiveAlarm(T pv, boolean autoAck, boolean latching, int id) {
         this.autoAcknowledge = autoAck;
         this.latching = latching;
@@ -76,7 +81,7 @@ public class ActiveAlarm<T> {
         this.id = id;
     }
 
-    public ActiveAlarm(T pv, boolean autoAck, boolean latching) {
+    ActiveAlarm(T pv, boolean autoAck, boolean latching) {
         this(pv, autoAck, latching, counter.getAndIncrement());
     }
 
@@ -86,6 +91,10 @@ public class ActiveAlarm<T> {
 
     public boolean isAcknowledged() {
         return acknowledged;
+    }
+
+    public boolean isPending() {
+        return pending;
     }
 
     public int getId() {
@@ -100,7 +109,12 @@ public class ActiveAlarm<T> {
         return triggered;
     }
 
-    public synchronized void clear(String username, long time, String message) {
+    /**
+     * Clear the alarm
+     * <p>
+     * Note: only the Alarm Server is allowed to call this after acquiring the lock
+     */
+    void clear(String username, long time, String message) {
         this.processOK = true;
         this.triggered = false;
         this.acknowledged = true;
@@ -109,9 +123,12 @@ public class ActiveAlarm<T> {
 
     /**
      * Trigger the alarm if not already triggered
+     * <p>
+     * Note: only the Alarm Server is allowed to call this after acquiring the lock
      */
-    public synchronized void trigger() {
+    synchronized void trigger() {
         if (!triggered) {
+            pending = false;
             processOK = false;
             triggered = true;
             acknowledged = false;
@@ -121,11 +138,10 @@ public class ActiveAlarm<T> {
     /**
      * Acknowledge the alarm. This method does nothing if the alarm is already acknowledged.
      * 
-     * @param username
-     * @param ackTime
-     * @param message
+     * <p>
+     * Note: only the Alarm Server is allowed to call this after acquiring the lock
      */
-    public synchronized void acknowledge(String username, long ackTime, String message) {
+    void acknowledge(String username, long ackTime, String message) {
         if (acknowledged) {
             return;
         }
@@ -142,9 +158,10 @@ public class ActiveAlarm<T> {
     /**
      * Called when the process returns to normal (i.e. parameter is back in limits)
      * 
-     * @return true if the alarm has been updated
+     * <p>
+     * Note: only the Alarm Server is allowed to call this after acquiring the lock
      */
-    public synchronized boolean processRTN(long time) {
+    boolean processRTN(long time) {
         if (processOK) {
             return false;
         }
@@ -166,17 +183,29 @@ public class ActiveAlarm<T> {
 
     /**
      * Called when the operator resets a latching alarm
+     * <p>
+     * Note: only the Alarm Server is allowed to call this after acquiring the lock
      */
-    public synchronized void reset(String username, long time, String message) {
+    void reset(String username, long time, String message) {
         triggered = processOK;
         this.resetEvent = new ChangeEvent(username, time, message);
     }
 
-    public synchronized void shelve(String username, String message, long shelveDuration) {
+    /**
+     * Shelve the alarm. Uses the wallckock time
+     * <p>
+     * Note: only the Alarm Server is allowed to call this after acquiring the lock
+     */
+    void shelve(String username, String message, long shelveDuration) {
         shelve(TimeEncoding.getWallclockTime(), username, message, shelveDuration);
     }
 
-    public synchronized void shelve(long shelveTime, String username, String message, long shelveDuration) {
+    /**
+     * Shelve the alarm
+     * <p>
+     * Note: only the Alarm Server is allowed to call this after acquiring the lock
+     */
+    void shelve(long shelveTime, String username, String message, long shelveDuration) {
         this.shelved = true;
         this.shelveEvent = new ChangeEvent(username, TimeEncoding.getWallclockTime(), message);
         this.shelveTime = shelveTime;
@@ -207,6 +236,12 @@ public class ActiveAlarm<T> {
         return shelveDuration;
     }
 
+    /**
+     * 
+     * Returns true if the alarm is back to normal: processOK=true, acknowledged=true and triggered=false
+     * <p>
+     * Note that when latching is enabled, triggered can be true even if processOK=true
+     */
     public boolean isNormal() {
         return processOK && !triggered && acknowledged;
     }
@@ -291,6 +326,19 @@ public class ActiveAlarm<T> {
         this.violations = count;
     }
 
+    public T setMostSevereValue(T mostSevereValue) {
+        this.mostSevereValue = mostSevereValue;
+        return mostSevereValue;
+    }
+
+    void setAcknowledged(boolean ack) {
+        this.acknowledged = ack;
+    }
+
+    public void setPending(boolean pending) {
+        this.pending = pending;
+    }
+
     @Override
     public String toString() {
         return "ActiveAlarm [autoAcknowledge=" + autoAcknowledge + ", latching=" + latching + ", id=" + id
@@ -299,13 +347,9 @@ public class ActiveAlarm<T> {
                 + ", mostSevereValue=" + getMostSevereValue() + ", currentValue=" + currentValue
                 + ", violations=" + violations + ", valueCount=" + valueCount + ", usernameThatAcknowledged="
                 + ", shelved=" + shelved + ", shelveEvent=" + shelveEvent + ", shelveTime=" + shelveTime
-                + ", shelveDuration=" + shelveDuration + "]";
+                + ", shelveDuration=" + shelveDuration + ", pending: " + pending + "]";
     }
 
-    public T setMostSevereValue(T mostSevereValue) {
-        this.mostSevereValue = mostSevereValue;
-        return mostSevereValue;
-    }
 
     static class ChangeEvent {
         final String username;
@@ -322,9 +366,4 @@ public class ActiveAlarm<T> {
             return "[username: " + username + " time: " + TimeEncoding.toString(time) + " message: " + message + "]";
         }
     }
-
-    void setAcknowledged(boolean ack) {
-        this.acknowledged = ack;
-    }
-
 }
