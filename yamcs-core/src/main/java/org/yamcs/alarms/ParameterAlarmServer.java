@@ -62,12 +62,13 @@ public class ParameterAlarmServer extends AlarmServer<Parameter, ParameterValue>
                     tuple.getLongColumn(CNAME_SHELVE_DURATION));
         }
         if (tuple.hasColumn(CNAME_LAST_VALUE)) {
-            activeAlarm.setCurrentValue((ParameterValue) tuple.getColumn(CNAME_LAST_VALUE));
+            ParameterValue pv = tuple.getColumn(CNAME_LAST_VALUE);
+            pv.setParameter(parameter);
+            activeAlarm.setCurrentValue(pv);
         }
 
-        o = tuple.getColumn(CNAME_SEVERITY_INCREASED);
-        if (o != null && !(o instanceof ParameterValue)) {
-            ParameterValue pv = (ParameterValue) o;
+        if (tuple.hasColumn(CNAME_SEVERITY_INCREASED)) {
+            ParameterValue pv = tuple.getColumn(CNAME_SEVERITY_INCREASED);
             pv.setParameter(parameter);
             activeAlarm.setMostSevereValue(pv);
         }

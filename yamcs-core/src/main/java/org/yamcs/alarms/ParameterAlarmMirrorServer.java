@@ -1,5 +1,9 @@
 package org.yamcs.alarms;
 
+import static org.yamcs.alarms.AlarmStreamer.CNAME_LAST_VALUE;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_VALUE_COUNT;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_VIOLATION_COUNT;
+
 import java.util.Map;
 
 import org.yamcs.StandardTupleDefinitions;
@@ -52,6 +56,23 @@ class ParameterAlarmMirrorServer extends AbstractAlarmMirrorServer<Parameter, Pa
             return;
         }
         alarms.put(parameter, ParameterAlarmServer.tupleToActiveAlarm(parameter, tuple));
+    }
+
+    @Override
+    protected void processValueUpdate(Parameter parameter, ActiveAlarm<ParameterValue> activeAlarm, Tuple tuple) {
+        ParameterValue pv = tuple.getColumn(ParameterAlarmStreamer.CNAME_LAST_VALUE);
+        pv.setParameter(parameter);
+
+        activeAlarm.setViolations(tuple.getIntColumn(CNAME_VIOLATION_COUNT));
+        activeAlarm.setValueCount(tuple.getIntColumn(CNAME_VALUE_COUNT));
+        activeAlarm.setCurrentValue(tuple.getColumn(CNAME_LAST_VALUE));
+    }
+
+    @Override
+    protected void processSeverityIncrease(Parameter parameter, ActiveAlarm<ParameterValue> activeAlarm, Tuple tuple) {
+        ParameterValue pv = tuple.getColumn(ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED);
+        pv.setParameter(parameter);
+        activeAlarm.setMostSevereValue(pv);
     }
 
     @Override
