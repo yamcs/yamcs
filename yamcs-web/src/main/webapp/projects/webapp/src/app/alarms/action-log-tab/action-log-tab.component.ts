@@ -1,9 +1,8 @@
 import { ChangeDetectionStrategy, Component, OnInit, input } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
-import { Title } from '@angular/platform-browser';
-import { ActivatedRoute, Router } from '@angular/router';
-import { AuditRecord, GetAuditRecordsOptions, MessageService, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { ActivatedRoute } from '@angular/router';
+import { AuditRecord, BaseComponent, GetAuditRecordsOptions, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { AlarmsPageTabsComponent } from '../alarms-page-tabs/alarms-page-tabs.component';
@@ -20,7 +19,7 @@ import { AlarmsPageTabsComponent } from '../alarms-page-tabs/alarms-page-tabs.co
     WebappSdkModule,
   ],
 })
-export class ActionLogTabComponent implements OnInit {
+export class ActionLogTabComponent extends BaseComponent implements OnInit {
 
   interval = input<string>();
   customStart = input<string>();
@@ -58,13 +57,11 @@ export class ActionLogTabComponent implements OnInit {
   dataSource = new MatTableDataSource<AuditRecord>();
 
   constructor(
-    title: Title,
     readonly yamcs: YamcsService,
-    private messageService: MessageService,
-    private router: Router,
     private route: ActivatedRoute,
   ) {
-    title.setTitle('Alarms');
+    super();
+    this.setTitle('Alarm action log');
   }
 
   ngOnInit(): void {

@@ -1,6 +1,6 @@
 
 import { NgClass, NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { MatTooltip } from '@angular/material/tooltip';
 
 @Component({
@@ -20,6 +20,6 @@ export class AlarmLevelComponent {
   @Input()
   level: string;
 
-  @Input()
+  @Input({ transform: booleanAttribute })
   grayscale = false;
 }

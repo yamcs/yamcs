@@ -1,6 +1,5 @@
-import { Component, Input, OnDestroy } from '@angular/core';
-import { Alarm, Synchronizer, WebappSdkModule } from '@yamcs/webapp-sdk';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { Component, Input } from '@angular/core';
+import { Alarm, WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
   standalone: true,
@@ -10,21 +9,8 @@ import { BehaviorSubject, Subscription } from 'rxjs';
     WebappSdkModule,
   ],
 })
-export class AlarmStateIconComponent implements OnDestroy {
+export class AlarmStateIconComponent {
 
   @Input()
   alarm: Alarm;
-
-  private syncSubscription: Subscription;
-  visibility$ = new BehaviorSubject<boolean>(true);
-
-  constructor(synchronizer: Synchronizer) {
-    this.syncSubscription = synchronizer.syncFast(() => {
-      this.visibility$.next(!this.visibility$.value);
-    });
-  }
-
-  ngOnDestroy() {
-    this.syncSubscription?.unsubscribe();
-  }
 }

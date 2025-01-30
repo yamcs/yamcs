@@ -23,6 +23,7 @@ export interface SubscribeGlobalAlarmStatusRequest {
 export interface SubscribeAlarmsRequest {
   instance: string;
   processor: string;
+  includePending: boolean;
 }
 
 export interface ListAlarmsResponse {
@@ -30,6 +31,7 @@ export interface ListAlarmsResponse {
 }
 
 export type AlarmNotificationType = 'ACTIVE'
+  | 'TRIGGERED_PENDING'
   | 'TRIGGERED'
   | 'SEVERITY_INCREASED'
   | 'VALUE_UPDATED'
@@ -67,6 +69,7 @@ export interface Alarm {
   processOK: boolean;
   triggered: boolean;
   acknowledged: boolean;
+  pending?: boolean;
 
   parameterDetail?: ParameterAlarmData;
   eventDetail?: EventAlarmData;

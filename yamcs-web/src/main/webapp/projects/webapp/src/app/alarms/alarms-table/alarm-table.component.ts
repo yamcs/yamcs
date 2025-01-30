@@ -1,5 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Alarm, BaseComponent, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { AgoComponent } from '../../shared/ago/ago.component';
 import { AlarmLevelComponent } from '../../shared/alarm-level/alarm-level.component';
@@ -18,7 +18,7 @@ import { AlarmsDataSource } from '../alarms.datasource';
     WebappSdkModule,
   ],
 })
-export class AlarmsTableComponent extends BaseComponent {
+export class AlarmsTableComponent extends BaseComponent implements OnInit {
 
   displayedColumns = [
     'state',
@@ -38,7 +38,7 @@ export class AlarmsTableComponent extends BaseComponent {
   selection: SelectionModel<Alarm>;
 
   @Input()
-  view: 'standard' | 'unacknowledged' | 'acknowledged' | 'shelved' | 'all' = 'standard';
+  view: 'standard' | 'unacknowledged' | 'acknowledged' | 'shelved' | 'all' | 'pending' = 'standard';
 
   @Input()
   mayControl = false;
@@ -61,6 +61,12 @@ export class AlarmsTableComponent extends BaseComponent {
     super();
   }
 
+  ngOnInit(): void {
+    if (this.view === 'pending') {
+      this.displayedColumns.splice(this.displayedColumns.length - 1, 0, 'violations');
+    }
+  }
+
   toggleOne(row: Alarm) {
     if (!this.selection.isSelected(row) || this.selection.selected.length > 1) {
       this.selection.clear();
@@ -70,16 +76,18 @@ export class AlarmsTableComponent extends BaseComponent {
   }
 
   hideAlarm(alarm: Alarm) {
-    if (this.view === 'standard') {
-      return !!alarm.shelveInfo;
+    if (this.view === 'pending') {
+      return !alarm.pending;
+    } else if (this.view === 'standard') {
+      return alarm.pending || !!alarm.shelveInfo;
     } else if (this.view === 'all') {
-      return false;
+      return alarm.pending;
     } else if (this.view === 'unacknowledged') {
-      return !!alarm.shelveInfo || alarm.acknowledged;
+      return alarm.pending || !!alarm.shelveInfo || alarm.acknowledged;
     } else if (this.view === 'acknowledged') {
-      return !!alarm.shelveInfo || !alarm.acknowledged;
+      return alarm.pending || !!alarm.shelveInfo || !alarm.acknowledged;
     } else if (this.view === 'shelved') {
-      return !alarm.shelveInfo;
+      return alarm.pending || !alarm.shelveInfo;
     }
   }
 }

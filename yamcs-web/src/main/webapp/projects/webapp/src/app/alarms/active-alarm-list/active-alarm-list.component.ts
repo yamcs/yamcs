@@ -1,9 +1,8 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { Title } from '@angular/platform-browser';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Alarm, MessageService, TrackBySelectionModel, WebappSdkModule, YaSelectOption, YamcsService } from '@yamcs/webapp-sdk';
+import { ActivatedRoute } from '@angular/router';
+import { Alarm, BaseComponent, TrackBySelectionModel, WebappSdkModule, YaSelectOption, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { AuthService } from '../../core/services/AuthService';
@@ -18,8 +17,8 @@ import { ShelveAlarmDialogComponent } from '../shelve-alarm-dialog/shelve-alarm-
 
 @Component({
   standalone: true,
-  templateUrl: './alarm-list.component.html',
-  styleUrl: './alarm-list.component.css',
+  templateUrl: './active-alarm-list.component.html',
+  styleUrl: './active-alarm-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AlarmDetailComponent,
@@ -30,7 +29,7 @@ import { ShelveAlarmDialogComponent } from '../shelve-alarm-dialog/shelve-alarm-
     WebappSdkModule,
   ]
 })
-export class AlarmListComponent implements OnDestroy {
+export class ActiveAlarmListComponent extends BaseComponent implements OnDestroy {
 
   filterForm = new UntypedFormGroup({
     filter: new UntypedFormControl(),
@@ -64,13 +63,11 @@ export class AlarmListComponent implements OnDestroy {
   constructor(
     readonly yamcs: YamcsService,
     private route: ActivatedRoute,
-    private router: Router,
-    title: Title,
     private dialog: MatDialog,
     private authService: AuthService,
-    private messageService: MessageService,
   ) {
-    title.setTitle('Alarms');
+    super();
+    this.setTitle('Alarms');
     this.selectionSubscription = this.selection.changed.subscribe(() => {
       const selected = this.selection.selected;
       if (selected.length === 1) {
@@ -80,7 +77,7 @@ export class AlarmListComponent implements OnDestroy {
       }
     });
 
-    this.dataSource = new AlarmsDataSource(this.yamcs);
+    this.dataSource = new AlarmsDataSource(this.yamcs, false);
     this.dataSource.loadAlarms();
 
     this.alarmsSubscription = this.dataSource.alarms$.subscribe(alarms => {
