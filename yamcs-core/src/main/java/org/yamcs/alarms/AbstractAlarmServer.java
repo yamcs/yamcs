@@ -28,7 +28,6 @@ public abstract class AbstractAlarmServer<S, T> extends AbstractService {
     final protected String yamcsInstance;
     final protected TimeService timeService;
 
-
     Map<Stream, StreamSubscriber> susbscribers = new HashMap<>();
 
     // NUM_LOCKS has to be power of 2
@@ -49,13 +48,13 @@ public abstract class AbstractAlarmServer<S, T> extends AbstractService {
             locks[i] = new Object();
         }
     }
+
     /**
      * Returns the current set of active alarms
      */
     public Map<S, ActiveAlarm<T>> getActiveAlarms() {
         return activeAlarms;
     }
-
 
     /**
      * Register for alarm notices
@@ -71,17 +70,22 @@ public abstract class AbstractAlarmServer<S, T> extends AbstractService {
         alarmListeners.remove(listener);
     }
 
-
     void notifyUpdate(AlarmNotificationType notificationType, ActiveAlarm<T> alarm) {
-        alarmListeners.forEach(l -> l.notifyUpdate(notificationType, alarm));
+        if (alarm.getTriggerValue() != null) {
+            alarmListeners.forEach(l -> l.notifyUpdate(notificationType, alarm));
+        } // else the alarm has never been triggered probably due to the minViolatios not being met
     }
 
     void notifySeverityIncrease(ActiveAlarm<T> alarm) {
-        alarmListeners.forEach(l -> l.notifySeverityIncrease(alarm));
+        if (alarm.getTriggerValue() != null) {
+            alarmListeners.forEach(l -> l.notifySeverityIncrease(alarm));
+        } // else the alarm has never been triggered probably due to the minViolatios not being met
     }
 
     void notifyValueUpdate(ActiveAlarm<T> alarm) {
-        alarmListeners.forEach(l -> l.notifyValueUpdate(alarm));
+        if (alarm.getTriggerValue() != null) {
+            alarmListeners.forEach(l -> l.notifyValueUpdate(alarm));
+        } // else the alarm has never been triggered probably due to the minViolatios not being met
     }
 
     protected void loadAlarmsFromDb(double numDays, Map<S, ActiveAlarm<T>> alarms) {

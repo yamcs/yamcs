@@ -103,7 +103,7 @@ public abstract class AlarmServer<S, T> extends AbstractAlarmServer<S, T> {
 
             if (alarm.isNormal()) {
                 activeAlarms.remove(subject);
-                alarmListeners.forEach(l -> l.notifyUpdate(AlarmNotificationType.CLEARED, alarm));
+                notifyUpdate(AlarmNotificationType.CLEARED, alarm);
             }
 
             return alarm;
@@ -154,8 +154,9 @@ public abstract class AlarmServer<S, T> extends AbstractAlarmServer<S, T> {
             }
 
             alarm.clear(username, clearTime, message);
-
-            alarmListeners.forEach(l -> l.notifyUpdate(AlarmNotificationType.CLEARED, alarm));
+            if (alarm.getTriggerValue() != null) {
+                notifyUpdate(AlarmNotificationType.CLEARED, alarm);
+            } // else the alarm has never been really triggered because minViolations was not met
 
             return alarm;
         }
@@ -194,15 +195,15 @@ public abstract class AlarmServer<S, T> extends AbstractAlarmServer<S, T> {
     private void checkShelved() {
         long t = TimeEncoding.getWallclockTime();
 
-        for (ActiveAlarm<T> aa : activeAlarms.values()) {
-            if (aa.isShelved()) {
-                long exp = aa.getShelveExpiration();
+        for (ActiveAlarm<T> alarm : activeAlarms.values()) {
+            if (alarm.isShelved()) {
+                long exp = alarm.getShelveExpiration();
                 if (exp == -1) {
                     continue;
                 }
                 if (exp <= t) {
-                    aa.unshelve();
-                    alarmListeners.forEach(l -> l.notifyUpdate(AlarmNotificationType.UNSHELVED, aa));
+                    alarm.unshelve();
+                    notifyUpdate(AlarmNotificationType.UNSHELVED, alarm);
                 }
             }
         }
@@ -259,14 +260,11 @@ public abstract class AlarmServer<S, T> extends AbstractAlarmServer<S, T> {
 
                 activeAlarm.setCurrentValue(value);
                 activeAlarm.incrementValueCount();
-                for (AlarmListener<T> l : alarmListeners) {
-                    l.notifyValueUpdate(activeAlarm);
-                }
+                notifyValueUpdate(activeAlarm);
 
                 if (updated) {
-                    for (AlarmListener<T> l : alarmListeners) {
-                        l.notifyUpdate(AlarmNotificationType.RTN, activeAlarm);
-                    }
+                    notifyUpdate(AlarmNotificationType.RTN, activeAlarm);
+
                     if (activeAlarm.isNormal()) {
                         activeAlarms.remove(subject);
                         if (activeAlarm.isNormal()) {
@@ -295,24 +293,20 @@ public abstract class AlarmServer<S, T> extends AbstractAlarmServer<S, T> {
 
                 if (newAlarm) {
                     activeAlarms.put(subject, activeAlarm);
-                    for (AlarmListener<T> l : alarmListeners) {
-                        l.notifyUpdate(AlarmNotificationType.TRIGGERED, activeAlarm);
-                    }
+                    notifyUpdate(AlarmNotificationType.TRIGGERED, activeAlarm);
                 } else {
                     if (moreSevere(value, activeAlarm.getMostSevereValue())) {
                         activeAlarm.setMostSevereValue(value);
-                        for (AlarmListener<T> l : alarmListeners) {
-                            l.notifySeverityIncrease(activeAlarm);
-                        }
+                        notifySeverityIncrease(activeAlarm);
                     } else {
-                        for (AlarmListener<T> l : alarmListeners) {
-                            l.notifyValueUpdate(activeAlarm);
-                        }
+                        notifyValueUpdate(activeAlarm);
                     }
                 }
             }
         }
     }
+
+
 
     static private String getName(Object subject) {
         if (subject instanceof Parameter) {
