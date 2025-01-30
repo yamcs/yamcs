@@ -1,0 +1,15 @@
+<app-instance-page>
+  <app-instance-toolbar>Alarms</app-instance-toolbar>
+
+  <div class="table-wrapper">
+    <div class="panel-content">
+      <app-alarms-page-tabs />
+      <div style="margin-top: 16px"></div>
+      <app-alarms-table
+        [dataSource]="dataSource"
+        [selection]="selection"
+        view="pending"
+        [mayControl]="mayControlAlarms()" />
+    </div>
+  </div>
+</app-instance-page>

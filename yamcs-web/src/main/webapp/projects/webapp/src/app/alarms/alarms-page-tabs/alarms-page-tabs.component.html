@@ -11,10 +11,19 @@
   </a>
   <a
     mat-tab-link
-    routerLink="/alarms/history"
+    routerLink="/alarms/pending"
     routerLinkActive
     #rlb="routerLinkActive"
     [active]="rlb.isActive"
+    [queryParams]="{ c: yamcs.context }">
+    Pending
+  </a>
+  <a
+    mat-tab-link
+    routerLink="/alarms/history"
+    routerLinkActive
+    #rlc="routerLinkActive"
+    [active]="rlc.isActive"
     [queryParams]="{ c: yamcs.context }">
     History
   </a>
@@ -22,8 +31,8 @@
     mat-tab-link
     routerLink="/alarms/log"
     routerLinkActive
-    #rlc="routerLinkActive"
-    [active]="rlc.isActive"
+    #rld="routerLinkActive"
+    [active]="rld.isActive"
     [queryParams]="{ c: yamcs.context }">
     Action log
   </a>

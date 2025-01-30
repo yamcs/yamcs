@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Alarm, GetAlarmsOptions, MessageService, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { ActivatedRoute } from '@angular/router';
+import { Alarm, BaseComponent, GetAlarmsOptions, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { addHours } from 'date-fns';
 import { AlarmLevelComponent } from '../../shared/alarm-level/alarm-level.component';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
@@ -21,7 +21,7 @@ import { AlarmsPageTabsComponent } from '../alarms-page-tabs/alarms-page-tabs.co
     WebappSdkModule,
   ],
 })
-export class AlarmHistoryComponent {
+export class AlarmHistoryComponent extends BaseComponent {
 
   validStart: Date | null;
   validStop: Date | null;
@@ -61,10 +61,10 @@ export class AlarmHistoryComponent {
 
   constructor(
     readonly yamcs: YamcsService,
-    private router: Router,
     private route: ActivatedRoute,
-    private messageService: MessageService,
   ) {
+    super();
+    this.setTitle('Alarm history');
     this.initializeOptions();
     this.loadData();
 

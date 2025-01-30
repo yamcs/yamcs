@@ -1,24 +1,21 @@
 @if (alarm.shelveInfo) {
   <mat-icon matTooltip="Shelved">timer</mat-icon>
 } @else {
-  @if (!alarm.processOK && alarm.acknowledged) {
-    <mat-icon matTooltip="Active, acknowledged">check_circle</mat-icon>
-  }
-  @if (!alarm.processOK && !alarm.acknowledged) {
-    <mat-icon
-      [style.visibility]="(visibility$ | async) ? 'visible' : 'hidden'"
-      matTooltip="Active, unacknowledged">
-      notifications
-    </mat-icon>
-  }
-  @if (alarm.processOK && alarm.acknowledged) {
-    <mat-icon matTooltip="RTN, acknowledged">check_circle_outline</mat-icon>
-  }
-  @if (alarm.processOK && !alarm.acknowledged) {
-    <mat-icon
-      [style.visibility]="(visibility$ | async) ? 'visible' : 'hidden'"
-      matTooltip="RTN, unacknowledged">
-      notifications_none
-    </mat-icon>
+  @if (alarm.pending) {
+    <mat-icon matTooltip="Pending">pending</mat-icon>
+  } @else if (alarm.processOK) {
+    @if (alarm.acknowledged) {
+      <mat-icon matTooltip="RTN, acknowledged">check_circle_outline</mat-icon>
+    } @else {
+      <mat-icon matTooltip="RTN, unacknowledged" class="unacked">notifications_none</mat-icon>
+    }
+  } @else {
+    @if (alarm.acknowledged) {
+      <mat-icon matTooltip="Active, acknowledged">check_circle</mat-icon>
+    } @else {
+      <mat-icon matTooltip="Active, unacknowledged" class="unacked">
+        notification_important
+      </mat-icon>
+    }
   }
 }

@@ -20,7 +20,7 @@ export class AlarmsDataSource extends DataSource<Alarm> {
 
   private filter: string | null = null;
 
-  constructor(private yamcs: YamcsService) {
+  constructor(private yamcs: YamcsService, private pendingOnly: boolean) {
     super();
     this.unacknowledgedAlarms$ = this.alarms$.pipe(
       map(alarms => {
@@ -61,6 +61,7 @@ export class AlarmsDataSource extends DataSource<Alarm> {
     this.alarmSubscription = this.yamcs.yamcsClient.createAlarmSubscription({
       instance: this.yamcs.instance!,
       processor: this.yamcs.processor!,
+      includePending: true,
     }, alarm => {
       this.processAlarm(alarm);
       this.updateSubject();
@@ -124,10 +125,20 @@ export class AlarmsDataSource extends DataSource<Alarm> {
 
   private processAlarm(alarm: Alarm) {
     const alarmId = alarm.id.namespace + '/' + alarm.id.name;
-    if (alarm.processOK && !alarm.triggered && alarm.acknowledged) {
-      delete this.alarmsByName[alarmId];
+    if (this.pendingOnly) {
+      if (!alarm.pending) {
+        delete this.alarmsByName[alarmId];
+      } else {
+        this.alarmsByName[alarmId] = alarm;
+      }
     } else {
-      this.alarmsByName[alarmId] = alarm;
+      if (alarm.pending) {
+        delete this.alarmsByName[alarmId];
+      } else if (alarm.processOK && !alarm.triggered && alarm.acknowledged) {
+        delete this.alarmsByName[alarmId];
+      } else {
+        this.alarmsByName[alarmId] = alarm;
+      }
     }
   }
 }
