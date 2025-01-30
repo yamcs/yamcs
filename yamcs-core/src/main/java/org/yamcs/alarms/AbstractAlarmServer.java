@@ -33,7 +33,7 @@ public abstract class AbstractAlarmServer<S, T> extends AbstractService {
 
     // NUM_LOCKS has to be power of 2
     static final int NUM_LOCKS = 32;
-    Object[] locks = new Object[NUM_LOCKS];
+    Object[] locks;
 
     protected Map<S, ActiveAlarm<T>> activeAlarms = new ConcurrentHashMap<>();
     protected CopyOnWriteArrayList<AlarmListener<T>> alarmListeners = new CopyOnWriteArrayList<>();
@@ -43,6 +43,11 @@ public abstract class AbstractAlarmServer<S, T> extends AbstractService {
         this.timeService = YamcsServer.getTimeService(yamcsInstance);
 
         log = new Log(getClass(), yamcsInstance);
+
+        locks = new Object[NUM_LOCKS];
+        for (int i = 0; i < NUM_LOCKS; i++) {
+            locks[i] = new Object();
+        }
     }
     /**
      * Returns the current set of active alarms
