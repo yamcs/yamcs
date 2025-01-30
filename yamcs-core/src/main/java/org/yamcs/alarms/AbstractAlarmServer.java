@@ -28,7 +28,12 @@ public abstract class AbstractAlarmServer<S, T> extends AbstractService {
     final protected String yamcsInstance;
     final protected TimeService timeService;
 
+
     Map<Stream, StreamSubscriber> susbscribers = new HashMap<>();
+
+    // NUM_LOCKS has to be power of 2
+    static final int NUM_LOCKS = 32;
+    Object[] locks = new Object[NUM_LOCKS];
 
     protected Map<S, ActiveAlarm<T>> activeAlarms = new ConcurrentHashMap<>();
     protected CopyOnWriteArrayList<AlarmListener<T>> alarmListeners = new CopyOnWriteArrayList<>();
@@ -112,6 +117,10 @@ public abstract class AbstractAlarmServer<S, T> extends AbstractService {
                 result.close();
             }
         }
+    }
+
+    protected Object getLock(S alarmId) {
+        return locks[alarmId.hashCode() & (NUM_LOCKS - 1)];
     }
 
     protected abstract void addActiveAlarmFromTuple(Mdb mdb, Tuple t, Map<S, ActiveAlarm<T>> alarms);

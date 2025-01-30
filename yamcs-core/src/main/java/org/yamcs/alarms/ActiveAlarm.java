@@ -76,7 +76,7 @@ public class ActiveAlarm<T> {
         this.id = id;
     }
 
-    public ActiveAlarm(T pv, boolean autoAck, boolean latching) {
+    ActiveAlarm(T pv, boolean autoAck, boolean latching) {
         this(pv, autoAck, latching, counter.getAndIncrement());
     }
 
@@ -100,7 +100,12 @@ public class ActiveAlarm<T> {
         return triggered;
     }
 
-    public synchronized void clear(String username, long time, String message) {
+    /**
+     * Clear the alarm
+     * <p>
+     * Note: only the Alarm Server is allowed to call this after acquiring the lock
+     */
+    void clear(String username, long time, String message) {
         this.processOK = true;
         this.triggered = false;
         this.acknowledged = true;
@@ -109,8 +114,10 @@ public class ActiveAlarm<T> {
 
     /**
      * Trigger the alarm if not already triggered
+     * <p>
+     * Note: only the Alarm Server is allowed to call this after acquiring the lock
      */
-    public synchronized void trigger() {
+    synchronized void trigger() {
         if (!triggered) {
             processOK = false;
             triggered = true;
@@ -121,11 +128,10 @@ public class ActiveAlarm<T> {
     /**
      * Acknowledge the alarm. This method does nothing if the alarm is already acknowledged.
      * 
-     * @param username
-     * @param ackTime
-     * @param message
+     * <p>
+     * Note: only the Alarm Server is allowed to call this after acquiring the lock
      */
-    public synchronized void acknowledge(String username, long ackTime, String message) {
+    void acknowledge(String username, long ackTime, String message) {
         if (acknowledged) {
             return;
         }
@@ -142,9 +148,10 @@ public class ActiveAlarm<T> {
     /**
      * Called when the process returns to normal (i.e. parameter is back in limits)
      * 
-     * @return true if the alarm has been updated
+     * <p>
+     * Note: only the Alarm Server is allowed to call this after acquiring the lock
      */
-    public synchronized boolean processRTN(long time) {
+    boolean processRTN(long time) {
         if (processOK) {
             return false;
         }
@@ -166,17 +173,29 @@ public class ActiveAlarm<T> {
 
     /**
      * Called when the operator resets a latching alarm
+     * <p>
+     * Note: only the Alarm Server is allowed to call this after acquiring the lock
      */
-    public synchronized void reset(String username, long time, String message) {
+    void reset(String username, long time, String message) {
         triggered = processOK;
         this.resetEvent = new ChangeEvent(username, time, message);
     }
 
-    public synchronized void shelve(String username, String message, long shelveDuration) {
+    /**
+     * Shelve the alarm. Uses the wallckock time
+     * <p>
+     * Note: only the Alarm Server is allowed to call this after acquiring the lock
+     */
+    void shelve(String username, String message, long shelveDuration) {
         shelve(TimeEncoding.getWallclockTime(), username, message, shelveDuration);
     }
 
-    public synchronized void shelve(long shelveTime, String username, String message, long shelveDuration) {
+    /**
+     * Shelve the alarm
+     * <p>
+     * Note: only the Alarm Server is allowed to call this after acquiring the lock
+     */
+    void shelve(long shelveTime, String username, String message, long shelveDuration) {
         this.shelved = true;
         this.shelveEvent = new ChangeEvent(username, TimeEncoding.getWallclockTime(), message);
         this.shelveTime = shelveTime;
@@ -207,6 +226,12 @@ public class ActiveAlarm<T> {
         return shelveDuration;
     }
 
+    /**
+     * 
+     * Returns true if the alarm is back to normal: processOK=true, acknowledged=true and triggered=false
+     * <p>
+     * Note that when latching is enabled, triggered can be true even if processOK=true
+     */
     public boolean isNormal() {
         return processOK && !triggered && acknowledged;
     }
