@@ -99,7 +99,7 @@ public abstract class AlarmServer<S, T> extends AbstractAlarmServer<S, T> {
             }
 
             alarm.acknowledge(username, ackTime, message);
-            alarmListeners.forEach(l -> l.notifyUpdate(AlarmNotificationType.ACKNOWLEDGED, alarm));
+            notifyUpdate(AlarmNotificationType.ACKNOWLEDGED, alarm);
 
             if (alarm.isNormal()) {
                 activeAlarms.remove(subject);
@@ -154,9 +154,7 @@ public abstract class AlarmServer<S, T> extends AbstractAlarmServer<S, T> {
             }
 
             alarm.clear(username, clearTime, message);
-            if (alarm.getTriggerValue() != null) {
-                notifyUpdate(AlarmNotificationType.CLEARED, alarm);
-            } // else the alarm has never been really triggered because minViolations was not met
+            notifyUpdate(AlarmNotificationType.CLEARED, alarm);
 
             return alarm;
         }
@@ -185,7 +183,7 @@ public abstract class AlarmServer<S, T> extends AbstractAlarmServer<S, T> {
             }
 
             alarm.shelve(username, message, shelveDuration);
-            alarmListeners.forEach(l -> l.notifyUpdate(AlarmNotificationType.SHELVED, alarm));
+            notifyUpdate(AlarmNotificationType.SHELVED, alarm);
             timer.schedule(this::checkShelved, shelveDuration, TimeUnit.MILLISECONDS);
 
             return alarm;
@@ -228,7 +226,7 @@ public abstract class AlarmServer<S, T> extends AbstractAlarmServer<S, T> {
             }
 
             alarm.unshelve();
-            alarmListeners.forEach(l -> l.notifyUpdate(AlarmNotificationType.UNSHELVED, alarm));
+            notifyUpdate(AlarmNotificationType.UNSHELVED, alarm);
             return alarm;
         }
     }
@@ -268,9 +266,7 @@ public abstract class AlarmServer<S, T> extends AbstractAlarmServer<S, T> {
                     if (activeAlarm.isNormal()) {
                         activeAlarms.remove(subject);
                         if (activeAlarm.isNormal()) {
-                            for (AlarmListener<T> l : alarmListeners) {
-                                l.notifyUpdate(AlarmNotificationType.CLEARED, activeAlarm);
-                            }
+                            notifyUpdate(AlarmNotificationType.CLEARED, activeAlarm);
                         }
                     }
                 }
