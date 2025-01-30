@@ -678,7 +678,12 @@ public class XtceToGpbAssembler {
         if (parameterType instanceof NameDescription) {
             var nameDescription = (NameDescription) parameterType;
 
-            infob.setQualifiedName(parameterType.getQualifiedName());
+            if (parameterType.getQualifiedName() != null) {
+                // Should not happen, but can be null when loading
+                // very old spreadsheet formats (where parameter types
+                // were not added to a subsystem)
+                infob.setQualifiedName(parameterType.getQualifiedName());
+            }
 
             if (detail == DetailLevel.SUMMARY || detail == DetailLevel.FULL) {
                 if (parameterType.getShortDescription() != null) {
