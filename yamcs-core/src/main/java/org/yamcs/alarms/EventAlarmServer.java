@@ -20,6 +20,7 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 import static org.yamcs.alarms.AlarmStreamer.CNAME_ACK_BY;
 import static org.yamcs.alarms.AlarmStreamer.CNAME_ACK_MSG;
 import static org.yamcs.alarms.AlarmStreamer.CNAME_ACK_TIME;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_PENDING;
 import static org.yamcs.alarms.AlarmStreamer.CNAME_SEQ_NUM;
 import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_BY;
 import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_MSG;
@@ -110,7 +111,11 @@ public class EventAlarmServer extends AlarmServer<EventId, Event> {
         int seqNum = tuple.getIntColumn(CNAME_SEQ_NUM);
 
         var activeAlarm = new ActiveAlarm<Event>(triggerValue, false, false, seqNum);
-        activeAlarm.trigger();
+        if (tuple.hasColumn(CNAME_PENDING) && tuple.getBooleanColumn(CNAME_PENDING)) {
+            activeAlarm.setPending(true);
+        } else {
+            activeAlarm.trigger();
+        }
 
         activeAlarm.setViolations(tuple.getIntColumn(CNAME_VIOLATION_COUNT));
         if (tuple.hasColumn(CNAME_ACK_TIME)) {
@@ -126,6 +131,10 @@ public class EventAlarmServer extends AlarmServer<EventId, Event> {
         o = tuple.getColumn(CNAME_SEVERITY_INCREASED);
         if (o != null && !(o instanceof Event)) {
             activeAlarm.setMostSevereValue((Event) o);
+        }
+
+        if (tuple.hasColumn(CNAME_PENDING)) {
+            activeAlarm.setPending(tuple.getColumn(CNAME_PENDING));
         }
 
         return activeAlarm;

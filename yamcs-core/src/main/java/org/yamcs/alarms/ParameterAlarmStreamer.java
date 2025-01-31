@@ -9,7 +9,6 @@ import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 
 public class ParameterAlarmStreamer extends AlarmStreamer<ParameterValue> {
-
     static public final String CNAME_LAST_EVENT = "alarmEvent";
     static public final String CNAME_UPDATE_PV = "updatePV";
     static public final String CNAME_TRIGGER = "triggerPV";
@@ -34,6 +33,10 @@ public class ParameterAlarmStreamer extends AlarmStreamer<ParameterValue> {
 
         // alarmEvent
         al.add(notificationType.toString());
+
+        // the AlarmRecorder checks for null
+        al.add(activeAlarm.isPending() ? Boolean.TRUE : null);
+
         return al;
     }
 
@@ -42,6 +45,9 @@ public class ParameterAlarmStreamer extends AlarmStreamer<ParameterValue> {
      */
     @Override
     public void notifyShutdown(ActiveAlarm<ParameterValue> alarm) {
+        if (alarm.isPending()) {
+            return;
+        }
         Tuple t = new Tuple();
         // primary key
         t.addTimestampColumn(AlarmStreamer.CNAME_TRIGGER_TIME, alarm.getTriggerValue().getGenerationTime());

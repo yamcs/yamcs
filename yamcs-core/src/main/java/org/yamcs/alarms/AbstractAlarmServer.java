@@ -51,6 +51,8 @@ public abstract class AbstractAlarmServer<S, T> extends AbstractService {
 
     /**
      * Returns the current set of active alarms
+     * <p>
+     * 
      */
     public Map<S, ActiveAlarm<T>> getActiveAlarms() {
         return activeAlarms;

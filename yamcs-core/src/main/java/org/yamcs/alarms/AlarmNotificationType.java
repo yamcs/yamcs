@@ -2,6 +2,7 @@ package org.yamcs.alarms;
  
 
 public enum AlarmNotificationType {
+    TRIGGERED_PENDING, // when the alarm was created but the not yet triggered because the minViolations has not been reached
     TRIGGERED, //when the alarm has been initially triggered
     ACKNOWLEDGED, //when the operator acknowledges the alarm
     RTN, //when the process (parameter) has returned to normal (in limits)

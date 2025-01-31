@@ -231,7 +231,6 @@ public abstract class AlarmServer<S, T> extends AbstractAlarmServer<S, T> {
         }
     }
 
-
     public void update(T pv, int minViolations) {
         update(pv, minViolations, false, false);
     }
@@ -240,18 +239,25 @@ public abstract class AlarmServer<S, T> extends AbstractAlarmServer<S, T> {
         S subject = getSubject(value);
         var lock = getLock(subject);
 
+        boolean noAlarm = isOkNoAlarm(value);
+        if (noAlarm && !activeAlarms.containsKey(subject)) {
+            // fast return path for parameters in limits and not in an alarm state from a previous value
+            // no locking necessary
+            return;
+        }
+
         synchronized (lock) {
             ActiveAlarm<T> activeAlarm = activeAlarms.get(subject);
-
-            boolean noAlarm = isOkNoAlarm(value);
-
             if (noAlarm) {
                 if (activeAlarm == null) {
+                    // this check was already performed above but another thread may have removed the
+                    // alarm before the lock acquisition
                     return;
                 }
-                if (activeAlarm.isNormal()) {
+                if (activeAlarm.isPending()) {
                     log.debug("Clearing glitch for {}", getName(subject));
                     activeAlarms.remove(subject);
+                    notifyUpdate(AlarmNotificationType.CLEARED, activeAlarm);
                     return;
                 }
                 boolean updated = activeAlarm.processRTN(timeService.getMissionTime());
@@ -265,44 +271,42 @@ public abstract class AlarmServer<S, T> extends AbstractAlarmServer<S, T> {
 
                     if (activeAlarm.isNormal()) {
                         activeAlarms.remove(subject);
-                        if (activeAlarm.isNormal()) {
-                            notifyUpdate(AlarmNotificationType.CLEARED, activeAlarm);
-                        }
+                        notifyUpdate(AlarmNotificationType.CLEARED, activeAlarm);
                     }
                 }
             } else { // alarm
-                boolean newAlarm;
                 if (activeAlarm == null) {
                     activeAlarm = new ActiveAlarm<>(value, autoAck, latching);
                     activeAlarms.put(subject, activeAlarm);
-                    newAlarm = true;
+
+                    if (activeAlarm.getViolations() >= minViolations) {
+                        activeAlarm.trigger();
+                        notifyUpdate(AlarmNotificationType.TRIGGERED, activeAlarm);
+                    } else {
+                        notifyUpdate(AlarmNotificationType.TRIGGERED_PENDING, activeAlarm);
+                    }
                 } else {
                     activeAlarm.setCurrentValue(value);
                     activeAlarm.incrementViolations();
                     activeAlarm.incrementValueCount();
-                    newAlarm = false;
-                }
-                if (activeAlarm.getViolations() < minViolations) {
-                    return;
-                }
-                activeAlarm.trigger();
-
-                if (newAlarm) {
-                    activeAlarms.put(subject, activeAlarm);
-                    notifyUpdate(AlarmNotificationType.TRIGGERED, activeAlarm);
-                } else {
+                    boolean notifySimpleUpdate = true;
+                    if (activeAlarm.isPending() && activeAlarm.getViolations() >= minViolations) {
+                        activeAlarm.trigger();
+                        notifyUpdate(AlarmNotificationType.TRIGGERED, activeAlarm);
+                        notifySimpleUpdate = false;
+                    }
                     if (moreSevere(value, activeAlarm.getMostSevereValue())) {
                         activeAlarm.setMostSevereValue(value);
                         notifySeverityIncrease(activeAlarm);
-                    } else {
+                        notifySimpleUpdate = false;
+                    }
+                    if (notifySimpleUpdate) {
                         notifyValueUpdate(activeAlarm);
                     }
                 }
             }
         }
     }
-
-
 
     static private String getName(Object subject) {
         if (subject instanceof Parameter) {

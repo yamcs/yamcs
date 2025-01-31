@@ -46,6 +46,8 @@ enum AlarmNotificationType {
   SHELVED = 8; //when the alarm has been shelved
   UNSHELVED = 9; //when the alarm has been unshelved (either by operator request or automatically at timer expiration)
   RESET = 10; //when a latching alarm has been reset  
+  
+  TRIGGERED_PENDING = 11; //when an alarm first becomes active but the minimum number of violations has not been met. When that number is met, a TRIGGERED event will be sent
 }
 
 enum AlarmType {
@@ -119,6 +121,11 @@ message AlarmData {
   // Whether this alarm may be updated by this processor.
   // Set to false when the alarms are mirrored from another Yamcs instance.
   optional bool readonly = 19;
+  
+  // An alarm is in pending state if the minViolations has not been reached
+  // The alarm is not actually triggered in this case
+  // This is only sent when true
+  optional bool pending = 20;
 }
 
 message ParameterAlarmData {

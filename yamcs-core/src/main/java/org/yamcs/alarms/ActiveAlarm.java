@@ -68,6 +68,11 @@ public class ActiveAlarm<T> {
     boolean shelved;
     private long shelveDuration;
 
+    /**
+     * Pending is when the minViolations has not been reached
+     */
+    boolean pending = true;
+
     ActiveAlarm(T pv, boolean autoAck, boolean latching, int id) {
         this.autoAcknowledge = autoAck;
         this.latching = latching;
@@ -86,6 +91,10 @@ public class ActiveAlarm<T> {
 
     public boolean isAcknowledged() {
         return acknowledged;
+    }
+
+    public boolean isPending() {
+        return pending;
     }
 
     public int getId() {
@@ -119,6 +128,7 @@ public class ActiveAlarm<T> {
      */
     synchronized void trigger() {
         if (!triggered) {
+            pending = false;
             processOK = false;
             triggered = true;
             acknowledged = false;
@@ -316,6 +326,19 @@ public class ActiveAlarm<T> {
         this.violations = count;
     }
 
+    public T setMostSevereValue(T mostSevereValue) {
+        this.mostSevereValue = mostSevereValue;
+        return mostSevereValue;
+    }
+
+    void setAcknowledged(boolean ack) {
+        this.acknowledged = ack;
+    }
+
+    public void setPending(boolean pending) {
+        this.pending = pending;
+    }
+
     @Override
     public String toString() {
         return "ActiveAlarm [autoAcknowledge=" + autoAcknowledge + ", latching=" + latching + ", id=" + id
@@ -324,13 +347,9 @@ public class ActiveAlarm<T> {
                 + ", mostSevereValue=" + getMostSevereValue() + ", currentValue=" + currentValue
                 + ", violations=" + violations + ", valueCount=" + valueCount + ", usernameThatAcknowledged="
                 + ", shelved=" + shelved + ", shelveEvent=" + shelveEvent + ", shelveTime=" + shelveTime
-                + ", shelveDuration=" + shelveDuration + "]";
+                + ", shelveDuration=" + shelveDuration + ", pending: " + pending + "]";
     }
 
-    public T setMostSevereValue(T mostSevereValue) {
-        this.mostSevereValue = mostSevereValue;
-        return mostSevereValue;
-    }
 
     static class ChangeEvent {
         final String username;
@@ -347,9 +366,4 @@ public class ActiveAlarm<T> {
             return "[username: " + username + " time: " + TimeEncoding.toString(time) + " message: " + message + "]";
         }
     }
-
-    void setAcknowledged(boolean ack) {
-        this.acknowledged = ack;
-    }
-
 }
