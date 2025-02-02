@@ -93,8 +93,9 @@ public abstract class AlarmServer<S, T> extends AbstractAlarmServer<S, T> {
 
         var lock = getLock(subject);
         synchronized (lock) {
+            var alarm1 = activeAlarms.get(subject);
 
-            if (!activeAlarms.containsValue(subject)) {
+            if (alarm1 != alarm) {
                 return null;
             }
 
