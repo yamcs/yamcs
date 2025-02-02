@@ -122,7 +122,6 @@ message TablespaceRecord {
     //Starting with Yamcs 5.10.0 stores the version of the Parameter Archive in case time based partitioning is not used
     // if time based partitioning is used, each partition has its own version
     optional uint32 parchiveVersion = 18 [default = 0];
-    
 }
 
 //associated to each bucket

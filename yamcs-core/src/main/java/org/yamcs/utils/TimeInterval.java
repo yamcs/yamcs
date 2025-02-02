@@ -13,6 +13,7 @@ public class TimeInterval {
     private boolean hasEnd = false;
 
     public TimeInterval(long start, long end) {
+        // do not change these (they set both the start/end and hasStart/hasEnd)
         setStart(start);
         setEnd(end);
     }

@@ -24,6 +24,7 @@ import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 
 public abstract class BaseParchiveTest {
@@ -52,7 +53,7 @@ public abstract class BaseParchiveTest {
         Map<String, Object> conf = new HashMap<>();
 
         if (partitioningSchema != null) {
-            conf.put("partitioningSchema", partitioningSchema);
+            conf.put(YarchDatabaseInstance.PART_CONF_KEY, partitioningSchema);
         }
         Map<String, Object> bfc = new HashMap<>();
         bfc.put("enabled", Boolean.FALSE);

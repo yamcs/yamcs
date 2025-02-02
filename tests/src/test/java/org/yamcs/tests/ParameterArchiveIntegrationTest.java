@@ -307,7 +307,6 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     public void testWithArrayElements() throws Exception {
-        System.out.println("testing with array elements");
         generatePkt8("2019-04-06T20:00:00", 2 * 3600);
 
         // first two requests before the consolidation, should return data from cache

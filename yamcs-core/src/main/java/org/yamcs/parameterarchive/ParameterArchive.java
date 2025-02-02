@@ -45,6 +45,7 @@ import org.yamcs.yarch.rocksdb.Tablespace;
 import org.yamcs.yarch.rocksdb.YRDB;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type;
+
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TimeBasedPartition;
 
 /**
@@ -90,14 +91,17 @@ public class ParameterArchive extends AbstractYamcsService {
     // from Yamcs 5.9.0, store the parameter archive data into a separate Column Family with this name
     public static final String CF_NAME = "parameter_archive";
 
+    // how long in the future (compared to mission time) to allow data part of the coverage
+    private long coverageEndDelta = 3600_000;
+
     private ParameterIdDb parameterIdDb;
 
     private Tablespace tablespace;
 
     TimePartitionSchema partitioningSchema;
 
-    // the tbsIndex used to encode partition information
-    int partitionTbsIndex;
+    // the tablespace record holding partition information
+    TablespaceRecord pinfoTablespaceRecord;
 
     private PartitionedTimeInterval<Partition> partitions = new PartitionedTimeInterval<>();
 
@@ -119,11 +123,14 @@ public class ParameterArchive extends AbstractYamcsService {
         Spec spec = new Spec();
         spec.addOption("backFiller", OptionType.MAP).withSpec(BackFiller.getSpec());
         spec.addOption("realtimeFiller", OptionType.MAP).withSpec(RealtimeArchiveFiller.getSpec());
-        spec.addOption("partitioningSchema", OptionType.STRING).withDefault("none")
+        spec.addOption(YarchDatabaseInstance.PART_CONF_KEY, OptionType.STRING).withAliases("partitioningSchema")
                 .withChoices("YYYY/DOY", "YYYY/MM", "YYYY", "none");
         spec.addOption("maxSegmentSize", OptionType.INTEGER).withDefault(500);
         spec.addOption("sparseGroups", OptionType.BOOLEAN).withDefault(true);
         spec.addOption("minimumGroupOverlap", OptionType.FLOAT).withDefault(0.5);
+        spec.addOption("coverageEndDelta", OptionType.INTEGER).withDefault(60)
+                .withDescription("how long in the future in seconds (compared to mission time) "
+                        + "to allow data part of the coverage)");
 
         return spec;
     }
@@ -154,6 +161,7 @@ public class ParameterArchive extends AbstractYamcsService {
         }
         sparseGroups = config.getBoolean("sparseGroups");
         minimumGroupOverlap = config.getDouble("minimumGroupOverlap");
+        coverageEndDelta = config.getLong("coverageEndDelta") * 1000;
 
         try {
             TablespaceRecord.Type trType = TablespaceRecord.Type.PARCHIVE_PINFO;
@@ -164,23 +172,25 @@ public class ParameterArchive extends AbstractYamcsService {
             }
             parameterIdDb = new ParameterIdDb(yamcsInstance, tablespace, sparseGroups, minimumGroupOverlap);
 
-            TablespaceRecord tr;
             if (trl.isEmpty()) { // new database
                 initializeDb();
             } else {// existing database
-                tr = trl.get(0);
-                partitionTbsIndex = tr.getTbsIndex();
-                if (tr.hasPartitioningSchema()) {
-                    partitioningSchema = TimePartitionSchema.getInstance(tr.getPartitioningSchema());
+                pinfoTablespaceRecord = trl.get(0);
+
+                if (pinfoTablespaceRecord.hasPartitioningSchema()) {
+                    partitioningSchema = TimePartitionSchema.getInstance(pinfoTablespaceRecord.getPartitioningSchema());
                 }
                 readPartitions();
                 if (partitions.isEmpty() && partitioningSchema == null) {
-                    partitions.insert(new Partition(tr.hasParchiveCf() ? tr.getParchiveCf() : null,
-                            tr.getParchiveVersion()));
+                    partitions.insert(new Partition(
+                            pinfoTablespaceRecord.hasParchiveCf() ? pinfoTablespaceRecord.getParchiveCf() : null,
+                            pinfoTablespaceRecord.getParchiveVersion()));
                 }
+
+                coverageEnd.set(getCoverageEnd(maxCoverageEnd()));
             }
 
-        } catch (RocksDBException | IOException e) {
+        } catch (RocksDBException | IOException | DecodingException e) {
             throw new InitException(e);
         }
     }
@@ -197,9 +207,8 @@ public class ParameterArchive extends AbstractYamcsService {
             partitions.insert(new Partition(CF_NAME, VERSION));
         }
         trb.setParchiveCf(CF_NAME);
-        trb.setParchiveVersion(1);
-        TablespaceRecord tr = tablespace.createMetadataRecord(yamcsInstance, trb);
-        partitionTbsIndex = tr.getTbsIndex();
+        trb.setParchiveVersion(VERSION);
+        pinfoTablespaceRecord = tablespace.createMetadataRecord(yamcsInstance, trb);
     }
 
     public TimePartitionSchema getPartitioningSchema() {
@@ -212,7 +221,7 @@ public class ParameterArchive extends AbstractYamcsService {
     private void readPartitions() throws IOException, RocksDBException {
         YRDB db = tablespace.getRdb();
         byte[] range = new byte[TBS_INDEX_SIZE];
-        ByteArrayUtils.encodeInt(partitionTbsIndex, range, 0);
+        ByteArrayUtils.encodeInt(pinfoTablespaceRecord.getTbsIndex(), range, 0);
 
         try (AscendingRangeIterator it = new AscendingRangeIterator(db.newIterator(), range, range)) {
             while (it.isValid()) {
@@ -289,8 +298,7 @@ public class ParameterArchive extends AbstractYamcsService {
             }
             rdb.write(wo, writeBatch);
         }
-        long m = maxTime;
-        coverageEnd.updateAndGet(current -> Math.max(current, m));
+        updateCoverageEnd(maxTime);
     }
 
     // write data to the archive using the merge operator.
@@ -323,7 +331,7 @@ public class ParameterArchive extends AbstractYamcsService {
         // and then the consolidated value segments
         for (var pvs : pgs.pvSegments) {
             log.trace("Writing {}", pvs);
-           
+
             int parameterId = pvs.pid;
             if (orphans != null) {
                 orphans.remove(parameterId);
@@ -425,8 +433,8 @@ public class ParameterArchive extends AbstractYamcsService {
     }
 
     // writes to the archive without using the rocksdb merge operator (which merges segments together into intervals).
-    // The segment start is used part of the key (instead of the interval start) which means that we need to remove old
-    // data as it may have a different start
+    // The segment start (instead of the interval start) is part of the key which means that we need to remove old
+    // data as it may have a different segment start resulting into a different key.
     //
     private void writeToBatchVersion0(ColumnFamilyHandle cfh, WriteBatch writeBatch, PGSegment pgs)
             throws RocksDBException {
@@ -523,7 +531,6 @@ public class ParameterArchive extends AbstractYamcsService {
     private Partition createAndGetPartition(long intervalStart) throws RocksDBException {
         synchronized (partitions) {
             Partition p = partitions.getFit(intervalStart);
-
             if (p == null) {
                 TimePartitionInfo pinfo = partitioningSchema.getPartitionInfo(intervalStart);
                 p = new Partition(pinfo.getStart(), pinfo.getEnd(), pinfo.getDir(), CF_NAME, VERSION);
@@ -535,7 +542,7 @@ public class ParameterArchive extends AbstractYamcsService {
                         .setParchiveVersion(p.version)
                         .build();
                 byte[] key = new byte[TBS_INDEX_SIZE + 8];
-                ByteArrayUtils.encodeInt(partitionTbsIndex, key, 0);
+                ByteArrayUtils.encodeInt(pinfoTablespaceRecord.getTbsIndex(), key, 0);
                 ByteArrayUtils.encodeLong(pinfo.getStart(), key, TBS_INDEX_SIZE);
                 tablespace.putData(key, tbp.toByteArray());
             }
@@ -692,7 +699,7 @@ public class ParameterArchive extends AbstractYamcsService {
         tablespace.removeTbsIndex(TablespaceRecord.Type.PARCHIVE_PGID2PG, pgTbsIndex);
 
         log.debug("removing partitions and related metadata");
-        tablespace.removeTbsIndex(TablespaceRecord.Type.PARCHIVE_PINFO, partitionTbsIndex);
+        tablespace.removeTbsIndex(TablespaceRecord.Type.PARCHIVE_PINFO, pinfoTablespaceRecord.getTbsIndex());
 
         log.debug("removing metadata storing aggregate/array composition");
         // there is no data of this type stored
@@ -870,6 +877,8 @@ public class ParameterArchive extends AbstractYamcsService {
         return backFiller;
     }
 
+    // this method is never used
+    // we leave it in if we want to experiment again with manual compaction
     public void disableAutoCompaction(long start, long stop) {
         try {
             var interval = new TimeInterval(start, stop);
@@ -885,6 +894,8 @@ public class ParameterArchive extends AbstractYamcsService {
         }
     }
 
+    // this method is never used
+    // we leave it in if we want to experiment again with manual compaction
     public void enableAutoCompaction(long start, long stop) {
         try {
             var interval = new TimeInterval(start, stop);
@@ -931,8 +942,75 @@ public class ParameterArchive extends AbstractYamcsService {
         }
     }
 
-    public long now() {
-        return timeService.getMissionTime();
+    public long maxCoverageEnd() {
+        return timeService.getMissionTime() + coverageEndDelta;
+    }
+
+    /**
+     * Computes the coverage end as the greatest timestamp of a parameter in the archive, smaller than now
+     * <p>
+     * In order to find that, it iterates over all time segments
+     * 
+     * @throws IOException
+     * @throws RocksDBException
+     * @throws DecodingException
+     */
+    public long getCoverageEnd(long now) throws RocksDBException, IOException, DecodingException {
+        long covEnd = TimeEncoding.NEGATIVE_INFINITY;
+        log.debug("Computing coverage end as greatest timestamp of a parameter smaller than {}",
+                TimeEncoding.toString(now));
+        if (getParameterGroupIdDb().groups.isEmpty()) {
+            log.debug("No parameter group, coverageEnd is {}", TimeEncoding.toString(covEnd));
+            return covEnd;
+        }
+        var partitions = getPartitions(TimeEncoding.MIN_INSTANT, now, false);
+        if (partitions.isEmpty()) {
+            log.debug("No partition, coverageEnd is {}", TimeEncoding.toString(covEnd));
+            return covEnd;
+        }
+
+        // he first partition (in descending order) should be enough but maybe it will contain no data, that's why we
+        // iterate
+        var nowIntervalEnd = getIntervalEnd(now);
+        for (var p : partitions) {
+            try (RocksIterator it = getIterator(p)) {
+                pg_loop: for (var pg : getParameterGroupIdDb().groups) {
+                    var sk = new SegmentKey(parameterIdDb.timeParameterId, pg.id, nowIntervalEnd, Byte.MAX_VALUE);
+                    byte[] timeKey = p.version == 0 ? sk.encodeV0() : sk.encode();
+                    it.seekForPrev(timeKey);
+                    while (it.isValid()) {
+                        sk = p.version == 0 ? SegmentKey.decodeV0(it.key()) : SegmentKey.decode(it.key());
+                        if (sk.parameterGroupId != pg.id) {
+                            // no time segment for this parameter group
+                            continue pg_loop;
+                        }
+                        if (getIntervalEnd(sk.segmentStart) <= covEnd) {
+                            // this time segment ends before the current covEnd, no point in decoding it
+                            continue pg_loop;
+                        }
+
+                        var sts = (SortedTimeSegment) SegmentEncoderDecoder.decode(it.value(), sk.segmentStart);
+
+                        long covEnd1;
+                        int pos = sts.search(now);
+                        if (pos >= 0) {
+                            covEnd1 = sts.getTime(pos);
+                        } else {
+                            pos = -pos - 1;
+                            if (pos == 0) {
+                                it.prev();
+                                continue;
+                            }
+                            covEnd1 = sts.getTime(pos - 1);
+                        }
+                        covEnd = Long.max(covEnd, covEnd1);
+                        break;
+                    }
+                }
+            }
+        }
+        log.debug("Found coverageEnd {}", TimeEncoding.toString(covEnd));
+        return covEnd;
     }
 
     public static class Partition extends TimeInterval {
@@ -942,7 +1020,7 @@ public class ParameterArchive extends AbstractYamcsService {
         final int version;
 
         Partition(String cfName, int version) {
-            super();
+            super(TimeEncoding.NEGATIVE_INFINITY, TimeEncoding.POSITIVE_INFINITY);
 
             this.partitionDir = null;
             this.cfName = cfName;

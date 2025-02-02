@@ -24,7 +24,7 @@ class BackFillerTask extends AbstractArchiveFiller {
         for (PGSegment seg : pgSegments.values()) {
             writeToArchive(seg);
             var segEnd = seg.getSegmentEnd();
-            if (segEnd <= parameterArchive.now()) {
+            if (segEnd <= parameterArchive.maxCoverageEnd()) {
                 coverageEnd = Math.max(coverageEnd, segEnd);
             }
         }
@@ -43,10 +43,10 @@ class BackFillerTask extends AbstractArchiveFiller {
             log.debug("Wrote segment {} to archive in {} millisec", pgSegment, d / 1000_000);
         } catch (RocksDBException | IOException e) {
             log.error("Error writing segment to archive", e);
-            throw new ParameterArchiveException("Error writing segment to arcive", e);
+            throw new ParameterArchiveException("Error writing segment to archive", e);
         }
         var segEnd = pgSegment.getSegmentEnd();
-        if (segEnd <= parameterArchive.now()) {
+        if (segEnd <= parameterArchive.maxCoverageEnd()) {
             coverageEnd = Math.max(coverageEnd, segEnd);
         }
     }

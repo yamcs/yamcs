@@ -108,6 +108,11 @@ public class ParameterArchiveTest extends BaseParchiveTest {
         assertEquals(0, l0d.size());
 
         parchive.writeToArchive(pgSegment1);
+        assertEquals(TimeEncoding.NEGATIVE_INFINITY, parchive.getCoverageEnd(0));
+        assertEquals(TimeEncoding.NEGATIVE_INFINITY, parchive.getCoverageEnd(99));
+        assertEquals(100, parchive.getCoverageEnd(199));
+        assertEquals(200, parchive.getCoverageEnd(200));
+        assertEquals(200, parchive.getCoverageEnd(10000));
 
         // ascending request on two value
         List<ParameterValueArray> l4a = retrieveSingleParamSingleGroup(0, TimeEncoding.POSITIVE_INFINITY, p1id, pg1.id,
@@ -150,6 +155,9 @@ public class ParameterArchiveTest extends BaseParchiveTest {
         ParameterValue pv1_3 = getParameterValue(p1, t3, "pv1_3", 45);
         pgSegment3.addRecord(t3, IntArray.wrap(p1id), Arrays.asList(pv1_3));
         parchive.writeToArchive(pgSegment3);
+
+        assertEquals(t3, parchive.getCoverageEnd(t3));
+        assertEquals(t2, parchive.getCoverageEnd(t3 - 1));
 
         // ascending request on four values
         List<ParameterValueArray> l7a = retrieveSingleParamSingleGroup(0, t3 + 1, p1id, pg1.id, true);

@@ -27,7 +27,7 @@ public class TimeEncoding {
 
     // these two are used for open intervals
     public static final long NEGATIVE_INFINITY = MIN_INSTANT - 1;
-    public static final long POSITIVE_INFINITY = MAX_INSTANT + 1;
+    public static long POSITIVE_INFINITY = MAX_INSTANT + 1;
 
     static final long GPS_EPOCH_YAMCS_EPOCH_DELTA = 315964819000L;
     static final long TAI_EPOCH_YAMCS_EPOCH_DELTA = -378691200000L;
@@ -49,6 +49,7 @@ public class TimeEncoding {
         try {
             taiUtcConverter = new TaiUtcConverter();
             MAX_INSTANT = 185539080470399999L + taiUtcConverter.diffTaiUtc * 1000;
+            POSITIVE_INFINITY = MAX_INSTANT + 1;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -58,6 +59,7 @@ public class TimeEncoding {
         try {
             taiUtcConverter = new TaiUtcConverter(in);
             MAX_INSTANT = 185539080470399999L + taiUtcConverter.diffTaiUtc * 1000;
+            POSITIVE_INFINITY = MAX_INSTANT + 1;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
