@@ -28,7 +28,6 @@ public class ReedSolomonTest {
         byte[] parity = new byte[rsp.nroots];
         int nn = (1 << rsp.symsize) - 1;
         int ds = nn - rsp.nroots - rsp.pad;
-        System.out.println("ds: " + ds);
         for (int i = 0; i < n; i++) {
             byte[] orig_data = new byte[ds];
             fillRandom(orig_data, nn);
