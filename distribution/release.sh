@@ -48,7 +48,7 @@ rm -rf $clonedir/.git
 cd $clonedir
 
 cd yamcs-web/src/main/webapp
-npm ci
+npm install
 npm run build
 rm -rf node_modules
 cd -
