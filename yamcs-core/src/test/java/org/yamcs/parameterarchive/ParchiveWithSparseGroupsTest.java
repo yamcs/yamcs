@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.yamcs.parameter.ParameterStatus.isInvalid;
+import static org.yamcs.parameter.ParameterStatus.isNominal;
 import static org.yamcs.parameterarchive.TestUtils.checkEquals;
 
 import java.util.Arrays;
@@ -15,6 +17,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.yamcs.YamcsServer;
+import org.yamcs.parameter.ParameterStatus;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.utils.IntArray;
@@ -66,7 +69,7 @@ public class ParchiveWithSparseGroupsTest extends BaseParchiveTest {
         ParameterValue pv2_0 = getParameterValue(p2, 100, "pv2_0");
         ParameterValue pv1_1 = getParameterValue(p1, 200, "pv1_1");
         ParameterValue pv1_2 = getParameterValue(p1, 300, "pv1_2");
-        pv1_2.setAcquisitionStatus(AcquisitionStatus.INVALID);
+        pv1_2.setInvalid();
 
         int p1id = parchive.getParameterIdDb().createAndGet(p1.getQualifiedName(), pv1_0.getEngValue().getType());
         int p2id = parchive.getParameterIdDb().createAndGet(p2.getQualifiedName(), pv2_0.getEngValue().getType());
@@ -197,8 +200,8 @@ public class ParchiveWithSparseGroupsTest extends BaseParchiveTest {
         assertNotNull(l7a.get(1).paramStatus);
         assertNotNull(l7a.get(2).paramStatus);
 
-        assertEquals(AcquisitionStatus.INVALID, l7a.get(0).paramStatus[2].getAcquisitionStatus());
-        assertEquals(AcquisitionStatus.ACQUIRED, l7a.get(2).paramStatus[0].getAcquisitionStatus());
+        assertTrue(isInvalid(l7a.get(0).paramStatus[2].getAcqStatus()));
+        assertTrue(isNominal(l7a.get(2).paramStatus[0].getAcqStatus()));
     }
 
     @Test
@@ -464,7 +467,7 @@ public class ParchiveWithSparseGroupsTest extends BaseParchiveTest {
         ParameterValue pv1_0 = getParameterValue(p1, 100, "pv1_0");
         ParameterValue pv2_0 = getParameterValue(p2, 100, "pv2_0");
         ParameterValue pv1_2 = getParameterValue(p1, 300, "pv1_2");
-        pv1_2.setAcquisitionStatus(AcquisitionStatus.INVALID);
+        pv1_2.setInvalid();
 
         int p1id = parchive.getParameterIdDb().createAndGet(p1.getQualifiedName(), pv1_0.getEngValue().getType());
         int p2id = parchive.getParameterIdDb().createAndGet(p2.getQualifiedName(), pv2_0.getEngValue().getType());

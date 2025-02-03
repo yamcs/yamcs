@@ -11,10 +11,10 @@ import org.yamcs.logging.Log;
 import org.yamcs.parameter.Value;
 import org.yamcs.parameter.ValueArray;
 import org.yamcs.parameterarchive.ParameterValueArray;
-import org.yamcs.protobuf.Pvalue.ParameterStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.UnsignedLong;
+import org.yamcs.yarch.protobuf.Db.ParameterStatus;
 
 /**
  * One-pass downsampler for time-series data (i.e. numeric archived parameters), where the number of recorded data

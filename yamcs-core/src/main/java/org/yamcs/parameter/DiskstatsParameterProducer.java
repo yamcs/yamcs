@@ -123,7 +123,6 @@ public class DiskstatsParameterProducer implements SystemParametersProducer {
                 ParameterValue pv = new ParameterValue(ioparam.param);
                 pv.setGenerationTime(gentime);
                 pv.setAcquisitionTime(gentime);
-                pv.setAcquisitionStatus(AcquisitionStatus.ACQUIRED);
                 pv.setEngValue(v);
 
                 pv.setExpireMillis((long) (1.9 * getFrequency() * 1000));

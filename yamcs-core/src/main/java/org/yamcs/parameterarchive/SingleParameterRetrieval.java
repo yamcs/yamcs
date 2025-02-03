@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.ParameterRetrievalOptions;
 import org.yamcs.parameter.ValueArray;
-import org.yamcs.protobuf.Pvalue.ParameterStatus;
+import org.yamcs.yarch.protobuf.Db.ParameterStatus;
 
 /**
  * Retrieves values for a single parameter from the parameter archive. The result is arrays of samples (see

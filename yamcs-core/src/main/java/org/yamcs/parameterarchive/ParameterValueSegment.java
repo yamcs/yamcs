@@ -3,11 +3,11 @@ package org.yamcs.parameterarchive;
 import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.parameter.ValueArray;
-import org.yamcs.protobuf.Pvalue.ParameterStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.PeekingIterator;
 import org.yamcs.utils.SortedIntArray;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.yarch.protobuf.Db.ParameterStatus;
 
 import static org.yamcs.parameterarchive.ParameterArchive.STORE_RAW_VALUES;
 

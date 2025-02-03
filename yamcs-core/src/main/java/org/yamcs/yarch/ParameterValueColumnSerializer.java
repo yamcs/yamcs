@@ -6,6 +6,7 @@ import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 
 import org.yamcs.parameter.BasicParameterValue;
+import org.yamcs.parameter.ParameterStatus;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Mdb.AlarmLevelType;
 import org.yamcs.utils.ByteArray;
@@ -76,10 +77,14 @@ public class ParameterValueColumnSerializer implements ColumnSerializer<Paramete
 
     private ParameterValue fromProto(String fqn, Db.ParameterValue gpv) {
         ParameterValue pv = new ParameterValue(fqn);
-        pv.setAcquisitionStatus(gpv.getAcquisitionStatus());
+        if (gpv.hasAcqStatus()) {
+            pv.setAcqStatus(gpv.getAcqStatus());
+        } else {
+            pv.setAcqStatus(ParameterStatus.getAcquisitionStatus(gpv.getAcquisitionStatus()));
+        }
 
         if (gpv.hasEngValue()) {
-            pv.setEngineeringValue(ValueUtility.fromGpb(gpv.getEngValue()));
+            pv.setEngValue(ValueUtility.fromGpb(gpv.getEngValue()));
         }
 
         if (gpv.hasAcquisitionTime()) {
@@ -111,7 +116,7 @@ public class ParameterValueColumnSerializer implements ColumnSerializer<Paramete
     public Db.ParameterValue toProto(ParameterValue pv) {
 
         Db.ParameterValue.Builder gpvb = Db.ParameterValue.newBuilder()
-                .setAcquisitionStatus(pv.getAcquisitionStatus())
+                .setAcqStatus(pv.getAcqStatus())
                 .setGenerationTime(pv.getGenerationTime());
 
         if (pv.getAcquisitionTime() != TimeEncoding.INVALID_INSTANT) {
@@ -129,7 +134,7 @@ public class ParameterValueColumnSerializer implements ColumnSerializer<Paramete
             gpvb.setRangeCondition(pv.getRangeCondition());
         }
 
-        long expireMillis = pv.getExpireMills();
+        long expireMillis = pv.getExpireMillis();
         if (expireMillis >= 0) {
             gpvb.setExpireMillis(expireMillis);
         }

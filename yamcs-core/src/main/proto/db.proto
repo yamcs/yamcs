@@ -19,7 +19,7 @@ message ParameterValue {
     optional yamcs.protobuf.Value engValue = 3;
     optional int64 acquisitionTime = 4;
     optional int64 generationTime = 5;
-    optional yamcs.protobuf.pvalue.AcquisitionStatus acquisitionStatus = 6;
+    optional yamcs.protobuf.pvalue.AcquisitionStatus acquisitionStatus = 6 [deprecated = true];
     optional bool processingStatus = 7;
     optional yamcs.protobuf.pvalue.MonitoringResult monitoringResult = 8;
     optional yamcs.protobuf.pvalue.RangeCondition rangeCondition = 9;
@@ -31,6 +31,9 @@ message ParameterValue {
     // Note that there is an option when subscribing to parameters to get
     // updated when the parameter values expire. 
     optional int64 expireMillis = 26;
+    
+    //this replaces the acquisitionStatus enum above
+    optional int32 acqStatus = 27;
 }
 
 message Event {
@@ -49,6 +52,20 @@ message Event {
     map<string, string> extra = 11;
 }
 
+// used in the ParameterArchive to store the status flags associated to one parameter value
+message ParameterStatus {
+    optional yamcs.protobuf.pvalue.AcquisitionStatus acquisitionStatus = 1 [deprecated = true];
+    optional yamcs.protobuf.pvalue.MonitoringResult monitoringResult = 2;
+    optional yamcs.protobuf.pvalue.RangeCondition rangeCondition = 3;
+    // context-dependent ranges
+    repeated yamcs.protobuf.mdb.AlarmRange alarmRange = 4;
+
+    //when the value expires
+    optional int64 expireMillis = 5;
+    
+    //this replaces the acquisitionStatus enum above
+    optional int32 acqStatus = 6;
+}
 enum ProtoDataType {
   //error in replay
   DT_ERROR = 1;

@@ -50,7 +50,7 @@ public class MathAlgorithmExecutor extends AbstractAlgorithmExecutor {
             execCtx.getProcessorData().getEventProducer()
                     .sendWarning(getAlgorithm().getName(), "Cannot convert raw value from algorithm output "
                             + "'" + value + "' into " + outParam.getParameterType());
-            pv.setAcquisitionStatus(AcquisitionStatus.INVALID);
+            pv.setInvalid();
         } else {
             pv.setEngValue(engValue);
         }

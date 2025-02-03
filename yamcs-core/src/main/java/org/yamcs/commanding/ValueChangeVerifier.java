@@ -8,7 +8,6 @@ import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
-import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.utils.AggregateUtil;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.CommandVerifier;
@@ -67,8 +66,8 @@ public class ValueChangeVerifier  extends Verifier implements ParameterConsumer 
     }
 
     private void process(ParameterValue pv, boolean fromCache) {
-        if (pv.getAcquisitionStatus() != AcquisitionStatus.ACQUIRED) {
-            log.debug("Ignoring invalid value {}", pv);
+        if (!pv.isNominal()) {
+            log.debug("Ignoring non-nominal value {}", pv);
             return;
         }
 

@@ -1,6 +1,6 @@
 package org.yamcs.mdb;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.ByteBuffer;
 
@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.utils.TimeEncoding;
 
 public class ParameterValidityRangesTest {
@@ -32,25 +31,24 @@ public class ParameterValidityRangesTest {
 
     @Test
     public void test1() {
-
         byte[] buf = new byte[8];
         ByteBuffer.wrap(buf).putDouble(90);
         ContainerProcessingResult cpr = processPacket(buf);
         ParameterValue pv = cpr.getParameterResult()
                 .getFirstInserted(mdb.getParameter("/Example/latitude"));
-        assertEquals(AcquisitionStatus.ACQUIRED, pv.getAcquisitionStatus());
+        assertTrue(pv.isNominal());
 
         ByteBuffer.wrap(buf).putDouble(90.01);
         cpr = processPacket(buf);
         ParameterValue pv1 = cpr.getParameterResult()
                 .getFirstInserted(mdb.getParameter("/Example/latitude"));
-        assertEquals(AcquisitionStatus.INVALID, pv1.getAcquisitionStatus());
+        assertTrue(pv1.isInvalid());
 
         ByteBuffer.wrap(buf).putDouble(-90.01);
         cpr = processPacket(buf);
         ParameterValue pv2 = cpr.getParameterResult()
                 .getFirstInserted(mdb.getParameter("/Example/latitude"));
-        assertEquals(AcquisitionStatus.INVALID, pv2.getAcquisitionStatus());
+        assertTrue(pv2.isInvalid());
     }
 
     private ContainerProcessingResult processPacket(byte[] buf) {

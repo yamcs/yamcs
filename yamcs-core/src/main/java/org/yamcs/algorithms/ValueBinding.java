@@ -20,7 +20,7 @@ public abstract class ValueBinding {
     public void updateValue(RawEngValue newValue) {
         if (newValue instanceof ParameterValue) {
             ParameterValue pv = (ParameterValue) newValue;
-            acquisitionStatus = pv.getAcquisitionStatus();
+            acquisitionStatus = pv.getAcquisitionStatus(false);
             monitoringResult = pv.getMonitoringResult();
             rangeCondition = pv.getRangeCondition();
 

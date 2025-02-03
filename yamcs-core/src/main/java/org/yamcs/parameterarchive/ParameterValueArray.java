@@ -2,8 +2,8 @@ package org.yamcs.parameterarchive;
 
 import org.yamcs.parameter.Value;
 import org.yamcs.parameter.ValueArray;
-import org.yamcs.protobuf.Pvalue.ParameterStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.yarch.protobuf.Db.ParameterStatus;
 
 /**
  * an array of values for one {@link ParameterId}

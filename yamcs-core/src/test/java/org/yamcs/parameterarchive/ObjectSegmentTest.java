@@ -10,11 +10,11 @@ import org.junit.jupiter.api.Test;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Mdb.AlarmRange;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
-import org.yamcs.protobuf.Pvalue.ParameterStatus;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.util.DoubleRange;
+import org.yamcs.yarch.protobuf.Db.ParameterStatus;
 
 public class ObjectSegmentTest {
     Parameter p1 = new Parameter("abc");

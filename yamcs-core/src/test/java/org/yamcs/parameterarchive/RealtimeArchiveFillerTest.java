@@ -503,7 +503,6 @@ public class RealtimeArchiveFillerTest {
             ParameterValue value = new ParameterValue(name);
             value.setGenerationTime(genTime);
             value.setAcquisitionTime(acqTime);
-            value.setAcquisitionStatus(AcquisitionStatus.ACQUIRED);
             value.setRawSignedInteger(123);
             value.setEngValue(value.getRawValue());
             values.add(value);

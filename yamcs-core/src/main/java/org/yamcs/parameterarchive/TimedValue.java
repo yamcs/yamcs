@@ -1,7 +1,7 @@
 package org.yamcs.parameterarchive;
 
-import org.yamcs.protobuf.Pvalue.ParameterStatus;
 import org.yamcs.parameter.Value;
+import org.yamcs.yarch.protobuf.Db.ParameterStatus;
 
 public class TimedValue {
     final long instant;

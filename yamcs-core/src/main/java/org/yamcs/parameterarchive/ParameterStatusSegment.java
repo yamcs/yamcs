@@ -8,8 +8,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
-import org.yamcs.protobuf.Pvalue.ParameterStatus;
 import org.yamcs.utils.DecodingException;
+import org.yamcs.yarch.protobuf.Db.ParameterStatus;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -22,14 +22,14 @@ public class ParameterStatusSegment extends ObjectSegment<ParameterStatus> {
     }
 
     static public final ParameterStatus getStatus(BasicParameterValue pv, ParameterStatus prevStatus) {
-        AcquisitionStatus acq = pv.getAcquisitionStatus();
+        AcquisitionStatus acq = pv.getAcquisitionStatus(false);
         MonitoringResult mr = pv.getMonitoringResult();
 
         if (acq == AcquisitionStatus.ACQUIRED && mr == null) {
-            return cache.get(pv.getExpireMills());
+            return cache.get(pv.getExpireMillis());
         }
 
-        ParameterStatus newStatus = pv.getStatus().toProtoBuf();
+        ParameterStatus newStatus = pv.getStatus().toProtoBuf(false);
 
         if (newStatus.equals(prevStatus)) {
             return prevStatus;

@@ -4,7 +4,7 @@ import java.util.NoSuchElementException;
 
 import org.yamcs.parameter.ParameterRetrievalOptions;
 import org.yamcs.parameter.Value;
-import org.yamcs.protobuf.Pvalue.ParameterStatus;
+import org.yamcs.yarch.protobuf.Db.ParameterStatus;
 
 /**
  * Iterates over parameter archive segments storing components of an aggregate or array value and reconstructs the

@@ -35,7 +35,7 @@ public class ArrayParameterCacheTest {
         p1v1.setExpireMillis(1000);
 
         ParameterValue p2v1 = getFloatParameterValue(p2, 10);
-        p2v1.setAcquisitionStatus(AcquisitionStatus.INVALID);
+        p2v1.setInvalid();
         pcache.update(Arrays.asList(p1v1, p2v1));
 
         TestUtils.checkEquals(p1v1, pcache.getLastValue(p1));
@@ -95,7 +95,7 @@ public class ArrayParameterCacheTest {
         List<ParameterValue> expectedPVlist = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             ParameterValue pv = getUint64ParameterValue(p1, i * 100L);
-            pv.setAcquisitionStatus(AcquisitionStatus.INVALID);
+            pv.setInvalid();
             expectedPVlist.add(pv);
             pcache.update(Arrays.asList(pv));
         }

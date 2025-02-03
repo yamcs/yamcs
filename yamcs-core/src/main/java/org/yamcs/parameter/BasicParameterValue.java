@@ -34,23 +34,6 @@ public class BasicParameterValue extends RawEngValue {
         this.status = pv.status;
     }
 
-    public void setExpireMillis(long em) {
-        changeNominalStatus();
-        status.setExpireMillis(em);
-    }
-
-    public long getExpireMillis() {
-        return status.getExpireMills();
-    }
-
-    /**
-     * @deprecated Use {@link #getExpireMillis()} instead.
-     */
-    @Deprecated
-    public long getExpireMills() {
-        return getExpireMillis();
-    }
-
     @Override
     public void setEngValue(Value engValue) {
         this.engValue = engValue;
@@ -61,6 +44,33 @@ public class BasicParameterValue extends RawEngValue {
         if (status == ParameterStatus.NOMINAL) {
             status = new ParameterStatus();
         }
+    }
+
+    public void setExpireMillis(long em) {
+        changeNominalStatus();
+        status.setExpireMillis(em);
+    }
+
+    public long getExpireMillis() {
+        return status.getExpireMills();
+    }
+
+    public void setInvalid() {
+        changeNominalStatus();
+        status.setInvalid();
+    }
+
+    public void setExpired() {
+        changeNominalStatus();
+        status.setExpired();
+    }
+
+    public boolean isInvalid() {
+        return status.isInvalid();
+    }
+
+    public boolean isExpired() {
+        return status.isExpired();
     }
 
     public void setWatchRange(DoubleRange range) {
@@ -103,11 +113,11 @@ public class BasicParameterValue extends RawEngValue {
         status.setRangeCondition(rangeCondition);
     }
 
-    public void setAcquisitionStatus(AcquisitionStatus a) {
-        if (status.getAcquisitionStatus() != a) {
+    public void setAcqStatus(int acqStatus) {
+        if (status.getAcqStatus() != acqStatus) {
             changeNominalStatus();
         }
-        status.setAcquisitionStatus(a);
+        status.setAcqStatus(acqStatus);
     }
 
     public DoubleRange getDistressRange() {
@@ -138,8 +148,12 @@ public class BasicParameterValue extends RawEngValue {
         return status.getRangeCondition();
     }
 
-    public AcquisitionStatus getAcquisitionStatus() {
-        return status.getAcquisitionStatus();
+    /**
+     * Used for compatibility with the old Parameter status whereas expiration was cancelling the other statuses but was
+     * sent only when clients were subscribed with the option to send the parameter expiration
+     */
+    public AcquisitionStatus getAcquisitionStatus(boolean withExpiration) {
+        return status.getAcquisitionStatus(withExpiration);
     }
 
     public MonitoringResult getDeltaMonitoringResult() {
@@ -189,8 +203,15 @@ public class BasicParameterValue extends RawEngValue {
         return pv;
     }
 
+    /**
+     * returns true if the parameter is valid and not expired
+     */
+    public boolean isNominal() {
+        return status.isNominal();
+    }
+
     private static void copyTo(org.yamcs.protobuf.Pvalue.ParameterValue gpv, ParameterValue pv) {
-        pv.setAcquisitionStatus(gpv.getAcquisitionStatus());
+        pv.getStatus().setAcqStatus(ParameterStatus.getAcquisitionStatus(gpv.getAcquisitionStatus()));
         if (gpv.hasEngValue()) {
             pv.setEngValue(ValueUtility.fromGpb(gpv.getEngValue()));
         }

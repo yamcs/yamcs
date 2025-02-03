@@ -15,10 +15,10 @@ import org.yamcs.parameter.ValueArray;
 import org.yamcs.parameterarchive.ParameterArchive;
 import org.yamcs.parameterarchive.ParameterValueArray;
 import org.yamcs.parameterarchive.SingleParameterRetrieval;
-import org.yamcs.protobuf.Pvalue.ParameterStatus;
 import org.yamcs.utils.AggregateUtil;
 import org.yamcs.utils.MutableLong;
 import org.yamcs.xtce.PathElement;
+import org.yamcs.yarch.protobuf.Db.ParameterStatus;
 
 import com.google.common.collect.Lists;
 
@@ -140,7 +140,7 @@ public class SingleParameterRetriever {
         for (int i = n; i < m; i++) {
             ParameterValue pv = pvlist.get(i);
             timestamps[i - n] = pv.getGenerationTime();
-            statuses[i - n] = pv.getStatus().toProtoBuf();
+            statuses[i - n] = pv.getStatus().toProtoBuf(false);
         }
         ParameterValueArray pva = new ParameterValueArray(timestamps, engValues, rawValues, statuses);
         consumer.accept(pva);

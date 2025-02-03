@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.yamcs.parameter.ParameterStatus.isExpired;
+import static org.yamcs.parameter.ParameterStatus.isNominal;
+import static org.yamcs.parameter.ParameterStatus.isInvalid;
 import static org.yamcs.parameterarchive.TestUtils.checkEquals;
 
 import java.util.Arrays;
@@ -20,12 +23,11 @@ import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameterarchive.ParameterArchive.Partition;
-import org.yamcs.protobuf.Pvalue;
-import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.IntArray;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.yarch.protobuf.Db.ParameterStatus;
 
 public class ParameterArchiveTest extends BaseParchiveTest {
 
@@ -144,7 +146,7 @@ public class ParameterArchiveTest extends BaseParchiveTest {
         long t2 = ParameterArchive.getIntervalEnd(0) + 100;
         PGSegment pgSegment2 = new PGSegment(pg1.id, ParameterArchive.getIntervalStart(t2));
         ParameterValue pv1_2 = getParameterValue(p1, t2, "pv1_2", 30);
-        pv1_2.setAcquisitionStatus(AcquisitionStatus.EXPIRED);
+        pv1_2.setExpired();
 
         pgSegment2.addRecord(t2, IntArray.wrap(p1id), Arrays.asList(pv1_2));
         parchive.writeToArchive(pgSegment2);
@@ -188,8 +190,8 @@ public class ParameterArchiveTest extends BaseParchiveTest {
         assertNotNull(l9a.get(0).paramStatus);
         assertNotNull(l9a.get(1).paramStatus);
         assertNotNull(l9a.get(2).paramStatus);
-        assertEquals(AcquisitionStatus.EXPIRED, l9a.get(1).paramStatus[0].getAcquisitionStatus());
-        assertEquals(AcquisitionStatus.ACQUIRED, l9a.get(2).paramStatus[0].getAcquisitionStatus());
+        assertTrue(isExpired(l9a.get(1).paramStatus[0].getAcqStatus()));
+        assertTrue(isNominal(l9a.get(2).paramStatus[0].getAcqStatus()));
     }
 
     /**
@@ -244,7 +246,7 @@ public class ParameterArchiveTest extends BaseParchiveTest {
         ParameterValue pv2_0 = getParameterValue(p2, 100, "pv2_0");
         ParameterValue pv1_1 = getParameterValue(p1, 200, "pv1_1");
         ParameterValue pv1_2 = getParameterValue(p1, 300, "pv1_2");
-        pv1_2.setAcquisitionStatus(AcquisitionStatus.INVALID);
+        pv1_2.setInvalid();
 
         int p1id = parchive.getParameterIdDb().createAndGet(p1.getQualifiedName(), pv1_0.getEngValue().getType());
         int p2id = parchive.getParameterIdDb().createAndGet(p2.getQualifiedName(), pv2_0.getEngValue().getType());
@@ -350,8 +352,8 @@ public class ParameterArchiveTest extends BaseParchiveTest {
         assertNotNull(l5a.get(1).paramStatus);
         assertNotNull(l5a.get(2).paramStatus);
 
-        assertEquals(AcquisitionStatus.INVALID, l5a.get(0).paramStatus[2].getAcquisitionStatus());
-        assertEquals(AcquisitionStatus.ACQUIRED, l5a.get(2).paramStatus[0].getAcquisitionStatus());
+        assertTrue(isInvalid(l5a.get(0).paramStatus[2].getAcqStatus()));
+        assertTrue(isNominal(l5a.get(2).paramStatus[0].getAcqStatus()));
 
     }
 
@@ -562,7 +564,7 @@ public class ParameterArchiveTest extends BaseParchiveTest {
 
         // ascending request on empty data
         List<ParameterValueArray> l0a = retrieveSingleParamSingleGroup(t, t + 1, p1id, pg1.id, true);
-        Pvalue.ParameterStatus pstatus = l0a.get(0).paramStatus[0];
+        ParameterStatus pstatus = l0a.get(0).paramStatus[0];
         assertTrue(pstatus.hasExpireMillis());
         assertEquals(1234, pstatus.getExpireMillis());
     }

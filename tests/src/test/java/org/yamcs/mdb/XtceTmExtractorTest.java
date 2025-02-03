@@ -109,7 +109,7 @@ public class XtceTmExtractorTest {
         assertNotNull(pv);
         assertEquals(tmGenerator.pLEFloatPara1_2_2, pv.getEngValue().getFloatValue(), 0);
 
-        assertEquals((long) (1500 * 1.9), pv.getExpireMills());
+        assertEquals((long) (1500 * 1.9), pv.getExpireMillis());
     }
 
     @Test
@@ -185,7 +185,7 @@ public class XtceTmExtractorTest {
         assertEquals(12, received.size());
 
         ParameterValue pv = received.getLastInserted(mdb.getParameter("/REFMDB/SUBSYS1/StringFloatTSCPara1_4_2"));
-        assertEquals(AcquisitionStatus.INVALID, pv.getAcquisitionStatus());
+        assertTrue(pv.isInvalid());
     }
 
     @Test
@@ -224,7 +224,7 @@ public class XtceTmExtractorTest {
         assertEquals(11, received.size());
 
         ParameterValue pv = received.getLastInserted(mdb.getParameter("/REFMDB/SUBSYS1/StringIntTermPara1_5_2"));
-        assertEquals(AcquisitionStatus.INVALID, pv.getAcquisitionStatus());
+        assertTrue(pv.isInvalid());
     }
 
     @Test
@@ -345,7 +345,7 @@ public class XtceTmExtractorTest {
         ParameterValueList received = extractParameters(tmGenerator.generate_PKT1_12());
         ParameterValue pv = received.getLastInserted(mdb.getParameter("/REFMDB/SUBSYS1/StringEnumPara1_12_1"));
         assertEquals(tmGenerator.pStringEnumPara1_12_1, pv.getRawValue().getStringValue());
-        assertEquals(AcquisitionStatus.INVALID, pv.getAcquisitionStatus());
+        assertTrue(pv.isInvalid());
     }
 
     private void testPKT10(String rawValue, Boolean expectedEngineering) {

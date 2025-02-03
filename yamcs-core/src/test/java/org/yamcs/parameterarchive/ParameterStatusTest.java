@@ -6,11 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Pvalue.MonitoringResult;
-import org.yamcs.protobuf.Pvalue.ParameterStatus;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.util.DoubleRange;
+import org.yamcs.yarch.protobuf.Db.ParameterStatus;
 
 public class ParameterStatusTest {
 
@@ -18,7 +17,6 @@ public class ParameterStatusTest {
     public void test1() {
         Parameter p = new Parameter("p1");
         ParameterValue pv = new ParameterValue(p);
-        pv.setAcquisitionStatus(AcquisitionStatus.ACQUIRED);
 
         ParameterStatus s1 = ParameterStatusSegment.getStatus(pv, null);
         assertNotNull(s1);
@@ -29,7 +27,7 @@ public class ParameterStatusTest {
         assertNotEquals(s1, s2);
         assertTrue(s2 == ParameterStatusSegment.getStatus(pv, s2));
 
-        pv.setAcquisitionStatus(AcquisitionStatus.EXPIRED);
+        pv.setExpired();
         ParameterStatus s3 = ParameterStatusSegment.getStatus(pv, s2);
         assertNotEquals(s2, s3);
         assertTrue(s3 == ParameterStatusSegment.getStatus(pv, s3));

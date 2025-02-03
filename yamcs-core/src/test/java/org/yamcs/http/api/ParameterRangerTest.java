@@ -13,8 +13,7 @@ import org.yamcs.http.api.ParameterRanger.Range;
 import org.yamcs.http.api.ParameterRanger.SingleRange;
 import org.yamcs.parameter.ValueArray;
 import org.yamcs.parameterarchive.ParameterValueArray;
-import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
-import org.yamcs.protobuf.Pvalue.ParameterStatus;
+import org.yamcs.yarch.protobuf.Db.ParameterStatus;
 
 public class ParameterRangerTest {
     @Test
@@ -103,7 +102,7 @@ public class ParameterRangerTest {
             timestamps[i] = i;
         }
         ParameterStatus[] paramStatus = new ParameterStatus[values.length];
-        Arrays.fill(paramStatus, ParameterStatus.newBuilder().setAcquisitionStatus(AcquisitionStatus.ACQUIRED).build());
+        Arrays.fill(paramStatus, ParameterStatus.newBuilder().setAcqStatus(0).build());
 
         return new ParameterValueArray(timestamps, engValues, engValues, paramStatus);
     }

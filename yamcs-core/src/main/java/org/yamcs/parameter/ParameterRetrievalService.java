@@ -30,7 +30,6 @@ import org.yamcs.parameterarchive.ParameterId;
 import org.yamcs.parameterarchive.ParameterIdDb;
 import org.yamcs.parameterarchive.ParameterValueArray;
 import org.yamcs.parameterarchive.SingleParameterRetrieval;
-import org.yamcs.protobuf.Pvalue.ParameterStatus;
 import org.yamcs.protobuf.Yamcs.ParameterReplayRequest;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.AggregateUtil;
@@ -537,11 +536,11 @@ public class ParameterRetrievalService extends AbstractYamcsService {
             }
         }
         long[] timestamps = new long[m - n];
-        ParameterStatus[] statuses = new ParameterStatus[m - n];
+        var statuses = new org.yamcs.yarch.protobuf.Db.ParameterStatus[m - n];
         for (int i = n; i < m; i++) {
             ParameterValue pv = pvlist.get(i);
             timestamps[i - n] = pv.getGenerationTime();
-            statuses[i - n] = pv.getStatus().toProtoBuf();
+            statuses[i - n] = pv.getStatus().toProtoBuf(false);
         }
         ParameterValueArray pva = new ParameterValueArray(timestamps, engValues, rawValues, statuses);
         consumer.accept(pva);
@@ -646,11 +645,11 @@ public class ParameterRetrievalService extends AbstractYamcsService {
             rawValues.setValue(0, pv.getRawValue());
         }
 
-        org.yamcs.protobuf.Pvalue.ParameterStatus[] paramStatus = null;
+        org.yamcs.yarch.protobuf.Db.ParameterStatus[] paramStatus = null;
 
         if (opts.retrieveParameterStatus()) {
-            paramStatus = new org.yamcs.protobuf.Pvalue.ParameterStatus[] {
-                    pv.getStatus().toProtoBuf() };
+            paramStatus = new org.yamcs.yarch.protobuf.Db.ParameterStatus[] {
+                    pv.getStatus().toProtoBuf(false) };
         }
 
         return new ParameterValueArray(timestamps, engValues, rawValues, paramStatus);

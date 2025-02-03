@@ -80,7 +80,6 @@ public class RocksdbSysParamProducer implements SystemParametersProducer {
         ParameterValue pv = new ParameterValue(rocksdbMemUsageParam);
         pv.setGenerationTime(gentime);
         pv.setAcquisitionTime(gentime);
-        pv.setAcquisitionStatus(AcquisitionStatus.ACQUIRED);
         pv.setEngValue(v);
 
         pv.setExpireMillis((long) (1.9 * getFrequency() * 1000));

@@ -11,10 +11,10 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.Value;
 import org.yamcs.parameter.ValueArray;
 import org.yamcs.parameterarchive.ParameterValueArray;
-import org.yamcs.protobuf.Pvalue.ParameterStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.IntArray;
 import org.yamcs.utils.MutableLong;
+import org.yamcs.yarch.protobuf.Db.ParameterStatus;
 
 /**
  * builds ranges of parameters

@@ -11,8 +11,8 @@ import org.rocksdb.RocksDBException;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterRetrievalOptions;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.protobuf.Pvalue.ParameterStatus;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.yarch.protobuf.Db.ParameterStatus;
 
 /**
  * Retrieves multiple parameters from the Parameter Archive.
@@ -148,9 +148,13 @@ public class MultiParameterRetrieval {
             }
             if (tv.paramStatus != null) {
                 ParameterStatus ps = tv.paramStatus;
-                if (ps.hasAcquisitionStatus()) {
-                    pv.setAcquisitionStatus(ps.getAcquisitionStatus());
+                if (ps.hasAcqStatus()) {
+                    pv.setAcqStatus(ps.getAcqStatus());
+                } else if (ps.hasAcquisitionStatus()) {
+                    pv.setAcqStatus(
+                            org.yamcs.parameter.ParameterStatus.getAcquisitionStatus(ps.getAcquisitionStatus()));
                 }
+
                 if (ps.hasMonitoringResult()) {
                     pv.setMonitoringResult(ps.getMonitoringResult());
                 }

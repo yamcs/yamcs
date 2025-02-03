@@ -11,7 +11,6 @@ import org.yamcs.parameter.BinaryValue;
 import org.yamcs.parameter.BooleanValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
-import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
@@ -85,7 +84,7 @@ public class ParameterTypeProcessor {
                 checkValidity(ptype, pval);
             }
         } else {
-            pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
+            pval.setInvalid();
         }
     }
 
@@ -302,7 +301,6 @@ public class ParameterTypeProcessor {
                     "Unsupported raw value type '" + rawValue.getType() + "' cannot be converted to integer");
         }
     }
-
 
     private Value doIntegerCalibration(ProcessingData processingData, IntegerParameterType ipt, long longValue) {
         CalibratorProc calibrator = pdata.getCalibrator(processingData, ipt.getEncoding());
@@ -550,7 +548,7 @@ public class ParameterTypeProcessor {
                 }
                 boolean valid = ValidRangeChecker.checkFloatRange(fvr, v);
                 if (!valid) {
-                    pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
+                    pval.setInvalid();
                 }
             }
         } else if (ptype instanceof IntegerParameterType) {
@@ -564,7 +562,7 @@ public class ParameterTypeProcessor {
                 }
                 boolean valid = ValidRangeChecker.checkIntegerRange(ivr, v);
                 if (!valid) {
-                    pval.setAcquisitionStatus(AcquisitionStatus.INVALID);
+                    pval.setInvalid();
                 }
             }
         }

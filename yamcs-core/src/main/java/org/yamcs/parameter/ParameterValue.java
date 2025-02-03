@@ -77,16 +77,16 @@ public class ParameterValue extends BasicParameterValue {
 
     public org.yamcs.protobuf.Pvalue.ParameterValue toGpb() {
         NamedObjectId id = NamedObjectId.newBuilder().setName(getParameterQualifiedName()).build();
-        return toProtobufParameterValue(Optional.of(id), OptionalInt.empty());
+        return toProtobufParameterValue(Optional.of(id), OptionalInt.empty(), true);
     }
 
     public org.yamcs.protobuf.Pvalue.ParameterValue toGpb(NamedObjectId id) {
         Optional<NamedObjectId> optionalId = Optional.ofNullable(id);
-        return toProtobufParameterValue(optionalId, OptionalInt.empty());
+        return toProtobufParameterValue(optionalId, OptionalInt.empty(), false);
     }
 
     public org.yamcs.protobuf.Pvalue.ParameterValue toGpb(int numericId) {
-        return toProtobufParameterValue(Optional.empty(), OptionalInt.of(numericId));
+        return toProtobufParameterValue(Optional.empty(), OptionalInt.of(numericId), true);
     }
 
     /**
@@ -97,10 +97,10 @@ public class ParameterValue extends BasicParameterValue {
      * @return the created ProtobufPV
      */
     public org.yamcs.protobuf.Pvalue.ParameterValue toProtobufParameterValue(Optional<NamedObjectId> id,
-            OptionalInt numericId) {
+            OptionalInt numericId, boolean withExpiration) {
 
         org.yamcs.protobuf.Pvalue.ParameterValue.Builder gpvb = org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder()
-                .setAcquisitionStatus(getAcquisitionStatus())
+                .setAcquisitionStatus(getAcquisitionStatus(withExpiration))
                 .setGenerationTime(TimeEncoding.toProtobufTimestamp(generationTime));
         if (id.isPresent()) {
             gpvb.setId(id.get());
@@ -164,6 +164,10 @@ public class ParameterValue extends BasicParameterValue {
         return (expireMillis > 0) && (acquisitionTime + expireMillis < now);
     }
 
+    public int getAcqStatus() {
+        return status.getAcqStatus();
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -182,4 +186,6 @@ public class ParameterValue extends BasicParameterValue {
         }
         return sb.toString();
     }
+
+    
 }

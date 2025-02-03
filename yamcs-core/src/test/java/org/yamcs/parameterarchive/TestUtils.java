@@ -6,9 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
-import org.yamcs.protobuf.Pvalue.ParameterStatus;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.yarch.protobuf.Db.ParameterStatus;
 
 public class TestUtils {
     static ParameterValue getParameterValue(Parameter p, long instant, int intv) {

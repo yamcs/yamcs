@@ -107,7 +107,6 @@ public class FileStoreParameterProducer implements SystemParametersProducer {
                 ParameterValue pv = new ParameterValue(storep.param);
                 pv.setGenerationTime(gentime);
                 pv.setAcquisitionTime(gentime);
-                pv.setAcquisitionStatus(AcquisitionStatus.ACQUIRED);
                 pv.setEngValue(v);
 
                 pv.setExpireMillis((long) (1.9 * getFrequency() * 1000));

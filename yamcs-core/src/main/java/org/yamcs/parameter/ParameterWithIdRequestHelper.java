@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.InvalidRequestIdentification;
 import org.yamcs.NoPermissionException;
-import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.User;
@@ -229,7 +228,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         for (ParameterValue pv : values) {
             if (pv.isExpired(now)) {
                 pv = new ParameterValue(pv);
-                pv.setAcquisitionStatus(AcquisitionStatus.EXPIRED);
+                pv.setExpired();
             }
             if (subscr.checkExpiration && pv.hasExpirationTime()) {
                 subscr.pvexp.put(pv.getParameter(), pv);
@@ -459,11 +458,13 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
             } else {
                 oldPv = subscription.pvexp.remove(p);
             }
-            if ((oldPv != null) && oldPv.getAcquisitionStatus() == AcquisitionStatus.ACQUIRED && oldPv.isExpired(now)) {
-                ParameterValue tmp = new ParameterValue(oldPv); // make a copy because this is shared by other
-                                                                // subscribers
-                tmp.setAcquisitionStatus(AcquisitionStatus.EXPIRED);
-                addValueForAllSubscribedIds(expired, subscription, tmp);
+            if (oldPv != null) {
+                if (oldPv.isExpired()) {
+                    addValueForAllSubscribedIds(expired, subscription, oldPv);
+                } else if (oldPv.isExpired(now)) {
+                    oldPv.setExpired();
+                    addValueForAllSubscribedIds(expired, subscription, oldPv);
+                }
             }
         }
         return expired;
@@ -472,13 +473,17 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     // check expiration of all parameters from subscription
     private List<ParameterValueWithId> checkExpiration(Subscription subscription, long now) {
         List<ParameterValueWithId> expired = new ArrayList<>();
-        for (ParameterValue pv : subscription.pvexp.values()) {
-            if (pv.getAcquisitionStatus() == AcquisitionStatus.ACQUIRED && pv.isExpired(now)) {
-
-                ParameterValue tmp = new ParameterValue(pv); // make a copy because this is shared by other subscribers
-                tmp.setAcquisitionStatus(AcquisitionStatus.EXPIRED);
-                subscription.pvexp.put(pv.getParameter(), tmp);
-                addValueForAllSubscribedIds(expired, subscription, tmp);
+        var it = subscription.pvexp.entrySet().iterator();
+        while (it.hasNext()) {
+            var entry = it.next();
+            var pv = entry.getValue();
+            if (pv.isExpired()) {
+                addValueForAllSubscribedIds(expired, subscription, pv);
+                it.remove();
+            } else if (pv.isExpired(now)) {
+                pv.setExpired();
+                addValueForAllSubscribedIds(expired, subscription, pv);
+                it.remove();
             }
         }
         subscription.lastExpirationCheck = now;

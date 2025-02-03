@@ -58,7 +58,7 @@ public class ContainerProcessingContext {
         if (pv == null) {
             return null;
         }
-        if (pv.getAcquisitionStatus() != AcquisitionStatus.ACQUIRED) {
+        if (!pv.isNominal()) {
             return null;
         }
 

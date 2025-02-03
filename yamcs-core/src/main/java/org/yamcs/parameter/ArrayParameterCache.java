@@ -13,7 +13,6 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.yamcs.logging.Log;
-import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.IntArray;
 import org.yamcs.utils.SortedIntArray;
@@ -152,8 +151,8 @@ public class ArrayParameterCache implements ParameterCache {
         long now = TimeEncoding.getWallclockTime();
         // check expiration
         for (ParameterValue pv : result) {
-            if ((pv.getAcquisitionStatus() == AcquisitionStatus.ACQUIRED) && pv.isExpired(now)) {
-                pv.setAcquisitionStatus(AcquisitionStatus.EXPIRED);
+            if (!pv.status.isExpired() && pv.isExpired(now)) {
+                pv.status.setExpired();
             }
         }
 

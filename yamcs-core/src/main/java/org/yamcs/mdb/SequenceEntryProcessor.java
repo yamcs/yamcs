@@ -8,7 +8,6 @@ import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ArrayValue;
 import org.yamcs.parameter.ContainerParameterValue;
 import org.yamcs.parameter.Value;
-import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.xtce.AggregateDataType;
 import org.yamcs.xtce.ArrayDataType;
@@ -109,8 +108,8 @@ public class SequenceEntryProcessor {
             if (ptype instanceof ArrayParameterType) {
                 return null;
             }
-
-            pv.setAcquisitionStatus(AcquisitionStatus.INVALID);
+            System.out.println("setting invalid");
+            pv.setInvalid();
         } else {
             pv.setRawValue(rv);
         }

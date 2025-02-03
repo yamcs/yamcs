@@ -170,8 +170,8 @@ public class AggregateUtil {
             pv1.setRawValue(rawValue);
             pv1.setGenerationTime(rev.getGenerationTime());
             pv1.setAcquisitionTime(pv.getAcquisitionTime());
-            pv1.setAcquisitionStatus(pv.getAcquisitionStatus());
-            pv1.setExpireMillis(pv.getExpireMills());
+            pv1.setAcqStatus(pv.getAcqStatus());
+            pv1.setExpireMillis(pv.getExpireMillis());
             return (T) pv1;
         } else {
             ArgumentValue av = (ArgumentValue) rev;
