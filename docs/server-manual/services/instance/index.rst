@@ -12,6 +12,7 @@ Instance Services
     parameter-archive-service
     parameter-list-service
     parameter-recorder
+    parameter-retrieval
     processor-creator-service
     replay-server
     system-parameters-service

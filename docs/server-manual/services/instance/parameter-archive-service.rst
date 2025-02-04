@@ -114,15 +114,14 @@ minimumGroupOverlap (double)
     Default: ``0.5``
     
 coverageEndDelta (integer)
-    Number of seconds in the future, relative to the mission time, considered for the parameter archive coverage end. Any data falling beyond this, it is not considered.a
-    The coverage end should normally be in the past and it is used when retrieving parameters - if parameters fall before the coverage end, then the parameter retrieval service
-     will attempt retrieval fromt he parameter archive and will not try to retrieve the parameter via other means (cache or replay).
-     The reason for implementing this delta is to avoid adding by mistake some data in the far future causing the parameter retrieval to never use the cache (because theoretically all data is covered by the parameter archive)	
+    Number of seconds in the future, relative to the mission time, considered for the parameter archive coverage end. Any data falling beyond this, it is not considered.
+
+    The coverage end should normally be in the past and it is used when retrieving parameters - if parameters fall before the coverage end, then the parameter retrieval service will attempt retrieval from the parameter archive and will not try to retrieve the parameter via other means (cache or replay).
+
+    The reason for implementing this delta is to avoid adding by mistake some data in the far future causing the parameter retrieval to never use the cache (because theoretically all data is covered by the parameter archive)
     
-     Default: ``60`` (one minute)   
-     
-    
-    
+    Default: ``60`` (one minute)
+
 
 Backfiller Options
 ------------------

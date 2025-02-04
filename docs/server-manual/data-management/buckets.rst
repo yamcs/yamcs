@@ -13,19 +13,22 @@ A bucket is limited to 100MB in size and maximum 1000 objects. In addition, the 
 
 The RocksDB buckets can be created in the configuration or programmatically using the :apidoc:`HTTP API <buckets>`.
 
-The filesystem buckets can only be defined in the configuration by using the ``buckets`` configuration option as shown below.
 
-The ``buckets`` keyword in :file:`etc/yamcs.yaml` will define a list of buckets.
+Buckets
+-------
+
+The ``buckets`` keyword in :file:`etc/yamcs.yaml` defines a list of buckets.
 
 .. code-block:: yaml
 
   buckets:
+    - name: mybucket
     - name: cfdpUp
       path: ../../cfdpUp
 
    
 Options
--------
+~~~~~~~
 
 name (string)
     The name of the bucket. The name must contain only letters, digits or underscores.
@@ -43,3 +46,41 @@ maxObjects (number)
 .. note::
 
     The ``maxSize`` and ``maxObjects`` are enforced when *new* objects are added to the bucket. It is possible for limits to be lower than the actual usage. For example, when they have been reconfigured. Or, in the case of filesystem buckets, because content has changed outside of Yamcs.
+
+
+Bucket Providers
+----------------
+
+A plugin mechanism is available to add custom bucket providers. Currently the only such implementation is called ``remote-yamcs``, which allows Yamcs to interact with a bucket on another server of Yamcs.
+
+This can be activated by setting the ``bucketProviders`` property in :file:`etc/yamcs.yaml`. In the following example, Yamcs will reach out to a yamcs2 server with the provided credentials (Basic Auth only) to locate a remote bucket named ``foo`` and map this to a local bucket named ``bar``. Any read or write in ``bar`` is actually done on the yamcs2 server in the ``foo`` bucket:
+
+.. code-block:: yaml
+
+  bucketProviders:
+    - type: remote-yamcs
+      yamcsUrl: https://yamcs2.example.com
+      username: admin
+      password: test
+      buckets:
+        - name: foo
+          localName: bar
+
+Options
+~~~~~~~
+
+yamcsUrl (string)
+  **Required.** The URL of the remote Yamcs server; The URL has to include http or https.
+
+username (string)
+  Username to connect to the upstream Yamcs server (if authentication is enabled); has to be set together with password.
+
+password (string)
+  Password to connect to the upstream Yamcs server (if authentication is enabled); has to be set together with username.
+
+verifyTls (boolean)
+    If the connection is over TLS (when ``yamcsUrl`` starts with https), this option can enable/disable the verification of the server certificate against local accepted CA list. Default: true
+
+buckets (list of maps)
+  Buckets to consider. Any remote bucket not in this list is ignored. For each bucket at least the ``name`` should be specified. Specify also ``localName`` if you want the local name to be different than the remote name.
+
