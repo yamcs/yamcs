@@ -40,8 +40,14 @@ public class UslpFrameDecoder implements TransferFrameDecoder {
             throw new TcTmException("Bad frame version number " + version + "; expected 12 (USLP)");
         }
         
-        if (uslpParams.frameLength != -1 && length != uslpParams.frameLength) {
-            throw new TcTmException("Bad frame length " + length + "; expected fixed length " + uslpParams.frameLength);
+        if (uslpParams.frameLength != -1) {
+            if (length != uslpParams.frameLength) {
+                throw new TcTmException("Bad frame length " + length + "; expected fixed length " + uslpParams.frameLength);
+            }
+        } else {
+            if (length < uslpParams.minFrameLength || length > uslpParams.maxFrameLength) {
+                throw new TcTmException("Bad frame length " + length + "; expected length between" + uslpParams.minFrameLength + " and " + uslpParams.maxFrameLength);
+            }
         }
 
         int dataEnd = offset + length;
@@ -136,30 +142,40 @@ public class UslpFrameDecoder implements TransferFrameDecoder {
         utf.setMapId(mapId);
 
         byte dataHeader = data[dataOffset];
-        int constrRules = dataHeader >> 5;
+        int constrRules = (dataHeader & 0xFF) >> 5;
         int protId = dataHeader & 0x1F;
         if (vmp.service == ServiceType.PACKET) {
-            if (constrRules != 0) {
-                throw new TcTmException(
-                        "Invalid TFDZ Construction Rule Value " + constrRules + " Expected 0 for packet data.");
-            }
 
             if (protId != 0) {
                 throw new TcTmException("Invalid Protocol Id " + protId + " Expected 0 for packet data.");
             }
-            int fhp = ByteArrayUtils.decodeShort(data, dataOffset + 1);
-            dataOffset += 3;
-            if (fhp == 0xFFFF) {
-                fhp = -1;
-            } else {
-                fhp += dataOffset;
-                if (fhp > dataEnd) {
-                    throw new TcTmException(
-                            "First header pointer in the date header part of USLP frame is outside the data "
-                                    + (fhp - dataOffset) + ">" + (dataEnd - dataOffset));
+
+            if (constrRules == 0b000) {
+                // This construction rule logic is also valid for 0b010 and 0b001 (fixed size)
+                int fhp = ByteArrayUtils.decodeShort(data, dataOffset + 1);
+                dataOffset += 3;
+
+                if (fhp == 0xFFFF) {
+                    fhp = -1;
+                } else {
+                    fhp += dataOffset;
+                    if (fhp > dataEnd) {
+                        throw new TcTmException(
+                                "First header pointer in the date header part of USLP frame is outside the data "
+                                        + (fhp - dataOffset) + ">" + (dataEnd - dataOffset));
+                    }
                 }
+
+                utf.setFirstHeaderPointer(fhp);
+            } else if(constrRules == 0b111) {
+                // This construction rule logic is also valid for other TFDZ construction rules
+                // with variable length.
+                dataOffset += 1;
+                utf.setFirstHeaderPointer(dataOffset);   
+            } else {
+                throw new TcTmException(
+                        "Invalid TFDZ Construction Rule Value " + constrRules + " Expected 0 for packet data.");
             }
-            utf.setFirstHeaderPointer(fhp);
         }
 
         utf.setDataStart(dataOffset);
