@@ -37,34 +37,37 @@ upstreamInstance (string)
   **Required.** The instance of Yamcs on the upstream server.
 
 verifyTls (boolean)
-    If the connection is over TLS (when ``yamcsUrl`` starts with https), this option can enable/disable the verification of the server certificate against local accepted CA list. Default: true
+    If the connection is over TLS (when ``yamcsUrl`` starts with https), this option can enable/disable the verification of the server certificate against local accepted CA list. Default: ``true``
 
 upstreamProcessor (string)
-  The processor to connect to on the upstream Yamcs server. Default: realtime
+  The processor to connect to on the upstream Yamcs server. Default: ``realtime``
   
 tm (boolean)
-  Subscribe telemetry containers (packets). The list of containers (packets) has to be specified using the containers option. Default: true
+  Subscribe telemetry containers (packets). The list of containers (packets) has to be specified using the containers option. Default: ``true``
 
 containers (list of strings)
   **Required if tm is true.** The list of containers(packets) to subscribe to. The list has to contain fully qualified names of containers.
+
   At this moment both the local (downstream) MDB and the upstream MDB have to contain definitions for the containers specified in this list.
+
   However, the local MDB can contain a more refined version. 
+
   For example the upstream MDB may define the container with just the header or a few parameters whereas the local MDB may define it in full and additionally other derived containers. 
 
 tmRealtimeStream (string)
-  Stream to which the TM packets will be sent. Default: "tm_realtime".
+  Stream to which the TM packets will be sent. Default: ``tm_realtime``.
 
 tmArchive (boolean)
-  Enables TM archival. Default: true.
+  Enables TM archival. Default: ``true``.
 
 tmArchiveStream (string)
-  Stream to which the TM packets will be archived. Default: "tm_dump".
+  Stream to which the TM packets will be archived. Default: ``tm_dump``.
 
 gapFillingInterval (integer)
-  Number of seconds between each archive gap filling attempt. Default: 300.
+  Number of seconds between each archive gap filling attempt. Default: ``300``.
 
 pp (boolean) 
-  Subscribe parameters (pp stands for "processed parameters"). The list of parameters has to be specified using the parameters option. Default: true
+  Subscribe parameters (pp stands for "processed parameters"). The list of parameters has to be specified using the parameters option. Default: ``true``
 
 parameters (list of strings)
   **Required if pp is true.** The list of parameters has to subscribe to. The list should contain fully qualified name of parameters which
@@ -76,14 +79,14 @@ parameters (list of strings)
   The /yamcs system parameters will be renamed such that ``/yamcs/a/b/c/parameter_name`` is saved in the local archive as ``/yamcs/upstreamName_a/b/c/parameter_name``.
 
 ppRealtimeStream (string)
-  Stream to which the parameter packets will be sent. Default: "pp_realtime".
+  Stream to which the parameter packets will be sent. Default: ``pp_realtime``.
 
 tc (boolean)
   Allow to send TC and subscribe to command history.
 
-  All the command history entries received from the upstream server will be renamed to the shape yamcs<uspstreamName>_OriginalEntryName.
+  All the command history entries received from the upstream server will be renamed to the shape yamcs<upstreamName>_OriginalEntryName.
 
-  Exception make those added in the keepUpstreamAcks configuration.
+  Exception make those added in the ``keepUpstreamAcks`` configuration.
 
   Default: true
 
@@ -98,7 +101,7 @@ event (boolean)
    Default: true
 
 eventRealtimeStream (string)
-  Stream to which the events will be sent. Default: "events_realtime".
+  Stream to which the events will be sent. Default: ``events_realtime``.
 
 connectionAttempts (integer)
   How many times to attempt reconnection if the connection fails. Reconnection will only be attempted once if the authentication fails.
@@ -132,7 +135,8 @@ commandMapping (list of CommandMapData)
     argument (string)
         **Required if type is EMBEDDED_BINARY.** Argument in the upstream command that will be used for the embedded binary downstream command.
     
-    The list of commandMapping is checked in order - the first entry which matches the ``local`` entry will be used.
+    The list of ``commandMapping`` is checked in order - the first entry which matches the ``local`` entry will be used.
+
     If no entry matches the sent command, the command will fail.
     
 failCommandIfNoMappingMatches (boolean)
@@ -142,4 +146,4 @@ commandPostprocessorClassName (string)
     The class name for the command post-processor. The post-processor is used for the embedded binary commands.
     
 commandPostprocessorClassName (map)
-    The arguments to use for initializing the post-processor.    
+    The arguments to use for initializing the post-processor.
