@@ -2,8 +2,10 @@ package org.yamcs.parameterarchive;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -16,6 +18,8 @@ import org.yamcs.yarch.rocksdb.AscendingRangeIterator;
 import org.yamcs.yarch.rocksdb.Tablespace;
 import org.yamcs.yarch.rocksdb.YRDB;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord;
+
+import com.google.common.collect.Iterators;
 
 import static org.yamcs.yarch.rocksdb.RdbStorageEngine.TBS_INDEX_SIZE;
 
@@ -57,7 +61,7 @@ public class ParameterGroupIdDb {
     // The index in this list is the pgid
     // May contain nulls if a group is ever removed, or if the archive comes from Yamcs prior to 5.9.5 - for some reason
     // the group 0 was not used
-    List<ParameterGroup> groups = new ArrayList<>();
+    private List<ParameterGroup> groups = new ArrayList<>();
 
     Map<IntArray, ParameterGroup> pg2groupCache = new HashMap<>();
 
@@ -233,6 +237,14 @@ public class ParameterGroupIdDb {
         } finally {
             lock.readLock().unlock();
         }
+    }
+
+    public int numGroups() {
+        return (int) groups.stream().filter(Objects::nonNull).count();
+    }
+
+    public Iterator<ParameterGroup> groupIterato() {
+        return Iterators.filter(groups.iterator(), Objects::nonNull);
     }
 
     @Override

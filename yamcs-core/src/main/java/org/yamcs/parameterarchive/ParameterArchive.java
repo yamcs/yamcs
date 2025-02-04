@@ -959,7 +959,9 @@ public class ParameterArchive extends AbstractYamcsService {
         long covEnd = TimeEncoding.NEGATIVE_INFINITY;
         log.debug("Computing coverage end as greatest timestamp of a parameter smaller than {}",
                 TimeEncoding.toString(now));
-        if (getParameterGroupIdDb().groups.isEmpty()) {
+
+
+        if (getParameterGroupIdDb().numGroups() == 0) {
             log.debug("No parameter group, coverageEnd is {}", TimeEncoding.toString(covEnd));
             return covEnd;
         }
@@ -974,7 +976,10 @@ public class ParameterArchive extends AbstractYamcsService {
         var nowIntervalEnd = getIntervalEnd(now);
         for (var p : partitions) {
             try (RocksIterator it = getIterator(p)) {
-                pg_loop: for (var pg : getParameterGroupIdDb().groups) {
+                var groupIterator = getParameterGroupIdDb().groupIterato();
+                pg_loop: while (groupIterator.hasNext()) {
+                    var pg = groupIterator.next();
+
                     var sk = new SegmentKey(parameterIdDb.timeParameterId, pg.id, nowIntervalEnd, Byte.MAX_VALUE);
                     byte[] timeKey = p.version == 0 ? sk.encodeV0() : sk.encode();
                     it.seekForPrev(timeKey);
