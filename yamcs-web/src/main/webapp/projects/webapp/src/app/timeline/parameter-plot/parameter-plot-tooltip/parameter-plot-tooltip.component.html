@@ -1,0 +1,18 @@
+<div #tt class="ya-tooltip">
+  {{ date() | datetime }}
+  <br />
+  <br />
+  <table yaSimpleTable>
+    @for (item of legend(); track item.label) {
+      <tr>
+        <td>
+          <span [style.color]="item.color">⬤</span>
+        </td>
+        <td>
+          {{ item.label }}
+        </td>
+        <td>{{ (item.value | number: "1.0-2") ?? "-" }}</td>
+      </tr>
+    }
+  </table>
+</div>

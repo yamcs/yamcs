@@ -13,7 +13,16 @@ export class YaStepperStep {
   visible = input(true);
   expanded = model(false);
 
-  toggle() {
+  toggle(event: MouseEvent) {
+    if (!event.target) {
+      return;
+    }
+
+    if ((event.target as HTMLElement).closest('ya-stepper-step-actions')) {
+      // Ignore bubbled up click
+      return;
+    }
+
     this.expanded.set(!this.expanded());
   }
 }

@@ -1,5 +1,5 @@
-export * from './lib/BitRange';
 export * from './lib/abc/BaseComponent';
+export * from './lib/BitRange';
 export * from './lib/client';
 export * from './lib/commanding/Acknowledgment';
 export * from './lib/commanding/AdvancementParams';
@@ -49,6 +49,7 @@ export * from './lib/components/search-filter2/search-filter2.component';
 export * from './lib/components/select/select.component';
 export * from './lib/components/sidebar/sidebar-nav-group.component';
 export * from './lib/components/sidebar/sidebar-nav-item.component';
+export * from './lib/components/stepper/stepper-step-actions.component';
 export * from './lib/components/stepper/stepper-step.component';
 export * from './lib/components/stepper/stepper.component';
 export * from './lib/components/table-toggle/table-toggle.component';

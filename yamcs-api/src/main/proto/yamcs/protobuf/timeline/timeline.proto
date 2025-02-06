@@ -266,6 +266,7 @@ enum TimelineBandType {
   ITEM_BAND = 2;
   SPACER = 3;
   COMMAND_BAND = 4;
+  PARAMETER_PLOT = 5;
 }
 
 message TimelineBand {

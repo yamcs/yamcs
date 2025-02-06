@@ -1,0 +1,59 @@
+<form [formGroup]="form">
+  <table class="style-table" yaSimpleTable formGroupName="properties">
+    <tr>
+      <td class="property">
+        Frozen
+        <ya-help dialogTitle="Frozen">
+          Fix this line to the top of the view. Frozen bands are always rendered above other bands.
+        </ya-help>
+      </td>
+      <td class="widget">
+        <mat-slide-toggle formControlName="frozen" />
+      </td>
+    </tr>
+    <tr>
+      <td class="property">Height</td>
+      <td class="widget">
+        <input type="number" formControlName="height" style="width: 100px" min="0" />
+      </td>
+    </tr>
+    <tr>
+      <td class="property">
+        Minimum
+        <ya-help dialogTitle="Minimum">
+          Minimum value on the Y axis. Values lower than the minimum are not visible. If undefined,
+          the value is automatically derived from the actual trace data.
+        </ya-help>
+      </td>
+      <td class="widget">
+        <input type="number" formControlName="minimum" style="width: 100px" />
+        <span class="hint">Leave empty for automatic determination</span>
+      </td>
+    </tr>
+    <tr>
+      <td class="property">
+        Maximum
+        <ya-help dialogTitle="Maximum">
+          Maximum value on the Y axis. Values higher than the maximum are not visible. If undefined,
+          the value is automatically derived from the actual trace data.
+        </ya-help>
+      </td>
+      <td class="widget">
+        <input type="number" formControlName="maximum" style="width: 100px" />
+        <span class="hint">Leave empty for automatic determination</span>
+      </td>
+    </tr>
+    <tr>
+      <td class="property">Zero line width</td>
+      <td class="widget">
+        <input type="number" formControlName="zeroLineWidth" style="width: 100px" min="0" />
+      </td>
+    </tr>
+    <tr>
+      <td class="property">Zero line color</td>
+      <td class="widget">
+        <input type="color" formControlName="zeroLineColor" />
+      </td>
+    </tr>
+  </table>
+</form>

@@ -62,6 +62,9 @@ import { YaSearchFilter2 } from './components/search-filter2/search-filter2.comp
 import { YaSelect } from './components/select/select.component';
 import { YaSidebarNavGroup } from './components/sidebar/sidebar-nav-group.component';
 import { YaSidebarNavItem } from './components/sidebar/sidebar-nav-item.component';
+import { YaStepperStepActions } from './components/stepper/stepper-step-actions.component';
+import { YaStepperStep } from './components/stepper/stepper-step.component';
+import { YaStepper } from './components/stepper/stepper.component';
 import { YaTableToggle } from './components/table-toggle/table-toggle.component';
 import { YaTableTop } from './components/table-top/table-top.component';
 import { YaTagSelect } from './components/tag-select/tag-select.component';
@@ -195,6 +198,9 @@ const sharedComponents = [
   YaSelect,
   YaSidebarNavGroup,
   YaSidebarNavItem,
+  YaStepper,
+  YaStepperStep,
+  YaStepperStepActions,
   YaTableToggle,
   YaTableTop,
   YaTagSelect,

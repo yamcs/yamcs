@@ -23,6 +23,6 @@ export class CreateBandComponent {
     title: Title,
     readonly yamcs: YamcsService,
   ) {
-    title.setTitle('Create a Band');
+    title.setTitle('Create a band');
   }
 }

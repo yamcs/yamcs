@@ -15,6 +15,9 @@
         @if (band.type === "COMMAND_BAND") {
           <app-edit-command-band [form]="form" [band]="band" />
         }
+        @if (band.type === "PARAMETER_PLOT") {
+          <app-edit-parameter-plot [form]="form" [band]="band" />
+        }
       </form>
       <p>&nbsp;</p>
       <div class="action-bar">

@@ -61,7 +61,11 @@ export interface GetTimelineItemsOptions {
   band?: string;
 }
 
-export type TimelineBandType = 'TIME_RULER' | 'ITEM_BAND' | 'SPACER' | 'COMMAND_BAND';
+export type TimelineBandType = 'TIME_RULER'
+  | 'ITEM_BAND'
+  | 'SPACER'
+  | 'COMMAND_BAND'
+  | 'PARAMETER_PLOT';
 
 export interface CreateTimelineBandRequest {
   name: string;

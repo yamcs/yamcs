@@ -11,3 +11,7 @@
   font-style: italic;
   color: grey;
 }
+
+.style-table .widget .hint {
+  margin-left: 10px;
+}

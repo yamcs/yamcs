@@ -9,6 +9,7 @@
   text-transform: inherit;
   cursor: default;
   position: relative;
+  font-family: Roboto, sans-serif;
 }
 
 .ya-form label.invalid,
@@ -23,13 +24,14 @@
 
 .ya-form label,
 .ya-form label input[type="text"],
-.ya-form input[type="number"],
+.ya-form label input[type="number"],
 .ya-form label input[type="password"],
 .ya-form label textarea,
 .ya-form label select,
 .ya-form label .date-time-input,
 .ya-form div.label,
 .ya-form div.label input[type="text"],
+.ya-form div.label input[type="number"],
 .ya-form div.label input[type="password"],
 .ya-form div.label textarea,
 .ya-form div.label select,

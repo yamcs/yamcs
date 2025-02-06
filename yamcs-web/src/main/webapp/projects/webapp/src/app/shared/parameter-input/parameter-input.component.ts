@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, forwardRef } from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, forwardRef, input } from '@angular/core';
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { Parameter, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { debounceTime, map, Observable, switchMap, tap } from 'rxjs';
@@ -7,6 +7,7 @@ import { debounceTime, map, Observable, switchMap, tap } from 'rxjs';
   standalone: true,
   selector: 'app-parameter-input',
   templateUrl: './parameter-input.component.html',
+  styleUrl: './parameter-input.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{
     provide: NG_VALUE_ACCESSOR,
@@ -18,6 +19,8 @@ import { debounceTime, map, Observable, switchMap, tap } from 'rxjs';
   ],
 })
 export class AppParameterInput implements ControlValueAccessor {
+
+  fill = input(false, { transform: booleanAttribute });
 
   private onChange = (_: string | null) => { };
 

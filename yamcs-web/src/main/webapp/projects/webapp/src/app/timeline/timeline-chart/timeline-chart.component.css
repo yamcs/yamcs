@@ -12,7 +12,8 @@
   position: absolute;
   bottom: 35px;
   right: 0;
-  padding: 0 16px;
+  margin-right: 16px;
+  background: #fff;
   opacity: 0.75;
   font-size: small;
 }

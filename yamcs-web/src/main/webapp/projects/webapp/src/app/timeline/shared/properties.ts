@@ -4,7 +4,7 @@
 // (restriction of HTML color input type).
 const colorCache: { [key: string]: string; } = {};
 
-function convertColor(cssColor: string) {
+export function convertColor(cssColor: string) {
   let hex = colorCache[cssColor];
   if (!hex) {
     const ctx = document.createElement('canvas').getContext('2d')!;
@@ -25,7 +25,7 @@ export enum PropertyInputType {
 
 export interface PropertyInfo<T> {
   inputType: PropertyInputType;
-  defaultValue: T;
+  defaultValue: T | undefined;
 }
 
 export class BooleanProperty implements PropertyInfo<boolean> {
@@ -46,8 +46,8 @@ export class ColorProperty implements PropertyInfo<string> {
 
 export class NumberProperty implements PropertyInfo<number> {
   inputType = PropertyInputType.NUMBER;
-  defaultValue: number;
-  constructor(defaultValue: number) {
+  defaultValue: number | undefined;
+  constructor(defaultValue?: number) {
     this.defaultValue = defaultValue;
   }
 }
@@ -82,16 +82,34 @@ export function resolveProperties(info: PropertyInfoSet, properties: { [key: str
   return { ...defaultProperties, ...convertStringTypes(info, properties) };
 }
 
+export function removeUnsetProperties(properties: { [key: string]: any; }) {
+  for (const key in properties) {
+    if (properties[key] === null || properties[key] === '') {
+      delete properties[key];
+    }
+  }
+}
+
 function convertStringTypes(info: PropertyInfoSet, properties: { [key: string]: string; }) {
-  const result: { [key: string]: any; } = { ...properties };
+  const result: { [key: string]: any; } = {};
   for (const key in properties) {
     const propertyInfo = info[key];
-    if (propertyInfo?.inputType === PropertyInputType.BOOLEAN) {
+    if (!propertyInfo) {
+      continue;
+    }
+    if (propertyInfo.inputType === PropertyInputType.BOOLEAN) {
       result[key] = properties[key] === 'true';
-    } else if (propertyInfo?.inputType === PropertyInputType.NUMBER) {
+    } else if (propertyInfo.inputType === PropertyInputType.NUMBER) {
       result[key] = Number(properties[key]);
-    } else if (propertyInfo?.inputType === PropertyInputType.COLOR) {
+    } else if (propertyInfo.inputType === PropertyInputType.COLOR) {
       result[key] = convertColor(properties[key]);
+    } else if (propertyInfo.inputType === PropertyInputType.TEXT) {
+      result[key] = properties[key];
+    } else if (propertyInfo.inputType === PropertyInputType.SELECT) {
+      result[key] = properties[key];
+    } else {
+      console.warn(`Unexpected property input type for ${key}`, propertyInfo?.inputType);
+      result[key] = properties[key];
     }
   }
   return result;
