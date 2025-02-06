@@ -36,7 +36,7 @@ export class PlotBuffer {
   }
 
   setArchiveData(samples: DySample[]) {
-    this.archiveSamples = samples;
+    this.archiveSamples = samples ?? [];
     this.dirty = true;
   }
 

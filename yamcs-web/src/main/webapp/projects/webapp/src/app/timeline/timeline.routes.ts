@@ -11,6 +11,7 @@ import { EditItemComponent } from './edit-item/edit-item.component';
 import { EditViewComponent } from './edit-view/edit-view.component';
 import { CreateItemBandComponent } from './item-band/create-item-band/create-item-band.component';
 import { ItemListComponent } from './item-list/item-list.component';
+import { CreateParameterPlotComponent } from './parameter-plot/create-parameter-plot/create-parameter-plot.component';
 import { CreateSpacerComponent } from './spacer/create-spacer/create-spacer.component';
 import { CreateTimeRulerComponent } from './time-ruler/create-time-ruler/create-time-ruler.component';
 import { TimelineChartComponent } from './timeline-chart/timeline-chart.component';
@@ -61,6 +62,10 @@ export const ROUTES: Routes = [{
     path: 'bands/create/time-ruler',
     pathMatch: 'full',
     component: CreateTimeRulerComponent,
+  }, {
+    path: 'bands/create/parameter-plot',
+    pathMatch: 'full',
+    component: CreateParameterPlotComponent,
   }, {
     path: 'bands/create/command-band',
     pathMatch: 'full',

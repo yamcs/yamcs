@@ -31,7 +31,7 @@
     "@codemirror/lang-markdown": "^6.2.5",
     "@codemirror/lang-python": "^6.1.5",
     "@codemirror/state": "^6.4.1",
-    "@fqqb/timeline": "^1.2.9",
+    "@fqqb/timeline": "^1.4.0",
     "@types/dygraphs": "^2.1.4",
     "@yamcs/opi": "^1.2.9",
     "codemirror": "^6.0.1",

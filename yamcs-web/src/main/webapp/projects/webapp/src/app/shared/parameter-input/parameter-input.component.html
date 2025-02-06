@@ -3,7 +3,8 @@
   type="text"
   autocomplete="off"
   [formControl]="formControl"
-  [matAutocomplete]="auto" />
+  [matAutocomplete]="auto"
+  [class.fill]="fill()" />
 <mat-autocomplete class="ya-autocomplete" #auto>
   @for (option of filteredOptions | async; track option) {
     <mat-option [value]="option | memberPath">

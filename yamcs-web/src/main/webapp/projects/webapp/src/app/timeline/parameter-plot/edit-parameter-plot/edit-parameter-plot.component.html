@@ -1,0 +1,51 @@
+@if (formConfigured$ | async) {
+  <form [formGroup]="form" class="ya-form">
+    <ya-stepper>
+      <ya-stepper-step label="General" [expanded]="true">
+        <label>
+          Label
+          <span class="hint">(required)</span>
+          <br />
+          <input type="text" formControlName="name" style="width: 100%" />
+        </label>
+        <br />
+        <label>
+          Description
+          <span class="hint">(optional)</span>
+          <br />
+          <textarea formControlName="description" rows="3"></textarea>
+        </label>
+        <br />
+        <app-parameter-plot-styles [form]="form" />
+      </ya-stepper-step>
+
+      @for (traceForm of traces.controls; track traceForm; let i = $index) {
+        <ya-stepper-step label="Trace {{ i + 1 }}" [expanded]="true">
+          <ya-stepper-step-actions>
+            <ya-icon-action
+              icon="arrow_drop_up"
+              matTooltip="Move up"
+              [disabled]="i === 0"
+              (click)="moveUp(i)" />
+            <ya-icon-action
+              icon="arrow_drop_down"
+              matTooltip="Move down"
+              [disabled]="i >= traces.controls.length - 1"
+              (click)="moveDown(i)" />
+            <ya-icon-action
+              icon="delete_outline"
+              matTooltip="Remove trace"
+              [disabled]="traces.controls.length <= 1"
+              (click)="removeTrace(i)" />
+            <ya-icon-action
+              icon="add_circle_outline"
+              matTooltip="Add trace below"
+              (click)="addTrace(i)" />
+          </ya-stepper-step-actions>
+
+          <app-trace-styles [form]="traceForm" />
+        </ya-stepper-step>
+      }
+    </ya-stepper>
+  </form>
+}

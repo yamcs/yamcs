@@ -1,10 +1,12 @@
 import { ChangeDetectionStrategy, Component, Inject, OnDestroy } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MessageService, UpdateTimelineBandRequest, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { EditCommandBandComponent } from '../command-band/edit-command-band/edit-command-band.component';
 import { EditItemBandComponent } from '../item-band/edit-item-band/edit-item-band.component';
+import { EditParameterPlotComponent } from '../parameter-plot/edit-parameter-plot/edit-parameter-plot.component';
+import { removeUnsetProperties } from '../shared/properties';
 import { EditSpacerComponent } from '../spacer/edit-spacer/edit-spacer.component';
 import { EditTimeRulerComponent } from '../time-ruler/edit-time-ruler/edit-time-ruler.component';
 
@@ -16,6 +18,7 @@ import { EditTimeRulerComponent } from '../time-ruler/edit-time-ruler/edit-time-
   imports: [
     EditCommandBandComponent,
     EditItemBandComponent,
+    EditParameterPlotComponent,
     EditSpacerComponent,
     EditTimeRulerComponent,
     WebappSdkModule,
@@ -23,7 +26,7 @@ import { EditTimeRulerComponent } from '../time-ruler/edit-time-ruler/edit-time-
 })
 export class EditBandDialogComponent implements OnDestroy {
 
-  form: UntypedFormGroup;
+  form: FormGroup;
   dirty$ = new BehaviorSubject<boolean>(false);
 
   private formSubscription: Subscription;
@@ -32,7 +35,7 @@ export class EditBandDialogComponent implements OnDestroy {
     private dialogRef: MatDialogRef<EditBandDialogComponent>,
     readonly yamcs: YamcsService,
     private messageService: MessageService,
-    formBuilder: UntypedFormBuilder,
+    formBuilder: FormBuilder,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     const band = data.band;
@@ -40,6 +43,7 @@ export class EditBandDialogComponent implements OnDestroy {
       name: [band.name, [Validators.required]],
       description: [band.description || ''],
       tags: [band.tags || []],
+      traces: formBuilder.array([]), // Used by parameter plot
       properties: formBuilder.group({}), // Properties are added in sub-components
     });
     this.formSubscription = this.form.valueChanges.subscribe(() => {
@@ -57,9 +61,24 @@ export class EditBandDialogComponent implements OnDestroy {
       properties: formValue.properties,
     };
 
+    for (let i = 0; i < this.traces.length; i++) {
+      const traceForm = this.traces.at(i) as FormGroup;
+      for (const key in traceForm.controls) {
+        const propName = `trace_${i + 1}_${key}`;
+        const value = traceForm.controls[key].value;
+        options.properties![propName] = value;
+      }
+    }
+
+    removeUnsetProperties(options.properties || {});
+
     this.yamcs.yamcsClient.updateTimelineBand(this.yamcs.instance!, this.data.band.id, options)
       .then(band => this.dialogRef.close(band))
       .catch(err => this.messageService.showError(err));
+  }
+
+  get traces() {
+    return this.form.controls['traces'] as FormArray;
   }
 
   ngOnDestroy() {

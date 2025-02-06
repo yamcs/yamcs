@@ -1,6 +1,6 @@
 import { Location } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import { FormArray, FormGroup, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService, TimelineBand, UpdateTimelineBandRequest, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
@@ -9,6 +9,8 @@ import { InstancePageTemplateComponent } from '../../shared/instance-page-templa
 import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { EditCommandBandComponent } from '../command-band/edit-command-band/edit-command-band.component';
 import { EditItemBandComponent } from '../item-band/edit-item-band/edit-item-band.component';
+import { EditParameterPlotComponent } from '../parameter-plot/edit-parameter-plot/edit-parameter-plot.component';
+import { removeUnsetProperties } from '../shared/properties';
 import { EditSpacerComponent } from '../spacer/edit-spacer/edit-spacer.component';
 import { EditTimeRulerComponent } from '../time-ruler/edit-time-ruler/edit-time-ruler.component';
 
@@ -19,6 +21,7 @@ import { EditTimeRulerComponent } from '../time-ruler/edit-time-ruler/edit-time-
   imports: [
     EditCommandBandComponent,
     EditItemBandComponent,
+    EditParameterPlotComponent,
     EditSpacerComponent,
     EditTimeRulerComponent,
     InstanceToolbarComponent,
@@ -44,7 +47,7 @@ export class EditBandComponent implements OnDestroy {
     formBuilder: UntypedFormBuilder,
     readonly location: Location,
   ) {
-    title.setTitle('Edit Band');
+    title.setTitle('Edit band');
     const id = route.snapshot.paramMap.get('band')!;
     this.band$ = yamcs.yamcsClient.getTimelineBand(yamcs.instance!, id);
     this.band$.then(band => {
@@ -52,6 +55,7 @@ export class EditBandComponent implements OnDestroy {
         name: [band.name, [Validators.required]],
         description: [band.description || ''],
         tags: [band.tags || []],
+        traces: formBuilder.array([]), // Used by parameter plot
         properties: formBuilder.group({}), // Properties are added in sub-components
       });
       this.formSubscription = this.form.valueChanges.subscribe(() => {
@@ -71,9 +75,24 @@ export class EditBandComponent implements OnDestroy {
       properties: formValue.properties,
     };
 
+    for (let i = 0; i < this.traces.length; i++) {
+      const traceForm = this.traces.at(i) as FormGroup;
+      for (const key in traceForm.controls) {
+        const propName = `trace_${i + 1}_${key}`;
+        const value = traceForm.controls[key].value;
+        options.properties![propName] = value;
+      }
+    }
+
+    removeUnsetProperties(options.properties || {});
+
     this.yamcs.yamcsClient.updateTimelineBand(this.yamcs.instance!, id, options)
       .then(() => this.router.navigateByUrl(`/timeline/bands?c=${this.yamcs.context}`))
       .catch(err => this.messageService.showError(err));
+  }
+
+  get traces() {
+    return this.form.controls['traces'] as FormArray;
   }
 
   ngOnDestroy() {

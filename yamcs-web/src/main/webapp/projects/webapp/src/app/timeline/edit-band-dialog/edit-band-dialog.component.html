@@ -1,19 +1,18 @@
 <div class="central-pane">
   @if (data.band; as band) {
     <div class="ya-form" style="max-width: 600px">
-      <h2>Edit Band</h2>
+      <h2>Edit band</h2>
       <form [formGroup]="form" novalidate autocomplete="off">
         @if (band.type === "ITEM_BAND") {
           <app-edit-item-band [form]="form" [band]="band" />
-        }
-        @if (band.type === "SPACER") {
+        } @else if (band.type === "SPACER") {
           <app-edit-spacer [form]="form" [band]="band" />
-        }
-        @if (band.type === "TIME_RULER") {
+        } @else if (band.type === "TIME_RULER") {
           <app-edit-time-ruler [form]="form" [band]="band" />
-        }
-        @if (band.type === "COMMAND_BAND") {
+        } @else if (band.type === "COMMAND_BAND") {
           <app-edit-command-band [form]="form" [band]="band" />
+        } @else if (band.type === "PARAMETER_PLOT") {
+          <app-edit-parameter-plot [form]="form" [band]="band" />
         }
       </form>
     </div>

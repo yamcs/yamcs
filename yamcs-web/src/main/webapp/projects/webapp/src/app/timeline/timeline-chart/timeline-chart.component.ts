@@ -3,7 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Band, Banner, ItemBand as DefaultItemBand, Item, MouseTracker, TimeLocator, Timeline } from '@fqqb/timeline';
-import { MessageService, Synchronizer, TimelineItem, TimelineView, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { ConfigService, MessageService, Synchronizer, TimelineItem, TimelineView, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { AuthService } from '../../core/services/AuthService';
@@ -22,7 +22,9 @@ interface DateRange {
   stop: Date;
 }
 
+import { Overlay } from '@angular/cdk/overlay';
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
+import { ParameterPlot } from '../parameter-plot/ParameterPlot';
 
 @Component({
   standalone: true,
@@ -61,8 +63,10 @@ export class TimelineChartComponent implements AfterViewInit, OnDestroy {
     private router: Router,
     private authService: AuthService,
     private synchronizer: Synchronizer,
+    private configService: ConfigService,
+    private overlay: Overlay,
   ) {
-    title.setTitle('Timeline Chart');
+    title.setTitle('Timeline chart');
   }
 
   ngAfterViewInit() {
@@ -181,6 +185,10 @@ export class TimelineChartComponent implements AfterViewInit, OnDestroy {
           const band = new CommandBand(this, bandInfo);
           this.bands.push(band);
           this.installBandListeners(band);
+        } else if (bandInfo.type === 'PARAMETER_PLOT') {
+          const band = new ParameterPlot(this, bandInfo, this.yamcs, this.synchronizer, this.configService, this.overlay);
+          this.bands.push(band);
+          this.installBandListeners(band);
         }
       }
       this.refreshData();
@@ -234,6 +242,8 @@ export class TimelineChartComponent implements AfterViewInit, OnDestroy {
           start: new Date(loadStart).toISOString(),
           stop: new Date(loadStop).toISOString(),
         }));
+      } else if (band instanceof ParameterPlot) {
+        band.refreshData();
       }
     }
     if (promises.length) {

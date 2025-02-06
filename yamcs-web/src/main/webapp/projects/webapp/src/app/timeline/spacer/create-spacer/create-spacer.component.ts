@@ -1,8 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { Title } from '@angular/platform-browser';
-import { Router } from '@angular/router';
-import { MessageService, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { BaseComponent, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { CreateBandWizardStepComponent } from '../../create-band-wizard-step/create-band-wizard-step.component';
@@ -21,18 +19,16 @@ import { SpacerStylesComponent } from '../spacer-styles/spacer-styles.component'
     SpacerStylesComponent,
   ],
 })
-export class CreateSpacerComponent {
+export class CreateSpacerComponent extends BaseComponent {
 
-  form: UntypedFormGroup;
+  form: FormGroup;
 
   constructor(
-    title: Title,
-    formBuilder: UntypedFormBuilder,
+    formBuilder: FormBuilder,
     readonly yamcs: YamcsService,
-    private messageService: MessageService,
-    private router: Router,
   ) {
-    title.setTitle('Configure Spacer');
+    super();
+    this.setTitle('Configure Spacer');
     this.form = formBuilder.group({
       name: '',
       description: '',
