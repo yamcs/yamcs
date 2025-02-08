@@ -23,12 +23,6 @@ services:
   - class: org.yamcs.timeline.TimelineService
   - class: org.yamcs.plists.ParameterListService
   - class: org.yamcs.parameterarchive.ParameterArchive
-    args:
-      realtimeFiller: 
-        enabled: false
-      backFiller:
-        enabled: true
-        warmupTime: 60
   - class: org.yamcs.simulator.SimulatorCommander
     args:
       telnet:

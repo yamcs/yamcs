@@ -85,7 +85,7 @@ public class ParameterArchive extends AbstractYamcsService {
 
     public static final boolean STORE_RAW_VALUES = true;
 
-    public static final int NUMBITS_MASK = 23; // 2^23 millisecons =~ 139 minutes per interval
+    public static final int NUMBITS_MASK = 23; // 2^23 milliseconds =~ 139 minutes per interval
     public static final int TIMESTAMP_MASK = (0xFFFFFFFF >>> (32 - NUMBITS_MASK));
     public static final long INTERVAL_MASK = ~TIMESTAMP_MASK;
 
@@ -112,7 +112,6 @@ public class ParameterArchive extends AbstractYamcsService {
     YConfiguration realtimeFillerConfig;
     YConfiguration backFillerConfig;
     boolean realtimeFillerEnabled;
-    boolean backFillerEnabled;
     int maxSegmentSize;
     boolean sparseGroups;
     double minimumGroupOverlap;
@@ -144,22 +143,18 @@ public class ParameterArchive extends AbstractYamcsService {
         tablespace = RdbStorageEngine.getInstance().getTablespace(ydb);
         this.maxSegmentSize = config.getInt("maxSegmentSize");
 
-        if (config.containsKey("backFiller")) {
-            backFillerConfig = config.getConfig("backFiller");
-            log.debug("backFillerConfig: {}", backFillerConfig);
-            backFillerEnabled = backFillerConfig.getBoolean("enabled", true);
-        }
         if (config.containsKey("realtimeFiller")) {
             realtimeFillerConfig = config.getConfig("realtimeFiller");
             realtimeFillerEnabled = realtimeFillerConfig.getBoolean("enabled", false);
             log.debug("realtimeFillerConfig: {}", realtimeFillerConfig);
+        } else {
+            realtimeFillerEnabled = false;
         }
 
         partitioningSchema = ydb.getTimePartitioningSchema(config);
 
-        if (!config.containsKey("backFiller") && !config.containsKey("realtimeFiller")) {
-            backFiller = new BackFiller(this, YConfiguration.emptyConfig());
-        }
+        this.backFiller = new BackFiller(this, config.getConfigOrEmpty("backFiller"), !realtimeFillerEnabled);
+
         sparseGroups = config.getBoolean("sparseGroups");
         minimumGroupOverlap = config.getDouble("minimumGroupOverlap");
         coverageEndDelta = config.getLong("coverageEndDelta") * 1000;
@@ -560,6 +555,7 @@ public class ParameterArchive extends AbstractYamcsService {
         return backFiller.scheduleFillingTask(start, stop);
     }
 
+
     /**
      * a copy of the partitions from start to stop inclusive
      * 
@@ -583,10 +579,8 @@ public class ParameterArchive extends AbstractYamcsService {
 
     @Override
     protected void doStart() {
-        if (backFillerEnabled) {
-            backFiller = new BackFiller(this, backFillerConfig);
-            backFiller.start();
-        }
+        backFiller.scheduleAutoFillers();
+
         if (realtimeFillerEnabled) {
             realtimeFiller = new RealtimeArchiveFiller(this, realtimeFillerConfig);
             realtimeFiller.start();
@@ -598,9 +592,9 @@ public class ParameterArchive extends AbstractYamcsService {
     protected void doStop() {
         log.debug("Stopping ParameterArchive service for instance {}", yamcsInstance);
         try {
-            if (backFiller != null) {
-                backFiller.shutDown();
-            }
+
+            backFiller.shutDown();
+
             if (realtimeFiller != null) {
                 realtimeFiller.shutDown();
             }
@@ -662,10 +656,9 @@ public class ParameterArchive extends AbstractYamcsService {
     public void purge() throws RocksDBException, InterruptedException, IOException {
         log.info("Purging the parameter archive");
 
-        if (backFiller != null) {
-            log.debug("Shutting down the back filler");
-            backFiller.shutDown();
-        }
+        log.debug("Shutting down the back filler");
+        backFiller.shutDown();
+
         if (realtimeFiller != null) {
             log.debug("Shutting down the realtime filler");
             realtimeFiller.shutDown();
@@ -708,11 +701,11 @@ public class ParameterArchive extends AbstractYamcsService {
 
         parameterIdDb = new ParameterIdDb(yamcsInstance, tablespace, sparseGroups, minimumGroupOverlap);
         initializeDb();
-        if (backFillerEnabled) {
-            log.debug("Starting the back filler");
-            backFiller = new BackFiller(this, backFillerConfig);
-            backFiller.start();
-        }
+
+        log.debug("Starting the back filler");
+        backFiller = new BackFiller(this, backFillerConfig, !realtimeFillerEnabled);
+        backFiller.scheduleAutoFillers();
+
         if (realtimeFillerEnabled) {
             log.debug("Starting the realtime filler");
             realtimeFiller = new RealtimeArchiveFiller(this, realtimeFillerConfig);

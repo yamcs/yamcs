@@ -1,10 +1,10 @@
 package org.yamcs.parameterarchive;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -24,6 +24,7 @@ import org.yamcs.YamcsServer;
 import org.yamcs.archive.ReplayOptions;
 import org.yamcs.logging.Log;
 import org.yamcs.time.TimeService;
+import org.yamcs.utils.LongArray;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
@@ -37,9 +38,6 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  * Back-fills the parameter archive by triggering replays: - either regularly scheduled replays - or monitor data
  * streams (tm, param) and keep track of which segments have to be rebuild
  * 
- * 
- * @author nm
- *
  */
 public class BackFiller implements StreamSubscriber {
     List<Schedule> schedules;
@@ -55,23 +53,35 @@ public class BackFiller implements StreamSubscriber {
     final ScheduledThreadPoolExecutor executor;
 
     // set of segments that have to be rebuilt following monitoring of streams
-    private Set<Long> streamUpdates;
+    private Map<Long, StreamUpdate> streamUpdates;
     // streams which are monitored
     private List<Stream> subscribedStreams;
-    // how often (in seconds) the fillup based on the stream monitoring is started
-    long streamUpdateFillFrequency;
 
     // after how many backfilling tasks to trigger a parchive.compact()
-    int compactFrequency = 5;
+    int compactFrequency = -1;
 
     int compactCount = 0;
+    long quietPeriodThreshold;
 
     private List<BackFillerListener> listeners = new CopyOnWriteArrayList<>();
+    private List<StreamUpdatePolicyEnter> streamUpdatePolicy = new ArrayList<>();
 
-    BackFiller(ParameterArchive parchive, YConfiguration config) {
+    private boolean automaticBackfillingEnabled = true;
+    private List<Future<?>> scheduledFutures = new ArrayList<>();
+
+    /**
+     * 
+     * Constructs a new BackFiller
+     * <p>
+     * The backfiller is used for manual requests and also by automatic backfilling.
+     * <p>
+     * defaultAutomaticBackfilling is used as default for whether to schedule or not backfillings. If the realtime
+     * filler is enabled, the automatic backfilling is disabled by default.
+     */
+    BackFiller(ParameterArchive parchive, YConfiguration config, boolean defaultAutomaticBackfilling) {
         this.parchive = parchive;
         this.log = new Log(BackFiller.class, parchive.getYamcsInstance());
-        parseConfig(config);
+        parseConfig(config, defaultAutomaticBackfilling);
         timeService = YamcsServer.getTimeService(parchive.getYamcsInstance());
         executor = new ScheduledThreadPoolExecutor(1,
                 new ThreadFactoryBuilder().setNameFormat("ParameterArchive-BackFiller-" + parchive.getYamcsInstance())
@@ -82,23 +92,33 @@ public class BackFiller implements StreamSubscriber {
     public static Spec getSpec() {
         Spec spec = new Spec();
 
-        spec.addOption("enabled", OptionType.BOOLEAN);
         spec.addOption("warmupTime", OptionType.INTEGER).withDefault(60);
+        spec.addOption("automaticBackfilling", OptionType.BOOLEAN).withAliases("enabled").withRequired(false);
         spec.addOption("monitorStreams", OptionType.LIST).withElementType(OptionType.STRING);
-        spec.addOption("streamUpdateFillFrequency", OptionType.INTEGER).withDefault(600);
+        spec.addOption("streamUpdateFillFrequency", OptionType.INTEGER)
+                .withDeprecationMessage("Please use the streamUpdateFillPolicy").withDefault(3600);
+
+        Spec policyEntry = new Spec();
+        policyEntry.addOption("dataAge", OptionType.FLOAT).withRequired(true);
+        policyEntry.addOption("fillFrequency", OptionType.INTEGER).withDefault(3600);
+        policyEntry.addOption("quietThreshold", OptionType.INTEGER).withDefault(60);
+        spec.addOption("streamUpdateFillPolicy", OptionType.LIST).withElementType(OptionType.MAP).withSpec(policyEntry);
 
         Spec schedSpec = new Spec();
         schedSpec.addOption("startInterval", OptionType.INTEGER);
         schedSpec.addOption("numIntervals", OptionType.INTEGER);
 
         spec.addOption("schedule", OptionType.MAP).withSpec(schedSpec);
-        spec.addOption("compactFrequency", OptionType.INTEGER).withDefault(5);
+        spec.addOption("compactFrequency", OptionType.INTEGER).withDefault(-1);
 
         return spec;
-
     }
 
-    void start() {
+    synchronized void scheduleAutoFillers() {
+        if (!this.automaticBackfillingEnabled) {
+            return;
+        }
+
         if (schedules != null && !schedules.isEmpty()) {
             int c = 0;
             for (Schedule s : schedules) {
@@ -106,29 +126,53 @@ public class BackFiller implements StreamSubscriber {
                     c++;
                     continue;
                 }
-
-                executor.scheduleAtFixedRate(() -> {
+                var f = executor.scheduleAtFixedRate(() -> {
                     runSchedule(s);
                 }, 0, s.frequency, TimeUnit.SECONDS);
+                scheduledFutures.add(f);
             }
             if (c > 0) {
                 long now = timeService.getMissionTime();
                 t0 = ParameterArchive.getIntervalStart(now);
 
-                executor.schedule(() -> {
+                var f = executor.schedule(() -> {
                     runSegmentSchedules();
                 }, t0 - now, TimeUnit.MILLISECONDS);
+
+                scheduledFutures.add(f);
             }
         }
+
         if (subscribedStreams != null && !subscribedStreams.isEmpty()) {
-            executor.scheduleAtFixedRate(() -> {
+            var f = executor.scheduleAtFixedRate(() -> {
                 checkStreamUpdates();
-            }, streamUpdateFillFrequency, streamUpdateFillFrequency, TimeUnit.SECONDS);
+            }, 5, 5, TimeUnit.SECONDS);
+            scheduledFutures.add(f);
         }
     }
 
-    private void parseConfig(YConfiguration config) {
-        warmupTime = 1000L * config.getInt("warmupTime", 60);
+    public synchronized void enableAutomaticBackfilling(boolean enable) {
+        if (this.automaticBackfillingEnabled == enable) {
+            log.debug("automatic backfilling is already {}", automaticBackfillingEnabled ? "enabled" : "disabled");
+            return;
+        }
+        for (var f : scheduledFutures) {
+            f.cancel(true);
+        }
+        scheduledFutures.clear();
+        this.automaticBackfillingEnabled = enable;
+
+        if (enable) {
+            scheduleAutoFillers();
+        }
+
+        log.debug("automatic backfilling has been {}", automaticBackfillingEnabled ? "enabled" : "disabled");
+    }
+
+    private void parseConfig(YConfiguration config, boolean defaultAutomaticBackfilling) {
+        this.warmupTime = 1000L * config.getInt("warmupTime", 60);
+
+        this.compactFrequency = config.getInt("compactFrequency", -1);
 
         if (config.containsKey("schedule")) {
             List<YConfiguration> l = config.getConfigList("schedule");
@@ -142,7 +186,6 @@ public class BackFiller implements StreamSubscriber {
             }
         }
 
-        streamUpdateFillFrequency = config.getLong("streamUpdateFillFrequency", 600);
         List<String> monitoredStreams;
         if (config.containsKey("monitorStreams")) {
             monitoredStreams = config.getList("monitorStreams");
@@ -152,8 +195,29 @@ public class BackFiller implements StreamSubscriber {
             sc.getEntries(StandardStreamType.TM).forEach(sce -> monitoredStreams.add(sce.getName()));
             sc.getEntries(StandardStreamType.PARAM).forEach(sce -> monitoredStreams.add(sce.getName()));
         }
+
         if (!monitoredStreams.isEmpty()) {
-            streamUpdates = new HashSet<>();
+            if (config.containsKey("streamUpdateFillPolicy")) {
+                if (monitoredStreams.isEmpty()) {
+                    log.warn("Monitored streams is empty, the streamUpdateFillPolicy will not be used");
+                }
+                List<YConfiguration> l = config.getConfigList("streamUpdateFillPolicy");
+                for (YConfiguration sch : l) {
+                    long dataAge = (long) (sch.getDouble("dataAge") * 3600_000);
+                        long fillFrequency = sch.getLong("fillFrequency", 3600) * 1000;
+                        long quietThreshold = sch.getLong("quietThreshold") * 1000;
+                        streamUpdatePolicy.add(new StreamUpdatePolicyEnter(dataAge, fillFrequency, quietThreshold));
+                }
+                streamUpdatePolicy.sort(Comparator.comparingLong(StreamUpdatePolicyEnter::dataAge));
+            } else if (config.containsKey("streamUpdateFillFrequency")) {
+                var streamUpdateFillFrequency = 1000 * config.getLong("streamUpdateFillFrequency", 3600);
+                streamUpdatePolicy.add(new StreamUpdatePolicyEnter(-1, streamUpdateFillFrequency, -1));
+            } else {
+                streamUpdatePolicy.add(new StreamUpdatePolicyEnter(-3600_000, 600_000, 10_000));
+                streamUpdatePolicy.add(new StreamUpdatePolicyEnter(7200_000, -1, 60_000));
+            }
+
+            streamUpdates = new HashMap<>();
             subscribedStreams = new ArrayList<>(monitoredStreams.size());
             YarchDatabaseInstance ydb = YarchDatabase.getInstance(parchive.getYamcsInstance());
             for (String streamName : monitoredStreams) {
@@ -166,7 +230,6 @@ public class BackFiller implements StreamSubscriber {
                 subscribedStreams.add(s);
             }
         }
-        this.compactFrequency = config.getInt("compactFrequency", 5);
     }
 
     public Future<?> scheduleFillingTask(long start, long stop) {
@@ -213,6 +276,9 @@ public class BackFiller implements StreamSubscriber {
     }
 
     private void runSchedule(Schedule s) {
+        if (!automaticBackfillingEnabled) {
+            return;
+        }
         long start, stop;
         long intervalDuration = ParameterArchive.getIntervalDuration();
         if (s.frequency == -1) {
@@ -227,33 +293,68 @@ public class BackFiller implements StreamSubscriber {
     }
 
     private void checkStreamUpdates() {
-        long[] a;
+        if (!automaticBackfillingEnabled) {
+            return;
+        }
+
+        LongArray rebuildIntervals;
         synchronized (streamUpdates) {
             if (streamUpdates.isEmpty()) {
                 return;
             }
-            a = new long[streamUpdates.size()];
-            int i = 0;
-            for (Long l : streamUpdates) {
-                a[i++] = l;
+            // wall clock time is used to compare with the lastUpdate and lastRebuild since these are set by the
+            // System.currentTime
+            var nowWc = System.currentTimeMillis();
+            // mission time is used to compare with the interval time to get the data age
+            var nowMt = timeService.getMissionTime();
+            rebuildIntervals = new LongArray(streamUpdates.size());
+
+            var it = streamUpdates.entrySet().iterator();
+
+            while (it.hasNext()) {
+                var streamUpdateEntry = it.next();
+                long age = nowMt - streamUpdateEntry.getKey();
+
+                var applicablePolicyEntry = streamUpdatePolicy.get(0);
+                for (int i = 1; i < streamUpdatePolicy.size(); i++) {
+                    var supe = streamUpdatePolicy.get(i);
+                    if (age < supe.dataAge) {
+                        break;
+                    }
+                    applicablePolicyEntry = supe;
+                }
+                var streamUpdate = streamUpdateEntry.getValue();
+                if (applicablePolicyEntry.fillFrequency > 0
+                        && nowWc - streamUpdate.lastRebuild > applicablePolicyEntry.fillFrequency) {
+                    rebuildIntervals.add(streamUpdateEntry.getKey());
+                    streamUpdate.lastRebuild = nowWc;
+                    it.remove();
+                } else if (applicablePolicyEntry.quietThreshold > 0
+                        && nowWc - streamUpdate.lastUpdate > applicablePolicyEntry.quietThreshold) {
+                    rebuildIntervals.add(streamUpdateEntry.getKey());
+                    it.remove();
+                }
             }
-            streamUpdates.clear();
         }
-        Arrays.sort(a);
-        for (int i = 0; i < a.length; i++) {
+        rebuildIntervals.sort();
+
+        for (int i = 0; i < rebuildIntervals.size(); i++) {
             int j;
-            for (j = i; j < a.length - 1; j++) {
-                if (ParameterArchive.getIntervalStart(a[j]) != a[j + 1]) {
+            for (j = i; j < rebuildIntervals.size() - 1; j++) {
+                if (ParameterArchive.getIntervalEnd(rebuildIntervals.get(j)) != rebuildIntervals.get(j + 1)) {
                     break;
                 }
             }
-            runTask(a[i], a[j]);
+            runTask(rebuildIntervals.get(i), ParameterArchive.getIntervalEnd(rebuildIntervals.get(j)));
             i = j;
         }
     }
 
     // runs all schedules with interval -1
     private void runSegmentSchedules() {
+        if (!automaticBackfillingEnabled) {
+            return;
+        }
         for (Schedule s : schedules) {
             if (s.frequency == -1) {
                 runSchedule(s);
@@ -293,7 +394,9 @@ public class BackFiller implements StreamSubscriber {
         }
         long t0 = ParameterArchive.getIntervalStart(gentime);
         synchronized (streamUpdates) {
-            streamUpdates.add(t0);
+            long now = System.currentTimeMillis();
+            var streamUpdate = streamUpdates.computeIfAbsent(t0, t -> new StreamUpdate(now));
+            streamUpdate.lastUpdate = now;
         }
     }
 
@@ -309,4 +412,27 @@ public class BackFiller implements StreamSubscriber {
     public void removeListener(BackFillerListener listener) {
         listeners.remove(listener);
     }
+
+
+
+    static class StreamUpdate {
+        long lastUpdate;
+        long lastRebuild;
+
+        StreamUpdate(long lastRebuild) {
+            this.lastRebuild = lastRebuild;
+        }
+    }
+
+    /**
+     * all values are milliseconds
+     */
+    static record StreamUpdatePolicyEnter(long dataAge, long fillFrequency, long quietThreshold) {
+        @Override
+        public String toString() {
+            return String.format("StreamUpdatePolicyEnter{dataAge=%.2f h, fillFrequency=%.2f s, quietThreshold=%.2f s}",
+                    dataAge / 3600000.0, fillFrequency / 1000.0, quietThreshold / 1000.0);
+        }
+    }
+
 }

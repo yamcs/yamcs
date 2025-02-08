@@ -137,6 +137,31 @@ service ParameterArchiveApi {
       body: "*"
     };
   }
+  
+  // Disables the automatic backfilling (rebuilding) of the parameter archive.
+  // See :manual:`services/instance/parameter-archive-service/#backfiller-options`
+  // 
+  // If the backfilling is already disabled, this operation has no effect.
+  // If there is a backfilling running, this call will not stop it. 
+  //
+  // Manual rebuild operations are still accepted.
+  //  
+  rpc DisableBackfilling(DisableBackfillingRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/archive/{instance}/parameterArchive:disableBackfilling"
+      body: "*"
+    };
+  }
+  
+  // Enables the automatic backfilling (rebuilding) of the parameter archive. 
+  // If the backfilling is already enabled, this operation has no effect.
+  //  
+  rpc EnableBackfilling(EnableBackfillingRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/archive/{instance}/parameterArchive:enableBackfilling"
+      body: "*"
+    };
+  }
 
   // Receive backfill notifications
   rpc SubscribeBackfilling(SubscribeBackfillingRequest) returns (stream SubscribeBackfillingData) {
@@ -340,4 +365,14 @@ message ArchivedParameterGroupResponse {
   
   // Parameters belonging to the group
   repeated ArchivedParameterInfo parameters = 2;
+}
+
+message EnableBackfillingRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+}
+
+message DisableBackfillingRequest {
+  // Yamcs instance name
+  optional string instance = 1;
 }

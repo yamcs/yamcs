@@ -23,6 +23,7 @@ import org.yamcs.parameter.ParameterRetrievalOptions;
 import org.yamcs.parameter.ParameterRetrievalService;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithId;
+import org.yamcs.parameterarchive.BackFiller;
 import org.yamcs.parameterarchive.BackFillerListener;
 import org.yamcs.parameterarchive.ParameterArchive;
 import org.yamcs.parameterarchive.ParameterGroupIdDb;
@@ -37,6 +38,8 @@ import org.yamcs.protobuf.ArchivedParameterGroupResponse;
 import org.yamcs.protobuf.ArchivedParameterInfo;
 import org.yamcs.protobuf.ArchivedParameterSegmentsResponse;
 import org.yamcs.protobuf.ArchivedParametersInfoResponse;
+import org.yamcs.protobuf.DisableBackfillingRequest;
+import org.yamcs.protobuf.EnableBackfillingRequest;
 import org.yamcs.protobuf.GetArchivedParameterGroupRequest;
 import org.yamcs.protobuf.GetArchivedParameterSegmentsRequest;
 import org.yamcs.protobuf.GetArchivedParametersInfoRequest;
@@ -137,7 +140,6 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
     @Override
     public void getParameterSamples(Context ctx, GetParameterSamplesRequest request,
             Observer<TimeSeries> observer) {
-
 
         YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(request.getInstance());
 
@@ -515,4 +517,30 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
 
     }
 
+    @Override
+    public void disableBackfilling(Context ctx, DisableBackfillingRequest request, Observer<Empty> observer) {
+        YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(request.getInstance());
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
+
+        getBackFiller(ysi).enableAutomaticBackfilling(false);
+        observer.complete(Empty.getDefaultInstance());
+    }
+
+    @Override
+    public void enableBackfilling(Context ctx, EnableBackfillingRequest request, Observer<Empty> observer) {
+        YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(request.getInstance());
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
+
+        getBackFiller(ysi).enableAutomaticBackfilling(true);
+        observer.complete(Empty.getDefaultInstance());
+    }
+
+    BackFiller getBackFiller(YamcsServerInstance ysi) {
+        var parchive = getParameterArchive(ysi);
+        var backfiller = parchive.getBackFiller();
+        if (backfiller == null) {
+            throw new BadRequestException("Backfiller not enabled");
+        }
+        return backfiller;
+    }
 }

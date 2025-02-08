@@ -16,7 +16,7 @@ public class LongArray {
     private int hash;
 
     /**
-     * Creates a sorted int array with a default initial capacity
+     * Creates an long array with a default initial capacity
      */
     public LongArray() {
         a = new long[DEFAULT_CAPACITY];
@@ -107,6 +107,9 @@ public class LongArray {
         a[pos] = x;
     }
 
+    public void sort() {
+        Arrays.sort(a, 0, length);
+    }
     private void rangeCheck(int pos) {
         if (pos >= length)
             throw new IndexOutOfBoundsException("Index: " + pos + " length: " + length);
@@ -152,6 +155,8 @@ public class LongArray {
         return true;
     }
 
+
+
     /**
      * get the backing array. It's length will be &ge; than the size of the array.
      * 
@@ -173,5 +178,6 @@ public class LongArray {
             b.append(", ");
         }
     }
+
 
 }

@@ -11,6 +11,7 @@ import static org.yamcs.parameter.ParameterStatus.isInvalid;
 import static org.yamcs.parameterarchive.TestUtils.checkEquals;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -603,11 +604,9 @@ public class ParameterArchiveTest extends BaseParchiveTest {
     public static YConfiguration backFillerDisabledConfig() {
         Map<String, Object> pam = new HashMap<>();
         Map<String, Object> bfm = new HashMap<>();
-        bfm.put("enabled", Boolean.FALSE);
+        bfm.put("automaticBackfilling", Boolean.FALSE);
+        bfm.put("monitorStreams", Collections.emptyList());
         pam.put("backFiller", bfm);
         return YConfiguration.wrap(pam);
     }
-
-
-
 }

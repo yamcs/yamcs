@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,7 +57,8 @@ public abstract class BaseParchiveTest {
             conf.put(YarchDatabaseInstance.PART_CONF_KEY, partitioningSchema);
         }
         Map<String, Object> bfc = new HashMap<>();
-        bfc.put("enabled", Boolean.FALSE);
+        bfc.put("automaticBackfilling", Boolean.FALSE);
+        bfc.put("monitorStreams", Collections.emptyList());
         conf.put("backFiller", bfc);
         conf.put("sparseGroups", sparseGroups);
         conf.put("minimumGroupOverlap", minOverlap);
