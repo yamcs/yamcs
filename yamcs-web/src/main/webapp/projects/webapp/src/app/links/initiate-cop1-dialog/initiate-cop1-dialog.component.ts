@@ -18,7 +18,6 @@ const CombinedValidator: ValidatorFn = (form: UntypedFormGroup) => {
 };
 
 @Component({
-  standalone: true,
   selector: 'app-initiate-cop1-dialog',
   templateUrl: './initiate-cop1-dialog.component.html',
   imports: [

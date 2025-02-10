@@ -11,7 +11,6 @@ import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance
 import { AlgorithmsDataSource, ListItem } from './algorithms.datasource';
 
 @Component({
-  standalone: true,
   templateUrl: './algorithm-list.component.html',
   styleUrl: './algorithm-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

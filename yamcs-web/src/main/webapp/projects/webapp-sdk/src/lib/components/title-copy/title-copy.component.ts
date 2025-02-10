@@ -8,7 +8,6 @@ import { BehaviorSubject } from 'rxjs';
 const defaultText = "Copy to clipboard";
 
 @Component({
-  standalone: true,
   selector: 'ya-title-copy',
   templateUrl: './title-copy.component.html',
   styleUrl: './title-copy.component.css',

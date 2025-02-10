@@ -13,7 +13,6 @@ import { ChangeLevelDialogComponent } from '../change-level-dialog/change-level-
 import { ClearancesPageTabsComponent } from '../clearances-page-tabs/clearances-page-tabs.component';
 
 @Component({
-  standalone: true,
   templateUrl: './clearances-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

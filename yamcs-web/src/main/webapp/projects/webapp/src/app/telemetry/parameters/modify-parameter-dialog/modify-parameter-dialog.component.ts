@@ -5,7 +5,6 @@ import { ColorPaletteComponent } from '../color-palette/color-palette.component'
 import { ThicknessComponent } from '../thickness/thickness.component';
 
 @Component({
-  standalone: true,
   selector: 'app-modify-parameter-dialog',
   templateUrl: './modify-parameter-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

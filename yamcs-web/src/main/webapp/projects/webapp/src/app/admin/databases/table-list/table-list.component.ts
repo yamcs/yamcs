@@ -5,7 +5,6 @@ import { ActivatedRoute } from '@angular/router';
 import { Table, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   templateUrl: './table-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

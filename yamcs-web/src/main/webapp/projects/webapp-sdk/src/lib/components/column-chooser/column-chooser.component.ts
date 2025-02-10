@@ -15,7 +15,6 @@ export interface YaColumnInfo {
 }
 
 @Component({
-  standalone: true,
   selector: 'ya-column-chooser',
   templateUrl: './column-chooser.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

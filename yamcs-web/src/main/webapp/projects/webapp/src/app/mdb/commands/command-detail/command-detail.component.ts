@@ -6,7 +6,6 @@ import { SignificanceLevelComponent } from '../../../shared/significance-level/s
 import { ArgumentEnumDialogComponent } from '../argument-enum-dialog/argument-enum-dialog.component';
 
 @Component({
-  standalone: true,
   selector: 'app-command-detail',
   templateUrl: './command-detail.component.html',
   styleUrl: './command-detail.component.css',

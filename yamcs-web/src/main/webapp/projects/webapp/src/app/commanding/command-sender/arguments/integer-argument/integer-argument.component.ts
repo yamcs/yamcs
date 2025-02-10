@@ -4,7 +4,6 @@ import { ArgumentType, utils, validators, WebappSdkModule } from '@yamcs/webapp-
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 @Component({
-  standalone: true,
   selector: 'app-integer-argument',
   templateUrl: './integer-argument.component.html',
   styleUrls: ['../arguments.css', './integer-argument.component.css'],

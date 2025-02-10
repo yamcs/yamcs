@@ -16,7 +16,6 @@ export interface YaSelectOption {
 }
 
 @Component({
-  standalone: true,
   selector: 'ya-select',
   templateUrl: './select.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

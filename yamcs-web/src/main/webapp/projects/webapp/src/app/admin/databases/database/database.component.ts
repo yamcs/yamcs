@@ -15,7 +15,6 @@ interface DatabaseObject {
 
 
 @Component({
-  standalone: true,
   templateUrl: './database.component.html',
   styleUrl: './database.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

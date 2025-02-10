@@ -5,7 +5,6 @@ import { Subscription, filter } from 'rxjs';
 import { AuthService } from '../../../core/services/AuthService';
 
 @Component({
-  standalone: true,
   templateUrl: './admin-page.component.html',
   styleUrl: './admin-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

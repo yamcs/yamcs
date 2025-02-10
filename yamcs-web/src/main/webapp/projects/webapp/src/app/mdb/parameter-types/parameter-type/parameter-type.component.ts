@@ -8,7 +8,6 @@ import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/insta
 import { ParameterTypeDetailComponent } from '../parameter-type-detail/parameter-type-detail.component';
 
 @Component({
-  standalone: true,
   templateUrl: './parameter-type.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

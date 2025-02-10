@@ -4,7 +4,6 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { WebappSdkModule, utils } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   templateUrl: './jump-to-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

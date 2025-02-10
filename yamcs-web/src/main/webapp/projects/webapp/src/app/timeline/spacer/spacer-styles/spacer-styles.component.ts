@@ -3,7 +3,6 @@ import { UntypedFormGroup } from '@angular/forms';
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   selector: 'app-spacer-styles',
   templateUrl: './spacer-styles.component.html',
   styleUrl: '../../shared/StyleTable.css',

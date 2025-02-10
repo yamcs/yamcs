@@ -15,7 +15,6 @@ interface Record {
 }
 
 @Component({
-  standalone: true,
   selector: 'app-stacked-verify-entry',
   templateUrl: './stacked-verify-entry.component.html',
   styleUrl: './stacked-verify-entry.component.css',

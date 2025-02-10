@@ -3,7 +3,6 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   selector: 'app-stack-file-page-dirty-dialog',
   templateUrl: './stack-file-dirty-guard-dialog.component.html',
   imports: [

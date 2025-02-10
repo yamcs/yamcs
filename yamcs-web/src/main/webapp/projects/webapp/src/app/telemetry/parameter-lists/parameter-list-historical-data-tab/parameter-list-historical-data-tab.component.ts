@@ -20,7 +20,6 @@ export interface ValueSnapshot {
 const defaultInterval = 'PT1H';
 
 @Component({
-  standalone: true,
   templateUrl: './parameter-list-historical-data-tab.component.html',
   styleUrl: './parameter-list-historical-data-tab.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

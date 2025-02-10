@@ -16,7 +16,6 @@ interface ErrorState {
 }
 
 @Component({
-  standalone: true,
   selector: 'ya-search-filter2',
   templateUrl: './search-filter2.component.html',
   styleUrl: './search-filter2.component.css',

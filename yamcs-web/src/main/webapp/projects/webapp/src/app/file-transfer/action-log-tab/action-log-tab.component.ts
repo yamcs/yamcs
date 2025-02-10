@@ -11,7 +11,6 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
 import { FileTransferTabsComponent } from '../file-transfer-tabs/file-transfer-tabs.component';
 
 @Component({
-  standalone: true,
   selector: 'app-file-transfer-action-log-tab',
   templateUrl: './action-log-tab.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

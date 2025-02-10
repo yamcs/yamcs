@@ -4,7 +4,6 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Alarm, ShelveAlarmOptions, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   selector: 'app-shelve-alarm-dialog',
   templateUrl: './shelve-alarm-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

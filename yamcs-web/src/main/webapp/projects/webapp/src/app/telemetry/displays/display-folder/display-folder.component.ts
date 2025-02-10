@@ -17,7 +17,6 @@ import { RenameDisplayDialogComponent } from '../rename-display-dialog/rename-di
 import { DisplayTypePipe } from './display-type.pipe';
 
 @Component({
-  standalone: true,
   templateUrl: './display-folder.component.html',
   styleUrl: './display-folder.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

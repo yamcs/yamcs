@@ -16,7 +16,6 @@ import { FileTransferDataSource } from './file-transfer.datasource';
 const defaultInterval = 'NO_LIMIT';
 
 @Component({
-  standalone: true,
   selector: 'app-file-transfer-list',
   templateUrl: './file-transfer-list.component.html',
   styleUrl: './file-transfer-list.component.css',

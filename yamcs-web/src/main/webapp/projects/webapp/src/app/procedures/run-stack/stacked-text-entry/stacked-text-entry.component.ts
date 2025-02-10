@@ -5,7 +5,6 @@ import { EntryLabel } from '../entry-label/entry-label.component';
 import { StackedTextEntry } from '../stack-file/StackedEntry';
 
 @Component({
-  standalone: true,
   selector: 'app-stacked-text-entry',
   templateUrl: './stacked-text-entry.component.html',
   styleUrl: './stacked-text-entry.component.css',

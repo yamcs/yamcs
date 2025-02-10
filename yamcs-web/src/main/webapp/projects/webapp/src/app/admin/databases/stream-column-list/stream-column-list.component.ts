@@ -3,7 +3,6 @@ import { ActivatedRoute } from '@angular/router';
 import { Stream, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   templateUrl: './stream-column-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

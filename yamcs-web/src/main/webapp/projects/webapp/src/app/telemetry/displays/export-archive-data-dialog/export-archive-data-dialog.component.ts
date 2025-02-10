@@ -5,7 +5,6 @@ import { DownloadParameterValuesOptions, WebappSdkModule, YaSelectOption, YamcsS
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 @Component({
-  standalone: true,
   selector: 'app-export-archive-data-dialog',
   templateUrl: './export-archive-data-dialog.component.html',
   imports: [

@@ -4,7 +4,6 @@ import { MatListItem } from '@angular/material/list';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 @Component({
-  standalone: true,
   selector: 'ya-sidebar-nav-item',
   templateUrl: './sidebar-nav-item.component.html',
   styleUrl: './sidebar-nav-item.component.css',
@@ -13,7 +12,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
     MatListItem,
     RouterLink,
     RouterLinkActive
-],
+  ],
 })
 export class YaSidebarNavItem {
 

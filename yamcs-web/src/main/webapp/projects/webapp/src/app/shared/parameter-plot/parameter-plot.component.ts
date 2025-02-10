@@ -15,7 +15,6 @@ import { ParameterLegendComponent } from './parameter-legend/parameter-legend.co
 import { ParameterSeriesComponent } from './parameter-series/parameter-series.component';
 
 @Component({
-  standalone: true,
   selector: 'app-parameter-plot',
   templateUrl: './parameter-plot.component.html',
   styleUrl: './parameter-plot.component.css',

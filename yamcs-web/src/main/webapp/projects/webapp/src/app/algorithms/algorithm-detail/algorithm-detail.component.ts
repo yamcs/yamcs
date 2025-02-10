@@ -13,7 +13,6 @@ import { MarkdownComponent } from '../../shared/markdown/markdown.component';
 import { AlgorithmStatusComponent } from '../algorithm-status/algorithm-status.component';
 
 @Component({
-  standalone: true,
   selector: 'app-algorithm-detail',
   templateUrl: './algorithm-detail.component.html',
   styleUrl: './algorithm-detail.component.css',

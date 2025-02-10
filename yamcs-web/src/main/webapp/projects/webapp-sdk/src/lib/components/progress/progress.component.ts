@@ -3,7 +3,6 @@ import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/c
 import { BehaviorSubject } from 'rxjs';
 
 @Component({
-  standalone: true,
   selector: 'ya-progress',
   templateUrl: './progress.component.html',
   styleUrl: './progress.component.css',
@@ -11,7 +10,7 @@ import { BehaviorSubject } from 'rxjs';
   imports: [
     AsyncPipe,
     PercentPipe
-],
+  ],
 })
 export class YaProgress implements OnChanges {
 

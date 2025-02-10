@@ -5,7 +5,6 @@ import { DownloadParameterValuesOptions, WebappSdkModule, YaSelectOption, YamcsS
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 @Component({
-  standalone: true,
   templateUrl: './export-parameter-data-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

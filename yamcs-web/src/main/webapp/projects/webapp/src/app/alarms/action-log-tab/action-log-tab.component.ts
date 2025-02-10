@@ -8,7 +8,6 @@ import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance
 import { AlarmsPageTabsComponent } from '../alarms-page-tabs/alarms-page-tabs.component';
 
 @Component({
-  standalone: true,
   selector: 'app-alarms-action-log-tab',
   templateUrl: './action-log-tab.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

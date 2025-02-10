@@ -7,7 +7,6 @@ import { ParameterTableBuffer } from '../ParameterTableBuffer';
 import { ParameterTable } from '../ParameterTableModel';
 
 @Component({
-  standalone: true,
   selector: 'app-scrolling-parameter-table',
   templateUrl: './scrolling-parameter-table.component.html',
   styleUrl: './scrolling-parameter-table.component.css',

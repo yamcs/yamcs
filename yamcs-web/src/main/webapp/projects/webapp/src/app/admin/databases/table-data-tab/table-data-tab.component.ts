@@ -6,7 +6,6 @@ import { RecordComponent } from '../record/record.component';
 import { ColumnValuePipe } from '../shared/column-value.pipe';
 
 @Component({
-  standalone: true,
   templateUrl: './table-data-tab.component.html',
   styleUrl: './table-data-tab.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

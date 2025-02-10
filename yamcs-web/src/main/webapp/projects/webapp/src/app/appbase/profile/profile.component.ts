@@ -5,7 +5,6 @@ import { BehaviorSubject } from 'rxjs';
 import { SignificanceLevelComponent } from '../../shared/significance-level/significance-level.component';
 
 @Component({
-  standalone: true,
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

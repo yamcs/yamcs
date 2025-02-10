@@ -5,7 +5,6 @@ import { Clearance, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { SignificanceLevelComponent } from '../../../shared/significance-level/significance-level.component';
 
 @Component({
-  standalone: true,
   selector: 'app-change-level-dialog',
   templateUrl: './change-level-dialog.component.html',
   styleUrl: './change-level-dialog.component.css',

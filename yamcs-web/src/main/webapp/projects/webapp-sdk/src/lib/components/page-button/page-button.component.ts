@@ -3,7 +3,6 @@ import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 
 @Component({
-  standalone: true,
   selector: 'ya-page-button',
   templateUrl: './page-button.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

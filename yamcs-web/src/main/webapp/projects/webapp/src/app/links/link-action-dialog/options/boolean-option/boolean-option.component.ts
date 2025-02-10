@@ -4,7 +4,6 @@ import { Option, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
 
 @Component({
-  standalone: true,
   selector: 'app-boolean-option',
   templateUrl: './boolean-option.component.html',
   styleUrls: ['../options.css', './boolean-option.component.css'],
@@ -20,7 +19,7 @@ import { Subscription } from 'rxjs';
     provide: NG_VALIDATORS,
     useExisting: forwardRef(() => BooleanOptionComponent),
     multi: true,
-  }],
+  }]
 })
 export class BooleanOptionComponent implements ControlValueAccessor, Validator, OnInit, OnDestroy {
 

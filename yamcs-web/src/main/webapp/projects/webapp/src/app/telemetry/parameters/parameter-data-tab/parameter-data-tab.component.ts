@@ -14,7 +14,6 @@ import { ParameterDataDataSource } from './parameter-data.datasource';
 const defaultInterval = 'PT1H';
 
 @Component({
-  standalone: true,
   templateUrl: './parameter-data-tab.component.html',
   styleUrl: './parameter-data-tab.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

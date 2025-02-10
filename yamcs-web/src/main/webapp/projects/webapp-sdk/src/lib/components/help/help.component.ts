@@ -6,7 +6,6 @@ import { YaTextAction } from '../text-action/text-action.component';
 import { YaHelpDialog } from './help.dialog';
 
 @Component({
-  standalone: true,
   selector: 'ya-help',
   templateUrl: './help.component.html',
   styleUrl: './help.component.css',

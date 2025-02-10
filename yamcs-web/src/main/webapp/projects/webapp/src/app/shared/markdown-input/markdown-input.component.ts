@@ -24,7 +24,6 @@ import { EditorView } from 'codemirror';
 import { MarkdownComponent } from '../markdown/markdown.component';
 
 @Component({
-  standalone: true,
   selector: 'app-markdown-input',
   templateUrl: './markdown-input.component.html',
   styleUrl: './markdown-input.component.css',

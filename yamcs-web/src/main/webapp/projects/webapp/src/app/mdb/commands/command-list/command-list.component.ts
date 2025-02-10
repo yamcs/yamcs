@@ -12,7 +12,6 @@ import { SignificanceLevelComponent } from '../../../shared/significance-level/s
 import { CommandsDataSource } from './commands.datasource';
 
 @Component({
-  standalone: true,
   templateUrl: './command-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

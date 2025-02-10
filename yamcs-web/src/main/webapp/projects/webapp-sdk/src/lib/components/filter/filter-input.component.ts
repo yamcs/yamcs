@@ -10,7 +10,6 @@ import { FilterErrorMark } from './FilterErrorMark';
 import { filter } from './lang-filter';
 
 @Component({
-  standalone: true,
   selector: 'ya-filter-input',
   templateUrl: './filter-input.component.html',
   styleUrl: './filter-input.component.css',

@@ -3,7 +3,6 @@ import { UntypedFormGroup } from '@angular/forms';
 import { WebappSdkModule, YaSelectOption } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   selector: 'app-item-band-styles',
   templateUrl: './item-band-styles.component.html',
   styleUrl: '../../shared/StyleTable.css',

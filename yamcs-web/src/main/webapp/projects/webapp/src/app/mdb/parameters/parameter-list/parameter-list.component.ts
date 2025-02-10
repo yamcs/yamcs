@@ -11,7 +11,6 @@ import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/insta
 import { ParametersDataSource } from './parameters.datasource';
 
 @Component({
-  standalone: true,
   templateUrl: './parameter-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

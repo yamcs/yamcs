@@ -6,7 +6,6 @@ import { MarkdownComponent } from '../../../shared/markdown/markdown.component';
 import { SeverityMeterComponent } from '../severity-meter/severity-meter.component';
 
 @Component({
-  standalone: true,
   selector: 'app-parameter-detail',
   templateUrl: './parameter-detail.component.html',
   styleUrl: './parameter-detail.component.css',

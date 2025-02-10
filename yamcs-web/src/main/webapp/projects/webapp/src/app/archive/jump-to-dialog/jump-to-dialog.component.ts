@@ -4,7 +4,6 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { WebappSdkModule, utils } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   selector: 'app-jump-to-dialog',
   templateUrl: './jump-to-dialog.component.html',
   imports: [

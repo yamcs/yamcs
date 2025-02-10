@@ -4,7 +4,6 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   selector: 'app-create-event-dialog',
   templateUrl: './create-event-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -5,7 +5,6 @@ import { Bucket, ListObjectsOptions, ListObjectsResponse, StorageClient, WebappS
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 @Component({
-  standalone: true,
   selector: 'app-object-selector',
   templateUrl: './object-selector.component.html',
   styleUrl: './object-selector.component.css',

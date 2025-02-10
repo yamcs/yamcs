@@ -11,7 +11,6 @@ import { StackCommentForm } from './stack-comment-form.component';
 import { TemplateProvider } from './TemplateProvider';
 
 @Component({
-  standalone: true,
   selector: 'app-command-form',
   templateUrl: './command-form.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

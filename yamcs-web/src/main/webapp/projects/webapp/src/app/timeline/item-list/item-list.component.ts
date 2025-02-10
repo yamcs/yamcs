@@ -9,7 +9,6 @@ import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance
 import { CreateItemDialogComponent } from '../create-item-dialog/create-item-dialog.component';
 
 @Component({
-  standalone: true,
   templateUrl: './item-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

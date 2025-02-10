@@ -4,7 +4,6 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   selector: 'app-schedule-stack-dialog',
   templateUrl: './schedule-stack-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

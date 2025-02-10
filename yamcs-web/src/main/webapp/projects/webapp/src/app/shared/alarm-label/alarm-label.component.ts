@@ -5,7 +5,6 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 
 @Component({
-  standalone: true,
   selector: 'app-alarm-label',
   templateUrl: './alarm-label.component.html',
   styleUrl: './alarm-label.component.css',

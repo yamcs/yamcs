@@ -4,7 +4,6 @@ import { Parameter, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { debounceTime, map, Observable, switchMap, tap } from 'rxjs';
 
 @Component({
-  standalone: true,
   selector: 'app-parameter-input',
   templateUrl: './parameter-input.component.html',
   styleUrl: './parameter-input.component.css',

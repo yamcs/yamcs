@@ -12,7 +12,6 @@ import { StringArgumentComponent } from '../string-argument/string-argument.comp
 import { TimeArgumentComponent } from '../time-argument/time-argument.component';
 
 @Component({
-  standalone: true,
   selector: 'app-array-argument',
   templateUrl: './array-argument.component.html',
   styleUrls: ['../arguments.css', './array-argument.component.css'],

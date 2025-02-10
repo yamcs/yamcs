@@ -4,7 +4,6 @@ import { ArgumentType, utils, validators, WebappSdkModule } from '@yamcs/webapp-
 import { Subscription } from 'rxjs';
 
 @Component({
-  standalone: true,
   selector: 'app-float-argument',
   templateUrl: './float-argument.component.html',
   styleUrls: ['../arguments.css', './float-argument.component.css'],

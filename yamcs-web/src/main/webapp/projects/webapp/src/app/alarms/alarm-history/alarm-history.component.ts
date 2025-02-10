@@ -10,7 +10,6 @@ import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance
 import { AlarmsPageTabsComponent } from '../alarms-page-tabs/alarms-page-tabs.component';
 
 @Component({
-  standalone: true,
   templateUrl: './alarm-history.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

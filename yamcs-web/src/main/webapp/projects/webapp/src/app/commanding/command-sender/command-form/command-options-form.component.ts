@@ -6,7 +6,6 @@ import { renderValue } from '../arguments/argument/argument.component';
 import { TemplateProvider } from './TemplateProvider';
 
 @Component({
-  standalone: true,
   selector: 'app-command-options-form',
   templateUrl: './command-options-form.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

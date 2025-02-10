@@ -13,7 +13,6 @@ import { PacketsDataSource } from './packets.datasource';
 const defaultInterval = 'PT1H';
 
 @Component({
-  standalone: true,
   templateUrl: './packet-list.component.html',
   styleUrl: './packet-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

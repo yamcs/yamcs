@@ -5,7 +5,6 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 import { AgoPipe } from '../pipes/ago.pipe';
 
 @Component({
-  standalone: true,
   selector: 'app-ago',
   template: '{{ value$ | async }}',
   changeDetection: ChangeDetectionStrategy.OnPush,

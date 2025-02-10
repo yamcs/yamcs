@@ -6,7 +6,6 @@ import { YaSelect, YaSelectOption } from '../select/select.component';
 const INVALID_PROTOSTRING = 'invalid';
 
 @Component({
-  standalone: true,
   selector: 'ya-duration-input',
   templateUrl: './duration-input.component.html',
   styleUrl: './duration-input.component.css',

@@ -67,7 +67,6 @@ function renderJsonElement(jsonElement: any): any {
 }
 
 @Component({
-  standalone: true,
   selector: 'app-argument',
   templateUrl: './argument.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

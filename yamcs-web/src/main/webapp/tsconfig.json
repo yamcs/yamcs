@@ -38,5 +38,10 @@
     "strictInputAccessModifiers": true,
     "strictTemplates": true,
     "strictInputTypes": false,
+    "extendedDiagnostics": {
+      "checks": {
+        "unusedStandaloneImports": "suppress"
+      }
+    }
   }
 }

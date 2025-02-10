@@ -18,7 +18,6 @@ import { RenameStackDialogComponent } from '../rename-stack-dialog/rename-stack-
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   templateUrl: './stack-folder.component.html',
   styleUrl: './stack-folder.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

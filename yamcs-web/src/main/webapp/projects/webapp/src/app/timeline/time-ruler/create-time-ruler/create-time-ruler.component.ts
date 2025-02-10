@@ -6,7 +6,6 @@ import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/insta
 import { CreateBandWizardStepComponent } from '../../create-band-wizard-step/create-band-wizard-step.component';
 
 @Component({
-  standalone: true,
   templateUrl: './create-time-ruler.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
@@ -14,7 +13,7 @@ import { CreateBandWizardStepComponent } from '../../create-band-wizard-step/cre
     InstanceToolbarComponent,
     InstancePageTemplateComponent,
     WebappSdkModule,
-  ]
+  ],
 })
 export class CreateTimeRulerComponent extends BaseComponent {
 

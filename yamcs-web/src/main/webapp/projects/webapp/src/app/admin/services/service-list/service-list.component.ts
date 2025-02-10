@@ -10,7 +10,6 @@ import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.
 import { ServicesTableComponent } from '../services-table/services-table.component';
 
 @Component({
-  standalone: true,
   templateUrl: './service-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

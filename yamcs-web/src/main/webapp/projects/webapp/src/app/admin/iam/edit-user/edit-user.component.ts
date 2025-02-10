@@ -11,7 +11,6 @@ import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.
 import { AddRolesDialogComponent, RoleItem } from '../add-roles-dialog/add-roles-dialog.component';
 
 @Component({
-  standalone: true,
   templateUrl: './edit-user.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

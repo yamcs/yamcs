@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, HostBinding, Input } from '@angular
 import { CommandHistoryRecord, WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   selector: 'app-command-arguments',
   templateUrl: './command-arguments.component.html',
   styleUrl: './command-arguments.component.css',

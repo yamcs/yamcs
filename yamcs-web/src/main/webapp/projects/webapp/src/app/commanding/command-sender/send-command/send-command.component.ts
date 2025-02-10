@@ -13,7 +13,6 @@ import { SendCommandWizardStepComponent } from '../send-command-wizard-step/send
 import { CommandsDataSource, ListItem } from './commands.datasource';
 
 @Component({
-  standalone: true,
   templateUrl: './send-command.component.html',
   styleUrl: './send-command.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

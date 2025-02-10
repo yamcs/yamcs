@@ -4,7 +4,6 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { AcknowledgeAlarmOptions, Alarm, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   selector: 'app-acknowledge-alarm-dialog',
   templateUrl: './acknowledge-alarm-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

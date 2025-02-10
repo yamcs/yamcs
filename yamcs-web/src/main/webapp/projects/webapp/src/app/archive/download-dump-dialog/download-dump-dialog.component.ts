@@ -5,7 +5,6 @@ import { WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 
 @Component({
-  standalone: true,
   selector: 'app-download-dump-dialog',
   templateUrl: './download-dump-dialog.component.html',
   imports: [

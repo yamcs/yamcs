@@ -2,7 +2,6 @@ import { booleanAttribute, Component, ElementRef, input, ViewChild } from '@angu
 import { YaButton, YaButtonAppearance } from '../button/button.component';
 
 @Component({
-  standalone: true,
   selector: 'ya-download-button',
   templateUrl: './download-button.component.html',
   imports: [

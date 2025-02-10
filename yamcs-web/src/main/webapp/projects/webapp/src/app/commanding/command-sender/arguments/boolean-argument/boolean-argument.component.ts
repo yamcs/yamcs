@@ -4,7 +4,6 @@ import { ArgumentType, utils, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
 
 @Component({
-  standalone: true,
   selector: 'app-boolean-argument',
   templateUrl: './boolean-argument.component.html',
   styleUrls: ['../arguments.css', './boolean-argument.component.css'],

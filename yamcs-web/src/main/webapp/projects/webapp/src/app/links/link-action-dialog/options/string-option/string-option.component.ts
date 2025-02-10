@@ -4,7 +4,6 @@ import { Option, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
 
 @Component({
-  standalone: true,
   selector: 'app-string-option',
   templateUrl: './string-option.component.html',
   styleUrls: ['../options.css', './string-option.component.css'],
@@ -20,7 +19,7 @@ import { Subscription } from 'rxjs';
     provide: NG_VALIDATORS,
     useExisting: forwardRef(() => StringOptionComponent),
     multi: true,
-  }],
+  }]
 })
 export class StringOptionComponent implements ControlValueAccessor, Validator, OnInit, OnDestroy {
 

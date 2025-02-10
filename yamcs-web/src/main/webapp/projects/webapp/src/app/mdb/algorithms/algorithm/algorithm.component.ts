@@ -7,7 +7,6 @@ import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/insta
 import { AlgorithmDetailComponent } from '../algorithm-detail/algorithm-detail.component';
 
 @Component({
-  standalone: true,
   templateUrl: './algorithm.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

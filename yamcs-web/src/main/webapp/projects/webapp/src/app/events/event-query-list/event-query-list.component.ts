@@ -8,7 +8,6 @@ import { EditEventQueryDialogComponent } from '../edit-event-query-dialog/edit-e
 import { EventsPageTabsComponent } from '../events-page-tabs/events-page-tabs.component';
 
 @Component({
-  standalone: true,
   selector: 'app-event-query-list',
   templateUrl: './event-query-list.component.html',
   imports: [

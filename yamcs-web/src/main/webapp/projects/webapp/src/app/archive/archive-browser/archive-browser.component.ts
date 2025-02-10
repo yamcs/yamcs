@@ -44,7 +44,6 @@ function makeGradient(rgb: RGB) {
 }
 
 @Component({
-  standalone: true,
   templateUrl: './archive-browser.component.html',
   styleUrl: './archive-browser.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

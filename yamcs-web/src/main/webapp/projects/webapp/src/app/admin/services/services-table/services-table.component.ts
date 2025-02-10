@@ -5,7 +5,6 @@ import { Service, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { ServiceStateComponent } from '../service-state/service-state.component';
 
 @Component({
-  standalone: true,
   selector: 'app-services-table',
   templateUrl: './services-table.component.html',
   styleUrl: './services-table.component.css',

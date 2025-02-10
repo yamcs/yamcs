@@ -9,7 +9,6 @@ import { SessionExpiredDialogComponent } from '../session-expired-dialog/session
 import { StartReplayDialogComponent } from '../start-replay-dialog/start-replay-dialog.component';
 
 @Component({
-  standalone: true,
   selector: 'app-instance-toolbar',
   templateUrl: './instance-toolbar.component.html',
   styleUrl: './instance-toolbar.component.css',

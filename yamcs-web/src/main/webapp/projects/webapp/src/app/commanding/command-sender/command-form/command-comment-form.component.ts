@@ -4,7 +4,6 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
 import { TemplateProvider } from './TemplateProvider';
 
 @Component({
-  standalone: true,
   selector: 'app-command-comment-form',
   templateUrl: './command-comment-form.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

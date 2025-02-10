@@ -19,7 +19,6 @@ export interface SelectParameterOptions {
  */
 
 @Component({
-  standalone: true,
   selector: 'app-select-parameter-dialog',
   templateUrl: './select-parameter-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

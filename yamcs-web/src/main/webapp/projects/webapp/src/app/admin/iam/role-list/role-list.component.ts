@@ -9,7 +9,6 @@ import { AdminPageTemplateComponent } from '../../shared/admin-page-template/adm
 import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.component';
 
 @Component({
-  standalone: true,
   templateUrl: './role-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

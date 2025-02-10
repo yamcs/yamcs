@@ -5,7 +5,6 @@ import { ThreadInfo, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { TraceElementComponent } from '../trace-element/trace-element.component';
 
 @Component({
-  standalone: true,
   selector: 'app-threads-table',
   templateUrl: './threads-table.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -4,14 +4,13 @@ import { MatIcon } from '@angular/material/icon';
 import { DyLegendData } from '../dygraphs';
 
 @Component({
-  standalone: true,
   selector: 'app-parameter-legend',
   templateUrl: './parameter-legend.component.html',
   styleUrl: './parameter-legend.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     MatIcon
-],
+  ],
 })
 export class ParameterLegendComponent {
 

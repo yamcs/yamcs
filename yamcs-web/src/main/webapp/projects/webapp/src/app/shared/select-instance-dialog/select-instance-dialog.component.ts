@@ -8,7 +8,6 @@ import { ConfigService, Instance, WebappSdkModule, YamcsService } from '@yamcs/w
 import { AuthService } from '../../core/services/AuthService';
 
 @Component({
-  standalone: true,
   templateUrl: './select-instance-dialog.component.html',
   styleUrl: './select-instance-dialog.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

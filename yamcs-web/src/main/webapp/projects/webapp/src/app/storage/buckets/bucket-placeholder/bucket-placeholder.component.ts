@@ -8,7 +8,6 @@ import { RouterOutlet } from '@angular/router';
  */
 
 @Component({
-  standalone: true,
   selector: 'app-bucket-placeholder',
   template: '<router-outlet />',
   changeDetection: ChangeDetectionStrategy.OnPush,

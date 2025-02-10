@@ -21,7 +21,6 @@ import { CommandConstraintsComponent } from './command-constraints.component';
 import { CommandHistoryTemplateProvider } from './CommandHistoryTemplateProvider';
 
 @Component({
-  standalone: true,
   templateUrl: './configure-command.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

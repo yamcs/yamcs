@@ -6,11 +6,10 @@ import { AuthService } from '../../../../core/services/AuthService';
 import { ScriptViewerComponent } from '../script-viewer/script-viewer.component';
 
 @Component({
-  standalone: true,
   templateUrl: './script-viewer-controls.component.html',
   imports: [
     WebappSdkModule,
-  ]
+  ],
 })
 export class ScriptViewerControlsComponent {
 

@@ -8,7 +8,6 @@ import { CommandsDataSource } from '../../commanding/command-sender/send-command
 import { SignificanceLevelComponent } from '../significance-level/significance-level.component';
 
 @Component({
-  standalone: true,
   selector: 'app-command-selector',
   templateUrl: './command-selector.component.html',
   styleUrl: './command-selector.component.css',

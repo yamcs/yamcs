@@ -3,7 +3,6 @@ import { Activity, MessageService, WebappSdkModule, YamcsService } from '@yamcs/
 import { BehaviorSubject } from 'rxjs';
 
 @Component({
-  standalone: true,
   templateUrl: './activity-details-tab.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

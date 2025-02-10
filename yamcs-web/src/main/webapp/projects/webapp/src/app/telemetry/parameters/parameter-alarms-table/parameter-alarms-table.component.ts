@@ -6,7 +6,6 @@ import { AlarmLevelComponent } from '../../../shared/alarm-level/alarm-level.com
 import { ParameterAlarmsDataSource } from './parameter-alarms.datasource';
 
 @Component({
-  standalone: true,
   selector: 'app-parameter-alarms-table',
   templateUrl: './parameter-alarms-table.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

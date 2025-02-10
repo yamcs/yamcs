@@ -5,7 +5,6 @@ import { Member, Parameter, ParameterType, Value, WebappSdkModule, utils, valida
 import { ParameterFormComponent } from '../parameter-form/parameter-form.component';
 
 @Component({
-  standalone: true,
   selector: 'app-set-parameter-dialog',
   templateUrl: './set-parameter-dialog.component.html',
   imports: [

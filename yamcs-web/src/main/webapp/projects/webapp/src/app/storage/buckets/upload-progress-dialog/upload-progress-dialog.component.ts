@@ -6,7 +6,6 @@ import { debounceTime } from 'rxjs/operators';
 import { Upload } from './Upload';
 
 @Component({
-  standalone: true,
   selector: 'app-upload-progress-dialog',
   templateUrl: './upload-progress-dialog.component.html',
   styleUrl: './upload-progress-dialog.component.css',

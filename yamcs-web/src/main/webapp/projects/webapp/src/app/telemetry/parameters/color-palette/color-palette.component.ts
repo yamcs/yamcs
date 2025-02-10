@@ -19,7 +19,6 @@ const PALETTE = [
 ];
 
 @Component({
-  standalone: true,
   selector: 'app-color-palette',
   templateUrl: './color-palette.component.html',
   styleUrl: './color-palette.component.css',

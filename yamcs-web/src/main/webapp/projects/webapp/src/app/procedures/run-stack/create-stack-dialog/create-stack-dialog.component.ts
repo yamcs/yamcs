@@ -4,7 +4,6 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ConfigService, StackFormatter, StorageClient, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   selector: 'app-create-stack-dialog',
   templateUrl: './create-stack-dialog.component.html',
   imports: [

@@ -11,7 +11,6 @@ import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.
 import { AddMembersDialogComponent, MemberItem } from '../add-members-dialog/add-members-dialog.component';
 
 @Component({
-  standalone: true,
   templateUrl: './edit-group.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

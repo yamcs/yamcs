@@ -27,7 +27,6 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
 import { ParameterPlot } from '../parameter-plot/ParameterPlot';
 
 @Component({
-  standalone: true,
   templateUrl: './timeline-chart.component.html',
   styleUrl: './timeline-chart.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

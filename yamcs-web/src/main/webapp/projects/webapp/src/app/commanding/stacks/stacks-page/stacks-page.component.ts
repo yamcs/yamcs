@@ -5,7 +5,6 @@ import { InstancePageTemplateComponent } from '../../../shared/instance-page-tem
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 
 @Component({
-  standalone: true,
   selector: 'app-stacks-page',
   templateUrl: './stacks-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -11,7 +11,6 @@ import { ActivityStatusComponent } from '../shared/activity-status.component';
 import { ActivityService } from '../shared/activity.service';
 
 @Component({
-  standalone: true,
   templateUrl: './activity.component.html',
   styleUrl: './activity.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

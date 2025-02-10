@@ -6,7 +6,6 @@ import { AppMarkdownInput } from '../../../shared/markdown-input/markdown-input.
 import { TemplateProvider } from './TemplateProvider';
 
 @Component({
-  standalone: true,
   selector: 'app-stack-advancement-form',
   templateUrl: './stack-advancement-form.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -4,7 +4,6 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   selector: 'app-set-failed-dialog',
   templateUrl: './set-failed-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

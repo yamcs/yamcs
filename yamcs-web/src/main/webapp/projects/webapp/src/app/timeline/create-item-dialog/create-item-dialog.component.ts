@@ -10,7 +10,6 @@ import { resolveProperties } from '../shared/properties';
 const OVERRIDE_SUFFIX = '_overrideBand';
 
 @Component({
-  standalone: true,
   templateUrl: './create-item-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

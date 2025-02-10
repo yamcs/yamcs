@@ -7,7 +7,6 @@ import { propertyInfo } from '../ItemBand';
 import { ItemBandStylesComponent } from '../item-band-styles/item-band-styles.component';
 
 @Component({
-  standalone: true,
   selector: 'app-edit-item-band',
   templateUrl: './edit-item-band.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

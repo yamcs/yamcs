@@ -7,7 +7,6 @@ import { YaButton } from '../button/button.component';
 import { YaLabel } from '../label/label.component';
 
 @Component({
-  standalone: true,
   selector: 'ya-tag-select',
   templateUrl: './tag-select.component.html',
   styleUrl: './tag-select.component.css',

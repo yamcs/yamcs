@@ -11,7 +11,6 @@ import { ClearancesPageTabsComponent } from '../clearances-page-tabs/clearances-
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   selector: 'app-clearances-action-log-tab',
   templateUrl: './clearances-action-log-tab.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

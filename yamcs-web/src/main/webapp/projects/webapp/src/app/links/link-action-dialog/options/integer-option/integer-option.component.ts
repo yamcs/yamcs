@@ -4,7 +4,6 @@ import { Option, WebappSdkModule, validators } from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
 
 @Component({
-  standalone: true,
   selector: 'app-integer-option',
   templateUrl: './integer-option.component.html',
   styleUrls: ['../options.css', './integer-option.component.css'],
@@ -20,7 +19,7 @@ import { Subscription } from 'rxjs';
     provide: NG_VALIDATORS,
     useExisting: forwardRef(() => IntegerOptionComponent),
     multi: true,
-  }],
+  }]
 })
 export class IntegerOptionComponent implements ControlValueAccessor, Validator, OnInit, OnDestroy {
 

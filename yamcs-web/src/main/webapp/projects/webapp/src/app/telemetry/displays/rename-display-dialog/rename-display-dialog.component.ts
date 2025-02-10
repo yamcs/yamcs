@@ -4,7 +4,6 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ConfigService, StorageClient, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   selector: 'app-rename-display-dialog',
   templateUrl: './rename-display-dialog.component.html',
   imports: [

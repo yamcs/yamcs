@@ -5,7 +5,6 @@ import { LinkStatusComponent } from '../link-status/link-status.component';
 import { LinkService } from '../shared/link.service';
 
 @Component({
-  standalone: true,
   selector: 'app-link-detail',
   templateUrl: './link-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

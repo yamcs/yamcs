@@ -21,7 +21,6 @@ import { EventsDataSource } from './events.datasource';
 const defaultInterval = 'PT1H';
 
 @Component({
-  standalone: true,
   templateUrl: './event-list.component.html',
   styleUrl: './event-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

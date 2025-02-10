@@ -4,7 +4,6 @@ import { ArgumentType, utils, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
 
 @Component({
-  standalone: true,
   selector: 'app-string-argument',
   templateUrl: './string-argument.component.html',
   styleUrls: ['../arguments.css', './string-argument.component.css'],

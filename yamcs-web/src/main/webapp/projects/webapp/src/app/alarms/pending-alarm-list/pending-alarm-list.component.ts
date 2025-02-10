@@ -9,7 +9,6 @@ import { AlarmsTableComponent } from '../alarms-table/alarm-table.component';
 import { AlarmsDataSource } from '../alarms.datasource';
 
 @Component({
-  standalone: true,
   templateUrl: './pending-alarm-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

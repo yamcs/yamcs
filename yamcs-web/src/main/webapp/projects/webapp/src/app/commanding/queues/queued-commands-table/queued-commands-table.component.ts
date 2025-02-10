@@ -5,7 +5,6 @@ import { CommandQueue, CommandQueueEntry, WebappSdkModule, YamcsService } from '
 import { Observable } from 'rxjs';
 
 @Component({
-  standalone: true,
   selector: 'app-queued-commands-table',
   templateUrl: './queued-commands-table.component.html',
   styleUrl: './queued-commands-table.component.css',

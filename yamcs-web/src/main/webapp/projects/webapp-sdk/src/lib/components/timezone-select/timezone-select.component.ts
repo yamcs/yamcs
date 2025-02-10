@@ -6,7 +6,6 @@ import { YaSelect, YaSelectOption } from '../select/select.component';
 import tznames from './tznames';
 
 @Component({
-  standalone: true,
   selector: 'ya-timezone-select',
   templateUrl: './timezone-select.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -19,7 +18,7 @@ import tznames from './tznames';
     AsyncPipe,
     ReactiveFormsModule,
     YaSelect
-],
+  ],
 })
 export class YaTimezoneSelect implements ControlValueAccessor {
 

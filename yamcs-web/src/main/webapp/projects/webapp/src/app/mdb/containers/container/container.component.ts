@@ -8,7 +8,6 @@ import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/insta
 import { ContainerDetailComponent } from '../container-detail/container-detail.component';
 
 @Component({
-  standalone: true,
   templateUrl: './container.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

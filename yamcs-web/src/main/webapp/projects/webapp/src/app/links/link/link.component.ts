@@ -12,7 +12,6 @@ import { LinkStatusComponent } from '../link-status/link-status.component';
 import { LinkService } from '../shared/link.service';
 
 @Component({
-  standalone: true,
   templateUrl: './link.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

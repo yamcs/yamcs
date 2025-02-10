@@ -4,7 +4,6 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { EditReplayProcessorRequest, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   selector: 'app-modify-replay-dialog',
   templateUrl: './modify-replay-dialog.component.html',
   imports: [

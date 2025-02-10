@@ -7,7 +7,6 @@ import { AlarmStateIconComponent } from '../alarm-state-icon/alarm-state-icon.co
 import { AlarmsDataSource } from '../alarms.datasource';
 
 @Component({
-  standalone: true,
   selector: 'app-alarms-table',
   templateUrl: './alarm-table.component.html',
   styleUrl: './alarm-table.component.css',

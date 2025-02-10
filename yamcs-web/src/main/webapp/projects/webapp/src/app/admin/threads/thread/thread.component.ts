@@ -8,7 +8,6 @@ import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.
 import { TraceElementComponent } from '../trace-element/trace-element.component';
 
 @Component({
-  standalone: true,
   templateUrl: './thread.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

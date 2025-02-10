@@ -8,7 +8,6 @@ import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/insta
 import { CreateBandWizardStepComponent } from '../../create-band-wizard-step/create-band-wizard-step.component';
 
 @Component({
-  standalone: true,
   templateUrl: './create-command-band.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
