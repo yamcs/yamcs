@@ -4,7 +4,6 @@ import { TimelineBand, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 
 @Component({
-  standalone: true,
   selector: 'app-edit-time-ruler',
   templateUrl: './edit-time-ruler.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

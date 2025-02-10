@@ -19,7 +19,6 @@ import { ViewerControlsHostDirective } from './viewer-controls-host.directive';
 import { ViewerHostDirective } from './viewer-host.directive';
 
 @Component({
-  standalone: true,
   templateUrl: './display-file.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

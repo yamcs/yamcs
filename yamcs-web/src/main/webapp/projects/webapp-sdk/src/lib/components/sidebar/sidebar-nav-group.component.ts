@@ -4,7 +4,6 @@ import { MatIcon } from '@angular/material/icon';
 import { MatListItem } from '@angular/material/list';
 
 @Component({
-  standalone: true,
   selector: 'ya-sidebar-nav-group',
   templateUrl: './sidebar-nav-group.component.html',
   styleUrl: './sidebar-nav-group.component.css',
@@ -12,7 +11,7 @@ import { MatListItem } from '@angular/material/list';
   imports: [
     MatIcon,
     MatListItem
-],
+  ],
 })
 export class YaSidebarNavGroup {
 

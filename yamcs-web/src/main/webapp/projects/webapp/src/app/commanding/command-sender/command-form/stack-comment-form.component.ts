@@ -5,7 +5,6 @@ import { AppMarkdownInput } from '../../../shared/markdown-input/markdown-input.
 import { TemplateProvider } from './TemplateProvider';
 
 @Component({
-  standalone: true,
   selector: 'app-stack-comment-form',
   templateUrl: './stack-comment-form.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -4,7 +4,6 @@ import { Table, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import * as utils from '../utils';
 
 @Component({
-  standalone: true,
   selector: 'app-table-script-tab',
   templateUrl: './table-script-tab.component.html',
   styleUrls: [

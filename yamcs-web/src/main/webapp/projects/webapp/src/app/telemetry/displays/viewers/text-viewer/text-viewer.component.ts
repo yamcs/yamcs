@@ -3,7 +3,6 @@ import { ConfigService, StorageClient, WebappSdkModule, YamcsService } from '@ya
 import { Viewer } from '../Viewer';
 
 @Component({
-  standalone: true,
   selector: 'app-text-viewer',
   template: `
     @if (text) {

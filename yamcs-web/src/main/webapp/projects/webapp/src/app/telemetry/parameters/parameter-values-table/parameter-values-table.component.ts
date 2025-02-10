@@ -4,7 +4,6 @@ import { AlarmLevelComponent } from '../../../shared/alarm-level/alarm-level.com
 import { ParameterDataDataSource } from '../parameter-data-tab/parameter-data.datasource';
 
 @Component({
-  standalone: true,
   selector: 'app-parameter-values-table',
   templateUrl: './parameter-values-table.component.html',
   styleUrl: './parameter-values-table.component.css',

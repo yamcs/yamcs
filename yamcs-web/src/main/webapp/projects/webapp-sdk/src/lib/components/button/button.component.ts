@@ -4,7 +4,6 @@ import { MatIcon } from '@angular/material/icon';
 export type YaButtonAppearance = 'basic' | 'text' | 'primary';
 
 @Component({
-  standalone: true,
   selector: 'ya-button',
   templateUrl: './button.component.html',
   styleUrl: './button.component.css',

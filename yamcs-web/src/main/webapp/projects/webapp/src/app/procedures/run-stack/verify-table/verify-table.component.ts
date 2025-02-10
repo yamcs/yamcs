@@ -4,7 +4,6 @@ import { StackedVerifyEntry } from '../stack-file/StackedEntry';
 import { VerifyIconComponent } from '../verify-icon/verify-icon.component';
 
 @Component({
-  standalone: true,
   selector: 'app-verify-table',
   templateUrl: './verify-table.component.html',
   styleUrl: './verify-table.component.css',

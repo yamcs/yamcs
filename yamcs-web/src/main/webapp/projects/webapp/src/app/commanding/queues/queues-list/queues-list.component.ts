@@ -8,7 +8,6 @@ import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/insta
 import { SignificanceLevelComponent } from '../../../shared/significance-level/significance-level.component';
 
 @Component({
-  standalone: true,
   templateUrl: './queues-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

@@ -2,7 +2,6 @@ import { Component, HostBinding, input } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 
 @Component({
-  standalone: true,
   selector: 'ya-table-top',
   templateUrl: './table-top.component.html',
   styleUrl: './table-top.component.css',

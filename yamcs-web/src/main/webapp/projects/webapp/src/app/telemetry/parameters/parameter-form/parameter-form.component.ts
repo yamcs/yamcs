@@ -4,7 +4,6 @@ import { Parameter, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 
 @Component({
-  standalone: true,
   selector: 'app-parameter-form',
   templateUrl: './parameter-form.component.html',
   styleUrl: './parameter-form.component.css',

@@ -3,7 +3,6 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
 import { DyLegendData, TimestampTrackerData } from '../parameter-plot/dygraphs';
 
 @Component({
-  standalone: true,
   selector: 'app-timestamp-tracker',
   templateUrl: './timestamp-tracker.component.html',
   styleUrl: './timestamp-tracker.component.css',

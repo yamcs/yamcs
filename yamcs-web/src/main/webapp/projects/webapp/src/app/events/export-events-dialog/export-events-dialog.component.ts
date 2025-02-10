@@ -5,7 +5,6 @@ import { DownloadEventsOptions, WebappSdkModule, YamcsService, utils } from '@ya
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 @Component({
-  standalone: true,
   templateUrl: './export-events-dialog.component.html',
   imports: [
     WebappSdkModule,

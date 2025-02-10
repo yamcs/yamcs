@@ -3,7 +3,6 @@ import { FormGroup } from '@angular/forms';
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   selector: 'app-parameter-plot-styles',
   templateUrl: './parameter-plot-styles.component.html',
   styleUrl: '../../shared/StyleTable.css',

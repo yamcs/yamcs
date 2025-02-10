@@ -9,7 +9,6 @@ import { YaButton } from '../button/button.component';
 import { YaSelectOption } from '../select/select.component';
 
 @Component({
-  standalone: true,
   selector: 'ya-multi-select',
   templateUrl: './multi-select.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -4,7 +4,6 @@ import { ArgumentType, utils, validators, WebappSdkModule } from '@yamcs/webapp-
 import { Subscription } from 'rxjs';
 
 @Component({
-  standalone: true,
   selector: 'app-binary-argument',
   templateUrl: './binary-argument.component.html',
   styleUrls: ['../arguments.css', './binary-argument.component.css'],

@@ -9,7 +9,6 @@ import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.
 import { ChangeUserPasswordDialogComponent } from '../change-user-password-dialog/change-user-password-dialog.component';
 
 @Component({
-  standalone: true,
   templateUrl: './user.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

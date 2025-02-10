@@ -7,7 +7,6 @@ import { AppParameterInput } from '../../../shared/parameter-input/parameter-inp
 import { StackedCheckEntry } from '../stack-file/StackedEntry';
 
 @Component({
-  standalone: true,
   selector: 'app-edit-check-entry-dialog',
   templateUrl: './edit-check-entry-dialog.component.html',
   styleUrl: './edit-check-entry-dialog.component.css',

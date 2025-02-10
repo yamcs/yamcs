@@ -10,7 +10,6 @@ import { ParameterPlotStylesComponent } from '../parameter-plot-styles/parameter
 import { TraceStylesComponent } from '../trace-styles/trace-styles.component';
 
 @Component({
-  standalone: true,
   selector: 'app-create-parameter-plot',
   templateUrl: './create-parameter-plot.component.html',
   styleUrl: './create-parameter-plot.component.css',

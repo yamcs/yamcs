@@ -9,13 +9,12 @@ interface Entry {
 }
 
 @Component({
-  standalone: true,
   selector: 'ya-labels',
   templateUrl: './labels.component.html',
   imports: [
     AsyncPipe,
     YaLabel
-],
+  ],
 })
 export class YaLabels implements OnInit {
 

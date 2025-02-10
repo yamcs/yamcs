@@ -4,7 +4,6 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
 import { AppParameterInput } from '../../../shared/parameter-input/parameter-input.component';
 
 @Component({
-  standalone: true,
   selector: 'app-trace-styles',
   templateUrl: './trace-styles.component.html',
   styleUrl: '../../shared/StyleTable.css',

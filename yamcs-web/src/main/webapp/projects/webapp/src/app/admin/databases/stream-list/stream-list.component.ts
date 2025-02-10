@@ -11,7 +11,6 @@ export interface StreamItem {
 
 
 @Component({
-  standalone: true,
   templateUrl: './stream-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

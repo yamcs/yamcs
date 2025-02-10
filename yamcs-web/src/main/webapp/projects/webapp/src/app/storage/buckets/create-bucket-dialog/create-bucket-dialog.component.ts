@@ -4,7 +4,6 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MessageService, StorageClient, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   selector: 'app-create-bucket-dialog',
   templateUrl: './create-bucket-dialog.component.html',
   imports: [

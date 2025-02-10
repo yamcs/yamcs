@@ -11,7 +11,6 @@ import { SetParameterDialogComponent } from '../set-parameter-dialog/set-paramet
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   templateUrl: './parameter.component.html',
   styleUrl: './parameter.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

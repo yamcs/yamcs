@@ -4,7 +4,6 @@ import { BehaviorSubject } from 'rxjs';
 import { QueuedCommandsTableComponent } from '../queued-commands-table/queued-commands-table.component';
 
 @Component({
-  standalone: true,
   templateUrl: './queued-commands-tab.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

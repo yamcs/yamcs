@@ -7,7 +7,6 @@ import { AdminPageTemplateComponent } from '../../shared/admin-page-template/adm
 import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.component';
 
 @Component({
-  standalone: true,
   templateUrl: './group.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

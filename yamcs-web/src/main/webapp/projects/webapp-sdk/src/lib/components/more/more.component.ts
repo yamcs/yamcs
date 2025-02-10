@@ -3,7 +3,6 @@ import { MatMenu, MatMenuTrigger } from '@angular/material/menu';
 import { YaIconAction } from '../icon-action/icon-action.component';
 
 @Component({
-  standalone: true,
   selector: 'ya-more',
   templateUrl: 'more.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

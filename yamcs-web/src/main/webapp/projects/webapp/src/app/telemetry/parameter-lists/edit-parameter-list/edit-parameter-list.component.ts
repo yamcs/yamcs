@@ -11,7 +11,6 @@ import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/insta
 import { SelectParameterDialogComponent } from '../../../shared/select-parameter-dialog/select-parameter-dialog.component';
 
 @Component({
-  standalone: true,
   templateUrl: './edit-parameter-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

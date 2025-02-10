@@ -15,7 +15,6 @@ import { EditSpacerComponent } from '../spacer/edit-spacer/edit-spacer.component
 import { EditTimeRulerComponent } from '../time-ruler/edit-time-ruler/edit-time-ruler.component';
 
 @Component({
-  standalone: true,
   templateUrl: './edit-band.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

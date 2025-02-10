@@ -4,7 +4,6 @@ import { ArgumentType, utils, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
 
 @Component({
-  standalone: true,
   selector: 'app-time-argument',
   templateUrl: './time-argument.component.html',
   styleUrls: ['../arguments.css', './time-argument.component.css'],

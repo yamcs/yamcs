@@ -7,7 +7,6 @@ const defaultSeverity: EventSeverity = 'INFO';
 const defaultSource: string[] = [];
 
 @Component({
-  standalone: true,
   selector: 'app-create-event-query-dialog',
   templateUrl: './create-event-query-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -10,7 +10,6 @@ interface Legend {
 }
 
 @Component({
-  standalone: true,
   selector: 'app-parameter-plot-tooltip',
   templateUrl: './parameter-plot-tooltip.component.html',
   styleUrl: './parameter-plot-tooltip.component.css',
@@ -18,7 +17,7 @@ interface Legend {
     CommonModule,
     DateTimePipe,
     SimpleTableDirective,
-  ]
+  ],
 })
 export class ParameterPlotTooltipComponent {
 

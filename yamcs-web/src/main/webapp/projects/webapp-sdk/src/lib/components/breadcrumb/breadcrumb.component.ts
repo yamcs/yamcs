@@ -4,7 +4,6 @@ import { MatIcon } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
 
 @Component({
-  standalone: true,
   selector: 'ya-breadcrumb',
   templateUrl: './breadcrumb.component.html',
   styleUrl: './breadcrumb.component.css',
@@ -12,7 +11,7 @@ import { RouterLink } from '@angular/router';
   imports: [
     MatIcon,
     RouterLink
-],
+  ],
 })
 export class YaBreadcrumb {
 

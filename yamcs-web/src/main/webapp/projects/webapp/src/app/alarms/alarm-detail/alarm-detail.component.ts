@@ -3,7 +3,6 @@ import { Alarm, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { AlarmLevelComponent } from '../../shared/alarm-level/alarm-level.component';
 
 @Component({
-  standalone: true,
   selector: 'app-alarm-detail',
   templateUrl: './alarm-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

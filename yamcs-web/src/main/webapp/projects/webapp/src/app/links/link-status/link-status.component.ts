@@ -6,7 +6,6 @@ import { map } from 'rxjs/operators';
 const EXPIRY = 2000;
 
 @Component({
-  standalone: true,
   selector: 'app-link-status',
   templateUrl: './link-status.component.html',
   styleUrl: './link-status.component.css',

@@ -4,7 +4,6 @@ import { MessageService, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk
 import * as utils from '../utils';
 
 @Component({
-  standalone: true,
   selector: 'app-stream-script-tab',
   templateUrl: './stream-script-tab.component.html',
   styleUrls: [

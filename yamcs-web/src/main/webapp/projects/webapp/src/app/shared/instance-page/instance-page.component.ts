@@ -11,7 +11,6 @@ import { ActivitiesLabelComponent } from '../activities-label/activities-label.c
 import { AlarmLabelComponent } from '../alarm-label/alarm-label.component';
 
 @Component({
-  standalone: true,
   templateUrl: './instance-page.component.html',
   styleUrl: './instance-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -4,7 +4,6 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { StorageClient, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   selector: 'app-create-stack-folder-dialog',
   templateUrl: './create-stack-folder-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

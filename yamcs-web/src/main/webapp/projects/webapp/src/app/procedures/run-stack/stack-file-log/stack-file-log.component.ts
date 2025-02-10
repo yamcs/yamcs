@@ -6,7 +6,6 @@ import { StackFilePageTabsComponent } from '../stack-file-page-tabs/stack-file-p
 import { StackFileService } from '../stack-file/StackFileService';
 
 @Component({
-  standalone: true,
   selector: 'app-stack-file-log',
   templateUrl: './stack-file-log.component.html',
   styleUrl: './stack-file-log.component.css',

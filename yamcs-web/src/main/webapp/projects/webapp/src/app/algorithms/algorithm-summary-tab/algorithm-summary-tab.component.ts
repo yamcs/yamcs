@@ -4,7 +4,6 @@ import { BehaviorSubject } from 'rxjs';
 import { AlgorithmDetailComponent } from '../algorithm-detail/algorithm-detail.component';
 
 @Component({
-  standalone: true,
   templateUrl: './algorithm-summary-tab.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

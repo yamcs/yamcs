@@ -10,7 +10,6 @@ const PASSWORD_VALIDATOR: ValidatorFn = (control: AbstractControl) => {
 };
 
 @Component({
-  standalone: true,
   selector: 'app-change-user-password-dialog',
   templateUrl: './change-user-password-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -8,7 +8,6 @@ import { ColorPaletteComponent } from '../color-palette/color-palette.component'
 import { ThicknessComponent } from '../thickness/thickness.component';
 
 @Component({
-  standalone: true,
   selector: 'app-compare-parameter-dialog',
   templateUrl: './compare-parameter-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

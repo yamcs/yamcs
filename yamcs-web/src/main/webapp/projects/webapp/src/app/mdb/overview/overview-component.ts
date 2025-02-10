@@ -5,7 +5,6 @@ import { InstancePageTemplateComponent } from '../../shared/instance-page-templa
 import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 
 @Component({
-  standalone: true,
   templateUrl: './overview-component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

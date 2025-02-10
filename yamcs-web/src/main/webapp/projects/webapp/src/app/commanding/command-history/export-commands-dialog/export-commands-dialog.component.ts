@@ -5,7 +5,6 @@ import { DownloadCommandsOptions, WebappSdkModule, YaSelectOption, YamcsService,
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 @Component({
-  standalone: true,
   templateUrl: './export-commands-dialog.component.html',
   imports: [
     WebappSdkModule,

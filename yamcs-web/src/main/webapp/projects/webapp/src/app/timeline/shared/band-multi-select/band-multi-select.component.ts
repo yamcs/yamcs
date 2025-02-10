@@ -4,7 +4,6 @@ import { MatTableDataSource } from '@angular/material/table';
 import { TimelineBand, TimelineBandsPage, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   selector: 'app-band-multi-select',
   templateUrl: './band-multi-select.component.html',
   styleUrl: './band-multi-select.component.css',

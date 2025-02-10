@@ -4,7 +4,6 @@ import { AcknowledgmentIconComponent } from '../acknowledgment-icon/acknowledgme
 import { TransmissionConstraintsIconComponent } from '../transmission-constraints-icon/transmission-constraints-icon.component';
 
 @Component({
-  standalone: true,
   selector: 'app-yamcs-acknowledgments-table',
   templateUrl: './yamcs-acknowledgments-table.component.html',
   styleUrl: './yamcs-acknowledgments-table.component.css',

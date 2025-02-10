@@ -8,7 +8,6 @@ import { StorageToolbarComponent } from '../../storage-toolbar/storage-toolbar.c
 import { BucketPageTabsComponent } from '../bucket-page-tabs/bucket-page-tabs.component';
 
 @Component({
-  standalone: true,
   templateUrl: './bucket-properties.component.html',
   styleUrl: './bucket-properties.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

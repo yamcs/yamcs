@@ -8,7 +8,6 @@ import { propertyInfo } from '../Spacer';
 import { SpacerStylesComponent } from '../spacer-styles/spacer-styles.component';
 
 @Component({
-  standalone: true,
   selector: 'app-edit-spacer',
   templateUrl: './edit-spacer.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

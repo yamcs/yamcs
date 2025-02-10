@@ -4,7 +4,6 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { StorageClient, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   selector: 'app-create-bucket-folder-dialog',
   templateUrl: './create-folder-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

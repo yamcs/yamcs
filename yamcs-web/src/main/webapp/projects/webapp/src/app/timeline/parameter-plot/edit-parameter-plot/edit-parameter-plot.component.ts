@@ -8,7 +8,6 @@ import { ParameterPlotStylesComponent } from '../parameter-plot-styles/parameter
 import { TraceStylesComponent } from '../trace-styles/trace-styles.component';
 
 @Component({
-  standalone: true,
   selector: 'app-edit-parameter-plot',
   templateUrl: './edit-parameter-plot.component.html',
   styleUrl: './edit-parameter-plot.component.css',

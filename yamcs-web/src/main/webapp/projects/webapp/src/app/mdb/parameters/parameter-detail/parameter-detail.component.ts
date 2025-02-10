@@ -6,7 +6,6 @@ import { MarkdownComponent } from '../../../shared/markdown/markdown.component';
 import { ParameterCalibrationComponent } from '../parameter-calibration/parameter-calibration.component';
 
 @Component({
-  standalone: true,
   selector: 'app-parameter-detail',
   templateUrl: './parameter-detail.component.html',
   styleUrl: './parameter-detail.component.css',

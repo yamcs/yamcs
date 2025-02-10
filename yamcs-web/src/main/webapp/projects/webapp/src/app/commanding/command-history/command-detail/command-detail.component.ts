@@ -8,7 +8,6 @@ import { CascadingPrefixPipe } from '../shared/cascading-prefix.pipe';
 import { YamcsAcknowledgmentsTableComponent } from '../yamcs-acknowledgments-table/yamcs-acknowledgments-table.component';
 
 @Component({
-  standalone: true,
   selector: 'app-command-detail2',
   templateUrl: './command-detail.component.html',
   styleUrl: './command-detail.component.css',

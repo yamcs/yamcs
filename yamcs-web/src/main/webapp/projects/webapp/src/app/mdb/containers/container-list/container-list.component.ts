@@ -11,7 +11,6 @@ import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/insta
 import { ContainersDataSource } from './containers.datasource';
 
 @Component({
-  standalone: true,
   templateUrl: './container-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

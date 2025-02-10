@@ -12,7 +12,6 @@ export interface LinkActionDialogData {
 }
 
 @Component({
-  standalone: true,
   templateUrl: './link-action-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

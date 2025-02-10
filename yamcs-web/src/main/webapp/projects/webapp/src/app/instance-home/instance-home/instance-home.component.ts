@@ -8,7 +8,6 @@ import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance
 import { TmStatsTableComponent } from '../tm-stats-table/tm-stats-table.component';
 
 @Component({
-  standalone: true,
   templateUrl: './instance-home.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

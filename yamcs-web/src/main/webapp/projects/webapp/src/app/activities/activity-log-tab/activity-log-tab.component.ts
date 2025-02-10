@@ -4,7 +4,6 @@ import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { ActivityService } from '../shared/activity.service';
 
 @Component({
-  standalone: true,
   templateUrl: './activity-log-tab.component.html',
   styleUrl: './activity-log-tab.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

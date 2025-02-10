@@ -4,7 +4,6 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { ParameterValue } from '../../client';
 
 @Component({
-  standalone: true,
   selector: 'ya-expirable',
   templateUrl: './expirable.component.html',
   styleUrl: './expirable.component.css',

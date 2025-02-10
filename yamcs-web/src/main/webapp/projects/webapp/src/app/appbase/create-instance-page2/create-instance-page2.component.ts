@@ -9,7 +9,6 @@ import { CreateInstanceWizardStepComponent } from '../create-instance-wizard-ste
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   templateUrl: './create-instance-page2.component.html',
   styleUrl: './create-instance-page2.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -13,7 +13,6 @@ export interface MemberItem {
 
 
 @Component({
-  standalone: true,
   selector: 'app-add-members-dialog',
   templateUrl: './add-members-dialog.component.html',
   styleUrl: './add-members-dialog.component.css',

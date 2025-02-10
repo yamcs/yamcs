@@ -10,7 +10,6 @@ export interface FileActionRequest {
 }
 
 @Component({
-  standalone: true,
   selector: 'app-remote-file-selector',
   templateUrl: './remote-file-selector.component.html',
   styleUrl: './remote-file-selector.component.css',

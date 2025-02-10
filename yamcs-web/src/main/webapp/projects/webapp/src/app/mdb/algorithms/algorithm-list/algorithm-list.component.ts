@@ -10,7 +10,6 @@ import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/insta
 import { AlgorithmsDataSource } from './algorithms.datasource';
 
 @Component({
-  standalone: true,
   templateUrl: './algorithm-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

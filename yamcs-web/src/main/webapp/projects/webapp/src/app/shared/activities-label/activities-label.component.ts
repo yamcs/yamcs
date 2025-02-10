@@ -4,7 +4,6 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 
 @Component({
-  standalone: true,
   selector: 'app-activities-label',
   templateUrl: './activities-label.component.html',
   styleUrl: './activities-label.component.css',

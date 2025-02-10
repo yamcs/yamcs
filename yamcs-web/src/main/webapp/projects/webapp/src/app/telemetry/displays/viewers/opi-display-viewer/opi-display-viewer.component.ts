@@ -22,7 +22,6 @@ const OPS_DATASOURCE = "ops://";
 const ARGS_PREFIX = 'args.';
 
 @Component({
-  standalone: true,
   selector: 'app-opi-display-viewer',
   template: `
     <div #frameInner class="frame-inner">

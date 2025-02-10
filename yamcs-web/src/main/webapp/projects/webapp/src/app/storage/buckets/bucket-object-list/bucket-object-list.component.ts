@@ -18,7 +18,6 @@ import { UploadProgressDialogComponent } from '../upload-progress-dialog/upload-
 import { ViewObjectMetadataDialogComponent } from '../view-object-metadata-dialog/view-object-metadata-dialog.component';
 
 @Component({
-  standalone: true,
   templateUrl: './bucket-object-list.component.html',
   styleUrl: './bucket-object-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

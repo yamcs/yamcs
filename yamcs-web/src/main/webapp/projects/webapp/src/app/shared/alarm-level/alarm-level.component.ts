@@ -4,7 +4,6 @@ import { booleanAttribute, ChangeDetectionStrategy, Component, Input } from '@an
 import { MatTooltip } from '@angular/material/tooltip';
 
 @Component({
-  standalone: true,
   selector: 'app-alarm-level',
   templateUrl: './alarm-level.component.html',
   styleUrl: './alarm-level.component.css',

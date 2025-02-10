@@ -8,7 +8,6 @@ import { ParameterTableBuffer } from '../ParameterTableBuffer';
 import { ParameterTable } from '../ParameterTableModel';
 
 @Component({
-  standalone: true,
   selector: 'app-multiple-parameter-table',
   templateUrl: './multiple-parameter-table.component.html',
   styleUrl: './multiple-parameter-table.component.css',

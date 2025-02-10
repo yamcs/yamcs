@@ -8,7 +8,6 @@ import { EditorView, basicSetup } from 'codemirror';
 import { MarkdownComponent } from '../../../shared/markdown/markdown.component';
 
 @Component({
-  standalone: true,
   selector: 'app-algorithm-detail',
   templateUrl: './algorithm-detail.component.html',
   styleUrl: './algorithm-detail.component.css',

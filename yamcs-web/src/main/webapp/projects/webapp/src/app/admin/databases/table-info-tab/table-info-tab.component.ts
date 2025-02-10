@@ -5,7 +5,6 @@ import { Column, Table, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk'
 import { ShowEnumDialogComponent } from '../show-enum-dialog/show-enum-dialog.component';
 
 @Component({
-  standalone: true,
   templateUrl: './table-info-tab.component.html',
   styleUrl: './table-info-tab.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

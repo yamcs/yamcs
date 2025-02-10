@@ -13,7 +13,6 @@ export interface PacketStats {
 }
 
 @Component({
-  standalone: true,
   selector: 'app-tmstats-table',
   templateUrl: './tm-stats-table.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

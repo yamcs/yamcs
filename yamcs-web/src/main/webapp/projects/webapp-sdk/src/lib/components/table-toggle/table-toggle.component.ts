@@ -5,7 +5,6 @@ import { PreferenceStore } from '../../services/preference-store.service';
 
 
 @Component({
-  standalone: true,
   selector: 'ya-table-toggle',
   templateUrl: './table-toggle.component.html',
   styleUrl: './table-toggle.component.css',

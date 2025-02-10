@@ -11,7 +11,6 @@ import { StringArgumentComponent } from '../string-argument/string-argument.comp
 import { TimeArgumentComponent } from '../time-argument/time-argument.component';
 
 @Component({
-  standalone: true,
   selector: 'app-aggregate-argument',
   templateUrl: './aggregate-argument.component.html',
   styleUrls: ['../arguments.css', './aggregate-argument.component.css'],

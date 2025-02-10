@@ -6,7 +6,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AuditRecord, GetAuditRecordsOptions, MessageService, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   selector: 'app-queues-action-log-tab',
   templateUrl: './queues-action-log-tab.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

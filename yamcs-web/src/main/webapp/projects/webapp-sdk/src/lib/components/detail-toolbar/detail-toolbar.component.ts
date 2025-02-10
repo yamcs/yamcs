@@ -5,7 +5,6 @@ import { BaseComponent } from '../../abc/BaseComponent';
 import { YaIconAction } from '../icon-action/icon-action.component';
 
 @Component({
-  standalone: true,
   selector: 'ya-detail-toolbar',
   templateUrl: './detail-toolbar.component.html',
   styleUrl: './detail-toolbar.component.css',

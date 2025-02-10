@@ -6,7 +6,6 @@ import { Subject, Subscription, fromEvent, merge } from 'rxjs';
 import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
 
 @Component({
-  standalone: true,
   selector: 'ya-search-filter',
   templateUrl: './search-filter.component.html',
   styleUrl: './search-filter.component.css',
@@ -19,7 +18,7 @@ import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
   imports: [
     AsyncPipe,
     MatIcon
-],
+  ],
 })
 export class YaSearchFilter implements ControlValueAccessor, AfterViewInit, OnDestroy {
 

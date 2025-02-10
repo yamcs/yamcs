@@ -19,7 +19,6 @@ interface Resource {
 }
 
 @Component({
-  standalone: true,
   templateUrl: './search.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

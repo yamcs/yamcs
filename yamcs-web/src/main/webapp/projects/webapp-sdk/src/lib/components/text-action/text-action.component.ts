@@ -3,14 +3,13 @@ import { ChangeDetectionStrategy, Component, HostBinding, Input } from '@angular
 import { MatIcon } from '@angular/material/icon';
 
 @Component({
-  standalone: true,
   selector: 'ya-text-action',
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './text-action.component.html',
   styleUrl: './text-action.component.css',
   imports: [
     MatIcon
-],
+  ],
 })
 export class YaTextAction {
 

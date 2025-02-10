@@ -49,7 +49,6 @@ export const PLIST_SOURCE_OPTIONS: YaSelectOption[] = [
 ];
 
 @Component({
-  standalone: true,
   templateUrl: './parameters.component.html',
   styleUrl: './parameters.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -11,7 +11,6 @@ import { LinksPageTabsComponent } from '../links-page-tabs/links-page-tabs.compo
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   selector: 'app-links-action-log-tab',
   templateUrl: './action-log-tab.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

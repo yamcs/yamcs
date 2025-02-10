@@ -14,7 +14,6 @@ import { resolveProperties } from '../shared/properties';
 const OVERRIDE_SUFFIX = '_overrideBand';
 
 @Component({
-  standalone: true,
   templateUrl: './edit-item.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

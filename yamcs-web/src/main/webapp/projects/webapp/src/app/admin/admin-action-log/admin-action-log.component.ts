@@ -12,7 +12,6 @@ import { RequestOption, Row, RowGroup } from './model';
 const defaultInterval = 'NO_LIMIT';
 
 @Component({
-  standalone: true,
   templateUrl: './admin-action-log.component.html',
   styleUrl: './admin-action-log.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

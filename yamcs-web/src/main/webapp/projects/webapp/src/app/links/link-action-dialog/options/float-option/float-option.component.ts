@@ -4,7 +4,6 @@ import { Option, WebappSdkModule, validators } from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
 
 @Component({
-  standalone: true,
   selector: 'app-float-option',
   templateUrl: './float-option.component.html',
   styleUrls: ['../options.css', './float-option.component.css'],
@@ -20,7 +19,7 @@ import { Subscription } from 'rxjs';
     provide: NG_VALIDATORS,
     useExisting: forwardRef(() => FloatOptionComponent),
     multi: true,
-  }],
+  }]
 })
 export class FloatOptionComponent implements ControlValueAccessor, Validator, OnInit, OnDestroy {
 

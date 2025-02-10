@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { Transfer, WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   selector: 'app-file-transfer-icon',
   templateUrl: './file-transfer-icon.component.html',
   styleUrl: './file-transfer-icon.component.css',

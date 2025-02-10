@@ -3,7 +3,6 @@ import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   selector: 'app-session-expired-dialog',
   templateUrl: './session-expired-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

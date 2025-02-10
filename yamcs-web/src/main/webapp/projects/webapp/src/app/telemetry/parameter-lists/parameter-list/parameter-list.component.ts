@@ -8,7 +8,6 @@ import { InstancePageTemplateComponent } from '../../../shared/instance-page-tem
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 
 @Component({
-  standalone: true,
   templateUrl: './parameter-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

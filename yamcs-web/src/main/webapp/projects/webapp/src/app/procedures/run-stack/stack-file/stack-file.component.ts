@@ -26,7 +26,6 @@ import { NamedParameterValue, StackedCheckEntry, StackedCommandEntry, StackedEnt
 import { StackFileService } from './StackFileService';
 
 @Component({
-  standalone: true,
   templateUrl: './stack-file.component.html',
   styleUrl: './stack-file.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

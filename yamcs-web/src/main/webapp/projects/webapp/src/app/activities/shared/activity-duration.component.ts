@@ -3,7 +3,6 @@ import { Activity, Synchronizer, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 @Component({
-  standalone: true,
   selector: 'app-activity-duration',
   template: '{{ elapsed$ | async | duration }}',
   changeDetection: ChangeDetectionStrategy.OnPush,

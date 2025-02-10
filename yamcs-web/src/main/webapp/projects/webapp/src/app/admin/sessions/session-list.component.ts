@@ -11,7 +11,6 @@ import { AdminPageTemplateComponent } from '../shared/admin-page-template/admin-
 import { AdminToolbarComponent } from '../shared/admin-toolbar/admin-toolbar.component';
 
 @Component({
-  standalone: true,
   templateUrl: './session-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

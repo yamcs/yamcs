@@ -7,7 +7,6 @@ import { ParameterAlarmsDataSource } from '../parameter-alarms-table/parameter-a
 const defaultInterval = 'P1M';
 
 @Component({
-  standalone: true,
   templateUrl: './parameter-alarms-tab.component.html',
   styleUrl: './parameter-alarms-tab.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

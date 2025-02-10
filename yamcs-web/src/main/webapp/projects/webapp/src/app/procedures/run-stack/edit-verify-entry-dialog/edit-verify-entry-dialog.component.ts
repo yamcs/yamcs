@@ -7,7 +7,6 @@ import { AppParameterInput } from '../../../shared/parameter-input/parameter-inp
 import { StackedVerifyEntry } from '../stack-file/StackedEntry';
 
 @Component({
-  standalone: true,
   selector: 'app-edit-verify-entry-dialog',
   templateUrl: './edit-verify-entry-dialog.component.html',
   styleUrl: './edit-verify-entry-dialog.component.css',

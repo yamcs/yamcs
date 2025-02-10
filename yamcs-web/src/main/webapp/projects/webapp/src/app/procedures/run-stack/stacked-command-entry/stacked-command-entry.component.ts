@@ -6,7 +6,6 @@ import { EntryLabel } from '../entry-label/entry-label.component';
 import { StackedCommandEntry } from '../stack-file/StackedEntry';
 
 @Component({
-  standalone: true,
   selector: 'app-stacked-command-entry',
   templateUrl: './stacked-command-entry.component.html',
   styleUrl: './stacked-command-entry.component.css',

@@ -8,7 +8,6 @@ import { map } from 'rxjs/operators';
 import { MessageService, SiteMessage } from '../../services/message.service';
 
 @Component({
-  standalone: true,
   selector: 'ya-message-bar',
   templateUrl: './message-bar.component.html',
   styleUrl: './message-bar.component.css',
@@ -19,7 +18,7 @@ import { MessageService, SiteMessage } from '../../services/message.service';
     MatIconButton,
     MatToolbar,
     MatToolbarRow
-],
+  ],
 })
 export class YaMessageBar {
 

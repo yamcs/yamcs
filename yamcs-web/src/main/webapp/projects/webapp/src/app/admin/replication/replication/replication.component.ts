@@ -10,7 +10,6 @@ import { ReplicationStateComponent } from '../replication-state/replication-stat
 import { ShowStreamsDialogComponent } from '../show-streams-dialog/show-streams-dialog.component';
 
 @Component({
-  standalone: true,
   templateUrl: './replication.component.html',
   styleUrl: './replication.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

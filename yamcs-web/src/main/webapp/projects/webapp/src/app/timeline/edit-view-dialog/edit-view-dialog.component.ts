@@ -6,7 +6,6 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 import { BandMultiSelectComponent } from '../shared/band-multi-select/band-multi-select.component';
 
 @Component({
-  standalone: true,
   selector: 'app-edit-view-dialog',
   templateUrl: './edit-view-dialog.component.html',
   styleUrl: './edit-view-dialog.component.css',

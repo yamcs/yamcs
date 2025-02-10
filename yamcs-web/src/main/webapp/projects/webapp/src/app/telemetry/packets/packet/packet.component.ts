@@ -77,7 +77,6 @@ export type Node = ContainerNode
   | ArrayValueNode;
 
 @Component({
-  standalone: true,
   templateUrl: './packet.component.html',
   styleUrl: './packet.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

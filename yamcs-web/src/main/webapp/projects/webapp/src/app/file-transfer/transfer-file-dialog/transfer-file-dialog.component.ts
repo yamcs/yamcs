@@ -9,7 +9,6 @@ import { ObjectSelector } from '../../shared/object-selector/object-selector.com
 import { FileActionRequest, RemoteFileSelectorComponent } from '../remote-file-selector/remote-file-selector.component';
 
 @Component({
-  standalone: true,
   selector: 'app-transfer-file-dialog',
   templateUrl: './transfer-file-dialog.component.html',
   styleUrl: './transfer-file-dialog.component.css',

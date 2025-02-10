@@ -8,7 +8,6 @@ import { AuthService } from './core/services/AuthService';
 import { SelectInstanceDialogComponent } from './shared/select-instance-dialog/select-instance-dialog.component';
 
 @Component({
-  standalone: true,
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',

@@ -10,7 +10,6 @@ import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.
 import { RouteDetailComponent } from '../route-detail/route-detail.component';
 
 @Component({
-  standalone: true,
   templateUrl: './route-list.component.html',
   styleUrl: './route-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

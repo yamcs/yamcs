@@ -16,7 +16,6 @@ import { AlarmsDataSource } from '../alarms.datasource';
 import { ShelveAlarmDialogComponent } from '../shelve-alarm-dialog/shelve-alarm-dialog.component';
 
 @Component({
-  standalone: true,
   templateUrl: './active-alarm-list.component.html',
   styleUrl: './active-alarm-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -27,7 +26,7 @@ import { ShelveAlarmDialogComponent } from '../shelve-alarm-dialog/shelve-alarm-
     InstanceToolbarComponent,
     InstancePageTemplateComponent,
     WebappSdkModule,
-  ]
+  ],
 })
 export class ActiveAlarmListComponent extends BaseComponent implements OnDestroy {
 

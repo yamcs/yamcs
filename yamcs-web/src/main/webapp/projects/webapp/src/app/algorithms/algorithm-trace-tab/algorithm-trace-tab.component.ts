@@ -4,7 +4,6 @@ import { AlgorithmStatus, AlgorithmTrace, MessageService, WebappSdkModule, Yamcs
 import { BehaviorSubject } from 'rxjs';
 
 @Component({
-  standalone: true,
   templateUrl: './algorithm-trace-tab.component.html',
   styleUrl: './algorithm-trace-tab.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

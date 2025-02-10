@@ -8,7 +8,6 @@ import { CommandDetailComponent } from '../../command-history/command-detail/com
 import { SendCommandWizardStepComponent } from '../send-command-wizard-step/send-command-wizard-step.component';
 
 @Component({
-  standalone: true,
   templateUrl: './command-report.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

@@ -10,7 +10,6 @@ import { AuthService } from '../../../../core/services/AuthService';
 import { Viewer } from '../Viewer';
 
 @Component({
-  standalone: true,
   selector: 'app-script-viewer',
   template: `
     <div #scriptContainer class="script-container"></div>

@@ -4,7 +4,6 @@ import { LiveExpressionComponent } from '../../../shared/live-expression/live-ex
 
 
 @Component({
-  standalone: true,
   selector: 'app-command-constraints',
   templateUrl: './command-constraints.component.html',
   styleUrl: './command-constraints.component.css',
@@ -13,7 +12,7 @@ import { LiveExpressionComponent } from '../../../shared/live-expression/live-ex
     LiveExpressionComponent,
     MillisDurationPipe,
     WebappSdkModule,
-  ]
+  ],
 })
 export class CommandConstraintsComponent {
 

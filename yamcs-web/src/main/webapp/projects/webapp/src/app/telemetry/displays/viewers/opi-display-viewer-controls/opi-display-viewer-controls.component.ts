@@ -4,7 +4,6 @@ import { BehaviorSubject } from 'rxjs';
 import { OpiDisplayViewerComponent } from '../opi-display-viewer/opi-display-viewer.component';
 
 @Component({
-  standalone: true,
   selector: 'app-opi-display-viewer-controls',
   templateUrl: './opi-display-viewer-controls.component.html',
   imports: [

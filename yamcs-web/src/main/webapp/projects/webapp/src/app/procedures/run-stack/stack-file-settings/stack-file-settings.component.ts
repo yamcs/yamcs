@@ -8,7 +8,6 @@ import { StackFilePageTabsComponent } from '../stack-file-page-tabs/stack-file-p
 import { StackFileService } from '../stack-file/StackFileService';
 
 @Component({
-  standalone: true,
   selector: 'app-stack-file-settings',
   templateUrl: './stack-file-settings.component.html',
   styleUrl: './stack-file-settings.component.css',

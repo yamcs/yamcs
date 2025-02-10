@@ -13,7 +13,6 @@ export interface RoleItem {
 
 
 @Component({
-  standalone: true,
   selector: 'app-add-roles-dialog',
   templateUrl: './add-roles-dialog.component.html',
   styleUrl: './add-roles-dialog.component.css',

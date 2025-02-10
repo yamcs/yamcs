@@ -8,7 +8,6 @@ import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance
 import { BandMultiSelectComponent } from '../shared/band-multi-select/band-multi-select.component';
 
 @Component({
-  standalone: true,
   templateUrl: './create-view.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

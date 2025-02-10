@@ -3,7 +3,6 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 
 @Component({
-  standalone: true,
   selector: 'app-event-message',
   templateUrl: './event-message.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

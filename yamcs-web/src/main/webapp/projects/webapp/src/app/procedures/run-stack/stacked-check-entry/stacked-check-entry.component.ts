@@ -12,7 +12,6 @@ interface Record {
 }
 
 @Component({
-  standalone: true,
   selector: 'app-stacked-check-entry',
   templateUrl: './stacked-check-entry.component.html',
   styleUrl: './stacked-check-entry.component.css',

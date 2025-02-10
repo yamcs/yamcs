@@ -4,7 +4,6 @@ import { ActivatedRoute } from '@angular/router';
 import { Stream, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   selector: 'app-stream-page',
   templateUrl: './stream.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -17,7 +17,6 @@ import { ActivitiesDataSource } from './activities.datasource';
 const defaultInterval = 'NO_LIMIT';
 
 @Component({
-  standalone: true,
   templateUrl: './activity-list.component.html',
   styleUrl: './activity-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

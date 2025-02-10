@@ -27,13 +27,12 @@ const defaultErrors: { [key: string]: any; } = {
 };
 
 @Component({
-  standalone: true,
   selector: 'ya-errors',
   templateUrl: './errors.component.html',
   styleUrl: './errors.component.css',
   imports: [
     AsyncPipe
-],
+  ],
 })
 export class YaErrors implements OnInit, OnDestroy {
 

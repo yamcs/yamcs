@@ -7,7 +7,6 @@ import { basicSetup, EditorView } from 'codemirror';
 import { MarkdownComponent } from '../../../shared/markdown/markdown.component';
 
 @Component({
-  standalone: true,
   selector: 'app-edit-text-entry-dialog',
   templateUrl: './edit-text-entry-dialog.component.html',
   styleUrl: './edit-text-entry-dialog.component.css',

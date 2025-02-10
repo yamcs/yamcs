@@ -19,7 +19,6 @@ export interface CommandResult {
 }
 
 @Component({
-  standalone: true,
   templateUrl: './edit-command-entry-dialog.component.html',
   styleUrl: './edit-command-entry-dialog.component.css',
   imports: [

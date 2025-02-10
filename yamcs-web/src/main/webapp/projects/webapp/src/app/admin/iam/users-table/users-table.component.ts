@@ -4,7 +4,6 @@ import { MatTableDataSource } from '@angular/material/table';
 import { UserInfo, WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   selector: 'app-users-table',
   templateUrl: './users-table.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

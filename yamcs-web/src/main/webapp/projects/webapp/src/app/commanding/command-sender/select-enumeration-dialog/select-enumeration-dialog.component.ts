@@ -7,7 +7,6 @@ import { MatTableDataSource } from '@angular/material/table';
 import { ArgumentType, EnumValue, WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   selector: 'app-select-enumeration-dialog',
   templateUrl: './select-enumeration-dialog.component.html',
   styleUrl: './select-enumeration-dialog.component.css',

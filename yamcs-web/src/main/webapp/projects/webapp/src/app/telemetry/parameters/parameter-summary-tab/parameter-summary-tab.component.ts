@@ -4,7 +4,6 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 import { ParameterDetailComponent } from '../parameter-detail/parameter-detail.component';
 
 @Component({
-  standalone: true,
   templateUrl: './parameter-summary-tab.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

@@ -21,7 +21,6 @@ const INVALID_ISOSTRING = 'invalid';
 const DAY_OF_YEAR_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
 
 @Component({
-  standalone: true,
   selector: 'ya-date-time-input',
   templateUrl: './date-time-input.component.html',
   styleUrl: './date-time-input.component.css',

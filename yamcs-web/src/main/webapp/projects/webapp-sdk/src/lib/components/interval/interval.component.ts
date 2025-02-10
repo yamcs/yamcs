@@ -5,7 +5,6 @@ import { BehaviorSubject } from 'rxjs';
 export type RangeForm = 'inside' | 'outside';
 
 @Component({
-  standalone: true,
   selector: 'ya-interval',
   templateUrl: './interval.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

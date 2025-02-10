@@ -10,7 +10,6 @@ import { propertyInfo } from '../ItemBand';
 import { ItemBandStylesComponent } from '../item-band-styles/item-band-styles.component';
 
 @Component({
-  standalone: true,
   templateUrl: './create-item-band.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

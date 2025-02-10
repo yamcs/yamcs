@@ -15,7 +15,6 @@ import { LinkService } from '../shared/link.service';
 import { LinkItem } from './model';
 
 @Component({
-  standalone: true,
   templateUrl: './link-list.component.html',
   styleUrl: './link-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

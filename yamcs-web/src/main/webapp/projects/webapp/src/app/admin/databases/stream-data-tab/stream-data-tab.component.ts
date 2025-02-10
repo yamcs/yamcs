@@ -8,7 +8,6 @@ import { StreamDataComponent } from '../stream-data/stream-data.component';
 import { StreamDataDataSource } from './stream-data.datasource';
 
 @Component({
-  standalone: true,
   templateUrl: './stream-data-tab.component.html',
   styleUrl: './stream-data-tab.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

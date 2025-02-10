@@ -10,7 +10,6 @@ import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.
 import { ApplicationCredentialsDialogComponent } from '../application-credentials-dialog/application-credentials-dialog.component';
 
 @Component({
-  standalone: true,
   templateUrl: './create-service-account.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

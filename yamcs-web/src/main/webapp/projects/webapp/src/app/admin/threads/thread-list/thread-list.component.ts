@@ -10,7 +10,6 @@ import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.
 import { ThreadsTableComponent } from '../threads-table/threads-table.component';
 
 @Component({
-  standalone: true,
   templateUrl: './thread-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

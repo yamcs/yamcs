@@ -6,7 +6,6 @@ import { ArgumentComponent, renderValue } from '../arguments/argument/argument.c
 import { TemplateProvider } from './TemplateProvider';
 
 @Component({
-  standalone: true,
   selector: 'app-command-arguments-form',
   templateUrl: './command-arguments-form.component.html',
   styleUrl: './command-arguments-form.component.css',

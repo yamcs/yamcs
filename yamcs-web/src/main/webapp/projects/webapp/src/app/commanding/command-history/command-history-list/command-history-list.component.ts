@@ -23,7 +23,6 @@ import { CommandHistoryDataSource } from './command-history.datasource';
 const defaultInterval = 'PT1H';
 
 @Component({
-  standalone: true,
   templateUrl: './command-history-list.component.html',
   styleUrl: './command-history-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

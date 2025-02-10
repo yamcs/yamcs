@@ -13,7 +13,6 @@ import { StorageToolbarComponent } from '../../storage-toolbar/storage-toolbar.c
 import { CreateBucketDialogComponent } from '../create-bucket-dialog/create-bucket-dialog.component';
 
 @Component({
-  standalone: true,
   templateUrl: './bucket-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

@@ -6,7 +6,6 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 import { SelectEnumerationDialogComponent } from '../../select-enumeration-dialog/select-enumeration-dialog.component';
 
 @Component({
-  standalone: true,
   selector: 'app-enumeration-argument',
   templateUrl: './enumeration-argument.component.html',
   styleUrls: ['../arguments.css', './enumeration-argument.component.css'],

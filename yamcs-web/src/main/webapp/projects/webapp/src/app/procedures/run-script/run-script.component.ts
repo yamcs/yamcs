@@ -11,7 +11,6 @@ import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance
 import { ScheduleScriptDialogComponent } from '../schedule-script-dialog/schedule-script-dialog.component';
 
 @Component({
-  standalone: true,
   templateUrl: './run-script.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

@@ -11,7 +11,6 @@ import { MultipleParameterTableComponent } from './multiple-parameter-table/mult
 import { ScrollingParameterTable } from './scrolling-parameter-table/scrolling-parameter-table.component';
 
 @Component({
-  standalone: true,
   selector: 'app-parameter-table-viewer',
   templateUrl: './parameter-table-viewer.component.html',
   styleUrl: './parameter-table-viewer.component.css',

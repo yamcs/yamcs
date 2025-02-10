@@ -3,7 +3,6 @@ import { CommandHistoryRecord, Printable, WebappSdkModule } from '@yamcs/webapp-
 import { CommandDetailComponent } from '../command-detail/command-detail.component';
 
 @Component({
-  standalone: true,
   selector: 'app-command-history-printable',
   templateUrl: './command-history-printable.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

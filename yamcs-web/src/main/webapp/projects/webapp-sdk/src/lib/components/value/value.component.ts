@@ -16,7 +16,6 @@ interface ValueNode {
 }
 
 @Component({
-  standalone: true,
   selector: 'ya-value',
   templateUrl: './value.component.html',
   styleUrl: './value.component.css',
@@ -24,7 +23,7 @@ interface ValueNode {
   imports: [
     AsyncPipe,
     ValuePipe
-],
+  ],
 })
 export class YaValue implements OnChanges {
 

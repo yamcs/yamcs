@@ -17,7 +17,7 @@ import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormCont
       useExisting: forwardRef(() => YaHexIntegerInput),
       multi: true,
     },
-  ]
+  ],
 })
 export class YaHexIntegerInput implements ControlValueAccessor, Validator {
 

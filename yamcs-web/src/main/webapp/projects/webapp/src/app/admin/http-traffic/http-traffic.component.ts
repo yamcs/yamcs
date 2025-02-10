@@ -10,7 +10,6 @@ import { AdminToolbarComponent } from '../shared/admin-toolbar/admin-toolbar.com
 import { UserAgentPipe } from './user-agent.pipe';
 
 @Component({
-  standalone: true,
   templateUrl: './http-traffic.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

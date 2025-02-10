@@ -10,7 +10,6 @@ import { CompareParameterDialogComponent } from '../compare-parameter-dialog/com
 import { SelectRangeDialogComponent } from '../select-range-dialog/select-range-dialog.component';
 
 @Component({
-  standalone: true,
   templateUrl: './parameter-chart-tab.component.html',
   styleUrl: './parameter-chart-tab.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

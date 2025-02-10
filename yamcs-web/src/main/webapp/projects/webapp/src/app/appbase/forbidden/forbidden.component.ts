@@ -4,7 +4,6 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
 import { OopsComponent } from '../oops/oops.component';
 
 @Component({
-  standalone: true,
   templateUrl: './forbidden.component.html',
   styleUrl: './forbidden.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

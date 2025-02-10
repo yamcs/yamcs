@@ -9,7 +9,6 @@ import { ExportArchiveDataDialogComponent } from '../../export-archive-data-dial
 import { ParameterTableViewerComponent } from '../parameter-table-viewer/parameter-table-viewer.component';
 
 @Component({
-  standalone: true,
   selector: 'app-parameter-table-viewer-controls',
   templateUrl: './parameter-table-viewer-controls.component.html',
   imports: [
