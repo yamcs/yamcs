@@ -13,6 +13,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.rocksdb.ColumnFamilyHandle;
+import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 import org.rocksdb.WriteBatch;
@@ -725,6 +726,16 @@ public class ParameterArchive extends AbstractYamcsService {
         return rdb.newIterator(cfh(rdb, p));
     }
 
+    public RdbIteratorWithOptions getIteratorWithOptions(Partition p) throws RocksDBException, IOException {
+        YRDB rdb = tablespace.getRdb(p.partitionDir, false);
+        var snapshot = rdb.getSnapshot();
+        ReadOptions opts = new ReadOptions();
+        opts.setSnapshot(snapshot);
+
+        var it = rdb.newIterator(cfh(rdb, p), opts);
+        return new RdbIteratorWithOptions(it, opts);
+    }
+
     public SortedTimeSegment getTimeSegment(Partition p, long segmentStart, int parameterGroupId)
             throws RocksDBException, IOException {
 
@@ -736,6 +747,28 @@ public class ParameterArchive extends AbstractYamcsService {
         var cfh = cfh(rdb, p);
 
         byte[] tv = rdb.get(cfh, timeKey);
+
+        if (tv == null) {
+            return null;
+        }
+        try {
+            return (SortedTimeSegment) SegmentEncoderDecoder.decode(tv, segmentStart);
+        } catch (DecodingException e) {
+            throw new DatabaseCorruptionException(e);
+        }
+    }
+
+    public SortedTimeSegment getTimeSegment(Partition p, long segmentStart, int parameterGroupId, ReadOptions opts)
+            throws RocksDBException, IOException {
+
+        var sk = new SegmentKey(parameterIdDb.timeParameterId, parameterGroupId, segmentStart,
+                SegmentKey.TYPE_ENG_VALUE);
+        byte[] timeKey = p.version == 0 ? sk.encodeV0() : sk.encode();
+        YRDB rdb = tablespace.getRdb(p.partitionDir, false);
+
+        var cfh = cfh(rdb, p);
+
+        byte[] tv = rdb.get(cfh, opts, timeKey);
 
         if (tv == null) {
             return null;
@@ -959,7 +992,6 @@ public class ParameterArchive extends AbstractYamcsService {
         long covEnd = TimeEncoding.NEGATIVE_INFINITY;
         log.debug("Computing coverage end as greatest timestamp of a parameter smaller than {}",
                 TimeEncoding.toString(now));
-
 
         if (getParameterGroupIdDb().numGroups() == 0) {
             log.debug("No parameter group, coverageEnd is {}", TimeEncoding.toString(covEnd));

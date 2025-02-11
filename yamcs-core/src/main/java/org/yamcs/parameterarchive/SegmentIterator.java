@@ -4,12 +4,12 @@ import static org.yamcs.parameterarchive.ParameterArchive.getIntervalEnd;
 import static org.yamcs.parameterarchive.ParameterArchive.getIntervalStart;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.rocksdb.RocksDBException;
-import org.rocksdb.RocksIterator;
 import org.yamcs.parameter.ParameterRetrievalOptions;
 import org.yamcs.parameterarchive.ParameterArchive.Partition;
 import org.yamcs.utils.DatabaseCorruptionException;
@@ -209,9 +209,9 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
 
         public SubIterator(Partition partition) {
             this.partition = partition;
-            RocksIterator iterator;
+            RdbIteratorWithOptions iterator;
             try {
-                iterator = parchive.getIterator(partition);
+                iterator = parchive.getIteratorWithOptions(partition);
             } catch (RocksDBException | IOException e) {
                 throw new ParameterArchiveException("Failed to create iterator", e);
             }
@@ -228,9 +228,9 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
             byte[] rangeStop = partition.version == 0 ? stopk.encodeV0() : stopk.encode();
 
             if (ascending) {
-                dbIterator = new AscendingRangeIterator(iterator, rangeStart, rangeStop);
+                dbIterator = new AscendingRangeIterator(iterator.it(), rangeStart, rangeStop);
             } else {
-                dbIterator = new DescendingRangeIterator(iterator, rangeStart, rangeStop);
+                dbIterator = new DescendingRangeIterator(iterator.it(), rangeStart, rangeStop);
             }
             next();
         }
@@ -372,12 +372,39 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
             if ((engValueSegment != null && engValueSegment.size() + gapSize != timeSize)
                     || (rawValueSegment != null && rawValueSegment.size() + gapSize != timeSize)
                     || (parameterStatusSegment != null && parameterStatusSegment.size() + gapSize != timeSize)) {
-                throw new DatabaseCorruptionException(
-                        "Size of the values segment + gaps does not match the size of the time segment.\n"
-                                + "If this is a database made with Yamcs versions 5.10.0 - 5.10.7, please rebuild the corrupted segment using the command:\n"
-                                + "yamcs parameter-archive rebuild " + TimeEncoding.toString(timeSegment.getInterval())
-                                + " " + TimeEncoding.toString(timeSegment.getSegmentEnd()));
+                String err = String.format(
+                        """
+                                        Parameter %s id=%d pgid=%d: size of the values segment + gaps does not match the size of the time segment.
+                                        Values size: %s, Gap size: %d, Time size: %d
+                                        If this is a database made with Yamcs versions 5.10.0 - 5.10.7, please rebuild the corrupted segment using the command:
+                                        "yamcs parameter-archive rebuild %s %s".
+
+                                """,
+                        parameterId.getParamFqn(), parameterId.getPid(), parameterGroupId,
+                        getSizesString(engValueSegment, rawValueSegment, parameterStatusSegment),
+                        gapSize, timeSize,
+                        TimeEncoding.toString(timeSegment.getInterval()),
+                        TimeEncoding.toString(timeSegment.getSegmentEnd()));
+
+                throw new DatabaseCorruptionException(err);
             }
+        }
+
+        private String getSizesString(ValueSegment engValueSegment, ValueSegment rawValueSegment,
+                ParameterStatusSegment parameterStatusSegment) {
+            List<String> parts = new ArrayList<>();
+
+            if (engValueSegment != null) {
+                parts.add("eng=" + engValueSegment.size());
+            }
+            if (rawValueSegment != null) {
+                parts.add("raw=" + rawValueSegment.size());
+            }
+            if (parameterStatusSegment != null) {
+                parts.add("status=" + parameterStatusSegment.size());
+            }
+
+            return String.join(", ", parts);
         }
 
         boolean isValid() {

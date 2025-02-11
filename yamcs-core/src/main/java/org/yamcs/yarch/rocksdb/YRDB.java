@@ -171,6 +171,18 @@ public class YRDB {
         }
     }
 
+    public RocksIterator newIterator(ColumnFamilyHandle cfh, ReadOptions opts) throws RocksDBException {
+        if (closed) {
+            throw new IllegalStateException("Database is closed");
+        }
+        if (cfh == null) {
+            return db.newIterator(opts);
+        } else {
+            return db.newIterator(cfh, opts);
+        }
+    }
+
+
     public ColumnFamilyHandle getDefaultColumnFamilyHandle() {
         return db.getDefaultColumnFamily();
     }
@@ -209,6 +221,17 @@ public class YRDB {
             return db.get(cfh, key);
         } else {
             return db.get(key);
+        }
+    }
+
+    public byte[] get(ColumnFamilyHandle cfh, ReadOptions opts, byte[] key) throws RocksDBException {
+        if (closed) {
+            throw new IllegalStateException("Database is closed");
+        }
+        if (cfh != null) {
+            return db.get(cfh, opts, key);
+        } else {
+            return db.get(opts, key);
         }
     }
 
