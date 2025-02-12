@@ -22,7 +22,7 @@ import org.yamcs.yarch.protobuf.Db.ParameterStatus;
  */
 public class ParameterRanger implements Consumer<ParameterValueArray> {
     private static final Logger log = LoggerFactory.getLogger(ParameterRanger.class);
-    static final int MAX_RANGES = 500;
+    static final int MAX_RANGES = 5000;
     static final int MAX_VALUES = 100;
 
     // Time in milliseconds. Any gap smaller than this will be ignored. However
@@ -157,11 +157,11 @@ public class ParameterRanger implements Consumer<ParameterValueArray> {
         }
 
         if (prevStatus.hasExpireMillis() && delta > prevStatus.getExpireMillis()) {
-            return prevTimestamp + prevStatus.getExpireMillis();
+            return prevTimestamp;
         }
 
         if (delta > maxGap) {
-            return prevTimestamp + maxGap;
+            return prevTimestamp;
         }
         return Long.MIN_VALUE;
     }
@@ -199,10 +199,12 @@ public class ParameterRanger implements Consumer<ParameterValueArray> {
             this.count = 1;
         }
 
+        @Override
         public void add(Value v, boolean distinct) {
             count++;
         }
 
+        @Override
         public int valueCount() {
             return value == null ? 0 : 1;
         }

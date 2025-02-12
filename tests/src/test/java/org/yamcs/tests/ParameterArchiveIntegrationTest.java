@@ -230,8 +230,8 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
 
         assertEquals("2018-01-01T10:00:00.000Z",
                 TimeEncoding.toString(TimeEncoding.fromProtobufTimestamp(r0.getStart())));
-        // last parameter time plus expiration
-        assertEquals("2018-01-01T12:00:01.850Z",
+        // last parameter time (does not currently include expiration time)
+        assertEquals("2018-01-01T11:59:59.000Z",
                 TimeEncoding.toString(TimeEncoding.fromProtobufTimestamp(r0.getStop())));
 
         Range r1 = ranges.get(1);
@@ -464,7 +464,6 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(4, pv0.getEngValue().getUint32Value());
         assertEquals(3, pv1.getEngValue().getUint32Value());
     }
-
 
     @Test
     public void testAggregatesWithSameTimestamps() throws Exception {
