@@ -1,5 +1,7 @@
 package org.yamcs.http.api;
 
+import static org.yamcs.http.api.ParameterArchiveApi.isReplayAsked;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
@@ -51,7 +53,6 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.collect.BiMap;
 import com.google.protobuf.ByteString;
-import static org.yamcs.http.api.ParameterArchiveApi.isReplayAsked;
 
 public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
@@ -462,6 +463,8 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             b.setMax(sample.max);
             b.setMinTime(TimeEncoding.toProtobufTimestamp(sample.minTime));
             b.setMaxTime(TimeEncoding.toProtobufTimestamp(sample.maxTime));
+            b.setFirstTime(TimeEncoding.toProtobufTimestamp(sample.firstTime));
+            b.setLastTime(TimeEncoding.toProtobufTimestamp(sample.lastTime));
         }
 
         return b.build();

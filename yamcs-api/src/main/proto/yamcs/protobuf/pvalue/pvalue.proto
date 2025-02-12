@@ -77,8 +77,6 @@ message ParameterValue {
     optional uint32 numericId = 27;
 }
 
-
-
 message ParameterData {
     repeated ParameterValue parameter = 1;
 
@@ -117,6 +115,14 @@ message TimeSeries {
 
         // Generation time of the ``max`` value.
         optional google.protobuf.Timestamp maxTime = 8;
+
+        // Generation time of the first value in this sample
+        // interval.
+        optional google.protobuf.Timestamp firstTime = 9;
+
+        // Generation time of the last value in this sample
+        // interval.
+        optional google.protobuf.Timestamp lastTime = 10;
     }
 
     // List of samples.
@@ -139,14 +145,14 @@ message Ranges {
         // If the count does not match the sum(counts), it means that not all the values have been sent
         optional int32 count = 4;
         
-        // Since Yamcs 5.4.1 there is a new parameter minRange in the GetParameterRangesRequest which allows 
-        // specifying the minimum length of the range returned.
+        // The ``minRange`` option on the request allows to specify 
+        // the minimum length of returned ranges.
         // Practically we guarantee that stop-start >= minRange (mind the leap seconds!).
         //
-        // If the minRange parameter is set, the returning ranges may include multiple values.
-        // These are given by the engValues and counts below. 
+        // If ``minRange`` was set, the returned ranges may include multiple values.
+        // These are given by ``engValues`` and ``counts``. 
         //
-        // Since Yamcs 5.4.2 there is a new parameter maxValues which allows to limit the number 
+        // The ``maxValues`` option on the request allows to limit the number 
         // of distinct values returned across all the ranges.
         // In order to not return ranges containing no value, each range will have at least one value even if
         // that will cause the total number of range values returned to exceed the maxValues parameter
