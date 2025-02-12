@@ -2,7 +2,7 @@ import { HistoricalDataProvider, NullablePoint, Widget } from '@yamcs/opi';
 import { BackfillingSubscription, ConfigService, Synchronizer, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
 import { DyDataSource } from '../../../../shared/parameter-plot/DyDataSource';
-import { PlotData } from '../../../../shared/parameter-plot/PlotBuffer';
+import { DyPlotData } from '../../../../shared/parameter-plot/DyPlotBuffer';
 
 export class OpiDisplayHistoricDataProvider implements HistoricalDataProvider {
 
@@ -64,7 +64,7 @@ export class OpiDisplayHistoricDataProvider implements HistoricalDataProvider {
     });
   }
 
-  private processSamples(data: PlotData) {
+  private processSamples(data: DyPlotData) {
     const points: NullablePoint[] = [];
     for (const sample of data.samples) {
       const t = sample[0].getTime();

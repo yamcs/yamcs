@@ -1,4 +1,5 @@
-import { DySample } from './dygraphs';
+import { DySample } from '../../shared/parameter-plot/dygraphs';
+import { PlotSeries } from './PlotDataSource';
 
 export type WatermarkObserver = () => void;
 
@@ -6,7 +7,7 @@ export type DyValueRange = [number | null, number | null];
 
 export interface PlotData {
   valueRange: DyValueRange;
-  samples: DySample[];
+  series: PlotSeries[];
 }
 
 /**
@@ -23,7 +24,7 @@ export class PlotBuffer {
 
   private valueRange: DyValueRange = [null, null];
 
-  private archiveSamples: DySample[] = [];
+  private archiveSamples: PlotSeries[] = [];
 
   private realtimeBuffer: (DySample | undefined)[];
   private bufferSize = 500;
@@ -35,8 +36,8 @@ export class PlotBuffer {
     this.realtimeBuffer = Array(this.bufferSize).fill(undefined);
   }
 
-  setArchiveData(samples: DySample[]) {
-    this.archiveSamples = samples ?? [];
+  setArchiveData(series: PlotSeries[]) {
+    this.archiveSamples = series ?? [];
     this.dirty = true;
   }
 
@@ -75,13 +76,13 @@ export class PlotBuffer {
       archiveCutOff = realtimeSamples[0][0].getTime();
     }
 
-    const splicedSamples = this.archiveSamples
-      .filter(s => archiveCutOff === null || s[0].getTime() < archiveCutOff)
-      .concat(realtimeSamples)
-      .sort((s1, s2) => s1[0].getTime() - s2[0].getTime());
+    const splicedSamples = this.archiveSamples;
+    //.filter(s => archiveCutOff === null || s[0].getTime() < archiveCutOff)
+    //.concat(realtimeSamples)
+    //.sort((s1, s2) => s1[0].getTime() - s2[0].getTime());
     return {
       valueRange: this.valueRange,
-      samples: splicedSamples,
+      series: splicedSamples,
     };
   }
 }

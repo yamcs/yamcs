@@ -1,0 +1,30 @@
+<div #tt class="ya-tooltip">
+  {{ start() | datetime }} to
+  <br />
+  {{ (stop() | datetime) || "-" }}
+  <br />
+  <br />
+  <table yaSimpleTable>
+    @for (item of legend(); track item.label) {
+      <tr [class.most-frequent]="item.mostFrequent">
+        <td width="1">
+          <span [style.color]="item.color">⬤</span>
+        </td>
+        <td>
+          @if (item.label === "__OTHER") {
+            Other
+          } @else {
+            {{ item.label }}
+          }
+        </td>
+        <td>
+          @if (item.count > 0) {
+            {{ item.count }} x
+          } @else {
+            -
+          }
+        </td>
+      </tr>
+    }
+  </table>
+</div>

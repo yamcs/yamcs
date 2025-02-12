@@ -1,0 +1,13 @@
+table.mappings td {
+  white-space: nowrap;
+}
+
+table.mappings td:not(:first-child),
+table.mappings th:not(:first-child) {
+  padding-left: 5px;
+}
+
+table.mappings td:not(:last-child),
+table.mappings th:not(:last-child) {
+  padding-right: 5px;
+}

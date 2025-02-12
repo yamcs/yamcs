@@ -1,0 +1,118 @@
+<app-instance-page>
+  <app-instance-toolbar>Create band</app-instance-toolbar>
+
+  <app-create-band-wizard-step step="2" />
+
+  <div class="form-content ya-form">
+    <form [formGroup]="form" novalidate autocomplete="off">
+      <ya-stepper>
+        <ya-stepper-step label="General" [expanded]="true">
+          <label>
+            Label
+            <span class="hint">(required)</span>
+            <br />
+            <input type="text" formControlName="name" style="width: 100%" />
+          </label>
+          <br />
+          <label>
+            Description
+            <span class="hint">(optional)</span>
+            <br />
+            <textarea formControlName="description" rows="3"></textarea>
+          </label>
+          <br />
+          <app-parameter-states-styles [form]="form" />
+        </ya-stepper-step>
+
+        <ya-stepper-step label="Value mapping" [expanded]="true">
+          @if (valueMappings.length) {
+            <table yaSimpleTable class="mappings" formArrayName="valueMappings">
+              <tr>
+                <th>Type</th>
+                <th>
+                  Condition
+                  <span class="hint">(required)</span>
+                </th>
+                <th></th>
+                <th>Label</th>
+                <th>Color</th>
+                <th style="width: 99%"></th>
+              </tr>
+              @for (mapping of valueMappings.controls; track mapping; let i = $index) {
+                <tr [formGroupName]="i">
+                  <td>
+                    <input #type type="hidden" formControlName="type" />
+                    {{ mapping.value["type"] | titlecase }}
+                  </td>
+                  <td>
+                    @if (type.value === "value") {
+                      <input
+                        type="text"
+                        placeholder="value"
+                        formControlName="value"
+                        style="width: 164px" />
+                    } @else if (type.value === "range") {
+                      <input
+                        type="number"
+                        placeholder="start"
+                        formControlName="start"
+                        style="width: 80px; margin-right: 4px" />
+                      <input
+                        type="number"
+                        placeholder="end"
+                        formControlName="end"
+                        style="width: 80px" />
+                    }
+                  </td>
+                  <td>→</td>
+                  <td>
+                    <input
+                      type="text"
+                      style="width: 140px"
+                      placeholder="(optional)"
+                      formControlName="label" />
+                  </td>
+                  <td>
+                    <ya-color-input formControlName="color" label="auto" />
+                  </td>
+                  <td style="text-align: right">
+                    <ya-icon-action
+                      icon="arrow_drop_up"
+                      matTooltip="Move up"
+                      [disabled]="i === 0"
+                      (click)="moveUp(i)" />
+                    <ya-icon-action
+                      icon="arrow_drop_down"
+                      matTooltip="Move down"
+                      [disabled]="i >= valueMappings.controls.length - 1"
+                      (click)="moveDown(i)" />
+                    <ya-icon-action
+                      icon="delete_outline"
+                      matTooltip="Remove mapping"
+                      [disabled]="valueMappings.controls.length <= 1"
+                      (click)="removeMapping(i)" />
+                  </td>
+                </tr>
+              }
+            </table>
+            <br />
+          }
+          <ya-button icon="add_circle_outline" (click)="addValueMapping()">
+            Add value mapping
+          </ya-button>
+          &nbsp;
+          <ya-button icon="add_circle_outline" (click)="addRangeMapping()">
+            Add range mapping
+          </ya-button>
+        </ya-stepper-step>
+      </ya-stepper>
+    </form>
+    <p>&nbsp;</p>
+    <div class="action-bar">
+      <ya-button routerLink="../.." [queryParams]="{ c: yamcs.context }">Cancel</ya-button>
+      <ya-button appearance="primary" (click)="onConfirm()" [disabled]="!form.valid">
+        CREATE
+      </ya-button>
+    </div>
+  </div>
+</app-instance-page>

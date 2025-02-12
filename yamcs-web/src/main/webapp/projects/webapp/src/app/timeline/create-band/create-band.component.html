@@ -38,6 +38,12 @@
           <div class="card-content">Plot the values of a numeric parameter.</div>
         </div>
       </a>
+      <a class="band-type" routerLink="parameter-states" [queryParams]="{ c: yamcs.context }">
+        <div class="card">
+          <div class="card-title">Parameter states</div>
+          <div class="card-content">Show state transitions of a parameter.</div>
+        </div>
+      </a>
       <a class="band-type" routerLink="command-band" [queryParams]="{ c: yamcs.context }">
         <div class="card">
           <div class="card-title">Commands</div>

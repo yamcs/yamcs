@@ -1,29 +1,28 @@
 import { ConfigService, NamedObjectId, ParameterSubscription, ParameterValue, Sample, Synchronizer, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { DyPlotBuffer, DyPlotData, DyValueRange } from './DyPlotBuffer';
-import { NamedParameterType } from './NamedParameterType';
-import { CustomBarsValue, DySample, DySeries } from './dygraphs';
+import { DyValueRange } from '../../shared/parameter-plot/DyPlotBuffer';
+import { NamedParameterType } from '../../shared/parameter-plot/NamedParameterType';
+import { PlotBuffer, PlotData } from './PlotBuffer';
+
+export type CustomBarsValue = [number, number, number] | null;
+
+export type PlotSample = [Date, CustomBarsValue];
+
+export type PlotSeries = Sample[];
 
 /**
- * Stores sample data for use in a ParameterPlot directly
- * in DyGraphs native format.
- *
- * See http://dygraphs.com/data.html#array
+ * Stores sample data for use in a ParameterPlot.
  */
-export class DyDataSource {
-
-  // If true, load more samples than needed
-  // (useful when horizontal scroll is allowed)
-  extendRequestedRange = true;
+export class PlotDataSource {
 
   // How many samples to load at once
   resolution = 6000;
 
   public loading$ = new BehaviorSubject<boolean>(false);
 
-  data$ = new BehaviorSubject<DyPlotData>({
+  data$ = new BehaviorSubject<PlotData>({
     valueRange: [null, null],
-    samples: [],
+    series: [],
   });
   minValue?: number;
   maxValue?: number;
@@ -32,7 +31,7 @@ export class DyDataSource {
   visibleStop: Date;
 
   parameters$ = new BehaviorSubject<NamedParameterType[]>([]);
-  private plotBuffer: DyPlotBuffer;
+  private plotBuffer: PlotBuffer;
 
   private lastLoadPromise: Promise<any> | null;
 
@@ -52,7 +51,7 @@ export class DyDataSource {
   ) {
     this.syncSubscription = synchronizer.syncFast(() => this.plotNow());
 
-    this.plotBuffer = new DyPlotBuffer(() => {
+    this.plotBuffer = new PlotBuffer(() => {
       this.reloadVisibleRange();
     });
   }
@@ -60,10 +59,7 @@ export class DyDataSource {
   private plotNow() {
     if (this.plotBuffer.dirty && !this.loading$.getValue()) {
       const plotData = this.plotBuffer.snapshot();
-      this.data$.next({
-        samples: plotData.samples,
-        valueRange: plotData.valueRange,
-      });
+      this.data$.next(plotData);
       this.plotBuffer.dirty = false;
     }
   }
@@ -106,11 +102,8 @@ export class DyDataSource {
     valueRange: DyValueRange,
   ) {
     this.loading$.next(true);
-    // Load beyond the visible range to be able to show data
-    // when panning.
-    const delta = this.extendRequestedRange ? stop.getTime() - start.getTime() : 0;
-    const loadStart = new Date(start.getTime() - delta);
-    const loadStop = new Date(stop.getTime() + delta);
+    const loadStart = new Date(start.getTime());
+    const loadStop = new Date(stop.getTime());
 
     const parameters = this.parameters$.value;
     const promises: Promise<any>[] = [];
@@ -120,7 +113,7 @@ export class DyDataSource {
           start: loadStart.toISOString(),
           stop: loadStop.toISOString(),
           count: this.resolution,
-          fields: ['time', 'n', 'avg', 'min', 'max'],
+          fields: ['time', 'n', 'avg', 'min', 'max', 'firstTime', 'lastTime'],
           gapTime: 300000,
           source: this.configService.isParameterArchiveEnabled()
             ? 'ParameterArchive' : 'replay',
@@ -150,8 +143,7 @@ export class DyDataSource {
             dySeries.push([]);
           }
         }
-        const dySamples = this.mergeSeries(...dySeries);
-        this.plotBuffer.setArchiveData(dySamples);
+        this.plotBuffer.setArchiveData(dySeries);
         this.plotBuffer.setValueRange(valueRange);
         // Quick emit, don't wait on sync tick
         this.plotNow();
@@ -238,14 +230,13 @@ export class DyDataSource {
   }
 
   private processSamples(samples: Sample[]) {
-    const dySamples: DySample[] = [];
+    const plotSeries: PlotSeries = [];
     for (const sample of samples) {
       const t = new Date();
-      t.setTime(Date.parse(sample['time']));
+      t.setTime(Date.parse(sample.time));
       if (sample.n > 0) {
-        const v = sample['avg'];
-        const min = sample['min'];
-        const max = sample['max'];
+        const min = sample.min;
+        const max = sample.max;
 
         if (this.minValue === undefined) {
           this.minValue = min;
@@ -258,85 +249,9 @@ export class DyDataSource {
             this.maxValue = max;
           }
         }
-        dySamples.push([t, [min, v, max]]);
-      } else {
-        dySamples.push([t, null]);
       }
+      plotSeries.push(sample);
     }
-    return dySamples;
-  }
-
-  /**
-   * Merges two or more DySample[] series together. This assumes that timestamps between
-   * the two series are identical, which is the case if server requests are done
-   * with the same date range.
-   *
-   * As a special case, we also allow a series to be fully empty (no samples, not even null),
-   * which can occur if a parameter is found to be invalid.
-   */
-  private mergeSeries(...series: DySeries[]) {
-    if (series.length === 1) {
-      return series[0];
-    }
-
-    // Find the expected length of each series.
-    // Series of zero length (which may be generated by webapp if a parameter is found to be
-    // invalid), are extended to be of the same length (with same timestamps, but null values).
-    let referenceSeries: DySeries | null = null;
-    for (let i = 0; i < series.length; i++) {
-      if (series[i].length > 0) {
-        referenceSeries = series[i];
-      }
-    }
-    if (referenceSeries !== null) {
-      for (let i = 0; i < series.length; i++) {
-        if (series[i].length === 0) {
-          series[i] = referenceSeries.map(s => [s[0], null]);
-        }
-      }
-    }
-
-    // At this point, all series should have same length
-    let result: DySample[] = series[0];
-    for (let i = 1; i < series.length; i++) {
-      const merged: DySample[] = [];
-      let index1 = 0;
-      let index2 = 0;
-      let prev1: CustomBarsValue[] = [];
-      let prev2: CustomBarsValue | null = null;
-      const series1 = result;
-      const series2 = series[i];
-      while (index1 < series1.length || index2 < series2.length) {
-        const top1 = index1 < series1.length ? series1[index1] : null;
-        const top2 = index2 < series2.length ? series2[index2] : null;
-        if (top1 && top2) {
-          if (top1[0].getTime() === top2[0].getTime()) {
-            prev1 = top1.slice(1) as CustomBarsValue[];
-            prev2 = top2[1];
-            merged.push([top1[0], ...prev1, prev2] as any);
-            index1++;
-            index2++;
-          } else if (top1[0].getTime() < top2[0].getTime()) {
-            prev1 = top1.slice(1) as CustomBarsValue[];
-            merged.push([top1[0], ...prev1, prev2] as any);
-            index1++;
-          } else {
-            prev2 = top2[1];
-            merged.push([top2[0], ...prev1, prev2] as any);
-            index2++;
-          }
-        } else if (top1) {
-          prev1 = top1.slice(1) as CustomBarsValue[];
-          merged.push([top1[0], ...prev1, prev2] as any);
-          index1++;
-        } else if (top2) {
-          prev2 = top2[1];
-          merged.push([top2[0], ...prev1, prev2] as any);
-          index2++;
-        }
-      }
-      result = merged;
-    }
-    return result;
+    return plotSeries;
   }
 }

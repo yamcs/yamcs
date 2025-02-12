@@ -6,6 +6,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 import { EditCommandBandComponent } from '../command-band/edit-command-band/edit-command-band.component';
 import { EditItemBandComponent } from '../item-band/edit-item-band/edit-item-band.component';
 import { EditParameterPlotComponent } from '../parameter-plot/edit-parameter-plot/edit-parameter-plot.component';
+import { EditParameterStatesComponent } from '../parameter-states/edit-parameter-states/edit-parameter-states.component';
 import { removeUnsetProperties } from '../shared/properties';
 import { EditSpacerComponent } from '../spacer/edit-spacer/edit-spacer.component';
 import { EditTimeRulerComponent } from '../time-ruler/edit-time-ruler/edit-time-ruler.component';
@@ -18,6 +19,7 @@ import { EditTimeRulerComponent } from '../time-ruler/edit-time-ruler/edit-time-
     EditCommandBandComponent,
     EditItemBandComponent,
     EditParameterPlotComponent,
+    EditParameterStatesComponent,
     EditSpacerComponent,
     EditTimeRulerComponent,
     WebappSdkModule,
@@ -43,6 +45,7 @@ export class EditBandDialogComponent implements OnDestroy {
       description: [band.description || ''],
       tags: [band.tags || []],
       traces: formBuilder.array([]), // Used by parameter plot
+      valueMappings: formBuilder.array([]), // Used by parameter states
       properties: formBuilder.group({}), // Properties are added in sub-components
     });
     this.formSubscription = this.form.valueChanges.subscribe(() => {
@@ -69,6 +72,15 @@ export class EditBandDialogComponent implements OnDestroy {
       }
     }
 
+    for (let i = 0; i < this.valueMappings.length; i++) {
+      const mappingForm = this.valueMappings.at(i) as FormGroup;
+      for (const key in mappingForm.controls) {
+        const propName = `value_mapping_${i}_${key}`;
+        const value = mappingForm.controls[key].value;
+        options.properties![propName] = value;
+      }
+    }
+
     removeUnsetProperties(options.properties || {});
 
     this.yamcs.yamcsClient.updateTimelineBand(this.yamcs.instance!, this.data.band.id, options)
@@ -78,6 +90,10 @@ export class EditBandDialogComponent implements OnDestroy {
 
   get traces() {
     return this.form.controls['traces'] as FormArray;
+  }
+
+  get valueMappings() {
+    return this.form.controls['valueMappings'] as FormArray;
   }
 
   ngOnDestroy() {

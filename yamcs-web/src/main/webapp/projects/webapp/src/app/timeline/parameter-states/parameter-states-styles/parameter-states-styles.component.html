@@ -1,0 +1,41 @@
+<form [formGroup]="form">
+  <table class="style-table" yaSimpleTable formGroupName="properties">
+    <tr>
+      <td class="property">
+        Frozen
+        <ya-help dialogTitle="Frozen">
+          Fix this line to the top of the view. Frozen bands are always rendered above other bands.
+        </ya-help>
+      </td>
+      <td class="widget">
+        <mat-slide-toggle formControlName="frozen" />
+      </td>
+    </tr>
+    <tr>
+      <td class="property">Height</td>
+      <td class="widget">
+        <input type="number" formControlName="height" style="width: 100px" min="0" />
+      </td>
+    </tr>
+    <tr>
+      <td class="property">Parameter</td>
+      <td class="widget">
+        <app-parameter-input formControlName="parameter" [fill]="true" />
+      </td>
+    </tr>
+  </table>
+  <br />
+  <p class="hint">
+    For best results the displayed parameter should have a limited amount of possible values and/or
+    change infrequently. Else the visualization will not be very useful, especially when zoomed out.
+  </p>
+  <p class="hint">
+    This generally means that
+    <strong>enumeration</strong>
+    ,
+    <strong>boolean</strong>
+    or
+    <strong>string</strong>
+    parameters are the best candidates. Or a numeric parameter with custom value mapping.
+  </p>
+</form>

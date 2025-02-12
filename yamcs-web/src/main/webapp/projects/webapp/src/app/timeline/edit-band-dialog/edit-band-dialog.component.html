@@ -13,6 +13,8 @@
           <app-edit-command-band [form]="form" [band]="band" />
         } @else if (band.type === "PARAMETER_PLOT") {
           <app-edit-parameter-plot [form]="form" [band]="band" />
+        } @else if (band.type === "PARAMETER_STATES") {
+          <app-edit-parameter-states [form]="form" [band]="band" />
         }
       </form>
     </div>

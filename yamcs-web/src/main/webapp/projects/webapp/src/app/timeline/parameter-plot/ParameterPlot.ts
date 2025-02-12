@@ -3,11 +3,11 @@ import { ComponentPortal } from '@angular/cdk/portal';
 import { ElementRef } from '@angular/core';
 import { Line, LinePlot } from '@fqqb/timeline';
 import { BackfillingSubscription, ConfigService, Synchronizer, TimelineBand, YamcsService } from '@yamcs/webapp-sdk';
-import { DyDataSource } from '../../shared/parameter-plot/DyDataSource';
 import { NamedParameterType } from '../../shared/parameter-plot/NamedParameterType';
 import { BooleanProperty, ColorProperty, convertColor, NumberProperty, PropertyInfoSet, resolveProperties, TextProperty } from '../shared/properties';
 import { TimelineChartComponent } from '../timeline-chart/timeline-chart.component';
 import { ParameterPlotTooltipComponent } from './parameter-plot-tooltip/parameter-plot-tooltip.component';
+import { PlotDataSource } from './PlotDataSource';
 
 export const propertyInfo: PropertyInfoSet = {
   frozen: new BooleanProperty(false),
@@ -26,8 +26,8 @@ export function createTracePropertyInfo(index: number, color: string): PropertyI
   set[`trace_${index}_lineWidth`] = new NumberProperty(1);
   set[`trace_${index}_fill`] = new BooleanProperty(false);
   set[`trace_${index}_fillColor`] = new TextProperty('#dddddd');
-  set[`trace_${index}_lohi`] = new BooleanProperty(false);
-  set[`trace_${index}_lohiOpacity`] = new NumberProperty(0.17);
+  set[`trace_${index}_minMax`] = new BooleanProperty(false);
+  set[`trace_${index}_minMaxOpacity`] = new NumberProperty(0.17);
   return set;
 }
 
@@ -52,7 +52,7 @@ export const DEFAULT_COLORS = [
 
 export class ParameterPlot extends LinePlot {
 
-  private dataSource: DyDataSource;
+  private dataSource: PlotDataSource;
 
   private tooltipInstance: ParameterPlotTooltipComponent;
   private backfillSubscription?: BackfillingSubscription;
@@ -104,37 +104,43 @@ export class ParameterPlot extends LinePlot {
       traces.push(traceProperties);
     }
 
-    this.dataSource = new DyDataSource(yamcs, synchronizer, configService);
+    this.dataSource = new PlotDataSource(yamcs, synchronizer, configService);
     this.dataSource.data$.subscribe(data => {
       const lines: Line[] = [];
       for (let i = 0; i < traces.length; i++) {
+        const trace = traces[i];
+        const series = data.series.length ? data.series[i] : [];
         const points = new Map<number, number | null>();
-        const lohi = new Map<number, [number, number] | null>();
-        for (const sample of data.samples) {
-          const time = sample[0].getTime();
-          const lo_avg_hi = (sample as any)[1 + i];
-          if (lo_avg_hi === null) {
+        const minMax = new Map<number, [number, number] | null>();
+        for (let j = 0; j < series.length; j++) {
+          const sample = series[j];
+          if (sample.n === 0) {
+            const time = Date.parse(sample.time);
             points.set(time, null);
-            if (traces[i].lohi) {
-              lohi.set(sample[0].getTime(), null);
-            }
+            minMax.set(time, null);
           } else {
-            const lo = lo_avg_hi ? lo_avg_hi[0] : null;
-            const avg = lo_avg_hi ? lo_avg_hi[1] : null;
-            const hi = lo_avg_hi ? lo_avg_hi[2] : null;
-            points.set(time, avg);
-            if (traces[i].lohi) {
-              lohi.set(time, [lo, hi]);
+            const prevIsGap = j === 0 || series[j - 1].n === 0;
+            const nextIsGap = (j === series.length - 1) || (series[j + 1].n === 0);
+
+            let time: number;
+            if (prevIsGap && !nextIsGap) {
+              time = Date.parse(sample.firstTime);
+            } else if (!prevIsGap && nextIsGap) {
+              time = Date.parse(sample.lastTime);
+            } else {
+              time = Date.parse(sample.time);
             }
+
+            points.set(time, sample.avg);
+            minMax.set(time, [sample.min, sample.max]);
           }
         }
-        const trace = traces[i];
-        const hexOpacity = Math.floor(trace.lohiOpacity * 255).toString(16);
+        const hexOpacity = Math.floor(trace.minMaxOpacity * 255).toString(16);
         lines.push({
           visible: trace.visible,
           points,
           pointRadius: 0,
-          lohi,
+          lohi: trace.minMax ? minMax : undefined,
           lineColor: trace.lineColor,
           lohiColor: convertColor(trace.lineColor) + hexOpacity,
           lineWidth: trace.lineWidth,
@@ -170,7 +176,7 @@ export class ParameterPlot extends LinePlot {
 
   refreshData() {
     // Load beyond the edges (for pan purposes)
-    const viewportRange = this.timeline.stop - this.timeline.start;
+    const viewportRange = 0; // this.timeline.stop - this.timeline.start;
     const loadStart = this.timeline.start - viewportRange;
     const loadStop = this.timeline.stop + viewportRange;
     this.dataSource.updateWindow(new Date(loadStart), new Date(loadStop), [null, null]);

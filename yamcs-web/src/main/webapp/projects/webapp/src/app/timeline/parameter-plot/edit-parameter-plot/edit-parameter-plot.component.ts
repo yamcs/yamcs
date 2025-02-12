@@ -84,8 +84,8 @@ export class EditParameterPlotComponent implements AfterViewInit {
       lineColor: [hexColor, [Validators.required]],
       visible: [true, [Validators.required]],
       lineWidth: [1, [Validators.required]],
-      lohi: [true, [Validators.required]],
-      lohiOpacity: [0.17, [Validators.required]],
+      minMax: [true, [Validators.required]],
+      minMaxOpacity: [0.17, [Validators.required]],
       fill: [false, [Validators.required]],
       fillColor: ['#dddddd', [Validators.required]],
     });

@@ -1,0 +1,22 @@
+:host {
+  display: inline-block;
+  position: relative;
+  white-space: nowrap;
+}
+
+input[type="color"] {
+  position: absolute;
+  width: 100%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+span.color {
+  cursor: pointer;
+}
+
+span.action {
+  color: #009e87;
+  cursor: pointer;
+  text-decoration: underline;
+}
