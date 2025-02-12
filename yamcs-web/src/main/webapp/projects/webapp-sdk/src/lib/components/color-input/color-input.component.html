@@ -1,0 +1,7 @@
+<input #colorInput [formControl]="colorControl" type="color" />
+@if (selectedColor) {
+  <span class="color" [style.color]="selectedColor" (click)="openColorPicker()">⬤</span>
+  <ya-icon-action icon="close" (click)="unsetColor()" matTooltip="Unset color" />
+} @else {
+  <span class="action" (click)="openColorPicker()">{{ label() }}</span>
+}

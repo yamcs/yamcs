@@ -32,7 +32,7 @@ export class CreateParameterPlotComponent extends BaseComponent {
     readonly yamcs: YamcsService,
   ) {
     super();
-    this.setTitle('Configure Parameter Plot');
+    this.setTitle('Configure parameter plot');
 
     this.form = formBuilder.group({
       name: ['', [Validators.required]],
@@ -62,8 +62,8 @@ export class CreateParameterPlotComponent extends BaseComponent {
       lineColor: [hexColor, [Validators.required]],
       visible: [true, [Validators.required]],
       lineWidth: [1, [Validators.required]],
-      lohi: [true, [Validators.required]],
-      lohiOpacity: [0.17, [Validators.required]],
+      minMax: [true, [Validators.required]],
+      minMaxOpacity: [0.17, [Validators.required]],
       fill: [false, [Validators.required]],
       fillColor: ['#dddddd', [Validators.required]],
     });

@@ -1,6 +1,6 @@
 import { FullscreenOverlayContainer, OverlayContainer } from '@angular/cdk/overlay';
 import { APP_BASE_HREF } from '@angular/common';
-import { APP_INITIALIZER, EnvironmentProviders, provideExperimentalZonelessChangeDetection, Provider } from '@angular/core';
+import { EnvironmentProviders, inject, provideAppInitializer, provideExperimentalZonelessChangeDetection, Provider } from '@angular/core';
 import { DateAdapter } from '@angular/material/core';
 import { MAT_TOOLTIP_DEFAULT_OPTIONS, MAT_TOOLTIP_DEFAULT_OPTIONS_FACTORY, MatTooltipDefaultOptions } from '@angular/material/tooltip';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
@@ -49,33 +49,22 @@ export function provideYamcsMaterialConfiguration(): Provider[] {
   ];
 }
 
-export function provideConfigInitializer(): Provider[] {
+export function provideConfigInitializer(): EnvironmentProviders[] {
   return [
-    {
-      provide: APP_INITIALIZER,
-      useFactory: (configService: ConfigService) => {
-        return () => configService.loadWebsiteConfig();
-      },
-      multi: true,
-      deps: [ConfigService],
-    },
+    provideAppInitializer(() => {
+      inject(ConfigService).loadWebsiteConfig();
+    }),
   ];
 }
 
 // Not intended for use in webcomponents
-export function provideSdkBridge(): Provider[] {
+export function provideSdkBridge(): EnvironmentProviders[] {
   return [
-    {
-      provide: APP_INITIALIZER,
-      useFactory: (sdkBridge: SdkBridge, router: Router, appearanceService: AppearanceService) => {
-        return () => {
-          sdkBridge.router = router;
-          sdkBridge.appearanceService = appearanceService;
-        };
-      },
-      multi: true,
-      deps: [SdkBridge, Router, AppearanceService],
-    },
+    provideAppInitializer(() => {
+      const sdkBridge = inject(SdkBridge);
+      sdkBridge.router = inject(Router);
+      sdkBridge.appearanceService = inject(AppearanceService);
+    }),
   ];
 }
 

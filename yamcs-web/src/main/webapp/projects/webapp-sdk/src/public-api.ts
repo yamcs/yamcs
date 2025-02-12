@@ -13,6 +13,7 @@ export * from './lib/components/binary-input/binary-input.component';
 export * from './lib/components/breadcrumb/breadcrumb-trail.component';
 export * from './lib/components/breadcrumb/breadcrumb.component';
 export * from './lib/components/button/button.component';
+export * from './lib/components/color-input/color-input.component';
 export * from './lib/components/column-chooser/column-chooser.component';
 export * from './lib/components/date-time-input/date-time-input.component';
 export * from './lib/components/date-time-input/UtcDateAdapter';

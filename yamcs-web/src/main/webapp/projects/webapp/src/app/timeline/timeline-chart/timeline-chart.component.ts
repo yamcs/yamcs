@@ -1,9 +1,10 @@
+import { Overlay } from '@angular/cdk/overlay';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Band, Banner, ItemBand as DefaultItemBand, Item, MouseTracker, TimeLocator, Timeline } from '@fqqb/timeline';
-import { ConfigService, MessageService, Synchronizer, TimelineItem, TimelineView, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { ConfigService, Formatter, MessageService, Synchronizer, TimelineItem, TimelineView, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { AuthService } from '../../core/services/AuthService';
@@ -15,16 +16,14 @@ import { EditBandDialogComponent } from '../edit-band-dialog/edit-band-dialog.co
 import { EditViewDialogComponent } from '../edit-view-dialog/edit-view-dialog.component';
 import { ItemBand } from '../item-band/ItemBand';
 import { JumpToDialogComponent } from '../jump-to-dialog/jump-to-dialog.component';
+import { ParameterPlot } from '../parameter-plot/ParameterPlot';
+import { ParameterStates } from '../parameter-states/ParameterStates';
 import { TimeRuler } from '../time-ruler/TimeRuler';
 
 interface DateRange {
   start: Date;
   stop: Date;
 }
-
-import { Overlay } from '@angular/cdk/overlay';
-import { WebappSdkModule } from '@yamcs/webapp-sdk';
-import { ParameterPlot } from '../parameter-plot/ParameterPlot';
 
 @Component({
   templateUrl: './timeline-chart.component.html',
@@ -58,6 +57,7 @@ export class TimelineChartComponent implements AfterViewInit, OnDestroy {
     readonly yamcs: YamcsService,
     private dialog: MatDialog,
     private messageService: MessageService,
+    private formatter: Formatter,
     readonly route: ActivatedRoute,
     private router: Router,
     private authService: AuthService,
@@ -188,6 +188,10 @@ export class TimelineChartComponent implements AfterViewInit, OnDestroy {
           const band = new ParameterPlot(this, bandInfo, this.yamcs, this.synchronizer, this.configService, this.overlay);
           this.bands.push(band);
           this.installBandListeners(band);
+        } else if (bandInfo.type === 'PARAMETER_STATES') {
+          const band = new ParameterStates(this, bandInfo, this.yamcs, this.messageService, this.formatter, this.overlay);
+          this.bands.push(band);
+          this.installBandListeners(band);
         }
       }
       this.refreshData();
@@ -242,6 +246,8 @@ export class TimelineChartComponent implements AfterViewInit, OnDestroy {
           stop: new Date(loadStop).toISOString(),
         }));
       } else if (band instanceof ParameterPlot) {
+        band.refreshData();
+      } else if (band instanceof ParameterStates) {
         band.refreshData();
       }
     }

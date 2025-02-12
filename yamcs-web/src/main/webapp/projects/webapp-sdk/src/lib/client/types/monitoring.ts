@@ -69,6 +69,8 @@ export interface Sample {
   minTime: string;
   max: number;
   maxTime: string;
+  firstTime: string;
+  lastTime: string;
   n: number;
 }
 
@@ -248,6 +250,9 @@ export interface GetParameterRangesOptions {
   stop?: string;
   minGap?: number;
   maxGap?: number;
+  minRange?: number;
+  maxValues?: number;
+  source?: 'ParameterArchive' | 'replay';
 }
 
 export interface GetPacketIndexOptions {

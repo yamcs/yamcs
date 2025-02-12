@@ -25,18 +25,18 @@
       </td>
     </tr>
     <tr>
-      <td class="property">Show low/high</td>
+      <td class="property">Show min/max</td>
       <td class="widget">
-        <mat-slide-toggle #lohi formControlName="lohi" />
+        <mat-slide-toggle #minMax formControlName="minMax" />
       </td>
     </tr>
-    @if (lohi.checked) {
+    @if (minMax.checked) {
       <tr>
-        <td class="property">Low/high opacity</td>
+        <td class="property">Min/max opacity</td>
         <td class="widget">
           <input
             type="number"
-            formControlName="lohiOpacity"
+            formControlName="minMaxOpacity"
             style="width: 100px"
             min="0"
             max="1"

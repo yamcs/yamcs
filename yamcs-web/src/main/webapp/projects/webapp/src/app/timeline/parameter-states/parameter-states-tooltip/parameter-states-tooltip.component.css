@@ -1,0 +1,20 @@
+.ya-tooltip {
+  position: absolute;
+  display: none;
+  white-space: pre;
+  border-radius: 2px;
+  max-width: 350px;
+  padding-left: 8px;
+  padding-right: 8px;
+  margin-top: 14px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--y-border-color);
+  font-family: Roboto, sans-serif;
+  font-size: 10px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+tr.most-frequent {
+  background: #eee;
+}

@@ -65,7 +65,8 @@ export type TimelineBandType = 'TIME_RULER'
   | 'ITEM_BAND'
   | 'SPACER'
   | 'COMMAND_BAND'
-  | 'PARAMETER_PLOT';
+  | 'PARAMETER_PLOT'
+  | 'PARAMETER_STATES';
 
 export interface CreateTimelineBandRequest {
   name: string;

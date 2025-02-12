@@ -78,6 +78,7 @@ import { DataTableDirective } from './directives/data-table.directive';
 import { SimpleTableDirective } from './directives/simple-table.directive';
 import { TableDirective } from './directives/table.directive';
 
+import { YaColorInput } from '../public-api';
 import { YaActionLogSummary } from './components/action-log-summary/action-log-summary.component';
 import { AliasPipe } from './pipes/alias.pipe';
 import { ArrayContainsPipe } from './pipes/array-contains.pipe';
@@ -163,6 +164,7 @@ const sharedComponents = [
   YaBreadcrumb,
   YaBreadcrumbTrail,
   YaButton,
+  YaColorInput,
   YaColumnChooser,
   YaDateTimeInput,
   YaDetailPane,

@@ -5,7 +5,7 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
 //
 // palette = require('google-palette');
 // palette('mpn65', 30);
-const PALETTE = [
+export const PALETTE = [
   '#ff0029', '#377eb8', '#66a61e',
   '#984ea3', '#00d2d5', '#ff7f00',
   '#af8d00', '#7f80cd', '#b3e900',
