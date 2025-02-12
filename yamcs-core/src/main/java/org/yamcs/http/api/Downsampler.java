@@ -228,6 +228,8 @@ public class Downsampler implements Consumer<ParameterValueArray> {
         int n;
         long minTime;
         long maxTime;
+        long firstTime;
+        long lastTime;
 
         long expireMillis; // Matching the 'last' value for this sample.
 
@@ -235,7 +237,7 @@ public class Downsampler implements Consumer<ParameterValueArray> {
         Sample(long t) {
             this.t = t;
             min = avg = max = Double.NaN;
-            minTime = maxTime = TimeEncoding.INVALID_INSTANT;
+            minTime = maxTime = firstTime = lastTime = TimeEncoding.INVALID_INSTANT;
             n = 0;
             expireMillis = -1;
         }
@@ -245,12 +247,13 @@ public class Downsampler implements Consumer<ParameterValueArray> {
             this.t = t;
             this.expireMillis = expireMillis;
             min = avg = max = value;
-            minTime = maxTime = valueTime;
+            minTime = maxTime = firstTime = lastTime = valueTime;
             n = 1;
         }
 
         public void process(long valueTime, double value, long expireMillis) {
             this.expireMillis = expireMillis;
+            lastTime = valueTime;
             if (value < min) {
                 min = value;
                 minTime = valueTime;
