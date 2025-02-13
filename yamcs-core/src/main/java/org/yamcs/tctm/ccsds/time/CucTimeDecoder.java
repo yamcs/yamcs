@@ -5,8 +5,7 @@ import org.yamcs.time.TimeDecoder;
 import org.yamcs.utils.ByteSupplier;
 
 /**
- * Decoder for CCSDS Unsegmented time Code as specified in
- * TIME CODE FORMATS, CCSDS 301.0-B-4, Nov 2010
+ * Decoder for CCSDS Unsegmented time Code as specified in TIME CODE FORMATS, CCSDS 301.0-B-4, Nov 2010
  * 
  * The time code is composed by
  * <ul>
@@ -14,8 +13,6 @@ import org.yamcs.utils.ByteSupplier;
  * <li>T-Field - up to 7+10 bytes (although it could be longer for custom codes)</li>
  * </ul>
  * 
- * @author nm
- *
  */
 public class CucTimeDecoder implements TimeDecoder {
     public static final Log log = new Log(CucTimeDecoder.class);
@@ -33,8 +30,8 @@ public class CucTimeDecoder implements TimeDecoder {
      * Constructor for decoder.
      * 
      * @param pfield1
-     *            first octet of the pfield
-     *            -1 means is part of the packet, other values means it is pre-defined (implicit)
+     *            first octet of the pfield -1 means is part of the packet, other values means it is pre-defined
+     *            (implicit)
      * @param pfield2
      *            second octet of the pfield - used if the first bit of pfield1 (seen as one byte) is 1
      */
@@ -134,7 +131,8 @@ public class CucTimeDecoder implements TimeDecoder {
                 fineTime = (fineTime << 8) + (0xFF & s.getAsByte());
                 fb--;
             }
-            fineTime = 1000 * fineTime / (1 << (ftBytes * 8));
+            int shift = ftBytes * 8;
+            fineTime = (1000 * fineTime + (1 << shift)) >> shift;
         }
         if (log.isTraceEnabled()) {
             log.trace("Extracted corseTime={} sec and fineTime={} millis", coarseTime, fineTime);
