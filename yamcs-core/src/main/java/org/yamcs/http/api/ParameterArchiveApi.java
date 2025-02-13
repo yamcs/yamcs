@@ -186,15 +186,11 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
                 .build();
         prs.retrieveScalar(pid, opts, sampler)
                 .thenRun(() -> {
-
                     TimeSeries.Builder series = TimeSeries.newBuilder();
                     for (Sample s : sampler.collect()) {
                         series.addSample(StreamArchiveApi.toGPBSample(s));
                     }
-
                     observer.complete(series.build());
-
-                    prs.retrieveScalar(pid, opts, sampler);
                 })
                 .exceptionally(e -> {
                     log.warn("Received exception during parameter retrieval", e);
@@ -233,7 +229,6 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
                 .withStartStop(start, stop)
                 .withRetrieveRawValues(false)
                 .withoutRealtime(request.getNorealtime())
-                // .withNoreplay(false)// TODO
                 .build();
 
         prs.retrieveScalar(pid, opts, ranger)

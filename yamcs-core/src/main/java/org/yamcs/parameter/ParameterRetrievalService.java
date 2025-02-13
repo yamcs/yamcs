@@ -60,33 +60,46 @@ public class ParameterRetrievalService extends AbstractYamcsService {
     ExecutorService executor;
     static AtomicInteger count = new AtomicInteger();
 
+    // if this is true, then we stick to the cacheConfig discovered during init
+    // if this is false (meaning no explicit cache has been configured) then we set a cache if the realtime archive
+    // filler is not enabled
+    boolean pcacheConfigured;
+
     public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
         super.init(yamcsInstance, serviceName, config);
         this.procName = config.getString("processor", DEFAULT_PROCESSOR);
 
         int parallelRetrievals = config.getInt("parallelRetrievals", 4);
         this.executor = createExecutor(parallelRetrievals);
-        YConfiguration pcacheConfig = config.getConfigOrEmpty("parameterCache");
-        if (pcacheConfig.getBoolean("enabled", true)) {
-            this.cacheConfig = new ParameterCacheConfig(pcacheConfig, log);
+        if (config.containsKey("parameterCache")) {
+            pcacheConfigured = true;
+            YConfiguration pcacheConfig = config.getConfig("parameterCache");
+            if (pcacheConfig.getBoolean("enabled", true)) {
+                this.cacheConfig = new ParameterCacheConfig(pcacheConfig, log);
+            }
+        } else {
+            pcacheConfigured = false;
         }
     }
 
     @Override
     protected void doStart() {
         var ysi = YamcsServer.getServer().getInstance(yamcsInstance);
-        if (cacheConfig != null) {
-            pcache = new ArrayParameterCache(yamcsInstance, cacheConfig);
-            var proc = ysi.getProcessor(procName);
-            proc.getParameterRequestManager()
-                    .subscribeAll((id, items) -> pcache.update(items));
-        }
-
         var l = ysi.getServices(ParameterArchive.class);
         if (!l.isEmpty()) {
             parchive = l.get(0);
         } else {
             log.info("The parameter archive service has not been found");
+        }
+        if ((parchive == null || parchive.getRealtimeFiller() == null) && !pcacheConfigured) {
+            cacheConfig = new ParameterCacheConfig(YConfiguration.emptyConfig(), log);
+        }
+
+        if (cacheConfig != null) {
+            pcache = new ArrayParameterCache(yamcsInstance, cacheConfig);
+            var proc = ysi.getProcessor(procName);
+            proc.getParameterRequestManager()
+                    .subscribeAll((id, items) -> pcache.update(items));
         }
 
         notifyStarted();
@@ -103,13 +116,14 @@ public class ParameterRetrievalService extends AbstractYamcsService {
      */
     public CompletableFuture<Void> retrieveScalar(ParameterWithId pid, ParameterRetrievalOptions opts,
             Consumer<ParameterValueArray> consumer) {
-        log.debug("retrieveScalar pid: {}, opts: {}", pid, opts);
-
+        log.debug("retrieveScalar pid: {}, opts: {} ", pid, opts);
         var cf = new CompletableFuture<Void>();
         executor.submit(() -> {
             try {
                 if (parchive == null || opts.noparchive()) {
                     retrieveScalarReplayOrCache(pid, opts, consumer);
+                } else if (parchive.getRealtimeFiller() != null) {
+                    retrieveScalarParameterArchive(pid, opts, consumer);
                 } else {
                     long coverageEnd = parchive.coverageEnd();
 
@@ -163,6 +177,8 @@ public class ParameterRetrievalService extends AbstractYamcsService {
             try {
                 if (parchive == null || opts.noparchive()) {
                     retrieveSingleReplayOrCache(pid, opts, consumer);
+                } else if (parchive.getRealtimeFiller() != null) {
+                    retrieveSingleParameterArchive(pid, opts, consumer);
                 } else {
                     long coverageEnd = parchive.coverageEnd();
                     if (opts.ascending()) {
@@ -217,6 +233,8 @@ public class ParameterRetrievalService extends AbstractYamcsService {
             try {
                 if (parchive == null || opts.noparchive()) {
                     retrieveMultiReplayOrCache(pids, opts, consumer);
+                } else if (parchive.getRealtimeFiller() != null) {
+                    retrieveMultiParameterArchive(pids, opts, consumer);
                 } else {
                     long coverageEnd = parchive.coverageEnd();
                     if (opts.ascending()) {
@@ -269,6 +287,7 @@ public class ParameterRetrievalService extends AbstractYamcsService {
 
     private TimeAndCount retrieveScalarParameterArchive(ParameterWithId pid, ParameterRetrievalOptions request,
             Consumer<ParameterValueArray> consumer) throws IOException {
+        log.debug("retrieveScalarParameterArchive pid: {}, request: {}", pid, request);
         SingleParameterRetrieval spar = new SingleParameterRetrieval(parchive, pid.getQualifiedName(), request);
         TimeAndCount tc = new TimeAndCount(TimeEncoding.INVALID_INSTANT, 0);
         try {
@@ -286,6 +305,8 @@ public class ParameterRetrievalService extends AbstractYamcsService {
 
     TimeAndCount retrieveScalarReplayOrCache(ParameterWithId pid, ParameterRetrievalOptions opts,
             Consumer<ParameterValueArray> consumer) throws Exception {
+
+        log.debug("retrieveScalarReplayOrCache pid: {}, opts: {} pcache present: {}", pid, opts, pcache != null);
         if (pcache != null && !opts.norealtime()) {
             long start = opts.start();
             long stop = opts.stop();
@@ -298,6 +319,7 @@ public class ParameterRetrievalService extends AbstractYamcsService {
             // TODO this could be optimised because the pcache stores already arrays of values
             var pvList = opts.noreplay() ? pcache.getAllValues(pid.getParameter(), start, stop)
                     : pcache.getAllValuesIfCovered(pid.getParameter(), start, stop);
+            log.debug("pcache returned {} results", pvList == null ? null : pvList.size());
             if (pvList != null) {
                 if (pid.getPath() != null) {
                     pvList = extractMembers(pvList, pid.getPath());
@@ -354,6 +376,7 @@ public class ParameterRetrievalService extends AbstractYamcsService {
     TimeAndCount retrieveSingleReplayOrCache(ParameterWithId pid, ParameterRetrievalOptions opts,
             Consumer<ParameterValueWithId> consumer) throws Exception {
 
+        log.debug("retrieveSingleReplayOrCache pid: {}, opts: {} pcache present: {}", pid, opts, pcache != null);
         if (pcache != null && !opts.norealtime()) {
             long start = opts.start();
             long stop = opts.stop();
@@ -366,6 +389,7 @@ public class ParameterRetrievalService extends AbstractYamcsService {
 
             var pvList = opts.noreplay() ? pcache.getAllValues(pid.getParameter(), start, stop)
                     : pcache.getAllValuesIfCovered(pid.getParameter(), start, stop);
+            log.debug("pcache returned {} results", pvList == null ? null : pvList.size());
             if (pvList != null) {
                 if (pid.getPath() != null) {
                     pvList = extractMembers(pvList, pid.getPath());
@@ -404,6 +428,7 @@ public class ParameterRetrievalService extends AbstractYamcsService {
     private TimeAndCount retrieveMultiParameterArchive(List<ParameterWithId> pidList, ParameterRetrievalOptions opts,
             Consumer<List<ParameterValueWithId>> consumer) throws RocksDBException, IOException {
 
+        log.debug("retrieveMultiParameterArchive pid: {}, opts: {}", pidList, opts);
         MultipleParameterRequest mpvr;
         ParameterIdDb piddb = parchive.getParameterIdDb();
         List<ParameterId> parameterIds = new ArrayList<>();
@@ -450,7 +475,7 @@ public class ParameterRetrievalService extends AbstractYamcsService {
 
     TimeAndCount retrieveMultiReplayOrCache(List<ParameterWithId> pids, ParameterRetrievalOptions opts,
             Consumer<List<ParameterValueWithId>> consumer) throws Exception {
-
+        log.debug("retrieveSingleReplayOrCache pid: {}, opts: {} pcache present: {}", pids, opts, pcache != null);
         if (pcache != null && !opts.norealtime()) {
             long start = opts.start();
             long stop = opts.stop();
@@ -469,6 +494,7 @@ public class ParameterRetrievalService extends AbstractYamcsService {
 
             var pvListList = opts.noreplay() ? pcache.getAllValues(parameters, start, stop)
                     : pcache.getAllValuesIfCovered(parameters, start, stop);
+            log.debug("pcache returned {} results", pvListList.size());
             if (opts.ascending()) {
                 pvListList = Lists.reverse(pvListList);
             }

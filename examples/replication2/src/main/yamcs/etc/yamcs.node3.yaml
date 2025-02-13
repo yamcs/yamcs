@@ -18,12 +18,6 @@ services:
       type: "realtime"
   - class: org.yamcs.archive.CommandHistoryRecorder
   - class: org.yamcs.parameterarchive.ParameterArchive
-    args:
-        realtimeFiller: 
-            enabled: false
-        backFiller:
-            enabled: true
-            warmupTime: 60
   - class: org.yamcs.replication.ReplicationSlave
     name: slave-to-node1
     args:

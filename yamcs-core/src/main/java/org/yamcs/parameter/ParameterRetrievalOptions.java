@@ -38,7 +38,7 @@ public record ParameterRetrievalOptions(
         private boolean retrieveParameterStatus = true;
         private boolean norealtime = false;
         private boolean noparchive = false;
-        private boolean noreplay = true;
+        private boolean noreplay = false;
         private PacketReplayRequest packetReplayRequest = null;
 
         public Builder withStartStop(long start, long stop) {

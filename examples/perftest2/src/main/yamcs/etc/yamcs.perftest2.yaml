@@ -24,7 +24,19 @@ services:
         enabled: false
       backFiller:
         enabled: true
-        streamUpdateFillFrequency: 3600
+        streamUpdateFillPolicy:
+           - dataAge: -1
+             fillFrequency: 3600
+             quietThreshold: -1
+           - dataAge: 2
+             fillFrequency: -1
+             quietThreshold: 60
+  - class: org.yamcs.parameter.ParameterRetrievalService
+    args:
+        parameterCache:
+            enabled: true
+            cacheAll: false
+            maxDuration: 3600
         
   - class: org.yamcs.simulator.SimulatorCommander
     args:

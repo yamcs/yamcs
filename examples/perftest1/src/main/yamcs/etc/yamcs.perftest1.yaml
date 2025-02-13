@@ -22,8 +22,6 @@ services:
       maxSegmentSize: 1000
       realtimeFiller: 
         enabled: true
-      backFiller:
-        enabled: false
   - class: org.yamcs.simulator.SimulatorCommander
     args:
       telnet:
