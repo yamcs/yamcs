@@ -12,10 +12,7 @@ import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
 
 /**
- * Event producer used from inside Yamcs to report events. It writes directly to the realtime_event stream
- * 
- * 
- * @author nm
+ * Event producer used from inside Yamcs to report events. It writes directly to the events_realtime stream
  *
  */
 public class StreamEventProducer extends AbstractEventProducer {

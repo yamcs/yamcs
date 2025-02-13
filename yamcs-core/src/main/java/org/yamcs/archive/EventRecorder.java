@@ -15,14 +15,13 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 
 /**
  * Sets up the archiving of the events coming on events_realtime and events_dump streams into the yarch table events.
- * 
- * @author nm
  *
  */
 public class EventRecorder extends AbstractYamcsService {
 
     public static final String TABLE_NAME = "events";
     public static final String REALTIME_EVENT_STREAM_NAME = "events_realtime";
+    public static final String DUMP_EVENT_STREAM_NAME = "events_dump";
     public static final String CF_NAME = XtceTmRecorder.CF_NAME;
     
     @Override

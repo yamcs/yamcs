@@ -40,7 +40,7 @@ tm (list)
 
 tc (list)
     contains a list of TC streams. Each stream has a mandatory name and an optional processor and tcPatterns properties. The processor is used to attach the stream to a specific processor. If no processor is specified, the stream can be used by other services. For example the CFDP service will push the CFDP PDUs to a stream from which they can be copied to a TC stream using some sql commands (as demonstrated in the cfdp example).
-    The tcPatterns property is used to determine which command will be sent via this stream. It contains a list of regular expressions which are matched against eh command fully qualified name. If the patterns are not specified, it means that all commands will match.
+    The tcPatterns property is used to determine which command will be sent via this stream. It contains a list of regular expressions which are matched against the command fully qualified name. If the patterns are not specified, it means that all commands will match.
     The ordering of the streams in this list is important because once a command has matched one stream, the other streams are not checked.
 
 invalidTm (list)
@@ -49,9 +49,10 @@ invalidTm (list)
 cmdHist (list)
     streams used for the command history. No additional option in addition to the stream name is supported.
 
-
 event
     streams used for events. No additional option in addition to the stream name is supported.
+    Note that many components use the "events_realtime" stream to publish realtime events so this stream should always be present in the list and its name should not be changed.
+    Some components (e.g. PusEventDecoder) use the events_dump stream but usually that stream name is configurable.
     
 param
     streams used for parameters. No additional option in addition to the stream name is supported.
