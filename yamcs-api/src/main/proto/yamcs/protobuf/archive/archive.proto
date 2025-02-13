@@ -132,6 +132,10 @@ message ListParameterHistoryRequest {
   //
   // Default: ``ParameterArchive``.
   optional string source = 11;
+  
+  // Do not perform a replay if the ``source=ParameterArchive`` and the parameter archive does not cover the last part of the requested time interval.
+  // Default: ``false``.
+  optional bool noreplay = 14;
 
   // If set, truncate binary values to the specified byte length.
   // This may be necessary when Yamcs contains large binary values.
@@ -139,6 +143,8 @@ message ListParameterHistoryRequest {
 
   // Continuation token returned by a previous page response.
   optional string next = 12;
+  
+
 }
 
 message ListParameterHistoryResponse {

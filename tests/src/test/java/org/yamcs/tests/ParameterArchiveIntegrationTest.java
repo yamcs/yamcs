@@ -145,7 +145,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
 
         // request excluding realtime cache
         page = archiveClient.listValues("/REFMDB/SUBSYS1/FloatPara1_1_2", start, stop,
-                ListOptions.noRealtime(true)).get();
+                ListOptions.noRealtime(true), ListOptions.noReplay(true)).get();
         values = new ArrayList<>();
         page.iterator().forEachRemaining(values::add);
         assertEquals(0, values.size());

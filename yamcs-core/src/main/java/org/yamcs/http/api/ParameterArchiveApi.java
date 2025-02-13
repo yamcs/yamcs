@@ -286,6 +286,9 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
                     .withoutParchive(true)
                     .withoutReplay(false);
         } else {
+            if (request.hasNoreplay()) {
+                optsb = optsb.withoutReplay(request.getNoreplay());
+            }
             optsb = optsb.withoutRealtime(request.getNorealtime());
         }
 

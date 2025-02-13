@@ -20,6 +20,7 @@ import org.yamcs.client.archive.ArchiveClient.ListOptions.LimitOption;
 import org.yamcs.client.archive.ArchiveClient.ListOptions.ListOption;
 import org.yamcs.client.archive.ArchiveClient.ListOptions.NoRealtimeOption;
 import org.yamcs.client.archive.ArchiveClient.ListOptions.NoRepeatOption;
+import org.yamcs.client.archive.ArchiveClient.ListOptions.NoReplayOption;
 import org.yamcs.client.archive.ArchiveClient.ListOptions.SourceOption;
 import org.yamcs.client.archive.ArchiveClient.RangeOptions.MinimumGapOption;
 import org.yamcs.client.archive.ArchiveClient.RangeOptions.MinimumRangeOption;
@@ -697,6 +698,8 @@ public class ArchiveClient {
                 requestb.setNorepeat(((NoRepeatOption) option).noRepeat);
             } else if (option instanceof NoRealtimeOption) {
                 requestb.setNorealtime(((NoRealtimeOption) option).noRealtime);
+            } else if (option instanceof NoReplayOption) {
+                requestb.setNoreplay(((NoReplayOption) option).noReplay);
             } else if (option instanceof LimitOption) {
                 requestb.setLimit(((LimitOption) option).limit);
             } else if (option instanceof SourceOption) {
@@ -936,6 +939,10 @@ public class ArchiveClient {
             return new NoRealtimeOption(noRealtime);
         }
 
+        public static ListOption noReplay(boolean noReplay) {
+            return new NoReplayOption(noReplay);
+        }
+
         public static ListOption source(String source) {
             return new SourceOption(source);
         }
@@ -981,6 +988,14 @@ public class ArchiveClient {
 
             public NoRealtimeOption(boolean noRealtime) {
                 this.noRealtime = noRealtime;
+            }
+        }
+
+        static final class NoReplayOption implements ListOption {
+            final boolean noReplay;
+
+            public NoReplayOption(boolean noReplay) {
+                this.noReplay = noReplay;
             }
         }
 
