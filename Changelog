@@ -1,3 +1,9 @@
+Version 5.11.1 released 13-Feb-2025
+- Added a streamUpdateFillPolicy to the parameter archive backfiller that allows to fine tune the automatic backfilling of the parameter archive. For example older parts of the archive can be excluded from automatic backfilling. 
+- Added some calls to allow enablign/disabling the automatic backfilling.
+- Disabled the default noreply option in the Parameter Retrieval Service introduced in 5.11.0. This means that if the backfiller is used and the Parameter Archive does not cover the requested data interval, and there is no cache or the cache does not contain the requested parameter, a replay will be performed to retrieve the last part of the interval (presumably corresponding to close to realtime data). If the realtime filler is used, the replay will not be performed.
+- Fixed a data consistency bug when reading from the parameter archive causing spurious DatabaseCorruption exceptions.
+
 Version 5.11.0 released 3-Feb-2025
 - Introduced a Parameter Retrieval Service (enabled by default) to handle code that combines retrieval from the parameter archive with replay and the parameter cache. Before this release, the code was scattered across the Yamcs API handling.
 - Added the ability to mirror alarm status via replication (see the replication1 example).
