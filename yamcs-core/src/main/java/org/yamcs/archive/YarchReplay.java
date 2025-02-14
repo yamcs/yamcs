@@ -34,8 +34,6 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
  * sent to the listener This class can also handle pause/resume: simply stop sending data seek: closes the streams and
  * creates new ones with a different starting time.
  * 
- * @author nm
- *
  */
 public class YarchReplay implements StreamSubscriber {
     /**

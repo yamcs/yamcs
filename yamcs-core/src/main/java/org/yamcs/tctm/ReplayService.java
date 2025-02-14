@@ -183,7 +183,7 @@ public class ReplayService extends AbstractProcessorService
         if (rs.getState() == ReplayState.CLOSED) {
             log.debug("End signal received");
             notifyStopped();
-            tmProcessor.finished();
+            processor.stopAsync();
         } else {
             processor.notifyStateChange();
         }

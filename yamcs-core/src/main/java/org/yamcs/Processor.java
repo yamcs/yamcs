@@ -45,7 +45,6 @@ import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 
 import com.google.common.util.concurrent.AbstractService;
-import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
@@ -286,12 +285,6 @@ public class Processor extends AbstractService {
     public void doStart() {
         try {
             tmProcessor.startAsync();
-            tmProcessor.addListener(new Listener() {
-                @Override
-                public void terminated(State from) {
-                    stopAsync();
-                }
-            }, MoreExecutors.directExecutor());
             startIfNecessary(commandHistoryRequestManager);
             startIfNecessary(commandHistoryProvider);
             startIfNecessary(parameterProcessorManager);
@@ -302,9 +295,7 @@ public class Processor extends AbstractService {
             for (ProcessorServiceWithConfig swc : serviceList) {
                 startIfNecessary(swc.service);
             }
-
             tmProcessor.awaitRunning();
-
             awaitIfNecessary(commandHistoryRequestManager);
             awaitIfNecessary(commandHistoryProvider);
             awaitIfNecessary(parameterProcessorManager);

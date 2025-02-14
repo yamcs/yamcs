@@ -135,7 +135,7 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
          * Verify the delivery on testReplay
          */
         List<ParameterValue> values = captor.expectTimely();
-        assertEquals(2, values.size());
+        assertEquals(2, values.size(), "Expected 2 values, but got: " + values);
         ParameterValue p1_1_6 = values.get(0);
         assertEquals("/REFMDB/SUBSYS1/IntegerPara1_1_6", p1_1_6.getId().getName());
         assertEquals(Timestamps.parse("2015-01-01T10:01:00.000Z"), p1_1_6.getGenerationTime());
