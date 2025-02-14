@@ -681,20 +681,29 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
 
     private OngoingCfdpTransfer processPauseRequest(PauseRequest request) {
         OngoingCfdpTransfer transfer = request.getTransfer();
-        transfer.pauseTransfer();
-        return transfer;
+        try {
+            return transfer.pauseTransfer().get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Failed to pause transfer", e);
+        }
     }
 
     private OngoingCfdpTransfer processResumeRequest(ResumeRequest request) {
         OngoingCfdpTransfer transfer = request.getTransfer();
-        transfer.resumeTransfer();
-        return transfer;
+        try {
+            return transfer.resumeTransfer().get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Failed to resume transfer", e);
+        }
     }
 
     private OngoingCfdpTransfer processCancelRequest(CancelRequest request) {
         OngoingCfdpTransfer transfer = request.getTransfer();
-        transfer.cancelTransfer();
-        return transfer;
+        try {
+            return transfer.cancelTransfer().get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Failed to cancel transfer", e);
+        }
     }
 
     @Override

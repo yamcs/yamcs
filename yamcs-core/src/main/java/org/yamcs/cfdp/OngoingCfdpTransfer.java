@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -233,26 +234,30 @@ public abstract class OngoingCfdpTransfer implements CfdpFileTransfer {
                 TimeUnit.MILLISECONDS);
     }
 
-    public OngoingCfdpTransfer pauseTransfer() {
-        executor.submit(this::suspend);
-        return this;
+    public CompletableFuture<OngoingCfdpTransfer> pauseTransfer() {
+        return CompletableFuture.supplyAsync(() -> {
+            suspend();
+            return this;
+        }, executor);
     }
 
     protected abstract void suspend();
 
-    public OngoingCfdpTransfer resumeTransfer() {
-        executor.submit(this::resume);
-        return this;
+    public CompletableFuture<OngoingCfdpTransfer> resumeTransfer() {
+        return CompletableFuture.supplyAsync(() -> {
+            resume();
+            return this;
+        }, executor);
     }
 
     protected abstract void resume();
 
-    public OngoingCfdpTransfer cancelTransfer() {
-        executor.submit(() -> {
+    public CompletableFuture<OngoingCfdpTransfer> cancelTransfer() {
+        return CompletableFuture.supplyAsync(() -> {
             pushError("Cancel request received");
             cancel(ConditionCode.CANCEL_REQUEST_RECEIVED);
-        });
-        return this;
+            return this;
+        }, executor);
     }
 
     protected abstract void cancel(ConditionCode code);
