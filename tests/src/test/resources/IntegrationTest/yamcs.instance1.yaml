@@ -6,6 +6,9 @@ services:
   - class: org.yamcs.archive.CcsdsTmIndex
   - class: org.yamcs.archive.AlarmRecorder
   - class: org.yamcs.parameterarchive.ParameterArchive
+    args:
+        backFiller:
+          automaticBackfilling: false
   - class: org.yamcs.ProcessorCreatorService
     args: 
       name: "realtime"
