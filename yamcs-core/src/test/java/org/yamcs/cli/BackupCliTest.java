@@ -21,6 +21,7 @@ import org.yamcs.utils.FileUtils;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.rocksdb.RdbBucket;
 import org.yamcs.yarch.rocksdb.RdbBucketDatabase;
+import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 import org.yamcs.yarch.rocksdb.Tablespace;
 
 public class BackupCliTest extends AbstractCliTest {
@@ -35,6 +36,7 @@ public class BackupCliTest extends AbstractCliTest {
 
     @AfterAll
     public static void cleanup() throws IOException {
+        RdbStorageEngine.getInstance().shutdown();
         FileUtils.deleteRecursively(etcdata);
     }
 
