@@ -310,6 +310,7 @@ public class ReplayService extends AbstractProcessorService
             createRawSubscription();
             createReplay();
         } catch (YamcsException e) {
+            e.printStackTrace();
             notifyFailed(e);
             return;
         }
