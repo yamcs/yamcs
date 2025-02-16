@@ -1,7 +1,14 @@
-import { CB_SET3 } from './palette';
-
-export const PALETTE = CB_SET3;
 export const OTHER_COLOR = '#000000';
+
+// Adapted from cb-Set3
+// https://google.github.io/palette.js/
+//
+// - Removed gray (#d9d9d9)
+// - Moved palid yellow (#ffffb3) to the end
+export const PALETTE = [
+  '#8dd3c7', '#bebada', '#fb8072', '#80b1d3', '#fdb462',
+  '#b3de69', '#fccde5', '#bc80bd', '#ccebc5', '#ffffb3',
+];
 
 export class ColorMap {
 
@@ -35,6 +42,11 @@ export class ColorMap {
     // Insert MRU
     this.cache.set(value, color);
     return color;
+  }
+
+  reset() {
+    this.cache.clear();
+    this.nextIndex = 0;
   }
 
   private keepSizeWithinLimits() {

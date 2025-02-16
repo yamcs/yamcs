@@ -4,7 +4,7 @@ import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@ang
 import { TimelineBand, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { resolveProperties } from '../../shared/properties';
-import { createValueMappingPropertyInfo, propertyInfo, resolveValueMappingProperties } from '../ParameterStates';
+import { createValueMappingPropertyInfo, propertyInfo, resolveValueMappingProperties } from '../ParameterStateBand';
 import { ParameterStatesStylesComponent } from '../parameter-states-styles/parameter-states-styles.component';
 
 @Component({

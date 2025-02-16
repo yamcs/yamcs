@@ -11,7 +11,7 @@ import { AppParameterInput } from '../../../shared/parameter-input/parameter-inp
   imports: [
     AppParameterInput,
     WebappSdkModule,
-  ]
+  ],
 })
 export class ParameterStatesStylesComponent {
 

@@ -11,7 +11,7 @@
         <td>
           {{ item.label }}
         </td>
-        <td>{{ (item.value | number: "1.0-2") ?? "-" }}</td>
+        <td>{{ item.value ?? "-" }}</td>
       </tr>
     }
   </table>
