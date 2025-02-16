@@ -80,8 +80,12 @@
     <ya-button (click)="pageRight()" icon="east" />
     &nbsp;
     <ya-button (click)="jumpToToday()" icon="today">Today</ya-button>
-    <ya-button (click)="jumpToNow()" icon="my_location" />
+    <ya-button (click)="jumpToNow()" icon="my_location">Now</ya-button>
     <ya-button (click)="openJumpToDialog()" icon="directions">Jump to...</ya-button>
+    &nbsp;
+    <ya-button (click)="show3Hours()">3 hours</ya-button>
+    <ya-button (click)="show1Hour()">1 hour</ya-button>
+    <ya-button (click)="show10Minutes()">10 min</ya-button>
     &nbsp;
     <ya-button (click)="zoomIn()" icon="add" />
     <ya-button (click)="zoomOut()" icon="remove" />

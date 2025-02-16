@@ -5,6 +5,7 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Band, Banner, ItemBand as DefaultItemBand, Item, MouseTracker, TimeLocator, Timeline } from '@fqqb/timeline';
 import { ConfigService, Formatter, MessageService, Synchronizer, TimelineItem, TimelineView, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { addHours, addMinutes } from 'date-fns';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { AuthService } from '../../core/services/AuthService';
@@ -17,7 +18,7 @@ import { EditViewDialogComponent } from '../edit-view-dialog/edit-view-dialog.co
 import { ItemBand } from '../item-band/ItemBand';
 import { JumpToDialogComponent } from '../jump-to-dialog/jump-to-dialog.component';
 import { ParameterPlot } from '../parameter-plot/ParameterPlot';
-import { ParameterStates } from '../parameter-states/ParameterStates';
+import { ParameterStateBand } from '../parameter-states/ParameterStateBand';
 import { TimeRuler } from '../time-ruler/TimeRuler';
 
 interface DateRange {
@@ -121,11 +122,10 @@ export class TimelineChartComponent implements AfterViewInit, OnDestroy {
       const stop = utils.toDate(queryParams.get('stop'));
       this.timeline.setViewRange(start.getTime(), stop.getTime());
     } else {
-      // Show Today
-      const start = this.yamcs.getMissionTime();
-      start.setUTCHours(0, 0, 0, 0);
-      const stop = new Date(start.getTime());
-      stop.setUTCDate(start.getUTCDate() + 1);
+      // Show 1 hour
+      const midTime = this.yamcs.getMissionTime();
+      const start = addMinutes(midTime, -30);
+      const stop = addMinutes(midTime, 30);
       this.timeline.setViewRange(start.getTime(), stop.getTime());
     }
 
@@ -189,7 +189,7 @@ export class TimelineChartComponent implements AfterViewInit, OnDestroy {
           this.bands.push(band);
           this.installBandListeners(band);
         } else if (bandInfo.type === 'PARAMETER_STATES') {
-          const band = new ParameterStates(this, bandInfo, this.yamcs, this.messageService, this.formatter, this.overlay);
+          const band = new ParameterStateBand(this, bandInfo, this.yamcs, this.synchronizer, this.formatter, this.configService, this.overlay);
           this.bands.push(band);
           this.installBandListeners(band);
         }
@@ -247,7 +247,7 @@ export class TimelineChartComponent implements AfterViewInit, OnDestroy {
         }));
       } else if (band instanceof ParameterPlot) {
         band.refreshData();
-      } else if (band instanceof ParameterStates) {
+      } else if (band instanceof ParameterStateBand) {
         band.refreshData();
       }
     }
@@ -372,6 +372,27 @@ export class TimelineChartComponent implements AfterViewInit, OnDestroy {
 
   zoomOut() {
     this.timeline.zoomOut();
+  }
+
+  show3Hours() {
+    const midTime = this.timeline.start + (this.timeline.stop - this.timeline.start) / 2;
+    const start = addHours(midTime, -1.5);
+    const stop = addHours(midTime, 1.5);
+    this.timeline.setViewRange(start.getTime(), stop.getTime());
+  }
+
+  show1Hour() {
+    const midTime = this.timeline.start + (this.timeline.stop - this.timeline.start) / 2;
+    const start = addMinutes(midTime, -30);
+    const stop = addMinutes(midTime, 30);
+    this.timeline.setViewRange(start.getTime(), stop.getTime());
+  }
+
+  show10Minutes() {
+    const midTime = this.timeline.start + (this.timeline.stop - this.timeline.start) / 2;
+    const start = addMinutes(midTime, -5);
+    const stop = addMinutes(midTime, 5);
+    this.timeline.setViewRange(start.getTime(), stop.getTime());
   }
 
   jumpToToday() {

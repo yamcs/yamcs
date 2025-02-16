@@ -45,6 +45,8 @@ export class CreateParameterPlotComponent extends BaseComponent {
         maximum: [],
         zeroLineWidth: [propertyInfo.zeroLineWidth.defaultValue, [Validators.required]],
         zeroLineColor: [propertyInfo.zeroLineColor.defaultValue, [Validators.required]],
+        minimumFractionDigits: [propertyInfo.minimumFractionDigits.defaultValue, [Validators.required]],
+        maximumFractionDigits: [propertyInfo.maximumFractionDigits.defaultValue, [Validators.required]],
       }),
     });
     this.addTrace();

@@ -48,6 +48,8 @@ export class EditParameterPlotComponent implements AfterViewInit {
       maximum: [props.maximum, []],
       zeroLineColor: [props.zeroLineColor, [Validators.required]],
       zeroLineWidth: [props.zeroLineWidth, [Validators.required]],
+      minimumFractionDigits: [props.minimumFractionDigits, [Validators.required]],
+      maximumFractionDigits: [props.maximumFractionDigits, [Validators.required]],
     };
 
     const propertiesGroup = this.form.get('properties') as FormGroup;

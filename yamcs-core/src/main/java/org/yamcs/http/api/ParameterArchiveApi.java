@@ -18,6 +18,7 @@ import org.yamcs.http.api.AbstractPaginatedParameterRetrievalConsumer.PaginatedS
 import org.yamcs.http.api.Downsampler.Sample;
 import org.yamcs.http.api.ParameterRanger.Range;
 import org.yamcs.logging.Log;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.ParameterRetrievalOptions;
 import org.yamcs.parameter.ParameterRetrievalService;
@@ -56,7 +57,6 @@ import org.yamcs.utils.IntArray;
 import org.yamcs.utils.SortedIntArray;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
-import org.yamcs.mdb.Mdb;
 
 import com.google.protobuf.Empty;
 
@@ -359,10 +359,13 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         b.setCount(r.totalCount());
         b.setStart(TimeEncoding.toProtobufTimestamp(r.start));
         b.setStop(TimeEncoding.toProtobufTimestamp(r.stop));
+        var valueCount = 0;
         for (int i = 0; i < r.valueCount(); i++) {
             b.addEngValues(ValueUtility.toGbp(r.getValue(i)));
             b.addCounts(r.getCount(i));
+            valueCount += r.getCount(i);
         }
+        b.setOtherCount(r.totalCount() - valueCount);
 
         return b.build();
     }

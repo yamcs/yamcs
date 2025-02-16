@@ -3,7 +3,8 @@ import { Component, ElementRef, signal, ViewChild } from '@angular/core';
 import { Item } from '@fqqb/timeline';
 import { DateTimePipe, Formatter, SimpleTableDirective } from '@yamcs/webapp-sdk';
 import { LegendEntry } from '../LegendEntry';
-import { State } from '../ParameterStates';
+import { State } from '../State';
+import { StateLegend } from '../StateLegend';
 
 
 @Component({
@@ -31,7 +32,7 @@ export class ParameterStatesTooltipComponent {
   show(
     left: number,
     top: number,
-    legend: Map<string, string | CanvasPattern>,
+    legend: StateLegend,
     item?: Item,
   ) {
     let state: State | undefined = undefined;
@@ -44,7 +45,7 @@ export class ParameterStatesTooltipComponent {
     const richEntries: LegendEntry[] = [];
 
     let mostFrequentEntry: LegendEntry | undefined = undefined;
-    for (const [label, color] of legend) {
+    for (const [label, color] of legend.entries()) {
       if (label === '__OTHER') {
         const entry: LegendEntry = {
           label,

@@ -69,8 +69,8 @@ export interface Sample {
   minTime: string;
   max: number;
   maxTime: string;
-  firstTime: string;
-  lastTime: string;
+  firstTime?: string;
+  lastTime?: string;
   n: number;
 }
 
@@ -79,7 +79,7 @@ export interface Range {
   stop: string;
   engValues: Value[];
   counts: number[];
-  count: number;
+  otherCount: number;
 }
 
 export interface IssueCommandOptions {

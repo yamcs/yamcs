@@ -7,7 +7,7 @@ import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/insta
 import { CreateBandWizardStepComponent } from '../../create-band-wizard-step/create-band-wizard-step.component';
 import { removeUnsetProperties } from '../../shared/properties';
 import { ParameterStatesStylesComponent } from '../parameter-states-styles/parameter-states-styles.component';
-import { propertyInfo } from '../ParameterStates';
+import { propertyInfo } from '../ParameterStateBand';
 
 @Component({
   selector: 'app-create-parameter-states',

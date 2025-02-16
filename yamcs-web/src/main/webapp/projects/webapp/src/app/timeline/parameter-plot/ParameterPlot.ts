@@ -16,6 +16,8 @@ export const propertyInfo: PropertyInfoSet = {
   maximum: new NumberProperty(),
   zeroLineWidth: new NumberProperty(0),
   zeroLineColor: new ColorProperty('#ff0000'),
+  minimumFractionDigits: new NumberProperty(0),
+  maximumFractionDigits: new NumberProperty(2),
 };
 
 export function createTracePropertyInfo(index: number, color: string): PropertyInfoSet {
@@ -78,6 +80,13 @@ export class ParameterPlot extends LinePlot {
     this.zeroLineWidth = properties.zeroLineWidth ?? propertyInfo.zeroLineWidth.defaultValue;
     this.zeroLineColor = properties.zeroLineColor ?? propertyInfo.zeroLineColor.defaultValue;
 
+    const numberFormat = Intl.NumberFormat('en-US', {
+      minimumFractionDigits: properties.minimumFractionDigits ?? propertyInfo.minimumFractionDigits.defaultValue,
+      maximumFractionDigits: properties.maximumFractionDigits ?? propertyInfo.maximumFractionDigits.defaultValue,
+      useGrouping: false,
+    });
+    this.labelFormatter = value => numberFormat.format(value);
+
     const bodyRef = new ElementRef(document.body);
     const positionStrategy = overlay.position().flexibleConnectedTo(bodyRef)
       .withPositions([{
@@ -109,36 +118,35 @@ export class ParameterPlot extends LinePlot {
       const lines: Line[] = [];
       for (let i = 0; i < traces.length; i++) {
         const trace = traces[i];
-        const series = data.series.length ? data.series[i] : [];
-        const points = new Map<number, number | null>();
+        const series = data.length ? data[i] : [];
+        const pointsByTime = new Map<number, number | null>();
         const minMax = new Map<number, [number, number] | null>();
         for (let j = 0; j < series.length; j++) {
-          const sample = series[j];
-          if (sample.n === 0) {
-            const time = Date.parse(sample.time);
-            points.set(time, null);
-            minMax.set(time, null);
+          const point = series[j];
+          if (point.n === 0) {
+            pointsByTime.set(point.time, null);
+            minMax.set(point.time, null);
           } else {
             const prevIsGap = j === 0 || series[j - 1].n === 0;
             const nextIsGap = (j === series.length - 1) || (series[j + 1].n === 0);
 
             let time: number;
             if (prevIsGap && !nextIsGap) {
-              time = Date.parse(sample.firstTime);
+              time = point.firstTime;
             } else if (!prevIsGap && nextIsGap) {
-              time = Date.parse(sample.lastTime);
+              time = point.lastTime;
             } else {
-              time = Date.parse(sample.time);
+              time = point.time;
             }
 
-            points.set(time, sample.avg);
-            minMax.set(time, [sample.min, sample.max]);
+            pointsByTime.set(time, point.avg);
+            minMax.set(time, [point.min!, point.max!]);
           }
         }
         const hexOpacity = Math.floor(trace.minMaxOpacity * 255).toString(16);
         lines.push({
           visible: trace.visible,
-          points,
+          points: pointsByTime,
           pointRadius: 0,
           lohi: trace.minMax ? minMax : undefined,
           lineColor: trace.lineColor,
@@ -167,7 +175,7 @@ export class ParameterPlot extends LinePlot {
     }
 
     this.addMouseMoveListener(evt => {
-      this.tooltipInstance.show(evt.clientX, evt.clientY, new Date(evt.time), traces, evt.points);
+      this.tooltipInstance.show(evt.clientX, evt.clientY, new Date(evt.time), traces, evt.points, this.labelFormatter);
     });
     this.addMouseLeaveListener(evt => {
       this.tooltipInstance.hide();
@@ -175,11 +183,9 @@ export class ParameterPlot extends LinePlot {
   }
 
   refreshData() {
-    // Load beyond the edges (for pan purposes)
-    const viewportRange = 0; // this.timeline.stop - this.timeline.start;
-    const loadStart = this.timeline.start - viewportRange;
-    const loadStop = this.timeline.stop + viewportRange;
-    this.dataSource.updateWindow(new Date(loadStart), new Date(loadStop), [null, null]);
+    const loadStart = this.timeline.start;
+    const loadStop = this.timeline.stop;
+    this.dataSource.updateWindow(new Date(loadStart), new Date(loadStop));
   }
 
   override disconnectedCallback(): void {

@@ -33,6 +33,7 @@ export class ParameterPlotTooltipComponent {
     date: Date,
     traces: { [key: string]: any; }[],
     points: Array<LinePlotPoint | null>,
+    labelFormatter: (value: number) => string,
   ) {
     this.date.set(date);
 
@@ -40,10 +41,15 @@ export class ParameterPlotTooltipComponent {
 
     const legend: Legend[] = [];
     for (let i = 0; i < visibleTraces.length; i++) {
+      let value: string | null = null;
+      const point = points[i];
+      if (point && point.value !== null) {
+        value = labelFormatter(point.value);
+      }
       legend.push({
         color: visibleTraces[i].lineColor,
         label: visibleTraces[i].parameter,
-        value: points[i]?.value,
+        value: value,
       });
     }
     this.legend.set(legend);
