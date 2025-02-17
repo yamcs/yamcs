@@ -650,7 +650,6 @@ public class ParameterRetrievalService extends AbstractYamcsService {
         };
         processor.getParameterRequestManager().addRequest(params.keySet(), prmConsumer);
         processor.startAsync();
-        processor.startAsync();
         processor.awaitTerminated();
 
         return tc;
