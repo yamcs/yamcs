@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,7 +44,6 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         archiveClient = yamcsClient.createArchiveClient(yamcsInstance);
         parameterArchive = YamcsServer.getServer().getService(yamcsInstance, ParameterArchive.class);
         parameterArchive.resetCoverageEnd();
-        org.yamcs.tests.LoggingUtils.configureLogging(Level.FINE);
     }
 
     @Test
