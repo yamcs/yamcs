@@ -324,6 +324,11 @@ public class AuthHandler extends BodyHandler {
         if (result == null) {
             throw new UnauthorizedException("Invalid refresh token");
         } else {
+            var authenticationInfo = result.session.getAuthenticationInfo();
+            var valid = getSecurityStore().verifyValidity(authenticationInfo);
+            if (!valid) {
+                throw new UnauthorizedException("Identity became invalid");
+            }
             sendNewAccessToken(ctx, result.session.getAuthenticationInfo(), result.refreshToken);
         }
     }
