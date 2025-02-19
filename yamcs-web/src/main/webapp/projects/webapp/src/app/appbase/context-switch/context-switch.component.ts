@@ -10,7 +10,6 @@ import { ActivatedRoute, Params, Router } from '@angular/router';
  */
 
 @Component({
-  standalone: true,
   template: '',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

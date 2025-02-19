@@ -1,7 +1,6 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 
 @Component({
-  standalone: true,
   template: '<div #tt class="ya-tooltip"></div>',
   styleUrl: './timeline-tooltip.component.css',
 })

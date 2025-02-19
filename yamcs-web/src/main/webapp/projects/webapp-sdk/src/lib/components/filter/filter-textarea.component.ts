@@ -9,7 +9,6 @@ import { FilterErrorMark } from './FilterErrorMark';
 import { filter } from './lang-filter';
 
 @Component({
-  standalone: true,
   selector: 'ya-filter-textarea',
   templateUrl: './filter-textarea.component.html',
   styleUrl: './filter-textarea.component.css',

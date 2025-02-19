@@ -3,7 +3,6 @@ import { Value } from '../client';
 import { FormatValueOptions, Formatter } from '../services/formatter.service';
 
 @Pipe({
-  standalone: true,
   name: 'value',
 })
 export class ValuePipe implements PipeTransform {

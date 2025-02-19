@@ -4,7 +4,6 @@ import { ChangeDetectionStrategy, Component, HostBinding, ViewEncapsulation } fr
  * Applies styling to the attributed table host
  */
 @Component({
-  standalone: true,
   selector: 'table[yaSimpleTable]',
   template: '<ng-content />',
   styles: `

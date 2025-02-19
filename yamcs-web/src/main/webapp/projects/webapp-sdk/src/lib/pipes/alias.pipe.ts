@@ -9,7 +9,6 @@ interface HasAlias {
 }
 
 @Pipe({
-  standalone: true,
   name: 'alias',
 })
 export class AliasPipe implements PipeTransform {

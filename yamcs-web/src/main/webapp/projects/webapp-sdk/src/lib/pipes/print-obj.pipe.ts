@@ -1,7 +1,6 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
-  standalone: true,
   name: 'printObj',
 })
 export class PrintObjPipe implements PipeTransform {

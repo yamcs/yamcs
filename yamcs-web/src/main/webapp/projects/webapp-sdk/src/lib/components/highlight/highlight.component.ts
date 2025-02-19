@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, SecurityCo
 import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
-  standalone: true,
   selector: 'ya-highlight',
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './highlight.component.html',

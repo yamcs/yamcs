@@ -5,7 +5,6 @@ import { getExtension } from '../utils';
  * Outputs the extension of a filename.
  */
 @Pipe({
-  standalone: true,
   name: 'extension',
 })
 export class ExtensionPipe implements PipeTransform {

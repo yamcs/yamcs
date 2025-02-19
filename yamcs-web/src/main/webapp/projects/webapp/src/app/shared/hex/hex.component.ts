@@ -6,7 +6,6 @@ import { BehaviorSubject } from 'rxjs';
 import { HexModel, Line } from './model';
 
 @Component({
-  standalone: true,
   selector: 'app-hex',
   templateUrl: './hex.component.html',
   styleUrl: './hex.component.css',

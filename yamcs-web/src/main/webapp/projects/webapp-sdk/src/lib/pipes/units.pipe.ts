@@ -3,7 +3,6 @@ import { UnitInfo } from '../client';
 import { getUnits } from '../utils';
 
 @Pipe({
-  standalone: true,
   name: 'units',
 })
 export class UnitsPipe implements PipeTransform {

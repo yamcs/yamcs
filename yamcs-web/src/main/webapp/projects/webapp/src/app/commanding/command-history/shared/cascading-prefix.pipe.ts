@@ -8,7 +8,6 @@ const UPSTREAM_PATTERN = /yamcs<([^>]+)>_/g;
  * Converts something like 'yamcs<YUP2>_yamcs_<YUP1>_' to 'YUP1'
  */
 @Pipe({
-  standalone: true,
   name: 'cascadingPrefix',
 })
 export class CascadingPrefixPipe implements PipeTransform {

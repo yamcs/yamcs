@@ -2,7 +2,6 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { ColumnData, Value } from '@yamcs/webapp-sdk';
 
 @Pipe({
-  standalone: true,
   name: 'columnValue',
 })
 export class ColumnValuePipe implements PipeTransform {

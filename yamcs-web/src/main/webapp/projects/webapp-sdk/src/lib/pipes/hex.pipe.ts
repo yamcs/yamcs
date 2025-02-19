@@ -2,7 +2,6 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { Formatter } from '../services/formatter.service';
 
 @Pipe({
-  standalone: true,
   name: 'hex',
 })
 export class HexPipe implements PipeTransform {

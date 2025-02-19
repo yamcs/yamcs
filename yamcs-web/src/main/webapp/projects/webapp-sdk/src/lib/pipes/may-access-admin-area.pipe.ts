@@ -2,7 +2,6 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { User } from '../User';
 
 @Pipe({
-  standalone: true,
   name: 'mayAccessAdminArea',
 })
 export class MayAccessAdminAreaPipe implements PipeTransform {

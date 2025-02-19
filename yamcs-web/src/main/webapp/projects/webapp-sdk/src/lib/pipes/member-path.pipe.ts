@@ -6,7 +6,6 @@ import { getMemberPath } from '../utils';
  * Prints a qualified name of a specific parameter member entry
  */
 @Pipe({
-  standalone: true,
   name: 'memberPath',
 })
 export class MemberPathPipe implements PipeTransform {
