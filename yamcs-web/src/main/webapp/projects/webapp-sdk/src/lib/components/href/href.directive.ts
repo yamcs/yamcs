@@ -11,7 +11,6 @@ import { SdkBridge } from '../../services/sdk-bridge.service';
  * This implementation does not use ActivatedRoute.
  */
 @Directive({
-  standalone: true,
   selector: '[yaHref]',
 })
 export class YaHref implements OnChanges, OnDestroy {

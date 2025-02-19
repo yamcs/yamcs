@@ -4,7 +4,6 @@ import { AlarmRange, ParameterValue } from '@yamcs/webapp-sdk';
 const XMLNS = 'http://www.w3.org/2000/svg';
 
 @Component({
-  standalone: true,
   selector: 'app-severity-meter',
   template: `
     <svg #container

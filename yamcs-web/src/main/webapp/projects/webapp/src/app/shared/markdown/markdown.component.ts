@@ -3,7 +3,6 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { marked } from 'marked';
 
 @Component({
-  standalone: true,
   selector: 'app-markdown',
   templateUrl: './markdown.component.html',
   styleUrl: './markdown.component.css',

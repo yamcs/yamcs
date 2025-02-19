@@ -4,7 +4,6 @@ import { NamedObjectId, ParameterSubscription, Synchronizer, YamcsService, utils
 import { Subscription } from 'rxjs';
 
 @Component({
-  standalone: true,
   selector: 'app-live-expression',
   template: '{{ result() }}',
   changeDetection: ChangeDetectionStrategy.OnPush,

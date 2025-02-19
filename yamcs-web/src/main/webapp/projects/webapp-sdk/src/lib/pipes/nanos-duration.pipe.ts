@@ -2,7 +2,6 @@ import { Pipe, PipeTransform } from '@angular/core';
 import * as utils from '../utils';
 
 @Pipe({
-  standalone: true,
   name: 'nanosDuration',
 })
 export class NanosDurationPipe implements PipeTransform {

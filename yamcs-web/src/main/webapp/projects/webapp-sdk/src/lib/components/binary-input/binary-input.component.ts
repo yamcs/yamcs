@@ -3,7 +3,6 @@ import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormCont
 import { requireHex } from '../../validators';
 
 @Component({
-  standalone: true,
   selector: 'ya-binary-input',
   templateUrl: './binary-input.component.html',
   styleUrl: './binary-input.component.css',

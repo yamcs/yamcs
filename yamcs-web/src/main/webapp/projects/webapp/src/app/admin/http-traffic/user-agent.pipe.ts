@@ -10,7 +10,6 @@ import { Pipe, PipeTransform } from '@angular/core';
  * full User Agent.
  */
 @Pipe({
-  standalone: true,
   name: 'userAgent',
 })
 export class UserAgentPipe implements PipeTransform {

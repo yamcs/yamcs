@@ -4,7 +4,6 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { ActivityDefinition, MessageService, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
-  standalone: true,
   templateUrl: './start-manual-activity-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [

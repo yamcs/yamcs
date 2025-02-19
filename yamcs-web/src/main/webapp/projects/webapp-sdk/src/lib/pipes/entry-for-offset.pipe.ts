@@ -3,7 +3,6 @@ import { Member, Parameter } from '../client';
 import { getEntryForOffset } from '../utils';
 
 @Pipe({
-  standalone: true,
   name: 'entryForOffset',
 })
 export class EntryForOffsetPipe implements PipeTransform {

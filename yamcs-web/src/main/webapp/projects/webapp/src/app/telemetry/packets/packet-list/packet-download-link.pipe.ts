@@ -2,7 +2,6 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { Packet, YamcsService } from '@yamcs/webapp-sdk';
 
 @Pipe({
-  standalone: true,
   name: 'packetDownloadLink',
 })
 export class PacketDownloadLinkPipe implements PipeTransform {

@@ -2,7 +2,6 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { Instance } from '../client';
 
 @Pipe({
-  standalone: true,
   name: 'defaultProcessor',
 })
 export class DefaultProcessorPipe implements PipeTransform {

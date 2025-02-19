@@ -9,7 +9,6 @@ export interface Parent {
  * Outputs an array with parents of a path-like name
  */
 @Pipe({
-  standalone: true,
   name: 'parents',
 })
 export class ParentsPipe implements PipeTransform {

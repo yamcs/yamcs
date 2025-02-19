@@ -4,7 +4,6 @@ import { Pipe, PipeTransform } from '@angular/core';
  * Outputs the extension of a filename.
  */
 @Pipe({
-  standalone: true,
   name: 'acknowledgmentName',
 })
 export class AcknowledgmentNamePipe implements PipeTransform {

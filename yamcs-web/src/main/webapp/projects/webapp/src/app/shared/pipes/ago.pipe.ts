@@ -2,7 +2,6 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { YamcsService } from '@yamcs/webapp-sdk';
 
 @Pipe({
-  standalone: true,
   name: 'ago',
 })
 export class AgoPipe implements PipeTransform {

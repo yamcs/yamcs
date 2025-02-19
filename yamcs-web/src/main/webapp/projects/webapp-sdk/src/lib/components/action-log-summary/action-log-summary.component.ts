@@ -5,7 +5,6 @@ import { DomSanitizer } from '@angular/platform-browser';
  * Highlights action log entries.
  */
 @Component({
-  standalone: true,
   selector: './ya-action-log-summary',
   templateUrl: './action-log-summary.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

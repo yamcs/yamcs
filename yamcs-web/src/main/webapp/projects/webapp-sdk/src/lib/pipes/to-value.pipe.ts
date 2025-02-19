@@ -3,7 +3,6 @@ import { Value } from '../client';
 import * as utils from '../utils';
 
 @Pipe({
-  standalone: true,
   name: 'tovalue',
 })
 export class ToValuePipe implements PipeTransform {

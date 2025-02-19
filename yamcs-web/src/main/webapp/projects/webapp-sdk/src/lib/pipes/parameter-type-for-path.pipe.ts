@@ -3,7 +3,6 @@ import { Parameter, ParameterType } from '../client';
 import { getParameterTypeForPath } from '../utils';
 
 @Pipe({
-  standalone: true,
   name: 'parameterTypeForPath',
 })
 export class ParameterTypeForPathPipe implements PipeTransform {

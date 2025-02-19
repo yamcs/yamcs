@@ -3,7 +3,6 @@ import { Pipe, PipeTransform } from '@angular/core';
 const sizes = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
 
 @Pipe({
-  standalone: true,
   name: 'formatBytes',
 })
 export class FormatBytesPipe implements PipeTransform {

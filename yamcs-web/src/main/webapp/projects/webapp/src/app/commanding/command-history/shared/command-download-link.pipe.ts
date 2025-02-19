@@ -2,7 +2,6 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { CommandHistoryRecord, YamcsService } from '@yamcs/webapp-sdk';
 
 @Pipe({
-  standalone: true,
   name: 'commandDownloadLink',
 })
 export class CommandDownloadLinkPipe implements PipeTransform {

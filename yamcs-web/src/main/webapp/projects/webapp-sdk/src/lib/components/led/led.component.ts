@@ -6,7 +6,6 @@ export const OFF_COLOR = 'rgb(0,100,0)';
 export let SEQ = 0;
 
 @Component({
-  standalone: true,
   selector: 'ya-led',
   template: `
         <div #container [style.opacity]="fade ? 0.3 : 1"

@@ -8,7 +8,6 @@ import { Pipe, PipeTransform } from '@angular/core';
  * falsiness. (e.g. it will also render 0, or detect unset booleans)
  */
 @Pipe({
-  standalone: true,
   name: 'nvl',
 })
 export class NvlPipe implements PipeTransform {

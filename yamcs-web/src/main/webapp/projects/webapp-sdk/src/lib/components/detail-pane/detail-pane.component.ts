@@ -3,7 +3,6 @@ import { Subscription } from 'rxjs';
 import { BaseComponent } from '../../abc/BaseComponent';
 
 @Component({
-  standalone: true,
   selector: 'ya-detail-pane',
   templateUrl: './detail-pane.component.html',
   styleUrl: './detail-pane.component.css',
