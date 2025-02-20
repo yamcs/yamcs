@@ -1,3 +1,7 @@
+Version 5.11.2 released 20-Feb-2025
+- Yamcs web: added parameter plots and states in the timeline.
+- Minor tweaks and fixes.
+
 Version 5.11.1 released 13-Feb-2025
 - Added a streamUpdateFillPolicy to the parameter archive backfiller that allows to fine tune the automatic backfilling of the parameter archive. For example older parts of the archive can be excluded from automatic backfilling. 
 - Added some calls to allow enablign/disabling the automatic backfilling.
