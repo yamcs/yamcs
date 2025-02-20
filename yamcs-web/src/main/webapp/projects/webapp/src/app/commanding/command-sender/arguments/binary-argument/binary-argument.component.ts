@@ -60,7 +60,7 @@ export class BinaryArgumentComponent implements ControlValueAccessor, OnInit, Va
       this.controlName = String(this.index);
     }
 
-    if (this.type.minBytes !== 0) {
+    if (this.type.minBytes !== undefined && this.type.minBytes !== 0) {
       this.validators.push(Validators.required);
     }
     this.validators.push(validators.requireHex);
