@@ -23,7 +23,7 @@
   padding-left: 3px;
 }
 
-.item-icon.material-icons {
+.item-icon.material-symbols {
   font-size: 18px !important;
   height: 24px !important;
   width: 24px !important;
@@ -37,6 +37,7 @@
   overflow: hidden;
 }
 
-.mat-mdc-list-item:hover, .mat-mdc-list-item:focus {
+.mat-mdc-list-item:hover,
+.mat-mdc-list-item:focus {
   background-color: rgba(255, 255, 255, 0.1) !important;
 }

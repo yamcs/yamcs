@@ -48,14 +48,14 @@
   height: 20px;
 }
 
-.material-icons {
+.material-symbols {
   vertical-align: middle;
   font-size: 20px !important;
   height: 20px !important;
   width: 20px !important;
 }
 
-.material-icons:hover {
+.material-symbols:hover {
   background-color: rgba(0, 0, 0, 0.08);
   border-radius: 50%;
 }

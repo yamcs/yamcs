@@ -40,7 +40,7 @@ button.toggled {
   color: var(--y-accent);
 }
 
-button .material-icons {
+button .material-symbols {
   font-size: 14px;
   height: 14px;
   width: 14px;

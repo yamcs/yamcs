@@ -143,8 +143,8 @@ a.ya-link:hover {
   text-align: left;
 }
 
-.ya-data-table td.status .material-icons,
-.ya-data-table th.status .material-icons {
+.ya-data-table td.status .material-symbols,
+.ya-data-table th.status .material-symbols {
   vertical-align: middle;
 }
 

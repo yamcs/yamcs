@@ -13,7 +13,7 @@
   left: 0;
 }
 
-.icon .material-icons {
+.icon .material-symbols {
   color: darkgrey;
   padding: 4px;
 }
@@ -24,12 +24,12 @@
   right: 0;
 }
 
-.clear .material-icons {
+.clear .material-symbols {
   cursor: pointer;
   color: darkgrey;
   padding: 4px;
 }
 
-.clear:hover .material-icons {
+.clear:hover .material-symbols {
   color: black;
 }
