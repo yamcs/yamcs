@@ -3,6 +3,7 @@ import { bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter, withComponentInputBinding, withPreloading, withRouterConfig } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
 import { provideBaseHrefFromIndexHtml, provideConfigInitializer, provideSdkBridge, provideYamcsMaterialConfiguration } from '@yamcs/webapp-sdk';
+import { provideMaterialSymbols } from '../../webapp-sdk/src/public-api';
 import { CustomPreloadingStrategy } from './app/CustomPreloadingStrategy';
 import { AppComponent } from './app/app.component';
 import { APP_ROUTES } from './app/app.routes';
@@ -15,6 +16,7 @@ bootstrapApplication(AppComponent, {
     provideConfigInitializer(),
     provideSdkBridge(),
     provideExperimentalZonelessChangeDetection(),
+    provideMaterialSymbols(),
     provideRouter(APP_ROUTES,
       withComponentInputBinding(),
       withPreloading(CustomPreloadingStrategy),

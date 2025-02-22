@@ -2,6 +2,7 @@ import { FullscreenOverlayContainer, OverlayContainer } from '@angular/cdk/overl
 import { APP_BASE_HREF } from '@angular/common';
 import { EnvironmentProviders, inject, provideAppInitializer, provideExperimentalZonelessChangeDetection, Provider } from '@angular/core';
 import { DateAdapter } from '@angular/material/core';
+import { MatIconRegistry } from '@angular/material/icon';
 import { MAT_TOOLTIP_DEFAULT_OPTIONS, MAT_TOOLTIP_DEFAULT_OPTIONS_FACTORY, MatTooltipDefaultOptions } from '@angular/material/tooltip';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
@@ -57,6 +58,18 @@ export function provideConfigInitializer(): EnvironmentProviders[] {
   ];
 }
 
+/**
+ * Configures Angular Material to use Material Symbols font,
+ * mapped to material-symbols class.
+ */
+export function provideMaterialSymbols(): EnvironmentProviders[] {
+  return [
+    provideAppInitializer(() => {
+      inject(MatIconRegistry).setDefaultFontSetClass('material-symbols');
+    }),
+  ];
+}
+
 // Not intended for use in webcomponents
 export function provideSdkBridge(): EnvironmentProviders[] {
   return [
@@ -74,5 +87,6 @@ export function provideYamcsWebExtension(): (Provider | EnvironmentProviders)[] 
     provideYamcsMaterialConfiguration(),
     provideConfigInitializer(),
     provideExperimentalZonelessChangeDetection(),
+    provideMaterialSymbols(),
   ];
 }

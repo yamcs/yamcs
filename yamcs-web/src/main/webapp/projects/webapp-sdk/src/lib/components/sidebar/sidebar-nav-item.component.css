@@ -15,7 +15,7 @@ a.subitem.mat-mdc-list-item {
   padding-right: 16px;
 }
 
-::ng-deep .item-icon.material-icons {
+::ng-deep .item-icon.material-symbols {
   font-size: 18px !important;
   height: 24px !important;
   width: 24px !important;
@@ -27,7 +27,8 @@ a.subitem.mat-mdc-list-item {
   padding: 4px 0;
 }
 
-.mat-mdc-list-item:hover, .mat-mdc-list-item:focus {
+.mat-mdc-list-item:hover,
+.mat-mdc-list-item:focus {
   background-color: rgba(255, 255, 255, 0.1) !important;
 }
 

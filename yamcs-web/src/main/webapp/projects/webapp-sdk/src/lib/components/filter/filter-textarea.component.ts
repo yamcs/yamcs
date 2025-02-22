@@ -44,7 +44,7 @@ export class YaFilterTextarea implements ControlValueAccessor, AfterViewInit, On
       const errorMark = this.errorMark();
 
       // Remove any old effect, before adding a new one
-      this.editorView!.dispatch({
+      this.editorView?.dispatch({
         effects: this.removeUnderlineEffect.of(null),
       });
 

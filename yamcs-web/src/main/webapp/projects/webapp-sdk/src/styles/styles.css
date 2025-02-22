@@ -17,49 +17,49 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-.material-icons.icon12 {
+.material-symbols.icon12 {
   font-size: 12px !important;
   height: 12px !important;
   width: 12px !important;
 }
 
-.material-icons.icon14 {
+.material-symbols.icon14 {
   font-size: 14px !important;
   height: 14px !important;
   width: 14px !important;
 }
 
-.material-icons.icon16 {
+.material-symbols.icon16 {
   font-size: 16px !important;
   height: 16px !important;
   width: 16px !important;
 }
 
-.material-icons.icon18 {
+.material-symbols.icon18 {
   font-size: 18px !important;
   height: 18px !important;
   width: 18px !important;
 }
 
-.material-icons.icon24 {
+.material-symbols.icon24 {
   font-size: 24px !important;
   height: 24px !important;
   width: 24px !important;
 }
 
-.material-icons.icon32 {
+.material-symbols.icon32 {
   font-size: 32px !important;
   height: 32px !important;
   width: 32px !important;
 }
 
-.material-icons.icon36 {
+.material-symbols.icon36 {
   font-size: 36px !important;
   height: 36px !important;
   width: 36px !important;
 }
 
-.material-icons.icon48 {
+.material-symbols.icon48 {
   font-size: 48px !important;
   height: 48px !important;
   width: 48px !important;
@@ -115,8 +115,8 @@ dt {
   font-weight: bold;
 }
 
-.ya-link a .material-icons,
-a.ya-link .material-icons {
+.ya-link a .material-symbols,
+a.ya-link .material-symbols {
   text-decoration: none !important;
 }
 
@@ -137,7 +137,7 @@ a.ya-link.ya-header-link {
   font-size: 12px;
 }
 
-.ya-menu .mat-mdc-menu-item .material-icons {
+.ya-menu .mat-mdc-menu-item .material-symbols {
   font-size: 14px !important;
   height: 14px !important;
   width: 14px !important;
