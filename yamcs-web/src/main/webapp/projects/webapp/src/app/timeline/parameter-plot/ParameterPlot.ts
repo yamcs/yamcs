@@ -23,11 +23,11 @@ export const propertyInfo: PropertyInfoSet = {
 export function createTracePropertyInfo(index: number, color: string): PropertyInfoSet {
   const set: PropertyInfoSet = {};
   set[`trace_${index}_parameter`] = new TextProperty('');
-  set[`trace_${index}_lineColor`] = new TextProperty(color);
+  set[`trace_${index}_lineColor`] = new ColorProperty(color);
   set[`trace_${index}_visible`] = new BooleanProperty(true);
   set[`trace_${index}_lineWidth`] = new NumberProperty(1);
   set[`trace_${index}_fill`] = new BooleanProperty(false);
-  set[`trace_${index}_fillColor`] = new TextProperty('#dddddd');
+  set[`trace_${index}_fillColor`] = new ColorProperty('#dddddd');
   set[`trace_${index}_minMax`] = new BooleanProperty(false);
   set[`trace_${index}_minMaxOpacity`] = new NumberProperty(0.17);
   return set;
