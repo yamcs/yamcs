@@ -167,6 +167,8 @@ export class OpiDisplayViewerComponent implements Viewer, PVProvider, OnDestroy 
       sample.value = utils.convertValue(pval.engValue);
       if (pval.engValue.type === 'ENUMERATED') {
         sample.valueIndex = Number(pval.engValue.sint64Value);
+      } else if (pval.engValue.type === 'BINARY') {
+        sample.typeHint = 'BINARY_STRING';
       }
     }
     if (info.units) {
