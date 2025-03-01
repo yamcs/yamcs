@@ -1,9 +1,9 @@
 import { APP_BASE_HREF } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ElementRef, Inject, OnDestroy, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AlarmSeverity, Display, PV, PVProvider, Sample } from '@yamcs/opi';
+import { AlarmSeverity, colorFromCssColor, Display, PV, PVProvider, Sample } from '@yamcs/opi';
 import { Widget } from '@yamcs/opi/dist/types/Widget';
-import { ConfigService, Formatter, MessageService, NamedObjectId, ParameterSubscription, ParameterValue, StorageClient, SubscribedParameterInfo, Synchronizer, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
+import { ConfigService, Formatter, MessageService, NamedObjectId, ParameterSubscription, ParameterValue, StorageClient, SubscribedParameterInfo, Synchronizer, utils, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
 import { Viewer } from '../Viewer';
 import { OpiDisplayConsoleHandler } from './OpiDisplayConsoleHandler';
@@ -206,6 +206,12 @@ export class OpiDisplayViewerComponent implements Viewer, PVProvider, OnDestroy 
   public init(objectName: string) {
     const container: HTMLDivElement = this.displayContainer.nativeElement;
     this.display = new Display(container);
+
+    const opiConfig = this.configService.getConfig().opi;
+    this.display.disconnectedColor = colorFromCssColor(opiConfig.disconnectedColor);
+    this.display.invalidColor = colorFromCssColor(opiConfig.invalidColor);
+    this.display.majorColor = colorFromCssColor(opiConfig.majorColor);
+    this.display.minorColor = colorFromCssColor(opiConfig.minorColor);
     this.display.utc = this.formatter.isUTC();
     this.display.imagesPrefix = this.baseHref + 'media/';
     this.display.setPathResolver(new OpiDisplayPathResolver(this.storageClient, this.display));
@@ -291,7 +297,7 @@ export class OpiDisplayViewerComponent implements Viewer, PVProvider, OnDestroy 
       }
       this.frameInner.nativeElement.style.backgroundColor = backgroundColor;
 
-      this.syncSubscription = this.synchronizer.sync(() => this.updateSubscription());
+      this.syncSubscription = this.synchronizer.syncFast(() => this.updateSubscription());
       // Quick emit, don't wait on sync tick
       this.updateSubscription();
     });

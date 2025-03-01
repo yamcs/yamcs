@@ -33,7 +33,7 @@
     "@codemirror/state": "^6.5.2",
     "@fqqb/timeline": "^1.4.0",
     "@types/dygraphs": "^2.1.4",
-    "@yamcs/opi": "^1.2.9",
+    "@yamcs/opi": "^1.3.0",
     "codemirror": "^6.0.1",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.1.3",
