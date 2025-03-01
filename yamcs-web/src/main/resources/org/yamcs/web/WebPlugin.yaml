@@ -241,6 +241,38 @@ options:
               - rectime
               - seqNumber
 
+  opi:
+    title: OPI
+    description:
+      - Customize OPI display rendering.
+    type: MAP
+    applySpecDefaults: true
+    suboptions:
+      disconnectedColor:
+        title: Disconnected Color
+        description:
+          - CSS color string for the Disconnected color. Default is pink.
+        type: STRING
+        default: "#a020f0"
+      invalidColor:
+        title: Invalid Color
+        description:
+          - CSS color string for the Invalid color. Default is purple.
+        type: STRING
+        default: "#ff00ff"
+      majorColor:
+        title: Major Color
+        description:
+          - CSS color string for the Major color. Default is red.
+        type: STRING
+        default: "#ff0000"
+      minorColor:
+        title: Minor Color
+        description:
+          - CSS color string for the Minor color. Default is orange.
+        type: STRING
+        default: "#ff8000"
+
 #
 # Instance-specific Options
 #

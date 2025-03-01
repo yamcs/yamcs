@@ -20,6 +20,7 @@ export interface WebsiteConfig {
   disableLoginForm: boolean;
   logoutRedirectUrl: string;
   cookie: CookieConfig;
+  opi: OpiConfig;
   dass: boolean;
   tc: boolean;
   tmArchive: boolean;
@@ -35,6 +36,13 @@ export interface EventsConfig {
 export interface CookieConfig {
   secure: boolean;
   sameSite: string;
+}
+
+export interface OpiConfig {
+  disconnectedColor: string;
+  invalidColor: string;
+  majorColor: string;
+  minorColor: string;
 }
 
 export interface SiteLink {
