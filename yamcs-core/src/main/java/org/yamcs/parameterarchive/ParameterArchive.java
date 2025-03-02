@@ -152,8 +152,8 @@ public class ParameterArchive extends AbstractYamcsService {
         }
 
         partitioningSchema = ydb.getTimePartitioningSchema(config);
-
-        this.backFiller = new BackFiller(this, config.getConfigOrEmpty("backFiller"), !realtimeFillerEnabled);
+        this.backFillerConfig = config.getConfigOrEmpty("backFiller");
+        this.backFiller = new BackFiller(this, backFillerConfig, !realtimeFillerEnabled);
 
         sparseGroups = config.getBoolean("sparseGroups");
         minimumGroupOverlap = config.getDouble("minimumGroupOverlap");

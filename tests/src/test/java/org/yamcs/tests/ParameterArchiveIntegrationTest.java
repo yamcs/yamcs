@@ -536,6 +536,47 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         assertEquals(15.5, pv1.getEngValue().getAggregateValue().getValue(1).getFloatValue());
     }
 
+    @Test
+    public void testPurge() throws Exception {
+        generatePkt13AndPps("2025-03-02T07:29:00", 300);
+
+        // check no data from cache
+        Instant start = Instant.parse("2025-03-02T07:29:00Z");
+        Instant stop = Instant.parse("2025-03-02T07:30:40Z");
+
+        var values = listValues(start, stop, true, true);
+        assertEquals(0, values.size());
+
+        buildParameterArchive("2025-03-02T07:29:00Z", "2025-03-02T08:00:00Z");
+        // org.yamcs.tests.LoggingUtils.enableTracing();
+        var values1 = listValues(start, stop, true, true);
+        assertEquals(100, values1.size());
+
+        parameterArchive.purge();
+
+        var values2 = listValues(start, stop, true, true);
+        assertEquals(0, values2.size());
+
+        buildParameterArchive("2025-03-02T08:29:00", "2025-03-02T09:00:00");
+
+        var values3 = listValues(start, stop, true, true);
+        assertEquals(100, values3.size());
+
+    }
+
+    List<ParameterValue> listValues(Instant start, Instant stop, boolean noReplay, boolean noRealtime)
+            throws Exception {
+        Page<ParameterValue> page = archiveClient
+                .listValues("/REFMDB/SUBSYS1/FloatPara1_1_2", start, stop,
+                        ListOptions.noRealtime(noRealtime), ListOptions.noReplay(noReplay))
+                .get();
+
+        List<ParameterValue> values = new ArrayList<>();
+        page.iterator().forEachRemaining(values::add);
+
+        return values;
+    }
+
     private void buildParameterArchive(String start, String stop) throws InterruptedException, ExecutionException {
         Future<?> f = parameterArchive.reprocess(TimeEncoding.parse(start), TimeEncoding.parse(stop));
         f.get();
