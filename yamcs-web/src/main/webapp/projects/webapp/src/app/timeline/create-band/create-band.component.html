@@ -13,18 +13,25 @@
         <div class="card">
           <div class="card-title">Time ruler</div>
           <div class="card-content">Display absolute time, formatted in a timezone of choice.</div>
+          <div class="card-preview" #timeRuler></div>
         </div>
       </a>
       <a class="band-type" routerLink="item-band" [queryParams]="{ c: yamcs.context }">
         <div class="card">
           <div class="card-title">Item band</div>
           <div class="card-content">Show a selection of timeline items.</div>
+          <div class="card-preview" #itemBand></div>
         </div>
       </a>
       <a class="band-type" routerLink="spacer" [queryParams]="{ c: yamcs.context }">
         <div class="card">
           <div class="card-title">Spacer</div>
-          <div class="card-content">Insert empty vertical space.</div>
+          <div class="card-content">
+            Insert empty vertical space.
+            <br />
+            <br />
+          </div>
+          <div class="card-preview" #spacer></div>
         </div>
       </a>
     </div>
@@ -36,18 +43,25 @@
         <div class="card">
           <div class="card-title">Parameter plot</div>
           <div class="card-content">Plot the values of a numeric parameter.</div>
+          <div class="card-preview" #parameterPlot></div>
         </div>
       </a>
       <a class="band-type" routerLink="parameter-states" [queryParams]="{ c: yamcs.context }">
         <div class="card">
           <div class="card-title">Parameter states</div>
           <div class="card-content">Show state transitions of a parameter.</div>
+          <div class="card-preview" #parameterStates></div>
         </div>
       </a>
       <a class="band-type" routerLink="command-band" [queryParams]="{ c: yamcs.context }">
         <div class="card">
           <div class="card-title">Commands</div>
-          <div class="card-content">Display issued commands.</div>
+          <div class="card-content">
+            Display issued commands.
+            <br />
+            <br />
+          </div>
+          <div class="card-preview" #commandBand></div>
         </div>
       </a>
     </div>
