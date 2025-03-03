@@ -65,6 +65,7 @@ public class YarchReplay implements StreamSubscriber {
     volatile boolean sleeping;
     ReplayListener listener;
     volatile long replayTime;
+    final YarchDatabaseInstance ydb;
 
     public YarchReplay(ReplayServer replayServer, ReplayOptions rr, ReplayListener listener, Mdb mdb)
             throws YamcsException {
@@ -72,6 +73,7 @@ public class YarchReplay implements StreamSubscriber {
         this.replayServer = replayServer;
         this.mdb = mdb;
         this.instance = replayServer.getYamcsInstance();
+        ydb = YarchDatabase.getInstance(instance);
         setRequest(rr);
     }
 
@@ -104,13 +106,28 @@ public class YarchReplay implements StreamSubscriber {
             handlers.put(ProtoDataType.EVENT, new EventReplayHandler());
         }
         if (currentRequest.hasPacketRequest()) {
-            handlers.put(ProtoDataType.TM_PACKET, new XtceTmReplayHandler(mdb));
+            if (ydb.getTable(XtceTmRecorder.TABLE_NAME) == null) {
+                log.debug("TM packet replay is requested but the table {} is not available, skipping",
+                        XtceTmRecorder.TABLE_NAME);
+            } else {
+                handlers.put(ProtoDataType.TM_PACKET, new XtceTmReplayHandler(mdb));
+            }
         }
         if (currentRequest.hasPpRequest()) {
-            handlers.put(ProtoDataType.PP, new ParameterReplayHandler(mdb));
+            if (ydb.getTable(ParameterRecorder.TABLE_NAME) == null) {
+                log.debug("Parameter replay is requested but the  table {} is not available, skipping",
+                        ParameterRecorder.TABLE_NAME);
+            } else {
+                handlers.put(ProtoDataType.PP, new ParameterReplayHandler(mdb));
+            }
         }
         if (currentRequest.hasCommandHistoryRequest()) {
-            handlers.put(ProtoDataType.CMD_HISTORY, new CommandHistoryReplayHandler(instance, mdb));
+            if (ydb.getTable(CommandHistoryRecorder.TABLE_NAME) == null) {
+                log.debug("Command history replay is requested but the  table {} is not available, skipping",
+                        CommandHistoryRecorder.TABLE_NAME);
+            } else {
+                handlers.put(ProtoDataType.CMD_HISTORY, new CommandHistoryReplayHandler(instance, mdb));
+            }
         }
 
         for (ReplayHandler rh : handlers.values()) {
@@ -197,7 +214,6 @@ public class YarchReplay implements StreamSubscriber {
         String query = sb.toString();
         log.debug("running query {} with args {} ", query, args);
 
-        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         ydb.execute(query, args.toArray());
         Stream s = ydb.getStream(streamName);
 
