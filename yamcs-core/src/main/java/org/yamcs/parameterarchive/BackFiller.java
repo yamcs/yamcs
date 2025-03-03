@@ -86,7 +86,6 @@ public class BackFiller implements StreamSubscriber {
         executor = new ScheduledThreadPoolExecutor(1,
                 new ThreadFactoryBuilder().setNameFormat("ParameterArchive-BackFiller-" + parchive.getYamcsInstance())
                         .build());
-
     }
 
     public static Spec getSpec() {
@@ -171,6 +170,8 @@ public class BackFiller implements StreamSubscriber {
 
     private void parseConfig(YConfiguration config, boolean defaultAutomaticBackfilling) {
         this.warmupTime = 1000L * config.getInt("warmupTime", 60);
+        this.automaticBackfillingEnabled = config.getBoolean("automaticBackfilling",
+                defaultAutomaticBackfilling);
 
         this.compactFrequency = config.getInt("compactFrequency", -1);
 
@@ -272,6 +273,11 @@ public class BackFiller implements StreamSubscriber {
             }
         } catch (Exception e) {
             log.error("Error when running the archive filler task", e);
+        }
+        log.debug("After backilling filler lock count: {}", parchive.getFillerLock().lockCount());
+
+        if (log.isTraceEnabled()) {
+            log.trace("Filler locks: {}", parchive.getFillerLock().toString());
         }
     }
 
@@ -413,8 +419,6 @@ public class BackFiller implements StreamSubscriber {
         listeners.remove(listener);
     }
 
-
-
     static class StreamUpdate {
         long lastUpdate;
         long lastRebuild;
@@ -434,5 +438,4 @@ public class BackFiller implements StreamSubscriber {
                     dataAge / 3600000.0, fillFrequency / 1000.0, quietThreshold / 1000.0);
         }
     }
-
 }

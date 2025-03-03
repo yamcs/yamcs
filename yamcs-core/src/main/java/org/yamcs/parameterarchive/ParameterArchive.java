@@ -118,6 +118,8 @@ public class ParameterArchive extends AbstractYamcsService {
 
     AtomicLong coverageEnd = new AtomicLong(TimeEncoding.NEGATIVE_INFINITY);
 
+    final FillerLock fillerLock = new FillerLock();
+
     @Override
     public Spec getSpec() {
         Spec spec = new Spec();
@@ -546,15 +548,35 @@ public class ParameterArchive extends AbstractYamcsService {
         }
     }
 
+    /**
+     * Rebuild the parameter archive between start and stop. The times will be adjusted to build full intervals.
+     * <p>
+     * Both start and stop can be left unspecified (by setting them to {@link TimeEncoding#INVALID_INSTANT}) to start
+     * from the beginning and/or go to the end of the archive.
+     * <p>
+     * If the realtime parameter filler is enabled, the end will be set by default to the end of the previous interval
+     * compared to the interval of the current mission time.
+     */
     public Future<?> reprocess(long start, long stop) {
-        log.debug("Scheduling a reprocess for interval [{} - {}]", TimeEncoding.toString(start),
-                TimeEncoding.toString(stop));
         if (backFiller == null) {
             throw new ConfigurationException("backFilling is not enabled");
         }
+        if (start == TimeEncoding.INVALID_INSTANT) {
+            start = TimeEncoding.NEGATIVE_INFINITY;
+        }
+
+        if (stop == TimeEncoding.INVALID_INSTANT) {
+            if (realtimeFiller == null) {
+                stop = TimeEncoding.POSITIVE_INFINITY;
+            } else {
+                stop = ParameterArchive.getIntervalStart(timeService.getMissionTime()) - 1;
+            }
+        }
+        log.debug("Scheduling a reprocess for interval [{} - {}]",
+                start == TimeEncoding.INVALID_INSTANT ? "not_specified" : TimeEncoding.toString(start),
+                stop == TimeEncoding.INVALID_INSTANT ? "not_specified" : TimeEncoding.toString(stop));
         return backFiller.scheduleFillingTask(start, stop);
     }
-
 
     /**
      * a copy of the partitions from start to stop inclusive
@@ -795,53 +817,58 @@ public class ParameterArchive extends AbstractYamcsService {
         YRDB rdb = tablespace.getRdb(partition.partitionDir, false);
         var cfh = cfh(rdb, partition);
 
-        List<ParameterValueSegment> pvsList = new ArrayList<>();
-        for (int pid : pg.pids) {
+        try (var snapshot = rdb.getSnapshot();
+                ReadOptions opts = new ReadOptions()) {
+            opts.setSnapshot(snapshot);
+            List<ParameterValueSegment> pvsList = new ArrayList<>();
+            for (int pid : pg.pids) {
 
-            ValueSegment engValueSegment = null;
-            ValueSegment rawValueSegment = null;
-            ParameterStatusSegment parameterStatusSegment = null;
-            SortedIntArray gaps = null;
-            try {
-                var sk = new SegmentKey(pid, pg.id, intervalStart, SegmentKey.TYPE_ENG_VALUE);
-                byte[] key = partition.version == 0 ? sk.encodeV0() : sk.encode();
-                byte[] value = rdb.get(cfh, key);
+                ValueSegment engValueSegment = null;
+                ValueSegment rawValueSegment = null;
+                ParameterStatusSegment parameterStatusSegment = null;
+                SortedIntArray gaps = null;
+                try {
+                    var sk = new SegmentKey(pid, pg.id, intervalStart, SegmentKey.TYPE_ENG_VALUE);
+                    byte[] key = partition.version == 0 ? sk.encodeV0() : sk.encode();
+                    byte[] value = rdb.get(cfh, opts, key);
 
-                if (value != null) {
-                    engValueSegment = (ValueSegment) SegmentEncoderDecoder.decode(value, intervalStart);
+                    if (value != null) {
+                        engValueSegment = (ValueSegment) SegmentEncoderDecoder.decode(value, intervalStart);
+                    }
+
+                    sk = new SegmentKey(pid, pg.id, intervalStart, SegmentKey.TYPE_RAW_VALUE);
+                    key = partition.version == 0 ? sk.encodeV0() : sk.encode();
+                    value = rdb.get(cfh, opts, key);
+                    if (value != null) {
+                        rawValueSegment = (ValueSegment) SegmentEncoderDecoder.decode(value, intervalStart);
+                    }
+
+                    sk = new SegmentKey(pid, pg.id, intervalStart, SegmentKey.TYPE_PARAMETER_STATUS);
+                    key = partition.version == 0 ? sk.encodeV0() : sk.encode();
+                    value = rdb.get(cfh, opts, key);
+                    if (value != null) {
+                        parameterStatusSegment = (ParameterStatusSegment) SegmentEncoderDecoder.decode(value,
+                                intervalStart);
+                    }
+                    sk = new SegmentKey(pid, pg.id, intervalStart, SegmentKey.TYPE_GAPS);
+                    key = partition.version == 0 ? sk.encodeV0() : sk.encode();
+                    value = rdb.get(cfh, opts, key);
+                    if (value != null) {
+                        gaps = SegmentEncoderDecoder.decodeGaps(value);
+                    }
+
+                    ParameterValueSegment pvs = new ParameterValueSegment(pid, timeSegment, engValueSegment,
+                            rawValueSegment, parameterStatusSegment, gaps);
+                    pvsList.add(pvs);
+
+                } catch (DecodingException e) {
+                    throw new DatabaseCorruptionException(e);
                 }
 
-                sk = new SegmentKey(pid, pg.id, intervalStart, SegmentKey.TYPE_RAW_VALUE);
-                key = partition.version == 0 ? sk.encodeV0() : sk.encode();
-                value = rdb.get(cfh, key);
-                if (value != null) {
-                    rawValueSegment = (ValueSegment) SegmentEncoderDecoder.decode(value, intervalStart);
-                }
-
-                sk = new SegmentKey(pid, pg.id, intervalStart, SegmentKey.TYPE_PARAMETER_STATUS);
-                key = partition.version == 0 ? sk.encodeV0() : sk.encode();
-                value = rdb.get(cfh, key);
-                if (value != null) {
-                    parameterStatusSegment = (ParameterStatusSegment) SegmentEncoderDecoder.decode(value,
-                            intervalStart);
-                }
-                sk = new SegmentKey(pid, pg.id, intervalStart, SegmentKey.TYPE_GAPS);
-                key = partition.version == 0 ? sk.encodeV0() : sk.encode();
-                value = rdb.get(cfh, key);
-                if (value != null) {
-                    gaps = SegmentEncoderDecoder.decodeGaps(value);
-                }
-
-                ParameterValueSegment pvs = new ParameterValueSegment(pid, timeSegment, engValueSegment,
-                        rawValueSegment, parameterStatusSegment, gaps);
-                pvsList.add(pvs);
-
-            } catch (DecodingException e) {
-                throw new DatabaseCorruptionException(e);
             }
 
+            return new PGSegment(pg.id, timeSegment, pvsList);
         }
-        return new PGSegment(pg.id, timeSegment, pvsList);
     }
 
     Partition getPartitions(long instant) {
@@ -1043,6 +1070,10 @@ public class ParameterArchive extends AbstractYamcsService {
         return covEnd;
     }
 
+    public FillerLock getFillerLock() {
+        return fillerLock;
+    }
+
     public static class Partition extends TimeInterval {
         final String partitionDir;
         final private String cfName;
@@ -1075,4 +1106,5 @@ public class ParameterArchive extends AbstractYamcsService {
             return partitionDir;
         }
     }
+
 }

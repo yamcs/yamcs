@@ -69,15 +69,15 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(request.getInstance());
         ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
 
-        if (!request.hasStart()) {
-            throw new BadRequestException("no start specified");
-        }
-        if (!request.hasStop()) {
-            throw new BadRequestException("no stop specified");
-        }
+        long start = TimeEncoding.INVALID_INSTANT;
+        long stop = TimeEncoding.INVALID_INSTANT;
 
-        long start = TimeEncoding.fromProtobufTimestamp(request.getStart());
-        long stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
+        if (request.hasStart()) {
+            start = TimeEncoding.fromProtobufTimestamp(request.getStart());
+        }
+        if (request.hasStop()) {
+            stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
+        }
 
         ParameterArchive parchive = getParameterArchive(ysi);
         try {

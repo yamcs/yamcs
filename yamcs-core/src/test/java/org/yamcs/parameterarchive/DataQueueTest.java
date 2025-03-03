@@ -10,24 +10,33 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameterarchive.RealtimeArchiveFiller.SegmentQueue;
+import org.yamcs.parameterarchive.RealtimeArchiveFiller.DataQueue;
 import org.yamcs.utils.IntArray;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 
-public class SegmentQueueTest {
+import static org.yamcs.parameterarchive.RealtimeArchiveFiller.DataQueue.IntervalData.QSIZE;
+
+public class DataQueueTest {
 
     /** The size of an interval, in milliseconds. (2^23 seconds) */
     private static final long INTERVAL_SIZE_MILLIS = 8388608000L;
 
     Function<PGSegment, CompletableFuture<Void>> dbWriter = pgs -> CompletableFuture.completedFuture(null);
+    FillerLock fillerLock;
 
     @BeforeAll
     public static void beforeAll() {
         TimeEncoding.setUp();
+    }
+
+    @BeforeEach
+    public void beforeEach() {
+        fillerLock = new FillerLock();
     }
 
     @Test
@@ -36,7 +45,7 @@ public class SegmentQueueTest {
         List<BasicParameterValue> plist1 = getParaList(9);
         List<BasicParameterValue> plist2 = getParaList(10);
 
-        SegmentQueue sq = new SegmentQueue(1, 2, dbWriter, t -> null);
+        DataQueue sq = new DataQueue(1, 2, dbWriter, t -> null, fillerLock);
         sq.addRecord(10, new BasicParameterList(IntArray.wrap(1), plist2));
         sq.addRecord(9, new BasicParameterList(IntArray.wrap(1), plist1));
 
@@ -63,7 +72,7 @@ public class SegmentQueueTest {
         List<BasicParameterValue> plist1 = getParaList(t1);
         List<BasicParameterValue> plist2 = getParaList(t1 + 1);
 
-        SegmentQueue sq = new SegmentQueue(1, 2, dbWriter, t -> null);
+        DataQueue sq = new DataQueue(1, 2, dbWriter, t -> null, fillerLock);
         sq.addRecord(t1 + 1, new BasicParameterList(IntArray.wrap(1), plist2));
         sq.addRecord(t1, new BasicParameterList(IntArray.wrap(1), plist1));
 
@@ -87,8 +96,8 @@ public class SegmentQueueTest {
      */
     @Test
     public void testEmptyQueue() {
-        SegmentQueue sq = new SegmentQueue(1, 2, dbWriter, t -> null);
-        assertTrue(sq.isEmpty());
+        DataQueue sq = new DataQueue(1, 2, dbWriter, t -> null, fillerLock);
+        assertFalse(sq.hasDataToWrite());
         assertEquals(0, sq.getPVSegments(1, false).size());
         assertEquals(0, sq.getPVSegments(1, true).size());
     }
@@ -98,29 +107,33 @@ public class SegmentQueueTest {
      */
     @Test
     public void testQueueCapacity() {
-        SegmentQueue sq = new SegmentQueue(1, 2, dbWriter, t -> null);
+        DataQueue sq = new DataQueue(1, 2, dbWriter, t -> null, fillerLock);
 
-        // Add one value in each separate interval, until the cache has only one
+        // Add two values in each separate interval, until the cache has only one
         // slot free.
-        for (int i = 0; i < SegmentQueue.QSIZE - 1; ++i) {
-            List<BasicParameterValue> plist = getParaList(i * INTERVAL_SIZE_MILLIS);
-            assertTrue(sq.addRecord(i * INTERVAL_SIZE_MILLIS, new BasicParameterList(IntArray.wrap(1), plist)));
-            assertEquals(i + 1, sq.size());
+        for (int i = 0; i < QSIZE - 1; ++i) {
+            long t = 2 * i;
+            List<BasicParameterValue> plist0 = getParaList(t);
+            assertTrue(sq.addRecord(t, new BasicParameterList(IntArray.wrap(1), plist0)));
+
+            List<BasicParameterValue> plist1 = getParaList(t + 1);
+            assertTrue(sq.addRecord(t + 1, new BasicParameterList(IntArray.wrap(1), plist1)));
+
+            assertEquals(i + 1, sq.numReadSegments());
             assertEquals(i + 1, sq.getPVSegments(1, false).size());
             assertEquals(i + 1, sq.getPVSegments(1, true).size());
         }
 
         // Inserting another value in a new interval should fail, since then the queue would
         // be full, with <code>head==tail</code>, which looks the same as an empty queue.
-        assertEquals(sq.size(), SegmentQueue.QSIZE - 1);
-        List<BasicParameterValue> plist = getParaList(SegmentQueue.QSIZE * INTERVAL_SIZE_MILLIS);
-        assertFalse(sq.addRecord(SegmentQueue.QSIZE * INTERVAL_SIZE_MILLIS,
-                new BasicParameterList(IntArray.wrap(1), plist)));
-        assertFalse(sq.isEmpty());
+        assertEquals(sq.numReadSegments(), QSIZE - 1);
+        List<BasicParameterValue> plist = getParaList(QSIZE * INTERVAL_SIZE_MILLIS);
+        assertFalse(sq.addRecord(QSIZE * 2, new BasicParameterList(IntArray.wrap(1), plist)));
+        assertTrue(sq.hasDataToWrite());
 
         // We should be able to retrieve all segments in the queue.
-        assertEquals(SegmentQueue.QSIZE - 1, sq.getPVSegments(1, false).size());
-        assertEquals(SegmentQueue.QSIZE - 1, sq.getPVSegments(1, true).size());
+        assertEquals(QSIZE - 1, sq.getPVSegments(1, false).size());
+        assertEquals(QSIZE - 1, sq.getPVSegments(1, true).size());
     }
 
     private void testEquals(List<ParameterValueSegment> pvsegList, List<List<Long>> l) {

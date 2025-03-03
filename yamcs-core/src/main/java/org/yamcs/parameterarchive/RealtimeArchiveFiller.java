@@ -21,6 +21,7 @@ import org.yamcs.Processor;
 import org.yamcs.Spec;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.logging.Log;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.parameterarchive.ParameterGroupIdDb.ParameterGroup;
 import org.yamcs.utils.TimeEncoding;
@@ -50,7 +51,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
     Processor realtimeProcessor;
     int subscriptionId;
     ExecutorService executor;
-    Map<Integer, SegmentQueue> queues = new HashMap<>();
+    Map<Integer, DataQueue> queues = new HashMap<>();
     private YamcsServer yamcsServer;
 
     // Maximum time to wait for new data before flushing to archive
@@ -143,9 +144,9 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
     private void flushPeriodically() {
         long now = System.currentTimeMillis();
         for (var queueEntry : queues.entrySet()) {
-            SegmentQueue queue = queueEntry.getValue();
+            DataQueue queue = queueEntry.getValue();
             synchronized (queue) {
-                if (!queue.isEmpty() && now > queue.getLatestUpdateTime() + flushInterval * 1000L) {
+                if (queue.hasDataToWrite() && now > queue.getLatestUpdateTime() + flushInterval * 1000L) {
                     log.debug("Flush interval reached without new data for parameter group {}, flushing queue",
                             queueEntry.getKey());
                     queue.flush();
@@ -157,7 +158,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
     public void shutDown() throws InterruptedException {
         realtimeProcessor.getParameterRequestManager().unsubscribeAll(subscriptionId);
         log.info("Shutting down, writing all pending segments");
-        for (SegmentQueue queue : queues.values()) {
+        for (DataQueue queue : queues.values()) {
             queue.flush();
         }
         executor.shutdown();
@@ -176,12 +177,12 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
             return;
         }
 
-        SegmentQueue segQueue = queues.computeIfAbsent(pg.id,
-                id -> new SegmentQueue(pg.id, maxSegmentSize, pgs -> scheduleWriteToArchive(pgs),
-                        interval -> readPgSegment(pg, interval)));
+        DataQueue segQueue = queues.computeIfAbsent(pg.id,
+                id -> new DataQueue(pg.id, maxSegmentSize, pgs -> scheduleWriteToArchive(pgs),
+                        interval -> readPgSegment(pg, interval), parameterArchive.getFillerLock()));
 
         synchronized (segQueue) {
-            if (!segQueue.isEmpty()) {
+            if (segQueue.hasDataToWrite()) {
                 long segStart = segQueue.getStart();
                 if (t < segStart - pastJumpThreshold) {
                     log.warn(
@@ -199,9 +200,6 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
 
             if (segQueue.addRecord(t, pvList)) {
                 segQueue.sendToArchive(t - sortingThreshold);
-            } else {
-                log.warn("Realtime parameter archive queue full."
-                        + "Consider increasing the writerThreads (if CPUs are available) or using a back filler");
             }
         }
 
@@ -275,7 +273,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
      * @return
      */
     public List<ParameterValueSegment> getSegments(int parameterId, int parameterGroupId, boolean ascending) {
-        SegmentQueue queue = queues.get(parameterGroupId);
+        DataQueue queue = queues.get(parameterGroupId);
         if (queue == null) {
             return Collections.emptyList();
         }
@@ -284,7 +282,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
     }
 
     public List<MultiParameterValueSegment> getSegments(ParameterId[] pids, int parameterGroupId, boolean ascending) {
-        SegmentQueue queue = queues.get(parameterGroupId);
+        DataQueue queue = queues.get(parameterGroupId);
         if (queue == null) {
             return Collections.emptyList();
         }
@@ -312,17 +310,13 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
      * still added.
      *
      */
-    static class SegmentQueue {
-        static final int QSIZE = 16; // has to be a power of 2!
-        static final int MASK = QSIZE - 1;
-        final PGSegment[] segments = new PGSegment[QSIZE];
-        int head = 0;
-        int tail = 0;
-
+    static class DataQueue {
+        private static Log log = new Log(DataQueue.class);
         final int parameterGroupId;
-        final int maxSegmentSize;
 
-        private long latestUpdateTime;
+        // sorted list of intervals
+        List<IntervalData> intervals = new ArrayList<>();
+        final int maxSegmentSize;
 
         // this function is used to write to the archive
         // it returns a completable future which is completed when the data has been written.
@@ -331,106 +325,18 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
         // used to read an existing segment from the archive at startup or if after a period of inactivity the data has
         // been flushed
         final Function<Long, PGSegment> readFromArchiveFunction;
+        final FillerLock fillerLock;
 
-        // we use this to make sure that only one write is running for a given pg at a time
-        CompletableFuture<Void> lastWriteFuture = CompletableFuture.completedFuture(null);
+        private long latestUpdateTime;
 
-        public SegmentQueue(int parameterGroupId, int maxSegmentSize,
+        public DataQueue(int parameterGroupId, int maxSegmentSize,
                 Function<PGSegment, CompletableFuture<Void>> writeToArchiveFunction,
-                Function<Long, PGSegment> readFromArchiveFunction) {
+                Function<Long, PGSegment> readFromArchiveFunction, FillerLock fillerLocks) {
             this.parameterGroupId = parameterGroupId;
             this.maxSegmentSize = maxSegmentSize;
             this.writeToArchiveFunction = writeToArchiveFunction;
             this.readFromArchiveFunction = readFromArchiveFunction;
-        }
-
-        public long getStart() {
-            if (isEmpty()) {
-                throw new IllegalStateException("queue is empty");
-            }
-            return segments[head].getSegmentStart();
-        }
-
-        /**
-         * Add the record to the queue.
-         * <p>
-         * Given the queue state s1, s2, s3... sn, it is inserted into the sk such that the t is in the same interval as
-         * sk and either sk is not full, or t<sk.end.
-         * <p>
-         * If not such a segment exists, a new segment is created and inserted in the queue (if the queue is not full).
-         * <p>
-         * Returns true if the record has been added or false if the queue was full.
-         */
-        public synchronized boolean addRecord(long t, BasicParameterList pvList) {
-            latestUpdateTime = System.currentTimeMillis();
-
-            int k = head;
-            long tintv = getInterval(t);
-
-            if (isEmpty()) {
-                // we need to read the existing interval from the archive, we may need to add to it
-                // or in any case to continue it
-                PGSegment prevSeg = readFromArchiveFunction.apply(tintv);
-                if (prevSeg != null && t <= prevSeg.getSegmentEnd()) {
-                    // data fits into the previous segment
-                    prevSeg.makeWritable();
-                    prevSeg.addRecord(t, pvList);
-                    segments[tail] = prevSeg;
-                    tail = inc(tail);
-                    return true;
-                }
-                // else we make a new segment continuing the previous one (if it exists)
-                var pids = pvList.getPids();
-                PGSegment seg = new PGSegment(parameterGroupId, ParameterArchive.getInterval(t), pids.size());
-                seg.addRecord(t, pvList);
-                if (prevSeg != null) {
-                    prevSeg.freeze();
-                    seg.continueSegment(prevSeg);
-                }
-                segments[tail] = seg;
-                tail = inc(tail);
-                return true;
-            }
-
-            // SeqmentQueue not empty, look for a segment where to place the new data
-            for (; k != tail; k = inc(k)) {
-                PGSegment seg = segments[k];
-                long kintv = seg.getInterval();
-                if (kintv < tintv) {
-                    continue;
-                } else if (kintv > tintv) {
-                    break;
-                }
-
-                if (t <= seg.getSegmentEnd() || seg.size() < maxSegmentSize) {
-                    // when the first condition is met only (i.e. new data coming in the middle of a full segment)
-                    // the segment will become bigger than the maxSegmentSize
-                    seg.addRecord(t, pvList);
-                    return true;
-                }
-            }
-
-            // new segment to be added on position k
-            // If there is only one slot free, then the queue is already full.
-            // if segments[tail] is not null, it means it hasn't been written to the archive yet (async operation),
-            // we do not want to overwrite it because it won't be found in the retrieval
-            if (inc(tail) == head || segments[tail] != null) {
-                return false;
-            }
-
-            var pids = pvList.getPids();
-            PGSegment seg = new PGSegment(parameterGroupId, ParameterArchive.getInterval(t), pids.size());
-            seg.addRecord(t, pvList);
-            // shift everything between k and tail to the right
-            for (int i = k; i != tail; i = inc(i)) {
-                segments[inc(i)] = segments[i];
-            }
-            tail = inc(tail);
-
-            // insert on position k
-            segments[k] = seg;
-            return true;
-
+            this.fillerLock = fillerLocks;
         }
 
         /**
@@ -441,117 +347,86 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
          * the writing to archive has been completed and is used to null the entry in the queue. Before the entry is
          * null, the data can still be used in the retrieval.
          */
-        void sendToArchive(long t1) {
-            while (head != tail) {
-                PGSegment seg = segments[head];
+        public synchronized void sendToArchive(long t1) {
+            int firstNonEmpty = -1;
+            long t1int = getInterval(t1);
 
-                if (seg.getInterval() >= getInterval(t1)
-                        && (seg.size() < maxSegmentSize || seg.getSegmentEnd() >= t1)) {
+            for (int i = 0; i < intervals.size(); i++) {
+                var intv = intervals.get(i);
+                if (firstNonEmpty == -1 && intv.hasDataToRead()) {
+                    firstNonEmpty = i;
+                }
+                if (intv.hasDataToWrite()) {
+                    if (intv.interval < t1int) {
+                        intv.flush();
+                        fillerLock.unlock(intv.interval, parameterGroupId);
+                    } else if (intv.interval == t1int) {
+                        intv.sendToArchive(t1);
+                    } else {
+                        break;
+                    }
+                }
+
+            }
+            if (firstNonEmpty > 0) {
+                // we can discard all intervals before firstNonEmpty
+                for (int i = firstNonEmpty; i < intervals.size(); i++) {
+                    intervals.set(i - firstNonEmpty, intervals.get(i));
+                }
+                for (int i = 0; i < firstNonEmpty; i++) {
+                    intervals.remove(intervals.size() - 1);
+                }
+            }
+        }
+
+        public synchronized boolean addRecord(long t, BasicParameterList pvList) {
+            long interval = getInterval(t);
+            latestUpdateTime = System.currentTimeMillis();
+            int pos = 0;
+            boolean replace = false;
+
+            for (int i = intervals.size() - 1; i >= 0; i--) {
+                var intv = intervals.get(i);
+                if (intv.interval == interval) {
+                    if (!intv.hasDataToWrite()) {
+                        // all the segments of this interval have been flushed to the archive
+                        // replace it with a new interval
+                        pos = i;
+                        replace = true;
+                        break;
+                    } else {
+                        return intv.addRecord(t, pvList);
+                    }
+                } else if (intv.interval < interval) {
+                    // Since the list is sorted, no need to check earlier elements
+                    pos = i + 1;
                     break;
                 }
-                sendHeadToArchive();
-            }
-        }
-
-        synchronized void flush() {
-            while (head != tail) {
-                sendHeadToArchive();
-            }
-        }
-
-        // send the head to the archive and move the head towards the tail
-        private void sendHeadToArchive() {
-            PGSegment seg = segments[head];
-            seg.freeze();
-
-            int _head = head;
-            head = inc(head);
-            if (head != tail) {
-                var nextSeg = segments[head];
-                if (nextSeg.getInterval() == seg.getInterval()) {
-                    nextSeg.continueSegment(seg);
-                }
-            }
-            toArchive(_head);
-        }
-
-        private void toArchive(int idx) {
-            PGSegment seg = segments[idx];
-            lastWriteFuture = lastWriteFuture
-                    .thenCompose(v -> writeToArchiveFunction.apply(seg))
-                    .thenAccept(v -> segments[idx] = null);
-        }
-
-        public int size() {
-            return (tail - head) & MASK;
-        }
-
-        public boolean isEmpty() {
-            return head == tail;
-        }
-
-        /**
-         * Returns a list of segments for the pid.
-         * 
-         * <p>
-         * The ascending argument can be used to sort the segments in ascending or descending order. The values inside
-         * the segments will always be ascending (but one can iterate the segment in descending order).
-         * 
-         */
-        public synchronized List<ParameterValueSegment> getPVSegments(int pid, boolean ascending) {
-            if (isEmpty()) {
-                return Collections.emptyList();
             }
 
+            if (!fillerLock.try_lock(interval, parameterGroupId, this)) {
+                log.warn("Cannot lock interval {} for parameter group {}", TimeEncoding.toString(interval),
+                        parameterGroupId);
+                return false;
+            }
 
-            if (ascending) {
-                return getSegmentsAscending(pid);
+            var intv = new IntervalData(t, pvList);
+            if (replace) {
+                intervals.set(pos, intv);
             } else {
-                return getSegmentsDescending(pid);
+                intervals.add(pos, intv);
             }
+
+            return true;
         }
 
-        private List<ParameterValueSegment> getSegmentsAscending(int pid) {
-            List<ParameterValueSegment> r = new ArrayList<>();
-
-            int k = head;
-            while (k != tail && segments[dec(k)] != null) {
-                k = dec(k);
+        public synchronized long getStart() {
+            for (var intv : intervals) {
+                if (intv.hasDataToWrite()) {
+                    return intv.getStart();
+                }
             }
-
-            while (k != tail) {
-                PGSegment seg = segments[k];
-                if (seg == null) {
-                    continue;
-                }
-                ParameterValueSegment pvs = seg.getParameterValue(pid);
-                if (pvs != null) {
-                    r.add(pvs);
-                }
-                k = inc(k);
-            }
-
-            return r;
-        }
-
-        private List<ParameterValueSegment> getSegmentsDescending(int pid) {
-            List<ParameterValueSegment> r = new ArrayList<>();
-
-            int k = dec(tail);
-
-            while (true) {
-                PGSegment seg = segments[k];
-                if (seg == null) {
-                    break;
-                }
-                ParameterValueSegment pvs = seg.getParameterValue(pid);
-                if (pvs != null) {
-                    r.add(pvs);
-                }
-                k = dec(k);
-            }
-
-            return r;
+            throw new IllegalStateException("queue is empty");
         }
 
         /**
@@ -563,78 +438,342 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
          * 
          */
         public synchronized List<MultiParameterValueSegment> getPVSegments(ParameterId[] pids, boolean ascending) {
-            if (head == tail) {
-                return Collections.emptyList();
-            }
-
+            List<MultiParameterValueSegment> r = new ArrayList<>();
             if (ascending) {
-                return getSegmentsAscending(pids);
+                for (var intv : intervals) {
+                    intv.getSegmentsAscending(pids, r);
+                }
             } else {
-                return getSegmentsDescending(pids);
-            }
-        }
-
-        private List<MultiParameterValueSegment> getSegmentsAscending(ParameterId[] pids) {
-            List<MultiParameterValueSegment> r = new ArrayList<>();
-
-            int k = head;
-            while (k != tail && segments[dec(k)] != null) {
-                k = dec(k);
-            }
-
-            while (k != tail) {
-                PGSegment seg = segments[k];
-                if (seg == null) {
-                    continue;
+                for (int i = intervals.size() - 1; i >= 0; i--) {
+                    var intv = intervals.get(i);
+                    intv.getSegmentsDescending(pids, r);
                 }
-
-                MultiParameterValueSegment pvs = seg.getParametersValues(pids);
-                if (pvs != null) {
-                    r.add(pvs);
-                }
-                k = inc(k);
             }
-
-            return r;
-        }
-
-        private List<MultiParameterValueSegment> getSegmentsDescending(ParameterId[] pids) {
-            List<MultiParameterValueSegment> r = new ArrayList<>();
-
-            int k = dec(tail);
-
-            while (true) {
-                PGSegment seg = segments[k];
-                if (seg == null) {
-                    break;
-                }
-                MultiParameterValueSegment pvs = seg.getParametersValues(pids);
-                if (pvs != null) {
-                    r.add(pvs);
-                }
-                k = dec(k);
-            }
-
-            return r;
+            return null;
         }
 
         /**
-         * Circularly increment k
+         * Returns a list of segments for the pid.
+         * 
+         * <p>
+         * The ascending argument can be used to sort the segments in ascending or descending order. The values inside
+         * the segments will always be ascending (but one can iterate the segment in descending order).
+         * 
          */
-        static final int inc(int k) {
-            return (k + 1) & MASK;
+        public synchronized List<ParameterValueSegment> getPVSegments(int parameterId, boolean ascending) {
+            List<ParameterValueSegment> r = new ArrayList<>();
+            if (ascending) {
+                for (var intv : intervals) {
+                    intv.getSegmentsAscending(parameterId, r);
+                }
+            } else {
+                for (int i = intervals.size() - 1; i >= 0; i--) {
+                    var intv = intervals.get(i);
+                    intv.getSegmentsDescending(parameterId, r);
+                }
+
+            }
+            return r;
         }
 
-        /**
-         * Circularly decrement k
-         */
-        static final int dec(int k) {
-            return (k - 1) & MASK;
+        public void flush() {
+            for (var intv : intervals) {
+                intv.flush();
+            }
         }
 
         public long getLatestUpdateTime() {
             return latestUpdateTime;
         }
-    }
 
+        public synchronized boolean hasDataToRead() {
+            for (int i = intervals.size() - 1; i >= 0; i--) {
+                var intv = intervals.get(i);
+                if (intv.hasDataToRead()) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public synchronized boolean hasDataToWrite() {
+            for (int i = intervals.size() - 1; i >= 0; i--) {
+                var intv = intervals.get(i);
+                if (intv.hasDataToWrite()) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /**
+         * return the number of segments which can be read
+         */
+        public synchronized int numReadSegments() {
+            int r = 0;
+            for (var intv : intervals) {
+                r += intv.numReadSegments();
+            }
+            return r;
+        }
+
+        /**
+         * Queue of segments belonging to one interval
+         */
+        class IntervalData {
+            final long interval;
+            static final int QSIZE = 16; // has to be a power of 2!
+            static final int MASK = QSIZE - 1;
+            final PGSegment[] segments = new PGSegment[QSIZE];
+            int head = 0;
+            int tail = 0;
+
+            // we use this to make sure that only one write is running for a given pg at a time
+            CompletableFuture<Void> lastWriteFuture = CompletableFuture.completedFuture(null);
+
+            public IntervalData(long t, BasicParameterList pvList) {
+                this.interval = getInterval(t);
+                // we need to read the existing interval from the archive, we may need to add to it
+                // or in any case to continue it
+                PGSegment prevSeg = readFromArchiveFunction.apply(interval);
+                if (prevSeg != null && t <= prevSeg.getSegmentEnd()) {
+                    // data fits into the previous segment
+                    prevSeg.makeWritable();
+                    prevSeg.addRecord(t, pvList);
+                    segments[tail] = prevSeg;
+                    tail = inc(tail);
+                } else {
+                    // else we make a new segment continuing the previous one (if it exists)
+                    var pids = pvList.getPids();
+                    PGSegment seg = new PGSegment(parameterGroupId, ParameterArchive.getInterval(t), pids.size());
+                    seg.addRecord(t, pvList);
+                    if (prevSeg != null) {
+                        prevSeg.freeze();
+                        seg.continueSegment(prevSeg);
+                    }
+                    segments[tail] = seg;
+                    tail = inc(tail);
+                }
+            }
+
+            public long getStart() {
+                if (tail == head) {
+                    throw new IllegalStateException("interval is empty");
+                }
+                return segments[head].getSegmentStart();
+            }
+
+            /**
+             * Add the record to the queue.
+             * <p>
+             * Given the queue state s1, s2, s3... sn, it is inserted into the sk such that the t is in the same
+             * interval as sk and either sk is not full, or t < sk.end.
+             * <p>
+             * If not such a segment exists, a new segment is created and inserted in the queue (if the queue is not
+             * full).
+             * <p>
+             * Returns true if the record has been added or false if the queue was full or if the filler lock could not
+             * be obtained.
+             */
+            public boolean addRecord(long t, BasicParameterList pvList) {
+                int k = head;
+                for (; k != tail; k = inc(k)) {
+                    PGSegment seg = segments[k];
+
+                    if (t <= seg.getSegmentEnd() || seg.size() < maxSegmentSize) {
+                        // when the first condition is met only (i.e. new data coming in the middle of a full segment)
+                        // the segment will become bigger than the maxSegmentSize
+                        seg.addRecord(t, pvList);
+                        return true;
+                    }
+                }
+                // new segment to be added on position k
+                // If there is only one slot free, then the queue is already full.
+                // if segments[tail] is not null, it means it hasn't been written to the archive yet (async operation),
+                // we do not want to overwrite it because it won't be found in the retrieval
+                if (inc(tail) == head || segments[tail] != null) {
+                    log.warn("Realtime parameter archive queue for parameter group {} full."
+                            + "Consider increasing the writerThreads (if CPUs are available) or using a back filler",
+                            parameterGroupId);
+                    return false;
+                }
+
+                var pids = pvList.getPids();
+                PGSegment seg = new PGSegment(parameterGroupId, ParameterArchive.getInterval(t), pids.size());
+                seg.addRecord(t, pvList);
+                // shift everything between k and tail to the right
+                for (int i = k; i != tail; i = inc(i)) {
+                    segments[inc(i)] = segments[i];
+                }
+                tail = inc(tail);
+
+                // insert on position k
+                segments[k] = seg;
+                return true;
+
+            }
+
+            /**
+             * send to archive all segments which are full and their end is smaller than t1.
+             * <p>
+             * Writing to archive is an async operation, and the completable future returned by the function is called
+             * when the writing to archive has been completed and is used to null the entry in the queue. Before the
+             * entry is null, the data can still be used in the retrieval.
+             */
+            void sendToArchive(long t1) {
+                while (head != tail) {
+                    PGSegment seg = segments[head];
+
+                    if (seg.size() < maxSegmentSize || seg.getSegmentEnd() >= t1) {
+                        break;
+                    }
+                    sendHeadToArchive();
+                }
+            }
+
+            void flush() {
+                while (head != tail) {
+                    sendHeadToArchive();
+                }
+            }
+
+            // send the head to the archive and move the head towards the tail
+            private void sendHeadToArchive() {
+                PGSegment seg = segments[head];
+                seg.freeze();
+
+                int _head = head;
+                head = inc(head);
+                if (head != tail) {
+                    var nextSeg = segments[head];
+                    if (nextSeg.getInterval() == seg.getInterval()) {
+                        nextSeg.continueSegment(seg);
+                    }
+                }
+                toArchive(_head);
+            }
+
+            private void toArchive(int idx) {
+                PGSegment seg = segments[idx];
+                lastWriteFuture = lastWriteFuture
+                        .thenCompose(v -> writeToArchiveFunction.apply(seg))
+                        .thenAccept(v -> segments[idx] = null);
+            }
+
+            public int size() {
+                return (tail - head) & MASK;
+            }
+
+            private boolean hasDataToWrite() {
+                return head != tail;
+            }
+
+            private boolean hasDataToRead() {
+                for (var seg : segments) {
+                    if (seg != null) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            public int numReadSegments() {
+                int r = 0;
+                for (var seg : segments) {
+                    if (seg != null) {
+                        r++;
+                    }
+                }
+                return r;
+            }
+
+            private void getSegmentsAscending(int pid, List<ParameterValueSegment> r) {
+                int k = head;
+                while (k != tail && segments[dec(k)] != null) {
+                    k = dec(k);
+                }
+
+                while (k != tail) {
+                    PGSegment seg = segments[k];
+                    if (seg == null) {
+                        continue;
+                    }
+                    ParameterValueSegment pvs = seg.getParameterValue(pid);
+                    if (pvs != null) {
+                        r.add(pvs);
+                    }
+                    k = inc(k);
+                }
+
+            }
+
+            private void getSegmentsDescending(int pid, List<ParameterValueSegment> r) {
+                int k = dec(tail);
+
+                while (true) {
+                    PGSegment seg = segments[k];
+                    if (seg == null) {
+                        break;
+                    }
+                    ParameterValueSegment pvs = seg.getParameterValue(pid);
+                    if (pvs != null) {
+                        r.add(pvs);
+                    }
+                    k = dec(k);
+                }
+
+            }
+
+            private void getSegmentsAscending(ParameterId[] pids, List<MultiParameterValueSegment> r) {
+
+                int k = head;
+                while (k != tail && segments[dec(k)] != null) {
+                    k = dec(k);
+                }
+
+                while (k != tail) {
+                    PGSegment seg = segments[k];
+                    if (seg == null) {
+                        continue;
+                    }
+
+                    MultiParameterValueSegment pvs = seg.getParametersValues(pids);
+                    if (pvs != null) {
+                        r.add(pvs);
+                    }
+                    k = inc(k);
+                }
+            }
+
+            private void getSegmentsDescending(ParameterId[] pids, List<MultiParameterValueSegment> r) {
+                int k = dec(tail);
+
+                while (true) {
+                    PGSegment seg = segments[k];
+                    if (seg == null) {
+                        break;
+                    }
+                    MultiParameterValueSegment pvs = seg.getParametersValues(pids);
+                    if (pvs != null) {
+                        r.add(pvs);
+                    }
+                    k = dec(k);
+                }
+            }
+
+            /**
+             * Circularly increment k
+             */
+            static final int inc(int k) {
+                return (k + 1) & MASK;
+            }
+
+            /**
+             * Circularly decrement k
+             */
+            static final int dec(int k) {
+                return (k - 1) & MASK;
+            }
+        }
+    }
 }

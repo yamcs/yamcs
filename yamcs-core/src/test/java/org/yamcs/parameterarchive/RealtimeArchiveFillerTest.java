@@ -30,13 +30,13 @@ import org.yamcs.YamcsServer;
 import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameterarchive.RealtimeArchiveFiller.SegmentQueue;
-import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.IntArray;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yaml.snakeyaml.Yaml;
+
+import static org.yamcs.parameterarchive.RealtimeArchiveFiller.DataQueue.IntervalData.QSIZE;
 
 /**
  * Implements unit tests for {@link RealtimeArchiveFiller}.
@@ -80,6 +80,7 @@ public class RealtimeArchiveFillerTest {
         MockitoAnnotations.openMocks(this);
         when(processor.getParameterRequestManager()).thenReturn(parameterRequestManager);
         when(parameterArchive.getYamcsInstance()).thenReturn("realtime");
+        when(parameterArchive.getFillerLock()).thenReturn(new FillerLock());
         when(parameterArchive.getParameterIdDb()).thenReturn(parameterIdDb);
         when(parameterArchive.getParameterGroupIdDb()).thenReturn(parameterGroupIdDb);
         when(parameterGroupIdDb.getGroup(any(IntArray.class)))
@@ -256,12 +257,6 @@ public class RealtimeArchiveFillerTest {
      * Tests that when adding a new value, a prior segment that ends before the current time minus the sorting threshold
      * is archived.
      * 
-     * @throws InterruptedException
-     *             if the executor is interrupted while shutting down
-     * @throws IOException
-     *             if there is an error writing to the archive
-     * @throws RocksDBException
-     *             if there is an error writing to the database
      */
     @Test
     public void testFullIntervalOutsideSortingThresholdIsArchived()
@@ -396,7 +391,7 @@ public class RealtimeArchiveFillerTest {
         filler.start();
         filler.processParameters(getValues(10, "/myproject/value"));
 
-        for (int i = 0; i < SegmentQueue.QSIZE - 1; ++i) {
+        for (int i = 0; i < QSIZE - 1; ++i) {
             // Add two values to fill a segment.
             List<ParameterValue> values = getValues(2 * i, "/myproject/value");
             filler.processParameters(values);
@@ -406,7 +401,7 @@ public class RealtimeArchiveFillerTest {
 
         // The queue should now be full. Adding another value should fail.
         // assertEquals(SegmentQueue.QSIZE - 1, filler.getSegments(0, 0, false).size());
-        List<ParameterValue> values = getValues(2 * SegmentQueue.QSIZE, "/myproject/value");
+        List<ParameterValue> values = getValues(2 * QSIZE, "/myproject/value");
         filler.processParameters(values);
         // assertEquals(SegmentQueue.QSIZE - 1, filler.getSegments(0, 0, false).size());
 

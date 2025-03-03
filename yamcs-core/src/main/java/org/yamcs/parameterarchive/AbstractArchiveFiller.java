@@ -11,12 +11,11 @@ import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
+import org.yamcs.utils.TimeEncoding;
 
 /**
  * Archive filler that creates segments of max size .
  * 
- * @author nm
- *
  */
 abstract class AbstractArchiveFiller implements ParameterConsumer {
     final ParameterArchive parameterArchive;
@@ -30,7 +29,8 @@ abstract class AbstractArchiveFiller implements ParameterConsumer {
 
     // ignore any data older than this
     // when doing backfilling, there is a warming up interval - the replay is started with older data
-    protected long collectionStart;
+    // for the realtime filler this is not used and left to default
+    protected long collectionStart = TimeEncoding.NEGATIVE_INFINITY;
 
     protected int maxSegmentSize;
     boolean aborted = false;
