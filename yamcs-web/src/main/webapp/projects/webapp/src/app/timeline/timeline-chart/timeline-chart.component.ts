@@ -1,5 +1,5 @@
 import { Overlay } from '@angular/cdk/overlay';
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -195,6 +195,21 @@ export class TimelineChartComponent implements AfterViewInit, OnDestroy {
         }
       }
       this.refreshData();
+    }
+  }
+
+  /**
+   * Some band types (plot in particular) may stop updating
+   * if the tab is inactive for a while, as part of a kind
+   * of energy saving mode.
+   *
+   * When the tab becomes active again, make sure to undo
+   * any weird visual artifacts coming from this.
+   */
+  @HostListener('document:visibilitychange', ['$event'])
+  onVisibilityChange() {
+    if (!document.hidden) {
+      this.refreshView();
     }
   }
 
