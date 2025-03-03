@@ -36,6 +36,12 @@ a.band-type {
   color: rgba(0, 0, 0, .54);
 }
 
+.card-preview {
+  height: 30px;
+  line-height: 0;
+  pointer-events: none;
+}
+
 a.band-type:hover .card {
   background-color: #f2f2f2;
 }
