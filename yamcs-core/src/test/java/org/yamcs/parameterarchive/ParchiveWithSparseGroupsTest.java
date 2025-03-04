@@ -5,10 +5,15 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.yamcs.parameterarchive.TestUtils.checkEquals;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Random;
+import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -17,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import org.yamcs.YamcsServer;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
+import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.IntArray;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
@@ -25,6 +31,7 @@ import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 public class ParchiveWithSparseGroupsTest extends BaseParchiveTest {
 
     static Parameter p1, p2, p3, p4, p5, a1;
+    static Random random = new Random();
 
     @BeforeAll
     public static void beforeClass() {
@@ -45,7 +52,7 @@ public class ParchiveWithSparseGroupsTest extends BaseParchiveTest {
 
         timeService = new MockupTimeService();
         YamcsServer.setMockupTimeService(timeService);
-        // org.yamcs.LoggingUtils.enableLogging();
+        // org.yamcs.LoggingUtils.enableTracing();
     }
 
     @BeforeEach
@@ -127,7 +134,6 @@ public class ParchiveWithSparseGroupsTest extends BaseParchiveTest {
         ParameterValue pv2_2 = getParameterValue(p2, t3, "pv2_2");
         pgSegment4.addRecord(t3, IntArray.wrap(p1id, p2id), Arrays.asList(pv1_4, pv2_2));
         parchive.writeToArchive(pgSegment4);
-
 
         // p1 ascending on 5 values from three segments (fourth one is empty)
         List<ParameterValueArray> l3a = retrieveSingleValueMultigroup(0, TimeEncoding.MAX_INSTANT, p1id,
@@ -470,6 +476,75 @@ public class ParchiveWithSparseGroupsTest extends BaseParchiveTest {
     }
 
     @Test
+    public void testRandomized() throws Exception {
+        openDb("none", true, 0);
+
+        BackFillerTask task = new BackFillerTask(parchive);
+        task.maxSegmentSize = 2;
+        int maxNumParams = 30;
+        List<Parameter> params = new ArrayList<>(maxNumParams);
+        for (int i = 0; i < maxNumParams; i++) {
+            var p = new Parameter("p" + i);
+            p.setQualifiedName("/randomized_test/" + p.getName());
+            params.add(p);
+            // add parameters to the parameter id db in order to make sure they get increasing numbers
+            parchive.getParameterIdDb().createAndGet(p.getQualifiedName(), Type.STRING);
+        }
+        /*     var sl = List.of(a(0), a(0, 0), a(0, 1), a(0, 0), a(0, 1), a(0, 0), a(0, 0), a(0, 0), a(1), a(1, 1), a(0, 1),
+                a(1, 0), a(1), a(0), a(1), a(0), a(1), a(0), a(0), a(0));
+        testRandomOne(task, params, sl, 0);
+          */
+        long t0 = 0;
+        for (int numParams = 2; numParams < maxNumParams; numParams++) {
+            for (int i = 0; i < 100; i++) {
+                var setList = generateSetList(numParams, 100);
+                try {
+                    testRandomOne(task, params, setList, t0);
+                } catch (Throwable e) {
+                    fail(toString(setList), e);
+                }
+                t0 = ParameterArchive.getIntervalEnd(t0) + 1;
+            }
+        }
+    }
+
+    public void testRandomOne(BackFillerTask task, List<Parameter> params, List<IntArray> setList, long t0)
+            throws Exception {
+        List<ParameterValue[]> expectedValueList = new ArrayList<>();
+
+        for (int k = 0; k < setList.size(); k++) {
+            var set = setList.get(k);
+            List<ParameterValue> values = new ArrayList<>();
+            for (int pid : set) {
+                Parameter param = params.get(pid);
+                ParameterValue pv = getParameterValue(param, t0 + k, "pv" + pid + "_" + k);
+                values.add(pv);
+
+            }
+            task.processParameters(values);
+            var sortedValues = IntStream.range(0, values.size())
+                    .boxed()
+                    .sorted(Comparator.comparing(set::get))
+                    .map(values::get)
+                    .toArray(ParameterValue[]::new);
+            // the parameter archive returns values in the order of their parameter ids
+            expectedValueList.add(sortedValues);
+        }
+        task.flush();
+        var paramIds = params.stream()
+                .map(p -> parchive.getParameterIdDb().get(p.getQualifiedName())[0].getPid())
+                .mapToInt(Integer::intValue)
+                .toArray();
+        List<ParameterIdValueList> l = retrieveMultipleParameters(t0,
+                TimeEncoding.POSITIVE_INFINITY,
+                paramIds, null, true);
+
+        for (int k = 0; k < expectedValueList.size(); k++) {
+            checkEquals(l.get(k), t0 + k, expectedValueList.get(k));
+        }
+    }
+
+    @Test
     public void test4() throws Exception {
         openDb("none", true, 0);
 
@@ -538,7 +613,6 @@ public class ParchiveWithSparseGroupsTest extends BaseParchiveTest {
 
         assertEquals(pg1.id, pg2.id);
 
-
         PGSegment pgSegment1 = new PGSegment(pg1.id, 0);
         pgSegment1.addRecord(100, IntArray.wrap(p1id, p2id), Arrays.asList(pv1_0, pv2_0));
         parchive.writeToArchive(0, Arrays.asList(pgSegment1));
@@ -559,5 +633,49 @@ public class ParchiveWithSparseGroupsTest extends BaseParchiveTest {
                 new int[] { pg1.id }, true);
         assertEquals(1, l3a.size());
 
+    }
+
+    public static List<IntArray> generateSetList(int maxSetSize, int listLength) {
+        List<IntArray> list = new ArrayList<>();
+
+        for (int j = 0; j < listLength; j++) {
+            IntArray set = new IntArray();
+            int setSize = 1 + random.nextInt(maxSetSize);
+            while (set.size() < setSize) {
+                set.add(random.nextInt(maxSetSize));
+            }
+            list.add(set);
+        }
+        return list;
+    }
+
+    String toString(List<IntArray> setList) {
+        StringBuilder sb = new StringBuilder("List.of(");
+        boolean first0 = true;
+        for (var set : setList) {
+            if (first0) {
+                first0 = false;
+            } else {
+                sb.append(", ");
+            }
+            sb.append("a(");
+            boolean first1 = true;
+            for (var i : set) {
+                if (first1) {
+                    first1 = false;
+                } else {
+                    sb.append(", ");
+                }
+                sb.append(i);
+            }
+            sb.append(")");
+
+        }
+        sb.append("); ");
+        return sb.toString();
+    }
+
+    IntArray a(int... a) {
+        return IntArray.wrap(a);
     }
 }
