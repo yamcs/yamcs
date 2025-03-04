@@ -666,18 +666,28 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         TimelineItemType type = request.getType();
         org.yamcs.timeline.TimelineItem item;
 
-        UUID newId = UUID.randomUUID();
+        UUID id;
+        if (request.hasId()) {
+            try {
+                id = UUID.fromString(request.getId());
+            } catch (IllegalArgumentException e) {
+                throw new BadRequestException("Provided ID is not a valid UUID");
+            }
+        } else {
+            id = UUID.randomUUID();
+        }
+
         switch (type) {
         case EVENT:
-            TimelineEvent event = new TimelineEvent(newId.toString());
+            TimelineEvent event = new TimelineEvent(id.toString());
             item = event;
             break;
         case ITEM_GROUP:
-            ItemGroup itemGroup = new ItemGroup(newId);
+            ItemGroup itemGroup = new ItemGroup(id);
             item = itemGroup;
             break;
         case ACTIVITY:
-            var activity = new TimelineActivity(newId);
+            var activity = new TimelineActivity(id);
             item = activity;
             if (request.hasActivityDefinition()) { // If missing, it's a 'manual' activity
                 var defInfo = request.getActivityDefinition();
@@ -688,7 +698,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
             }
             break;
         case ACTIVITY_GROUP:
-            ActivityGroup activityGroup = new ActivityGroup(newId);
+            ActivityGroup activityGroup = new ActivityGroup(id);
             item = activityGroup;
             break;
         default:
@@ -736,7 +746,18 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
     }
 
     private org.yamcs.timeline.TimelineBand req2Band(AddBandRequest request, String user) {
-        var band = new org.yamcs.timeline.TimelineBand(UUID.randomUUID());
+        UUID id;
+        if (request.hasId()) {
+            try {
+                id = UUID.fromString(request.getId());
+            } catch (IllegalArgumentException e) {
+                throw new BadRequestException("Provided ID is not a valid UUID");
+            }
+        } else {
+            id = UUID.randomUUID();
+        }
+
+        var band = new org.yamcs.timeline.TimelineBand(id);
 
         if (!request.hasType()) {
             throw new BadRequestException("Type is mandatory");
@@ -768,7 +789,18 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
                 .map(id -> UUID.fromString(id))
                 .collect(Collectors.toList());
 
-        var view = new org.yamcs.timeline.TimelineView(UUID.randomUUID());
+        UUID id;
+        if (request.hasId()) {
+            try {
+                id = UUID.fromString(request.getId());
+            } catch (IllegalArgumentException e) {
+                throw new BadRequestException("Provided ID is not a valid UUID");
+            }
+        } else {
+            id = UUID.randomUUID();
+        }
+
+        var view = new org.yamcs.timeline.TimelineView(id);
         view.setName(request.getName());
         if (view.toProtobuf().hasDescription()) {
             view.setDescription(request.getDescription());
