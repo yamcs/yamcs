@@ -154,7 +154,6 @@ public class PGSegment {
             }
             idx2++;
         }
-
     }
 
     public void consolidate() {
@@ -219,8 +218,11 @@ public class PGSegment {
                 currentFullGaps.add(pid1);
                 idx1++;
             } else if (pid1 > pid2) {
-                // pid2 not part of the previous segment
-                previousFullGaps.add(pid2);
+                // if pid2 was part of the prevSegment.currentFullGaps, we have to remove it from
+                // this segment currentFullGaps
+                if (!currentFullGaps.remove(pid2)) {
+                    previousFullGaps.add(pid2);
+                } // else pid2 was part of the prevSegment.currentFullGaps so it cannot be part of this segment
                 idx2++;
             } else {
                 // happy case, parameter exists both in the segments and in the new data
@@ -242,7 +244,6 @@ public class PGSegment {
             if (!currentFullGaps.remove(pid2)) {
                 previousFullGaps.add(pid2);
             } // else pid2 was part of the prevSegment.currentFullGaps so it cannot be part of this segment
-              // previousFullGaps as it contains parameter that never appeared in the group
             idx2++;
         }
     }
