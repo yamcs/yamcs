@@ -331,7 +331,14 @@ message CreateItemRequest {
   
   // Item source
   optional string source = 2;
-  
+
+  // Optional item identifier.
+  //
+  // If not set, an ID will be assigned by the server.
+  //
+  // If set, it should be a valid UUID.
+  optional string id = 13;
+
   // Item name
   optional string name = 3;
   
@@ -547,6 +554,13 @@ message AddBandRequest {
   // Yamcs instance name
   optional string instance = 1;
 
+  // Optional band identifier.
+  //
+  // If not set, an ID will be assigned by the server.
+  //
+  // If set, it should be a valid UUID.
+  optional string id = 10;
+
   // Band name
   optional string name = 2;
 
@@ -630,6 +644,13 @@ message ListBandsResponse {
 message AddViewRequest {
   // Yamcs instance name
   optional string instance = 1;
+
+  // Optional view identifier.
+  //
+  // If not set, an ID will be assigned by the server.
+  //
+  // If set, it should be a valid UUID.
+  optional string id = 5;
 
   // View name
   optional string name = 2;
