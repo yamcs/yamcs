@@ -214,7 +214,9 @@ public class ReplicationFile implements Closeable {
             if (hdr2.lastPageNumTx == hdr1.pageSize) {
                 hdr2.numFullPages++;
                 hdr2.lastPageNumTx = 0;
-                hdr2.writeIndex(hdr2.numFullPages, buf.position());
+                if (!readOnly) {
+                    hdr2.writeIndex(hdr2.numFullPages, buf.position());
+                } // else this method is called from recover when reading an old file which cannot be modified
             }
         }
 
