@@ -209,7 +209,6 @@ public class PGSegment {
         } else {
             currentFullGaps = prevSegment.currentFullGaps.clone();
         }
-
         previousFullGaps = new IntHashSet();
         while (idx1 < pvl1.size() && idx2 < pvl2.size()) {
             var pid1 = pvl1.get(idx1).pid;
@@ -236,10 +235,14 @@ public class PGSegment {
 
             idx1++;
         }
-
         while (idx2 < pvl2.size()) {
             var pid2 = pvl2.get(idx2).pid;
-            previousFullGaps.add(pid2);
+            // if pid2 was part of the prevSegment.currentFullGaps, we have to remove it from
+            // this segment currentFullGaps
+            if (!currentFullGaps.remove(pid2)) {
+                previousFullGaps.add(pid2);
+            } // else pid2 was part of the prevSegment.currentFullGaps so it cannot be part of this segment
+              // previousFullGaps as it contains parameter that never appeared in the group
             idx2++;
         }
     }
@@ -337,7 +340,8 @@ public class PGSegment {
 
     public String toString() {
         return "PGsegment[groupId: " + parameterGroupId + ", [" + TimeEncoding.toString(getSegmentStart()) + ", "
-                + TimeEncoding.toString(getSegmentEnd()) + "], size: " + size()
+                + TimeEncoding.toString(getSegmentEnd()) + "], num of rows: " + size()
+                + ", num of params: " + pvSegments.size()
                 + ", segmentIdxInsideInterval: " + segmentIdxInsideInterval
                 + ", previousFullGaps: " + previousFullGaps
                 + ", currentFullGaps: " + currentFullGaps

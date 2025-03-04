@@ -409,6 +409,70 @@ public class ParchiveWithSparseGroupsTest extends BaseParchiveTest {
     }
 
     @Test
+    public void test3bis() throws Exception {
+        openDb("none", true, 1);
+
+        BackFillerTask task = new BackFillerTask(parchive);
+        task.maxSegmentSize = 2;
+
+        // segment 0 - p1 and partially p2
+        ParameterValue pv1_1 = getParameterValue(p1, 100, "pv1_1");
+        ParameterValue pv1_2 = getParameterValue(p1, 200, "pv1_2");
+        ParameterValue pv2_2 = getParameterValue(p2, 200, "pv2_2");
+        task.processParameters(Arrays.asList(pv1_1));
+        task.processParameters(Arrays.asList(pv1_2, pv2_2));
+
+        // segment 1 - both p1 and p2
+        ParameterValue pv1_3 = getParameterValue(p1, 300, "pv1_3");
+        ParameterValue pv2_3 = getParameterValue(p2, 300, "pv2_3");
+        ParameterValue pv1_4 = getParameterValue(p1, 400, "pv1_4");
+        ParameterValue pv2_4 = getParameterValue(p2, 400, "pv2_4");
+        task.processParameters(Arrays.asList(pv1_3, pv2_3));
+        task.processParameters(Arrays.asList(pv1_4, pv2_4));
+
+        // segment 2 - only p1
+        ParameterValue pv1_5 = getParameterValue(p1, 500, "pv1_5");
+        ParameterValue pv1_6 = getParameterValue(p1, 600, "pv1_6");
+        task.processParameters(Arrays.asList(pv1_5));
+        task.processParameters(Arrays.asList(pv1_6));
+
+        // segment 3 - only p1
+        ParameterValue pv1_7 = getParameterValue(p1, 700, "pv1_7");
+        ParameterValue pv1_8 = getParameterValue(p1, 800, "pv1_8");
+        task.processParameters(Arrays.asList(pv1_7));
+        task.processParameters(Arrays.asList(pv1_8));
+
+        // segment 4 - both p1 and p2
+        ParameterValue pv1_9 = getParameterValue(p1, 900, "pv1_9");
+        ParameterValue pv2_9 = getParameterValue(p2, 900, "pv2_9");
+        ParameterValue pv1_10 = getParameterValue(p1, 1000, "pv1_10");
+        ParameterValue pv2_10 = getParameterValue(p2, 1000, "pv2_10");
+        task.processParameters(Arrays.asList(pv1_9, pv2_9));
+        task.processParameters(Arrays.asList(pv1_10, pv2_10));
+
+        task.flush();
+        var p1id = parchive.getParameterIdDb().get(p1.getQualifiedName())[0].getPid();
+        var p2id = parchive.getParameterIdDb().get(p2.getQualifiedName())[0].getPid();
+        var pgid = parchive.getParameterGroupIdDb().getGroup(IntArray.wrap(p1id, p2id)).id;
+
+        List<ParameterIdValueList> l = retrieveMultipleParameters(0,
+                TimeEncoding.POSITIVE_INFINITY,
+                new int[] { p1id, p2id }, new int[] { pgid, pgid }, true);
+        // assertEquals(14, l.size());
+
+        checkEquals(l.get(0), 100, pv1_1);
+        checkEquals(l.get(1), 200, pv1_2, pv2_2);
+        checkEquals(l.get(2), 300, pv1_3, pv2_3);
+        checkEquals(l.get(3), 400, pv1_4, pv2_4);
+        checkEquals(l.get(4), 500, pv1_5);
+        checkEquals(l.get(5), 600, pv1_6);
+        checkEquals(l.get(6), 700, pv1_7);
+        checkEquals(l.get(7), 800, pv1_8);
+        checkEquals(l.get(8), 900, pv1_9, pv2_9);
+        checkEquals(l.get(9), 1000, pv1_10, pv2_10);
+    }
+
+    @Test
     public void test4() throws Exception {
         openDb("none", true, 0);
 
