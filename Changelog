@@ -1,3 +1,6 @@
+Version 5.11.4 released 04-Mar-2025
+- Fixed parameter archive corruption bug
+
 Version 5.11.3 released 02-Mar-2025
 - Fixed the parameter archive purge operation broken by the 5.11.1 release
 
