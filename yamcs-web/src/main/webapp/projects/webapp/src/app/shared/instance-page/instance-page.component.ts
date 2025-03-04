@@ -129,7 +129,8 @@ export class InstancePageComponent implements OnInit, OnDestroy {
     if (this.config.tc && this.user.hasObjectPrivilege('ReadBucket', stackBucket)) {
       this.proceduresItems.push({ path: 'stacks', label: 'Stacks' });
     }
-    if (this.user.hasSystemPrivilege('ControlActivities')) {
+    if (this.user.hasSystemPrivilege('ControlActivities') &&
+      (yamcs.connectionInfo$.value?.instance.capabilities ?? []).indexOf('activities') !== -1) {
       this.proceduresItems.push({ path: 'script', label: 'Run a script' });
     }
     for (const item of extensionService.getExtraNavItems('procedures')) {
