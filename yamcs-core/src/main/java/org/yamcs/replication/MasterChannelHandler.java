@@ -137,6 +137,9 @@ public class MasterChannelHandler extends ChannelInboundHandlerAdapter {
     }
 
     void goToNextFile() {
+        if (!channelHandlerContext.channel().isActive()) {
+            return;
+        }
         log.trace("Looking for a new file for transaction {}", nextTxToSend);
         currentFile = replMaster.getFile(nextTxToSend);
         if (currentFile == null) {
