@@ -1,3 +1,6 @@
+Version 5.11.6 released 05-Mar-2025
+- Fixed another parameter archive corruption bug triggered when the realtime filler is used
+
 Version 5.11.5 released 04-Mar-2025
 - Fixed parameter archive corruption bug
 - Fixed two issues in the replication service
