@@ -822,15 +822,26 @@ public class ParameterArchive extends AbstractYamcsService {
             opts.setSnapshot(snapshot);
             List<ParameterValueSegment> pvsList = new ArrayList<>();
             for (int pid : pg.pids) {
-
                 ValueSegment engValueSegment = null;
                 ValueSegment rawValueSegment = null;
                 ParameterStatusSegment parameterStatusSegment = null;
                 SortedIntArray gaps = null;
                 try {
-                    var sk = new SegmentKey(pid, pg.id, intervalStart, SegmentKey.TYPE_ENG_VALUE);
+
+                    var sk = new SegmentKey(pid, pg.id, intervalStart, SegmentKey.TYPE_PARAMETER_STATUS);
                     byte[] key = partition.version == 0 ? sk.encodeV0() : sk.encode();
                     byte[] value = rdb.get(cfh, opts, key);
+                    if (value == null) {
+                        // parameter status is mandatory so if it does not exist it means this parameter is not part of
+                        // the interval
+                        continue;
+                    }
+                    parameterStatusSegment = (ParameterStatusSegment) SegmentEncoderDecoder.decode(value,
+                            intervalStart);
+
+                    sk = new SegmentKey(pid, pg.id, intervalStart, SegmentKey.TYPE_ENG_VALUE);
+                    key = partition.version == 0 ? sk.encodeV0() : sk.encode();
+                    value = rdb.get(cfh, opts, key);
 
                     if (value != null) {
                         engValueSegment = (ValueSegment) SegmentEncoderDecoder.decode(value, intervalStart);
@@ -843,13 +854,6 @@ public class ParameterArchive extends AbstractYamcsService {
                         rawValueSegment = (ValueSegment) SegmentEncoderDecoder.decode(value, intervalStart);
                     }
 
-                    sk = new SegmentKey(pid, pg.id, intervalStart, SegmentKey.TYPE_PARAMETER_STATUS);
-                    key = partition.version == 0 ? sk.encodeV0() : sk.encode();
-                    value = rdb.get(cfh, opts, key);
-                    if (value != null) {
-                        parameterStatusSegment = (ParameterStatusSegment) SegmentEncoderDecoder.decode(value,
-                                intervalStart);
-                    }
                     sk = new SegmentKey(pid, pg.id, intervalStart, SegmentKey.TYPE_GAPS);
                     key = partition.version == 0 ? sk.encodeV0() : sk.encode();
                     value = rdb.get(cfh, opts, key);

@@ -368,6 +368,10 @@ public abstract class AbstractIntegrationTest {
         public String getName() {
             return name;
         }
+
+        public void inject(long generationTime, List<ParameterValue> pvList) {
+            ppListener.updateParameters(generationTime, "test", 0, pvList);
+        }
     }
 
     public static class TcDataLink extends AbstractTcDataLink {

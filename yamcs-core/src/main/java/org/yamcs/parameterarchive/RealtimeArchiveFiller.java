@@ -536,6 +536,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
                 // we need to read the existing interval from the archive, we may need to add to it
                 // or in any case to continue it
                 PGSegment prevSeg = readFromArchiveFunction.apply(interval);
+                log.trace("Read from archive prevSeg {}", prevSeg);
                 if (prevSeg != null && t <= prevSeg.getSegmentEnd()) {
                     // data fits into the previous segment
                     prevSeg.makeWritable();
