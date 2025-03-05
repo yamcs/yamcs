@@ -749,9 +749,10 @@ public class ParameterArchive extends AbstractYamcsService {
                 byte[] key = partition.version == 0 ? sk.encodeV0() : sk.encode();
                 byte[] value = rdb.get(cfh, key);
 
-                if (value != null) {
-                    engValueSegment = (ValueSegment) SegmentEncoderDecoder.decode(value, intervalStart);
+                if (value == null) {
+                    continue;
                 }
+                engValueSegment = (ValueSegment) SegmentEncoderDecoder.decode(value, intervalStart);
 
                 sk = new SegmentKey(pid, pg.id, intervalStart, SegmentKey.TYPE_RAW_VALUE);
                 key = partition.version == 0 ? sk.encodeV0() : sk.encode();
