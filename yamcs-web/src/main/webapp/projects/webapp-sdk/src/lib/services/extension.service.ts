@@ -19,7 +19,12 @@ export class ExtensionService {
   private extraNavItems = new Map<NavGroup, NavItem[]>();
 
   getExtraNavItems(group: NavGroup) {
-    return this.extraNavItems.get(group) || [];
+    const navItems = [...this.extraNavItems.get(group) || []];
+    navItems.sort((a, b) => {
+      const rc = (a.order || 0) - (b.order || 0);
+      return rc !== 0 ? rc : (a.label.localeCompare(b.label));
+    });
+    return navItems;
   }
 
   addNavItem(group: NavGroup, item: NavItem) {
