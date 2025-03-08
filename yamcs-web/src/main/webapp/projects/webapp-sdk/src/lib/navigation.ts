@@ -7,4 +7,11 @@ export interface NavItem {
   label: string;
   icon?: string;
   condition?: (user: User) => boolean;
+
+  /**
+   * Optional hint to order items in sidebar. Defaults to 0.
+   *
+   * Only used for extension paths.
+   */
+  order?: number;
 }
