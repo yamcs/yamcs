@@ -751,28 +751,6 @@ public class ParameterArchive extends AbstractYamcsService {
         return new RdbIteratorWithOptions(it, opts);
     }
 
-    public SortedTimeSegment getTimeSegment(Partition p, long segmentStart, int parameterGroupId)
-            throws RocksDBException, IOException {
-
-        var sk = new SegmentKey(parameterIdDb.timeParameterId, parameterGroupId, segmentStart,
-                SegmentKey.TYPE_ENG_VALUE);
-        byte[] timeKey = p.version == 0 ? sk.encodeV0() : sk.encode();
-        YRDB rdb = tablespace.getRdb(p.partitionDir, false);
-
-        var cfh = cfh(rdb, p);
-
-        byte[] tv = rdb.get(cfh, timeKey);
-
-        if (tv == null) {
-            return null;
-        }
-        try {
-            return (SortedTimeSegment) SegmentEncoderDecoder.decode(tv, segmentStart);
-        } catch (DecodingException e) {
-            throw new DatabaseCorruptionException(e);
-        }
-    }
-
     public SortedTimeSegment getTimeSegment(Partition p, long segmentStart, int parameterGroupId, ReadOptions opts)
             throws RocksDBException, IOException {
 
@@ -808,71 +786,68 @@ public class ParameterArchive extends AbstractYamcsService {
         if (partition.version == 0) {
             return null;
         }
-
-        var timeSegment = getTimeSegment(partition, intervalStart, pg.id);
-
-        if (timeSegment == null) {
-            return null;
-        }
         YRDB rdb = tablespace.getRdb(partition.partitionDir, false);
         var cfh = cfh(rdb, partition);
 
         try (var snapshot = rdb.getSnapshot();
                 ReadOptions opts = new ReadOptions()) {
             opts.setSnapshot(snapshot);
+
+            byte[] timeKey = SegmentKey.encode(parameterIdDb.timeParameterId, pg.id, intervalStart,
+                    SegmentKey.TYPE_ENG_VALUE);
+            byte[] tv = rdb.get(cfh, opts, timeKey);
+
+            if (tv == null) {
+                return null;
+            }
+            var timeSegment = (SortedTimeSegment) SegmentEncoderDecoder.decode(tv, intervalStart);
+
             List<ParameterValueSegment> pvsList = new ArrayList<>();
             for (int pid : pg.pids) {
                 ValueSegment engValueSegment = null;
                 ValueSegment rawValueSegment = null;
                 ParameterStatusSegment parameterStatusSegment = null;
                 SortedIntArray gaps = null;
-                try {
 
-                    var sk = new SegmentKey(pid, pg.id, intervalStart, SegmentKey.TYPE_PARAMETER_STATUS);
-                    byte[] key = partition.version == 0 ? sk.encodeV0() : sk.encode();
-                    byte[] value = rdb.get(cfh, opts, key);
-                    if (value == null) {
-                        // parameter status is mandatory so if it does not exist it means this parameter is not part of
-                        // the interval
-                        continue;
-                    }
-                    parameterStatusSegment = (ParameterStatusSegment) SegmentEncoderDecoder.decode(value,
-                            intervalStart);
+                byte[] key = SegmentKey.encode(pid, pg.id, intervalStart, SegmentKey.TYPE_PARAMETER_STATUS);
+                byte[] value = rdb.get(cfh, opts, key);
+                if (value == null) {
+                    // parameter status is mandatory so if it does not exist it means this parameter is not part of
+                    // the interval
+                    continue;
+                }
+                parameterStatusSegment = (ParameterStatusSegment) SegmentEncoderDecoder.decode(value,
+                        intervalStart);
 
-                    sk = new SegmentKey(pid, pg.id, intervalStart, SegmentKey.TYPE_ENG_VALUE);
-                    key = partition.version == 0 ? sk.encodeV0() : sk.encode();
-                    value = rdb.get(cfh, opts, key);
+                key = SegmentKey.encode(pid, pg.id, intervalStart, SegmentKey.TYPE_ENG_VALUE);
+                value = rdb.get(cfh, opts, key);
 
-                    if (value != null) {
-                        engValueSegment = (ValueSegment) SegmentEncoderDecoder.decode(value, intervalStart);
-                    }
-
-                    sk = new SegmentKey(pid, pg.id, intervalStart, SegmentKey.TYPE_RAW_VALUE);
-                    key = partition.version == 0 ? sk.encodeV0() : sk.encode();
-                    value = rdb.get(cfh, opts, key);
-                    if (value != null) {
-                        rawValueSegment = (ValueSegment) SegmentEncoderDecoder.decode(value, intervalStart);
-                    }
-
-                    sk = new SegmentKey(pid, pg.id, intervalStart, SegmentKey.TYPE_GAPS);
-                    key = partition.version == 0 ? sk.encodeV0() : sk.encode();
-                    value = rdb.get(cfh, opts, key);
-                    if (value != null) {
-                        gaps = SegmentEncoderDecoder.decodeGaps(value);
-                    }
-
-                    ParameterValueSegment pvs = new ParameterValueSegment(pid, timeSegment, engValueSegment,
-                            rawValueSegment, parameterStatusSegment, gaps);
-                    pvsList.add(pvs);
-
-                } catch (DecodingException e) {
-                    throw new DatabaseCorruptionException(e);
+                if (value != null) {
+                    engValueSegment = (ValueSegment) SegmentEncoderDecoder.decode(value, intervalStart);
                 }
 
-            }
+                key = SegmentKey.encode(pid, pg.id, intervalStart, SegmentKey.TYPE_RAW_VALUE);
+                value = rdb.get(cfh, opts, key);
+                if (value != null) {
+                    rawValueSegment = (ValueSegment) SegmentEncoderDecoder.decode(value, intervalStart);
+                }
 
+                key = SegmentKey.encode(pid, pg.id, intervalStart, SegmentKey.TYPE_GAPS);
+                value = rdb.get(cfh, opts, key);
+                if (value != null) {
+                    gaps = SegmentEncoderDecoder.decodeGaps(value);
+                }
+
+                ParameterValueSegment pvs = new ParameterValueSegment(pid, timeSegment, engValueSegment,
+                        rawValueSegment, parameterStatusSegment, gaps);
+                pvsList.add(pvs);
+
+            }
             return new PGSegment(pg.id, timeSegment, pvsList);
+        } catch (DecodingException e) {
+            throw new DatabaseCorruptionException(e);
         }
+
     }
 
     Partition getPartitions(long instant) {

@@ -201,17 +201,21 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
         private byte[] currentGaps;
         long currentGapsSegmentStart;
         /**
-         * The dbIterator iterates over all segment types (raw value, eng value, parameter status). The time values are
-         * received using point loockups.
+         * Iterator with options containing a snapshot to ensure that the time and value segments are consistent
+         */
+        RdbIteratorWithOptions iteratorWithOptions;
+        /**
+         * The dbIterator is a wrapper around the iteratorWithOptions to iterate in ascending or descending (raw value,
+         * eng value, parameter status). The time values are received using point loockups.
          */
         DbIterator dbIterator;
         boolean valid;
 
+
         public SubIterator(Partition partition) {
             this.partition = partition;
-            RdbIteratorWithOptions iterator;
             try {
-                iterator = parchive.getIteratorWithOptions(partition);
+                iteratorWithOptions = parchive.getIteratorWithOptions(partition);
             } catch (RocksDBException | IOException e) {
                 throw new ParameterArchiveException("Failed to create iterator", e);
             }
@@ -228,9 +232,9 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
             byte[] rangeStop = partition.version == 0 ? stopk.encodeV0() : stopk.encode();
 
             if (ascending) {
-                dbIterator = new AscendingRangeIterator(iterator.it(), rangeStart, rangeStop);
+                dbIterator = new AscendingRangeIterator(iteratorWithOptions.it(), rangeStart, rangeStop);
             } else {
-                dbIterator = new DescendingRangeIterator(iterator.it(), rangeStart, rangeStop);
+                dbIterator = new DescendingRangeIterator(iteratorWithOptions.it(), rangeStart, rangeStop);
             }
             next();
         }
@@ -320,7 +324,8 @@ public class SegmentIterator implements ParchiveIterator<ParameterValueSegment> 
 
             long segStart = currentKey.segmentStart;
             try {
-                var timeSegment = parchive.getTimeSegment(partition, segStart, parameterGroupId);
+                var timeSegment = parchive.getTimeSegment(partition, segStart, parameterGroupId,
+                        iteratorWithOptions.opts());
                 if (timeSegment == null) {
                     String msg = "Cannot find a time segment for parameterGroupId=" + parameterGroupId
                             + " segmentStart = " + segStart + " despite having a value segment for parameterId: "
