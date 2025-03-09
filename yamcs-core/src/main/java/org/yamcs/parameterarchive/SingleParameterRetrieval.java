@@ -22,15 +22,15 @@ import org.yamcs.yarch.protobuf.Db.ParameterStatus;
  * 
  */
 public class SingleParameterRetrieval {
-    final private ParameterRetrievalOptions req;
+    final private ParameterRetrievalOptions opts;
     final private ParameterArchive parchive;
     private final Logger log = LoggerFactory.getLogger(SingleParameterRetrieval.class);
     final ParameterId[] pids;
 
     final int[] parameterGroupIds;
 
-    public SingleParameterRetrieval(ParameterArchive parchive, String parameterFqn, ParameterRetrievalOptions spvr) {
-        this.req = spvr;
+    public SingleParameterRetrieval(ParameterArchive parchive, String parameterFqn, ParameterRetrievalOptions opts) {
+        this.opts = opts;
         this.parchive = parchive;
 
         pids = parchive.getParameterIdDb().get(parameterFqn);
@@ -42,7 +42,7 @@ public class SingleParameterRetrieval {
 
     SingleParameterRetrieval(ParameterArchive parchive, int parameterId, int[] parameterGroupIds,
             ParameterRetrievalOptions spvr) {
-        this.req = spvr;
+        this.opts = spvr;
         this.parchive = parchive;
         ParameterId pid1 = parchive.getParameterIdDb().getParameterId(parameterId);
         this.pids = new ParameterId[] { pid1 };
@@ -82,10 +82,10 @@ public class SingleParameterRetrieval {
     private void retrieveValueSingleGroup(ParameterId pid, int parameterGroupId,
             Consumer<ParameterValueArray> consumer) throws RocksDBException, IOException {
 
-        try (SegmentIterator it = new SegmentIterator(parchive, pid, parameterGroupId, req)) {
+        try (SegmentIterator it = new SegmentIterator(parchive, pid, parameterGroupId, opts)) {
             while (it.isValid()) {
                 ParameterValueSegment pvs = it.value();
-                sendValuesFromSegment(pid, pvs, req, consumer);
+                sendValuesFromSegment(pid, pvs, opts, consumer);
                 it.next();
             }
         }
@@ -96,21 +96,21 @@ public class SingleParameterRetrieval {
             Consumer<ParameterValueArray> consumer)
             throws RocksDBException, IOException {
 
-        PriorityQueue<SegmentIterator> queue = new PriorityQueue<>(new SegmentIteratorComparator(req.ascending()));
+        PriorityQueue<SegmentIterator> queue = new PriorityQueue<>(new SegmentIteratorComparator(opts.ascending()));
         try {
             for (int pgid : parameterGroupIds) {
-                SegmentIterator it = new SegmentIterator(parchive, pid, pgid, req);
+                SegmentIterator it = new SegmentIterator(parchive, pid, pgid, opts);
                 if (it.isValid()) {
                     queue.add(it);
                 } else { // not really necessary
                     it.close();
                 }
             }
-            SegmentMerger merger = new SegmentMerger(pid, req, consumer);
+            SegmentMerger merger = new SegmentMerger(pid, opts, consumer);
 
             while (!queue.isEmpty()) {
                 SegmentIterator it = queue.poll();
-                sendValuesFromSegment(pid, it.value(), req, merger);
+                sendValuesFromSegment(pid, it.value(), opts, merger);
                 it.next();
                 if (it.isValid()) {
                     queue.add(it);
@@ -164,13 +164,13 @@ public class SingleParameterRetrieval {
      */
     static class SegmentMerger implements Consumer<ParameterValueArray> {
         final Consumer<ParameterValueArray> finalConsumer;
-        final ParameterRetrievalOptions spvr;
+        final ParameterRetrievalOptions opts;
         ParameterValueArray mergedPva;
         ParameterId pid;
 
-        public SegmentMerger(ParameterId pid, ParameterRetrievalOptions spvr, Consumer<ParameterValueArray> finalConsumer) {
+        public SegmentMerger(ParameterId pid, ParameterRetrievalOptions opts, Consumer<ParameterValueArray> finalConsumer) {
             this.finalConsumer = finalConsumer;
-            this.spvr = spvr;
+            this.opts = opts;
             this.pid = pid;
         }
 
@@ -191,7 +191,6 @@ public class SingleParameterRetrieval {
 
         // merge the pva with the mergedPva into a new pva
         private void merge(ParameterValueArray pva) {
-
             long[] timestamps0 = mergedPva.timestamps;
             long[] timestamps1 = pva.timestamps;
 
@@ -221,7 +220,7 @@ public class SingleParameterRetrieval {
                     Arrays.fill(src, k, k + n, 0);
                     break;
                 }
-                if ((spvr.ascending() && t0 <= t1) || (!spvr.ascending() && t0 >= t1)) {
+                if ((opts.ascending() && t0 <= t1) || (!opts.ascending() && t0 >= t1)) {
                     mergedTimestamps[k] = t0;
                     src[k] = 0;
                     k++;
@@ -235,15 +234,15 @@ public class SingleParameterRetrieval {
             }
 
             ValueArray engValues = null;
-            if (mergedPva.engValues != null) {
+            if (opts.retrieveEngValues() && mergedPva.engValues != null) {
                 engValues = ValueArray.merge(src, mergedPva.engValues, pva.engValues);
             }
             ValueArray rawValues = null;
-            if (mergedPva.rawValues != null) {
+            if (opts.retrieveRawValues() && mergedPva.rawValues != null) {
                 rawValues = ValueArray.merge(src, mergedPva.rawValues, pva.rawValues);
             }
             ParameterStatus[] paramStatus = null;
-            if (spvr.retrieveParameterStatus()) {
+            if (opts.retrieveParameterStatus() && opts.retrieveParameterStatus()) {
                 paramStatus = (ParameterStatus[]) merge(src, mergedPva.paramStatus, pva.paramStatus);
             }
 
