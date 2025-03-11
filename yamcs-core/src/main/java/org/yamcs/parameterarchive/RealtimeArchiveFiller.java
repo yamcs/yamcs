@@ -546,7 +546,8 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
                 } else {
                     // else we make a new segment continuing the previous one (if it exists)
                     var pids = pvList.getPids();
-                    PGSegment seg = new PGSegment(parameterGroupId, ParameterArchive.getInterval(t), pids.size());
+                    PGSegment seg = new SynchronizedPGSegment(parameterGroupId, ParameterArchive.getInterval(t),
+                            pids.size());
                     seg.addRecord(t, pvList);
                     if (prevSeg != null) {
                         prevSeg.freeze();
@@ -600,7 +601,8 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
                 }
 
                 var pids = pvList.getPids();
-                PGSegment seg = new PGSegment(parameterGroupId, ParameterArchive.getInterval(t), pids.size());
+                PGSegment seg = new SynchronizedPGSegment(parameterGroupId, ParameterArchive.getInterval(t),
+                        pids.size());
                 seg.addRecord(t, pvList);
                 // shift everything between k and tail to the right
                 for (int i = k; i != tail; i = inc(i)) {
@@ -696,6 +698,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
 
                 while (k != tail) {
                     PGSegment seg = segments[k];
+                    k = inc(k);
                     if (seg == null) {
                         continue;
                     }
@@ -703,9 +706,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
                     if (pvs != null) {
                         r.add(pvs);
                     }
-                    k = inc(k);
                 }
-
             }
 
             private void getSegmentsDescending(int pid, List<ParameterValueSegment> r) {

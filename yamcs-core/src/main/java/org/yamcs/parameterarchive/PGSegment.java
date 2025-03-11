@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.yamcs.parameter.BasicParameterValue;
+import org.yamcs.parameter.Value;
 import org.yamcs.parameterarchive.ParameterGroupIdDb.ParameterGroup;
+import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.IntArray;
 import org.yamcs.utils.IntHashSet;
 import org.yamcs.utils.TimeEncoding;
@@ -118,7 +120,12 @@ public class PGSegment {
             } else if (pvs.pid > pid2) {
                 // new parameter, we have to shift all existing segments to the right and insert a new segment with gaps
                 // in all positions except pos
-                ParameterValueSegment newPvs = new ParameterValueSegment(pid2, timeSegment, pos, pv);
+                ParameterValueSegment newPvs = newPvs(pid2, timeSegment, type(pv.getEngValue()),
+                        type(pv.getRawValue()));
+                for (int i = 0; i < pos; i++) {
+                    newPvs.insertGap(i);
+                }
+                newPvs.insert(pos, pv);
                 pvSegments.add(idx1, newPvs);
                 if (currentFullGaps != null && !currentFullGaps.remove(pid2)) {
                     // pid2 is part of this segment and was not part of the previous segments
@@ -146,13 +153,26 @@ public class PGSegment {
             BasicParameterValue pv = values.get(idx2);
             var pid2 = pids.get(idx2);
             // new segment to add to the end of the segment list
-            ParameterValueSegment newPvs = new ParameterValueSegment(pid2, timeSegment, pos, pv);
+            ParameterValueSegment newPvs = newPvs(pid2, timeSegment, type(pv.getEngValue()),
+                    type(pv.getRawValue()));
+            for (int i = 0; i < pos; i++) {
+                newPvs.insertGap(i);
+            }
+            newPvs.insert(pos, pv);
             pvSegments.add(newPvs);
             if (currentFullGaps != null && !currentFullGaps.remove(pid2)) {
                 // pid2 is added to this segment but was not part of the previous segments
                 previousFullGaps.add(pid2);
             }
             idx2++;
+        }
+    }
+
+    private Type type(Value v) {
+        if (v == null) {
+            return null;
+        } else {
+            return v.getType();
         }
     }
 
@@ -337,6 +357,11 @@ public class PGSegment {
         for (var pvs : pvSegments) {
             pvs.makeWritable();
         }
+    }
+
+    ParameterValueSegment newPvs(int pid, SortedTimeSegment timeSegment, Type engValueType,
+            Type rawValueType) {
+        return new ParameterValueSegment(pid, timeSegment, engValueType, rawValueType);
     }
 
     public String toString() {

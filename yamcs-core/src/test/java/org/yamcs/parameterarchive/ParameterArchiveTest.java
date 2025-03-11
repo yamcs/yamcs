@@ -33,7 +33,7 @@ import org.yamcs.yarch.protobuf.Db.ParameterStatus;
 public class ParameterArchiveTest extends BaseParchiveTest {
 
     static Parameter p1, p2, p3, p4, p5, a1;
- 
+
     @BeforeAll
     public static void beforeClass() {
         p1 = new Parameter("p1");
@@ -236,7 +236,6 @@ public class ParameterArchiveTest extends BaseParchiveTest {
         assertEquals(2, params.size());
         checkEquals(params.get(0), 100, pv1_0);
     }
-
 
     @ParameterizedTest
     @ValueSource(strings = { "none", "YYYY", "YYYY/MM" })
@@ -599,7 +598,6 @@ public class ParameterArchiveTest extends BaseParchiveTest {
         assertEquals(1, l1a.size());
         checkEquals(l2a.get(0), 100, pv1_0, pv1_1);
     }
-
 
     public static YConfiguration backFillerDisabledConfig() {
         Map<String, Object> pam = new HashMap<>();

@@ -51,43 +51,23 @@ public class ParameterValueSegment {
 
     /**
      * 
-     * Creates a new segment and insert one value. The value is used to determine the individual engineering/raw segment
-     * types. All future values are expected to be the same type.
-     * <p>
-     * The length of the segment (number of parameters) is given by the timeSegment length.
-     * <p>
-     * If the length is greater than 1, then all other positions will be initialised with gaps.
+     * Creates a new segment for a parameter with the given engValue and raw value types
      */
-    public ParameterValueSegment(int pid, SortedTimeSegment timeSegment, int pos, BasicParameterValue pv) {
+    public ParameterValueSegment(int pid, SortedTimeSegment timeSegment, Type engValueType, Type rawValueType) {
         this.pid = pid;
         this.timeSegment = timeSegment;
 
-        Value v = pv.getEngValue();
-        if (v != null) {
-            engValueSegment = getNewSegment(v.getType());
+        if (engValueType != null) {
+            engValueSegment = getNewSegment(engValueType);
         } else {
             engValueSegment = null;
         }
         parameterStatusSegment = new ParameterStatusSegment(true);
 
-        if (STORE_RAW_VALUES) {
-            Value rawV = pv.getRawValue();
-
-            if (rawV != null) {
-                rawValueSegment = getNewSegment(rawV.getType());
-            } else {
-                rawValueSegment = null;
-            }
+        if (STORE_RAW_VALUES && rawValueType != null) {
+            rawValueSegment = getNewSegment(rawValueType);
         } else {
             rawValueSegment = null;
-        }
-
-        for (int i = 0; i < pos; i++) {
-            insertGap(i);
-        }
-        insert(pos, pv);
-        for (int i = pos + 1; i < timeSegment.size(); i++) {
-            insertGap(i);
         }
     }
 
@@ -458,7 +438,6 @@ public class ParameterValueSegment {
         }
 
         public void next() {
-
             while (gaps != null && idxG >= 0 && idxT == gaps.get(idxG)) {
                 idxT--;
                 idxG--;
