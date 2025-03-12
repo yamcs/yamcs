@@ -1,12 +1,9 @@
 <a
   mat-list-item
-  routerLinkActive="link-active"
-  [routerLinkActiveOptions]="
-    exact ? { matrixParams: 'exact', paths: 'exact', queryParams: 'ignored' } : false
-  "
-  [routerLink]="routerLink"
+  [routerLink]="routerLink()"
   [queryParams]="queryParams"
   [class.subitem]="subitem"
+  [class.link-active]="linkActive()"
   [style.color]="color ? color + ' !important' : undefined">
   @if (subitem) {
     <div style="display: inline-block; width: 60px"></div>

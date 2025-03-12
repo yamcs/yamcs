@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnChanges, ViewChild, inject } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnChanges, ViewChild, inject, signal } from '@angular/core';
 import { ExtensionService, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
@@ -29,6 +29,9 @@ export class ExtensionComponent implements AfterViewInit, OnChanges {
   @ViewChild('customElementHolder')
   customElementHolder: ElementRef<HTMLDivElement>;
 
+  disableScroll = signal(false);
+  disablePadding = signal(false);
+
   ngAfterViewInit() {
     this.loadExtension(this.extension);
   }
@@ -46,6 +49,10 @@ export class ExtensionComponent implements AfterViewInit, OnChanges {
     const extensionEl = holder.childNodes.item(0);
     (extensionEl as any).subroute = this.subroute;
     (extensionEl as any).extensionService = this.extensionService;
+
+    const pageSettings = this.extensionService.getPageSettings(extension);
+    this.disablePadding.set(pageSettings?.disablePadding ?? false);
+    this.disableScroll.set(pageSettings?.disableScroll ?? false);
 
     const { nativeElement: controlsHolder } = this.customElementControlsHolder;
     controlsHolder.innerHTML = `<${extension}-controls></${extension}-controls>`;

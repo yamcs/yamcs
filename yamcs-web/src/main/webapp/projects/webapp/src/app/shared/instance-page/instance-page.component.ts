@@ -98,7 +98,7 @@ export class InstancePageComponent implements OnInit, OnDestroy {
     if (this.user.hasObjectPrivilege('ReadBucket', displayBucket)) {
       this.telemetryItems.push({ path: 'displays', label: 'Displays' });
     }
-    for (const item of extensionService.getExtraNavItems('telemetry')) {
+    for (const item of extensionService.getNavItems('telemetry')) {
       if (item.condition && item.condition(this.user)) {
         this.telemetryItems.push(item);
       }
@@ -120,7 +120,7 @@ export class InstancePageComponent implements OnInit, OnDestroy {
     if (this.config.commandClearanceEnabled && this.user.hasSystemPrivilege('ControlCommandClearances')) {
       this.commandingItems.push({ path: 'clearances', label: 'Clearances' });
     }
-    for (const item of extensionService.getExtraNavItems('commanding')) {
+    for (const item of extensionService.getNavItems('commanding')) {
       if (item.condition && item.condition(this.user)) {
         this.commandingItems.push(item);
       }
@@ -133,7 +133,7 @@ export class InstancePageComponent implements OnInit, OnDestroy {
       (yamcs.connectionInfo$.value?.instance.capabilities ?? []).indexOf('activities') !== -1) {
       this.proceduresItems.push({ path: 'script', label: 'Run a script' });
     }
-    for (const item of extensionService.getExtraNavItems('procedures')) {
+    for (const item of extensionService.getNavItems('procedures')) {
       if (item.condition && item.condition(this.user)) {
         this.proceduresItems.push(item);
       }
@@ -155,14 +155,14 @@ export class InstancePageComponent implements OnInit, OnDestroy {
       this.mdbItems.push({ path: 'containers', label: 'Containers' });
       this.mdbItems.push({ path: 'commands', label: 'Commands' });
       this.mdbItems.push({ path: 'algorithms', label: 'Algorithms' });
-      for (const item of extensionService.getExtraNavItems('mdb')) {
+      for (const item of extensionService.getNavItems('mdb')) {
         if (item.condition && item.condition(this.user)) {
           this.mdbItems.push(item);
         }
       }
     }
 
-    for (const item of extensionService.getExtraNavItems('archive')) {
+    for (const item of extensionService.getNavItems('archive')) {
       if (!item.condition || item.condition(this.user)) {
         this.extraItems.push(item);
       }

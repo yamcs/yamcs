@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NavGroup, NavItem } from '../navigation';
+import { NavGroup, NavItem, PageSettings } from '../navigation';
 import { AppearanceService } from './appearance.service';
 import { ConfigService } from './config.service';
 import { MessageService } from './message.service';
@@ -16,10 +16,11 @@ export class ExtensionService {
   readonly route = inject(ActivatedRoute);
   readonly yamcs = inject(YamcsService);
 
-  private extraNavItems = new Map<NavGroup, NavItem[]>();
+  private navItems = new Map<NavGroup, NavItem[]>();
+  private pageSettingsByExtension = new Map<string, PageSettings>();
 
-  getExtraNavItems(group: NavGroup) {
-    const navItems = [...this.extraNavItems.get(group) || []];
+  getNavItems(group: NavGroup) {
+    const navItems = [...this.navItems.get(group) || []];
     navItems.sort((a, b) => {
       const rc = (a.order || 0) - (b.order || 0);
       return rc !== 0 ? rc : (a.label.localeCompare(b.label));
@@ -27,12 +28,20 @@ export class ExtensionService {
     return navItems;
   }
 
+  getPageSettings(extension: string) {
+    return this.pageSettingsByExtension.get(extension);
+  }
+
   addNavItem(group: NavGroup, item: NavItem) {
-    let items = this.extraNavItems.get(group);
+    let items = this.navItems.get(group);
     if (!items) {
       items = [];
-      this.extraNavItems.set(group, items);
+      this.navItems.set(group, items);
     }
     items.push(item);
+  }
+
+  setPageSettings(extension: string, pageSettings: PageSettings) {
+    this.pageSettingsByExtension.set(extension, pageSettings);
   }
 }
