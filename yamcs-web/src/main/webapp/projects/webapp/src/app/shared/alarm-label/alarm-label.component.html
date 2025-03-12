@@ -1,5 +1,8 @@
 @if (context$ | async; as context) {
-  <ya-sidebar-nav-item routerLink="/alarms" [queryParams]="{ c: yamcs.context }">
+  <ya-sidebar-nav-item
+    activeWhen="/alarms"
+    routerLink="/alarms"
+    [queryParams]="{ c: yamcs.context }">
     <mat-icon class="item-icon">notifications_none</mat-icon>
     Alarms
     @if (status$ | async; as status) {

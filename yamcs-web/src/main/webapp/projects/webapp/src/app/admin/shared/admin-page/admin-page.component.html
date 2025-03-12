@@ -11,7 +11,7 @@
       </mat-toolbar>
 
       <mat-nav-list dense>
-        <ya-sidebar-nav-item routerLink="/admin" [exact]="true">
+        <ya-sidebar-nav-item activeWhen="/admin" routerLink="/admin" [exact]="true">
           <mat-icon class="item-icon">recent_actors</mat-icon>
           Action log
         </ya-sidebar-nav-item>
@@ -22,44 +22,58 @@
             [active]="userManagementActive"
             [expanded]="userManagementExpanded"
             (toggle)="toggleUserManagementGroup()">
-            <ya-sidebar-nav-item routerLink="/admin/iam/users" [subitem]="true">
+            <ya-sidebar-nav-item
+              activeWhen="/admin/iam/users"
+              routerLink="/admin/iam/users"
+              [subitem]="true">
               Users
             </ya-sidebar-nav-item>
-            <ya-sidebar-nav-item routerLink="/admin/iam/service-accounts" [subitem]="true">
+            <ya-sidebar-nav-item
+              activeWhen="/admin/iam/service-accounts"
+              routerLink="/admin/iam/service-accounts"
+              [subitem]="true">
               Service accounts
             </ya-sidebar-nav-item>
-            <ya-sidebar-nav-item routerLink="/admin/iam/groups" [subitem]="true">
+            <ya-sidebar-nav-item
+              activeWhen="/admin/iam/groups"
+              routerLink="/admin/iam/groups"
+              [subitem]="true">
               Groups
             </ya-sidebar-nav-item>
-            <ya-sidebar-nav-item routerLink="/admin/iam/roles" [subitem]="true">
+            <ya-sidebar-nav-item
+              activeWhen="/admin/iam/roles"
+              routerLink="/admin/iam/roles"
+              [subitem]="true">
               Roles
             </ya-sidebar-nav-item>
           </ya-sidebar-nav-group>
         }
         @if (showAccessControlItem()) {
-          <ya-sidebar-nav-item routerLink="/admin/sessions">
+          <ya-sidebar-nav-item activeWhen="/admin/sessions" routerLink="/admin/sessions">
             <mat-icon class="item-icon">devices</mat-icon>
             Sessions
           </ya-sidebar-nav-item>
         }
         @if (showServicesItem()) {
-          <ya-sidebar-nav-item routerLink="/admin/services">
+          <ya-sidebar-nav-item activeWhen="/admin/services" routerLink="/admin/services">
             <mat-icon class="item-icon">attractions</mat-icon>
             Services
           </ya-sidebar-nav-item>
         }
         @if (showSystemInfo()) {
-          <ya-sidebar-nav-item routerLink="/admin/processor-types">
+          <ya-sidebar-nav-item
+            activeWhen="/admin/processor-types"
+            routerLink="/admin/processor-types">
             <mat-icon class="item-icon">flip_camera_android</mat-icon>
             Processor types
           </ya-sidebar-nav-item>
         }
-        <ya-sidebar-nav-item routerLink="/admin/databases">
+        <ya-sidebar-nav-item activeWhen="/admin/databases" routerLink="/admin/databases">
           <mat-icon class="item-icon">database</mat-icon>
           Databases
         </ya-sidebar-nav-item>
         @if (showSystemInfo()) {
-          <ya-sidebar-nav-item routerLink="/admin/replication">
+          <ya-sidebar-nav-item activeWhen="/admin/replication" routerLink="/admin/replication">
             <mat-icon class="item-icon">share</mat-icon>
             Replication
           </ya-sidebar-nav-item>
@@ -71,37 +85,40 @@
             [active]="rocksDbActive"
             [expanded]="rocksDbExpanded"
             (toggle)="toggleRocksDbGroup()">
-            <ya-sidebar-nav-item routerLink="/admin/rocksdb/databases" [subitem]="true">
+            <ya-sidebar-nav-item
+              activeWhen="/admin/rocksdb/databases"
+              routerLink="/admin/rocksdb/databases"
+              [subitem]="true">
               Open databases
             </ya-sidebar-nav-item>
           </ya-sidebar-nav-group>
         }
         @if (showSystemInfo()) {
-          <ya-sidebar-nav-item routerLink="/admin/http-traffic">
+          <ya-sidebar-nav-item activeWhen="/admin/http-traffic" routerLink="/admin/http-traffic">
             <mat-icon class="item-icon">traffic</mat-icon>
             HTTP traffic
           </ya-sidebar-nav-item>
         }
         @if (showSystemInfo()) {
-          <ya-sidebar-nav-item routerLink="/admin/routes">
+          <ya-sidebar-nav-item activeWhen="/admin/routes" routerLink="/admin/routes">
             <mat-icon class="item-icon">api</mat-icon>
             API routes
           </ya-sidebar-nav-item>
         }
         @if (showSystemInfo()) {
-          <ya-sidebar-nav-item routerLink="/admin/leap-seconds">
+          <ya-sidebar-nav-item activeWhen="/admin/leap-seconds" routerLink="/admin/leap-seconds">
             <mat-icon class="item-icon">access_time</mat-icon>
             Leap seconds
           </ya-sidebar-nav-item>
         }
         @if (showSystemInfo()) {
-          <ya-sidebar-nav-item routerLink="/admin/threads">
+          <ya-sidebar-nav-item activeWhen="/admin/threads" routerLink="/admin/threads">
             <mat-icon class="item-icon">receipt</mat-icon>
             Threads
           </ya-sidebar-nav-item>
         }
         @if (showSystemInfo()) {
-          <ya-sidebar-nav-item routerLink="/admin/system">
+          <ya-sidebar-nav-item activeWhen="/admin/system" routerLink="/admin/system">
             <mat-icon class="item-icon">memory</mat-icon>
             System
           </ya-sidebar-nav-item>

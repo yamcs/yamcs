@@ -5,6 +5,7 @@ export type NavGroup = 'telemetry' | 'commanding' | 'procedures' | 'archive' | '
 export interface NavItem {
   path: string;
   label: string;
+  activeWhen?: string;
   icon?: string;
   condition?: (user: User) => boolean;
 
@@ -14,4 +15,16 @@ export interface NavItem {
    * Only used for extension paths.
    */
   order?: number;
+}
+
+export interface PageSettings {
+  /**
+   * Disable automatic padding around the page content.
+   */
+  disablePadding?: boolean;
+
+  /**
+   * Disable automatic scrollbars around the page content.
+   */
+  disableScroll?: boolean;
 }

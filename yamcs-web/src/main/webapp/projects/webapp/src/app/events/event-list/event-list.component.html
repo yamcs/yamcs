@@ -165,7 +165,7 @@
           </td>
         </ng-container>
         <ng-container cdkColumnDef="message">
-          <th mat-header-cell *cdkHeaderCellDef>Message</th>
+          <th mat-header-cell *cdkHeaderCellDef class="expand">Message</th>
           <td mat-cell *cdkCellDef="let row" class="mono message expand">
             <app-event-message [message]="row.message" [highlight]="filterForm.value.filter" />
           </td>
