@@ -29,6 +29,10 @@ mat-toolbar-row {
   letter-spacing: 1.07143px;
 }
 
+.processor-time {
+  margin-right: 8px;
+}
+
 .processor-time.paused {
   font-style: italic;
 }

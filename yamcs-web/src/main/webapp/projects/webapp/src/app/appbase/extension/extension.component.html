@@ -1,7 +1,7 @@
-<app-instance-page>
+<app-instance-page [noscroll]="disableScroll()">
   <app-instance-toolbar>
     <div #customElementControlsHolder></div>
   </app-instance-toolbar>
 
-  <div #customElementHolder class="panel-content"></div>
+  <div #customElementHolder [class.panel-content]="!disablePadding()"></div>
 </app-instance-page>
