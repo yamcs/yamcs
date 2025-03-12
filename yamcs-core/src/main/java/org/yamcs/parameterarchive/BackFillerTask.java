@@ -16,6 +16,7 @@ class BackFillerTask extends AbstractArchiveFiller {
     private Processor processor;
     long coverageEnd = TimeEncoding.NEGATIVE_INFINITY;
     private final FillerLock fillerLock;
+    private final Map<LockFailureKey, LockFailureCount> lockFailureCount = new HashMap<>();
 
     public BackFillerTask(ParameterArchive parameterArchive) {
         super(parameterArchive);
@@ -64,9 +65,15 @@ class BackFillerTask extends AbstractArchiveFiller {
 
             if (pgs == null) {
                 if (!fillerLock.try_lock(interval, parameterGroupId, this)) {
-                    log.warn(
-                            "Failed to aquire lock for interval {} parameter group {} (backfiller overlapping with realtime filler?); dropping parameters ",
-                            TimeEncoding.toString(interval), parameterGroupId);
+                    var lfc = lockFailureCount.computeIfAbsent(new LockFailureKey(interval, parameterGroupId),
+                            k -> new LockFailureCount());
+                    lfc.increment();
+                    if (lfc.count == 1 || lfc.count % 100 == 0) {
+                        log.warn(
+                                "Failed to aquire lock {} for interval {} parameter group {} (backfiller overlapping with realtime filler?); dropping parameters ",
+                                lfc.count > 1 ? "(" + lfc.count + " times already)" : "",
+                                TimeEncoding.toString(interval), parameterGroupId);
+                    }
                     return;
                 }
                 pgs = new PGSegment(parameterGroupId, interval, pg.pids.size());
@@ -105,5 +112,16 @@ class BackFillerTask extends AbstractArchiveFiller {
     @Override
     protected void abort() {
         processor.stopAsync();
+    }
+
+    static record LockFailureKey(long interval, int parameterGroupId) {
+    }
+
+    static class LockFailureCount {
+        int count = 0;
+
+        void increment() {
+            count++;
+        }
     }
 }

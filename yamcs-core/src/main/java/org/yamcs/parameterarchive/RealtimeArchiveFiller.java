@@ -479,6 +479,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
         public void flush() {
             for (var intv : intervals) {
                 intv.flush();
+                fillerLock.unlock(intv.interval, parameterGroupId);
             }
         }
 
