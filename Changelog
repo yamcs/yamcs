@@ -1,3 +1,6 @@
+Version 5.9.8.1 released 13-March-2025
+- backport the fix for #934 to the 5.9.8 release
+
 Version 5.9.8 released 9-July-2024
 - small tweaks and fixes related to Parameter Archive, Frame valid/invalid counters, command dispatching, parameter link configuration.
 - updated yamcs-maven plugin to work with Java 22.
