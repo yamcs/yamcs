@@ -120,19 +120,20 @@ public class Subscription {
             }
         }
 
-        if ((se.getRepeatEntry() != null) && (se.getRepeatEntry().getCount() instanceof DynamicIntegerValue div)) {
+        if ((se.getRepeatEntry() != null) && (se.getRepeatEntry().getCount() instanceof DynamicIntegerValue)) {
+            DynamicIntegerValue div = (DynamicIntegerValue) se.getRepeatEntry().getCount();
             addParameter(div.getParameterInstanceRef().getParameter());
         }
 
-        if (se instanceof ArrayParameterEntry ape) {
-            for (IntegerValue iv : ape.getSize()) {
+        if (se instanceof ArrayParameterEntry) {
+            for (IntegerValue iv : ((ArrayParameterEntry) se).getSize()) {
                 if (iv instanceof DynamicIntegerValue) {
                     addParameter(((DynamicIntegerValue) iv).getParameterInstanceRef().getParameter());
                 }
             }
         }
-        if (se instanceof ContainerEntry ce) {
-            addSequenceContainer(ce.getRefContainer());
+        if (se instanceof ContainerEntry) {
+            addSequenceContainer(((ContainerEntry) se).getRefContainer());
         }
 
     }
