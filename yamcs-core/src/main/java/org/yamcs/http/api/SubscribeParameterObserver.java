@@ -184,6 +184,7 @@ public class SubscribeParameterObserver implements Observer<SubscribeParametersR
                 }
                 if (dtype instanceof EnumeratedParameterType ept) {
                     infob.addAllEnumValues(XtceToGpbAssembler.toEnumValues(ept));
+                    infob.addAllEnumRanges(XtceToGpbAssembler.toEnumRanges(ept));
                 }
             }
         } catch (InvalidIdentification e) {

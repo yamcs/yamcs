@@ -273,13 +273,16 @@ message SubscribedParameterInfo {
   optional string parameter = 1;
 
   // Engineering units
-  optional string units =  2;
+  optional string units = 2;
 
   // Data source
   optional mdb.DataSourceType dataSource = 3;
 
   // Enumeration states, in case this concerns an enumerated parameter
   repeated mdb.EnumValue enumValues = 4;
+
+  // Enumeration ranges, in case this concerns an enumerated parameter
+  repeated mdb.EnumRange enumRanges = 5;
 }
 
 // Request message for `GetProcessor`.

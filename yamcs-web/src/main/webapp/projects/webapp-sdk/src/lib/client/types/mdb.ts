@@ -84,7 +84,8 @@ export interface ParameterType {
   unitSet?: UnitInfo[];
   defaultAlarm?: AlarmInfo;
   contextAlarm: ContextAlarmInfo[];
-  enumValue: EnumValue[];
+  enumValues: EnumValue[];
+  enumRanges: EnumRange[];
   absoluteTimeInfo: AbsoluteTimeInfo;
   member: ParameterMember[];
   signed?: boolean;
@@ -270,7 +271,16 @@ export interface TransmissionConstraint {
 export interface EnumValue {
   value: number;
   label: string;
-  description: string;
+  description?: string;
+}
+
+export interface EnumRange {
+  min: number;
+  max: number;
+  minInclusive: boolean;
+  maxInclusive: boolean;
+  label: string;
+  description?: string;
 }
 
 export type AlarmLevelType = 'NORMAL' | 'WATCH' | 'WARNING' | 'DISTRESS' | 'CRITICAL' | 'SEVERE';

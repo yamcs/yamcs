@@ -322,10 +322,37 @@ message JavaExpressionCalibratorInfo {
   optional string formula = 1;
 }
 
+// Maps a numeric value to a label
 message EnumValue {
+  // Enum value
   optional int64 value = 1;
+
+  // Enum label
   optional string label = 2;
+
+  // Description of this enumeration value
   optional string description = 3;
+}
+
+// Maps a range of numeric values to a label
+message EnumRange {
+  // Range start
+  optional double min = 1;
+
+  // Range end
+  optional double max = 2;
+
+  // Whether ``min`` is included in this range
+  optional bool minInclusive = 3;
+
+  // Whether ``max`` is included in this range
+  optional bool maxInclusive = 4;
+
+  // Enum label
+  optional string label = 5;
+
+  // Description of this enumeration range
+  optional string description = 6;
 }
 
 message ParameterTypeInfo {
@@ -342,7 +369,16 @@ message ParameterTypeInfo {
 
   // Default Alarm, effective when no contextual alarm takes precedence.
   optional AlarmInfo defaultAlarm = 4;
-  repeated EnumValue enumValue = 5;
+
+  // Deprecated, use ``enumValues`` instead
+  repeated EnumValue enumValue = 5 [deprecated = true];
+
+  // Value-to-label mappings if this is an enumeration type
+  repeated EnumValue enumValues = 22;
+
+  // Range-to-label mappings if this is an enumeration type
+  repeated EnumRange enumRanges = 23;
+
   optional AbsoluteTimeInfo absoluteTimeInfo = 6;
 
   // Contextual alarms
