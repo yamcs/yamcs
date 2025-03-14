@@ -1,5 +1,5 @@
 import { WebSocketCall } from '../WebSocketCall';
-import { AlgorithmStatus, Container, DataSource, EnumValue, NamedObjectId, Parameter } from './mdb';
+import { AlgorithmStatus, Container, DataSource, EnumRange, EnumValue, NamedObjectId, Parameter } from './mdb';
 import { ParameterValue, Value } from './monitoring';
 import { Service, ServiceState } from './system';
 
@@ -74,6 +74,7 @@ export interface SubscribedParameterInfo {
   dataSource: DataSource;
   units?: string;
   enumValues?: EnumValue[];
+  enumRanges?: EnumRange[];
 }
 
 export interface SubscribeProcessorsRequest {

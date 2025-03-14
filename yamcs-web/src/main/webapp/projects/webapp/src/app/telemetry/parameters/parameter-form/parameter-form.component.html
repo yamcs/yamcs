@@ -10,7 +10,7 @@
           <ya-errors [controlName]="controlName" />
           <select [formControlName]="controlName">
             <option hidden disabled selected value>-- select an option --</option>
-            @for (enumValue of parameter.type?.enumValue; track enumValue) {
+            @for (enumValue of parameter.type?.enumValues; track enumValue) {
               <option [value]="enumValue.label">
                 {{ enumValue.label }}
               </option>
@@ -23,8 +23,11 @@
           {{ parameter.name }}
           <ya-errors [controlName]="controlName" />
           <br />
-          <input type="radio" [formControlName]="controlName" value="true" /> true<br />
-          <input type="radio" [formControlName]="controlName" value="false" /> false
+          <input type="radio" [formControlName]="controlName" value="true" />
+          true
+          <br />
+          <input type="radio" [formControlName]="controlName" value="false" />
+          false
         </label>
       }
       @case ("time") {

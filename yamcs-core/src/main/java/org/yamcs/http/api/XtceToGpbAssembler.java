@@ -153,6 +153,7 @@ import org.yamcs.xtce.TransmissionConstraint;
 import org.yamcs.xtce.TriggerSetType;
 import org.yamcs.xtce.UnitType;
 import org.yamcs.xtce.ValueEnumeration;
+import org.yamcs.xtce.ValueEnumerationRange;
 
 public class XtceToGpbAssembler {
     static final Log log = new Log(XtceToGpbAssembler.class);
@@ -830,6 +831,9 @@ public class XtceToGpbAssembler {
                 }
                 var enumValues = toEnumValues(ept);
                 infob.addAllEnumValue(enumValues);
+                infob.addAllEnumValues(enumValues);
+                var enumRanges = toEnumRanges(ept);
+                infob.addAllEnumRanges(enumRanges);
             } else if (parameterType instanceof AbsoluteTimeParameterType) {
                 AbsoluteTimeParameterType apt = (AbsoluteTimeParameterType) parameterType;
                 AbsoluteTimeInfo.Builder timeb = AbsoluteTimeInfo.newBuilder();
@@ -1176,12 +1180,32 @@ public class XtceToGpbAssembler {
                 .toList();
     }
 
+    public static List<Mdb.EnumRange> toEnumRanges(EnumeratedParameterType ptype) {
+        return ptype.getValueEnumerationRangeList().stream()
+                .sorted((a, b) -> Double.compare(a.getMin(), b.getMin()))
+                .map(XtceToGpbAssembler::toEnumRange)
+                .toList();
+    }
+
     public static Mdb.EnumValue toEnumValue(ValueEnumeration xtceValue) {
         Mdb.EnumValue.Builder b = Mdb.EnumValue.newBuilder();
         b.setValue(xtceValue.getValue());
         b.setLabel(xtceValue.getLabel());
         if (xtceValue.getDescription() != null) {
             b.setDescription(xtceValue.getDescription());
+        }
+        return b.build();
+    }
+
+    public static Mdb.EnumRange toEnumRange(ValueEnumerationRange range) {
+        var b = Mdb.EnumRange.newBuilder()
+                .setLabel(range.getLabel())
+                .setMin(range.getMin())
+                .setMax(range.getMax())
+                .setMinInclusive(range.getMinInclusive())
+                .setMaxInclusive(range.getMaxInclusive());
+        if (range.getDescription() != null) {
+            b.setDescription(range.getDescription());
         }
         return b.build();
     }

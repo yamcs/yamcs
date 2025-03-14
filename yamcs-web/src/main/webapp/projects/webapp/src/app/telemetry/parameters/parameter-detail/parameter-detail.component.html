@@ -268,13 +268,13 @@
           </th>
         }
       </tr>
-      @for (enumValue of entry.type!.enumValue; track enumValue) {
+      @for (enumValue of entry.type!.enumValues; track enumValue) {
         <tr>
           <td style="white-space: nowrap">{{ enumValue.value }}</td>
           <td style="white-space: nowrap">{{ enumValue.label }}</td>
           <td>{{ enumValue.description || "-" }}</td>
           <td>
-            @if (getDefaultAlarmLevel(entry.type!, enumValue); as level) {
+            @if (getDefaultAlarmLevel(entry.type!, enumValue.label); as level) {
               <app-alarm-level [level]="level" [grayscale]="true" />
               {{ level }}
             } @else {
@@ -283,7 +283,38 @@
           </td>
           @for (context of entry.type!.contextAlarm; track context) {
             <td>
-              @if (getEnumerationAlarmLevel(context, enumValue); as level) {
+              @if (getEnumerationAlarmLevel(context, enumValue.label); as level) {
+                <app-alarm-level [level]="level" [grayscale]="true" />
+                {{ level }}
+              } @else {
+                <span>-</span>
+              }
+            </td>
+          }
+        </tr>
+      }
+      @for (enumRange of entry.type!.enumRanges; track enumRange) {
+        <tr>
+          <td style="white-space: nowrap">
+            <ya-interval
+              [left]="enumRange.min"
+              [right]="enumRange.max"
+              [leftInclusive]="enumRange.minInclusive"
+              [rightInclusive]="enumRange.maxInclusive" />
+          </td>
+          <td style="white-space: nowrap">{{ enumRange.label }}</td>
+          <td>{{ enumRange.description || "-" }}</td>
+          <td>
+            @if (getDefaultAlarmLevel(entry.type!, enumRange.label); as level) {
+              <app-alarm-level [level]="level" [grayscale]="true" />
+              {{ level }}
+            } @else {
+              <span>-</span>
+            }
+          </td>
+          @for (context of entry.type!.contextAlarm; track context) {
+            <td>
+              @if (getEnumerationAlarmLevel(context, enumRange.label); as level) {
                 <app-alarm-level [level]="level" [grayscale]="true" />
                 {{ level }}
               } @else {

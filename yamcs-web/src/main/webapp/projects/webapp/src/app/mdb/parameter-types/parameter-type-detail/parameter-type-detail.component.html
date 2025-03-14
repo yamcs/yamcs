@@ -70,7 +70,7 @@
     <mat-divider />
   </div>
 
-  <h4>Used By</h4>
+  <h4>Used by</h4>
   <table yaDataTable>
     <tr>
       <th>Type</th>
@@ -97,7 +97,7 @@
     <mat-divider />
   </div>
 
-  <h4>Data Encoding</h4>
+  <h4>Data encoding</h4>
   <dl class="dl-horizontal no-trail">
     <dt>Size in bits</dt>
     <dd>{{ dataEncoding?.sizeInBits | nvl: "-" }}</dd>
@@ -158,13 +158,13 @@
           </th>
         }
       </tr>
-      @for (enumValue of parameterType.enumValue; track enumValue) {
+      @for (enumValue of parameterType.enumValues; track enumValue) {
         <tr>
           <td style="white-space: nowrap">{{ enumValue.value }}</td>
           <td style="white-space: nowrap">{{ enumValue.label }}</td>
           <td>{{ enumValue.description || "-" }}</td>
           <td>
-            @if (getDefaultAlarmLevel(parameterType, enumValue); as level) {
+            @if (getDefaultAlarmLevel(parameterType, enumValue.label); as level) {
               <app-alarm-level [level]="level" [grayscale]="true" />
               {{ level }}
             } @else {
@@ -173,7 +173,38 @@
           </td>
           @for (context of parameterType.contextAlarm; track context) {
             <td>
-              @if (getEnumerationAlarmLevel(context, enumValue); as level) {
+              @if (getEnumerationAlarmLevel(context, enumValue.label); as level) {
+                <app-alarm-level [level]="level" [grayscale]="true" />
+                {{ level }}
+              } @else {
+                <span>-</span>
+              }
+            </td>
+          }
+        </tr>
+      }
+      @for (enumRange of parameterType.enumRanges; track enumRange) {
+        <tr>
+          <td style="white-space: nowrap">
+            <ya-interval
+              [left]="enumRange.min"
+              [right]="enumRange.max"
+              [leftInclusive]="enumRange.minInclusive"
+              [rightInclusive]="enumRange.maxInclusive" />
+          </td>
+          <td style="white-space: nowrap">{{ enumRange.label }}</td>
+          <td>{{ enumRange.description || "-" }}</td>
+          <td>
+            @if (getDefaultAlarmLevel(parameterType, enumRange.label); as level) {
+              <app-alarm-level [level]="level" [grayscale]="true" />
+              {{ level }}
+            } @else {
+              <span>-</span>
+            }
+          </td>
+          @for (context of parameterType.contextAlarm; track context) {
+            <td>
+              @if (getEnumerationAlarmLevel(context, enumRange.label); as level) {
                 <app-alarm-level [level]="level" [grayscale]="true" />
                 {{ level }}
               } @else {
