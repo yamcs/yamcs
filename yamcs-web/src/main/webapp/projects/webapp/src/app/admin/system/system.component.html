@@ -2,7 +2,7 @@
   <app-admin-toolbar>System</app-admin-toolbar>
 
   @if (info$ | async; as info) {
-    <div class="panel-content">
+    <ya-panel>
       <dl class="dl-horizontal" style="margin-top: 0">
         <dt>Yamcs version</dt>
         <dd>{{ info.yamcsVersion || "-" }}</dd>
@@ -109,7 +109,7 @@
             context: { process: info.process, indent: 0, last: false }
           " />
       </table>
-    </div>
+    </ya-panel>
   }
 </app-admin-page>
 

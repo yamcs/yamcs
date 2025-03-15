@@ -10,7 +10,7 @@
     }
   </ya-detail-pane>
   <div class="data-table-wrapper">
-    <div class="panel-content">
+    <ya-panel>
       @if (records$ | async; as records) {
         @if (records.length) {
           <table yaDataTable>
@@ -45,6 +45,6 @@
       } @else {
         <ya-empty-message>Empty table.</ya-empty-message>
       }
-    </div>
+    </ya-panel>
   </div>
 }

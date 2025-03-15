@@ -12,7 +12,7 @@
     }
   </app-instance-toolbar>
 
-  <div class="panel-content">
+  <ya-panel>
     <form [formGroup]="filterForm">
       <div class="filter-bar">
         <ya-search-filter formControlName="filter" placeholder="Filter by text search" />
@@ -198,5 +198,5 @@
       <ya-button [disabled]="!dataSource.hasMore()" (click)="loadMoreData()">Load more</ya-button>
       <span style="flex: 1 1 auto"></span>
     </mat-toolbar>
-  </div>
+  </ya-panel>
 </app-instance-page>

@@ -1,7 +1,7 @@
 <app-instance-page>
   <app-instance-toolbar>Search results</app-instance-toolbar>
 
-  <div class="panel-content">
+  <ya-panel>
     @if (result$ | async; as result) {
       <div style="margin-bottom: 1em">
         Showing {{ result.resources.length }} of {{ result.totalSize }} result
@@ -29,5 +29,5 @@
         </mat-toolbar>
       }
     }
-  </div>
+  </ya-panel>
 </app-instance-page>

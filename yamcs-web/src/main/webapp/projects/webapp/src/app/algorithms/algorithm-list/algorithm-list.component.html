@@ -1,8 +1,8 @@
 <app-instance-page>
-  <app-instance-toolbar> Algorithms </app-instance-toolbar>
+  <app-instance-toolbar>Algorithms</app-instance-toolbar>
   <span #top></span>
 
-  <div class="panel-content">
+  <ya-panel>
     <form [formGroup]="filterForm">
       @if (breadcrumb$ | async; as breadcrumb) {
         @if (breadcrumb.length) {
@@ -43,8 +43,8 @@
               <mat-icon class="icon12" style="vertical-align: middle">folder</mat-icon>
               <a
                 [routerLink]="['/algorithms']"
-                [queryParams]="{ c: yamcs.context, system: item.name }"
-                >{{ item.name | filename }}/
+                [queryParams]="{ c: yamcs.context, system: item.name }">
+                {{ item.name | filename }}/
               </a>
             }
             @if (item.algorithm) {
@@ -106,10 +106,12 @@
       [hidePageSize]="true"
       [showFirstLastButtons]="true"
       [length]="dataSource.totalSize$ | async" />
-  </div>
+  </ya-panel>
   <ng-template #empty>
-    <div class="panel-content">
-      The Mission Database for <i>{{ yamcs.instance }}</i> does not define any algorithms.
-    </div>
+    <ya-panel>
+      The Mission Database for
+      <i>{{ yamcs.instance }}</i>
+      does not define any algorithms.
+    </ya-panel>
   </ng-template>
 </app-instance-page>

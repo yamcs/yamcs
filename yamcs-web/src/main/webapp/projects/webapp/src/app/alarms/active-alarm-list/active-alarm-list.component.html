@@ -80,7 +80,7 @@
 
   <div class="table-wrapper">
     @if (dataSource) {
-      <div class="panel-content">
+      <ya-panel>
         <app-alarms-page-tabs />
         <dl class="dl-horizontal">
           <dt>Unacknowledged alarms:</dt>
@@ -110,7 +110,7 @@
           (acknowledgeAlarm)="acknowledgeAlarms([$event])"
           (shelveAlarm)="shelveAlarms([$event])"
           (unshelveAlarm)="unshelveAlarms([$event])" />
-      </div>
+      </ya-panel>
     }
   </div>
 </app-instance-page>

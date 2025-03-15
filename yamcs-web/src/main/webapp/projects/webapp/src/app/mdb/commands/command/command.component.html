@@ -6,13 +6,14 @@
           routerLink="/mdb/commands"
           [queryParams]="{ c: yamcs.context, filter: spaceSystemName }"
           class="ya-link ya-header-link">
-          {{ spaceSystemName }} </a
-        >/{{ command.qualifiedName | shortName }}
+          {{ spaceSystemName }}
+        </a>
+        /{{ command.qualifiedName | shortName }}
         <ya-title-copy [text]="command.qualifiedName" />
       }
     </app-instance-toolbar>
-    <div class="panel-content">
+    <ya-panel>
       <app-command-detail [command]="command" />
-    </div>
+    </ya-panel>
   </app-instance-page>
 }

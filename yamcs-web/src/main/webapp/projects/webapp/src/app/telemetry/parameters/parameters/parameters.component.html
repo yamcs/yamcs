@@ -2,7 +2,7 @@
   <app-instance-toolbar>Parameters</app-instance-toolbar>
   <span #top></span>
 
-  <div class="panel-content">
+  <ya-panel>
     <form [formGroup]="filterForm">
       @if (breadcrumb$ | async; as breadcrumb) {
         @if (breadcrumb.length) {
@@ -187,12 +187,12 @@
       [hidePageSize]="true"
       [showFirstLastButtons]="true"
       [length]="dataSource.totalSize$ | async" />
-  </div>
+  </ya-panel>
   <ng-template #empty>
-    <div class="panel-content">
+    <ya-panel>
       The Mission Database for
       <i>{{ yamcs.instance }}</i>
       does not define any parameters.
-    </div>
+    </ya-panel>
   </ng-template>
 </app-instance-page>

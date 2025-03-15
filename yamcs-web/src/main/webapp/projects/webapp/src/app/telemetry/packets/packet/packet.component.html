@@ -24,7 +24,7 @@
       </div>
     </ya-detail-pane>
     <div class="table-wrapper">
-      <div class="panel-content">
+      <ya-panel>
         @if ((messages$ | async)?.length) {
           <h4>Warnings</h4>
           <table yaDataTable class="expand">
@@ -244,7 +244,7 @@
             (mouseout)="clearHighlightedBitRange()"
             (click)="toggleRow(node)"></tr>
         </table>
-      </div>
+      </ya-panel>
     </div>
   </app-instance-page>
 }

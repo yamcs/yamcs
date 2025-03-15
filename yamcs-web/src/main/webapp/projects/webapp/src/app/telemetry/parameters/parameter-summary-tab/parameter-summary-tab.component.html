@@ -1,8 +1,8 @@
-<div class="panel-content">
+<ya-panel>
   @if (parameter$ | async; as parameter) {
     <app-parameter-detail
       [parameter]="parameter"
       [offset]="offset$ | async"
       [pval]="pval$ | async" />
   }
-</div>
+</ya-panel>

@@ -4,8 +4,8 @@
       <ya-page-icon-button routerLink=".." [queryParams]="{ c: yamcs.context }" icon="arrow_back" />
       Command history / {{ command.id }}
     </app-instance-toolbar>
-    <div class="panel-content">
+    <ya-panel>
       <app-command-detail2 [command]="command" />
-    </div>
+    </ya-panel>
   </app-instance-page>
 }

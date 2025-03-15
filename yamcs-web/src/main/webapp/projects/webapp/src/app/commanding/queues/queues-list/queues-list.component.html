@@ -49,7 +49,7 @@
     </mat-menu>
   </app-instance-toolbar>
 
-  <div class="panel-content">
+  <ya-panel>
     @if ((connectionInfo$ | async)?.processor?.hasCommanding) {
       @if (dataSource) {
         <table
@@ -212,5 +212,5 @@
         </ya-empty-message>
       }
     }
-  </div>
+  </ya-panel>
 </app-instance-page>

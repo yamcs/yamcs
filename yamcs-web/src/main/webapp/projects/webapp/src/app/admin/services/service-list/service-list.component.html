@@ -4,7 +4,7 @@
     <ya-page-icon-button (clicked)="refresh()" matTooltip="Refresh view" icon="refresh" />
   </app-admin-toolbar>
 
-  <div class="panel-content">
+  <ya-panel>
     <form [formGroup]="filterForm">
       <div class="filter-bar">
         <ya-select [options]="instanceOptions$ | async" formControlName="instance" />
@@ -14,5 +14,5 @@
       [dataSource]="dataSource"
       (startService)="startService($event)"
       (stopService)="stopService($event)" />
-  </div>
+  </ya-panel>
 </app-admin-page>

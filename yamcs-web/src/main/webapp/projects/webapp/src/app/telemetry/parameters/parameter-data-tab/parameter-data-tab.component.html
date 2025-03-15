@@ -47,7 +47,7 @@
   }
 </ya-detail-pane>
 <div class="table-wrapper">
-  <div class="panel-content">
+  <ya-panel>
     <form [formGroup]="filterForm">
       <div class="filter-bar">
         <ya-select icon="access_time" formControlName="interval" [options]="intervalOptions" />
@@ -140,7 +140,7 @@
         <span style="flex: 1 1 auto"></span>
       </mat-toolbar>
     }
-  </div>
+  </ya-panel>
 </div>
 
 <ng-template #valueActionsTemplate let-value="value">
