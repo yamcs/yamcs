@@ -1,5 +1,5 @@
 @if (table$ | async; as table) {
-  <div class="panel-content">
+  <ya-panel>
     <h3>Key</h3>
     <table yaDataTable class="expand">
       <tr>
@@ -13,9 +13,9 @@
           <td>{{ column.name }}</td>
           <td>
             @if (column.type === "ENUM") {
-              <span (click)="showEnum(column)" matTooltip="Show enum states" class="enum">{{
-                column.type
-              }}</span>
+              <span (click)="showEnum(column)" matTooltip="Show enum states" class="enum">
+                {{ column.type }}
+              </span>
             }
             @if (column.type !== "ENUM") {
               {{ column.type }}
@@ -42,9 +42,9 @@
           <td>{{ column.name }}</td>
           <td>
             @if (column.type === "ENUM") {
-              <span (click)="showEnum(column)" matTooltip="Show enum states" class="enum">{{
-                column.type
-              }}</span>
+              <span (click)="showEnum(column)" matTooltip="Show enum states" class="enum">
+                {{ column.type }}
+              </span>
             }
             @if (column.type !== "ENUM") {
               {{ column.type }}
@@ -74,7 +74,7 @@
           @for (col of table.histogramColumn; track col; let last = $last) {
             {{ col }}
             @if (!last) {
-              <span>, </span>
+              <span>,</span>
             }
           }
         }
@@ -99,5 +99,5 @@
         </dd>
       }
     </dl>
-  </div>
+  </ya-panel>
 }

@@ -4,7 +4,7 @@
   <app-send-command-wizard-step step="3" />
 
   @if (command$ | async; as command) {
-    <div class="panel-content">
+    <ya-panel>
       <app-command-detail2 [command]="command" />
       <ng-container>
         <br />
@@ -20,6 +20,6 @@
           Resend this command
         </ya-button>
       </ng-container>
-    </div>
+    </ya-panel>
   }
 </app-instance-page>

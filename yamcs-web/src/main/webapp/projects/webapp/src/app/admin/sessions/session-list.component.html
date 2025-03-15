@@ -1,7 +1,7 @@
 <app-admin-page>
-  <app-admin-toolbar> Sessions </app-admin-toolbar>
+  <app-admin-toolbar>Sessions</app-admin-toolbar>
 
-  <div class="panel-content">
+  <ya-panel>
     <table
       mat-table
       [dataSource]="dataSource"
@@ -69,5 +69,5 @@
       <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
     </table>
     <mat-paginator [pageSize]="100" [hidePageSize]="true" [showFirstLastButtons]="true" />
-  </div>
+  </ya-panel>
 </app-admin-page>

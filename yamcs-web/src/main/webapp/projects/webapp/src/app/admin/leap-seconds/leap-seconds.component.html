@@ -1,7 +1,7 @@
 <app-admin-page>
-  <app-admin-toolbar> Leap seconds </app-admin-toolbar>
+  <app-admin-toolbar>Leap seconds</app-admin-toolbar>
 
-  <div class="panel-content">
+  <ya-panel>
     <table mat-table [dataSource]="dataSource" class="ya-data-table expand">
       <ng-container matColumnDef="period">
         <th mat-header-cell *matHeaderCellDef>Valid period (at 0h UTC)</th>
@@ -34,5 +34,5 @@
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
     </table>
-  </div>
+  </ya-panel>
 </app-admin-page>

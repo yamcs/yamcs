@@ -80,6 +80,7 @@ import { TableDirective } from './directives/table.directive';
 
 import { YaColorInput } from '../public-api';
 import { YaActionLogSummary } from './components/action-log-summary/action-log-summary.component';
+import { YaPanel } from './components/panel/panel.component';
 import { AliasPipe } from './pipes/alias.pipe';
 import { ArrayContainsPipe } from './pipes/array-contains.pipe';
 import { BasenamePipe } from './pipes/basename.pipe';
@@ -193,6 +194,7 @@ const sharedComponents = [
   YaOption,
   YaPageButton,
   YaPageIconButton,
+  YaPanel,
   YaProgress,
   YaPrintZone,
   YaSearchFilter,

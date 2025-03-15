@@ -1,7 +1,7 @@
 <app-admin-page>
   <app-admin-toolbar>Roles</app-admin-toolbar>
 
-  <div class="panel-content">
+  <ya-panel>
     <div class="filter-bar">
       <ya-search-filter [formControl]="filterControl" placeholder="Filter roles" />
     </div>
@@ -38,5 +38,5 @@
     @if (!dataSource.data.length) {
       <ya-empty-message>No rows to display</ya-empty-message>
     }
-  </div>
+  </ya-panel>
 </app-admin-page>

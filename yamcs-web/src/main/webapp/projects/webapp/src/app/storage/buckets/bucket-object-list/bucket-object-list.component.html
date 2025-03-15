@@ -55,7 +55,7 @@
         }
       </mat-sidenav>
       <mat-sidenav-content>
-        <div class="panel-content">
+        <ya-panel>
           <app-bucket-page-tabs [bucket]="name" />
           @if (breadcrumb$ | async; as breadcrumb) {
             <div style="margin-top: 16px">
@@ -149,7 +149,7 @@
           } @else {
             <ya-empty-message>Empty directory.</ya-empty-message>
           }
-        </div>
+        </ya-panel>
       </mat-sidenav-content>
     </mat-sidenav-container>
   </div>

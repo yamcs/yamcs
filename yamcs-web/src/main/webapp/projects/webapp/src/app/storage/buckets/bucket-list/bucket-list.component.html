@@ -16,7 +16,7 @@
     }
   </app-storage-toolbar>
 
-  <div class="panel-content">
+  <ya-panel>
     <div class="filter-bar">
       <ya-search-filter
         [formControl]="filterControl"
@@ -139,5 +139,5 @@
         [class.selected]="selection.isSelected(row)"
         (click)="toggleOne(row)"></tr>
     </table>
-  </div>
+  </ya-panel>
 </app-storage-page>

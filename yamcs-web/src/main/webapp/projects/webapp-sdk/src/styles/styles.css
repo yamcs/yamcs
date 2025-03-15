@@ -89,10 +89,6 @@ body {
   -webkit-user-select: none;
 }
 
-.panel-content {
-  padding: 24px;
-}
-
 .form-content {
   padding: 24px;
   max-width: 600px;
@@ -344,10 +340,6 @@ p {
 
   .mat-drawer-content {
     margin: 0 !important;
-  }
-
-  .panel-content {
-    padding: 0;
   }
 
   * {

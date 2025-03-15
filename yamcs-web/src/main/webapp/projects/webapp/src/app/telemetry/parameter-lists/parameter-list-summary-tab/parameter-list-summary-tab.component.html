@@ -1,4 +1,4 @@
-<div class="panel-content">
+<ya-panel>
   @if (plist$ | async; as plist) {
     <div class="filter-bar">
       <ya-column-chooser #columnChooser [columns]="columns" preferenceKey="tmParameters" />
@@ -111,4 +111,4 @@
       <tr mat-row *matRowDef="let row; columns: columnChooser.displayedColumns$ | async"></tr>
     </table>
   }
-</div>
+</ya-panel>

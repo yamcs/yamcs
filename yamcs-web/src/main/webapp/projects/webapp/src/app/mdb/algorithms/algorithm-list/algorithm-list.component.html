@@ -2,7 +2,7 @@
   <app-instance-toolbar>Algorithms</app-instance-toolbar>
   <span #top></span>
 
-  <div class="panel-content">
+  <ya-panel>
     <div class="filter-bar">
       <ya-search-filter
         [formControl]="filterControl"
@@ -61,10 +61,12 @@
       [hidePageSize]="true"
       [showFirstLastButtons]="true"
       [length]="dataSource.totalSize$ | async" />
-  </div>
+  </ya-panel>
   <ng-template #empty>
-    <div class="panel-content">
-      The Mission Database for <i>{{ yamcs.instance }}</i> does not define any algorithms.
-    </div>
+    <ya-panel>
+      The Mission Database for
+      <i>{{ yamcs.instance }}</i>
+      does not define any algorithms.
+    </ya-panel>
   </ng-template>
 </app-instance-page>

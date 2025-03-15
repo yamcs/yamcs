@@ -4,7 +4,7 @@
       <ya-page-icon-button routerLink=".." icon="arrow_back" />
       {{ thread.name }}
     </app-admin-toolbar>
-    <div class="panel-content ya-link">
+    <ya-panel class="ya-link">
       <dl class="dl-horizontal no-lead">
         <dt>ID</dt>
         <dd>{{ thread.id }}</dd>
@@ -38,6 +38,6 @@
       } @else {
         Information not available
       }
-    </div>
+    </ya-panel>
   </app-admin-page>
 }

@@ -11,7 +11,7 @@
     }
   </app-instance-toolbar>
 
-  <div class="panel-content">
+  <ya-panel>
     <div class="filter-bar">
       <ya-search-filter [formControl]="filterControl" placeholder="Filter lists" />
     </div>
@@ -48,5 +48,5 @@
     @if (!dataSource.data.length) {
       <ya-empty-message>No rows to display</ya-empty-message>
     }
-  </div>
+  </ya-panel>
 </app-instance-page>

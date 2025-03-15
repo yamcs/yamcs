@@ -1,7 +1,7 @@
 <app-instance-page>
   <app-instance-toolbar>Events</app-instance-toolbar>
 
-  <div class="panel-content">
+  <ya-panel>
     <app-events-page-tabs />
     <table
       mat-table
@@ -44,5 +44,5 @@
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
     </table>
-  </div>
+  </ya-panel>
 </app-instance-page>

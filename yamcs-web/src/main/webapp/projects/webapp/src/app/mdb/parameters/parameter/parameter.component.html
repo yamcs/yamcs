@@ -6,13 +6,14 @@
           routerLink="/mdb/parameters"
           [queryParams]="{ c: yamcs.context, filter: spaceSystemName }"
           class="ya-link ya-header-link">
-          {{ spaceSystemName }} </a
-        >/{{ parameter.qualifiedName | shortName }}{{ offset$ | async }}
+          {{ spaceSystemName }}
+        </a>
+        /{{ parameter.qualifiedName | shortName }}{{ offset$ | async }}
         <ya-title-copy [text]="parameter.qualifiedName + ((offset$ | async) || '')" />
       }
     </app-instance-toolbar>
-    <div class="panel-content">
+    <ya-panel>
       <app-parameter-detail [parameter]="parameter" [offset]="offset$ | async" />
-    </div>
+    </ya-panel>
   </app-instance-page>
 }

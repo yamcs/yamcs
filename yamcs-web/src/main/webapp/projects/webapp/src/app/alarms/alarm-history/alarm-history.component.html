@@ -2,7 +2,7 @@
   <app-instance-toolbar>Alarms</app-instance-toolbar>
 
   <div class="table-wrapper">
-    <div class="panel-content">
+    <ya-panel>
       <app-alarms-page-tabs />
       <form [formGroup]="filterForm" style="margin-top: 16px">
         <div class="filter-bar">
@@ -156,6 +156,6 @@
         <ya-button [disabled]="true">Load more</ya-button>
         <span style="flex: 1 1 auto"></span>
       </mat-toolbar>
-    </div>
+    </ya-panel>
   </div>
 </app-instance-page>

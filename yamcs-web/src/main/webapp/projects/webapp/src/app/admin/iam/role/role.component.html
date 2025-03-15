@@ -3,7 +3,7 @@
     <app-admin-toolbar>
       {{ role.name }}
     </app-admin-toolbar>
-    <div class="panel-content ya-link">
+    <ya-panel class="ya-link">
       <h4>Description</h4>
       <div style="white-space: pre-wrap">{{ role.description || "-" }}</div>
       <br />
@@ -27,6 +27,6 @@
           <dd>{{ privilege.objects }}</dd>
         }
       </dl>
-    </div>
+    </ya-panel>
   </app-admin-page>
 }

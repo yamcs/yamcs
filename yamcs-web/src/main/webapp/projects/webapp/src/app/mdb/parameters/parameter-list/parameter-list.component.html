@@ -2,7 +2,7 @@
   <app-instance-toolbar>Parameters</app-instance-toolbar>
   <span #top></span>
 
-  <div class="panel-content">
+  <ya-panel>
     <form [formGroup]="filterForm">
       <div class="filter-bar">
         <ya-search-filter
@@ -91,10 +91,12 @@
       [hidePageSize]="true"
       [showFirstLastButtons]="true"
       [length]="dataSource.totalSize$ | async" />
-  </div>
+  </ya-panel>
   <ng-template #empty>
-    <div class="panel-content">
-      The Mission Database for <i>{{ yamcs.instance }}</i> does not define any parameters.
-    </div>
+    <ya-panel>
+      The Mission Database for
+      <i>{{ yamcs.instance }}</i>
+      does not define any parameters.
+    </ya-panel>
   </ng-template>
 </app-instance-page>

@@ -21,7 +21,7 @@
   </app-instance-toolbar>
 
   @if (dataSource) {
-    <div class="panel-content">
+    <ya-panel>
       <app-events-page-tabs>
         <ya-button
           appearance="text"
@@ -234,6 +234,6 @@
         <ya-button [disabled]="!dataSource.hasMore()" (click)="loadMoreData()">Load more</ya-button>
         <span style="flex: 1 1 auto"></span>
       </mat-toolbar>
-    </div>
+    </ya-panel>
   }
 </app-instance-page>

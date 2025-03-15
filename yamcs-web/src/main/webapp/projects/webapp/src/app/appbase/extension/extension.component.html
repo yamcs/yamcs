@@ -3,5 +3,5 @@
     <div #customElementControlsHolder></div>
   </app-instance-toolbar>
 
-  <div #customElementHolder [class.panel-content]="!disablePadding()"></div>
+  <div #customElementHolder class="page-panel" [class.no-padding]="disablePadding()"></div>
 </app-instance-page>

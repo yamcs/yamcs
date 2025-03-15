@@ -1,7 +1,7 @@
 <app-admin-page>
   <app-admin-toolbar>Action log</app-admin-toolbar>
 
-  <div class="panel-content">
+  <ya-panel>
     <form [formGroup]="filterForm">
       <div class="filter-bar">
         <ya-search-filter formControlName="filter" placeholder="Filter by text search" />
@@ -79,5 +79,5 @@
     @if (!(rowGroups$ | async)!.length) {
       <ya-empty-message>No actions for the current filter criteria.</ya-empty-message>
     }
-  </div>
+  </ya-panel>
 </app-admin-page>

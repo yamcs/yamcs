@@ -1,7 +1,7 @@
 <app-admin-page>
-  <app-admin-toolbar> HTTP traffic </app-admin-toolbar>
+  <app-admin-toolbar>HTTP traffic</app-admin-toolbar>
 
-  <div class="panel-content">
+  <ya-panel>
     @if (traffic$ | async; as traffic) {
       <dl class="dl-horizontal no-lead">
         <dt>Cumulative read</dt>
@@ -89,5 +89,5 @@
       <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
     </table>
     <mat-paginator [pageSize]="100" [hidePageSize]="true" [showFirstLastButtons]="true" />
-  </div>
+  </ya-panel>
 </app-admin-page>

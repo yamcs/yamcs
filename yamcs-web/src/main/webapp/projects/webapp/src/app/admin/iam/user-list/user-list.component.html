@@ -4,7 +4,7 @@
     <ya-page-button routerLink="create" icon="add_circle_outline">Create user</ya-page-button>
   </app-admin-toolbar>
 
-  <div class="panel-content">
+  <ya-panel>
     <div class="filter-bar">
       <ya-search-filter [formControl]="filterControl" placeholder="Filter users" />
     </div>
@@ -42,5 +42,5 @@
           (deleteUser)="deleteUser($event)" />
       </mat-tab>
     </mat-tab-group>
-  </div>
+  </ya-panel>
 </app-admin-page>

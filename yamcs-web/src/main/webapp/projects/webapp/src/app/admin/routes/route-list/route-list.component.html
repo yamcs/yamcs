@@ -16,7 +16,7 @@
   </ya-detail-pane>
 
   <div class="table-wrapper">
-    <div class="panel-content">
+    <ya-panel>
       <div class="filter-bar">
         <ya-search-filter [formControl]="filterControl" placeholder="Filter routes" />
       </div>
@@ -66,6 +66,6 @@
           [ngClass]="{ selected: row === (selectedRoute$ | async) }"
           [class.deprecated]="row.deprecated"></tr>
       </table>
-    </div>
+    </ya-panel>
   </div>
 </app-admin-page>

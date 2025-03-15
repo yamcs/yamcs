@@ -39,7 +39,7 @@
       (dragleave)="dragLeave($event)"
       (drop)="drop($event)"></div>
 
-    <div class="panel-content">
+    <ya-panel>
       @if (breadcrumb$ | async; as breadcrumb) {
         @if (breadcrumb.length) {
           <ya-breadcrumb-trail>
@@ -175,6 +175,6 @@
           }
         }
       }
-    </div>
+    </ya-panel>
   </div>
 </app-instance-page>

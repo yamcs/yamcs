@@ -42,7 +42,7 @@
   </app-instance-toolbar>
 
   <div class="table-wrapper">
-    <div class="panel-content">
+    <ya-panel>
       <app-file-transfer-tabs />
 
       <form [formGroup]="filterForm" style="margin-top: 16px">
@@ -215,6 +215,6 @@
           <p>This instance has no file transfer services configured.</p>
         </ya-empty-message>
       }
-    </div>
+    </ya-panel>
   </div>
 </app-instance-page>

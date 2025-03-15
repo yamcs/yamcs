@@ -1,11 +1,11 @@
 <app-instance-page>
-  <app-instance-toolbar> Send a command </app-instance-toolbar>
+  <app-instance-toolbar>Send a command</app-instance-toolbar>
   <span #top></span>
 
   <app-send-command-wizard-step step="1" />
 
   @if (connectionInfo$ | async; as connectionInfo) {
-    <div class="panel-content">
+    <ya-panel>
       <div [class.noDisplay]="!connectionInfo.processor?.hasCommanding">
         @if (breadcrumb$ | async; as breadcrumb) {
           @if (breadcrumb.length) {
@@ -54,8 +54,8 @@
                   <mat-icon class="icon12" style="vertical-align: middle">folder</mat-icon>
                   <a
                     routerLink="/commanding/send"
-                    [queryParams]="{ c: yamcs.context, system: item.name }"
-                    >{{ item.name | filename }}/
+                    [queryParams]="{ c: yamcs.context, system: item.name }">
+                    {{ item.name | filename }}/
                   </a>
                 }
                 @if (item.command) {
@@ -130,12 +130,13 @@
             @if (connectionInfo.processor?.replay) {
               replay
             }
-            processor <strong>{{ connectionInfo.processor?.name }}</strong
-            >.
+            processor
+            <strong>{{ connectionInfo.processor?.name }}</strong>
+            .
           </p>
           <p>This processor does not support commanding.</p>
         </ya-empty-message>
       }
-    </div>
+    </ya-panel>
   }
 </app-instance-page>
