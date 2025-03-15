@@ -1,7 +1,7 @@
 <app-admin-page>
-  <app-admin-toolbar> Replication </app-admin-toolbar>
+  <app-admin-toolbar>Replication</app-admin-toolbar>
 
-  <div class="panel-content">
+  <ya-panel>
     <h4>Inbound</h4>
     @if (hasSlaves$ | async) {
       <table mat-table [dataSource]="slavesDataSource" class="ya-data-table expand">
@@ -21,9 +21,9 @@
             <span
               (click)="showReplicationStreams(row.streams || [])"
               matTooltip="Show streams"
-              class="streams"
-              >{{ (row.streams || []).length }} streams</span
-            >
+              class="streams">
+              {{ (row.streams || []).length }} streams
+            </span>
           </td>
         </ng-container>
         <ng-container matColumnDef="mode">
@@ -86,9 +86,9 @@
             <span
               (click)="showReplicationStreams(row.streams || [])"
               matTooltip="Show streams"
-              class="streams"
-              >{{ (row.streams || []).length }} streams</span
-            >
+              class="streams">
+              {{ (row.streams || []).length }} streams
+            </span>
           </td>
         </ng-container>
         <ng-container matColumnDef="mode">
@@ -127,7 +127,7 @@
         <ng-container matColumnDef="nextTx">
           <th mat-header-cell *matHeaderCellDef>
             Next&nbsp;TX
-            <ya-help> Next Transaction ID expected by the remote Yamcs instance </ya-help>
+            <ya-help>Next Transaction ID expected by the remote Yamcs instance</ya-help>
           </th>
           <td mat-cell *matCellDef="let row">{{ (row.nextTx | number) || "-" }}</td>
         </ng-container>
@@ -141,5 +141,5 @@
     } @else {
       <ya-empty-message marginTop="0">Not configured</ya-empty-message>
     }
-  </div>
+  </ya-panel>
 </app-admin-page>

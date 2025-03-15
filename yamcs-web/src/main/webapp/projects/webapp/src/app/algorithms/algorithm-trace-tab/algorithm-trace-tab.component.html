@@ -25,7 +25,7 @@
           }
         </div>
       </div>
-      <div class="panel-content">
+      <ya-panel>
         @if ((section$ | async) === "runs") {
           @if (trace$ | async; as trace) {
             @if (trace.runs?.length) {
@@ -174,7 +174,7 @@
             </ya-empty-message>
           }
         }
-      </div>
+      </ya-panel>
     } @else {
       <ya-empty-message headerTitle="Trace">
         <p>The trace tool captures runs, inputs, outputs and log messages of this algorithm.</p>

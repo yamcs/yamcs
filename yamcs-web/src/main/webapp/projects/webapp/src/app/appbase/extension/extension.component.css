@@ -1,0 +1,13 @@
+.page-panel {
+  padding: 24px;
+}
+
+.page-panel.no-padding {
+  padding: 0;
+}
+
+@media print {
+  .page-panel {
+    padding: 0;
+  }
+}

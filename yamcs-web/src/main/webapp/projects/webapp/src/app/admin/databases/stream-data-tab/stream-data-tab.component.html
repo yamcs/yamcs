@@ -9,7 +9,7 @@
   }
 </ya-detail-pane>
 <div class="data-table-wrapper">
-  <div class="panel-content">
+  <ya-panel>
     <table mat-table #table [dataSource]="dataSource" class="ya-data-table expand">
       @for (column of availableColumns$ | async; track column) {
         <ng-container [cdkColumnDef]="column">
@@ -32,5 +32,5 @@
         [ngClass]="{ selected: row === (selectedStreamData$ | async) }"
         (click)="selectStreamData(row)"></tr>
     </table>
-  </div>
+  </ya-panel>
 </div>

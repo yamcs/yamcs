@@ -5,6 +5,7 @@ import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance
 
 @Component({
   templateUrl: './extension.component.html',
+  styleUrl: './extension.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     InstanceToolbarComponent,

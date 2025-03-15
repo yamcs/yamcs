@@ -4,7 +4,7 @@
     {{ name }}
   </app-storage-toolbar>
 
-  <div class="panel-content">
+  <ya-panel>
     <app-bucket-page-tabs [bucket]="name"></app-bucket-page-tabs>
     @if (bucket$ | async; as bucket) {
       <div class="small" style="margin-top: 16px">
@@ -38,5 +38,5 @@
         </dl>
       </div>
     }
-  </div>
+  </ya-panel>
 </app-storage-page>

@@ -15,7 +15,7 @@
     </ya-page-button>
   </app-instance-toolbar>
 
-  <div class="panel-content">
+  <ya-panel>
     @if (dataSource) {
       <table
         mat-table
@@ -89,5 +89,5 @@
           (click)="toggleOne(row)"></tr>
       </table>
     }
-  </div>
+  </ya-panel>
 </app-instance-page>

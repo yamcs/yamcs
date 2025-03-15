@@ -1,5 +1,5 @@
 @if (model$ | async; as model) {
-  <div class="panel-content">
+  <ya-panel>
     @if (model.parameters.length) {
       @if (model.scroll) {
         <app-scrolling-parameter-table
@@ -51,5 +51,5 @@
         </div>
       </ya-empty-message>
     </ng-template>
-  </div>
+  </ya-panel>
 }

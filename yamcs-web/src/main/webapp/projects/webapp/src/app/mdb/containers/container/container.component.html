@@ -6,13 +6,14 @@
           routerLink="/mdb/containers"
           [queryParams]="{ c: yamcs.context, filter: spaceSystemName }"
           class="ya-link ya-header-link">
-          {{ spaceSystemName }} </a
-        >/{{ container.qualifiedName | shortName }}
+          {{ spaceSystemName }}
+        </a>
+        /{{ container.qualifiedName | shortName }}
         <ya-title-copy [text]="container.qualifiedName" />
       }
     </app-instance-toolbar>
-    <div class="panel-content">
+    <ya-panel>
       <app-container-detail [container]="container" />
-    </div>
+    </ya-panel>
   </app-instance-page>
 }

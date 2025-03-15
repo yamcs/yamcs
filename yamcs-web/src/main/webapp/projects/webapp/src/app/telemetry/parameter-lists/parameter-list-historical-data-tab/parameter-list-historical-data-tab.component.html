@@ -1,5 +1,5 @@
 @if (plist$ | async; as plist) {
-  <div class="panel-content">
+  <ya-panel>
     <form [formGroup]="filterForm">
       <div class="filter-bar">
         <ya-select icon="access_time" formControlName="interval" [options]="intervalOptions" />
@@ -106,5 +106,5 @@
         </table>
       </div>
     }
-  </div>
+  </ya-panel>
 }

@@ -65,7 +65,7 @@
     }
   </ya-detail-pane>
   <div class="table-wrapper">
-    <div class="panel-content">
+    <ya-panel>
       <form [formGroup]="filterForm">
         <div class="filter-bar">
           <ya-select [options]="nameOptions$ | async" formControlName="name" />
@@ -166,6 +166,6 @@
         <ya-button [disabled]="!dataSource.hasMore()" (click)="loadMoreData()">Load more</ya-button>
         <span style="flex: 1 1 auto"></span>
       </mat-toolbar>
-    </div>
+    </ya-panel>
   </div>
 </app-instance-page>

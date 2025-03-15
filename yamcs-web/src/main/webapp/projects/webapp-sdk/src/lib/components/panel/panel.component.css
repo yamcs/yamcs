@@ -1,0 +1,10 @@
+:host {
+  display: block;
+  padding: 24px;
+}
+
+@media print {
+  :host {
+    padding: 0;
+  }
+}

@@ -20,7 +20,7 @@
     </ya-page-button>
   </app-instance-toolbar>
 
-  <div class="panel-content">
+  <ya-panel>
     <app-clearances-page-tabs />
     @if (dataSource) {
       <table
@@ -91,5 +91,5 @@
       </table>
     }
     <mat-paginator [pageSize]="100" [hidePageSize]="true" [showFirstLastButtons]="true" />
-  </div>
+  </ya-panel>
 </app-instance-page>

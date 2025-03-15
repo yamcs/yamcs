@@ -6,13 +6,14 @@
           routerLink="/mdb/algorithms"
           [queryParams]="{ c: yamcs.context, filter: spaceSystemName }"
           class="ya-link ya-header-link">
-          {{ spaceSystemName }} </a
-        >/{{ algorithm.qualifiedName | shortName }}
+          {{ spaceSystemName }}
+        </a>
+        /{{ algorithm.qualifiedName | shortName }}
         <ya-title-copy [text]="algorithm.qualifiedName" />
       }
     </app-instance-toolbar>
-    <div class="panel-content">
+    <ya-panel>
       <app-algorithm-detail [algorithm]="algorithm" />
-    </div>
+    </ya-panel>
   </app-instance-page>
 }

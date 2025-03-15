@@ -48,7 +48,7 @@
 
   <div class="table-wrapper">
     @if (dataSource) {
-      <div class="panel-content">
+      <ya-panel>
         <form [formGroup]="filterForm">
           <div class="filter-bar">
             <ya-search-filter formControlName="filter" placeholder="Filter by text search" />
@@ -457,7 +457,7 @@
           </ya-button>
           <span style="flex: 1 1 auto"></span>
         </mat-toolbar>
-      </div>
+      </ya-panel>
     }
   </div>
 </app-instance-page>
