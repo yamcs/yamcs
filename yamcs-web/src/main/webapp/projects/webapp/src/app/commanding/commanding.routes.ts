@@ -16,7 +16,6 @@ import { SendCommandComponent } from './command-sender/send-command/send-command
 import { QueuedCommandsTabComponent } from './queues/queued-commands-tab/queued-commands-tab.component';
 import { QueuesActionLogTabComponent } from './queues/queues-action-log-tab/queues-action-log-tab.component';
 import { QueuesListComponent } from './queues/queues-list/queues-list.component';
-import { StacksPageComponent } from './stacks/stacks-page/stacks-page.component';
 
 const commandMatcher: UrlMatcher = (url) => {
   let consumed = url;
@@ -117,10 +116,6 @@ export const ROUTES: Routes = [
             component: QueuesActionLogTabComponent,
           },
         ],
-      },
-      {
-        path: 'stacks',
-        component: StacksPageComponent,
       },
       {
         path: 'ext',

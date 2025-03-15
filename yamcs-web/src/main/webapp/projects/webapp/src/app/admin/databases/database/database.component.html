@@ -44,14 +44,6 @@
           [active]="rlb.isActive">
           Streams
         </a>
-        <a
-          mat-tab-link
-          [routerLink]="['/admin/databases', database.name, 'shell']"
-          routerLinkActive
-          #rlc="routerLinkActive"
-          [active]="rlc.isActive">
-          DB Shell
-        </a>
       }
       @if (object$ | async; as obj) {
         @if (obj.type === "table") {
