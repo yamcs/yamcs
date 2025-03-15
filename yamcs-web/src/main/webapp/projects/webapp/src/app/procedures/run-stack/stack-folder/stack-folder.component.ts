@@ -72,7 +72,7 @@ export class StackFolderComponent implements OnDestroy {
     private messageService: MessageService,
     private configService: ConfigService,
   ) {
-    title.setTitle('Command stacks');
+    title.setTitle('Stacks');
     this.storageClient = yamcs.createStorageClient();
 
     this.bucket = configService.getStackBucket();

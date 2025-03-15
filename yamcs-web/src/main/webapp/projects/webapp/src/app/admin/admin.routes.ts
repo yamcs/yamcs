@@ -9,7 +9,6 @@ import { mayReadSystemInfoGuardFn } from '../core/guards/MayReadSystemInfoGuard'
 import { AdminActionLogComponent } from './admin-action-log/admin-action-log.component';
 import { DatabaseListComponent } from './databases/database-list/database-list.component';
 import { DatabaseComponent } from './databases/database/database.component';
-import { ShellTabComponent } from './databases/shell-tab/shell-tab.component';
 import { StreamColumnListComponent } from './databases/stream-column-list/stream-column-list.component';
 import { StreamDataTabComponent } from './databases/stream-data-tab/stream-data-tab.component';
 import { StreamListComponent } from './databases/stream-list/stream-list.component';
@@ -139,11 +138,6 @@ export const ROUTES: Routes = [
                     component: TableScriptTabComponent,
                   },
                 ],
-              },
-              {
-                path: 'shell',
-                pathMatch: 'full',
-                component: ShellTabComponent,
               },
               {
                 path: 'streams',
