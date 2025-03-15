@@ -136,12 +136,6 @@ export class InstancePageComponent implements OnInit, OnDestroy {
       this.commandingItems.push({ path: 'send', label: 'Send a command' });
     }
     const stackBucket = configService.getStackBucket();
-    if (
-      this.config.tc &&
-      this.user.hasObjectPrivilege('ReadBucket', stackBucket)
-    ) {
-      this.commandingItems.push({ path: 'stacks', label: 'Command stacks' });
-    }
     if (this.user.hasAnyObjectPrivilegeOfType('CommandHistory')) {
       this.commandingItems.push({ path: 'history', label: 'Command history' });
     }
