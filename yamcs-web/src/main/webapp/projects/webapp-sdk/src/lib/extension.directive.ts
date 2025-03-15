@@ -8,7 +8,6 @@ import { YamcsService } from './services/yamcs.service';
 
 @Directive()
 export abstract class YamcsWebExtension {
-
   private _extensionService: ExtensionService;
   sdkBridge = inject(SdkBridge);
 
@@ -16,7 +15,9 @@ export abstract class YamcsWebExtension {
   public subroute: string;
 
   @Input()
-  get extensionService() { return this._extensionService; }
+  get extensionService() {
+    return this._extensionService;
+  }
   set extensionService(extensionService: ExtensionService) {
     this._extensionService = extensionService;
 

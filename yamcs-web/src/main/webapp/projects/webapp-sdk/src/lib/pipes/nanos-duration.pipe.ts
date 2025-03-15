@@ -5,7 +5,6 @@ import * as utils from '../utils';
   name: 'nanosDuration',
 })
 export class NanosDurationPipe implements PipeTransform {
-
   transform(nanos: number | null): string | null {
     if (nanos == null) {
       return null;
@@ -13,9 +12,9 @@ export class NanosDurationPipe implements PipeTransform {
     nanos = Math.floor(nanos);
     const totalSeconds = Math.floor(nanos / 1000 / 1000 / 1000);
     const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds - (hours * 3600)) / 60);
-    const seconds = totalSeconds - (hours * 3600) - (minutes * 60);
-    const subseconds = nanos - (totalSeconds * 1000 * 1000 * 1000);
+    const minutes = Math.floor((totalSeconds - hours * 3600) / 60);
+    const seconds = totalSeconds - hours * 3600 - minutes * 60;
+    const subseconds = nanos - totalSeconds * 1000 * 1000 * 1000;
     if (hours) {
       if (minutes) {
         return `${hours}h ${minutes}m`;

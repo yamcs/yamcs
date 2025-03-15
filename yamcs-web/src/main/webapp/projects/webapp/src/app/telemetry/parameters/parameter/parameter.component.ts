@@ -1,7 +1,24 @@
-import { ChangeDetectionStrategy, Component, OnChanges, OnDestroy, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnChanges,
+  OnDestroy,
+  input,
+} from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
-import { ConfigService, Formatter, MessageService, Parameter, ParameterSubscription, ParameterValue, Value, WebsiteConfig, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  ConfigService,
+  Formatter,
+  MessageService,
+  Parameter,
+  ParameterSubscription,
+  ParameterValue,
+  Value,
+  WebsiteConfig,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../../core/services/AuthService';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
@@ -21,7 +38,6 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
   ],
 })
 export class ParameterComponent implements OnChanges, OnDestroy {
-
   qualifiedName = input.required<string>({ alias: 'parameter' });
 
   config: WebsiteConfig;
@@ -45,36 +61,45 @@ export class ParameterComponent implements OnChanges, OnDestroy {
 
   ngOnChanges() {
     const qualifiedName = this.qualifiedName();
-    this.yamcs.yamcsClient.getParameter(this.yamcs.instance!, qualifiedName).then(parameter => {
-      this.parameter$.next(parameter);
+    this.yamcs.yamcsClient
+      .getParameter(this.yamcs.instance!, qualifiedName)
+      .then((parameter) => {
+        this.parameter$.next(parameter);
 
-      if (qualifiedName !== parameter.qualifiedName) {
-        this.offset$.next(qualifiedName.substring(parameter.qualifiedName.length));
-      } else {
-        this.offset$.next(null);
-      }
+        if (qualifiedName !== parameter.qualifiedName) {
+          this.offset$.next(
+            qualifiedName.substring(parameter.qualifiedName.length),
+          );
+        } else {
+          this.offset$.next(null);
+        }
 
-      this.updateTitle();
-    }).catch(err => {
-      this.messageService.showError(err);
-    });
+        this.updateTitle();
+      })
+      .catch((err) => {
+        this.messageService.showError(err);
+      });
 
     if (this.parameterValueSubscription) {
       this.parameterValueSubscription.cancel();
     }
 
-    this.parameterValueSubscription = this.yamcs.yamcsClient.createParameterSubscription({
-      instance: this.yamcs.instance!,
-      processor: this.yamcs.processor!,
-      id: [{ name: qualifiedName }],
-      abortOnInvalid: false,
-      sendFromCache: true,
-      updateOnExpiration: true,
-      action: 'REPLACE',
-    }, data => {
-      this.parameterValue$.next(data.values ? data.values[0] : null);
-      this.updateTitle();
-    });
+    this.parameterValueSubscription =
+      this.yamcs.yamcsClient.createParameterSubscription(
+        {
+          instance: this.yamcs.instance!,
+          processor: this.yamcs.processor!,
+          id: [{ name: qualifiedName }],
+          abortOnInvalid: false,
+          sendFromCache: true,
+          updateOnExpiration: true,
+          action: 'REPLACE',
+        },
+        (data) => {
+          this.parameterValue$.next(data.values ? data.values[0] : null);
+          this.updateTitle();
+        },
+      );
   }
 
   updateTitle() {
@@ -104,10 +129,12 @@ export class ParameterComponent implements OnChanges, OnDestroy {
   isWritable() {
     const parameter = this.parameter$.value;
     if (parameter) {
-      return parameter.dataSource === 'LOCAL'
-        || parameter.dataSource === 'EXTERNAL1'
-        || parameter.dataSource === 'EXTERNAL2'
-        || parameter.dataSource === 'EXTERNAL3';
+      return (
+        parameter.dataSource === 'LOCAL' ||
+        parameter.dataSource === 'EXTERNAL1' ||
+        parameter.dataSource === 'EXTERNAL2' ||
+        parameter.dataSource === 'EXTERNAL3'
+      );
     }
     return false;
   }
@@ -115,7 +142,9 @@ export class ParameterComponent implements OnChanges, OnDestroy {
   maySetParameter() {
     const parameter = this.parameter$.value;
     if (parameter) {
-      return this.authService.getUser()!.hasObjectPrivilege('WriteParameter', parameter.qualifiedName);
+      return this.authService
+        .getUser()!
+        .hasObjectPrivilege('WriteParameter', parameter.qualifiedName);
     }
     return false;
   }
@@ -133,14 +162,19 @@ export class ParameterComponent implements OnChanges, OnDestroy {
     const dialogRef = this.dialog.open(SetParameterDialogComponent, {
       width: '600px',
       data: {
-        parameter: this.parameter$.value
-      }
+        parameter: this.parameter$.value,
+      },
     });
     dialogRef.afterClosed().subscribe((value: Value) => {
       if (value) {
         this.yamcs.yamcsClient
-          .setParameterValue(this.yamcs.instance!, this.yamcs.processor!, parameter.qualifiedName, value)
-          .catch(err => this.messageService.showError(err));
+          .setParameterValue(
+            this.yamcs.instance!,
+            this.yamcs.processor!,
+            parameter.qualifiedName,
+            value,
+          )
+          .catch((err) => this.messageService.showError(err));
       }
     });
   }

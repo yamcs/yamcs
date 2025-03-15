@@ -1,8 +1,29 @@
-import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
-import { FormArray, FormControl, FormGroup, UntypedFormControl } from '@angular/forms';
-import { Argument, ArgumentMember, ArgumentType, Command, ConfigService, WebappSdkModule, WebsiteConfig } from '@yamcs/webapp-sdk';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnChanges,
+} from '@angular/core';
+import {
+  FormArray,
+  FormControl,
+  FormGroup,
+  UntypedFormControl,
+} from '@angular/forms';
+import {
+  Argument,
+  ArgumentMember,
+  ArgumentType,
+  Command,
+  ConfigService,
+  WebappSdkModule,
+  WebsiteConfig,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { ArgumentComponent, renderValue } from '../arguments/argument/argument.component';
+import {
+  ArgumentComponent,
+  renderValue,
+} from '../arguments/argument/argument.component';
 import { TemplateProvider } from './TemplateProvider';
 
 @Component({
@@ -10,13 +31,9 @@ import { TemplateProvider } from './TemplateProvider';
   templateUrl: './command-arguments-form.component.html',
   styleUrl: './command-arguments-form.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    ArgumentComponent,
-    WebappSdkModule,
-  ],
+  imports: [ArgumentComponent, WebappSdkModule],
 })
 export class CommandArgumentsForm implements OnChanges {
-
   @Input()
   formGroup: FormGroup;
 
@@ -68,12 +85,18 @@ export class CommandArgumentsForm implements OnChanges {
       if (c.argument) {
         for (const argument of c.argument) {
           if (this.templateProvider) {
-            const previousValue = this.templateProvider.getAssignment(argument.name);
+            const previousValue = this.templateProvider.getAssignment(
+              argument.name,
+            );
             if (previousValue !== undefined) {
               const stringValue = renderValue(previousValue);
               let initialValue = argument.initialValue;
-              if (argument.type.engType === 'boolean' && initialValue !== undefined) {
-                initialValue = '' + (argument.type.oneStringValue === initialValue);
+              if (
+                argument.type.engType === 'boolean' &&
+                initialValue !== undefined
+              ) {
+                initialValue =
+                  '' + (argument.type.oneStringValue === initialValue);
               }
               if (stringValue === initialValue) {
                 this.argumentsWithInitial.push(argument);
@@ -84,10 +107,13 @@ export class CommandArgumentsForm implements OnChanges {
             }
           }
 
-          let initialized = (argument.initialValue !== undefined);
+          let initialized = argument.initialValue !== undefined;
           if (initialized && argument.type.engType === 'aggregate') {
             const aggregateValue = JSON.parse(argument.initialValue!);
-            initialized = this.isAggregateFullyInitialized(argument, aggregateValue);
+            initialized = this.isAggregateFullyInitialized(
+              argument,
+              aggregateValue,
+            );
           }
 
           if (initialized) {
@@ -105,8 +131,12 @@ export class CommandArgumentsForm implements OnChanges {
     }
 
     // Assignments cannot be overriden by user, so filter them out
-    this.arguments = this.arguments.filter(argument => !assignments.has(argument.name));
-    this.argumentsWithInitial = this.argumentsWithInitial.filter(argument => !assignments.has(argument.name));
+    this.arguments = this.arguments.filter(
+      (argument) => !assignments.has(argument.name),
+    );
+    this.argumentsWithInitial = this.argumentsWithInitial.filter(
+      (argument) => !assignments.has(argument.name),
+    );
 
     for (const arg of this.arguments) {
       this.addControl(arg, this.templateProvider);
@@ -115,7 +145,9 @@ export class CommandArgumentsForm implements OnChanges {
       this.addControl(arg, this.templateProvider);
     }
 
-    this.hasArguments$.next(this.arguments.length > 0 || this.argumentsWithInitial.length > 0);
+    this.hasArguments$.next(
+      this.arguments.length > 0 || this.argumentsWithInitial.length > 0,
+    );
   }
 
   get argsGroup() {
@@ -131,7 +163,8 @@ export class CommandArgumentsForm implements OnChanges {
     } else {
       let initialValue;
       if (argument.type.engType === 'boolean' && argument.initialValue) {
-        initialValue = '' + (argument.initialValue === argument.type.oneStringValue);
+        initialValue =
+          '' + (argument.initialValue === argument.type.oneStringValue);
       } else {
         initialValue = argument.initialValue;
       }
@@ -148,7 +181,9 @@ export class CommandArgumentsForm implements OnChanges {
       }
 
       this.argsGroup.addControl(
-        argument.name, new UntypedFormControl(initialValue));
+        argument.name,
+        new UntypedFormControl(initialValue),
+      );
     }
   }
 
@@ -161,12 +196,18 @@ export class CommandArgumentsForm implements OnChanges {
     return false;
   }
 
-  private isAggregateFullyInitialized(argument: Argument | ArgumentMember, value: { [key: string]: any; }) {
+  private isAggregateFullyInitialized(
+    argument: Argument | ArgumentMember,
+    value: { [key: string]: any },
+  ) {
     for (const member of argument.type.member || []) {
-      if (!value.hasOwnProperty(member.name) && argument.initialValue === undefined) {
+      if (
+        !value.hasOwnProperty(member.name) &&
+        argument.initialValue === undefined
+      ) {
         return false;
       } else if (member.type.engType === 'aggregate') {
-        const subValue: { [key: string]: any; } = value[member.name];
+        const subValue: { [key: string]: any } = value[member.name];
         if (!this.isAggregateFullyInitialized(member, subValue)) {
           return false;
         }
@@ -175,20 +216,23 @@ export class CommandArgumentsForm implements OnChanges {
     return true;
   }
 
-  getResult(): { [key: string]: any; } {
-    const assignments: { [key: string]: any; } = {};
+  getResult(): { [key: string]: any } {
+    const assignments: { [key: string]: any } = {};
     for (const arg of [...this.arguments, ...this.argumentsWithInitial]) {
       if (arg.type.engType === 'aggregate') {
         const subform = this.argsGroup.get(arg.name) as FormGroup;
         assignments[arg.name] = this.getMemberAssignments(subform, arg.type);
       } else if (arg.type.engType.endsWith('[]')) {
         const subarray = this.argsGroup.get(arg.name) as FormArray;
-        assignments[arg.name] = this.getArrayAssignment(subarray, arg.type.elementType!);
+        assignments[arg.name] = this.getArrayAssignment(
+          subarray,
+          arg.type.elementType!,
+        );
       } else {
         const control = this.argsGroup.controls[arg.name];
         if (!this.isArgumentWithInitialValue(arg.name) || control.dirty) {
           if (arg.type.engType === 'boolean') {
-            assignments[arg.name] = (this.argsGroup.value[arg.name] === 'true');
+            assignments[arg.name] = this.argsGroup.value[arg.name] === 'true';
           } else {
             // String is better at representing large numbers or precision
             // to the server. Some inputs (hex) store a non-string value,
@@ -202,17 +246,20 @@ export class CommandArgumentsForm implements OnChanges {
   }
 
   private getMemberAssignments(form: FormGroup, argumentType: ArgumentType) {
-    const result: { [key: string]: any; } = {};
+    const result: { [key: string]: any } = {};
     for (const member of argumentType.member || []) {
       if (member.type.engType === 'aggregate') {
         const subform = form.get(member.name) as FormGroup;
         result[member.name] = this.getMemberAssignments(subform, member.type);
       } else if (member.type.engType.endsWith('[]')) {
         const subarray = form.get(member.name) as FormArray;
-        result[member.name] = this.getArrayAssignment(subarray, member.type.elementType!);
+        result[member.name] = this.getArrayAssignment(
+          subarray,
+          member.type.elementType!,
+        );
       } else if (member.type.engType === 'boolean') {
         const control = form.get(member.name) as FormControl;
-        result[member.name] = (control.value === 'true');
+        result[member.name] = control.value === 'true';
       } else {
         const control = form.get(member.name) as FormControl;
         result[member.name] = control.value;
@@ -222,7 +269,7 @@ export class CommandArgumentsForm implements OnChanges {
   }
 
   getArrayAssignment(array: FormArray, elementType: ArgumentType) {
-    let result: { [key: string]: any; } = [];
+    let result: { [key: string]: any } = [];
     for (const control of array.controls) {
       if (elementType.engType === 'aggregate') {
         const subform = control as FormGroup;

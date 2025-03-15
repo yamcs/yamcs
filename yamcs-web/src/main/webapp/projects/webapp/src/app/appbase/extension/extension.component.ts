@@ -1,5 +1,19 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnChanges, ViewChild, inject, signal } from '@angular/core';
-import { ExtensionService, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  Input,
+  OnChanges,
+  ViewChild,
+  inject,
+  signal,
+} from '@angular/core';
+import {
+  ExtensionService,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 
@@ -14,7 +28,6 @@ import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance
   ],
 })
 export class ExtensionComponent implements AfterViewInit, OnChanges {
-
   private extensionService = inject(ExtensionService);
   private yamcs = inject(YamcsService);
 

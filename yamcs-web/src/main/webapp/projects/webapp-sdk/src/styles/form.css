@@ -105,7 +105,7 @@
   letter-spacing: normal;
 }
 
-.ya-form div.radio-group input[type=radio] {
+.ya-form div.radio-group input[type="radio"] {
   margin-top: -1px;
   vertical-align: middle;
 }

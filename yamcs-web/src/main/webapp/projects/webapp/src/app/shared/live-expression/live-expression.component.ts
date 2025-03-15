@@ -1,6 +1,19 @@
-import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { FormulaCompiler } from '@yamcs/opi';
-import { NamedObjectId, ParameterSubscription, Synchronizer, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  NamedObjectId,
+  ParameterSubscription,
+  Synchronizer,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -9,7 +22,6 @@ import { Subscription } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LiveExpressionComponent implements OnInit, OnDestroy {
-
   @Input()
   expression: string;
 
@@ -19,8 +31,10 @@ export class LiveExpressionComponent implements OnInit, OnDestroy {
   private dirty = false;
   private syncSubscription: Subscription;
 
-  constructor(private yamcs: YamcsService, private synchronizer: Synchronizer) {
-  }
+  constructor(
+    private yamcs: YamcsService,
+    private synchronizer: Synchronizer,
+  ) {}
 
   ngOnInit() {
     const compiler = new FormulaCompiler();
@@ -28,40 +42,45 @@ export class LiveExpressionComponent implements OnInit, OnDestroy {
 
     const parameters = script.getPVNames();
     if (parameters.length) {
-      const ids = parameters.map(parameter => ({ name: parameter }));
-      let idMapping: { [key: number]: NamedObjectId; };
-      this.subscription = this.yamcs.yamcsClient.createParameterSubscription({
-        instance: this.yamcs.instance!,
-        processor: this.yamcs.processor!,
-        id: ids,
-        abortOnInvalid: true,
-        sendFromCache: true,
-        updateOnExpiration: true,
-        action: 'REPLACE',
-      }, data => {
-        if (data.mapping) {
-          idMapping = {
-            ...idMapping,
-            ...data.mapping,
-          };
-        }
-        for (const pval of (data.values || [])) {
-          if (pval.engValue) {
-            const id = idMapping[pval.numericId];
-            script.updateDataSource(id.name, {
-              value: utils.convertValue(pval.engValue),
-              acquisitionStatus: pval.acquisitionStatus,
-            });
+      const ids = parameters.map((parameter) => ({ name: parameter }));
+      let idMapping: { [key: number]: NamedObjectId };
+      this.subscription = this.yamcs.yamcsClient.createParameterSubscription(
+        {
+          instance: this.yamcs.instance!,
+          processor: this.yamcs.processor!,
+          id: ids,
+          abortOnInvalid: true,
+          sendFromCache: true,
+          updateOnExpiration: true,
+          action: 'REPLACE',
+        },
+        (data) => {
+          if (data.mapping) {
+            idMapping = {
+              ...idMapping,
+              ...data.mapping,
+            };
           }
-        }
+          for (const pval of data.values || []) {
+            if (pval.engValue) {
+              const id = idMapping[pval.numericId];
+              script.updateDataSource(id.name, {
+                value: utils.convertValue(pval.engValue),
+                acquisitionStatus: pval.acquisitionStatus,
+              });
+            }
+          }
 
-        if (this.result() === null) { // First value: fast page update
-          const output = script.execute();
-          this.result.set(output);
-        } else { // Throttle follow-on updates
-          this.dirty = true;
-        }
-      });
+          if (this.result() === null) {
+            // First value: fast page update
+            const output = script.execute();
+            this.result.set(output);
+          } else {
+            // Throttle follow-on updates
+            this.dirty = true;
+          }
+        },
+      );
     } else {
       const output = script.execute();
       this.result.set(output);

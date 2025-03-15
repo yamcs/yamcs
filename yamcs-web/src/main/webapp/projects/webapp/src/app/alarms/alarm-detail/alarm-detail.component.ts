@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+} from '@angular/core';
 import { Alarm, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { AlarmLevelComponent } from '../../shared/alarm-level/alarm-level.component';
 
@@ -6,13 +12,9 @@ import { AlarmLevelComponent } from '../../shared/alarm-level/alarm-level.compon
   selector: 'app-alarm-detail',
   templateUrl: './alarm-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AlarmLevelComponent,
-    WebappSdkModule,
-  ],
+  imports: [AlarmLevelComponent, WebappSdkModule],
 })
 export class AlarmDetailComponent {
-
   @Input()
   alarm: Alarm;
 
@@ -31,6 +33,5 @@ export class AlarmDetailComponent {
   @Output()
   clearAlarm = new EventEmitter<Alarm>();
 
-  constructor(readonly yamcs: YamcsService) {
-  }
+  constructor(readonly yamcs: YamcsService) {}
 }

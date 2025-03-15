@@ -1,8 +1,8 @@
 const https = require('https');
 
-https.get("https://data.iana.org/time-zones/data/zone1970.tab", response => {
+https.get('https://data.iana.org/time-zones/data/zone1970.tab', (response) => {
   var data = '';
-  response.on('data', chunk => data += chunk);
+  response.on('data', (chunk) => (data += chunk));
   response.on('end', () => {
     const names = ['UTC'];
     for (let line of data.split('\n')) {
@@ -15,7 +15,7 @@ https.get("https://data.iana.org/time-zones/data/zone1970.tab", response => {
     names.sort();
 
     let code = `export default tznames = [
-  '${names.join('\',\n  \'')}'
+  '${names.join("',\n  '")}'
 ];
 `;
     console.log(code);

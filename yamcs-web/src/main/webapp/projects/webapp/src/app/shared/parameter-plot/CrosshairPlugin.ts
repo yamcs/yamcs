@@ -5,7 +5,6 @@
  * on top of this plugin.
  */
 export default class CrosshairPlugin {
-
   private canvas: any;
 
   constructor() {

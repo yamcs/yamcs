@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit,
+} from '@angular/core';
 import { ControlContainer, FormGroupName } from '@angular/forms';
 import { ArgumentType, Value, WebappSdkModule, utils } from '@yamcs/webapp-sdk';
 import { TemplateProvider } from '../../command-form/TemplateProvider';
@@ -39,13 +44,13 @@ export function renderValue(value: Value): any {
       return '' + value.sint64Value;
     case 'AGGREGATE':
       const { name: names, value: values } = value.aggregateValue!;
-      const result: { [key: string]: any; } = {};
+      const result: { [key: string]: any } = {};
       for (let i = 0; i < names.length; i++) {
         result[names[i]] = renderValue(values[i]);
       }
       return result;
     case 'ARRAY':
-      return (value.arrayValue || []).map(v => renderValue(v));
+      return (value.arrayValue || []).map((v) => renderValue(v));
   }
 }
 
@@ -54,9 +59,9 @@ export function renderValue(value: Value): any {
  */
 function renderJsonElement(jsonElement: any): any {
   if (Array.isArray(jsonElement)) {
-    return jsonElement.map(el => renderJsonElement(el));
+    return jsonElement.map((el) => renderJsonElement(el));
   } else if (typeof jsonElement === 'object') {
-    const result: { [key: string]: any; } = {};
+    const result: { [key: string]: any } = {};
     for (const key in jsonElement) {
       result[key] = renderJsonElement(jsonElement[key]);
     }
@@ -70,10 +75,12 @@ function renderJsonElement(jsonElement: any): any {
   selector: 'app-argument',
   templateUrl: './argument.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  viewProviders: [{
-    provide: ControlContainer,
-    useExisting: FormGroupName,
-  }],
+  viewProviders: [
+    {
+      provide: ControlContainer,
+      useExisting: FormGroupName,
+    },
+  ],
   imports: [
     AggregateArgumentComponent,
     ArrayArgumentComponent,
@@ -88,7 +95,6 @@ function renderJsonElement(jsonElement: any): any {
   ],
 })
 export class ArgumentComponent implements OnInit {
-
   @Input()
   name: string;
 
@@ -109,9 +115,12 @@ export class ArgumentComponent implements OnInit {
   ngOnInit() {
     if (this.initialValue) {
       if (this.type.engType === 'AGGREGATE' || this.type.engType === 'ARRAY') {
-        this.parsedInitialValue = renderJsonElement(JSON.parse(this.initialValue));
+        this.parsedInitialValue = renderJsonElement(
+          JSON.parse(this.initialValue),
+        );
       } else if (this.type.engType === 'BOOLEAN') {
-        this.parsedInitialValue = '' + (this.initialValue === this.type.oneStringValue);
+        this.parsedInitialValue =
+          '' + (this.initialValue === this.type.oneStringValue);
       } else {
         this.parsedInitialValue = this.initialValue;
       }
@@ -121,7 +130,7 @@ export class ArgumentComponent implements OnInit {
       const previousValue = this.templateProvider.getAssignment(this.name);
       if (previousValue?.type === 'AGGREGATE') {
         this.parsedInitialValue = {
-          ...this.parsedInitialValue || {},
+          ...(this.parsedInitialValue || {}),
           ...renderValue(previousValue),
         };
       } else if (previousValue?.type === 'ARRAY') {

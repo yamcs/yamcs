@@ -9,7 +9,6 @@ import { getMemberPath } from '../utils';
   name: 'memberPath',
 })
 export class MemberPathPipe implements PipeTransform {
-
   transform(parameter: Parameter): string | null {
     return getMemberPath(parameter);
   }

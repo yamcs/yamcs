@@ -1,7 +1,22 @@
-import { ChangeDetectionStrategy, Component, Inject, OnDestroy } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Inject,
+  OnDestroy,
+} from '@angular/core';
+import {
+  UntypedFormBuilder,
+  UntypedFormGroup,
+  Validators,
+} from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { MessageService, TimelineBand, UpdateTimelineViewRequest, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  MessageService,
+  TimelineBand,
+  UpdateTimelineViewRequest,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { BandMultiSelectComponent } from '../shared/band-multi-select/band-multi-select.component';
 
@@ -10,13 +25,9 @@ import { BandMultiSelectComponent } from '../shared/band-multi-select/band-multi
   templateUrl: './edit-view-dialog.component.html',
   styleUrl: './edit-view-dialog.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    BandMultiSelectComponent,
-    WebappSdkModule,
-  ],
+  imports: [BandMultiSelectComponent, WebappSdkModule],
 })
 export class EditViewDialogComponent implements OnDestroy {
-
   form: UntypedFormGroup;
 
   dirty$ = new BehaviorSubject<boolean>(false);
@@ -46,9 +57,10 @@ export class EditViewDialogComponent implements OnDestroy {
       bands: formValue.bands.map((band: TimelineBand) => band.id),
     };
     const view = this.data.view;
-    this.yamcs.yamcsClient.updateTimelineView(this.yamcs.instance!, view.id, options)
-      .then(updatedView => this.dialogRef.close(updatedView))
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .updateTimelineView(this.yamcs.instance!, view.id, options)
+      .then((updatedView) => this.dialogRef.close(updatedView))
+      .catch((err) => this.messageService.showError(err));
   }
 
   ngOnDestroy() {

@@ -6,14 +6,10 @@ import { WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
   templateUrl: './stack-file-page-tabs.component.html',
   styleUrl: './stack-file-page-tabs.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class StackFilePageTabsComponent {
-
   objectName = input.required<string>();
 
-  constructor(readonly yamcs: YamcsService) {
-  }
+  constructor(readonly yamcs: YamcsService) {}
 }

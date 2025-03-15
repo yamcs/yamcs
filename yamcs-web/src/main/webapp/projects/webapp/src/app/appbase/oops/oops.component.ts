@@ -8,5 +8,4 @@ import { Component } from '@angular/core';
   selector: 'app-oops',
   templateUrl: './oops.component.html',
 })
-export class OopsComponent {
-}
+export class OopsComponent {}

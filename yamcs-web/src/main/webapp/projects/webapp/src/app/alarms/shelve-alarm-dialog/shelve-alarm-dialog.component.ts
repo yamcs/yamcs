@@ -1,18 +1,22 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { Alarm, ShelveAlarmOptions, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  Alarm,
+  ShelveAlarmOptions,
+  WebappSdkModule,
+  YaSelectOption,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-shelve-alarm-dialog',
   templateUrl: './shelve-alarm-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class ShelveAlarmDialogComponent {
-
   formGroup: UntypedFormGroup;
 
   durationOptions: YaSelectOption[] = [
@@ -31,8 +35,8 @@ export class ShelveAlarmDialogComponent {
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     this.formGroup = formBuilder.group({
-      'duration': 'PT2H',
-      'comment': undefined,
+      duration: 'PT2H',
+      comment: undefined,
     });
   }
 
@@ -53,8 +57,15 @@ export class ShelveAlarmDialogComponent {
       if (duration) {
         options.shelveDuration = duration;
       }
-      const alarmName = alarm.id.namespace + (alarm.id.name ? '/' + alarm.id.name : '');
-      this.yamcs.yamcsClient.shelveAlarm(this.yamcs.instance!, this.yamcs.processor!, alarmName, alarm.seqNum, options);
+      const alarmName =
+        alarm.id.namespace + (alarm.id.name ? '/' + alarm.id.name : '');
+      this.yamcs.yamcsClient.shelveAlarm(
+        this.yamcs.instance!,
+        this.yamcs.processor!,
+        alarmName,
+        alarm.seqNum,
+        options,
+      );
     }
     this.dialogRef.close();
   }

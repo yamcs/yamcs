@@ -1,15 +1,35 @@
 import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, RouterStateSnapshot } from '@angular/router';
-import { AdvancementParams, Argument, Command, ConfigService, MessageService, StackFormatter, Step, StorageClient, utils, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  ActivatedRouteSnapshot,
+  CanActivate,
+  RouterStateSnapshot,
+} from '@angular/router';
+import {
+  AdvancementParams,
+  Argument,
+  Command,
+  ConfigService,
+  MessageService,
+  StackFormatter,
+  Step,
+  StorageClient,
+  utils,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, map } from 'rxjs';
-import { StackedCheckEntry, StackedCommandEntry, StackedEntry, StackedTextEntry, StackedVerifyEntry } from './StackedEntry';
+import {
+  StackedCheckEntry,
+  StackedCommandEntry,
+  StackedEntry,
+  StackedTextEntry,
+  StackedVerifyEntry,
+} from './StackedEntry';
 import { StackLogEntry } from './StackLogEntry';
 import { parseXML } from './xmlparse';
 import { parseYCS } from './ycsparse';
 
 @Injectable()
 export class StackFileService implements CanActivate {
-
   storageClient: StorageClient;
   bucket: string;
   objectName: string;
@@ -25,14 +45,14 @@ export class StackFileService implements CanActivate {
 
   entries$ = new BehaviorSubject<StackedEntry[]>([]);
   hasState$ = this.entries$.pipe(
-    map(entries => {
+    map((entries) => {
       for (const entry of entries) {
-        if (entry.hasOutputs() || (entry.executionNumber !== undefined)) {
+        if (entry.hasOutputs() || entry.executionNumber !== undefined) {
           return true;
         }
       }
       return false;
-    })
+    }),
   );
   logs$ = new BehaviorSubject<StackLogEntry[]>([]);
 
@@ -50,11 +70,14 @@ export class StackFileService implements CanActivate {
   }
 
   addLogEntry(executionNumber: number, text: string) {
-    this.logs$.next([...this.logs$.value, {
-      executionNumber,
-      text,
-      time: this.yamcs.getMissionTime().toISOString(),
-    }]);
+    this.logs$.next([
+      ...this.logs$.value,
+      {
+        executionNumber,
+        text,
+        time: this.yamcs.getMissionTime().toISOString(),
+      },
+    ]);
   }
 
   async canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
@@ -62,10 +85,15 @@ export class StackFileService implements CanActivate {
     this.entries = [];
 
     this.objectName = route.params['objectName'];
-    const format = utils.getExtension(utils.getFilename(this.objectName))?.toLowerCase();
+    const format = utils
+      .getExtension(utils.getFilename(this.objectName))
+      ?.toLowerCase();
 
     try {
-      const response = await this.storageClient.getObject(this.bucket, this.objectName);
+      const response = await this.storageClient.getObject(
+        this.bucket,
+        this.objectName,
+      );
       if (response.ok) {
         const text = await response.text();
         if (format === 'xml' || format === 'ycs') {
@@ -88,7 +116,10 @@ export class StackFileService implements CanActivate {
     switch (format) {
       case 'ycs':
         let ycsEntries: Step[];
-        [ycsEntries, this.advancement] = parseYCS(text, this.configService.getCommandOptions());
+        [ycsEntries, this.advancement] = parseYCS(
+          text,
+          this.configService.getCommandOptions(),
+        );
         for (const ycsEntry of ycsEntries) {
           if (ycsEntry.type === 'check') {
             this.entries.push(new StackedCheckEntry(ycsEntry));
@@ -104,15 +135,19 @@ export class StackFileService implements CanActivate {
         }
         break;
       case 'xml':
-        const xmlModels = parseXML(text, this.configService.getCommandOptions());
+        const xmlModels = parseXML(
+          text,
+          this.configService.getCommandOptions(),
+        );
         for (const xmlModel of xmlModels) {
           this.entries.push(new StackedCommandEntry(xmlModel));
         }
         break;
     }
 
-    const commandEntries = this.entries.filter(entry => entry instanceof StackedCommandEntry);
-
+    const commandEntries = this.entries.filter(
+      (entry) => entry instanceof StackedCommandEntry,
+    );
 
     // Enrich entries with MDB info, it's used in the detail panel
     const promises = [];
@@ -120,9 +155,13 @@ export class StackFileService implements CanActivate {
     for (const entry of commandEntries) {
       const namespace = entry.namespace ?? null;
       const name = entry.name;
-      promises.push(this.yamcs.yamcsClient.getCommandForNamespace(instance, namespace, name).then(command => {
-        entry.command = command;
-      }));
+      promises.push(
+        this.yamcs.yamcsClient
+          .getCommandForNamespace(instance, namespace, name)
+          .then((command) => {
+            entry.command = command;
+          }),
+      );
     }
 
     // Wait on all definition requests to arrive
@@ -150,7 +189,9 @@ export class StackFileService implements CanActivate {
             }
             if (!match) {
               for (const enumValue of argument.type.enumValue || []) {
-                if (String(enumValue.value) === String(entry.args[argumentName])) {
+                if (
+                  String(enumValue.value) === String(entry.args[argumentName])
+                ) {
                   entry.args[argumentName] = enumValue.label;
                   match = true;
                   break;
@@ -177,7 +218,7 @@ export class StackFileService implements CanActivate {
   }
 
   private getArgument(argumentName: string, info: Command): Argument | null {
-    for (const argument of (info.argument || [])) {
+    for (const argument of info.argument || []) {
       if (argument.name === argumentName) {
         return argument;
       }
@@ -190,10 +231,12 @@ export class StackFileService implements CanActivate {
   }
 
   private isComplex(argumentName: string, info: Command): boolean {
-    for (const argument of (info.argument || [])) {
+    for (const argument of info.argument || []) {
       if (argument.name === argumentName) {
-        return argument.type.engType === 'aggregate'
-          || argument.type.engType.endsWith('[]');
+        return (
+          argument.type.engType === 'aggregate' ||
+          argument.type.engType.endsWith('[]')
+        );
       }
     }
     if (info.baseCommand) {
@@ -221,7 +264,8 @@ export class StackFileService implements CanActivate {
             counters[3] = 0;
             counters[4] = 0;
             counters[5] = 0;
-            const renderedLine = `# ${counters[0]}.&nbsp;&nbsp;` + line.slice(2);
+            const renderedLine =
+              `# ${counters[0]}.&nbsp;&nbsp;` + line.slice(2);
             renderedLines.push(renderedLine);
           } else if (line.startsWith('## ')) {
             counters[1]++;
@@ -229,29 +273,38 @@ export class StackFileService implements CanActivate {
             counters[3] = 0;
             counters[4] = 0;
             counters[5] = 0;
-            const renderedLine = `## ${counters[0]}.${counters[1]}.&nbsp;&nbsp;` + line.slice(3);
+            const renderedLine =
+              `## ${counters[0]}.${counters[1]}.&nbsp;&nbsp;` + line.slice(3);
             renderedLines.push(renderedLine);
           } else if (line.startsWith('### ')) {
             counters[2]++;
             counters[3] = 0;
             counters[4] = 0;
             counters[5] = 0;
-            const renderedLine = `### ${counters[0]}.${counters[1]}.${counters[2]}.&nbsp;&nbsp;` + line.slice(4);
+            const renderedLine =
+              `### ${counters[0]}.${counters[1]}.${counters[2]}.&nbsp;&nbsp;` +
+              line.slice(4);
             renderedLines.push(renderedLine);
           } else if (line.startsWith('#### ')) {
             counters[3]++;
             counters[4] = 0;
             counters[5] = 0;
-            const renderedLine = `#### ${counters[0]}.${counters[1]}.${counters[2]}.${counters[3]}.&nbsp;&nbsp;` + line.slice(5);
+            const renderedLine =
+              `#### ${counters[0]}.${counters[1]}.${counters[2]}.${counters[3]}.&nbsp;&nbsp;` +
+              line.slice(5);
             renderedLines.push(renderedLine);
           } else if (line.startsWith('##### ')) {
             counters[4]++;
             counters[5] = 0;
-            const renderedLine = `##### ${counters[0]}.${counters[1]}.${counters[2]}.${counters[3]}.${counters[4]}.&nbsp;&nbsp;` + line.slice(6);
+            const renderedLine =
+              `##### ${counters[0]}.${counters[1]}.${counters[2]}.${counters[3]}.${counters[4]}.&nbsp;&nbsp;` +
+              line.slice(6);
             renderedLines.push(renderedLine);
           } else if (line.startsWith('###### ')) {
             counters[5]++;
-            const renderedLine = `###### ${counters[0]}.${counters[1]}.${counters[2]}.${counters[3]}.${counters[4]}.${counters[5]}.&nbsp;&nbsp;` + line.slice(7);
+            const renderedLine =
+              `###### ${counters[0]}.${counters[1]}.${counters[2]}.${counters[3]}.${counters[4]}.${counters[5]}.&nbsp;&nbsp;` +
+              line.slice(7);
             renderedLines.push(renderedLine);
           } else {
             renderedLines.push(line);
@@ -263,9 +316,11 @@ export class StackFileService implements CanActivate {
   }
 
   saveStack() {
-    const format = utils.getExtension(utils.getFilename(this.objectName))?.toLowerCase();
+    const format = utils
+      .getExtension(utils.getFilename(this.objectName))
+      ?.toLowerCase();
 
-    const modelEntries = this.entries$.value.map(e => e.model);
+    const modelEntries = this.entries$.value.map((e) => e.model);
     let file;
     switch (format) {
       case 'ycs':
@@ -282,10 +337,12 @@ export class StackFileService implements CanActivate {
         console.error('Unexpected format');
         return;
     }
-    const type = (format === 'xml') ? 'application/xml' : 'application/json';
+    const type = format === 'xml' ? 'application/xml' : 'application/json';
     const blob = new Blob([file], { type });
-    return this.storageClient.uploadObject(this.bucket, this.objectName, blob).then(() => {
-      this.dirty$.next(false);
-    });
+    return this.storageClient
+      .uploadObject(this.bucket, this.objectName, blob)
+      .then(() => {
+        this.dirty$.next(false);
+      });
   }
 }

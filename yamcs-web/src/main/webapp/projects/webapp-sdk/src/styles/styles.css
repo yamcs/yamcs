@@ -145,10 +145,10 @@ a.ya-link.ya-header-link {
   min-height: 24px;
 }
 
-.ng-invalid:not(.ng-pristine)>.date-time-input>input,
-.ng-invalid:not(.ng-pristine)>.binary-input>input,
+.ng-invalid:not(.ng-pristine) > .date-time-input > input,
+.ng-invalid:not(.ng-pristine) > .binary-input > input,
 input.ng-invalid:not(.ng-pristine),
-.ng-invalid:not(.ng-pristine)>.duration-input>input {
+.ng-invalid:not(.ng-pristine) > .duration-input > input {
   border-color: var(--y-error-color) !important;
 }
 
@@ -215,7 +215,7 @@ input.ng-invalid:not(.ng-pristine),
   min-width: unset;
 }
 
-.mat-toolbar.top .mat-mdc-button.icon>mat-icon {
+.mat-toolbar.top .mat-mdc-button.icon > mat-icon {
   margin-right: 0;
 }
 
@@ -264,10 +264,10 @@ input[type="radio"] {
 
 .action-bar ya-button,
 .mat-mdc-dialog-actions ya-button:not(:last-child),
-.filter-bar>.date-time-input,
-.filter-bar>ya-button,
-.filter-bar>ya-select,
-.filter-bar>ya-multi-select,
+.filter-bar > .date-time-input,
+.filter-bar > ya-button,
+.filter-bar > ya-select,
+.filter-bar > ya-multi-select,
 .filter-bar .search-input {
   margin-right: 7px;
 }
@@ -290,31 +290,40 @@ hr.half-break {
 }
 
 h2 {
-  font: 500 20px / 32px Roboto, sans-serif;
-  letter-spacing: .0125em;
+  font:
+    500 20px / 32px Roboto,
+    sans-serif;
+  letter-spacing: 0.0125em;
   margin: 0 0 16px;
 }
 
 h3 {
-  font: 400 16px / 28px Roboto, sans-serif;
-  letter-spacing: .009375em;
+  font:
+    400 16px / 28px Roboto,
+    sans-serif;
+  letter-spacing: 0.009375em;
   margin: 0 0 16px;
 }
 
 h4 {
-  font: 400 16px / 24px Roboto, sans-serif;
-  letter-spacing: .03125em;
+  font:
+    400 16px / 24px Roboto,
+    sans-serif;
+  letter-spacing: 0.03125em;
   margin: 0 0 16px;
 }
 
 p {
   margin-top: 0;
   margin-bottom: 12px;
-  letter-spacing: .0178571429em;
+  letter-spacing: 0.0178571429em;
 }
 
 .elevation-z1 {
-  box-shadow: 0 2px 1px -1px #0003, 0 1px 1px #00000024, 0 1px 3px #0000001f;
+  box-shadow:
+    0 2px 1px -1px #0003,
+    0 1px 1px #00000024,
+    0 1px 3px #0000001f;
 }
 
 /*
@@ -326,7 +335,6 @@ p {
 }
 
 @media print {
-
   .mat-drawer,
   .mat-toolbar,
   .filter-bar {

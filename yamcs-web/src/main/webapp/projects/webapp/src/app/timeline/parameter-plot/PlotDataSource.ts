@@ -1,4 +1,13 @@
-import { ConfigService, NamedObjectId, ParameterSubscription, ParameterValue, Sample, Synchronizer, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  ConfigService,
+  NamedObjectId,
+  ParameterSubscription,
+  ParameterValue,
+  Sample,
+  Synchronizer,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { NamedParameterType } from '../../shared/parameter-plot/NamedParameterType';
 import { NamedSeries, PlotBuffer, PlotSeries } from './PlotBuffer';
@@ -8,7 +17,6 @@ import { PlotPoint } from './PlotPoint';
  * Stores sample data for use in a ParameterPlot.
  */
 export class PlotDataSource {
-
   // How many samples to load at once
   resolution = 6000;
 
@@ -26,7 +34,7 @@ export class PlotDataSource {
 
   private realtimeSubscription: ParameterSubscription;
   private syncSubscription: Subscription;
-  private idMapping: { [key: number]: NamedObjectId; };
+  private idMapping: { [key: number]: NamedObjectId };
 
   constructor(
     private yamcs: YamcsService,
@@ -52,13 +60,10 @@ export class PlotDataSource {
   }
 
   public addParameter(...parameter: NamedParameterType[]) {
-    this.parameters$.next([
-      ...this.parameters$.value,
-      ...parameter,
-    ]);
+    this.parameters$.next([...this.parameters$.value, ...parameter]);
 
     if (this.realtimeSubscription) {
-      const ids = parameter.map(p => ({ name: p.qualifiedName }));
+      const ids = parameter.map((p) => ({ name: p.qualifiedName }));
       this.addToRealtimeSubscription(ids);
     } else {
       this.connectRealtime();
@@ -66,7 +71,9 @@ export class PlotDataSource {
   }
 
   public removeParameter(qualifiedName: string) {
-    const parameters = this.parameters$.value.filter(p => p.qualifiedName !== qualifiedName);
+    const parameters = this.parameters$.value.filter(
+      (p) => p.qualifiedName !== qualifiedName,
+    );
     this.parameters$.next(parameters);
   }
 
@@ -95,21 +102,34 @@ export class PlotDataSource {
       const promises: Promise<any>[] = [];
       for (const parameter of parameters) {
         promises.push(
-          this.yamcs.yamcsClient.getParameterSamples(this.yamcs.instance!, parameter.qualifiedName, {
-            start: loadStart.toISOString(),
-            stop: loadStop.toISOString(),
-            count: this.resolution,
-            fields: ['time', 'n', 'avg', 'min', 'max', 'firstTime', 'lastTime'],
-            gapTime: 300000,
-            source: this.configService.isParameterArchiveEnabled()
-              ? 'ParameterArchive' : 'replay',
-          })
+          this.yamcs.yamcsClient.getParameterSamples(
+            this.yamcs.instance!,
+            parameter.qualifiedName,
+            {
+              start: loadStart.toISOString(),
+              stop: loadStop.toISOString(),
+              count: this.resolution,
+              fields: [
+                'time',
+                'n',
+                'avg',
+                'min',
+                'max',
+                'firstTime',
+                'lastTime',
+              ],
+              gapTime: 300000,
+              source: this.configService.isParameterArchiveEnabled()
+                ? 'ParameterArchive'
+                : 'replay',
+            },
+          ),
         );
       }
 
       const loadPromise = Promise.allSettled(promises);
       this.lastLoadPromise = loadPromise;
-      return loadPromise.then(results => {
+      return loadPromise.then((results) => {
         // Effectively cancels past requests
         if (this.lastLoadPromise === loadPromise) {
           this.loading$.next(false);
@@ -125,7 +145,10 @@ export class PlotDataSource {
                 series: this.processSamples(result.value),
               });
             } else {
-              console.warn(`Failed to retrieve samples for ${parameters[i].qualifiedName}`, result.reason);
+              console.warn(
+                `Failed to retrieve samples for ${parameters[i].qualifiedName}`,
+                result.reason,
+              );
               namedSeries.push({
                 name: parameters[i].qualifiedName,
                 series: [],
@@ -160,26 +183,32 @@ export class PlotDataSource {
   }
 
   private connectRealtime() {
-    const ids = this.parameters$.value.map(parameter => ({ name: parameter.qualifiedName }));
-    this.realtimeSubscription = this.yamcs.yamcsClient.createParameterSubscription({
-      instance: this.yamcs.instance!,
-      processor: this.yamcs.processor!,
-      id: ids,
-      sendFromCache: false,
-      updateOnExpiration: true,
-      abortOnInvalid: true,
-      action: 'REPLACE',
-    }, data => {
-      if (data.mapping) {
-        this.idMapping = {
-          ...this.idMapping,
-          ...data.mapping,
-        };
-      }
-      if (data.values && data.values.length) {
-        this.processRealtimeDelivery(data.values);
-      }
-    });
+    const ids = this.parameters$.value.map((parameter) => ({
+      name: parameter.qualifiedName,
+    }));
+    this.realtimeSubscription =
+      this.yamcs.yamcsClient.createParameterSubscription(
+        {
+          instance: this.yamcs.instance!,
+          processor: this.yamcs.processor!,
+          id: ids,
+          sendFromCache: false,
+          updateOnExpiration: true,
+          abortOnInvalid: true,
+          action: 'REPLACE',
+        },
+        (data) => {
+          if (data.mapping) {
+            this.idMapping = {
+              ...this.idMapping,
+              ...data.mapping,
+            };
+          }
+          if (data.values && data.values.length) {
+            this.processRealtimeDelivery(data.values);
+          }
+        },
+      );
   }
 
   addToRealtimeSubscription(ids: NamedObjectId[]) {

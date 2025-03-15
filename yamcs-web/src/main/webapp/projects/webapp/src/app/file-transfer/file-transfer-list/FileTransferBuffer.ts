@@ -11,7 +11,6 @@ export type WatermarkObserver = () => void;
  * sorted under all conditions.
  */
 export class FileTransferBuffer {
-
   public dirty = false;
 
   private archiveTransfers: TransferItem[] = [];
@@ -34,7 +33,11 @@ export class FileTransferBuffer {
   addRealtimeTransfer(transfer: TransferItem) {
     if (this.pointer < this.bufferSize) {
       this.realtimeBuffer[this.pointer] = transfer;
-      if (this.pointer >= this.bufferWatermark && this.watermarkObserver && !this.alreadyWarned) {
+      if (
+        this.pointer >= this.bufferWatermark &&
+        this.watermarkObserver &&
+        !this.alreadyWarned
+      ) {
         this.alreadyWarned = true;
         this.watermarkObserver();
       }
@@ -53,10 +56,12 @@ export class FileTransferBuffer {
 
   snapshot(): TransferItem[] {
     const splicedTransfers = [...this.archiveTransfers];
-    this.realtimeBuffer.map(transfer => {
+    this.realtimeBuffer.map((transfer) => {
       if (!transfer) return;
 
-      const existingIndex = splicedTransfers.findIndex(a => a.id === transfer.id);
+      const existingIndex = splicedTransfers.findIndex(
+        (a) => a.id === transfer.id,
+      );
       if (existingIndex === -1) {
         splicedTransfers.push(transfer);
       } else {

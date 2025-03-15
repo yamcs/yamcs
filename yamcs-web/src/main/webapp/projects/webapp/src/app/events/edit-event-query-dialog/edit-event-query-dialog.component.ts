@@ -1,7 +1,12 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { EventSeverity, MessageService, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  EventSeverity,
+  MessageService,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 
 const defaultSeverity: EventSeverity = 'INFO';
 const defaultSource: string[] = [];
@@ -10,12 +15,9 @@ const defaultSource: string[] = [];
   selector: 'app-edit-event-query-dialog',
   templateUrl: './edit-event-query-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class EditEventQueryDialogComponent {
-
   form = new FormGroup({
     name: new FormControl<string>('', Validators.required),
     filter: new FormControl<string>(''),
@@ -43,15 +45,17 @@ export class EditEventQueryDialogComponent {
   save() {
     const { value: fv } = this.form;
     const queryId: string = this.data.query.id;
-    this.yamcs.yamcsClient.editQuery(this.yamcs.instance!, 'events', queryId, {
-      name: fv.name!,
-      shared: fv.shared ?? false,
-      query: {
-        filter: fv.filter ?? undefined,
-        source: fv.source ?? defaultSource,
-        severity: fv.severity ?? defaultSeverity,
-      },
-    }).then(query => this.dialogRef.close(query))
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .editQuery(this.yamcs.instance!, 'events', queryId, {
+        name: fv.name!,
+        shared: fv.shared ?? false,
+        query: {
+          filter: fv.filter ?? undefined,
+          source: fv.source ?? defaultSource,
+          severity: fv.severity ?? defaultSeverity,
+        },
+      })
+      .then((query) => this.dialogRef.close(query))
+      .catch((err) => this.messageService.showError(err));
   }
 }

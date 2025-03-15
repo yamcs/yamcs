@@ -1,4 +1,9 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ViewChild,
+} from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
@@ -11,24 +16,15 @@ import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.
 @Component({
   templateUrl: './role-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AdminPageTemplateComponent,
-    AdminToolbarComponent,
-    WebappSdkModule,
-  ],
+  imports: [AdminPageTemplateComponent, AdminToolbarComponent, WebappSdkModule],
 })
 export class RoleListComponent implements AfterViewInit {
-
   filterControl = new UntypedFormControl();
 
   @ViewChild(MatSort, { static: true })
   sort: MatSort;
 
-  displayedColumns = [
-    'name',
-    'default',
-    'actions',
-  ];
+  displayedColumns = ['name', 'default', 'actions'];
   dataSource = new MatTableDataSource<RoleInfo>();
 
   constructor(
@@ -56,13 +52,12 @@ export class RoleListComponent implements AfterViewInit {
       this.dataSource.filter = value.toLowerCase();
     });
 
-
     this.refresh();
     this.dataSource.sort = this.sort;
   }
 
   private refresh() {
-    this.yamcs.yamcsClient.getRoles().then(roles => {
+    this.yamcs.yamcsClient.getRoles().then((roles) => {
       this.dataSource.data = roles;
     });
   }

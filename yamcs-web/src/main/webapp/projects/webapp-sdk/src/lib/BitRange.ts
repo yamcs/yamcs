@@ -1,7 +1,8 @@
 export class BitRange {
-
-  constructor(readonly start: number, readonly bitlength: number) {
-  }
+  constructor(
+    readonly start: number,
+    readonly bitlength: number,
+  ) {}
 
   get stop() {
     return this.start + this.bitlength;

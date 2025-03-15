@@ -1,7 +1,19 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, Type, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  OnDestroy,
+  Type,
+  ViewChild,
+} from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { ConfigService, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  ConfigService,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
@@ -38,7 +50,6 @@ import { ViewerHostDirective } from './viewer-host.directive';
   ],
 })
 export class DisplayFileComponent implements AfterViewInit, OnDestroy {
-
   @ViewChild(ViewerControlsHostDirective)
   private controlsHost: ViewerControlsHostDirective;
 
@@ -66,14 +77,14 @@ export class DisplayFileComponent implements AfterViewInit, OnDestroy {
     const initialObject = this.getObjectNameFromUrl();
     this.loadFile(initialObject);
 
-    let sub = router.events.pipe(
-      filter(evt => evt instanceof NavigationEnd)
-    ).subscribe(() => {
-      const newObjectName = this.getObjectNameFromUrl();
-      if (newObjectName !== this.objectName) {
-        this.loadFile(newObjectName, true);
-      }
-    });
+    let sub = router.events
+      .pipe(filter((evt) => evt instanceof NavigationEnd))
+      .subscribe(() => {
+        const newObjectName = this.getObjectNameFromUrl();
+        if (newObjectName !== this.objectName) {
+          this.loadFile(newObjectName, true);
+        }
+      });
     this.subscriptions.push(sub);
 
     const preferredRange = route.snapshot.queryParamMap.get('range');
@@ -81,7 +92,7 @@ export class DisplayFileComponent implements AfterViewInit, OnDestroy {
       yamcs.range$.next(preferredRange);
     }
 
-    sub = yamcs.range$.subscribe(range => {
+    sub = yamcs.range$.subscribe((range) => {
       router.navigate([], {
         replaceUrl: true,
         relativeTo: route,
@@ -127,12 +138,18 @@ export class DisplayFileComponent implements AfterViewInit, OnDestroy {
     if (this.filename.toLowerCase().endsWith('.opi')) {
       const opiDisplayViewer = this.createViewer(OpiDisplayViewerComponent);
       opiDisplayViewer.setViewerContainerEl(this.viewerContainer.nativeElement);
-      const controls = this.createViewerControls(OpiDisplayViewerControlsComponent);
+      const controls = this.createViewerControls(
+        OpiDisplayViewerControlsComponent,
+      );
       controls.init(opiDisplayViewer as OpiDisplayViewerComponent);
       this.viewer = opiDisplayViewer;
     } else if (this.filename.toLowerCase().endsWith('.par')) {
-      const parameterTableViewer = this.createViewer(ParameterTableViewerComponent);
-      const controls = this.createViewerControls(ParameterTableViewerControlsComponent);
+      const parameterTableViewer = this.createViewer(
+        ParameterTableViewerComponent,
+      );
+      const controls = this.createViewerControls(
+        ParameterTableViewerControlsComponent,
+      );
       controls.init(parameterTableViewer as ParameterTableViewerComponent);
       parameterTableViewer.setEnableActions();
       this.viewer = parameterTableViewer;
@@ -166,7 +183,13 @@ export class DisplayFileComponent implements AfterViewInit, OnDestroy {
 
   private isImage() {
     const lc = this.filename.toLowerCase();
-    return lc.endsWith('.png') || lc.endsWith('.gif') || lc.endsWith('.jpg') || lc.endsWith('jpeg') || lc.endsWith('bmp');
+    return (
+      lc.endsWith('.png') ||
+      lc.endsWith('.gif') ||
+      lc.endsWith('.jpg') ||
+      lc.endsWith('jpeg') ||
+      lc.endsWith('bmp')
+    );
   }
 
   hasPendingChanges() {
@@ -174,6 +197,6 @@ export class DisplayFileComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.subscriptions.forEach(x => x.unsubscribe());
+    this.subscriptions.forEach((x) => x.unsubscribe());
   }
 }

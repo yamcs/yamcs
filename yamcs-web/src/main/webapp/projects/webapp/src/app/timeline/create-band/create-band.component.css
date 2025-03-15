@@ -14,7 +14,7 @@ a.band-type {
 }
 
 .card {
-  border: 1px solid rgba(0, 0, 0, .12);
+  border: 1px solid rgba(0, 0, 0, 0.12);
   background: #fff;
   border-radius: 4px;
   overflow: hidden;
@@ -26,14 +26,14 @@ a.band-type {
   padding: 15px;
   font-size: 20px;
   font-weight: 500;
-  color: rgba(0, 0, 0, .87);
+  color: rgba(0, 0, 0, 0.87);
 }
 
 .card-content {
   padding: 0 15px 15px;
   min-height: 2.4em;
   font-size: 15px;
-  color: rgba(0, 0, 0, .54);
+  color: rgba(0, 0, 0, 0.54);
 }
 
 .card-preview {

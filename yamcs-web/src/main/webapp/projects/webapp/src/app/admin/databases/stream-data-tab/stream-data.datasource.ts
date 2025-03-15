@@ -1,10 +1,14 @@
 import { DataSource } from '@angular/cdk/table';
-import { StreamData, StreamSubscription, Synchronizer, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  StreamData,
+  StreamSubscription,
+  Synchronizer,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { StreamBuffer } from './StreamBuffer';
 
 export class StreamDataDataSource extends DataSource<StreamData> {
-
   streamData$ = new BehaviorSubject<StreamData[]>([]);
 
   public loading$ = new BehaviorSubject<boolean>(false);
@@ -37,22 +41,25 @@ export class StreamDataDataSource extends DataSource<StreamData> {
 
   startStreaming() {
     this.streaming$.next(true);
-    this.streamSubscription = this.yamcs.yamcsClient.createStreamSubscription({
-      instance: this.database,
-      stream: this.stream,
-    }, streamData => {
-      if (!this.loading$.getValue()) {
-        this.streamBuffer.add(streamData);
+    this.streamSubscription = this.yamcs.yamcsClient.createStreamSubscription(
+      {
+        instance: this.database,
+        stream: this.stream,
+      },
+      (streamData) => {
+        if (!this.loading$.getValue()) {
+          this.streamBuffer.add(streamData);
 
-        const columns = this.columns$.value;
-        for (const newColumn of streamData.column) {
-          if (columns.indexOf(newColumn.name) === -1) {
-            columns.push(newColumn.name);
+          const columns = this.columns$.value;
+          for (const newColumn of streamData.column) {
+            if (columns.indexOf(newColumn.name) === -1) {
+              columns.push(newColumn.name);
+            }
           }
+          this.columns$.next([...columns]);
         }
-        this.columns$.next([...columns]);
-      }
-    });
+      },
+    );
   }
 
   stopStreaming() {

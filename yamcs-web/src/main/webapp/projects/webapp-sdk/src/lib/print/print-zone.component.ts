@@ -1,5 +1,11 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ElementRef, Type, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  Type,
+  ViewChild,
+} from '@angular/core';
 import { Printable } from './Printable';
 import { PrintService } from './print.service';
 import { PrintableDirective } from './printable.directive';
@@ -9,13 +15,9 @@ import { PrintableDirective } from './printable.directive';
   templateUrl: './print-zone.component.html',
   styleUrl: './print-zone.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    NgTemplateOutlet,
-    PrintableDirective,
-  ],
+  imports: [NgTemplateOutlet, PrintableDirective],
 })
 export class YaPrintZone {
-
   /*
    * Implementation note:
    *
@@ -36,12 +38,16 @@ export class YaPrintZone {
   private printableHost: PrintableDirective;
 
   constructor(private printService: PrintService) {
-    this.printService.printOrders$.subscribe(order => {
+    this.printService.printOrders$.subscribe((order) => {
       this.createAndPrint(order.componentType, order.title, order.data);
     });
   }
 
-  private createAndPrint(componentType: Type<Printable>, pageTitle: string, data: any) {
+  private createAndPrint(
+    componentType: Type<Printable>,
+    pageTitle: string,
+    data: any,
+  ) {
     const viewContainerRef = this.printableHost.viewContainerRef;
     viewContainerRef.clear();
     const componentRef = viewContainerRef.createComponent(componentType);

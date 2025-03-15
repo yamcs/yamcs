@@ -1,15 +1,18 @@
-import { booleanAttribute, Component, ElementRef, input, ViewChild } from '@angular/core';
+import {
+  booleanAttribute,
+  Component,
+  ElementRef,
+  input,
+  ViewChild,
+} from '@angular/core';
 import { YaButton, YaButtonAppearance } from '../button/button.component';
 
 @Component({
   selector: 'ya-download-button',
   templateUrl: './download-button.component.html',
-  imports: [
-    YaButton,
-  ],
+  imports: [YaButton],
 })
 export class YaDownloadButton {
-
   link = input.required<string>();
   disabled = input(false, { transform: booleanAttribute });
   appearance = input<YaButtonAppearance>('basic');

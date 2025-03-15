@@ -14,9 +14,10 @@ import { ActivatedRoute, Params, Router } from '@angular/router';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ContextSwitchComponent implements OnInit {
-
-  constructor(private route: ActivatedRoute, private router: Router) {
-  }
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+  ) {}
 
   ngOnInit() {
     // Get information only from route params.
@@ -29,7 +30,9 @@ export class ContextSwitchComponent implements OnInit {
     // We must specially 'preserve' % escape patterns, because the parseUrl will decode them
     url = url.replace(/\%/g, '__TEMP__');
     const tree = this.router.parseUrl(url);
-    let urlWithoutParams = '/' + tree.root.children['primary'].segments.map(it => it.path).join('/');
+    let urlWithoutParams =
+      '/' +
+      tree.root.children['primary'].segments.map((it) => it.path).join('/');
     urlWithoutParams = urlWithoutParams.replace(/__TEMP__/g, '%');
 
     // Now we have a string that matches exactly what we passed in, but
@@ -47,7 +50,9 @@ export class ContextSwitchComponent implements OnInit {
     };
     for (const key in queryParams) {
       let value = queryParams[key];
-      queryParams[key] = value ? decodeURIComponent(value.replace(/__TEMP__/g, '%')) : value;
+      queryParams[key] = value
+        ? decodeURIComponent(value.replace(/__TEMP__/g, '%'))
+        : value;
     }
 
     // Pass an array of fragments, job done!

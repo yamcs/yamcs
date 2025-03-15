@@ -1,10 +1,14 @@
 import { DataSource } from '@angular/cdk/table';
-import { GetPacketsOptions, Packet, Synchronizer, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  GetPacketsOptions,
+  Packet,
+  Synchronizer,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { PacketBuffer } from './PacketBuffer';
 
 export class PacketsDataSource extends DataSource<Packet> {
-
   pageSize = 100;
   continuationToken?: string;
   options: GetPacketsOptions;
@@ -17,7 +21,10 @@ export class PacketsDataSource extends DataSource<Packet> {
 
   private syncSubscription: Subscription;
 
-  constructor(private yamcs: YamcsService, synchronizer: Synchronizer) {
+  constructor(
+    private yamcs: YamcsService,
+    synchronizer: Synchronizer,
+  ) {
     super();
     this.syncSubscription = synchronizer.sync(() => {
       if (this.buffer.dirty && !this.loading$.getValue()) {
@@ -42,7 +49,7 @@ export class PacketsDataSource extends DataSource<Packet> {
     return this.loadPage({
       ...options,
       limit: this.pageSize,
-    }).then(packets => {
+    }).then((packets) => {
       this.loading$.next(false);
       this.buffer.reset();
       this.blockHasMore = false;
@@ -58,21 +65,24 @@ export class PacketsDataSource extends DataSource<Packet> {
   }
 
   private loadPage(options: GetPacketsOptions) {
-    return this.yamcs.yamcsClient.getPackets(this.yamcs.instance!, {
-      ...options,
-      fields: [ // Everything except the packet binary
-        'id',
-        'generationTime',
-        'earthReceptionTime',
-        'receptionTime',
-        'sequenceNumber',
-        'link',
-        'size',
-      ],
-    }).then(page => {
-      this.continuationToken = page.continuationToken;
-      return page.packet || [];
-    });
+    return this.yamcs.yamcsClient
+      .getPackets(this.yamcs.instance!, {
+        ...options,
+        fields: [
+          // Everything except the packet binary
+          'id',
+          'generationTime',
+          'earthReceptionTime',
+          'receptionTime',
+          'sequenceNumber',
+          'link',
+          'size',
+        ],
+      })
+      .then((page) => {
+        this.continuationToken = page.continuationToken;
+        return page.packet || [];
+      });
   }
 
   loadMoreData(options: GetPacketsOptions) {
@@ -83,7 +93,7 @@ export class PacketsDataSource extends DataSource<Packet> {
       ...options,
       next: this.continuationToken,
       limit: this.pageSize,
-    }).then(packets => {
+    }).then((packets) => {
       this.buffer.addArchiveData(packets);
 
       // Quick emit, don't wait on sync tick

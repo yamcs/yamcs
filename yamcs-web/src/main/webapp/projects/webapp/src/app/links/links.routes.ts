@@ -6,21 +6,27 @@ import { ActionLogTabComponent } from './action-log-tab/action-log-tab.component
 import { LinkListComponent } from './link-list/link-list.component';
 import { LinkComponent } from './link/link.component';
 
-export const ROUTES: Routes = [{
-  path: '',
-  canActivate: [authGuardFn, attachContextGuardFn],
-  canActivateChild: [authGuardChildFn],
-  runGuardsAndResolvers: 'always',
-  component: InstancePageComponent,
-  children: [{
+export const ROUTES: Routes = [
+  {
     path: '',
-    pathMatch: 'full',
-    component: LinkListComponent,
-  }, {
-    path: 'log',
-    component: ActionLogTabComponent,
-  }, {
-    path: ':link',
-    component: LinkComponent,
-  }]
-}];
+    canActivate: [authGuardFn, attachContextGuardFn],
+    canActivateChild: [authGuardChildFn],
+    runGuardsAndResolvers: 'always',
+    component: InstancePageComponent,
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        component: LinkListComponent,
+      },
+      {
+        path: 'log',
+        component: ActionLogTabComponent,
+      },
+      {
+        path: ':link',
+        component: LinkComponent,
+      },
+    ],
+  },
+];

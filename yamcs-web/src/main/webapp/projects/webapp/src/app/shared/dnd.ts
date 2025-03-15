@@ -9,11 +9,12 @@ export interface FileWithFullPath extends File {
  * The returned files have an extra property '_fullPath' which contains
  * the full path starting from the top selected folder.
  */
-export async function listDroppedFiles(dataTransfer: DataTransfer): Promise<FileWithFullPath[]> {
+export async function listDroppedFiles(
+  dataTransfer: DataTransfer,
+): Promise<FileWithFullPath[]> {
   const droppedFiles: FileWithFullPath[] = [];
   const items = dataTransfer.items;
   if (items && items.length && (items[0] as any).webkitGetAsEntry) {
-
     // Convert all items to entries
     // (important to do this _before_ recursing on subtrees)
     const entries: FileSystemEntry[] = [];
@@ -42,7 +43,7 @@ export async function listFilesUnderEntry(entry: FileSystemEntry, path = '') {
   const fullPath = path ? `${path}/${entry.name}` : entry.name;
   if (entry.isFile) {
     const fileEntry = entry as FileSystemFileEntry;
-    const droppedFile = await getFile(fileEntry) as FileWithFullPath;
+    const droppedFile = (await getFile(fileEntry)) as FileWithFullPath;
     droppedFile._fullPath = fullPath;
     droppedFiles.push(droppedFile);
   } else if (entry.isDirectory) {
@@ -51,7 +52,8 @@ export async function listFilesUnderEntry(entry: FileSystemEntry, path = '') {
 
     const directoryReader = directoryEntry.createReader();
     let batch = await readEntries(directoryReader);
-    while (batch.length) { // Empty array means no more batches (batch is about 100 entries)
+    while (batch.length) {
+      // Empty array means no more batches (batch is about 100 entries)
       directoryEntries.push(...batch);
       batch = await readEntries(directoryReader);
     }
@@ -66,16 +68,22 @@ export async function listFilesUnderEntry(entry: FileSystemEntry, path = '') {
 
 function getFile(entry: FileSystemFileEntry) {
   return new Promise<File>((resolve, reject) => {
-    entry.file(file => {
-      resolve(file);
-    }, err => reject(err));
+    entry.file(
+      (file) => {
+        resolve(file);
+      },
+      (err) => reject(err),
+    );
   });
 }
 
 function readEntries(reader: FileSystemDirectoryReader) {
   return new Promise<FileSystemEntry[]>((resolve, reject) => {
-    reader.readEntries(results => {
-      resolve(results);
-    }, err => reject(err));
+    reader.readEntries(
+      (results) => {
+        resolve(results);
+      },
+      (err) => reject(err),
+    );
   });
 }

@@ -1,7 +1,22 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
-import { ParameterValue, Synchronizer, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  ParameterValue,
+  Synchronizer,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
 import { AlarmLevelComponent } from '../../../../../shared/alarm-level/alarm-level.component';
 import { ParameterTableBuffer } from '../ParameterTableBuffer';
@@ -12,13 +27,11 @@ import { ParameterTable } from '../ParameterTableModel';
   templateUrl: './multiple-parameter-table.component.html',
   styleUrl: './multiple-parameter-table.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AlarmLevelComponent,
-    WebappSdkModule,
-  ],
+  imports: [AlarmLevelComponent, WebappSdkModule],
 })
-export class MultipleParameterTableComponent implements OnInit, OnChanges, OnDestroy {
-
+export class MultipleParameterTableComponent
+  implements OnInit, OnChanges, OnDestroy
+{
   @Input()
   model: ParameterTable = {
     scroll: false,
@@ -58,7 +71,11 @@ export class MultipleParameterTableComponent implements OnInit, OnChanges, OnDes
 
   displayedColumns: string[];
 
-  constructor(readonly yamcs: YamcsService, private changeDetector: ChangeDetectorRef, synchronizer: Synchronizer) {
+  constructor(
+    readonly yamcs: YamcsService,
+    private changeDetector: ChangeDetectorRef,
+    synchronizer: Synchronizer,
+  ) {
     this.syncSubscription = synchronizer.syncFast(() => {
       if (!this.paused) {
         this.refreshTable();
@@ -71,7 +88,9 @@ export class MultipleParameterTableComponent implements OnInit, OnChanges, OnDes
   }
 
   private refreshTable() {
-    const recs: ParameterTableRecord[] = this.model.parameters.map(name => ({ name }));
+    const recs: ParameterTableRecord[] = this.model.parameters.map((name) => ({
+      name,
+    }));
     for (const rec of recs) {
       rec.pval = this.buffer.getLatestValue(rec.name);
     }
@@ -94,13 +113,18 @@ export class MultipleParameterTableComponent implements OnInit, OnChanges, OnDes
   }
 
   masterToggle() {
-    this.isAllSelected() ?
-      this.selection.clear() :
-      this.dataSource.filteredData.forEach(row => this.selection.select(row.name));
+    this.isAllSelected()
+      ? this.selection.clear()
+      : this.dataSource.filteredData.forEach((row) =>
+          this.selection.select(row.name),
+        );
   }
 
   toggleOne(name: string) {
-    if (!this.selection.isSelected(name) || this.selection.selected.length > 1) {
+    if (
+      !this.selection.isSelected(name) ||
+      this.selection.selected.length > 1
+    ) {
       this.selection.clear();
     }
     this.selection.toggle(name);

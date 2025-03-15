@@ -1,12 +1,12 @@
-import { LanguageSupport, LRLanguage } from "@codemirror/language";
-import { parser } from "./parser";
+import { LanguageSupport, LRLanguage } from '@codemirror/language';
+import { parser } from './parser';
 
 export const filterLanguage = LRLanguage.define({
-  name: "filter",
+  name: 'filter',
   parser: parser.configure({}),
   languageData: {
-    closeBrackets: { brackets: ["(", '"'] },
-  }
+    closeBrackets: { brackets: ['(', '"'] },
+  },
 });
 
 export function filter() {

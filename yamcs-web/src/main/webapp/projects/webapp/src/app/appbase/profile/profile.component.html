@@ -1,5 +1,5 @@
 <mat-toolbar class="top">
-  <mat-toolbar-row> Profile </mat-toolbar-row>
+  <mat-toolbar-row>Profile</mat-toolbar-row>
 </mat-toolbar>
 @if (user$ | async; as user) {
   <div class="form-content">
@@ -81,7 +81,8 @@
                   <td>
                     @if (p.objects) {
                       @for (object of p.objects; track object) {
-                        {{ object }}<br />
+                        {{ object }}
+                        <br />
                       }
                     } @else {
                       -

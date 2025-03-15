@@ -1,9 +1,19 @@
 import { Location } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import {
+  UntypedFormBuilder,
+  UntypedFormGroup,
+  Validators,
+} from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MessageService, TimelineBand, UpdateTimelineViewRequest, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  MessageService,
+  TimelineBand,
+  UpdateTimelineViewRequest,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
@@ -20,7 +30,6 @@ import { BandMultiSelectComponent } from '../shared/band-multi-select/band-multi
   ],
 })
 export class EditViewComponent implements OnDestroy {
-
   form: UntypedFormGroup;
 
   dirty$ = new BehaviorSubject<boolean>(false);
@@ -41,8 +50,9 @@ export class EditViewComponent implements OnDestroy {
       name: [null, Validators.required],
       bands: [null, []],
     });
-    yamcs.yamcsClient.getTimelineView(yamcs.instance!, id)
-      .then(view => {
+    yamcs.yamcsClient
+      .getTimelineView(yamcs.instance!, id)
+      .then((view) => {
         this.form.setValue({
           name: view.name,
           bands: view.bands || [],
@@ -50,7 +60,8 @@ export class EditViewComponent implements OnDestroy {
         this.formSubscription = this.form.valueChanges.subscribe(() => {
           this.dirty$.next(true);
         });
-      }).catch(err => this.messageService.showError(err));
+      })
+      .catch((err) => this.messageService.showError(err));
   }
 
   onConfirm() {
@@ -60,9 +71,12 @@ export class EditViewComponent implements OnDestroy {
       bands: formValue.bands.map((band: TimelineBand) => band.id),
     };
     const id = this.route.snapshot.paramMap.get('view')!;
-    this.yamcs.yamcsClient.updateTimelineView(this.yamcs.instance!, id, options)
-      .then(() => this.router.navigateByUrl(`/timeline/views?c=${this.yamcs.context}`))
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .updateTimelineView(this.yamcs.instance!, id, options)
+      .then(() =>
+        this.router.navigateByUrl(`/timeline/views?c=${this.yamcs.context}`),
+      )
+      .catch((err) => this.messageService.showError(err));
   }
 
   ngOnDestroy() {

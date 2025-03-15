@@ -1,6 +1,7 @@
 import { WebSocketCall } from '../WebSocketCall';
 
-export type Cop1State = 'ACTIVE'
+export type Cop1State =
+  | 'ACTIVE'
   | 'RETRANSMIT_WITHOUT_WAIT'
   | 'RETRANSMIT_WITH_WAIT'
   | 'INITIALIZING_WITHOUT_BC'

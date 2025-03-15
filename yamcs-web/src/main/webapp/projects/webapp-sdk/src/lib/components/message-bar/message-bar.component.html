@@ -2,7 +2,8 @@
   <mat-toolbar class="message-bar" [class.warning]="siteMessage.level === 'WARNING'">
     <mat-toolbar-row>
       <span style="flex: 1 1 auto"></span>
-      <mat-icon>report_problem</mat-icon>&nbsp; {{ siteMessage.message }}
+      <mat-icon>report_problem</mat-icon>
+      &nbsp; {{ siteMessage.message }}
       <span style="flex: 1 1 auto"></span>
       <div class="actions">
         <button mat-icon-button (click)="dismiss()">

@@ -1,11 +1,18 @@
 import { CollectionViewer, DataSource } from '@angular/cdk/collections';
-import { FileTransferService, GetFileTransfersOptions, StorageClient, Synchronizer, Transfer, TransferSubscription, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  FileTransferService,
+  GetFileTransfersOptions,
+  StorageClient,
+  Synchronizer,
+  Transfer,
+  TransferSubscription,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { FileTransferBuffer } from './FileTransferBuffer';
 import { TransferItem } from './TransferItem';
 
 export class FileTransferDataSource extends DataSource<TransferItem> {
-
   pageSize = 100;
   options: GetFileTransfersOptions;
 
@@ -36,7 +43,9 @@ export class FileTransferDataSource extends DataSource<TransferItem> {
     });
   }
 
-  override connect(collectionViewer: CollectionViewer): Observable<readonly TransferItem[]> {
+  override connect(
+    collectionViewer: CollectionViewer,
+  ): Observable<readonly TransferItem[]> {
     return this.transfers$;
   }
 
@@ -45,15 +54,18 @@ export class FileTransferDataSource extends DataSource<TransferItem> {
     this.transfers$.next(transfers);
   }
 
-  loadTransfers(service: FileTransferService, options: GetFileTransfersOptions) {
+  loadTransfers(
+    service: FileTransferService,
+    options: GetFileTransfersOptions,
+  ) {
     this.loading$.next(true);
     return Promise.all([
       this.loadPage(service, {
         ...options,
         limit: this.pageSize,
       }),
-    ]).then(results => {
-      const transfers = results[0].map(transfer => this.toItem(transfer));
+    ]).then((results) => {
+      const transfers = results[0].map((transfer) => this.toItem(transfer));
 
       this.loading$.next(false);
       this.buffer.reset();
@@ -66,24 +78,33 @@ export class FileTransferDataSource extends DataSource<TransferItem> {
     });
   }
 
-  private loadPage(service: FileTransferService, options: GetFileTransfersOptions) {
+  private loadPage(
+    service: FileTransferService,
+    options: GetFileTransfersOptions,
+  ) {
     this.options = options;
-    return this.yamcs.yamcsClient.getFileTransfers(this.yamcs.instance!, service.name, options).then(page => {
-      return page.transfers || [];
-    });
+    return this.yamcs.yamcsClient
+      .getFileTransfers(this.yamcs.instance!, service.name, options)
+      .then((page) => {
+        return page.transfers || [];
+      });
   }
 
   startStreaming(service: FileTransferService) {
     this.streaming$.next(true);
-    this.realtimeSubscription = this.yamcs.yamcsClient.createTransferSubscription({
-      instance: this.yamcs.instance!,
-      serviceName: service.name,
-      ongoingOnly: true,
-    }, transfer => {
-      if (!this.loading$.getValue() && this.matchesFilter(transfer)) {
-        this.buffer.addRealtimeTransfer(this.toItem(transfer));
-      }
-    });
+    this.realtimeSubscription =
+      this.yamcs.yamcsClient.createTransferSubscription(
+        {
+          instance: this.yamcs.instance!,
+          serviceName: service.name,
+          ongoingOnly: true,
+        },
+        (transfer) => {
+          if (!this.loading$.getValue() && this.matchesFilter(transfer)) {
+            this.buffer.addRealtimeTransfer(this.toItem(transfer));
+          }
+        },
+      );
   }
 
   private toItem(transfer: Transfer): TransferItem {

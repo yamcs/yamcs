@@ -1,6 +1,19 @@
-import { ChangeDetectionStrategy, Component, Input, OnChanges, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnChanges,
+  OnInit,
+} from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
-import { AcknowledgmentInfo, AdvancementParams, Command, WebappSdkModule, YamcsService, YaSelectOption } from '@yamcs/webapp-sdk';
+import {
+  AcknowledgmentInfo,
+  AdvancementParams,
+  Command,
+  WebappSdkModule,
+  YamcsService,
+  YaSelectOption,
+} from '@yamcs/webapp-sdk';
 import { AdvanceAckHelpComponent } from '../../../procedures/run-stack/advance-ack-help/advance-ack-help.component';
 import { AppMarkdownInput } from '../../../shared/markdown-input/markdown-input.component';
 import { TemplateProvider } from './TemplateProvider';
@@ -9,14 +22,9 @@ import { TemplateProvider } from './TemplateProvider';
   selector: 'app-stack-advancement-form',
   templateUrl: './stack-advancement-form.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AdvanceAckHelpComponent,
-    AppMarkdownInput,
-    WebappSdkModule,
-  ],
+  imports: [AdvanceAckHelpComponent, AppMarkdownInput, WebappSdkModule],
 })
 export class StackAdvancementForm implements OnInit, OnChanges {
-
   @Input()
   formGroup: FormGroup;
 
@@ -36,8 +44,7 @@ export class StackAdvancementForm implements OnInit, OnChanges {
     { id: 'CommandComplete', label: 'Completed' },
   ];
 
-  constructor(private yamcs: YamcsService) {
-  }
+  constructor(private yamcs: YamcsService) {}
 
   ngOnInit(): void {
     this.verifierAcknowledgments = [];
@@ -51,7 +58,9 @@ export class StackAdvancementForm implements OnInit, OnChanges {
     }
     for (const command of commandHierarchy) {
       for (const verifier of command.verifier ?? []) {
-        this.verifierAcknowledgments.push({ name: `Verifier_${verifier.stage}` });
+        this.verifierAcknowledgments.push({
+          name: `Verifier_${verifier.stage}`,
+        });
       }
     }
     let first = true;
@@ -64,7 +73,8 @@ export class StackAdvancementForm implements OnInit, OnChanges {
       first = false;
     }
 
-    this.extraAcknowledgments = this.yamcs.getProcessor()?.acknowledgments ?? [];
+    this.extraAcknowledgments =
+      this.yamcs.getProcessor()?.acknowledgments ?? [];
     first = true;
     for (const ack of this.extraAcknowledgments) {
       this.ackOptions.push({
@@ -93,9 +103,12 @@ export class StackAdvancementForm implements OnInit, OnChanges {
 
       advancementGroup.valueChanges.subscribe((result) => {
         if (result.acknowledgment !== 'custom') {
-          advancementGroup.patchValue({ 'ackCustom': undefined }, {
-            emitEvent: false,
-          });
+          advancementGroup.patchValue(
+            { ackCustom: undefined },
+            {
+              emitEvent: false,
+            },
+          );
         }
       });
     }
@@ -108,9 +121,12 @@ export class StackAdvancementForm implements OnInit, OnChanges {
 
       const advancement = this.templateProvider.getAdvancementParams();
       if (advancement) {
-        const match = this.ackOptions.find(el => el.id === advancement.acknowledgment);
+        const match = this.ackOptions.find(
+          (el) => el.id === advancement.acknowledgment,
+        );
         const acknowledgment = match ? match.id : 'custom';
-        const ackCustom = acknowledgment === 'custom' ? advancement.acknowledgment : '';
+        const ackCustom =
+          acknowledgment === 'custom' ? advancement.acknowledgment : '';
         let wait = advancement.wait ?? null;
         this.advancementGroup.patchValue({
           acknowledgment,

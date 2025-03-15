@@ -1,4 +1,3 @@
-
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
 @Component({
@@ -6,10 +5,9 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
   templateUrl: './empty-message.component.html',
   styleUrl: './empty-message.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: []
+  imports: [],
 })
 export class YaEmptyMessage {
-
   @Input()
   headerTitle: string;
 

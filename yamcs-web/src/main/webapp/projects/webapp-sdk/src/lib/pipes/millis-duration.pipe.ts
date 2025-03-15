@@ -4,7 +4,6 @@ import { Pipe, PipeTransform } from '@angular/core';
   name: 'millisDuration',
 })
 export class MillisDurationPipe implements PipeTransform {
-
   transform(millis?: number | null): string | null {
     if (millis === null || millis === undefined) {
       return null;
@@ -12,9 +11,9 @@ export class MillisDurationPipe implements PipeTransform {
     millis = Math.floor(millis);
     const totalSeconds = Math.floor(millis / 1000);
     const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds - (hours * 3600)) / 60);
-    const seconds = totalSeconds - (hours * 3600) - (minutes * 60);
-    const remainingMillis = millis - (totalSeconds * 1000);
+    const minutes = Math.floor((totalSeconds - hours * 3600) / 60);
+    const seconds = totalSeconds - hours * 3600 - minutes * 60;
+    const remainingMillis = millis - totalSeconds * 1000;
     if (hours) {
       if (minutes) {
         return `${hours}h ${minutes}m`;

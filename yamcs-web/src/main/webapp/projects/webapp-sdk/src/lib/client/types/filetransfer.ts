@@ -3,7 +3,13 @@ import { ActionInfo } from './management';
 
 export type FileTransferDirection = 'UPLOAD' | 'DOWNLOAD';
 
-export type FileTransferStatus = 'RUNNING' | 'PAUSED' | 'FAILED' | 'COMPLETED' | 'CANCELLING' | 'QUEUED';
+export type FileTransferStatus =
+  | 'RUNNING'
+  | 'PAUSED'
+  | 'FAILED'
+  | 'COMPLETED'
+  | 'CANCELLING'
+  | 'QUEUED';
 
 export interface FileTransferService {
   instance: string;
@@ -21,7 +27,7 @@ export interface FileTransferOption {
   description?: string;
   associatedText?: string;
   default?: string;
-  values?: { value: string, verboseName?: string; }[];
+  values?: { value: string; verboseName?: string }[];
   allowCustomOption?: boolean;
 }
 
@@ -82,7 +88,7 @@ export interface CreateTransferRequest {
   remotePath: string;
   source: string;
   destination: string;
-  options: { [key: string]: boolean | number | string; };
+  options: { [key: string]: boolean | number | string };
 }
 
 export interface TransfersPage {
@@ -93,7 +99,7 @@ export interface ListFilesRequest {
   source: string;
   destination: string;
   remotePath: string;
-  options?: { [key: string]: boolean | number | string; };
+  options?: { [key: string]: boolean | number | string };
 }
 
 export interface RemoteFile {
@@ -102,7 +108,7 @@ export interface RemoteFile {
   isDirectory: boolean;
   size: number;
   modified: string;
-  extra?: { [key: string]: any; };
+  extra?: { [key: string]: any };
 }
 
 export interface ListFilesResponse {
@@ -118,7 +124,7 @@ export interface RunFileActionRequest {
   remoteEntity: string;
   file: string;
   action: string;
-  message?: { [key: string]: any; };
+  message?: { [key: string]: any };
 }
 
 export interface ServicesPage {
@@ -136,5 +142,11 @@ export interface SubscribeRemoteFileListRequest {
   serviceName: string;
 }
 
-export type TransferSubscription = WebSocketCall<SubscribeTransfersRequest, Transfer>;
-export type RemoteFileListSubscription = WebSocketCall<SubscribeRemoteFileListRequest, ListFilesResponse>;
+export type TransferSubscription = WebSocketCall<
+  SubscribeTransfersRequest,
+  Transfer
+>;
+export type RemoteFileListSubscription = WebSocketCall<
+  SubscribeRemoteFileListRequest,
+  ListFilesResponse
+>;

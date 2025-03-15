@@ -6,14 +6,9 @@ import { YaIconAction } from '../icon-action/icon-action.component';
   selector: 'ya-more',
   templateUrl: 'more.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    YaIconAction,
-    MatMenu,
-    MatMenuTrigger,
-  ],
+  imports: [YaIconAction, MatMenu, MatMenuTrigger],
 })
 export class YaMore {
-
   @Input()
   icon = 'more_vert';
 

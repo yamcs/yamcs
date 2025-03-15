@@ -6,11 +6,8 @@ import { Transfer, WebappSdkModule } from '@yamcs/webapp-sdk';
   templateUrl: './file-transfer-icon.component.html',
   styleUrl: './file-transfer-icon.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class FileTransferIconComponent {
-
   transfer = input.required<Transfer>();
 }

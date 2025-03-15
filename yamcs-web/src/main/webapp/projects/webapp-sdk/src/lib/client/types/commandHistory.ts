@@ -7,4 +7,7 @@ export interface SubscribeCommandsRequest {
   ignorePastCommands?: boolean;
 }
 
-export type CommandSubscription = WebSocketCall<SubscribeCommandsRequest, CommandHistoryEntry>;
+export type CommandSubscription = WebSocketCall<
+  SubscribeCommandsRequest,
+  CommandHistoryEntry
+>;

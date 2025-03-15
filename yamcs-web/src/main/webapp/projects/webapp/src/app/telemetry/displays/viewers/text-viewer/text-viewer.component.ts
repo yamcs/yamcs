@@ -1,5 +1,14 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component } from '@angular/core';
-import { ConfigService, StorageClient, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+} from '@angular/core';
+import {
+  ConfigService,
+  StorageClient,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { Viewer } from '../Viewer';
 
 @Component({
@@ -8,19 +17,16 @@ import { Viewer } from '../Viewer';
     @if (text) {
       <pre>{{ text }}</pre>
     }
-    `,
+  `,
   styles: `
     pre {
       margin: 1em;
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class TextViewerComponent implements Viewer {
-
   text: string;
 
   private storageClient: StorageClient;
@@ -33,12 +39,11 @@ export class TextViewerComponent implements Viewer {
   ) {
     this.storageClient = yamcs.createStorageClient();
     this.bucket = configService.getDisplayBucket();
-
   }
 
   public init(objectName: string) {
-    this.storageClient.getObject(this.bucket, objectName).then(response => {
-      response.text().then(text => {
+    this.storageClient.getObject(this.bucket, objectName).then((response) => {
+      response.text().then((text) => {
         this.text = text;
         this.changeDetector.detectChanges();
       });

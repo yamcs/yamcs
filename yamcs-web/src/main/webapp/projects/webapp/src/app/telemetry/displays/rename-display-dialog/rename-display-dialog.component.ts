@@ -1,17 +1,24 @@
 import { Component, Inject } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import {
+  UntypedFormBuilder,
+  UntypedFormGroup,
+  Validators,
+} from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { ConfigService, StorageClient, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  ConfigService,
+  StorageClient,
+  WebappSdkModule,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-rename-display-dialog',
   templateUrl: './rename-display-dialog.component.html',
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class RenameDisplayDialogComponent {
-
   filenameForm: UntypedFormGroup;
 
   private storageClient: StorageClient;
@@ -40,7 +47,10 @@ export class RenameDisplayDialogComponent {
       prefix = this.data.name.substring(0, idx + 1);
     }
 
-    const response = await this.storageClient.getObject(this.bucket, this.data.name);
+    const response = await this.storageClient.getObject(
+      this.bucket,
+      this.data.name,
+    );
     const blob = await response.blob();
 
     const newObjectName = (prefix || '') + this.filenameForm.get('name')!.value;

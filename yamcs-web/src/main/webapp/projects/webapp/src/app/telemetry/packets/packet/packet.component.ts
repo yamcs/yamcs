@@ -1,8 +1,28 @@
 import { Clipboard } from '@angular/cdk/clipboard';
-import { ChangeDetectionStrategy, Component, OnInit, ViewChild, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  ViewChild,
+  input,
+} from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute } from '@angular/router';
-import { BaseComponent, BitRange, Container, ExtractPacketResponse, ExtractedParameter, Packet, Parameter, ParameterType, Value, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  BaseComponent,
+  BitRange,
+  Container,
+  ExtractPacketResponse,
+  ExtractedParameter,
+  Packet,
+  Parameter,
+  ParameterType,
+  Value,
+  WebappSdkModule,
+  YaSelectOption,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { HexComponent } from '../../../shared/hex/hex.component';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
@@ -68,7 +88,8 @@ export interface AggregateValueNode extends INode {
   depth: number;
 }
 
-export type Node = ContainerNode
+export type Node =
+  | ContainerNode
   | SimpleParameterNode
   | AggregateParameterNode
   | ArrayParameterNode
@@ -88,7 +109,6 @@ export type Node = ContainerNode
   ],
 })
 export class PacketComponent extends BaseComponent implements OnInit {
-
   packetName = input.required<string>({ alias: 'packet' });
 
   packet$ = new BehaviorSubject<Packet | null>(null);
@@ -148,13 +168,15 @@ export class PacketComponent extends BaseComponent implements OnInit {
     const seqno = Number(this.route.snapshot.paramMap.get('seqno')!);
     this.setTitle(pname);
 
-    this.yamcs.yamcsClient.getPacket(this.yamcs.instance!, pname, gentime, seqno)
-      .then(packet => this.packet$.next(packet))
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .getPacket(this.yamcs.instance!, pname, gentime, seqno)
+      .then((packet) => this.packet$.next(packet))
+      .catch((err) => this.messageService.showError(err));
 
-    this.yamcs.yamcsClient.extractPacket(this.yamcs.instance!, pname, gentime, seqno)
-      .then(result => this.processResponse(result))
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .extractPacket(this.yamcs.instance!, pname, gentime, seqno)
+      .then((result) => this.processResponse(result))
+      .catch((err) => this.messageService.showError(err));
   }
 
   private processResponse(result: ExtractPacketResponse) {
@@ -162,7 +184,10 @@ export class PacketComponent extends BaseComponent implements OnInit {
 
     let prevContainerNode: ContainerNode | undefined;
     for (const pval of result.parameterValues || []) {
-      if (pval.entryContainer.qualifiedName !== prevContainerNode?.container.qualifiedName) {
+      if (
+        pval.entryContainer.qualifiedName !==
+        prevContainerNode?.container.qualifiedName
+      ) {
         const containerNode: ContainerNode = {
           type: 'CONTAINER',
           container: pval.entryContainer,
@@ -184,7 +209,11 @@ export class PacketComponent extends BaseComponent implements OnInit {
     this.updateDataSource();
   }
 
-  private addParameterNodes(parent: Node, pval: ExtractedParameter, nodes: Node[]) {
+  private addParameterNodes(
+    parent: Node,
+    pval: ExtractedParameter,
+    nodes: Node[],
+  ) {
     const { parameter, location, rawValue, engValue, size } = pval;
     if (parameter.type?.engType.endsWith('[]')) {
       const arrayNode: Node = {
@@ -198,7 +227,6 @@ export class PacketComponent extends BaseComponent implements OnInit {
         size,
       };
       nodes.push(arrayNode);
-
 
       //  Nodes for array entries
       const rawValues = rawValue?.arrayValue || [];
@@ -214,9 +242,9 @@ export class PacketComponent extends BaseComponent implements OnInit {
           1,
           rawValues[i],
           engValues[i],
-          nodes);
+          nodes,
+        );
       }
-
     } else if (parameter.type?.engType === 'aggregate') {
       const aggregateNode: Node = {
         type: 'AGGREGATE_PARAMETER',
@@ -244,7 +272,8 @@ export class PacketComponent extends BaseComponent implements OnInit {
           1,
           rawAggregateValue.value[i],
           engAggregateValue.value[i],
-          nodes);
+          nodes,
+        );
       }
     } else {
       nodes.push({
@@ -299,7 +328,8 @@ export class PacketComponent extends BaseComponent implements OnInit {
           depth + 1,
           rawValues[i],
           engValues[i],
-          nodes);
+          nodes,
+        );
       }
     } else if (parameterType.engType === 'aggregate') {
       const node: AggregateValueNode = {
@@ -331,7 +361,8 @@ export class PacketComponent extends BaseComponent implements OnInit {
           depth + 1,
           rawAggregateValue.value[i],
           engAggregateValue.value[i],
-          nodes);
+          nodes,
+        );
       }
     } else {
       nodes.push({
@@ -359,9 +390,11 @@ export class PacketComponent extends BaseComponent implements OnInit {
   }
 
   highlightBitRange(node: Node) {
-    if (node.type === 'SIMPLE_PARAMETER'
-      || node.type === 'AGGREGATE_PARAMETER'
-      || node.type === 'ARRAY_PARAMETER') {
+    if (
+      node.type === 'SIMPLE_PARAMETER' ||
+      node.type === 'AGGREGATE_PARAMETER' ||
+      node.type === 'ARRAY_PARAMETER'
+    ) {
       this.hex?.setHighlight(new BitRange(node.location, node.size));
     }
   }
@@ -371,9 +404,11 @@ export class PacketComponent extends BaseComponent implements OnInit {
   }
 
   selectBitRange(node: Node) {
-    if (node.type === 'SIMPLE_PARAMETER'
-      || node.type === 'AGGREGATE_PARAMETER'
-      || node.type === 'ARRAY_PARAMETER') {
+    if (
+      node.type === 'SIMPLE_PARAMETER' ||
+      node.type === 'AGGREGATE_PARAMETER' ||
+      node.type === 'ARRAY_PARAMETER'
+    ) {
       this.hex?.setSelection(new BitRange(node.location, node.size));
     }
   }
@@ -416,11 +451,13 @@ export class PacketComponent extends BaseComponent implements OnInit {
   }
 
   isExpandable(node: Node) {
-    return node.type === 'CONTAINER'
-      || node.type === 'AGGREGATE_PARAMETER'
-      || node.type === 'ARRAY_PARAMETER'
-      || node.type === 'AGGREGATE_VALUE'
-      || node.type === 'ARRAY_VALUE';
+    return (
+      node.type === 'CONTAINER' ||
+      node.type === 'AGGREGATE_PARAMETER' ||
+      node.type === 'ARRAY_PARAMETER' ||
+      node.type === 'AGGREGATE_VALUE' ||
+      node.type === 'ARRAY_VALUE'
+    );
   }
 
   /**

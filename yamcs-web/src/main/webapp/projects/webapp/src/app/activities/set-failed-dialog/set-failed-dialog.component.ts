@@ -1,5 +1,9 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import {
+  UntypedFormBuilder,
+  UntypedFormGroup,
+  Validators,
+} from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
 
@@ -7,12 +11,9 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
   selector: 'app-set-failed-dialog',
   templateUrl: './set-failed-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class SetFailedDialogComponent {
-
   form: UntypedFormGroup;
 
   constructor(
@@ -27,7 +28,7 @@ export class SetFailedDialogComponent {
 
   async submit() {
     this.dialogRef.close({
-      failureReason: this.form.value["failureReason"],
+      failureReason: this.form.value['failureReason'],
     });
   }
 }

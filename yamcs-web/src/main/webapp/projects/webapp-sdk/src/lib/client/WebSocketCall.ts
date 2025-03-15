@@ -5,7 +5,6 @@ import { ServerMessage, WebSocketClient } from './WebSocketClient';
  * Multiple calls may be active on the same WebSocket connection.
  */
 export class WebSocketCall<O, D> {
-
   private _id?: number;
   private seq = 0; // Mirror of received seq count on server messages
   private _frameLoss = false;
@@ -55,7 +54,8 @@ export class WebSocketCall<O, D> {
    */
   addReplyListener(replyListener: () => void) {
     this.replyListeners.add(replyListener);
-    if (this._id) { // Already replied to
+    if (this._id) {
+      // Already replied to
       replyListener();
     }
   }
@@ -96,16 +96,18 @@ export class WebSocketCall<O, D> {
         const errCode = msg.data.exception['code'];
         const errType = msg.data.exception['type'];
         const errDetail = msg.data.exception['msg'];
-        console.error(`Received ${errCode} ${errType} for topic '${this.type}': ${errDetail}`);
+        console.error(
+          `Received ${errCode} ${errType} for topic '${this.type}': ${errDetail}`,
+        );
       }
-      this.replyListeners.forEach(listener => listener());
+      this.replyListeners.forEach((listener) => listener());
     } else if (msg.type === this.type && msg.call === this.id) {
-      if (!this.frameLoss && (this.seq + 1 !== msg.seq)) {
+      if (!this.frameLoss && this.seq + 1 !== msg.seq) {
         this._frameLoss = true;
-        this.frameLossListeners.forEach(listener => listener());
+        this.frameLossListeners.forEach((listener) => listener());
       }
       this.seq = msg.seq;
-      this.messageListeners.forEach(l => l(msg.data));
+      this.messageListeners.forEach((l) => l(msg.data));
     }
   }
 

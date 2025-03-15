@@ -21,7 +21,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: rgba(0, 0, 0, .654);
+  color: rgba(0, 0, 0, 0.654);
 }
 
 .dl-horizontal dd {

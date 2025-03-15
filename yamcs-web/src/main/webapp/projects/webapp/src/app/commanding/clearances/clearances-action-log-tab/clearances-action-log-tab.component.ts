@@ -1,9 +1,21 @@
-import { ChangeDetectionStrategy, Component, OnInit, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  input,
+} from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AuditRecord, GetAuditRecordsOptions, MessageService, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  AuditRecord,
+  GetAuditRecordsOptions,
+  MessageService,
+  YaSelectOption,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { ClearancesPageTabsComponent } from '../clearances-page-tabs/clearances-page-tabs.component';
@@ -22,7 +34,6 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
   ],
 })
 export class ClearancesActionLogTabComponent implements OnInit {
-
   interval = input<string>();
   customStart = input<string>();
   customStop = input<string>();
@@ -41,12 +52,7 @@ export class ClearancesActionLogTabComponent implements OnInit {
     customStop: new FormControl<string | null>(null),
   });
 
-  displayedColumns = [
-    'time',
-    'user',
-    'summary',
-    'actions',
-  ];
+  displayedColumns = ['time', 'user', 'summary', 'actions'];
 
   intervalOptions: YaSelectOption[] = [
     { id: 'PT1H', label: 'Last hour' },
@@ -72,13 +78,17 @@ export class ClearancesActionLogTabComponent implements OnInit {
     this.initializeOptions();
     this.loadData();
 
-    this.filterForm.get('interval')!.valueChanges.forEach(nextInterval => {
+    this.filterForm.get('interval')!.valueChanges.forEach((nextInterval) => {
       if (nextInterval === 'CUSTOM') {
         const now = new Date();
         const customStart = this.validStart || now;
         const customStop = this.validStop || now;
-        this.filterForm.get('customStart')!.setValue(utils.toISOString(customStart));
-        this.filterForm.get('customStop')!.setValue(utils.toISOString(customStop));
+        this.filterForm
+          .get('customStart')!
+          .setValue(utils.toISOString(customStart));
+        this.filterForm
+          .get('customStop')!
+          .setValue(utils.toISOString(customStop));
       } else if (nextInterval === 'NO_LIMIT') {
         this.validStart = null;
         this.validStop = null;
@@ -109,7 +119,10 @@ export class ClearancesActionLogTabComponent implements OnInit {
         this.validStop = null;
       } else {
         this.validStop = new Date();
-        this.validStart = utils.subtractDuration(this.validStop, this.appliedInterval);
+        this.validStart = utils.subtractDuration(
+          this.validStop,
+          this.appliedInterval,
+        );
       }
     } else {
       this.appliedInterval = 'NO_LIMIT';
@@ -145,9 +158,10 @@ export class ClearancesActionLogTabComponent implements OnInit {
       options.stop = this.validStop.toISOString();
     }
 
-    this.yamcs.yamcsClient.getAuditRecords('_global', options)
-      .then(page => this.dataSource.data = page.records || [])
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .getAuditRecords('_global', options)
+      .then((page) => (this.dataSource.data = page.records || []))
+      .catch((err) => this.messageService.showError(err));
   }
 
   private updateURL() {
@@ -157,8 +171,14 @@ export class ClearancesActionLogTabComponent implements OnInit {
       relativeTo: this.route,
       queryParams: {
         interval: this.appliedInterval,
-        customStart: this.appliedInterval === 'CUSTOM' ? controls['customStart'].value : null,
-        customStop: this.appliedInterval === 'CUSTOM' ? controls['customStop'].value : null,
+        customStart:
+          this.appliedInterval === 'CUSTOM'
+            ? controls['customStart'].value
+            : null,
+        customStop:
+          this.appliedInterval === 'CUSTOM'
+            ? controls['customStop'].value
+            : null,
       },
       queryParamsHandling: 'merge',
     });

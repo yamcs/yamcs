@@ -1,6 +1,5 @@
 import { Value } from '../client/types/monitoring';
 
-
 export interface Acknowledgment {
   name?: string;
   status?: string;

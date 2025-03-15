@@ -47,7 +47,7 @@
 ::ng-deep .dygraph-legend-line {
   display: inline-block;
   position: relative;
-  bottom: .5ex;
+  bottom: 0.5ex;
   padding-left: 1em;
   height: 1px;
   border-bottom-width: 2px;
@@ -60,7 +60,7 @@
 ::ng-deep .dygraph-legend-dash {
   display: inline-block;
   position: relative;
-  bottom: .5ex;
+  bottom: 0.5ex;
   height: 1px;
   border-bottom-width: 2px;
   border-bottom-style: solid;
@@ -102,11 +102,14 @@
   /* replaces old axisLabelColor option */
 }
 
-::ng-deep .dygraph-axis-label-x {}
+::ng-deep .dygraph-axis-label-x {
+}
 
-::ng-deep .dygraph-axis-label-y {}
+::ng-deep .dygraph-axis-label-y {
+}
 
-::ng-deep .dygraph-axis-label-y2 {}
+::ng-deep .dygraph-axis-label-y2 {
+}
 
 ::ng-deep .dygraph-title {
   font-weight: bold;

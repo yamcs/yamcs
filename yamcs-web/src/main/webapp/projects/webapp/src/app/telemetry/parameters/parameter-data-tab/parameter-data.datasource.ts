@@ -1,17 +1,23 @@
 import { CollectionViewer } from '@angular/cdk/collections';
 import { DataSource } from '@angular/cdk/table';
-import { GetParameterValuesOptions, ParameterValue, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  GetParameterValuesOptions,
+  ParameterValue,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 
 export class ParameterDataDataSource extends DataSource<ParameterValue> {
-
   pageSize = 100;
   offscreenRecord: ParameterValue | null;
 
   pvals$ = new BehaviorSubject<ParameterValue[]>([]);
   public loading$ = new BehaviorSubject<boolean>(false);
 
-  constructor(private yamcs: YamcsService, private qualifiedName: string) {
+  constructor(
+    private yamcs: YamcsService,
+    private qualifiedName: string,
+  ) {
     super();
   }
 
@@ -28,9 +34,11 @@ export class ParameterDataDataSource extends DataSource<ParameterValue> {
     return this.loadPage({
       ...options,
       limit: this.pageSize + 1, // One extra to detect hasMore
-    }).then(pvals => {
-      this.pvals$.next(pvals);
-    }).finally(() => this.loading$.next(false));
+    })
+      .then((pvals) => {
+        this.pvals$.next(pvals);
+      })
+      .finally(() => this.loading$.next(false));
   }
 
   hasMore() {
@@ -43,14 +51,16 @@ export class ParameterDataDataSource extends DataSource<ParameterValue> {
    * be used for the next page (start/stop are inclusive).
    */
   private loadPage(options: GetParameterValuesOptions) {
-    return this.yamcs.yamcsClient.getParameterValues(this.yamcs.instance!, this.qualifiedName, options).then(pvals => {
-      if (pvals.length > this.pageSize) {
-        this.offscreenRecord = pvals.splice(pvals.length - 1, 1)[0];
-      } else {
-        this.offscreenRecord = null;
-      }
-      return pvals;
-    });
+    return this.yamcs.yamcsClient
+      .getParameterValues(this.yamcs.instance!, this.qualifiedName, options)
+      .then((pvals) => {
+        if (pvals.length > this.pageSize) {
+          this.offscreenRecord = pvals.splice(pvals.length - 1, 1)[0];
+        } else {
+          this.offscreenRecord = null;
+        }
+        return pvals;
+      });
   }
 
   /**
@@ -67,7 +77,7 @@ export class ParameterDataDataSource extends DataSource<ParameterValue> {
       ...options,
       stop: this.offscreenRecord.generationTime,
       limit: this.pageSize + 1, // One extra to detect hasMore
-    }).then(pvals => {
+    }).then((pvals) => {
       const combinedPvals = this.pvals$.getValue().concat(pvals);
       this.pvals$.next(combinedPvals);
     });

@@ -1,24 +1,28 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
-import { AbstractControl, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  UntypedFormBuilder,
+  UntypedFormControl,
+  UntypedFormGroup,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { UserInfo, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 
 const PASSWORD_VALIDATOR: ValidatorFn = (control: AbstractControl) => {
   const pw1 = control.get('password')!.value;
   const pw2 = control.get('passwordConfirmation')!.value;
-  return pw1 && pw2 && pw1 !== pw2 ? { 'passwordMismatch': true } : null;
+  return pw1 && pw2 && pw1 !== pw2 ? { passwordMismatch: true } : null;
 };
 
 @Component({
   selector: 'app-change-user-password-dialog',
   templateUrl: './change-user-password-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class ChangeUserPasswordDialogComponent {
-
   form: UntypedFormGroup;
   user: UserInfo;
 
@@ -28,12 +32,15 @@ export class ChangeUserPasswordDialogComponent {
     formBuilder: UntypedFormBuilder,
   ) {
     this.user = data.user;
-    this.form = formBuilder.group({
-      password: new UntypedFormControl(null, Validators.required),
-      passwordConfirmation: new UntypedFormControl(null, Validators.required),
-    }, {
-      validator: PASSWORD_VALIDATOR,
-    });
+    this.form = formBuilder.group(
+      {
+        password: new UntypedFormControl(null, Validators.required),
+        passwordConfirmation: new UntypedFormControl(null, Validators.required),
+      },
+      {
+        validator: PASSWORD_VALIDATOR,
+      },
+    );
   }
 
   changePassword() {

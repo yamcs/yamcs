@@ -3,7 +3,14 @@ import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ExportParameterValuesOptions, ParameterList, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  ExportParameterValuesOptions,
+  ParameterList,
+  WebappSdkModule,
+  YaSelectOption,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { ExportArchiveDataDialogComponent } from '../../displays/export-archive-data-dialog/export-archive-data-dialog.component';
 
@@ -23,12 +30,9 @@ const defaultInterval = 'PT1H';
   templateUrl: './parameter-list-historical-data-tab.component.html',
   styleUrl: './parameter-list-historical-data-tab.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class ParameterListHistoricalDataTabComponent {
-
   plistId: string;
   intervalOptions: YaSelectOption[] = [
     { id: 'PT1H', label: 'Last hour' },
@@ -52,10 +56,7 @@ export class ParameterListHistoricalDataTabComponent {
     customStop: new UntypedFormControl(null),
   });
 
-  displayedColumns = [
-    'generationTime',
-    'actions',
-  ];
+  displayedColumns = ['generationTime', 'actions'];
   displayedColumns$ = new BehaviorSubject<string[]>(this.displayedColumns);
 
   plist$ = new BehaviorSubject<ParameterList | null>(null);
@@ -78,12 +79,16 @@ export class ParameterListHistoricalDataTabComponent {
     this.initializeOptions();
     this.loadData();
 
-    this.filterForm.get('interval')!.valueChanges.forEach(nextInterval => {
+    this.filterForm.get('interval')!.valueChanges.forEach((nextInterval) => {
       if (nextInterval === 'CUSTOM') {
         const customStart = this.validStart || this.yamcs.getMissionTime();
         const customStop = this.validStop || this.yamcs.getMissionTime();
-        this.filterForm.get('customStart')!.setValue(utils.toISOString(customStart));
-        this.filterForm.get('customStop')!.setValue(utils.toISOString(customStop));
+        this.filterForm
+          .get('customStart')!
+          .setValue(utils.toISOString(customStart));
+        this.filterForm
+          .get('customStop')!
+          .setValue(utils.toISOString(customStop));
       } else if (nextInterval === 'NO_LIMIT') {
         this.validStart = null;
         this.validStop = null;
@@ -115,7 +120,10 @@ export class ParameterListHistoricalDataTabComponent {
         this.validStop = null;
       } else {
         this.validStop = this.yamcs.getMissionTime();
-        this.validStart = utils.subtractDuration(this.validStop, this.appliedInterval);
+        this.validStart = utils.subtractDuration(
+          this.validStop,
+          this.appliedInterval,
+        );
       }
     } else {
       this.appliedInterval = defaultInterval;
@@ -162,25 +170,29 @@ export class ParameterListHistoricalDataTabComponent {
       options.stop = this.validStop.toISOString();
     }
 
-    this.yamcs.yamcsClient.getParameterList(this.yamcs.instance!, this.plistId).then(plist => {
-      this.plist$.next(plist);
+    this.yamcs.yamcsClient
+      .getParameterList(this.yamcs.instance!, this.plistId)
+      .then((plist) => {
+        this.plist$.next(plist);
 
-      if (plist.match) {
-        this.yamcs.yamcsClient.exportParameterValues(this.yamcs.instance!, {
-          ...options,
-          list: plist.id,
-        }).then(pdata => {
-          const exportData = this.processCsv(pdata);
-          this.exportData$.next(exportData);
-          this.displayedColumns$.next([
-            'generationTime',
-            ...exportData.headers,
-            'actions',
-          ]);
-          this.dataSource.data = exportData.records;
-        });
-      }
-    });
+        if (plist.match) {
+          this.yamcs.yamcsClient
+            .exportParameterValues(this.yamcs.instance!, {
+              ...options,
+              list: plist.id,
+            })
+            .then((pdata) => {
+              const exportData = this.processCsv(pdata);
+              this.exportData$.next(exportData);
+              this.displayedColumns$.next([
+                'generationTime',
+                ...exportData.headers,
+                'actions',
+              ]);
+              this.dataSource.data = exportData.records;
+            });
+        }
+      });
   }
 
   private processCsv(csv: string) {
@@ -203,7 +215,7 @@ export class ParameterListHistoricalDataTabComponent {
     }
 
     const qualifiedNames = lines[0].split(/\t/).slice(1);
-    const headers: string[] = qualifiedNames.map(x => utils.getFilename(x)!);
+    const headers: string[] = qualifiedNames.map((x) => utils.getFilename(x)!);
     const result: ValueExport = { headers, records };
     return result;
   }
@@ -214,8 +226,14 @@ export class ParameterListHistoricalDataTabComponent {
       relativeTo: this.route,
       queryParams: {
         interval: this.appliedInterval,
-        customStart: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStart'] : null,
-        customStop: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStop'] : null,
+        customStart:
+          this.appliedInterval === 'CUSTOM'
+            ? this.filterForm.value['customStart']
+            : null,
+        customStop:
+          this.appliedInterval === 'CUSTOM'
+            ? this.filterForm.value['customStop']
+            : null,
       },
       queryParamsHandling: 'merge',
     });
@@ -227,7 +245,11 @@ export class ParameterListHistoricalDataTabComponent {
     if (parameters) {
       let filename = plist.name;
       if (this.validStart && this.validStop) {
-        filename += '_' + this.validStart.toISOString() + '_' + this.validStop.toISOString();
+        filename +=
+          '_' +
+          this.validStart.toISOString() +
+          '_' +
+          this.validStop.toISOString();
       } else if (this.validStart) {
         filename += '_' + this.validStart.toISOString();
       } else if (this.validStop) {
@@ -241,7 +263,7 @@ export class ParameterListHistoricalDataTabComponent {
           start: this.validStart,
           stop: this.validStop,
           filename,
-        }
+        },
       });
     }
   }

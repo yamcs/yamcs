@@ -1,5 +1,20 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit, Optional, SkipSelf, forwardRef } from '@angular/core';
-import { ControlContainer, FormArray, FormArrayName, FormGroup, FormGroupName, UntypedFormControl } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit,
+  Optional,
+  SkipSelf,
+  forwardRef,
+} from '@angular/core';
+import {
+  ControlContainer,
+  FormArray,
+  FormArrayName,
+  FormGroup,
+  FormGroupName,
+  UntypedFormControl,
+} from '@angular/forms';
 import { ArgumentType, WebappSdkModule, utils } from '@yamcs/webapp-sdk';
 import { ArrayArgumentComponent } from '../array-argument/array-argument.component';
 import { BinaryArgumentComponent } from '../binary-argument/binary-argument.component';
@@ -15,21 +30,25 @@ import { TimeArgumentComponent } from '../time-argument/time-argument.component'
   templateUrl: './aggregate-argument.component.html',
   styleUrls: ['../arguments.css', './aggregate-argument.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  viewProviders: [{
-    provide: ControlContainer,
-    useFactory: (formArrayName: FormArrayName, formGroupName: FormGroupName) => {
-      if (!formArrayName) {
-        return formGroupName;
-      } else {
-        if (formArrayName.control.parent === formGroupName.control) {
+  viewProviders: [
+    {
+      provide: ControlContainer,
+      useFactory: (
+        formArrayName: FormArrayName,
+        formGroupName: FormGroupName,
+      ) => {
+        if (
+          formArrayName &&
+          formArrayName.control.parent === formGroupName.control
+        ) {
           return formArrayName;
         } else {
           return formGroupName;
         }
-      }
+      },
+      deps: [[new SkipSelf(), new Optional(), FormArrayName], FormGroupName],
     },
-    deps: [[new SkipSelf(), new Optional(), FormArrayName], FormGroupName],
-  }],
+  ],
   imports: [
     // Break circular imports
     forwardRef(() => ArrayArgumentComponent),
@@ -44,7 +63,6 @@ import { TimeArgumentComponent } from '../time-argument/time-argument.component'
   ],
 })
 export class AggregateArgumentComponent implements OnInit {
-
   @Input()
   name: string;
 
@@ -61,7 +79,7 @@ export class AggregateArgumentComponent implements OnInit {
   dimensions?: number[];
 
   @Input()
-  initialValue: { [key: string]: any; };
+  initialValue: { [key: string]: any };
 
   controlName: string;
 
@@ -72,7 +90,7 @@ export class AggregateArgumentComponent implements OnInit {
   constructor(
     private formGroupName: FormGroupName,
     @Optional() private formArrayName: FormArrayName,
-  ) { }
+  ) {}
 
   ngOnInit() {
     const parent = this.formGroupName.control;
@@ -93,17 +111,26 @@ export class AggregateArgumentComponent implements OnInit {
       let initialValue;
       if (member.type.engType === 'aggregate') {
         initialValue = {};
-        if (this.initialValue && this.initialValue.hasOwnProperty(member.name)) {
+        if (
+          this.initialValue &&
+          this.initialValue.hasOwnProperty(member.name)
+        ) {
           initialValue = this.initialValue[member.name];
         }
       } else if (member.type.engType.endsWith('[]')) {
         initialValue = [];
-        if (this.initialValue && this.initialValue.hasOwnProperty(member.name)) {
+        if (
+          this.initialValue &&
+          this.initialValue.hasOwnProperty(member.name)
+        ) {
           initialValue = this.initialValue[member.name];
         }
       } else {
         initialValue = member.initialValue ?? '';
-        if (this.initialValue && this.initialValue.hasOwnProperty(member.name)) {
+        if (
+          this.initialValue &&
+          this.initialValue.hasOwnProperty(member.name)
+        ) {
           initialValue = this.initialValue[member.name];
         }
 
@@ -122,7 +149,7 @@ export class AggregateArgumentComponent implements OnInit {
       return this.name;
     } else {
       const index = utils.unflattenIndex(this.index, this.dimensions!);
-      return index.map(i => '[' + i + ']').join('');
+      return index.map((i) => '[' + i + ']').join('');
     }
   }
 }

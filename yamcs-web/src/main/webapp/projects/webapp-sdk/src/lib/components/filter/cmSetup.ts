@@ -1,10 +1,17 @@
-import { autocompletion, closeBrackets, closeBracketsKeymap, Completion, CompletionContext, completionKeymap } from '@codemirror/autocomplete';
+import {
+  autocompletion,
+  closeBrackets,
+  closeBracketsKeymap,
+  Completion,
+  CompletionContext,
+  completionKeymap,
+} from '@codemirror/autocomplete';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import {
   bracketMatching,
   HighlightStyle,
   indentOnInput,
-  syntaxHighlighting
+  syntaxHighlighting,
 } from '@codemirror/language';
 import { lintKeymap } from '@codemirror/lint';
 import { highlightSelectionMatches } from '@codemirror/search';
@@ -19,7 +26,7 @@ import {
   keymap,
   lineNumbers,
   placeholder,
-  rectangularSelection
+  rectangularSelection,
 } from '@codemirror/view';
 import { tags } from '@lezer/highlight';
 import { EditorView } from 'codemirror';
@@ -35,32 +42,35 @@ const highlightStyle = HighlightStyle.define([
   { tag: tags.string, color: 'rgb(201, 39, 134)' },
 ]);
 
-const multilineTheme = EditorView.theme({
-  '&': {
-    width: '100%',
-    height: '100%',
-    fontSize: '12px',
-    fontWeight: 'normal',
-    letterSpacing: 'normal',
+const multilineTheme = EditorView.theme(
+  {
+    '&': {
+      width: '100%',
+      height: '100%',
+      fontSize: '12px',
+      fontWeight: 'normal',
+      letterSpacing: 'normal',
+    },
+    '.cm-content, .cm-gutter': {
+      minHeight: '100px',
+    },
+    '.cm-scroller': {
+      overflow: 'auto',
+      fontFamily: "'Roboto Mono', monospace",
+    },
+    '&.cm-focused': {
+      outline: 'none',
+    },
+    '.cm-underline': {
+      textDecoration: 'underline 1px red',
+      textDecorationStyle: 'wavy',
+    },
   },
-  '.cm-content, .cm-gutter': {
-    minHeight: '100px',
-  },
-  '.cm-scroller': {
-    overflow: 'auto',
-    fontFamily: "'Roboto Mono', monospace",
-  },
-  '&.cm-focused': {
-    outline: 'none',
-  },
-  ".cm-underline": {
-    textDecoration: 'underline 1px red',
-    textDecorationStyle: 'wavy',
-  },
-}, { dark: false });
+  { dark: false },
+);
 
 function createOnelineTheme(paddingLeft: string | undefined) {
-  const styles: { [key: string]: StyleSpec; } = {
+  const styles: { [key: string]: StyleSpec } = {
     '&': {
       width: '100%',
       height: '100%',
@@ -101,7 +111,9 @@ export interface CodeMirrorConfiguration {
   completions?: Completion[];
 }
 
-export function provideCodeMirrorSetup(options?: CodeMirrorConfiguration): Extension {
+export function provideCodeMirrorSetup(
+  options?: CodeMirrorConfiguration,
+): Extension {
   function provideCompletions(context: CompletionContext) {
     const before = context.matchBefore(/\w+/);
     // If completion wasn't explicitly started and there
@@ -112,7 +124,7 @@ export function provideCodeMirrorSetup(options?: CodeMirrorConfiguration): Exten
     return {
       from: before ? before.from : context.pos,
       options: options?.completions || [],
-      validFor: /^\w*$/
+      validFor: /^\w*$/,
     };
   }
 
@@ -132,33 +144,38 @@ export function provideCodeMirrorSetup(options?: CodeMirrorConfiguration): Exten
   ];
 
   if (options?.oneline) {
-
     if (options.onEnter) {
       // Important to have this in the extension array
       // before any other key mappings (higher priority)
-      extensions.push(keymap.of([{
-        key: 'Enter',
-        run: view => {
-          options.onEnter!(view);
-          return true;
-        },
-        preventDefault: true
-      }]));
+      extensions.push(
+        keymap.of([
+          {
+            key: 'Enter',
+            run: (view) => {
+              options.onEnter!(view);
+              return true;
+            },
+            preventDefault: true,
+          },
+        ]),
+      );
     }
 
     const theme = createOnelineTheme(options?.paddingLeft);
     extensions.push(theme);
   } else {
-    extensions.push(...[
-      multilineTheme,
-      lineNumbers(),
-      highlightActiveLineGutter(),
-      EditorState.allowMultipleSelections.of(true),
-      rectangularSelection(),
-      crosshairCursor(),
-      highlightActiveLine(),
-      EditorView.lineWrapping,
-    ]);
+    extensions.push(
+      ...[
+        multilineTheme,
+        lineNumbers(),
+        highlightActiveLineGutter(),
+        EditorState.allowMultipleSelections.of(true),
+        rectangularSelection(),
+        crosshairCursor(),
+        highlightActiveLine(),
+        EditorView.lineWrapping,
+      ],
+    );
   }
 
   extensions.push(
@@ -168,7 +185,8 @@ export function provideCodeMirrorSetup(options?: CodeMirrorConfiguration): Exten
       ...historyKeymap,
       ...completionKeymap,
       ...lintKeymap,
-    ]));
+    ]),
+  );
 
   if (options?.placeholder) {
     extensions.push(placeholder(options.placeholder));

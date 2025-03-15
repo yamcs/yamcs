@@ -1,6 +1,12 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { BaseComponent, Record, Table, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  BaseComponent,
+  Record,
+  Table,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { RecordComponent } from '../record/record.component';
 import { ColumnValuePipe } from '../shared/column-value.pipe';
@@ -9,14 +15,9 @@ import { ColumnValuePipe } from '../shared/column-value.pipe';
   templateUrl: './table-data-tab.component.html',
   styleUrl: './table-data-tab.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    ColumnValuePipe,
-    RecordComponent,
-    WebappSdkModule,
-  ],
+  imports: [ColumnValuePipe, RecordComponent, WebappSdkModule],
 })
 export class TableDataTabComponent extends BaseComponent {
-
   table$: Promise<Table>;
   records$: Promise<Record[]>;
 

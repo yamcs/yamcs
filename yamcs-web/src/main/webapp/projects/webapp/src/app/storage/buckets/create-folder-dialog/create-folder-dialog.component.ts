@@ -1,18 +1,23 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import {
+  UntypedFormBuilder,
+  UntypedFormGroup,
+  Validators,
+} from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { StorageClient, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  StorageClient,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-create-bucket-folder-dialog',
   templateUrl: './create-folder-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class CreateFolderDialogComponent {
-
   form: UntypedFormGroup;
 
   private storageClient: StorageClient;
@@ -21,7 +26,7 @@ export class CreateFolderDialogComponent {
     private dialogRef: MatDialogRef<CreateFolderDialogComponent>,
     formBuilder: UntypedFormBuilder,
     yamcs: YamcsService,
-    @Inject(MAT_DIALOG_DATA) readonly data: any
+    @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     this.storageClient = yamcs.createStorageClient();
     this.form = formBuilder.group({
@@ -37,7 +42,8 @@ export class CreateFolderDialogComponent {
     }
     const folderName = this.form.value['name'];
     const objectName = path ? `${path}/${folderName}/` : `${folderName}/`;
-    this.storageClient.uploadObject(bucket, objectName, new Blob())
+    this.storageClient
+      .uploadObject(bucket, objectName, new Blob())
       .then(() => this.dialogRef.close(true));
   }
 }

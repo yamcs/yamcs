@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, HostBinding, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  HostBinding,
+  Input,
+} from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 
 @Component({
@@ -6,12 +11,9 @@ import { MatIcon } from '@angular/material/icon';
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './icon-action.component.html',
   styleUrl: './icon-action.component.css',
-  imports: [
-    MatIcon,
-  ],
+  imports: [MatIcon],
 })
 export class YaIconAction {
-
   @Input()
   icon: string;
 

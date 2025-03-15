@@ -3,8 +3,10 @@ import { Widget } from '@yamcs/opi/dist/types/Widget';
 import { StorageClient } from '@yamcs/webapp-sdk';
 
 export class OpiDisplayPathResolver extends DefaultPathResolver {
-
-  constructor(private storageClient: StorageClient, display: Display) {
+  constructor(
+    private storageClient: StorageClient,
+    display: Display,
+  ) {
     super(display);
   }
 

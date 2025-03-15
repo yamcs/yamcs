@@ -1,10 +1,23 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  ViewChild,
+} from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Algorithm, GetAlgorithmsOptions, MessageService, WebappSdkModule, YaColumnInfo, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  Algorithm,
+  GetAlgorithmsOptions,
+  MessageService,
+  WebappSdkModule,
+  YaColumnInfo,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { AlgorithmsDataSource } from './algorithms.datasource';
@@ -19,7 +32,6 @@ import { AlgorithmsDataSource } from './algorithms.datasource';
   ],
 })
 export class AlgorithmListComponent implements AfterViewInit {
-
   shortName = false;
   pageSize = 100;
 
@@ -84,9 +96,12 @@ export class AlgorithmListComponent implements AfterViewInit {
     if (filterValue) {
       options.q = filterValue.toLowerCase();
     }
-    this.dataSource.loadAlgorithms(options).then(() => {
-      this.selection.clear();
-    }).catch(err => this.messageService.showError(err));
+    this.dataSource
+      .loadAlgorithms(options)
+      .then(() => {
+        this.selection.clear();
+      })
+      .catch((err) => this.messageService.showError(err));
   }
 
   private updateURL() {
@@ -132,7 +147,7 @@ export class AlgorithmListComponent implements AfterViewInit {
       const items = this.dataSource.algorithms$.value;
       if (items.indexOf(item) !== -1) {
         this.router.navigate(['/mdb/algorithms', item.qualifiedName], {
-          queryParams: { c: this.yamcs.context }
+          queryParams: { c: this.yamcs.context },
         });
       }
     }

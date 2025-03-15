@@ -9,8 +9,8 @@ export interface CommandStep {
   type: 'command';
   name: string;
   namespace?: string;
-  args: { [key: string]: any; };
-  extra?: { [key: string]: Value; };
+  args: { [key: string]: any };
+  extra?: { [key: string]: Value };
   advancement?: AdvancementParams;
   stream?: string;
   comment?: string;

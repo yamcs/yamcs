@@ -1,26 +1,34 @@
 import { Location } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import {
+  UntypedFormBuilder,
+  UntypedFormControl,
+  UntypedFormGroup,
+} from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EditUserRequest, MessageService, UserInfo, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  EditUserRequest,
+  MessageService,
+  UserInfo,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { AdminPageTemplateComponent } from '../../shared/admin-page-template/admin-page-template.component';
 import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.component';
-import { AddRolesDialogComponent, RoleItem } from '../add-roles-dialog/add-roles-dialog.component';
+import {
+  AddRolesDialogComponent,
+  RoleItem,
+} from '../add-roles-dialog/add-roles-dialog.component';
 
 @Component({
   templateUrl: './edit-user.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AdminPageTemplateComponent,
-    AdminToolbarComponent,
-    WebappSdkModule,
-  ],
+  imports: [AdminPageTemplateComponent, AdminToolbarComponent, WebappSdkModule],
 })
 export class EditUserComponent implements OnDestroy {
-
   form: UntypedFormGroup;
   user$: Promise<UserInfo>;
   private user: UserInfo;
@@ -43,7 +51,7 @@ export class EditUserComponent implements OnDestroy {
     title.setTitle('Edit User');
     const username = route.snapshot.paramMap.get('username')!;
     this.user$ = yamcs.yamcsClient.getUser(username);
-    this.user$.then(user => {
+    this.user$.then((user) => {
       this.user = user;
       this.form = formBuilder.group({
         displayName: new UntypedFormControl(user.displayName),
@@ -74,24 +82,23 @@ export class EditUserComponent implements OnDestroy {
       },
       width: '600px',
     });
-    dialogRef.afterClosed().subscribe(roleItems => {
+    dialogRef.afterClosed().subscribe((roleItems) => {
       if (roleItems) {
-        this.updateRoleItems([
-          ...this.roleItems$.value,
-          ...roleItems,
-        ]);
+        this.updateRoleItems([...this.roleItems$.value, ...roleItems]);
       }
     });
   }
 
   private updateRoleItems(items: RoleItem[], dirty = true) {
-    items.sort((i1, i2) => (i1.label < i2.label) ? -1 : (i1.label > i2.label) ? 1 : 0);
+    items.sort((i1, i2) =>
+      i1.label < i2.label ? -1 : i1.label > i2.label ? 1 : 0,
+    );
     this.roleItems$.next(items);
     this.dirty$.next(dirty);
   }
 
   deleteItem(item: RoleItem) {
-    this.updateRoleItems(this.roleItems$.value.filter(i => i !== item));
+    this.updateRoleItems(this.roleItems$.value.filter((i) => i !== item));
   }
 
   onConfirm() {
@@ -99,8 +106,10 @@ export class EditUserComponent implements OnDestroy {
 
     const options: EditUserRequest = {
       roleAssignment: {
-        roles: this.roleItems$.value.filter(item => item.role).map(item => item.role!.name),
-      }
+        roles: this.roleItems$.value
+          .filter((item) => item.role)
+          .map((item) => item.role!.name),
+      },
     };
     if (formValue.displayName !== this.user.displayName) {
       options.displayName = formValue.displayName;
@@ -115,9 +124,10 @@ export class EditUserComponent implements OnDestroy {
       options.superuser = formValue.superuser;
     }
 
-    this.yamcs.yamcsClient.editUser(this.user.name, options)
+    this.yamcs.yamcsClient
+      .editUser(this.user.name, options)
       .then(() => this.router.navigate(['..'], { relativeTo: this.route }))
-      .catch(err => this.messageService.showError(err));
+      .catch((err) => this.messageService.showError(err));
   }
 
   ngOnDestroy() {

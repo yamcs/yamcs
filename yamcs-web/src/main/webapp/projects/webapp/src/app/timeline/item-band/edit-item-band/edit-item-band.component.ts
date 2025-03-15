@@ -1,4 +1,10 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+} from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { TimelineBand, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
@@ -10,13 +16,9 @@ import { ItemBandStylesComponent } from '../item-band-styles/item-band-styles.co
   selector: 'app-edit-item-band',
   templateUrl: './edit-item-band.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    ItemBandStylesComponent,
-    WebappSdkModule,
-  ],
+  imports: [ItemBandStylesComponent, WebappSdkModule],
 })
 export class EditItemBandComponent implements AfterViewInit {
-
   @Input()
   form: FormGroup;
 
@@ -28,7 +30,7 @@ export class EditItemBandComponent implements AfterViewInit {
   constructor(
     readonly yamcs: YamcsService,
     private changeDetection: ChangeDetectorRef,
-  ) { }
+  ) {}
 
   ngAfterViewInit() {
     const props = resolveProperties(propertyInfo, this.band.properties || {});
@@ -58,7 +60,10 @@ export class EditItemBandComponent implements AfterViewInit {
     const propertiesGroup = this.form.get('properties') as FormGroup;
     for (const controlName in propConfig) {
       const config = propConfig[controlName];
-      propertiesGroup.addControl(controlName, new FormControl(config[0], config[1]));
+      propertiesGroup.addControl(
+        controlName,
+        new FormControl(config[0], config[1]),
+      );
     }
 
     this.formConfigured$.next(true);

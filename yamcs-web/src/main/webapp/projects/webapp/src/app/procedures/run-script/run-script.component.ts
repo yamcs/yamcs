@@ -3,7 +3,15 @@ import { FormGroup, UntypedFormBuilder, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
-import { ActivityDefinition, CreateTimelineItemRequest, MessageService, WebappSdkModule, YaHelpDialog, YaSelectOption, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  ActivityDefinition,
+  CreateTimelineItemRequest,
+  MessageService,
+  WebappSdkModule,
+  YaHelpDialog,
+  YaSelectOption,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
@@ -20,7 +28,6 @@ import { ScheduleScriptDialogComponent } from '../schedule-script-dialog/schedul
   ],
 })
 export class RunScriptComponent {
-
   form: FormGroup;
 
   scriptOptions$ = new BehaviorSubject<YaSelectOption[]>([]);
@@ -40,8 +47,9 @@ export class RunScriptComponent {
       args: [''],
     });
 
-    yamcs.yamcsClient.getActivityScripts(this.yamcs.instance!)
-      .then(page => {
+    yamcs.yamcsClient
+      .getActivityScripts(this.yamcs.instance!)
+      .then((page) => {
         for (const script of page.scripts || []) {
           this.scriptOptions$.next([
             ...this.scriptOptions$.value,
@@ -49,66 +57,79 @@ export class RunScriptComponent {
           ]);
         }
       })
-      .catch(err => messageService.showError(err));
+      .catch((err) => messageService.showError(err));
   }
 
   runScript() {
     const options = this.createActivityDefinition();
-    this.yamcs.yamcsClient.startActivity(this.yamcs.instance!, options)
-      .then(activity => {
+    this.yamcs.yamcsClient
+      .startActivity(this.yamcs.instance!, options)
+      .then((activity) => {
         if (this.authService.getUser()!.hasSystemPrivilege('ReadActivities')) {
-          this.router.navigateByUrl(`/activities/${activity.id}?c=${this.yamcs.context}`);
+          this.router.navigateByUrl(
+            `/activities/${activity.id}?c=${this.yamcs.context}`,
+          );
         } else {
-          this.dialog.open(YaHelpDialog, {
-            width: '500px',
-            data: {
-              icon: 'done',
-              closeText: 'OK',
-              content: `
+          this.dialog
+            .open(YaHelpDialog, {
+              width: '500px',
+              data: {
+                icon: 'done',
+                closeText: 'OK',
+                content: `
                 <p>The procedure has started executing.</p>
                 <p>
                   Note that you do not have sufficient privileges
                   to follow up on submitted procedures.
                 </p>
               `,
-            },
-          }).afterClosed().subscribe(() => this.form.reset());
+              },
+            })
+            .afterClosed()
+            .subscribe(() => this.form.reset());
         }
       })
-      .catch(err => this.messageService.showError(err));
+      .catch((err) => this.messageService.showError(err));
   }
 
   showSchedule() {
-    const capabilities = this.yamcs.connectionInfo$.value?.instance?.capabilities || [];
-    return capabilities.indexOf('timeline') !== -1
-      && capabilities.indexOf('activities') !== -1
-      && this.authService.getUser()!.hasSystemPrivilege('ControlTimeline');
+    const capabilities =
+      this.yamcs.connectionInfo$.value?.instance?.capabilities || [];
+    return (
+      capabilities.indexOf('timeline') !== -1 &&
+      capabilities.indexOf('activities') !== -1 &&
+      this.authService.getUser()!.hasSystemPrivilege('ControlTimeline')
+    );
   }
 
   openScheduleScriptDialog() {
-    this.dialog.open(ScheduleScriptDialogComponent, {
-      width: '600px',
-    }).afterClosed().subscribe(scheduleOptions => {
-      const formValue = this.form.value;
+    this.dialog
+      .open(ScheduleScriptDialogComponent, {
+        width: '600px',
+      })
+      .afterClosed()
+      .subscribe((scheduleOptions) => {
+        const formValue = this.form.value;
 
-      if (scheduleOptions) {
-        const options: CreateTimelineItemRequest = {
-          type: 'ACTIVITY',
-          duration: '0s',
-          name: formValue['script'],
-          start: scheduleOptions['executionTime'],
-          tags: scheduleOptions['tags'],
-          activityDefinition: this.createActivityDefinition(),
-        };
+        if (scheduleOptions) {
+          const options: CreateTimelineItemRequest = {
+            type: 'ACTIVITY',
+            duration: '0s',
+            name: formValue['script'],
+            start: scheduleOptions['executionTime'],
+            tags: scheduleOptions['tags'],
+            activityDefinition: this.createActivityDefinition(),
+          };
 
-        this.yamcs.yamcsClient.createTimelineItem(this.yamcs.instance!, options)
-          .then(() => {
-            this.messageService.showInfo('Script scheduled');
-            this.router.navigateByUrl(`/activities?c=${this.yamcs.context}`);
-          })
-          .catch(err => this.messageService.showError(err));
-      }
-    });
+          this.yamcs.yamcsClient
+            .createTimelineItem(this.yamcs.instance!, options)
+            .then(() => {
+              this.messageService.showInfo('Script scheduled');
+              this.router.navigateByUrl(`/activities?c=${this.yamcs.context}`);
+            })
+            .catch((err) => this.messageService.showError(err));
+        }
+      });
   }
 
   private createActivityDefinition(): ActivityDefinition {

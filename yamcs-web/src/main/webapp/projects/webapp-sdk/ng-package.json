@@ -8,9 +8,7 @@
       "output": "styles"
     }
   ],
-  "allowedNonPeerDependencies": [
-    "."
-  ],
+  "allowedNonPeerDependencies": ["."],
   "lib": {
     "entryFile": "src/public-api.ts"
   }

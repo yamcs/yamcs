@@ -1,9 +1,22 @@
-
-import { ChangeDetectionStrategy, Component, input, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  Input,
+  OnInit,
+} from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
-import { MatMenu, MatMenuContent, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
+import {
+  MatMenu,
+  MatMenuContent,
+  MatMenuItem,
+  MatMenuTrigger,
+} from '@angular/material/menu';
 import { BehaviorSubject } from 'rxjs';
-import { PreferenceStore, StoredColumnInfo } from '../../services/preference-store.service';
+import {
+  PreferenceStore,
+  StoredColumnInfo,
+} from '../../services/preference-store.service';
 import { YaButton } from '../button/button.component';
 
 export interface YaColumnInfo {
@@ -28,7 +41,6 @@ export interface YaColumnInfo {
   ],
 })
 export class YaColumnChooser implements OnInit {
-
   @Input()
   columns: YaColumnInfo[];
 
@@ -38,8 +50,7 @@ export class YaColumnChooser implements OnInit {
 
   displayedColumns$ = new BehaviorSubject<string[]>([]);
 
-  constructor(private preferenceStore: PreferenceStore) {
-  }
+  constructor(private preferenceStore: PreferenceStore) {}
 
   ngOnInit() {
     this.recalculate(this.columns);
@@ -51,8 +62,9 @@ export class YaColumnChooser implements OnInit {
     const preferenceKey = this.preferenceKey();
     const storedColumnsById = new Map<string, StoredColumnInfo>();
     if (preferenceKey) {
-      const storedColumnInfo = this.preferenceStore.getStoredColumnInfo(preferenceKey);
-      const storedColumns = (storedColumnInfo || []).filter(el => {
+      const storedColumnInfo =
+        this.preferenceStore.getStoredColumnInfo(preferenceKey);
+      const storedColumns = (storedColumnInfo || []).filter((el) => {
         // Filter out unknown columns
         for (const column of this.columns) {
           if (column.id === el.id) {
@@ -105,7 +117,7 @@ export class YaColumnChooser implements OnInit {
     if (preferenceKey) {
       this.preferenceStore.setVisibleColumns(preferenceKey, value);
     }
-    const visibleIds = value.filter(v => v.visible).map(v => v.id);
+    const visibleIds = value.filter((v) => v.visible).map((v) => v.id);
     this.displayedColumns$.next(visibleIds);
   }
 }

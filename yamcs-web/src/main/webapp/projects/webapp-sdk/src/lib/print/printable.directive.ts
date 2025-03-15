@@ -4,7 +4,5 @@ import { Directive, ViewContainerRef } from '@angular/core';
   selector: '[printable-host]',
 })
 export class PrintableDirective {
-
-  constructor(public viewContainerRef: ViewContainerRef) {
-  }
+  constructor(public viewContainerRef: ViewContainerRef) {}
 }

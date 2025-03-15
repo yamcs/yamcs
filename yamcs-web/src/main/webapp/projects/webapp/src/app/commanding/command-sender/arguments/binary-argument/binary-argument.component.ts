@@ -1,6 +1,27 @@
-import { ChangeDetectionStrategy, Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
-import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormControl, ValidationErrors, Validator, ValidatorFn, Validators } from '@angular/forms';
-import { ArgumentType, utils, validators, WebappSdkModule } from '@yamcs/webapp-sdk';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  forwardRef,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
+import {
+  ControlValueAccessor,
+  NG_VALIDATORS,
+  NG_VALUE_ACCESSOR,
+  UntypedFormControl,
+  ValidationErrors,
+  Validator,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
+import {
+  ArgumentType,
+  utils,
+  validators,
+  WebappSdkModule,
+} from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -8,21 +29,23 @@ import { Subscription } from 'rxjs';
   templateUrl: './binary-argument.component.html',
   styleUrls: ['../arguments.css', './binary-argument.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => BinaryArgumentComponent),
-    multi: true,
-  }, {
-    provide: NG_VALIDATORS,
-    useExisting: forwardRef(() => BinaryArgumentComponent),
-    multi: true,
-  }],
-  imports: [
-    WebappSdkModule,
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => BinaryArgumentComponent),
+      multi: true,
+    },
+    {
+      provide: NG_VALIDATORS,
+      useExisting: forwardRef(() => BinaryArgumentComponent),
+      multi: true,
+    },
   ],
+  imports: [WebappSdkModule],
 })
-export class BinaryArgumentComponent implements ControlValueAccessor, OnInit, Validator, OnDestroy {
-
+export class BinaryArgumentComponent
+  implements ControlValueAccessor, OnInit, Validator, OnDestroy
+{
   @Input()
   name: string;
 
@@ -43,7 +66,7 @@ export class BinaryArgumentComponent implements ControlValueAccessor, OnInit, Va
   controlName: string;
 
   private validators: ValidatorFn[] = [];
-  private onChange = (_: string | null) => { };
+  private onChange = (_: string | null) => {};
   private subscriptions: Subscription[] = [];
 
   ngOnInit() {
@@ -51,7 +74,7 @@ export class BinaryArgumentComponent implements ControlValueAccessor, OnInit, Va
       this.formControl.valueChanges.subscribe(() => {
         let value = this.formControl.value;
         this.onChange(value);
-      })
+      }),
     );
 
     if (this.index === undefined) {
@@ -65,17 +88,21 @@ export class BinaryArgumentComponent implements ControlValueAccessor, OnInit, Va
     }
     this.validators.push(validators.requireHex);
     if (this.type.minBytes !== undefined) {
-      this.validators.push(validators.minHexLengthValidator(this.type.minBytes));
+      this.validators.push(
+        validators.minHexLengthValidator(this.type.minBytes),
+      );
     }
     if (this.type.maxBytes !== undefined) {
-      this.validators.push(validators.maxHexLengthValidator(this.type.maxBytes));
+      this.validators.push(
+        validators.maxHexLengthValidator(this.type.maxBytes),
+      );
     }
   }
 
   get label() {
     if (this.index !== undefined) {
       const index = utils.unflattenIndex(this.index, this.dimensions!);
-      return index.map(i => '[' + i + ']').join('');
+      return index.map((i) => '[' + i + ']').join('');
     } else {
       return this.name;
     }
@@ -89,8 +116,7 @@ export class BinaryArgumentComponent implements ControlValueAccessor, OnInit, Va
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any) {
-  }
+  registerOnTouched(fn: any) {}
 
   validate(control: UntypedFormControl): ValidationErrors | null {
     for (const validator of this.validators) {
@@ -103,6 +129,6 @@ export class BinaryArgumentComponent implements ControlValueAccessor, OnInit, Va
   }
 
   ngOnDestroy() {
-    this.subscriptions.forEach(s => s.unsubscribe());
+    this.subscriptions.forEach((s) => s.unsubscribe());
   }
 }

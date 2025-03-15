@@ -4,7 +4,6 @@ import { Pipe, PipeTransform } from '@angular/core';
   name: 'messageName',
 })
 export class MessageNamePipe implements PipeTransform {
-
   transform(value: string): string | null {
     if (!value) {
       return value;
@@ -13,6 +12,6 @@ export class MessageNamePipe implements PipeTransform {
       return null;
     }
     const idx = value.lastIndexOf('.');
-    return idx > 0 ? (value.substr(idx + 1)) : value;
+    return idx > 0 ? value.substr(idx + 1) : value;
   }
 }

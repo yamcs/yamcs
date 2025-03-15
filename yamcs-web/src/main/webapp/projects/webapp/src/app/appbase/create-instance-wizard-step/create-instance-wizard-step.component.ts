@@ -6,12 +6,9 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
   templateUrl: './create-instance-wizard-step.component.html',
   styleUrl: './create-instance-wizard-step.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class CreateInstanceWizardStepComponent {
-
   @Input()
   step: number;
 }

@@ -1,18 +1,31 @@
-import { ChangeDetectionStrategy, Component, Inject, OnDestroy } from '@angular/core';
-import { FormControl, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Inject,
+  OnDestroy,
+} from '@angular/core';
+import {
+  FormControl,
+  UntypedFormControl,
+  UntypedFormGroup,
+  Validators,
+} from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { DownloadParameterValuesOptions, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  DownloadParameterValuesOptions,
+  WebappSdkModule,
+  YaSelectOption,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 @Component({
   templateUrl: './export-parameter-data-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class ExportParameterDataDialogComponent implements OnDestroy {
-
   delimiterOptions: YaSelectOption[] = [
     { id: 'COMMA', label: 'Comma' },
     { id: 'SEMICOLON', label: 'Semicolon' },
@@ -75,7 +88,10 @@ export class ExportParameterDataDialogComponent implements OnDestroy {
       if (this.form.value['interval']) {
         dlOptions.interval = this.form.value['interval'];
       }
-      const url = this.yamcs.yamcsClient.getParameterValuesDownloadURL(this.yamcs.instance!, dlOptions);
+      const url = this.yamcs.yamcsClient.getParameterValuesDownloadURL(
+        this.yamcs.instance!,
+        dlOptions,
+      );
       this.downloadURL$.next(url);
     } else {
       this.downloadURL$.next(null);

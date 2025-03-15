@@ -1,5 +1,20 @@
-import { ChangeDetectionStrategy, Component, ElementRef, forwardRef, ViewChild } from '@angular/core';
-import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, ReactiveFormsModule, UntypedFormControl, ValidationErrors, Validator, Validators } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  forwardRef,
+  ViewChild,
+} from '@angular/core';
+import {
+  ControlValueAccessor,
+  NG_VALIDATORS,
+  NG_VALUE_ACCESSOR,
+  ReactiveFormsModule,
+  UntypedFormControl,
+  ValidationErrors,
+  Validator,
+  Validators,
+} from '@angular/forms';
 import { YaSelect, YaSelectOption } from '../select/select.component';
 
 // Used as a signal to show validation results
@@ -10,37 +25,39 @@ const INVALID_PROTOSTRING = 'invalid';
   templateUrl: './duration-input.component.html',
   styleUrl: './duration-input.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => YaDurationInput),
-    multi: true,
-  }, {
-    provide: NG_VALIDATORS,
-    useExisting: forwardRef(() => YaDurationInput),
-    multi: true,
-  }],
-  imports: [
-    ReactiveFormsModule,
-    YaSelect,
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => YaDurationInput),
+      multi: true,
+    },
+    {
+      provide: NG_VALIDATORS,
+      useExisting: forwardRef(() => YaDurationInput),
+      multi: true,
+    },
   ],
+  imports: [ReactiveFormsModule, YaSelect],
 })
 export class YaDurationInput implements ControlValueAccessor, Validator {
-
   resolutionOptions: YaSelectOption[] = [
     { id: 'seconds', label: 'seconds' },
     { id: 'minutes', label: 'minutes' },
-    { id: 'hours', label: 'hours' }
+    { id: 'hours', label: 'hours' },
   ];
 
   @ViewChild('input', { static: true })
   private inputComponent: ElementRef;
 
-  private onChange = (_: string | null) => { };
+  private onChange = (_: string | null) => {};
 
   resolutionControl: UntypedFormControl;
 
   constructor() {
-    this.resolutionControl = new UntypedFormControl('seconds', Validators.required);
+    this.resolutionControl = new UntypedFormControl(
+      'seconds',
+      Validators.required,
+    );
     this.resolutionControl.valueChanges.subscribe(() => this.fireChange());
   }
 
@@ -67,8 +84,7 @@ export class YaDurationInput implements ControlValueAccessor, Validator {
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any) {
-  }
+  registerOnTouched(fn: any) {}
 
   validate(control: UntypedFormControl): ValidationErrors | null {
     if (control.value === INVALID_PROTOSTRING) {
@@ -108,5 +124,7 @@ export class YaDurationInput implements ControlValueAccessor, Validator {
 }
 
 function isFloat(value: any) {
-  return !isNaN(value) && (Number.isInteger(parseFloat(value)) || value % 1 !== 0);
+  return (
+    !isNaN(value) && (Number.isInteger(parseFloat(value)) || value % 1 !== 0)
+  );
 }

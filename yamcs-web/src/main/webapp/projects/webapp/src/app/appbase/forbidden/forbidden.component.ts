@@ -7,17 +7,12 @@ import { OopsComponent } from '../oops/oops.component';
   templateUrl: './forbidden.component.html',
   styleUrl: './forbidden.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    OopsComponent,
-    WebappSdkModule,
-  ],
+  imports: [OopsComponent, WebappSdkModule],
 })
 export class ForbiddenComponent implements OnInit {
-
   page: string | null;
 
-  constructor(private route: ActivatedRoute) {
-  }
+  constructor(private route: ActivatedRoute) {}
 
   ngOnInit() {
     this.page = this.route.snapshot.queryParamMap.get('page');

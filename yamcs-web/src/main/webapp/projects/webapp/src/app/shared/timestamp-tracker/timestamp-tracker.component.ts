@@ -7,12 +7,9 @@ import { DyLegendData, TimestampTrackerData } from '../parameter-plot/dygraphs';
   templateUrl: './timestamp-tracker.component.html',
   styleUrl: './timestamp-tracker.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class TimestampTrackerComponent {
-
   @Input()
   legendData?: DyLegendData; // Use this to hide timestamp when mouse leaves canvas
 

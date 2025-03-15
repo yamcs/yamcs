@@ -4,7 +4,17 @@ import { Link } from './management';
 import { IndexGroup, Range, Sample } from './monitoring';
 import { Processor } from './processing';
 import { CommandQueue } from './queue';
-import { Bucket, GroupInfo, Instance, InstanceTemplate, RocksDbDatabase, RoleInfo, Service, SessionInfo, UserInfo } from './system';
+import {
+  Bucket,
+  GroupInfo,
+  Instance,
+  InstanceTemplate,
+  RocksDbDatabase,
+  RoleInfo,
+  Service,
+  SessionInfo,
+  UserInfo,
+} from './system';
 import { Record, Stream, Table } from './table';
 
 export interface EventsWrapper {

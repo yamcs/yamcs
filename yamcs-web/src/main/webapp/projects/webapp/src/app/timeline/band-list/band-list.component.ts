@@ -1,8 +1,19 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ViewChild,
+} from '@angular/core';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
-import { MessageService, TimelineBand, TrackBySelectionModel, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  MessageService,
+  TimelineBand,
+  TrackBySelectionModel,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 
@@ -16,7 +27,6 @@ import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance
   ],
 })
 export class BandListComponent implements AfterViewInit {
-
   @ViewChild(MatSort)
   sort: MatSort;
 
@@ -32,7 +42,11 @@ export class BandListComponent implements AfterViewInit {
   tableTrackerFn = (index: number, band: TimelineBand) => band.id;
 
   dataSource = new MatTableDataSource<TimelineBand>();
-  selection = new TrackBySelectionModel<TimelineBand>(this.tableTrackerFn, true, []);
+  selection = new TrackBySelectionModel<TimelineBand>(
+    this.tableTrackerFn,
+    true,
+    [],
+  );
 
   constructor(
     readonly yamcs: YamcsService,
@@ -54,9 +68,11 @@ export class BandListComponent implements AfterViewInit {
   }
 
   masterToggle() {
-    this.isAllSelected() ?
-      this.selection.clear() :
-      this.dataSource.filteredData.forEach(row => this.selection.select(row));
+    this.isAllSelected()
+      ? this.selection.clear()
+      : this.dataSource.filteredData.forEach((row) =>
+          this.selection.select(row),
+        );
   }
 
   toggleOne(row: TimelineBand) {
@@ -75,10 +91,14 @@ export class BandListComponent implements AfterViewInit {
   }
 
   deleteBand(id: string, prompt = true) {
-    if (!prompt || confirm('Are you sure you want to delete the selected band?'))
-      this.yamcs.yamcsClient.deleteTimelineBand(this.yamcs.instance!, id)
+    if (
+      !prompt ||
+      confirm('Are you sure you want to delete the selected band?')
+    )
+      this.yamcs.yamcsClient
+        .deleteTimelineBand(this.yamcs.instance!, id)
         .then(() => this.refreshData())
-        .catch(err => this.messageService.showError(err));
+        .catch((err) => this.messageService.showError(err));
   }
 
   isGroupDeleteEnabled() {
@@ -86,9 +106,12 @@ export class BandListComponent implements AfterViewInit {
   }
 
   private refreshData() {
-    this.yamcs.yamcsClient.getTimelineBands(this.yamcs.instance!).then(page => {
-      this.selection.matchNewValues(page.bands || []);
-      this.dataSource.data = page.bands || [];
-    }).catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .getTimelineBands(this.yamcs.instance!)
+      .then((page) => {
+        this.selection.matchNewValues(page.bands || []);
+        this.dataSource.data = page.bands || [];
+      })
+      .catch((err) => this.messageService.showError(err));
   }
 }

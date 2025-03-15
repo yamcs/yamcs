@@ -1,5 +1,17 @@
 import { AsyncPipe } from '@angular/common';
-import { AfterViewInit, ChangeDetectionStrategy, Component, ContentChildren, ElementRef, EventEmitter, Input, OnDestroy, Output, QueryList, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ContentChildren,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  Output,
+  QueryList,
+  ViewChild,
+} from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Formatter, Parameter, utils } from '@yamcs/webapp-sdk';
 import Dygraph from 'dygraphs';
@@ -10,7 +22,11 @@ import CrosshairPlugin from './CrosshairPlugin';
 import { DyDataSource } from './DyDataSource';
 import GridPlugin from './GridPlugin';
 import { NamedParameterType } from './NamedParameterType';
-import { DyLegendData, TimestampTrackerData, analyzeStaticValueRanges } from './dygraphs';
+import {
+  DyLegendData,
+  TimestampTrackerData,
+  analyzeStaticValueRanges,
+} from './dygraphs';
 import { ParameterLegendComponent } from './parameter-legend/parameter-legend.component';
 import { ParameterSeriesComponent } from './parameter-series/parameter-series.component';
 
@@ -19,14 +35,9 @@ import { ParameterSeriesComponent } from './parameter-series/parameter-series.co
   templateUrl: './parameter-plot.component.html',
   styleUrl: './parameter-plot.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AsyncPipe,
-    ParameterLegendComponent,
-    TimestampTrackerComponent,
-  ],
+  imports: [AsyncPipe, ParameterLegendComponent, TimestampTrackerComponent],
 })
 export class ParameterPlotComponent implements AfterViewInit, OnDestroy {
-
   @Input()
   dataSource: DyDataSource;
 
@@ -90,51 +101,67 @@ export class ParameterPlotComponent implements AfterViewInit, OnDestroy {
   private disableDataReload = false;
 
   legendData$ = new BehaviorSubject<DyLegendData | null>(null);
-  timestampTrackerData$ = new BehaviorSubject<TimestampTrackerData | null>(null);
+  timestampTrackerData$ = new BehaviorSubject<TimestampTrackerData | null>(
+    null,
+  );
 
-  constructor(private dialog: MatDialog, private formatter: Formatter) {
-  }
+  constructor(
+    private dialog: MatDialog,
+    private formatter: Formatter,
+  ) {}
 
   ngAfterViewInit() {
-    this.dataSource.parameters$.value.forEach(p => {
+    this.dataSource.parameters$.value.forEach((p) => {
       this.parameters.push(p);
     });
 
-    this.seriesComponents.forEach(series => {
+    this.seriesComponents.forEach((series) => {
       this.parameterConfig.set(series.parameter, series);
     });
 
     const containingDiv = this.graphContainer.nativeElement as HTMLDivElement;
 
     this.initDygraphs(containingDiv);
-    this.dataSource.data$.subscribe(data => {
+    this.dataSource.data$.subscribe((data) => {
       if (this.disableDataReload) {
         return;
       }
 
-      const dyOptions: { [key: string]: any; } = {
+      const dyOptions: { [key: string]: any } = {
         file: data.samples.length ? data.samples : 'X\n',
       };
-      if (this.dataSource.visibleStart) { // May be undefined on subject initial []
+      if (this.dataSource.visibleStart) {
+        // May be undefined on subject initial []
         dyOptions.dateWindow = [
           this.dataSource.visibleStart.getTime(),
           this.dataSource.visibleStop.getTime(),
         ];
-        this.onVisibleRange.emit([this.dataSource.visibleStart, this.dataSource.visibleStop]);
+        this.onVisibleRange.emit([
+          this.dataSource.visibleStart,
+          this.dataSource.visibleStop,
+        ]);
       }
       if (data.valueRange[0] !== null && data.valueRange[1] !== null) {
         dyOptions.axes = {
-          y: { valueRange: data.valueRange }
+          y: { valueRange: data.valueRange },
         };
       } else {
-        const valueRange = analyzeStaticValueRanges(this.parameters[0]).valueRange;
+        const valueRange = analyzeStaticValueRanges(
+          this.parameters[0],
+        ).valueRange;
         let lo = valueRange[0];
         if (this.dataSource.minValue !== undefined) {
-          lo = (lo !== null) ? Math.min(lo, this.dataSource.minValue) : this.dataSource.minValue;
+          lo =
+            lo !== null
+              ? Math.min(lo, this.dataSource.minValue)
+              : this.dataSource.minValue;
         }
         let hi = valueRange[1];
         if (this.dataSource.maxValue !== undefined) {
-          hi = (hi !== null) ? Math.max(hi, this.dataSource.maxValue) : this.dataSource.maxValue;
+          hi =
+            hi !== null
+              ? Math.max(hi, this.dataSource.maxValue)
+              : this.dataSource.maxValue;
         }
 
         // Prevent identical lo/hi
@@ -150,7 +177,7 @@ export class ParameterPlotComponent implements AfterViewInit, OnDestroy {
         }
 
         dyOptions.axes = {
-          y: { valueRange: [lo, hi] }
+          y: { valueRange: [lo, hi] },
         };
       }
       this.dygraph.updateOptions(dyOptions);
@@ -168,10 +195,12 @@ export class ParameterPlotComponent implements AfterViewInit, OnDestroy {
   }
 
   private initDygraphs(containingDiv: HTMLDivElement) {
-    const seriesByLabel: { [key: string]: any; } = {};
+    const seriesByLabel: { [key: string]: any } = {};
 
-    const configs = this.parameters.map(p => this.parameterConfig.get(p.qualifiedName)!);
-    configs.forEach(config => {
+    const configs = this.parameters.map(
+      (p) => this.parameterConfig.get(p.qualifiedName)!,
+    );
+    configs.forEach((config) => {
       seriesByLabel[config.label || config.parameter] = {
         color: config.color,
         strokeWidth: config.strokeWidth,
@@ -185,7 +214,7 @@ export class ParameterPlotComponent implements AfterViewInit, OnDestroy {
 
     let lastClickedGraph: any = null;
 
-    const dyOptions: { [key: string]: any; } = {
+    const dyOptions: { [key: string]: any } = {
       legend: 'always',
       fillGraph: this.fillGraph,
       drawGrid: false,
@@ -196,7 +225,10 @@ export class ParameterPlotComponent implements AfterViewInit, OnDestroy {
       axisLineColor: this.axisLineColor,
       axisLabelFontSize: 11,
       digitsAfterDecimal: 6,
-      labels: ['Generation Time', ...configs.map(s => s.label || s.parameter)],
+      labels: [
+        'Generation Time',
+        ...configs.map((s) => s.label || s.parameter),
+      ],
       rightGap: 0,
       labelsUTC: this.formatter.isUTC(),
       series: seriesByLabel,
@@ -213,7 +245,7 @@ export class ParameterPlotComponent implements AfterViewInit, OnDestroy {
           axisLineWidth: primaryConfig.axisLineWidth || 0.0000001, // Dygraphs does not handle 0 correctly
           // includeZero: true,
           valueRange: analyzeStaticValueRanges(primaryParameter).valueRange,
-        }
+        },
       },
       interactionModel: {
         mousedown: (event: any, g: any, context: any) => {
@@ -343,10 +375,7 @@ export class ParameterPlotComponent implements AfterViewInit, OnDestroy {
             }
 
             ctx.fillStyle = zone.color;
-            ctx.fillRect(
-              area.x, Math.min(y1, y2),
-              area.w, Math.abs(y2 - y1)
-            );
+            ctx.fillRect(area.x, Math.min(y1, y2), area.w, Math.abs(y2 - y1));
           }
         }
         ctx.restore();
@@ -399,7 +428,9 @@ export class ParameterPlotComponent implements AfterViewInit, OnDestroy {
       legendFormatter: (data: DyLegendData) => {
         for (const trace of data.series) {
           if (trace.y === undefined) {
-            const rtValue = this.dataSource.latestRealtimeValues.get(trace.label);
+            const rtValue = this.dataSource.latestRealtimeValues.get(
+              trace.label,
+            );
             if (rtValue) {
               trace.y = rtValue[1];
               trace.yHTML = String(rtValue[1]);
@@ -409,9 +440,7 @@ export class ParameterPlotComponent implements AfterViewInit, OnDestroy {
         this.legendData$.next(data);
         return '';
       },
-      plugins: [
-        new CrosshairPlugin(),
-      ],
+      plugins: [new CrosshairPlugin()],
     };
 
     if (this.xAxisHeight !== undefined) {
@@ -431,7 +460,9 @@ export class ParameterPlotComponent implements AfterViewInit, OnDestroy {
 
     this.dygraph = new Dygraph(containingDiv, 'X\n', dyOptions);
 
-    const gridPluginInstance = this.dygraph.getPluginInstance_(GridPlugin) as GridPlugin;
+    const gridPluginInstance = this.dygraph.getPluginInstance_(
+      GridPlugin,
+    ) as GridPlugin;
     gridPluginInstance.setAlarmZones(alarmZones);
   }
 
@@ -439,7 +470,10 @@ export class ParameterPlotComponent implements AfterViewInit, OnDestroy {
     return this.parameters;
   }
 
-  addParameter(parameter: Parameter, parameterConfig: ParameterSeriesComponent) {
+  addParameter(
+    parameter: Parameter,
+    parameterConfig: ParameterSeriesComponent,
+  ) {
     this.dataSource.addParameter(parameter);
     this.parameters.push(parameter);
     this.parameterConfig.set(parameter.qualifiedName, parameterConfig);
@@ -450,7 +484,9 @@ export class ParameterPlotComponent implements AfterViewInit, OnDestroy {
   removeParameter(label: string) {
     const qualifiedName = label; // TODO
     this.dataSource.removeParameter(qualifiedName);
-    this.parameters = this.parameters.filter(p => p.qualifiedName !== qualifiedName);
+    this.parameters = this.parameters.filter(
+      (p) => p.qualifiedName !== qualifiedName,
+    );
     this.parameterConfig.delete(qualifiedName);
 
     this.updateDygraphSeries();
@@ -464,7 +500,7 @@ export class ParameterPlotComponent implements AfterViewInit, OnDestroy {
         strokeWidth: this.dygraph.getOption('strokeWidth', label),
       },
     });
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         const config = this.parameterConfig.get(label)!;
         config.color = result.color;
@@ -475,26 +511,31 @@ export class ParameterPlotComponent implements AfterViewInit, OnDestroy {
   }
 
   private updateDygraphSeries() {
-    const seriesByLabel: { [key: string]: any; } = {};
+    const seriesByLabel: { [key: string]: any } = {};
 
-    const configs = this.parameters.map(p => this.parameterConfig.get(p.qualifiedName)!);
-    configs.forEach(config => {
+    const configs = this.parameters.map(
+      (p) => this.parameterConfig.get(p.qualifiedName)!,
+    );
+    configs.forEach((config) => {
       seriesByLabel[config.label || config.parameter] = {
         color: config.color,
         strokeWidth: config.strokeWidth,
       };
     });
 
-    const dyOptions: { [key: string]: any; } = {
-      labels: ['Generation Time', ...configs.map(s => s.label || s.parameter)],
+    const dyOptions: { [key: string]: any } = {
+      labels: [
+        'Generation Time',
+        ...configs.map((s) => s.label || s.parameter),
+      ],
       series: seriesByLabel,
     };
 
     // TODO when removing a series we get legend-related errors on hovering (before data is set)
     // Visually it works though.
-    this.dataSource.reloadVisibleRange().then((() => {
+    this.dataSource.reloadVisibleRange().then(() => {
       this.dygraph.updateOptions(dyOptions, true /* block redraw */);
-    }));
+    });
   }
 
   private applyTheme() {
@@ -538,7 +579,11 @@ export class ParameterPlotComponent implements AfterViewInit, OnDestroy {
    */
   zoom(zoomInPercentage: number, xBias = 0.5) {
     this.dygraph.updateOptions({
-      dateWindow: this.adjustAxis(this.dygraph.xAxisRange(), zoomInPercentage, xBias),
+      dateWindow: this.adjustAxis(
+        this.dygraph.xAxisRange(),
+        zoomInPercentage,
+        xBias,
+      ),
     });
 
     const xAxisRange = this.dygraph.xAxisRange();
@@ -551,7 +596,7 @@ export class ParameterPlotComponent implements AfterViewInit, OnDestroy {
   updateWindowOnly(start: Date, stop: Date) {
     this.dataSource.updateWindowOnly(start, stop);
     this.dygraph.updateOptions({
-      dateWindow: [start, stop]
+      dateWindow: [start, stop],
     });
   }
 
@@ -566,17 +611,21 @@ export class ParameterPlotComponent implements AfterViewInit, OnDestroy {
   // convert it to a pair of percentages from the bottom left.
   private offsetToPercentage(offsetX: number) {
     // Calculate pixel offset of the leftmost date.
-    const xOffset = this.dygraph.toDomCoords(this.dygraph.xAxisRange()[0], null)[0];
+    const xOffset = this.dygraph.toDomCoords(
+      this.dygraph.xAxisRange()[0],
+      null,
+    )[0];
 
     // x y w and h are relative to the corner of the drawing area,
     // so that the upper corner of the drawing area is (0, 0).
     const x = offsetX - xOffset;
 
     // Calcuate the rightmost pixel, effectively defining the width
-    const w = this.dygraph.toDomCoords(this.dygraph.xAxisRange()[1], null)[0] - xOffset;
+    const w =
+      this.dygraph.toDomCoords(this.dygraph.xAxisRange()[1], null)[0] - xOffset;
 
     // Percentage from the left.
-    return w === 0 ? 0 : (x / w);
+    return w === 0 ? 0 : x / w;
   }
 
   ngOnDestroy() {

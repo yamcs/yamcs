@@ -1,6 +1,20 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, viewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  OnDestroy,
+  viewChild,
+} from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { Banner, ItemBand, LinePlot, StateBand, Timeline, TimeRuler } from '@fqqb/timeline';
+import {
+  Banner,
+  ItemBand,
+  LinePlot,
+  StateBand,
+  Timeline,
+  TimeRuler,
+} from '@fqqb/timeline';
 import { WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
@@ -18,25 +32,29 @@ import { CreateBandWizardStepComponent } from '../create-band-wizard-step/create
   ],
 })
 export class CreateBandComponent implements AfterViewInit, OnDestroy {
-
   previewHeight = 30;
 
-  timeRulerContainer = viewChild.required<ElementRef<HTMLDivElement>>('timeRuler');
+  timeRulerContainer =
+    viewChild.required<ElementRef<HTMLDivElement>>('timeRuler');
   timeRulerPreview?: Timeline;
 
-  itemBandContainer = viewChild.required<ElementRef<HTMLDivElement>>('itemBand');
+  itemBandContainer =
+    viewChild.required<ElementRef<HTMLDivElement>>('itemBand');
   itemBandPreview?: Timeline;
 
   spacerContainer = viewChild.required<ElementRef<HTMLDivElement>>('spacer');
   spacerPreview?: Timeline;
 
-  parameterPlotContainer = viewChild.required<ElementRef<HTMLDivElement>>('parameterPlot');
+  parameterPlotContainer =
+    viewChild.required<ElementRef<HTMLDivElement>>('parameterPlot');
   parameterPlotPreview?: Timeline;
 
-  parameterStatesContainer = viewChild.required<ElementRef<HTMLDivElement>>('parameterStates');
+  parameterStatesContainer =
+    viewChild.required<ElementRef<HTMLDivElement>>('parameterStates');
   parameterStatesPreview?: Timeline;
 
-  commandBandContainer = viewChild.required<ElementRef<HTMLDivElement>>('commandBand');
+  commandBandContainer =
+    viewChild.required<ElementRef<HTMLDivElement>>('commandBand');
   commandBandPreview?: Timeline;
 
   constructor(
@@ -128,10 +146,12 @@ export class CreateBandComponent implements AfterViewInit, OnDestroy {
     for (let i = 0; i < 50; i += 0.01) {
       points.set(i, Math.sin(i));
     }
-    band.lines = [{
-      points,
-      pointRadius: 0,
-    }];
+    band.lines = [
+      {
+        points,
+        pointRadius: 0,
+      },
+    ];
   }
 
   private createParameterStatesPreview() {
@@ -148,10 +168,10 @@ export class CreateBandComponent implements AfterViewInit, OnDestroy {
     band.paddingTop = 0;
     band.paddingBottom = 0;
     band.states = [
-      { time: 0, label: 'ON', background: "#8dd3c7" },
-      { time: 30, label: 'OFF', background: "#fdb462" },
-      { time: 50, label: 'ON', background: "#8dd3c7" },
-      { time: 80, label: 'OFF', background: "#fdb462" },
+      { time: 0, label: 'ON', background: '#8dd3c7' },
+      { time: 30, label: 'OFF', background: '#fdb462' },
+      { time: 50, label: 'ON', background: '#8dd3c7' },
+      { time: 80, label: 'OFF', background: '#fdb462' },
     ];
   }
 

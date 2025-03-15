@@ -11,12 +11,9 @@ import { ParameterTableViewerComponent } from '../parameter-table-viewer/paramet
 @Component({
   selector: 'app-parameter-table-viewer-controls',
   templateUrl: './parameter-table-viewer-controls.component.html',
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class ParameterTableViewerControlsComponent {
-
   private bucket: string;
 
   initialized$ = new BehaviorSubject<boolean>(false);
@@ -43,9 +40,9 @@ export class ParameterTableViewerControlsComponent {
       data: {
         okLabel: 'ADD',
         exclude: this.viewer.getModel().parameters,
-      }
+      },
     });
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.viewer.addParameter(result);
       }
@@ -54,18 +51,23 @@ export class ParameterTableViewerControlsComponent {
 
   mayManageDisplays() {
     const user = this.authService.getUser()!;
-    return user.hasObjectPrivilege('ManageBucket', this.bucket)
-      || user.hasSystemPrivilege('ManageAnyBucket');
+    return (
+      user.hasObjectPrivilege('ManageBucket', this.bucket) ||
+      user.hasSystemPrivilege('ManageAnyBucket')
+    );
   }
 
   save() {
-    this.viewer.save().then(() => {
-      this.snackbar.open('Changes saved', undefined, {
-        duration: 1000,
+    this.viewer
+      .save()
+      .then(() => {
+        this.snackbar.open('Changes saved', undefined, {
+          duration: 1000,
+        });
+      })
+      .catch((err) => {
+        this.snackbar.open('Failed to save changes: ' + err);
       });
-    }).catch(err => {
-      this.snackbar.open('Failed to save changes: ' + err);
-    });
   }
 
   exportArchiveData() {
@@ -77,7 +79,7 @@ export class ParameterTableViewerControlsComponent {
       width: '400px',
       data: {
         parameterIds,
-      }
+      },
     });
   }
 }

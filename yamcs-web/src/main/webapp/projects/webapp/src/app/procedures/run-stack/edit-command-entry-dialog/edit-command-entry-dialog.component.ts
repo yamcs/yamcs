@@ -1,7 +1,17 @@
 import { ChangeDetectorRef, Component, Inject, ViewChild } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import {
+  UntypedFormBuilder,
+  UntypedFormGroup,
+  Validators,
+} from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { AdvancementParams, Command, Value, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  AdvancementParams,
+  Command,
+  Value,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { CommandFormComponent } from '../../../commanding/command-sender/command-form/command-form.component';
 import { CommandSelectorComponent } from '../../../shared/command-selector/command-selector.component';
@@ -11,8 +21,8 @@ import { CommandStepTemplateProvider } from './CommandStepTemplateProvider';
 
 export interface CommandResult {
   command: Command;
-  args: { [key: string]: any; };
-  extra: { [key: string]: Value; };
+  args: { [key: string]: any };
+  extra: { [key: string]: Value };
   comment?: string;
   stream?: string;
   advancement?: AdvancementParams;
@@ -29,7 +39,6 @@ export interface CommandResult {
   ],
 })
 export class EditCommandEntryDialogComponent {
-
   okLabel = 'OK';
 
   @ViewChild('commandSelector')

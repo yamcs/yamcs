@@ -30,7 +30,8 @@ export interface ListAlarmsResponse {
   alarms: Alarm[];
 }
 
-export type AlarmNotificationType = 'ACTIVE'
+export type AlarmNotificationType =
+  | 'ACTIVE'
   | 'TRIGGERED_PENDING'
   | 'TRIGGERED'
   | 'SEVERITY_INCREASED'
@@ -40,15 +41,14 @@ export type AlarmNotificationType = 'ACTIVE'
   | 'RTN'
   | 'SHELVED'
   | 'UNSHELVED'
-  | 'RESET'
-  ;
+  | 'RESET';
 
-export type AlarmSeverity = 'WATCH'
+export type AlarmSeverity =
+  | 'WATCH'
   | 'WARNING'
   | 'DISTRESS'
   | 'CRITICAL'
-  | 'SEVERE'
-  ;
+  | 'SEVERE';
 
 export interface Alarm {
   seqNum: number;
@@ -129,5 +129,8 @@ export interface ClearAlarmOptions {
   comment?: string;
 }
 
-export type GlobalAlarmStatusSubscription = WebSocketCall<SubscribeGlobalAlarmStatusRequest, GlobalAlarmStatus>;
+export type GlobalAlarmStatusSubscription = WebSocketCall<
+  SubscribeGlobalAlarmStatusRequest,
+  GlobalAlarmStatus
+>;
 export type AlarmSubscription = WebSocketCall<SubscribeAlarmsRequest, Alarm>;

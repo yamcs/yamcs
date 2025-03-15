@@ -1,4 +1,5 @@
-<span [innerHTML]="element.className | classNameHtml"></span>.{{ element.methodName }}
+<span [innerHTML]="element.className | classNameHtml"></span>
+.{{ element.methodName }}
 @if (element.lineNumber) {
   <small>(line: {{ element.lineNumber }})</small>
 }

@@ -1,5 +1,17 @@
 import { AsyncPipe } from '@angular/common';
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnDestroy, Output, ViewChild, forwardRef } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  Output,
+  ViewChild,
+  forwardRef,
+} from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatIcon } from '@angular/material/icon';
 import { Subject, Subscription, fromEvent, merge } from 'rxjs';
@@ -10,18 +22,18 @@ import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
   templateUrl: './search-filter.component.html',
   styleUrl: './search-filter.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => YaSearchFilter),
-    multi: true,
-  }],
-  imports: [
-    AsyncPipe,
-    MatIcon
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => YaSearchFilter),
+      multi: true,
+    },
   ],
+  imports: [AsyncPipe, MatIcon],
 })
-export class YaSearchFilter implements ControlValueAccessor, AfterViewInit, OnDestroy {
-
+export class YaSearchFilter
+  implements ControlValueAccessor, AfterViewInit, OnDestroy
+{
   @ViewChild('input', { static: true })
   filter: ElementRef;
 
@@ -51,10 +63,9 @@ export class YaSearchFilter implements ControlValueAccessor, AfterViewInit, OnDe
   private setEvent$ = new Subject<string>();
   private eventSubscription: Subscription;
 
-  private onChange = (_: string | null) => { };
+  private onChange = (_: string | null) => {};
 
-  constructor(private changeDetection: ChangeDetectorRef) {
-  }
+  constructor(private changeDetection: ChangeDetectorRef) {}
 
   ngAfterViewInit() {
     const keyObservable = fromEvent(this.filter.nativeElement, 'keyup').pipe(
@@ -65,12 +76,12 @@ export class YaSearchFilter implements ControlValueAccessor, AfterViewInit, OnDe
     this.showClear$.next(!!this.getValue());
     this.changeDetection.detectChanges();
 
-    this.eventSubscription = merge(keyObservable, this.setEvent$).pipe(
-      distinctUntilChanged(),
-    ).subscribe(value => {
-      this.onChange(value);
-      this.showClear$.next(!!value);
-    });
+    this.eventSubscription = merge(keyObservable, this.setEvent$)
+      .pipe(distinctUntilChanged())
+      .subscribe((value) => {
+        this.onChange(value);
+        this.showClear$.next(!!value);
+      });
   }
 
   getValue() {
@@ -92,8 +103,7 @@ export class YaSearchFilter implements ControlValueAccessor, AfterViewInit, OnDe
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any) {
-  }
+  registerOnTouched(fn: any) {}
 
   onKeydown(event: KeyboardEvent) {
     switch (event.key) {

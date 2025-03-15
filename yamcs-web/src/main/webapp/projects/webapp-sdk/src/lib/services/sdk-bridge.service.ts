@@ -10,7 +10,6 @@ import { AppearanceService } from './appearance.service';
  */
 @Injectable({ providedIn: 'root' })
 export class SdkBridge {
-
   /**
    * The main webapp router
    */

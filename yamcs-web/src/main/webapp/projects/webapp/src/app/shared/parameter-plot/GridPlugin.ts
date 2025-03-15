@@ -12,12 +12,11 @@ import { AlarmZone } from './dygraphs';
  * leads to a weird color effect on the limit line).
  */
 export default class GridPlugin {
-
   private yLimits: number[] = [];
 
   activate(g: any) {
     return {
-      willDrawChart: this.willDrawChart
+      willDrawChart: this.willDrawChart,
     };
   }
 
@@ -49,7 +48,7 @@ export default class GridPlugin {
           strokeStyles[i] = g.getOptionForAxis('gridLineColor', axes[i]);
           lineWidths[i] = g.getOptionForAxis('gridLineWidth', axes[i]);
           strokePattern[i] = g.getOptionForAxis('gridLinePattern', axes[i]);
-          stroking[i] = strokePattern[i] && (strokePattern[i].length >= 2);
+          stroking[i] = strokePattern[i] && strokePattern[i].length >= 2;
         }
       }
       const ticks = layout.yticks;
@@ -91,7 +90,7 @@ export default class GridPlugin {
       const ticks = layout.xticks;
       ctx.save();
       const strokePattern = g.getOptionForAxis('gridLinePattern', 'x');
-      const stroking = strokePattern && (strokePattern.length >= 2);
+      const stroking = strokePattern && strokePattern.length >= 2;
       if (stroking) {
         if (ctx.setLineDash) {
           ctx.setLineDash(strokePattern);
@@ -132,6 +131,5 @@ export default class GridPlugin {
     return 'Gridline Plugin';
   }
 
-  destroy() {
-  }
+  destroy() {}
 }

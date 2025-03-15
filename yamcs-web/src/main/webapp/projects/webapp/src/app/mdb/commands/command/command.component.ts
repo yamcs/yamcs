@@ -18,7 +18,6 @@ import { CommandDetailComponent } from '../command-detail/command-detail.compone
   ],
 })
 export class CommandComponent {
-
   command$ = new BehaviorSubject<Command | null>(null);
 
   constructor(
@@ -28,16 +27,18 @@ export class CommandComponent {
   ) {
     // When clicking links pointing to this same component, Angular will not reinstantiate
     // the component. Therefore subscribe to routeParams
-    route.paramMap.subscribe(params => {
+    route.paramMap.subscribe((params) => {
       const qualifiedName = params.get('qualifiedName')!;
       this.changeCommand(qualifiedName);
     });
   }
 
   changeCommand(qualifiedName: string) {
-    this.yamcs.yamcsClient.getCommand(this.yamcs.instance!, qualifiedName).then(command => {
-      this.command$.next(command);
-      this.title.setTitle(command.name);
-    });
+    this.yamcs.yamcsClient
+      .getCommand(this.yamcs.instance!, qualifiedName)
+      .then((command) => {
+        this.command$.next(command);
+        this.title.setTitle(command.name);
+      });
   }
 }

@@ -1,1 +1,7 @@
+**/.angular/
+**/dist/
+**/node_modules/
 **/index.template.html
+**/parser.js
+**/parser.terms.js
+**/package-lock.json

@@ -1,6 +1,6 @@
 .extra-bar-container {
   padding: 12px;
-  border-bottom: 1.1px solid rgba(0, 0, 0, .08);
+  border-bottom: 1.1px solid rgba(0, 0, 0, 0.08);
 }
 
 .extra-bar {
@@ -18,7 +18,7 @@ table.logs {
 
 table.logs td {
   font-size: 12px;
-  color: rgba(0, 0, 0, .654);
+  color: rgba(0, 0, 0, 0.654);
 }
 
 table.logs td.time {

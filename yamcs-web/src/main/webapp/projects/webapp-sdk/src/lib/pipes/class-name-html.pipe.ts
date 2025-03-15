@@ -4,7 +4,6 @@ import { Pipe, PipeTransform } from '@angular/core';
   name: 'classNameHtml',
 })
 export class ClassNameHtmlPipe implements PipeTransform {
-
   transform(qualifiedName: string): string | null {
     if (!qualifiedName) {
       return null;

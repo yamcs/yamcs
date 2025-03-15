@@ -1,15 +1,16 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { TrackByFunction } from '@angular/core';
 
-
-
 /**
  * A SelectionModel that compares items via an arbitrary tracker function instead of
  * via the default reference equality.
  */
 export class TrackBySelectionModel<T> extends SelectionModel<T> {
-
-  constructor(private tracker: TrackByFunction<T>, multiple?: boolean, initiallySelectedValues?: T[]) {
+  constructor(
+    private tracker: TrackByFunction<T>,
+    multiple?: boolean,
+    initiallySelectedValues?: T[],
+  ) {
     super(multiple, initiallySelectedValues);
   }
 
@@ -23,7 +24,7 @@ export class TrackBySelectionModel<T> extends SelectionModel<T> {
       newIds.push(this.tracker(-1, value));
     }
 
-    const oldIds = this.selected.map(v => this.tracker(-1, v));
+    const oldIds = this.selected.map((v) => this.tracker(-1, v));
 
     const newSelected: T[] = [];
     for (const value of newValues) {
@@ -38,7 +39,6 @@ export class TrackBySelectionModel<T> extends SelectionModel<T> {
       this.select(...newSelected);
     }
   }
-
 
   override isSelected(value: T) {
     const valueId = this.tracker(-1, value);

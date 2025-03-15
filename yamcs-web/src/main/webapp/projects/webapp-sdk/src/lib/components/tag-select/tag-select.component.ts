@@ -1,6 +1,11 @@
 import { AsyncPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, forwardRef } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule, UntypedFormControl } from '@angular/forms';
+import {
+  ControlValueAccessor,
+  NG_VALUE_ACCESSOR,
+  ReactiveFormsModule,
+  UntypedFormControl,
+} from '@angular/forms';
 import { MatIcon } from '@angular/material/icon';
 import { BehaviorSubject } from 'rxjs';
 import { YaButton } from '../button/button.component';
@@ -11,24 +16,19 @@ import { YaLabel } from '../label/label.component';
   templateUrl: './tag-select.component.html',
   styleUrl: './tag-select.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => YaTagSelect),
-    multi: true
-  }],
-  imports: [
-    AsyncPipe,
-    MatIcon,
-    ReactiveFormsModule,
-    YaButton,
-    YaLabel,
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => YaTagSelect),
+      multi: true,
+    },
   ],
+  imports: [AsyncPipe, MatIcon, ReactiveFormsModule, YaButton, YaLabel],
 })
 export class YaTagSelect implements ControlValueAccessor {
-
   control = new UntypedFormControl(null);
 
-  private onChange = (_: string[]) => { };
+  private onChange = (_: string[]) => {};
 
   tags$ = new BehaviorSubject<string[]>([]);
 
@@ -69,6 +69,5 @@ export class YaTagSelect implements ControlValueAccessor {
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any) {
-  }
+  registerOnTouched(fn: any) {}
 }

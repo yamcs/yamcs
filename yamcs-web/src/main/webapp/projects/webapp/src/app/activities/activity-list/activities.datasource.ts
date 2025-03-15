@@ -1,11 +1,16 @@
 import { CollectionViewer } from '@angular/cdk/collections';
 import { DataSource } from '@angular/cdk/table';
-import { Activity, ActivitySubscription, GetActivitiesOptions, Synchronizer, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  Activity,
+  ActivitySubscription,
+  GetActivitiesOptions,
+  Synchronizer,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { ActivityBuffer } from './ActivityBuffer';
 
 export class ActivitiesDataSource extends DataSource<Activity> {
-
   pageSize = 100;
   continuationToken?: string;
   options: GetActivitiesOptions;
@@ -20,7 +25,10 @@ export class ActivitiesDataSource extends DataSource<Activity> {
   private realtimeSubscription: ActivitySubscription;
   private syncSubscription: Subscription;
 
-  constructor(private yamcs: YamcsService, synchronizer: Synchronizer) {
+  constructor(
+    private yamcs: YamcsService,
+    synchronizer: Synchronizer,
+  ) {
     super();
     this.syncSubscription = synchronizer.sync(() => {
       if (this.buffer.dirty && !this.loading$.getValue()) {
@@ -30,7 +38,6 @@ export class ActivitiesDataSource extends DataSource<Activity> {
     });
 
     this.buffer = new ActivityBuffer(() => {
-
       // Best solution for now, alternative is to re-establish
       // the offscreenRecord after compacting.
       this.blockHasMore = true;
@@ -39,7 +46,9 @@ export class ActivitiesDataSource extends DataSource<Activity> {
     });
   }
 
-  override connect(collectionViewer: CollectionViewer): Observable<readonly Activity[]> {
+  override connect(
+    collectionViewer: CollectionViewer,
+  ): Observable<readonly Activity[]> {
     return this.activities$;
   }
 
@@ -55,7 +64,7 @@ export class ActivitiesDataSource extends DataSource<Activity> {
         ...options,
         limit: this.pageSize,
       }),
-    ]).then(results => {
+    ]).then((results) => {
       const activities = results[0];
 
       this.loading$.next(false);
@@ -82,10 +91,12 @@ export class ActivitiesDataSource extends DataSource<Activity> {
    */
   private loadPage(options: GetActivitiesOptions) {
     this.options = options;
-    return this.yamcs.yamcsClient.getActivities(this.yamcs.instance!, options).then(page => {
-      this.continuationToken = page.continuationToken;
-      return page.activities || [];
-    });
+    return this.yamcs.yamcsClient
+      .getActivities(this.yamcs.instance!, options)
+      .then((page) => {
+        this.continuationToken = page.continuationToken;
+        return page.activities || [];
+      });
   }
 
   /**
@@ -99,20 +110,24 @@ export class ActivitiesDataSource extends DataSource<Activity> {
       ...options,
       next: this.continuationToken,
       limit: this.pageSize,
-    }).then(activities => {
+    }).then((activities) => {
       this.buffer.addArchiveData(activities);
     });
   }
 
   startStreaming() {
     this.streaming$.next(true);
-    this.realtimeSubscription = this.yamcs.yamcsClient.createActivitySubscription({
-      instance: this.yamcs.instance!,
-    }, activity => {
-      if (!this.loading$.getValue() && this.matchesFilter(activity)) {
-        this.buffer.addRealtimeActivity(activity);
-      }
-    });
+    this.realtimeSubscription =
+      this.yamcs.yamcsClient.createActivitySubscription(
+        {
+          instance: this.yamcs.instance!,
+        },
+        (activity) => {
+          if (!this.loading$.getValue() && this.matchesFilter(activity)) {
+            this.buffer.addRealtimeActivity(activity);
+          }
+        },
+      );
   }
 
   private matchesFilter(activity: Activity) {
@@ -128,7 +143,10 @@ export class ActivitiesDataSource extends DataSource<Activity> {
         }
       }
       if (this.options.q) {
-        if (!activity.detail || activity.detail.indexOf(this.options.q) === -1) {
+        if (
+          !activity.detail ||
+          activity.detail.indexOf(this.options.q) === -1
+        ) {
           return false;
         }
       }

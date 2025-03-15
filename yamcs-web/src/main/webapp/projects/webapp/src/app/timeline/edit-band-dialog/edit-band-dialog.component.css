@@ -11,7 +11,9 @@
   right: 0;
   overflow: auto;
   padding: 24px;
-  font: 400 12px / 20px Roboto, sans-serif
+  font:
+    400 12px / 20px Roboto,
+    sans-serif;
 }
 
 .footer {

@@ -10,18 +10,17 @@ import { StackedCommandEntry } from '../stack-file/StackedEntry';
   templateUrl: './stacked-command-entry.component.html',
   styleUrl: './stacked-command-entry.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AcknowledgmentNamePipe,
-    EntryLabel,
-    WebappSdkModule,
-  ],
+  imports: [AcknowledgmentNamePipe, EntryLabel, WebappSdkModule],
 })
 export class StackedCommandEntryComponent {
   entry = input.required<StackedCommandEntry>();
 
   // KeyValuePipe comparator that preserves original order.
   // (default KeyValuePipe is to sort A-Z, but that's undesired for args).
-  insertionOrder = (a: KeyValue<string, any>, b: KeyValue<string, any>): number => {
+  insertionOrder = (
+    a: KeyValue<string, any>,
+    b: KeyValue<string, any>,
+  ): number => {
     return 0;
   };
 }

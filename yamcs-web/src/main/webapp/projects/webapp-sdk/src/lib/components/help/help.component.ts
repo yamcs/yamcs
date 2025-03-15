@@ -9,13 +9,9 @@ import { YaHelpDialog } from './help.dialog';
   selector: 'ya-help',
   templateUrl: './help.component.html',
   styleUrl: './help.component.css',
-  imports: [
-    MatIcon,
-    YaTextAction,
-  ],
+  imports: [MatIcon, YaTextAction],
 })
 export class YaHelp {
-
   @Input()
   dialogTitle: string;
 
@@ -25,8 +21,10 @@ export class YaHelp {
   @ViewChild('dialogContent', { static: true })
   dialogContent: ElementRef;
 
-  constructor(private dialog: MatDialog, private sanitizer: DomSanitizer) {
-  }
+  constructor(
+    private dialog: MatDialog,
+    private sanitizer: DomSanitizer,
+  ) {}
 
   showHelp() {
     const html = this.dialogContent.nativeElement.innerHTML;
@@ -35,7 +33,7 @@ export class YaHelp {
       data: {
         title: this.dialogTitle,
         content: this.sanitizer.bypassSecurityTrustHtml(html),
-      }
+      },
     });
 
     // Prevent further click handling.

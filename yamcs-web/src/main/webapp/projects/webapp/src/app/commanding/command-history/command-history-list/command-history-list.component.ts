@@ -1,9 +1,29 @@
 import { Clipboard } from '@angular/cdk/clipboard';
-import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute } from '@angular/router';
-import { BaseComponent, CommandHistoryRecord, ConfigService, GetCommandHistoryOptions, PrintService, User, WebappSdkModule, WebsiteConfig, YaColumnChooser, YaColumnInfo, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  BaseComponent,
+  CommandHistoryRecord,
+  ConfigService,
+  GetCommandHistoryOptions,
+  PrintService,
+  User,
+  WebappSdkModule,
+  WebsiteConfig,
+  YaColumnChooser,
+  YaColumnInfo,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/AuthService';
@@ -18,7 +38,6 @@ import { ExportCommandsDialogComponent } from '../export-commands-dialog/export-
 import { CommandDownloadLinkPipe } from '../shared/command-download-link.pipe';
 import { TransmissionConstraintsIconComponent } from '../transmission-constraints-icon/transmission-constraints-icon.component';
 import { CommandHistoryDataSource } from './command-history.datasource';
-
 
 const defaultInterval = 'PT1H';
 
@@ -38,8 +57,10 @@ const defaultInterval = 'PT1H';
     TransmissionConstraintsIconComponent,
   ],
 })
-export class CommandHistoryListComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
-
+export class CommandHistoryListComponent
+  extends BaseComponent
+  implements OnInit, AfterViewInit, OnDestroy
+{
   selectedRecord$ = new BehaviorSubject<CommandHistoryRecord | null>(null);
 
   validStart: Date | null;
@@ -100,29 +121,37 @@ export class CommandHistoryListComponent extends BaseComponent implements OnInit
     this.config = configService.getConfig();
     this.user = authService.getUser()!;
 
-    this.dataSource = new CommandHistoryDataSource(this.yamcs, this.synchronizer);
+    this.dataSource = new CommandHistoryDataSource(
+      this.yamcs,
+      this.synchronizer,
+    );
   }
 
   ngOnInit(): void {
     this.initializeOptions();
     this.loadData();
 
-    this.filterForm.get('filter')!.valueChanges.pipe(
-      debounceTime(400),
-    ).forEach(filter => {
+    this.filterForm
+      .get('filter')!
+      .valueChanges.pipe(debounceTime(400))
+      .forEach((filter) => {
+        this.loadData();
+      });
+
+    this.filterForm.get('queue')!.valueChanges.forEach((queue) => {
       this.loadData();
     });
 
-    this.filterForm.get('queue')!.valueChanges.forEach(queue => {
-      this.loadData();
-    });
-
-    this.filterForm.get('interval')!.valueChanges.forEach(nextInterval => {
+    this.filterForm.get('interval')!.valueChanges.forEach((nextInterval) => {
       if (nextInterval === 'CUSTOM') {
         const customStart = this.validStart || this.yamcs.getMissionTime();
         const customStop = this.validStop || this.yamcs.getMissionTime();
-        this.filterForm.get('customStart')!.setValue(utils.toISOString(customStart));
-        this.filterForm.get('customStop')!.setValue(utils.toISOString(customStop));
+        this.filterForm
+          .get('customStart')!
+          .setValue(utils.toISOString(customStart));
+        this.filterForm
+          .get('customStop')!
+          .setValue(utils.toISOString(customStop));
       } else if (nextInterval === 'NO_LIMIT') {
         this.validStart = null;
         this.validStop = null;
@@ -138,24 +167,32 @@ export class CommandHistoryListComponent extends BaseComponent implements OnInit
   }
 
   ngAfterViewInit() {
-    this.subscriptions.push(this.dataSource.namespaces$.subscribe(namespaces => {
-      // Reset alias columns
-      for (const aliasColumn of this.aliasColumns$.value) {
-        const idx = this.columns.indexOf(aliasColumn);
-        if (idx !== -1) {
-          this.columns.splice(idx, 1);
+    this.subscriptions.push(
+      this.dataSource.namespaces$.subscribe((namespaces) => {
+        // Reset alias columns
+        for (const aliasColumn of this.aliasColumns$.value) {
+          const idx = this.columns.indexOf(aliasColumn);
+          if (idx !== -1) {
+            this.columns.splice(idx, 1);
+          }
         }
-      }
-      const aliasColumns = [];
-      for (const namespace of namespaces) {
-        const aliasColumn = { id: namespace, label: namespace, alwaysVisible: true };
-        aliasColumns.push(aliasColumn);
-      }
-      const insertIdx = this.columns.findIndex(column => column.id === 'command');
-      this.columns.splice(insertIdx + 1, 0, ...aliasColumns); // Insert after name column
-      this.aliasColumns$.next(aliasColumns);
-      this.columnChooser.recalculate(this.columns);
-    }));
+        const aliasColumns = [];
+        for (const namespace of namespaces) {
+          const aliasColumn = {
+            id: namespace,
+            label: namespace,
+            alwaysVisible: true,
+          };
+          aliasColumns.push(aliasColumn);
+        }
+        const insertIdx = this.columns.findIndex(
+          (column) => column.id === 'command',
+        );
+        this.columns.splice(insertIdx + 1, 0, ...aliasColumns); // Insert after name column
+        this.aliasColumns$.next(aliasColumns);
+        this.columnChooser.recalculate(this.columns);
+      }),
+    );
   }
 
   private initializeOptions() {
@@ -183,7 +220,10 @@ export class CommandHistoryListComponent extends BaseComponent implements OnInit
         this.validStop = null;
       } else {
         this.validStop = this.yamcs.getMissionTime();
-        this.validStart = utils.subtractDuration(this.validStop, this.appliedInterval);
+        this.validStart = utils.subtractDuration(
+          this.validStop,
+          this.appliedInterval,
+        );
       }
     } else {
       this.appliedInterval = defaultInterval;
@@ -245,8 +285,9 @@ export class CommandHistoryListComponent extends BaseComponent implements OnInit
     if (queue) {
       options.queue = queue;
     }
-    this.dataSource.loadEntries(options)
-      .catch(err => this.messageService.showError(err));
+    this.dataSource
+      .loadEntries(options)
+      .catch((err) => this.messageService.showError(err));
   }
 
   loadMoreData() {
@@ -264,8 +305,9 @@ export class CommandHistoryListComponent extends BaseComponent implements OnInit
       options.queue = queue;
     }
 
-    this.dataSource.loadMoreData(options)
-      .catch(err => this.messageService.showError(err));
+    this.dataSource
+      .loadMoreData(options)
+      .catch((err) => this.messageService.showError(err));
   }
 
   showResend() {
@@ -285,8 +327,14 @@ export class CommandHistoryListComponent extends BaseComponent implements OnInit
         filter: controls['filter'].value || null,
         queue: controls['queue'].value || null,
         interval: this.appliedInterval,
-        customStart: this.appliedInterval === 'CUSTOM' ? controls['customStart'].value : null,
-        customStop: this.appliedInterval === 'CUSTOM' ? controls['customStop'].value : null,
+        customStart:
+          this.appliedInterval === 'CUSTOM'
+            ? controls['customStart'].value
+            : null,
+        customStop:
+          this.appliedInterval === 'CUSTOM'
+            ? controls['customStop'].value
+            : null,
       },
       queryParamsHandling: 'merge',
     });
@@ -309,7 +357,11 @@ export class CommandHistoryListComponent extends BaseComponent implements OnInit
 
   printReport() {
     const data = this.dataSource.records$.value.slice().reverse();
-    this.printService.printComponent(CommandHistoryPrintableComponent, 'Command Report', data);
+    this.printService.printComponent(
+      CommandHistoryPrintableComponent,
+      'Command Report',
+      data,
+    );
   }
 
   exportCsv() {
@@ -324,6 +376,6 @@ export class CommandHistoryListComponent extends BaseComponent implements OnInit
   }
 
   ngOnDestroy() {
-    this.subscriptions.forEach(sub => sub.unsubscribe());
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
   }
 }

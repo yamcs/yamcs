@@ -1,9 +1,20 @@
-import { ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  ViewChild,
+} from '@angular/core';
 import { indentWithTab } from '@codemirror/commands';
 import { javascript } from '@codemirror/lang-javascript';
 import { EditorState, Extension } from '@codemirror/state';
 import { keymap } from '@codemirror/view';
-import { ConfigService, MessageService, StorageClient, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  ConfigService,
+  MessageService,
+  StorageClient,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { EditorView, basicSetup } from 'codemirror';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../../../core/services/AuthService';
@@ -11,9 +22,7 @@ import { Viewer } from '../Viewer';
 
 @Component({
   selector: 'app-script-viewer',
-  template: `
-    <div #scriptContainer class="script-container"></div>
-  `,
+  template: ` <div #scriptContainer class="script-container"></div> `,
   styles: `
     .script-container {
       width: 100%;
@@ -22,12 +31,9 @@ import { Viewer } from '../Viewer';
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class ScriptViewerComponent implements Viewer {
-
   @ViewChild('scriptContainer')
   private scriptContainer: ElementRef<HTMLDivElement>;
 
@@ -52,9 +58,12 @@ export class ScriptViewerComponent implements Viewer {
 
   public init(objectName: string) {
     this.objectName = objectName;
-    this.storageClient.getObject(this.bucket, objectName)
-      .then(response => response.text().then(text => this.initializeEditor(text)))
-      .catch(err => this.messageService.showError(err));
+    this.storageClient
+      .getObject(this.bucket, objectName)
+      .then((response) =>
+        response.text().then((text) => this.initializeEditor(text)),
+      )
+      .catch((err) => this.messageService.showError(err));
 
     return Promise.resolve();
   }
@@ -68,26 +77,31 @@ export class ScriptViewerComponent implements Viewer {
     ];
 
     if (this.mayManageDisplays()) {
-      extensions.push(EditorView.updateListener.of(update => {
-        if (update.docChanged) {
-          this.hasUnsavedChanges$.next(true);
-        }
-      }));
+      extensions.push(
+        EditorView.updateListener.of((update) => {
+          if (update.docChanged) {
+            this.hasUnsavedChanges$.next(true);
+          }
+        }),
+      );
     } else {
       extensions.push(EditorState.readOnly.of(true));
     }
 
-    const theme = EditorView.theme({
-      '&': {
-        width: '100%',
-        height: '100%',
-        fontSize: '12px',
+    const theme = EditorView.theme(
+      {
+        '&': {
+          width: '100%',
+          height: '100%',
+          fontSize: '12px',
+        },
+        '.cm-scroller': {
+          overflow: 'auto',
+          fontFamily: "'Roboto Mono', monospace",
+        },
       },
-      '.cm-scroller': {
-        overflow: 'auto',
-        fontFamily: "'Roboto Mono', monospace",
-      },
-    }, { dark: false });
+      { dark: false },
+    );
     extensions.push(theme);
 
     const state = EditorState.create({
@@ -103,8 +117,10 @@ export class ScriptViewerComponent implements Viewer {
 
   private mayManageDisplays() {
     const user = this.authService.getUser()!;
-    return user.hasObjectPrivilege('ManageBucket', this.bucket)
-      || user.hasSystemPrivilege('ManageAnyBucket');
+    return (
+      user.hasObjectPrivilege('ManageBucket', this.bucket) ||
+      user.hasSystemPrivilege('ManageAnyBucket')
+    );
   }
 
   public hasPendingChanges() {
@@ -114,8 +130,10 @@ export class ScriptViewerComponent implements Viewer {
   async save() {
     const text = this.editorView.state.doc.toString();
     const b = new Blob([text], { type: 'text/javascript' });
-    return this.storageClient.uploadObject(this.bucket, this.objectName, b).then(() => {
-      this.hasUnsavedChanges$.next(false);
-    });
+    return this.storageClient
+      .uploadObject(this.bucket, this.objectName, b)
+      .then(() => {
+        this.hasUnsavedChanges$.next(false);
+      });
   }
 }

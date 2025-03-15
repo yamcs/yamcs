@@ -5,12 +5,9 @@ import { Route, WebappSdkModule } from '@yamcs/webapp-sdk';
   selector: 'app-route-detail',
   templateUrl: './route-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class RouteDetailComponent {
-
   @Input()
   route: Route;
 }

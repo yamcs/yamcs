@@ -5,14 +5,13 @@ interface HasAlias {
   // Old-style
   alias?: NamedObjectId[];
   // New-style
-  aliases?: { [key: string]: string; };
+  aliases?: { [key: string]: string };
 }
 
 @Pipe({
   name: 'alias',
 })
 export class AliasPipe implements PipeTransform {
-
   transform(item: HasAlias | null, namespace: string): string | null {
     if (!item?.alias?.length && !item?.aliases) {
       return null;

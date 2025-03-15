@@ -1,6 +1,24 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, forwardRef, Input, ViewChild } from '@angular/core';
-import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormControl, ValidationErrors, Validator } from '@angular/forms';
-import { MatDatepicker, MatDatepickerInput } from '@angular/material/datepicker';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  forwardRef,
+  Input,
+  ViewChild,
+} from '@angular/core';
+import {
+  ControlValueAccessor,
+  NG_VALIDATORS,
+  NG_VALUE_ACCESSOR,
+  UntypedFormControl,
+  ValidationErrors,
+  Validator,
+} from '@angular/forms';
+import {
+  MatDatepicker,
+  MatDatepickerInput,
+} from '@angular/material/datepicker';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
 import { formatInTimeZone } from 'date-fns-tz';
@@ -25,15 +43,19 @@ const DAY_OF_YEAR_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
   templateUrl: './date-time-input.component.html',
   styleUrl: './date-time-input.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => YaDateTimeInput),
-    multi: true,
-  }, {
-    provide: NG_VALIDATORS,
-    useExisting: forwardRef(() => YaDateTimeInput),
-    multi: true,
-  }, provideUtcNativeDateAdapter()],
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => YaDateTimeInput),
+      multi: true,
+    },
+    {
+      provide: NG_VALIDATORS,
+      useExisting: forwardRef(() => YaDateTimeInput),
+      multi: true,
+    },
+    provideUtcNativeDateAdapter(),
+  ],
   imports: [
     MatDatepicker,
     MatDatepickerInput,
@@ -42,8 +64,9 @@ const DAY_OF_YEAR_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
     YaIconAction,
   ],
 })
-export class YaDateTimeInput implements AfterViewInit, ControlValueAccessor, Validator {
-
+export class YaDateTimeInput
+  implements AfterViewInit, ControlValueAccessor, Validator
+{
   @Input()
   showMillis = false;
 
@@ -71,10 +94,9 @@ export class YaDateTimeInput implements AfterViewInit, ControlValueAccessor, Val
   @ViewChild('picker', { static: true })
   private picker: MatDatepicker<Date>;
 
-  private onChange = (_: string | null) => { };
+  private onChange = (_: string | null) => {};
 
-  constructor(private formatter: Formatter) {
-  }
+  constructor(private formatter: Formatter) {}
 
   ngAfterViewInit(): void {
     this.picker.closedStream.subscribe(() => {
@@ -89,7 +111,11 @@ export class YaDateTimeInput implements AfterViewInit, ControlValueAccessor, Val
   writeValue(value: any) {
     if (value) {
       let iso = value as string;
-      iso = formatInTimeZone(iso, this.formatter.getTimezone(), 'yyyy-MM-dd\'T\'HH:mm:ss.SSS');
+      iso = formatInTimeZone(
+        iso,
+        this.formatter.getTimezone(),
+        "yyyy-MM-dd'T'HH:mm:ss.SSS",
+      );
 
       this.dayInputComponent.nativeElement.value = iso.substring(0, 10);
       this.picker.select(utils.toDate(iso));
@@ -120,8 +146,7 @@ export class YaDateTimeInput implements AfterViewInit, ControlValueAccessor, Val
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any) {
-  }
+  registerOnTouched(fn: any) {}
 
   validate(control: UntypedFormControl): ValidationErrors | null {
     if (control.value === INVALID_ISOSTRING) {
@@ -132,7 +157,9 @@ export class YaDateTimeInput implements AfterViewInit, ControlValueAccessor, Val
 
   // If the user is pasting an ISO string then apply it to all inputs
   processPaste(event: ClipboardEvent) {
-    let data = (event.clipboardData || (window as any).clipboardData).getData('text');
+    let data = (event.clipboardData || (window as any).clipboardData).getData(
+      'text',
+    );
     if (data) {
       try {
         const pastedDate = utils.toDate(data);
@@ -228,6 +255,8 @@ export class YaDateTimeInput implements AfterViewInit, ControlValueAccessor, Val
       }
     }
 
-    return new Date(Date.UTC(year, month, day, hours, minutes, seconds, millis));
+    return new Date(
+      Date.UTC(year, month, day, hours, minutes, seconds, millis),
+    );
   }
 }

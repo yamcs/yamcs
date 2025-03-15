@@ -6,11 +6,8 @@ import { Activity, WebappSdkModule } from '@yamcs/webapp-sdk';
   templateUrl: './activity-icon.component.html',
   styleUrl: './activity-icon.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class ActivityIconComponent {
-
   activity = input.required<Activity>();
 }

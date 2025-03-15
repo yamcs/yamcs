@@ -10,7 +10,6 @@ export type WatermarkObserver = () => void;
  * and realtime values are connected. Both sets are joined and sorted under all conditions.
  */
 export class EventBuffer {
-
   public dirty = false;
 
   private archiveEvents: Event[] = [];
@@ -33,7 +32,11 @@ export class EventBuffer {
   addRealtimeEvent(event: Event) {
     if (this.pointer < this.bufferSize) {
       this.realtimeBuffer[this.pointer] = event;
-      if (this.pointer >= this.bufferWatermark && this.watermarkObserver && !this.alreadyWarned) {
+      if (
+        this.pointer >= this.bufferWatermark &&
+        this.watermarkObserver &&
+        !this.alreadyWarned
+      ) {
         this.alreadyWarned = true;
         this.watermarkObserver();
       }
@@ -51,7 +54,9 @@ export class EventBuffer {
   }
 
   snapshot(): Event[] {
-    const realtimeEvents = this.realtimeBuffer.filter(s => s !== undefined) as Event[];
+    const realtimeEvents = this.realtimeBuffer.filter(
+      (s) => s !== undefined,
+    ) as Event[];
 
     const splicedEvents = this.archiveEvents
       .concat(realtimeEvents)
@@ -60,7 +65,7 @@ export class EventBuffer {
         if (res === 0) {
           res = -e1.source.localeCompare(e2.source);
         }
-        return res !== 0 ? res : (e2.seqNumber - e1.seqNumber);
+        return res !== 0 ? res : e2.seqNumber - e1.seqNumber;
       });
     return splicedEvents;
   }

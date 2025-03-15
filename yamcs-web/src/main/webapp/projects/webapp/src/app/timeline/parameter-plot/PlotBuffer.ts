@@ -36,20 +36,22 @@ class RealtimeBuffer {
 
     // Merge with previous point when possible
     if (prev && !this.forceNextPoint) {
-      if (prev.n === 0 && point.n === 0) { // Consecutive gaps
+      if (prev.n === 0 && point.n === 0) {
+        // Consecutive gaps
         prev.time = Math.min(prev.time, point.time);
         prev.firstTime = Math.min(prev.firstTime, point.firstTime);
         prev.lastTime = Math.max(prev.lastTime, point.lastTime);
         return;
-      } else if (prev.n > 0 && point.n > 0) { // Consecutive non-gaps
+      } else if (prev.n > 0 && point.n > 0) {
+        // Consecutive non-gaps
         prev.time = Math.min(prev.time, point.time);
         prev.firstTime = Math.min(prev.firstTime, point.firstTime);
         prev.lastTime = Math.max(prev.lastTime, point.lastTime);
         prev.min = Math.min(prev.min!, point.min!);
         prev.max = Math.max(prev.max!, point.max!);
         prev.n += point.n;
-        prev.avg! -= (prev.avg! / prev.n);
-        prev.avg! += (point.avg! / prev.n);
+        prev.avg! -= prev.avg! / prev.n;
+        prev.avg! += point.avg! / prev.n;
         return;
       }
     }
@@ -57,7 +59,11 @@ class RealtimeBuffer {
     // Can't merge: new point
     if (this.pointer < this.bufferSize) {
       this.buffer[this.pointer] = point;
-      if (this.pointer >= this.bufferWatermark && this.watermarkObserver && !this.alreadyWarned) {
+      if (
+        this.pointer >= this.bufferWatermark &&
+        this.watermarkObserver &&
+        !this.alreadyWarned
+      ) {
         this.watermarkObserver();
         this.alreadyWarned = true;
       }
@@ -69,7 +75,7 @@ class RealtimeBuffer {
   }
 
   snapshot() {
-    return this.buffer.filter(s => s !== undefined);
+    return this.buffer.filter((s) => s !== undefined);
   }
 
   reset() {
@@ -89,12 +95,10 @@ class RealtimeBuffer {
  * and sorted under all conditions.
  */
 export class PlotBuffer {
-
   private archiveData = new Map<string, PlotPoint[]>();
   private realtimeBuffers = new Map<string, RealtimeBuffer>();
 
-  constructor(private watermarkObserver: WatermarkObserver) {
-  }
+  constructor(private watermarkObserver: WatermarkObserver) {}
 
   setArchiveData(archiveData: NamedSeries[]) {
     this.archiveData.clear();
@@ -114,12 +118,12 @@ export class PlotBuffer {
   }
 
   forceNextPoint() {
-    this.realtimeBuffers.forEach(b => b.forceNextPoint = true);
+    this.realtimeBuffers.forEach((b) => (b.forceNextPoint = true));
   }
 
   reset() {
     this.archiveData.clear();
-    this.realtimeBuffers.forEach(b => b.reset());
+    this.realtimeBuffers.forEach((b) => b.reset());
   }
 
   snapshot(start: number, stop: number): PlotSeries[] {
@@ -127,7 +131,7 @@ export class PlotBuffer {
 
     for (const [name, archivePoints] of this.archiveData) {
       const realtimeBuffer = this.realtimeBuffers.get(name)?.snapshot() || [];
-      const realtimePoints = realtimeBuffer.filter(s => s !== undefined);
+      const realtimePoints = realtimeBuffer.filter((s) => s !== undefined);
 
       // Archive sample data contains [null] points for future data (because of empty buckets)
       // Filter these out so that they don't overlap with incoming realtime.
@@ -136,8 +140,9 @@ export class PlotBuffer {
         archiveCutOff = realtimePoints[0].firstTime;
       }
 
-      let splicedPoints = archivePoints
-        .filter(s => archiveCutOff === null || s.firstTime < archiveCutOff);
+      let splicedPoints = archivePoints.filter(
+        (s) => archiveCutOff === null || s.firstTime < archiveCutOff,
+      );
 
       // Ignore realtime points if they fall outside of the visible
       // viewport (this avoids seeing a straight line between the
@@ -148,7 +153,9 @@ export class PlotBuffer {
         }
       }
 
-      splicedPoints = splicedPoints.sort((s1, s2) => s1.firstTime - s2.firstTime);
+      splicedPoints = splicedPoints.sort(
+        (s1, s2) => s1.firstTime - s2.firstTime,
+      );
       allSeries.push(splicedPoints);
     }
     return allSeries;

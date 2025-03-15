@@ -1,7 +1,17 @@
-import { ChangeDetectionStrategy, Component, Inject, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Inject,
+  OnInit,
+} from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { Parameter, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  Parameter,
+  WebappSdkModule,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
 import { Observable } from 'rxjs';
 import { debounceTime, map, switchMap } from 'rxjs/operators';
 
@@ -22,12 +32,9 @@ export interface SelectParameterOptions {
   selector: 'app-select-parameter-dialog',
   templateUrl: './select-parameter-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class SelectParameterDialogComponent implements OnInit {
-
   parameter = new UntypedFormControl(null, [Validators.required]);
 
   filteredOptions: Observable<Parameter[]>;
@@ -52,14 +59,16 @@ export class SelectParameterDialogComponent implements OnInit {
     const excludedParameters = this.data.exclude || [];
     this.filteredOptions = this.parameter.valueChanges.pipe(
       debounceTime(300),
-      switchMap(val => this.yamcs.yamcsClient.getParameters(this.yamcs.instance!, {
-        q: val,
-        limit: this.limit,
-        searchMembers: true,
-      })),
-      map(page => page.parameters || []),
-      map(candidates => {
-        return candidates.filter(candidate => {
+      switchMap((val) =>
+        this.yamcs.yamcsClient.getParameters(this.yamcs.instance!, {
+          q: val,
+          limit: this.limit,
+          searchMembers: true,
+        }),
+      ),
+      map((page) => page.parameters || []),
+      map((candidates) => {
+        return candidates.filter((candidate) => {
           for (const excludedParameter of excludedParameters) {
             const qualifiedName = utils.getMemberPath(candidate);
             if (excludedParameter === qualifiedName) {

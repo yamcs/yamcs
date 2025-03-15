@@ -5,9 +5,7 @@ import { Formatter } from '../services/formatter.service';
   name: 'hex',
 })
 export class HexPipe implements PipeTransform {
-
-  constructor(private formatter: Formatter) {
-  }
+  constructor(private formatter: Formatter) {}
 
   transform(value: string | null): string | null {
     if (!value) {

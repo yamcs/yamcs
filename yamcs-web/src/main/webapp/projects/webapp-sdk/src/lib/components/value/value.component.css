@@ -33,7 +33,7 @@ table.detail td:not(:first-child) {
 
 table {
   line-height: 1.1em;
-  font-family: 'Roboto Mono', monospace;
+  font-family: "Roboto Mono", monospace;
 }
 
 td:first-child {

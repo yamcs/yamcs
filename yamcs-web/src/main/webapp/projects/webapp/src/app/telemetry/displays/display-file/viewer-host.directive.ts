@@ -4,7 +4,5 @@ import { Directive, ViewContainerRef } from '@angular/core';
   selector: '[app-viewer-host]',
 })
 export class ViewerHostDirective {
-
-  constructor(public viewContainerRef: ViewContainerRef) {
-  }
+  constructor(public viewContainerRef: ViewContainerRef) {}
 }

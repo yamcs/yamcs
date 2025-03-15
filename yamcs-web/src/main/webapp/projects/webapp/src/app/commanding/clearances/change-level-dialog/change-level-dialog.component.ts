@@ -1,5 +1,10 @@
 import { Component, Inject } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import {
+  UntypedFormBuilder,
+  UntypedFormControl,
+  UntypedFormGroup,
+  Validators,
+} from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Clearance, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { SignificanceLevelComponent } from '../../../shared/significance-level/significance-level.component';
@@ -8,13 +13,9 @@ import { SignificanceLevelComponent } from '../../../shared/significance-level/s
   selector: 'app-change-level-dialog',
   templateUrl: './change-level-dialog.component.html',
   styleUrl: './change-level-dialog.component.css',
-  imports: [
-    WebappSdkModule,
-    SignificanceLevelComponent,
-  ],
+  imports: [WebappSdkModule, SignificanceLevelComponent],
 })
 export class ChangeLevelDialogComponent {
-
   form: UntypedFormGroup;
 
   constructor(
@@ -22,9 +23,8 @@ export class ChangeLevelDialogComponent {
     formBuilder: UntypedFormBuilder,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
-
     this.form = formBuilder.group({
-      'level': new UntypedFormControl(null, [Validators.required]),
+      level: new UntypedFormControl(null, [Validators.required]),
     });
 
     if (data.clearance) {
@@ -37,7 +37,10 @@ export class ChangeLevelDialogComponent {
 
   confirm() {
     this.dialogRef.close({
-      level: this.form.value['level'] === 'DISABLED' ? undefined : this.form.value['level'],
+      level:
+        this.form.value['level'] === 'DISABLED'
+          ? undefined
+          : this.form.value['level'],
     });
   }
 }
