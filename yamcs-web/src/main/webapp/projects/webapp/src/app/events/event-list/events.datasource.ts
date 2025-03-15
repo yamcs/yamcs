@@ -1,10 +1,15 @@
 import { DataSource } from '@angular/cdk/table';
-import { Event, EventSubscription, GetEventsOptions, Synchronizer, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  Event,
+  EventSubscription,
+  GetEventsOptions,
+  Synchronizer,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { EventBuffer } from './EventBuffer';
 
 export class EventsDataSource extends DataSource<Event> {
-
   pageSize = 100;
   offscreenRecord: Event | null;
   options: GetEventsOptions;
@@ -21,7 +26,10 @@ export class EventsDataSource extends DataSource<Event> {
   private realtimeSubscription: EventSubscription;
   private syncSubscription: Subscription;
 
-  constructor(private yamcs: YamcsService, synchronizer: Synchronizer) {
+  constructor(
+    private yamcs: YamcsService,
+    synchronizer: Synchronizer,
+  ) {
     super();
     this.syncSubscription = synchronizer.sync(() => {
       if (this.eventBuffer.dirty && !this.loading$.getValue()) {
@@ -31,7 +39,6 @@ export class EventsDataSource extends DataSource<Event> {
     });
 
     this.eventBuffer = new EventBuffer(() => {
-
       // Best solution for now, alternative is to re-establish
       // the offscreenRecord after compacting.
       this.blockHasMore = true;
@@ -66,26 +73,29 @@ export class EventsDataSource extends DataSource<Event> {
         ...options,
         limit: this.pageSize + 1, // One extra to detect hasMore
       }),
-    ]).then(results => {
-      const sources = results[0];
-      const events = results[1];
+    ])
+      .then((results) => {
+        const sources = results[0];
+        const events = results[1];
 
-      this.eventBuffer.reset();
-      this.blockHasMore = false;
-      this.eventBuffer.addArchiveData(events);
+        this.eventBuffer.reset();
+        this.blockHasMore = false;
+        this.eventBuffer.addArchiveData(events);
 
-      this.sources$.next(sources);
+        this.sources$.next(sources);
 
-      // Quick emit, don't wait on sync tick
-      this.emitEvents();
+        // Quick emit, don't wait on sync tick
+        this.emitEvents();
 
-      return events;
-    }).catch(err => {
-      this.eventBuffer.reset();
-      throw err;
-    }).finally(() => {
-      this.loading$.next(false);
-    });
+        return events;
+      })
+      .catch((err) => {
+        this.eventBuffer.reset();
+        throw err;
+      })
+      .finally(() => {
+        this.loading$.next(false);
+      });
   }
 
   hasMore() {
@@ -100,15 +110,17 @@ export class EventsDataSource extends DataSource<Event> {
    */
   private loadPage(options: GetEventsOptions) {
     this.options = options;
-    return this.yamcs.yamcsClient.getEvents(this.yamcs.instance!, options).then(events => {
-      if (events.length > this.pageSize) {
-        events.splice(events.length - 1, 1);
-        this.offscreenRecord = events[events.length - 1];
-      } else {
-        this.offscreenRecord = null;
-      }
-      return events;
-    });
+    return this.yamcs.yamcsClient
+      .getEvents(this.yamcs.instance!, options)
+      .then((events) => {
+        if (events.length > this.pageSize) {
+          events.splice(events.length - 1, 1);
+          this.offscreenRecord = events[events.length - 1];
+        } else {
+          this.offscreenRecord = null;
+        }
+        return events;
+      });
   }
 
   /**
@@ -125,7 +137,7 @@ export class EventsDataSource extends DataSource<Event> {
       ...options,
       stop: this.offscreenRecord.generationTime,
       limit: this.pageSize + 1, // One extra to detect hasMore
-    }).then(events => {
+    }).then((events) => {
       this.eventBuffer.addArchiveData(events);
 
       // Quick emit, don't wait on sync tick
@@ -135,15 +147,18 @@ export class EventsDataSource extends DataSource<Event> {
 
   startStreaming() {
     this.streaming$.next(true);
-    this.realtimeSubscription = this.yamcs.yamcsClient.createEventSubscription({
-      instance: this.yamcs.instance!,
-      filter: this.options.filter,
-    }, event => {
-      this.addEventSource(event);
-      if (!this.loading$.getValue() && this.matchesFilter(event)) {
-        this.eventBuffer.addRealtimeEvent(event);
-      }
-    });
+    this.realtimeSubscription = this.yamcs.yamcsClient.createEventSubscription(
+      {
+        instance: this.yamcs.instance!,
+        filter: this.options.filter,
+      },
+      (event) => {
+        this.addEventSource(event);
+        if (!this.loading$.getValue() && this.matchesFilter(event)) {
+          this.eventBuffer.addRealtimeEvent(event);
+        }
+      },
+    );
   }
 
   private addEventSource(event: Event) {
@@ -157,10 +172,11 @@ export class EventsDataSource extends DataSource<Event> {
       }
     }
 
-    this.sources$.next([
-      ...this.sources$.value,
-      event.source,
-    ].sort((a, b) => a.toLowerCase().localeCompare(b.toLocaleLowerCase())));
+    this.sources$.next(
+      [...this.sources$.value, event.source].sort((a, b) =>
+        a.toLowerCase().localeCompare(b.toLocaleLowerCase()),
+      ),
+    );
   }
 
   private matchesFilter(event: Event) {

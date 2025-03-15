@@ -13,7 +13,6 @@ export interface FormatValueOptions {
 
 @Injectable({ providedIn: 'root' })
 export class Formatter {
-
   private timezone: string;
   private DT_FMT_LONG = 'yyyy-MM-dd HH:mm:ss.SSS';
   private DT_FMT_LONG_TZ = 'yyyy-MM-dd HH:mm:ss.SSS zzz';
@@ -42,7 +41,12 @@ export class Formatter {
       // is used.
       //
       // For example: en-US would not display CEST but GMT+2.
-      return formatInTimeZone(date, this.timezone, this.DT_FMT_LONG_TZ, FNS_OPTS);
+      return formatInTimeZone(
+        date,
+        this.timezone,
+        this.DT_FMT_LONG_TZ,
+        FNS_OPTS,
+      );
     } else {
       return formatInTimeZone(date, this.timezone, this.DT_FMT_LONG, FNS_OPTS);
     }
@@ -57,7 +61,13 @@ export class Formatter {
           if (i !== 0) {
             preview += ', ';
           }
-          preview += value.aggregateValue.name[i] + ': ' + this.formatValueWithoutPreview(value.aggregateValue.value[i], options);
+          preview +=
+            value.aggregateValue.name[i] +
+            ': ' +
+            this.formatValueWithoutPreview(
+              value.aggregateValue.value[i],
+              options,
+            );
         }
         if (n < value.aggregateValue.value.length) {
           preview += `, …`;
@@ -73,7 +83,10 @@ export class Formatter {
           if (i !== 0) {
             preview += ', ';
           }
-          preview += this.formatValueWithoutPreview(value.arrayValue[i], options);
+          preview += this.formatValueWithoutPreview(
+            value.arrayValue[i],
+            options,
+          );
         }
         if (n < value.arrayValue.length) {
           preview += ', …';
@@ -88,7 +101,10 @@ export class Formatter {
     }
   }
 
-  private formatValueWithoutPreview(value: Value, options?: FormatValueOptions): string {
+  private formatValueWithoutPreview(
+    value: Value,
+    options?: FormatValueOptions,
+  ): string {
     switch (value.type) {
       case 'AGGREGATE':
         return '{…}';
@@ -106,7 +122,10 @@ export class Formatter {
         return '' + value.sint32Value;
       case 'BINARY':
         if (options?.maxBytes !== undefined) {
-          return this.formatHexPreview('' + value.binaryValue, options.maxBytes);
+          return this.formatHexPreview(
+            '' + value.binaryValue,
+            options.maxBytes,
+          );
         } else {
           return this.formatHexPreview('' + value.binaryValue);
         }
@@ -164,7 +183,7 @@ export class Formatter {
         lineAscii += '.';
       }
 
-      result += (hex.length === 2 ? hex : '0' + hex);
+      result += hex.length === 2 ? hex : '0' + hex;
       if ((i + 1) % 2 === 0) {
         result += ' ';
       }

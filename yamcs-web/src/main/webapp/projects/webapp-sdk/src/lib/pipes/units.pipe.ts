@@ -6,7 +6,6 @@ import { getUnits } from '../utils';
   name: 'units',
 })
 export class UnitsPipe implements PipeTransform {
-
   transform(unitSet?: UnitInfo[]): string | null {
     return getUnits(unitSet);
   }

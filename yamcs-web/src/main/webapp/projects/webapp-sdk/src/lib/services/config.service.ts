@@ -26,7 +26,7 @@ export interface WebsiteConfig {
   tmArchive: boolean;
   utc: boolean;
   siteLinks: SiteLink[];
-  extra: { [key: string]: { [key: string]: any; }; };
+  extra: { [key: string]: { [key: string]: any } };
 }
 
 export interface EventsConfig {
@@ -64,7 +64,6 @@ export interface ExtraColumnInfo extends YaColumnInfo {
 
 @Injectable({ providedIn: 'root' })
 export class ConfigService {
-
   private websiteConfig: WebsiteConfig;
   private instanceConfig: InstanceConfig;
 

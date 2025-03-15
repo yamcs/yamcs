@@ -12,7 +12,7 @@ const wsProxy = createProxyMiddleware({
   changeOrigin: true,
   headers: {
     'X-Remote-User': 'admin',
-  }
+  },
 });
 
 app.use('/', wsProxy);

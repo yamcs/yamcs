@@ -2,7 +2,6 @@ import { Drawable, Graphics, Path, Timeline } from '@fqqb/timeline';
 import { ReplayRequest } from '@yamcs/webapp-sdk';
 
 export class ReplayOverlay extends Drawable {
-
   private pattern;
 
   private _replayRequest?: ReplayRequest;
@@ -35,8 +34,12 @@ export class ReplayOverlay extends Drawable {
     const { start, stop, endAction } = this.replayRequest;
 
     if (start && stop) {
-      const x1 = Math.round(this.timeline.positionTime(new Date(start).getTime()));
-      const x2 = Math.round(this.timeline.positionTime(new Date(stop).getTime()));
+      const x1 = Math.round(
+        this.timeline.positionTime(new Date(start).getTime()),
+      );
+      const x2 = Math.round(
+        this.timeline.positionTime(new Date(stop).getTime()),
+      );
       g.fillRect({
         x: x1 + 0.5,
         y: 0,
@@ -72,7 +75,9 @@ export class ReplayOverlay extends Drawable {
     }
   }
 
-  get replayRequest() { return this._replayRequest; }
+  get replayRequest() {
+    return this._replayRequest;
+  }
   set replayRequest(replayRequest) {
     this._replayRequest = replayRequest;
     this.reportMutation();

@@ -1,17 +1,19 @@
-@use '@angular/material' as mat;
+@use "@angular/material" as mat;
 
 @include mat.core();
 
-$ya-theme: mat.define-theme((
-  color: (
-    theme-type: light,
-    primary: mat.$azure-palette,
-    tertiary: mat.$blue-palette,
-  ),
-  density: (
-    scale: 0,
+$ya-theme: mat.define-theme(
+  (
+    color: (
+      theme-type: light,
+      primary: mat.$azure-palette,
+      tertiary: mat.$blue-palette,
+    ),
+    density: (
+      scale: 0,
+    ),
   )
-));
+);
 
 :root {
   @include mat.all-component-themes($ya-theme);
@@ -28,7 +30,7 @@ $ya-theme: mat.define-theme((
 
     --mdc-text-button-label-text-size: 14px;
     --mdc-text-button-label-text-weight: 400;
-    --mdc-text-button-label-text-tracking: .0892857143em;
+    --mdc-text-button-label-text-tracking: 0.0892857143em;
     --mat-text-button-state-layer-color: #009e87;
     --mdc-text-button-label-text-color: #009e87;
     --mdc-icon-button-icon-color: #009e87;
@@ -52,11 +54,14 @@ $ya-theme: mat.define-theme((
     --mat-tab-header-inactive-label-text-color: rgba(0, 0, 0, 0.6);
     --mat-tab-header-inactive-focus-label-text-color: rgba(0, 0, 0, 0.6);
     --mat-tab-header-inactive-hover-label-text-color: rgba(0, 0, 0, 0.6);
-    --mat-tab-header-label-text-tracking: .0892857143em;
+    --mat-tab-header-label-text-tracking: 0.0892857143em;
 
     --mdc-dialog-container-color: #fff;
     --mdc-dialog-container-shape: 10px;
-    --mat-dialog-container-elevation-shadow: 0px 11px 15px -7px rgba(0, 0, 0, .2), 0px 24px 38px 3px rgba(0, 0, 0, .14), 0px 9px 46px 8px rgba(0, 0, 0, .12);
+    --mat-dialog-container-elevation-shadow:
+      0px 11px 15px -7px rgba(0, 0, 0, 0.2),
+      0px 24px 38px 3px rgba(0, 0, 0, 0.14),
+      0px 9px 46px 8px rgba(0, 0, 0, 0.12);
     --mat-dialog-container-max-width: 60vw;
     --mat-dialog-actions-padding: 16px 24px;
     --mat-dialog-content-padding: 20px 24px;
@@ -103,11 +108,13 @@ $ya-theme: mat.define-theme((
     --mat-datepicker-calendar-date-today-selected-state-outline-color: #009e97;
     --mat-datepicker-calendar-date-today-outline-color: #009e97;
     --mat-datepicker-calendar-container-background-color: #fff;
-    --mat-datepicker-calendar-container-elevation-shadow: 0px 2px 4px -1px rgba(0, 0, 0, .2), 0px 4px 5px 0px rgba(0, 0, 0, .14), 0px 1px 10px 0px rgba(0, 0, 0, .12);
+    --mat-datepicker-calendar-container-elevation-shadow:
+      0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0.14),
+      0px 1px 10px 0px rgba(0, 0, 0, 0.12);
 
     --mat-toolbar-container-background-color: var(--y-background-color);
     --mat-toolbar-title-text-size: 20px;
-    --mat-toolbar-title-text-tracking: .0125em;
+    --mat-toolbar-title-text-tracking: 0.0125em;
   }
 }
 
@@ -119,7 +126,10 @@ $ya-theme: mat.define-theme((
 //@include mat.color-variants-backwards-compatibility($ya-theme);
 
 .mat-mdc-menu-panel {
-  box-shadow: 0 5px 5px -3px #0003, 0 8px 10px 1px #00000024, 0 3px 14px 2px #0000001f;
+  box-shadow:
+    0 5px 5px -3px #0003,
+    0 8px 10px 1px #00000024,
+    0 3px 14px 2px #0000001f;
 }
 
 .mat-mdc-dialog-title {
@@ -130,7 +140,7 @@ $ya-theme: mat.define-theme((
   display: none !important;
 }
 
-.mat-mdc-dialog-container .mat-mdc-dialog-title+.mat-mdc-dialog-content {
+.mat-mdc-dialog-container .mat-mdc-dialog-title + .mat-mdc-dialog-content {
   padding-top: 12px !important;
 }
 

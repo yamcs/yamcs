@@ -10,7 +10,6 @@ export type WatermarkObserver = () => void;
  * and realtime values are connected. Both sets are joined and sorted under all conditions.
  */
 export class CommandHistoryBuffer {
-
   public dirty = false;
 
   private archiveRecords: CommandHistoryRecord[] = [];
@@ -33,7 +32,11 @@ export class CommandHistoryBuffer {
   addRealtimeCommand(entry: CommandHistoryEntry) {
     if (this.pointer < this.bufferSize) {
       this.realtimeBuffer[this.pointer] = entry;
-      if (this.pointer >= this.bufferWatermark && this.watermarkObserver && !this.alreadyWarned) {
+      if (
+        this.pointer >= this.bufferWatermark &&
+        this.watermarkObserver &&
+        !this.alreadyWarned
+      ) {
         this.alreadyWarned = true;
         this.watermarkObserver();
       }
@@ -53,14 +56,15 @@ export class CommandHistoryBuffer {
   snapshot(): CommandHistoryRecord[] {
     const splicedRecords = [...this.archiveRecords];
 
-    this.realtimeBuffer.map(entry => {
+    this.realtimeBuffer.map((entry) => {
       if (!entry) return;
 
-      const existingIndex = splicedRecords.findIndex(r => r.id == entry.id);
+      const existingIndex = splicedRecords.findIndex((r) => r.id == entry.id);
       if (existingIndex === -1) {
         splicedRecords.push(new CommandHistoryRecord(entry));
       } else {
-        splicedRecords[existingIndex] = splicedRecords[existingIndex].mergeEntry(entry);
+        splicedRecords[existingIndex] =
+          splicedRecords[existingIndex].mergeEntry(entry);
       }
     });
 
@@ -69,7 +73,7 @@ export class CommandHistoryBuffer {
       if (res === 0) {
         res = -r1.origin.localeCompare(r2.origin);
       }
-      return res !== 0 ? res : (r2.sequenceNumber - r1.sequenceNumber);
+      return res !== 0 ? res : r2.sequenceNumber - r1.sequenceNumber;
     });
     return splicedRecords;
   }

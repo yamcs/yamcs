@@ -1,5 +1,17 @@
-import { ChangeDetectionStrategy, Component, Input, OnChanges, OnDestroy } from '@angular/core';
-import { Link, OFF_COLOR, ON_COLOR, Synchronizer, WebappSdkModule } from '@yamcs/webapp-sdk';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnChanges,
+  OnDestroy,
+} from '@angular/core';
+import {
+  Link,
+  OFF_COLOR,
+  ON_COLOR,
+  Synchronizer,
+  WebappSdkModule,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -10,12 +22,9 @@ const EXPIRY = 2000;
   templateUrl: './link-status.component.html',
   styleUrl: './link-status.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class LinkStatusComponent implements OnChanges, OnDestroy {
-
   @Input()
   link: Link;
 
@@ -26,7 +35,7 @@ export class LinkStatusComponent implements OnChanges, OnDestroy {
   private prevOutCount = -1;
   active$ = new BehaviorSubject<boolean>(false);
   okColor$ = this.active$.pipe(
-    map(active => active ? ON_COLOR : OFF_COLOR),
+    map((active) => (active ? ON_COLOR : OFF_COLOR)),
   );
   private activeExpiration = -1;
 
@@ -44,8 +53,10 @@ export class LinkStatusComponent implements OnChanges, OnDestroy {
 
   ngOnChanges() {
     if (this.link.status === 'OK') {
-      const activeIn = this.prevInCount !== -1 && this.prevInCount < this.link.dataInCount;
-      const activeOut = this.prevOutCount !== -1 && this.prevOutCount < this.link.dataOutCount;
+      const activeIn =
+        this.prevInCount !== -1 && this.prevInCount < this.link.dataInCount;
+      const activeOut =
+        this.prevOutCount !== -1 && this.prevOutCount < this.link.dataOutCount;
       if (activeIn || activeOut) {
         this.active$.next(true);
         this.activeExpiration = new Date().getTime() + EXPIRY;

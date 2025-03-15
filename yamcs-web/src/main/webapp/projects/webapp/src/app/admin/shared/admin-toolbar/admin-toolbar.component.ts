@@ -6,9 +6,6 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
   templateUrl: './admin-toolbar.component.html',
   styleUrl: './admin-toolbar.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
-export class AdminToolbarComponent {
-}
+export class AdminToolbarComponent {}

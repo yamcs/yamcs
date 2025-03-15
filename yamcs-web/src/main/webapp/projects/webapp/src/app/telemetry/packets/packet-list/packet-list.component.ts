@@ -2,7 +2,17 @@ import { Clipboard } from '@angular/cdk/clipboard';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { BaseComponent, DownloadPacketsOptions, GetPacketsOptions, Packet, WebappSdkModule, YaColumnInfo, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  BaseComponent,
+  DownloadPacketsOptions,
+  GetPacketsOptions,
+  Packet,
+  WebappSdkModule,
+  YaColumnInfo,
+  YaSelectOption,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { HexComponent } from '../../../shared/hex/hex.component';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
@@ -25,7 +35,6 @@ const defaultInterval = 'PT1H';
   ],
 })
 export class PacketListComponent extends BaseComponent {
-
   columns: YaColumnInfo[] = [
     { id: 'packetName', label: 'Packet name', alwaysVisible: true },
     { id: 'generationTime', label: 'Generation time', alwaysVisible: true },
@@ -90,14 +99,14 @@ export class PacketListComponent extends BaseComponent {
 
     this.dataSource = new PacketsDataSource(this.yamcs, this.synchronizer);
 
-    yamcs.yamcsClient.getPacketNames(yamcs.instance!).then(message => {
+    yamcs.yamcsClient.getPacketNames(yamcs.instance!).then((message) => {
       for (const name of message.packets || []) {
         this.nameOptions$.next([
           ...this.nameOptions$.value,
           {
             id: name,
             label: name,
-          }
+          },
         ]);
       }
       for (const name of message.links || []) {
@@ -106,7 +115,7 @@ export class PacketListComponent extends BaseComponent {
           {
             id: name,
             label: name,
-          }
+          },
         ]);
       }
     });
@@ -114,22 +123,26 @@ export class PacketListComponent extends BaseComponent {
     this.initializeOptions();
     this.loadData();
 
-    this.filterForm.get('name')!.valueChanges.forEach(name => {
-      this.name = (name !== 'ANY') ? name : null;
+    this.filterForm.get('name')!.valueChanges.forEach((name) => {
+      this.name = name !== 'ANY' ? name : null;
       this.loadData();
     });
 
-    this.filterForm.get('link')!.valueChanges.forEach(link => {
-      this.link = (link !== 'ANY') ? link : null;
+    this.filterForm.get('link')!.valueChanges.forEach((link) => {
+      this.link = link !== 'ANY' ? link : null;
       this.loadData();
     });
 
-    this.filterForm.get('interval')!.valueChanges.forEach(nextInterval => {
+    this.filterForm.get('interval')!.valueChanges.forEach((nextInterval) => {
       if (nextInterval === 'CUSTOM') {
         const customStart = this.validStart || this.yamcs.getMissionTime();
         const customStop = this.validStop || this.yamcs.getMissionTime();
-        this.filterForm.get('customStart')!.setValue(utils.toISOString(customStart));
-        this.filterForm.get('customStop')!.setValue(utils.toISOString(customStop));
+        this.filterForm
+          .get('customStart')!
+          .setValue(utils.toISOString(customStart));
+        this.filterForm
+          .get('customStop')!
+          .setValue(utils.toISOString(customStop));
       } else if (nextInterval === 'NO_LIMIT') {
         this.validStart = null;
         this.validStop = null;
@@ -169,7 +182,10 @@ export class PacketListComponent extends BaseComponent {
         this.validStop = null;
       } else {
         this.validStop = this.yamcs.getMissionTime();
-        this.validStart = utils.subtractDuration(this.validStop, this.appliedInterval);
+        this.validStart = utils.subtractDuration(
+          this.validStop,
+          this.appliedInterval,
+        );
       }
     } else {
       this.appliedInterval = defaultInterval;
@@ -234,8 +250,11 @@ export class PacketListComponent extends BaseComponent {
       dlOptions.link = this.link;
     }
 
-    this.dataSource.loadEntries('realtime', options).then(packets => {
-      const downloadURL = this.yamcs.yamcsClient.getPacketsDownloadURL(this.yamcs.instance!, dlOptions);
+    this.dataSource.loadEntries('realtime', options).then((packets) => {
+      const downloadURL = this.yamcs.yamcsClient.getPacketsDownloadURL(
+        this.yamcs.instance!,
+        dlOptions,
+      );
       this.downloadURL$.next(downloadURL);
     });
   }
@@ -256,25 +275,29 @@ export class PacketListComponent extends BaseComponent {
   }
 
   copyHex(packet: Packet) {
-    this.fetchPacket(packet).then(packetDetail => {
-      const hex = utils.convertBase64ToHex(packetDetail.packet ?? '');
-      if (this.clipboard.copy(hex)) {
-        this.messageService.showInfo('Hex copied');
-      } else {
-        this.messageService.showInfo('Hex copy failed');
-      }
-    }).catch(err => this.messageService.showError(err));
+    this.fetchPacket(packet)
+      .then((packetDetail) => {
+        const hex = utils.convertBase64ToHex(packetDetail.packet ?? '');
+        if (this.clipboard.copy(hex)) {
+          this.messageService.showInfo('Hex copied');
+        } else {
+          this.messageService.showInfo('Hex copy failed');
+        }
+      })
+      .catch((err) => this.messageService.showError(err));
   }
 
   copyBinary(packet: Packet) {
-    this.fetchPacket(packet).then(packetDetail => {
-      const raw = window.atob(packetDetail.packet ?? '');
-      if (this.clipboard.copy(raw)) {
-        this.messageService.showInfo('Binary copied');
-      } else {
-        this.messageService.showInfo('Binary copy failed');
-      }
-    }).catch(err => this.messageService.showError(err));
+    this.fetchPacket(packet)
+      .then((packetDetail) => {
+        const raw = window.atob(packetDetail.packet ?? '');
+        if (this.clipboard.copy(raw)) {
+          this.messageService.showInfo('Binary copied');
+        } else {
+          this.messageService.showInfo('Binary copy failed');
+        }
+      })
+      .catch((err) => this.messageService.showError(err));
   }
 
   private updateURL() {
@@ -285,46 +308,63 @@ export class PacketListComponent extends BaseComponent {
         name: this.name || null,
         link: this.link || null,
         interval: this.appliedInterval,
-        customStart: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStart'] : null,
-        customStop: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStop'] : null,
+        customStart:
+          this.appliedInterval === 'CUSTOM'
+            ? this.filterForm.value['customStart']
+            : null,
+        customStop:
+          this.appliedInterval === 'CUSTOM'
+            ? this.filterForm.value['customStop']
+            : null,
       },
       queryParamsHandling: 'merge',
     });
   }
 
   selectPacket(packet: Packet) {
-    this.fetchPacket(packet).then(packetDetail => {
-      this.detailPacket$.next(packetDetail);
-      this.openDetailPane();
-    }).catch(err => this.messageService.showError(err));
+    this.fetchPacket(packet)
+      .then((packetDetail) => {
+        this.detailPacket$.next(packetDetail);
+        this.openDetailPane();
+      })
+      .catch((err) => this.messageService.showError(err));
   }
 
   private fetchPacket(packet: Packet) {
     // Fetch the full detail of a packet, which includes the binary
     return this.yamcs.yamcsClient.getPacket(
-      this.yamcs.instance!, packet.id.name, packet.generationTime, packet.sequenceNumber);
+      this.yamcs.instance!,
+      packet.id.name,
+      packet.generationTime,
+      packet.sequenceNumber,
+    );
   }
 
   extractPacket(packet: Packet) {
-    this.router.navigate([
-      '/telemetry/packets' + packet.id.name,
-      '-',
-      'log',
-      packet.generationTime,
-      packet.sequenceNumber,
-    ], {
-      queryParams: {
-        c: this.yamcs.context,
-      }
-    });
+    this.router.navigate(
+      [
+        '/telemetry/packets' + packet.id.name,
+        '-',
+        'log',
+        packet.generationTime,
+        packet.sequenceNumber,
+      ],
+      {
+        queryParams: {
+          c: this.yamcs.context,
+        },
+      },
+    );
   }
 
   isSelected(packet: Packet) {
     const detail = this.detailPacket$.value;
     if (detail) {
-      return packet.id.name === detail.id.name
-        && packet.generationTime === detail.generationTime
-        && packet.sequenceNumber === detail.sequenceNumber;
+      return (
+        packet.id.name === detail.id.name &&
+        packet.generationTime === detail.generationTime &&
+        packet.sequenceNumber === detail.sequenceNumber
+      );
     }
     return false;
   }

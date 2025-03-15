@@ -10,7 +10,9 @@
     "build-lib": "ng build webapp-sdk",
     "pack-lib": "cd dist/webapp-sdk; npm pack",
     "publish-lib": "cd dist/webapp-sdk; npm publish",
-    "watch-lib": "ng build webapp-sdk --watch --configuration development"
+    "watch-lib": "ng build webapp-sdk --watch --configuration development",
+    "prettier:check": "prettier --check .",
+    "prettier:write": "prettier --check --write ."
   },
   "private": true,
   "dependencies": {

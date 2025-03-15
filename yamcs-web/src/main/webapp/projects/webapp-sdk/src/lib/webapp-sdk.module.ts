@@ -216,7 +216,6 @@ const sharedComponents = [
   YaWarningMessage,
 ];
 
-
 const materialModules = [
   OverlayModule,
   CdkTableModule,
@@ -261,4 +260,4 @@ const materialModules = [
     pipes,
   ],
 })
-export class WebappSdkModule { }
+export class WebappSdkModule {}

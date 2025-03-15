@@ -17,58 +17,79 @@ import { ParameterTypeComponent } from './parameter-types/parameter-type/paramet
 import { ParameterListComponent } from './parameters/parameter-list/parameter-list.component';
 import { ParameterComponent } from './parameters/parameter/parameter.component';
 
-export const ROUTES: Routes = [{
-  path: '',
-  canActivate: [authGuardFn, attachContextGuardFn, mayGetMissionDatabaseGuardFn],
-  canActivateChild: [authGuardChildFn, mayGetMissionDatabaseGuardFn],
-  component: InstancePageComponent,
-  children: [{
+export const ROUTES: Routes = [
+  {
     path: '',
-    pathMatch: 'full',
-    component: OverviewComponent,
-  }, {
-    path: 'algorithms',
-    pathMatch: 'full',
-    component: AlgorithmListComponent,
-  }, {
-    path: 'algorithms/:qualifiedName',
-    component: AlgorithmComponent,
-  }, {
-    path: 'commands',
-    pathMatch: 'full',
-    component: CommandListComponent,
-  }, {
-    path: 'commands/:qualifiedName',
-    component: CommandComponent,
-  }, {
-    path: 'containers',
-    pathMatch: 'full',
-    component: ContainerListComponent,
-  }, {
-    path: 'containers/:qualifiedName',
-    component: ContainerComponent,
-  }, {
-    path: 'parameters',
-    pathMatch: 'full',
-    component: ParameterListComponent,
-  }, {
-    path: 'parameters/:qualifiedName',
-    component: ParameterComponent,
-  }, {
-    path: 'parameter-types',
-    pathMatch: 'full',
-    component: ParameterTypesComponent,
-  }, {
-    path: 'parameter-types/:qualifiedName',
-    component: ParameterTypeComponent,
-  }, {
-    path: 'ext',
-    canActivate: [authGuardFn, attachContextGuardFn],
-    canActivateChild: [authGuardChildFn],
-    runGuardsAndResolvers: 'always',
-    children: [{
-      matcher: extensionMatcher,
-      component: ExtensionComponent,
-    }]
-  }]
-}];
+    canActivate: [
+      authGuardFn,
+      attachContextGuardFn,
+      mayGetMissionDatabaseGuardFn,
+    ],
+    canActivateChild: [authGuardChildFn, mayGetMissionDatabaseGuardFn],
+    component: InstancePageComponent,
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        component: OverviewComponent,
+      },
+      {
+        path: 'algorithms',
+        pathMatch: 'full',
+        component: AlgorithmListComponent,
+      },
+      {
+        path: 'algorithms/:qualifiedName',
+        component: AlgorithmComponent,
+      },
+      {
+        path: 'commands',
+        pathMatch: 'full',
+        component: CommandListComponent,
+      },
+      {
+        path: 'commands/:qualifiedName',
+        component: CommandComponent,
+      },
+      {
+        path: 'containers',
+        pathMatch: 'full',
+        component: ContainerListComponent,
+      },
+      {
+        path: 'containers/:qualifiedName',
+        component: ContainerComponent,
+      },
+      {
+        path: 'parameters',
+        pathMatch: 'full',
+        component: ParameterListComponent,
+      },
+      {
+        path: 'parameters/:qualifiedName',
+        component: ParameterComponent,
+      },
+      {
+        path: 'parameter-types',
+        pathMatch: 'full',
+        component: ParameterTypesComponent,
+      },
+      {
+        path: 'parameter-types/:qualifiedName',
+        component: ParameterTypeComponent,
+      },
+      {
+        path: 'ext',
+        canActivate: [authGuardFn, attachContextGuardFn],
+        canActivateChild: [authGuardChildFn],
+        runGuardsAndResolvers: 'always',
+        children: [
+          {
+            matcher: extensionMatcher,
+            component: ExtensionComponent,
+          },
+        ],
+      },
+    ],
+  },
+];

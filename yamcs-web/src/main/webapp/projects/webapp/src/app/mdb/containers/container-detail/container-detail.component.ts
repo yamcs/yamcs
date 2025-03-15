@@ -6,16 +6,11 @@ import { MarkdownComponent } from '../../../shared/markdown/markdown.component';
   selector: 'app-container-detail',
   templateUrl: './container-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    MarkdownComponent,
-    WebappSdkModule,
-  ],
+  imports: [MarkdownComponent, WebappSdkModule],
 })
 export class ContainerDetailComponent {
-
   @Input()
   container: Container;
 
-  constructor(readonly yamcs: YamcsService) {
-  }
+  constructor(readonly yamcs: YamcsService) {}
 }

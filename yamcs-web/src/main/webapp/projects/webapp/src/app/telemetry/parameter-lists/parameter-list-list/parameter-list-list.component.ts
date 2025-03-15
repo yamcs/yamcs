@@ -1,9 +1,18 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+} from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MessageService, ParameterList, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  MessageService,
+  ParameterList,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { AuthService } from '../../../core/services/AuthService';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
@@ -18,14 +27,9 @@ import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/insta
   ],
 })
 export class ParameterListListComponent implements AfterViewInit {
-
   filterControl = new UntypedFormControl();
 
-  displayedColumns = [
-    'name',
-    'description',
-    'actions',
-  ];
+  displayedColumns = ['name', 'description', 'actions'];
   dataSource = new MatTableDataSource<ParameterList>();
 
   constructor(
@@ -59,13 +63,18 @@ export class ParameterListListComponent implements AfterViewInit {
   }
 
   mayManageParameterLists() {
-    return this.authService.getUser()!.hasSystemPrivilege('ManageParameterLists');
+    return this.authService
+      .getUser()!
+      .hasSystemPrivilege('ManageParameterLists');
   }
 
   private refresh() {
-    this.yamcs.yamcsClient.getParameterLists(this.yamcs.instance!).then(plists => {
-      this.dataSource.data = plists;
-    }).catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .getParameterLists(this.yamcs.instance!)
+      .then((plists) => {
+        this.dataSource.data = plists;
+      })
+      .catch((err) => this.messageService.showError(err));
   }
 
   private updateURL() {
@@ -82,9 +91,10 @@ export class ParameterListListComponent implements AfterViewInit {
 
   deleteList(list: ParameterList) {
     if (confirm(`Are you sure you want to delete the list '${list.name}'`)) {
-      this.yamcs.yamcsClient.deleteParameterList(this.yamcs.instance!, list.id)
+      this.yamcs.yamcsClient
+        .deleteParameterList(this.yamcs.instance!, list.id)
         .then(() => this.refresh())
-        .catch(err => this.messageService.showError(err));
+        .catch((err) => this.messageService.showError(err));
     }
   }
 }

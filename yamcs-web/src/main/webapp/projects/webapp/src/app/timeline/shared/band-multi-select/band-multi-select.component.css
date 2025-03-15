@@ -1,25 +1,31 @@
-.bands-from, .bands-to {
+.bands-from,
+.bands-to {
   border: 1px solid #d3d3d3;
   flex: 1 1 auto;
 }
 
-.bands-from th, .bands-to th {
+.bands-from th,
+.bands-to th {
   text-align: center;
 }
 
-.bands-from td, .bands-to td {
+.bands-from td,
+.bands-to td {
   cursor: pointer;
 }
 
-.bands-from table, .bands-to table {
+.bands-from table,
+.bands-to table {
   border-left: none;
   border-right: none;
 }
 
-.bands-from th, .bands-to th {
+.bands-from th,
+.bands-to th {
   border-top: none;
 }
 
-.bands-from tr:last-of-type td, .bands-to tr:last-of-type {
+.bands-from tr:last-of-type td,
+.bands-to tr:last-of-type {
   border-bottom: none;
 }

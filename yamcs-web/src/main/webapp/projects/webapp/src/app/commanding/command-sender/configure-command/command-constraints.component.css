@@ -1,5 +1,5 @@
 .evaluation {
-  font-family: 'Roboto Mono', monospace;
+  font-family: "Roboto Mono", monospace;
   background-color: #ffeef0;
   color: red;
   padding-left: 2px;
@@ -16,5 +16,5 @@ th {
 }
 
 p {
-  color: rgba(0, 0, 0, 0.654)
+  color: rgba(0, 0, 0, 0.654);
 }

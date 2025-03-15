@@ -128,14 +128,16 @@ export interface CommandOption {
   help: string;
 }
 
-export type ServiceState = 'NEW'
+export type ServiceState =
+  | 'NEW'
   | 'STARTING'
   | 'RUNNING'
   | 'STOPPING'
   | 'TERMINATED'
   | 'FAILED';
 
-export type InstanceState = 'OFFLINE'
+export type InstanceState =
+  | 'OFFLINE'
   | 'INITIALIZING'
   | 'INITIALIZED'
   | 'STARTING'
@@ -147,11 +149,11 @@ export interface Instance {
   name: string;
   state: InstanceState;
   processors: Processor[];
-  labels?: { [key: string]: string; };
+  labels?: { [key: string]: string };
   missionTime: string;
   capabilities: string[];
   template?: string;
-  templateArgs?: { [key: string]: string; };
+  templateArgs?: { [key: string]: string };
   templateAvailable: boolean;
   templateChanged: boolean;
 }
@@ -388,7 +390,7 @@ export interface ObjectInfo {
   name: string;
   created: string;
   size: number;
-  metadata: { [key: string]: string; };
+  metadata: { [key: string]: string };
 }
 
 export interface CreateBucketRequest {

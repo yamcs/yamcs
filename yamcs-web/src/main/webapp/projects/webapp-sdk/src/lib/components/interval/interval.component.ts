@@ -1,5 +1,10 @@
 import { AsyncPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnChanges,
+} from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
 export type RangeForm = 'inside' | 'outside';
@@ -8,12 +13,9 @@ export type RangeForm = 'inside' | 'outside';
   selector: 'ya-interval',
   templateUrl: './interval.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AsyncPipe,
-  ],
+  imports: [AsyncPipe],
 })
 export class YaInterval implements OnChanges {
-
   @Input()
   left: number;
 
@@ -35,13 +37,19 @@ export class YaInterval implements OnChanges {
   interval$ = new BehaviorSubject<string | null>(null);
 
   ngOnChanges() {
-    const result = this.outside ? this.printOutsideForm() : this.printInsideForm();
+    const result = this.outside
+      ? this.printOutsideForm()
+      : this.printInsideForm();
     this.interval$.next(result);
   }
 
   private printInsideForm() {
     let result;
-    if (this.singleValueIfEqual && this.left !== undefined && this.left === this.right) {
+    if (
+      this.singleValueIfEqual &&
+      this.left !== undefined &&
+      this.left === this.right
+    ) {
       result = String(this.left);
     } else {
       result = '(-∞';

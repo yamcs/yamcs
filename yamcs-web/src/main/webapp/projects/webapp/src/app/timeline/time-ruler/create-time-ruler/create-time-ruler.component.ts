@@ -1,6 +1,14 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { BaseComponent, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  UntypedFormBuilder,
+  UntypedFormGroup,
+  Validators,
+} from '@angular/forms';
+import {
+  BaseComponent,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { CreateBandWizardStepComponent } from '../../create-band-wizard-step/create-band-wizard-step.component';
@@ -16,7 +24,6 @@ import { CreateBandWizardStepComponent } from '../../create-band-wizard-step/cre
   ],
 })
 export class CreateTimeRulerComponent extends BaseComponent {
-
   form: UntypedFormGroup;
 
   constructor(
@@ -38,13 +45,17 @@ export class CreateTimeRulerComponent extends BaseComponent {
   onConfirm() {
     const formValue = this.form.value;
 
-    this.yamcs.yamcsClient.createTimelineBand(this.yamcs.instance!, {
-      name: formValue.name,
-      description: formValue.description,
-      type: 'TIME_RULER',
-      shared: true,
-      properties: formValue.properties,
-    }).then(() => this.router.navigateByUrl(`/timeline/bands?c=${this.yamcs.context}`))
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .createTimelineBand(this.yamcs.instance!, {
+        name: formValue.name,
+        description: formValue.description,
+        type: 'TIME_RULER',
+        shared: true,
+        properties: formValue.properties,
+      })
+      .then(() =>
+        this.router.navigateByUrl(`/timeline/bands?c=${this.yamcs.context}`),
+      )
+      .catch((err) => this.messageService.showError(err));
   }
 }

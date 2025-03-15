@@ -77,13 +77,13 @@
   grid-column: remote;
 }
 
-.buckets-column.header>label {
+.buckets-column.header > label {
   position: absolute;
   bottom: 0;
   line-height: 24px;
 }
 
-.buckets-column.header>label>a {
+.buckets-column.header > label > a {
   float: right;
 }
 
@@ -117,7 +117,7 @@ a.column-action:hover {
   align-items: flex-end;
 }
 
-.remote-column.header.no-filelist>ya-breadcrumb-trail {
+.remote-column.header.no-filelist > ya-breadcrumb-trail {
   visibility: hidden;
 }
 
@@ -142,16 +142,16 @@ ya-breadcrumb-trail {
   float: right;
 }
 
-.footer>button,
-.footer>input {
+.footer > button,
+.footer > input {
   flex-shrink: 1;
 }
 
-.footer>button {
+.footer > button {
   flex-grow: 1;
 }
 
-.footer>input {
+.footer > input {
   flex-grow: 5;
 }
 

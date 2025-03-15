@@ -4,12 +4,9 @@ import { MatMenuItem } from '@angular/material/menu';
 @Component({
   selector: 'ya-download-menu-item',
   templateUrl: './download-menu-item.component.html',
-  imports: [
-    MatMenuItem,
-  ],
+  imports: [MatMenuItem],
 })
 export class YaDownloadMenuItem {
-
   @Input()
   link: string;
 

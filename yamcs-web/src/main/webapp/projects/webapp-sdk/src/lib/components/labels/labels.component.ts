@@ -11,15 +11,11 @@ interface Entry {
 @Component({
   selector: 'ya-labels',
   templateUrl: './labels.component.html',
-  imports: [
-    AsyncPipe,
-    YaLabel
-  ],
+  imports: [AsyncPipe, YaLabel],
 })
 export class YaLabels implements OnInit {
-
   @Input()
-  dict: { [key: string]: string; };
+  dict: { [key: string]: string };
 
   sortedLabels$ = new BehaviorSubject<Entry[]>([]);
 

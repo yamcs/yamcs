@@ -26,7 +26,9 @@
   <ya-errors #err [controlName]="controlName" />
   <br />
   <ng-container [formGroup]="formGroup">
-    <input type="radio" formControlName="enabled" value="true" /> {{ type.oneStringValue }}
-    <input type="radio" formControlName="enabled" value="false" /> {{ type.zeroStringValue }}
+    <input type="radio" formControlName="enabled" value="true" />
+    {{ type.oneStringValue }}
+    <input type="radio" formControlName="enabled" value="false" />
+    {{ type.zeroStringValue }}
   </ng-container>
 </div>

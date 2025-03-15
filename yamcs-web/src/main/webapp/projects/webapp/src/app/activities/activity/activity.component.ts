@@ -1,7 +1,18 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  OnInit,
+  input,
+} from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
-import { Activity, MessageService, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  Activity,
+  MessageService,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { Observable, tap } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
@@ -22,7 +33,6 @@ import { ActivityService } from '../shared/activity.service';
   ],
 })
 export class ActivityComponent implements OnInit, OnDestroy {
-
   activityId = input.required<string>();
   activity$: Observable<Activity | null>;
 
@@ -35,11 +45,11 @@ export class ActivityComponent implements OnInit, OnDestroy {
     private activityService: ActivityService,
   ) {
     this.activity$ = activityService.activity$.pipe(
-      tap(activity => {
+      tap((activity) => {
         if (activity) {
           title.setTitle(activity.detail);
         }
-      })
+      }),
     );
   }
 
@@ -52,26 +62,33 @@ export class ActivityComponent implements OnInit, OnDestroy {
   }
 
   setSuccessful(activity: Activity) {
-    this.yamcs.yamcsClient.completeManualActivity(this.yamcs.instance!, activity.id)
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .completeManualActivity(this.yamcs.instance!, activity.id)
+      .catch((err) => this.messageService.showError(err));
   }
 
   setFailed(activity: Activity) {
-    this.dialog.open(SetFailedDialogComponent, {
-      width: '400px',
-      data: { activity },
-    }).afterClosed().subscribe(result => {
-      if (result) {
-        this.yamcs.yamcsClient.completeManualActivity(this.yamcs.instance!, activity.id, {
-          failureReason: result.failureReason,
-        }).catch(err => this.messageService.showError(err));
-      }
-    });
+    this.dialog
+      .open(SetFailedDialogComponent, {
+        width: '400px',
+        data: { activity },
+      })
+      .afterClosed()
+      .subscribe((result) => {
+        if (result) {
+          this.yamcs.yamcsClient
+            .completeManualActivity(this.yamcs.instance!, activity.id, {
+              failureReason: result.failureReason,
+            })
+            .catch((err) => this.messageService.showError(err));
+        }
+      });
   }
 
   cancelActivity(activity: Activity) {
-    this.yamcs.yamcsClient.cancelActivity(this.yamcs.instance!, activity.id)
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .cancelActivity(this.yamcs.instance!, activity.id)
+      .catch((err) => this.messageService.showError(err));
   }
 
   ngOnDestroy() {

@@ -1,6 +1,16 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+} from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
-import { AcknowledgmentInfo, WebappSdkModule, YamcsService, YaSelectOption } from '@yamcs/webapp-sdk';
+import {
+  AcknowledgmentInfo,
+  WebappSdkModule,
+  YamcsService,
+  YaSelectOption,
+} from '@yamcs/webapp-sdk';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { AdvanceAckHelpComponent } from '../advance-ack-help/advance-ack-help.component';
@@ -21,7 +31,6 @@ import { StackFileService } from '../stack-file/StackFileService';
   ],
 })
 export class StackFileSettingsComponent {
-
   objectName = input.required<string>();
 
   folderLink = computed(() => {
@@ -74,25 +83,33 @@ export class StackFileSettingsComponent {
     });
 
     const { advancement } = this.stackFileService;
-    const match = this.ackOptions.find(el => el.id === advancement.acknowledgment);
+    const match = this.ackOptions.find(
+      (el) => el.id === advancement.acknowledgment,
+    );
     const ackDefault = match ? match.id : 'custom';
     this.stackOptionsForm.setValue({
       advancementAckDropDown: ackDefault,
-      advancementAckCustom: ackDefault === 'custom' ? advancement.acknowledgment : '',
+      advancementAckCustom:
+        ackDefault === 'custom' ? advancement.acknowledgment : '',
       advancementWait: advancement.wait,
     });
 
     this.stackOptionsForm.valueChanges.subscribe((result: any) => {
       this.stackFileService.advancement = {
-        acknowledgment: result.advancementAckDropDown !== 'custom'
-          ? result.advancementAckDropDown : result.advancementAckCustom,
+        acknowledgment:
+          result.advancementAckDropDown !== 'custom'
+            ? result.advancementAckDropDown
+            : result.advancementAckCustom,
         wait: result.advancementWait ?? 0,
       };
 
       if (result.advancementAckDropDown !== 'custom') {
-        this.stackOptionsForm.patchValue({
-          'advancementAckCustom': undefined,
-        }, { emitEvent: false });
+        this.stackOptionsForm.patchValue(
+          {
+            advancementAckCustom: undefined,
+          },
+          { emitEvent: false },
+        );
       }
 
       this.stackFileService.markDirty();

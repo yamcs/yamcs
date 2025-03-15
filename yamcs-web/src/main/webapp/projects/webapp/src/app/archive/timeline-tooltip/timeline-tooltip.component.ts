@@ -5,7 +5,6 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
   styleUrl: './timeline-tooltip.component.css',
 })
 export class TimelineTooltipComponent {
-
   @ViewChild('tt', { static: true })
   tt: ElementRef<HTMLDivElement>;
 

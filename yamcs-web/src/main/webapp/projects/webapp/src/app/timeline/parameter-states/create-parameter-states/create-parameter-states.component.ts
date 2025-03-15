@@ -1,7 +1,12 @@
 import { TitleCasePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { BaseComponent, CreateTimelineBandRequest, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  BaseComponent,
+  CreateTimelineBandRequest,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { CreateBandWizardStepComponent } from '../../create-band-wizard-step/create-band-wizard-step.component';
@@ -24,7 +29,6 @@ import { propertyInfo } from '../ParameterStateBand';
   ],
 })
 export class CreateParameterStatesComponent extends BaseComponent {
-
   form: FormGroup;
 
   constructor(
@@ -116,7 +120,11 @@ export class CreateParameterStatesComponent extends BaseComponent {
 
     removeUnsetProperties(options.properties || {});
 
-    this.yamcs.yamcsClient.createTimelineBand(this.yamcs.instance!, options).then(() => this.router.navigateByUrl(`/timeline/bands?c=${this.yamcs.context}`))
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .createTimelineBand(this.yamcs.instance!, options)
+      .then(() =>
+        this.router.navigateByUrl(`/timeline/bands?c=${this.yamcs.context}`),
+      )
+      .catch((err) => this.messageService.showError(err));
   }
 }

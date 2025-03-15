@@ -20,12 +20,12 @@ import { StackedVerifyEntry } from '../stack-file/StackedEntry';
   ],
 })
 export class EditVerifyEntryDialogComponent {
-
   form: FormGroup;
 
   constructor(
     private dialogRef: MatDialogRef<EditVerifyEntryDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) readonly data: { edit: boolean, entry?: StackedVerifyEntry; },
+    @Inject(MAT_DIALOG_DATA)
+    readonly data: { edit: boolean; entry?: StackedVerifyEntry },
   ) {
     this.form = new FormGroup({
       condition: new FormArray([]),
@@ -35,16 +35,16 @@ export class EditVerifyEntryDialogComponent {
     });
 
     if (data.entry) {
-      const condition = (data.entry.condition || []);
+      const condition = data.entry.condition || [];
       for (const comparison of condition) {
         this.addComparisonGroup();
       }
 
       this.form.setValue({
-        'condition': condition,
-        'delay': data.entry.delay ?? 0,
-        'timeout': data.entry.timeout || '',
-        'comment': data.entry.comment || '',
+        condition: condition,
+        delay: data.entry.delay ?? 0,
+        timeout: data.entry.timeout || '',
+        comment: data.entry.comment || '',
       });
     }
 
@@ -63,11 +63,13 @@ export class EditVerifyEntryDialogComponent {
   }
 
   addComparisonGroup() {
-    this.conditionFormArray.push(new FormGroup({
-      'parameter': new FormControl('', [Validators.required]),
-      'operator': new FormControl('eq', [Validators.required]),
-      'value': new FormControl('', [Validators.required]),
-    }));
+    this.conditionFormArray.push(
+      new FormGroup({
+        parameter: new FormControl('', [Validators.required]),
+        operator: new FormControl('eq', [Validators.required]),
+        value: new FormControl('', [Validators.required]),
+      }),
+    );
   }
 
   removeComparisonGroup(idx: number) {
@@ -88,7 +90,7 @@ export class EditVerifyEntryDialogComponent {
 
   save() {
     const { value } = this.form;
-    const result: { [key: string]: any; } = {
+    const result: { [key: string]: any } = {
       condition: value.condition,
       delay: Math.max(value.delay, 0),
       comment: value.comment,

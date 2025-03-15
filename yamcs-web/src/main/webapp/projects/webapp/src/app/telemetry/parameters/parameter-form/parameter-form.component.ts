@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit,
+} from '@angular/core';
 import { UntypedFormGroup } from '@angular/forms';
 import { Parameter, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
@@ -8,12 +13,9 @@ import { BehaviorSubject } from 'rxjs';
   templateUrl: './parameter-form.component.html',
   styleUrl: './parameter-form.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class ParameterFormComponent implements OnInit {
-
   @Input()
   formGroup: UntypedFormGroup;
 

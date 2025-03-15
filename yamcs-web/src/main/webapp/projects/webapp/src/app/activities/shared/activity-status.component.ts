@@ -6,11 +6,8 @@ import { Activity, WebappSdkModule } from '@yamcs/webapp-sdk';
   templateUrl: './activity-status.component.html',
   styleUrl: './activity-status.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class ActivityStatusComponent {
-
   activity = input.required<Activity>();
 }

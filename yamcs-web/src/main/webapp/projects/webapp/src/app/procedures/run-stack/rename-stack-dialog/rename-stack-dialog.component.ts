@@ -1,17 +1,24 @@
 import { Component, Inject } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import {
+  UntypedFormBuilder,
+  UntypedFormGroup,
+  Validators,
+} from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { ConfigService, StorageClient, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  ConfigService,
+  StorageClient,
+  WebappSdkModule,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-rename-stack-dialog',
   templateUrl: './rename-stack-dialog.component.html',
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class RenameStackDialogComponent {
-
   filenameForm: UntypedFormGroup;
 
   private storageClient: StorageClient;
@@ -40,12 +47,20 @@ export class RenameStackDialogComponent {
       prefix = this.data.name.substring(0, idx + 1);
     }
 
-    const response = await this.storageClient.getObject(this.bucket, this.data.name);
+    const response = await this.storageClient.getObject(
+      this.bucket,
+      this.data.name,
+    );
     const blob = await response.blob();
 
-    const format = utils.getExtension(utils.getFilename(this.data.name))?.toLowerCase();
+    const format = utils
+      .getExtension(utils.getFilename(this.data.name))
+      ?.toLowerCase();
 
-    const newObjectName = (prefix || '') + this.filenameForm.get('name')!.value + (format ? "." + format : '');
+    const newObjectName =
+      (prefix || '') +
+      this.filenameForm.get('name')!.value +
+      (format ? '.' + format : '');
     if (newObjectName !== this.data.name) {
       await this.storageClient.uploadObject(this.bucket, newObjectName, blob);
       await this.storageClient.deleteObject(this.bucket, this.data.name);

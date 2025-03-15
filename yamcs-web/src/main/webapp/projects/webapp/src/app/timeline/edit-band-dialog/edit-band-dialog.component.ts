@@ -1,7 +1,17 @@
-import { ChangeDetectionStrategy, Component, Inject, OnDestroy } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Inject,
+  OnDestroy,
+} from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { MessageService, UpdateTimelineBandRequest, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  MessageService,
+  UpdateTimelineBandRequest,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { EditCommandBandComponent } from '../command-band/edit-command-band/edit-command-band.component';
 import { EditItemBandComponent } from '../item-band/edit-item-band/edit-item-band.component';
@@ -26,7 +36,6 @@ import { EditTimeRulerComponent } from '../time-ruler/edit-time-ruler/edit-time-
   ],
 })
 export class EditBandDialogComponent implements OnDestroy {
-
   form: FormGroup;
   dirty$ = new BehaviorSubject<boolean>(false);
 
@@ -83,9 +92,10 @@ export class EditBandDialogComponent implements OnDestroy {
 
     removeUnsetProperties(options.properties || {});
 
-    this.yamcs.yamcsClient.updateTimelineBand(this.yamcs.instance!, this.data.band.id, options)
-      .then(band => this.dialogRef.close(band))
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .updateTimelineBand(this.yamcs.instance!, this.data.band.id, options)
+      .then((band) => this.dialogRef.close(band))
+      .catch((err) => this.messageService.showError(err));
   }
 
   get traces() {

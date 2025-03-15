@@ -1,4 +1,3 @@
-
 import { Component, Input } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 
@@ -6,12 +5,9 @@ import { MatIcon } from '@angular/material/icon';
   selector: 'ya-label',
   templateUrl: './label.component.html',
   styleUrl: './label.component.css',
-  imports: [
-    MatIcon
-  ],
+  imports: [MatIcon],
 })
 export class YaLabel {
-
   @Input()
   icon: string;
 

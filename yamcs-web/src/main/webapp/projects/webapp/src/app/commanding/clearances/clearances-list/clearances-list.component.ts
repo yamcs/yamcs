@@ -1,5 +1,10 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ViewChild,
+} from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
@@ -24,7 +29,6 @@ import { ClearancesPageTabsComponent } from '../clearances-page-tabs/clearances-
   ],
 })
 export class ClearancesListComponent implements AfterViewInit {
-
   @ViewChild(MatSort)
   sort: MatSort;
 
@@ -43,7 +47,11 @@ export class ClearancesListComponent implements AfterViewInit {
   dataSource = new MatTableDataSource<Clearance>();
   selection = new SelectionModel<Clearance>(true, []);
 
-  constructor(private yamcs: YamcsService, title: Title, private dialog: MatDialog) {
+  constructor(
+    private yamcs: YamcsService,
+    title: Title,
+    private dialog: MatDialog,
+  ) {
     title.setTitle('Clearances');
     this.refresh();
   }
@@ -60,9 +68,11 @@ export class ClearancesListComponent implements AfterViewInit {
   }
 
   masterToggle() {
-    this.isAllSelected() ?
-      this.selection.clear() :
-      this.dataSource.filteredData.forEach(row => this.selection.select(row));
+    this.isAllSelected()
+      ? this.selection.clear()
+      : this.dataSource.filteredData.forEach((row) =>
+          this.selection.select(row),
+        );
   }
 
   toggleOne(row: Clearance) {
@@ -74,7 +84,7 @@ export class ClearancesListComponent implements AfterViewInit {
 
   refresh() {
     this.selection.clear();
-    this.yamcs.yamcsClient.getClearances().then(page => {
+    this.yamcs.yamcsClient.getClearances().then((page) => {
       this.dataSource.data = page.clearances || [];
     });
   }
@@ -93,18 +103,22 @@ export class ClearancesListComponent implements AfterViewInit {
       data: { clearance },
       width: '400px',
     });
-    dialogRef.afterClosed().subscribe(response => {
+    dialogRef.afterClosed().subscribe((response) => {
       if (response) {
         const promises: Array<Promise<any>> = [];
         if (response.level) {
           for (const clearance of this.selection.selected) {
-            promises.push(this.yamcs.yamcsClient.changeClearance(clearance.username, {
-              level: response.level
-            }));
+            promises.push(
+              this.yamcs.yamcsClient.changeClearance(clearance.username, {
+                level: response.level,
+              }),
+            );
           }
         } else {
           for (const clearance of this.selection.selected) {
-            promises.push(this.yamcs.yamcsClient.deleteClearance(clearance.username));
+            promises.push(
+              this.yamcs.yamcsClient.deleteClearance(clearance.username),
+            );
           }
         }
         if (promises.length) {

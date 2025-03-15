@@ -1,9 +1,47 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
-import { ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, OnInit, SecurityContext, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  Input,
+  OnDestroy,
+  OnInit,
+  SecurityContext,
+  ViewChild,
+} from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { DomSanitizer, SafeResourceUrl, Title } from '@angular/platform-browser';
-import { AppearanceService, CommandHistoryRecord, CommandStep, CommandSubscription, ConfigService, CreateTimelineItemRequest, MessageService, NamedObjectId, ParameterSubscription, ParameterValue, StackFormatter, Step, utils, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
-import { BehaviorSubject, delay, filter, first, Observable, Subscription, timeout, TimeoutError } from 'rxjs';
+import {
+  DomSanitizer,
+  SafeResourceUrl,
+  Title,
+} from '@angular/platform-browser';
+import {
+  AppearanceService,
+  CommandHistoryRecord,
+  CommandStep,
+  CommandSubscription,
+  ConfigService,
+  CreateTimelineItemRequest,
+  MessageService,
+  NamedObjectId,
+  ParameterSubscription,
+  ParameterValue,
+  StackFormatter,
+  Step,
+  utils,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
+import {
+  BehaviorSubject,
+  delay,
+  filter,
+  first,
+  Observable,
+  Subscription,
+  timeout,
+  TimeoutError,
+} from 'rxjs';
 import { ExtraAcknowledgmentsTableComponent } from '../../../commanding/command-history/extra-acknowledgments-table/extra-acknowledgments-table.component';
 import { YamcsAcknowledgmentsTableComponent } from '../../../commanding/command-history/yamcs-acknowledgments-table/yamcs-acknowledgments-table.component';
 import { AuthService } from '../../../core/services/AuthService';
@@ -12,7 +50,10 @@ import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/insta
 import { MarkdownComponent } from '../../../shared/markdown/markdown.component';
 import { AdvanceAckHelpComponent } from '../advance-ack-help/advance-ack-help.component';
 import { EditCheckEntryDialogComponent } from '../edit-check-entry-dialog/edit-check-entry-dialog.component';
-import { CommandResult, EditCommandEntryDialogComponent } from '../edit-command-entry-dialog/edit-command-entry-dialog.component';
+import {
+  CommandResult,
+  EditCommandEntryDialogComponent,
+} from '../edit-command-entry-dialog/edit-command-entry-dialog.component';
 import { EditTextEntryDialogComponent } from '../edit-text-entry-dialog/edit-text-entry-dialog.component';
 import { EditVerifyEntryDialogComponent } from '../edit-verify-entry-dialog/edit-verify-entry-dialog.component';
 import { ScheduleStackDialogComponent } from '../schedule-stack-dialog/schedule-stack-dialog.component';
@@ -22,7 +63,14 @@ import { StackedCommandEntryComponent } from '../stacked-command-entry/stacked-c
 import { StackedTextEntryComponent } from '../stacked-text-entry/stacked-text-entry.component';
 import { StackedVerifyEntryComponent } from '../stacked-verify-entry/stacked-verify-entry.component';
 import { VerifyTableComponent } from '../verify-table/verify-table.component';
-import { NamedParameterValue, StackedCheckEntry, StackedCommandEntry, StackedEntry, StackedTextEntry, StackedVerifyEntry } from './StackedEntry';
+import {
+  NamedParameterValue,
+  StackedCheckEntry,
+  StackedCommandEntry,
+  StackedEntry,
+  StackedTextEntry,
+  StackedVerifyEntry,
+} from './StackedEntry';
 import { StackFileService } from './StackFileService';
 
 @Component({
@@ -46,7 +94,6 @@ import { StackFileService } from './StackFileService';
   ],
 })
 export class StackFileComponent implements OnInit, OnDestroy {
-
   @Input()
   objectName: string;
 
@@ -81,8 +128,8 @@ export class StackFileComponent implements OnInit, OnDestroy {
   private nextCommandDelayTimeout: number;
   private nextEntryScheduled = false;
 
-  idMapping: { [key: number]: NamedObjectId; } = {};
-  pvals$ = new BehaviorSubject<{ [key: string]: ParameterValue; }>({});
+  idMapping: { [key: number]: NamedObjectId } = {};
+  pvals$ = new BehaviorSubject<{ [key: string]: ParameterValue }>({});
 
   constructor(
     private dialog: MatDialog,
@@ -99,29 +146,32 @@ export class StackFileComponent implements OnInit, OnDestroy {
     this.entries$ = stackFileService.entries$;
     this.hasState$ = stackFileService.hasState$;
 
-    this.parameterSubscription = yamcs.yamcsClient.createParameterSubscription({
-      instance: yamcs.instance!,
-      processor: yamcs.processor!,
-      action: 'REPLACE',
-      abortOnInvalid: false,
-      sendFromCache: true,
-      updateOnExpiration: true,
-      id: [],
-    }, data => {
-      if (data.mapping) {
-        this.idMapping = data.mapping;
-      }
-      if (data.values) {
-        const pvals = { ...this.pvals$.value };
-        for (const value of data.values) {
-          const pname = this.idMapping[value.numericId];
-          if (pname) {
-            pvals[pname.name] = value;
-          }
+    this.parameterSubscription = yamcs.yamcsClient.createParameterSubscription(
+      {
+        instance: yamcs.instance!,
+        processor: yamcs.processor!,
+        action: 'REPLACE',
+        abortOnInvalid: false,
+        sendFromCache: true,
+        updateOnExpiration: true,
+        id: [],
+      },
+      (data) => {
+        if (data.mapping) {
+          this.idMapping = data.mapping;
         }
-        this.pvals$.next(pvals);
-      }
-    });
+        if (data.values) {
+          const pvals = { ...this.pvals$.value };
+          for (const value of data.values) {
+            const pname = this.idMapping[value.numericId];
+            if (pname) {
+              pvals[pname.name] = value;
+            }
+          }
+          this.pvals$.next(pvals);
+        }
+      },
+    );
   }
 
   ngOnInit(): void {
@@ -137,7 +187,9 @@ export class StackFileComponent implements OnInit, OnDestroy {
 
     this.title.setTitle(this.filename);
 
-    const format = utils.getExtension(utils.getFilename(this.objectName))?.toLowerCase();
+    const format = utils
+      .getExtension(utils.getFilename(this.objectName))
+      ?.toLowerCase();
     if (format === 'ycs' || format === 'xml') {
       this.format = format;
     } else {
@@ -153,41 +205,48 @@ export class StackFileComponent implements OnInit, OnDestroy {
     this.updateParameterSubscription();
     this.loaded = true;
 
-    this.commandSubscription = this.yamcs.yamcsClient.createCommandSubscription({
-      instance: this.yamcs.instance!,
-      processor: this.yamcs.processor!,
-      ignorePastCommands: true,
-    }, histUpdate => {
-      const id = histUpdate.id;
-      let rec = this.commandHistoryRecords.get(id);
-      if (rec) {
-        rec = rec.mergeEntry(histUpdate);
-      } else {
-        rec = new CommandHistoryRecord(histUpdate);
-      }
-      this.commandHistoryRecords.set(id, rec);
-
-      // Try to find a with matching id. If it's there
-      // update it. If not: no problem, the link will be made when
-      // handling the command response.
-      for (const entry of this.stackFileService.entries$.value) {
-        if ((entry instanceof StackedCommandEntry) && entry.id === id) {
-          entry.record = rec;
-          break;
+    this.commandSubscription = this.yamcs.yamcsClient.createCommandSubscription(
+      {
+        instance: this.yamcs.instance!,
+        processor: this.yamcs.processor!,
+        ignorePastCommands: true,
+      },
+      (histUpdate) => {
+        const id = histUpdate.id;
+        let rec = this.commandHistoryRecords.get(id);
+        if (rec) {
+          rec = rec.mergeEntry(histUpdate);
+        } else {
+          rec = new CommandHistoryRecord(histUpdate);
         }
-      }
+        this.commandHistoryRecords.set(id, rec);
 
-      // Continue running entries
-      const currentEntry = this.selectedEntry$.value;
-      if (currentEntry && (currentEntry instanceof StackedCommandEntry)) {
-        this.checkAckContinueRunning(currentEntry, rec);
-      }
-    });
+        // Try to find a with matching id. If it's there
+        // update it. If not: no problem, the link will be made when
+        // handling the command response.
+        for (const entry of this.stackFileService.entries$.value) {
+          if (entry instanceof StackedCommandEntry && entry.id === id) {
+            entry.record = rec;
+            break;
+          }
+        }
+
+        // Continue running entries
+        const currentEntry = this.selectedEntry$.value;
+        if (currentEntry && currentEntry instanceof StackedCommandEntry) {
+          this.checkAckContinueRunning(currentEntry, rec);
+        }
+      },
+    );
   }
 
   handleDrop(event: CdkDragDrop<Step[]>) {
     if (event.previousIndex !== event.currentIndex) {
-      moveItemInArray(this.entries$.value, event.previousIndex, event.currentIndex);
+      moveItemInArray(
+        this.entries$.value,
+        event.previousIndex,
+        event.currentIndex,
+      );
       this.stackFileService.updateEntries([...this.entries$.value]);
       this.stackFileService.markDirty();
     }
@@ -208,7 +267,7 @@ export class StackFileComponent implements OnInit, OnDestroy {
     }
 
     const ids: NamedObjectId[] = [];
-    parameters.forEach(p => ids.push({ 'name': p }));
+    parameters.forEach((p) => ids.push({ name: p }));
 
     // Ensure the initial reply is already received
     this.parameterSubscription.addReplyListener(() => {
@@ -269,35 +328,45 @@ export class StackFileComponent implements OnInit, OnDestroy {
     entry.clearOutputs();
     if (entry instanceof StackedCommandEntry) {
       const namespace = entry.namespace ?? null;
-      return this.yamcs.yamcsClient.issueCommandForNamespace(instance!, processor!, namespace, entry.name, {
-        sequenceNumber: executionNumber,
-        args: entry.args,
-        stream: entry.stream,
-        extra: entry.extra,
-      }).then(response => {
-        entry.executionNumber = executionNumber;
-        entry.executing = true;
-        entry.id = response.id;
+      return this.yamcs.yamcsClient
+        .issueCommandForNamespace(
+          instance!,
+          processor!,
+          namespace,
+          entry.name,
+          {
+            sequenceNumber: executionNumber,
+            args: entry.args,
+            stream: entry.stream,
+            extra: entry.extra,
+          },
+        )
+        .then((response) => {
+          entry.executionNumber = executionNumber;
+          entry.executing = true;
+          entry.id = response.id;
 
-        const logMessage = `Sending command ${entry}`;
-        this.stackFileService.addLogEntry(executionNumber, logMessage);
+          const logMessage = `Sending command ${entry}`;
+          this.stackFileService.addLogEntry(executionNumber, logMessage);
 
-        // It's possible the WebSocket received data before we
-        // get our response.
-        const rec = this.commandHistoryRecords.get(entry.id);
-        if (rec) {
-          entry.record = rec;
-          this.checkAckContinueRunning(entry, rec);
-        }
-      }).catch(err => {
-        entry.executionNumber = executionNumber;
-        entry.executing = false;
-        entry.err = err.message || err;
-        this.stopRun();
-      }).finally(() => {
-        // Refresh subject, to be sure
-        this.stackFileService.updateEntries([...this.entries$.value]);
-      });
+          // It's possible the WebSocket received data before we
+          // get our response.
+          const rec = this.commandHistoryRecords.get(entry.id);
+          if (rec) {
+            entry.record = rec;
+            this.checkAckContinueRunning(entry, rec);
+          }
+        })
+        .catch((err) => {
+          entry.executionNumber = executionNumber;
+          entry.executing = false;
+          entry.err = err.message || err;
+          this.stopRun();
+        })
+        .finally(() => {
+          // Refresh subject, to be sure
+          this.stackFileService.updateEntries([...this.entries$.value]);
+        });
     } else if (entry instanceof StackedVerifyEntry) {
       entry.executionNumber = executionNumber;
       entry.executing = true;
@@ -332,18 +401,16 @@ export class StackFileComponent implements OnInit, OnDestroy {
       pipeline = pipeline.pipe(delay(entry.delay));
     }
     pipeline = pipeline.pipe(
-      filter(pvals => this.testVerifyEntry(entry)),
-      first(),  // Unsubscribe when test succeeds)
+      filter((pvals) => this.testVerifyEntry(entry)),
+      first(), // Unsubscribe when test succeeds)
     );
     if (entry.timeout && entry.timeout > 0) {
       const delay = Math.max(0, entry.delay || 0);
-      pipeline = pipeline.pipe(
-        timeout(delay + entry.timeout),
-      );
+      pipeline = pipeline.pipe(timeout(delay + entry.timeout));
     }
     const subscription = pipeline.subscribe({
       next: () => this.continueRunning(entry),
-      error: err => {
+      error: (err) => {
         if (err instanceof TimeoutError) {
           entry.executing = false;
           entry.err = err.message || String(err);
@@ -374,7 +441,10 @@ export class StackFileComponent implements OnInit, OnDestroy {
     this.runEntry(entry);
   }
 
-  private checkAckContinueRunning(entry: StackedCommandEntry, record: CommandHistoryRecord) {
+  private checkAckContinueRunning(
+    entry: StackedCommandEntry,
+    record: CommandHistoryRecord,
+  ) {
     // Attempts to continue the current run from selected by checking acknowledgement statuses
     if (!this.running$.value || this.nextEntryScheduled) {
       return;
@@ -382,7 +452,8 @@ export class StackFileComponent implements OnInit, OnDestroy {
 
     const { advancement: stackAdvancement } = this.stackFileService;
 
-    let acceptingAck = entry.advancement?.acknowledgment || stackAdvancement.acknowledgment!;
+    let acceptingAck =
+      entry.advancement?.acknowledgment || stackAdvancement.acknowledgment!;
     let delay = entry.advancement?.wait ?? stackAdvancement.wait!;
 
     if (entry.id === record.id) {
@@ -401,17 +472,20 @@ export class StackFileComponent implements OnInit, OnDestroy {
 
   private continueRunning(entry: StackedEntry, delay = 0) {
     this.nextEntryScheduled = this.runningStack;
-    this.nextCommandDelayTimeout = window.setTimeout(() => {
-      entry.executing = false;
-      if (this.running$.value) {
-        this.advanceSelection(entry);
-        if (this.runningStack) {
-          this.runFromSelection();
-        } else {
-          this.stopRun();
+    this.nextCommandDelayTimeout = window.setTimeout(
+      () => {
+        entry.executing = false;
+        if (this.running$.value) {
+          this.advanceSelection(entry);
+          if (this.runningStack) {
+            this.runFromSelection();
+          } else {
+            this.stopRun();
+          }
         }
-      }
-    }, Math.max(delay, 0));
+      },
+      Math.max(delay, 0),
+    );
   }
 
   stopRun() {
@@ -433,7 +507,7 @@ export class StackFileComponent implements OnInit, OnDestroy {
   }
 
   private clearStepScopedSubscriptions() {
-    this.stepScopedSubscriptions.forEach(s => s.unsubscribe());
+    this.stepScopedSubscriptions.forEach((s) => s.unsubscribe());
     this.stepScopedSubscriptions.length = 0;
   }
 
@@ -445,7 +519,9 @@ export class StackFileComponent implements OnInit, OnDestroy {
       this.selectEntry(nextEntry);
 
       const parentEl = this.entryParent.nativeElement;
-      const entryEl = parentEl.getElementsByClassName('entry')[idx + 1] as HTMLDivElement;
+      const entryEl = parentEl.getElementsByClassName('entry')[
+        idx + 1
+      ] as HTMLDivElement;
       if (!this.isVisible(entryEl)) {
         entryEl.scrollIntoView();
       }
@@ -456,68 +532,83 @@ export class StackFileComponent implements OnInit, OnDestroy {
 
   private isVisible(el: HTMLDivElement) {
     const rect = el.getBoundingClientRect();
-    const viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight);
+    const viewHeight = Math.max(
+      document.documentElement.clientHeight,
+      window.innerHeight,
+    );
     return !(rect.bottom < 0 || rect.top - viewHeight >= 0);
   }
 
   addCheckEntry() {
-    this.dialog.open(EditCheckEntryDialogComponent, {
-      autoFocus: false,
-      width: '800px',
-      data: {
-        edit: false,
-      },
-    }).afterClosed().subscribe((result?: any) => {
-      if (result) {
-        const entry = new StackedCheckEntry({
-          type: 'check',
-          ...result,
-        });
+    this.dialog
+      .open(EditCheckEntryDialogComponent, {
+        autoFocus: false,
+        width: '800px',
+        data: {
+          edit: false,
+        },
+      })
+      .afterClosed()
+      .subscribe((result?: any) => {
+        if (result) {
+          const entry = new StackedCheckEntry({
+            type: 'check',
+            ...result,
+          });
 
-        const relto = this.selectedEntry$.value;
-        if (relto) {
-          const entries = this.entries$.value;
-          const idx = entries.indexOf(relto);
-          entries.splice(idx + 1, 0, entry);
-          this.stackFileService.updateEntries([...this.entries$.value]);
-        } else {
-          this.stackFileService.updateEntries([...this.entries$.value, entry]);
+          const relto = this.selectedEntry$.value;
+          if (relto) {
+            const entries = this.entries$.value;
+            const idx = entries.indexOf(relto);
+            entries.splice(idx + 1, 0, entry);
+            this.stackFileService.updateEntries([...this.entries$.value]);
+          } else {
+            this.stackFileService.updateEntries([
+              ...this.entries$.value,
+              entry,
+            ]);
+          }
+          this.selectEntry(entry);
+          this.stackFileService.markDirty();
+          this.updateParameterSubscription();
         }
-        this.selectEntry(entry);
-        this.stackFileService.markDirty();
-        this.updateParameterSubscription();
-      }
-    });
+      });
   }
 
   addVerifyEntry() {
-    this.dialog.open(EditVerifyEntryDialogComponent, {
-      autoFocus: false,
-      width: '800px',
-      data: {
-        edit: false,
-      },
-    }).afterClosed().subscribe((result?: any) => {
-      if (result) {
-        const entry = new StackedVerifyEntry({
-          type: 'verify',
-          ...result,
-        });
+    this.dialog
+      .open(EditVerifyEntryDialogComponent, {
+        autoFocus: false,
+        width: '800px',
+        data: {
+          edit: false,
+        },
+      })
+      .afterClosed()
+      .subscribe((result?: any) => {
+        if (result) {
+          const entry = new StackedVerifyEntry({
+            type: 'verify',
+            ...result,
+          });
 
-        const relto = this.selectedEntry$.value;
-        if (relto) {
-          const entries = this.entries$.value;
-          const idx = entries.indexOf(relto);
-          entries.splice(idx + 1, 0, entry);
-          this.stackFileService.updateEntries([...this.entries$.value]);
-        } else {
-          this.stackFileService.updateEntries([...this.entries$.value, entry]);
+          const relto = this.selectedEntry$.value;
+          if (relto) {
+            const entries = this.entries$.value;
+            const idx = entries.indexOf(relto);
+            entries.splice(idx + 1, 0, entry);
+            this.stackFileService.updateEntries([...this.entries$.value]);
+          } else {
+            this.stackFileService.updateEntries([
+              ...this.entries$.value,
+              entry,
+            ]);
+          }
+          this.selectEntry(entry);
+          this.stackFileService.markDirty();
+          this.updateParameterSubscription();
         }
-        this.selectEntry(entry);
-        this.stackFileService.markDirty();
-        this.updateParameterSubscription();
-      }
-    });
+      });
   }
 
   addCommandEntry() {
@@ -531,7 +622,7 @@ export class StackFileComponent implements OnInit, OnDestroy {
       panelClass: 'dialog-full-size',
       data: {
         okLabel: 'ADD TO STACK',
-      }
+      },
     });
 
     dialogRef.afterClosed().subscribe((result?: CommandResult) => {
@@ -579,32 +670,38 @@ export class StackFileComponent implements OnInit, OnDestroy {
   }
 
   addTextEntry() {
-    this.dialog.open(EditTextEntryDialogComponent, {
-      autoFocus: false,
-      width: '800px',
-      data: {
-        edit: false,
-      },
-    }).afterClosed().subscribe((result?: string) => {
-      if (result) {
-        const entry = new StackedTextEntry({
-          type: 'text',
-          text: result,
-        });
+    this.dialog
+      .open(EditTextEntryDialogComponent, {
+        autoFocus: false,
+        width: '800px',
+        data: {
+          edit: false,
+        },
+      })
+      .afterClosed()
+      .subscribe((result?: string) => {
+        if (result) {
+          const entry = new StackedTextEntry({
+            type: 'text',
+            text: result,
+          });
 
-        const relto = this.selectedEntry$.value;
-        if (relto) {
-          const entries = this.entries$.value;
-          const idx = entries.indexOf(relto);
-          entries.splice(idx + 1, 0, entry);
-          this.stackFileService.updateEntries([...this.entries$.value]);
-        } else {
-          this.stackFileService.updateEntries([...this.entries$.value, entry]);
+          const relto = this.selectedEntry$.value;
+          if (relto) {
+            const entries = this.entries$.value;
+            const idx = entries.indexOf(relto);
+            entries.splice(idx + 1, 0, entry);
+            this.stackFileService.updateEntries([...this.entries$.value]);
+          } else {
+            this.stackFileService.updateEntries([
+              ...this.entries$.value,
+              entry,
+            ]);
+          }
+          this.selectEntry(entry);
+          this.stackFileService.markDirty();
         }
-        this.selectEntry(entry);
-        this.stackFileService.markDirty();
-      }
-    });
+      });
   }
 
   editSelectedEntry() {
@@ -616,128 +713,140 @@ export class StackFileComponent implements OnInit, OnDestroy {
     this.selectEntry(entry);
 
     if (entry instanceof StackedCommandEntry) {
-      this.dialog.open(EditCommandEntryDialogComponent, {
-        width: '70%',
-        height: '100%',
-        autoFocus: false,
-        position: {
-          right: '0',
-        },
-        panelClass: 'dialog-full-size',
-        data: {
-          okLabel: 'UPDATE',
-          entry,
-        }
-      }).afterClosed().subscribe((result?: CommandResult) => {
-        if (result) {
-          const changedModel: CommandStep = {
-            type: 'command',
-            name: result.command.qualifiedName,
-            args: result.args,
-            comment: result.comment,
-            stream: result.stream,
-            extra: result.extra,
-            advancement: result.advancement,
-          };
+      this.dialog
+        .open(EditCommandEntryDialogComponent, {
+          width: '70%',
+          height: '100%',
+          autoFocus: false,
+          position: {
+            right: '0',
+          },
+          panelClass: 'dialog-full-size',
+          data: {
+            okLabel: 'UPDATE',
+            entry,
+          },
+        })
+        .afterClosed()
+        .subscribe((result?: CommandResult) => {
+          if (result) {
+            const changedModel: CommandStep = {
+              type: 'command',
+              name: result.command.qualifiedName,
+              args: result.args,
+              comment: result.comment,
+              stream: result.stream,
+              extra: result.extra,
+              advancement: result.advancement,
+            };
 
-          // Save with an alias, if so configured and the alias is available
-          const config = this.configService.getConfig();
-          if (config.preferredNamespace) {
-            for (const alias of result.command.alias || []) {
-              if (alias.namespace === config.preferredNamespace) {
-                changedModel.name = alias.name;
-                changedModel.namespace = alias.namespace;
-                break;
+            // Save with an alias, if so configured and the alias is available
+            const config = this.configService.getConfig();
+            if (config.preferredNamespace) {
+              for (const alias of result.command.alias || []) {
+                if (alias.namespace === config.preferredNamespace) {
+                  changedModel.name = alias.name;
+                  changedModel.namespace = alias.namespace;
+                  break;
+                }
               }
             }
+
+            const changedEntry = new StackedCommandEntry(changedModel);
+            changedEntry.command = result.command;
+
+            const entries = this.entries$.value;
+            const idx = entries.indexOf(entry);
+            entries.splice(idx, 1, changedEntry);
+            this.stackFileService.updateEntries([...this.entries$.value]);
+
+            this.selectEntry(changedEntry);
+            this.stackFileService.markDirty();
           }
-
-          const changedEntry = new StackedCommandEntry(changedModel);
-          changedEntry.command = result.command;
-
-          const entries = this.entries$.value;
-          const idx = entries.indexOf(entry);
-          entries.splice(idx, 1, changedEntry);
-          this.stackFileService.updateEntries([...this.entries$.value]);
-
-          this.selectEntry(changedEntry);
-          this.stackFileService.markDirty();
-        }
-      });
+        });
     } else if (entry instanceof StackedCheckEntry) {
-      this.dialog.open(EditCheckEntryDialogComponent, {
-        autoFocus: false,
-        width: '800px',
-        data: {
-          edit: true,
-          entry,
-        }
-      }).afterClosed().subscribe((result?: any) => {
-        if (result) {
-          const changedEntry = new StackedCheckEntry({
-            type: 'check',
-            ...result,
-          });
+      this.dialog
+        .open(EditCheckEntryDialogComponent, {
+          autoFocus: false,
+          width: '800px',
+          data: {
+            edit: true,
+            entry,
+          },
+        })
+        .afterClosed()
+        .subscribe((result?: any) => {
+          if (result) {
+            const changedEntry = new StackedCheckEntry({
+              type: 'check',
+              ...result,
+            });
 
-          const entries = this.entries$.value;
-          const idx = entries.indexOf(entry);
-          entries.splice(idx, 1, changedEntry);
-          this.stackFileService.updateEntries([...this.entries$.value]);
+            const entries = this.entries$.value;
+            const idx = entries.indexOf(entry);
+            entries.splice(idx, 1, changedEntry);
+            this.stackFileService.updateEntries([...this.entries$.value]);
 
-          this.selectEntry(changedEntry);
-          this.stackFileService.markDirty();
-          this.updateParameterSubscription();
-        }
-      });
+            this.selectEntry(changedEntry);
+            this.stackFileService.markDirty();
+            this.updateParameterSubscription();
+          }
+        });
     } else if (entry instanceof StackedTextEntry) {
-      this.dialog.open(EditTextEntryDialogComponent, {
-        autoFocus: false,
-        width: '800px',
-        data: {
-          edit: true,
-          entry,
-        }
-      }).afterClosed().subscribe((result?: string) => {
-        if (result) {
-          const changedEntry = new StackedTextEntry({
-            type: 'text',
-            text: result,
-          });
+      this.dialog
+        .open(EditTextEntryDialogComponent, {
+          autoFocus: false,
+          width: '800px',
+          data: {
+            edit: true,
+            entry,
+          },
+        })
+        .afterClosed()
+        .subscribe((result?: string) => {
+          if (result) {
+            const changedEntry = new StackedTextEntry({
+              type: 'text',
+              text: result,
+            });
 
-          const entries = this.entries$.value;
-          const idx = entries.indexOf(entry);
-          entries.splice(idx, 1, changedEntry);
-          this.stackFileService.updateEntries([...this.entries$.value]);
+            const entries = this.entries$.value;
+            const idx = entries.indexOf(entry);
+            entries.splice(idx, 1, changedEntry);
+            this.stackFileService.updateEntries([...this.entries$.value]);
 
-          this.selectEntry(changedEntry);
-          this.stackFileService.markDirty();
-        }
-      });
+            this.selectEntry(changedEntry);
+            this.stackFileService.markDirty();
+          }
+        });
     } else if (entry instanceof StackedVerifyEntry) {
-      this.dialog.open(EditVerifyEntryDialogComponent, {
-        autoFocus: false,
-        width: '800px',
-        data: {
-          edit: true,
-          entry,
-        }
-      }).afterClosed().subscribe((result?: any) => {
-        if (result) {
-          const changedEntry = new StackedVerifyEntry({
-            type: 'verify',
-            ...result,
-          });
+      this.dialog
+        .open(EditVerifyEntryDialogComponent, {
+          autoFocus: false,
+          width: '800px',
+          data: {
+            edit: true,
+            entry,
+          },
+        })
+        .afterClosed()
+        .subscribe((result?: any) => {
+          if (result) {
+            const changedEntry = new StackedVerifyEntry({
+              type: 'verify',
+              ...result,
+            });
 
-          const entries = this.entries$.value;
-          const idx = entries.indexOf(entry);
-          entries.splice(idx, 1, changedEntry);
-          this.stackFileService.updateEntries([...this.entries$.value]);
+            const entries = this.entries$.value;
+            const idx = entries.indexOf(entry);
+            entries.splice(idx, 1, changedEntry);
+            this.stackFileService.updateEntries([...this.entries$.value]);
 
-          this.selectEntry(changedEntry);
-          this.stackFileService.markDirty();
-          this.updateParameterSubscription();
-        }
-      });
+            this.selectEntry(changedEntry);
+            this.stackFileService.markDirty();
+            this.updateParameterSubscription();
+          }
+        });
     }
 
     return false;
@@ -773,7 +882,10 @@ export class StackFileComponent implements OnInit, OnDestroy {
         entries.splice(idx + 1, 0, copiedEntry);
         this.stackFileService.updateEntries([...this.entries$.value]);
       } else {
-        this.stackFileService.updateEntries([...this.entries$.value, copiedEntry]);
+        this.stackFileService.updateEntries([
+          ...this.entries$.value,
+          copiedEntry,
+        ]);
       }
       this.selectEntry(copiedEntry);
       this.stackFileService.markDirty();
@@ -781,53 +893,68 @@ export class StackFileComponent implements OnInit, OnDestroy {
   }
 
   showSchedule() {
-    const capabilities = this.yamcs.connectionInfo$.value?.instance?.capabilities || [];
-    return capabilities.indexOf('timeline') !== -1
-      && capabilities.indexOf('activities') !== -1
-      && this.authService.getUser()!.hasSystemPrivilege('ControlTimeline');
+    const capabilities =
+      this.yamcs.connectionInfo$.value?.instance?.capabilities || [];
+    return (
+      capabilities.indexOf('timeline') !== -1 &&
+      capabilities.indexOf('activities') !== -1 &&
+      this.authService.getUser()!.hasSystemPrivilege('ControlTimeline')
+    );
   }
 
   openScheduleStackDialog() {
-    this.dialog.open(ScheduleStackDialogComponent, {
-      width: '600px',
-    }).afterClosed().subscribe(scheduleOptions => {
-      if (scheduleOptions) {
-        const options: CreateTimelineItemRequest = {
-          type: 'ACTIVITY',
-          duration: '0s',
-          name: this.filename,
-          start: scheduleOptions['executionTime'],
-          tags: scheduleOptions['tags'],
-          activityDefinition: {
-            'type': 'COMMAND_STACK',
-            'args': {
-              'processor': this.yamcs.processor!,
-              'bucket': this.bucket,
-              'stack': this.filename,
-            }
-          },
-        };
+    this.dialog
+      .open(ScheduleStackDialogComponent, {
+        width: '600px',
+      })
+      .afterClosed()
+      .subscribe((scheduleOptions) => {
+        if (scheduleOptions) {
+          const options: CreateTimelineItemRequest = {
+            type: 'ACTIVITY',
+            duration: '0s',
+            name: this.filename,
+            start: scheduleOptions['executionTime'],
+            tags: scheduleOptions['tags'],
+            activityDefinition: {
+              type: 'COMMAND_STACK',
+              args: {
+                processor: this.yamcs.processor!,
+                bucket: this.bucket,
+                stack: this.filename,
+              },
+            },
+          };
 
-        this.yamcs.yamcsClient.createTimelineItem(this.yamcs.instance!, options)
-          .then(() => {
-            this.messageService.showInfo('Stack scheduled');
-          })
-          .catch(err => this.messageService.showError(err));
-      }
-    });
+          this.yamcs.yamcsClient
+            .createTimelineItem(this.yamcs.instance!, options)
+            .then(() => {
+              this.messageService.showInfo('Stack scheduled');
+            })
+            .catch((err) => this.messageService.showError(err));
+        }
+      });
   }
 
   setExportURLs() {
-    const entryModels = this.entries$.value.map(e => e.model);
+    const entryModels = this.entries$.value.map((e) => e.model);
     const formatter = new StackFormatter(entryModels, {
       advancement: this.stackFileService.advancement,
     });
 
-    const jsonBlob = new Blob([formatter.toJSON()], { type: 'application/json' });
-    this.jsonBlobUrl = this.sanitizer.sanitize(SecurityContext.URL, URL.createObjectURL(jsonBlob))!;
+    const jsonBlob = new Blob([formatter.toJSON()], {
+      type: 'application/json',
+    });
+    this.jsonBlobUrl = this.sanitizer.sanitize(
+      SecurityContext.URL,
+      URL.createObjectURL(jsonBlob),
+    )!;
 
     const xmlBlob = new Blob([formatter.toXML()], { type: 'application/xml' });
-    this.xmlBlobUrl = this.sanitizer.sanitize(SecurityContext.URL, URL.createObjectURL(xmlBlob))!;
+    this.xmlBlobUrl = this.sanitizer.sanitize(
+      SecurityContext.URL,
+      URL.createObjectURL(xmlBlob),
+    )!;
   }
 
   ngOnDestroy() {

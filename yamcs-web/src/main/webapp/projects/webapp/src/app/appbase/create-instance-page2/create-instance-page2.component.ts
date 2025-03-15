@@ -1,8 +1,17 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import {
+  UntypedFormBuilder,
+  UntypedFormControl,
+  UntypedFormGroup,
+  Validators,
+} from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { InstanceTemplate, MessageService, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  InstanceTemplate,
+  MessageService,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { CreateInstanceWizardStepComponent } from '../create-instance-wizard-step/create-instance-wizard-step.component';
 
@@ -12,13 +21,9 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
   templateUrl: './create-instance-page2.component.html',
   styleUrl: './create-instance-page2.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    CreateInstanceWizardStepComponent,
-    WebappSdkModule,
-  ],
+  imports: [CreateInstanceWizardStepComponent, WebappSdkModule],
 })
 export class CreateInstancePage2Component {
-
   form: UntypedFormGroup;
   template$ = new BehaviorSubject<InstanceTemplate | null>(null);
 
@@ -32,11 +37,11 @@ export class CreateInstancePage2Component {
   ) {
     title.setTitle('Create an Instance');
     this.form = formBuilder.group({
-      name: new UntypedFormControl('', [Validators.required])
+      name: new UntypedFormControl('', [Validators.required]),
     });
 
     const templateId = route.snapshot.paramMap.get('template')!;
-    yamcs.yamcsClient.getInstanceTemplate(templateId).then(template => {
+    yamcs.yamcsClient.getInstanceTemplate(templateId).then((template) => {
       this.template$.next(template);
       for (const variable of template.variables || []) {
         const validators = variable.required ? [Validators.required] : [];
@@ -45,25 +50,30 @@ export class CreateInstancePage2Component {
           initialValue = variable.initial;
         }
 
-        this.form.addControl(variable.name, new UntypedFormControl(initialValue, validators));
+        this.form.addControl(
+          variable.name,
+          new UntypedFormControl(initialValue, validators),
+        );
       }
     });
   }
 
   onConfirm() {
     const template = this.template$.value!;
-    const templateArgs: { [key: string]: string; } = {};
+    const templateArgs: { [key: string]: string } = {};
     for (const variable of template.variables || []) {
       if (this.form.get(variable.name)!.value) {
         templateArgs[variable.name] = this.form.get(variable.name)!.value;
       }
     }
 
-    this.yamcs.yamcsClient.createInstance({
-      name: this.form.get('name')!.value,
-      template: template.name,
-      templateArgs,
-    }).then(() => this.router.navigateByUrl('/'))
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .createInstance({
+        name: this.form.get('name')!.value,
+        template: template.name,
+        templateArgs,
+      })
+      .then(() => this.router.navigateByUrl('/'))
+      .catch((err) => this.messageService.showError(err));
   }
 }

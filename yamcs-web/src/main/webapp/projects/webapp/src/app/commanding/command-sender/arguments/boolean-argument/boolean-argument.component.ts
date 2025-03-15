@@ -1,5 +1,23 @@
-import { ChangeDetectionStrategy, Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
-import { ControlValueAccessor, FormControl, FormGroup, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormControl, ValidationErrors, Validator, ValidatorFn, Validators } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  forwardRef,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
+import {
+  ControlValueAccessor,
+  FormControl,
+  FormGroup,
+  NG_VALIDATORS,
+  NG_VALUE_ACCESSOR,
+  UntypedFormControl,
+  ValidationErrors,
+  Validator,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 import { ArgumentType, utils, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
 
@@ -8,21 +26,23 @@ import { Subscription } from 'rxjs';
   templateUrl: './boolean-argument.component.html',
   styleUrls: ['../arguments.css', './boolean-argument.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => BooleanArgumentComponent),
-    multi: true,
-  }, {
-    provide: NG_VALIDATORS,
-    useExisting: forwardRef(() => BooleanArgumentComponent),
-    multi: true,
-  }],
-  imports: [
-    WebappSdkModule,
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => BooleanArgumentComponent),
+      multi: true,
+    },
+    {
+      provide: NG_VALIDATORS,
+      useExisting: forwardRef(() => BooleanArgumentComponent),
+      multi: true,
+    },
   ],
+  imports: [WebappSdkModule],
 })
-export class BooleanArgumentComponent implements ControlValueAccessor, OnInit, Validator, OnDestroy {
-
+export class BooleanArgumentComponent
+  implements ControlValueAccessor, OnInit, Validator, OnDestroy
+{
   @Input()
   name: string;
 
@@ -45,7 +65,7 @@ export class BooleanArgumentComponent implements ControlValueAccessor, OnInit, V
   controlName: string;
 
   private validators: ValidatorFn[] = [];
-  private onChange = (_: string | null) => { };
+  private onChange = (_: string | null) => {};
   private subscriptions: Subscription[] = [];
 
   constructor() {
@@ -59,7 +79,7 @@ export class BooleanArgumentComponent implements ControlValueAccessor, OnInit, V
       this.formGroup.valueChanges.subscribe(() => {
         let value = this.formGroup.get('enabled')!.value;
         this.onChange(value);
-      })
+      }),
     );
 
     if (this.index === undefined) {
@@ -74,7 +94,7 @@ export class BooleanArgumentComponent implements ControlValueAccessor, OnInit, V
   get label() {
     if (this.index !== undefined) {
       const index = utils.unflattenIndex(this.index, this.dimensions!);
-      return index.map(i => '[' + i + ']').join('');
+      return index.map((i) => '[' + i + ']').join('');
     } else {
       return this.name;
     }
@@ -82,9 +102,9 @@ export class BooleanArgumentComponent implements ControlValueAccessor, OnInit, V
 
   writeValue(obj: any) {
     if (obj === 'true') {
-      this.formGroup.setValue({ 'enabled': 'true' });
+      this.formGroup.setValue({ enabled: 'true' });
     } else if (obj === 'false') {
-      this.formGroup.setValue({ 'enabled': 'false' });
+      this.formGroup.setValue({ enabled: 'false' });
     }
   }
 
@@ -92,8 +112,7 @@ export class BooleanArgumentComponent implements ControlValueAccessor, OnInit, V
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any) {
-  }
+  registerOnTouched(fn: any) {}
 
   validate(control: UntypedFormControl): ValidationErrors | null {
     for (const validator of this.validators) {
@@ -106,6 +125,6 @@ export class BooleanArgumentComponent implements ControlValueAccessor, OnInit, V
   }
 
   ngOnDestroy() {
-    this.subscriptions.forEach(s => s.unsubscribe());
+    this.subscriptions.forEach((s) => s.unsubscribe());
   }
 }

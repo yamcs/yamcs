@@ -11,7 +11,6 @@ import { Pipe, PipeTransform } from '@angular/core';
   name: 'nvl',
 })
 export class NvlPipe implements PipeTransform {
-
   transform(subject: any, replacement: any): any {
     if (subject === null || subject === undefined) {
       return replacement;

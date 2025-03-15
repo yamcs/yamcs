@@ -10,23 +10,19 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
   templateUrl: './create-instance-page1.component.html',
   styleUrl: './create-instance-page1.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    CreateInstanceWizardStepComponent,
-    WebappSdkModule,
-  ],
+  imports: [CreateInstanceWizardStepComponent, WebappSdkModule],
 })
 export class CreateInstancePage1Component {
-
   dataSource = new MatTableDataSource<InstanceTemplate>([]);
 
-  displayedColumns = [
-    'name',
-    'description',
-  ];
+  displayedColumns = ['name', 'description'];
 
-  constructor(private yamcs: YamcsService, title: Title) {
+  constructor(
+    private yamcs: YamcsService,
+    title: Title,
+  ) {
     title.setTitle('Create an Instance');
-    this.yamcs.yamcsClient.getInstanceTemplates().then(templates => {
+    this.yamcs.yamcsClient.getInstanceTemplates().then((templates) => {
       this.dataSource.data = templates;
     });
   }

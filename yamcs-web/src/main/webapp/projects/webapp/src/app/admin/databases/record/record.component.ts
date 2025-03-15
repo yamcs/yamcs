@@ -7,14 +7,9 @@ import { ColumnValuePipe } from '../shared/column-value.pipe';
   selector: 'app-record',
   templateUrl: './record.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    ColumnValuePipe,
-    HexComponent,
-    WebappSdkModule,
-  ],
+  imports: [ColumnValuePipe, HexComponent, WebappSdkModule],
 })
 export class RecordComponent {
-
   @Input()
   table: Table;
 

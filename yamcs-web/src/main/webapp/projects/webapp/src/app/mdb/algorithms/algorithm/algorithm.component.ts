@@ -17,13 +17,19 @@ import { AlgorithmDetailComponent } from '../algorithm-detail/algorithm-detail.c
   ],
 })
 export class AlgorithmComponent {
-
   algorithm$: Promise<Algorithm>;
 
-  constructor(route: ActivatedRoute, readonly yamcs: YamcsService, title: Title) {
+  constructor(
+    route: ActivatedRoute,
+    readonly yamcs: YamcsService,
+    title: Title,
+  ) {
     const qualifiedName = route.snapshot.paramMap.get('qualifiedName')!;
-    this.algorithm$ = yamcs.yamcsClient.getAlgorithm(this.yamcs.instance!, qualifiedName);
-    this.algorithm$.then(algorithm => {
+    this.algorithm$ = yamcs.yamcsClient.getAlgorithm(
+      this.yamcs.instance!,
+      qualifiedName,
+    );
+    this.algorithm$.then((algorithm) => {
       title.setTitle(algorithm.name);
     });
   }

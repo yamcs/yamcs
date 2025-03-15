@@ -1,11 +1,14 @@
 import { BucketsWrapper } from './types/internal';
-import { Bucket, CreateBucketRequest, ListObjectsOptions, ListObjectsResponse } from './types/system';
+import {
+  Bucket,
+  CreateBucketRequest,
+  ListObjectsOptions,
+  ListObjectsResponse,
+} from './types/system';
 import YamcsClient from './YamcsClient';
 
 export class StorageClient {
-
-  constructor(private yamcs: YamcsClient) {
-  }
+  constructor(private yamcs: YamcsClient) {}
 
   async createBucket(options: CreateBucketRequest) {
     const body = JSON.stringify(options);
@@ -16,14 +19,18 @@ export class StorageClient {
   }
 
   async getBuckets(): Promise<Bucket[]> {
-    const response = await this.yamcs.doFetch(`${this.yamcs.apiUrl}/storage/buckets`);
-    const wrapper = await response.json() as BucketsWrapper;
+    const response = await this.yamcs.doFetch(
+      `${this.yamcs.apiUrl}/storage/buckets`,
+    );
+    const wrapper = (await response.json()) as BucketsWrapper;
     return wrapper.buckets || [];
   }
 
   async getBucket(bucket: string): Promise<Bucket> {
-    const response = await this.yamcs.doFetch(`${this.yamcs.apiUrl}/storage/buckets/${bucket}`);
-    return await response.json() as Bucket;
+    const response = await this.yamcs.doFetch(
+      `${this.yamcs.apiUrl}/storage/buckets/${bucket}`,
+    );
+    return (await response.json()) as Bucket;
   }
 
   async deleteBucket(bucket: string) {
@@ -33,10 +40,13 @@ export class StorageClient {
     });
   }
 
-  async listObjects(bucket: string, options: ListObjectsOptions = {}): Promise<ListObjectsResponse> {
+  async listObjects(
+    bucket: string,
+    options: ListObjectsOptions = {},
+  ): Promise<ListObjectsResponse> {
     const url = `${this.yamcs.apiUrl}/storage/buckets/${bucket}/objects`;
     const response = await this.yamcs.doFetch(url + this.queryString(options));
-    return await response.json() as ListObjectsResponse;
+    return (await response.json()) as ListObjectsResponse;
   }
 
   async getObject(bucket: string, objectName: string) {
@@ -65,16 +75,17 @@ export class StorageClient {
     });
   }
 
-  private queryString(options: { [key: string]: any; }) {
+  private queryString(options: { [key: string]: any }) {
     const qs = Object.keys(options)
-      .map(k => `${k}=${options[k]}`)
+      .map((k) => `${k}=${options[k]}`)
       .join('&');
     return qs === '' ? qs : '?' + qs;
   }
 
   private encodeObjectName(objectName: string) {
-    return objectName.split('/')
-      .map(component => encodeURIComponent(component))
+    return objectName
+      .split('/')
+      .map((component) => encodeURIComponent(component))
       .join('/');
   }
 }

@@ -1,8 +1,17 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+} from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MessageService, UserInfo, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  MessageService,
+  UserInfo,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { AdminPageTemplateComponent } from '../../shared/admin-page-template/admin-page-template.component';
@@ -20,7 +29,6 @@ import { UsersTableComponent } from '../users-table/users-table.component';
   ],
 })
 export class UserListComponent implements AfterViewInit {
-
   filterControl = new UntypedFormControl();
 
   filterValue$ = new BehaviorSubject<string | null>(null);
@@ -59,35 +67,33 @@ export class UserListComponent implements AfterViewInit {
     });
 
     this.activeUsers$ = this.users$.pipe(
-      map(users => users.filter(u => u.active)),
+      map((users) => users.filter((u) => u.active)),
     );
     this.activeUserCount$ = this.activeUsers$.pipe(
-      map(users => users.length),
+      map((users) => users.length),
     );
     this.superUsers$ = this.users$.pipe(
-      map(users => users.filter(u => u.superuser)),
+      map((users) => users.filter((u) => u.superuser)),
     );
-    this.superUserCount$ = this.superUsers$.pipe(
-      map(users => users.length),
-    );
+    this.superUserCount$ = this.superUsers$.pipe(map((users) => users.length));
     this.internalUsers$ = this.users$.pipe(
-      map(users => users.filter(u => !u.identities)),
+      map((users) => users.filter((u) => !u.identities)),
     );
     this.internalUserCount$ = this.internalUsers$.pipe(
-      map(users => users.length),
+      map((users) => users.length),
     );
     this.blockedUsers$ = this.users$.pipe(
-      map(users => users.filter(u => !u.active)),
+      map((users) => users.filter((u) => !u.active)),
     );
     this.blockedUserCount$ = this.blockedUsers$.pipe(
-      map(users => users.length),
+      map((users) => users.length),
     );
 
     this.refresh();
   }
 
   private refresh() {
-    this.yamcs.yamcsClient.getUsers().then(users => {
+    this.yamcs.yamcsClient.getUsers().then((users) => {
       this.users$.next(users);
     });
   }
@@ -106,9 +112,10 @@ export class UserListComponent implements AfterViewInit {
 
   deleteUser(name: string) {
     if (confirm(`Are you sure you want to delete the user account '${name}'`)) {
-      this.yamcs.yamcsClient.deleteUser(name)
+      this.yamcs.yamcsClient
+        .deleteUser(name)
         .then(() => this.refresh())
-        .catch(err => this.messageService.showError(err));
+        .catch((err) => this.messageService.showError(err));
     }
   }
 }

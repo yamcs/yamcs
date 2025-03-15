@@ -1,10 +1,24 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  ViewChild,
+} from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Container, GetContainersOptions, MessageService, WebappSdkModule, YaColumnChooser, YaColumnInfo, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  Container,
+  GetContainersOptions,
+  MessageService,
+  WebappSdkModule,
+  YaColumnChooser,
+  YaColumnInfo,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
@@ -20,7 +34,6 @@ import { ContainersDataSource } from './containers.datasource';
   ],
 })
 export class ContainerListComponent implements AfterViewInit {
-
   shortName = false;
   pageSize = 100;
 
@@ -93,25 +106,32 @@ export class ContainerListComponent implements AfterViewInit {
     if (filterValue) {
       options.q = filterValue.toLowerCase();
     }
-    this.dataSource.loadContainers(options).then(() => {
-      this.selection.clear();
+    this.dataSource
+      .loadContainers(options)
+      .then(() => {
+        this.selection.clear();
 
-      // Reset alias columns
-      for (const aliasColumn of this.aliasColumns$.value) {
-        const idx = this.columns.indexOf(aliasColumn);
-        if (idx !== -1) {
-          this.columns.splice(idx, 1);
+        // Reset alias columns
+        for (const aliasColumn of this.aliasColumns$.value) {
+          const idx = this.columns.indexOf(aliasColumn);
+          if (idx !== -1) {
+            this.columns.splice(idx, 1);
+          }
         }
-      }
-      const aliasColumns = [];
-      for (const namespace of this.dataSource.getAliasNamespaces()) {
-        const aliasColumn = { id: namespace, label: namespace, alwaysVisible: true };
-        aliasColumns.push(aliasColumn);
-      }
-      this.columns.splice(1, 0, ...aliasColumns); // Insert after name column
-      this.aliasColumns$.next(aliasColumns);
-      this.columnChooser.recalculate(this.columns);
-    }).catch(err => this.messageService.showError(err));
+        const aliasColumns = [];
+        for (const namespace of this.dataSource.getAliasNamespaces()) {
+          const aliasColumn = {
+            id: namespace,
+            label: namespace,
+            alwaysVisible: true,
+          };
+          aliasColumns.push(aliasColumn);
+        }
+        this.columns.splice(1, 0, ...aliasColumns); // Insert after name column
+        this.aliasColumns$.next(aliasColumns);
+        this.columnChooser.recalculate(this.columns);
+      })
+      .catch((err) => this.messageService.showError(err));
   }
 
   private updateURL() {
@@ -157,7 +177,7 @@ export class ContainerListComponent implements AfterViewInit {
       const items = this.dataSource.containers$.value;
       if (items.indexOf(item) !== -1) {
         this.router.navigate(['/mdb/containers', item.qualifiedName], {
-          queryParams: { c: this.yamcs.context }
+          queryParams: { c: this.yamcs.context },
         });
       }
     }

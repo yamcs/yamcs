@@ -6,9 +6,6 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
   templateUrl: './storage-toolbar.component.html',
   styleUrl: './storage-toolbar.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
-export class StorageToolbarComponent {
-}
+export class StorageToolbarComponent {}

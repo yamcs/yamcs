@@ -6,12 +6,9 @@ import { CommandHistoryRecord, WebappSdkModule } from '@yamcs/webapp-sdk';
   templateUrl: './transmission-constraints-icon.component.html',
   styleUrl: './transmission-constraints-icon.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class TransmissionConstraintsIconComponent {
-
   @Input()
   command: CommandHistoryRecord;
 }

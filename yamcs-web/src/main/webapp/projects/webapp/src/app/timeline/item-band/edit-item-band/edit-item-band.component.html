@@ -1,17 +1,22 @@
 @if (formConfigured$ | async) {
   <form [formGroup]="form">
     <label>
-      Label <span class="hint">(required)</span><br />
+      Label
+      <span class="hint">(required)</span>
+      <br />
       <input type="text" formControlName="name" />
     </label>
     <br />
     <label>
-      Description <span class="hint">(optional)</span><br />
+      Description
+      <span class="hint">(optional)</span>
+      <br />
       <textarea formControlName="description" rows="3"></textarea>
     </label>
     <br />
     <label>
-      Tags<br />
+      Tags
+      <br />
       <ya-tag-select formControlName="tags" />
     </label>
     <br />

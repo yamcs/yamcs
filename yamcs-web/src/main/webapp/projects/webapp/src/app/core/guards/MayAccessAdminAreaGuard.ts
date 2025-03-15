@@ -1,22 +1,38 @@
 import { Injectable, inject } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivateChildFn, CanActivateFn, Router, RouterStateSnapshot } from '@angular/router';
+import {
+  ActivatedRouteSnapshot,
+  CanActivateChildFn,
+  CanActivateFn,
+  Router,
+  RouterStateSnapshot,
+} from '@angular/router';
 import { AuthService } from '../services/AuthService';
 
-export const mayAccessAdminAreaGuardFn: CanActivateFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+export const mayAccessAdminAreaGuardFn: CanActivateFn = (
+  route: ActivatedRouteSnapshot,
+  state: RouterStateSnapshot,
+) => {
   return inject(MayAccessAdminAreaGuard).canActivate(route, state);
 };
 
-export const mayAccessAdminAreaGuardChildFn: CanActivateChildFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+export const mayAccessAdminAreaGuardChildFn: CanActivateChildFn = (
+  route: ActivatedRouteSnapshot,
+  state: RouterStateSnapshot,
+) => {
   return inject(MayAccessAdminAreaGuard).canActivateChild(route, state);
 };
 
 @Injectable({ providedIn: 'root' })
 class MayAccessAdminAreaGuard {
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+  ) {}
 
-  constructor(private authService: AuthService, private router: Router) {
-  }
-
-  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
+  canActivate(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot,
+  ): boolean {
     if (this.authService.getUser()!.hasSystemPrivilege('web.AccessAdminArea')) {
       return true;
     }
@@ -25,7 +41,10 @@ class MayAccessAdminAreaGuard {
     return false;
   }
 
-  canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
+  canActivateChild(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot,
+  ): boolean {
     return this.canActivate(route, state);
   }
 }

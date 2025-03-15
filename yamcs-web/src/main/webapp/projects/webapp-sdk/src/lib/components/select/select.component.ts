@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, contentChildren, forwardRef, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  contentChildren,
+  forwardRef,
+  input,
+  signal,
+} from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatDivider } from '@angular/material/divider';
 import { MatIcon } from '@angular/material/icon';
@@ -19,11 +27,13 @@ export interface YaSelectOption {
   selector: 'ya-select',
   templateUrl: './select.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => YaSelect),
-    multi: true,
-  }],
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => YaSelect),
+      multi: true,
+    },
+  ],
   imports: [
     MatDivider,
     MatIcon,
@@ -36,7 +46,6 @@ export interface YaSelectOption {
   ],
 })
 export class YaSelect implements ControlValueAccessor {
-
   icon = input<string>();
   emptyOption = input<string>('-- select an option --');
   showClear = input<boolean>(false);
@@ -64,7 +73,7 @@ export class YaSelect implements ControlValueAccessor {
     return selectedId;
   });
 
-  private onChange = (_: string | null) => { };
+  private onChange = (_: string | null) => {};
 
   public isSelected(id: string) {
     const value = this.selected();
@@ -87,6 +96,5 @@ export class YaSelect implements ControlValueAccessor {
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any) {
-  }
+  registerOnTouched(fn: any) {}
 }

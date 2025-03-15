@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, ElementRef, Input, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  Input,
+  ViewChild,
+} from '@angular/core';
 import { java } from '@codemirror/lang-java';
 import { javascript } from '@codemirror/lang-javascript';
 import { python } from '@codemirror/lang-python';
@@ -12,18 +18,13 @@ import { MarkdownComponent } from '../../../shared/markdown/markdown.component';
   templateUrl: './algorithm-detail.component.html',
   styleUrl: './algorithm-detail.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    MarkdownComponent,
-    WebappSdkModule,
-  ],
+  imports: [MarkdownComponent, WebappSdkModule],
 })
 export class AlgorithmDetailComponent {
-
   @Input()
   algorithm: Algorithm;
 
-  constructor(readonly yamcs: YamcsService) {
-  }
+  constructor(readonly yamcs: YamcsService) {}
 
   @ViewChild('text')
   set textContainer(textContainer: ElementRef<HTMLDivElement>) {
@@ -31,13 +32,16 @@ export class AlgorithmDetailComponent {
       basicSetup,
       EditorState.readOnly.of(true),
       EditorView.lineWrapping,
-      EditorView.theme({
-        '&': { height: '300px', fontSize: '12px' },
-        '.cm-scroller': {
-          overflow: 'auto',
-          fontFamily: "'Roboto Mono', monospace",
+      EditorView.theme(
+        {
+          '&': { height: '300px', fontSize: '12px' },
+          '.cm-scroller': {
+            overflow: 'auto',
+            fontFamily: "'Roboto Mono', monospace",
+          },
         },
-      }, { dark: false }),
+        { dark: false },
+      ),
     ];
 
     switch (this.algorithm.language.toLowerCase()) {

@@ -1,5 +1,16 @@
 import { APP_BASE_HREF } from '@angular/common';
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, Inject, Input, OnChanges, OnDestroy, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  HostListener,
+  Inject,
+  Input,
+  OnChanges,
+  OnDestroy,
+  ViewChild,
+} from '@angular/core';
 import { EventHandler, Graphics } from '@fqqb/timeline';
 import { BitRange } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
@@ -12,7 +23,6 @@ import { HexModel, Line } from './model';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HexComponent implements AfterViewInit, OnChanges, OnDestroy {
-
   fontPreloaded$: Promise<boolean>;
 
   @ViewChild('canvasEl')
@@ -43,9 +53,12 @@ export class HexComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   constructor(@Inject(APP_BASE_HREF) baseHref: string) {
     const resourceUrl = `url(${baseHref}media/RobotoMono-Regular.woff2)`;
-    this.fontPreloaded$ = new Promise(resolve => {
+    this.fontPreloaded$ = new Promise((resolve) => {
       const robotoMono = new FontFace('Roboto Mono', resourceUrl);
-      robotoMono.load().then(() => resolve(true)).catch(() => resolve(false));
+      robotoMono
+        .load()
+        .then(() => resolve(true))
+        .catch(() => resolve(false));
     });
   }
 
@@ -87,12 +100,20 @@ export class HexComponent implements AfterViewInit, OnChanges, OnDestroy {
 
     this.mediaQueryListEventListener = () => {
       this.dirty = true;
-      this.mediaQueryList = matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
-      this.mediaQueryList.addEventListener('change', this.mediaQueryListEventListener, { once: true });
+      this.mediaQueryList = matchMedia(
+        `(resolution: ${window.devicePixelRatio}dppx)`,
+      );
+      this.mediaQueryList.addEventListener(
+        'change',
+        this.mediaQueryListEventListener,
+        { once: true },
+      );
     };
     this.mediaQueryListEventListener();
 
-    this.animationFrameRequest = window.requestAnimationFrame(() => this.step());
+    this.animationFrameRequest = window.requestAnimationFrame(() =>
+      this.step(),
+    );
   }
 
   ngOnChanges() {
@@ -133,7 +154,9 @@ export class HexComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   private step() {
-    this.animationFrameRequest = window.requestAnimationFrame(() => this.step());
+    this.animationFrameRequest = window.requestAnimationFrame(() =>
+      this.step(),
+    );
 
     if (!this.dirty) {
       return;
@@ -158,29 +181,31 @@ export class HexComponent implements AfterViewInit, OnChanges, OnDestroy {
   private drawCharcount(line: Line, y: number) {
     const text = line.charCountHex + ': ';
 
-    this.g.addHitRegion({
-      id: line.id,
-      mouseDown: () => {
-        this.pressStart = line.range;
-        this.selection = line.range;
-        this.dirty = true;
-      },
-      mouseEnter: () => {
-        this.highlight = line.range;
-        this.dirty = true;
-      },
-      mouseLeave: () => {
-        this.highlight = undefined;
-        this.dirty = true;
-      },
-      mouseMove: (pressing) => {
-        if (pressing && this.pressStart) {
-          const joined = this.pressStart.join(line.range);
-          this.selection = joined;
+    this.g
+      .addHitRegion({
+        id: line.id,
+        mouseDown: () => {
+          this.pressStart = line.range;
+          this.selection = line.range;
           this.dirty = true;
-        }
-      }
-    }).addRect(0, y, this.charWidth * text.length, this.fontSize);
+        },
+        mouseEnter: () => {
+          this.highlight = line.range;
+          this.dirty = true;
+        },
+        mouseLeave: () => {
+          this.highlight = undefined;
+          this.dirty = true;
+        },
+        mouseMove: (pressing) => {
+          if (pressing && this.pressStart) {
+            const joined = this.pressStart.join(line.range);
+            this.selection = joined;
+            this.dirty = true;
+          }
+        },
+      })
+      .addRect(0, y, this.charWidth * text.length, this.fontSize);
 
     this.g.fillText({
       x: 0,
@@ -199,36 +224,46 @@ export class HexComponent implements AfterViewInit, OnChanges, OnDestroy {
     for (let i = 0; i < line.hexComponents.length; i++) {
       const component = line.hexComponents[i];
       if (component.type === 'word') {
-
         // Highlight entire word when any of its four nibbles is hovered
-        this.g.addHitRegion({
-          id: component.id,
-          mouseDown: () => {
-            this.pressStart = component.range;
-            this.selection = component.range;
-            this.dirty = true;
-          },
-          mouseEnter: () => {
-            this.highlight = component.range;
-            this.dirty = true;
-          },
-          mouseLeave: () => {
-            this.highlight = undefined;
-            this.dirty = true;
-          },
-          mouseMove: (pressing) => {
-            if (pressing && this.pressStart) {
-              const joined = this.pressStart.join(component.range);
-              this.selection = joined;
+        this.g
+          .addHitRegion({
+            id: component.id,
+            mouseDown: () => {
+              this.pressStart = component.range;
+              this.selection = component.range;
               this.dirty = true;
-            }
-          }
-        }).addRect(x, y, component.nibbles.length * this.charWidth, this.fontSize);
+            },
+            mouseEnter: () => {
+              this.highlight = component.range;
+              this.dirty = true;
+            },
+            mouseLeave: () => {
+              this.highlight = undefined;
+              this.dirty = true;
+            },
+            mouseMove: (pressing) => {
+              if (pressing && this.pressStart) {
+                const joined = this.pressStart.join(component.range);
+                this.selection = joined;
+                this.dirty = true;
+              }
+            },
+          })
+          .addRect(
+            x,
+            y,
+            component.nibbles.length * this.charWidth,
+            this.fontSize,
+          );
 
         for (const nibble of component.nibbles) {
           let bgColor;
           let fgColor = '#000000';
-          if (!this.pressStart && this.highlight && this.highlight.overlaps(nibble.range)) {
+          if (
+            !this.pressStart &&
+            this.highlight &&
+            this.highlight.overlaps(nibble.range)
+          ) {
             bgColor = 'lightgrey';
           } else if (this.selection && this.selection.overlaps(nibble.range)) {
             bgColor = '#009e87';
@@ -244,7 +279,8 @@ export class HexComponent implements AfterViewInit, OnChanges, OnDestroy {
             });
           }
           this.g.fillText({
-            x, y,
+            x,
+            y,
             baseline: 'top',
             align: 'left',
             font: `${this.fontSize}px 'Roboto Mono', monospace`,
@@ -254,24 +290,38 @@ export class HexComponent implements AfterViewInit, OnChanges, OnDestroy {
           x += this.charWidth;
         }
       } else if (component.type === 'filler') {
-        this.g.addHitRegion({
-          id: component.id,
-          mouseDown: () => {
-            this.pressStart = new BitRange(component.bitpos, 0);
-          },
-          mouseMove: (pressing) => {
-            if (pressing && this.pressStart) {
-              const joined = this.pressStart.joinBit(component.bitpos);
-              this.selection = joined;
-              this.dirty = true;
-            }
-          }
-        }).addRect(x, y, component.content.length * this.charWidth, this.fontSize);
+        this.g
+          .addHitRegion({
+            id: component.id,
+            mouseDown: () => {
+              this.pressStart = new BitRange(component.bitpos, 0);
+            },
+            mouseMove: (pressing) => {
+              if (pressing && this.pressStart) {
+                const joined = this.pressStart.joinBit(component.bitpos);
+                this.selection = joined;
+                this.dirty = true;
+              }
+            },
+          })
+          .addRect(
+            x,
+            y,
+            component.content.length * this.charWidth,
+            this.fontSize,
+          );
 
         let bgColor;
-        if (!this.pressStart && this.highlight && this.highlight.containsBitExclusive(component.bitpos)) {
+        if (
+          !this.pressStart &&
+          this.highlight &&
+          this.highlight.containsBitExclusive(component.bitpos)
+        ) {
           bgColor = 'lightgrey';
-        } else if (this.selection && this.selection.containsBitExclusive(component.bitpos)) {
+        } else if (
+          this.selection &&
+          this.selection.containsBitExclusive(component.bitpos)
+        ) {
           bgColor = '#009e87';
         }
         if (bgColor && i !== line.hexComponents.length - 1) {
@@ -293,36 +343,41 @@ export class HexComponent implements AfterViewInit, OnChanges, OnDestroy {
 
     for (const component of line.asciiComponents) {
       if (component.type === 'word') {
-
         for (const c of component.chars) {
           // Highlight byte when a character is hovered
-          this.g.addHitRegion({
-            id: component.id,
-            mouseDown: () => {
-              this.pressStart = c.range;
-              this.selection = c.range;
-              this.dirty = true;
-            },
-            mouseEnter: () => {
-              this.highlight = c.range;
-              this.dirty = true;
-            },
-            mouseLeave: () => {
-              this.highlight = undefined;
-              this.dirty = true;
-            },
-            mouseMove: (pressing) => {
-              if (pressing && this.pressStart) {
-                const joined = this.pressStart.join(c.range);
-                this.selection = joined;
+          this.g
+            .addHitRegion({
+              id: component.id,
+              mouseDown: () => {
+                this.pressStart = c.range;
+                this.selection = c.range;
                 this.dirty = true;
-              }
-            }
-          }).addRect(x, y, this.charWidth, this.fontSize);
+              },
+              mouseEnter: () => {
+                this.highlight = c.range;
+                this.dirty = true;
+              },
+              mouseLeave: () => {
+                this.highlight = undefined;
+                this.dirty = true;
+              },
+              mouseMove: (pressing) => {
+                if (pressing && this.pressStart) {
+                  const joined = this.pressStart.join(c.range);
+                  this.selection = joined;
+                  this.dirty = true;
+                }
+              },
+            })
+            .addRect(x, y, this.charWidth, this.fontSize);
 
           let bgColor;
           let fgColor = '#777';
-          if (!this.pressStart && this.highlight && this.highlight.overlaps(c.range)) {
+          if (
+            !this.pressStart &&
+            this.highlight &&
+            this.highlight.overlaps(c.range)
+          ) {
             bgColor = 'lightgrey';
           } else if (this.selection && this.selection.overlaps(c.range)) {
             bgColor = '#009e87';
@@ -338,7 +393,8 @@ export class HexComponent implements AfterViewInit, OnChanges, OnDestroy {
             });
           }
           this.g.fillText({
-            x, y,
+            x,
+            y,
             baseline: 'top',
             align: 'left',
             font: `${this.fontSize}px 'Roboto Mono', monospace`,
@@ -348,25 +404,36 @@ export class HexComponent implements AfterViewInit, OnChanges, OnDestroy {
           x += this.charWidth;
         }
       } else if (component.type === 'filler') {
-        this.g.addHitRegion({
-          id: component.id,
-          mouseDown: () => {
-            this.pressStart = new BitRange(component.bitpos, 0);
-          },
-          mouseMove: (pressing) => {
-            if (pressing && this.pressStart) {
-              const joined = this.pressStart.joinBit(component.bitpos);
-              this.selection = joined;
-              this.dirty = true;
-            }
-          }
-        }).addRect(x, y, component.content.length * this.charWidth, this.fontSize);
+        this.g
+          .addHitRegion({
+            id: component.id,
+            mouseDown: () => {
+              this.pressStart = new BitRange(component.bitpos, 0);
+            },
+            mouseMove: (pressing) => {
+              if (pressing && this.pressStart) {
+                const joined = this.pressStart.joinBit(component.bitpos);
+                this.selection = joined;
+                this.dirty = true;
+              }
+            },
+          })
+          .addRect(
+            x,
+            y,
+            component.content.length * this.charWidth,
+            this.fontSize,
+          );
       }
     }
   }
 
   ngOnDestroy() {
-    this.mediaQueryList?.removeEventListener('change', this.mediaQueryListEventListener);
-    this.animationFrameRequest && window.cancelAnimationFrame(this.animationFrameRequest);
+    this.mediaQueryList?.removeEventListener(
+      'change',
+      this.mediaQueryListEventListener,
+    );
+    this.animationFrameRequest &&
+      window.cancelAnimationFrame(this.animationFrameRequest);
   }
 }

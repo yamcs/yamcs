@@ -9,14 +9,9 @@ import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.
 @Component({
   templateUrl: './role.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AdminPageTemplateComponent,
-    AdminToolbarComponent,
-    WebappSdkModule,
-  ],
+  imports: [AdminPageTemplateComponent, AdminToolbarComponent, WebappSdkModule],
 })
 export class RoleComponent {
-
   role$ = new BehaviorSubject<RoleInfo | null>(null);
 
   constructor(
@@ -24,14 +19,14 @@ export class RoleComponent {
     private yamcs: YamcsService,
     private title: Title,
   ) {
-    route.paramMap.subscribe(params => {
+    route.paramMap.subscribe((params) => {
       const name = params.get('name')!;
       this.changeRole(name);
     });
   }
 
   private changeRole(name: string) {
-    this.yamcs.yamcsClient.getRole(name).then(role => {
+    this.yamcs.yamcsClient.getRole(name).then((role) => {
       this.role$.next(role);
       this.title.setTitle(role.name);
     });

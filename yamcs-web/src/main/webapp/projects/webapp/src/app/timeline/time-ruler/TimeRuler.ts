@@ -3,7 +3,6 @@ import { TimelineBand } from '@yamcs/webapp-sdk';
 import { TimelineChartComponent } from '../timeline-chart/timeline-chart.component';
 
 export class TimeRuler extends DefaultTimeRuler {
-
   constructor(chart: TimelineChartComponent, bandInfo: TimelineBand) {
     super(chart.timeline);
     this.contentHeight = 20;

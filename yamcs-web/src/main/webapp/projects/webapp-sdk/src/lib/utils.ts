@@ -1,14 +1,21 @@
-import { Instance, Parameter, ParameterMember, ParameterType, UnitInfo, Value } from './client';
+import {
+  Instance,
+  Parameter,
+  ParameterMember,
+  ParameterType,
+  UnitInfo,
+  Value,
+} from './client';
 
 /**
  * Minimum valid date for a proto Timestamp
  */
-export const MIN_DATE = new Date("0001-01-01T00:00:00Z");
+export const MIN_DATE = new Date('0001-01-01T00:00:00Z');
 
 /**
  * Maximum valid date for a proto Timestamp
  */
-export const MAX_DATE = new Date("9999-12-31T23:59:59.999999999Z");
+export const MAX_DATE = new Date('9999-12-31T23:59:59.999999999Z');
 
 /**
  * Return a new date, clamped to the range {@link MIN_DATE} - {@link MAX_DATE}
@@ -28,9 +35,9 @@ export function clampDate(date: Date | number | string): Date {
  * https://github.com/whatwg/html/issues/793
  */
 export function structuredClone(obj: {}) {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     const { port1, port2 } = new MessageChannel();
-    port2.onmessage = ev => resolve(ev.data);
+    port2.onmessage = (ev) => resolve(ev.data);
     port1.postMessage(obj);
   });
 }
@@ -40,7 +47,8 @@ export function structuredClone(obj: {}) {
  * Fractions are not currently supported.
  */
 export function subtractDuration(date: Date, isoDuration: string) {
-  const regex = /P((([0-9]*\.?[0-9]*)Y)?(([0-9]*\.?[0-9]*)M)?(([0-9]*\.?[0-9]*)W)?(([0-9]*\.?[0-9]*)D)?)?(T(([0-9]*\.?[0-9]*)H)?(([0-9]*\.?[0-9]*)M)?(([0-9]*\.?[0-9]*)S)?)?/;
+  const regex =
+    /P((([0-9]*\.?[0-9]*)Y)?(([0-9]*\.?[0-9]*)M)?(([0-9]*\.?[0-9]*)W)?(([0-9]*\.?[0-9]*)D)?)?(T(([0-9]*\.?[0-9]*)H)?(([0-9]*\.?[0-9]*)M)?(([0-9]*\.?[0-9]*)S)?)?/;
 
   const matchResult = isoDuration.match(regex);
   if (!matchResult) {
@@ -48,35 +56,44 @@ export function subtractDuration(date: Date, isoDuration: string) {
   }
 
   const dt = new Date(date.getTime());
-  if (matchResult[3]) { // e.g. P1Y
+  if (matchResult[3]) {
+    // e.g. P1Y
     dt.setUTCFullYear(date.getUTCFullYear() - parseFloat(matchResult[3]));
   }
-  if (matchResult[5]) { // e.g. P1M
+  if (matchResult[5]) {
+    // e.g. P1M
     dt.setUTCMonth(date.getUTCMonth() - parseFloat(matchResult[5]));
   }
-  if (matchResult[7]) { // e.g. P1W
-    dt.setUTCDate(date.getUTCDate() - (7 * parseFloat(matchResult[7])));
+  if (matchResult[7]) {
+    // e.g. P1W
+    dt.setUTCDate(date.getUTCDate() - 7 * parseFloat(matchResult[7]));
   }
-  if (matchResult[9]) { // e.g. P1D
+  if (matchResult[9]) {
+    // e.g. P1D
     dt.setUTCDate(date.getUTCDate() - parseFloat(matchResult[9]));
   }
-  if (matchResult[12]) { // e.g. PT1H
+  if (matchResult[12]) {
+    // e.g. PT1H
     dt.setUTCHours(date.getUTCHours() - parseFloat(matchResult[12]));
   }
-  if (matchResult[14]) { // e.g. PT1M
+  if (matchResult[14]) {
+    // e.g. PT1M
     dt.setUTCMinutes(date.getUTCMinutes() - parseFloat(matchResult[14]));
   }
-  if (matchResult[16]) { // e.g. PT1S
+  if (matchResult[16]) {
+    // e.g. PT1S
     dt.setUTCSeconds(date.getUTCSeconds() - parseFloat(matchResult[16]));
   }
   return dt;
 }
 
 export function convertProtoDurationToMillis(protoDuration: string) {
-  if (!protoDuration.endsWith("s")) {
+  if (!protoDuration.endsWith('s')) {
     throw new Error(`Invalid proto duration: ${protoDuration}`);
   }
-  const parts = protoDuration.substring(0, protoDuration.length - 1).split(".", 2);
+  const parts = protoDuration
+    .substring(0, protoDuration.length - 1)
+    .split('.', 2);
   if (parts.length === 1) {
     return Number(parts[0]) * 1000;
   } else {
@@ -88,7 +105,7 @@ export function convertProtoDurationToMillis(protoDuration: string) {
     } else if (millisString.length === 2) {
       millis *= 10;
     }
-    return (seconds * 1000) + millis;
+    return seconds * 1000 + millis;
   }
 }
 
@@ -97,7 +114,8 @@ export function convertProtoDurationToMillis(protoDuration: string) {
  * This only works with seconds, minutes, hours and days.
  */
 export function convertDurationToMillis(isoDuration: string) {
-  const regex = /P((([0-9]*\.?[0-9]*)Y)?(([0-9]*\.?[0-9]*)M)?(([0-9]*\.?[0-9]*)W)?(([0-9]*\.?[0-9]*)D)?)?(T(([0-9]*\.?[0-9]*)H)?(([0-9]*\.?[0-9]*)M)?(([0-9]*\.?[0-9]*)S)?)?/;
+  const regex =
+    /P((([0-9]*\.?[0-9]*)Y)?(([0-9]*\.?[0-9]*)M)?(([0-9]*\.?[0-9]*)W)?(([0-9]*\.?[0-9]*)D)?)?(T(([0-9]*\.?[0-9]*)H)?(([0-9]*\.?[0-9]*)M)?(([0-9]*\.?[0-9]*)S)?)?/;
 
   const matchResult = isoDuration.match(regex);
   if (!matchResult) {
@@ -105,16 +123,20 @@ export function convertDurationToMillis(isoDuration: string) {
   }
 
   let millis = 0;
-  if (matchResult[9]) { // e.g. P1D
+  if (matchResult[9]) {
+    // e.g. P1D
     millis += parseFloat(matchResult[9]) * 86400000;
   }
-  if (matchResult[12]) { // e.g. PT1H
+  if (matchResult[12]) {
+    // e.g. PT1H
     millis += parseFloat(matchResult[12]) * 3600000;
   }
-  if (matchResult[14]) { // e.g. PT1M
+  if (matchResult[14]) {
+    // e.g. PT1M
     millis += parseFloat(matchResult[14]) * 60000;
   }
-  if (matchResult[16]) { // e.g. PT1S
+  if (matchResult[16]) {
+    // e.g. PT1S
     millis += parseFloat(matchResult[16]) * 1000;
   }
   return millis;
@@ -144,7 +166,7 @@ export function convertBase64ToHex(base64: string) {
   let result = '';
   for (let i = 0; i < raw.length; i++) {
     const hex = raw.charCodeAt(i).toString(16);
-    result += (hex.length === 2 ? hex : '0' + hex);
+    result += hex.length === 2 ? hex : '0' + hex;
   }
   return result;
 }
@@ -175,7 +197,10 @@ export function toValue(value: any): Value {
       names.push(name);
       values.push(toValue(value[name]));
     }
-    return { type: 'AGGREGATE', aggregateValue: { name: names, value: values } };
+    return {
+      type: 'AGGREGATE',
+      aggregateValue: { name: names, value: values },
+    };
   } else if (value === true || value === false) {
     return { type: 'BOOLEAN', booleanValue: value };
   } else {
@@ -208,7 +233,7 @@ export function convertValue(value: Value) {
       return value.stringValue;
     case 'ARRAY':
       const arrayValue: any[] = [];
-      for (const item of (value.arrayValue || [])) {
+      for (const item of value.arrayValue || []) {
         arrayValue.push(convertValue(item));
       }
       return arrayValue;
@@ -216,7 +241,7 @@ export function convertValue(value: Value) {
       const aggregate: Map<string, any> = new Map<string, any>();
       let membersLength = value.aggregateValue?.value.length || 0;
       for (let i = 0; i < membersLength; i++) {
-        let memberName = value.aggregateValue?.name[i] || "";
+        let memberName = value.aggregateValue?.name[i] || '';
         let memberValue = convertValue(value.aggregateValue?.value[i] as Value);
         aggregate.set(memberName, memberValue);
       }
@@ -227,25 +252,165 @@ export function convertValue(value: Value) {
 }
 
 const adjectives = [
-  'amused', 'acid', 'adaptable', 'alleged', 'agreeable', 'aspiring', 'awestruck', 'berserk', 'bright',
-  'busy', 'calm', 'caring', 'chilly', 'cool', 'curious', 'dapper', 'dazzling', 'dizzy', 'eager',
-  'elite', 'energetic', 'familiar', 'famous', 'fancy', 'fast', 'festive', 'flawless', 'fresh',
-  'friendly', 'funny', 'furry', 'gifted', 'groovy', 'helpful', 'hungry', 'jolly', 'jumpy', 'lucky',
-  'polite', 'quick', 'quiet', 'rapid', 'rare', 'scary', 'surprised', 'swift', 'tall', 'tame', 'thin',
-  'tidy', 'tiny', 'thirsty', 'tough', 'wacky', 'wild'];
+  'amused',
+  'acid',
+  'adaptable',
+  'alleged',
+  'agreeable',
+  'aspiring',
+  'awestruck',
+  'berserk',
+  'bright',
+  'busy',
+  'calm',
+  'caring',
+  'chilly',
+  'cool',
+  'curious',
+  'dapper',
+  'dazzling',
+  'dizzy',
+  'eager',
+  'elite',
+  'energetic',
+  'familiar',
+  'famous',
+  'fancy',
+  'fast',
+  'festive',
+  'flawless',
+  'fresh',
+  'friendly',
+  'funny',
+  'furry',
+  'gifted',
+  'groovy',
+  'helpful',
+  'hungry',
+  'jolly',
+  'jumpy',
+  'lucky',
+  'polite',
+  'quick',
+  'quiet',
+  'rapid',
+  'rare',
+  'scary',
+  'surprised',
+  'swift',
+  'tall',
+  'tame',
+  'thin',
+  'tidy',
+  'tiny',
+  'thirsty',
+  'tough',
+  'wacky',
+  'wild',
+];
 
 const animals = [
-  'alligator', 'ant', 'anteater', 'antelope', 'armadillo', 'badger', 'bat', 'bear', 'bee',
-  'beetle', 'buffalo', 'butterfly', 'camel', 'cat', 'chameleon', 'cheetah', 'chicken',
-  'cicada', 'chimp', 'clam', 'cow', 'coyote', 'crab', 'cricket', 'crow', 'deer', 'dog', 'dolphin',
-  'donkey', 'dove', 'dragonfly', 'duck', 'eagle', 'eel', 'elephant', 'ferret', 'fish', 'fly', 'fox',
-  'frog', 'gazelle', 'goat', 'groundhog', 'hedgehog', 'hen', 'hippo', 'horse', 'hyena', 'koala',
-  'leopard', 'lion', 'llama', 'lobster', 'lynx', 'meerkat', 'mole', 'moose', 'moth', 'mouse', 'octopus',
-  'orangutan', 'orca', 'ostrich', 'otter', 'owl', 'panda', 'panther', 'parrot', 'penguin', 'pig',
-  'pigeon', 'rabbit', 'raccoon', 'reindeer', 'seagull', 'seahorse', 'seal', 'shark', 'sheep',
-  'shrimp', 'slug', 'snail', 'snake', 'sparrow', 'spider', 'squid', 'squirrel', 'starfish', 'swan',
-  'tiger', 'turtle', 'wallaby', 'walrus', 'wasp', 'weasel', 'weaver', 'whale', 'wolf', 'wolverine',
-  'wombat'];
+  'alligator',
+  'ant',
+  'anteater',
+  'antelope',
+  'armadillo',
+  'badger',
+  'bat',
+  'bear',
+  'bee',
+  'beetle',
+  'buffalo',
+  'butterfly',
+  'camel',
+  'cat',
+  'chameleon',
+  'cheetah',
+  'chicken',
+  'cicada',
+  'chimp',
+  'clam',
+  'cow',
+  'coyote',
+  'crab',
+  'cricket',
+  'crow',
+  'deer',
+  'dog',
+  'dolphin',
+  'donkey',
+  'dove',
+  'dragonfly',
+  'duck',
+  'eagle',
+  'eel',
+  'elephant',
+  'ferret',
+  'fish',
+  'fly',
+  'fox',
+  'frog',
+  'gazelle',
+  'goat',
+  'groundhog',
+  'hedgehog',
+  'hen',
+  'hippo',
+  'horse',
+  'hyena',
+  'koala',
+  'leopard',
+  'lion',
+  'llama',
+  'lobster',
+  'lynx',
+  'meerkat',
+  'mole',
+  'moose',
+  'moth',
+  'mouse',
+  'octopus',
+  'orangutan',
+  'orca',
+  'ostrich',
+  'otter',
+  'owl',
+  'panda',
+  'panther',
+  'parrot',
+  'penguin',
+  'pig',
+  'pigeon',
+  'rabbit',
+  'raccoon',
+  'reindeer',
+  'seagull',
+  'seahorse',
+  'seal',
+  'shark',
+  'sheep',
+  'shrimp',
+  'slug',
+  'snail',
+  'snake',
+  'sparrow',
+  'spider',
+  'squid',
+  'squirrel',
+  'starfish',
+  'swan',
+  'tiger',
+  'turtle',
+  'wallaby',
+  'walrus',
+  'wasp',
+  'weasel',
+  'weaver',
+  'whale',
+  'wolf',
+  'wolverine',
+  'wombat',
+];
 
 /**
  * Generates 'random' animal names.
@@ -291,7 +456,8 @@ export function toDate(obj: any): Date {
 }
 
 export function toBase64URL(data: string) {
-  return window.btoa(data)
+  return window
+    .btoa(data)
     .replace(/\//g, '_')
     .replace(/\+/g, '-')
     .replace(/=/g, '');
@@ -302,7 +468,7 @@ export function fromBase64URL(base64Url: string) {
   return window.atob(base64);
 }
 
-export function generateUnsignedJWT(claims: { [key: string]: any; }) {
+export function generateUnsignedJWT(claims: { [key: string]: any }) {
   const joseHeader = toBase64URL('{"alg":"none"}');
   const payload = toBase64URL(JSON.stringify(claims));
   return `${joseHeader}.${payload}.`;
@@ -319,7 +485,7 @@ export function getDefaultProcessor(instance: Instance): string | null {
 
   // Try to find a 'default' processor for this instance.
   // The alphabetic-first non-replay persistent processor
-  for (const processor of (instance.processors || [])) {
+  for (const processor of instance.processors || []) {
     if (processor.persistent && !processor.replay) {
       return processor.name;
     }
@@ -400,14 +566,18 @@ export function getExtension(filename: string | null): string | null {
   }
 }
 
-export function getEntryForOffset(parameter: Parameter, offset: string): Parameter | ParameterMember | null {
+export function getEntryForOffset(
+  parameter: Parameter,
+  offset: string,
+): Parameter | ParameterMember | null {
   const entry = parameter.name + offset;
   const parts = entry.split('.');
 
   let node: Parameter | ParameterMember = parameter;
   for (let i = 1; i < parts.length; i++) {
     let memberNode;
-    const members: ParameterMember[] = getParameterTypeForEntry(node)?.member || [];
+    const members: ParameterMember[] =
+      getParameterTypeForEntry(node)?.member || [];
     for (const member of members) {
       if (member.name === parts[i]) {
         memberNode = member;
@@ -434,7 +604,10 @@ function getParameterTypeForEntry(entry: Parameter | ParameterMember) {
   }
 }
 
-export function getParameterTypeForPath(parameter: Parameter, pathString?: string): ParameterType | null | undefined {
+export function getParameterTypeForPath(
+  parameter: Parameter,
+  pathString?: string,
+): ParameterType | null | undefined {
   if (!parameter) {
     return null;
   }
@@ -454,7 +627,7 @@ export function getParameterTypeForPath(parameter: Parameter, pathString?: strin
     if (segment.startsWith('[')) {
       ptype = ptype.arrayInfo!.type;
     } else {
-      for (const member of (ptype.member || [])) {
+      for (const member of ptype.member || []) {
         if (member.name === segment) {
           ptype = member.type as ParameterType;
           break;
@@ -526,7 +699,7 @@ export function objectCompareFn(...fields: string[]) {
       } else if (bField == null) {
         rc = 1;
       } else {
-        rc = (aField > bField) ? 1 : -1;
+        rc = aField > bField ? 1 : -1;
       }
       if (reverse[i]) {
         rc = -rc;

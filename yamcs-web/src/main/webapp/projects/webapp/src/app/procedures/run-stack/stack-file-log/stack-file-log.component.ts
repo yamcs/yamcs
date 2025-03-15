@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+} from '@angular/core';
 import { WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
@@ -18,7 +23,6 @@ import { StackFileService } from '../stack-file/StackFileService';
   ],
 })
 export class StackFileLogComponent {
-
   objectName = input.required<string>();
 
   folderLink = computed(() => {
@@ -35,6 +39,5 @@ export class StackFileLogComponent {
   constructor(
     readonly yamcs: YamcsService,
     readonly stackFileService: StackFileService,
-  ) {
-  }
+  ) {}
 }

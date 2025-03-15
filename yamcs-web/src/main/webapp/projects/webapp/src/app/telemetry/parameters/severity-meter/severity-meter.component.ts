@@ -1,21 +1,29 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnChanges, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  Input,
+  OnChanges,
+  ViewChild,
+} from '@angular/core';
 import { AlarmRange, ParameterValue } from '@yamcs/webapp-sdk';
 
 const XMLNS = 'http://www.w3.org/2000/svg';
 
 @Component({
   selector: 'app-severity-meter',
-  template: `
-    <svg #container
-         width="100%" height="8px"
-         viewBox="0 0 100 100"
-         preserveAspectRatio="none"
-         style="overflow: visible">
-    </svg>`,
+  template: ` <svg
+    #container
+    width="100%"
+    height="8px"
+    viewBox="0 0 100 100"
+    preserveAspectRatio="none"
+    style="overflow: visible"
+  ></svg>`,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SeverityMeterComponent implements AfterViewInit, OnChanges {
-
   @Input()
   pval: ParameterValue;
 
@@ -189,7 +197,11 @@ export class SeverityMeterComponent implements AfterViewInit, OnChanges {
     this.criticalLowRange.setAttribute('width', '0');
     this.indicator.style.visibility = 'hidden';
 
-    if (minLimit !== undefined && maxLimit !== undefined && minLimit !== maxLimit) {
+    if (
+      minLimit !== undefined &&
+      maxLimit !== undefined &&
+      minLimit !== maxLimit
+    ) {
       const meterMin = minLimit - (maxLimit - minLimit) / 5;
       const meterMax = maxLimit + (maxLimit - minLimit) / 5;
       const ratio = 100 / (meterMax - meterMin);
@@ -296,9 +308,15 @@ export class SeverityMeterComponent implements AfterViewInit, OnChanges {
 
       const currentValue = this.getNumericValue(this.pval);
       if (currentValue !== undefined) {
-        const constrained = Math.min(Math.max(currentValue, meterMin), meterMax);
+        const constrained = Math.min(
+          Math.max(currentValue, meterMin),
+          meterMax,
+        );
         const pos = (constrained - meterMin) * ratio;
-        this.indicator.setAttribute('points', `${pos},25 ${pos - 3.5},100 ${pos + 3.5},100`);
+        this.indicator.setAttribute(
+          'points',
+          `${pos},25 ${pos - 3.5},100 ${pos + 3.5},100`,
+        );
         this.indicator.style.visibility = 'visible';
       } else {
         this.indicator.style.visibility = 'hidden';

@@ -1,9 +1,7 @@
 import { ObjectPrivilege, UserInfo } from './client';
 
 export class User {
-
-  constructor(private userInfo: UserInfo) {
-  }
+  constructor(private userInfo: UserInfo) {}
 
   getName() {
     return this.userInfo.name;

@@ -1,9 +1,22 @@
-import { FullscreenOverlayContainer, OverlayContainer } from '@angular/cdk/overlay';
+import {
+  FullscreenOverlayContainer,
+  OverlayContainer,
+} from '@angular/cdk/overlay';
 import { APP_BASE_HREF } from '@angular/common';
-import { EnvironmentProviders, inject, provideAppInitializer, provideExperimentalZonelessChangeDetection, Provider } from '@angular/core';
+import {
+  EnvironmentProviders,
+  inject,
+  provideAppInitializer,
+  provideExperimentalZonelessChangeDetection,
+  Provider,
+} from '@angular/core';
 import { DateAdapter } from '@angular/material/core';
 import { MatIconRegistry } from '@angular/material/icon';
-import { MAT_TOOLTIP_DEFAULT_OPTIONS, MAT_TOOLTIP_DEFAULT_OPTIONS_FACTORY, MatTooltipDefaultOptions } from '@angular/material/tooltip';
+import {
+  MAT_TOOLTIP_DEFAULT_OPTIONS,
+  MAT_TOOLTIP_DEFAULT_OPTIONS_FACTORY,
+  MatTooltipDefaultOptions,
+} from '@angular/material/tooltip';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
 import { UtcDateAdapter } from './components/date-time-input/UtcDateAdapter';
@@ -17,9 +30,7 @@ const matTooltipOptions: MatTooltipDefaultOptions = {
 };
 
 export function provideUtcNativeDateAdapter(): Provider[] {
-  return [
-    { provide: DateAdapter, useClass: UtcDateAdapter },
-  ];
+  return [{ provide: DateAdapter, useClass: UtcDateAdapter }];
 }
 
 /**
@@ -81,7 +92,10 @@ export function provideSdkBridge(): EnvironmentProviders[] {
   ];
 }
 
-export function provideYamcsWebExtension(): (Provider | EnvironmentProviders)[] {
+export function provideYamcsWebExtension(): (
+  | Provider
+  | EnvironmentProviders
+)[] {
   return [
     provideBaseHrefFromIndexHtml(),
     provideYamcsMaterialConfiguration(),

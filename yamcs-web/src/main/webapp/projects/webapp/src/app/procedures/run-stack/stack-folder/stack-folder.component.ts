@@ -1,10 +1,23 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  OnDestroy,
+  ViewChild,
+} from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { ConfigService, ListObjectsOptions, ListObjectsResponse, MessageService, StorageClient, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  ConfigService,
+  ListObjectsOptions,
+  ListObjectsResponse,
+  MessageService,
+  StorageClient,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/AuthService';
@@ -65,11 +78,11 @@ export class StackFolderComponent implements OnDestroy {
     this.bucket = configService.getStackBucket();
 
     this.loadCurrentFolder();
-    this.routerSubscription = router.events.pipe(
-      filter(evt => evt instanceof NavigationEnd)
-    ).subscribe(() => {
-      this.loadCurrentFolder();
-    });
+    this.routerSubscription = router.events
+      .pipe(filter((evt) => evt instanceof NavigationEnd))
+      .subscribe(() => {
+        this.loadCurrentFolder();
+      });
   }
 
   private loadCurrentFolder() {
@@ -79,10 +92,10 @@ export class StackFolderComponent implements OnDestroy {
 
     const routeSegments = this.route.snapshot.url;
     if (routeSegments.length) {
-      options.prefix = routeSegments.map(s => s.path).join('/') + '/';
+      options.prefix = routeSegments.map((s) => s.path).join('/') + '/';
     }
 
-    this.storageClient.listObjects(this.bucket, options).then(dir => {
+    this.storageClient.listObjects(this.bucket, options).then((dir) => {
       this.updateBrowsePath();
       this.changedir(dir);
       this.loaded = true;
@@ -120,9 +133,11 @@ export class StackFolderComponent implements OnDestroy {
   }
 
   masterToggle() {
-    this.isAllSelected() ?
-      this.selection.clear() :
-      this.dataSource.filteredData.forEach(row => this.selection.select(row));
+    this.isAllSelected()
+      ? this.selection.clear()
+      : this.dataSource.filteredData.forEach((row) =>
+          this.selection.select(row),
+        );
   }
 
   toggleOne(row: BrowseItem) {
@@ -138,25 +153,30 @@ export class StackFolderComponent implements OnDestroy {
       data: {
         path: this.getCurrentPath(),
         prefix: '',
-      }
+      },
     });
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.router.navigateByUrl(`/procedures/stacks/files/${result}?c=${this.yamcs.context}`);
+        this.router.navigateByUrl(
+          `/procedures/stacks/files/${result}?c=${this.yamcs.context}`,
+        );
       }
     });
   }
 
   createFolder() {
-    this.dialog.open(CreateStackFolderDialogComponent, {
-      width: '400px',
-      data: {
-        bucket: this.bucket,
-        path: this.getCurrentPath(),
-      }
-    }).afterClosed().subscribe({
-      next: () => this.loadCurrentFolder(),
-    });
+    this.dialog
+      .open(CreateStackFolderDialogComponent, {
+        width: '400px',
+        data: {
+          bucket: this.bucket,
+          path: this.getCurrentPath(),
+        },
+      })
+      .afterClosed()
+      .subscribe({
+        next: () => this.loadCurrentFolder(),
+      });
   }
 
   openUploadDialog() {
@@ -179,14 +199,18 @@ export class StackFolderComponent implements OnDestroy {
         const fullPath = path ? path + '/' + file.name : file.name;
         const prefix = '';
         const objectName = prefix + fullPath;
-        const promise = this.storageClient.uploadObject(this.bucket, objectName, file);
+        const promise = this.storageClient.uploadObject(
+          this.bucket,
+          objectName,
+          file,
+        );
         uploadPromises.push(promise);
       }
     }
 
     Promise.all(uploadPromises)
       .then(() => this.loadCurrentFolder())
-      .catch(err => this.messageService.showError(err));
+      .catch((err) => this.messageService.showError(err));
   }
 
   private getCurrentPath() {
@@ -202,22 +226,32 @@ export class StackFolderComponent implements OnDestroy {
     const findObjectPromises = [];
     for (const item of this.selection.selected) {
       if (item.folder) {
-        findObjectPromises.push(this.storageClient.listObjects(this.bucket, {
-          prefix: item.name,
-        }).then(response => {
-          const objects = response.objects || [];
-          deletableObjects.push(...objects.map(o => o.name));
-        }));
+        findObjectPromises.push(
+          this.storageClient
+            .listObjects(this.bucket, {
+              prefix: item.name,
+            })
+            .then((response) => {
+              const objects = response.objects || [];
+              deletableObjects.push(...objects.map((o) => o.name));
+            }),
+        );
       } else {
         deletableObjects.push(item.name);
       }
     }
 
     Promise.all(findObjectPromises).then(() => {
-      if (confirm(`You are about to delete ${deletableObjects.length} files. Are you sure you want to continue?`)) {
+      if (
+        confirm(
+          `You are about to delete ${deletableObjects.length} files. Are you sure you want to continue?`,
+        )
+      ) {
         const deletePromises = [];
         for (const object of deletableObjects) {
-          deletePromises.push(this.storageClient.deleteObject(this.bucket, object));
+          deletePromises.push(
+            this.storageClient.deleteObject(this.bucket, object),
+          );
         }
 
         Promise.all(deletePromises).then(() => {
@@ -234,7 +268,7 @@ export class StackFolderComponent implements OnDestroy {
       },
       width: '400px',
     });
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.loadCurrentFolder();
       }
@@ -256,7 +290,8 @@ export class StackFolderComponent implements OnDestroy {
     return false;
   }
 
-  dragOver(evt: DragEvent) { // This event must be prevented. Otherwise drop doesn't trigger.
+  dragOver(evt: DragEvent) {
+    // This event must be prevented. Otherwise drop doesn't trigger.
     evt.preventDefault();
     evt.stopPropagation();
     return false;
@@ -277,11 +312,15 @@ export class StackFolderComponent implements OnDestroy {
         objectPrefix += '/';
       }
 
-      dnd.listDroppedFiles(dataTransfer).then(droppedFiles => {
+      dnd.listDroppedFiles(dataTransfer).then((droppedFiles) => {
         const uploadPromises: any[] = [];
         for (const droppedFile of droppedFiles) {
           let objectPath = objectPrefix + droppedFile._fullPath;
-          const promise = this.storageClient.uploadObject(this.bucket, objectPath, droppedFile);
+          const promise = this.storageClient.uploadObject(
+            this.bucket,
+            objectPath,
+            droppedFile,
+          );
           uploadPromises.push(promise);
         }
         Promise.all(uploadPromises).finally(() => {
@@ -297,8 +336,10 @@ export class StackFolderComponent implements OnDestroy {
 
   mayManageStacks() {
     const user = this.authService.getUser()!;
-    return user.hasObjectPrivilege('ManageBucket', this.bucket)
-      || user.hasSystemPrivilege('ManageAnyBucket');
+    return (
+      user.hasObjectPrivilege('ManageBucket', this.bucket) ||
+      user.hasSystemPrivilege('ManageAnyBucket')
+    );
   }
 
   private updateBrowsePath() {

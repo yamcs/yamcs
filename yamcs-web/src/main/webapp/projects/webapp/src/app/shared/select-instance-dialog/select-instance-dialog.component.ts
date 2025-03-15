@@ -1,22 +1,29 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ViewChild,
+} from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
-import { ConfigService, Instance, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  ConfigService,
+  Instance,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { AuthService } from '../../core/services/AuthService';
 
 @Component({
   templateUrl: './select-instance-dialog.component.html',
   styleUrl: './select-instance-dialog.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class SelectInstanceDialogComponent implements AfterViewInit {
-
   filterControl = new UntypedFormControl();
 
   @ViewChild(MatPaginator, { static: true })
@@ -25,11 +32,7 @@ export class SelectInstanceDialogComponent implements AfterViewInit {
   dataSource = new MatTableDataSource<Instance>([]);
   selection = new SelectionModel<Instance>();
 
-  displayedColumns = [
-    'selected',
-    'name',
-    'processor',
-  ];
+  displayedColumns = ['selected', 'name', 'processor'];
 
   constructor(
     private dialogRef: MatDialogRef<SelectInstanceDialogComponent>,
@@ -41,16 +44,20 @@ export class SelectInstanceDialogComponent implements AfterViewInit {
       return instance.name.toLowerCase().indexOf(filter) >= 0;
     };
 
-    yamcs.yamcsClient.getInstances({
-      filter: 'state=running',
-    }).then(instances => {
-      this.dataSource.data = instances;
-    });
+    yamcs.yamcsClient
+      .getInstances({
+        filter: 'state=running',
+      })
+      .then((instances) => {
+        this.dataSource.data = instances;
+      });
   }
 
   isCreateInstanceEnabled() {
     const user = this.authService.getUser()!;
-    return this.config.hasTemplates() && user.hasSystemPrivilege('CreateInstances');
+    return (
+      this.config.hasTemplates() && user.hasSystemPrivilege('CreateInstances')
+    );
   }
 
   ngAfterViewInit() {

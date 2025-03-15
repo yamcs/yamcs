@@ -1,6 +1,27 @@
-import { ChangeDetectionStrategy, Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
-import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormControl, ValidationErrors, Validator, ValidatorFn, Validators } from '@angular/forms';
-import { ArgumentType, utils, validators, WebappSdkModule } from '@yamcs/webapp-sdk';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  forwardRef,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
+import {
+  ControlValueAccessor,
+  NG_VALIDATORS,
+  NG_VALUE_ACCESSOR,
+  UntypedFormControl,
+  ValidationErrors,
+  Validator,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
+import {
+  ArgumentType,
+  utils,
+  validators,
+  WebappSdkModule,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 @Component({
@@ -8,21 +29,23 @@ import { BehaviorSubject, Subscription } from 'rxjs';
   templateUrl: './integer-argument.component.html',
   styleUrls: ['../arguments.css', './integer-argument.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => IntegerArgumentComponent),
-    multi: true,
-  }, {
-    provide: NG_VALIDATORS,
-    useExisting: forwardRef(() => IntegerArgumentComponent),
-    multi: true,
-  }],
-  imports: [
-    WebappSdkModule,
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => IntegerArgumentComponent),
+      multi: true,
+    },
+    {
+      provide: NG_VALIDATORS,
+      useExisting: forwardRef(() => IntegerArgumentComponent),
+      multi: true,
+    },
   ],
+  imports: [WebappSdkModule],
 })
-export class IntegerArgumentComponent implements ControlValueAccessor, OnInit, Validator, OnDestroy {
-
+export class IntegerArgumentComponent
+  implements ControlValueAccessor, OnInit, Validator, OnDestroy
+{
   @Input()
   name: string;
 
@@ -43,7 +66,7 @@ export class IntegerArgumentComponent implements ControlValueAccessor, OnInit, V
   controlName: string;
 
   private validators: ValidatorFn[] = [];
-  private onChange = (_: string | null) => { };
+  private onChange = (_: string | null) => {};
   private subscriptions: Subscription[] = [];
 
   hexToggle$ = new BehaviorSubject<boolean>(false);
@@ -56,7 +79,7 @@ export class IntegerArgumentComponent implements ControlValueAccessor, OnInit, V
           value = String(value);
         }
         this.onChange(value);
-      })
+      }),
     );
 
     if (this.index === undefined) {
@@ -81,7 +104,7 @@ export class IntegerArgumentComponent implements ControlValueAccessor, OnInit, V
   get label() {
     if (this.index !== undefined) {
       const index = utils.unflattenIndex(this.index, this.dimensions!);
-      return index.map(i => '[' + i + ']').join('');
+      return index.map((i) => '[' + i + ']').join('');
     } else {
       return this.name;
     }
@@ -95,11 +118,9 @@ export class IntegerArgumentComponent implements ControlValueAccessor, OnInit, V
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any) {
-  }
+  registerOnTouched(fn: any) {}
 
-  setDisabledState?(isDisabled: boolean) {
-  }
+  setDisabledState?(isDisabled: boolean) {}
 
   validate(control: UntypedFormControl): ValidationErrors | null {
     for (const validator of this.validators) {
@@ -112,6 +133,6 @@ export class IntegerArgumentComponent implements ControlValueAccessor, OnInit, V
   }
 
   ngOnDestroy() {
-    this.subscriptions.forEach(s => s.unsubscribe());
+    this.subscriptions.forEach((s) => s.unsubscribe());
   }
 }

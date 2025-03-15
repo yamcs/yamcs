@@ -6,7 +6,6 @@ const sizes = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
   name: 'formatBytes',
 })
 export class FormatBytesPipe implements PipeTransform {
-
   transform(bytes: string | number | null, decimals = 2): string | null {
     const bytesNumber = Number(bytes);
     if (bytesNumber === 0) {
@@ -15,6 +14,10 @@ export class FormatBytesPipe implements PipeTransform {
       return null;
     }
     const i = Math.floor(Math.log(bytesNumber) / Math.log(1024));
-    return parseFloat((bytesNumber / Math.pow(1024, i)).toFixed(decimals)) + ' ' + sizes[i];
+    return (
+      parseFloat((bytesNumber / Math.pow(1024, i)).toFixed(decimals)) +
+      ' ' +
+      sizes[i]
+    );
   }
 }

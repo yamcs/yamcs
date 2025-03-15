@@ -5,7 +5,6 @@ import { OperatorType } from '../client';
   name: 'operator',
 })
 export class OperatorPipe implements PipeTransform {
-
   transform(operator?: OperatorType): string | null {
     if (!operator) {
       return null;

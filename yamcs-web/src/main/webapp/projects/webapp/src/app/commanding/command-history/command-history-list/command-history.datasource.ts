@@ -1,10 +1,16 @@
 import { DataSource } from '@angular/cdk/table';
-import { CommandHistoryEntry, CommandHistoryRecord, CommandSubscription, GetCommandHistoryOptions, Synchronizer, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  CommandHistoryEntry,
+  CommandHistoryRecord,
+  CommandSubscription,
+  GetCommandHistoryOptions,
+  Synchronizer,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { CommandHistoryBuffer } from './CommandHistoryBuffer';
 
 export class CommandHistoryDataSource extends DataSource<CommandHistoryRecord> {
-
   pageSize = 100;
   continuationToken?: string;
   options: GetCommandHistoryOptions;
@@ -21,7 +27,10 @@ export class CommandHistoryDataSource extends DataSource<CommandHistoryRecord> {
   private realtimeSubscription: CommandSubscription;
   private syncSubscription: Subscription;
 
-  constructor(private yamcs: YamcsService, synchronizer: Synchronizer) {
+  constructor(
+    private yamcs: YamcsService,
+    synchronizer: Synchronizer,
+  ) {
     super();
     this.syncSubscription = synchronizer.sync(() => {
       if (this.buffer.dirty && !this.loading$.getValue()) {
@@ -31,7 +40,6 @@ export class CommandHistoryDataSource extends DataSource<CommandHistoryRecord> {
     });
 
     this.buffer = new CommandHistoryBuffer(() => {
-
       // Best solution for now, alternative is to re-establish
       // the offscreenRecord after compacting.
       this.blockHasMore = true;
@@ -53,16 +61,20 @@ export class CommandHistoryDataSource extends DataSource<CommandHistoryRecord> {
     return this.loadPage({
       ...options,
       limit: this.pageSize,
-    }).then(entries => {
-      this.buffer.reset();
-      this.blockHasMore = false;
-      this.buffer.addArchiveData(entries.map(entry => new CommandHistoryRecord(entry)));
+    })
+      .then((entries) => {
+        this.buffer.reset();
+        this.blockHasMore = false;
+        this.buffer.addArchiveData(
+          entries.map((entry) => new CommandHistoryRecord(entry)),
+        );
 
-      // Quick emit, don't wait on sync tick
-      this.emitCommands();
-    }).finally(() => {
-      this.loading$.next(false);
-    });
+        // Quick emit, don't wait on sync tick
+        this.emitCommands();
+      })
+      .finally(() => {
+        this.loading$.next(false);
+      });
   }
 
   hasMore() {
@@ -70,14 +82,16 @@ export class CommandHistoryDataSource extends DataSource<CommandHistoryRecord> {
   }
 
   private async loadPage(options: GetCommandHistoryOptions) {
-    return this.yamcs.yamcsClient.getCommandHistoryEntries(this.yamcs.instance!, options).then(page => {
-      this.continuationToken = page.continuationToken;
-      var commands = page.commands || [];
-      for (const command of commands) {
-        this.updateNamespaces(command);
-      }
-      return commands;
-    });
+    return this.yamcs.yamcsClient
+      .getCommandHistoryEntries(this.yamcs.instance!, options)
+      .then((page) => {
+        this.continuationToken = page.continuationToken;
+        var commands = page.commands || [];
+        for (const command of commands) {
+          this.updateNamespaces(command);
+        }
+        return commands;
+      });
   }
 
   async loadMoreData(options: GetCommandHistoryOptions) {
@@ -88,8 +102,8 @@ export class CommandHistoryDataSource extends DataSource<CommandHistoryRecord> {
       ...options,
       next: this.continuationToken,
       limit: this.pageSize,
-    }).then(entries => {
-      const records = entries.map(entry => new CommandHistoryRecord(entry));
+    }).then((entries) => {
+      const records = entries.map((entry) => new CommandHistoryRecord(entry));
       this.buffer.addArchiveData(records);
 
       // Quick emit, don't wait on sync tick
@@ -99,15 +113,19 @@ export class CommandHistoryDataSource extends DataSource<CommandHistoryRecord> {
 
   startStreaming() {
     this.streaming$.next(true);
-    this.realtimeSubscription = this.yamcs.yamcsClient.createCommandSubscription({
-      instance: this.yamcs.instance!,
-      processor: this.yamcs.processor!,
-    }, entry => {
-      if (!this.loading$.getValue()) {
-        this.updateNamespaces(entry);
-        this.buffer.addRealtimeCommand(entry);
-      }
-    });
+    this.realtimeSubscription =
+      this.yamcs.yamcsClient.createCommandSubscription(
+        {
+          instance: this.yamcs.instance!,
+          processor: this.yamcs.processor!,
+        },
+        (entry) => {
+          if (!this.loading$.getValue()) {
+            this.updateNamespaces(entry);
+            this.buffer.addRealtimeCommand(entry);
+          }
+        },
+      );
   }
 
   private updateNamespaces(command: CommandHistoryEntry) {

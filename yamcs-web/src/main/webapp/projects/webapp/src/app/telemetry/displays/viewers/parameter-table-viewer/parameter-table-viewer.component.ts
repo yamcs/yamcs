@@ -1,7 +1,14 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { ConfigService, NamedObjectId, ParameterSubscription, StorageClient, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  ConfigService,
+  NamedObjectId,
+  ParameterSubscription,
+  StorageClient,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { SelectParameterDialogComponent } from '../../../../shared/select-parameter-dialog/select-parameter-dialog.component';
 import { Viewer } from '../Viewer';
@@ -22,7 +29,6 @@ import { ScrollingParameterTable } from './scrolling-parameter-table/scrolling-p
   ],
 })
 export class ParameterTableViewerComponent implements Viewer, OnDestroy {
-
   objectName: string;
 
   selection = new SelectionModel<string>(true, []);
@@ -38,7 +44,7 @@ export class ParameterTableViewerComponent implements Viewer, OnDestroy {
   showActions$ = new BehaviorSubject<boolean>(false);
 
   private dataSubscription: ParameterSubscription;
-  private idMapping: { [key: number]: NamedObjectId; };
+  private idMapping: { [key: number]: NamedObjectId };
 
   constructor(
     private yamcs: YamcsService,
@@ -51,8 +57,8 @@ export class ParameterTableViewerComponent implements Viewer, OnDestroy {
 
   public init(objectName: string) {
     this.objectName = objectName;
-    this.storageClient.getObject(this.bucket, objectName).then(response => {
-      response.text().then(text => {
+    this.storageClient.getObject(this.bucket, objectName).then((response) => {
+      response.text().then((text) => {
         const model: ParameterTable = JSON.parse(text);
         this.model$.next(model);
         this.createOrModifySubscription();
@@ -70,7 +76,7 @@ export class ParameterTableViewerComponent implements Viewer, OnDestroy {
   }
 
   private createOrModifySubscription() {
-    const ids = this.model$.value!.parameters.map(name => ({ name }));
+    const ids = this.model$.value!.parameters.map((name) => ({ name }));
     if (ids.length) {
       if (this.dataSubscription) {
         this.dataSubscription.sendMessage({
@@ -83,21 +89,25 @@ export class ParameterTableViewerComponent implements Viewer, OnDestroy {
           action: 'REPLACE',
         });
       } else {
-        this.dataSubscription = this.yamcs.yamcsClient.createParameterSubscription({
-          instance: this.yamcs.instance!,
-          processor: this.yamcs.processor!,
-          id: ids,
-          abortOnInvalid: false,
-          sendFromCache: true,
-          updateOnExpiration: true,
-          action: 'REPLACE',
-        }, data => {
-          if (data.mapping) {
-            this.idMapping = data.mapping;
-          }
-          const pvals = data.values || [];
-          this.buffer.push(pvals, this.idMapping);
-        });
+        this.dataSubscription =
+          this.yamcs.yamcsClient.createParameterSubscription(
+            {
+              instance: this.yamcs.instance!,
+              processor: this.yamcs.processor!,
+              id: ids,
+              abortOnInvalid: false,
+              sendFromCache: true,
+              updateOnExpiration: true,
+              action: 'REPLACE',
+            },
+            (data) => {
+              if (data.mapping) {
+                this.idMapping = data.mapping;
+              }
+              const pvals = data.values || [];
+              this.buffer.push(pvals, this.idMapping);
+            },
+          );
       }
     }
   }
@@ -137,7 +147,9 @@ export class ParameterTableViewerComponent implements Viewer, OnDestroy {
   public delete() {
     if (!this.selection.isEmpty()) {
       const model = this.model$.value!;
-      model.parameters = model.parameters.filter(p => !this.selection.isSelected(p));
+      model.parameters = model.parameters.filter(
+        (p) => !this.selection.isSelected(p),
+      );
       this.emitModelUpdate(model);
       this.hasUnsavedChanges$.next(true);
     }
@@ -162,7 +174,7 @@ export class ParameterTableViewerComponent implements Viewer, OnDestroy {
 
   removeParameter(name: string) {
     const model = this.model$.value!;
-    model.parameters = model.parameters.filter(p => p !== name);
+    model.parameters = model.parameters.filter((p) => p !== name);
     this.emitModelUpdate(model);
     this.hasUnsavedChanges$.next(true);
   }
@@ -206,15 +218,26 @@ export class ParameterTableViewerComponent implements Viewer, OnDestroy {
   }
 
   save() {
-    const b = new Blob([JSON.stringify({
-      "$schema": "https://yamcs.org/schema/parameter-table.schema.json",
-      ...this.model$.value!,
-    }, undefined, 2)], {
-      type: 'application/json'
-    });
-    return this.storageClient.uploadObject(this.bucket, this.objectName, b).then(() => {
-      this.hasUnsavedChanges$.next(false);
-    });
+    const b = new Blob(
+      [
+        JSON.stringify(
+          {
+            $schema: 'https://yamcs.org/schema/parameter-table.schema.json',
+            ...this.model$.value!,
+          },
+          undefined,
+          2,
+        ),
+      ],
+      {
+        type: 'application/json',
+      },
+    );
+    return this.storageClient
+      .uploadObject(this.bucket, this.objectName, b)
+      .then(() => {
+        this.hasUnsavedChanges$.next(false);
+      });
   }
 
   showAddParameterDialog() {
@@ -223,9 +246,9 @@ export class ParameterTableViewerComponent implements Viewer, OnDestroy {
       data: {
         okLabel: 'ADD',
         exclude: this.getModel().parameters,
-      }
+      },
     });
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.addParameter(result);
       }

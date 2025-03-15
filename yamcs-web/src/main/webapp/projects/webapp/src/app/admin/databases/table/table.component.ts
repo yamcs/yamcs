@@ -7,15 +7,16 @@ import { Table, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
   selector: 'app-table-page',
   templateUrl: './table.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class TableComponent {
-
   table$: Promise<Table>;
 
-  constructor(route: ActivatedRoute, readonly yamcs: YamcsService, title: Title) {
+  constructor(
+    route: ActivatedRoute,
+    readonly yamcs: YamcsService,
+    title: Title,
+  ) {
     const database = route.snapshot.parent!.paramMap.get('database')!;
     const name = route.snapshot.paramMap.get('table')!;
     title.setTitle(name);

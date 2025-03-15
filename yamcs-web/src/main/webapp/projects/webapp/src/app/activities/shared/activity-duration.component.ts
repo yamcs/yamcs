@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, Input, OnChanges, OnDestroy, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnChanges,
+  OnDestroy,
+  inject,
+} from '@angular/core';
 import { Activity, Synchronizer, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
@@ -6,12 +13,9 @@ import { BehaviorSubject, Subscription } from 'rxjs';
   selector: 'app-activity-duration',
   template: '{{ elapsed$ | async | duration }}',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class ActivityDurationComponent implements OnChanges, OnDestroy {
-
   private synchronizer = inject(Synchronizer);
 
   @Input()

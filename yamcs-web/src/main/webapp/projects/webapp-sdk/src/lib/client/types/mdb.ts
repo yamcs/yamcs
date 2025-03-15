@@ -39,7 +39,8 @@ export interface HistoryInfo {
   author: string;
 }
 
-export type DataSource = 'COMMAND'
+export type DataSource =
+  | 'COMMAND'
   | 'COMMAND_HISTORY'
   | 'CONSTANT'
   | 'DERIVED'
@@ -259,7 +260,13 @@ export interface ArgumentAssignment {
 }
 
 export interface Significance {
-  consequenceLevel: 'NONE' | 'WATCH' | 'WARNING' | 'DISTRESS' | 'CRITICAL' | 'SEVERE';
+  consequenceLevel:
+    | 'NONE'
+    | 'WATCH'
+    | 'WARNING'
+    | 'DISTRESS'
+    | 'CRITICAL'
+    | 'SEVERE';
   reasonForWarning: string;
 }
 
@@ -283,7 +290,13 @@ export interface EnumRange {
   description?: string;
 }
 
-export type AlarmLevelType = 'NORMAL' | 'WATCH' | 'WARNING' | 'DISTRESS' | 'CRITICAL' | 'SEVERE';
+export type AlarmLevelType =
+  | 'NORMAL'
+  | 'WATCH'
+  | 'WARNING'
+  | 'DISTRESS'
+  | 'CRITICAL'
+  | 'SEVERE';
 
 export interface AlarmRange {
   level: AlarmLevelType;
@@ -365,7 +378,8 @@ export interface Container extends NameDescription {
   entry?: SequenceEntry[];
 }
 
-export type OperatorType = 'EQUAL_TO'
+export type OperatorType =
+  | 'EQUAL_TO'
   | 'NOT_EQUAL_TO'
   | 'GREATER_THAN'
   | 'GREATER_THAN_OR_EQUAL_TO'

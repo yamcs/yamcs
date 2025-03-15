@@ -1,20 +1,21 @@
 import { AlarmRange, NamedObjectId } from './mdb';
 
 export interface Value {
-  type: 'AGGREGATE'
-  | 'ARRAY'
-  | 'BINARY'
-  | 'BOOLEAN'
-  | 'DOUBLE'
-  | 'ENUMERATED'
-  | 'FLOAT'
-  | 'NONE'
-  | 'SINT32'
-  | 'SINT64'
-  | 'STRING'
-  | 'TIMESTAMP'
-  | 'UINT32'
-  | 'UINT64';
+  type:
+    | 'AGGREGATE'
+    | 'ARRAY'
+    | 'BINARY'
+    | 'BOOLEAN'
+    | 'DOUBLE'
+    | 'ENUMERATED'
+    | 'FLOAT'
+    | 'NONE'
+    | 'SINT32'
+    | 'SINT64'
+    | 'STRING'
+    | 'TIMESTAMP'
+    | 'UINT32'
+    | 'UINT64';
   aggregateValue?: AggregateValue;
   arrayValue?: Value[];
   binaryValue?: string;
@@ -34,7 +35,8 @@ export interface AggregateValue {
   value: Value[];
 }
 
-export type MonitoringResult = 'DISABLED'
+export type MonitoringResult =
+  | 'DISABLED'
   | 'IN_LIMITS'
   | 'WATCH'
   | 'WARNING'
@@ -83,13 +85,13 @@ export interface Range {
 }
 
 export interface IssueCommandOptions {
-  args?: { [key: string]: any; };
+  args?: { [key: string]: any };
   origin?: string;
   sequenceNumber?: number;
   dryRun?: boolean;
   comment?: string;
   stream?: string;
-  extra?: { [key: string]: Value; };
+  extra?: { [key: string]: Value };
 }
 
 export interface IssueCommandResponse {
@@ -98,14 +100,14 @@ export interface IssueCommandResponse {
   origin: string;
   sequenceNumber: number;
   commandName: string;
-  aliases?: { [key: string]: string; };
+  aliases?: { [key: string]: string };
   binary: string;
   username: string;
   queue?: string;
 }
 
 export interface StartProcedureOptions {
-  arguments?: { [key: string]: string; };
+  arguments?: { [key: string]: string };
 }
 
 export interface ExecutorInfo {
@@ -126,7 +128,7 @@ export interface CommandAssignment {
 export interface CommandHistoryEntry {
   id: string;
   commandName: string;
-  aliases?: { [key: string]: string; };
+  aliases?: { [key: string]: string };
   origin: string;
   sequenceNumber: number;
   generationTime: string;

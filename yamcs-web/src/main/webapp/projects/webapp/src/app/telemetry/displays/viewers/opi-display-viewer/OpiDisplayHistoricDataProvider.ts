@@ -1,11 +1,16 @@
 import { HistoricalDataProvider, NullablePoint, Widget } from '@yamcs/opi';
-import { BackfillingSubscription, ConfigService, Synchronizer, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  BackfillingSubscription,
+  ConfigService,
+  Synchronizer,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
 import { DyDataSource } from '../../../../shared/parameter-plot/DyDataSource';
 import { DyPlotData } from '../../../../shared/parameter-plot/DyPlotBuffer';
 
 export class OpiDisplayHistoricDataProvider implements HistoricalDataProvider {
-
   private processedSamples: NullablePoint[] = [];
   private dataSource: DyDataSource;
 
@@ -24,13 +29,13 @@ export class OpiDisplayHistoricDataProvider implements HistoricalDataProvider {
     this.dataSource.resolution = 400;
     this.dataSource.addParameter({ qualifiedName: pvName });
 
-    this.yamcs.range$.subscribe(range => {
+    this.yamcs.range$.subscribe((range) => {
       const stop = this.yamcs.getMissionTime();
       const start = utils.subtractDuration(stop, range);
       this.dataSource.updateWindow(start, stop, [null, null]);
     });
 
-    this.dataSource.data$.subscribe(data => {
+    this.dataSource.data$.subscribe((data) => {
       this.processSamples(data);
       widget.requestRepaint();
     });
@@ -55,13 +60,16 @@ export class OpiDisplayHistoricDataProvider implements HistoricalDataProvider {
     });
     this.subscriptions.push(sub);
 
-    this.backfillSubscription = yamcs.yamcsClient.createBackfillingSubscription({
-      instance: yamcs.instance!
-    }, update => {
-      if (update.finished) {
-        this.dataSource.reloadVisibleRange();
-      }
-    });
+    this.backfillSubscription = yamcs.yamcsClient.createBackfillingSubscription(
+      {
+        instance: yamcs.instance!,
+      },
+      (update) => {
+        if (update.finished) {
+          this.dataSource.reloadVisibleRange();
+        }
+      },
+    );
   }
 
   private processSamples(data: DyPlotData) {
@@ -114,7 +122,7 @@ export class OpiDisplayHistoricDataProvider implements HistoricalDataProvider {
 
   disconnect(): void {
     this.backfillSubscription?.cancel();
-    this.subscriptions.forEach(x => x.unsubscribe());
+    this.subscriptions.forEach((x) => x.unsubscribe());
     this.dataSource?.disconnect();
   }
 }

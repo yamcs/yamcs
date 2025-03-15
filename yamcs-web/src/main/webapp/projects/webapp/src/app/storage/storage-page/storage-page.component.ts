@@ -5,9 +5,6 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
   templateUrl: './storage-page.component.html',
   styleUrl: './storage-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
-export class StoragePageComponent {
-}
+export class StoragePageComponent {}

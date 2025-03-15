@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+} from '@angular/core';
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
@@ -6,12 +11,9 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
   templateUrl: './thickness.component.html',
   styleUrl: './thickness.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class ThicknessComponent {
-
   options = [1, 2, 3, 4];
 
   @Input()
@@ -20,8 +22,7 @@ export class ThicknessComponent {
   @Input()
   color: string;
 
-  constructor(private changeDetection: ChangeDetectorRef) {
-  }
+  constructor(private changeDetection: ChangeDetectorRef) {}
 
   select(thickness: number) {
     this.selectedThickness = thickness;

@@ -1,4 +1,12 @@
-import { AfterViewInit, Component, ElementRef, Inject, OnDestroy, signal, viewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  Inject,
+  OnDestroy,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { markdown } from '@codemirror/lang-markdown';
 import { Extension } from '@codemirror/state';
@@ -10,14 +18,11 @@ import { MarkdownComponent } from '../../../shared/markdown/markdown.component';
   selector: 'app-edit-text-entry-dialog',
   templateUrl: './edit-text-entry-dialog.component.html',
   styleUrl: './edit-text-entry-dialog.component.css',
-  imports: [
-    MarkdownComponent,
-    WebappSdkModule,
-  ],
+  imports: [MarkdownComponent, WebappSdkModule],
 })
 export class EditTextEntryDialogComponent implements AfterViewInit, OnDestroy {
-
-  textContainerRef = viewChild.required<ElementRef<HTMLDivElement>>('textContainer');
+  textContainerRef =
+    viewChild.required<ElementRef<HTMLDivElement>>('textContainer');
   editorView?: EditorView;
 
   text = signal<string>('');
@@ -25,8 +30,7 @@ export class EditTextEntryDialogComponent implements AfterViewInit, OnDestroy {
   constructor(
     private dialogRef: MatDialogRef<EditTextEntryDialogComponent>,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
-  ) {
-  }
+  ) {}
 
   ngAfterViewInit(): void {
     this.text.set(this.data.entry?.text || '');
@@ -35,7 +39,7 @@ export class EditTextEntryDialogComponent implements AfterViewInit, OnDestroy {
       basicSetup,
       EditorView.lineWrapping,
       markdown(),
-      EditorView.updateListener.of(update => {
+      EditorView.updateListener.of((update) => {
         if (update.docChanged) {
           const newValue = update.state.doc.toString();
           this.text.set(newValue);
@@ -43,19 +47,22 @@ export class EditTextEntryDialogComponent implements AfterViewInit, OnDestroy {
       }),
     ];
 
-    const theme = EditorView.theme({
-      '&': {
-        height: '100%',
-        fontSize: '12px',
+    const theme = EditorView.theme(
+      {
+        '&': {
+          height: '100%',
+          fontSize: '12px',
+        },
+        '.cm-scroller': {
+          overflow: 'auto',
+          fontFamily: "'Roboto Mono', monospace",
+        },
+        '&.cm-focused': {
+          outline: 'none',
+        },
       },
-      '.cm-scroller': {
-        overflow: 'auto',
-        fontFamily: "'Roboto Mono', monospace",
-      },
-      '&.cm-focused': {
-        outline: 'none',
-      },
-    }, { dark: false });
+      { dark: false },
+    );
     extensions.push(theme);
 
     this.editorView = new EditorView({
@@ -72,7 +79,11 @@ export class EditTextEntryDialogComponent implements AfterViewInit, OnDestroy {
   }
 
   gotoMarkdownDocs() {
-    window.open('https://www.markdownguide.org/basic-syntax/', '_blank', 'noreferrer');
+    window.open(
+      'https://www.markdownguide.org/basic-syntax/',
+      '_blank',
+      'noreferrer',
+    );
   }
 
   ngOnDestroy(): void {

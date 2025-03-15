@@ -8,7 +8,6 @@ import { Synchronizer } from '../services/synchronizer.service';
 
 @Directive()
 export abstract class BaseComponent {
-
   protected appearanceService: AppearanceService;
   protected changeDetection: ChangeDetectorRef;
   protected messageService: MessageService;

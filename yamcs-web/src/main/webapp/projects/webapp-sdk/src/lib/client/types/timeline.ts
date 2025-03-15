@@ -1,11 +1,10 @@
-
 export interface CreateTimelineItemRequest {
   name: string;
   start: string;
   duration: string;
   type: TimelineItemType;
   tags?: string[];
-  properties?: { [key: string]: string; };
+  properties?: { [key: string]: string };
   activityDefinition?: ActivityDefinition;
 }
 
@@ -14,7 +13,7 @@ export interface UpdateTimelineItemRequest {
   start: string;
   duration: string;
   tags?: string[];
-  properties?: { [key: string]: string; };
+  properties?: { [key: string]: string };
   clearTags?: boolean;
   clearProperties?: boolean;
 }
@@ -28,14 +27,14 @@ export interface TimelineItem {
   duration: string;
   type: TimelineItemType;
   tags?: string[];
-  properties?: { [key: string]: string; };
+  properties?: { [key: string]: string };
   status?: string;
   activityDefinition?: ActivityDefinition;
 }
 
 export interface ActivityDefinition {
   type: string;
-  args?: { [key: string]: any; };
+  args?: { [key: string]: any };
 }
 
 export interface TimelineViewsPage {
@@ -61,7 +60,8 @@ export interface GetTimelineItemsOptions {
   band?: string;
 }
 
-export type TimelineBandType = 'TIME_RULER'
+export type TimelineBandType =
+  | 'TIME_RULER'
   | 'ITEM_BAND'
   | 'SPACER'
   | 'COMMAND_BAND'
@@ -74,17 +74,17 @@ export interface CreateTimelineBandRequest {
   type: TimelineBandType;
   shared: boolean;
   tags?: string[];
-  properties?: { [key: string]: string; };
+  properties?: { [key: string]: string };
 }
 
 export interface TimelineBand {
   id: string;
-  type: TimelineBandType,
+  type: TimelineBandType;
   shared: boolean;
   name: string;
   description: string;
   tags?: string[];
-  properties?: { [key: string]: string; };
+  properties?: { [key: string]: string };
   username: string;
 }
 
@@ -93,7 +93,7 @@ export interface UpdateTimelineBandRequest {
   description: string;
   shared: boolean;
   tags?: string[];
-  properties?: { [key: string]: string; };
+  properties?: { [key: string]: string };
 }
 
 export interface TimelineView {

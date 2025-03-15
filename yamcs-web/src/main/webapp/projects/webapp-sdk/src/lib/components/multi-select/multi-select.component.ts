@@ -1,5 +1,12 @@
 import { AsyncPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input, OnChanges, forwardRef, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnChanges,
+  forwardRef,
+  input,
+} from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatDivider } from '@angular/material/divider';
 import { MatIcon } from '@angular/material/icon';
@@ -12,11 +19,13 @@ import { YaSelectOption } from '../select/select.component';
   selector: 'ya-multi-select',
   templateUrl: './multi-select.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => YaMultiSelect),
-    multi: true,
-  }],
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => YaMultiSelect),
+      multi: true,
+    },
+  ],
   imports: [
     AsyncPipe,
     MatDivider,
@@ -28,7 +37,6 @@ import { YaSelectOption } from '../select/select.component';
   ],
 })
 export class YaMultiSelect implements OnChanges, ControlValueAccessor {
-
   @Input()
   options: YaSelectOption[] = [];
 
@@ -38,7 +46,7 @@ export class YaMultiSelect implements OnChanges, ControlValueAccessor {
   options$ = new BehaviorSubject<YaSelectOption[]>([]);
   selected$ = new BehaviorSubject<string[]>([]);
 
-  private onChange = (_: string[]) => { };
+  private onChange = (_: string[]) => {};
 
   ngOnChanges() {
     this.options$.next(this.options);
@@ -82,11 +90,10 @@ export class YaMultiSelect implements OnChanges, ControlValueAccessor {
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any) {
-  }
+  registerOnTouched(fn: any) {}
 
   getLabel(ids: string[]) {
-    const labels = ids.map(id => {
+    const labels = ids.map((id) => {
       const option = this.findOption(id);
       if (option) {
         return option.label || option.id;

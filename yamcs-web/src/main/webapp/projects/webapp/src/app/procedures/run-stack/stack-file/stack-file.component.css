@@ -34,7 +34,7 @@
 div.entry {
   font-size: 12px;
   line-height: 17px;
-  color: rgba(0, 0, 0, .654);
+  color: rgba(0, 0, 0, 0.654);
 }
 
 div.entry div.in {
@@ -63,7 +63,7 @@ div.entry .seq {
   -webkit-user-select: none;
   -moz-user-select: none;
   -khtml-user-select: none;
-  font-family: 'Roboto Mono', monospace;
+  font-family: "Roboto Mono", monospace;
   color: #bdbdbd;
 }
 
@@ -87,7 +87,7 @@ div.entry.display-text .body {
 div.entry div.in .body {
   background-color: #fafafa;
   border: 1px solid rgb(224, 224, 224);
-  font-family: 'Roboto Mono', monospace;
+  font-family: "Roboto Mono", monospace;
 }
 
 div.entry.display-text div.in .body {

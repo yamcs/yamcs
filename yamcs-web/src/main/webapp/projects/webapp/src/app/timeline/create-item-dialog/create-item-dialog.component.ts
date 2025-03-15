@@ -1,7 +1,24 @@
-import { ChangeDetectionStrategy, Component, Inject, OnDestroy } from '@angular/core';
-import { FormGroup, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Inject,
+  OnDestroy,
+} from '@angular/core';
+import {
+  FormGroup,
+  UntypedFormBuilder,
+  UntypedFormGroup,
+  Validators,
+} from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { CreateTimelineItemRequest, MessageService, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  CreateTimelineItemRequest,
+  MessageService,
+  WebappSdkModule,
+  YaSelectOption,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
 import { itemPropertyInfo } from '../item-band/ItemBand';
 import { ItemStylesComponent } from '../item-band/item-styles/item-styles.component';
@@ -12,13 +29,9 @@ const OVERRIDE_SUFFIX = '_overrideBand';
 @Component({
   templateUrl: './create-item-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    ItemStylesComponent,
-    WebappSdkModule,
-  ],
+  imports: [ItemStylesComponent, WebappSdkModule],
 })
 export class CreateItemDialogComponent implements OnDestroy {
-
   startConstraintOptions: YaSelectOption[] = [
     { id: 'START_ON', label: 'Start on' },
   ];
@@ -67,7 +80,8 @@ export class CreateItemDialogComponent implements OnDestroy {
     const { controls } = this.propertiesGroup;
     for (const key in controls) {
       if (key.endsWith(OVERRIDE_SUFFIX)) {
-        const styleControl = controls[key.substring(0, key.length - OVERRIDE_SUFFIX.length)];
+        const styleControl =
+          controls[key.substring(0, key.length - OVERRIDE_SUFFIX.length)];
         if (controls[key].value) {
           styleControl.enable({ onlySelf: true });
         } else {
@@ -98,9 +112,10 @@ export class CreateItemDialogComponent implements OnDestroy {
       }
     }
 
-    this.yamcs.yamcsClient.createTimelineItem(this.yamcs.instance!, options)
-      .then(item => this.dialogRef.close(item))
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .createTimelineItem(this.yamcs.instance!, options)
+      .then((item) => this.dialogRef.close(item))
+      .catch((err) => this.messageService.showError(err));
   }
 
   ngOnDestroy() {

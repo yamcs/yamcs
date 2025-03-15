@@ -6,9 +6,13 @@ export interface SubscribeEventsRequest {
 }
 
 export type EventSeverity =
-  'INFO' | 'WARNING' | 'ERROR' |
-  'WATCH' | 'DISTRESS' | 'CRITICAL' | 'SEVERE'
-  ;
+  | 'INFO'
+  | 'WARNING'
+  | 'ERROR'
+  | 'WATCH'
+  | 'DISTRESS'
+  | 'CRITICAL'
+  | 'SEVERE';
 
 export interface Event {
   source: string;
@@ -18,7 +22,7 @@ export interface Event {
   type: string;
   message: string;
   severity: EventSeverity;
-  extra?: { [key: string]: string; };
+  extra?: { [key: string]: string };
 }
 
 export interface CreateEventRequest {
@@ -26,7 +30,7 @@ export interface CreateEventRequest {
   type?: string;
   severity?: EventSeverity;
   time?: string;
-  extra?: { [key: string]: string; };
+  extra?: { [key: string]: string };
 }
 
 export interface GetEventsOptions {

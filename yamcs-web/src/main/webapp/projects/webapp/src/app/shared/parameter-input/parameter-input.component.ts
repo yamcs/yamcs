@@ -1,5 +1,15 @@
-import { booleanAttribute, ChangeDetectionStrategy, Component, forwardRef, input } from '@angular/core';
-import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
+import {
+  booleanAttribute,
+  ChangeDetectionStrategy,
+  Component,
+  forwardRef,
+  input,
+} from '@angular/core';
+import {
+  ControlValueAccessor,
+  FormControl,
+  NG_VALUE_ACCESSOR,
+} from '@angular/forms';
 import { Parameter, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { debounceTime, map, Observable, switchMap, tap } from 'rxjs';
 
@@ -8,29 +18,28 @@ import { debounceTime, map, Observable, switchMap, tap } from 'rxjs';
   templateUrl: './parameter-input.component.html',
   styleUrl: './parameter-input.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => AppParameterInput),
-    multi: true,
-  }],
-  imports: [
-    WebappSdkModule,
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => AppParameterInput),
+      multi: true,
+    },
   ],
+  imports: [WebappSdkModule],
 })
 export class AppParameterInput implements ControlValueAccessor {
-
   fill = input(false, { transform: booleanAttribute });
 
-  private onChange = (_: string | null) => { };
+  private onChange = (_: string | null) => {};
 
   formControl = new FormControl<string | null>('');
   filteredOptions: Observable<Parameter[]>;
 
   constructor(yamcs: YamcsService) {
     this.filteredOptions = this.formControl.valueChanges.pipe(
-      tap(val => this.onChange(val)),
+      tap((val) => this.onChange(val)),
       debounceTime(300),
-      switchMap(val => {
+      switchMap((val) => {
         if (val) {
           return yamcs.yamcsClient.getParameters(yamcs.instance!, {
             q: val,
@@ -41,7 +50,7 @@ export class AppParameterInput implements ControlValueAccessor {
           return Promise.resolve({ parameters: [] });
         }
       }),
-      map(page => page.parameters || []),
+      map((page) => page.parameters || []),
     );
   }
 
@@ -53,6 +62,5 @@ export class AppParameterInput implements ControlValueAccessor {
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any): void {
-  }
+  registerOnTouched(fn: any): void {}
 }

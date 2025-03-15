@@ -6,12 +6,9 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
   templateUrl: './admin-page-template.component.html',
   styleUrl: './admin-page-template.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class AdminPageTemplateComponent {
-
   @Input()
   noscroll = false;
 }

@@ -17,7 +17,9 @@ button {
   border-radius: 1px;
   background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.02));
   cursor: pointer;
-  font: 400 12px / 12px Roboto, sans-serif;
+  font:
+    400 12px / 12px Roboto,
+    sans-serif;
 }
 
 button:active {

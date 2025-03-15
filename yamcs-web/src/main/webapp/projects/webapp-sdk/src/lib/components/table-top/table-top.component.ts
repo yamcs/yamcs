@@ -5,12 +5,9 @@ import { MatIcon } from '@angular/material/icon';
   selector: 'ya-table-top',
   templateUrl: './table-top.component.html',
   styleUrl: './table-top.component.css',
-  imports: [
-    MatIcon,
-  ],
+  imports: [MatIcon],
 })
 export class YaTableTop {
-
   icon = input<string>('auto');
   severity = input<'info' | 'error'>('info');
 

@@ -13,7 +13,7 @@
           @if (customStart$ | async; as customStart) {
             @if (customStop$ | async; as customStop) {
               @if (range === "CUSTOM") {
-                <span> {{ customStart | datetime }} - {{ customStop | datetime }} </span>
+                <span>{{ customStart | datetime }} - {{ customStop | datetime }}</span>
               }
             }
           }

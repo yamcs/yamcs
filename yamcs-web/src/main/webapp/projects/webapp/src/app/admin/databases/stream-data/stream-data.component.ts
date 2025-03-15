@@ -6,13 +6,9 @@ import { HexComponent } from '../../../shared/hex/hex.component';
   selector: 'app-stream-data',
   templateUrl: './stream-data.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    HexComponent,
-    WebappSdkModule,
-  ],
+  imports: [HexComponent, WebappSdkModule],
 })
 export class StreamDataComponent {
-
   @Input()
   streamData: StreamData;
 }

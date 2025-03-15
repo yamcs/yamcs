@@ -1,4 +1,13 @@
-import { ConfigService, NamedObjectId, ParameterSubscription, ParameterValue, Sample, Synchronizer, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  ConfigService,
+  NamedObjectId,
+  ParameterSubscription,
+  ParameterValue,
+  Sample,
+  Synchronizer,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { DyPlotBuffer, DyPlotData, DyValueRange } from './DyPlotBuffer';
 import { NamedParameterType } from './NamedParameterType';
@@ -11,7 +20,6 @@ import { CustomBarsValue, DySample, DySeries } from './dygraphs';
  * See http://dygraphs.com/data.html#array
  */
 export class DyDataSource {
-
   // If true, load more samples than needed
   // (useful when horizontal scroll is allowed)
   extendRequestedRange = true;
@@ -43,7 +51,7 @@ export class DyDataSource {
   // same delivery. Should probably have a server-side solution for this use cause though.
   latestRealtimeValues = new Map<string, CustomBarsValue>();
 
-  private idMapping: { [key: number]: NamedObjectId; };
+  private idMapping: { [key: number]: NamedObjectId };
 
   constructor(
     private yamcs: YamcsService,
@@ -69,13 +77,10 @@ export class DyDataSource {
   }
 
   public addParameter(...parameter: NamedParameterType[]) {
-    this.parameters$.next([
-      ...this.parameters$.value,
-      ...parameter,
-    ]);
+    this.parameters$.next([...this.parameters$.value, ...parameter]);
 
     if (this.realtimeSubscription) {
-      const ids = parameter.map(p => ({ name: p.qualifiedName }));
+      const ids = parameter.map((p) => ({ name: p.qualifiedName }));
       this.addToRealtimeSubscription(ids);
     } else {
       this.connectRealtime();
@@ -83,7 +88,9 @@ export class DyDataSource {
   }
 
   public removeParameter(qualifiedName: string) {
-    const parameters = this.parameters$.value.filter(p => p.qualifiedName !== qualifiedName);
+    const parameters = this.parameters$.value.filter(
+      (p) => p.qualifiedName !== qualifiedName,
+    );
     this.parameters$.next(parameters);
   }
 
@@ -100,15 +107,13 @@ export class DyDataSource {
     this.visibleStop = stop;
   }
 
-  updateWindow(
-    start: Date,
-    stop: Date,
-    valueRange: DyValueRange,
-  ) {
+  updateWindow(start: Date, stop: Date, valueRange: DyValueRange) {
     this.loading$.next(true);
     // Load beyond the visible range to be able to show data
     // when panning.
-    const delta = this.extendRequestedRange ? stop.getTime() - start.getTime() : 0;
+    const delta = this.extendRequestedRange
+      ? stop.getTime() - start.getTime()
+      : 0;
     const loadStart = new Date(start.getTime() - delta);
     const loadStop = new Date(stop.getTime() + delta);
 
@@ -116,21 +121,26 @@ export class DyDataSource {
     const promises: Promise<any>[] = [];
     for (const parameter of parameters) {
       promises.push(
-        this.yamcs.yamcsClient.getParameterSamples(this.yamcs.instance!, parameter.qualifiedName, {
-          start: loadStart.toISOString(),
-          stop: loadStop.toISOString(),
-          count: this.resolution,
-          fields: ['time', 'n', 'avg', 'min', 'max'],
-          gapTime: 300000,
-          source: this.configService.isParameterArchiveEnabled()
-            ? 'ParameterArchive' : 'replay',
-        })
+        this.yamcs.yamcsClient.getParameterSamples(
+          this.yamcs.instance!,
+          parameter.qualifiedName,
+          {
+            start: loadStart.toISOString(),
+            stop: loadStop.toISOString(),
+            count: this.resolution,
+            fields: ['time', 'n', 'avg', 'min', 'max'],
+            gapTime: 300000,
+            source: this.configService.isParameterArchiveEnabled()
+              ? 'ParameterArchive'
+              : 'replay',
+          },
+        ),
       );
     }
 
     const loadPromise = Promise.allSettled(promises);
     this.lastLoadPromise = loadPromise;
-    return loadPromise.then(results => {
+    return loadPromise.then((results) => {
       // Effectively cancels past requests
       if (this.lastLoadPromise === loadPromise) {
         this.loading$.next(false);
@@ -146,7 +156,10 @@ export class DyDataSource {
           if (result.status === 'fulfilled') {
             dySeries.push(this.processSamples(result.value));
           } else {
-            console.warn(`Failed to retrieve samples for ${parameters[i].qualifiedName}`, result.reason);
+            console.warn(
+              `Failed to retrieve samples for ${parameters[i].qualifiedName}`,
+              result.reason,
+            );
             dySeries.push([]);
           }
         }
@@ -161,26 +174,32 @@ export class DyDataSource {
   }
 
   private connectRealtime() {
-    const ids = this.parameters$.value.map(parameter => ({ name: parameter.qualifiedName }));
-    this.realtimeSubscription = this.yamcs.yamcsClient.createParameterSubscription({
-      instance: this.yamcs.instance!,
-      processor: this.yamcs.processor!,
-      id: ids,
-      sendFromCache: false,
-      updateOnExpiration: true,
-      abortOnInvalid: true,
-      action: 'REPLACE',
-    }, data => {
-      if (data.mapping) {
-        this.idMapping = {
-          ...this.idMapping,
-          ...data.mapping,
-        };
-      }
-      if (data.values && data.values.length) {
-        this.processRealtimeDelivery(data.values);
-      }
-    });
+    const ids = this.parameters$.value.map((parameter) => ({
+      name: parameter.qualifiedName,
+    }));
+    this.realtimeSubscription =
+      this.yamcs.yamcsClient.createParameterSubscription(
+        {
+          instance: this.yamcs.instance!,
+          processor: this.yamcs.processor!,
+          id: ids,
+          sendFromCache: false,
+          updateOnExpiration: true,
+          abortOnInvalid: true,
+          action: 'REPLACE',
+        },
+        (data) => {
+          if (data.mapping) {
+            this.idMapping = {
+              ...this.idMapping,
+              ...data.mapping,
+            };
+          }
+          if (data.values && data.values.length) {
+            this.processRealtimeDelivery(data.values);
+          }
+        },
+      );
   }
 
   addToRealtimeSubscription(ids: NamedObjectId[]) {
@@ -222,9 +241,11 @@ export class DyDataSource {
     const t = new Date();
     t.setTime(Date.parse(pvals[0].generationTime));
 
-    const dyValues: CustomBarsValue[] = this.parameters$.value.map(parameter => {
-      return this.latestRealtimeValues.get(parameter.qualifiedName) || null;
-    });
+    const dyValues: CustomBarsValue[] = this.parameters$.value.map(
+      (parameter) => {
+        return this.latestRealtimeValues.get(parameter.qualifiedName) || null;
+      },
+    );
 
     const sample: any = [t, ...dyValues];
     this.plotBuffer.addRealtimeValue(sample);
@@ -291,7 +312,7 @@ export class DyDataSource {
     if (referenceSeries !== null) {
       for (let i = 0; i < series.length; i++) {
         if (series[i].length === 0) {
-          series[i] = referenceSeries.map(s => [s[0], null]);
+          series[i] = referenceSeries.map((s) => [s[0], null]);
         }
       }
     }

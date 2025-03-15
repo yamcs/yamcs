@@ -10,9 +10,8 @@ export interface StoredColumnInfo {
   providedIn: 'root',
 })
 export class PreferenceStore {
-
   // Keys without prefix
-  private preferences: { [key: string]: BehaviorSubject<any>; } = {};
+  private preferences: { [key: string]: BehaviorSubject<any> } = {};
 
   private prefix = 'yamcs.';
 
@@ -25,7 +24,9 @@ export class PreferenceStore {
     let item = localStorage.getItem(this.prefix + key);
 
     if (typeof defaultValue === 'boolean') {
-      this.preferences[key].next(item === (!defaultValue).toString() ? !defaultValue : defaultValue);
+      this.preferences[key].next(
+        item === (!defaultValue).toString() ? !defaultValue : defaultValue,
+      );
     } else {
       this.preferences[key].next(item != null ? item : defaultValue);
     }
@@ -66,6 +67,9 @@ export class PreferenceStore {
   }
 
   setVisibleColumns(source: string, columns: StoredColumnInfo[]) {
-    localStorage.setItem(`${this.prefix}${source}.cols`, JSON.stringify(columns));
+    localStorage.setItem(
+      `${this.prefix}${source}.cols`,
+      JSON.stringify(columns),
+    );
   }
 }

@@ -5,5 +5,4 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   template: '<ng-content />',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class YaToolbarActions {
-}
+export class YaToolbarActions {}

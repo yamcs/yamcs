@@ -15,8 +15,10 @@ import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/insta
   ],
 })
 export class StacksPageComponent {
-
-  constructor(title: Title, readonly yamcs: YamcsService) {
+  constructor(
+    title: Title,
+    readonly yamcs: YamcsService,
+  ) {
     title.setTitle('Command stacks');
   }
 }

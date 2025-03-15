@@ -1,10 +1,25 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  ViewChild,
+} from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GetParametersOptions, MessageService, Parameter, WebappSdkModule, YaColumnChooser, YaColumnInfo, YaSelectOption, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  GetParametersOptions,
+  MessageService,
+  Parameter,
+  WebappSdkModule,
+  YaColumnChooser,
+  YaColumnInfo,
+  YaSelectOption,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
@@ -20,7 +35,6 @@ import { ParametersDataSource } from './parameters.datasource';
   ],
 })
 export class ParameterListComponent implements AfterViewInit {
-
   filterForm = new UntypedFormGroup({
     filter: new UntypedFormControl(),
     type: new UntypedFormControl('ANY'),
@@ -114,19 +128,19 @@ export class ParameterListComponent implements AfterViewInit {
       this.filterForm.get('source')!.setValue(this.source);
     }
 
-    this.filterForm.get('filter')!.valueChanges.subscribe(filter => {
+    this.filterForm.get('filter')!.valueChanges.subscribe((filter) => {
       this.paginator.pageIndex = 0;
       this.filter = filter;
       this.updateDataSource();
     });
 
-    this.filterForm.get('type')!.valueChanges.forEach(type => {
-      this.type = (type !== 'ANY') ? type : null;
+    this.filterForm.get('type')!.valueChanges.forEach((type) => {
+      this.type = type !== 'ANY' ? type : null;
       this.updateDataSource();
     });
 
-    this.filterForm.get('source')!.valueChanges.forEach(source => {
-      this.source = (source !== 'ANY') ? source : null;
+    this.filterForm.get('source')!.valueChanges.forEach((source) => {
+      this.source = source !== 'ANY' ? source : null;
       this.updateDataSource();
     });
 
@@ -157,25 +171,32 @@ export class ParameterListComponent implements AfterViewInit {
     if (this.source) {
       options.source = this.source;
     }
-    this.dataSource.loadParameters(options).then(() => {
-      this.selection.clear();
+    this.dataSource
+      .loadParameters(options)
+      .then(() => {
+        this.selection.clear();
 
-      // Reset alias columns
-      for (const aliasColumn of this.aliasColumns$.value) {
-        const idx = this.columns.indexOf(aliasColumn);
-        if (idx !== -1) {
-          this.columns.splice(idx, 1);
+        // Reset alias columns
+        for (const aliasColumn of this.aliasColumns$.value) {
+          const idx = this.columns.indexOf(aliasColumn);
+          if (idx !== -1) {
+            this.columns.splice(idx, 1);
+          }
         }
-      }
-      const aliasColumns = [];
-      for (const namespace of this.dataSource.getAliasNamespaces()) {
-        const aliasColumn = { id: namespace, label: namespace, alwaysVisible: true };
-        aliasColumns.push(aliasColumn);
-      }
-      this.columns.splice(1, 0, ...aliasColumns); // Insert after name column
-      this.aliasColumns$.next(aliasColumns);
-      this.columnChooser.recalculate(this.columns);
-    }).catch(err => this.messageService.showError(err));
+        const aliasColumns = [];
+        for (const namespace of this.dataSource.getAliasNamespaces()) {
+          const aliasColumn = {
+            id: namespace,
+            label: namespace,
+            alwaysVisible: true,
+          };
+          aliasColumns.push(aliasColumn);
+        }
+        this.columns.splice(1, 0, ...aliasColumns); // Insert after name column
+        this.aliasColumns$.next(aliasColumns);
+        this.columnChooser.recalculate(this.columns);
+      })
+      .catch((err) => this.messageService.showError(err));
   }
 
   private updateURL() {
@@ -222,7 +243,7 @@ export class ParameterListComponent implements AfterViewInit {
       const items = this.dataSource.parameters$.value;
       if (items.indexOf(item) !== -1) {
         this.router.navigate(['/mdb/parameters', item.qualifiedName], {
-          queryParams: { c: this.yamcs.context }
+          queryParams: { c: this.yamcs.context },
         });
       }
     }

@@ -7,12 +7,17 @@ import { RGB } from './RGB';
 export const PADDING_TB = 2;
 
 export class IndexGroupBand extends ItemBand {
-
   private backgroundRGB: RGB;
   private foregroundRGB: RGB;
   private formatter: Formatter;
 
-  constructor(timeline: Timeline, label: string, backgroundColor: RGB, foregroundColor: RGB, formatter: Formatter) {
+  constructor(
+    timeline: Timeline,
+    label: string,
+    backgroundColor: RGB,
+    foregroundColor: RGB,
+    formatter: Formatter,
+  ) {
     super(timeline);
     this.label = label;
     this.borderWidth = 0;
@@ -32,14 +37,14 @@ export class IndexGroupBand extends ItemBand {
     this.formatter = formatter;
     this.background = 'white';
 
-    this.addHeaderMouseEnterListener(ev => {
+    this.addHeaderMouseEnterListener((ev) => {
       this.background = (timeline.sidebar! as DefaultSidebar).hoverOverlayColor;
     });
-    this.addHeaderMouseLeaveListener(ev => {
+    this.addHeaderMouseLeaveListener((ev) => {
       this.background = 'white';
     });
 
-    this.addItemClickListener(clickEvent => {
+    this.addItemClickListener((clickEvent) => {
       const { start, stop } = clickEvent.item;
       if (start && stop) {
         this.timeline.setSelection(start, stop);
@@ -50,7 +55,7 @@ export class IndexGroupBand extends ItemBand {
   }
 
   setupTooltip(tooltipInstance: TimelineTooltipComponent) {
-    this.addItemMouseMoveListener(evt => {
+    this.addItemMouseMoveListener((evt) => {
       const { start, stop, data } = evt.item;
       let ttText = data.name + '\n';
       ttText += `Start: ${this.formatter.formatDateTime(start, true)}\n`;
@@ -70,7 +75,7 @@ export class IndexGroupBand extends ItemBand {
       tooltipInstance.show(ttText, evt.clientX, evt.clientY);
     });
 
-    this.addItemMouseLeaveListener(evt => {
+    this.addItemMouseLeaveListener((evt) => {
       tooltipInstance.hide();
     });
   }
@@ -81,10 +86,12 @@ export class IndexGroupBand extends ItemBand {
       const start = utils.toDate(record.first).getTime();
       const stop = utils.toDate(record.last).getTime();
       const item: Item = {
-        start, stop, data: {
+        start,
+        stop,
+        data: {
           name: group.name,
           count: record.num,
-        }
+        },
       };
       if (record.num > 1) {
         const sec = (stop - start) / 1000;

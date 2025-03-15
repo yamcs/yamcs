@@ -15,7 +15,6 @@ import { TransmissionConstraintsIconComponent } from '../transmission-constraint
   ],
 })
 export class YamcsAcknowledgmentsTableComponent {
-
   @Input()
   command: CommandHistoryRecord;
 

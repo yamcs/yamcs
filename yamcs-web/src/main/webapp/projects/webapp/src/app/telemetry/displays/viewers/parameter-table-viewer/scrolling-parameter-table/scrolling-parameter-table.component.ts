@@ -1,7 +1,22 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
-import { ParameterValue, Synchronizer, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  ParameterValue,
+  Synchronizer,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
 import { ParameterTableBuffer } from '../ParameterTableBuffer';
 import { ParameterTable } from '../ParameterTableModel';
@@ -11,12 +26,9 @@ import { ParameterTable } from '../ParameterTableModel';
   templateUrl: './scrolling-parameter-table.component.html',
   styleUrl: './scrolling-parameter-table.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class ScrollingParameterTable implements OnInit, OnChanges, OnDestroy {
-
   @Input()
   model: ParameterTable = {
     scroll: true,
@@ -51,12 +63,13 @@ export class ScrollingParameterTable implements OnInit, OnChanges, OnDestroy {
 
   private syncSubscription: Subscription;
 
-  displayedColumns = [
-    'generationTime',
-    'actions',
-  ];
+  displayedColumns = ['generationTime', 'actions'];
 
-  constructor(readonly yamcs: YamcsService, private changeDetector: ChangeDetectorRef, synchronizer: Synchronizer) {
+  constructor(
+    readonly yamcs: YamcsService,
+    private changeDetector: ChangeDetectorRef,
+    synchronizer: Synchronizer,
+  ) {
     this.syncSubscription = synchronizer.syncFast(() => {
       if (!this.paused) {
         this.refreshTable();
@@ -96,7 +109,9 @@ export class ScrollingParameterTable implements OnInit, OnChanges, OnDestroy {
     this.changeDetector.detectChanges();
   }
 
-  private findAnyMatchingParameterValue(sample: { [key: string]: ParameterValue; }) {
+  private findAnyMatchingParameterValue(sample: {
+    [key: string]: ParameterValue;
+  }) {
     for (const name in sample) {
       if (sample.hasOwnProperty(name)) {
         if (this.model.parameters.indexOf(name) !== -1) {
@@ -122,5 +137,5 @@ export class ScrollingParameterTable implements OnInit, OnChanges, OnDestroy {
 
 export interface ScrollRecord {
   generationTime: string;
-  pvals: { [key: string]: ParameterValue; };
+  pvals: { [key: string]: ParameterValue };
 }

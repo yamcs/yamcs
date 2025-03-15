@@ -15,14 +15,14 @@
                 }
               }
               @if (node.key !== undefined) {
-                <span class="key">{{ node.key }}</span
-                ><span class="symbol">: </span>
+                <span class="key">{{ node.key }}</span>
+                <span class="symbol">:</span>
               }
               @if (node.expanded) {
                 @if (node.value.type === "ARRAY") {
-                  <span class="value expandable" (click)="collapseNode(node)"
-                    >Array({{ node.value.arrayValue?.length || 0 }})</span
-                  >
+                  <span class="value expandable" (click)="collapseNode(node)">
+                    Array({{ node.value.arrayValue?.length || 0 }})
+                  </span>
                 }
                 @if (node.value.type === "AGGREGATE") {
                   <span class="value expandable" (click)="collapseNode(node)">&#123;...&#125;</span>
@@ -34,9 +34,9 @@
                 <span
                   class="value"
                   [class.expandable]="node.children"
-                  (click)="node.children ? expandNode(node) : false"
-                  >{{ node.value | value }}</span
-                >
+                  (click)="node.children ? expandNode(node) : false">
+                  {{ node.value | value }}
+                </span>
               }
             </td>
           </tr>

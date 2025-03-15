@@ -23,7 +23,6 @@ export interface LinkActionDialogData {
   ],
 })
 export class LinkActionDialogComponent {
-
   form: FormGroup;
 
   constructor(

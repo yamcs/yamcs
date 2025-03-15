@@ -6,5 +6,4 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   styleUrl: './stepper.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class YaStepper {
-}
+export class YaStepper {}

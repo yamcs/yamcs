@@ -1,10 +1,36 @@
 import { Overlay } from '@angular/cdk/overlay';
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  HostListener,
+  OnDestroy,
+  ViewChild,
+} from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Band, Banner, ItemBand as DefaultItemBand, Item, MouseTracker, TimeLocator, Timeline } from '@fqqb/timeline';
-import { ConfigService, Formatter, MessageService, Synchronizer, TimelineItem, TimelineView, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  Band,
+  Banner,
+  ItemBand as DefaultItemBand,
+  Item,
+  MouseTracker,
+  TimeLocator,
+  Timeline,
+} from '@fqqb/timeline';
+import {
+  ConfigService,
+  Formatter,
+  MessageService,
+  Synchronizer,
+  TimelineItem,
+  TimelineView,
+  WebappSdkModule,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
 import { addHours, addMinutes } from 'date-fns';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
@@ -38,7 +64,6 @@ interface DateRange {
   ],
 })
 export class TimelineChartComponent implements AfterViewInit, OnDestroy {
-
   @ViewChild('container', { static: true })
   container: ElementRef;
 
@@ -74,37 +99,37 @@ export class TimelineChartComponent implements AfterViewInit, OnDestroy {
     const queryParams = this.route.snapshot.queryParamMap;
     const requestedView = queryParams.get('view');
 
-    this.yamcs.yamcsClient.getTimelineViews(this.yamcs.instance!).then(page => {
-      this.views$.next(page.views || []);
+    this.yamcs.yamcsClient
+      .getTimelineViews(this.yamcs.instance!)
+      .then((page) => {
+        this.views$.next(page.views || []);
 
-      // Respect the requested view (from query param)
-      // But default to the first if unspecified.
-      let view = null;
-      for (const candidate of (page.views || [])) {
-        if (requestedView === candidate.id) {
-          view = candidate;
-          break;
+        // Respect the requested view (from query param)
+        // But default to the first if unspecified.
+        let view = null;
+        for (const candidate of page.views || []) {
+          if (requestedView === candidate.id) {
+            view = candidate;
+            break;
+          }
         }
-      }
-      if (!view && !requestedView) {
-        view = page.views?.length ? page.views[0] : null;
-      }
-      if (view) {
-        this.switchView(view);
-      }
-    });
+        if (!view && !requestedView) {
+          view = page.views?.length ? page.views[0] : null;
+        }
+        if (view) {
+          this.switchView(view);
+        }
+      });
 
     this.timeline = new Timeline(this.container.nativeElement);
 
-    this.timeline.addViewportChangeListener(event => {
+    this.timeline.addViewportChangeListener((event) => {
       this.viewportRange$.next({
         start: new Date(event.start),
         stop: new Date(event.stop),
       });
     });
-    this.viewportRange$.pipe(
-      debounceTime(400),
-    ).forEach(range => {
+    this.viewportRange$.pipe(debounceTime(400)).forEach((range) => {
       this.refreshData();
       this.router.navigate([], {
         replaceUrl: true,
@@ -113,7 +138,7 @@ export class TimelineChartComponent implements AfterViewInit, OnDestroy {
         queryParams: {
           start: range!.start.toISOString(),
           stop: range!.stop.toISOString(),
-        }
+        },
       });
     });
     // this.timeline.sidebar!.backgroundColor = '#fcfcfc';
@@ -136,7 +161,7 @@ export class TimelineChartComponent implements AfterViewInit, OnDestroy {
     this.subscriptions.push(
       this.synchronizer.sync(() => {
         locator.time = this.yamcs.getMissionTime().getTime();
-      })
+      }),
     );
 
     new MouseTracker(this.timeline);
@@ -148,9 +173,10 @@ export class TimelineChartComponent implements AfterViewInit, OnDestroy {
   refreshView() {
     const view = this.view$.value;
     if (view) {
-      this.yamcs.yamcsClient.getTimelineView(this.yamcs.instance!, view.id)
-        .then(updatedView => this.switchView(updatedView))
-        .catch(err => this.messageService.showError(err));
+      this.yamcs.yamcsClient
+        .getTimelineView(this.yamcs.instance!, view.id)
+        .then((updatedView) => this.switchView(updatedView))
+        .catch((err) => this.messageService.showError(err));
     }
   }
 
@@ -170,7 +196,7 @@ export class TimelineChartComponent implements AfterViewInit, OnDestroy {
       this.timeline.removeChild(line);
     }
     if (view) {
-      for (const bandInfo of (view.bands || [])) {
+      for (const bandInfo of view.bands || []) {
         if (bandInfo.type === 'TIME_RULER') {
           const band = new TimeRuler(this, bandInfo);
           this.bands.push(band);
@@ -187,11 +213,26 @@ export class TimelineChartComponent implements AfterViewInit, OnDestroy {
           this.bands.push(band);
           this.installBandListeners(band);
         } else if (bandInfo.type === 'PARAMETER_PLOT') {
-          const band = new ParameterPlot(this, bandInfo, this.yamcs, this.synchronizer, this.configService, this.overlay);
+          const band = new ParameterPlot(
+            this,
+            bandInfo,
+            this.yamcs,
+            this.synchronizer,
+            this.configService,
+            this.overlay,
+          );
           this.bands.push(band);
           this.installBandListeners(band);
         } else if (bandInfo.type === 'PARAMETER_STATES') {
-          const band = new ParameterStateBand(this, bandInfo, this.yamcs, this.synchronizer, this.formatter, this.configService, this.overlay);
+          const band = new ParameterStateBand(
+            this,
+            bandInfo,
+            this.yamcs,
+            this.synchronizer,
+            this.formatter,
+            this.configService,
+            this.overlay,
+          );
           this.bands.push(band);
           this.installBandListeners(band);
         }
@@ -216,7 +257,7 @@ export class TimelineChartComponent implements AfterViewInit, OnDestroy {
   }
 
   private installBandListeners(band: Band) {
-    band.addHeaderClickListener(evt => {
+    band.addHeaderClickListener((evt) => {
       const band = evt.band.data.band;
       const dialogRef = this.dialog.open(EditBandDialogComponent, {
         width: '70%',
@@ -226,9 +267,9 @@ export class TimelineChartComponent implements AfterViewInit, OnDestroy {
           right: '0',
         },
         panelClass: 'dialog-full-size',
-        data: { band }
+        data: { band },
       });
-      dialogRef.afterClosed().subscribe(updatedBand => {
+      dialogRef.afterClosed().subscribe((updatedBand) => {
         if (updatedBand) {
           this.refreshView();
         }
@@ -248,20 +289,24 @@ export class TimelineChartComponent implements AfterViewInit, OnDestroy {
     for (const band of this.bands) {
       if (band instanceof ItemBand) {
         queriedBands.push(band);
-        promises.push(this.yamcs.yamcsClient.getTimelineItems(this.yamcs.instance!, {
-          source: 'rdb',
-          band: band.data.band.id,
-          start: new Date(loadStart).toISOString(),
-          stop: new Date(loadStop).toISOString(),
-        }));
+        promises.push(
+          this.yamcs.yamcsClient.getTimelineItems(this.yamcs.instance!, {
+            source: 'rdb',
+            band: band.data.band.id,
+            start: new Date(loadStart).toISOString(),
+            stop: new Date(loadStop).toISOString(),
+          }),
+        );
       } else if (band instanceof CommandBand) {
         queriedBands.push(band);
-        promises.push(this.yamcs.yamcsClient.getTimelineItems(this.yamcs.instance!, {
-          source: 'commands',
-          band: band.data.band.id,
-          start: new Date(loadStart).toISOString(),
-          stop: new Date(loadStop).toISOString(),
-        }));
+        promises.push(
+          this.yamcs.yamcsClient.getTimelineItems(this.yamcs.instance!, {
+            source: 'commands',
+            band: band.data.band.id,
+            start: new Date(loadStart).toISOString(),
+            stop: new Date(loadStop).toISOString(),
+          }),
+        );
       } else if (band instanceof ParameterPlot) {
         band.refreshData();
       } else if (band instanceof ParameterStateBand) {
@@ -269,12 +314,14 @@ export class TimelineChartComponent implements AfterViewInit, OnDestroy {
       }
     }
     if (promises.length) {
-      Promise.all(promises).then(responses => {
-        for (let i = 0; i < responses.length; i++) {
-          const band = queriedBands[i];
-          this.populateItems(band, responses[i].items || []);
-        }
-      }).catch(err => this.messageService.showError(err));
+      Promise.all(promises)
+        .then((responses) => {
+          for (let i = 0; i < responses.length; i++) {
+            const band = queriedBands[i];
+            this.populateItems(band, responses[i].items || []);
+          }
+        })
+        .catch((err) => this.messageService.showError(err));
     }
   }
 
@@ -336,28 +383,34 @@ export class TimelineChartComponent implements AfterViewInit, OnDestroy {
   }
 
   openCreateItemDialog(type: string) {
-    this.dialog.open(CreateItemDialogComponent, {
-      width: '600px',
-      panelClass: 'dialog-force-no-scrollbar',
-      data: { type },
-    }).afterClosed().subscribe(() => this.refreshData());
+    this.dialog
+      .open(CreateItemDialogComponent, {
+        width: '600px',
+        panelClass: 'dialog-force-no-scrollbar',
+        data: { type },
+      })
+      .afterClosed()
+      .subscribe(() => this.refreshData());
   }
 
   openEditViewDialog(view: TimelineView) {
-    this.dialog.open(EditViewDialogComponent, {
-      width: '70%',
-      height: '100%',
-      panelClass: 'dialog-full-size',
-      autoFocus: false,
-      position: {
-        right: '0',
-      },
-      data: { view }
-    }).afterClosed().subscribe(updatedView => {
-      if (updatedView) {
-        this.switchView(updatedView);
-      }
-    });
+    this.dialog
+      .open(EditViewDialogComponent, {
+        width: '70%',
+        height: '100%',
+        panelClass: 'dialog-full-size',
+        autoFocus: false,
+        position: {
+          right: '0',
+        },
+        data: { view },
+      })
+      .afterClosed()
+      .subscribe((updatedView) => {
+        if (updatedView) {
+          this.switchView(updatedView);
+        }
+      });
   }
 
   toggleMove(x: number) {
@@ -392,21 +445,24 @@ export class TimelineChartComponent implements AfterViewInit, OnDestroy {
   }
 
   show3Hours() {
-    const midTime = this.timeline.start + (this.timeline.stop - this.timeline.start) / 2;
+    const midTime =
+      this.timeline.start + (this.timeline.stop - this.timeline.start) / 2;
     const start = addHours(midTime, -1.5);
     const stop = addHours(midTime, 1.5);
     this.timeline.setViewRange(start.getTime(), stop.getTime());
   }
 
   show1Hour() {
-    const midTime = this.timeline.start + (this.timeline.stop - this.timeline.start) / 2;
+    const midTime =
+      this.timeline.start + (this.timeline.stop - this.timeline.start) / 2;
     const start = addMinutes(midTime, -30);
     const stop = addMinutes(midTime, 30);
     this.timeline.setViewRange(start.getTime(), stop.getTime());
   }
 
   show10Minutes() {
-    const midTime = this.timeline.start + (this.timeline.stop - this.timeline.start) / 2;
+    const midTime =
+      this.timeline.start + (this.timeline.stop - this.timeline.start) / 2;
     const start = addMinutes(midTime, -5);
     const stop = addMinutes(midTime, 5);
     this.timeline.setViewRange(start.getTime(), stop.getTime());
@@ -428,14 +484,17 @@ export class TimelineChartComponent implements AfterViewInit, OnDestroy {
 
   openJumpToDialog() {
     const currentDate = this.timeline.center;
-    this.dialog.open(JumpToDialogComponent, {
-      width: '400px',
-      data: { date: new Date(currentDate) },
-    }).afterClosed().subscribe(result => {
-      if (result) {
-        this.timeline.panTo(result.date.getTime());
-      }
-    });
+    this.dialog
+      .open(JumpToDialogComponent, {
+        width: '400px',
+        data: { date: new Date(currentDate) },
+      })
+      .afterClosed()
+      .subscribe((result) => {
+        if (result) {
+          this.timeline.panTo(result.date.getTime());
+        }
+      });
   }
 
   saveSnapshot() {
@@ -455,7 +514,7 @@ export class TimelineChartComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.subscriptions.forEach(subscription => subscription.unsubscribe());
+    this.subscriptions.forEach((subscription) => subscription.unsubscribe());
     this.timeline.disconnect();
   }
 }

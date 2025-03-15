@@ -10,7 +10,6 @@ export type WatermarkObserver = () => void;
  * and realtime values are connected. Both sets are joined and sorted under all conditions.
  */
 export class ActivityBuffer {
-
   public dirty = false;
 
   private archiveActivities: Activity[] = [];
@@ -33,7 +32,11 @@ export class ActivityBuffer {
   addRealtimeActivity(activity: Activity) {
     if (this.pointer < this.bufferSize) {
       this.realtimeBuffer[this.pointer] = activity;
-      if (this.pointer >= this.bufferWatermark && this.watermarkObserver && !this.alreadyWarned) {
+      if (
+        this.pointer >= this.bufferWatermark &&
+        this.watermarkObserver &&
+        !this.alreadyWarned
+      ) {
         this.alreadyWarned = true;
         this.watermarkObserver();
       }
@@ -53,10 +56,12 @@ export class ActivityBuffer {
   snapshot(): Activity[] {
     const splicedActivities = this.archiveActivities;
 
-    this.realtimeBuffer.map(activity => {
+    this.realtimeBuffer.map((activity) => {
       if (!activity) return;
 
-      const existingIndex = splicedActivities.findIndex(a => a.id == activity.id);
+      const existingIndex = splicedActivities.findIndex(
+        (a) => a.id == activity.id,
+      );
       if (existingIndex === -1) {
         splicedActivities.push(activity);
       } else {
@@ -64,10 +69,9 @@ export class ActivityBuffer {
       }
     });
 
-
     splicedActivities.sort((e1, e2) => {
       let res = -e1.start.localeCompare(e2.start);
-      return res !== 0 ? res : (e2.seq - e1.seq);
+      return res !== 0 ? res : e2.seq - e1.seq;
     });
     return splicedActivities;
   }

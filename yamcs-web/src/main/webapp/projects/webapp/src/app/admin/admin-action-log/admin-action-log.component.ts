@@ -1,9 +1,22 @@
-import { ChangeDetectionStrategy, Component, OnInit, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  input,
+} from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AuditRecord, GetAuditRecordsOptions, MessageService, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  AuditRecord,
+  GetAuditRecordsOptions,
+  MessageService,
+  WebappSdkModule,
+  YaSelectOption,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, debounceTime } from 'rxjs';
 import { AdminPageTemplateComponent } from '../shared/admin-page-template/admin-page-template.component';
 import { AdminToolbarComponent } from '../shared/admin-toolbar/admin-toolbar.component';
@@ -15,14 +28,9 @@ const defaultInterval = 'NO_LIMIT';
   templateUrl: './admin-action-log.component.html',
   styleUrl: './admin-action-log.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AdminPageTemplateComponent,
-    AdminToolbarComponent,
-    WebappSdkModule,
-  ],
+  imports: [AdminPageTemplateComponent, AdminToolbarComponent, WebappSdkModule],
 })
 export class AdminActionLogComponent implements OnInit {
-
   filter = input<string>();
   interval = input<string>();
   customStart = input<string>();
@@ -43,12 +51,7 @@ export class AdminActionLogComponent implements OnInit {
     customStop: new FormControl<string | null>(null),
   });
 
-  displayedColumns = [
-    'time',
-    'user',
-    'summary',
-    'actions',
-  ];
+  displayedColumns = ['time', 'user', 'summary', 'actions'];
 
   intervalOptions: YaSelectOption[] = [
     { id: 'PT1H', label: 'Last hour' },
@@ -74,19 +77,24 @@ export class AdminActionLogComponent implements OnInit {
     this.initializeOptions();
     this.loadData();
 
-    this.filterForm.get('filter')!.valueChanges.pipe(
-      debounceTime(400),
-    ).forEach(filter => {
-      this.loadData();
-    });
+    this.filterForm
+      .get('filter')!
+      .valueChanges.pipe(debounceTime(400))
+      .forEach((filter) => {
+        this.loadData();
+      });
 
-    this.filterForm.get('interval')!.valueChanges.forEach(nextInterval => {
+    this.filterForm.get('interval')!.valueChanges.forEach((nextInterval) => {
       if (nextInterval === 'CUSTOM') {
         const now = new Date();
         const customStart = this.validStart || now;
         const customStop = this.validStop || now;
-        this.filterForm.get('customStart')!.setValue(utils.toISOString(customStart));
-        this.filterForm.get('customStop')!.setValue(utils.toISOString(customStop));
+        this.filterForm
+          .get('customStart')!
+          .setValue(utils.toISOString(customStart));
+        this.filterForm
+          .get('customStop')!
+          .setValue(utils.toISOString(customStop));
       } else if (nextInterval === 'NO_LIMIT') {
         this.validStart = null;
         this.validStop = null;
@@ -121,7 +129,10 @@ export class AdminActionLogComponent implements OnInit {
         this.validStop = null;
       } else {
         this.validStop = new Date();
-        this.validStart = utils.subtractDuration(this.validStop, this.appliedInterval);
+        this.validStart = utils.subtractDuration(
+          this.validStop,
+          this.appliedInterval,
+        );
       }
     } else {
       this.appliedInterval = defaultInterval;
@@ -159,8 +170,7 @@ export class AdminActionLogComponent implements OnInit {
    */
   loadData() {
     this.updateURL();
-    const options: GetAuditRecordsOptions = {
-    };
+    const options: GetAuditRecordsOptions = {};
     if (this.validStart) {
       options.start = this.validStart.toISOString();
     }
@@ -172,27 +182,33 @@ export class AdminActionLogComponent implements OnInit {
     }
 
     const today = new Date().toISOString().substring(0, 10);
-    const yesterday = utils.subtractDuration(new Date(), 'P1D').toISOString().substring(0, 10);
-    this.yamcs.yamcsClient.getAuditRecords('_global', options).then(page => {
-      const rowGroups = this.groupByDay(page.records || []).map(group => {
-        const dataSource = new MatTableDataSource<Row>();
-        dataSource.data = group.map(item => {
-          const requestOptions: any[] = [{ key: 'Request', value: '' }];
-          if (item.request) {
-            this.flatten(item.request, requestOptions, '    ');
+    const yesterday = utils
+      .subtractDuration(new Date(), 'P1D')
+      .toISOString()
+      .substring(0, 10);
+    this.yamcs.yamcsClient
+      .getAuditRecords('_global', options)
+      .then((page) => {
+        const rowGroups = this.groupByDay(page.records || []).map((group) => {
+          const dataSource = new MatTableDataSource<Row>();
+          dataSource.data = group.map((item) => {
+            const requestOptions: any[] = [{ key: 'Request', value: '' }];
+            if (item.request) {
+              this.flatten(item.request, requestOptions, '    ');
+            }
+            return { item, expanded: false, requestOptions };
+          });
+          let grouper = group[0].time.substring(0, 10);
+          if (grouper === today) {
+            grouper = 'Today';
+          } else if (grouper === yesterday) {
+            grouper = 'Yesterday';
           }
-          return { item, expanded: false, requestOptions };
+          return { grouper, dataSource };
         });
-        let grouper = group[0].time.substring(0, 10);
-        if (grouper === today) {
-          grouper = 'Today';
-        } else if (grouper === yesterday) {
-          grouper = 'Yesterday';
-        }
-        return { grouper, dataSource };
-      });
-      this.rowGroups$.next(rowGroups);
-    }).catch(err => this.messageService.showError(err));
+        this.rowGroups$.next(rowGroups);
+      })
+      .catch((err) => this.messageService.showError(err));
   }
 
   loadMoreData() {
@@ -216,8 +232,14 @@ export class AdminActionLogComponent implements OnInit {
       queryParams: {
         filter: controls['filter'].value || null,
         interval: this.appliedInterval,
-        customStart: this.appliedInterval === 'CUSTOM' ? controls['customStart'].value : null,
-        customStop: this.appliedInterval === 'CUSTOM' ? controls['customStop'].value : null,
+        customStart:
+          this.appliedInterval === 'CUSTOM'
+            ? controls['customStart'].value
+            : null,
+        customStop:
+          this.appliedInterval === 'CUSTOM'
+            ? controls['customStop'].value
+            : null,
       },
       queryParamsHandling: 'merge',
     });
@@ -244,13 +266,20 @@ export class AdminActionLogComponent implements OnInit {
     return byDay;
   }
 
-  private flatten(node: { [key: string]: any; }, result: RequestOption[], indent = '') {
+  private flatten(
+    node: { [key: string]: any },
+    result: RequestOption[],
+    indent = '',
+  ) {
     for (const key in node) {
       const value = node[key];
       if (Array.isArray(value)) {
         result.push({ key: indent + key, value: '' });
         for (let i = 0; i < value.length; i++) {
-          result.push({ key: indent + '    ' + key + ' ' + (i + 1), value: value[i] });
+          result.push({
+            key: indent + '    ' + key + ' ' + (i + 1),
+            value: value[i],
+          });
         }
       } else if (typeof value === 'object') {
         result.push({ key: indent + key, value: '' });

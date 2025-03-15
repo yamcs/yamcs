@@ -16,6 +16,6 @@
   color: var(--y-error-color);
 }
 
-:host>mat-icon {
+:host > mat-icon {
   margin-right: 4px;
 }

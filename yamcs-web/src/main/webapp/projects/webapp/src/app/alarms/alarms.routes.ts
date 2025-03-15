@@ -7,24 +7,31 @@ import { ActiveAlarmListComponent } from './active-alarm-list/active-alarm-list.
 import { AlarmHistoryComponent } from './alarm-history/alarm-history.component';
 import { PendingAlarmListComponent } from './pending-alarm-list/pending-alarm-list.component';
 
-export const ROUTES: Routes = [{
-  path: '',
-  canActivate: [authGuardFn, attachContextGuardFn],
-  canActivateChild: [authGuardChildFn],
-  runGuardsAndResolvers: 'always',
-  component: InstancePageComponent,
-  children: [{
+export const ROUTES: Routes = [
+  {
     path: '',
-    pathMatch: 'full',
-    component: ActiveAlarmListComponent,
-  }, {
-    path: 'pending',
-    component: PendingAlarmListComponent,
-  }, {
-    path: 'history',
-    component: AlarmHistoryComponent,
-  }, {
-    path: 'log',
-    component: ActionLogTabComponent,
-  }]
-}];
+    canActivate: [authGuardFn, attachContextGuardFn],
+    canActivateChild: [authGuardChildFn],
+    runGuardsAndResolvers: 'always',
+    component: InstancePageComponent,
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        component: ActiveAlarmListComponent,
+      },
+      {
+        path: 'pending',
+        component: PendingAlarmListComponent,
+      },
+      {
+        path: 'history',
+        component: AlarmHistoryComponent,
+      },
+      {
+        path: 'log',
+        component: ActionLogTabComponent,
+      },
+    ],
+  },
+];

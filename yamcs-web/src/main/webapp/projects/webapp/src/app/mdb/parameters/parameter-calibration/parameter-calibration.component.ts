@@ -1,21 +1,20 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { ParameterType, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  ParameterType,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { PolynomialPipe } from './polynomial.pipe';
 
 @Component({
   selector: 'app-parameter-calibration',
   templateUrl: './parameter-calibration.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    PolynomialPipe,
-    WebappSdkModule,
-  ],
+  imports: [PolynomialPipe, WebappSdkModule],
 })
 export class ParameterCalibrationComponent {
-
   @Input()
   ptype: ParameterType;
 
-  constructor(readonly yamcs: YamcsService) {
-  }
+  constructor(readonly yamcs: YamcsService) {}
 }

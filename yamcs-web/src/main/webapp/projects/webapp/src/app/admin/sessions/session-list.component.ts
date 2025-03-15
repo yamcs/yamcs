@@ -1,9 +1,20 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  ViewChild,
+} from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
-import { SessionInfo, Synchronizer, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  SessionInfo,
+  Synchronizer,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
 import { AgoComponent } from '../../shared/ago/ago.component';
 import { UserAgentPipe } from '../http-traffic/user-agent.pipe';
@@ -22,7 +33,6 @@ import { AdminToolbarComponent } from '../shared/admin-toolbar/admin-toolbar.com
   ],
 })
 export class SessionListComponent implements AfterViewInit, OnDestroy {
-
   @ViewChild(MatSort)
   sort: MatSort;
 
@@ -63,7 +73,7 @@ export class SessionListComponent implements AfterViewInit, OnDestroy {
   }
 
   private refresh() {
-    this.yamcs.yamcsClient.getSessions().then(sessions => {
+    this.yamcs.yamcsClient.getSessions().then((sessions) => {
       this.dataSource.data = sessions || [];
     });
   }

@@ -9,14 +9,9 @@ import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.
 @Component({
   templateUrl: './group.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AdminPageTemplateComponent,
-    AdminToolbarComponent,
-    WebappSdkModule,
-  ],
+  imports: [AdminPageTemplateComponent, AdminToolbarComponent, WebappSdkModule],
 })
 export class GroupComponent {
-
   group$ = new BehaviorSubject<GroupInfo | null>(null);
 
   constructor(
@@ -24,14 +19,14 @@ export class GroupComponent {
     private yamcs: YamcsService,
     private title: Title,
   ) {
-    route.paramMap.subscribe(params => {
+    route.paramMap.subscribe((params) => {
       const name = params.get('name')!;
       this.changeGroup(name);
     });
   }
 
   private changeGroup(name: string) {
-    this.yamcs.yamcsClient.getGroup(name).then(group => {
+    this.yamcs.yamcsClient.getGroup(name).then((group) => {
       this.group$.next(group);
       this.title.setTitle(group.name);
     });

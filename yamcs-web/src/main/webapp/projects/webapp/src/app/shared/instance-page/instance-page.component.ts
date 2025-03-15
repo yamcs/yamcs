@@ -1,9 +1,32 @@
-import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, ViewChild, effect } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  effect,
+} from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
-import { MatSidenavContainer, MatSidenavContent } from '@angular/material/sidenav';
+import {
+  MatSidenavContainer,
+  MatSidenavContent,
+} from '@angular/material/sidenav';
 import { NavigationEnd, Router } from '@angular/router';
-import { AppearanceService, ConfigService, ConnectionInfo, ExtensionService, MessageService, NavItem, Parameter, User, WebappSdkModule, WebsiteConfig, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  AppearanceService,
+  ConfigService,
+  ConnectionInfo,
+  ExtensionService,
+  MessageService,
+  NavItem,
+  Parameter,
+  User,
+  WebappSdkModule,
+  WebsiteConfig,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { Observable, Subscription, of } from 'rxjs';
 import { debounceTime, filter, map, switchMap } from 'rxjs/operators';
 import { AuthService } from '../../core/services/AuthService';
@@ -14,14 +37,9 @@ import { AlarmLabelComponent } from '../alarm-label/alarm-label.component';
   templateUrl: './instance-page.component.html',
   styleUrl: './instance-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    ActivitiesLabelComponent,
-    AlarmLabelComponent,
-    WebappSdkModule,
-  ],
+  imports: [ActivitiesLabelComponent, AlarmLabelComponent, WebappSdkModule],
 })
 export class InstancePageComponent implements OnInit, OnDestroy {
-
   @ViewChild(MatSidenavContainer)
   pageContainer: MatSidenavContainer;
 
@@ -81,17 +99,27 @@ export class InstancePageComponent implements OnInit, OnDestroy {
     effect(() => {
       if (appearanceService.fullScreenRequested()) {
         const el = this.pageContent.getElementRef().nativeElement;
-        el.requestFullscreen().catch(err => messageService.showError(err));
+        el.requestFullscreen().catch((err) => messageService.showError(err));
       }
     });
 
-    if (this.config.tmArchive && this.user.hasAnyObjectPrivilegeOfType('ReadPacket')) {
+    if (
+      this.config.tmArchive &&
+      this.user.hasAnyObjectPrivilegeOfType('ReadPacket')
+    ) {
       this.telemetryItems.push({ path: 'packets', label: 'Packets' });
     }
     if (this.user.hasAnyObjectPrivilegeOfType('ReadParameter')) {
       this.telemetryItems.push({ path: 'parameters', label: 'Parameters' });
-      if ((yamcs.connectionInfo$.value?.instance.capabilities ?? []).indexOf('parameter-lists') !== -1) {
-        this.telemetryItems.push({ path: 'parameter-lists', label: 'Parameter lists' });
+      if (
+        (yamcs.connectionInfo$.value?.instance.capabilities ?? []).indexOf(
+          'parameter-lists',
+        ) !== -1
+      ) {
+        this.telemetryItems.push({
+          path: 'parameter-lists',
+          label: 'Parameter lists',
+        });
       }
     }
     const displayBucket = configService.getDisplayBucket();
@@ -108,7 +136,10 @@ export class InstancePageComponent implements OnInit, OnDestroy {
       this.commandingItems.push({ path: 'send', label: 'Send a command' });
     }
     const stackBucket = configService.getStackBucket();
-    if (this.config.tc && this.user.hasObjectPrivilege('ReadBucket', stackBucket)) {
+    if (
+      this.config.tc &&
+      this.user.hasObjectPrivilege('ReadBucket', stackBucket)
+    ) {
       this.commandingItems.push({ path: 'stacks', label: 'Command stacks' });
     }
     if (this.user.hasAnyObjectPrivilegeOfType('CommandHistory')) {
@@ -117,7 +148,10 @@ export class InstancePageComponent implements OnInit, OnDestroy {
     if (this.config.tc && this.user.hasSystemPrivilege('ControlCommandQueue')) {
       this.commandingItems.push({ path: 'queues', label: 'Queues' });
     }
-    if (this.config.commandClearanceEnabled && this.user.hasSystemPrivilege('ControlCommandClearances')) {
+    if (
+      this.config.commandClearanceEnabled &&
+      this.user.hasSystemPrivilege('ControlCommandClearances')
+    ) {
       this.commandingItems.push({ path: 'clearances', label: 'Clearances' });
     }
     for (const item of extensionService.getNavItems('commanding')) {
@@ -126,11 +160,18 @@ export class InstancePageComponent implements OnInit, OnDestroy {
       }
     }
 
-    if (this.config.tc && this.user.hasObjectPrivilege('ReadBucket', stackBucket)) {
+    if (
+      this.config.tc &&
+      this.user.hasObjectPrivilege('ReadBucket', stackBucket)
+    ) {
       this.proceduresItems.push({ path: 'stacks', label: 'Stacks' });
     }
-    if (this.user.hasSystemPrivilege('ControlActivities') &&
-      (yamcs.connectionInfo$.value?.instance.capabilities ?? []).indexOf('activities') !== -1) {
+    if (
+      this.user.hasSystemPrivilege('ControlActivities') &&
+      (yamcs.connectionInfo$.value?.instance.capabilities ?? []).indexOf(
+        'activities',
+      ) !== -1
+    ) {
       this.proceduresItems.push({ path: 'script', label: 'Run a script' });
     }
     for (const item of extensionService.getNavItems('procedures')) {
@@ -168,38 +209,38 @@ export class InstancePageComponent implements OnInit, OnDestroy {
       }
     }
 
-    this.routerSubscription = router.events.pipe(
-      filter(evt => evt instanceof NavigationEnd)
-    ).subscribe((evt: any) => {
-      const url = evt.url as string;
-      this.mdbActive = false;
-      this.commandingActive = false;
-      this.telemetryActive = false;
-      this.timelineActive = false;
-      this.collapseAllGroups();
-      if (url.match(/\/mdb.*/)) {
-        this.mdbActive = true;
-        this.mdbExpanded = true;
-      } else if (url.match(/\/commanding.*/)) {
-        this.commandingActive = true;
-        this.commandingExpanded = true;
-      } else if (url.match(/\/procedures.*/)) {
-        this.proceduresActive = true;
-        this.proceduresExpanded = true;
-      } else if (url.match(/\/telemetry.*/)) {
-        this.telemetryActive = true;
-        this.telemetryExpanded = true;
-      } else if (url.match(/\/timeline.*/)) {
-        this.timelineActive = true;
-        this.timelineExpanded = true;
-      }
-    });
+    this.routerSubscription = router.events
+      .pipe(filter((evt) => evt instanceof NavigationEnd))
+      .subscribe((evt: any) => {
+        const url = evt.url as string;
+        this.mdbActive = false;
+        this.commandingActive = false;
+        this.telemetryActive = false;
+        this.timelineActive = false;
+        this.collapseAllGroups();
+        if (url.match(/\/mdb.*/)) {
+          this.mdbActive = true;
+          this.mdbExpanded = true;
+        } else if (url.match(/\/commanding.*/)) {
+          this.commandingActive = true;
+          this.commandingExpanded = true;
+        } else if (url.match(/\/procedures.*/)) {
+          this.proceduresActive = true;
+          this.proceduresExpanded = true;
+        } else if (url.match(/\/telemetry.*/)) {
+          this.telemetryActive = true;
+          this.telemetryExpanded = true;
+        } else if (url.match(/\/timeline.*/)) {
+          this.timelineActive = true;
+          this.timelineExpanded = true;
+        }
+      });
   }
 
   ngOnInit() {
     this.filteredOptions = this.searchControl.valueChanges.pipe(
       debounceTime(300),
-      switchMap(val => {
+      switchMap((val) => {
         if (val) {
           return this.yamcs.yamcsClient.getParameters(this.yamcs.instance!, {
             q: val,
@@ -210,14 +251,14 @@ export class InstancePageComponent implements OnInit, OnDestroy {
           return of({ parameters: [] });
         }
       }),
-      map(page => page.parameters || []),
+      map((page) => page.parameters || []),
     );
   }
 
   onSearchSelect(event: MatAutocompleteSelectedEvent) {
     this.searchControl.setValue('');
     this.router.navigate(['/telemetry/parameters' + event.option.value], {
-      queryParams: { c: this.yamcs.context }
+      queryParams: { c: this.yamcs.context },
     });
   }
 
@@ -289,10 +330,10 @@ export class InstancePageComponent implements OnInit, OnDestroy {
 
   handleKeydown(event: KeyboardEvent) {
     const el: HTMLInputElement = this.searchInput.nativeElement;
-    if (event.key === "/" && this.isValidKeySource()) {
+    if (event.key === '/' && this.isValidKeySource()) {
       el.focus();
       event.preventDefault();
-    } else if (event.key === "Enter") {
+    } else if (event.key === 'Enter') {
       const value = this.searchControl.value;
       if (value) {
         this.searchControl.setValue('');
@@ -308,10 +349,12 @@ export class InstancePageComponent implements OnInit, OnDestroy {
     if (!activeElement) {
       return true;
     }
-    return activeElement.tagName !== "INPUT"
-      && activeElement.tagName !== "SELECT"
-      && activeElement.tagName !== "TEXTAREA"
-      && !activeElement.classList.contains('cm-content'); // Exclude CodeMirror editor
+    return (
+      activeElement.tagName !== 'INPUT' &&
+      activeElement.tagName !== 'SELECT' &&
+      activeElement.tagName !== 'TEXTAREA' &&
+      !activeElement.classList.contains('cm-content')
+    ); // Exclude CodeMirror editor
   }
 
   ngOnDestroy() {

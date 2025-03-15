@@ -2,7 +2,14 @@ import { MatDialog } from '@angular/material/dialog';
 import { ItemBand as DefaultItemBand } from '@fqqb/timeline';
 import { TimelineBand } from '@yamcs/webapp-sdk';
 import { EditItemDialogComponent } from '../edit-item-dialog/edit-item-dialog.component';
-import { BooleanProperty, ColorProperty, NumberProperty, PropertyInfoSet, SelectProperty, resolveProperties } from '../shared/properties';
+import {
+  BooleanProperty,
+  ColorProperty,
+  NumberProperty,
+  PropertyInfoSet,
+  SelectProperty,
+  resolveProperties,
+} from '../shared/properties';
 import { TimelineChartComponent } from '../timeline-chart/timeline-chart.component';
 
 export const propertyInfo: PropertyInfoSet = {
@@ -24,7 +31,9 @@ export const propertyInfo: PropertyInfoSet = {
 };
 
 export const itemPropertyInfo: PropertyInfoSet = {
-  backgroundColor: new ColorProperty(propertyInfo.itemBackgroundColor.defaultValue),
+  backgroundColor: new ColorProperty(
+    propertyInfo.itemBackgroundColor.defaultValue,
+  ),
   borderColor: new ColorProperty(propertyInfo.itemBorderColor.defaultValue),
   borderWidth: new NumberProperty(propertyInfo.itemBorderWidth.defaultValue),
   cornerRadius: new NumberProperty(propertyInfo.itemCornerRadius.defaultValue),
@@ -34,13 +43,19 @@ export const itemPropertyInfo: PropertyInfoSet = {
 };
 
 export class ItemBand extends DefaultItemBand {
-
-  constructor(chart: TimelineChartComponent, bandInfo: TimelineBand, dialog: MatDialog) {
+  constructor(
+    chart: TimelineChartComponent,
+    bandInfo: TimelineBand,
+    dialog: MatDialog,
+  ) {
     super(chart.timeline);
     this.label = bandInfo.name;
     this.data = { band: bandInfo };
 
-    const properties = resolveProperties(propertyInfo, bandInfo.properties || {});
+    const properties = resolveProperties(
+      propertyInfo,
+      bandInfo.properties || {},
+    );
     this.frozen = properties.frozen;
     this.itemBackground = properties.itemBackgroundColor;
     this.itemBorderColor = properties.itemBorderColor;
@@ -57,12 +72,15 @@ export class ItemBand extends DefaultItemBand {
     this.spaceBetween = properties.spaceBetweenItems;
     this.lineSpacing = properties.spaceBetweenLines;
 
-    this.addItemClickListener(evt => {
-      dialog.open(EditItemDialogComponent, {
-        width: '600px',
-        panelClass: 'dialog-force-no-scrollbar',
-        data: { item: evt.item.data.item }
-      }).afterClosed().subscribe(() => chart.refreshData());
+    this.addItemClickListener((evt) => {
+      dialog
+        .open(EditItemDialogComponent, {
+          width: '600px',
+          panelClass: 'dialog-force-no-scrollbar',
+          data: { item: evt.item.data.item },
+        })
+        .afterClosed()
+        .subscribe(() => chart.refreshData());
     });
   }
 }

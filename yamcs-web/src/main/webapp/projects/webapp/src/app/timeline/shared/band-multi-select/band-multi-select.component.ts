@@ -1,7 +1,12 @@
 import { ChangeDetectionStrategy, Component, forwardRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
-import { TimelineBand, TimelineBandsPage, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  TimelineBand,
+  TimelineBandsPage,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-band-multi-select',
@@ -12,15 +17,12 @@ import { TimelineBand, TimelineBandsPage, WebappSdkModule, YamcsService } from '
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => BandMultiSelectComponent),
-      multi: true
-    }
+      multi: true,
+    },
   ],
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class BandMultiSelectComponent implements ControlValueAccessor {
-
   displayedColumns = ['name'];
 
   availableDataSource = new MatTableDataSource<TimelineBand>([]);
@@ -29,20 +31,23 @@ export class BandMultiSelectComponent implements ControlValueAccessor {
 
   bands$: Promise<TimelineBandsPage>;
 
-  private onChange = (_: TimelineBand[]) => { };
+  private onChange = (_: TimelineBand[]) => {};
 
   constructor(yamcs: YamcsService) {
     this.bands$ = yamcs.yamcsClient.getTimelineBands(yamcs.instance!);
-    this.bands$.then(page => {
+    this.bands$.then((page) => {
       this.availableDataSource.data = page.bands || [];
     });
   }
 
   writeValue(value: any) {
-    this.bands$.then(page => { // Make sure bands are loaded
+    this.bands$.then((page) => {
+      // Make sure bands are loaded
       const allBands = page.bands || [];
       if (value) {
-        const selectedIds: string[] = value.map((band: TimelineBand) => band.id);
+        const selectedIds: string[] = value.map(
+          (band: TimelineBand) => band.id,
+        );
         const leftBands: TimelineBand[] = [];
         const rightBands: TimelineBand[] = [];
         for (const band of allBands) {
@@ -72,31 +77,38 @@ export class BandMultiSelectComponent implements ControlValueAccessor {
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any) {
-  }
+  registerOnTouched(fn: any) {}
 
   selectBand(row: TimelineBand) {
     this.selectedBand = row;
   }
 
   isLeftSelected(row: TimelineBand) {
-    return row === this.selectedBand &&
-      this.availableDataSource.data.indexOf(row) !== -1;
+    return (
+      row === this.selectedBand &&
+      this.availableDataSource.data.indexOf(row) !== -1
+    );
   }
 
   isAnyLeftSelected() {
-    return this.selectedBand &&
-      this.availableDataSource.data.indexOf(this.selectedBand) !== -1;
+    return (
+      this.selectedBand &&
+      this.availableDataSource.data.indexOf(this.selectedBand) !== -1
+    );
   }
 
   isRightSelected(row: TimelineBand) {
-    return row === this.selectedBand &&
-      this.selectedDataSource.data.indexOf(row) !== -1;
+    return (
+      row === this.selectedBand &&
+      this.selectedDataSource.data.indexOf(row) !== -1
+    );
   }
 
   isAnyRightSelected() {
-    return this.selectedBand &&
-      this.selectedDataSource.data.indexOf(this.selectedBand) !== -1;
+    return (
+      this.selectedBand &&
+      this.selectedDataSource.data.indexOf(this.selectedBand) !== -1
+    );
   }
 
   moveRight() {

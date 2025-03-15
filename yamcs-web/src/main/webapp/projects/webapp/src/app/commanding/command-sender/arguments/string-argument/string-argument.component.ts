@@ -1,5 +1,21 @@
-import { ChangeDetectionStrategy, Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
-import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormControl, ValidationErrors, Validator, ValidatorFn, Validators } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  forwardRef,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
+import {
+  ControlValueAccessor,
+  NG_VALIDATORS,
+  NG_VALUE_ACCESSOR,
+  UntypedFormControl,
+  ValidationErrors,
+  Validator,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 import { ArgumentType, utils, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
 
@@ -8,21 +24,23 @@ import { Subscription } from 'rxjs';
   templateUrl: './string-argument.component.html',
   styleUrls: ['../arguments.css', './string-argument.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => StringArgumentComponent),
-    multi: true,
-  }, {
-    provide: NG_VALIDATORS,
-    useExisting: forwardRef(() => StringArgumentComponent),
-    multi: true,
-  }],
-  imports: [
-    WebappSdkModule,
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => StringArgumentComponent),
+      multi: true,
+    },
+    {
+      provide: NG_VALIDATORS,
+      useExisting: forwardRef(() => StringArgumentComponent),
+      multi: true,
+    },
   ],
+  imports: [WebappSdkModule],
 })
-export class StringArgumentComponent implements ControlValueAccessor, OnInit, Validator, OnDestroy {
-
+export class StringArgumentComponent
+  implements ControlValueAccessor, OnInit, Validator, OnDestroy
+{
   @Input()
   name: string;
 
@@ -43,7 +61,7 @@ export class StringArgumentComponent implements ControlValueAccessor, OnInit, Va
   controlName: string;
 
   private validators: ValidatorFn[] = [];
-  private onChange = (_: string | null) => { };
+  private onChange = (_: string | null) => {};
   private subscriptions: Subscription[] = [];
 
   ngOnInit() {
@@ -51,7 +69,7 @@ export class StringArgumentComponent implements ControlValueAccessor, OnInit, Va
       this.formControl.valueChanges.subscribe(() => {
         let value = this.formControl.value;
         this.onChange(value);
-      })
+      }),
     );
 
     if (this.index === undefined) {
@@ -74,7 +92,7 @@ export class StringArgumentComponent implements ControlValueAccessor, OnInit, Va
   get label() {
     if (this.index !== undefined) {
       const index = utils.unflattenIndex(this.index, this.dimensions!);
-      return index.map(i => '[' + i + ']').join('');
+      return index.map((i) => '[' + i + ']').join('');
     } else {
       return this.name;
     }
@@ -88,8 +106,7 @@ export class StringArgumentComponent implements ControlValueAccessor, OnInit, Va
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any) {
-  }
+  registerOnTouched(fn: any) {}
 
   validate(control: UntypedFormControl): ValidationErrors | null {
     for (const validator of this.validators) {
@@ -102,6 +119,6 @@ export class StringArgumentComponent implements ControlValueAccessor, OnInit, Va
   }
 
   ngOnDestroy() {
-    this.subscriptions.forEach(s => s.unsubscribe());
+    this.subscriptions.forEach((s) => s.unsubscribe());
   }
 }

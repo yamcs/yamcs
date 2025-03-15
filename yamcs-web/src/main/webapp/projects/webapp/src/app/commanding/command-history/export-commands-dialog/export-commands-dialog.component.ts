@@ -1,17 +1,24 @@
 import { Component, Inject, OnDestroy } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import {
+  UntypedFormControl,
+  UntypedFormGroup,
+  Validators,
+} from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { DownloadCommandsOptions, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  DownloadCommandsOptions,
+  WebappSdkModule,
+  YaSelectOption,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 @Component({
   templateUrl: './export-commands-dialog.component.html',
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class ExportCommandsDialogComponent implements OnDestroy {
-
   delimiterOptions: YaSelectOption[] = [
     { id: 'COMMA', label: 'Comma' },
     { id: 'SEMICOLON', label: 'Semicolon' },
@@ -61,7 +68,10 @@ export class ExportCommandsDialogComponent implements OnDestroy {
       if (this.form.value['stop']) {
         dlOptions.stop = utils.toISOString(this.form.value['stop']);
       }
-      const url = this.yamcs.yamcsClient.getCommandsDownloadURL(this.yamcs.instance!, dlOptions);
+      const url = this.yamcs.yamcsClient.getCommandsDownloadURL(
+        this.yamcs.instance!,
+        dlOptions,
+      );
       this.downloadURL$.next(url);
     } else {
       this.downloadURL$.next(null);

@@ -1,17 +1,23 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import {
+  UntypedFormBuilder,
+  UntypedFormGroup,
+  Validators,
+} from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
-import { ActivityDefinition, MessageService, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  ActivityDefinition,
+  MessageService,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 
 @Component({
   templateUrl: './start-manual-activity-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class StartManualActivityDialogComponent {
-
   form: UntypedFormGroup;
 
   constructor(
@@ -27,9 +33,10 @@ export class StartManualActivityDialogComponent {
 
   onConfirm() {
     const options = this.createActivityDefinition();
-    this.yamcs.yamcsClient.startActivity(this.yamcs.instance!, options)
-      .then(activity => this.dialogRef.close())
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .startActivity(this.yamcs.instance!, options)
+      .then((activity) => this.dialogRef.close())
+      .catch((err) => this.messageService.showError(err));
   }
 
   private createActivityDefinition(): ActivityDefinition {

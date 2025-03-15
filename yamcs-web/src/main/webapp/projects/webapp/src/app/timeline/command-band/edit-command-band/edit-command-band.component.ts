@@ -1,4 +1,10 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+} from '@angular/core';
 import { UntypedFormGroup } from '@angular/forms';
 import { TimelineBand, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
@@ -7,12 +13,9 @@ import { BehaviorSubject } from 'rxjs';
   selector: 'app-edit-command-band',
   templateUrl: './edit-command-band.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class EditCommandBandComponent implements AfterViewInit {
-
   @Input()
   form: UntypedFormGroup;
 
@@ -24,7 +27,7 @@ export class EditCommandBandComponent implements AfterViewInit {
   constructor(
     readonly yamcs: YamcsService,
     private changeDetection: ChangeDetectorRef,
-  ) { }
+  ) {}
 
   ngAfterViewInit() {
     this.formConfigured$.next(true);

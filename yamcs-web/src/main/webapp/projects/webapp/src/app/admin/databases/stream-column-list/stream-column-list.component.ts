@@ -5,12 +5,9 @@ import { Stream, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 @Component({
   templateUrl: './stream-column-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class StreamColumnListComponent {
-
   stream$: Promise<Stream>;
 
   constructor(route: ActivatedRoute, yamcs: YamcsService) {

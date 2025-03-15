@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, HostBinding, ViewEncapsulation } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  HostBinding,
+  ViewEncapsulation,
+} from '@angular/core';
 
 /**
  * Applies styling to the attributed table host
@@ -14,7 +19,8 @@ import { ChangeDetectionStrategy, Component, HostBinding, ViewEncapsulation } fr
       border-collapse: collapse;
     }
 
-    .ya-simple-table th, .ya-simple-table td {
+    .ya-simple-table th,
+    .ya-simple-table td {
       border-top: 1px solid rgba(0, 0, 0, 0.03);
       border-bottom: 1px solid rgba(0, 0, 0, 0.03);
     }
@@ -32,7 +38,6 @@ import { ChangeDetectionStrategy, Component, HostBinding, ViewEncapsulation } fr
   encapsulation: ViewEncapsulation.None,
 })
 export class SimpleTableDirective {
-
   @HostBinding('class.ya-simple-table')
   applyClass = true;
 }

@@ -1,13 +1,22 @@
 import { AsyncPipe } from '@angular/common';
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { AbstractControl, ControlContainer, FormArray, FormArrayName, FormGroupDirective, FormGroupName } from '@angular/forms';
+import {
+  AbstractControl,
+  ControlContainer,
+  FormArray,
+  FormArrayName,
+  FormGroupDirective,
+  FormGroupName,
+} from '@angular/forms';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-const defaultErrors: { [key: string]: any; } = {
+const defaultErrors: { [key: string]: any } = {
   date: () => 'invalid date',
-  min: (args: { min: number, actual: number; }) => `the minimum value is ${args.min}`,
-  max: (args: { max: number, actual: number; }) => `the maximum value is ${args.max}`,
+  min: (args: { min: number; actual: number }) =>
+    `the minimum value is ${args.min}`,
+  max: (args: { max: number; actual: number }) =>
+    `the maximum value is ${args.max}`,
   notFloat: () => 'invalid float',
   notHex: () => 'invalid hex',
   notInteger: () => 'must be integer',
@@ -18,36 +27,32 @@ const defaultErrors: { [key: string]: any; } = {
   minhexlength: () => 'hexstring too small',
   maxhexlength: () => 'hexstring too large',
   invalidDimension: () => 'invalid dimension',
-  argumentRequired: (args: { name: string; }) => {
+  argumentRequired: (args: { name: string }) => {
     return `argument '${args.name}' is required`;
   },
-  parameterRequired: (args: { qualifiedName: string, name: string; }) => {
+  parameterRequired: (args: { qualifiedName: string; name: string }) => {
     return `parameter '${args.qualifiedName}' is required`;
-  }
+  },
 };
 
 @Component({
   selector: 'ya-errors',
   templateUrl: './errors.component.html',
   styleUrl: './errors.component.css',
-  imports: [
-    AsyncPipe
-  ],
+  imports: [AsyncPipe],
 })
 export class YaErrors implements OnInit, OnDestroy {
-
   @Input()
   controlName: string;
 
   public errorMessage$ = new BehaviorSubject<string | null>(null);
   public invalid$ = this.errorMessage$.pipe(
-    map(errorMessage => !!errorMessage),
+    map((errorMessage) => !!errorMessage),
   );
 
   private controlSubscription: Subscription;
 
-  constructor(private controlContainer: ControlContainer) {
-  }
+  constructor(private controlContainer: ControlContainer) {}
 
   ngOnInit() {
     let control: AbstractControl<any, any>;

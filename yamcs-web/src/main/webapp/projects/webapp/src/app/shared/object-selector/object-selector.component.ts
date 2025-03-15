@@ -1,7 +1,24 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, forwardRef, Input, OnChanges, OnDestroy, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  forwardRef,
+  Input,
+  OnChanges,
+  OnDestroy,
+  Output,
+} from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
-import { Bucket, ListObjectsOptions, ListObjectsResponse, StorageClient, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  Bucket,
+  ListObjectsOptions,
+  ListObjectsResponse,
+  StorageClient,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 @Component({
@@ -9,17 +26,18 @@ import { BehaviorSubject, Subscription } from 'rxjs';
   templateUrl: './object-selector.component.html',
   styleUrl: './object-selector.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => ObjectSelector),
-    multi: true
-  }],
-  imports: [
-    WebappSdkModule,
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => ObjectSelector),
+      multi: true,
+    },
   ],
+  imports: [WebappSdkModule],
 })
-export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestroy {
-
+export class ObjectSelector
+  implements ControlValueAccessor, OnChanges, OnDestroy
+{
   @Input()
   bucket: Bucket;
 
@@ -53,12 +71,15 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
   private selectedFileNames: Set<string> = new Set();
   private lastSelected: BrowseItem;
 
-  private onChange = (_: string | null) => { };
-  private onTouched = () => { };
+  private onChange = (_: string | null) => {};
+  private onTouched = () => {};
 
   private selectionSubscription: Subscription;
 
-  constructor(yamcs: YamcsService, private changeDetection: ChangeDetectorRef) {
+  constructor(
+    yamcs: YamcsService,
+    private changeDetection: ChangeDetectorRef,
+  ) {
     this.storageClient = yamcs.createStorageClient();
   }
 
@@ -80,7 +101,7 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
       options.prefix = prefix;
     }
 
-    this.storageClient.listObjects(this.bucket.name, options).then(dir => {
+    this.storageClient.listObjects(this.bucket.name, options).then((dir) => {
       this.changedir(dir);
       const newPrefix = prefix || null;
       if (newPrefix !== this.currentPrefix$.value) {
@@ -110,7 +131,10 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
         name: object.name,
         modified: object.created,
         size: object.size,
-        objectUrl: this.storageClient.getObjectURL(this.bucket.name, object.name),
+        objectUrl: this.storageClient.getObjectURL(
+          this.bucket.name,
+          object.name,
+        ),
       });
     }
     this.dataSource.data = items;
@@ -129,12 +153,19 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
       if (this.isMultiSelect && event.ctrlKey) {
         this.flipRowSelection(row);
       } else if (this.isMultiSelect && event.shiftKey) {
-        if (this.selectedFileNames.size == 0 || !this.lastSelected || this.lastSelected.name === row.name) {
+        if (
+          this.selectedFileNames.size == 0 ||
+          !this.lastSelected ||
+          this.lastSelected.name === row.name
+        ) {
           this.flipRowSelection(row);
         } else {
           let select = false;
           for (const candidate of this.dataSource.data) {
-            if (candidate.name === row.name || candidate.name === this.lastSelected.name) {
+            if (
+              candidate.name === row.name ||
+              candidate.name === this.lastSelected.name
+            ) {
               select = !select;
             }
             if (select) {
@@ -144,7 +175,10 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
           this.selectedFileNames.add(row.name);
         }
       } else {
-        if (this.selectedFileNames.size == 1 && this.selectedFileNames.has(row.name)) {
+        if (
+          this.selectedFileNames.size == 1 &&
+          this.selectedFileNames.has(row.name)
+        ) {
           this.selectedFileNames.clear();
         } else {
           this.selectedFileNames.clear();
@@ -169,7 +203,7 @@ export class ObjectSelector implements ControlValueAccessor, OnChanges, OnDestro
   }
 
   private updateFileNames() {
-    this.onChange(Array.from(this.selectedFileNames).join("|"));
+    this.onChange(Array.from(this.selectedFileNames).join('|'));
   }
 
   isSelected(row: BrowseItem) {
