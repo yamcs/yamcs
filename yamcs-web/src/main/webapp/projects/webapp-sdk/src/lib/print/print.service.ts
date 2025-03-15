@@ -12,7 +12,6 @@ export class PrintOrder {
   providedIn: 'root',
 })
 export class PrintService {
-
   printOrders$ = new Subject<PrintOrder>();
 
   printComponent(componentType: Type<Printable>, title: string, data: any) {

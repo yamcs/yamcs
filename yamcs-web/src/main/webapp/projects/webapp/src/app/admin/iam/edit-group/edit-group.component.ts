@@ -1,26 +1,34 @@
 import { Location } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import {
+  UntypedFormBuilder,
+  UntypedFormControl,
+  UntypedFormGroup,
+} from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EditGroupRequest, GroupInfo, MessageService, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  EditGroupRequest,
+  GroupInfo,
+  MessageService,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { AdminPageTemplateComponent } from '../../shared/admin-page-template/admin-page-template.component';
 import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.component';
-import { AddMembersDialogComponent, MemberItem } from '../add-members-dialog/add-members-dialog.component';
+import {
+  AddMembersDialogComponent,
+  MemberItem,
+} from '../add-members-dialog/add-members-dialog.component';
 
 @Component({
   templateUrl: './edit-group.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AdminPageTemplateComponent,
-    AdminToolbarComponent,
-    WebappSdkModule,
-  ],
+  imports: [AdminPageTemplateComponent, AdminToolbarComponent, WebappSdkModule],
 })
 export class EditGroupComponent implements OnDestroy {
-
   form: UntypedFormGroup;
   group$: Promise<GroupInfo>;
   private group: GroupInfo;
@@ -43,7 +51,7 @@ export class EditGroupComponent implements OnDestroy {
     title.setTitle('Edit Group');
     const name = route.snapshot.paramMap.get('name')!;
     this.group$ = yamcs.yamcsClient.getGroup(name);
-    this.group$.then(group => {
+    this.group$.then((group) => {
       this.group = group;
       this.form = formBuilder.group({
         name: new UntypedFormControl(group.name),
@@ -72,24 +80,23 @@ export class EditGroupComponent implements OnDestroy {
       },
       width: '600px',
     });
-    dialogRef.afterClosed().subscribe(memberItems => {
+    dialogRef.afterClosed().subscribe((memberItems) => {
       if (memberItems) {
-        this.updateMemberItems([
-          ...this.memberItems$.value,
-          ...memberItems,
-        ]);
+        this.updateMemberItems([...this.memberItems$.value, ...memberItems]);
       }
     });
   }
 
   private updateMemberItems(items: MemberItem[], dirty = true) {
-    items.sort((i1, i2) => (i1.label < i2.label) ? -1 : (i1.label > i2.label) ? 1 : 0);
+    items.sort((i1, i2) =>
+      i1.label < i2.label ? -1 : i1.label > i2.label ? 1 : 0,
+    );
     this.memberItems$.next(items);
     this.dirty$.next(dirty);
   }
 
   deleteItem(item: MemberItem) {
-    this.updateMemberItems(this.memberItems$.value.filter(i => i !== item));
+    this.updateMemberItems(this.memberItems$.value.filter((i) => i !== item));
   }
 
   onConfirm() {
@@ -99,14 +106,17 @@ export class EditGroupComponent implements OnDestroy {
       newName: formValue.name,
       description: formValue.description,
       memberInfo: {
-        users: this.memberItems$.value.filter(item => item.user).map(item => item.user!.name),
-      }
+        users: this.memberItems$.value
+          .filter((item) => item.user)
+          .map((item) => item.user!.name),
+      },
     };
 
     const newName = formValue.name;
-    this.yamcs.yamcsClient.editGroup(this.group.name, options)
+    this.yamcs.yamcsClient
+      .editGroup(this.group.name, options)
       .then(() => this.router.navigateByUrl(`/admin/iam/groups/${newName}`))
-      .catch(err => this.messageService.showError(err));
+      .catch((err) => this.messageService.showError(err));
   }
 
   ngOnDestroy() {

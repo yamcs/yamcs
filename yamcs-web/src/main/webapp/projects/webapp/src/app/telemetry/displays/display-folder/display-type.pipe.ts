@@ -4,7 +4,6 @@ import { Pipe, PipeTransform } from '@angular/core';
   name: 'displayType',
 })
 export class DisplayTypePipe implements PipeTransform {
-
   transform(path?: string): string | null {
     if (!path) {
       return null;

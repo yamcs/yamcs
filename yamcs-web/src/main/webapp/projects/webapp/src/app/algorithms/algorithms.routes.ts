@@ -7,48 +7,57 @@ import { AlgorithmSummaryTabComponent } from './algorithm-summary-tab/algorithm-
 import { AlgorithmTraceTabComponent } from './algorithm-trace-tab/algorithm-trace-tab.component';
 import { AlgorithmComponent } from './algorithm/algorithm.component';
 
-const algorithmMatcher: UrlMatcher = url => {
+const algorithmMatcher: UrlMatcher = (url) => {
   let consumed = url;
 
   // Stop consuming at /-/
   // (handled by Angular again)
-  const idx = url.findIndex(segment => segment.path === '-');
+  const idx = url.findIndex((segment) => segment.path === '-');
   if (idx !== -1) {
     consumed = url.slice(0, idx);
   }
 
-  const algorithm = '/' + consumed.map(segment => segment.path).join('/');
+  const algorithm = '/' + consumed.map((segment) => segment.path).join('/');
   return {
     consumed,
     posParams: {
-      'algorithm': new UrlSegment(algorithm, {}),
+      algorithm: new UrlSegment(algorithm, {}),
     },
   };
 };
 
-export const ROUTES: Routes = [{
-  path: '',
-  canActivate: [authGuardFn, attachContextGuardFn],
-  canActivateChild: [authGuardChildFn],
-  runGuardsAndResolvers: 'always',
-  component: InstancePageComponent,
-  children: [{
+export const ROUTES: Routes = [
+  {
     path: '',
-    pathMatch: 'full',
-    component: AlgorithmListComponent,
-  }, {
-    matcher: algorithmMatcher,
-    component: AlgorithmComponent,
-    children: [{
-      path: '',
-      pathMatch: 'full',
-      redirectTo: '-/summary',
-    }, {
-      path: '-/summary',
-      component: AlgorithmSummaryTabComponent,
-    }, {
-      path: '-/trace',
-      component: AlgorithmTraceTabComponent,
-    }]
-  }]
-}];
+    canActivate: [authGuardFn, attachContextGuardFn],
+    canActivateChild: [authGuardChildFn],
+    runGuardsAndResolvers: 'always',
+    component: InstancePageComponent,
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        component: AlgorithmListComponent,
+      },
+      {
+        matcher: algorithmMatcher,
+        component: AlgorithmComponent,
+        children: [
+          {
+            path: '',
+            pathMatch: 'full',
+            redirectTo: '-/summary',
+          },
+          {
+            path: '-/summary',
+            component: AlgorithmSummaryTabComponent,
+          },
+          {
+            path: '-/trace',
+            component: AlgorithmTraceTabComponent,
+          },
+        ],
+      },
+    ],
+  },
+];

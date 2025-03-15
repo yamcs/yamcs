@@ -120,4 +120,3 @@ export * from './lib/User';
 export * as utils from './lib/utils';
 export * as validators from './lib/validators';
 export * from './lib/webapp-sdk.module';
-

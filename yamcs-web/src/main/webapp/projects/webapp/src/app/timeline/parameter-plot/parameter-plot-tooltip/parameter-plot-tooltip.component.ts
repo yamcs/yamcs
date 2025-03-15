@@ -13,14 +13,9 @@ interface Legend {
   selector: 'app-parameter-plot-tooltip',
   templateUrl: './parameter-plot-tooltip.component.html',
   styleUrl: './parameter-plot-tooltip.component.css',
-  imports: [
-    CommonModule,
-    DateTimePipe,
-    SimpleTableDirective,
-  ],
+  imports: [CommonModule, DateTimePipe, SimpleTableDirective],
 })
 export class ParameterPlotTooltipComponent {
-
   @ViewChild('tt', { static: true })
   tt: ElementRef<HTMLDivElement>;
 
@@ -31,13 +26,13 @@ export class ParameterPlotTooltipComponent {
     left: number,
     top: number,
     date: Date,
-    traces: { [key: string]: any; }[],
+    traces: { [key: string]: any }[],
     points: Array<LinePlotPoint | null>,
     labelFormatter: (value: number) => string,
   ) {
     this.date.set(date);
 
-    const visibleTraces = traces.filter(trace => trace.visible);
+    const visibleTraces = traces.filter((trace) => trace.visible);
 
     const legend: Legend[] = [];
     for (let i = 0; i < visibleTraces.length; i++) {

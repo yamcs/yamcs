@@ -4,7 +4,6 @@ import { BehaviorSubject } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AppearanceService implements OnDestroy {
-
   public fullScreenRequested = signal(false);
 
   public fullScreenMode$ = new BehaviorSubject<boolean>(false);
@@ -21,10 +20,11 @@ export class AppearanceService implements OnDestroy {
     }
   };
 
-  constructor(
-    @Inject(DOCUMENT) private document: Document,
-  ) {
-    document.addEventListener('fullscreenchange', this.fullScreenChangeListener);
+  constructor(@Inject(DOCUMENT) private document: Document) {
+    document.addEventListener(
+      'fullscreenchange',
+      this.fullScreenChangeListener,
+    );
 
     effect(() => {
       if (!this.fullScreenRequested() && document.fullscreenElement) {
@@ -34,6 +34,9 @@ export class AppearanceService implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.document.removeEventListener('fullscreenchange', this.fullScreenChangeListener);
+    this.document.removeEventListener(
+      'fullscreenchange',
+      this.fullScreenChangeListener,
+    );
   }
 }

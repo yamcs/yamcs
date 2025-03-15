@@ -1,6 +1,33 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, Optional, SkipSelf, forwardRef } from '@angular/core';
-import { AbstractControl, ControlContainer, FormArrayName, FormControl, FormGroup, FormGroupDirective, FormGroupName, UntypedFormArray, UntypedFormGroup } from '@angular/forms';
-import { ArgumentType, NamedObjectId, ParameterSubscription, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+  Optional,
+  SkipSelf,
+  forwardRef,
+} from '@angular/core';
+import {
+  AbstractControl,
+  ControlContainer,
+  FormArrayName,
+  FormControl,
+  FormGroup,
+  FormGroupDirective,
+  FormGroupName,
+  UntypedFormArray,
+  UntypedFormGroup,
+} from '@angular/forms';
+import {
+  ArgumentType,
+  NamedObjectId,
+  ParameterSubscription,
+  WebappSdkModule,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription, distinctUntilChanged } from 'rxjs';
 import { AggregateArgumentComponent } from '../aggregate-argument/aggregate-argument.component';
 import { BinaryArgumentComponent } from '../binary-argument/binary-argument.component';
@@ -16,21 +43,25 @@ import { TimeArgumentComponent } from '../time-argument/time-argument.component'
   templateUrl: './array-argument.component.html',
   styleUrls: ['../arguments.css', './array-argument.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  viewProviders: [{
-    provide: ControlContainer,
-    useFactory: (formArrayName: FormArrayName, formGroupName: FormGroupName) => {
-      if (!formArrayName) {
-        return formGroupName;
-      } else {
-        if (formArrayName.control.parent === formGroupName.control) {
+  viewProviders: [
+    {
+      provide: ControlContainer,
+      useFactory: (
+        formArrayName: FormArrayName,
+        formGroupName: FormGroupName,
+      ) => {
+        if (
+          formArrayName &&
+          formArrayName.control.parent === formGroupName.control
+        ) {
           return formArrayName;
         } else {
           return formGroupName;
         }
-      }
+      },
+      deps: [[new SkipSelf(), new Optional(), FormArrayName], FormGroupName],
     },
-    deps: [[new SkipSelf(), new Optional(), FormArrayName], FormGroupName],
-  }],
+  ],
   imports: [
     // Break circular imports
     forwardRef(() => AggregateArgumentComponent),
@@ -45,7 +76,6 @@ import { TimeArgumentComponent } from '../time-argument/time-argument.component'
   ],
 })
 export class ArrayArgumentComponent implements OnInit, OnDestroy {
-
   @Input()
   name: string;
 
@@ -79,7 +109,7 @@ export class ArrayArgumentComponent implements OnInit, OnDestroy {
 
   private parameterSubscription?: ParameterSubscription;
   private subscriptions: Subscription[] = [];
-  private pvalCache: { [key: string]: any; } = {};
+  private pvalCache: { [key: string]: any } = {};
 
   constructor(
     private formGroupName: FormGroupName,
@@ -112,37 +142,41 @@ export class ArrayArgumentComponent implements OnInit, OnDestroy {
     parent.addControl(this.name, this.formArray);
     this.updateOwnDimensions();
 
-    let parameters = this.type.dimensions!
-      .filter(dimension => dimension.parameter !== undefined)
-      .map(dimension => dimension.parameter.qualifiedName);
+    let parameters = this.type
+      .dimensions!.filter((dimension) => dimension.parameter !== undefined)
+      .map((dimension) => dimension.parameter.qualifiedName);
     parameters = [...new Set(parameters)];
 
     if (parameters.length) {
-      const ids = parameters.map(parameter => ({ name: parameter }));
-      let idMapping: { [key: number]: NamedObjectId; };
-      this.parameterSubscription = this.yamcs.yamcsClient.createParameterSubscription({
-        instance: this.yamcs.instance!,
-        processor: this.yamcs.processor!,
-        id: ids,
-        abortOnInvalid: false,
-        sendFromCache: true,
-        updateOnExpiration: false,
-        action: 'REPLACE',
-      }, data => {
-        if (data.mapping) {
-          idMapping = {
-            ...idMapping,
-            ...data.mapping,
-          };
-        }
-        for (const pval of (data.values || [])) {
-          if (pval.engValue) {
-            const id = idMapping[pval.numericId];
-            this.pvalCache[id.name] = utils.convertValue(pval.engValue);
-            this.updateOwnDimensions();
-          }
-        }
-      });
+      const ids = parameters.map((parameter) => ({ name: parameter }));
+      let idMapping: { [key: number]: NamedObjectId };
+      this.parameterSubscription =
+        this.yamcs.yamcsClient.createParameterSubscription(
+          {
+            instance: this.yamcs.instance!,
+            processor: this.yamcs.processor!,
+            id: ids,
+            abortOnInvalid: false,
+            sendFromCache: true,
+            updateOnExpiration: false,
+            action: 'REPLACE',
+          },
+          (data) => {
+            if (data.mapping) {
+              idMapping = {
+                ...idMapping,
+                ...data.mapping,
+              };
+            }
+            for (const pval of data.values || []) {
+              if (pval.engValue) {
+                const id = idMapping[pval.numericId];
+                this.pvalCache[id.name] = utils.convertValue(pval.engValue);
+                this.updateOwnDimensions();
+              }
+            }
+          },
+        );
     }
 
     this.formArray.addValidators(() => {
@@ -151,26 +185,26 @@ export class ArrayArgumentComponent implements OnInit, OnDestroy {
         const dimensionType = this.type.dimensions![i];
         if (dimension !== undefined && dimension < 0) {
           return {
-            'invalidDimension': {
-              'dimension': dimension,
-            }
+            invalidDimension: {
+              dimension: dimension,
+            },
           };
         }
         if (dimensionType.argument) {
           if (dimension === undefined) {
             return {
-              'argumentRequired': {
-                'name': dimensionType.argument,
-              }
+              argumentRequired: {
+                name: dimensionType.argument,
+              },
             };
           }
         } else if (dimensionType.parameter) {
           if (dimension === undefined) {
             return {
-              'parameterRequired': {
-                'qualifiedName': dimensionType.parameter.qualifiedName,
-                'name': dimensionType.parameter.name,
-              }
+              parameterRequired: {
+                qualifiedName: dimensionType.parameter.qualifiedName,
+                name: dimensionType.parameter.name,
+              },
             };
           }
         }
@@ -180,26 +214,31 @@ export class ArrayArgumentComponent implements OnInit, OnDestroy {
     this.formArray.updateValueAndValidity();
 
     if (this.initialValue?.length === this.arrayLength$.value) {
-      this.entryInitialValues = [... this.initialValue];
+      this.entryInitialValues = [...this.initialValue];
     }
 
     let first = true;
     this.subscriptions.push(
-      this.arrayLength$.pipe(
-        distinctUntilChanged(),
-      ).subscribe(arrayLength => {
-        this.formArray.clear();
-        for (let i = 0; i < arrayLength; i++) {
-          if (!this.type.elementType!.engType.endsWith('[]') && this.type.elementType!.engType !== 'aggregate') {
-            const initialValue = first ? (this.entryInitialValues[i] ?? '') : '';
-            this.formArray.setControl(i, new FormControl(initialValue));
-          } else if (this.type.elementType!.engType === 'aggregate') {
-            this.formArray.setControl(i, new UntypedFormGroup({}));
-          } else {
-            this.formArray.setControl(i, new UntypedFormArray([]));
+      this.arrayLength$
+        .pipe(distinctUntilChanged())
+        .subscribe((arrayLength) => {
+          this.formArray.clear();
+          for (let i = 0; i < arrayLength; i++) {
+            if (
+              !this.type.elementType!.engType.endsWith('[]') &&
+              this.type.elementType!.engType !== 'aggregate'
+            ) {
+              const initialValue = first
+                ? (this.entryInitialValues[i] ?? '')
+                : '';
+              this.formArray.setControl(i, new FormControl(initialValue));
+            } else if (this.type.elementType!.engType === 'aggregate') {
+              this.formArray.setControl(i, new UntypedFormGroup({}));
+            } else {
+              this.formArray.setControl(i, new UntypedFormArray([]));
+            }
           }
-        }
-      })
+        }),
     );
 
     first = false; // Only initialize once
@@ -208,7 +247,7 @@ export class ArrayArgumentComponent implements OnInit, OnDestroy {
   get label() {
     if (this.index !== undefined) {
       const index = utils.unflattenIndex(this.index, this.dimensions!);
-      return index.map(i => '[' + i + ']').join('');
+      return index.map((i) => '[' + i + ']').join('');
     } else {
       return this.name;
     }
@@ -223,7 +262,7 @@ export class ArrayArgumentComponent implements OnInit, OnDestroy {
     }
 
     for (const dim of this.ownDimensions) {
-      result += (dim !== undefined) ? `[${dim}]` : '[?]';
+      result += dim !== undefined ? `[${dim}]` : '[?]';
     }
 
     this.engType$.next(result);
@@ -293,7 +332,8 @@ export class ArrayArgumentComponent implements OnInit, OnDestroy {
   private findClosestControl(name: string) {
     let parent: AbstractControl<any> | null = this.formGroupName.control;
     while (parent && parent !== this.topLevelForm.control) {
-      if (parent instanceof FormGroup) { // Ignore FormArray
+      if (parent instanceof FormGroup) {
+        // Ignore FormArray
         if (name in parent.controls) {
           return parent.controls[name];
         }
@@ -304,6 +344,6 @@ export class ArrayArgumentComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.parameterSubscription?.cancel();
-    this.subscriptions.forEach(s => s.unsubscribe());
+    this.subscriptions.forEach((s) => s.unsubscribe());
   }
 }

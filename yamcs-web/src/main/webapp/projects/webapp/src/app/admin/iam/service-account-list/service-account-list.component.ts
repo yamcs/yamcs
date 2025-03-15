@@ -1,33 +1,35 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ViewChild,
+} from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MessageService, ServiceAccount, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  MessageService,
+  ServiceAccount,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { AdminPageTemplateComponent } from '../../shared/admin-page-template/admin-page-template.component';
 import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.component';
 
 @Component({
   templateUrl: './service-account-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AdminPageTemplateComponent,
-    AdminToolbarComponent,
-    WebappSdkModule,
-  ],
+  imports: [AdminPageTemplateComponent, AdminToolbarComponent, WebappSdkModule],
 })
 export class ServiceAccountListComponent implements AfterViewInit {
-
   filterControl = new UntypedFormControl();
 
   @ViewChild(MatSort, { static: true })
   sort: MatSort;
 
-  displayedColumns = [
-    'name',
-    'actions',
-  ];
+  displayedColumns = ['name', 'actions'];
   dataSource = new MatTableDataSource<ServiceAccount>();
 
   constructor(
@@ -61,7 +63,7 @@ export class ServiceAccountListComponent implements AfterViewInit {
   }
 
   private refresh() {
-    this.yamcs.yamcsClient.getServiceAccounts().then(page => {
+    this.yamcs.yamcsClient.getServiceAccounts().then((page) => {
       this.dataSource.data = page.serviceAccounts || [];
     });
   }
@@ -80,9 +82,10 @@ export class ServiceAccountListComponent implements AfterViewInit {
 
   deleteServiceAccount(name: string) {
     if (confirm(`Are you sure you want to delete service account ${name}`)) {
-      this.yamcs.yamcsClient.deleteServiceAccount(name)
+      this.yamcs.yamcsClient
+        .deleteServiceAccount(name)
         .then(() => this.refresh())
-        .catch(err => this.messageService.showError(err));
+        .catch((err) => this.messageService.showError(err));
     }
   }
 }

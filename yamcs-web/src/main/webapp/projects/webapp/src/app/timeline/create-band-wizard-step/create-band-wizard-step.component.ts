@@ -6,12 +6,9 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
   templateUrl: './create-band-wizard-step.component.html',
   styleUrl: './create-band-wizard-step.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class CreateBandWizardStepComponent {
-
   @Input()
   step: string;
 }

@@ -82,15 +82,15 @@
           <ya-text-action
             icon="check"
             (click)="acceptEntry(entry)"
-            [disabled]="entry.pendingTransmissionConstraints"
-            >ACCEPT</ya-text-action
-          >
+            [disabled]="entry.pendingTransmissionConstraints">
+            ACCEPT
+          </ya-text-action>
           <ya-text-action
             icon="close"
             (click)="rejectEntry(entry)"
-            [disabled]="entry.pendingTransmissionConstraints"
-            >REJECT</ya-text-action
-          >
+            [disabled]="entry.pendingTransmissionConstraints">
+            REJECT
+          </ya-text-action>
         }
       </td>
     </ng-container>

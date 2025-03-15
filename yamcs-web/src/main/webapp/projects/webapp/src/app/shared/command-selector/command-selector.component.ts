@@ -1,8 +1,30 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwardRef, Input, ViewChild } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR, UntypedFormControl } from '@angular/forms';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  forwardRef,
+  Input,
+  ViewChild,
+} from '@angular/core';
+import {
+  ControlValueAccessor,
+  NG_VALUE_ACCESSOR,
+  UntypedFormControl,
+} from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
-import { Command, GetCommandsOptions, SpaceSystem, WebappSdkModule, YaColumnChooser, YaColumnInfo, YamcsService, YaSearchFilter } from '@yamcs/webapp-sdk';
+import {
+  Command,
+  GetCommandsOptions,
+  SpaceSystem,
+  WebappSdkModule,
+  YaColumnChooser,
+  YaColumnInfo,
+  YamcsService,
+  YaSearchFilter,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { CommandsDataSource } from '../../commanding/command-sender/send-command/commands.datasource';
 import { SignificanceLevelComponent } from '../significance-level/significance-level.component';
@@ -12,18 +34,18 @@ import { SignificanceLevelComponent } from '../significance-level/significance-l
   templateUrl: './command-selector.component.html',
   styleUrl: './command-selector.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => CommandSelectorComponent),
-    multi: true
-  }],
-  imports: [
-    SignificanceLevelComponent,
-    WebappSdkModule,
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => CommandSelectorComponent),
+      multi: true,
+    },
   ],
+  imports: [SignificanceLevelComponent, WebappSdkModule],
 })
-export class CommandSelectorComponent implements ControlValueAccessor, AfterViewInit {
-
+export class CommandSelectorComponent
+  implements ControlValueAccessor, AfterViewInit
+{
   @Input()
   path: string;
 
@@ -61,14 +83,20 @@ export class CommandSelectorComponent implements ControlValueAccessor, AfterView
   selection = new SelectionModel<ListItem>(false);
   selectedCommand$ = new BehaviorSubject<ListItem | null>(null);
 
-  private onChange = (_: Command | null) => { };
-  private onTouched = () => { };
+  private onChange = (_: Command | null) => {};
+  private onTouched = () => {};
 
-  constructor(readonly yamcs: YamcsService, private changeDetection: ChangeDetectorRef) {
+  constructor(
+    readonly yamcs: YamcsService,
+    private changeDetection: ChangeDetectorRef,
+  ) {
     this.dataSource = new CommandsDataSource(yamcs);
-    this.selectedCommand$.subscribe(async item => {
+    this.selectedCommand$.subscribe(async (item) => {
       if (item && item.command) {
-        const commandDetail = await this.yamcs.yamcsClient.getCommand(this.yamcs.instance!, item.command.qualifiedName);
+        const commandDetail = await this.yamcs.yamcsClient.getCommand(
+          this.yamcs.instance!,
+          item.command.qualifiedName,
+        );
         return this.onChange(commandDetail);
       } else {
         return this.onChange(null);
@@ -103,7 +131,13 @@ export class CommandSelectorComponent implements ControlValueAccessor, AfterView
       details: true,
       pos: this.paginator.pageIndex * this.pageSize,
       limit: this.pageSize,
-      fields: ['name', 'qualifiedName', 'alias', 'effectiveSignificance', 'shortDescription'],
+      fields: [
+        'name',
+        'qualifiedName',
+        'alias',
+        'effectiveSignificance',
+        'shortDescription',
+      ],
     };
     const filterValue = this.filterControl.value;
     if (filterValue) {
@@ -122,7 +156,11 @@ export class CommandSelectorComponent implements ControlValueAccessor, AfterView
       }
       const aliasColumns = [];
       for (const namespace of this.dataSource.getAliasNamespaces()) {
-        const aliasColumn = { id: namespace, label: namespace, alwaysVisible: true };
+        const aliasColumn = {
+          id: namespace,
+          label: namespace,
+          alwaysVisible: true,
+        };
         aliasColumns.push(aliasColumn);
       }
       this.columns.splice(1, 0, ...aliasColumns); // Insert after name column

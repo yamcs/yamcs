@@ -7,12 +7,9 @@ import { NamedParameterValue } from '../stack-file/StackedEntry';
   templateUrl: './verify-icon.component.html',
   styleUrl: './verify-icon.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class VerifyIconComponent {
-
   @Input()
   comparison: NamedParameterValue;
 }

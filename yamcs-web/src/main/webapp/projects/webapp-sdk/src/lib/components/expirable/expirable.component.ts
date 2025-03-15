@@ -8,13 +8,9 @@ import { ParameterValue } from '../../client';
   templateUrl: './expirable.component.html',
   styleUrl: './expirable.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    MatIcon,
-    MatTooltip
-  ],
+  imports: [MatIcon, MatTooltip],
 })
 export class YaExpirable {
-
   @Input()
   pval: ParameterValue;
 

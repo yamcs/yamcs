@@ -5,8 +5,11 @@ import * as utils from '../utils';
   name: 'deltaWith',
 })
 export class DeltaWithPipe implements PipeTransform {
-
-  transform(second: Date | string | undefined, first: Date | string, showSign = true): string | null {
+  transform(
+    second: Date | string | undefined,
+    first: Date | string,
+    showSign = true,
+  ): string | null {
     if (!first || !second) {
       return null;
     }
@@ -20,8 +23,8 @@ export class DeltaWithPipe implements PipeTransform {
 
     const totalSeconds = Math.floor(millis / 1000);
     const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds - (hours * 3600)) / 60);
-    const seconds = totalSeconds - (hours * 3600) - (minutes * 60);
+    const minutes = Math.floor((totalSeconds - hours * 3600) / 60);
+    const seconds = totalSeconds - hours * 3600 - minutes * 60;
     const milliseconds = millis % 1000;
 
     const days = Math.floor(hours / 24);

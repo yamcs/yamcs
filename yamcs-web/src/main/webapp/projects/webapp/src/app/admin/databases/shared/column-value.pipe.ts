@@ -5,8 +5,10 @@ import { ColumnData, Value } from '@yamcs/webapp-sdk';
   name: 'columnValue',
 })
 export class ColumnValuePipe implements PipeTransform {
-
-  transform(columnData: ColumnData[] | null | undefined, name: string): Value | null {
+  transform(
+    columnData: ColumnData[] | null | undefined,
+    name: string,
+  ): Value | null {
     if (!columnData || columnData.length === 0) {
       return null;
     }

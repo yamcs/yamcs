@@ -5,13 +5,8 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
 @Component({
   selector: 'app-show-streams-dialog',
   templateUrl: './show-streams-dialog.component.html',
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class ShowStreamsDialogComponent {
-
-  constructor(
-    @Inject(MAT_DIALOG_DATA) readonly data: any) {
-  }
+  constructor(@Inject(MAT_DIALOG_DATA) readonly data: any) {}
 }

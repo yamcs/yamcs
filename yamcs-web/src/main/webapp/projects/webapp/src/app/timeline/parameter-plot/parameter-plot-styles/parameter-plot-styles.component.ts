@@ -7,12 +7,9 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
   templateUrl: './parameter-plot-styles.component.html',
   styleUrl: '../../shared/StyleTable.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class ParameterPlotStylesComponent {
-
   @Input()
   form: FormGroup;
 }

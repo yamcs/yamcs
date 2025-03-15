@@ -4,9 +4,12 @@ import { Step } from './Step';
 
 export class StackFormatter {
   private steps: Step[];
-  private stackOptions: { advancement?: AdvancementParams; };
+  private stackOptions: { advancement?: AdvancementParams };
 
-  constructor(steps: Step[] = [], stackOptions: { advancement?: AdvancementParams; }) {
+  constructor(
+    steps: Step[] = [],
+    stackOptions: { advancement?: AdvancementParams },
+  ) {
     this.steps = steps;
     this.stackOptions = stackOptions;
   }
@@ -80,9 +83,9 @@ export class StackFormatter {
   }
 
   toJSON() {
-    const root: { [key: string]: any; } = {
-      '$schema': 'https://yamcs.org/schema/stack.schema.json',
-      'steps': [],
+    const root: { [key: string]: any } = {
+      $schema: 'https://yamcs.org/schema/stack.schema.json',
+      steps: [],
     };
     for (const step of this.steps) {
       if (step.type === 'command') {
@@ -92,9 +95,13 @@ export class StackFormatter {
           ...(step.namespace && { namespace: step.namespace }),
           ...(step.comment && { comment: step.comment }),
           ...(step.stream && { stream: step.stream }),
-          ...(step.extra && { extraOptions: this.getExtraOptionsJSON(step.extra) }),
-          ...(step.args && { arguments: this.getCommandArgumentsJSON(step.args) }),
-          ...(step.advancement && { advancement: step.advancement })
+          ...(step.extra && {
+            extraOptions: this.getExtraOptionsJSON(step.extra),
+          }),
+          ...(step.args && {
+            arguments: this.getCommandArgumentsJSON(step.args),
+          }),
+          ...(step.advancement && { advancement: step.advancement }),
         });
       } else if (step.type === 'check') {
         root['steps'].push({
@@ -125,24 +132,24 @@ export class StackFormatter {
     return JSON.stringify(root, null, 2);
   }
 
-  private getExtraOptionsJSON(extra: { [key: string]: Value; }): any {
+  private getExtraOptionsJSON(extra: { [key: string]: Value }): any {
     let extraOptions = [];
     for (const id in extra) {
       const value = this.getValue(extra[id]);
       extraOptions.push({
         id: id,
-        ...(value != null && { value: value })
+        ...(value != null && { value: value }),
       });
     }
     return extraOptions;
   }
 
-  private getCommandArgumentsJSON(args: { [key: string]: any; }) {
+  private getCommandArgumentsJSON(args: { [key: string]: any }) {
     let commandArguments = [];
     for (const argName in args) {
       commandArguments.push({
         name: argName,
-        value: args[argName]
+        value: args[argName],
       });
     }
     return commandArguments;

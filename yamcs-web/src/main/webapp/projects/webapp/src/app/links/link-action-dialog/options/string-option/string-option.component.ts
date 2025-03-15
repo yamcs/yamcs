@@ -1,5 +1,22 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, forwardRef, input } from '@angular/core';
-import { AbstractControl, ControlValueAccessor, FormControl, NG_VALIDATORS, NG_VALUE_ACCESSOR, ValidationErrors, Validator, ValidatorFn, Validators } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  OnInit,
+  forwardRef,
+  input,
+} from '@angular/core';
+import {
+  AbstractControl,
+  ControlValueAccessor,
+  FormControl,
+  NG_VALIDATORS,
+  NG_VALUE_ACCESSOR,
+  ValidationErrors,
+  Validator,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 import { Option, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
 
@@ -8,27 +25,29 @@ import { Subscription } from 'rxjs';
   templateUrl: './string-option.component.html',
   styleUrls: ['../options.css', './string-option.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
+  imports: [WebappSdkModule],
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => StringOptionComponent),
+      multi: true,
+    },
+    {
+      provide: NG_VALIDATORS,
+      useExisting: forwardRef(() => StringOptionComponent),
+      multi: true,
+    },
   ],
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => StringOptionComponent),
-    multi: true,
-  }, {
-    provide: NG_VALIDATORS,
-    useExisting: forwardRef(() => StringOptionComponent),
-    multi: true,
-  }]
 })
-export class StringOptionComponent implements ControlValueAccessor, Validator, OnInit, OnDestroy {
-
+export class StringOptionComponent
+  implements ControlValueAccessor, Validator, OnInit, OnDestroy
+{
   option = input.required<Option>();
 
   formControl = new FormControl<string | null>(null);
 
   private validators: ValidatorFn[] = [];
-  private onChange = (_: string | null) => { };
+  private onChange = (_: string | null) => {};
   private subscriptions: Subscription[] = [];
 
   ngOnInit(): void {
@@ -36,7 +55,7 @@ export class StringOptionComponent implements ControlValueAccessor, Validator, O
       this.formControl.valueChanges.subscribe(() => {
         const value = this.formControl.value;
         this.onChange(value);
-      })
+      }),
     );
 
     if (this.option().required) {
@@ -52,8 +71,7 @@ export class StringOptionComponent implements ControlValueAccessor, Validator, O
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any): void {
-  }
+  registerOnTouched(fn: any): void {}
 
   validate(control: AbstractControl<any, any>): ValidationErrors | null {
     for (const validator of this.validators) {
@@ -66,6 +84,6 @@ export class StringOptionComponent implements ControlValueAccessor, Validator, O
   }
 
   ngOnDestroy(): void {
-    this.subscriptions.forEach(s => s.unsubscribe());
+    this.subscriptions.forEach((s) => s.unsubscribe());
   }
 }

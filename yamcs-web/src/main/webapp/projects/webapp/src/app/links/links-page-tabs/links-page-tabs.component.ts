@@ -6,11 +6,8 @@ import { WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
   templateUrl: './links-page-tabs.component.html',
   styleUrl: './links-page-tabs.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class LinksPageTabsComponent {
-  constructor(readonly yamcs: YamcsService) {
-  }
+  constructor(readonly yamcs: YamcsService) {}
 }

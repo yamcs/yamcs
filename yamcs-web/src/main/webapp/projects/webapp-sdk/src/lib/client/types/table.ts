@@ -71,5 +71,11 @@ export interface ColumnData {
   value: Value;
 }
 
-export type StreamStatisticsSubscription = WebSocketCall<SubscribeStreamStatisticsRequest, StreamEvent>;
-export type StreamSubscription = WebSocketCall<SubscribeStreamRequest, StreamData>;
+export type StreamStatisticsSubscription = WebSocketCall<
+  SubscribeStreamStatisticsRequest,
+  StreamEvent
+>;
+export type StreamSubscription = WebSocketCall<
+  SubscribeStreamRequest,
+  StreamData
+>;

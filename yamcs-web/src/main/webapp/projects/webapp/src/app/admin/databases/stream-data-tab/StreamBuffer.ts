@@ -1,7 +1,6 @@
 import { StreamData } from '@yamcs/webapp-sdk';
 
 export class StreamBuffer {
-
   public dirty = false;
 
   private buffer: (StreamData | undefined)[];
@@ -33,7 +32,7 @@ export class StreamBuffer {
     } else {
       const left = this.buffer.slice(0, this.prevPointer + 1); // Left of pointer (inclusive)
       const right = this.buffer.slice(this.prevPointer + 1); // Right of pointer (exclusive)
-      return right.concat(left).filter(s => s !== undefined) as StreamData[];
+      return right.concat(left).filter((s) => s !== undefined) as StreamData[];
     }
   }
 }

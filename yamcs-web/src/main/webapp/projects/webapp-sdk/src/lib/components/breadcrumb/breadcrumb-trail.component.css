@@ -1,6 +1,8 @@
 .trail {
   height: 24px;
-  font: 400 12px / 24px Roboto, sans-serif;
+  font:
+    400 12px / 24px Roboto,
+    sans-serif;
 }
 
 .showMargin {

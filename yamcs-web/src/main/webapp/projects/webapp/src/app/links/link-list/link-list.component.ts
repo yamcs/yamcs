@@ -1,9 +1,22 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+} from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute } from '@angular/router';
-import { ActionInfo, BaseComponent, LinkEvent, LinkSubscription, WebappSdkModule, YaColumnInfo, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  ActionInfo,
+  BaseComponent,
+  LinkEvent,
+  LinkSubscription,
+  WebappSdkModule,
+  YaColumnInfo,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
@@ -27,8 +40,10 @@ import { LinkItem } from './model';
     WebappSdkModule,
   ],
 })
-export class LinkListComponent extends BaseComponent implements AfterViewInit, OnDestroy {
-
+export class LinkListComponent
+  extends BaseComponent
+  implements AfterViewInit, OnDestroy
+{
   filterControl = new UntypedFormControl();
 
   // Link to show detail pane (only on single selection)
@@ -51,7 +66,7 @@ export class LinkListComponent extends BaseComponent implements AfterViewInit, O
   private selectionSubscription: Subscription;
   private linkSubscription: LinkSubscription;
 
-  private itemsByName: { [key: string]: LinkItem; } = {};
+  private itemsByName: { [key: string]: LinkItem } = {};
 
   constructor(
     readonly yamcs: YamcsService,
@@ -63,8 +78,10 @@ export class LinkListComponent extends BaseComponent implements AfterViewInit, O
     this.setTitle('Links');
 
     this.dataSource.filterPredicate = (item, filter) => {
-      return item.link.name.toLowerCase().indexOf(filter) >= 0
-        || item.link.type.toLowerCase().indexOf(filter) >= 0;
+      return (
+        item.link.name.toLowerCase().indexOf(filter) >= 0 ||
+        item.link.type.toLowerCase().indexOf(filter) >= 0
+      );
     };
 
     this.selectionSubscription = this.selection.changed.subscribe(() => {
@@ -98,12 +115,13 @@ export class LinkListComponent extends BaseComponent implements AfterViewInit, O
 
     // Fetch with REST first, otherwise may take up to a second
     // before we get an update via websocket.
-    this.yamcs.yamcsClient.getLinks(this.yamcs.instance!).then(links => {
+    this.yamcs.yamcsClient.getLinks(this.yamcs.instance!).then((links) => {
       for (const link of links) {
         const linkItem = { link, hasChildren: false, expanded: false };
         this.itemsByName[link.name] = linkItem;
       }
-      for (const link of links) { // 2nd pass
+      for (const link of links) {
+        // 2nd pass
         if (link.parentName) {
           const parent = this.itemsByName[link.parentName];
           parent.hasChildren = true;
@@ -113,11 +131,14 @@ export class LinkListComponent extends BaseComponent implements AfterViewInit, O
 
       this.updateDataSource();
 
-      this.linkSubscription = this.yamcs.yamcsClient.createLinkSubscription({
-        instance: this.yamcs.instance!,
-      }, evt => {
-        this.processLinkEvent(evt);
-      });
+      this.linkSubscription = this.yamcs.yamcsClient.createLinkSubscription(
+        {
+          instance: this.yamcs.instance!,
+        },
+        (evt) => {
+          this.processLinkEvent(evt);
+        },
+      );
     });
   }
 
@@ -131,7 +152,10 @@ export class LinkListComponent extends BaseComponent implements AfterViewInit, O
     // Unselect child links when parent is collapsed
     if (!item.expanded) {
       for (const selectedItem of this.selection.selected) {
-        if (selectedItem.parentLink && selectedItem.parentLink.name === item.link.name) {
+        if (
+          selectedItem.parentLink &&
+          selectedItem.parentLink.name === item.link.name
+        ) {
           this.selection.deselect(selectedItem);
         }
       }
@@ -144,18 +168,21 @@ export class LinkListComponent extends BaseComponent implements AfterViewInit, O
   }
 
   enableLink(link: string) {
-    this.yamcs.yamcsClient.enableLink(this.yamcs.instance!, link)
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .enableLink(this.yamcs.instance!, link)
+      .catch((err) => this.messageService.showError(err));
   }
 
   disableLink(link: string) {
-    this.yamcs.yamcsClient.disableLink(this.yamcs.instance!, link)
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .disableLink(this.yamcs.instance!, link)
+      .catch((err) => this.messageService.showError(err));
   }
 
   resetCounters(link: string) {
-    this.yamcs.yamcsClient.resetLinkCounters(this.yamcs.instance!, link)
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .resetLinkCounters(this.yamcs.instance!, link)
+      .catch((err) => this.messageService.showError(err));
   }
 
   runAction(link: string, action: ActionInfo) {
@@ -186,7 +213,11 @@ export class LinkListComponent extends BaseComponent implements AfterViewInit, O
       if (linkInfo.name in this.itemsByName) {
         this.itemsByName[linkInfo.name].link = linkInfo;
       } else {
-        const linkItem = { link: linkInfo, hasChildren: false, expanded: false };
+        const linkItem = {
+          link: linkInfo,
+          hasChildren: false,
+          expanded: false,
+        };
         this.itemsByName[linkInfo.name] = linkItem;
       }
 
@@ -219,7 +250,7 @@ export class LinkListComponent extends BaseComponent implements AfterViewInit, O
   }
 
   private updateDataSource() {
-    const data = Object.values(this.itemsByName).filter(item => {
+    const data = Object.values(this.itemsByName).filter((item) => {
       const parentName = item.link.parentName;
       if (!parentName) {
         return true;
@@ -271,9 +302,11 @@ export class LinkListComponent extends BaseComponent implements AfterViewInit, O
   }
 
   masterToggle() {
-    this.isAllSelected() ?
-      this.selection.clear() :
-      this.dataSource.filteredData.forEach(row => this.selection.select(row));
+    this.isAllSelected()
+      ? this.selection.clear()
+      : this.dataSource.filteredData.forEach((row) =>
+          this.selection.select(row),
+        );
   }
 
   toggleOne(row: LinkItem) {
@@ -318,7 +351,8 @@ export class LinkListComponent extends BaseComponent implements AfterViewInit, O
     const items = this.dataSource.filteredData;
     let idx = 0;
     if (this.selection.hasValue()) {
-      const currentItem = this.selection.selected[this.selection.selected.length - 1];
+      const currentItem =
+        this.selection.selected[this.selection.selected.length - 1];
       if (items.indexOf(currentItem) !== -1) {
         idx = Math.min(items.indexOf(currentItem) + 1, items.length - 1);
       }
@@ -344,7 +378,7 @@ export class LinkListComponent extends BaseComponent implements AfterViewInit, O
     if (this.selection.hasValue() && this.selection.selected.length === 1) {
       const item = this.selection.selected[0];
       this.router.navigate(['/links', item.link.name], {
-        queryParams: { c: this.yamcs.context }
+        queryParams: { c: this.yamcs.context },
       });
     }
   }

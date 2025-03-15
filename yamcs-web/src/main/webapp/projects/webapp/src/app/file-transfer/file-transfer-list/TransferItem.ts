@@ -1,9 +1,10 @@
 import { Transfer } from '@yamcs/webapp-sdk';
 
 export class TransferItem implements Transfer {
-
-  constructor(public transfer: Transfer, public objectUrl: string) {
-  }
+  constructor(
+    public transfer: Transfer,
+    public objectUrl: string,
+  ) {}
 
   get id() {
     return this.transfer.id;

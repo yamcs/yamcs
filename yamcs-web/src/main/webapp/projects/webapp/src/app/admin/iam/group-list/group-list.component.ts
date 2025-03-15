@@ -1,34 +1,35 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ViewChild,
+} from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GroupInfo, MessageService, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  GroupInfo,
+  MessageService,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { AdminPageTemplateComponent } from '../../shared/admin-page-template/admin-page-template.component';
 import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.component';
 
 @Component({
   templateUrl: './group-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AdminPageTemplateComponent,
-    AdminToolbarComponent,
-    WebappSdkModule,
-  ],
+  imports: [AdminPageTemplateComponent, AdminToolbarComponent, WebappSdkModule],
 })
 export class GroupListComponent implements AfterViewInit {
-
   filterControl = new UntypedFormControl();
 
   @ViewChild(MatSort, { static: true })
   sort: MatSort;
 
-  displayedColumns = [
-    'name',
-    'members',
-    'actions',
-  ];
+  displayedColumns = ['name', 'members', 'actions'];
   dataSource = new MatTableDataSource<GroupInfo>();
 
   constructor(
@@ -57,13 +58,12 @@ export class GroupListComponent implements AfterViewInit {
       this.dataSource.filter = value.toLowerCase();
     });
 
-
     this.refresh();
     this.dataSource.sort = this.sort;
   }
 
   private refresh() {
-    this.yamcs.yamcsClient.getGroups().then(groups => {
+    this.yamcs.yamcsClient.getGroups().then((groups) => {
       this.dataSource.data = groups;
     });
   }
@@ -82,9 +82,10 @@ export class GroupListComponent implements AfterViewInit {
 
   deleteGroup(name: string) {
     if (confirm(`Are you sure you want to delete group ${name}`)) {
-      this.yamcs.yamcsClient.deleteGroup(name)
+      this.yamcs.yamcsClient
+        .deleteGroup(name)
         .then(() => this.refresh())
-        .catch(err => this.messageService.showError(err));
+        .catch((err) => this.messageService.showError(err));
     }
   }
 }

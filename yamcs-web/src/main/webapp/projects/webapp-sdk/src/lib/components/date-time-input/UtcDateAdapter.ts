@@ -1,11 +1,35 @@
 import { DateAdapter } from '@angular/material/core';
 
 const MONTH_NAMES = {
-  'long': [
-    'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'
+  long: [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ],
-  'short': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-  'narrow': ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D']
+  short: [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ],
+  narrow: ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'],
 };
 
 const DATE_NAMES = Array(31);
@@ -14,9 +38,17 @@ for (let i = 0; i < DATE_NAMES.length; i++) {
 }
 
 const DAY_OF_WEEK_NAMES = {
-  'long': ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-  'short': ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-  'narrow': ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+  long: [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+  ],
+  short: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+  narrow: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
 };
 
 const PARSE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
@@ -26,7 +58,6 @@ const PARSE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
  * formats as YYYY-MM-DD and uses UTC.
  */
 export class UtcDateAdapter extends DateAdapter<Date> {
-
   getYear(date: Date): number {
     return date.getUTCFullYear();
   }
@@ -60,12 +91,17 @@ export class UtcDateAdapter extends DateAdapter<Date> {
   }
 
   getFirstDayOfWeek(): number {
-    return 1;  // Monday
+    return 1; // Monday
   }
 
   getNumDaysInMonth(date: Date): number {
-    return this.getDate(this._createDateWithOverflow(
-      this.getYear(date), this.getMonth(date) + 1, 0));
+    return this.getDate(
+      this._createDateWithOverflow(
+        this.getYear(date),
+        this.getMonth(date) + 1,
+        0,
+      ),
+    );
   }
 
   clone(date: Date): Date {
@@ -101,7 +137,9 @@ export class UtcDateAdapter extends DateAdapter<Date> {
       }
       const match = value.match(PARSE_PATTERN);
       if (match) {
-        date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+        date = new Date(
+          Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])),
+        );
       } else {
         throw new Error(`Cannot parse '${value}' date string`);
       }
@@ -122,14 +160,24 @@ export class UtcDateAdapter extends DateAdapter<Date> {
 
   addCalendarMonths(date: Date, months: number): Date {
     let newDate = this._createDateWithOverflow(
-      this.getYear(date), this.getMonth(date) + months, this.getDate(date));
+      this.getYear(date),
+      this.getMonth(date) + months,
+      this.getDate(date),
+    );
 
     // It's possible to wind up in the wrong month if the original month has more days than the new
     // month. In this case we want to go to the last day of the desired month.
     // Note: the additional + 12 % 12 ensures we end up with a positive number, since JS % doesn't
     // guarantee this.
-    if (this.getMonth(newDate) != ((this.getMonth(date) + months) % 12 + 12) % 12) {
-      newDate = this._createDateWithOverflow(this.getYear(newDate), this.getMonth(newDate), 0);
+    if (
+      this.getMonth(newDate) !=
+      (((this.getMonth(date) + months) % 12) + 12) % 12
+    ) {
+      newDate = this._createDateWithOverflow(
+        this.getYear(newDate),
+        this.getMonth(newDate),
+        0,
+      );
     }
 
     return newDate;
@@ -137,7 +185,10 @@ export class UtcDateAdapter extends DateAdapter<Date> {
 
   addCalendarDays(date: Date, days: number): Date {
     return this._createDateWithOverflow(
-      this.getYear(date), this.getMonth(date), this.getDate(date) + days);
+      this.getYear(date),
+      this.getMonth(date),
+      this.getDate(date) + days,
+    );
   }
 
   toIso8601(date: Date): string {

@@ -6,8 +6,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   styleUrl: './panel.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    'class': 'ya-panel',
+    class: 'ya-panel',
   },
 })
-export class YaPanel {
-}
+export class YaPanel {}

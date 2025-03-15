@@ -6,7 +6,6 @@ import { getEntryForOffset } from '../utils';
   name: 'entryForOffset',
 })
 export class EntryForOffsetPipe implements PipeTransform {
-
   transform(parameter: Parameter, offset: string): Parameter | Member | null {
     return getEntryForOffset(parameter, offset);
   }

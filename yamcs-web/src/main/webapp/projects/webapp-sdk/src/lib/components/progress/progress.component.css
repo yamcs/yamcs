@@ -18,7 +18,12 @@
   bottom: 0;
   left: 0;
   background-color: var(--y-accent);
-  background: linear-gradient(to bottom, var(--y-accent), #bce3dd 50%, var(--y-accent));
+  background: linear-gradient(
+    to bottom,
+    var(--y-accent),
+    #bce3dd 50%,
+    var(--y-accent)
+  );
 }
 
 .label {

@@ -29,21 +29,14 @@
           "type": {
             "description": "Step type",
             "type": "string",
-            "enum": [
-              "check",
-              "command",
-              "text",
-              "verify"
-            ]
+            "enum": ["check", "command", "text", "verify"]
           },
           "comment": {
             "description": "Stack comment (Markdown syntax)",
             "type": "string"
           }
         },
-        "required": [
-          "type"
-        ],
+        "required": ["type"],
         "allOf": [
           {
             "if": {
@@ -66,15 +59,11 @@
                         "description": "Qualified parameter name"
                       }
                     },
-                    "required": [
-                      "parameter"
-                    ]
+                    "required": ["parameter"]
                   }
                 }
               },
-              "required": [
-                "parameters"
-              ]
+              "required": ["parameters"]
             }
           },
           {
@@ -116,10 +105,7 @@
                         ]
                       }
                     },
-                    "required": [
-                      "name",
-                      "value"
-                    ]
+                    "required": ["name", "value"]
                   }
                 },
                 "extraOptions": {
@@ -134,11 +120,7 @@
                       },
                       "value": {
                         "description": "Option value",
-                        "type": [
-                          "boolean",
-                          "number",
-                          "string"
-                        ]
+                        "type": ["boolean", "number", "string"]
                       }
                     }
                   }
@@ -151,9 +133,7 @@
                   "$ref": "#/definitions/advancement"
                 }
               },
-              "required": [
-                "name"
-              ]
+              "required": ["name"]
             }
           },
           {
@@ -171,9 +151,7 @@
                   "description": "Text in Markdown format"
                 }
               },
-              "required": [
-                "text"
-              ]
+              "required": ["text"]
             }
           },
           {
@@ -199,14 +177,7 @@
                       "operator": {
                         "type": "string",
                         "description": "Comparison operator",
-                        "enum": [
-                          "eq",
-                          "neq",
-                          "le",
-                          "lte",
-                          "gt",
-                          "gte"
-                        ]
+                        "enum": ["eq", "neq", "le", "lte", "gt", "gte"]
                       },
                       "value": {
                         "type": [
@@ -219,11 +190,7 @@
                         "description": "Value to compare against"
                       }
                     },
-                    "required": [
-                      "parameter",
-                      "operator",
-                      "value"
-                    ]
+                    "required": ["parameter", "operator", "value"]
                   }
                 },
                 "delay": {
@@ -236,9 +203,7 @@
                   "description": "How long before the verification is considered unsuccessful (in milliseconds)"
                 }
               },
-              "required": [
-                "condition"
-              ]
+              "required": ["condition"]
             }
           }
         ]

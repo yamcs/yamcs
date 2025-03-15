@@ -8,7 +8,6 @@ import { getBasename } from '../utils';
   name: 'basename',
 })
 export class BasenamePipe implements PipeTransform {
-
   transform(path: string | null): string | null {
     return getBasename(path);
   }

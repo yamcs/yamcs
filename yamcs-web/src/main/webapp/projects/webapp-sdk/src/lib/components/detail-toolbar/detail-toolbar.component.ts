@@ -8,13 +8,8 @@ import { YaIconAction } from '../icon-action/icon-action.component';
   selector: 'ya-detail-toolbar',
   templateUrl: './detail-toolbar.component.html',
   styleUrl: './detail-toolbar.component.css',
-  imports: [
-    MatToolbar,
-    MatTooltip,
-    YaIconAction,
-  ],
+  imports: [MatToolbar, MatTooltip, YaIconAction],
 })
 export class YaDetailToolbar extends BaseComponent {
-
   alwaysOpen = input(false, { transform: booleanAttribute });
 }

@@ -6,11 +6,8 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
   templateUrl: './replication-state.component.html',
   styleUrl: './replication-state.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class ReplicationStateComponent {
-
   connected = input<boolean>();
 }

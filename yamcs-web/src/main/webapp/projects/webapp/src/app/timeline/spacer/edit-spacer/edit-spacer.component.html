@@ -1,12 +1,16 @@
 @if (formConfigured$ | async) {
   <form [formGroup]="form">
     <label>
-      Label <span class="hint">(optional)</span><br />
+      Label
+      <span class="hint">(optional)</span>
+      <br />
       <input type="text" formControlName="name" style="width: 100%" />
     </label>
     <br />
     <label>
-      Description <span class="hint">(optional)</span><br />
+      Description
+      <span class="hint">(optional)</span>
+      <br />
       <textarea formControlName="description" rows="3"></textarea>
     </label>
     <br />

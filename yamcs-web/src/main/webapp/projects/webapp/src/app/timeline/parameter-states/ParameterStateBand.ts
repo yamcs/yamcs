@@ -2,9 +2,27 @@ import { Overlay } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { ElementRef } from '@angular/core';
 import { Item, ItemBand } from '@fqqb/timeline';
-import { BackfillingSubscription, ConfigService, Formatter, GetParameterRangesOptions, ParameterSubscription, Range, Synchronizer, TimelineBand, utils, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  BackfillingSubscription,
+  ConfigService,
+  Formatter,
+  GetParameterRangesOptions,
+  ParameterSubscription,
+  Range,
+  Synchronizer,
+  TimelineBand,
+  utils,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
-import { BooleanProperty, ColorProperty, NumberProperty, PropertyInfoSet, resolveProperties, TextProperty } from '../shared/properties';
+import {
+  BooleanProperty,
+  ColorProperty,
+  NumberProperty,
+  PropertyInfoSet,
+  resolveProperties,
+  TextProperty,
+} from '../shared/properties';
 import { TimelineChartComponent } from '../timeline-chart/timeline-chart.component';
 import { ParameterStatesTooltipComponent } from './parameter-states-tooltip/parameter-states-tooltip.component';
 import { State } from './State';
@@ -34,10 +52,14 @@ export function createValueMappingPropertyInfo(index: number): PropertyInfoSet {
   return set;
 }
 
-export function resolveValueMappingProperties(index: number, info: PropertyInfoSet, properties: { [key: string]: any; }) {
+export function resolveValueMappingProperties(
+  index: number,
+  info: PropertyInfoSet,
+  properties: { [key: string]: any },
+) {
   const prefix = `value_mapping_${index}_`;
   const prefixedResult = resolveProperties(info, properties);
-  const lstripped: { [key: string]: any; } = {};
+  const lstripped: { [key: string]: any } = {};
   for (const key in prefixedResult) {
     if (prefixedResult[key] !== '') {
       lstripped[key.slice(prefix.length)] = prefixedResult[key];
@@ -47,7 +69,6 @@ export function resolveValueMappingProperties(index: number, info: PropertyInfoS
 }
 
 export class ParameterStateBand extends ItemBand {
-
   private tooltipInstance: ParameterStatesTooltipComponent;
   private backfillSubscription?: BackfillingSubscription;
 
@@ -77,15 +98,23 @@ export class ParameterStateBand extends ItemBand {
     this.itemHoverBorderWidth = 1;
     this.data = { band: bandInfo };
 
-    const properties = resolveProperties(propertyInfo, bandInfo.properties || {});
+    const properties = resolveProperties(
+      propertyInfo,
+      bandInfo.properties || {},
+    );
     this.frozen = properties.frozen ?? propertyInfo.frozen.defaultValue;
     this.itemHeight = properties.height ?? propertyInfo.height.defaultValue;
-    this.parameter = properties.parameter ?? propertyInfo.parameter.defaultValue;
+    this.parameter =
+      properties.parameter ?? propertyInfo.parameter.defaultValue;
 
     let idx = 0;
     while (true) {
       const mappingPropertiesInfo = createValueMappingPropertyInfo(idx);
-      const mappingProperties = resolveValueMappingProperties(idx, mappingPropertiesInfo, bandInfo.properties || {});
+      const mappingProperties = resolveValueMappingProperties(
+        idx,
+        mappingPropertiesInfo,
+        bandInfo.properties || {},
+      );
       if (!mappingProperties.type) {
         break;
       }
@@ -94,42 +123,58 @@ export class ParameterStateBand extends ItemBand {
     }
 
     const bodyRef = new ElementRef(document.body);
-    const positionStrategy = overlay.position()
+    const positionStrategy = overlay
+      .position()
       .flexibleConnectedTo(bodyRef)
-      .withPositions([{
-        originX: 'start',
-        originY: 'top',
-        overlayX: 'start',
-        overlayY: 'top',
-      }])
+      .withPositions([
+        {
+          originX: 'start',
+          originY: 'top',
+          overlayX: 'start',
+          overlayY: 'top',
+        },
+      ])
       .withPush(false);
 
     const overlayRef = overlay.create({ positionStrategy });
     const tooltipPortal = new ComponentPortal(ParameterStatesTooltipComponent);
     this.tooltipInstance = overlayRef.attach(tooltipPortal).instance;
 
-    this.stateBuffer = new StateBuffer(MAX_GAP, this.formatter, this.stateRemapper, () => {
-      this.refreshData(false /* don't reset color assignment */);
-    });
+    this.stateBuffer = new StateBuffer(
+      MAX_GAP,
+      this.formatter,
+      this.stateRemapper,
+      () => {
+        this.refreshData(false /* don't reset color assignment */);
+      },
+    );
     this.syncSubscription = synchronizer.sync(() => {
       this.updateChart();
     });
 
-    this.backfillSubscription = yamcs.yamcsClient.createBackfillingSubscription({
-      instance: yamcs.instance!
-    }, update => {
-      if (update.finished) {
-        this.refreshData(false /* don't reset color assignment */);
-      }
-    });
+    this.backfillSubscription = yamcs.yamcsClient.createBackfillingSubscription(
+      {
+        instance: yamcs.instance!,
+      },
+      (update) => {
+        if (update.finished) {
+          this.refreshData(false /* don't reset color assignment */);
+        }
+      },
+    );
 
-    this.addItemMouseEnterListener(evt => {
+    this.addItemMouseEnterListener((evt) => {
       this.tooltipInstance.show(evt.clientX, evt.clientY, this.legend);
     });
-    this.addItemMouseMoveListener(evt => {
-      this.tooltipInstance.show(evt.clientX, evt.clientY, this.legend, evt.item);
+    this.addItemMouseMoveListener((evt) => {
+      this.tooltipInstance.show(
+        evt.clientX,
+        evt.clientY,
+        this.legend,
+        evt.item,
+      );
     });
-    this.addItemMouseLeaveListener(evt => {
+    this.addItemMouseLeaveListener((evt) => {
       this.tooltipInstance.hide();
     });
 
@@ -155,22 +200,26 @@ export class ParameterStateBand extends ItemBand {
     };
 
     if (this.configService.getConfig().tmArchive) {
-      this.yamcs.yamcsClient.getParameterRanges(this.yamcs.instance!, this.parameter, options).then(ranges => {
-        this.connectRealtime();
-        const states = this.convertRangesToStates(ranges);
-        this.stateBuffer.reset();
-        this.stateBuffer.setArchiveData(states);
-      }).catch(err => {
-        console.warn(`Failed to retrieve samples for ${this.parameter}`, err);
-        this.stateBuffer.reset();
-        this.stateBuffer.setArchiveData([]);
-      }).finally(() => {
-        if (resetColors) {
-          this.legend.resetColorAssignment();
-        }
-        // Quick emit, don't wait on sync tick
-        this.updateChart();
-      });
+      this.yamcs.yamcsClient
+        .getParameterRanges(this.yamcs.instance!, this.parameter, options)
+        .then((ranges) => {
+          this.connectRealtime();
+          const states = this.convertRangesToStates(ranges);
+          this.stateBuffer.reset();
+          this.stateBuffer.setArchiveData(states);
+        })
+        .catch((err) => {
+          console.warn(`Failed to retrieve samples for ${this.parameter}`, err);
+          this.stateBuffer.reset();
+          this.stateBuffer.setArchiveData([]);
+        })
+        .finally(() => {
+          if (resetColors) {
+            this.legend.resetColorAssignment();
+          }
+          // Quick emit, don't wait on sync tick
+          this.updateChart();
+        });
     } else {
       this.connectRealtime();
       this.stateBuffer.reset();
@@ -185,19 +234,23 @@ export class ParameterStateBand extends ItemBand {
 
   private connectRealtime() {
     this.realtimeSubscription?.cancel();
-    this.realtimeSubscription = this.yamcs.yamcsClient.createParameterSubscription({
-      instance: this.yamcs.instance!,
-      processor: this.yamcs.processor!,
-      id: [{ name: this.parameter }],
-      sendFromCache: false,
-      updateOnExpiration: false, // TODO turn into gap
-      abortOnInvalid: true,
-      action: 'REPLACE',
-    }, data => {
-      for (const pval of data.values || []) {
-        this.stateBuffer.addRealtimeValue(pval);
-      }
-    });
+    this.realtimeSubscription =
+      this.yamcs.yamcsClient.createParameterSubscription(
+        {
+          instance: this.yamcs.instance!,
+          processor: this.yamcs.processor!,
+          id: [{ name: this.parameter }],
+          sendFromCache: false,
+          updateOnExpiration: false, // TODO turn into gap
+          abortOnInvalid: true,
+          action: 'REPLACE',
+        },
+        (data) => {
+          for (const pval of data.values || []) {
+            this.stateBuffer.addRealtimeValue(pval);
+          }
+        },
+      );
   }
 
   private convertRangesToStates(ranges: Range[]): State[] {
@@ -225,7 +278,10 @@ export class ParameterStateBand extends ItemBand {
   }
 
   private updateChart() {
-    const states = this.stateBuffer.snapshot(this.timeline.start, this.timeline.stop);
+    const states = this.stateBuffer.snapshot(
+      this.timeline.start,
+      this.timeline.stop,
+    );
     this.legend.recalculate(states);
 
     const items: Item[] = [];
@@ -280,12 +336,12 @@ export class ParameterStateBand extends ItemBand {
 
     // Diagonal
     ctx.beginPath();
-    ctx.moveTo(size * 2 / 3, 0);
+    ctx.moveTo((size * 2) / 3, 0);
     ctx.lineTo(size, 0);
-    ctx.lineTo(size, size * 1 / 3);
-    ctx.lineTo(size * 1 / 3, size);
+    ctx.lineTo(size, (size * 1) / 3);
+    ctx.lineTo((size * 1) / 3, size);
     ctx.lineTo(0, size);
-    ctx.lineTo(0, size * 2 / 3);
+    ctx.lineTo(0, (size * 2) / 3);
     ctx.closePath();
     ctx.fill();
 

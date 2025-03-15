@@ -1,19 +1,27 @@
 import { Component, Inject } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import {
+  UntypedFormControl,
+  UntypedFormGroup,
+  Validators,
+} from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { Member, Parameter, ParameterType, Value, WebappSdkModule, utils, validators } from '@yamcs/webapp-sdk';
+import {
+  Member,
+  Parameter,
+  ParameterType,
+  Value,
+  WebappSdkModule,
+  utils,
+  validators,
+} from '@yamcs/webapp-sdk';
 import { ParameterFormComponent } from '../parameter-form/parameter-form.component';
 
 @Component({
   selector: 'app-set-parameter-dialog',
   templateUrl: './set-parameter-dialog.component.html',
-  imports: [
-    ParameterFormComponent,
-    WebappSdkModule,
-  ],
+  imports: [ParameterFormComponent, WebappSdkModule],
 })
 export class SetParameterDialogComponent {
-
   form = new UntypedFormGroup({});
 
   parameter: Parameter;
@@ -25,22 +33,34 @@ export class SetParameterDialogComponent {
     this.parameter = data.parameter;
     const validators = this.getValidatorsForType(this.parameter.type!);
     if (this.parameter.type!.engType === 'aggregate') {
-      this.addMemberControls(this.parameter.name + '.', this.parameter.type!.member || []);
+      this.addMemberControls(
+        this.parameter.name + '.',
+        this.parameter.type!.member || [],
+      );
     } else {
       this.form.addControl(
-        this.parameter.name, new UntypedFormControl(null, validators));
+        this.parameter.name,
+        new UntypedFormControl(null, validators),
+      );
     }
   }
 
   private addMemberControls(prefix: string, members: Member[]) {
     for (const member of members) {
       if (member.type.engType === 'aggregate') {
-        this.addMemberControls(prefix + member.name + '.', member.type.member || []);
+        this.addMemberControls(
+          prefix + member.name + '.',
+          member.type.member || [],
+        );
       } else {
         const controlName = prefix + member.name;
-        const validators = this.getValidatorsForType(member.type as ParameterType);
+        const validators = this.getValidatorsForType(
+          member.type as ParameterType,
+        );
         this.form.addControl(
-          controlName, new UntypedFormControl('', validators));
+          controlName,
+          new UntypedFormControl('', validators),
+        );
       }
     }
   }
@@ -67,7 +87,7 @@ export class SetParameterDialogComponent {
     const userValue = this.form.value[prefix + parameter.name];
     switch (parameter.type!.engType) {
       case 'boolean':
-        return { type: 'BOOLEAN', booleanValue: (userValue === 'true') };
+        return { type: 'BOOLEAN', booleanValue: userValue === 'true' };
       case 'float':
         return { type: 'FLOAT', floatValue: userValue };
       case 'double':
@@ -81,15 +101,21 @@ export class SetParameterDialogComponent {
       case 'time':
         return { type: 'TIMESTAMP', stringValue: utils.toISOString(userValue) };
       case 'binary':
-        return { type: 'BINARY', binaryValue: utils.convertHexToBase64(userValue) };
+        return {
+          type: 'BINARY',
+          binaryValue: utils.convertHexToBase64(userValue),
+        };
       case 'aggregate':
         const names: string[] = [];
         const values: Value[] = [];
-        for (const member of (parameter.type!.member || [])) {
+        for (const member of parameter.type!.member || []) {
           names.push(member.name);
           values.push(this.toValue(prefix + parameter.name + '.', member));
         }
-        return { type: 'AGGREGATE', aggregateValue: { name: names, value: values } };
+        return {
+          type: 'AGGREGATE',
+          aggregateValue: { name: names, value: values },
+        };
       default:
         throw new Error(`Unexpected type: ${parameter.type!.engType}`);
     }

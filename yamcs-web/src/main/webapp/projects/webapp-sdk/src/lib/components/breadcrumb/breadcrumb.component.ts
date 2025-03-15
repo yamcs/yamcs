@@ -1,4 +1,3 @@
-
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
@@ -8,13 +7,9 @@ import { RouterLink } from '@angular/router';
   templateUrl: './breadcrumb.component.html',
   styleUrl: './breadcrumb.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    MatIcon,
-    RouterLink
-  ],
+  imports: [MatIcon, RouterLink],
 })
 export class YaBreadcrumb {
-
   @Input()
   icon: string;
 

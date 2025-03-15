@@ -1,24 +1,31 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  ViewChild,
+} from '@angular/core';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute } from '@angular/router';
-import { StreamEvent, StreamStatisticsSubscription, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  StreamEvent,
+  StreamStatisticsSubscription,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 
 export interface StreamItem {
   name: string;
   dataCount: number;
 }
 
-
 @Component({
   templateUrl: './stream-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class StreamListComponent implements AfterViewInit, OnDestroy {
-
   @ViewChild(MatSort, { static: true })
   sort: MatSort;
 
@@ -29,20 +36,27 @@ export class StreamListComponent implements AfterViewInit, OnDestroy {
   private database: string;
   private streamStatisticsSubscription: StreamStatisticsSubscription;
 
-  private itemsByName: { [key: string]: StreamItem; } = {};
+  private itemsByName: { [key: string]: StreamItem } = {};
 
-  constructor(route: ActivatedRoute, readonly yamcs: YamcsService) {
+  constructor(
+    route: ActivatedRoute,
+    readonly yamcs: YamcsService,
+  ) {
     const parent = route.snapshot.parent!;
     this.database = parent.paramMap.get('database')!;
   }
 
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
-    this.streamStatisticsSubscription = this.yamcs.yamcsClient.createStreamStatisticsSubscription({
-      instance: this.database,
-    }, evt => {
-      this.processStreamEvent(evt);
-    });
+    this.streamStatisticsSubscription =
+      this.yamcs.yamcsClient.createStreamStatisticsSubscription(
+        {
+          instance: this.database,
+        },
+        (evt) => {
+          this.processStreamEvent(evt);
+        },
+      );
   }
 
   private processStreamEvent(evt: StreamEvent) {

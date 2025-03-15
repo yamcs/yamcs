@@ -1,4 +1,3 @@
-
 import { Injectable, OnDestroy } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NavigationEnd, Router } from '@angular/router';
@@ -10,10 +9,9 @@ export interface SiteMessage {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class MessageService implements OnDestroy {
-
   /**
    * Active error message. Each message replaces
    * the previous one.
@@ -26,10 +24,12 @@ export class MessageService implements OnDestroy {
     private snackBar: MatSnackBar,
     router: Router,
   ) {
-    this.routerSubscription = router.events.pipe(
-      filter(evt => evt instanceof NavigationEnd),
-      map(evt => this.dismiss()),
-    ).subscribe();
+    this.routerSubscription = router.events
+      .pipe(
+        filter((evt) => evt instanceof NavigationEnd),
+        map((evt) => this.dismiss()),
+      )
+      .subscribe();
   }
 
   showInfo(message: string) {
@@ -46,7 +46,7 @@ export class MessageService implements OnDestroy {
   showError(error: string | Error) {
     this.siteMessage$.next({
       level: 'ERROR',
-      message: (error instanceof Error) ? error.message : error,
+      message: error instanceof Error ? error.message : error,
     });
   }
 

@@ -1,7 +1,12 @@
 import { Completion, insertCompletionText } from '@codemirror/autocomplete';
 import { EditorView } from 'codemirror';
 
-function applyString(view: EditorView, completion: Completion, from: number, to: number) {
+function applyString(
+  view: EditorView,
+  completion: Completion,
+  from: number,
+  to: number,
+) {
   const replacement = completion.label + ' = \"\"';
   const tr = insertCompletionText(view.state, replacement, from, to);
   // Place cursor between quotes
@@ -9,16 +14,37 @@ function applyString(view: EditorView, completion: Completion, from: number, to:
   view.dispatch(tr);
 }
 
-function applyEnum(view: EditorView, completion: Completion, from: number, to: number) {
-  view.dispatch(insertCompletionText(view.state, completion.label + ' = ', from, to));
+function applyEnum(
+  view: EditorView,
+  completion: Completion,
+  from: number,
+  to: number,
+) {
+  view.dispatch(
+    insertCompletionText(view.state, completion.label + ' = ', from, to),
+  );
 }
 
-function applyNumber(view: EditorView, completion: Completion, from: number, to: number) {
-  view.dispatch(insertCompletionText(view.state, completion.label + ' = ', from, to));
+function applyNumber(
+  view: EditorView,
+  completion: Completion,
+  from: number,
+  to: number,
+) {
+  view.dispatch(
+    insertCompletionText(view.state, completion.label + ' = ', from, to),
+  );
 }
 
-function applyLogicalOperator(view: EditorView, completion: Completion, from: number, to: number) {
-  view.dispatch(insertCompletionText(view.state, completion.label + ' ', from, to));
+function applyLogicalOperator(
+  view: EditorView,
+  completion: Completion,
+  from: number,
+  to: number,
+) {
+  view.dispatch(
+    insertCompletionText(view.state, completion.label + ' ', from, to),
+  );
 }
 
 export const EVENT_COMPLETIONS: Completion[] = [

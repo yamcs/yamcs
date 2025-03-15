@@ -1,5 +1,13 @@
-
-import { ChangeDetectionStrategy, Component, inject, input, Input, OnDestroy, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  Input,
+  OnDestroy,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { MatListItem } from '@angular/material/list';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -10,10 +18,7 @@ import { filter } from 'rxjs/operators';
   templateUrl: './sidebar-nav-item.component.html',
   styleUrl: './sidebar-nav-item.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    MatListItem,
-    RouterLink,
-  ],
+  imports: [MatListItem, RouterLink],
 })
 export class YaSidebarNavItem implements OnInit, OnDestroy {
   router = inject(Router);
@@ -37,11 +42,11 @@ export class YaSidebarNavItem implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.checkLinkActive(this.router.url);
-    this.routerSubscription = this.router.events.pipe(
-      filter(evt => evt instanceof NavigationEnd),
-    ).subscribe(evt => {
-      this.checkLinkActive(evt.url);
-    });
+    this.routerSubscription = this.router.events
+      .pipe(filter((evt) => evt instanceof NavigationEnd))
+      .subscribe((evt) => {
+        this.checkLinkActive(evt.url);
+      });
   }
 
   private checkLinkActive(url: string) {
@@ -56,7 +61,10 @@ export class YaSidebarNavItem implements OnInit, OnDestroy {
       urlTree.fragment = null;
       let urlWithoutParams = urlTree.toString();
       if (urlWithoutParams.endsWith('/')) {
-        urlWithoutParams = urlWithoutParams.substring(0, urlWithoutParams.length - 1);
+        urlWithoutParams = urlWithoutParams.substring(
+          0,
+          urlWithoutParams.length - 1,
+        );
       }
 
       this.linkActive.set(urlWithoutParams === activeWhen);

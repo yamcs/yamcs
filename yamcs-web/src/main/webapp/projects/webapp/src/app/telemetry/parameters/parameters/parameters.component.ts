@@ -1,9 +1,25 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  OnDestroy,
+  ViewChild,
+} from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
-import { GetParametersOptions, Synchronizer, WebappSdkModule, YaColumnChooser, YaColumnInfo, YaSelectOption, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  GetParametersOptions,
+  Synchronizer,
+  WebappSdkModule,
+  YaColumnChooser,
+  YaColumnInfo,
+  YaSelectOption,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
@@ -59,7 +75,6 @@ export const PLIST_SOURCE_OPTIONS: YaSelectOption[] = [
   ],
 })
 export class ParametersComponent implements AfterViewInit, OnDestroy {
-
   filterForm = new UntypedFormGroup({
     filter: new UntypedFormControl(),
     type: new UntypedFormControl('ANY'),
@@ -112,7 +127,11 @@ export class ParametersComponent implements AfterViewInit, OnDestroy {
     private synchronizer: Synchronizer,
     changeDetection: ChangeDetectorRef,
   ) {
-    this.dataSource = new ParametersDataSource(this.yamcs, this.synchronizer, changeDetection);
+    this.dataSource = new ParametersDataSource(
+      this.yamcs,
+      this.synchronizer,
+      changeDetection,
+    );
   }
 
   ngAfterViewInit() {
@@ -130,28 +149,30 @@ export class ParametersComponent implements AfterViewInit, OnDestroy {
       this.filterForm.get('source')!.setValue(this.source);
     }
 
-    this.filterForm.get('filter')!.valueChanges.subscribe(filter => {
+    this.filterForm.get('filter')!.valueChanges.subscribe((filter) => {
       this.paginator.pageIndex = 0;
       this.filter = filter;
       this.updateDataSource();
     });
 
-    this.filterForm.get('type')!.valueChanges.forEach(type => {
-      this.type = (type !== 'ANY') ? type : null;
+    this.filterForm.get('type')!.valueChanges.forEach((type) => {
+      this.type = type !== 'ANY' ? type : null;
       this.updateDataSource();
     });
 
-    this.filterForm.get('source')!.valueChanges.forEach(source => {
-      this.source = (source !== 'ANY') ? source : null;
+    this.filterForm.get('source')!.valueChanges.forEach((source) => {
+      this.source = source !== 'ANY' ? source : null;
       this.updateDataSource();
     });
 
     this.changeSystem(this.route.snapshot.queryParamMap);
-    this.queryParamMapSubscription = this.route.queryParamMap.subscribe(map => {
-      if (map.get('system') !== this.system) {
-        this.changeSystem(map);
-      }
-    });
+    this.queryParamMapSubscription = this.route.queryParamMap.subscribe(
+      (map) => {
+        if (map.get('system') !== this.system) {
+          this.changeSystem(map);
+        }
+      },
+    );
 
     this.paginator.page.subscribe(() => {
       this.updateDataSource();
@@ -205,7 +226,11 @@ export class ParametersComponent implements AfterViewInit, OnDestroy {
       }
       const aliasColumns = [];
       for (const namespace of this.dataSource.getAliasNamespaces()) {
-        const aliasColumn = { id: namespace, label: namespace, alwaysVisible: true };
+        const aliasColumn = {
+          id: namespace,
+          label: namespace,
+          alwaysVisible: true,
+        };
         aliasColumns.push(aliasColumn);
       }
       newColumns.splice(1, 0, ...aliasColumns); // Insert after name column
@@ -274,9 +299,12 @@ export class ParametersComponent implements AfterViewInit, OnDestroy {
       const item = this.selection.selected[0];
       const items = this.dataSource.items$.value;
       if (item.parameter && items.indexOf(item) !== -1) {
-        this.router.navigate(['/telemetry/parameters' + item.parameter?.qualifiedName], {
-          queryParams: { c: this.yamcs.context }
-        });
+        this.router.navigate(
+          ['/telemetry/parameters' + item.parameter?.qualifiedName],
+          {
+            queryParams: { c: this.yamcs.context },
+          },
+        );
       }
     }
   }

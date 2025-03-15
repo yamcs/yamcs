@@ -9,11 +9,7 @@ import { StackedTextEntry } from '../stack-file/StackedEntry';
   templateUrl: './stacked-text-entry.component.html',
   styleUrl: './stacked-text-entry.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    EntryLabel,
-    MarkdownComponent,
-    WebappSdkModule,
-  ],
+  imports: [EntryLabel, MarkdownComponent, WebappSdkModule],
 })
 export class StackedTextEntryComponent {
   entry = input.required<StackedTextEntry>();

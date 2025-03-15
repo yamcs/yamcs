@@ -1,12 +1,32 @@
 import { Location } from '@angular/common';
-import { AfterViewInit, ChangeDetectionStrategy, Component, input, OnDestroy, OnInit, signal, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  OnDestroy,
+  OnInit,
+  signal,
+  ViewChild,
+} from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatStepperIcon, MatStepperModule } from '@angular/material/stepper';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Clearance, Command, CommandHistoryEntry, ConfigService, CreateTimelineItemRequest, MessageService, WebappSdkModule, WebsiteConfig, YamcsService, YaStepperStep } from '@yamcs/webapp-sdk';
+import {
+  Clearance,
+  Command,
+  CommandHistoryEntry,
+  ConfigService,
+  CreateTimelineItemRequest,
+  MessageService,
+  WebappSdkModule,
+  WebsiteConfig,
+  YamcsService,
+  YaStepperStep,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { AuthService } from '../../../core/services/AuthService';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
@@ -38,8 +58,9 @@ import { CommandHistoryTemplateProvider } from './CommandHistoryTemplateProvider
     YaStepperStep,
   ],
 })
-export class ConfigureCommandComponent implements OnInit, AfterViewInit, OnDestroy {
-
+export class ConfigureCommandComponent
+  implements OnInit, AfterViewInit, OnDestroy
+{
   qualifiedName = input.required<string>({ alias: 'command' });
 
   @ViewChild('commandForm')
@@ -73,16 +94,22 @@ export class ConfigureCommandComponent implements OnInit, AfterViewInit, OnDestr
     this.title.setTitle(`Send a command: ${this.qualifiedName()}`);
 
     const promises: Promise<any>[] = [
-      this.yamcs.yamcsClient.getCommand(this.yamcs.instance!, this.qualifiedName()),
+      this.yamcs.yamcsClient.getCommand(
+        this.yamcs.instance!,
+        this.qualifiedName(),
+      ),
     ];
 
     const templateId = this.route.snapshot.queryParamMap.get('template');
     if (templateId) {
-      const promise = this.yamcs.yamcsClient.getCommandHistoryEntry(this.yamcs.instance!, templateId);
+      const promise = this.yamcs.yamcsClient.getCommandHistoryEntry(
+        this.yamcs.instance!,
+        templateId,
+      );
       promises.push(promise);
     }
 
-    Promise.all(promises).then(responses => {
+    Promise.all(promises).then((responses) => {
       const command = responses[0] as Command;
       let template: CommandHistoryEntry | undefined;
       if (responses.length > 1) {
@@ -90,16 +117,22 @@ export class ConfigureCommandComponent implements OnInit, AfterViewInit, OnDestr
       }
       this.command.set(command);
       if (template) {
-        this.templateProvider$.next(new CommandHistoryTemplateProvider(template));
+        this.templateProvider$.next(
+          new CommandHistoryTemplateProvider(template),
+        );
       } else {
         this.templateProvider$.next(null);
       }
 
       if (this.config.commandClearanceEnabled) {
-        this.connectionInfoSubscription = this.yamcs.clearance$.subscribe(clearance => {
-          const significance = command.effectiveSignificance;
-          this.cleared$.next(this.isCleared(clearance, significance?.consequenceLevel));
-        });
+        this.connectionInfoSubscription = this.yamcs.clearance$.subscribe(
+          (clearance) => {
+            const significance = command.effectiveSignificance;
+            this.cleared$.next(
+              this.isCleared(clearance, significance?.consequenceLevel),
+            );
+          },
+        );
       }
     });
   }
@@ -129,70 +162,80 @@ export class ConfigureCommandComponent implements OnInit, AfterViewInit, OnDestr
     const qname = this.qualifiedName();
     const commandConfig = this.commandForm.getResult();
 
-    this.yamcs.yamcsClient.issueCommand(this.yamcs.instance!, this.yamcs.processor!, qname, {
-      args: commandConfig.args,
-      stream: commandConfig.stream,
-      comment: commandConfig.comment,
-      extra: commandConfig.extra,
-    }).then(response => {
-      this.router.navigate([
-        '/commanding/send' + qname,
-        '-',
-        'report',
-        response.id,
-      ], {
-        queryParams: {
-          c: this.yamcs.context,
-        }
+    this.yamcs.yamcsClient
+      .issueCommand(this.yamcs.instance!, this.yamcs.processor!, qname, {
+        args: commandConfig.args,
+        stream: commandConfig.stream,
+        comment: commandConfig.comment,
+        extra: commandConfig.extra,
+      })
+      .then((response) => {
+        this.router.navigate(
+          ['/commanding/send' + qname, '-', 'report', response.id],
+          {
+            queryParams: {
+              c: this.yamcs.context,
+            },
+          },
+        );
+      })
+      .catch((err) => {
+        this.messageService.showError(err);
       });
-    }).catch(err => {
-      this.messageService.showError(err);
-    });
   }
 
   showSchedule() {
-    const capabilities = this.yamcs.connectionInfo$.value?.instance?.capabilities || [];
-    return capabilities.indexOf('timeline') !== -1
-      && capabilities.indexOf('activities') !== -1
-      && this.authService.getUser()!.hasSystemPrivilege('ControlTimeline');
+    const capabilities =
+      this.yamcs.connectionInfo$.value?.instance?.capabilities || [];
+    return (
+      capabilities.indexOf('timeline') !== -1 &&
+      capabilities.indexOf('activities') !== -1 &&
+      this.authService.getUser()!.hasSystemPrivilege('ControlTimeline')
+    );
   }
 
   openScheduleCommandDialog() {
-    this.dialog.open(ScheduleCommandDialogComponent, {
-      width: '600px',
-    }).afterClosed().subscribe(scheduleOptions => {
-      if (scheduleOptions) {
-        this.armControl.setValue(false);
+    this.dialog
+      .open(ScheduleCommandDialogComponent, {
+        width: '600px',
+      })
+      .afterClosed()
+      .subscribe((scheduleOptions) => {
+        if (scheduleOptions) {
+          this.armControl.setValue(false);
 
-        const qname = this.qualifiedName();
-        const commandConfig = this.commandForm.getResult(true);
+          const qname = this.qualifiedName();
+          const commandConfig = this.commandForm.getResult(true);
 
-        const options: CreateTimelineItemRequest = {
-          type: 'ACTIVITY',
-          duration: '0s',
-          name: qname,
-          start: scheduleOptions['executionTime'],
-          tags: scheduleOptions['tags'],
-          activityDefinition: {
-            type: 'COMMAND',
-            args: {
-              processor: this.yamcs.processor!,
-              command: qname,
-              args: commandConfig.args,
-              extra: commandConfig.extra,
-              stream: commandConfig.stream,
-            }
-          },
-        };
+          const options: CreateTimelineItemRequest = {
+            type: 'ACTIVITY',
+            duration: '0s',
+            name: qname,
+            start: scheduleOptions['executionTime'],
+            tags: scheduleOptions['tags'],
+            activityDefinition: {
+              type: 'COMMAND',
+              args: {
+                processor: this.yamcs.processor!,
+                command: qname,
+                args: commandConfig.args,
+                extra: commandConfig.extra,
+                stream: commandConfig.stream,
+              },
+            },
+          };
 
-        this.yamcs.yamcsClient.createTimelineItem(this.yamcs.instance!, options)
-          .then(() => {
-            this.messageService.showInfo('Command scheduled');
-            this.router.navigateByUrl(`/commanding/send?c=${this.yamcs.context}`);
-          })
-          .catch(err => this.messageService.showError(err));
-      }
-    });
+          this.yamcs.yamcsClient
+            .createTimelineItem(this.yamcs.instance!, options)
+            .then(() => {
+              this.messageService.showInfo('Command scheduled');
+              this.router.navigateByUrl(
+                `/commanding/send?c=${this.yamcs.context}`,
+              );
+            })
+            .catch((err) => this.messageService.showError(err));
+        }
+      });
   }
 
   private isCleared(clearance: Clearance | null, level?: string) {

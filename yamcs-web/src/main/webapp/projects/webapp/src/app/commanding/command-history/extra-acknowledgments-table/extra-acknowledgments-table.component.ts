@@ -7,13 +7,9 @@ import { AcknowledgmentIconComponent } from '../acknowledgment-icon/acknowledgme
   templateUrl: './extra-acknowledgments-table.component.html',
   styleUrl: './extra-acknowledgments-table.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AcknowledgmentIconComponent,
-    WebappSdkModule,
-  ],
+  imports: [AcknowledgmentIconComponent, WebappSdkModule],
 })
 export class ExtraAcknowledgmentsTableComponent {
-
   @Input()
   command: CommandHistoryRecord;
 

@@ -1,10 +1,23 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  OnDestroy,
+  ViewChild,
+} from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { HttpError, ListObjectsOptions, ListObjectsResponse, StorageClient, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  HttpError,
+  ListObjectsOptions,
+  ListObjectsResponse,
+  StorageClient,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import * as dnd from '../../../shared/dnd';
@@ -29,7 +42,6 @@ import { ViewObjectMetadataDialogComponent } from '../view-object-metadata-dialo
   ],
 })
 export class BucketObjectListComponent implements OnDestroy {
-
   @ViewChild('droparea', { static: true })
   dropArea: ElementRef;
 
@@ -68,11 +80,11 @@ export class BucketObjectListComponent implements OnDestroy {
     this.storageClient = yamcs.createStorageClient();
 
     this.loadCurrentFolder();
-    this.routerSubscription = router.events.pipe(
-      filter(evt => evt instanceof NavigationEnd)
-    ).subscribe(() => {
-      this.loadCurrentFolder();
-    });
+    this.routerSubscription = router.events
+      .pipe(filter((evt) => evt instanceof NavigationEnd))
+      .subscribe(() => {
+        this.loadCurrentFolder();
+      });
   }
 
   private loadCurrentFolder() {
@@ -81,10 +93,10 @@ export class BucketObjectListComponent implements OnDestroy {
     };
     const routeSegments = this.route.snapshot.url;
     if (routeSegments.length) {
-      options.prefix = routeSegments.map(s => s.path).join('/') + '/';
+      options.prefix = routeSegments.map((s) => s.path).join('/') + '/';
     }
 
-    this.storageClient.listObjects(this.name, options).then(dir => {
+    this.storageClient.listObjects(this.name, options).then((dir) => {
       this.updateBrowsePath();
       this.changedir(dir);
     });
@@ -123,9 +135,11 @@ export class BucketObjectListComponent implements OnDestroy {
   }
 
   masterToggle() {
-    this.isAllSelected() ?
-      this.selection.clear() :
-      this.dataSource.filteredData.forEach(row => this.selection.select(row));
+    this.isAllSelected()
+      ? this.selection.clear()
+      : this.dataSource.filteredData.forEach((row) =>
+          this.selection.select(row),
+        );
   }
 
   toggleOne(row: BrowseItem) {
@@ -136,15 +150,18 @@ export class BucketObjectListComponent implements OnDestroy {
   }
 
   createFolder() {
-    this.dialog.open(CreateFolderDialogComponent, {
-      width: '400px',
-      data: {
-        bucket: this.name,
-        path: this.getCurrentPath(),
-      }
-    }).afterClosed().subscribe({
-      next: () => this.loadCurrentFolder(),
-    });
+    this.dialog
+      .open(CreateFolderDialogComponent, {
+        width: '400px',
+        data: {
+          bucket: this.name,
+          path: this.getCurrentPath(),
+        },
+      })
+      .afterClosed()
+      .subscribe({
+        next: () => this.loadCurrentFolder(),
+      });
   }
 
   uploadObjects() {
@@ -164,7 +181,7 @@ export class BucketObjectListComponent implements OnDestroy {
 
         const bucket = this.name;
         const promise = this.storageClient.uploadObject(bucket, fullPath, file);
-        uploads.push({ 'filename': file.name, promise });
+        uploads.push({ filename: file.name, promise });
       }
     }
 
@@ -173,7 +190,7 @@ export class BucketObjectListComponent implements OnDestroy {
         for (const upload of uploads) {
           this.trackUpload(upload);
         }
-        this.settlePromises(uploads.map(u => u.promise)).then(() => {
+        this.settlePromises(uploads.map((u) => u.promise)).then(() => {
           this.loadCurrentFolder();
         });
       });
@@ -185,33 +202,37 @@ export class BucketObjectListComponent implements OnDestroy {
    * the success/error of the passed promises.
    */
   private settlePromises(promises: Promise<any>[]) {
-    return Promise.all(promises.map(promise => {
-      return promise.then(
-        value => ({ state: 'fullfilled', value }),
-        value => ({ state: 'rejected', value })
-      );
-    }));
+    return Promise.all(
+      promises.map((promise) => {
+        return promise.then(
+          (value) => ({ state: 'fullfilled', value }),
+          (value) => ({ state: 'rejected', value }),
+        );
+      }),
+    );
   }
 
   private trackUpload(upload: Upload) {
-    upload.promise.then(() => {
-      upload.complete = true;
-      this.uploads$.next([... this.uploads$.value]);
-    }).catch((err: HttpError) => {
-      err.response.json().then(msg => {
+    upload.promise
+      .then(() => {
         upload.complete = true;
-        upload.err = msg['msg'];
-        this.uploads$.next([... this.uploads$.value]);
-      }).catch(() => {
-        upload.complete = true;
-        upload.err = err.statusText;
-        this.uploads$.next([... this.uploads$.value]);
+        this.uploads$.next([...this.uploads$.value]);
+      })
+      .catch((err: HttpError) => {
+        err.response
+          .json()
+          .then((msg) => {
+            upload.complete = true;
+            upload.err = msg['msg'];
+            this.uploads$.next([...this.uploads$.value]);
+          })
+          .catch(() => {
+            upload.complete = true;
+            upload.err = err.statusText;
+            this.uploads$.next([...this.uploads$.value]);
+          });
       });
-    });
-    this.uploads$.next([
-      ...this.uploads$.value,
-      upload,
-    ]);
+    this.uploads$.next([...this.uploads$.value, upload]);
   }
 
   private getCurrentPath() {
@@ -231,22 +252,32 @@ export class BucketObjectListComponent implements OnDestroy {
     const findObjectPromises = [];
     for (const item of this.selection.selected) {
       if (item.folder) {
-        findObjectPromises.push(this.storageClient.listObjects(this.name, {
-          prefix: item.name,
-        }).then(response => {
-          const objects = response.objects || [];
-          deletableObjects.push(...objects.map(o => o.name));
-        }));
+        findObjectPromises.push(
+          this.storageClient
+            .listObjects(this.name, {
+              prefix: item.name,
+            })
+            .then((response) => {
+              const objects = response.objects || [];
+              deletableObjects.push(...objects.map((o) => o.name));
+            }),
+        );
       } else {
         deletableObjects.push(item.name);
       }
     }
 
     Promise.all(findObjectPromises).then(() => {
-      if (confirm(`You are about to delete ${deletableObjects.length} files. Are you sure you want to continue?`)) {
+      if (
+        confirm(
+          `You are about to delete ${deletableObjects.length} files. Are you sure you want to continue?`,
+        )
+      ) {
         const deletePromises = [];
         for (const object of deletableObjects) {
-          deletePromises.push(this.storageClient.deleteObject(this.name, object));
+          deletePromises.push(
+            this.storageClient.deleteObject(this.name, object),
+          );
         }
 
         Promise.all(deletePromises).then(() => {
@@ -264,7 +295,7 @@ export class BucketObjectListComponent implements OnDestroy {
       },
       width: '400px',
     });
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.loadCurrentFolder();
       }
@@ -293,7 +324,8 @@ export class BucketObjectListComponent implements OnDestroy {
     return false;
   }
 
-  dragOver(evt: DragEvent) { // This event must be prevented. Otherwise drop doesn't trigger.
+  dragOver(evt: DragEvent) {
+    // This event must be prevented. Otherwise drop doesn't trigger.
     evt.preventDefault();
     evt.stopPropagation();
     return false;
@@ -314,14 +346,18 @@ export class BucketObjectListComponent implements OnDestroy {
         objectPrefix += '/';
       }
 
-      dnd.listDroppedFiles(dataTransfer).then(droppedFiles => {
+      dnd.listDroppedFiles(dataTransfer).then((droppedFiles) => {
         if (droppedFiles.length) {
           const uploadPromises: any[] = [];
 
           this.showUploadProgress().then(() => {
             for (const droppedFile of droppedFiles) {
               const objectPath = objectPrefix + droppedFile._fullPath;
-              const promise = this.storageClient.uploadObject(this.name, objectPath, droppedFile);
+              const promise = this.storageClient.uploadObject(
+                this.name,
+                objectPath,
+                droppedFile,
+              );
               this.trackUpload({ filename: droppedFile._fullPath, promise });
               uploadPromises.push(promise);
             }
@@ -358,8 +394,15 @@ export class BucketObjectListComponent implements OnDestroy {
       return false;
     }
     const lc = item.name.toLocaleLowerCase();
-    return lc.endsWith('.png') || lc.endsWith('.gif') || lc.endsWith('.jpg')
-      || lc.endsWith('jpeg') || lc.endsWith('bmp') || lc.endsWith('svg') || lc.endsWith('ico');
+    return (
+      lc.endsWith('.png') ||
+      lc.endsWith('.gif') ||
+      lc.endsWith('.jpg') ||
+      lc.endsWith('jpeg') ||
+      lc.endsWith('bmp') ||
+      lc.endsWith('svg') ||
+      lc.endsWith('ico')
+    );
   }
 
   private async showUploadProgress() {
@@ -374,24 +417,29 @@ export class BucketObjectListComponent implements OnDestroy {
       },
       width: '500px',
       data: {
-        uploads$: this.uploads$
+        uploads$: this.uploads$,
       },
       hasBackdrop: false,
       autoFocus: false,
       panelClass: ['progress-dialog', 'elevation-z1'],
     });
-    this.dialogRef.afterOpened().subscribe(() => this.progressDialogOpen = true);
+    this.dialogRef
+      .afterOpened()
+      .subscribe(() => (this.progressDialogOpen = true));
     this.dialogRef.afterClosed().subscribe(() => {
       this.uploads$.next([]);
       this.progressDialogOpen = false;
     });
 
     return new Promise<any>((resolve, reject) => {
-      this.dialogRef.afterOpened().subscribe(() => {
-        resolve(true);
-      }, err => {
-        reject(err);
-      });
+      this.dialogRef.afterOpened().subscribe(
+        () => {
+          resolve(true);
+        },
+        (err) => {
+          reject(err);
+        },
+      );
     });
   }
 
@@ -427,7 +475,7 @@ export class BrowseItem {
   modified?: string;
   objectUrl?: string;
   size?: number;
-  metadata?: { [key: string]: string; };
+  metadata?: { [key: string]: string };
 }
 
 export interface BreadCrumbItem {

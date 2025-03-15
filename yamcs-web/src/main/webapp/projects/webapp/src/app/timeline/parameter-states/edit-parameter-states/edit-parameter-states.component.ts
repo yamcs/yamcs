@@ -1,10 +1,26 @@
 import { TitleCasePipe } from '@angular/common';
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
-import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+} from '@angular/core';
+import {
+  FormArray,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
 import { TimelineBand, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { resolveProperties } from '../../shared/properties';
-import { createValueMappingPropertyInfo, propertyInfo, resolveValueMappingProperties } from '../ParameterStateBand';
+import {
+  createValueMappingPropertyInfo,
+  propertyInfo,
+  resolveValueMappingProperties,
+} from '../ParameterStateBand';
 import { ParameterStatesStylesComponent } from '../parameter-states-styles/parameter-states-styles.component';
 
 @Component({
@@ -12,14 +28,9 @@ import { ParameterStatesStylesComponent } from '../parameter-states-styles/param
   templateUrl: './edit-parameter-states.component.html',
   styleUrl: './edit-parameter-states.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    ParameterStatesStylesComponent,
-    TitleCasePipe,
-    WebappSdkModule,
-  ],
+  imports: [ParameterStatesStylesComponent, TitleCasePipe, WebappSdkModule],
 })
 export class EditParameterStatesComponent implements AfterViewInit {
-
   @Input()
   form: FormGroup;
 
@@ -32,7 +43,7 @@ export class EditParameterStatesComponent implements AfterViewInit {
     readonly yamcs: YamcsService,
     private changeDetection: ChangeDetectorRef,
     private formBuilder: FormBuilder,
-  ) { }
+  ) {}
 
   ngAfterViewInit() {
     const props = resolveProperties(propertyInfo, this.band.properties || {});
@@ -50,13 +61,20 @@ export class EditParameterStatesComponent implements AfterViewInit {
     const propertiesGroup = this.form.get('properties') as FormGroup;
     for (const controlName in propConfig) {
       const config = propConfig[controlName];
-      propertiesGroup.addControl(controlName, new FormControl(config[0], config[1]));
+      propertiesGroup.addControl(
+        controlName,
+        new FormControl(config[0], config[1]),
+      );
     }
 
     let idx = 0;
     while (true) {
       const mappingPropertyInfo = createValueMappingPropertyInfo(idx);
-      const mappingProperties = resolveValueMappingProperties(idx, mappingPropertyInfo, this.band.properties || {});
+      const mappingProperties = resolveValueMappingProperties(
+        idx,
+        mappingPropertyInfo,
+        this.band.properties || {},
+      );
       if (!mappingProperties.type) {
         break;
       }

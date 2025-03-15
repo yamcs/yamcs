@@ -1,20 +1,37 @@
 import { APP_BASE_HREF } from '@angular/common';
 import { Inject, Injectable, inject } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivateChildFn, CanActivateFn, Router, RouterStateSnapshot } from '@angular/router';
-import { AuthInfo, ConfigService, OpenIDConnectInfo, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  ActivatedRouteSnapshot,
+  CanActivateChildFn,
+  CanActivateFn,
+  Router,
+  RouterStateSnapshot,
+} from '@angular/router';
+import {
+  AuthInfo,
+  ConfigService,
+  OpenIDConnectInfo,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
 import { AuthService } from '../services/AuthService';
 
-export const authGuardFn: CanActivateFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+export const authGuardFn: CanActivateFn = (
+  route: ActivatedRouteSnapshot,
+  state: RouterStateSnapshot,
+) => {
   return inject(AuthGuard).canActivate(route, state);
 };
 
-export const authGuardChildFn: CanActivateChildFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+export const authGuardChildFn: CanActivateChildFn = (
+  route: ActivatedRouteSnapshot,
+  state: RouterStateSnapshot,
+) => {
   return inject(AuthGuard).canActivateChild(route, state);
 };
 
 @Injectable({ providedIn: 'root' })
 class AuthGuard {
-
   private authInfo: AuthInfo;
 
   constructor(
@@ -27,13 +44,17 @@ class AuthGuard {
     this.authInfo = configService.getAuthInfo();
   }
 
-  async canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> {
+  async canActivate(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot,
+  ): Promise<boolean> {
     try {
       await this.authService.loginAutomatically();
       this.yamcs.yamcsClient.prepareWebSocketClient();
       return true;
     } catch (err: any) {
-      if (err.name === 'NetworkError' || err.name === 'TypeError') { // TypeError is how Fetch API reports network or CORS failure
+      if (err.name === 'NetworkError' || err.name === 'TypeError') {
+        // TypeError is how Fetch API reports network or CORS failure
         this.router.navigate(['/down'], { skipLocationChange: true });
         return false;
       } else {
@@ -43,26 +64,42 @@ class AuthGuard {
           this.authService.logout(false);
         }
         if (this.authInfo.openid) {
-          const redirectURI = this.authService.buildServerSideOpenIDRedirectURI();
-          window.location.href = this.buildRedirector(this.authInfo.openid, redirectURI, state.url);
+          const redirectURI =
+            this.authService.buildServerSideOpenIDRedirectURI();
+          window.location.href = this.buildRedirector(
+            this.authInfo.openid,
+            redirectURI,
+            state.url,
+          );
         } else if (!this.configService.getConfig().disableLoginForm) {
           const redirectURI = this.authService.buildOpenIDRedirectURI();
-          window.location.href = this.buildRedirector({
-            clientId: 'yamcs-web',
-            authorizationEndpoint: `${location.protocol}//${location.host}${this.baseHref}auth/authorize`,
-            scope: 'openid',
-          }, redirectURI, state.url);
+          window.location.href = this.buildRedirector(
+            {
+              clientId: 'yamcs-web',
+              authorizationEndpoint: `${location.protocol}//${location.host}${this.baseHref}auth/authorize`,
+              scope: 'openid',
+            },
+            redirectURI,
+            state.url,
+          );
         }
         return false;
       }
     }
   }
 
-  async canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> {
+  async canActivateChild(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot,
+  ): Promise<boolean> {
     return this.canActivate(route, state);
   }
 
-  private buildRedirector(openid: OpenIDConnectInfo, redirectURI: string, next: string) {
+  private buildRedirector(
+    openid: OpenIDConnectInfo,
+    redirectURI: string,
+    next: string,
+  ) {
     // The current client-side URL gets passed as state
     // When the whole OIDC setup is done, we will get it back on the /oidc-browser-callback route
     // together with a code that we can exchange for a valid Yamcs access token.

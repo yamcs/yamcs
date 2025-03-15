@@ -3,7 +3,6 @@ import { Command, GetCommandsOptions, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 
 export class CommandsDataSource extends DataSource<Command> {
-
   commands$ = new BehaviorSubject<Command[]>([]);
   totalSize$ = new BehaviorSubject<number>(0);
   loading$ = new BehaviorSubject<boolean>(false);
@@ -18,11 +17,13 @@ export class CommandsDataSource extends DataSource<Command> {
 
   loadCommands(options: GetCommandsOptions) {
     this.loading$.next(true);
-    return this.yamcs.yamcsClient.getCommands(this.yamcs.instance!, options).then(page => {
-      this.loading$.next(false);
-      this.totalSize$.next(page.totalSize);
-      this.commands$.next(page.commands || []);
-    });
+    return this.yamcs.yamcsClient
+      .getCommands(this.yamcs.instance!, options)
+      .then((page) => {
+        this.loading$.next(false);
+        this.totalSize$.next(page.totalSize);
+        this.commands$.next(page.commands || []);
+      });
   }
 
   getAliasNamespaces() {

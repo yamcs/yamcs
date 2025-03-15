@@ -1,24 +1,22 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, signal, ViewChild } from '@angular/core';
 import { Item } from '@fqqb/timeline';
-import { DateTimePipe, Formatter, SimpleTableDirective } from '@yamcs/webapp-sdk';
+import {
+  DateTimePipe,
+  Formatter,
+  SimpleTableDirective,
+} from '@yamcs/webapp-sdk';
 import { LegendEntry } from '../LegendEntry';
 import { State } from '../State';
 import { StateLegend } from '../StateLegend';
-
 
 @Component({
   selector: 'app-parameter-states-tooltip',
   templateUrl: './parameter-states-tooltip.component.html',
   styleUrl: './parameter-states-tooltip.component.css',
-  imports: [
-    CommonModule,
-    DateTimePipe,
-    SimpleTableDirective,
-  ],
+  imports: [CommonModule, DateTimePipe, SimpleTableDirective],
 })
 export class ParameterStatesTooltipComponent {
-
   @ViewChild('tt', { static: true })
   tt: ElementRef<HTMLDivElement>;
 
@@ -26,15 +24,9 @@ export class ParameterStatesTooltipComponent {
   stop = signal<Date | null>(null);
   legend = signal<LegendEntry[]>([]);
 
-  constructor(private formatter: Formatter) {
-  }
+  constructor(private formatter: Formatter) {}
 
-  show(
-    left: number,
-    top: number,
-    legend: StateLegend,
-    item?: Item,
-  ) {
+  show(left: number, top: number, legend: StateLegend, item?: Item) {
     let state: State | undefined = undefined;
     if (item) {
       this.start.set(new Date(item.start));
@@ -68,7 +60,10 @@ export class ParameterStatesTooltipComponent {
         const entry: LegendEntry = { label, color, count, mostFrequent: false };
         richEntries.push(entry);
 
-        if (mostFrequentEntry === undefined || count > mostFrequentEntry.count) {
+        if (
+          mostFrequentEntry === undefined ||
+          count > mostFrequentEntry.count
+        ) {
           mostFrequentEntry = entry;
         }
       }

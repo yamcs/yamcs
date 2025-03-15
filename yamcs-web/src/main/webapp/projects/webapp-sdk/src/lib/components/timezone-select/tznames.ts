@@ -313,6 +313,6 @@ const tznames = [
   'Pacific/Tahiti',
   'Pacific/Tarawa',
   'Pacific/Tongatapu',
-  'UTC'
+  'UTC',
 ];
 export default tznames;

@@ -8,7 +8,6 @@ import { YamcsService } from './yamcs.service';
 
 @Injectable({ providedIn: 'root' })
 export class ExtensionService {
-
   readonly configService = inject(ConfigService);
   readonly messageService = inject(MessageService);
   readonly appearanceService = inject(AppearanceService);
@@ -20,10 +19,10 @@ export class ExtensionService {
   private pageSettingsByExtension = new Map<string, PageSettings>();
 
   getNavItems(group: NavGroup) {
-    const navItems = [...this.navItems.get(group) || []];
+    const navItems = [...(this.navItems.get(group) || [])];
     navItems.sort((a, b) => {
       const rc = (a.order || 0) - (b.order || 0);
-      return rc !== 0 ? rc : (a.label.localeCompare(b.label));
+      return rc !== 0 ? rc : a.label.localeCompare(b.label);
     });
     return navItems;
   }

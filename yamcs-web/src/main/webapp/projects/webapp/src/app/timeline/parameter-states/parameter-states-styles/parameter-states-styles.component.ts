@@ -8,13 +8,9 @@ import { AppParameterInput } from '../../../shared/parameter-input/parameter-inp
   templateUrl: './parameter-states-styles.component.html',
   styleUrl: '../../shared/StyleTable.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AppParameterInput,
-    WebappSdkModule,
-  ],
+  imports: [AppParameterInput, WebappSdkModule],
 })
 export class ParameterStatesStylesComponent {
-
   @Input()
   form: FormGroup;
 }

@@ -1,9 +1,26 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
-import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+} from '@angular/core';
+import {
+  FormArray,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
 import { TimelineBand, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { resolveProperties } from '../../shared/properties';
-import { createTracePropertyInfo, DEFAULT_COLORS, propertyInfo, resolveTraceProperties } from '../ParameterPlot';
+import {
+  createTracePropertyInfo,
+  DEFAULT_COLORS,
+  propertyInfo,
+  resolveTraceProperties,
+} from '../ParameterPlot';
 import { ParameterPlotStylesComponent } from '../parameter-plot-styles/parameter-plot-styles.component';
 import { TraceStylesComponent } from '../trace-styles/trace-styles.component';
 
@@ -19,7 +36,6 @@ import { TraceStylesComponent } from '../trace-styles/trace-styles.component';
   ],
 })
 export class EditParameterPlotComponent implements AfterViewInit {
-
   @Input()
   form: FormGroup;
 
@@ -32,7 +48,7 @@ export class EditParameterPlotComponent implements AfterViewInit {
     readonly yamcs: YamcsService,
     private changeDetection: ChangeDetectorRef,
     private formBuilder: FormBuilder,
-  ) { }
+  ) {}
 
   ngAfterViewInit() {
     const props = resolveProperties(propertyInfo, this.band.properties || {});
@@ -48,20 +64,33 @@ export class EditParameterPlotComponent implements AfterViewInit {
       maximum: [props.maximum, []],
       zeroLineColor: [props.zeroLineColor, [Validators.required]],
       zeroLineWidth: [props.zeroLineWidth, [Validators.required]],
-      minimumFractionDigits: [props.minimumFractionDigits, [Validators.required]],
-      maximumFractionDigits: [props.maximumFractionDigits, [Validators.required]],
+      minimumFractionDigits: [
+        props.minimumFractionDigits,
+        [Validators.required],
+      ],
+      maximumFractionDigits: [
+        props.maximumFractionDigits,
+        [Validators.required],
+      ],
     };
 
     const propertiesGroup = this.form.get('properties') as FormGroup;
     for (const controlName in propConfig) {
       const config = propConfig[controlName];
-      propertiesGroup.addControl(controlName, new FormControl(config[0], config[1]));
+      propertiesGroup.addControl(
+        controlName,
+        new FormControl(config[0], config[1]),
+      );
     }
 
     let idx = 1;
     while (true) {
       const tracePropertyInfo = createTracePropertyInfo(idx, '#zzzzzz');
-      const traceProperties = resolveTraceProperties(idx, tracePropertyInfo, this.band.properties || {});
+      const traceProperties = resolveTraceProperties(
+        idx,
+        tracePropertyInfo,
+        this.band.properties || {},
+      );
       if (!traceProperties.parameter) {
         break;
       }
@@ -79,7 +108,7 @@ export class EditParameterPlotComponent implements AfterViewInit {
   }
 
   addTrace(index?: number) {
-    const lookupIndex = index === undefined ? 0 : (index + 1);
+    const lookupIndex = index === undefined ? 0 : index + 1;
     const hexColor = DEFAULT_COLORS[lookupIndex % DEFAULT_COLORS.length];
     const traceForm = this.formBuilder.group({
       parameter: ['', [Validators.required]],

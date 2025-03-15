@@ -8,13 +8,9 @@ import { VerifyIconComponent } from '../verify-icon/verify-icon.component';
   templateUrl: './verify-table.component.html',
   styleUrl: './verify-table.component.css',
   //changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    VerifyIconComponent,
-    WebappSdkModule,
-  ],
+  imports: [VerifyIconComponent, WebappSdkModule],
 })
 export class VerifyTableComponent {
-
   @Input()
   entry: StackedVerifyEntry;
 }

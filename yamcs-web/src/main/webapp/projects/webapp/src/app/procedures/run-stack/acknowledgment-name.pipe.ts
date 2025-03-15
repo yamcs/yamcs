@@ -7,7 +7,6 @@ import { Pipe, PipeTransform } from '@angular/core';
   name: 'acknowledgmentName',
 })
 export class AcknowledgmentNamePipe implements PipeTransform {
-
   transform(acknowledgmentName: string | null): string | null {
     if (!acknowledgmentName) {
       return null;

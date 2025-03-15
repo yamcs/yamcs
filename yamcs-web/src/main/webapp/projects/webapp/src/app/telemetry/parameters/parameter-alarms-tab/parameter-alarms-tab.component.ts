@@ -1,6 +1,18 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  OnInit,
+  input,
+} from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
-import { GetAlarmsOptions, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  GetAlarmsOptions,
+  WebappSdkModule,
+  YaSelectOption,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
 import { ParameterAlarmsTableComponent } from '../parameter-alarms-table/parameter-alarms-table.component';
 import { ParameterAlarmsDataSource } from '../parameter-alarms-table/parameter-alarms.datasource';
 
@@ -10,13 +22,9 @@ const defaultInterval = 'P1M';
   templateUrl: './parameter-alarms-tab.component.html',
   styleUrl: './parameter-alarms-tab.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    ParameterAlarmsTableComponent,
-    WebappSdkModule,
-  ],
+  imports: [ParameterAlarmsTableComponent, WebappSdkModule],
 })
 export class ParameterAlarmsTabComponent implements OnInit, OnDestroy {
-
   qualifiedName = input.required<string>({ alias: 'parameter' });
 
   intervalOptions: YaSelectOption[] = [
@@ -42,8 +50,7 @@ export class ParameterAlarmsTabComponent implements OnInit, OnDestroy {
 
   dataSource: ParameterAlarmsDataSource;
 
-  constructor(readonly yamcs: YamcsService) {
-  }
+  constructor(readonly yamcs: YamcsService) {}
 
   ngOnInit() {
     const qualifiedName = this.qualifiedName();
@@ -54,11 +61,13 @@ export class ParameterAlarmsTabComponent implements OnInit, OnDestroy {
     this.appliedInterval = defaultInterval;
     this.loadData();
 
-    this.filter.get('interval')!.valueChanges.forEach(nextInterval => {
+    this.filter.get('interval')!.valueChanges.forEach((nextInterval) => {
       if (nextInterval === 'CUSTOM') {
         const customStart = this.validStart || this.yamcs.getMissionTime();
         const customStop = this.validStop || this.yamcs.getMissionTime();
-        this.filter.get('customStart')!.setValue(utils.toISOString(customStart));
+        this.filter
+          .get('customStart')!
+          .setValue(utils.toISOString(customStart));
         this.filter.get('customStop')!.setValue(utils.toISOString(customStop));
       } else if (nextInterval === 'NO_LIMIT') {
         this.validStart = null;

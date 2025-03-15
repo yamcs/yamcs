@@ -1,5 +1,11 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { AfterViewInit, ChangeDetectionStrategy, Component, Inject, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  Inject,
+  ViewChild,
+} from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
@@ -11,12 +17,9 @@ import { ArgumentType, EnumValue, WebappSdkModule } from '@yamcs/webapp-sdk';
   templateUrl: './select-enumeration-dialog.component.html',
   styleUrl: './select-enumeration-dialog.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class SelectEnumerationDialogComponent implements AfterViewInit {
-
   filterControl = new UntypedFormControl();
 
   @ViewChild(MatPaginator, { static: true })
@@ -25,10 +28,7 @@ export class SelectEnumerationDialogComponent implements AfterViewInit {
   dataSource = new MatTableDataSource<EnumValue>([]);
   selection = new SelectionModel<EnumValue>();
 
-  displayedColumns = [
-    'name',
-    'value',
-  ];
+  displayedColumns = ['name', 'value'];
 
   constructor(
     private dialogRef: MatDialogRef<SelectEnumerationDialogComponent>,
@@ -38,9 +38,11 @@ export class SelectEnumerationDialogComponent implements AfterViewInit {
     const isHex = argumentType.dataEncoding?.encoding === 'UNSIGNED';
     this.dataSource.filterPredicate = (enumValue, filter) => {
       const { label, value } = enumValue;
-      return label.toLowerCase().indexOf(filter) >= 0
-        || String(value).indexOf(filter) >= 0
-        || (isHex && Number(value).toString(16).indexOf(filter) >= 0);
+      return (
+        label.toLowerCase().indexOf(filter) >= 0 ||
+        String(value).indexOf(filter) >= 0 ||
+        (isHex && Number(value).toString(16).indexOf(filter) >= 0)
+      );
     };
 
     this.dataSource.data = argumentType.enumValue || [];

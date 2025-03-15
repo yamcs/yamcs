@@ -5,12 +5,9 @@ import { TraceElementInfo, WebappSdkModule } from '@yamcs/webapp-sdk';
   selector: 'app-trace-element',
   templateUrl: './trace-element.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class TraceElementComponent {
-
   @Input()
   element: TraceElementInfo;
 }

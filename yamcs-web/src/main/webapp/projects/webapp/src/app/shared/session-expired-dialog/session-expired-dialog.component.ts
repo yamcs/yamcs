@@ -6,14 +6,10 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
   selector: 'app-session-expired-dialog',
   templateUrl: './session-expired-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class SessionExpiredDialogComponent {
-
-  constructor(@Inject(MAT_DIALOG_DATA) public data: any) {
-  }
+  constructor(@Inject(MAT_DIALOG_DATA) public data: any) {}
 
   reload() {
     window.location.reload();

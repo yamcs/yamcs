@@ -5,12 +5,9 @@ import { AcknowledgmentInfo, WebappSdkModule } from '@yamcs/webapp-sdk';
   selector: 'app-advance-ack-help',
   templateUrl: './advance-ack-help.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class AdvanceAckHelpComponent {
-
   @Input()
   verifiers: AcknowledgmentInfo[] = [];
 

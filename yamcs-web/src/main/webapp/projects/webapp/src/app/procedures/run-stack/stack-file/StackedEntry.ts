@@ -1,8 +1,18 @@
 import { signal, WritableSignal } from '@angular/core';
-import { CheckStep, Command, CommandHistoryRecord, CommandStep, ParameterValue, Step, TextStep, VerifyStep } from '@yamcs/webapp-sdk';
+import {
+  CheckStep,
+  Command,
+  CommandHistoryRecord,
+  CommandStep,
+  ParameterValue,
+  Step,
+  TextStep,
+  VerifyStep,
+} from '@yamcs/webapp-sdk';
 import { renderValue } from '../../../commanding/command-sender/arguments/argument/argument.component';
 
-export type StackedEntry = StackedCheckEntry
+export type StackedEntry =
+  | StackedCheckEntry
   | StackedCommandEntry
   | StackedTextEntry
   | StackedVerifyEntry;
@@ -18,7 +28,9 @@ abstract class AbstractStackedEntry<T extends Step> {
     this.model = model;
   }
 
-  get comment() { return this.model.comment; }
+  get comment() {
+    return this.model.comment;
+  }
 
   clearOutputs(): void {
     this.executionNumber = undefined;
@@ -33,7 +45,6 @@ abstract class AbstractStackedEntry<T extends Step> {
 }
 
 export class StackedCommandEntry extends AbstractStackedEntry<CommandStep> {
-
   type: 'command' = 'command';
   command?: Command;
   id?: string;
@@ -43,12 +54,24 @@ export class StackedCommandEntry extends AbstractStackedEntry<CommandStep> {
     super(model);
   }
 
-  get name() { return this.model.name; }
-  get namespace() { return this.model.namespace; }
-  get args() { return this.model.args; }
-  get extra() { return this.model.extra; }
-  get stream() { return this.model.stream; }
-  get advancement() { return this.model.advancement; }
+  get name() {
+    return this.model.name;
+  }
+  get namespace() {
+    return this.model.namespace;
+  }
+  get args() {
+    return this.model.args;
+  }
+  get extra() {
+    return this.model.extra;
+  }
+  get stream() {
+    return this.model.stream;
+  }
+  get advancement() {
+    return this.model.advancement;
+  }
 
   override clearOutputs(): void {
     super.clearOutputs();
@@ -95,7 +118,7 @@ export class StackedCommandEntry extends AbstractStackedEntry<CommandStep> {
       res += ']';
     }
     return res;
-  };
+  }
 }
 
 export interface NamedParameterValue {
@@ -105,7 +128,6 @@ export interface NamedParameterValue {
 }
 
 export class StackedVerifyEntry extends AbstractStackedEntry<VerifyStep> {
-
   type: 'verify' = 'verify';
   pvals?: NamedParameterValue[];
 
@@ -113,9 +135,15 @@ export class StackedVerifyEntry extends AbstractStackedEntry<VerifyStep> {
     super(model);
   }
 
-  get condition() { return this.model.condition; }
-  get delay() { return this.model.delay; }
-  get timeout() { return this.model.timeout; }
+  get condition() {
+    return this.model.condition;
+  }
+  get delay() {
+    return this.model.delay;
+  }
+  get timeout() {
+    return this.model.timeout;
+  }
 
   override clearOutputs(): void {
     super.clearOutputs();
@@ -129,7 +157,7 @@ export class StackedVerifyEntry extends AbstractStackedEntry<VerifyStep> {
   override copy() {
     return new StackedVerifyEntry({
       type: 'verify',
-      condition: this.condition.map(c => ({ ...c })),
+      condition: this.condition.map((c) => ({ ...c })),
       comment: this.comment,
     });
   }
@@ -167,9 +195,9 @@ export class StackedVerifyEntry extends AbstractStackedEntry<VerifyStep> {
       res += comparison.value;
     }
     return res;
-  };
+  }
 
-  test(pvals: { [key: string]: ParameterValue; }): boolean {
+  test(pvals: { [key: string]: ParameterValue }): boolean {
     const matchedPvals: NamedParameterValue[] = [];
     for (const comparison of this.condition) {
       const allPvals = pvals;
@@ -264,7 +292,6 @@ export class StackedVerifyEntry extends AbstractStackedEntry<VerifyStep> {
 }
 
 export class StackedCheckEntry extends AbstractStackedEntry<CheckStep> {
-
   type: 'check' = 'check';
   pvals?: NamedParameterValue[];
 
@@ -272,7 +299,9 @@ export class StackedCheckEntry extends AbstractStackedEntry<CheckStep> {
     super(model);
   }
 
-  get parameters() { return this.model.parameters; }
+  get parameters() {
+    return this.model.parameters;
+  }
 
   override clearOutputs(): void {
     super.clearOutputs();
@@ -286,14 +315,13 @@ export class StackedCheckEntry extends AbstractStackedEntry<CheckStep> {
   override copy() {
     return new StackedCheckEntry({
       type: 'check',
-      parameters: this.parameters.map(p => ({ ...p })),
+      parameters: this.parameters.map((p) => ({ ...p })),
       comment: this.comment,
     });
   }
 }
 
 export class StackedTextEntry extends AbstractStackedEntry<TextStep> {
-
   type: 'text' = 'text';
 
   renderedText = signal<string>('');
@@ -302,7 +330,9 @@ export class StackedTextEntry extends AbstractStackedEntry<TextStep> {
     super(model);
   }
 
-  get text() { return this.model.text; }
+  get text() {
+    return this.model.text;
+  }
 
   override copy() {
     return new StackedTextEntry({

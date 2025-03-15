@@ -19,7 +19,6 @@ import { ParameterDetailComponent } from '../parameter-detail/parameter-detail.c
   ],
 })
 export class ParameterComponent {
-
   parameter$ = new BehaviorSubject<Parameter | null>(null);
   offset$ = new BehaviorSubject<string | null>(null);
 
@@ -30,25 +29,27 @@ export class ParameterComponent {
   ) {
     // When clicking links pointing to this same component, Angular will not reinstantiate
     // the component. Therefore subscribe to routeParams
-    route.paramMap.subscribe(params => {
+    route.paramMap.subscribe((params) => {
       const qualifiedName = params.get('qualifiedName')!;
       this.changeParameter(qualifiedName);
     });
   }
 
   changeParameter(qualifiedName: string) {
-    this.yamcs.yamcsClient.getParameter(this.yamcs.instance!, qualifiedName).then(parameter => {
-      this.parameter$.next(parameter);
+    this.yamcs.yamcsClient
+      .getParameter(this.yamcs.instance!, qualifiedName)
+      .then((parameter) => {
+        this.parameter$.next(parameter);
 
-      let offset;
-      if (qualifiedName !== parameter.qualifiedName) {
-        offset = qualifiedName.substring(parameter.qualifiedName.length);
-      } else {
-        offset = null;
-      }
-      this.offset$.next(offset);
+        let offset;
+        if (qualifiedName !== parameter.qualifiedName) {
+          offset = qualifiedName.substring(parameter.qualifiedName.length);
+        } else {
+          offset = null;
+        }
+        this.offset$.next(offset);
 
-      this.title.setTitle(parameter.name + (offset || ''));
-    });
+        this.title.setTitle(parameter.name + (offset || ''));
+      });
   }
 }

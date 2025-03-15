@@ -1,5 +1,10 @@
 import { AsyncPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnChanges,
+} from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { AggregateValue, Value } from '../../client';
 import { ValuePipe } from '../../pipes/value.pipe';
@@ -20,13 +25,9 @@ interface ValueNode {
   templateUrl: './value.component.html',
   styleUrl: './value.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AsyncPipe,
-    ValuePipe
-  ],
+  imports: [AsyncPipe, ValuePipe],
 })
 export class YaValue implements OnChanges {
-
   @Input()
   value?: Value;
 
@@ -51,7 +52,12 @@ export class YaValue implements OnChanges {
     this.nodes$.next(nodes);
   }
 
-  private processValue(value: Value, expanded: boolean, appendTo: ValueNode[], parent?: ValueNode) {
+  private processValue(
+    value: Value,
+    expanded: boolean,
+    appendTo: ValueNode[],
+    parent?: ValueNode,
+  ) {
     const node: ValueNode = {
       margin: parent ? parent.margin + indent : 0,
       parent,
@@ -61,15 +67,27 @@ export class YaValue implements OnChanges {
     appendTo.push(node);
 
     if (value.type === 'AGGREGATE') {
-      node.children = this.processAggregateValue(value.aggregateValue!, appendTo, node);
+      node.children = this.processAggregateValue(
+        value.aggregateValue!,
+        appendTo,
+        node,
+      );
     } else if (value.type === 'ARRAY') {
-      node.children = this.processArrayValue(value.arrayValue || [], appendTo, node);
+      node.children = this.processArrayValue(
+        value.arrayValue || [],
+        appendTo,
+        node,
+      );
     }
 
     return node;
   }
 
-  private processArrayValue(arrayValue: Value[], appendTo: ValueNode[], parent: ValueNode) {
+  private processArrayValue(
+    arrayValue: Value[],
+    appendTo: ValueNode[],
+    parent: ValueNode,
+  ) {
     const directChildren: ValueNode[] = [];
     for (let i = 0; i < arrayValue.length; i++) {
       const value = arrayValue[i];
@@ -81,7 +99,11 @@ export class YaValue implements OnChanges {
     return directChildren;
   }
 
-  private processAggregateValue(aggregateValue: AggregateValue, appendTo: ValueNode[], parent: ValueNode) {
+  private processAggregateValue(
+    aggregateValue: AggregateValue,
+    appendTo: ValueNode[],
+    parent: ValueNode,
+  ) {
     const directChildren: ValueNode[] = [];
     for (let i = 0; i < aggregateValue.name.length; i++) {
       const value = aggregateValue.value[i];

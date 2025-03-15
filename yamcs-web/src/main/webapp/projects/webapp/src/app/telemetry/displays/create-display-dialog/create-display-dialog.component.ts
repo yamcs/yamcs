@@ -1,17 +1,29 @@
-import { ChangeDetectorRef, Component, ElementRef, Inject, ViewChild } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  Inject,
+  ViewChild,
+} from '@angular/core';
+import {
+  UntypedFormBuilder,
+  UntypedFormGroup,
+  Validators,
+} from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { ConfigService, StorageClient, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  ConfigService,
+  StorageClient,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-create-display-dialog',
   templateUrl: './create-display-dialog.component.html',
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class CreateDisplayDialogComponent {
-
   page = 1;
 
   // Page 1
@@ -67,13 +79,22 @@ export class CreateDisplayDialogComponent {
     }
     const fullPath = path ? path + '/' + name : name;
 
-    const b = new Blob([JSON.stringify({
-      "$schema": "https://yamcs.org/schema/parameter-table.schema.json",
-      scroll: false,
-      parameters: [],
-    }, undefined, 2)], {
-      type: 'application/json'
-    });
+    const b = new Blob(
+      [
+        JSON.stringify(
+          {
+            $schema: 'https://yamcs.org/schema/parameter-table.schema.json',
+            scroll: false,
+            parameters: [],
+          },
+          undefined,
+          2,
+        ),
+      ],
+      {
+        type: 'application/json',
+      },
+    );
     const bucketName = this.configService.getDisplayBucket();
     const objectName = this.data.prefix + fullPath;
     this.storageClient.uploadObject(bucketName, objectName, b).then(() => {

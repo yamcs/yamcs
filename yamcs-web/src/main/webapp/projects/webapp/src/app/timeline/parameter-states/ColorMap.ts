@@ -6,12 +6,19 @@ export const OTHER_COLOR = '#000000';
 // - Removed gray (#d9d9d9)
 // - Moved palid yellow (#ffffb3) to the end
 export const PALETTE = [
-  '#8dd3c7', '#bebada', '#fb8072', '#80b1d3', '#fdb462',
-  '#b3de69', '#fccde5', '#bc80bd', '#ccebc5', '#ffffb3',
+  '#8dd3c7',
+  '#bebada',
+  '#fb8072',
+  '#80b1d3',
+  '#fdb462',
+  '#b3de69',
+  '#fccde5',
+  '#bc80bd',
+  '#ccebc5',
+  '#ffffb3',
 ];
 
 export class ColorMap {
-
   // Maps preserve insertion order.
   //
   // We use this attribute to store entries

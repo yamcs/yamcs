@@ -1,6 +1,17 @@
-import { ChangeDetectionStrategy, Component, Input, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  viewChild,
+} from '@angular/core';
 import { FormGroup } from '@angular/forms';
-import { Command, User, WebappSdkModule, YaStepper, YaStepperStep } from '@yamcs/webapp-sdk';
+import {
+  Command,
+  User,
+  WebappSdkModule,
+  YaStepper,
+  YaStepperStep,
+} from '@yamcs/webapp-sdk';
 import { AuthService } from '../../../core/services/AuthService';
 import { CommandArgumentsForm } from './command-arguments-form.component';
 import { CommandCommentForm } from './command-comment-form.component';
@@ -26,7 +37,6 @@ import { TemplateProvider } from './TemplateProvider';
   ],
 })
 export class CommandFormComponent {
-
   private user: User;
 
   @Input()

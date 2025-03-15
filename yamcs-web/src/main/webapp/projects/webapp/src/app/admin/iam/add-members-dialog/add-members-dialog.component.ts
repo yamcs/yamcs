@@ -1,5 +1,11 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { AfterViewInit, ChangeDetectionStrategy, Component, Inject, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  Inject,
+  ViewChild,
+} from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
@@ -11,23 +17,15 @@ export interface MemberItem {
   user?: UserInfo;
 }
 
-
 @Component({
   selector: 'app-add-members-dialog',
   templateUrl: './add-members-dialog.component.html',
   styleUrl: './add-members-dialog.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class AddMembersDialogComponent implements AfterViewInit {
-
-  displayedColumns = [
-    'select',
-    'type',
-    'name',
-  ];
+  displayedColumns = ['select', 'type', 'name'];
 
   filterControl = new UntypedFormControl();
 
@@ -40,17 +38,21 @@ export class AddMembersDialogComponent implements AfterViewInit {
   constructor(
     private dialogRef: MatDialogRef<AddMembersDialogComponent>,
     yamcs: YamcsService,
-    @Inject(MAT_DIALOG_DATA) readonly data: any
+    @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     const existingItems: MemberItem[] = data.items;
-    const existingUsernames = existingItems.filter(i => i.user).map(i => i.user!.name);
-    yamcs.yamcsClient.getUsers().then(users => {
-      const items = (users || []).filter(user => existingUsernames.indexOf(user.name) === -1).map(user => {
-        return {
-          label: user.displayName || user.name,
-          user,
-        };
-      });
+    const existingUsernames = existingItems
+      .filter((i) => i.user)
+      .map((i) => i.user!.name);
+    yamcs.yamcsClient.getUsers().then((users) => {
+      const items = (users || [])
+        .filter((user) => existingUsernames.indexOf(user.name) === -1)
+        .map((user) => {
+          return {
+            label: user.displayName || user.name,
+            user,
+          };
+        });
       this.dataSource.data = items;
     });
   }

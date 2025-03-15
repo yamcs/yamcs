@@ -2,7 +2,14 @@ import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute } from '@angular/router';
-import { Alarm, BaseComponent, TrackBySelectionModel, WebappSdkModule, YaSelectOption, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  Alarm,
+  BaseComponent,
+  TrackBySelectionModel,
+  WebappSdkModule,
+  YaSelectOption,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { AuthService } from '../../core/services/AuthService';
@@ -28,8 +35,10 @@ import { ShelveAlarmDialogComponent } from '../shelve-alarm-dialog/shelve-alarm-
     WebappSdkModule,
   ],
 })
-export class ActiveAlarmListComponent extends BaseComponent implements OnDestroy {
-
+export class ActiveAlarmListComponent
+  extends BaseComponent
+  implements OnDestroy
+{
   filterForm = new UntypedFormGroup({
     filter: new UntypedFormControl(),
     view: new UntypedFormControl('standard'),
@@ -39,9 +48,13 @@ export class ActiveAlarmListComponent extends BaseComponent implements OnDestroy
   detailAlarm$ = new BehaviorSubject<Alarm | null>(null);
 
   dataSource: AlarmsDataSource;
-  selection = new TrackBySelectionModel<Alarm>((index: number, alarm: Alarm) => {
-    return `${alarm.triggerTime}__${alarm.id.namespace}__${alarm.id.name}__${alarm.seqNum}`;
-  }, false, []);
+  selection = new TrackBySelectionModel<Alarm>(
+    (index: number, alarm: Alarm) => {
+      return `${alarm.triggerTime}__${alarm.id.namespace}__${alarm.id.name}__${alarm.seqNum}`;
+    },
+    false,
+    [],
+  );
 
   viewOptions: YaSelectOption[] = [
     { id: 'standard', label: 'Standard view (ack & unack)' },
@@ -79,7 +92,7 @@ export class ActiveAlarmListComponent extends BaseComponent implements OnDestroy
     this.dataSource = new AlarmsDataSource(this.yamcs, false);
     this.dataSource.loadAlarms();
 
-    this.alarmsSubscription = this.dataSource.alarms$.subscribe(alarms => {
+    this.alarmsSubscription = this.dataSource.alarms$.subscribe((alarms) => {
       this.selection.matchNewValues(alarms);
 
       // Update detail pane
@@ -96,15 +109,16 @@ export class ActiveAlarmListComponent extends BaseComponent implements OnDestroy
 
     this.initializeOptions();
 
-    this.filterForm.get('filter')!.valueChanges.pipe(
-      debounceTime(400),
-    ).forEach(filter => {
-      this.filter = filter;
-      this.updateURL();
-      this.dataSource.setFilter(filter);
-    });
+    this.filterForm
+      .get('filter')!
+      .valueChanges.pipe(debounceTime(400))
+      .forEach((filter) => {
+        this.filter = filter;
+        this.updateURL();
+        this.dataSource.setFilter(filter);
+      });
 
-    this.filterForm.get('view')!.valueChanges.forEach(view => {
+    this.filterForm.get('view')!.valueChanges.forEach((view) => {
       this.view$.next(view);
       this.updateURL();
       this.selection.clear();
@@ -125,39 +139,61 @@ export class ActiveAlarmListComponent extends BaseComponent implements OnDestroy
   }
 
   private isSameAlarm(alarm1: Alarm, alarm2: Alarm) {
-    return alarm1.seqNum === alarm2.seqNum
-      && alarm1.id.namespace === alarm2.id.namespace
-      && alarm1.id.name === alarm2.id.name
-      && alarm1.triggerTime === alarm2.triggerTime;
+    return (
+      alarm1.seqNum === alarm2.seqNum &&
+      alarm1.id.namespace === alarm2.id.namespace &&
+      alarm1.id.name === alarm2.id.name &&
+      alarm1.triggerTime === alarm2.triggerTime
+    );
   }
 
   acknowledgeAlarms(alarms: Alarm[]) {
-    this.dialog.open(AcknowledgeAlarmDialogComponent, {
-      width: '400px',
-      data: { alarms },
-    }).afterClosed().subscribe(() => this.selection.clear());
+    this.dialog
+      .open(AcknowledgeAlarmDialogComponent, {
+        width: '400px',
+        data: { alarms },
+      })
+      .afterClosed()
+      .subscribe(() => this.selection.clear());
   }
 
   shelveAlarms(alarms: Alarm[]) {
-    this.dialog.open(ShelveAlarmDialogComponent, {
-      width: '400px',
-      data: { alarms },
-    }).afterClosed().subscribe(() => this.selection.clear());
+    this.dialog
+      .open(ShelveAlarmDialogComponent, {
+        width: '400px',
+        data: { alarms },
+      })
+      .afterClosed()
+      .subscribe(() => this.selection.clear());
   }
 
   unshelveAlarms(alarms: Alarm[]) {
     for (const alarm of alarms) {
-      const alarmName = alarm.id.namespace + (alarm.id.name ? '/' + alarm.id.name : '');
-      this.yamcs.yamcsClient.unshelveAlarm(this.yamcs.instance!, this.yamcs.processor!, alarmName, alarm.seqNum)
+      const alarmName =
+        alarm.id.namespace + (alarm.id.name ? '/' + alarm.id.name : '');
+      this.yamcs.yamcsClient
+        .unshelveAlarm(
+          this.yamcs.instance!,
+          this.yamcs.processor!,
+          alarmName,
+          alarm.seqNum,
+        )
         .then(() => this.selection.clear())
-        .catch(err => this.messageService.showError(err));
+        .catch((err) => this.messageService.showError(err));
     }
   }
 
   clearAlarms(alarms: Alarm[]) {
     for (const alarm of alarms) {
-      const alarmName = alarm.id.namespace + (alarm.id.name ? '/' + alarm.id.name : '');
-      this.yamcs.yamcsClient.clearAlarm(this.yamcs.instance!, this.yamcs.processor!, alarmName, alarm.seqNum, {});
+      const alarmName =
+        alarm.id.namespace + (alarm.id.name ? '/' + alarm.id.name : '');
+      this.yamcs.yamcsClient.clearAlarm(
+        this.yamcs.instance!,
+        this.yamcs.processor!,
+        alarmName,
+        alarm.seqNum,
+        {},
+      );
     }
   }
 

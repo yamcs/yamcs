@@ -6,12 +6,8 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
   selector: 'app-application-credentials-dialog',
   templateUrl: './application-credentials-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class ApplicationCredentialsDialogComponent {
-
-  constructor(@Inject(MAT_DIALOG_DATA) readonly data: any) {
-  }
+  constructor(@Inject(MAT_DIALOG_DATA) readonly data: any) {}
 }

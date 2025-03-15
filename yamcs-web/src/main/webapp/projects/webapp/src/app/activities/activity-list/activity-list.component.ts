@@ -4,7 +4,17 @@ import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Activity, GetActivitiesOptions, MessageService, Synchronizer, WebappSdkModule, YaColumnInfo, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  Activity,
+  GetActivitiesOptions,
+  MessageService,
+  Synchronizer,
+  WebappSdkModule,
+  YaColumnInfo,
+  YaSelectOption,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, debounceTime } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
@@ -29,7 +39,6 @@ const defaultInterval = 'NO_LIMIT';
   ],
 })
 export class ActivityListComponent {
-
   validStart: Date | null;
   validStop: Date | null;
 
@@ -99,18 +108,21 @@ export class ActivityListComponent {
   ) {
     title.setTitle('Activities');
 
-    yamcs.yamcsClient.getExecutors(yamcs.instance!).then(executors => {
-      for (const executor of executors) {
-        this.typeOptions$.next([
-          ...this.typeOptions$.value,
-          {
-            id: executor.type,
-            label: executor.displayName,
-            icon: executor.icon || 'new_label',
-          },
-        ]);
-      }
-    }).catch(err => this.messageService.showError(err));
+    yamcs.yamcsClient
+      .getExecutors(yamcs.instance!)
+      .then((executors) => {
+        for (const executor of executors) {
+          this.typeOptions$.next([
+            ...this.typeOptions$.value,
+            {
+              id: executor.type,
+              label: executor.displayName,
+              icon: executor.icon || 'new_label',
+            },
+          ]);
+        }
+      })
+      .catch((err) => this.messageService.showError(err));
 
     this.dataSource = new ActivitiesDataSource(yamcs, synchronizer);
     this.dataSource.startStreaming();
@@ -118,29 +130,34 @@ export class ActivityListComponent {
     this.initializeOptions();
     this.loadData();
 
-    this.filterForm.get('filter')!.valueChanges.pipe(
-      debounceTime(400),
-    ).forEach(filter => {
-      this.filter = filter;
-      this.loadData();
-    });
+    this.filterForm
+      .get('filter')!
+      .valueChanges.pipe(debounceTime(400))
+      .forEach((filter) => {
+        this.filter = filter;
+        this.loadData();
+      });
 
-    this.filterForm.get('status')!.valueChanges.forEach(status => {
+    this.filterForm.get('status')!.valueChanges.forEach((status) => {
       this.status = status;
       this.loadData();
     });
 
-    this.filterForm.get('type')!.valueChanges.forEach(type => {
+    this.filterForm.get('type')!.valueChanges.forEach((type) => {
       this.type = type;
       this.loadData();
     });
 
-    this.filterForm.get('interval')!.valueChanges.forEach(nextInterval => {
+    this.filterForm.get('interval')!.valueChanges.forEach((nextInterval) => {
       if (nextInterval === 'CUSTOM') {
         const customStart = this.validStart || this.yamcs.getMissionTime();
         const customStop = this.validStop || this.yamcs.getMissionTime();
-        this.filterForm.get('customStart')!.setValue(utils.toISOString(customStart));
-        this.filterForm.get('customStop')!.setValue(utils.toISOString(customStop));
+        this.filterForm
+          .get('customStart')!
+          .setValue(utils.toISOString(customStart));
+        this.filterForm
+          .get('customStop')!
+          .setValue(utils.toISOString(customStop));
       } else if (nextInterval === 'NO_LIMIT') {
         this.validStart = null;
         this.validStop = null;
@@ -184,7 +201,10 @@ export class ActivityListComponent {
         this.validStop = null;
       } else {
         this.validStop = this.yamcs.getMissionTime();
-        this.validStart = utils.subtractDuration(this.validStop, this.appliedInterval);
+        this.validStart = utils.subtractDuration(
+          this.validStop,
+          this.appliedInterval,
+        );
       }
     } else {
       this.appliedInterval = defaultInterval;
@@ -238,8 +258,9 @@ export class ActivityListComponent {
       options.type = this.type;
     }
 
-    this.dataSource.loadActivities(options)
-      .catch(err => this.messageService.showError(err));
+    this.dataSource
+      .loadActivities(options)
+      .catch((err) => this.messageService.showError(err));
   }
 
   loadMoreData() {
@@ -266,8 +287,14 @@ export class ActivityListComponent {
         status: this.type.length ? this.status : null,
         type: this.type.length ? this.type : null,
         interval: this.appliedInterval,
-        customStart: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStart'] : null,
-        customStop: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStop'] : null,
+        customStart:
+          this.appliedInterval === 'CUSTOM'
+            ? this.filterForm.value['customStart']
+            : null,
+        customStop:
+          this.appliedInterval === 'CUSTOM'
+            ? this.filterForm.value['customStop']
+            : null,
       },
       queryParamsHandling: 'merge',
     });
@@ -311,31 +338,39 @@ export class ActivityListComponent {
 
   cancelSelectedActivities() {
     for (const activity of this.selection.selected) {
-      if (!activity.stop) { }
+      if (!activity.stop) {
+      }
       this.cancelActivity(activity);
     }
   }
 
   cancelActivity(activity: Activity) {
-    this.yamcs.yamcsClient.cancelActivity(this.yamcs.instance!, activity.id)
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .cancelActivity(this.yamcs.instance!, activity.id)
+      .catch((err) => this.messageService.showError(err));
   }
 
   setSuccessful(activity: Activity) {
-    this.yamcs.yamcsClient.completeManualActivity(this.yamcs.instance!, activity.id)
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .completeManualActivity(this.yamcs.instance!, activity.id)
+      .catch((err) => this.messageService.showError(err));
   }
 
   setFailed(activity: Activity) {
-    this.dialog.open(SetFailedDialogComponent, {
-      width: '400px',
-      data: { activity },
-    }).afterClosed().subscribe(result => {
-      if (result) {
-        this.yamcs.yamcsClient.completeManualActivity(this.yamcs.instance!, activity.id, {
-          failureReason: result.failureReason,
-        }).catch(err => this.messageService.showError(err));
-      }
-    });
+    this.dialog
+      .open(SetFailedDialogComponent, {
+        width: '400px',
+        data: { activity },
+      })
+      .afterClosed()
+      .subscribe((result) => {
+        if (result) {
+          this.yamcs.yamcsClient
+            .completeManualActivity(this.yamcs.instance!, activity.id, {
+              failureReason: result.failureReason,
+            })
+            .catch((err) => this.messageService.showError(err));
+        }
+      });
   }
 }

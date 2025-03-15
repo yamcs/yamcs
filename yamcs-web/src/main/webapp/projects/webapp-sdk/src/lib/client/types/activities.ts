@@ -4,7 +4,7 @@ export type ActivityStatus = 'RUNNING' | 'SUCCESSFUL' | 'CANCELLED' | 'FAILED';
 
 export interface Activity {
   type: string;
-  args: { [key: string]: any; };
+  args: { [key: string]: any };
   detail: string;
   id: string;
   start: string;
@@ -56,13 +56,22 @@ export interface SubscribeActivityLogRequest {
   activity: string;
 }
 
-export type GlobalActivityStatusSubscription = WebSocketCall<SubscribeGlobalActivityStatusRequest, GlobalActivityStatus>;
-export type ActivitySubscription = WebSocketCall<SubscribeActivitiesRequest, Activity>;
-export type ActivityLogSubscription = WebSocketCall<SubscribeActivityLogRequest, ActivityLog>;
+export type GlobalActivityStatusSubscription = WebSocketCall<
+  SubscribeGlobalActivityStatusRequest,
+  GlobalActivityStatus
+>;
+export type ActivitySubscription = WebSocketCall<
+  SubscribeActivitiesRequest,
+  Activity
+>;
+export type ActivityLogSubscription = WebSocketCall<
+  SubscribeActivityLogRequest,
+  ActivityLog
+>;
 
 export class StartActivityOptions {
   type: string;
-  args?: { [key: string]: any; };
+  args?: { [key: string]: any };
   comment?: string;
 }
 

@@ -9,13 +9,9 @@ import { ParameterAlarmsDataSource } from './parameter-alarms.datasource';
   selector: 'app-parameter-alarms-table',
   templateUrl: './parameter-alarms-table.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AlarmLevelComponent,
-    WebappSdkModule,
-  ],
+  imports: [AlarmLevelComponent, WebappSdkModule],
 })
 export class ParameterAlarmsTableComponent {
-
   @Input()
   dataSource: ParameterAlarmsDataSource;
 
@@ -32,13 +28,16 @@ export class ParameterAlarmsTableComponent {
   constructor(
     private router: Router,
     readonly yamcs: YamcsService,
-  ) { }
+  ) {}
 
   durationFor(alarm: Alarm) {
     if (!alarm.updateTime) {
       return undefined;
     }
-    return utils.toDate(alarm.updateTime).getTime() - utils.toDate(alarm.triggerTime).getTime();
+    return (
+      utils.toDate(alarm.updateTime).getTime() -
+      utils.toDate(alarm.triggerTime).getTime()
+    );
   }
 
   showChart(alarm: Alarm) {
@@ -55,18 +54,21 @@ export class ParameterAlarmsTableComponent {
       stop = addHours(utils.toDate(startIso), 1).toISOString();
     }
 
-    this.router.navigate([
-      '/telemetry/parameters' + alarm.parameterDetail?.triggerValue.id.name,
-      '-',
-      'chart'
-    ], {
-      queryParams: {
-        c: this.yamcs.context,
-        interval: 'CUSTOM',
-        customStart: start,
-        customStop: stop,
+    this.router.navigate(
+      [
+        '/telemetry/parameters' + alarm.parameterDetail?.triggerValue.id.name,
+        '-',
+        'chart',
+      ],
+      {
+        queryParams: {
+          c: this.yamcs.context,
+          interval: 'CUSTOM',
+          customStart: start,
+          customStop: stop,
+        },
       },
-    });
+    );
   }
 
   showData(alarm: Alarm) {
@@ -83,17 +85,20 @@ export class ParameterAlarmsTableComponent {
       stop = addHours(utils.toDate(startIso), 1).toISOString();
     }
 
-    this.router.navigate([
-      '/telemetry/parameters' + alarm.parameterDetail?.triggerValue.id.name,
-      '-',
-      'data'
-    ], {
-      queryParams: {
-        c: this.yamcs.context,
-        interval: 'CUSTOM',
-        customStart: start,
-        customStop: stop,
+    this.router.navigate(
+      [
+        '/telemetry/parameters' + alarm.parameterDetail?.triggerValue.id.name,
+        '-',
+        'data',
+      ],
+      {
+        queryParams: {
+          c: this.yamcs.context,
+          interval: 'CUSTOM',
+          customStart: start,
+          customStop: stop,
+        },
       },
-    });
+    );
   }
 }

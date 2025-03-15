@@ -1,6 +1,18 @@
-import { ChangeDetectionStrategy, Component, Input, OnChanges, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnChanges,
+  OnInit,
+} from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
-import { CommandOption, ConfigService, Value, WebappSdkModule, YaSelectOption } from '@yamcs/webapp-sdk';
+import {
+  CommandOption,
+  ConfigService,
+  Value,
+  WebappSdkModule,
+  YaSelectOption,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { renderValue } from '../arguments/argument/argument.component';
 import { TemplateProvider } from './TemplateProvider';
@@ -9,12 +21,9 @@ import { TemplateProvider } from './TemplateProvider';
   selector: 'app-command-options-form',
   templateUrl: './command-options-form.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class CommandOptionsForm implements OnInit, OnChanges {
-
   @Input()
   formGroup: FormGroup;
 
@@ -28,8 +37,9 @@ export class CommandOptionsForm implements OnInit, OnChanges {
   constructor(configService: ConfigService) {
     this.commandOptions = configService.getCommandOptions();
 
-    const streamOptions: YaSelectOption[] = configService.getTcStreams()
-      .map(streamName => ({ id: streamName, label: streamName }));
+    const streamOptions: YaSelectOption[] = configService
+      .getTcStreams()
+      .map((streamName) => ({ id: streamName, label: streamName }));
     this.streamOptions$.next(streamOptions);
   }
 
@@ -43,9 +53,14 @@ export class CommandOptionsForm implements OnInit, OnChanges {
   ngOnChanges(): void {
     if (this.templateProvider) {
       for (const option of this.commandOptions || []) {
-        const previousValue = this.templateProvider.getOption(option.id, option.type);
+        const previousValue = this.templateProvider.getOption(
+          option.id,
+          option.type,
+        );
         if (previousValue !== undefined) {
-          this.formGroup.controls['extra__' + option.id].setValue(renderValue(previousValue));
+          this.formGroup.controls['extra__' + option.id].setValue(
+            renderValue(previousValue),
+          );
         }
       }
     }
@@ -57,7 +72,7 @@ export class CommandOptionsForm implements OnInit, OnChanges {
   }
 
   getResult(struct = false) {
-    const extra: { [key: string]: Value; } = {};
+    const extra: { [key: string]: Value } = {};
     for (const id in this.formGroup.controls) {
       if (id.startsWith('extra__')) {
         const control = this.formGroup.controls[id];

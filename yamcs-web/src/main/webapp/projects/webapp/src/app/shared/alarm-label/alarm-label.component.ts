@@ -1,6 +1,12 @@
 import { LowerCasePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import { FaviconService, GlobalAlarmStatus, GlobalAlarmStatusSubscription, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  FaviconService,
+  GlobalAlarmStatus,
+  GlobalAlarmStatusSubscription,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 
@@ -9,13 +15,9 @@ import { AuthService } from '../../core/services/AuthService';
   templateUrl: './alarm-label.component.html',
   styleUrl: './alarm-label.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    LowerCasePipe,
-    WebappSdkModule,
-  ],
+  imports: [LowerCasePipe, WebappSdkModule],
 })
 export class AlarmLabelComponent implements OnDestroy {
-
   private connectionInfoSubscription: Subscription;
 
   context$ = new BehaviorSubject<string | null>(null);
@@ -28,29 +30,36 @@ export class AlarmLabelComponent implements OnDestroy {
     readonly faviconService: FaviconService,
     authService: AuthService,
   ) {
-    this.connectionInfoSubscription = yamcs.connectionInfo$.subscribe(connectionInfo => {
-      if (connectionInfo && connectionInfo.instance) {
-        let context = connectionInfo.instance.name;
-        if (connectionInfo.processor) {
-          if (authService.getUser()!.hasSystemPrivilege('ReadAlarms')) {
-            const options = {
-              instance: connectionInfo.instance.name,
-              processor: connectionInfo.processor.name,
-            };
-            this.statusSubscription = yamcs.yamcsClient.createGlobalAlarmStatusSubscription(options, status => {
-              this.status$.next(status);
-              const alarmCount = status.unacknowledgedCount + status.acknowledgedCount;
-              this.faviconService.showNotification(alarmCount > 0);
-            });
+    this.connectionInfoSubscription = yamcs.connectionInfo$.subscribe(
+      (connectionInfo) => {
+        if (connectionInfo && connectionInfo.instance) {
+          let context = connectionInfo.instance.name;
+          if (connectionInfo.processor) {
+            if (authService.getUser()!.hasSystemPrivilege('ReadAlarms')) {
+              const options = {
+                instance: connectionInfo.instance.name,
+                processor: connectionInfo.processor.name,
+              };
+              this.statusSubscription =
+                yamcs.yamcsClient.createGlobalAlarmStatusSubscription(
+                  options,
+                  (status) => {
+                    this.status$.next(status);
+                    const alarmCount =
+                      status.unacknowledgedCount + status.acknowledgedCount;
+                    this.faviconService.showNotification(alarmCount > 0);
+                  },
+                );
+            }
+            context += ';' + connectionInfo.processor;
           }
-          context += ';' + connectionInfo.processor;
+          this.context$.next(context);
+        } else {
+          this.clearAlarmSubscription();
+          this.context$.next(null);
         }
-        this.context$.next(context);
-      } else {
-        this.clearAlarmSubscription();
-        this.context$.next(null);
-      }
-    });
+      },
+    );
   }
 
   private clearAlarmSubscription() {

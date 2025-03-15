@@ -58,12 +58,16 @@ export class Line {
 
   wordCount = 0;
 
-  constructor(readonly model: HexModel, charCount: number, readonly chars: string) {
+  constructor(
+    readonly model: HexModel,
+    charCount: number,
+    readonly chars: string,
+  ) {
     this.id = 'p' + seq++;
     this.range = new BitRange(charCount * 8, chars.length * 8);
     this.charCountHex = this.lpad(charCount.toString(16), 4);
     for (let i = 0; i < chars.length; i += 2) {
-      const last = (i + 2 >= chars.length);
+      const last = i + 2 >= chars.length;
       this.addWord(chars.substring(i, i + 2), last);
     }
 
@@ -78,8 +82,8 @@ export class Line {
       this.asciiComponents.push(filler);
 
       let hexFiller = '';
-      for (let j = 0; j < 32 - (2 * (chars.length % 16)); j++) {
-        if (j !== 0 && ((2 * chars.length) + j) % 4 === 0) {
+      for (let j = 0; j < 32 - 2 * (chars.length % 16); j++) {
+        if (j !== 0 && (2 * chars.length + j) % 4 === 0) {
           hexFiller += '  ';
         } else {
           hexFiller += ' ';
@@ -142,13 +146,13 @@ export class Line {
       ascii += this.charToAscii(word[i]);
     }
 
-    const bitpos = this.range.start + (this.wordCount * 16);
+    const bitpos = this.range.start + this.wordCount * 16;
     const hexChars = hex.split('');
     const nibbles: NibbleHex[] = [];
     for (let i = 0; i < hexChars.length; i++) {
       const nibble = {
         id: 'p' + seq++,
-        range: new BitRange(bitpos + (i * 4), 4),
+        range: new BitRange(bitpos + i * 4, 4),
         content: hexChars[i],
       };
       nibbles.push(nibble);
@@ -175,7 +179,7 @@ export class Line {
     for (let i = 0; i < asciiChars.length; i++) {
       const c = {
         id: 'p' + seq++,
-        range: new BitRange(bitpos + (i * 8), 8),
+        range: new BitRange(bitpos + i * 8, 8),
         content: asciiChars[i],
       };
       chars.push(c);
@@ -192,11 +196,11 @@ export class Line {
   private charToHex(char: string) {
     const code = char.charCodeAt(0);
     const hex = code.toString(16);
-    return (hex.length === 2) ? hex : '0' + hex;
+    return hex.length === 2 ? hex : '0' + hex;
   }
 
   private charToAscii(char: string) {
     const code = char.charCodeAt(0);
-    return (32 <= code && code <= 126) ? char : '.';
+    return 32 <= code && code <= 126 ? char : '.';
   }
 }

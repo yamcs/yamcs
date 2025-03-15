@@ -16,9 +16,9 @@
               Finished
             }
             @if (upload.complete && upload.err) {
-              <mat-icon class="icon14" style="vertical-align: middle" [matTooltip]="upload.err"
-                >error</mat-icon
-              >
+              <mat-icon class="icon14" style="vertical-align: middle" [matTooltip]="upload.err">
+                error
+              </mat-icon>
               Failed
             }
             @if (!upload.complete) {

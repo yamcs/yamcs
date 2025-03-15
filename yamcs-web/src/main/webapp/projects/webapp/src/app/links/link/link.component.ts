@@ -2,7 +2,18 @@ import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
-import { ActionInfo, Cop1Config, Cop1Status, Cop1Subscription, InitiateCop1Request, Link, LinkSubscription, MessageService, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  ActionInfo,
+  Cop1Config,
+  Cop1Status,
+  Cop1Subscription,
+  InitiateCop1Request,
+  Link,
+  LinkSubscription,
+  MessageService,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
@@ -22,7 +33,6 @@ import { LinkService } from '../shared/link.service';
   ],
 })
 export class LinkComponent implements OnDestroy {
-
   link$ = new BehaviorSubject<Link | null>(null);
   cop1Config$ = new BehaviorSubject<Cop1Config | null>(null);
   cop1Status$ = new BehaviorSubject<Cop1Status | null>(null);
@@ -39,21 +49,24 @@ export class LinkComponent implements OnDestroy {
     private dialog: MatDialog,
     private linkService: LinkService,
   ) {
-    route.paramMap.subscribe(params => {
+    route.paramMap.subscribe((params) => {
       const linkName = params.get('link')!;
       this.changeLink(linkName);
     });
 
-    this.linkSubscription = this.yamcs.yamcsClient.createLinkSubscription({
-      instance: this.yamcs.instance!,
-    }, evt => {
-      for (const linkInfo of evt.links || []) {
-        const link = this.link$.value;
-        if (link && link.name === linkInfo.name) {
-          this.link$.next(linkInfo);
+    this.linkSubscription = this.yamcs.yamcsClient.createLinkSubscription(
+      {
+        instance: this.yamcs.instance!,
+      },
+      (evt) => {
+        for (const linkInfo of evt.links || []) {
+          const link = this.link$.value;
+          if (link && link.name === linkInfo.name) {
+            this.link$.next(linkInfo);
+          }
         }
-      }
-    });
+      },
+    );
   }
 
   private changeLink(name: string) {
@@ -62,27 +75,34 @@ export class LinkComponent implements OnDestroy {
     this.cop1Status$.next(null);
     this.cop1Config$.next(null);
 
-    this.yamcs.yamcsClient.getLink(this.yamcs.instance!, name).then(link => {
+    this.yamcs.yamcsClient.getLink(this.yamcs.instance!, name).then((link) => {
       this.link$.next(link);
       this.title.setTitle(name);
       if (link.type.indexOf('Cop1Tc') !== -1) {
-        this.yamcs.yamcsClient.getCop1Config(this.yamcs.instance!, name).then(cop1Config => {
-          this.cop1Config$.next(cop1Config);
-        });
+        this.yamcs.yamcsClient
+          .getCop1Config(this.yamcs.instance!, name)
+          .then((cop1Config) => {
+            this.cop1Config$.next(cop1Config);
+          });
 
-        this.cop1Subscription = this.yamcs.yamcsClient.createCop1Subscription({
-          instance: link.instance,
-          link: name,
-        }, status => {
-          this.cop1Status$.next(status);
-        });
+        this.cop1Subscription = this.yamcs.yamcsClient.createCop1Subscription(
+          {
+            instance: link.instance,
+            link: name,
+          },
+          (status) => {
+            this.cop1Status$.next(status);
+          },
+        );
       }
     });
   }
 
   openInitiateCop1Dialog(link: string) {
-    const dialogRef = this.dialog.open(InitiateCop1DialogComponent, { width: '400px' });
-    dialogRef.afterClosed().subscribe(result => {
+    const dialogRef = this.dialog.open(InitiateCop1DialogComponent, {
+      width: '400px',
+    });
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.initiateCop1(link, result);
       }
@@ -90,18 +110,21 @@ export class LinkComponent implements OnDestroy {
   }
 
   private initiateCop1(link: string, options: InitiateCop1Request) {
-    this.yamcs.yamcsClient.initiateCop1(this.yamcs.instance!, link, options)
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .initiateCop1(this.yamcs.instance!, link, options)
+      .catch((err) => this.messageService.showError(err));
   }
 
   disableCop1(link: string) {
-    this.yamcs.yamcsClient.disableCop1(this.yamcs.instance!, link)
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .disableCop1(this.yamcs.instance!, link)
+      .catch((err) => this.messageService.showError(err));
   }
 
   resumeCop1(link: string) {
-    this.yamcs.yamcsClient.resumeCop1(this.yamcs.instance!, link)
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .resumeCop1(this.yamcs.instance!, link)
+      .catch((err) => this.messageService.showError(err));
   }
 
   mayControlLinks() {
@@ -109,18 +132,21 @@ export class LinkComponent implements OnDestroy {
   }
 
   enableLink(link: string) {
-    this.yamcs.yamcsClient.enableLink(this.yamcs.instance!, link)
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .enableLink(this.yamcs.instance!, link)
+      .catch((err) => this.messageService.showError(err));
   }
 
   disableLink(link: string) {
-    this.yamcs.yamcsClient.disableLink(this.yamcs.instance!, link)
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .disableLink(this.yamcs.instance!, link)
+      .catch((err) => this.messageService.showError(err));
   }
 
   resetCounters(link: string) {
-    this.yamcs.yamcsClient.resetLinkCounters(this.yamcs.instance!, link)
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .resetLinkCounters(this.yamcs.instance!, link)
+      .catch((err) => this.messageService.showError(err));
   }
 
   runAction(link: string, action: ActionInfo) {

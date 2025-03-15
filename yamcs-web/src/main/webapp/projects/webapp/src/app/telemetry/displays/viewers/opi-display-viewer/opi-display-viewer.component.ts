@@ -1,9 +1,36 @@
 import { APP_BASE_HREF } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ElementRef, Inject, OnDestroy, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  Inject,
+  OnDestroy,
+  ViewChild,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AlarmSeverity, colorFromCssColor, Display, PV, PVProvider, Sample } from '@yamcs/opi';
+import {
+  AlarmSeverity,
+  colorFromCssColor,
+  Display,
+  PV,
+  PVProvider,
+  Sample,
+} from '@yamcs/opi';
 import { Widget } from '@yamcs/opi/dist/types/Widget';
-import { ConfigService, Formatter, MessageService, NamedObjectId, ParameterSubscription, ParameterValue, StorageClient, SubscribedParameterInfo, Synchronizer, utils, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  ConfigService,
+  Formatter,
+  MessageService,
+  NamedObjectId,
+  ParameterSubscription,
+  ParameterValue,
+  StorageClient,
+  SubscribedParameterInfo,
+  Synchronizer,
+  utils,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
 import { Viewer } from '../Viewer';
 import { OpiDisplayConsoleHandler } from './OpiDisplayConsoleHandler';
@@ -15,8 +42,8 @@ import { YamcsScriptLibrary } from './YamcsScriptLibrary';
 // Legacy namespace. New projects should not make use of this.
 // Yamcs Studio maps names under this namespace to an "ops://"
 // datasource.
-const OPS_NAMESPACE = "MDB:OPS Name";
-const OPS_DATASOURCE = "ops://";
+const OPS_NAMESPACE = 'MDB:OPS Name';
+const OPS_DATASOURCE = 'ops://';
 
 // Prefix used in query params to distinguish from non-OPI params
 const ARGS_PREFIX = 'args.';
@@ -30,12 +57,11 @@ const ARGS_PREFIX = 'args.';
   `,
   styleUrl: './opi-display-viewer.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
-export class OpiDisplayViewerComponent implements Viewer, PVProvider, OnDestroy {
-
+export class OpiDisplayViewerComponent
+  implements Viewer, PVProvider, OnDestroy
+{
   private storageClient: StorageClient;
   private bucket: string;
 
@@ -51,8 +77,8 @@ export class OpiDisplayViewerComponent implements Viewer, PVProvider, OnDestroy 
   private display: Display;
 
   private parameterSubscription: ParameterSubscription;
-  private idMapping: { [key: number]: NamedObjectId; } = {};
-  private idInfo: { [key: number]: SubscribedParameterInfo; } = {};
+  private idMapping: { [key: number]: NamedObjectId } = {};
+  private idInfo: { [key: number]: SubscribedParameterInfo } = {};
 
   private pvsByName = new Map<string, PV>();
   private subscriptionDirty = false;
@@ -90,62 +116,70 @@ export class OpiDisplayViewerComponent implements Viewer, PVProvider, OnDestroy 
       }
 
       if (ids.length) {
-        this.parameterSubscription = this.yamcs.yamcsClient!.createParameterSubscription({
-          instance: this.yamcs.instance!,
-          processor: this.yamcs.processor!,
-          id: ids,
-          abortOnInvalid: false,
-          sendFromCache: true,
-          updateOnExpiration: true,
-          action: 'REPLACE',
-        }, data => {
-          if (data.mapping) {
-            this.idMapping = data.mapping;
-          }
-          if (data.info) {
-            this.idInfo = data.info;
-            for (const key in data.info) {
-              const id = data.mapping[key];
-              const info = data.info[key];
-              const pv = this.getPVById(id);
-              if (pv) {
-                if (info.enumValues) {
-                  pv.labels = info.enumValues.map(x => x.label);
+        this.parameterSubscription =
+          this.yamcs.yamcsClient!.createParameterSubscription(
+            {
+              instance: this.yamcs.instance!,
+              processor: this.yamcs.processor!,
+              id: ids,
+              abortOnInvalid: false,
+              sendFromCache: true,
+              updateOnExpiration: true,
+              action: 'REPLACE',
+            },
+            (data) => {
+              if (data.mapping) {
+                this.idMapping = data.mapping;
+              }
+              if (data.info) {
+                this.idInfo = data.info;
+                for (const key in data.info) {
+                  const id = data.mapping[key];
+                  const info = data.info[key];
+                  const pv = this.getPVById(id);
+                  if (pv) {
+                    if (info.enumValues) {
+                      pv.labels = info.enumValues.map((x) => x.label);
+                    }
+                    pv.writable =
+                      info.dataSource === 'LOCAL' ||
+                      info.dataSource === 'EXTERNAL1' ||
+                      info.dataSource === 'EXTERNAL2' ||
+                      info.dataSource === 'EXTERNAL3';
+                  }
                 }
-                pv.writable = info.dataSource === 'LOCAL'
-                  || info.dataSource === 'EXTERNAL1'
-                  || info.dataSource === 'EXTERNAL2'
-                  || info.dataSource === 'EXTERNAL3';
               }
-            }
-          }
-          for (const id of (data.invalid || [])) {
-            const pv = this.getPVById(id);
-            if (pv) {
-              pv.disconnected = true;
-            }
-          }
-          if (data.values?.length) {
-            const samples = new Map<string, Sample>();
-            for (const pval of data.values) {
-              pval.id = this.idMapping[pval.numericId];
-              let pvName = pval.id.name;
-              if (pval.id.namespace === OPS_NAMESPACE) {
-                pvName = OPS_DATASOURCE + pvName;
+              for (const id of data.invalid || []) {
+                const pv = this.getPVById(id);
+                if (pv) {
+                  pv.disconnected = true;
+                }
               }
-              const info = this.idInfo[pval.numericId];
-              samples.set(pvName, this.toSample(pval, info));
-            }
-            this.display.setValues(samples);
-          }
-        });
+              if (data.values?.length) {
+                const samples = new Map<string, Sample>();
+                for (const pval of data.values) {
+                  pval.id = this.idMapping[pval.numericId];
+                  let pvName = pval.id.name;
+                  if (pval.id.namespace === OPS_NAMESPACE) {
+                    pvName = OPS_DATASOURCE + pvName;
+                  }
+                  const info = this.idInfo[pval.numericId];
+                  samples.set(pvName, this.toSample(pval, info));
+                }
+                this.display.setValues(samples);
+              }
+            },
+          );
       }
     }
   }
 
   private getIdForPvName(pvName: string) {
     if (pvName.startsWith(OPS_DATASOURCE)) {
-      return { namespace: OPS_NAMESPACE, name: pvName.substring(OPS_DATASOURCE.length) };
+      return {
+        namespace: OPS_NAMESPACE,
+        name: pvName.substring(OPS_DATASOURCE.length),
+      };
     } else {
       return { name: pvName };
     }
@@ -159,11 +193,15 @@ export class OpiDisplayViewerComponent implements Viewer, PVProvider, OnDestroy 
     return this.display.getPV(pvName);
   }
 
-  private toSample(pval: ParameterValue, info: SubscribedParameterInfo): Sample {
+  private toSample(
+    pval: ParameterValue,
+    info: SubscribedParameterInfo,
+  ): Sample {
     const time = utils.toDate(pval.generationTime);
     const severity = this.toAlarmSeverity(pval);
     const sample: Sample = { time, severity, value: undefined };
-    if (pval.engValue) { // Can be unset if acquisitionStatus is invalid
+    if (pval.engValue) {
+      // Can be unset if acquisitionStatus is invalid
       sample.value = utils.convertValue(pval.engValue);
       if (pval.engValue.type === 'ENUMERATED') {
         sample.valueIndex = Number(pval.engValue.sint64Value);
@@ -178,9 +216,11 @@ export class OpiDisplayViewerComponent implements Viewer, PVProvider, OnDestroy 
   }
 
   private toAlarmSeverity(pval: ParameterValue) {
-    if (pval.acquisitionStatus === 'EXPIRED'
-      || pval.acquisitionStatus == 'NOT_RECEIVED'
-      || pval.acquisitionStatus === 'INVALID') {
+    if (
+      pval.acquisitionStatus === 'EXPIRED' ||
+      pval.acquisitionStatus == 'NOT_RECEIVED' ||
+      pval.acquisitionStatus === 'INVALID'
+    ) {
       return AlarmSeverity.INVALID;
     }
 
@@ -210,14 +250,20 @@ export class OpiDisplayViewerComponent implements Viewer, PVProvider, OnDestroy 
     this.display = new Display(container);
 
     const opiConfig = this.configService.getConfig().opi;
-    this.display.disconnectedColor = colorFromCssColor(opiConfig.disconnectedColor);
+    this.display.disconnectedColor = colorFromCssColor(
+      opiConfig.disconnectedColor,
+    );
     this.display.invalidColor = colorFromCssColor(opiConfig.invalidColor);
     this.display.majorColor = colorFromCssColor(opiConfig.majorColor);
     this.display.minorColor = colorFromCssColor(opiConfig.minorColor);
     this.display.utc = this.formatter.isUTC();
     this.display.imagesPrefix = this.baseHref + 'media/';
-    this.display.setPathResolver(new OpiDisplayPathResolver(this.storageClient, this.display));
-    this.display.setConsoleHandler(new OpiDisplayConsoleHandler(this.messageService));
+    this.display.setPathResolver(
+      new OpiDisplayPathResolver(this.storageClient, this.display),
+    );
+    this.display.setConsoleHandler(
+      new OpiDisplayConsoleHandler(this.messageService),
+    );
     this.display.setFontResolver(new OpiDisplayFontResolver(this.baseHref));
 
     let currentFolder = '';
@@ -225,10 +271,12 @@ export class OpiDisplayViewerComponent implements Viewer, PVProvider, OnDestroy 
       currentFolder = objectName.substring(0, objectName.lastIndexOf('/') + 1);
     }
 
-    this.display.addScriptLibrary('Yamcs', new YamcsScriptLibrary(
-      this.yamcs, this.messageService));
+    this.display.addScriptLibrary(
+      'Yamcs',
+      new YamcsScriptLibrary(this.yamcs, this.messageService),
+    );
 
-    this.display.addEventListener('opendisplay', evt => {
+    this.display.addEventListener('opendisplay', (evt) => {
       let url;
       const qs = `?c=${this.yamcs.context}&range=${this.yamcs.getTimeRange()}`;
       if (evt.path.startsWith('/')) {
@@ -238,39 +286,59 @@ export class OpiDisplayViewerComponent implements Viewer, PVProvider, OnDestroy 
       }
       if (evt.args) {
         for (const k in evt.args) {
-          url += '&' + ARGS_PREFIX + encodeURIComponent(k) + '=' + encodeURIComponent(evt.args[k]);
+          url +=
+            '&' +
+            ARGS_PREFIX +
+            encodeURIComponent(k) +
+            '=' +
+            encodeURIComponent(evt.args[k]);
         }
       }
       this.router.navigateByUrl(url);
     });
 
-    this.display.addEventListener('closedisplay', evt => {
-      this.router.navigateByUrl(`/telemetry/displays/browse?c=${this.yamcs.context}`);
+    this.display.addEventListener('closedisplay', (evt) => {
+      this.router.navigateByUrl(
+        `/telemetry/displays/browse?c=${this.yamcs.context}`,
+      );
     });
 
-    this.display.addEventListener('openpv', evt => {
+    this.display.addEventListener('openpv', (evt) => {
       if (evt.pvName.startsWith('/')) {
-        this.router.navigateByUrl(`/telemetry/parameters${evt.pvName}/-/summary?c=${this.yamcs.context}`);
+        this.router.navigateByUrl(
+          `/telemetry/parameters${evt.pvName}/-/summary?c=${this.yamcs.context}`,
+        );
       } else if (evt.pvName.startsWith(OPS_DATASOURCE)) {
         // Find first the qualified name
-        this.yamcs.yamcsClient.getParameterById(this.yamcs.instance!, {
-          namespace: OPS_NAMESPACE,
-          name: evt.pvName.substring(6),
-        }).then(response => {
-          this.router.navigateByUrl(`/telemetry/parameters${response.qualifiedName}/-/summary?c=${this.yamcs.context}`);
-        });
+        this.yamcs.yamcsClient
+          .getParameterById(this.yamcs.instance!, {
+            namespace: OPS_NAMESPACE,
+            name: evt.pvName.substring(6),
+          })
+          .then((response) => {
+            this.router.navigateByUrl(
+              `/telemetry/parameters${response.qualifiedName}/-/summary?c=${this.yamcs.context}`,
+            );
+          });
       } else {
         alert(`Can't navigate to PV ${evt.pvName}`);
       }
     });
 
-    this.display.addEventListener('runcommand', evt => {
-      this.yamcs.yamcsClient.issueCommand(this.yamcs.instance!, this.yamcs.processor!, evt.command, {
-        args: evt.args,
-      }).catch(err => this.messageService.showError(err));
+    this.display.addEventListener('runcommand', (evt) => {
+      this.yamcs.yamcsClient
+        .issueCommand(
+          this.yamcs.instance!,
+          this.yamcs.processor!,
+          evt.command,
+          {
+            args: evt.args,
+          },
+        )
+        .catch((err) => this.messageService.showError(err));
     });
 
-    this.display.addEventListener('runstack', evt => {
+    this.display.addEventListener('runstack', (evt) => {
       const parts = evt.path.split('/');
       const resolvedParts: string[] = [];
       for (const part of parts) {
@@ -287,30 +355,34 @@ export class OpiDisplayViewerComponent implements Viewer, PVProvider, OnDestroy 
       const bucketRoot = this.storageClient.getObjectURL(this.bucket, '');
       if (resolvedPath.startsWith(bucketRoot)) {
         const objectName = resolvedPath.slice(bucketRoot.length);
-        this.yamcs.yamcsClient.startActivity(this.yamcs.instance!, {
-          type: 'COMMAND_STACK',
-          args: {
-            processor: this.yamcs.processor!,
-            bucket: this.bucket,
-            stack: objectName,
-          },
-        }).catch(err => this.messageService.showError(err));
+        this.yamcs.yamcsClient
+          .startActivity(this.yamcs.instance!, {
+            type: 'COMMAND_STACK',
+            args: {
+              processor: this.yamcs.processor!,
+              bucket: this.bucket,
+              stack: objectName,
+            },
+          })
+          .catch((err) => this.messageService.showError(err));
       } else {
         this.messageService.showError('Failed to resolve stack path');
       }
     });
 
-    this.display.addEventListener('runprocedure', evt => {
-      this.yamcs.yamcsClient.startProcedure(this.yamcs.instance!, evt.procedure, {
-        arguments: evt.args,
-      }).catch(err => this.messageService.showError(err));
+    this.display.addEventListener('runprocedure', (evt) => {
+      this.yamcs.yamcsClient
+        .startProcedure(this.yamcs.instance!, evt.procedure, {
+          arguments: evt.args,
+        })
+        .catch((err) => this.messageService.showError(err));
     });
 
     this.display.addProvider(this);
     this.display.absPrefix = this.storageClient.getObjectURL(this.bucket, '');
 
     const objectUrl = this.storageClient.getObjectURL(this.bucket, objectName);
-    const displayArgs: { [key: string]: string; } = {};
+    const displayArgs: { [key: string]: string } = {};
     const queryParams = this.route.snapshot.queryParams;
     for (const param in queryParams) {
       if (param.startsWith('args.')) {
@@ -319,7 +391,6 @@ export class OpiDisplayViewerComponent implements Viewer, PVProvider, OnDestroy 
     }
     const promise = this.display.setSource(objectUrl, displayArgs);
     promise.then(() => {
-
       // Apply display background to entire pane
       let backgroundColor: string;
       if (!this.display.transparent && this.display.instance) {
@@ -329,7 +400,9 @@ export class OpiDisplayViewerComponent implements Viewer, PVProvider, OnDestroy 
       }
       this.frameInner.nativeElement.style.backgroundColor = backgroundColor;
 
-      this.syncSubscription = this.synchronizer.syncFast(() => this.updateSubscription());
+      this.syncSubscription = this.synchronizer.syncFast(() =>
+        this.updateSubscription(),
+      );
       // Quick emit, don't wait on sync tick
       this.updateSubscription();
     });
@@ -359,18 +432,32 @@ export class OpiDisplayViewerComponent implements Viewer, PVProvider, OnDestroy 
     if (pvName.startsWith(OPS_DATASOURCE)) {
       parameter = OPS_NAMESPACE + '/' + pvName.substring(OPS_DATASOURCE.length);
     }
-    this.yamcs.yamcsClient.setParameterValue(this.yamcs.instance!, this.yamcs.processor!, parameter, {
-      type: 'STRING',
-      stringValue: String(value),
-    }).then(() => this.messageService.showInfo(`Parameter ${pvName} set to ${value}`))
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .setParameterValue(
+        this.yamcs.instance!,
+        this.yamcs.processor!,
+        parameter,
+        {
+          type: 'STRING',
+          stringValue: String(value),
+        },
+      )
+      .then(() =>
+        this.messageService.showInfo(`Parameter ${pvName} set to ${value}`),
+      )
+      .catch((err) => this.messageService.showError(err));
   }
 
   createHistoricalDataProvider(pvName: string, widget: Widget) {
     const { yamcs, synchronizer } = this;
     if (this.configService.getConfig().tmArchive) {
       return new OpiDisplayHistoricDataProvider(
-        pvName, widget, yamcs, synchronizer, this.configService);
+        pvName,
+        widget,
+        yamcs,
+        synchronizer,
+        this.configService,
+      );
     }
   }
 
@@ -378,8 +465,7 @@ export class OpiDisplayViewerComponent implements Viewer, PVProvider, OnDestroy 
     return true;
   }
 
-  shutdown() {
-  }
+  shutdown() {}
 
   public hasPendingChanges() {
     return false;

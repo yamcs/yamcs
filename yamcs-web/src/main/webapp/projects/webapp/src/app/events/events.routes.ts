@@ -7,23 +7,28 @@ import { EventListComponent } from './event-list/event-list.component';
 import { EventQueryListComponent } from './event-query-list/event-query-list.component';
 import { resolveParseFilterSubscription } from './events.resolvers';
 
-export const ROUTES: Routes = [{
-  path: '',
-  canActivate: [authGuardFn, attachContextGuardFn],
-  canActivateChild: [authGuardChildFn],
-  runGuardsAndResolvers: 'always',
-  component: InstancePageComponent,
-  children: [{
+export const ROUTES: Routes = [
+  {
     path: '',
-    pathMatch: 'full',
-    component: EventListComponent,
-    canActivate: [mayReadEventsGuardFn],
-    resolve: {
-      parseFilterSubscription: resolveParseFilterSubscription,
-    }
-  }, {
-    path: 'queries',
-    component: EventQueryListComponent,
-    canActivate: [mayReadEventsGuardFn],
-  }]
-}];
+    canActivate: [authGuardFn, attachContextGuardFn],
+    canActivateChild: [authGuardChildFn],
+    runGuardsAndResolvers: 'always',
+    component: InstancePageComponent,
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        component: EventListComponent,
+        canActivate: [mayReadEventsGuardFn],
+        resolve: {
+          parseFilterSubscription: resolveParseFilterSubscription,
+        },
+      },
+      {
+        path: 'queries',
+        component: EventQueryListComponent,
+        canActivate: [mayReadEventsGuardFn],
+      },
+    ],
+  },
+];

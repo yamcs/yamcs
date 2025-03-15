@@ -1,7 +1,17 @@
 import { APP_BASE_HREF } from '@angular/common';
 import { Inject, Injectable, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthInfo, ConfigService, HttpHandler, OpenIDConnectInfo, Synchronizer, TokenResponse, User, UserInfo, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  AuthInfo,
+  ConfigService,
+  HttpHandler,
+  OpenIDConnectInfo,
+  Synchronizer,
+  TokenResponse,
+  User,
+  UserInfo,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 export interface Claims {
@@ -15,7 +25,6 @@ export interface Claims {
   providedIn: 'root',
 })
 export class AuthService implements OnDestroy {
-
   private authInfo: AuthInfo;
   public user$ = new BehaviorSubject<User | null>(null);
 
@@ -36,7 +45,7 @@ export class AuthService implements OnDestroy {
     this.authInfo = configService.getAuthInfo();
     this.logoutRedirectUrl = configService.getConfig().logoutRedirectUrl;
 
-    yamcsService.sessionEnded$.subscribe(ended => {
+    yamcsService.sessionEnded$.subscribe((ended) => {
       if (ended && !this.authInfo.spnego) {
         this.logout(true);
       }
@@ -47,36 +56,38 @@ export class AuthService implements OnDestroy {
      * tokens should (still) work. If not, then the user is navigated
      * to the login page.
      */
-    yamcsService.yamcsClient.setHttpInterceptor(async (next: HttpHandler, url: string, init?: RequestInit) => {
-
-      let response;
-      try {
-        // Verify or fetch a token when necessary
-        await this.loginAutomatically();
-
-        init = this.modifyRequest(init);
-        response = await next.handle(url, init);
-        if (response.status === 401) {
-          // Server must have refused our access token. Attempt to refresh.
-          this.clearCookie('access_token');
+    yamcsService.yamcsClient.setHttpInterceptor(
+      async (next: HttpHandler, url: string, init?: RequestInit) => {
+        let response;
+        try {
+          // Verify or fetch a token when necessary
           await this.loginAutomatically();
-        }
-      } catch (err: any) {
-        if (err.name === 'TypeError') { // TypeError is how Fetch API reports network or CORS failure
-          this.router.navigate(['/down'], { skipLocationChange: true });
-        } else {
-          this.logout(true);
-        }
-        throw err;
-      }
 
-      if (response.status === 401) {
-        init = this.modifyRequest(init);
-        response = await next.handle(url, init);
-      }
+          init = this.modifyRequest(init);
+          response = await next.handle(url, init);
+          if (response.status === 401) {
+            // Server must have refused our access token. Attempt to refresh.
+            this.clearCookie('access_token');
+            await this.loginAutomatically();
+          }
+        } catch (err: any) {
+          if (err.name === 'TypeError') {
+            // TypeError is how Fetch API reports network or CORS failure
+            this.router.navigate(['/down'], { skipLocationChange: true });
+          } else {
+            this.logout(true);
+          }
+          throw err;
+        }
 
-      return response;
-    });
+        if (response.status === 401) {
+          init = this.modifyRequest(init);
+          response = await next.handle(url, init);
+        }
+
+        return response;
+      },
+    );
 
     const accessToken = this.getCookie('access_token');
     if (accessToken) {
@@ -129,11 +140,14 @@ export class AuthService implements OnDestroy {
    * The promise will be rejected when the automatic login failed.
    */
   public async loginAutomatically(refresh = false): Promise<any> {
-    if (!this.authInfo.requireAuthentication || this.configService.getDisableLoginForm()) {
+    if (
+      !this.authInfo.requireAuthentication ||
+      this.configService.getDisableLoginForm()
+    ) {
       if (!this.user$.value) {
         // Written such that it bypasses our interceptor
         const response = await fetch(`${this.baseHref}api/user`);
-        this.user$.next(new User(await response.json() as UserInfo));
+        this.user$.next(new User((await response.json()) as UserInfo));
       }
       return;
     }
@@ -148,7 +162,7 @@ export class AuthService implements OnDestroy {
         headers.append('Authorization', `Bearer ${accessToken}`);
         const response = await fetch(`${this.baseHref}api/user`, { headers });
         if (response.status === 200) {
-          const user = new User(await response.json() as UserInfo);
+          const user = new User((await response.json()) as UserInfo);
           this.user$.next(user);
         } else if (response.status === 401) {
           if (refreshToken) {
@@ -162,7 +176,9 @@ export class AuthService implements OnDestroy {
           this.logout(false);
           return await this.loginAutomatically();
         } else {
-          return Promise.reject('Unexpected response when retrieving user info');
+          return Promise.reject(
+            'Unexpected response when retrieving user info',
+          );
         }
       }
 
@@ -196,20 +212,24 @@ export class AuthService implements OnDestroy {
    * to come from our login page.
    */
   public login(username: string, password: string) {
-    return this.yamcsService.yamcsClient.fetchAccessTokenWithPassword(username, password).then(loginInfo => {
-      this.updateLoginState(loginInfo);
-      this.user$.next(new User(loginInfo.user));
-      return this.extractClaims(loginInfo.access_token);
-    });
+    return this.yamcsService.yamcsClient
+      .fetchAccessTokenWithPassword(username, password)
+      .then((loginInfo) => {
+        this.updateLoginState(loginInfo);
+        this.user$.next(new User(loginInfo.user));
+        return this.extractClaims(loginInfo.access_token);
+      });
   }
 
   public loginWithAuthorizationCode(authorizationCode: string) {
-    return this.yamcsService.yamcsClient.fetchAccessTokenWithAuthorizationCode(authorizationCode).then(loginInfo => {
-      this.updateLoginState(loginInfo);
+    return this.yamcsService.yamcsClient
+      .fetchAccessTokenWithAuthorizationCode(authorizationCode)
+      .then((loginInfo) => {
+        this.updateLoginState(loginInfo);
 
-      this.user$.next(new User(loginInfo.user));
-      return this.extractClaims(loginInfo.access_token);
-    });
+        this.user$.next(new User(loginInfo.user));
+        return this.extractClaims(loginInfo.access_token);
+      });
   }
 
   private async loginWithSpnego() {
@@ -227,11 +247,13 @@ export class AuthService implements OnDestroy {
   private loginWithRefreshToken(refreshToken: string) {
     // Store in cookie so that the token survives browser refreshes
     // and so it is added to the header of a websocket request.
-    return this.yamcsService.yamcsClient.fetchAccessTokenWithRefreshToken(refreshToken).then(loginInfo => {
-      this.updateLoginState(loginInfo);
-      this.user$.next(new User(loginInfo.user));
-      return this.extractClaims(loginInfo.access_token);
-    });
+    return this.yamcsService.yamcsClient
+      .fetchAccessTokenWithRefreshToken(refreshToken)
+      .then((loginInfo) => {
+        this.updateLoginState(loginInfo);
+        this.user$.next(new User(loginInfo.user));
+        return this.extractClaims(loginInfo.access_token);
+      });
   }
 
   /*
@@ -289,11 +311,14 @@ export class AuthService implements OnDestroy {
         window.location.href = this.logoutRedirectUrl;
       } else if (!this.configService.getConfig().disableLoginForm) {
         const redirectURI = this.buildOpenIDRedirectURI();
-        window.location.href = this.buildRedirector({
-          clientId: 'yamcs-web',
-          authorizationEndpoint: `${location.protocol}//${location.host}${this.baseHref}auth/authorize`,
-          scope: 'openid',
-        }, redirectURI);
+        window.location.href = this.buildRedirector(
+          {
+            clientId: 'yamcs-web',
+            authorizationEndpoint: `${location.protocol}//${location.host}${this.baseHref}auth/authorize`,
+            scope: 'openid',
+          },
+          redirectURI,
+        );
       }
     }
   }
@@ -352,7 +377,7 @@ export class AuthService implements OnDestroy {
     cookie += `; SameSite=${cookieConfig.sameSite}`;
     if (cookieConfig.secure) {
       cookie += '; Secure';
-    };
+    }
     document.cookie = cookie;
   }
 

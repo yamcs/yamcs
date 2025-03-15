@@ -1,10 +1,13 @@
-import { CommandOptionType, CommandStep, utils, Value } from '@yamcs/webapp-sdk';
+import {
+  CommandOptionType,
+  CommandStep,
+  utils,
+  Value,
+} from '@yamcs/webapp-sdk';
 import { TemplateProvider } from '../../../commanding/command-sender/command-form/TemplateProvider';
 
 export class CommandStepTemplateProvider implements TemplateProvider {
-
-  constructor(private step: CommandStep) {
-  }
+  constructor(private step: CommandStep) {}
 
   getAssignment(argumentName: string) {
     for (const argName in this.step.args) {
@@ -16,7 +19,7 @@ export class CommandStepTemplateProvider implements TemplateProvider {
   }
 
   getOption(id: string, expectedType: CommandOptionType) {
-    for (const extraId in (this.step.extra || {})) {
+    for (const extraId in this.step.extra || {}) {
       if (extraId === id) {
         const value = this.step.extra![extraId];
         switch (expectedType) {

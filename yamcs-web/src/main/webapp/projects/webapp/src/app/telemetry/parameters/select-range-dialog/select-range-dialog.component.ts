@@ -1,17 +1,18 @@
 import { Component, Inject } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import {
+  UntypedFormControl,
+  UntypedFormGroup,
+  Validators,
+} from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-select-range-dialog',
   templateUrl: './select-range-dialog.component.html',
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class SelectRangeDialogComponent {
-
   form = new UntypedFormGroup({
     start: new UntypedFormControl(null, Validators.required),
     stop: new UntypedFormControl(null, Validators.required),

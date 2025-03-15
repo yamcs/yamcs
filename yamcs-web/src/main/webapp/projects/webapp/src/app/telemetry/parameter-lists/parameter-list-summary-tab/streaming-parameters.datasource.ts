@@ -1,6 +1,13 @@
 import { DataSource } from '@angular/cdk/table';
 import { ChangeDetectorRef } from '@angular/core';
-import { NamedObjectId, Parameter, ParameterSubscription, ParameterValue, Synchronizer, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  NamedObjectId,
+  Parameter,
+  ParameterSubscription,
+  ParameterValue,
+  Synchronizer,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 export class ListItem {
@@ -10,7 +17,6 @@ export class ListItem {
 }
 
 export class StreamingParametersDataSource extends DataSource<ListItem> {
-
   // Max bytes to fetch and show
   readonly binaryPreview = 16;
 
@@ -19,7 +25,7 @@ export class StreamingParametersDataSource extends DataSource<ListItem> {
   loading$ = new BehaviorSubject<boolean>(false);
 
   private dataSubscription?: ParameterSubscription;
-  private idMapping: { [key: number]: NamedObjectId; } = {};
+  private idMapping: { [key: number]: NamedObjectId } = {};
   private latestValues = new Map<string, ParameterValue>();
 
   private syncSubscription: Subscription;
@@ -71,39 +77,44 @@ export class StreamingParametersDataSource extends DataSource<ListItem> {
   }
 
   private startSubscription(parameters: Parameter[]) {
-    const ids = parameters.map(p => {
+    const ids = parameters.map((p) => {
       return { name: p.qualifiedName };
     });
     if (ids.length) {
-      this.dataSubscription = this.yamcs.yamcsClient.createParameterSubscription({
-        instance: this.yamcs.instance!,
-        processor: this.yamcs.processor!,
-        id: ids,
-        abortOnInvalid: false,
-        sendFromCache: true,
-        updateOnExpiration: true,
-        maxBytes: this.binaryPreview + 1, // 1 more, so we know when to show ellipsis
-        action: 'REPLACE',
-      }, data => {
-        if (data.mapping) {
-          this.idMapping = data.mapping;
-          this.latestValues.clear();
-        }
-        this.processDelivery(data.values || []);
-        this.loading$.next(false);
+      this.dataSubscription =
+        this.yamcs.yamcsClient.createParameterSubscription(
+          {
+            instance: this.yamcs.instance!,
+            processor: this.yamcs.processor!,
+            id: ids,
+            abortOnInvalid: false,
+            sendFromCache: true,
+            updateOnExpiration: true,
+            maxBytes: this.binaryPreview + 1, // 1 more, so we know when to show ellipsis
+            action: 'REPLACE',
+          },
+          (data) => {
+            if (data.mapping) {
+              this.idMapping = data.mapping;
+              this.latestValues.clear();
+            }
+            this.processDelivery(data.values || []);
+            this.loading$.next(false);
 
-        // Quick emit, don't wait on sync tick
-        if (data.mapping) {
-          this.refreshTable();
-        }
-      });
+            // Quick emit, don't wait on sync tick
+            if (data.mapping) {
+              this.refreshTable();
+            }
+          },
+        );
     }
   }
 
   private processDelivery(delivery: ParameterValue[]) {
     for (const pval of delivery) {
       const id = this.idMapping[pval.numericId];
-      if (id) { // Can be unset, in case we get an old update, following a changed subscription
+      if (id) {
+        // Can be unset, in case we get an old update, following a changed subscription
         this.latestValues.set(id.name, pval);
       }
     }

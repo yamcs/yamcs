@@ -68,6 +68,8 @@ jobs:
         run: cd yamcs-web/src/main/webapp; npm install
       - name: Build webapp
         run: cd yamcs-web/src/main/webapp; npm run build
+      - name: Check formatting
+        run: cd yamcs-web/src/main/webapp; npm run prettier:check
 
   docs:
     name: Documentation

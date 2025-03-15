@@ -1,10 +1,13 @@
-import { AdvancementParams, CommandHistoryEntry, CommandOptionType, Value } from '@yamcs/webapp-sdk';
+import {
+  AdvancementParams,
+  CommandHistoryEntry,
+  CommandOptionType,
+  Value,
+} from '@yamcs/webapp-sdk';
 import { TemplateProvider } from '../command-form/TemplateProvider';
 
 export class CommandHistoryTemplateProvider implements TemplateProvider {
-
-  constructor(private entry: CommandHistoryEntry) {
-  }
+  constructor(private entry: CommandHistoryEntry) {}
 
   getAssignment(argumentName: string) {
     if (this.entry.assignments) {
@@ -17,7 +20,7 @@ export class CommandHistoryTemplateProvider implements TemplateProvider {
   }
 
   getOption(id: string, expectedType: CommandOptionType) {
-    for (const attr of (this.entry.attr || [])) {
+    for (const attr of this.entry.attr || []) {
       if (attr.name === id) {
         switch (expectedType) {
           case 'BOOLEAN':

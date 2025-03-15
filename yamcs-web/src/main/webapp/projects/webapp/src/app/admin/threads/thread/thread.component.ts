@@ -18,7 +18,6 @@ import { TraceElementComponent } from '../trace-element/trace-element.component'
   ],
 })
 export class ThreadComponent {
-
   thread$ = new BehaviorSubject<ThreadInfo | null>(null);
 
   constructor(
@@ -26,15 +25,14 @@ export class ThreadComponent {
     private yamcs: YamcsService,
     private title: Title,
   ) {
-
-    route.paramMap.subscribe(params => {
+    route.paramMap.subscribe((params) => {
       const id = params.get('id')!;
       this.changeThread(Number(id));
     });
   }
 
   private changeThread(id: number) {
-    this.yamcs.yamcsClient.getThread(id).then(thread => {
+    this.yamcs.yamcsClient.getThread(id).then((thread) => {
       this.thread$.next(thread);
       this.title.setTitle(thread.name);
     });

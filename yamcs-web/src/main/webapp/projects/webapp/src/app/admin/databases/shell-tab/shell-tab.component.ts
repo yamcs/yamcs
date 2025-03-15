@@ -4,10 +4,6 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
 @Component({
   templateUrl: './shell-tab.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
-export class ShellTabComponent {
-
-}
+export class ShellTabComponent {}

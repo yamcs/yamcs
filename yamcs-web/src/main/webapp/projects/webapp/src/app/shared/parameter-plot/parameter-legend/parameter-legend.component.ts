@@ -1,5 +1,10 @@
-
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+} from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { DyLegendData } from '../dygraphs';
 
@@ -8,12 +13,9 @@ import { DyLegendData } from '../dygraphs';
   templateUrl: './parameter-legend.component.html',
   styleUrl: './parameter-legend.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    MatIcon
-  ],
+  imports: [MatIcon],
 })
 export class ParameterLegendComponent {
-
   @Input()
   data: DyLegendData;
 

@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, SecurityContext } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  SecurityContext,
+} from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
@@ -7,7 +14,6 @@ import { DomSanitizer } from '@angular/platform-browser';
   templateUrl: './highlight.component.html',
 })
 export class YaHighlight {
-
   private sanitizer = inject(DomSanitizer);
 
   text = input<string>();

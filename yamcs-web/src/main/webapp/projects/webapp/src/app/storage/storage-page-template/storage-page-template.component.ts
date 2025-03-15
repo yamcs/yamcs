@@ -6,12 +6,9 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
   templateUrl: './storage-page-template.component.html',
   styleUrl: './storage-page-template.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class StoragePageTemplateComponent {
-
   @Input()
   noscroll = false;
 }

@@ -23,7 +23,7 @@
 .ya-data-table th.mat-mdc-header-cell {
   font-size: 12px;
   line-height: 16px;
-  color: rgba(0, 0, 0, .654);
+  color: rgba(0, 0, 0, 0.654);
   padding: 4px 8px 4px 0;
 }
 
@@ -31,7 +31,7 @@
   font-size: 12px;
   line-height: 16px;
   font-weight: 500;
-  color: rgba(0, 0, 0, .654);
+  color: rgba(0, 0, 0, 0.654);
   padding: 10px 10px 8px 0;
 }
 
@@ -43,7 +43,7 @@
 .ya-data-table td.mono,
 .ya-data-table th.mono,
 .mono {
-  font-family: 'Roboto Mono', monospace;
+  font-family: "Roboto Mono", monospace;
 }
 
 .ya-data-table th.mat-mdc-header-cell,
@@ -158,10 +158,10 @@ a.ya-link:hover {
   padding-right: 8px !important;
 }
 
-.ya-data-table td.checkbox+td,
-.ya-data-table th.checkbox+th,
-.ya-data-table td.status+td,
-.ya-data-table th.status+th {
+.ya-data-table td.checkbox + td,
+.ya-data-table th.checkbox + th,
+.ya-data-table td.status + td,
+.ya-data-table th.status + th {
   padding-left: 4px;
 }
 

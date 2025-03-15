@@ -1,5 +1,11 @@
 import { AsyncPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input, OnChanges, OnDestroy } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnChanges,
+  OnDestroy,
+} from '@angular/core';
 import { Synchronizer } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { AgoPipe } from '../pipes/ago.pipe';
@@ -8,12 +14,9 @@ import { AgoPipe } from '../pipes/ago.pipe';
   selector: 'app-ago',
   template: '{{ value$ | async }}',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AsyncPipe,
-  ],
+  imports: [AsyncPipe],
 })
 export class AgoComponent implements OnChanges, OnDestroy {
-
   @Input()
   time: string;
 
@@ -23,7 +26,10 @@ export class AgoComponent implements OnChanges, OnDestroy {
   value$ = new BehaviorSubject<string | null>(null);
   timerSubscription: Subscription;
 
-  constructor(synchronizer: Synchronizer, private agoPipe: AgoPipe) {
+  constructor(
+    synchronizer: Synchronizer,
+    private agoPipe: AgoPipe,
+  ) {
     this.timerSubscription = synchronizer.sync(() => {
       this.value$.next(agoPipe.transform(this.time, this.useMissionTime));
     });

@@ -8,24 +8,16 @@ import { AdminToolbarComponent } from '../shared/admin-toolbar/admin-toolbar.com
 @Component({
   templateUrl: './processor-types.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AdminPageTemplateComponent,
-    AdminToolbarComponent,
-    WebappSdkModule,
-  ],
+  imports: [AdminPageTemplateComponent, AdminToolbarComponent, WebappSdkModule],
 })
 export class ProcessorTypesComponent {
-
   displayedColumns = ['name'];
 
   dataSource = new MatTableDataSource<string>();
 
-  constructor(
-    yamcs: YamcsService,
-    title: Title,
-  ) {
+  constructor(yamcs: YamcsService, title: Title) {
     title.setTitle('Processor types');
-    yamcs.yamcsClient.getProcessorTypes().then(response => {
+    yamcs.yamcsClient.getProcessorTypes().then((response) => {
       this.dataSource.data = response.types || [];
     });
   }

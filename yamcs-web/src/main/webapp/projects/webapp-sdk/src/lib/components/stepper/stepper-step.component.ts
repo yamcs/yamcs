@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, input, model } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  model,
+} from '@angular/core';
 
 @Component({
   selector: 'ya-stepper-step',
@@ -7,7 +12,6 @@ import { ChangeDetectionStrategy, Component, input, model } from '@angular/core'
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class YaStepperStep {
-
   label = input.required<string>();
   visible = input(true);
   expanded = model(false);

@@ -7,14 +7,9 @@ import { MatTooltip } from '@angular/material/tooltip';
   templateUrl: './event-severity.component.html',
   styleUrl: './event-severity.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    MatTooltip,
-    NgClass,
-    NgTemplateOutlet,
-  ],
+  imports: [MatTooltip, NgClass, NgTemplateOutlet],
 })
 export class EventSeverityComponent {
-
   @Input()
   severity: string;
 

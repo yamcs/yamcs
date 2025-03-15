@@ -1,18 +1,20 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { AcknowledgeAlarmOptions, Alarm, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  AcknowledgeAlarmOptions,
+  Alarm,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-acknowledge-alarm-dialog',
   templateUrl: './acknowledge-alarm-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class AcknowledgeAlarmDialogComponent {
-
   formGroup: UntypedFormGroup;
 
   constructor(
@@ -22,7 +24,7 @@ export class AcknowledgeAlarmDialogComponent {
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     this.formGroup = formBuilder.group({
-      'comment': undefined,
+      comment: undefined,
     });
   }
 
@@ -35,8 +37,15 @@ export class AcknowledgeAlarmDialogComponent {
       if (comment) {
         options.comment = comment;
       }
-      const alarmName = alarm.id.namespace + (alarm.id.name ? '/' + alarm.id.name : '');
-      this.yamcs.yamcsClient.acknowledgeAlarm(this.yamcs.instance!, this.yamcs.processor!, alarmName, alarm.seqNum, options);
+      const alarmName =
+        alarm.id.namespace + (alarm.id.name ? '/' + alarm.id.name : '');
+      this.yamcs.yamcsClient.acknowledgeAlarm(
+        this.yamcs.instance!,
+        this.yamcs.processor!,
+        alarmName,
+        alarm.seqNum,
+        options,
+      );
     }
     this.dialogRef.close();
   }

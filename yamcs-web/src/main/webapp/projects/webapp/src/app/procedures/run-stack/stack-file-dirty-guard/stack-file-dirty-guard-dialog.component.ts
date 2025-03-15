@@ -5,15 +5,10 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
 @Component({
   selector: 'app-stack-file-page-dirty-dialog',
   templateUrl: './stack-file-dirty-guard-dialog.component.html',
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class StackFilePageDirtyDialog {
-
-  constructor(
-    private dialogRef: MatDialogRef<StackFilePageDirtyDialog>,
-  ) { }
+  constructor(private dialogRef: MatDialogRef<StackFilePageDirtyDialog>) {}
 
   confirmDiscard() {
     this.dialogRef.close(true);

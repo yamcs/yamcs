@@ -1,10 +1,20 @@
 import { Location } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import {
+  UntypedFormBuilder,
+  UntypedFormControl,
+  UntypedFormGroup,
+  Validators,
+} from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CreateParameterListRequest, MessageService, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  CreateParameterListRequest,
+  MessageService,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
@@ -20,7 +30,6 @@ import { SelectParameterDialogComponent } from '../../../shared/select-parameter
   ],
 })
 export class CreateParameterListComponent {
-
   form: UntypedFormGroup;
 
   patterns$ = new BehaviorSubject<string[]>([]);
@@ -51,12 +60,9 @@ export class CreateParameterListComponent {
         hint: 'Either an exact parameter name, or a glob pattern with *, **, or ? wildcards.',
       },
     });
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.patterns$.next([
-          ...this.patterns$.value,
-          result,
-        ]);
+        this.patterns$.next([...this.patterns$.value, result]);
       }
     });
   }
@@ -100,11 +106,14 @@ export class CreateParameterListComponent {
       description: this.form.value.description,
       patterns: [...this.patterns$.value],
     };
-    this.yamcs.yamcsClient.createParameterList(this.yamcs.instance!, options)
-      .then(() => this.router.navigate(['..'], {
-        relativeTo: this.route,
-        queryParams: { c: this.yamcs.context },
-      }))
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .createParameterList(this.yamcs.instance!, options)
+      .then(() =>
+        this.router.navigate(['..'], {
+          relativeTo: this.route,
+          queryParams: { c: this.yamcs.context },
+        }),
+      )
+      .catch((err) => this.messageService.showError(err));
   }
 }

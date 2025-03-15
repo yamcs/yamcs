@@ -1,5 +1,10 @@
 import { AsyncPipe, PercentPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnChanges,
+} from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
 @Component({
@@ -7,13 +12,9 @@ import { BehaviorSubject } from 'rxjs';
   templateUrl: './progress.component.html',
   styleUrl: './progress.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AsyncPipe,
-    PercentPipe
-  ],
+  imports: [AsyncPipe, PercentPipe],
 })
 export class YaProgress implements OnChanges {
-
   @Input()
   value: number;
 

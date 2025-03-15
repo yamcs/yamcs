@@ -1,7 +1,29 @@
-import { ChangeDetectionStrategy, Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
-import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormControl, ValidationErrors, Validator, ValidatorFn, Validators } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  forwardRef,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
+import {
+  ControlValueAccessor,
+  NG_VALIDATORS,
+  NG_VALUE_ACCESSOR,
+  UntypedFormControl,
+  ValidationErrors,
+  Validator,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { ArgumentType, EnumValue, utils, WebappSdkModule, YaSelectOption } from '@yamcs/webapp-sdk';
+import {
+  ArgumentType,
+  EnumValue,
+  utils,
+  WebappSdkModule,
+  YaSelectOption,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { SelectEnumerationDialogComponent } from '../../select-enumeration-dialog/select-enumeration-dialog.component';
 
@@ -10,21 +32,23 @@ import { SelectEnumerationDialogComponent } from '../../select-enumeration-dialo
   templateUrl: './enumeration-argument.component.html',
   styleUrls: ['../arguments.css', './enumeration-argument.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => EnumerationArgumentComponent),
-    multi: true,
-  }, {
-    provide: NG_VALIDATORS,
-    useExisting: forwardRef(() => EnumerationArgumentComponent),
-    multi: true,
-  }],
-  imports: [
-    WebappSdkModule,
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => EnumerationArgumentComponent),
+      multi: true,
+    },
+    {
+      provide: NG_VALIDATORS,
+      useExisting: forwardRef(() => EnumerationArgumentComponent),
+      multi: true,
+    },
   ],
+  imports: [WebappSdkModule],
 })
-export class EnumerationArgumentComponent implements ControlValueAccessor, OnInit, Validator, OnDestroy {
-
+export class EnumerationArgumentComponent
+  implements ControlValueAccessor, OnInit, Validator, OnDestroy
+{
   @Input()
   name: string;
 
@@ -47,18 +71,17 @@ export class EnumerationArgumentComponent implements ControlValueAccessor, OnIni
   selectOptions$ = new BehaviorSubject<YaSelectOption[]>([]);
 
   private validators: ValidatorFn[] = [];
-  private onChange = (_: string | null) => { };
+  private onChange = (_: string | null) => {};
   private subscriptions: Subscription[] = [];
 
-  constructor(private dialog: MatDialog) {
-  }
+  constructor(private dialog: MatDialog) {}
 
   ngOnInit() {
     this.subscriptions.push(
       this.formControl.valueChanges.subscribe(() => {
         let value = this.formControl.value;
         this.onChange(value);
-      })
+      }),
     );
 
     if (this.index === undefined) {
@@ -82,7 +105,7 @@ export class EnumerationArgumentComponent implements ControlValueAccessor, OnIni
   get label() {
     if (this.index !== undefined) {
       const index = utils.unflattenIndex(this.index, this.dimensions!);
-      return index.map(i => '[' + i + ']').join('');
+      return index.map((i) => '[' + i + ']').join('');
     } else {
       return this.name;
     }
@@ -96,19 +119,21 @@ export class EnumerationArgumentComponent implements ControlValueAccessor, OnIni
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any) {
-  }
+  registerOnTouched(fn: any) {}
 
   openSelectEnumerationDialog() {
-    this.dialog.open(SelectEnumerationDialogComponent, {
-      width: '600px',
-      data: { type: this.type },
-      panelClass: ['no-padding-dialog'],
-    }).afterClosed().subscribe((result: EnumValue) => {
-      if (result) {
-        this.writeValue(result.label);
-      }
-    });
+    this.dialog
+      .open(SelectEnumerationDialogComponent, {
+        width: '600px',
+        data: { type: this.type },
+        panelClass: ['no-padding-dialog'],
+      })
+      .afterClosed()
+      .subscribe((result: EnumValue) => {
+        if (result) {
+          this.writeValue(result.label);
+        }
+      });
   }
 
   validate(control: UntypedFormControl): ValidationErrors | null {
@@ -122,6 +147,6 @@ export class EnumerationArgumentComponent implements ControlValueAccessor, OnIni
   }
 
   ngOnDestroy() {
-    this.subscriptions.forEach(s => s.unsubscribe());
+    this.subscriptions.forEach((s) => s.unsubscribe());
   }
 }

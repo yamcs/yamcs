@@ -18,7 +18,6 @@ export interface DyPlotData {
  * and sorted under all conditions.
  */
 export class DyPlotBuffer {
-
   public dirty = false;
 
   private valueRange: DyValueRange = [null, null];
@@ -47,7 +46,11 @@ export class DyPlotBuffer {
   addRealtimeValue(sample: DySample) {
     if (this.pointer < this.bufferSize) {
       this.realtimeBuffer[this.pointer] = sample;
-      if (this.pointer >= this.bufferWatermark && this.watermarkObserver && !this.alreadyWarned) {
+      if (
+        this.pointer >= this.bufferWatermark &&
+        this.watermarkObserver &&
+        !this.alreadyWarned
+      ) {
         this.watermarkObserver();
         this.alreadyWarned = true;
       }
@@ -66,7 +69,9 @@ export class DyPlotBuffer {
   }
 
   snapshot(): DyPlotData {
-    const realtimeSamples = this.realtimeBuffer.filter(s => s !== undefined) as DySample[];
+    const realtimeSamples = this.realtimeBuffer.filter(
+      (s) => s !== undefined,
+    ) as DySample[];
 
     // Archive sample data contains [null] points for future data (because of empty buckets)
     // Filter these out so that they don't overlap with incoming realtime.
@@ -76,7 +81,7 @@ export class DyPlotBuffer {
     }
 
     const splicedSamples = this.archiveSamples
-      .filter(s => archiveCutOff === null || s[0].getTime() < archiveCutOff)
+      .filter((s) => archiveCutOff === null || s[0].getTime() < archiveCutOff)
       .concat(realtimeSamples)
       .sort((s1, s2) => s1[0].getTime() - s2[0].getTime());
     return {

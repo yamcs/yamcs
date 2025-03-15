@@ -6,12 +6,9 @@ import { MatIcon } from '@angular/material/icon';
   templateUrl: './entry-label.component.html',
   styleUrl: './entry-label.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    MatIcon,
-  ],
+  imports: [MatIcon],
 })
 export class EntryLabel {
-
   icon = input.required<string>();
   text = input.required<string>();
 }

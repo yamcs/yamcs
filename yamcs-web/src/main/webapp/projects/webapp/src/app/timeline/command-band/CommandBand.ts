@@ -3,7 +3,6 @@ import { TimelineBand } from '@yamcs/webapp-sdk';
 import { TimelineChartComponent } from '../timeline-chart/timeline-chart.component';
 
 export class CommandBand extends ItemBand {
-
   constructor(chart: TimelineChartComponent, bandInfo: TimelineBand) {
     super(chart.timeline);
     this.label = bandInfo.name;

@@ -1,7 +1,20 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, Input, OnDestroy, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnDestroy,
+  ViewChild,
+} from '@angular/core';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { ConfigService, TmStatistics, WebappSdkModule, WebsiteConfig, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  ConfigService,
+  TmStatistics,
+  WebappSdkModule,
+  WebsiteConfig,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 
 export interface PacketStats {
@@ -16,12 +29,9 @@ export interface PacketStats {
   selector: 'app-tmstats-table',
   templateUrl: './tm-stats-table.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class TmStatsTableComponent implements AfterViewInit, OnDestroy {
-
   @Input()
   tmstats$: Observable<TmStatistics[]>;
   tmstatsSubscription: Subscription;
@@ -29,7 +39,7 @@ export class TmStatsTableComponent implements AfterViewInit, OnDestroy {
   @ViewChild(MatSort)
   sort: MatSort;
 
-  private statsByName: { [key: string]: PacketStats; } = {};
+  private statsByName: { [key: string]: PacketStats } = {};
   dataSource = new MatTableDataSource<PacketStats>();
   totalPacketRate$ = new BehaviorSubject<number>(0);
   totalDataRate$ = new BehaviorSubject<number>(0);
@@ -45,26 +55,35 @@ export class TmStatsTableComponent implements AfterViewInit, OnDestroy {
     'actions',
   ];
 
-  constructor(readonly yamcs: YamcsService, configService: ConfigService) {
+  constructor(
+    readonly yamcs: YamcsService,
+    configService: ConfigService,
+  ) {
     this.config = configService.getConfig();
   }
 
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
     if (this.tmstats$ && !this.tmstatsSubscription) {
-      this.yamcs.yamcsClient.getPacketNames(this.yamcs.instance!).then(response => {
-        for (const packetName of response.packets || []) {
-          this.statsByName[packetName] = { packetName, packetRate: 0, dataRate: 0 };
-        }
-        this.updateData();
-
-        this.tmstatsSubscription = this.tmstats$.subscribe(tmstats => {
-          for (const entry of (tmstats || [])) {
-            this.statsByName[entry.packetName] = entry;
+      this.yamcs.yamcsClient
+        .getPacketNames(this.yamcs.instance!)
+        .then((response) => {
+          for (const packetName of response.packets || []) {
+            this.statsByName[packetName] = {
+              packetName,
+              packetRate: 0,
+              dataRate: 0,
+            };
           }
           this.updateData();
+
+          this.tmstatsSubscription = this.tmstats$.subscribe((tmstats) => {
+            for (const entry of tmstats || []) {
+              this.statsByName[entry.packetName] = entry;
+            }
+            this.updateData();
+          });
         });
-      });
     }
   }
 

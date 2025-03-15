@@ -1,5 +1,9 @@
 import { Component, Inject } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import {
+  UntypedFormBuilder,
+  UntypedFormGroup,
+  Validators,
+} from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
@@ -7,12 +11,9 @@ import { BehaviorSubject } from 'rxjs';
 @Component({
   selector: 'app-download-dump-dialog',
   templateUrl: './download-dump-dialog.component.html',
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class DownloadDumpDialogComponent {
-
   downloadURL$ = new BehaviorSubject<string | null>(null);
 
   form: UntypedFormGroup;
@@ -28,7 +29,7 @@ export class DownloadDumpDialogComponent {
       stop: [null, Validators.required],
     });
 
-    this.form.valueChanges.subscribe(value => {
+    this.form.valueChanges.subscribe((value) => {
       if (this.form.valid) {
         const url = yamcs.yamcsClient.getPacketsDownloadURL(yamcs.instance!, {
           start: utils.toISOString(value.start),

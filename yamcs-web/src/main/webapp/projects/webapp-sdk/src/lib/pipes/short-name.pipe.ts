@@ -4,7 +4,6 @@ import { Pipe, PipeTransform } from '@angular/core';
   name: 'shortName',
 })
 export class ShortNamePipe implements PipeTransform {
-
   transform(name: string | null | undefined): string | null {
     if (!name) {
       return null;

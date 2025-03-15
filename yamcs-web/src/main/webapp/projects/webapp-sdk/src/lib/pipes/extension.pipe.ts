@@ -8,7 +8,6 @@ import { getExtension } from '../utils';
   name: 'extension',
 })
 export class ExtensionPipe implements PipeTransform {
-
   transform(filename: string | null): string | null {
     return getExtension(filename);
   }

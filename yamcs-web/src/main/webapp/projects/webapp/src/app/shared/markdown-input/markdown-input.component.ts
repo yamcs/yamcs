@@ -1,24 +1,39 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, forwardRef, input, OnDestroy, signal, viewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  forwardRef,
+  input,
+  OnDestroy,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { autocompletion, closeBrackets, closeBracketsKeymap, completionKeymap } from "@codemirror/autocomplete";
-import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
+import {
+  autocompletion,
+  closeBrackets,
+  closeBracketsKeymap,
+  completionKeymap,
+} from '@codemirror/autocomplete';
+import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { markdown } from '@codemirror/lang-markdown';
 import {
   bracketMatching,
   defaultHighlightStyle,
   indentOnInput,
-  syntaxHighlighting
-} from "@codemirror/language";
-import { lintKeymap } from "@codemirror/lint";
-import { highlightSelectionMatches } from "@codemirror/search";
+  syntaxHighlighting,
+} from '@codemirror/language';
+import { lintKeymap } from '@codemirror/lint';
+import { highlightSelectionMatches } from '@codemirror/search';
 import { EditorState, Extension } from '@codemirror/state';
 import {
   crosshairCursor,
   drawSelection,
   dropCursor,
   highlightSpecialChars,
-  keymap
-} from "@codemirror/view";
+  keymap,
+} from '@codemirror/view';
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
 import { EditorView } from 'codemirror';
 import { MarkdownComponent } from '../markdown/markdown.component';
@@ -28,24 +43,25 @@ import { MarkdownComponent } from '../markdown/markdown.component';
   templateUrl: './markdown-input.component.html',
   styleUrl: './markdown-input.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => AppMarkdownInput),
-    multi: true,
-  }],
-  imports: [
-    MarkdownComponent,
-    WebappSdkModule,
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => AppMarkdownInput),
+      multi: true,
+    },
   ],
+  imports: [MarkdownComponent, WebappSdkModule],
 })
-export class AppMarkdownInput implements ControlValueAccessor, AfterViewInit, OnDestroy {
-
+export class AppMarkdownInput
+  implements ControlValueAccessor, AfterViewInit, OnDestroy
+{
   height = input('100px');
 
-  private editorContainerRef = viewChild.required<ElementRef<HTMLDivElement>>('editorContainer');
+  private editorContainerRef =
+    viewChild.required<ElementRef<HTMLDivElement>>('editorContainer');
   private editorView: EditorView | null = null;
 
-  private onChange = (_: string | null) => { };
+  private onChange = (_: string | null) => {};
 
   // Internal value, for when a value is received before CM init
   private initialDocString: string | undefined;
@@ -73,8 +89,7 @@ export class AppMarkdownInput implements ControlValueAccessor, AfterViewInit, On
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any): void {
-  }
+  registerOnTouched(fn: any): void {}
 
   private initializeEditor(targetEl: HTMLDivElement) {
     const extensions: Extension[] = [
@@ -99,7 +114,7 @@ export class AppMarkdownInput implements ControlValueAccessor, AfterViewInit, On
       ]),
       EditorView.lineWrapping,
       markdown(),
-      EditorView.updateListener.of(update => {
+      EditorView.updateListener.of((update) => {
         if (update.docChanged) {
           const newValue = update.state.doc.toString();
           this.text.set(newValue);
@@ -108,19 +123,22 @@ export class AppMarkdownInput implements ControlValueAccessor, AfterViewInit, On
       }),
     ];
 
-    const theme = EditorView.theme({
-      '&': {
-        height: '100%',
-        fontSize: '12px',
+    const theme = EditorView.theme(
+      {
+        '&': {
+          height: '100%',
+          fontSize: '12px',
+        },
+        '.cm-scroller': {
+          overflow: 'auto',
+          fontFamily: "'Roboto Mono', monospace",
+        },
+        '&.cm-focused': {
+          outline: 'none',
+        },
       },
-      '.cm-scroller': {
-        overflow: 'auto',
-        fontFamily: "'Roboto Mono', monospace",
-      },
-      '&.cm-focused': {
-        outline: 'none',
-      },
-    }, { dark: false });
+      { dark: false },
+    );
     extensions.push(theme);
 
     this.editorView = new EditorView({
@@ -131,7 +149,11 @@ export class AppMarkdownInput implements ControlValueAccessor, AfterViewInit, On
   }
 
   gotoMarkdownDocs() {
-    window.open('https://www.markdownguide.org/basic-syntax/', '_blank', 'noreferrer');
+    window.open(
+      'https://www.markdownguide.org/basic-syntax/',
+      '_blank',
+      'noreferrer',
+    );
   }
 
   ngOnDestroy(): void {

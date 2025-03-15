@@ -1,5 +1,10 @@
 import { Component, Inject } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
+import {
+  UntypedFormBuilder,
+  UntypedFormGroup,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { InitiateCop1Request, WebappSdkModule } from '@yamcs/webapp-sdk';
 
@@ -9,10 +14,13 @@ const CombinedValidator: ValidatorFn = (form: UntypedFormGroup) => {
   const clcwCheckTimeout = form.get('clcwCheckTimeout')!.value;
   const vr = form.get('vr')!.value;
 
-  if (type == 'WITH_CLCW_CHECK' && (clcwCheckTimeout === null || '' === clcwCheckTimeout)) {
-    return { combined: "CLCW Check Timeout must be specified" };
+  if (
+    type == 'WITH_CLCW_CHECK' &&
+    (clcwCheckTimeout === null || '' === clcwCheckTimeout)
+  ) {
+    return { combined: 'CLCW Check Timeout must be specified' };
   } else if (type == 'SET_VR' && (vr === null || '' == vr)) {
-    return { combined: "V(R) must be specified" };
+    return { combined: 'V(R) must be specified' };
   }
   return null;
 };
@@ -20,12 +28,9 @@ const CombinedValidator: ValidatorFn = (form: UntypedFormGroup) => {
 @Component({
   selector: 'app-initiate-cop1-dialog',
   templateUrl: './initiate-cop1-dialog.component.html',
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class InitiateCop1DialogComponent {
-
   form: UntypedFormGroup;
 
   constructor(
@@ -33,20 +38,23 @@ export class InitiateCop1DialogComponent {
     formBuilder: UntypedFormBuilder,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
-    this.form = formBuilder.group({
-      type: ['WITH_CLCW_CHECK', Validators.required],
-      clcwCheckTimeout: '3000',
-      vr: null,
-    }, {
-      validators: [CombinedValidator],
-    });
+    this.form = formBuilder.group(
+      {
+        type: ['WITH_CLCW_CHECK', Validators.required],
+        clcwCheckTimeout: '3000',
+        vr: null,
+      },
+      {
+        validators: [CombinedValidator],
+      },
+    );
   }
 
   sendRequest() {
     const value = this.form.value;
 
     const options: InitiateCop1Request = {
-      type: value['type']
+      type: value['type'],
     };
 
     if (options.type === 'WITH_CLCW_CHECK') {

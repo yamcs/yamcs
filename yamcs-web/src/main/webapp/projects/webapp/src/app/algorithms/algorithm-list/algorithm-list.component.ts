@@ -1,10 +1,22 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  OnDestroy,
+  ViewChild,
+} from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
-import { GetAlgorithmsOptions, WebappSdkModule, YaSelectOption, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  GetAlgorithmsOptions,
+  WebappSdkModule,
+  YaSelectOption,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
@@ -21,7 +33,6 @@ import { AlgorithmsDataSource, ListItem } from './algorithms.datasource';
   ],
 })
 export class AlgorithmListComponent implements AfterViewInit, OnDestroy {
-
   filterForm = new UntypedFormGroup({
     filter: new UntypedFormControl(),
     scope: new UntypedFormControl('ANY'),
@@ -87,23 +98,25 @@ export class AlgorithmListComponent implements AfterViewInit, OnDestroy {
       this.filterForm.get('scope')!.setValue(this.scope);
     }
 
-    this.filterForm.get('filter')!.valueChanges.subscribe(filter => {
+    this.filterForm.get('filter')!.valueChanges.subscribe((filter) => {
       this.paginator.pageIndex = 0;
       this.filter = filter;
       this.updateDataSource();
     });
 
-    this.filterForm.get('scope')!.valueChanges.forEach(scope => {
-      this.scope = (scope !== 'ANY') ? scope : null;
+    this.filterForm.get('scope')!.valueChanges.forEach((scope) => {
+      this.scope = scope !== 'ANY' ? scope : null;
       this.updateDataSource();
     });
 
     this.changeSystem(this.route.snapshot.queryParamMap);
-    this.queryParamMapSubscription = this.route.queryParamMap.subscribe(map => {
-      if (map.get('system') !== this.system) {
-        this.changeSystem(map);
-      }
-    });
+    this.queryParamMapSubscription = this.route.queryParamMap.subscribe(
+      (map) => {
+        if (map.get('system') !== this.system) {
+          this.changeSystem(map);
+        }
+      },
+    );
 
     this.paginator.page.subscribe(() => {
       this.updateDataSource();
@@ -203,7 +216,7 @@ export class AlgorithmListComponent implements AfterViewInit, OnDestroy {
       const items = this.dataSource.items$.value;
       if (items.indexOf(item) !== -1) {
         this.router.navigate(['/algorithms' + item.algorithm?.qualifiedName], {
-          queryParams: { c: this.yamcs.context }
+          queryParams: { c: this.yamcs.context },
         });
       }
     }

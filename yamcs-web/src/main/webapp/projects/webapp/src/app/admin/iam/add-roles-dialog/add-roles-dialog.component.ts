@@ -1,5 +1,11 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { AfterViewInit, ChangeDetectionStrategy, Component, Inject, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  Inject,
+  ViewChild,
+} from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
@@ -11,22 +17,15 @@ export interface RoleItem {
   role?: RoleInfo;
 }
 
-
 @Component({
   selector: 'app-add-roles-dialog',
   templateUrl: './add-roles-dialog.component.html',
   styleUrl: './add-roles-dialog.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class AddRolesDialogComponent implements AfterViewInit {
-
-  displayedColumns = [
-    'select',
-    'name',
-  ];
+  displayedColumns = ['select', 'name'];
 
   filterControl = new UntypedFormControl();
 
@@ -39,17 +38,21 @@ export class AddRolesDialogComponent implements AfterViewInit {
   constructor(
     private dialogRef: MatDialogRef<AddRolesDialogComponent>,
     yamcs: YamcsService,
-    @Inject(MAT_DIALOG_DATA) readonly data: any
+    @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     const existingItems: RoleItem[] = data.items;
-    const existingRoles = existingItems.filter(i => i.role).map(i => i.role!.name);
-    yamcs.yamcsClient.getRoles().then(roles => {
-      const items = (roles || []).filter(role => existingRoles.indexOf(role.name) === -1).map(role => {
-        return {
-          label: role.name,
-          role,
-        };
-      });
+    const existingRoles = existingItems
+      .filter((i) => i.role)
+      .map((i) => i.role!.name);
+    yamcs.yamcsClient.getRoles().then((roles) => {
+      const items = (roles || [])
+        .filter((role) => existingRoles.indexOf(role.name) === -1)
+        .map((role) => {
+          return {
+            label: role.name,
+            role,
+          };
+        });
       this.dataSource.data = items;
     });
   }

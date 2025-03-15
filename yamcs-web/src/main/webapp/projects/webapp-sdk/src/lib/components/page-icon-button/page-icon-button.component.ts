@@ -1,4 +1,10 @@
-import { booleanAttribute, ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import {
+  booleanAttribute,
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  output,
+} from '@angular/core';
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 
@@ -6,13 +12,9 @@ import { MatIcon } from '@angular/material/icon';
   selector: 'ya-page-icon-button',
   templateUrl: './page-icon-button.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    MatIconButton,
-    MatIcon,
-  ],
+  imports: [MatIconButton, MatIcon],
 })
 export class YaPageIconButton {
-
   icon = input.required<string>();
   iconRotate90 = input(false, { transform: booleanAttribute });
   disabled = input(false, { transform: booleanAttribute });

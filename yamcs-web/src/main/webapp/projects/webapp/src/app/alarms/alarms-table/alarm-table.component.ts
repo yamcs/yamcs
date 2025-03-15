@@ -1,6 +1,11 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { Alarm, BaseComponent, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  Alarm,
+  BaseComponent,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { AgoComponent } from '../../shared/ago/ago.component';
 import { AlarmLevelComponent } from '../../shared/alarm-level/alarm-level.component';
 import { AlarmStateIconComponent } from '../alarm-state-icon/alarm-state-icon.component';
@@ -18,7 +23,6 @@ import { AlarmsDataSource } from '../alarms.datasource';
   ],
 })
 export class AlarmsTableComponent extends BaseComponent implements OnInit {
-
   displayedColumns = [
     'state',
     'severity',
@@ -37,7 +41,13 @@ export class AlarmsTableComponent extends BaseComponent implements OnInit {
   selection: SelectionModel<Alarm>;
 
   @Input()
-  view: 'standard' | 'unacknowledged' | 'acknowledged' | 'shelved' | 'all' | 'pending' = 'standard';
+  view:
+    | 'standard'
+    | 'unacknowledged'
+    | 'acknowledged'
+    | 'shelved'
+    | 'all'
+    | 'pending' = 'standard';
 
   @Input()
   mayControl = false;
@@ -62,7 +72,11 @@ export class AlarmsTableComponent extends BaseComponent implements OnInit {
 
   ngOnInit(): void {
     if (this.view === 'pending') {
-      this.displayedColumns.splice(this.displayedColumns.length - 1, 0, 'violations');
+      this.displayedColumns.splice(
+        this.displayedColumns.length - 1,
+        0,
+        'violations',
+      );
     }
   }
 
