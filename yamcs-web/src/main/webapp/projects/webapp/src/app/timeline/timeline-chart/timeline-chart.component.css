@@ -15,5 +15,6 @@
   margin-right: 16px;
   background: #fff;
   opacity: 0.75;
-  font-size: small;
+  font-size: 12px;
+  line-height: 12px;
 }

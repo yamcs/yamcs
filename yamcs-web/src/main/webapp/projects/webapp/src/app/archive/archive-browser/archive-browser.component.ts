@@ -13,6 +13,7 @@ import { debounceTime } from 'rxjs/operators';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { StartReplayDialogComponent } from '../../shared/start-replay-dialog/start-replay-dialog.component';
+import { HoveredDateAnnotation } from '../../timeline/timeline-chart/HoveredDateAnnotation';
 import { DownloadDumpDialogComponent } from '../download-dump-dialog/download-dump-dialog.component';
 import { JumpToDialogComponent } from '../jump-to-dialog/jump-to-dialog.component';
 import { ArchiveRecordGroup } from '../model/ArchiveRecordGroup';
@@ -247,6 +248,7 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
     );
 
     new MouseTracker(this.timeline);
+    new HoveredDateAnnotation(this.timeline, this.formatter);
     const axis = new TimeRuler(this.timeline);
     axis.contentHeight = 20;
     axis.label = 'UTC';

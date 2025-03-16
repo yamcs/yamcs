@@ -43,12 +43,10 @@
   bottom: 35px;
   right: 0;
   padding: 0 16px;
-  opacity: 0.75;
-  font-size: small;
-}
-
-.info span {
   background: white;
+  opacity: 0.75;
+  font-size: 12px;
+  line-height: 12px;
 }
 
 label.legend {

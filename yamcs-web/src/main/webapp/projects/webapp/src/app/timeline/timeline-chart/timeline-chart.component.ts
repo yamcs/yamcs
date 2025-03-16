@@ -20,6 +20,7 @@ import { JumpToDialogComponent } from '../jump-to-dialog/jump-to-dialog.componen
 import { ParameterPlot } from '../parameter-plot/ParameterPlot';
 import { ParameterStateBand } from '../parameter-states/ParameterStateBand';
 import { TimeRuler } from '../time-ruler/TimeRuler';
+import { HoveredDateAnnotation } from './HoveredDateAnnotation';
 
 interface DateRange {
   start: Date;
@@ -139,6 +140,7 @@ export class TimelineChartComponent implements AfterViewInit, OnDestroy {
     );
 
     new MouseTracker(this.timeline);
+    new HoveredDateAnnotation(this.timeline, this.formatter);
 
     this.refreshData();
   }
