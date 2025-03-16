@@ -19,7 +19,7 @@
       <td mat-cell *matCellDef="let item">
         @if (item.pval?.engValue; as value) {
           <ya-expirable [pval]="item.pval">
-            {{ item.pval.engValue | value }}
+            <ya-value [value]="item.pval.engValue" [alwaysExpand]="true" />
             @if (item.pval.rangeCondition === "LOW") {
               <span>&#8595;</span>
             }
