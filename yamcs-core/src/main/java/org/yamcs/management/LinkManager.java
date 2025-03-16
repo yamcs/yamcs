@@ -183,8 +183,8 @@ public class LinkManager {
                     InvalidPacketAction ipa = getInvalidPacketAction(link.getName(), linkArgs);
                     tmLink.setTmSink(tmPacket -> processTmPacket(tmLink, tmPacket, streamf, ipa));
                 } else {
-                    throw new ConfigurationException("No stream configured for parameter link " + link.getName()
-                            + ". Please set a stream using the 'ppStream; option");
+                    throw new ConfigurationException("No stream configured for the tm link " + link.getName()
+                            + ". Please set a stream using the 'tmStream; option");
                 }
             }
         }
