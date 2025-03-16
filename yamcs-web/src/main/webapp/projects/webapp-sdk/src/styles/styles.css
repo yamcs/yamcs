@@ -4,7 +4,6 @@ body {
   padding: 0;
   height: 100%;
   position: relative;
-  letter-spacing: .0178571429em;
 }
 
 /* Disable dashed border in menus etc. Only FF does this */
