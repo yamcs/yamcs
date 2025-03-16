@@ -201,7 +201,13 @@
                       @for (namedPval of entry.pvals; track namedPval) {
                         <tr>
                           <td style="padding-right: 20px">{{ namedPval.parameter }}</td>
-                          <td>{{ (namedPval.pval?.engValue | value) ?? "-" }}</td>
+                          <td>
+                            @if (namedPval.pval?.engValue; as value) {
+                              <ya-value [value]="value" />
+                            } @else {
+                              -
+                            }
+                          </td>
                         </tr>
                       }
                     </table>
