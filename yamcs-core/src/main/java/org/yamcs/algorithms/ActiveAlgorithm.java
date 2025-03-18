@@ -7,7 +7,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.events.EventProducer;
-import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.ProcessingContext;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.RawEngValue;
 import org.yamcs.protobuf.AlgorithmStatus;
@@ -103,18 +103,18 @@ public class ActiveAlgorithm {
         return context;
     }
 
-    public boolean update(ProcessingData data) {
-        return executor.update(data);
+    public boolean update(ProcessingContext ctx) {
+        return executor.update(ctx);
     }
 
-    public List<ParameterValue> runAlgorithm(long acqTime, long genTime, ProcessingData data) {
+    public List<ParameterValue> runAlgorithm(long acqTime, long genTime, ProcessingContext ctx) {
         runCount++;
         List<ParameterValue> output;
         lastRun = System.currentTimeMillis();
 
         long t0 = System.nanoTime();
         try {
-            AlgorithmExecutionResult result = executor.execute(acqTime, genTime, data);
+            AlgorithmExecutionResult result = executor.execute(acqTime, genTime, ctx);
             propagateResultToListeners(result);
             output = result.getOutputValues();
         } catch (Exception e) {

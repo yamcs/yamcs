@@ -95,7 +95,7 @@ public class RefXtceCommandingTest {
         Map<String, Object> args = new HashMap<>();
         args.put("t1", tstring);
         args.put("t2", tstring);
-        CommandBuildResult cbr = metaCommandProcessor.buildCommand(mc, args);
+        CommandBuildResult cbr = buildCommand(mc, args);
         Value v1 = cbr.args.get(mc.getArgument("t1")).getEngValue();
         assertEquals(tlong, v1.getTimestampValue());
 
@@ -119,7 +119,7 @@ public class RefXtceCommandingTest {
         Map<String, Object> args = new HashMap<>();
         args.put("arg1", "{m1: 0}");
         assertThrows(ErrorInCommand.class, () -> {
-            metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+            buildCommand(mc, args).getCmdPacket();
         });
     }
 
@@ -128,7 +128,7 @@ public class RefXtceCommandingTest {
         MetaCommand mc = mdb.getMetaCommand("/RefXtce/command2");
         Map<String, Object> args = new HashMap<>();
         args.put("arg1", "{m1: 42, m2: 23.4}");
-        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        byte[] b = buildCommand(mc, args).getCmdPacket();
         assertEquals(12, b.length);
         ByteBuffer bb = ByteBuffer.wrap(b);
         assertEquals(42, bb.getInt());
@@ -140,7 +140,7 @@ public class RefXtceCommandingTest {
         MetaCommand mc = mdb.getMetaCommand("/RefXtce/command4");
         Map<String, Object> args = new HashMap<>();
         args.put("arg1", "{m1: 42}");
-        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        byte[] b = buildCommand(mc, args).getCmdPacket();
         assertEquals(12, b.length);
         ByteBuffer bb = ByteBuffer.wrap(b);
         assertEquals(42, bb.getInt());
@@ -151,7 +151,7 @@ public class RefXtceCommandingTest {
     public void testAggregateCmdArgInitialValue2() throws Exception {
         MetaCommand mc = mdb.getMetaCommand("/RefXtce/command4");
         Map<String, Object> args = new HashMap<>();
-        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        byte[] b = buildCommand(mc, args).getCmdPacket();
         assertEquals(12, b.length);
         ByteBuffer bb = ByteBuffer.wrap(b);
         assertEquals(7, bb.getInt());
@@ -164,7 +164,7 @@ public class RefXtceCommandingTest {
         Map<String, Object> args = new HashMap<>();
         args.put("arg1", "{m1: 42, m2: 123.4}");
         assertThrows(ErrorInCommand.class, () -> {
-            metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+            buildCommand(mc, args).getCmdPacket();
         });
     }
 
@@ -173,7 +173,7 @@ public class RefXtceCommandingTest {
         MetaCommand mc = mdb.getMetaCommand("/RefXtce/command3");
         Map<String, Object> args = new HashMap<>();
         args.put("arg1", "010203AB");
-        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        byte[] b = buildCommand(mc, args).getCmdPacket();
         assertEquals(6, b.length);
         assertEquals(4, ByteBuffer.wrap(b).getShort());
         assertEquals("010203AB", StringConverter.arrayToHexString(b, 2, 4));
@@ -186,7 +186,7 @@ public class RefXtceCommandingTest {
         // max allowed length for arg1 is 10, the value below has 11 bytes, it will throw an exception
         args.put("arg1", "0102030405060708090A0B");
         assertThrows(ErrorInCommand.class, () -> {
-            metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+            buildCommand(mc, args).getCmdPacket();
         });
     }
 
@@ -197,7 +197,7 @@ public class RefXtceCommandingTest {
         // min allowed length for arg1 is 2, the value below has 1 byte, it will throw an exception
         args.put("arg1", "01");
         assertThrows(ErrorInCommand.class, () -> {
-            metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+            buildCommand(mc, args).getCmdPacket();
         });
     }
 
@@ -208,7 +208,7 @@ public class RefXtceCommandingTest {
 
         args.put("arg1", "3.14");
         args.put("arg2", "150");
-        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        byte[] b = buildCommand(mc, args).getCmdPacket();
         assertEquals(4, b.length);
         ByteBuffer bb = ByteBuffer.wrap(b);
         assertEquals(31, bb.getShort());
@@ -415,6 +415,11 @@ public class RefXtceCommandingTest {
 
         }
 
+    }
+
+    private CommandBuildResult buildCommand(MetaCommand mc, Map<String, Object> argAssignmentList)
+            throws ErrorInCommand {
+        return metaCommandProcessor.buildCommand(mc, argAssignmentList, 0);
     }
 
     static class MyCommandReleaser extends AbstractProcessorService implements CommandReleaser {

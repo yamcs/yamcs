@@ -7,16 +7,14 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.yamcs.AbstractProcessorService;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
 import org.yamcs.YConfiguration;
-import org.yamcs.logging.Log;
 import org.yamcs.mdb.Mdb;
 
-import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.ProcessingContext;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.tctm.StreamParameterSender;
 import org.yamcs.utils.TimeEncoding;
@@ -44,14 +42,6 @@ public class LocalParameterManager extends AbstractProcessorService
     Mdb mdb;
     LastValueCache lvc;
     StreamParameterSender streamParameterSender;
-
-    // called from unit test
-    void init(String yamcsInstance, Mdb mdb) {
-        this.yamcsInstance = yamcsInstance;
-        this.mdb = mdb;
-        log = new Log(getClass(), yamcsInstance);
-        executor = Executors.newFixedThreadPool(1);
-    }
 
     @Override
     public void init(Processor proc, YConfiguration config, Object spec) {
@@ -104,9 +94,9 @@ public class LocalParameterManager extends AbstractProcessorService
             }
         }
         if (pvlist.size() > 0) {
-            ProcessingData pdata = ProcessingData.createForTmProcessing(lvc);
-            pdata.getTmParams().addAll(pvlist);
-            parameterListeners.forEach(l -> l.process(pdata));
+            ProcessingContext pctx = ProcessingContext.createForTmProcessing(lvc, processor.getCurrentTime());
+            pctx.getTmParams().addAll(pvlist);
+            parameterListeners.forEach(l -> l.process(pctx));
 
             if (streamParameterSender != null) {
                 streamParameterSender.sendParameters(pvlist);
@@ -134,7 +124,6 @@ public class LocalParameterManager extends AbstractProcessorService
             }
         });
     }
-
 
     @Override
     public void startProviding(final Parameter paramDef) {

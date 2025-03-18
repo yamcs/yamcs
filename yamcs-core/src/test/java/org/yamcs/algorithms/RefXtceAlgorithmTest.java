@@ -16,7 +16,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.mdb.ContainerProcessingResult;
 import org.yamcs.mdb.Mdb;
-import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.ProcessingContext;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.mdb.XtceTmExtractor;
 import org.yamcs.parameter.AggregateValue;
@@ -203,7 +203,7 @@ public class RefXtceAlgorithmTest {
         }
 
         @Override
-        public AlgorithmExecutionResult execute(long acqTime, long genTime, ProcessingData data) {
+        public AlgorithmExecutionResult execute(long acqTime, long genTime, ProcessingContext ctx) {
             AggregateValue v = (AggregateValue) inputValues.get(0).getEngValue();
             float m1 = v.getMemberValue(0).getFloatValue();
             int m2 = v.getMemberValue(1).getUint32Value();

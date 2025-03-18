@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,15 +13,19 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.yamcs.Processor;
 import org.yamcs.YConfiguration;
 import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
-import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.ProcessingContext;
 import org.yamcs.protobuf.Yamcs;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.TimeEncoding;
@@ -33,6 +38,13 @@ public class LocalParameterManagerTest {
     MyParamProcessor paraProc;
     LocalParameterManager localParamMgr;
     Parameter p1, p2, p4, p7, p9;
+    @Mock
+    private Processor mockProcessor;
+
+    @Mock
+    ParameterProcessorManager ppm;
+
+    ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
 
     @BeforeAll
     static public void setupTime() {
@@ -43,9 +55,15 @@ public class LocalParameterManagerTest {
 
     @BeforeEach
     public void beforeTest() throws Exception {
+        MockitoAnnotations.openMocks(this);
+
         localParamMgr = new LocalParameterManager();
         mdb = MdbFactory.createInstanceByConfig("refmdb");
-        localParamMgr.init("test", mdb);
+        when(mockProcessor.getMdb()).thenReturn(mdb);
+        when(mockProcessor.getParameterProcessorManager()).thenReturn(ppm);
+        when(mockProcessor.getTimer()).thenReturn(timer);
+
+        localParamMgr.init(mockProcessor, YConfiguration.emptyConfig(), null);
         paraProc = new MyParamProcessor();
         localParamMgr.setParameterProcessor(paraProc);
 
@@ -181,7 +199,7 @@ public class LocalParameterManagerTest {
         BlockingQueue<List<ParameterValue>> received = new LinkedBlockingQueue<>();
 
         @Override
-        public void process(ProcessingData data) {
+        public void process(ProcessingContext data) {
             try {
                 received.put(new ArrayList<>(data.getTmParams()));
             } catch (InterruptedException e) {

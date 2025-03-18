@@ -8,7 +8,7 @@ import org.yamcs.algorithms.AlgorithmExecListener;
 import org.yamcs.algorithms.AlgorithmExecutionContext;
 import org.yamcs.algorithms.AlgorithmManager;
 import org.yamcs.mdb.Mdb;
-import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.ProcessingContext;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.RawEngValue;
 import org.yamcs.parameter.Value;
@@ -50,10 +50,10 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
             algo.addExecListener(this);
         }
 
-        ProcessingData data = ProcessingData.createInitial(processor.getLastValueCache(),
-                activeCommand.getArguments(), activeCommand.getCmdParamCache());
+        ProcessingContext ctx = ProcessingContext.createInitial(processor.getLastValueCache(),
+                activeCommand.getArguments(), activeCommand.getCmdParamCache(), processor.getCurrentTime());
         // send initial values to algorithm
-        algCtx.process(processor.getCurrentTime(), data);
+        algCtx.process(processor.getCurrentTime(), ctx);
     }
 
     @Override
@@ -97,7 +97,7 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
         }
     }
 
-    public void processCmdData(ProcessingData data) {
-        algCtx.process(processor.getCurrentTime(), data);
+    public void processCmdData(ProcessingContext ctx) {
+        algCtx.process(processor.getCurrentTime(), ctx);
     }
 }

@@ -19,7 +19,7 @@ import org.yamcs.Processor;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.events.EventProducerFactory;
-import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.ProcessingContext;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ParameterConsumer;
@@ -136,7 +136,7 @@ public class AlgorithmManagerJavaTest {
         }
 
         @Override
-        public AlgorithmExecutionResult execute(long acqTime, long genTime, ProcessingData data) {
+        public AlgorithmExecutionResult execute(long acqTime, long genTime, ProcessingContext ctx) {
             Parameter p = algorithmDef.getOutputSet().get(0).getParameter();
             ParameterValue pv = new ParameterValue(p);
 
@@ -160,7 +160,7 @@ public class AlgorithmManagerJavaTest {
         }
 
         @Override
-        public AlgorithmExecutionResult execute(long acqTime, long genTime, ProcessingData data) {
+        public AlgorithmExecutionResult execute(long acqTime, long genTime, ProcessingContext ctx) {
             Parameter p = algorithmDef.getOutputSet().get(0).getParameter();
             ParameterValue pv = new ParameterValue(p);
 
@@ -188,7 +188,7 @@ public class AlgorithmManagerJavaTest {
         }
 
         @Override
-        public AlgorithmExecutionResult execute(long acqTime, long genTime, ProcessingData data) {
+        public AlgorithmExecutionResult execute(long acqTime, long genTime, ProcessingContext ctx) {
             Parameter p = algorithmDef.getOutputSet().get(0).getParameter();
             ParameterValue pv = new ParameterValue(p);
 
@@ -218,7 +218,7 @@ public class AlgorithmManagerJavaTest {
         }
 
         @Override
-        public AlgorithmExecutionResult execute(long acqTime, long genTime, ProcessingData data) {
+        public AlgorithmExecutionResult execute(long acqTime, long genTime, ProcessingContext ctx) {
             ParameterValue pv = new ParameterValue(out);
             AggregateValue ev = new AggregateValue(aggrMbr);
             ev.setMemberValue("member1", ValueUtility.getUint32Value(m1));

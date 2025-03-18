@@ -9,7 +9,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.yamcs.events.EventProducer;
 import org.yamcs.logging.Log;
 import org.yamcs.mdb.Mdb;
-import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.ProcessingContext;
 import org.yamcs.mdb.ProcessorData;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
@@ -22,7 +22,7 @@ import org.yamcs.xtce.Algorithm.Scope;
  * <p>
  * There is normally a global context in a processor and a few contexts related to the command verifiers.
  * <p>
- * The {@link #process(long, ProcessingData)} method will trigger calling all the active algorithms from this context in
+ * The {@link #process(long, ProcessingContext)} method will trigger calling all the active algorithms from this context in
  * order.
  *
  */
@@ -54,12 +54,12 @@ public class AlgorithmExecutionContext {
     /**
      * Update the input data and run the affected algorithms
      * <p>
-     * Add the result of the algorithms to the processing data
+     * Add the result of the algorithms to the processing context
      * 
      */
-    public void process(long acqTime, ProcessingData data) {
-        ParameterValueList tmParams = data.getTmParams();
-        ParameterValueList cmdParams = data.getCmdParams();
+    public void process(long acqTime, ProcessingContext pctx) {
+        ParameterValueList tmParams = pctx.getTmParams();
+        ParameterValueList cmdParams = pctx.getCmdParams();
         long genTime = acqTime;
         if (tmParams != null && !tmParams.isEmpty()) {
             genTime = tmParams.getFirst().getGenerationTime();
@@ -67,10 +67,10 @@ public class AlgorithmExecutionContext {
             genTime = cmdParams.getFirst().getGenerationTime();
         }
         for (ActiveAlgorithm activeAlgo : executionOrder) {
-            boolean shouldRun = activeAlgo.update(data);
+            boolean shouldRun = activeAlgo.update(pctx);
             if (shouldRun) {
                 log.trace("Running algorithm {}", activeAlgo.getAlgorithm().getName());
-                List<ParameterValue> r = runAlgorithm(activeAlgo, acqTime, genTime, data);
+                List<ParameterValue> r = runAlgorithm(activeAlgo, acqTime, genTime, pctx);
                 if (r == null || r.isEmpty()) {
                     continue;
                 }
@@ -91,8 +91,8 @@ public class AlgorithmExecutionContext {
         }
     }
 
-    List<ParameterValue> runAlgorithm(ActiveAlgorithm activeAlgo, long acqTime, long genTime, ProcessingData data) {
-        List<ParameterValue> params = activeAlgo.runAlgorithm(acqTime, genTime, data);
+    List<ParameterValue> runAlgorithm(ActiveAlgorithm activeAlgo, long acqTime, long genTime, ProcessingContext pctx) {
+        List<ParameterValue> params = activeAlgo.runAlgorithm(acqTime, genTime, pctx);
         if (activeAlgo.getErrorCount() >= maxErrCount) {
             Algorithm algo = activeAlgo.getAlgorithm();
             log.warn("Algorithm {} has faulted {} times, deactivating", algo.getQualifiedName(),
@@ -125,7 +125,7 @@ public class AlgorithmExecutionContext {
     /**
      * remove the active algorithm with the given identifier.
      * <p>
-     * The algorithm will not be called in subsequent calls to {@link #process(long, ProcessingData)}
+     * The algorithm will not be called in subsequent calls to {@link #process(long, ProcessingContext)}
      * 
      * @param algoFqn
      * @return the active algorithm removed or null if there was no active algorithm

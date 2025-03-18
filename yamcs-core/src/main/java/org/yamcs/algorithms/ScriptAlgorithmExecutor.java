@@ -23,7 +23,7 @@ import org.yamcs.events.EventProducer;
 import org.yamcs.mdb.DataEncodingDecoder;
 import org.yamcs.mdb.ParameterTypeProcessor;
 import org.yamcs.mdb.ParameterTypeUtils;
-import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.ProcessingContext;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.RawEngValue;
 import org.yamcs.parameter.Value;
@@ -127,7 +127,7 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
      * @see org.yamcs.algorithms.AlgorithmExecutor#runAlgorithm(long, long)
      */
     @Override
-    public synchronized AlgorithmExecutionResult execute(long acqTime, long genTime, ProcessingData data) {
+    public synchronized AlgorithmExecutionResult execute(long acqTime, long genTime, ProcessingContext ctx) {
         if (log.isTraceEnabled()) {
             logTraceInput();
         }

@@ -22,7 +22,9 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs;
+import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.Calibrator;
 import org.yamcs.xtce.ContextCalibrator;
 import org.yamcs.xtce.DataEncoding;
@@ -30,18 +32,13 @@ import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.EnumerationAlarm;
 import org.yamcs.xtce.EnumerationContextAlarm;
-import org.yamcs.xtce.JavaExpressionCalibrator;
 import org.yamcs.xtce.MatchCriteria;
-import org.yamcs.xtce.MathOperationCalibrator;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.NumericAlarm;
 import org.yamcs.xtce.NumericContextAlarm;
-import org.yamcs.xtce.NumericDataEncoding;
 import org.yamcs.xtce.NumericParameterType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
-import org.yamcs.xtce.PolynomialCalibrator;
-import org.yamcs.xtce.SplineCalibrator;
 
 /**
  * Holds information related and required for XTCE processing. It is separated from Processor because it has to be
@@ -57,6 +54,12 @@ public class ProcessorData {
      */
     final ParameterTypeProcessor parameterTypeProcessor;
 
+    /**
+     * Map containing the current known calibrators. These are reused when processing different packets or commands.
+     * <p>
+     * Because the spreadsheet format allows sharing calibrators between different types, and the calibrator knows as
+     * part of its definition the target type, we may need to create different instances for the different types.
+     */
     private Map<Calibrator, CalibratorProc> calibrators = new HashMap<>();
     private Map<DataEncoding, DataDecoder> decoders = new HashMap<>();
     private Map<DataEncoding, DataEncoder> encoders = new HashMap<>();
@@ -108,7 +111,7 @@ public class ProcessorData {
     /**
      * @param mdb
      * @param config
-     *            - generate events in case of errors when processing data
+     *            - generate events in case of errors when processing context
      */
     public ProcessorData(String instance, String procName, Mdb mdb, ProcessorConfig config,
             Map<Parameter, ParameterValue> persistedParams) {
@@ -218,53 +221,57 @@ public class ProcessorData {
      *            Could be null if the calibration is not running as part of packet processing.
      * @return a calibrator processor or null
      */
-    public CalibratorProc getCalibrator(ProcessingData pdata, DataEncoding de) {
-        if (de instanceof NumericDataEncoding) {
-            NumericDataEncoding nde = (NumericDataEncoding) de;
-            Calibrator c = nde.getDefaultCalibrator();
+    public CalibratorProc getCalibrator(ProcessingContext pdata, BaseDataType dataType) {
+        DataEncoding de = dataType.getEncoding();
+        Calibrator c = findMatchingCalibrator(pdata, de);
 
-            List<ContextCalibrator> clist = nde.getContextCalibratorList();
-            if (clist != null) {
-                for (ContextCalibrator cc : clist) {
-                    MatchCriteriaEvaluator evaluator = getEvaluator(cc.getContextMatch());
-                    if (evaluator.evaluate(pdata) == MatchResult.OK) {
-                        c = cc.getCalibrator();
-                        break;
-                    }
-                }
-            }
-            try {
-                return getCalibrator(c);
-            } catch (Exception e) {
-                eventProducer.sendWarning("Could not get calibrator processor for " + c + ": " + e.toString());
-                return null;
-            }
-        } else {
-            return null;
+        try {
+            return getCalibratorProc(c, dataType.getValueType());
+        } catch (Exception e) {
+            String msg = "Could not get calibrator processor for " + c + ": " + e.toString();
+            eventProducer.sendWarning(msg);
+            throw new XtceProcessingException(msg);
+        }
+
+    }
+
+    public CalibratorProc getDecalibrator(BaseDataType dataType) {
+        DataEncoding de = dataType.getEncoding();
+        Calibrator c = findMatchingCalibrator(null, de);
+
+        try {
+            return getCalibratorProc(c, DataEncodingUtils.rawValueType(de));
+        } catch (Exception e) {
+            String msg = "Could not get calibrator processor for " + c + ": " + e.toString();
+            eventProducer.sendWarning(msg);
+            throw new XtceProcessingException(msg);
         }
     }
 
-    public CalibratorProc getDecalibrator(DataEncoding de) {
-        return getCalibrator(null, de);
+    private Calibrator findMatchingCalibrator(ProcessingContext pdata, DataEncoding de) {
+        Calibrator c = de.getDefaultCalibrator();
+
+        List<ContextCalibrator> clist = de.getContextCalibratorList();
+        if (clist != null) {
+            for (ContextCalibrator cc : clist) {
+                MatchCriteriaEvaluator evaluator = getEvaluator(cc.getContextMatch());
+                if (evaluator.evaluate(pdata) == MatchResult.OK) {
+                    c = cc.getCalibrator();
+                    break;
+                }
+            }
+        }
+        return c;
     }
 
-    private CalibratorProc getCalibrator(Calibrator c) {
+    private CalibratorProc getCalibratorProc(Calibrator c, Type targetType) {
         if (c == null) {
             return null;
         }
+
         CalibratorProc calibrator = calibrators.get(c);
         if (calibrator == null) {
-            if (c instanceof PolynomialCalibrator) {
-                calibrator = new PolynomialCalibratorProc((PolynomialCalibrator) c);
-            } else if (c instanceof SplineCalibrator) {
-                calibrator = new SplineCalibratorProc((SplineCalibrator) c);
-            } else if (c instanceof JavaExpressionCalibrator) {
-                calibrator = JavaExpressionCalibratorFactory.compile((JavaExpressionCalibrator) c);
-            } else if (c instanceof MathOperationCalibrator) {
-                calibrator = MathOperationCalibratorFactory.compile((MathOperationCalibrator) c);
-            } else {
-                throw new IllegalStateException("No calibrator processor for " + c);
-            }
+            calibrator = CalibratorFactory.get(c, targetType, this);
             calibrators.put(c, calibrator);
         }
         return calibrator;
@@ -358,14 +365,14 @@ public class ProcessorData {
     public void setDefaultCalibrator(Parameter p, Calibrator defaultCalibrator) {
         modifyNumericTypeOverride(p, b -> {
             DataEncoding.Builder<?> enc = b.getEncoding();
-            ((NumericDataEncoding.Builder<?>) enc).setDefaultCalibrator(defaultCalibrator);
+            enc.setDefaultCalibrator(defaultCalibrator);
         });
     }
 
     public void setContextCalibratorList(Parameter p, List<ContextCalibrator> contextCalibrator) {
         modifyNumericTypeOverride(p, b -> {
             DataEncoding.Builder<?> enc = b.getEncoding();
-            ((NumericDataEncoding.Builder<?>) enc).setContextCalibratorList(contextCalibrator);
+            enc.setContextCalibratorList(contextCalibrator);
         });
     }
 
@@ -462,5 +469,4 @@ public class ProcessorData {
     private void notifyTypeUpdate(Parameter parameter) {
         typeListeners.forEach(l -> l.parameterTypeUpdated(parameter, getParameterType(parameter)));
     }
-
 }

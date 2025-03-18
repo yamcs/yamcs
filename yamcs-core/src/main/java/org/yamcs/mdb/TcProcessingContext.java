@@ -16,14 +16,13 @@ import org.yamcs.xtce.Parameter;
  * Keeps track of where we are when filling in the bits and bytes of a command
  * 
  */
-public class TcProcessingContext extends ProcessingData {
+public class TcProcessingContext extends ProcessingContext {
     final ProcessorData pdata;
     final BitBuffer bitbuf;
 
     // context parameters and their values
     final private Map<Parameter, Value> paramValues;
 
-    public long generationTime;
     final MetaCommandContainerProcessor mccProcessor;
     final DataEncodingEncoder deEncoder;
     final ArgumentTypeProcessor argumentTypeProcessor;
@@ -32,10 +31,10 @@ public class TcProcessingContext extends ProcessingData {
     final MetaCommand metaCmd;
 
     public TcProcessingContext(MetaCommand metaCmd, ProcessorData pdata, Map<Parameter, Value> paramValues,
-            BitBuffer bitbuf, int bitPosition) {
+            BitBuffer bitbuf, int bitPosition, long generationTime) {
         super(pdata.getLastValueCache(), null,
                 new LinkedHashMap<Argument, ArgumentValue>() /* preserve insertion order */,
-                new LastValueCache(), null);
+                new LastValueCache(), null, generationTime);
         this.metaCmd = metaCmd;
         this.bitbuf = bitbuf;
         this.pdata = pdata;

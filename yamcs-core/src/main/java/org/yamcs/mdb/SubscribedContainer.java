@@ -64,8 +64,8 @@ public class SubscribedContainer {
                     : MatchCriteriaEvaluatorFactory.getEvaluator(matchCriteria);
         }
 
-        public MatchResult matches(ProcessingData data) {
-            return criteriaEvaluator.evaluate(data);
+        public MatchResult matches(ProcessingContext ctx) {
+            return criteriaEvaluator.evaluate(ctx);
         }
     }
 }

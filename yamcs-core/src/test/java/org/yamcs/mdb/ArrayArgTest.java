@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.ProcessorConfig;
 import org.yamcs.YConfiguration;
+import org.yamcs.mdb.MetaCommandProcessor.CommandBuildResult;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.xml.XtceLoadException;
@@ -46,7 +47,7 @@ public class ArrayArgTest {
 
         args.put("length", "5");
         args.put("array1", "[1,2,3,4,5]");
-        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        byte[] b = buildCommand(mc, args).getCmdPacket();
 
         assertEquals("00050102030405", StringConverter.arrayToHexString(b));
     }
@@ -57,7 +58,7 @@ public class ArrayArgTest {
         Map<String, Object> args = new HashMap<>();
 
         args.put("array1", "[1,2,3,4,5]");
-        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        byte[] b = buildCommand(mc, args).getCmdPacket();
 
         assertEquals("00050102030405", StringConverter.arrayToHexString(b));
     }
@@ -69,9 +70,7 @@ public class ArrayArgTest {
 
         args.put("length", "3");// length does not match the array length
         args.put("array1", "[1,2,3,4,5]");
-        assertThrows(ErrorInCommand.class, () -> {
-            metaCommandProcessor.buildCommand(mc, args);
-        });
+        assertThrows(ErrorInCommand.class, () -> buildCommand(mc, args));
     }
 
     @Test
@@ -80,9 +79,7 @@ public class ArrayArgTest {
         Map<String, Object> args = new HashMap<>();
 
         args.put("array1", "[1,2,3,4,5,6]");
-        assertThrows(ErrorInCommand.class, () -> {
-            metaCommandProcessor.buildCommand(mc, args);
-        });
+        assertThrows(ErrorInCommand.class, () -> buildCommand(mc, args));
     }
 
     @Test
@@ -92,8 +89,12 @@ public class ArrayArgTest {
 
         args.put("length", 5);
         args.put("array1", Arrays.asList(1, 2, 3, 4, 5));
-        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        byte[] b = buildCommand(mc, args).getCmdPacket();
 
         assertEquals("00050102030405", StringConverter.arrayToHexString(b));
+    }
+
+    CommandBuildResult buildCommand(MetaCommand mc, Map<String, Object> argAssignmentList) throws ErrorInCommand {
+        return metaCommandProcessor.buildCommand(mc, argAssignmentList, 0);
     }
 }

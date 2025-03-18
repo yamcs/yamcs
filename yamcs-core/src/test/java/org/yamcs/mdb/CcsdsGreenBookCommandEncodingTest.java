@@ -39,7 +39,7 @@ public class CcsdsGreenBookCommandEncodingTest {
         Map<String, Object> args = new HashMap<>();
         args.put("TimerStartStop", "TIMER_START");
 
-        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        byte[] b = metaCommandProcessor.buildCommand(mc, args, 0).getCmdPacket();
         assertEquals(Levels.CRITICAL, mc.getDefaultSignificance().getConsequenceLevel());
 
         assertEquals("FF0000001E000001", StringConverter.arrayToHexString(b));

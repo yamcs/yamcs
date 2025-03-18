@@ -10,7 +10,7 @@ public class JavaExpressionCalibratorFactoryTest {
     @Test
     public void test1() {
         JavaExpressionCalibrator jec = new JavaExpressionCalibrator("v+3");
-        CalibratorProc c = JavaExpressionCalibratorFactory.compile(jec);
+        NumericCalibrator c = (NumericCalibrator) JavaExpressionNumericCalibratorFactory.compile(jec);
         assertEquals(7, c.calibrate(4), 1e-5);
     }
 
@@ -18,7 +18,7 @@ public class JavaExpressionCalibratorFactoryTest {
     public void test2() {
         assertThrows(IllegalArgumentException.class, () -> {
             JavaExpressionCalibrator jec = new JavaExpressionCalibrator("\"blabala\"");
-            CalibratorProc c = JavaExpressionCalibratorFactory.compile(jec);
+            NumericCalibrator c = (NumericCalibrator) JavaExpressionNumericCalibratorFactory.compile(jec);
             assertEquals(7, c.calibrate(4), 1e-5);
         });
     }
@@ -26,7 +26,7 @@ public class JavaExpressionCalibratorFactoryTest {
     @Test
     public void test3() {
         JavaExpressionCalibrator jec = new JavaExpressionCalibrator("v>0?v+5:v-5");
-        CalibratorProc c = JavaExpressionCalibratorFactory.compile(jec);
+        NumericCalibrator c = (NumericCalibrator) JavaExpressionNumericCalibratorFactory.compile(jec);
         assertEquals(9, c.calibrate(4), 1e-5);
         assertEquals(-7, c.calibrate(-2), 1e-5);
     }

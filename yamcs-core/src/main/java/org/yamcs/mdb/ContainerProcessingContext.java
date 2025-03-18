@@ -2,7 +2,6 @@ package org.yamcs.mdb;
 
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
-import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.xtce.DynamicIntegerValue;
 import org.yamcs.xtce.FixedIntegerValue;
@@ -13,7 +12,12 @@ import org.yamcs.xtce.SequenceEntry;
 /**
  * Keeps track of where we are when processing a packet.
  * <p>
- * One object is used for all containers deriving in a hierarchy
+ * It embeds the {@link ContainerProcessingResult} which is an extension of {@link ProcessingContext}. This accumulates
+ * the results of the processing (i.e. the parameters extracted from the packet)
+ * <p>
+ * We create an object of this class for all containers processed in hierarchy (i.e. inheritance). Each time a
+ * sub-container is encountered, a new object of this class is created (because the offset in the binary starts from 0
+ * in the sub-container), keeping the reference to the same ContainerProcessingResult/ProcessingContext.
  */
 public class ContainerProcessingContext {
     final ProcessorData proccessorData;
@@ -83,7 +87,7 @@ public class ContainerProcessingContext {
         return proccessorData;
     }
 
-    public long getAcquisitionTime() {
-        return result.acquisitionTime;
+    public long getGenerationTime() {
+        return result.generationTime;
     }
 }

@@ -24,11 +24,11 @@ import org.yamcs.xtce.ParameterOrArgumentRef;
  * It is created when data is incoming and is used in a processing pipeline. For example when a packet is received, the
  * following pipeline is executed:
  * <ul>
- * <li>a new processing data object is instantiated containing an empty parameter list and a reference to the latest
+ * <li>a new processing context object is instantiated containing an empty parameter list and a reference to the latest
  * parameter value cache</li>
  * <li>parameters are added to it as extracted from the packet</li>
  * <li>calibration (raw to engineering conversion) is performed on the newly added parameters</li>
- * <li>algorithms are run creating new parameters also added to the processing data object</li>
+ * <li>algorithms are run creating new parameters also added to the processing context object</li>
  * <li>monitoring and generation of alarms is done for the new parameters</li>
  * <li>command verifiers are run (possibly creating new parameters TBD)</li>
  * <li>the parameter archive is populated</li>
@@ -37,8 +37,8 @@ import org.yamcs.xtce.ParameterOrArgumentRef;
  * A processing can also start when receiving command history information (used as part of command verification), when
  * receiving processed parameters via the pp stream or periodically by algorithms.
  * <p>
- * There will be different threads running in parallel, each with its own ProcessingData object but one object cannot be
- * shared with another thread.
+ * There will be different threads running in parallel, each with its own ProcessingContext object but one object cannot
+ * be shared with another thread.
  * 
  * <p>
  * The following data is part of this object:
@@ -60,9 +60,23 @@ import org.yamcs.xtce.ParameterOrArgumentRef;
  * whose datasource is {@link DataSource#COMMAND}.
  * </ul>
  * 
- * 
+ * Starting with Yamcs 5.12, a {@link #generationTime} field has been added to be used by the algorithms that need to
+ * have an idea what time the current data being processed is. One example is a time correlation algorithm which needs
+ * to determine the set of correlation coefficients ot use when converting to/from on-board times.
  */
-public class ProcessingData {
+public class ProcessingContext {
+    /**
+     * The generation time gives an idea on what the time the data being processed is:
+     * <ul>
+     * <li>coming from the TM packet - time set by the packet pre-processor- in case of TM packet processing (also that
+     * same time recorded in case of replays)</li>
+     * <li>parameter time provided by the external component or the parameter link - in case of parameter (pp)
+     * processing (also that same time recorded in case of replays)</li>
+     * <li>processor time (mission time) in other cases</li>
+     * </ul>
+     */
+    final long generationTime;
+
     final protected LastValueCache tmParamsCache;
     final protected ParameterValueList tmParams;
     final protected Map<Argument, ArgumentValue> cmdArgs;
@@ -72,52 +86,54 @@ public class ProcessingData {
     /**
      * Used in a TM processing pipeline - for example when a TM packet is received
      */
-    public static ProcessingData createForTmProcessing(LastValueCache tmValueCache) {
-        return new ProcessingData(tmValueCache, new ParameterValueList(), null, null, null);
+    public static ProcessingContext createForTmProcessing(LastValueCache tmValueCache, long generationTime) {
+        return new ProcessingContext(tmValueCache, new ParameterValueList(), null, null, null, generationTime);
     }
 
     /**
      * Used in TC processing when command history events are received, they will be added to the cmdParams.
      */
-    public static ProcessingData createForCmdProcessing(LastValueCache tmValueCache,
-            Map<Argument, ArgumentValue> arguments, LastValueCache cmdLastValueCache) {
-        return new ProcessingData(tmValueCache, new ParameterValueList(), arguments, cmdLastValueCache,
-                new ParameterValueList());
+    public static ProcessingContext createForCmdProcessing(LastValueCache tmValueCache,
+            Map<Argument, ArgumentValue> arguments, LastValueCache cmdLastValueCache, long missionTime) {
+        return new ProcessingContext(tmValueCache, new ParameterValueList(), arguments, cmdLastValueCache,
+                new ParameterValueList(), missionTime);
     }
 
     /**
-     * Processing data which contains values to be used in algorithm initialisation.
+     * Processing context which contains values to be used in algorithm initialisation.
      * <p>
      * The tmParams and cmdParams will be null.
      */
-    public static ProcessingData createInitial(LastValueCache tmParamsCache, Map<Argument, ArgumentValue> arguments,
-            LastValueCache cmdParamsCache) {
-        return new ProcessingData(tmParamsCache, null, arguments, cmdParamsCache, null);
+    public static ProcessingContext createInitial(LastValueCache tmParamsCache, Map<Argument, ArgumentValue> arguments,
+            LastValueCache cmdParamsCache, long missionTime) {
+        return new ProcessingContext(tmParamsCache, null, arguments, cmdParamsCache, null, missionTime);
     }
 
     /**
-     * Create a new processing data object with the tmParamsCache and tmParams shared with the data object, but with new
-     * cmdParams. To be used in command verifiers - each command has its own context with different cmdParams.
+     * Create a new processing context object with the tmParamsCache and tmParams shared with the data object, but with
+     * new cmdParams. To be used in command verifiers - each command has its own context with different cmdParams.
      * <p>
      * It is used when starting a command processing chain.
      */
-    public static ProcessingData cloneForCommanding(ProcessingData data, Map<Argument, ArgumentValue> arguments,
-            LastValueCache cmdParams) {
-        return new ProcessingData(data.tmParamsCache, data.tmParams, arguments, cmdParams, new ParameterValueList());
+    public static ProcessingContext cloneForCommanding(ProcessingContext data, Map<Argument, ArgumentValue> arguments,
+            LastValueCache cmdParams, long missionTime) {
+        return new ProcessingContext(data.tmParamsCache, data.tmParams, arguments, cmdParams, new ParameterValueList(),
+                missionTime);
     }
 
     /**
      * keeps the tmParamsCache and tmParams from the given data
      */
-    public static ProcessingData cloneForTm(ProcessingData data) {
-        return new ProcessingData(data.tmParamsCache, data.tmParams, null, null, null);
+    public static ProcessingContext cloneForTm(ProcessingContext data) {
+        return new ProcessingContext(data.tmParamsCache, data.tmParams, null, null, null, data.generationTime);
     }
 
     /**
      * creates an object with an empty cache and with the given values as current tm delivery. Used in unit tests
      */
-    public static ProcessingData createForTestTm(ParameterValue... pvlist) {
-        ProcessingData data = new ProcessingData(new LastValueCache(), new ParameterValueList(), null, null, null);
+    public static ProcessingContext createForTestTm(ParameterValue... pvlist) {
+        ProcessingContext data = new ProcessingContext(new LastValueCache(), new ParameterValueList(), null, null, null,
+                0);
         for (ParameterValue pv : pvlist) {
             data.addTmParam(pv);
         }
@@ -127,22 +143,24 @@ public class ProcessingData {
     /**
      * same as above but creates command parameters
      */
-    public static ProcessingData createForTestCmd(ParameterValue... pvlist) {
-        ProcessingData data = new ProcessingData(new LastValueCache(), null,
-                null, new LastValueCache(), new ParameterValueList());
+    public static ProcessingContext createForTestCmd(ParameterValue... pvlist) {
+        ProcessingContext data = new ProcessingContext(new LastValueCache(), null,
+                null, new LastValueCache(), new ParameterValueList(), 0);
         for (ParameterValue pv : pvlist) {
             data.addCmdParam(pv);
         }
         return data;
     }
 
-    public ProcessingData(LastValueCache lastValueCache, ParameterValueList tmParams,
-            Map<Argument, ArgumentValue> cmdArgs, LastValueCache cmdParamsCache, ParameterValueList cmdParams) {
+    public ProcessingContext(LastValueCache lastValueCache, ParameterValueList tmParams,
+            Map<Argument, ArgumentValue> cmdArgs, LastValueCache cmdParamsCache, ParameterValueList cmdParams,
+            long generationTime) {
         this.tmParams = tmParams;
         this.tmParamsCache = lastValueCache;
         this.cmdArgs = cmdArgs;
         this.cmdParams = cmdParams;
         this.cmdParamsCache = cmdParamsCache;
+        this.generationTime = generationTime;
     }
 
     public ParameterValueList getTmParams() {
@@ -213,7 +231,7 @@ public class ProcessingData {
 
         }
         case PACKET_START_WITHIN_PACKET -> {
-            // paramsCache is not considered 
+            // paramsCache is not considered
             if (params == null || instance < 0) {
                 return null;
             }
@@ -300,6 +318,14 @@ public class ProcessingData {
                 + ", cmdArgs=" + ((cmdArgs == null) ? null : cmdArgs.values())
                 + ", cmdParams=" + cmdParams
                 + ", cmdParamsCache=" + cmdParamsCache + "]";
+    }
+
+    /**
+     * @return the generation time - that is either the generation time coming from the packet or parameters or the
+     *         processor time in case it is in a commanding context
+     */
+    public long getGenerationTime() {
+        return generationTime;
     }
 
 }

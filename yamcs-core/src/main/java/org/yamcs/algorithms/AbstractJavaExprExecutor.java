@@ -3,7 +3,7 @@ package org.yamcs.algorithms;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.ProcessingContext;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.OutputParameter;
@@ -15,7 +15,7 @@ public abstract class AbstractJavaExprExecutor extends AbstractAlgorithmExecutor
     }
 
     @Override
-    public AlgorithmExecutionResult execute(long acqTime, long genTime, ProcessingData data) throws AlgorithmException {
+    public AlgorithmExecutionResult execute(long acqTime, long genTime, ProcessingContext ctx) throws AlgorithmException {
         try {
             List<ParameterValue> outputValues = new ArrayList<>(algorithmDef.getOutputList().size());
             for (OutputParameter outputParam : algorithmDef.getOutputList()) {

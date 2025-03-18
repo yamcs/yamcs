@@ -26,7 +26,7 @@ import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.events.EventProducer;
-import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.ProcessingContext;
 import org.yamcs.parameter.ParameterProcessor;
 import org.yamcs.parameter.ParameterProcessorManager;
 import org.yamcs.parameter.ParameterProvider;
@@ -197,11 +197,12 @@ public class AlgorithmManager extends AbstractProcessorService
                 if (activeAlgo != null) {
                     for (OnPeriodicRateTrigger trigger : timedTriggers) {
                         timer.scheduleAtFixedRate(() -> {
-                            ProcessingData data = ProcessingData.createForTmProcessing(processor.getLastValueCache());
                             long t = processor.getCurrentTime();
-                            List<ParameterValue> params = globalCtx.runAlgorithm(activeAlgo, t, t, data);
-                            data.addTmParams(params);
-                            parameterProcessorManager.process(data);
+                            ProcessingContext processingCtx = ProcessingContext.createForTmProcessing(processor.getLastValueCache(),
+                                    t);
+                            List<ParameterValue> params = globalCtx.runAlgorithm(activeAlgo, t, t, processingCtx);
+                            processingCtx.addTmParams(params);
+                            parameterProcessorManager.process(processingCtx);
                         }, 1000, trigger.getFireRate(), TimeUnit.MILLISECONDS);
                     }
                 }
@@ -297,7 +298,8 @@ public class AlgorithmManager extends AbstractProcessorService
         // including the initialValue
         // TODO: should we also run the algorithm here???
         log.debug("Updating algorithm with initial values");
-        activeAlgo.update(ProcessingData.createForTmProcessing(processor.getLastValueCache()));
+        activeAlgo.update(
+                ProcessingContext.createForTmProcessing(processor.getLastValueCache(), processor.getCurrentTime()));
 
         return activeAlgo;
     }
@@ -471,9 +473,9 @@ public class AlgorithmManager extends AbstractProcessorService
      * 
      */
     @Override
-    public void process(ProcessingData data) {
+    public void process(ProcessingContext processingCtx) {
         for (AlgorithmExecutionContext ctx : contexts) {
-            ctx.process(processor.getCurrentTime(), data);
+            ctx.process(processor.getCurrentTime(), processingCtx);
         }
     }
 

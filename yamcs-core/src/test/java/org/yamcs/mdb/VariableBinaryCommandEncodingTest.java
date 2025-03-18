@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.ProcessorConfig;
 import org.yamcs.YConfiguration;
+import org.yamcs.mdb.MetaCommandProcessor.CommandBuildResult;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.xml.XtceLoadException;
@@ -47,7 +48,7 @@ public class VariableBinaryCommandEncodingTest {
         args.put("size", Integer.toString(data.length));
         args.put("data", StringConverter.arrayToHexString(data));
         args.put("value", "3.14");
-        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        byte[] b = buildCommand(mc, args).getCmdPacket();
         byte[] expected = createPacket(data, 3.14F, true);
 
         assertArrayEquals(expected, b);
@@ -65,7 +66,7 @@ public class VariableBinaryCommandEncodingTest {
         }
         args.put("data", builder.toString());
         args.put("value", "3.14");
-        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        byte[] b = buildCommand(mc, args).getCmdPacket();
         byte[] expected = createPacket(data, 3.14F, false);
 
         assertArrayEquals(expected, b);
@@ -78,7 +79,7 @@ public class VariableBinaryCommandEncodingTest {
         args.put("data", "01");
         args.put("value", "3.14");
         assertThrows(ErrorInCommand.class, () -> {
-            metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+            buildCommand(mc, args).getCmdPacket();
         });
     }
 
@@ -89,7 +90,7 @@ public class VariableBinaryCommandEncodingTest {
         args.put("data", "01020304050607");
         args.put("value", "3.14");
         assertThrows(ErrorInCommand.class, () -> {
-            metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+            buildCommand(mc, args).getCmdPacket();
         });
     }
 
@@ -103,5 +104,9 @@ public class VariableBinaryCommandEncodingTest {
         out.writeInt(Float.floatToIntBits(value));
 
         return arrayStream.toByteArray();
+    }
+
+    CommandBuildResult buildCommand(MetaCommand mc, Map<String, Object> argAssignmentList) throws ErrorInCommand {
+        return metaCommandProcessor.buildCommand(mc, argAssignmentList, 0);
     }
 }

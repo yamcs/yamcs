@@ -20,7 +20,7 @@ import org.yamcs.ProcessorException;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.ValidationException;
 import org.yamcs.events.EventProducerFactory;
-import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.ProcessingContext;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterConsumer;
@@ -101,8 +101,8 @@ public class AlgorithmManagerErrorTest {
         assertTrue(status2.hasErrorMessage());
     }
 
-    public static ProcessingData getProcessingData(ParameterValue pv) {
-        ProcessingData data = ProcessingData.createForTmProcessing(new LastValueCache());
+    public static ProcessingContext getProcessingData(ParameterValue pv) {
+        ProcessingContext data = ProcessingContext.createForTmProcessing(new LastValueCache(), 0);
         data.addTmParam(pv);
         return data;
     }

@@ -27,7 +27,7 @@ import org.yamcs.cmdhistory.CommandHistoryProvider;
 import org.yamcs.cmdhistory.CommandHistoryRequestManager;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.mdb.ParameterTypeProcessor;
-import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.ProcessingContext;
 import org.yamcs.mdb.Subscription;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.mdb.XtceTmProcessor;
@@ -150,9 +150,10 @@ public class ReplayService extends AbstractProcessorService
             @SuppressWarnings("unchecked")
             List<ParameterValue> pvals = (List<ParameterValue>) data;
             if (!pvals.isEmpty()) {
-                ProcessingData processingData = ProcessingData.createForTmProcessing(processor.getLastValueCache());
-                calibrate(pvals, processingData);
-                parameterProcessorManager.process(processingData);
+                ProcessingContext processingCtx = ProcessingContext.createForTmProcessing(processor.getLastValueCache(),
+                        processor.getCurrentTime());
+                calibrate(pvals, processingCtx);
+                parameterProcessorManager.process(processingCtx);
             }
             break;
         case CMD_HISTORY:
@@ -167,7 +168,7 @@ public class ReplayService extends AbstractProcessorService
         }
     }
 
-    private void calibrate(List<ParameterValue> pvlist, ProcessingData processingData) {
+    private void calibrate(List<ParameterValue> pvlist, ProcessingContext processingData) {
         ParameterTypeProcessor ptypeProcessor = processor.getProcessorData().getParameterTypeProcessor();
 
         for (ParameterValue pv : pvlist) {

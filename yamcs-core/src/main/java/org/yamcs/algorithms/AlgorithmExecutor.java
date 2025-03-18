@@ -2,7 +2,7 @@ package org.yamcs.algorithms;
 
 import java.util.List;
 
-import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.ProcessingContext;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.InputParameter;
 import org.yamcs.xtce.OutputParameter;
@@ -26,7 +26,7 @@ public interface AlgorithmExecutor {
      * 
      * @return true if the algorithm should run
      */
-    boolean update(ProcessingData processingData);
+    boolean update(ProcessingContext processingCtx);
 
     /**
      * Runs the associated algorithm with the latest InputParameters.
@@ -35,7 +35,7 @@ public interface AlgorithmExecutor {
      * <p>
      * The error message and error count will be remembered and available to external clients via the API.
      * <p>
-     * The processing data parameter is passed if required to calibrate the output values. It shall not be updated by
+     * The processing context parameter is passed if required to calibrate the output values. It shall not be updated by
      * the executor as it is done in the {@link ActiveAlgorithm}
      * 
      * @param acqTime
@@ -43,7 +43,7 @@ public interface AlgorithmExecutor {
      * @return the output parameters, if any
      * 
      */
-    AlgorithmExecutionResult execute(long acqTime, long genTime, ProcessingData data) throws AlgorithmException;
+    AlgorithmExecutionResult execute(long acqTime, long genTime, ProcessingContext data) throws AlgorithmException;
 
     /**
      * 

@@ -12,7 +12,7 @@ import org.yamcs.Processor;
 import org.yamcs.StreamConfig;
 import org.yamcs.StreamConfig.StandardStreamType;
 import org.yamcs.mdb.ParameterTypeProcessor;
-import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.ProcessingContext;
 import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.YConfiguration;
@@ -30,11 +30,10 @@ import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
+import static org.yamcs.StandardTupleDefinitions.PARAMETER_COL_GENTIME;
 
 /**
  * Provides parameters from yarch streams (pp_realtime) to {@link ParameterProcessorManager}
- * 
- * @author nm
  *
  */
 public class StreamParameterProvider extends AbstractProcessorService implements StreamSubscriber, ParameterProvider {
@@ -93,7 +92,8 @@ public class StreamParameterProvider extends AbstractProcessorService implements
      */
     @Override
     public void onTuple(Stream s, Tuple tuple) {// the definition of the tuple is in PpProviderAdapter
-        ProcessingData data = ProcessingData.createForTmProcessing(processor.getLastValueCache());
+        var genTime = tuple.getTimestampColumn(PARAMETER_COL_GENTIME);
+        ProcessingContext data = ProcessingContext.createForTmProcessing(processor.getLastValueCache(), genTime);
 
         for (int i = 4; i < tuple.size(); i++) {
             Object o = tuple.getColumn(i);

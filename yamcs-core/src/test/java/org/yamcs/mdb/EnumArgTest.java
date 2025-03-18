@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.ProcessorConfig;
 import org.yamcs.YConfiguration;
+import org.yamcs.mdb.MetaCommandProcessor.CommandBuildResult;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.MetaCommand;
 
@@ -33,7 +34,7 @@ public class EnumArgTest {
         Map<String, Object> args = new HashMap<>();
 
         args.put("phase", "ASCENT");
-        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        byte[] b = buildCommand(mc, args).getCmdPacket();
 
         assertEquals("02", StringConverter.arrayToHexString(b));
     }
@@ -44,7 +45,7 @@ public class EnumArgTest {
         Map<String, Object> args = new HashMap<>();
 
         args.put("phase", 2);
-        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        byte[] b = buildCommand(mc, args).getCmdPacket();
 
         assertEquals("02", StringConverter.arrayToHexString(b));
     }
@@ -58,8 +59,10 @@ public class EnumArgTest {
         Map<String, Object> args = new HashMap<>();
 
         args.put("phase", "2");
-        assertThrows(ErrorInCommand.class, () -> {
-            metaCommandProcessor.buildCommand(mc, args);
-        });
+        assertThrows(ErrorInCommand.class, () -> buildCommand(mc, args));
+    }
+
+    CommandBuildResult buildCommand(MetaCommand mc, Map<String, Object> argAssignmentList) throws ErrorInCommand {
+        return metaCommandProcessor.buildCommand(mc, argAssignmentList, 0);
     }
 }

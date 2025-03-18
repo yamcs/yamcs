@@ -7,10 +7,9 @@ import org.codehaus.commons.compiler.Location;
 import org.codehaus.janino.SimpleCompiler;
 import org.yamcs.mdb.MathOperationCalibratorFactory;
 import org.yamcs.mdb.ParameterTypeUtils;
-import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.ProcessingContext;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
-import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.InputParameter;
@@ -40,7 +39,7 @@ public class MathAlgorithmExecutor extends AbstractAlgorithmExecutor {
     }
 
     @Override
-    public AlgorithmExecutionResult execute(long acqTime, long genTime, ProcessingData data) {
+    public AlgorithmExecutionResult execute(long acqTime, long genTime, ProcessingContext pctx) {
         ParameterValue pv = new ParameterValue(outParam);
         pv.setAcquisitionTime(acqTime);
         pv.setGenerationTime(genTime);
@@ -92,7 +91,7 @@ public class MathAlgorithmExecutor extends AbstractAlgorithmExecutor {
             SimpleCompiler compiler = new SimpleCompiler();
             compiler.cook(expr);
             Class<?> cexprClass = compiler.getClassLoader().loadClass("org.yamcs.algorithms.maeval." + className);
-            return (MathOperationEvaluator) cexprClass.newInstance();
+            return (MathOperationEvaluator) cexprClass.getDeclaredConstructor().newInstance();
         } catch (LocatedException e) {
             String msg = e.getMessage();
             Location l = e.getLocation();

@@ -17,7 +17,7 @@ public interface MatchCriteriaEvaluator {
         UNDEF;
     }
 
-    MatchResult evaluate(ProcessingData input);
+    MatchResult evaluate(ProcessingContext ctx);
 
     public String toExpressionString();
 }

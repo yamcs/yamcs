@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.commanding.ArgumentValue;
-import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.ProcessingContext;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.RawEngValue;
 import org.yamcs.utils.AggregateUtil;
@@ -49,11 +49,11 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
     /**
      * update the parameters and return true if the algorithm should run
      * 
-     * @param processingData
+     * @param processingCtx
      * @return true if the algorithm should run
      */
     @Override
-    public synchronized boolean update(ProcessingData processingData) {
+    public synchronized boolean update(ProcessingContext processingCtx) {
 
         boolean skipRun = false;
         List<InputParameter> l = algorithmDef.getInputList();
@@ -62,13 +62,13 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
             InputParameter inputParameter = l.get(k);
             ParameterInstanceRef pref = inputParameter.getParameterInstance();
             if (pref == null) {
-                ArgumentValue argval = getInputArgument(processingData, inputParameter.getArgumentRef());
+                ArgumentValue argval = getInputArgument(processingCtx, inputParameter.getArgumentRef());
                 if (argval != null) {
                     updateInputArgument(k, inputParameter, argval);
                     inputValues.set(k, argval);
                 }
             } else {
-                ParameterValue pval = getInputParameter(processingData, pref);
+                ParameterValue pval = getInputParameter(processingCtx, pref);
                 if (pval != null) {
                     updateInput(k, inputParameter, pval);
                     inputValues.set(k, pval);
@@ -95,7 +95,7 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
                         .collect(Collectors.toList());
                 if (!parameterInputs.isEmpty()) {
                     for (var p : parameterInputs) {
-                        if (processingData.containsUpdate(p)) {
+                        if (processingCtx.containsUpdate(p)) {
                             triggered = true;
                             break;
                         }
@@ -108,7 +108,7 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
             }
         } else {
             for (OnParameterUpdateTrigger trigger : triggerSet.getOnParameterUpdateTriggers()) {
-                if (processingData.containsUpdate(trigger.getParameter())) {
+                if (processingCtx.containsUpdate(trigger.getParameter())) {
                     triggered = true;
                     break;
                 }
@@ -123,9 +123,9 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
         return shouldRun;
     }
 
-    public ParameterValue getInputParameter(ProcessingData processingData, ParameterInstanceRef pref) {
+    public ParameterValue getInputParameter(ProcessingContext processingCtx, ParameterInstanceRef pref) {
         ParameterValue pval = null;
-        pval = processingData.getParameterInstance(pref);
+        pval = processingCtx.getParameterInstance(pref);
         if (pval == null) {
             return null;
         }
@@ -142,8 +142,8 @@ public abstract class AbstractAlgorithmExecutor implements AlgorithmExecutor {
         return pval;
     }
 
-    public ArgumentValue getInputArgument(ProcessingData processingData, ArgumentInstanceRef ref) {
-        ArgumentValue aval = processingData.getCmdArgument(ref.getArgument());
+    public ArgumentValue getInputArgument(ProcessingContext processingCtx, ArgumentInstanceRef ref) {
+        ArgumentValue aval = processingCtx.getCmdArgument(ref.getArgument());
         if (aval == null) {
             return null;
         }

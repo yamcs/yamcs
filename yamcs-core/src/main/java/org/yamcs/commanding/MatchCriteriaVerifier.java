@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 
 import org.yamcs.Processor;
 import org.yamcs.mdb.MatchCriteriaEvaluator;
-import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.ProcessingContext;
 import org.yamcs.mdb.MatchCriteriaEvaluator.MatchResult;
 import org.yamcs.parameter.ParameterProcessor;
 import org.yamcs.parameter.ParameterValue;
@@ -50,7 +50,8 @@ public class MatchCriteriaVerifier extends Verifier implements ParameterProcesso
             ppmSubscriptionId = proc.getParameterProcessorManager().subscribe(pset, this);
         }
         ActiveCommand cmd = cvh.getActiveCommand();
-        check(ProcessingData.createInitial(proc.getLastValueCache(), cmd.getArguments(), cmd.getCmdParamCache()));
+        check(ProcessingContext.createInitial(proc.getLastValueCache(), cmd.getArguments(), cmd.getCmdParamCache(),
+                proc.getCurrentTime()));
     }
 
     @Override
@@ -59,17 +60,17 @@ public class MatchCriteriaVerifier extends Verifier implements ParameterProcesso
     }
 
     @Override
-    public void process(ProcessingData tmData) {
-        ProcessingData cmdData = ProcessingData.cloneForCommanding(tmData, activeCommand.getArguments(),
-                activeCommand.getCmdParamCache());
+    public void process(ProcessingContext tmData) {
+        ProcessingContext cmdData = ProcessingContext.cloneForCommanding(tmData, activeCommand.getArguments(),
+                activeCommand.getCmdParamCache(), proc.getCurrentTime());
         check(cmdData);
     }
 
-    private void check(ProcessingData processingData) {
+    private void check(ProcessingContext processingCtx) {
         if (state != State.RUNNING) {
             return;
         }
-        MatchResult result = evaluator.evaluate(processingData);
+        MatchResult result = evaluator.evaluate(processingCtx);
         log.debug("Condition check result: {}", result);
 
         if (result == MatchResult.UNDEF ||
@@ -79,7 +80,7 @@ public class MatchCriteriaVerifier extends Verifier implements ParameterProcesso
 
         // if there is a value for the return parameter in the current evaluatorInput (the one from which the result
         // has been computed), we want that one to be the returnValue
-        ParameterValue pv = getReturnValue(processingData);
+        ParameterValue pv = getReturnValue(processingCtx);
 
         timer.submit(() -> {
             if (state != State.RUNNING) {// it was finished in a different thread
@@ -96,7 +97,7 @@ public class MatchCriteriaVerifier extends Verifier implements ParameterProcesso
         });
     }
 
-    private ParameterValue getReturnValue(ProcessingData processingData) {
+    private ParameterValue getReturnValue(ProcessingContext processingCtx) {
         Parameter returnParam = cv.getReturnParameter();
         if (returnParam == null) {
             return null;
@@ -104,9 +105,9 @@ public class MatchCriteriaVerifier extends Verifier implements ParameterProcesso
         ParameterValue retPv;
         if (returnParam.getDataSource() == DataSource.COMMAND_HISTORY
                 || returnParam.getDataSource() == DataSource.COMMAND) {
-            retPv = processingData.getCmdParams().getLastInserted(returnParam);
+            retPv = processingCtx.getCmdParams().getLastInserted(returnParam);
         } else {
-            retPv = processingData.getTmParams().getLastInserted(returnParam);
+            retPv = processingCtx.getTmParams().getLastInserted(returnParam);
         }
         return retPv;
     }

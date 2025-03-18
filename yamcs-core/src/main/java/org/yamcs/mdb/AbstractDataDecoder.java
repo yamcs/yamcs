@@ -19,12 +19,12 @@ public abstract class AbstractDataDecoder implements DataDecoder {
     }
 
     @Override
-    public boolean update(ProcessingData data) {
+    public boolean update(ProcessingContext ctx) {
         return false;
     }
 
     @Override
-    public AlgorithmExecutionResult execute(long acqTime, long genTime, ProcessingData data) {
+    public AlgorithmExecutionResult execute(long acqTime, long genTime, ProcessingContext ctx) {
         throw new IllegalStateException("Cannot run this method on a data decoder algorithm");
     }
 

@@ -10,7 +10,7 @@ import org.yamcs.Processor;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.events.EventProducerFactory;
-import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.ProcessingContext;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterProcessorManager;
@@ -49,7 +49,7 @@ public class XtceAlgorithmTest {
         prm.addRequest(bsoc, (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
         ParameterValue pv = new ParameterValue(bv);
         pv.setEngValue(ValueUtility.getFloatValue(12.6f));
-        ppm.process(ProcessingData.createForTestTm(pv));
+        ppm.process(ProcessingContext.createForTestTm(pv));
         assertEquals(1, params.size());
         pv = params.get(0);
         assertEquals(1.0d, pv.getEngValue().getFloatValue(), 1e-5);
@@ -64,7 +64,7 @@ public class XtceAlgorithmTest {
         prm.addRequest(bscc, (ParameterConsumer) (subscriptionId, items) -> params.addAll(items));
         ParameterValue pv = new ParameterValue(bv);
         pv.setEngValue(ValueUtility.getFloatValue(12.6f));
-        ppm.process(ProcessingData.createForTestTm(pv));
+        ppm.process(ProcessingContext.createForTestTm(pv));
         assertEquals(1, params.size());
 
         pv = params.get(0);

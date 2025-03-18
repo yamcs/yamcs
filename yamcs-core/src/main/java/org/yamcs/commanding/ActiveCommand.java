@@ -8,7 +8,7 @@ import org.yamcs.Processor;
 import org.yamcs.cmdhistory.Attribute;
 import org.yamcs.cmdhistory.CommandHistoryConsumer;
 import org.yamcs.logging.Log;
-import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.ProcessingContext;
 import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterProcessor;
 import org.yamcs.parameter.ParameterValue;
@@ -140,10 +140,10 @@ public class ActiveCommand implements CommandHistoryConsumer {
             return;
         }
         Mdb mdb = processor.getMdb();
-        ProcessingData data = ProcessingData.createForCmdProcessing(processor.getLastValueCache(), getArguments(),
-                cmdParamCache);
+        ProcessingContext pctx = ProcessingContext.createForCmdProcessing(processor.getLastValueCache(), getArguments(),
+                cmdParamCache, processor.getCurrentTime());
 
-        ParameterValueList cmdParams = data.getCmdParams();
+        ParameterValueList cmdParams = pctx.getCmdParams();
 
         for (Attribute attr : attrs) {
             String fqn = Mdb.YAMCS_CMDHIST_SPACESYSTEM_NAME + "/" + attr.getKey();
@@ -160,13 +160,13 @@ public class ActiveCommand implements CommandHistoryConsumer {
         }
 
         for (ParameterProcessor proc : cmdParamProcessors) {
-            proc.process(data);
+            proc.process(pctx);
         }
 
         cmdParamCache.addAll(cmdParams);
-        ParameterValueList tmParams = data.getTmParams();
+        ParameterValueList tmParams = pctx.getTmParams();
         if (!tmParams.isEmpty()) {
-            ProcessingData tmData = ProcessingData.cloneForTm(data);
+            ProcessingContext tmData = ProcessingContext.cloneForTm(pctx);
             processor.getParameterProcessorManager().process(tmData);
         }
     }

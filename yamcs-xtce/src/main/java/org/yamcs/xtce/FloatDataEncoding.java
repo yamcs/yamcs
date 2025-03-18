@@ -1,27 +1,17 @@
 package org.yamcs.xtce;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 /**
  * For common encodings of floating point data.
  * <p>
  * Unlike XTCE we support encoding floats as strings - this is done by providing a separate {@link StringDataEncoding}
  * 
- * @author nm
- *
  */
-public class FloatDataEncoding extends DataEncoding implements NumericDataEncoding {
+public class FloatDataEncoding extends DataEncoding {
     private static final long serialVersionUID = 3L;
 
     public enum Encoding {
         IEEE754_1985, MILSTD_1750A, STRING// DIFFERS_FROM_XTCE
     };
-
-    Calibrator defaultCalibrator = null;
-    private List<ContextCalibrator> contextCalibratorList = null;
 
     private Encoding encoding = Encoding.IEEE754_1985;
 
@@ -33,21 +23,10 @@ public class FloatDataEncoding extends DataEncoding implements NumericDataEncodi
             this.encoding = builder.encoding;
         }
 
-        this.defaultCalibrator = builder.defaultCalibrator;
-        this.contextCalibratorList = builder.contextCalibratorList;
-
         this.stringEncoding = builder.stringEncoding;
 
         if (builder.baseEncoding instanceof FloatDataEncoding) {
             FloatDataEncoding baseEncoding = (FloatDataEncoding) builder.baseEncoding;
-            if (builder.defaultCalibrator == null) {
-                this.defaultCalibrator = baseEncoding.defaultCalibrator;
-            }
-
-            if (builder.contextCalibratorList == null) {
-                this.contextCalibratorList = baseEncoding.contextCalibratorList;
-            }
-
             if (builder.encoding == null) {
                 this.encoding = baseEncoding.encoding;
             }
@@ -83,8 +62,6 @@ public class FloatDataEncoding extends DataEncoding implements NumericDataEncodi
      */
     public FloatDataEncoding(FloatDataEncoding fde) {
         super(fde);
-        this.defaultCalibrator = fde.defaultCalibrator;
-        this.contextCalibratorList = fde.contextCalibratorList;
         this.encoding = fde.encoding;
         this.stringEncoding = fde.stringEncoding;
     }
@@ -95,14 +72,6 @@ public class FloatDataEncoding extends DataEncoding implements NumericDataEncodi
 
     public StringDataEncoding getStringDataEncoding() {
         return stringEncoding;
-    }
-
-    public Calibrator getDefaultCalibrator() {
-        return defaultCalibrator;
-    }
-
-    public void setDefaultCalibrator(Calibrator calibrator) {
-        this.defaultCalibrator = calibrator;
     }
 
     @Override
@@ -140,42 +109,18 @@ public class FloatDataEncoding extends DataEncoding implements NumericDataEncodi
         }
     }
 
-    public List<ContextCalibrator> getContextCalibratorList() {
-        return contextCalibratorList;
-    }
-
-    public void setContextCalibratorList(List<ContextCalibrator> contextCalibratorList) {
-        this.contextCalibratorList = contextCalibratorList;
-    }
-
-    @Override
-    public Set<Parameter> getDependentParameters() {
-        if (contextCalibratorList != null) {
-            Set<Parameter> r = new HashSet<>();
-            for (ContextCalibrator cc : contextCalibratorList) {
-                r.addAll(cc.getContextMatch().getDependentParameters());
-            }
-            return r;
-        } else {
-            return Collections.emptySet();
-        }
-    }
 
     @Override
     public FloatDataEncoding copy() {
         return new FloatDataEncoding(this);
     }
 
-    public static class Builder extends DataEncoding.Builder<Builder> implements NumericDataEncoding.Builder<Builder> {
-        Calibrator defaultCalibrator = null;
-        List<ContextCalibrator> contextCalibratorList = null;
+    public static class Builder extends DataEncoding.Builder<Builder> {
         Encoding encoding = null;
         StringDataEncoding stringEncoding = null;
 
         public Builder(FloatDataEncoding encoding) {
             super(encoding);
-            this.defaultCalibrator = encoding.defaultCalibrator;
-            this.contextCalibratorList = encoding.contextCalibratorList;
             this.stringEncoding = encoding.stringEncoding;
             this.encoding = encoding.encoding;
         }
@@ -190,16 +135,6 @@ public class FloatDataEncoding extends DataEncoding implements NumericDataEncodi
 
         public Builder setFloatEncoding(Encoding floatEncoding) {
             this.encoding = floatEncoding;
-            return self();
-        }
-
-        public Builder setDefaultCalibrator(Calibrator calibrator) {
-            this.defaultCalibrator = calibrator;
-            return self();
-        }
-
-        public Builder setContextCalibratorList(List<ContextCalibrator> list) {
-            this.contextCalibratorList = list;
             return self();
         }
 

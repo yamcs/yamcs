@@ -109,7 +109,6 @@ import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.NumericAlarm;
 import org.yamcs.xtce.NumericContextAlarm;
-import org.yamcs.xtce.NumericDataEncoding;
 import org.yamcs.xtce.ORedConditions;
 import org.yamcs.xtce.OnParameterUpdateTrigger;
 import org.yamcs.xtce.OnPeriodicRateTrigger;
@@ -1004,7 +1003,7 @@ public class XtceAssembler {
         doc.writeEndElement();// IntegerDataEncoding
     }
 
-    private void writeNumericDataEncodingCommonProps(XMLStreamWriter doc, NumericDataEncoding encoding)
+    private void writeNumericDataEncodingCommonProps(XMLStreamWriter doc, DataEncoding encoding)
             throws XMLStreamException {
         if (encoding.getDefaultCalibrator() != null) {
             doc.writeStartElement("DefaultCalibrator");

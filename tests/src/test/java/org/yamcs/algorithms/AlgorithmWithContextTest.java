@@ -18,7 +18,7 @@ import org.yamcs.Processor;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.events.EventProducerFactory;
-import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.ProcessingContext;
 import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.ParameterProcessorManager;
@@ -81,7 +81,7 @@ public class AlgorithmWithContextTest {
         ParameterValue pv = new ParameterValue(p);
         pv.setEngValue(ValueUtility.getUint32Value(10));
 
-        ctx.process(0, ProcessingData.createForTestCmd(pv));
+        ctx.process(0, ProcessingContext.createForTestCmd(pv));
 
         assertEquals(2, params.size());
         assertNull(params.get(0));

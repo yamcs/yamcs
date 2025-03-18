@@ -13,6 +13,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.ProcessorConfig;
 import org.yamcs.YConfiguration;
+import org.yamcs.mdb.MetaCommandProcessor.CommandBuildResult;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.MetaCommand;
 
@@ -44,7 +45,7 @@ public class XtceStringEncodingTest {
 
         args.put("string1", "abc");
         args.put("para1", "258");
-        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        byte[] b = buildCommand(mc, args).getCmdPacket();
         byte[] expected = { 'a', 'b', 'c', 0, 0, 0, 0x01, 0x02 };
         assertArrayEquals(expected, b);
     }
@@ -57,7 +58,7 @@ public class XtceStringEncodingTest {
 
         args.put("string1", "abcdef");
         args.put("para1", "258");
-        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        byte[] b = buildCommand(mc, args).getCmdPacket();
         byte[] expected = new byte[] { 'a', 'b', 'c', 'd', 'e', 'f', 0x01, 0x02 };
         assertArrayEquals(expected, b);
     }
@@ -70,7 +71,7 @@ public class XtceStringEncodingTest {
 
         args.put("string2", "abcdef");
         args.put("para1", "258");
-        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        byte[] b = buildCommand(mc, args).getCmdPacket();
         byte[] expected = new byte[] { 'a', 'b', 'c', 'd', 'e', 'f', 0x01, 0x02 };
         assertArrayEquals(expected, b);
     }
@@ -83,7 +84,7 @@ public class XtceStringEncodingTest {
 
         args.put("string3", "ab");
         args.put("para1", "258");
-        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        byte[] b = buildCommand(mc, args).getCmdPacket();
         byte[] expected = new byte[] { 'a', 'b', 0, 0x01, 0x02 };
         assertArrayEquals(expected, b);
     }
@@ -96,7 +97,7 @@ public class XtceStringEncodingTest {
 
         args.put("string3", "abcde");
         args.put("para1", "258");
-        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        byte[] b = buildCommand(mc, args).getCmdPacket();
         byte[] expected = new byte[] { 'a', 'b', 'c', 'd', 'e', 0, 0x01, 0x02 };
         assertArrayEquals(expected, b);
     }
@@ -110,7 +111,7 @@ public class XtceStringEncodingTest {
         args.put("string3", "abcdef");
         args.put("para1", "258");
         assertThrows(ErrorInCommand.class, () -> {
-            metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+            buildCommand(mc, args).getCmdPacket();
         });
     }
 
@@ -123,7 +124,7 @@ public class XtceStringEncodingTest {
         args.put("buf_length", "6");
         args.put("string4", "abc");
         args.put("para1", "258");
-        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        byte[] b = buildCommand(mc, args).getCmdPacket();
 
         byte[] expected = new byte[] {
                 0x00, 0x06, // buffer size
@@ -145,7 +146,7 @@ public class XtceStringEncodingTest {
         args.put("string4", "ab");
         args.put("para1", "258");
         assertThrows(ErrorInCommand.class, () -> {
-            metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+            buildCommand(mc, args).getCmdPacket();
         });
     }
 
@@ -159,7 +160,7 @@ public class XtceStringEncodingTest {
         args.put("string4", "abcd");
         args.put("para1", "258");
         assertThrows(ErrorInCommand.class, () -> {
-            metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+            buildCommand(mc, args).getCmdPacket();
         });
     }
 
@@ -171,7 +172,7 @@ public class XtceStringEncodingTest {
 
         args.put("string5", "ab");
         args.put("para1", "258");
-        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        byte[] b = buildCommand(mc, args).getCmdPacket();
 
         byte[] expected = new byte[] { 0x00, 0x02, 'a', 'b', 0x01, 0x02 };
         assertArrayEquals(expected, b);
@@ -186,7 +187,7 @@ public class XtceStringEncodingTest {
 
             args.put("string5", "abcde");
             args.put("para1", "258");
-            byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+            byte[] b = buildCommand(mc, args).getCmdPacket();
 
             byte[] expected = new byte[] { 0x00, 0x02, 'a', 'b', 0x01, 0x02 };
             assertArrayEquals(expected, b);
@@ -200,10 +201,13 @@ public class XtceStringEncodingTest {
 
         args.put("string6", "ab");
         args.put("para1", "258");
-        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        byte[] b = buildCommand(mc, args).getCmdPacket();
 
         byte[] expected = new byte[] { 'a', 'b', 0, 0, 0, 0x01, 0x02 };
         assertArrayEquals(expected, b);
     }
 
+    CommandBuildResult buildCommand(MetaCommand mc, Map<String, Object> argAssignmentList) throws ErrorInCommand {
+        return metaCommandProcessor.buildCommand(mc, argAssignmentList, 0);
+    }
 }

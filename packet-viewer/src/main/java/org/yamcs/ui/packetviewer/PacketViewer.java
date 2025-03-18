@@ -89,7 +89,7 @@ import org.yamcs.client.base.ServerURL;
 import org.yamcs.mdb.DatabaseLoadException;
 import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
-import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.ProcessingContext;
 import org.yamcs.mdb.XtceTmProcessor;
 import org.yamcs.parameter.ContainerParameterValue;
 import org.yamcs.parameter.ParameterProcessor;
@@ -882,8 +882,8 @@ public class PacketViewer extends JFrame implements ActionListener,
     }
 
     @Override
-    public void process(final ProcessingData processingData) {
-        ParameterValueList params = processingData.getTmParams();
+    public void process(final ProcessingContext processingCtx) {
+        ParameterValueList params = processingCtx.getTmParams();
         SwingUtilities.invokeLater(new Runnable() {
             Hashtable<String, TreeContainer> containers = new Hashtable<>();
 

@@ -30,9 +30,8 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
 
 /**
- * Part of the TM processing chain. Is called upon by the
- * ParameterRequestManager whenever a new parameter value may need alarms
- * published together with it.
+ * Part of the TM processing chain. Is called upon by the ParameterRequestManager whenever a new parameter value may
+ * need alarms published together with it.
  */
 public class ParameterAlarmChecker {
 
@@ -53,8 +52,8 @@ public class ParameterAlarmChecker {
     }
 
     /**
-     * Called from the ParameterRequestManager when a new parameter has been subscribed
-     * Check and subscribe any dependencies required for alarm checking
+     * Called from the ParameterRequestManager when a new parameter has been subscribed Check and subscribe any
+     * dependencies required for alarm checking
      */
     public void parameterSubscribed(Parameter p) {
         ParameterType ptype = pdata.getParameterType(p);
@@ -67,18 +66,17 @@ public class ParameterAlarmChecker {
     }
 
     /**
-     * Updates the iterator supplied ParameterValues with monitoring (out of limits)
-     * information.
+     * Updates the iterator supplied ParameterValues with monitoring (out of limits) information.
      * <p>
-     * The method is called once before the algorithms are run and once after the algorithms to also check
-     * the new values.
+     * The method is called once before the algorithms are run and once after the algorithms to also check the new
+     * values.
      */
-    public void performAlarmChecking(ProcessingData processingData, Iterator<ParameterValue> it) {
+    public void performAlarmChecking(ProcessingContext processingCtx, Iterator<ParameterValue> it) {
         while (it.hasNext()) {
             ParameterValue pval = it.next();
             ParameterType ptype = pdata.getParameterType(pval.getParameter());
             if (ptype != null && ptype.hasAlarm()) {
-                performAlarmChecking(processingData, pval, ptype);
+                performAlarmChecking(processingCtx, pval, ptype);
             } else if (pval.getMonitoringResult() != null) {
                 // monitoring result set already - either processed parameters or some service like the
                 // TimeCorrelationService
@@ -101,17 +99,17 @@ public class ParameterAlarmChecker {
     /**
      * Updates the ParameterValue with monitoring (out of limits) information
      */
-    private void performAlarmChecking(ProcessingData processingData, ParameterValue pv, ParameterType ptype) {
+    private void performAlarmChecking(ProcessingContext processingCtx, ParameterValue pv, ParameterType ptype) {
         if (ptype instanceof FloatParameterType) {
-            performAlarmCheckingFloat(processingData, (FloatParameterType) ptype, pv);
+            performAlarmCheckingFloat(processingCtx, (FloatParameterType) ptype, pv);
         } else if (ptype instanceof EnumeratedParameterType) {
-            performAlarmCheckingEnumerated(processingData, (EnumeratedParameterType) ptype, pv);
+            performAlarmCheckingEnumerated(processingCtx, (EnumeratedParameterType) ptype, pv);
         } else if (ptype instanceof IntegerParameterType) {
-            performAlarmCheckingInteger(processingData, (IntegerParameterType) ptype, pv);
+            performAlarmCheckingInteger(processingCtx, (IntegerParameterType) ptype, pv);
         }
     }
 
-    private void performAlarmCheckingInteger(ProcessingData processingData,
+    private void performAlarmCheckingInteger(ProcessingContext processingCtx,
             IntegerParameterType ipt, ParameterValue pv) {
         long intCalValue = 0;
         if (pv.getEngValue().getType() == Type.SINT32) {
@@ -136,7 +134,7 @@ public class ParameterAlarmChecker {
         if (ipt.getContextAlarmList() != null) {
             for (NumericContextAlarm nca : ipt.getContextAlarmList()) {
                 MatchCriteriaEvaluator evaluator = pdata.getEvaluator(nca.getContextMatch());
-                if (evaluator.evaluate(processingData) == MatchResult.OK) {
+                if (evaluator.evaluate(processingCtx) == MatchResult.OK) {
                     mon = true;
                     alarmType = nca;
                     staticAlarmRanges = nca.getStaticAlarmRanges();
@@ -173,7 +171,7 @@ public class ParameterAlarmChecker {
         }
     }
 
-    private void performAlarmCheckingFloat(ProcessingData processingData,
+    private void performAlarmCheckingFloat(ProcessingContext processingCtx,
             FloatParameterType fpt, ParameterValue pv) {
         double doubleCalValue = 0;
         if (pv.getEngValue().getType() == Type.FLOAT) {
@@ -195,7 +193,7 @@ public class ParameterAlarmChecker {
         if (fpt.getContextAlarmList() != null) {
             for (NumericContextAlarm nca : fpt.getContextAlarmList()) {
                 MatchCriteriaEvaluator evaluator = pdata.getEvaluator(nca.getContextMatch());
-                if (evaluator.evaluate(processingData) == MatchResult.OK) {
+                if (evaluator.evaluate(processingCtx) == MatchResult.OK) {
                     mon = true;
                     alarmType = nca;
                     staticAlarmRanges = nca.getStaticAlarmRanges();
@@ -280,7 +278,7 @@ public class ParameterAlarmChecker {
         pv.setSevereRange(severeRange);
     }
 
-    private void performAlarmCheckingEnumerated(ProcessingData processingData,
+    private void performAlarmCheckingEnumerated(ProcessingContext processingCtx,
             EnumeratedParameterType ept, ParameterValue pv) {
         pv.setMonitoringResult(null); // Default is DISABLED, but that doesn't seem fit when we are checking
         String s = pv.getEngValue().getStringValue();
@@ -290,7 +288,7 @@ public class ParameterAlarmChecker {
         if (ept.getContextAlarmList() != null) {
             for (EnumerationContextAlarm nca : ept.getContextAlarmList()) {
                 MatchCriteriaEvaluator evaluator = pdata.getEvaluator(nca.getContextMatch());
-                if (evaluator.evaluate(processingData) == MatchResult.OK) {
+                if (evaluator.evaluate(processingCtx) == MatchResult.OK) {
                     alarm = nca;
                     minViolations = nca.getMinViolations();
                     break;

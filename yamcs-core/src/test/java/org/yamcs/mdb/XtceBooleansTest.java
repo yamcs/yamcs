@@ -15,6 +15,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.ProcessorConfig;
 import org.yamcs.YConfiguration;
+import org.yamcs.mdb.MetaCommandProcessor.CommandBuildResult;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.utils.TimeEncoding;
@@ -93,7 +94,7 @@ public class XtceBooleansTest {
         Map<String, Object> args = new HashMap<>();
 
         args.put("bool1", "True");
-        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        byte[] b = buildCommand(mc, args).getCmdPacket();
         byte[] expected = { 1 };
         assertArrayEquals(expected, b);
     }
@@ -106,7 +107,7 @@ public class XtceBooleansTest {
             Map<String, Object> args = new HashMap<>();
 
             args.put("bool1", "true");
-            metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+            buildCommand(mc, args).getCmdPacket();
         });
     }
 
@@ -116,7 +117,7 @@ public class XtceBooleansTest {
         Map<String, Object> args = new HashMap<>();
 
         args.put("bool1", "False");
-        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        byte[] b = buildCommand(mc, args).getCmdPacket();
         byte[] expected = { 0 };
         assertArrayEquals(expected, b);
     }
@@ -129,7 +130,7 @@ public class XtceBooleansTest {
             Map<String, Object> args = new HashMap<>();
 
             args.put("bool1", "false");
-            metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+            buildCommand(mc, args).getCmdPacket();
         });
     }
 
@@ -139,7 +140,7 @@ public class XtceBooleansTest {
         Map<String, Object> args = new HashMap<>();
 
         args.put("bool2", "yes!");
-        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        byte[] b = buildCommand(mc, args).getCmdPacket();
         byte[] expected = { 'y', 'e', 's', '!' };
         assertArrayEquals(expected, b);
     }
@@ -150,7 +151,7 @@ public class XtceBooleansTest {
         Map<String, Object> args = new HashMap<>();
 
         args.put("bool2", "nooo");
-        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        byte[] b = buildCommand(mc, args).getCmdPacket();
         byte[] expected = { 'n', 'o', 'o', 'o' };
         assertArrayEquals(expected, b);
     }
@@ -161,7 +162,7 @@ public class XtceBooleansTest {
         Map<String, Object> args = new HashMap<>();
 
         args.put("bool1", true);
-        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        byte[] b = buildCommand(mc, args).getCmdPacket();
         byte[] expected = { 1 };
         assertArrayEquals(expected, b);
     }
@@ -172,7 +173,7 @@ public class XtceBooleansTest {
         Map<String, Object> args = new HashMap<>();
 
         args.put("bool1", false);
-        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        byte[] b = buildCommand(mc, args).getCmdPacket();
         byte[] expected = { 0 };
         assertArrayEquals(expected, b);
     }
@@ -183,5 +184,9 @@ public class XtceBooleansTest {
 
     private ContainerProcessingResult processPacket(byte[] buf, SequenceContainer sc) {
         return extractor.processPacket(buf, now, now, 0, sc);
+    }
+
+    CommandBuildResult buildCommand(MetaCommand mc, Map<String, Object> argAssignmentList) throws ErrorInCommand {
+        return metaCommandProcessor.buildCommand(mc, argAssignmentList, 0);
     }
 }

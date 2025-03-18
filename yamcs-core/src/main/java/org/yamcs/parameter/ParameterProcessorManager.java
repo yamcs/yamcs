@@ -17,7 +17,7 @@ import org.yamcs.alarms.ParameterAlarmServer;
 import org.yamcs.alarms.ParameterAlarmStreamer;
 import org.yamcs.logging.Log;
 import org.yamcs.mdb.ParameterAlarmChecker;
-import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.ProcessingContext;
 import org.yamcs.mdb.XtceTmProcessor;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.DataSource;
@@ -31,8 +31,8 @@ import com.google.common.util.concurrent.AbstractService;
 /**
  * Makes the connection between {@link ParameterProvider} and {@link ParameterProcessor}
  * <p>
- * Each parameter processor will get the {@link ProcessingData} delivery (those containing parameters it is interested
- * into) and can further add parameters to it.
+ * Each parameter processor will get the {@link ProcessingContext} delivery (those containing parameters it is
+ * interested into) and can further add parameters to it.
  * <p>
  * The AlgorithmManager is a parameter processor and is added first in the list.
  * <p>
@@ -203,11 +203,11 @@ public class ParameterProcessorManager extends AbstractService implements Parame
     }
 
     @Override
-    public void process(ProcessingData processingData) {
-        ParameterValueList pvlist = processingData.getTmParams();
+    public void process(ProcessingContext processingCtx) {
+        ParameterValueList pvlist = processingCtx.getTmParams();
         log.trace("Received TM data with {} parameters", pvlist.size);
         if (alarmChecker != null) {
-            alarmChecker.performAlarmChecking(processingData, pvlist.iterator());
+            alarmChecker.performAlarmChecking(processingCtx, pvlist.iterator());
         }
         BitSet bitset = new BitSet();
         bitset.or(subscribeAll);
@@ -232,7 +232,7 @@ public class ParameterProcessorManager extends AbstractService implements Parame
 
             for (int id = bitset.nextSetBit(0); id != -1; id = bitset.nextSetBit(id + 1)) {
                 finished = false;
-                sendToProcessor(parameterProcessors[id], processingData);
+                sendToProcessor(parameterProcessors[id], processingCtx);
             }
 
             // check the new parameters added in the loop above
@@ -259,19 +259,19 @@ public class ParameterProcessorManager extends AbstractService implements Parame
     }
 
     // sends the parameter to processor
-    private void sendToProcessor(ParameterProcessor paramProcessor, ProcessingData processingData) {
+    private void sendToProcessor(ParameterProcessor paramProcessor, ProcessingContext processingCtx) {
         log.trace("Sending data to parameter processor {}", paramProcessor.getClass());
-        ParameterValueList pvlist = processingData.getTmParams();
+        ParameterValueList pvlist = processingCtx.getTmParams();
 
         Iterator<ParameterValue> tailIt = pvlist.tailIterator();
 
         try {
-            paramProcessor.process(processingData);
+            paramProcessor.process(processingCtx);
         } catch (Exception e) {
             log.error("Parameter processor exception ", e);
         }
         if (alarmChecker != null) {
-            alarmChecker.performAlarmChecking(processingData, tailIt);
+            alarmChecker.performAlarmChecking(processingCtx, tailIt);
         }
     }
 
@@ -295,7 +295,6 @@ public class ParameterProcessorManager extends AbstractService implements Parame
     public AlarmServer<Parameter, ParameterValue> getAlarmServer() {
         return parameterAlarmServer;
     }
-
 
     void subscribeAllToProviders() {
         if (!subscribedAllParameters) {

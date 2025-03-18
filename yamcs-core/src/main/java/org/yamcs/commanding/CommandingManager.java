@@ -68,7 +68,7 @@ public class CommandingManager extends AbstractService {
             int seq, User user) throws ErrorInCommand, YamcsException {
         log.debug("Building command {} with arguments {}", mc.getName(), argAssignmentList);
 
-        CommandBuildResult cbr = metaCommandProcessor.buildCommand(mc, argAssignmentList);
+        CommandBuildResult cbr = metaCommandProcessor.buildCommand(mc, argAssignmentList, processor.getCurrentTime());
 
         CommandId cmdId = CommandId.newBuilder().setCommandName(mc.getQualifiedName()).setOrigin(origin)
                 .setSequenceNumber(seq).setGenerationTime(processor.getCurrentTime()).build();

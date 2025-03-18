@@ -66,16 +66,16 @@ public class MatchCriteriaEvaluatorFactory {
 
         final OperatorType comparisonOperator;
 
-        abstract ResolvedValue resolveLeft(ProcessingData input);
+        abstract ResolvedValue resolveLeft(ProcessingContext input);
 
-        abstract ResolvedValue resolveRight(ProcessingData input);
+        abstract ResolvedValue resolveRight(ProcessingContext input);
 
         AbstractComparisonEvaluator(OperatorType comparisonOperator) {
             this.comparisonOperator = comparisonOperator;
         }
 
         @Override
-        public MatchResult evaluate(ProcessingData input) {
+        public MatchResult evaluate(ProcessingContext input) {
             ResolvedValue lValue = resolveLeft(input);
             ResolvedValue rValue = resolveRight(input);
 
@@ -143,12 +143,12 @@ public class MatchCriteriaEvaluatorFactory {
         }
 
         @Override
-        ResolvedValue resolveLeft(ProcessingData input) {
+        ResolvedValue resolveLeft(ProcessingContext input) {
             return resolveValue(ref, input);
         }
 
         @Override
-        ResolvedValue resolveRight(ProcessingData input) {
+        ResolvedValue resolveRight(ProcessingContext input) {
             return rValue;
         }
 
@@ -172,12 +172,12 @@ public class MatchCriteriaEvaluatorFactory {
         }
 
         @Override
-        ResolvedValue resolveLeft(ProcessingData input) {
+        ResolvedValue resolveLeft(ProcessingContext input) {
             return resolveValue(leftRef, input);
         }
 
         @Override
-        ResolvedValue resolveRight(ProcessingData input) {
+        ResolvedValue resolveRight(ProcessingContext input) {
             return resolveValue(rightRef, input);
         }
 
@@ -207,7 +207,7 @@ public class MatchCriteriaEvaluatorFactory {
         }
 
         @Override
-        public MatchResult evaluate(ProcessingData input) {
+        public MatchResult evaluate(ProcessingContext input) {
             MatchResult result = MatchResult.OK;
 
             for (MatchCriteriaEvaluator mce : evaluatorList) {
@@ -247,7 +247,7 @@ public class MatchCriteriaEvaluatorFactory {
         }
 
         @Override
-        public MatchResult evaluate(ProcessingData input) {
+        public MatchResult evaluate(ProcessingContext input) {
             MatchResult result = MatchResult.NOK;
 
             for (MatchCriteriaEvaluator mce : evaluatorList) {
@@ -296,7 +296,7 @@ public class MatchCriteriaEvaluatorFactory {
         }
     }
 
-    static ResolvedValue resolveValue(ParameterOrArgumentRef ref, ProcessingData input) {
+    static ResolvedValue resolveValue(ParameterOrArgumentRef ref, ProcessingContext input) {
         if (ref instanceof ParameterInstanceRef) {
             return resolveParameter((ParameterInstanceRef) ref, input);
         } else {
@@ -304,7 +304,7 @@ public class MatchCriteriaEvaluatorFactory {
         }
     }
 
-    static ResolvedValue resolveParameter(ParameterInstanceRef paramRef, ProcessingData input) {
+    static ResolvedValue resolveParameter(ParameterInstanceRef paramRef, ProcessingContext input) {
         ParameterValue pv = null;
         Parameter p = paramRef.getParameter();
         if (p.getDataSource() == DataSource.COMMAND || p.getDataSource() == DataSource.COMMAND_HISTORY) {
@@ -577,7 +577,7 @@ public class MatchCriteriaEvaluatorFactory {
     public static MatchCriteriaEvaluator ALWAYS_MATCH = new MatchCriteriaEvaluator() {
 
         @Override
-        public MatchResult evaluate(ProcessingData input) {
+        public MatchResult evaluate(ProcessingContext input) {
             return MatchResult.OK;
         }
 

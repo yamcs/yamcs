@@ -20,6 +20,7 @@ import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentInstanceRef;
 import org.yamcs.xtce.ArgumentType;
 import org.yamcs.xtce.ArrayArgumentType;
+import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.BinaryArgumentType;
 import org.yamcs.xtce.BinaryDataEncoding;
 import org.yamcs.xtce.BooleanArgumentType;
@@ -60,27 +61,44 @@ public class ArgumentTypeProcessor {
         log.setContext(pdata.getProcessorName());
     }
 
-    public Value decalibrate(ArgumentType atype, Value v) {
-        if (atype instanceof EnumeratedArgumentType) {
-            return decalibrateEnumerated((EnumeratedArgumentType) atype, v);
-        } else if (atype instanceof IntegerArgumentType) {
-            return decalibrateInteger((IntegerArgumentType) atype, v);
-        } else if (atype instanceof FloatArgumentType) {
-            return decalibrateFloat((FloatArgumentType) atype, v);
-        } else if (atype instanceof StringArgumentType) {
-            return decalibrateString((StringArgumentType) atype, v);
-        } else if (atype instanceof BinaryArgumentType) {
-            return decalibrateBinary((BinaryArgumentType) atype, v);
-        } else if (atype instanceof BooleanArgumentType) {
-            return decalibrateBoolean((BooleanArgumentType) atype, v);
-        } else if (atype instanceof AbsoluteTimeArgumentType) {
-            return decalibrateAbsoluteTime((AbsoluteTimeArgumentType) atype, v);
+    /**
+     * Performs the engineering value to the raw value conversion for the given type
+     */
+    public Value decalibrate(ArgumentType atype, Value engValue) {
+        if (atype instanceof BaseDataType bdt) {
+            DataEncoding encoding = bdt.getEncoding();
+            if (encoding == null) {
+                throw new XtceProcessingException("Conversion from engineering value is requested for argument type "
+                        + atype.getName() + "; however there is no encoding defined");
+            }
+            CalibratorProc calibrator = pcontext.pdata.getDecalibrator(bdt);
+            if (calibrator != null) {
+                return calibrator.calibrate(engValue, pcontext);
+            }
+            // if no calibrator is defined, we attempt to convert engValue to the rawValue based on the encoding
+            if (atype instanceof EnumeratedArgumentType) {
+                return decalibrateEnumerated((EnumeratedArgumentType) atype, engValue);
+            } else if (atype instanceof IntegerArgumentType) {
+                return decalibrateInteger((IntegerArgumentType) atype, engValue);
+            } else if (atype instanceof FloatArgumentType) {
+                return decalibrateFloat((FloatArgumentType) atype, engValue);
+            } else if (atype instanceof StringArgumentType) {
+                return decalibrateString((StringArgumentType) atype, engValue);
+            } else if (atype instanceof BinaryArgumentType) {
+                return decalibrateBinary((BinaryArgumentType) atype, engValue);
+            } else if (atype instanceof BooleanArgumentType) {
+                return decalibrateBoolean((BooleanArgumentType) atype, engValue);
+            } else if (atype instanceof AbsoluteTimeArgumentType) {
+                return decalibrateAbsoluteTime((AbsoluteTimeArgumentType) atype, engValue);
+            } else {
+                throw new IllegalStateException("Decalibration for type " + atype + " not implemented");
+            }
         } else if (atype instanceof AggregateArgumentType) {
-            return decalibrateAggregate((AggregateArgumentType) atype, (AggregateValue) v);
+            return decalibrateAggregate((AggregateArgumentType) atype, (AggregateValue) engValue);
         } else if (atype instanceof ArrayArgumentType) {
-            return decalibrateArray((ArrayArgumentType) atype, (ArrayValue) v);
+            return decalibrateArray((ArrayArgumentType) atype, (ArrayValue) engValue);
         } else {
-            throw new IllegalArgumentException("decalibration for " + atype + " not implemented");
+            throw new IllegalStateException("Decalibration for type " + atype + " not implemented");
         }
     }
 
@@ -98,33 +116,20 @@ public class ArgumentTypeProcessor {
     private Value decalibrateInteger(IntegerArgumentType ipt, Value v) {
         DataEncoding encoding = ipt.getEncoding();
 
-        if (encoding instanceof IntegerDataEncoding) {
-            CalibratorProc calibrator = pcontext.pdata.getDecalibrator(encoding);
-            if (calibrator == null) {
-                return DataEncodingUtils.getRawIntegerValue((IntegerDataEncoding) encoding, v);
-            } else {
-                long calibValue = (long) calibrator.calibrate(v.toDouble());
-                return DataEncodingUtils.getRawIntegerValue((IntegerDataEncoding) encoding, calibValue);
-            }
-        } else if (encoding instanceof FloatDataEncoding) {
-            CalibratorProc calibrator = pcontext.pdata.getDecalibrator(encoding);
-            if (calibrator == null) {
-                return DataEncodingUtils.getRawFloatValue((FloatDataEncoding) encoding, v.toDouble());
-            } else {
-                double calibValue = calibrator.calibrate(v.toDouble());
-                return DataEncodingUtils.getRawFloatValue((FloatDataEncoding) encoding, calibValue);
-            }
+        if (encoding instanceof IntegerDataEncoding ide) {
+            return DataEncodingUtils.getRawIntegerValue(ide, v);
+        } else if (encoding instanceof FloatDataEncoding fde) {
+            return DataEncodingUtils.getRawFloatValue(fde, v.toDouble());
         } else if (encoding instanceof StringDataEncoding) {
             return ValueUtility.getStringValue(v.toString());
         } else {
-            throw new IllegalStateException(
-                    "Cannot convert integer to '" + encoding);
+            throw new XtceProcessingException("Cannot convert integer to '" + encoding);
         }
     }
 
     private Value decalibrateBoolean(BooleanArgumentType ipt, Value v) {
         if (v.getType() != Type.BOOLEAN) {
-            throw new IllegalStateException(
+            throw new XtceProcessingException(
                     "Unsupported value type '" + v.getType() + "' cannot be converted to boolean");
         }
         boolean boolv = v.getBooleanValue();
@@ -146,27 +151,15 @@ public class ArgumentTypeProcessor {
     private Value decalibrateFloat(FloatArgumentType fat, Value v) {
         DataEncoding encoding = fat.getEncoding();
 
-        if (encoding instanceof IntegerDataEncoding) {
-            CalibratorProc calibrator = pcontext.pdata.getDecalibrator(encoding);
-            if (calibrator == null) {
-                return DataEncodingUtils.getRawIntegerValue((IntegerDataEncoding) encoding, (long) v.toDouble());
-            } else {
-                long calibValue = Math.round(calibrator.calibrate(v.toDouble()));
-                return DataEncodingUtils.getRawIntegerValue((IntegerDataEncoding) encoding, (long) calibValue);
-            }
-        } else if (encoding instanceof FloatDataEncoding) {
-            CalibratorProc calibrator = pcontext.pdata.getDecalibrator(encoding);
-            if (calibrator == null) {
-                return DataEncodingUtils.getRawFloatValue((FloatDataEncoding) encoding, v.toDouble());
-            } else {
-                double calibValue = calibrator.calibrate(v.toDouble());
-                return DataEncodingUtils.getRawFloatValue((FloatDataEncoding) encoding, calibValue);
-            }
+        if (encoding instanceof IntegerDataEncoding ide) {
+            return DataEncodingUtils.getRawIntegerValue(ide, (long) v.toDouble());
+        } else if (encoding instanceof FloatDataEncoding fde) {
+            return DataEncodingUtils.getRawFloatValue(fde, v.toDouble());
         } else if (encoding instanceof StringDataEncoding) {
             return ValueUtility.getStringValue(v.toString());
         } else {
-            throw new IllegalStateException(
-                    "Cannot convert integer to '" + encoding);
+            throw new XtceProcessingException(
+                    "Unsupported value type '" + v.getType() + "cannot be converted to '" + encoding);
         }
     }
 
@@ -177,7 +170,7 @@ public class ArgumentTypeProcessor {
         } else if (encoding instanceof BinaryDataEncoding) {
             return ValueUtility.getBinaryValue(v.getStringValue().getBytes());
         } else {
-            throw new IllegalStateException(
+            throw new XtceProcessingException(
                     "Unsupported value type '" + v.getType() + "' cannot be converted to " + encoding);
         }
     }
@@ -189,7 +182,7 @@ public class ArgumentTypeProcessor {
         } else if (encoding instanceof StringDataEncoding) {
             return DataEncodingUtils.rawRawStringValue(v);
         } else {
-            throw new IllegalStateException(
+            throw new XtceProcessingException(
                     "Unsupported value type '" + v.getType() + "' cannot be converted to " + encoding);
         }
     }
@@ -226,7 +219,7 @@ public class ArgumentTypeProcessor {
         } else if (enc instanceof IntegerDataEncoding) {
             return ValueUtility.getSint64Value(scaleInt(atype, epochOffset));
         } else {
-            throw new CommandEncodingException(pcontext, "Cannot convert encode absolute time to " + enc + " encoding");
+            throw new CommandEncodingException(pcontext, "Cannot encode absolute time to " + enc + " encoding");
         }
     }
 

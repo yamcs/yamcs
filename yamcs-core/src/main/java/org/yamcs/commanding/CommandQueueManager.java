@@ -28,7 +28,7 @@ import org.yamcs.logging.Log;
 import org.yamcs.mdb.MatchCriteriaEvaluator;
 import org.yamcs.mdb.MatchCriteriaEvaluator.MatchResult;
 import org.yamcs.mdb.MatchCriteriaEvaluatorFactory;
-import org.yamcs.mdb.ProcessingData;
+import org.yamcs.mdb.ProcessingContext;
 import org.yamcs.memento.MementoDb;
 import org.yamcs.parameter.ParameterProcessor;
 import org.yamcs.parameter.ParameterProcessorManager;
@@ -629,9 +629,9 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
      * Called from PRM when new telemetry data is available
      */
     @Override
-    public void process(ProcessingData tmData) {
+    public void process(ProcessingContext ctx) {
         for (TransmissionConstraintChecker tcc : pendingTcCheckers) {
-            tcc.checkWithTm(tmData);
+            tcc.checkWithTm(ctx);
         }
     }
 
@@ -676,17 +676,17 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
         /**
          * This may be called on multiple threads in parallel.
          * <p>
-         * We cannot move the processing data on a different thread, so we do the check here and use the result in the
+         * We cannot move the processing context on a different thread, so we do the check here and use the result in the
          * timer thread.
          */
-        public void checkWithTm(ProcessingData tmData) {
+        public void checkWithTm(ProcessingContext tmCtx) {
             if (aggregateStatus != TCStatus.PENDING) {
                 return;
             }
-            ProcessingData cmdData = ProcessingData.cloneForCommanding(tmData, activeCommand.getArguments(),
-                    activeCommand.getCmdParamCache());
+            ProcessingContext cmdCtx = ProcessingContext.cloneForCommanding(tmCtx, activeCommand.getArguments(),
+                    activeCommand.getCmdParamCache(), processor.getCurrentTime());
 
-            check(System.currentTimeMillis(), cmdData);
+            check(System.currentTimeMillis(), cmdCtx);
         }
 
         public void checkImmediate() {
@@ -702,12 +702,12 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
             if (aggregateStatus != TCStatus.PENDING) {
                 return;
             }
-            ProcessingData cmdData = ProcessingData.createInitial(processor.getLastValueCache(),
-                    activeCommand.getArguments(), activeCommand.getCmdParamCache());
-            check(now, cmdData);
+            ProcessingContext cmdCtx = ProcessingContext.createInitial(processor.getLastValueCache(),
+                    activeCommand.getArguments(), activeCommand.getCmdParamCache(), processor.getCurrentTime());
+            check(now, cmdCtx);
         }
 
-        private void check(long now, ProcessingData data) {
+        private void check(long now, ProcessingContext ctx) {
             TcsUpdate tcsUpdate = new TcsUpdate();
             tcsUpdate.aggrStatus = TCStatus.OK;
             tcsUpdate.scheduleNextCheck = Long.MAX_VALUE;
@@ -721,7 +721,7 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
                         tcsUpdate.aggrStatus = TCStatus.TIMED_OUT;
                         break;
                     } else {
-                        if (tcs.evaluator.evaluate(data) != MatchResult.OK) {
+                        if (tcs.evaluator.evaluate(ctx) != MatchResult.OK) {
                             if (timeRemaining > 0) {
                                 tcsUpdate.aggrStatus = TCStatus.PENDING;
                                 if (timeRemaining < tcsUpdate.scheduleNextCheck) {

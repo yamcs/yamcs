@@ -26,11 +26,11 @@ public class MathOperationCalibratorFactory {
      * @throws IllegalArgumentException
      *             if the expression cannot be compiled
      */
-    public static CalibratorProc compile(MathOperationCalibrator c) {
+    public static NumericCalibrator compile(MathOperationCalibrator c) {
         StringBuilder sb = new StringBuilder();
         String className = "Expression" + c.hashCode();
         sb.append("package org.yamcs.mdb.mocf;\n")
-                .append("public class ").append(className).append(" implements org.yamcs.mdb.CalibratorProc {\n")
+                .append("public class ").append(className).append(" implements org.yamcs.mdb.NumericCalibrator {\n")
                 .append("   public double calibrate(double v) {\n")
                 .append("       return ").append(getJavaExpression(c, null)).append(";\n")
                 .append("   }\n")
@@ -41,7 +41,7 @@ public class MathOperationCalibratorFactory {
             SimpleCompiler compiler = new SimpleCompiler();
             compiler.cook(expr);
             Class<?> cexprClass = compiler.getClassLoader().loadClass("org.yamcs.mdb.mocf." + className);
-            return (CalibratorProc) cexprClass.newInstance();
+            return (NumericCalibrator) cexprClass.getDeclaredConstructor().newInstance();
         } catch (LocatedException e) {
             String msg = e.getMessage();
             Location l = e.getLocation();

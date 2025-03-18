@@ -19,6 +19,7 @@ import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.AbsoluteTimeParameterType;
 import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.ArrayParameterType;
+import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.BinaryParameterType;
 import org.yamcs.xtce.BooleanDataType;
 import org.yamcs.xtce.BooleanParameterType;
@@ -29,8 +30,6 @@ import org.yamcs.xtce.FloatValidRange;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.IntegerValidRange;
 import org.yamcs.xtce.Member;
-import org.yamcs.xtce.NumericDataEncoding;
-import org.yamcs.xtce.NumericParameterType;
 import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.ReferenceTime;
@@ -60,36 +59,78 @@ public class ParameterTypeProcessor {
      * 
      * @param pval
      */
-    public void calibrate(ProcessingData processingData, ParameterValue pval) {
-        doCalibrate(processingData, pval);
+    public void calibrate(ProcessingContext processingCtx, ParameterValue pval) {
+        doCalibrate(processingCtx, pval);
     }
 
     public void calibrate(ParameterValue pval) {
         doCalibrate(null, pval);
     }
 
-    private void doCalibrate(ProcessingData processingData, ParameterValue pval) {
+    private void doCalibrate(ProcessingContext processingCtx, ParameterValue pval) {
         ParameterType ptype = pdata.getParameterType(pval.getParameter());
+        Value rawValue = pval.getRawValue();
         Value engValue;
-
-        if (requireCalibration(ptype, pval.getRawValue())) {
-            engValue = doCalibrate(processingData, ptype, pval.getRawValue());
-        } else {
-            engValue = pval.getRawValue();
-        }
-
-        if (engValue != null) {
+        try {
+            if (requireCalibration(ptype, rawValue)) {
+                engValue = doCalibrate(processingCtx, ptype, rawValue);
+            } else {
+                engValue = pval.getRawValue();
+            }
             pval.setEngValue(engValue);
             if (checkValidityRanges) {
                 checkValidity(ptype, pval);
             }
-        } else {
+        } catch (XtceProcessingException e) {
+            log.info("Exception calibrating {}: {}", pval, e);
+            pval.setInvalid();
+        } catch (Exception e) {
+            log.error("Exception calibrating {}: {}" + pval, e);
             pval.setInvalid();
         }
     }
 
+    private Value doCalibrate(ProcessingContext processingCtx, ParameterType ptype,
+            Value rawValue) {
+        Value engValue;
+
+        if (ptype instanceof BaseDataType bdt) {
+            CalibratorProc calibrator = pdata.getCalibrator(processingCtx, bdt);
+            if (calibrator == null) {
+                if (ptype instanceof EnumeratedParameterType ept) {
+                    engValue = convertToEnumerated(ept, rawValue);
+                } else if (ptype instanceof IntegerParameterType ipt) {
+                    engValue = convertToInteger(processingCtx, ipt, rawValue);
+                } else if (ptype instanceof FloatParameterType fpt) {
+                    engValue = convertToFloat(processingCtx, fpt, rawValue);
+                } else if (ptype instanceof BinaryParameterType bpt) {
+                    engValue = convertToBinary(bpt, rawValue);
+                } else if (ptype instanceof StringParameterType spt) {
+                    engValue = convertToString(spt, rawValue);
+                } else if (ptype instanceof BooleanParameterType bpt) {
+                    engValue = convertToBoolean(bpt, rawValue);
+                } else if (ptype instanceof AbsoluteTimeParameterType apt) {
+                    engValue = calibrateAbsoluteTime(processingCtx, apt, rawValue);
+                } else {
+                    throw new IllegalStateException("Extraction of " + ptype + " not implemented");
+                }
+            } else {
+                engValue = calibrator.calibrate(rawValue, processingCtx);
+            }
+        } else if (ptype instanceof AggregateParameterType apt) {
+            engValue = calibrateAggregate(processingCtx, apt, (AggregateValue) rawValue);
+        } else if (ptype instanceof ArrayParameterType apt) {
+            engValue = calibrateArray(processingCtx, apt, (ArrayValue) rawValue);
+        } else {
+            throw new IllegalStateException("Extraction of " + ptype + " not implemented");
+        }
+        return engValue;
+    }
+
     private boolean requireCalibration(ParameterType ptype, Value rawValue) {
-        if (rawValue instanceof AggregateValue aggrv) {
+        if ((ptype instanceof BaseDataType bdtype) && hasCalibrator(bdtype)) {
+            return true;
+        } else if (rawValue instanceof AggregateValue aggrv) {
             if (ptype instanceof AggregateParameterType aggptype) {
                 for (Member m : aggptype.getMemberList()) {
                     var v = aggrv.getMemberValue(m.getName());
@@ -115,57 +156,20 @@ public class ParameterTypeProcessor {
             } else {
                 return true;
             }
-        } else if ((ptype instanceof NumericParameterType nptype) && hasCalibrator(nptype)) {
-            return true;
         } else {
             return rawValue.getType() != ptype.getValueType();
         }
     }
 
-    private boolean hasCalibrator(NumericParameterType npt) {
-        DataEncoding encoding = npt.getEncoding();
+    private boolean hasCalibrator(BaseDataType bpt) {
+        DataEncoding encoding = bpt.getEncoding();
         if (encoding == null) {
             return false;
         }
-        if (encoding instanceof NumericDataEncoding) {
-            NumericDataEncoding nde = (NumericDataEncoding) encoding;
-            return nde.getContextCalibratorList() != null || nde.getDefaultCalibrator() != null;
-        } else {
-            return false;
-        }
+        return encoding.getContextCalibratorList() != null || encoding.getDefaultCalibrator() != null;
     }
 
-    private Value doCalibrate(ProcessingData processingData, ParameterType ptype,
-            Value rawValue) {
-        Value engValue;
-
-        if (ptype instanceof EnumeratedParameterType) {
-            engValue = calibrateEnumerated((EnumeratedParameterType) ptype, rawValue);
-        } else if (ptype instanceof IntegerParameterType) {
-            engValue = calibrateInteger(processingData, (IntegerParameterType) ptype, rawValue);
-        } else if (ptype instanceof FloatParameterType) {
-            engValue = calibrateFloat(processingData, (FloatParameterType) ptype, rawValue);
-        } else if (ptype instanceof BinaryParameterType) {
-            engValue = calibrateBinary((BinaryParameterType) ptype, rawValue);
-        } else if (ptype instanceof StringParameterType) {
-            engValue = calibrateString((StringParameterType) ptype, rawValue);
-        } else if (ptype instanceof BooleanParameterType) {
-            engValue = calibrateBoolean((BooleanParameterType) ptype, rawValue);
-        } else if (ptype instanceof AbsoluteTimeParameterType) {
-            engValue = calibrateAbsoluteTime(processingData, (AbsoluteTimeParameterType) ptype, rawValue);
-        } else if (ptype instanceof AggregateParameterType) {
-            engValue = calibrateAggregate(processingData, (AggregateParameterType) ptype,
-                    (AggregateValue) rawValue);
-        } else if (ptype instanceof ArrayParameterType) {
-            engValue = calibrateArray(processingData, (ArrayParameterType) ptype, (ArrayValue) rawValue);
-        } else {
-            throw new IllegalArgumentException("Extraction of " + ptype + " not implemented");
-        }
-        return engValue;
-
-    }
-
-    private static Value calibrateEnumerated(EnumeratedParameterType ept, Value rawValue) {
+    private static Value convertToEnumerated(EnumeratedParameterType ept, Value rawValue) {
         switch (rawValue.getType()) {
         case UINT32:
             return ValueUtility.getEnumeratedValue(rawValue.getUint32Value(), ept.calibrate(rawValue.getUint32Value()));
@@ -186,8 +190,8 @@ public class ParameterTypeProcessor {
                 long l = Long.decode(rawValue.getStringValue());
                 return ValueUtility.getEnumeratedValue(l, ept.calibrate(l));
             } catch (NumberFormatException e) {
-                log.warn("{}: failed to parse string '{}' to long", ept.getName(), rawValue.getStringValue());
-                return null;
+                throw new XtceProcessingException(String.format("%s: failed to parse string '%s' to long",
+                        ept.getName(), rawValue.getStringValue()));
             }
         case BINARY:
             byte[] b = rawValue.getBinaryValue();
@@ -211,7 +215,7 @@ public class ParameterTypeProcessor {
         return ByteArrayUtils.decodeLong(b1, 0);
     }
 
-    private static Value calibrateBoolean(BooleanParameterType bpt, Value rawValue) {
+    private static Value convertToBoolean(BooleanParameterType bpt, Value rawValue) {
         switch (rawValue.getType()) {
         case SINT32:
             return ValueUtility.getBooleanValue(rawValue.getSint32Value() != 0);
@@ -253,7 +257,7 @@ public class ParameterTypeProcessor {
         }
     }
 
-    private static Value calibrateBinary(BinaryParameterType bpt, Value rawValue) {
+    private static Value convertToBinary(BinaryParameterType bpt, Value rawValue) {
         switch (rawValue.getType()) {
         case SINT32:
             return new BinaryValue(BigInteger.valueOf(rawValue.getSint32Value()).toByteArray());
@@ -268,32 +272,31 @@ public class ParameterTypeProcessor {
         }
     }
 
-    private Value calibrateInteger(ProcessingData processingData, IntegerParameterType ipt, Value rawValue) {
-
+    private Value convertToInteger(ProcessingContext processingCtx, IntegerParameterType ipt, Value rawValue) {
         switch (rawValue.getType()) {
         case SINT32:
-            return doIntegerCalibration(processingData, ipt, rawValue.getSint32Value());
+            return convertToInterger(processingCtx, ipt, rawValue.getSint32Value());
         case SINT64:
-            return doIntegerCalibration(processingData, ipt, rawValue.getSint64Value());
+            return convertToInterger(processingCtx, ipt, rawValue.getSint64Value());
         case UINT32:
-            return doIntegerCalibration(processingData, ipt, rawValue.getUint32Value() & 0xFFFFFFFFL);
+            return convertToInterger(processingCtx, ipt, rawValue.getUint32Value() & 0xFFFFFFFFL);
         case UINT64:
-            return doIntegerCalibration(processingData, ipt, rawValue.getUint64Value());
+            return convertToInterger(processingCtx, ipt, rawValue.getUint64Value());
         case FLOAT:
-            return doIntegerCalibration(processingData, ipt, (long) rawValue.getFloatValue());
+            return convertToInterger(processingCtx, ipt, (long) rawValue.getFloatValue());
         case DOUBLE:
-            return doIntegerCalibration(processingData, ipt, (long) rawValue.getDoubleValue());
+            return convertToInterger(processingCtx, ipt, (long) rawValue.getDoubleValue());
         case STRING:
             try {
                 long l = Long.decode(rawValue.getStringValue());
-                return doIntegerCalibration(processingData, ipt, l);
+                return convertToInterger(processingCtx, ipt, l);
             } catch (NumberFormatException e) {
                 try {
                     long l = (long) Double.parseDouble(rawValue.getStringValue());
-                    return doIntegerCalibration(processingData, ipt, l);
+                    return convertToInterger(processingCtx, ipt, l);
                 } catch (NumberFormatException e2) {
-                    log.warn("{}: failed to parse string '{}' to long", ipt.getName(), rawValue.getStringValue());
-                    return null;
+                    throw new XtceProcessingException(String.format("%s: failed to parse string '%s' to long",
+                            ipt.getName(), rawValue.getStringValue()));
                 }
             }
         default:
@@ -302,27 +305,23 @@ public class ParameterTypeProcessor {
         }
     }
 
-    private Value doIntegerCalibration(ProcessingData processingData, IntegerParameterType ipt, long longValue) {
-        CalibratorProc calibrator = pdata.getCalibrator(processingData, ipt.getEncoding());
-
-        long longCalValue = (calibrator == null) ? longValue : (long) calibrator.calibrate(longValue);
-
+    private Value convertToInterger(ProcessingContext processingCtx, IntegerParameterType ipt, long longValue) {
         if (ipt.getSizeInBits() <= 32) {
             if (ipt.isSigned()) {
-                return ValueUtility.getSint32Value((int) longCalValue);
+                return ValueUtility.getSint32Value((int) longValue);
             } else {
-                return ValueUtility.getUint32Value((int) longCalValue);
+                return ValueUtility.getUint32Value((int) longValue);
             }
         } else {
             if (ipt.isSigned()) {
-                return ValueUtility.getSint64Value(longCalValue);
+                return ValueUtility.getSint64Value(longValue);
             } else {
-                return ValueUtility.getUint64Value(longCalValue);
+                return ValueUtility.getUint64Value(longValue);
             }
         }
     }
 
-    private static Value calibrateString(StringParameterType spt, Value rawValue) {
+    private static Value convertToString(StringParameterType spt, Value rawValue) {
         if (rawValue.getType() == Type.STRING) {
             return rawValue;
         } else {
@@ -331,27 +330,27 @@ public class ParameterTypeProcessor {
         }
     }
 
-    private Value calibrateFloat(ProcessingData processingData, FloatParameterType ptype, Value rawValue) {
+    private Value convertToFloat(ProcessingContext processingCtx, FloatParameterType ptype, Value rawValue) {
         switch (rawValue.getType()) {
         case DOUBLE:
-            return doFloatCalibration(processingData, ptype, rawValue.getDoubleValue());
+            return convertToFloat(processingCtx, ptype, rawValue.getDoubleValue());
         case FLOAT:
-            return doFloatCalibration(processingData, ptype, rawValue.getFloatValue());
+            return convertToFloat(processingCtx, ptype, rawValue.getFloatValue());
         case SINT32:
-            return doFloatCalibration(processingData, ptype, rawValue.getSint32Value());
+            return convertToFloat(processingCtx, ptype, rawValue.getSint32Value());
         case SINT64:
-            return doFloatCalibration(processingData, ptype, rawValue.getSint64Value());
+            return convertToFloat(processingCtx, ptype, rawValue.getSint64Value());
         case UINT32:
-            return doFloatCalibration(processingData, ptype, rawValue.getUint32Value() & 0xFFFFFFFFL);
+            return convertToFloat(processingCtx, ptype, rawValue.getUint32Value() & 0xFFFFFFFFL);
         case UINT64:
-            return doFloatCalibration(processingData, ptype, UnsignedLong.toDouble(rawValue.getUint64Value()));
+            return convertToFloat(processingCtx, ptype, UnsignedLong.toDouble(rawValue.getUint64Value()));
         case STRING:
             try {
                 Double d = Double.parseDouble(rawValue.getStringValue());
-                return doFloatCalibration(processingData, ptype, d);
+                return convertToFloat(processingCtx, ptype, d);
             } catch (NumberFormatException e) {
-                log.warn("{}: failed to parse string '{}' to double", ptype.getName(), rawValue.getStringValue());
-                return null;
+                throw new XtceProcessingException(String.format("%s: failed to parse string '%s' to double",
+                        ptype.getName(), rawValue.getStringValue()));
             }
         default:
             throw new IllegalStateException(
@@ -359,19 +358,17 @@ public class ParameterTypeProcessor {
         }
     }
 
-    private Value doFloatCalibration(ProcessingData processingData, FloatParameterType ptype,
+    private Value convertToFloat(ProcessingContext processingCtx, FloatParameterType ptype,
             double doubleValue) {
-        CalibratorProc calibrator = pdata.getCalibrator(processingData, ptype.getEncoding());
 
-        double doubleCalValue = (calibrator == null) ? doubleValue : calibrator.calibrate(doubleValue);
         if (ptype.getSizeInBits() == 32) {
-            return ValueUtility.getFloatValue((float) doubleCalValue);
+            return ValueUtility.getFloatValue((float) doubleValue);
         } else {
-            return ValueUtility.getDoubleValue(doubleCalValue);
+            return ValueUtility.getDoubleValue(doubleValue);
         }
     }
 
-    private Value calibrateAbsoluteTime(ProcessingData processingData, AbsoluteTimeParameterType ptype,
+    private Value calibrateAbsoluteTime(ProcessingContext processingCtx, AbsoluteTimeParameterType ptype,
             Value rawValue) {
 
         ReferenceTime rtime = ptype.getReferenceTime();
@@ -379,7 +376,7 @@ public class ParameterTypeProcessor {
             if (rawValue.getType() == Type.TIMESTAMP) {
                 return rawValue;
             } else {
-                throw new IllegalStateException(
+                throw new XtceProcessingException(
                         "Raw value type '" + rawValue.getType()
                                 + "' cannot be converted to absolute time without a reference time");
             }
@@ -418,18 +415,17 @@ public class ParameterTypeProcessor {
         } else {
             ParameterInstanceRef ref = rtime.getOffsetFrom();
             if (ref != null) {
-                long referenceTime = getParaReferenceTime(processingData, ptype, ref);
+                long referenceTime = getParaReferenceTime(processingCtx, ptype, ref);
                 if (referenceTime == TimeEncoding.INVALID_INSTANT) {
-                    return null;
+                    throw new XtceProcessingException(ptype.getName() + ": could not extract the reference time");
                 }
                 time = offsetMillisec + referenceTime;
             } else {
-                log.warn("{}: cannot calibrate with a epoch without a reference", ptype.getName());
-                return null;
+                throw new XtceProcessingException(
+                        ptype.getName() + ": cannot calibrate with a epoch without a reference");
             }
         }
         return ValueUtility.getTimestampValue(time);
-
     }
 
     private long computeTime(AbsoluteTimeParameterType ptype, long offset) {
@@ -448,13 +444,13 @@ public class ParameterTypeProcessor {
         }
     }
 
-    private long getParaReferenceTime(ProcessingData processingData, ParameterType ptype,
+    private long getParaReferenceTime(ProcessingContext processingCtx, ParameterType ptype,
             ParameterInstanceRef ref) {
-        if (processingData == null) {
+        if (processingCtx == null) {
             log.warn("{}: no parameter processing context avaialble", ptype.getName());
             return TimeEncoding.INVALID_INSTANT;
         }
-        ParameterValue pv = processingData.getParameterInstance(ref);
+        ParameterValue pv = processingCtx.getParameterInstance(ref);
         if (pv == null) {
             log.warn("{}: no instance of {} found in the processing context", ptype.getName(),
                     ref.getParameter().getQualifiedName());
@@ -490,48 +486,29 @@ public class ParameterTypeProcessor {
         }
     }
 
-    private Value calibrateAggregate(ProcessingData processingData, AggregateParameterType ptype,
+    private Value calibrateAggregate(ProcessingContext processingCtx, AggregateParameterType ptype,
             AggregateValue rawValue) {
         AggregateValue engValue = new AggregateValue(ptype.getMemberNames());
         for (Member m : ptype.getMemberList()) {
             Value rv = rawValue.getMemberValue(m.getName());
-            if (rv != null) {
-                Value ev = doCalibrate(processingData, (ParameterType) m.getType(), rv);
-                if (ev != null) {
-                    engValue.setMemberValue(m.getName(), ev);
-                } else {
-                    return null;
-                }
-            } else {
-                return null;
-            }
+            Value ev = doCalibrate(processingCtx, (ParameterType) m.getType(), rv);
+            engValue.setMemberValue(m.getName(), ev);
         }
         return engValue;
     }
 
-    private Value calibrateArray(ProcessingData processingData, ArrayParameterType ptype, ArrayValue rawValue) {
+    private Value calibrateArray(ProcessingContext processingCtx, ArrayParameterType ptype, ArrayValue rawValue) {
         ParameterType engElementType = (ParameterType) ptype.getElementType();
 
         int fl = rawValue.flatLength();
         Value rv = rawValue.getElementValue(0);
-        Value ev = doCalibrate(processingData, engElementType, rv);
-        if (ev == null) {
-            return null;
-        }
+        Value ev = doCalibrate(processingCtx, engElementType, rv);
         ArrayValue engValue = new ArrayValue(rawValue.getDimensions(), ev.getType());
         engValue.setElementValue(0, ev);
         for (int i = 1; i < fl; i++) {
             rv = rawValue.getElementValue(i);
-            if (rv != null) {
-                ev = doCalibrate(processingData, engElementType, rv);
-                if (ev != null) {
-                    engValue.setElementValue(i, ev);
-                } else {
-                    return null;
-                }
-            } else {
-                return null;
-            }
+            ev = doCalibrate(processingCtx, engElementType, rv);
+            engValue.setElementValue(i, ev);
         }
         return engValue;
     }
@@ -566,7 +543,5 @@ public class ParameterTypeProcessor {
                 }
             }
         }
-
     }
-
 }

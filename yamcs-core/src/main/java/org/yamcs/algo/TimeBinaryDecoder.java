@@ -61,7 +61,6 @@ public class TimeBinaryDecoder extends AbstractDataDecoder {
         } else {
             tcoService = null;
         }
-
     }
 
     @Override
@@ -76,7 +75,7 @@ public class TimeBinaryDecoder extends AbstractDataDecoder {
         long t;
         if (tcoService != null) {
             long obt = timeDecoder.decodeRaw(suppl);
-            long acqTime = pcontext.getAcquisitionTime();
+            long acqTime = pcontext.getGenerationTime();
             t = tcoService.getHistoricalTime(Instant.get(acqTime), obt).getMillis();
         } else {
             t = timeDecoder.decode(suppl);

@@ -100,21 +100,13 @@ public class SequenceEntryProcessor {
         ContainerParameterValue pv = new ContainerParameterValue(param,
                 pcontext.buffer.offset(), pcontext.buffer.getPosition());
         int startPosition = pcontext.buffer.getPosition();
-
         Value rv = extract(ptype);
         if (rv == null) {
-            // A dynamically sized array could have zero length.
-            // Currently this is represented has having no value.
-            if (ptype instanceof ArrayParameterType) {
-                return null;
-            }
-            System.out.println("setting invalid");
             pv.setInvalid();
         } else {
             pv.setRawValue(rv);
         }
         pv.setBitSize(pcontext.buffer.getPosition() - startPosition);
-
         pcontext.proccessorData.parameterTypeProcessor.calibrate(result, pv);
 
         pv.setAcquisitionTime(result.acquisitionTime);
