@@ -578,7 +578,7 @@ public class ReplicationMaster extends AbstractYamcsService {
                                 Instant.ofEpochMilli(rfa.lastAccess));
                         rfa.rf.close();
                         rfa.rf = null;
-                    } else if (rfa.rf.isSyncRequired()) {
+                    } else if (rfa.rf != null && rfa.rf.isSyncRequired()) {
                         // the file has just been rotated by the data thread
                         rfa.rf.sync();
                         currentFile.setSyncRequired(false);
