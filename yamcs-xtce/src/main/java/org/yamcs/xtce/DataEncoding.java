@@ -6,6 +6,8 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.ByteOrder;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -22,10 +24,12 @@ import java.util.Set;
  * Therefore in Yamcs we allow the catch all custom algorithm for all encodings and the BinaryDataEncoding can only
  * convert from binary to binary.
  * 
- *
  */
 public abstract class DataEncoding implements Serializable {
-    private static final long serialVersionUID = 4L;
+    private static final long serialVersionUID = 5L;
+
+    protected Calibrator defaultCalibrator = null;
+    protected List<ContextCalibrator> contextCalibratorList = null;
 
     /**
      * size in bits if known. If the size in bits is variable, it should be set to -1.
@@ -65,6 +69,8 @@ public abstract class DataEncoding implements Serializable {
 
         this.fromBinaryTransformAlgorithm = builder.fromBinaryTransformAlgorithm;
         this.toBinaryTransformAlgorithm = builder.toBinaryTransformAlgorithm;
+        this.defaultCalibrator = builder.defaultCalibrator;
+        this.contextCalibratorList = builder.contextCalibratorList;
 
         if (builder.baseEncoding != null) {
             DataEncoding baseEncoding = builder.baseEncoding;
@@ -80,6 +86,12 @@ public abstract class DataEncoding implements Serializable {
             }
             if (builder.toBinaryTransformAlgorithm == null) {
                 this.toBinaryTransformAlgorithm = baseEncoding.toBinaryTransformAlgorithm;
+            }
+            if (builder.defaultCalibrator == null) {
+                this.defaultCalibrator = baseEncoding.defaultCalibrator;
+            }
+            if (builder.contextCalibratorList == null) {
+                this.contextCalibratorList = baseEncoding.contextCalibratorList;
             }
         }
     }
@@ -146,7 +158,31 @@ public abstract class DataEncoding implements Serializable {
     }
 
     public Set<Parameter> getDependentParameters() {
-        return Collections.emptySet();
+        if (contextCalibratorList != null) {
+            Set<Parameter> r = new HashSet<>();
+            for (ContextCalibrator cc : contextCalibratorList) {
+                r.addAll(cc.getContextMatch().getDependentParameters());
+            }
+            return r;
+        } else {
+            return Collections.emptySet();
+        }
+    }
+
+    public List<ContextCalibrator> getContextCalibratorList() {
+        return contextCalibratorList;
+    }
+
+    public Calibrator getDefaultCalibrator() {
+        return defaultCalibrator;
+    }
+
+    public void setDefaultCalibrator(Calibrator calibrator) {
+        this.defaultCalibrator = calibrator;
+    }
+
+    public void setContextCalibratorList(List<ContextCalibrator> contextCalibratorList) {
+        this.contextCalibratorList = contextCalibratorList;
     }
 
     /**
@@ -162,12 +198,16 @@ public abstract class DataEncoding implements Serializable {
         private Algorithm fromBinaryTransformAlgorithm;
         private Algorithm toBinaryTransformAlgorithm;
         DataEncoding baseEncoding;
+        Calibrator defaultCalibrator = null;
+        private List<ContextCalibrator> contextCalibratorList = null;
 
         public Builder(DataEncoding encoding) {
             this.sizeInBits = encoding.sizeInBits;
             this.byteOrder = encoding.byteOrder;
             this.fromBinaryTransformAlgorithm = encoding.fromBinaryTransformAlgorithm;
             this.toBinaryTransformAlgorithm = encoding.toBinaryTransformAlgorithm;
+            this.defaultCalibrator = encoding.defaultCalibrator;
+            this.contextCalibratorList = encoding.contextCalibratorList;
         }
 
         public Builder() {
@@ -190,6 +230,24 @@ public abstract class DataEncoding implements Serializable {
 
         public T setByteOrder(ByteOrder byteOrder) {
             this.byteOrder = byteOrder;
+            return self();
+        }
+
+        public List<ContextCalibrator> getContextCalibratorList() {
+            return contextCalibratorList;
+        }
+
+        public Calibrator getDefaultCalibrator() {
+            return defaultCalibrator;
+        }
+
+        public T setDefaultCalibrator(Calibrator calibrator) {
+            this.defaultCalibrator = calibrator;
+            return self();
+        }
+
+        public T setContextCalibratorList(List<ContextCalibrator> contextCalibratorList) {
+            this.contextCalibratorList = contextCalibratorList;
             return self();
         }
 

@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 
 import org.yamcs.YConfiguration;
 import org.yamcs.mdb.ConditionParser;
-import org.yamcs.mdb.JavaExpressionCalibratorFactory;
+import org.yamcs.mdb.JavaExpressionNumericCalibratorFactory;
 import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.SpreadsheetLoadContext;
 import org.yamcs.mdb.SpreadsheetLoadException;
@@ -546,11 +546,7 @@ public class V7Loader extends V7LoaderBase {
                 IntegerDataEncoding.Builder intStringEncoding = new IntegerDataEncoding.Builder()
                         .setStringEncoding(sde);
                 if (calib != null) {
-                    Calibrator c = calibrators.get(calib);
-                    if (c == null) {
-                        throw new SpreadsheetLoadException(ctx, "Parameter " + name + " specified calibrator '"
-                                + calib + "' but the calibrator does not exist");
-                    }
+                    Calibrator c = getNumericCalibrator(name, calib);
                     intStringEncoding.setDefaultCalibrator(c);
                 }
                 ((IntegerDataType.Builder<?>) dtypeb).setEncoding(intStringEncoding);
@@ -564,13 +560,8 @@ public class V7Loader extends V7LoaderBase {
                 // Create a new float encoding which uses the configured string encoding
                 FloatDataEncoding.Builder floatStringEncoding = new FloatDataEncoding.Builder().setStringEncoding(sde);
                 if (calib != null) {
-                    Calibrator c = calibrators.get(calib);
-                    if (c == null) {
-                        throw new SpreadsheetLoadException(ctx, "Parameter " + name + " specified calibrator '"
-                                + calib + "' but the calibrator does not exist.");
-                    } else {
-                        floatStringEncoding.setDefaultCalibrator(c);
-                    }
+                    Calibrator c = getNumericCalibrator(name, calib);
+                    floatStringEncoding.setDefaultCalibrator(c);
                 }
                 ((FloatDataType.Builder<?>) dtypeb).setEncoding(floatStringEncoding);
             } else {
@@ -985,7 +976,8 @@ public class V7Loader extends V7LoaderBase {
 
             if (calib != null && !PARAM_ENGTYPE_ENUMERATED.equalsIgnoreCase(engtype)
                     && !PARAM_ENGTYPE_TIME.equalsIgnoreCase(engtype)) {
-                ((IntegerDataEncoding.Builder) encoding).setDefaultCalibrator(getNumberCalibrator(paraArgDescr, calib));
+                ((IntegerDataEncoding.Builder) encoding)
+                        .setDefaultCalibrator(getNumericCalibrator(paraArgDescr, calib));
                 ((IntegerDataEncoding.Builder) encoding).setContextCalibratorList(contextCalibrators.get(calib));
             }
         } else if (PARAM_RAWTYPE_FLOAT.equalsIgnoreCase(rawtype)) {
@@ -1010,8 +1002,8 @@ public class V7Loader extends V7LoaderBase {
             }
             if (calib != null && !PARAM_ENGTYPE_ENUMERATED.equalsIgnoreCase(engtype)
                     && !PARAM_ENGTYPE_TIME.equalsIgnoreCase(engtype)) {
-                ((FloatDataEncoding.Builder) encoding).setDefaultCalibrator(getNumberCalibrator(paraArgDescr, calib));
-                ((FloatDataEncoding.Builder) encoding).setContextCalibratorList(contextCalibrators.get(calib));
+                encoding.setDefaultCalibrator(getNumericCalibrator(paraArgDescr, calib));
+                encoding.setContextCalibratorList(contextCalibrators.get(calib));
             }
         } else if (PARAM_RAWTYPE_BOOLEAN.equalsIgnoreCase(rawtype)) {
             if (customFromBinaryTransform != null) {
@@ -1119,10 +1111,10 @@ public class V7Loader extends V7LoaderBase {
         return encoding;
     }
 
-    private Calibrator getNumberCalibrator(String paraArgDescr, String calibName) {
+    private Calibrator getNumericCalibrator(String paraArgDescr, String calibName) {
         Calibrator c = calibrators.get(calibName);
         if (c != null) {
-            return c;
+            return clone(c);
         }
         if (!contextCalibrators.containsKey(calibName)) {
             throw new SpreadsheetLoadException(ctx, paraArgDescr + " is supposed to have a calibrator '" + calibName
@@ -1134,8 +1126,9 @@ public class V7Loader extends V7LoaderBase {
     JavaExpressionCalibrator getJavaCalibrator(String javaFormula) {
         JavaExpressionCalibrator jec = new JavaExpressionCalibrator(javaFormula);
         try {
-            JavaExpressionCalibratorFactory.compile(jec);
+            JavaExpressionNumericCalibratorFactory.compile(jec);
         } catch (IllegalArgumentException e) {
+            e.printStackTrace();
             throw new SpreadsheetLoadException(ctx, e.getMessage());
         }
         return jec;
@@ -2576,6 +2569,23 @@ public class V7Loader extends V7LoaderBase {
             }
         } else {
             return 1;
+        }
+    }
+
+    /**
+     * Starting with Yamcs 5.12 we do not allow sharing calibrators between types. That's because we create a one to one
+     * calibrator processor that has the required output type embedded inside. If two different types have the same
+     * calibrator that cannot work.
+     */
+    static Calibrator clone(Calibrator c) {
+        if (c instanceof PolynomialCalibrator pc) {
+            return new PolynomialCalibrator(pc.getCoefficients());
+        } else if (c instanceof SplineCalibrator sc) {
+            return new SplineCalibrator(Arrays.asList(sc.getPoints()));
+        } else if (c instanceof JavaExpressionCalibrator jec) {
+            return new JavaExpressionCalibrator(jec.getFormula());
+        } else {
+            throw new IllegalStateException("Unknown calibrator " + c);
         }
     }
 }

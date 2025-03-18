@@ -1,6 +1,10 @@
+Version 5.12.0 released 
+- Rework calibrators to allow calibrating from any raw value type to any engineering value type. XTCE only allows calibrating numerical values (using polynomials or math expressions), so the new calibrators can only be used from the custom MDB loaders for the moment.
+
+
 Version 5.11.7 released 19-Mar-2025
 - Fixed a bug in replication preventing old replication files to be removed.
-- - Minor tweaks and fixes in yamcs-web.
+- Minor tweaks and fixes in yamcs-web.
 
 Version 5.11.6 released 05-Mar-2025
 - Fixed another parameter archive corruption bug triggered when the realtime filler is used

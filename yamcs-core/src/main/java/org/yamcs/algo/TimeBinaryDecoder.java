@@ -61,7 +61,6 @@ public class TimeBinaryDecoder extends AbstractDataDecoder {
         } else {
             tcoService = null;
         }
-
     }
 
     @Override

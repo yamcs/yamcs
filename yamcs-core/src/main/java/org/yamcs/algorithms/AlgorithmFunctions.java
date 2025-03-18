@@ -6,13 +6,12 @@ import org.yamcs.events.EventProducerFactory;
 import org.yamcs.logging.Log;
 import org.yamcs.mdb.ProcessorData;
 import org.yamcs.time.Instant;
-import org.yamcs.utils.TimeEncoding;
-import org.yamcs.xtce.BaseDataType;
-import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.EnumeratedParameterType;
-import org.yamcs.xtce.IntegerDataEncoding;
+import org.yamcs.xtce.NumericDataType;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.mdb.CalibratorProc;
 import org.yamcs.mdb.Mdb;
+import org.yamcs.mdb.NumericCalibratorProc;
 
 /**
  * Library of functions available from within Algorithm scripts using this naming scheme:
@@ -57,13 +56,12 @@ public class AlgorithmFunctions {
     public Object calibrate(int raw, String parameter) {
         Parameter p = mdb.getParameter(parameter);
         if (p != null) {
-            if (p.getParameterType() instanceof EnumeratedParameterType) {
-                EnumeratedParameterType ptype = (EnumeratedParameterType) p.getParameterType();
+            if (p.getParameterType() instanceof EnumeratedParameterType ptype) {
                 return ptype.calibrate(raw);
-            } else {
-                DataEncoding encoding = ((BaseDataType) p.getParameterType()).getEncoding();
-                if (encoding instanceof IntegerDataEncoding) {
-                    return processorData.getCalibrator(null, encoding).calibrate(raw);
+            } else if (p.getParameterType() instanceof NumericDataType dtype) {
+                CalibratorProc c = processorData.getCalibrator(null, dtype);
+                if (c instanceof NumericCalibratorProc nc) {
+                    return nc.calibrate((double) raw);
                 }
             }
         } else {

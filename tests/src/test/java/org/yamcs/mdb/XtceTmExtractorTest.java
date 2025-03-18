@@ -39,7 +39,6 @@ import org.yamcs.parameter.FloatValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.Value;
-import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.tests.RefMdbPacketGenerator;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.utils.TimeEncoding;

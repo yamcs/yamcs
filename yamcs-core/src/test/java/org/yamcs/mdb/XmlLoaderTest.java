@@ -190,7 +190,7 @@ public class XmlLoaderTest {
         FloatDataEncoding encoding = (FloatDataEncoding) ptype.getEncoding();
         MathOperationCalibrator c = (MathOperationCalibrator) encoding.getDefaultCalibrator();
 
-        CalibratorProc cproc = MathOperationCalibratorFactory.compile(c);
+        NumericCalibrator cproc = (NumericCalibrator) MathOperationCalibratorFactory.compile(c);
         double value = 3;
         double expectedResult = 64 * (Math.log(1.234 * value) / Math.log(2));
         assertEquals(expectedResult, cproc.calibrate(value), 1E-10);

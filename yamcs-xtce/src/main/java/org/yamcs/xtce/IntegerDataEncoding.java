@@ -1,26 +1,17 @@
 package org.yamcs.xtce;
 
 import java.nio.ByteOrder;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * For all major encodings of integer data
- * 
- * @author nm
  *
  */
-public class IntegerDataEncoding extends DataEncoding implements NumericDataEncoding {
-    private static final long serialVersionUID = 3L;
+public class IntegerDataEncoding extends DataEncoding {
+    private static final long serialVersionUID = 4L;
     static Logger log = LoggerFactory.getLogger(IntegerDataEncoding.class.getName());
-
-    Calibrator defaultCalibrator = null;
-    private List<ContextCalibrator> contextCalibratorList = null;
 
     public enum Encoding {
         UNSIGNED, TWOS_COMPLEMENT, SIGN_MAGNITUDE, ONES_COMPLEMENT, STRING
@@ -36,20 +27,10 @@ public class IntegerDataEncoding extends DataEncoding implements NumericDataEnco
             this.encoding = builder.encoding;
         }
 
-        this.defaultCalibrator = builder.defaultCalibrator;
-        this.contextCalibratorList = builder.contextCalibratorList;
-
         this.stringEncoding = builder.stringEncoding;
 
         if (builder.baseEncoding instanceof IntegerDataEncoding) {
             IntegerDataEncoding baseEncoding = (IntegerDataEncoding) builder.baseEncoding;
-            if (builder.defaultCalibrator == null) {
-                this.defaultCalibrator = baseEncoding.defaultCalibrator;
-            }
-
-            if (builder.contextCalibratorList == null) {
-                this.contextCalibratorList = baseEncoding.contextCalibratorList;
-            }
 
             if (builder.encoding == null) {
                 this.encoding = baseEncoding.encoding;
@@ -77,16 +58,8 @@ public class IntegerDataEncoding extends DataEncoding implements NumericDataEnco
         return stringEncoding;
     }
 
-    public Calibrator getDefaultCalibrator() {
-        return defaultCalibrator;
-    }
-
     public void setEncoding(Encoding encoding) {
         this.encoding = encoding;
-    }
-
-    public void setDefaultCalibrator(Calibrator calibrator) {
-        this.defaultCalibrator = calibrator;
     }
 
     @Override
@@ -99,27 +72,6 @@ public class IntegerDataEncoding extends DataEncoding implements NumericDataEnco
             return Long.decode(stringValue);
         } else {
             return Long.decode(stringValue).intValue();
-        }
-    }
-
-    public List<ContextCalibrator> getContextCalibratorList() {
-        return contextCalibratorList;
-    }
-
-    public void setContextCalibratorList(List<ContextCalibrator> contextCalibratorList) {
-        this.contextCalibratorList = contextCalibratorList;
-    }
-
-    @Override
-    public Set<Parameter> getDependentParameters() {
-        if (contextCalibratorList != null) {
-            Set<Parameter> r = new HashSet<>();
-            for (ContextCalibrator cc : contextCalibratorList) {
-                r.addAll(cc.getContextMatch().getDependentParameters());
-            }
-            return r;
-        } else {
-            return Collections.emptySet();
         }
     }
 
@@ -148,16 +100,12 @@ public class IntegerDataEncoding extends DataEncoding implements NumericDataEnco
         return new IntegerDataEncoding(this);
     }
 
-    public static class Builder extends DataEncoding.Builder<Builder> implements NumericDataEncoding.Builder<Builder> {
-        Calibrator defaultCalibrator = null;
-        private List<ContextCalibrator> contextCalibratorList = null;
+    public static class Builder extends DataEncoding.Builder<Builder> {
         Encoding encoding = null;
         StringDataEncoding stringEncoding = null;
 
         public Builder(IntegerDataEncoding encoding) {
             super(encoding);
-            this.defaultCalibrator = encoding.defaultCalibrator;
-            this.contextCalibratorList = encoding.contextCalibratorList;
             this.encoding = encoding.encoding;
             this.stringEncoding = encoding.stringEncoding;
         }
@@ -177,11 +125,6 @@ public class IntegerDataEncoding extends DataEncoding implements NumericDataEnco
             return self();
         }
 
-        public Builder setDefaultCalibrator(Calibrator defaultCalibrator) {
-            this.defaultCalibrator = defaultCalibrator;
-            return self();
-        }
-
         public Builder setEncoding(Encoding enc) {
             this.encoding = enc;
             return self();
@@ -193,11 +136,6 @@ public class IntegerDataEncoding extends DataEncoding implements NumericDataEnco
 
         public Builder setByteOrder(ByteOrder byteOrder) {
             this.byteOrder = byteOrder;
-            return self();
-        }
-
-        public Builder setContextCalibratorList(List<ContextCalibrator> list) {
-            this.contextCalibratorList = list;
             return self();
         }
     }

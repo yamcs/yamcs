@@ -6,12 +6,12 @@ import org.yamcs.xtce.SplineCalibrator;
 import org.yamcs.xtce.SplinePoint;
 
 /**
- * A calibration type where a segmented line in a raw vs calibrated plane is described using a set of points.
- * Raw values are converted to calibrated values by finding a position on the line corresponding to the raw value.
- * The algorithm triggers on the input parameter.
+ * A calibration type where a segmented line in a raw vs calibrated plane is described using a set of points. Raw values
+ * are converted to calibrated values by finding a position on the line corresponding to the raw value. The algorithm
+ * triggers on the input parameter.
  *
  */
-public class SplineCalibratorProc implements CalibratorProc {
+public class SplineCalibratorProc implements NumericCalibrator {
     SplinePoint[] points;
 
     public SplineCalibratorProc(SplineCalibrator c) {
