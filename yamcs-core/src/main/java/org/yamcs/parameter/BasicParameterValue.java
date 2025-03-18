@@ -78,6 +78,10 @@ public class BasicParameterValue extends RawEngValue {
         return status.isExpired();
     }
 
+    public boolean isNotReceived() {
+        return status.isNotReceived();
+    }
+
     public void setWatchRange(DoubleRange range) {
         changeNominalStatus();
         status.setWatchRange(range);
