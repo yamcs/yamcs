@@ -268,6 +268,36 @@ export class OpiDisplayViewerComponent implements Viewer, PVProvider, OnDestroy 
       }).catch(err => this.messageService.showError(err));
     });
 
+    this.display.addEventListener('runstack', evt => {
+      const parts = evt.path.split('/');
+      const resolvedParts: string[] = [];
+      for (const part of parts) {
+        if (part === '.') {
+          // Ignore
+        } else if (part === '..') {
+          resolvedParts.pop();
+        } else {
+          resolvedParts.push(part);
+        }
+      }
+
+      const resolvedPath = resolvedParts.join('/');
+      const bucketRoot = this.storageClient.getObjectURL(this.bucket, '');
+      if (resolvedPath.startsWith(bucketRoot)) {
+        const objectName = resolvedPath.slice(bucketRoot.length);
+        this.yamcs.yamcsClient.startActivity(this.yamcs.instance!, {
+          type: 'COMMAND_STACK',
+          args: {
+            processor: this.yamcs.processor!,
+            bucket: this.bucket,
+            stack: objectName,
+          },
+        }).catch(err => this.messageService.showError(err));
+      } else {
+        this.messageService.showError('Failed to resolve stack path');
+      }
+    });
+
     this.display.addEventListener('runprocedure', evt => {
       this.yamcs.yamcsClient.startProcedure(this.yamcs.instance!, evt.procedure, {
         arguments: evt.args,
