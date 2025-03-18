@@ -60,6 +60,11 @@ public class BasicParameterValue extends RawEngValue {
         status.setInvalid();
     }
 
+    public void setNotReceived() {
+        changeNominalStatus();
+        status.setNotReceived();
+    }
+
     public void setExpired() {
         changeNominalStatus();
         status.setExpired();

@@ -91,23 +91,27 @@ public class ParameterStatus {
     }
 
     public boolean isInvalid() {
-        return isBitSet(acqStatus, 0);
+        return isInvalid(acqStatus);
     }
 
     public void setInvalid() {
         acqStatus |= 1 << 0;
     }
 
+    public boolean isNotReceived() {
+        return isNotReceived(acqStatus);
+    }
+
+    public void setNotReceived() {
+        acqStatus |= 1 << 1;
+    }
+
     public boolean isExpired() {
-        return isBitSet(acqStatus, 2);
+        return isExpired(acqStatus);
     }
 
     public void setExpired() {
         acqStatus |= 1 << 2;
-    }
-
-    public static boolean isExpired(int acqStatus) {
-        return isBitSet(acqStatus, 2);
     }
 
     public static boolean isNominal(int acqStatus) {
@@ -120,6 +124,14 @@ public class ParameterStatus {
 
     public static boolean isInvalid(int acqStatus) {
         return isBitSet(acqStatus, 0);
+    }
+
+    public static boolean isNotReceived(int acqStatus) {
+        return isBitSet(acqStatus, 1);
+    }
+
+    public static boolean isExpired(int acqStatus) {
+        return isBitSet(acqStatus, 2);
     }
 
     private static boolean isBitSet(int acqStatus, int x) {
