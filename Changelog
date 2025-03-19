@@ -1,3 +1,7 @@
+Version 5.11.7 released 19-Mar-2025
+- Fixed a bug in replication preventing old replication files to be removed.
+- - Minor tweaks and fixes in yamcs-web.
+
 Version 5.11.6 released 05-Mar-2025
 - Fixed another parameter archive corruption bug triggered when the realtime filler is used
 
