@@ -371,7 +371,7 @@ public class PGSegment {
                 + ", segmentIdxInsideInterval: " + segmentIdxInsideInterval
                 + ", previousFullGaps: " + previousFullGaps
                 + ", currentFullGaps: " + currentFullGaps
-                + "\n timeSegment: " + timeSegment
+                + ", timeSegment: " + timeSegment
                 + "]";
     }
 }

@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -323,22 +324,25 @@ public class RealtimeArchiveFillerTest {
 
         ArgumentCaptor<PGSegment> segCaptor = ArgumentCaptor.forClass(PGSegment.class);
         verify(parameterArchive, times(4)).writeToArchive(segCaptor.capture());
-        PGSegment seg0 = segCaptor.getAllValues().get(0);
+        Map<Long, List<PGSegment>> segs = segCaptor.getAllValues().stream()
+                .collect(Collectors.groupingBy(PGSegment::getInterval, HashMap::new, Collectors.toList()));
+
+        PGSegment seg0 = segs.get(0l).get(0);
         assertEquals(0, seg0.getSegmentStart());
         assertEquals(2, seg0.getSegmentEnd());
         assertEquals(0, seg0.getSegmentIdxInsideInterval());
 
-        PGSegment seg1 = segCaptor.getAllValues().get(1);
+        PGSegment seg1 = segs.get(0l).get(1);
         assertEquals(INTERVAL_SIZE_MILLIS - 2, seg1.getSegmentStart());
         assertEquals(INTERVAL_SIZE_MILLIS - 1, seg1.getSegmentEnd());
         assertEquals(3, seg1.getSegmentIdxInsideInterval());
 
-        PGSegment seg2 = segCaptor.getAllValues().get(2);
+        PGSegment seg2 = segs.get(INTERVAL_SIZE_MILLIS).get(0);
         assertEquals(INTERVAL_SIZE_MILLIS + 0, seg2.getSegmentStart());
         assertEquals(INTERVAL_SIZE_MILLIS + 2, seg2.getSegmentEnd());
         assertEquals(0, seg2.getSegmentIdxInsideInterval());
 
-        PGSegment seg3 = segCaptor.getAllValues().get(3);
+        PGSegment seg3 = segs.get(INTERVAL_SIZE_MILLIS).get(1);
         assertEquals(INTERVAL_SIZE_MILLIS + 3, seg3.getSegmentStart());
         assertEquals(INTERVAL_SIZE_MILLIS + 4, seg3.getSegmentEnd());
         assertEquals(3, seg3.getSegmentIdxInsideInterval());

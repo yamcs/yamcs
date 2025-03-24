@@ -162,6 +162,7 @@ public class ParameterRetrievalService extends AbstractYamcsService {
                 }
                 cf.complete(null);
             } catch (Exception e) {
+                log.error("Error during retrieval", e);
                 cf.completeExceptionally(e);
             }
         });
@@ -219,6 +220,7 @@ public class ParameterRetrievalService extends AbstractYamcsService {
             } catch (ConsumerAbortException e) {
                 cf.complete(null);
             } catch (Exception e) {
+                log.error("Error during retrieval", e);
                 cf.completeExceptionally(e);
             }
         });
@@ -275,6 +277,7 @@ public class ParameterRetrievalService extends AbstractYamcsService {
             } catch (ConsumerAbortException e) {
                 cf.complete(null);
             } catch (Exception e) {
+                log.error("Error during retrieval", e);
                 cf.completeExceptionally(e);
             }
         });
