@@ -53,6 +53,9 @@ export class StackFilePageDirtyGuard {
         this.dialogOpen$.next(true);
         this.dialogRef = this.dialog.open(StackFilePageDirtyDialog, {
           width: '400px',
+          data: {
+            stackFileService: this.stackFileService,
+          },
         });
         this.dialogRef.afterClosed().subscribe({
           next: result => {
