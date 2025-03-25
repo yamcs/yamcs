@@ -15,7 +15,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.AfterEach;
@@ -26,7 +25,6 @@ import org.yamcs.YamcsServer;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.IntArray;
-import org.yamcs.utils.IntHashSet;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.yarch.rocksdb.RdbStorageEngine;
@@ -464,7 +462,7 @@ public class ParchiveWithSparseGroupsTest extends BaseParchiveTest {
         List<ParameterIdValueList> l = retrieveMultipleParameters(0,
                 TimeEncoding.POSITIVE_INFINITY,
                 new int[] { p1id, p2id }, new int[] { pgid, pgid }, true);
-        // assertEquals(14, l.size());
+        assertEquals(10, l.size());
 
         checkEquals(l.get(0), 100, pv1_1);
         checkEquals(l.get(1), 200, pv1_2, pv2_2);
@@ -476,6 +474,44 @@ public class ParchiveWithSparseGroupsTest extends BaseParchiveTest {
         checkEquals(l.get(7), 800, pv1_8);
         checkEquals(l.get(8), 900, pv1_9, pv2_9);
         checkEquals(l.get(9), 1000, pv1_10, pv2_10);
+    }
+
+    @Test
+    public void testUnsorted() throws Exception {
+        openDb("none", true, 1);
+
+        BackFillerTask task = new BackFillerTask(parchive);
+        task.maxSegmentSize = 3;
+
+        // interval 0 - p1 and p2 - to make sure that p1 and p2 are in the same group
+        ParameterValue pv1_1 = getParameterValue(p1, 100, "pv1_1");
+        ParameterValue pv2_1 = getParameterValue(p2, 100, "pv2_1");
+        task.processParameters(Arrays.asList(pv1_1, pv2_1));
+
+
+        // interval 1 - p1, p1 and then p2 in between
+        long t1 = ParameterArchive.getIntervalEnd(0) + 1;
+        ParameterValue pv1_2 = getParameterValue(p1, t1, "pv1_2");
+        ParameterValue pv1_3 = getParameterValue(p1, t1 + 200, "pv1_3");
+        ParameterValue pv2_2 = getParameterValue(p2, t1 + 100, "pv2_2");
+
+        task.processParameters(Arrays.asList(pv1_2));
+        task.processParameters(Arrays.asList(pv1_3));
+        task.processParameters(Arrays.asList(pv2_2));
+        task.flush();
+
+        var p1id = parchive.getParameterIdDb().get(p1.getQualifiedName())[0].getPid();
+        var p2id = parchive.getParameterIdDb().get(p2.getQualifiedName())[0].getPid();
+        var pgid = parchive.getParameterGroupIdDb().getGroup(IntArray.wrap(p1id, p2id)).id;
+
+        List<ParameterIdValueList> l = retrieveMultipleParameters(0,
+                TimeEncoding.POSITIVE_INFINITY,
+                new int[] { p1id, p2id }, new int[] { pgid, pgid }, true);
+        assertEquals(4, l.size());
+        checkEquals(l.get(0), 100, pv1_1, pv2_1);
+        checkEquals(l.get(1), t1, pv1_2);
+        checkEquals(l.get(2), t1 + 100, pv2_2);
+        checkEquals(l.get(3), t1 + 200, pv1_3);
     }
 
     @Test
