@@ -17,6 +17,10 @@ import org.yamcs.tctm.ccsds.TransferFrameDecoder.CcsdsFrameType;
 import org.yamcs.time.Instant;
 
 public abstract class AbstractTmFrameLink extends AbstractLink implements AggregatedDataLink {
+    // all the TM frame links should move the TM frame config under this section, to allow having both TM and TC frame
+    // in the same link
+    final public static String TM_FRAME_CONFIG_SECTION = "tmFrameConfig";
+    
     protected List<Link> subLinks;
     protected MasterChannelFrameHandler frameHandler;
     protected AtomicLong validFrameCount = new AtomicLong(0);
@@ -28,7 +32,11 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
     @Override
     public Spec getDefaultSpec() {
         var spec = super.getDefaultSpec();
+        addDefaultOptions(spec);
+        return spec;
+    }
 
+    public static Spec addDefaultOptions(Spec spec) {
         spec.addOption("frameType", OptionType.STRING).withChoices(CcsdsFrameType.class);
         spec.addOption("clcwStream", OptionType.STRING);
         spec.addOption("goodFrameStream", OptionType.STRING);

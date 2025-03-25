@@ -29,6 +29,9 @@ import org.yamcs.utils.YObjectLoader;
  * 
  */
 public abstract class AbstractTcFrameLink extends AbstractLink implements AggregatedDataLink, TcDataLink {
+    // all the TC frame links should move the TC frame config under this section, to allow having both TM and TC frame
+    // in the same link
+    final public static String TC_FRAME_CONFIG_SECTION = "tcFrameConfig";
     protected int frameCount;
     boolean sendCltu;
     protected MasterChannelFrameMultiplexer multiplexer;
@@ -46,7 +49,11 @@ public abstract class AbstractTcFrameLink extends AbstractLink implements Aggreg
     @Override
     public Spec getDefaultSpec() {
         var spec = super.getDefaultSpec();
+        spec = addDefaultOptions(spec);
+        return spec;
+    }
 
+    public static Spec addDefaultOptions(Spec spec) {
         spec.addOption("frameType", OptionType.STRING).withChoices(CcsdsFrameType.class);
         spec.addOption("clcwStream", OptionType.STRING);
         spec.addOption("goodFrameStream", OptionType.STRING);
