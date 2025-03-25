@@ -1,6 +1,11 @@
+Version 5.11.8 released 25-Mar-2025
+- Fixed a bug with the parameter archive realtime filler appearing when inserted data was unsorted
+- Unset dirty flag when leaving stack #1014
+- Minor changes in the TM and TC frame options to allow adding frame support to the Yamcs gateway plugin
+
 Version 5.11.7 released 19-Mar-2025
 - Fixed a bug in replication preventing old replication files to be removed.
-- - Minor tweaks and fixes in yamcs-web.
+- Minor tweaks and fixes in yamcs-web.
 
 Version 5.11.6 released 05-Mar-2025
 - Fixed another parameter archive corruption bug triggered when the realtime filler is used
