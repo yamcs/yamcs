@@ -348,7 +348,7 @@ public class PGSegment {
     }
 
     // create a new ParameterValueSegment with the pv on position pos and everything else gap
-    ParameterValueSegment newPvs(int pid, SortedTimeSegment timeSegment, int pos, BasicParameterValue pv) {
+    private ParameterValueSegment newPvs(int pid, SortedTimeSegment timeSegment, int pos, BasicParameterValue pv) {
         ParameterValueSegment pvs = new ParameterValueSegment(pid, timeSegment, type(pv.getEngValue()),
                 type(pv.getRawValue()));
 
@@ -360,6 +360,11 @@ public class PGSegment {
             pvs.insertGap(i);
         }
         return pvs;
+    }
+
+    protected ParameterValueSegment newPvs(int pid, SortedTimeSegment timeSegment, Type engValueType,
+            Type rawValueType) {
+        return new ParameterValueSegment(pid, timeSegment, engValueType, rawValueType);
     }
 
     public String toString() {

@@ -32,7 +32,7 @@ public class SynchronizedPGSegment extends PGSegment {
     }
 
     @Override
-    ParameterValueSegment newPvs(int pid, SortedTimeSegment timeSegment, Type engValueType,
+    protected ParameterValueSegment newPvs(int pid, SortedTimeSegment timeSegment, Type engValueType,
             Type rawValueType) {
         return new SynchronizedParameterValueSegment(pid, timeSegment, engValueType, rawValueType, lock);
     }
