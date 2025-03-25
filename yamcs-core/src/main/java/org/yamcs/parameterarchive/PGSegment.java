@@ -47,7 +47,7 @@ import org.yamcs.utils.TimeEncoding;
  */
 public class PGSegment {
     final int parameterGroupId;
-    private SortedTimeSegment timeSegment;
+    private final SortedTimeSegment timeSegment;
     List<ParameterValueSegment> pvSegments;
 
     /**
@@ -120,13 +120,7 @@ public class PGSegment {
             } else if (pvs.pid > pid2) {
                 // new parameter, we have to shift all existing segments to the right and insert a new segment with gaps
                 // in all positions except pos
-                ParameterValueSegment newPvs = newPvs(pid2, timeSegment, type(pv.getEngValue()),
-                        type(pv.getRawValue()));
-                for (int i = 0; i < pos; i++) {
-                    newPvs.insertGap(i);
-                }
-                newPvs.insert(pos, pv);
-                pvSegments.add(idx1, newPvs);
+                pvSegments.add(idx1, newPvs(pid2, timeSegment, pos, pv));
                 if (currentFullGaps != null && !currentFullGaps.remove(pid2)) {
                     // pid2 is part of this segment and was not part of the previous segments
                     // it means we need to generate gaps for it in the previous segments when merging them
@@ -153,13 +147,7 @@ public class PGSegment {
             BasicParameterValue pv = values.get(idx2);
             var pid2 = pids.get(idx2);
             // new segment to add to the end of the segment list
-            ParameterValueSegment newPvs = newPvs(pid2, timeSegment, type(pv.getEngValue()),
-                    type(pv.getRawValue()));
-            for (int i = 0; i < pos; i++) {
-                newPvs.insertGap(i);
-            }
-            newPvs.insert(pos, pv);
-            pvSegments.add(newPvs);
+            pvSegments.add(newPvs(pid2, timeSegment, pos, pv));
             if (currentFullGaps != null && !currentFullGaps.remove(pid2)) {
                 // pid2 is added to this segment but was not part of the previous segments
                 previousFullGaps.add(pid2);
@@ -359,9 +347,19 @@ public class PGSegment {
         }
     }
 
-    ParameterValueSegment newPvs(int pid, SortedTimeSegment timeSegment, Type engValueType,
-            Type rawValueType) {
-        return new ParameterValueSegment(pid, timeSegment, engValueType, rawValueType);
+    // create a new ParameterValueSegment with the pv on position pos and everything else gap
+    ParameterValueSegment newPvs(int pid, SortedTimeSegment timeSegment, int pos, BasicParameterValue pv) {
+        ParameterValueSegment pvs = new ParameterValueSegment(pid, timeSegment, type(pv.getEngValue()),
+                type(pv.getRawValue()));
+
+        for (int i = 0; i < pos; i++) {
+            pvs.insertGap(i);
+        }
+        pvs.insert(pos, pv);
+        for (int i = pos + 1; i < timeSegment.size(); i++) {
+            pvs.insertGap(i);
+        }
+        return pvs;
     }
 
     public String toString() {
