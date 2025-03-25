@@ -68,6 +68,7 @@ import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.AlarmLevels;
 import org.yamcs.xtce.AlarmRanges;
 import org.yamcs.xtce.Algorithm;
+import org.yamcs.xtce.AlgorithmCalibrator;
 import org.yamcs.xtce.AncillaryData;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentAssignment;
@@ -1246,6 +1247,8 @@ public class XtceToGpbAssembler {
         } else if (calibrator instanceof MathOperationCalibrator) {
             calibratorInfob.setType(CalibratorInfo.Type.MATH_OPERATION);
             // MathOperationCalibrator mathOperationCalibrator = (MathOperationCalibrator) calibrator;
+        } else if (calibrator instanceof AlgorithmCalibrator) {
+            calibratorInfob.setType(CalibratorInfo.Type.ALGORITHM);
         } else {
             throw new IllegalArgumentException("Unexpected calibrator type " + calibrator.getClass());
         }

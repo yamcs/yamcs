@@ -73,7 +73,7 @@ public class ArgumentTypeProcessor {
             }
             CalibratorProc calibrator = pcontext.pdata.getDecalibrator(bdt);
             if (calibrator != null) {
-                return calibrator.calibrate(engValue, pcontext);
+                return calibrator.decalibrate(engValue, pcontext);
             }
             // if no calibrator is defined, we attempt to convert engValue to the rawValue based on the encoding
             if (atype instanceof EnumeratedArgumentType) {

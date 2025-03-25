@@ -4,6 +4,7 @@ import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.UnsignedLong;
 import org.yamcs.utils.ValueUtility;
+import org.yamcs.xtce.BaseDataType;
 
 /**
  * Calibrates float32/float64/sint32/sint64/uint32/uint64 into float32/float64/sint32/sint64/uint32/uint64
@@ -13,15 +14,24 @@ import org.yamcs.utils.ValueUtility;
  */
 public class NumericCalibratorProc implements CalibratorProc {
     final NumericCalibrator numericCalibrator;
-    Type targetType;
+    BaseDataType dataType;
 
-    public NumericCalibratorProc(Type targetType, NumericCalibrator numericCalibrator) {
-        this.targetType = targetType;
+    public NumericCalibratorProc(BaseDataType dataType, NumericCalibrator numericCalibrator) {
+        this.dataType = dataType;
         this.numericCalibrator = numericCalibrator;
     }
 
     @Override
-    public Value calibrate(Value value, ProcessingContext pctx) {
+    public Value calibrate(Value rawValue, ProcessingContext pctx) {
+        return transform(rawValue, dataType.getValueType());
+    }
+
+    @Override
+    public Value decalibrate(Value engValue, ProcessingContext pctx) {
+        return transform(engValue, DataEncodingUtils.rawValueType(dataType.getEncoding()));
+    }
+
+    private Value transform(Value value, Type targetType) {
         // first convert the value to double
         double uncalibrated = switch (value.getType()) {
         case DOUBLE -> value.getDoubleValue();
@@ -55,11 +65,11 @@ public class NumericCalibratorProc implements CalibratorProc {
         case FLOAT -> ValueUtility.getFloatValue((float) calibrated);
         case DOUBLE -> ValueUtility.getDoubleValue(calibrated);
         default -> {
-            throw new IllegalStateException("Cannot convert calibrated value to " + targetType);
+            throw new IllegalStateException("Cannot convert value to " + targetType);
         }
         };
     }
-
+    
     /**
      * performs double to double calibration using the inner calibrator
      */
@@ -69,7 +79,7 @@ public class NumericCalibratorProc implements CalibratorProc {
 
     @Override
     public String toString() {
-        return "NumericCalibratorProc [targetType=" + targetType + ", numericCalibrator=" + numericCalibrator + "]";
+        return "NumericCalibratorProc [dataType=" + dataType + ", numericCalibrator=" + numericCalibrator + "]";
     }
 
 }

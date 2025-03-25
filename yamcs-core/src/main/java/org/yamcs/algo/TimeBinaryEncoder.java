@@ -62,7 +62,6 @@ public class TimeBinaryEncoder extends AbstractDataEncoder {
         } else {
             tcoService = null;
         }
-
     }
 
 

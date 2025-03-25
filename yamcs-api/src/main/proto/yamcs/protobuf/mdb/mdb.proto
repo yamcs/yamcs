@@ -295,6 +295,7 @@ message CalibratorInfo {
      SPLINE = 1;
      MATH_OPERATION = 2;
      JAVA_EXPRESSION = 3;
+     ALGORITHM = 4;
   }
   optional PolynomialCalibratorInfo polynomialCalibrator = 2;
   optional SplineCalibratorInfo splineCalibrator = 3;

@@ -16,7 +16,7 @@ import org.yamcs.parameter.Value;
  */
 public interface CalibratorProc {
     /**
-     * Calibrate the value v
+     * Convert the raw value to an engineering value
      * <p>
      * 
      * @throws XtceProcessingException
@@ -24,5 +24,16 @@ public interface CalibratorProc {
      *             pdata) is not present
      * 
      */
-    public abstract Value calibrate(Value v, ProcessingContext pctx) throws XtceProcessingException;
+    public abstract Value calibrate(Value rawValue, ProcessingContext pctx) throws XtceProcessingException;
+    
+    /**
+     * Convert the engineering value to a raw value
+     * <p>
+     * 
+     * @throws XtceProcessingException
+     *             if the calibrator cannot calibrate the input value v or if a required input (that should be in the
+     *             pdata) is not present
+     * 
+     */
+    public abstract Value decalibrate(Value engValue, ProcessingContext pctx) throws XtceProcessingException;
 }

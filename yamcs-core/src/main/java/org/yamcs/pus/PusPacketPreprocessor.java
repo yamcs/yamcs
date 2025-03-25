@@ -152,6 +152,7 @@ public class PusPacketPreprocessor extends CcsdsPacketPreprocessor {
         boolean corrupted = false;
         if (!useLocalGenerationTime && timeEpoch == null || timeEpoch == TimeEpochs.NONE) {
             long obt = timeDecoder.decodeRaw(packet, timePktTimeOffset);
+            System.out.println("decoded obt: " + obt);
             Instant ert = tmPacket.getEarthReceptionTime();
             log.debug("Adding tco sample obt: {} , ert: {}", obt, ert);
             tcoService.addSample(obt, ert);

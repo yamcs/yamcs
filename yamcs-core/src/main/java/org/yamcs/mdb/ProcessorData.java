@@ -22,7 +22,6 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs;
-import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.Calibrator;
@@ -226,7 +225,7 @@ public class ProcessorData {
         Calibrator c = findMatchingCalibrator(pdata, de);
 
         try {
-            return getCalibratorProc(c, dataType.getValueType());
+            return getCalibratorProc(c, dataType);
         } catch (Exception e) {
             String msg = "Could not get calibrator processor for " + c + ": " + e.toString();
             eventProducer.sendWarning(msg);
@@ -240,7 +239,7 @@ public class ProcessorData {
         Calibrator c = findMatchingCalibrator(null, de);
 
         try {
-            return getCalibratorProc(c, DataEncodingUtils.rawValueType(de));
+            return getCalibratorProc(c, dataType);
         } catch (Exception e) {
             String msg = "Could not get calibrator processor for " + c + ": " + e.toString();
             eventProducer.sendWarning(msg);
@@ -264,14 +263,14 @@ public class ProcessorData {
         return c;
     }
 
-    private CalibratorProc getCalibratorProc(Calibrator c, Type targetType) {
+    private CalibratorProc getCalibratorProc(Calibrator c, BaseDataType dataType) {
         if (c == null) {
             return null;
         }
 
         CalibratorProc calibrator = calibrators.get(c);
         if (calibrator == null) {
-            calibrator = CalibratorFactory.get(c, targetType, this);
+            calibrator = CalibratorFactory.get(c, dataType, this);
             calibrators.put(c, calibrator);
         }
         return calibrator;
