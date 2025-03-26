@@ -22,14 +22,15 @@ import org.yamcs.yarch.YarchDatabaseInstance;
  */
 public class FrameStreamHelper {
 
-    final static String RECTIME_CNAME = "rectime";
-    final static String SEQ_CNAME = "seq";
+    public final static String RECTIME_CNAME = "rectime";
+    public final static String SEQ_CNAME = "seq";
 
-    final static String ERTIME_CNAME = "ertime";
-    final static String SCID_CNAME = "scid";
-    final static String VCID_CNAME = "vcid";
-    final static String DATA_CNAME = "data";
-    final static String ERROR_CNAME = "error";
+    public final static String ERTIME_CNAME = "ertime";
+    public final static String SCID_CNAME = "scid";
+    public final static String VCID_CNAME = "vcid";
+    public final static String FRAME_SEQ_CNAME = "frameSeq";
+    public final static String DATA_CNAME = "data";
+    public final static String ERROR_CNAME = "error";
 
     static TupleDefinition gftdef;
     static TupleDefinition bftdef;
@@ -41,6 +42,7 @@ public class FrameStreamHelper {
         gftdef.addColumn(new ColumnDefinition(ERTIME_CNAME, DataType.HRES_TIMESTAMP));
         gftdef.addColumn(new ColumnDefinition(SCID_CNAME, DataType.INT));
         gftdef.addColumn(new ColumnDefinition(VCID_CNAME, DataType.INT));
+        gftdef.addColumn(new ColumnDefinition(FRAME_SEQ_CNAME, DataType.LONG));
         gftdef.addColumn(new ColumnDefinition(DATA_CNAME, DataType.BINARY));
 
         bftdef = new TupleDefinition();
@@ -83,7 +85,7 @@ public class FrameStreamHelper {
         }
         long rectime = TimeEncoding.getWallclockTime();
         goodFrameStream.emitTuple(new Tuple(gftdef, Arrays.asList(rectime, seq, frame.getEarthRceptionTime(),
-                frame.getSpacecraftId(), frame.getVirtualChannelId(),
+                frame.getSpacecraftId(), frame.getVirtualChannelId(), frame.getVcFrameSeq(),
                 getData(data, offset, length))));
     }
 
