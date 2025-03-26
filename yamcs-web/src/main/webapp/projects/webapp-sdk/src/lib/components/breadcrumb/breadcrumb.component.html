@@ -1,5 +1,5 @@
 @if (link) {
-  <a class="ya-link" [routerLink]="link" [queryParams]="queryParams">
+  <a class="ya-link" [yaHref]="link" [queryParams]="queryParams">
     @if (icon) {
       <mat-icon class="icon12 item" [class.with-label]="label">
         {{ icon }}
