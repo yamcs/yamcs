@@ -23,16 +23,22 @@ import org.yamcs.xtce.IntegerDataEncoding;
 /**
  * Calibrator that converts Absolute Times to/from integer using a time correlation service.
  * <p>
- * when decalibrating (command arguments) Timestamps are always converted to sint64.
+ * Works both in calibration (integer to timestamp) for parameters and decalibration (timestamp to integer) for command
+ * arguments.
  * <p>
- * when calibrating (tm parameters) the raw value
+ * There is configuration parameter shiftBits that allows shifting the raw value to the left by that number of bits when
+ * converting to the obt that is then passed to the time correlation service. Reversely the obt retrieved from the time
+ * correlation service is shifted to the right to get the raw value.
  * <p>
- * This is most useful when using a time correlation service.
+ * The reason for the shiftBits is that it has been observed in some ESA missions that the time correlation service
+ * works with higher precision than the timestamps used in TM and TC.
+ * 
  */
 public class TcoCalibrator implements AlgorithmCalibratorProc {
     TimeCorrelationService tcoService;
     AlgorithmExecutionContext ctx;
     IntegerDataEncoding dataEncoding;
+    int shiftBits;
 
     public void init(CustomAlgorithm alg, AlgorithmExecutionContext ctx, YConfiguration conf,
             BaseDataType dtype) {
@@ -52,6 +58,7 @@ public class TcoCalibrator implements AlgorithmCalibratorProc {
             throw new ConfigurationException(
                     "Cannot find a time correlation service with name " + tcoServiceName);
         }
+        shiftBits = conf.getInt("shiftBits", 0);
     }
 
     @Override
@@ -73,6 +80,7 @@ public class TcoCalibrator implements AlgorithmCalibratorProc {
     public Value decalibrate(Value rawValue, ProcessingContext pctx) {
         if (rawValue instanceof TimestampValue) {
             long obt = tcoService.getObt(rawValue.getTimestampValue());
+            obt >>= shiftBits;
             return DataEncodingUtils.getRawIntegerValue(dataEncoding, obt);
         } else {
             throw new XtceProcessingException("Cannot calibrate/decalibrate values of type " + rawValue.getClass());
@@ -80,6 +88,7 @@ public class TcoCalibrator implements AlgorithmCalibratorProc {
     }
 
     private Value calibrate(long obt, ProcessingContext pctx) {
+        obt <<= shiftBits;
         Instant t = tcoService.getHistoricalTime(Instant.get(pctx.getGenerationTime()), obt);
         return new TimestampValue(t.getMillis(), t.getPicos());
     }
