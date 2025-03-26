@@ -1,6 +1,6 @@
 {
   "name": "@yamcs/webapp-sdk",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "SDK for Yamcs Web Components",
   "author": "Yamcs Team <yamcs@spaceapplications.com>",
   "license": "AGPL-3.0",

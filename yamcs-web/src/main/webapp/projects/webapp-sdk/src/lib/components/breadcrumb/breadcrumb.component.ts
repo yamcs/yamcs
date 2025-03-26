@@ -1,13 +1,13 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
-import { RouterLink } from '@angular/router';
+import { YaHref } from '../href/href.directive';
 
 @Component({
   selector: 'ya-breadcrumb',
   templateUrl: './breadcrumb.component.html',
   styleUrl: './breadcrumb.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatIcon, RouterLink],
+  imports: [MatIcon, YaHref],
 })
 export class YaBreadcrumb {
   @Input()
