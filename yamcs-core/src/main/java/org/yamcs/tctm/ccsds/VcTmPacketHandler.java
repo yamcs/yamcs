@@ -129,6 +129,7 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
         numPackets++;
         TmPacket pwt = new TmPacket(timeService.getMissionTime(), p);
         pwt.setEarthReceptionTime(ertime);
+        pwt.setFrameSeqCount(lastFrameSeq);
 
         pwt = packetPreprocessor.process(pwt);
         if (pwt != null) {

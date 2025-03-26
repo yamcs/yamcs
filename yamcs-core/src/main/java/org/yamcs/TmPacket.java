@@ -40,6 +40,13 @@ public class TmPacket {
     private long rectime = TimeEncoding.INVALID_INSTANT; // Yamcs reception time
     private long gentime = TimeEncoding.INVALID_INSTANT; // generation time
     private Instant ertime = Instant.INVALID_INSTANT; // earth reception time
+    /**
+     * If this packet has been extracted from a CCSDS frame, this is the sequence count of the frame containing the last
+     * byte of the packet.
+     * <p>
+     * It is the same frame that contained the ertime
+     */
+    private long frameSeqCount = -1;
 
     private long obt = Long.MIN_VALUE;// on-board time when the time is free running
     private int seqCount;
@@ -197,5 +204,13 @@ public class TmPacket {
 
     public void setObt(long obt) {
         this.obt = obt;
+    }
+
+    public long getFrameSeqCount() {
+        return frameSeqCount;
+    }
+
+    public void setFrameSeqCount(long frameSeqCount) {
+        this.frameSeqCount = frameSeqCount;
     }
 }

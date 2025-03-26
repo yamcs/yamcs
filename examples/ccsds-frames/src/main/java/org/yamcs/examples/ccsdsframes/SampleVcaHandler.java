@@ -20,6 +20,7 @@ import org.yamcs.utils.StringConverter;
  */
 public class SampleVcaHandler extends AbstractTmDataLink implements VcDownlinkHandler {
     private Instant ertime;
+    private long frameSeqCount;
 
     @Override
     public void init(String instance, String name, YConfiguration config) {
@@ -39,6 +40,7 @@ public class SampleVcaHandler extends AbstractTmDataLink implements VcDownlinkHa
                     frame.getFirstHeaderPointer(), frame.getDataStart(), frame.getDataEnd());
         }
         ertime = frame.getEarthRceptionTime();
+        frameSeqCount = frame.getVcFrameSeq();
 
         PacketDecoder packetDecoder = new PacketDecoder(frame.getDataEnd() - frame.getDataStart(),
                 p -> handlePacket(p));
@@ -53,6 +55,7 @@ public class SampleVcaHandler extends AbstractTmDataLink implements VcDownlinkHa
         log.info("Received packet of length {}: {}", p.length, StringConverter.arrayToHexString(p, true));
         TmPacket pwt = new TmPacket(timeService.getMissionTime(), p);
         pwt.setEarthReceptionTime(ertime);
+        pwt.setFrameSeqCount(frameSeqCount);
 
         pwt = packetPreprocessor.process(pwt);
         processPacket(pwt);

@@ -4,14 +4,19 @@ import static org.yamcs.pus.Constants.*;
 
 import java.nio.ByteBuffer;
 
+import org.yamcs.ConfigurationException;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.tctm.CcsdsPacket;
 import org.yamcs.tctm.CcsdsPacketPreprocessor;
+import org.yamcs.tctm.ccsds.FrameStreamHelper;
 import org.yamcs.tctm.ccsds.time.CucTimeDecoder;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.yarch.Stream;
+import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.YarchDatabase;
 
 /**
  * Implementation for ECSS PUS (ECSS-E-ST-70-41C) packets.
@@ -73,14 +78,34 @@ import org.yamcs.utils.TimeEncoding;
  *       timeIncludesLeapSeconds: false
  * </pre>
  *
- * @author nm
+ * Another example with time correlation:
  *
+ * <pre>
+ * dataLinks:
+ * ...
+ * - name: tm_realtime
+ *   packetPreprocessorClassName: org.yamcs.tctm.pus.PusPacketPreprocessor
+ *   packetPreprocessorArgs:
+ *     errorDetection:
+ *       type: CRC-16-CCIIT
+ *     pktTimeOffset: 13
+ *     timePktTimeOffset: 7
+ *     performTimeCorrelation: true
+ *     goodFrameStream: good_frames
+ *     tcoService: tco0
+ * </pre>
+ *
+ * In this second example, the goodFramesStream option is required because the preprocessor will monitor the stream to
+ * determine the earth reception time of the frame to which the time packet refers to.
  */
 public class PusPacketPreprocessor extends CcsdsPacketPreprocessor {
     // where to look for time in the telemetry
     int pktTimeOffset;
     // the offset of the time inside the PUS time packets
     int timePktTimeOffset;
+
+    boolean performTimeCorrelation;
+    RateErtRecorder ertRecorder;
 
     public PusPacketPreprocessor(String yamcsInstance) {
         this(yamcsInstance, YConfiguration.emptyConfig());
@@ -89,10 +114,23 @@ public class PusPacketPreprocessor extends CcsdsPacketPreprocessor {
     public PusPacketPreprocessor(String yamcsInstance, YConfiguration config) {
         super(yamcsInstance, config);
         pktTimeOffset = config.getInt("pktTimeOffset", DEFAULT_PKT_TIME_OFFSET);
-        timePktTimeOffset = config.getInt("timePktTimeOffset", DEFAULT_TIME_PACKET_TIME_OFFSET);
+        performTimeCorrelation = config.getBoolean("performTimeCorrelation", false);
+
         if (timeDecoder == null) {
             this.timeDecoder = new CucTimeDecoder(-1);
             this.timeEpoch = TimeEpochs.GPS;
+        }
+        if (performTimeCorrelation) {
+            ertRecorder = new RateErtRecorder();
+            timePktTimeOffset = config.getInt("timePktTimeOffset", DEFAULT_TIME_PACKET_TIME_OFFSET);
+
+            String goodFrameStream = config.getString("goodFrameStream", "good_frames");
+            var ydb = YarchDatabase.getInstance(yamcsInstance);
+            Stream stream = ydb.getStream(goodFrameStream);
+            if (stream == null) {
+                throw new ConfigurationException("Cannot find stream " + goodFrameStream);
+            }
+            stream.addSubscriber(this::processFrameTuple);
         }
     }
 
@@ -147,15 +185,28 @@ public class PusPacketPreprocessor extends CcsdsPacketPreprocessor {
         return tmPacket;
     }
 
+    private void processFrameTuple(Stream stream, Tuple tuple) {
+        long vcid = tuple.getIntColumn(FrameStreamHelper.VCID_CNAME);
+        if (vcid != 0) {
+            return;
+        }
+        long seq = tuple.getLongColumn(FrameStreamHelper.FRAME_SEQ_CNAME);
+        Instant ert = tuple.getColumn(FrameStreamHelper.ERTIME_CNAME);
+        ertRecorder.update(seq, ert);
+    }
+
     private void processTimePacket(TmPacket tmPacket) {
         byte[] packet = tmPacket.getPacket();
         boolean corrupted = false;
-        if (!useLocalGenerationTime && timeEpoch == null || timeEpoch == TimeEpochs.NONE) {
+
+        int rate = packet[6] & 0xFF;
+        if (performTimeCorrelation) {
             long obt = timeDecoder.decodeRaw(packet, timePktTimeOffset);
-            System.out.println("decoded obt: " + obt);
-            Instant ert = tmPacket.getEarthReceptionTime();
-            log.debug("Adding tco sample obt: {} , ert: {}", obt, ert);
-            tcoService.addSample(obt, ert);
+            Instant ert = ertRecorder.get(rate, tmPacket.getFrameSeqCount());
+            if (ert != null) {
+                log.debug("Adding tco sample obt: {} , ert: {}", obt, ert);
+                tcoService.addSample(obt, ert);
+            }
         }
 
         setRealtimePacketTime(tmPacket, timePktTimeOffset);
@@ -163,5 +214,38 @@ public class PusPacketPreprocessor extends CcsdsPacketPreprocessor {
         int apidseqcount = ByteBuffer.wrap(packet).getInt(0);
         tmPacket.setInvalid(corrupted);
         tmPacket.setSequenceCount(apidseqcount);
+    }
+
+    static class RateErtRecorder {
+        long frameSeqNum;
+        Instant ert;
+        int rate = 4;
+
+        /**
+         * if the last rate bits of frameSeqNumber are 0, then store the ert
+         * <p>
+         * if all the bits except the last rate bits are different, then clear the ert
+         */
+        public synchronized void update(long frameSeqNumber, Instant ert) {
+            if ((frameSeqNumber & ((1L << rate) - 1)) == 0) {
+                this.ert = ert;
+                this.frameSeqNum = frameSeqNumber;
+            } else if ((this.frameSeqNum >> rate) != (frameSeqNumber >> rate)) {
+                this.ert = null;
+            }
+        }
+
+        /**
+         * if all the bits except the last rate are the same then return the currently stored ert, otherwise return null
+         */
+        public synchronized Instant get(int rate, long frameSeqNumber) {
+            this.rate = rate;
+
+            if ((this.frameSeqNum >> rate) == (frameSeqNumber >> rate)) {
+                return ert;
+            } else {
+                return null;
+            }
+        }
     }
 }
