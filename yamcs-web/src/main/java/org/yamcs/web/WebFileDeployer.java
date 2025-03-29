@@ -76,6 +76,8 @@ public class WebFileDeployer {
     private YConfiguration config;
     private String contextPath;
 
+    private Thread redeployer;
+
     public WebFileDeployer(String cacheKey, YConfiguration config, String contextPath, List<Path> extraStaticRoots,
             Map<String, Map<String, Object>> extraConfigs) throws IOException, ParseException {
         this.config = config;
@@ -102,9 +104,7 @@ public class WebFileDeployer {
                 log.debug("Deploying yamcs-web from {}", source);
                 FileUtils.copyRecursively(source, target);
                 deployed = true;
-
-                // Watch for changes
-                new Redeployer(source, target).start();
+                setupRedeployer();
             } else {
                 log.warn("Static root for yamcs-web not found at '{}'", source);
             }
@@ -133,6 +133,7 @@ public class WebFileDeployer {
         this.extraStaticRoots = extraStaticRoots;
         this.extraConfigs = extraConfigs;
         redeploy();
+        setupRedeployer();
     }
 
     public void redeploy() {
@@ -141,6 +142,21 @@ public class WebFileDeployer {
         } catch (IOException | ParseException e) {
             log.error("Failed to deploy additional static roots", e);
         }
+    }
+
+    private synchronized void setupRedeployer() {
+        if (redeployer != null) {
+            redeployer.interrupt();
+            try {
+                redeployer.join();
+            } catch (InterruptedException e) {
+                // Ignore
+            }
+        }
+
+        // Watch for changes
+        redeployer = new Redeployer(source, extraStaticRoots, target);
+        redeployer.start();
     }
 
     /**
@@ -352,10 +368,12 @@ public class WebFileDeployer {
     private class Redeployer extends Thread {
 
         private Path source;
+        private List<Path> extraStaticRoots;
         private Path target;
 
-        private Redeployer(Path source, Path target) {
+        private Redeployer(Path source, List<Path> extraStaticRoots, Path target) {
             this.source = source;
+            this.extraStaticRoots = extraStaticRoots;
             this.target = target;
         }
 
@@ -363,15 +381,30 @@ public class WebFileDeployer {
         public void run() {
             try {
                 while (true) {
-                    if (Files.exists(source)) {
-                        var watchService = source.getFileSystem().newWatchService();
-                        source.register(watchService, ENTRY_CREATE, ENTRY_MODIFY);
+                    var watchedPaths = new ArrayList<Path>();
+                    if (source != null && Files.exists(source)) {
+                        watchedPaths.add(source);
+                    }
+                    for (var extraStaticRoot : extraStaticRoots) {
+                        if (Files.exists(extraStaticRoot)) {
+                            watchedPaths.add(extraStaticRoot);
+                        }
+                    }
+
+                    if (!watchedPaths.isEmpty()) {
+                        // Assume all source paths are on same file system
+                        var watchService = watchedPaths.get(0).getFileSystem().newWatchService();
+
+                        for (var path : watchedPaths) {
+                            path.register(watchService, ENTRY_CREATE, ENTRY_MODIFY);
+                        }
 
                         var forceDeploy = false;
                         var loop = true;
                         while (loop) {
                             var key = watchService.take();
-                            if (forceDeploy || !key.pollEvents().isEmpty()) {
+                            var watchEvents = key.pollEvents();
+                            if (forceDeploy || !watchEvents.isEmpty()) {
                                 forceDeploy = false;
 
                                 log.debug("Redeploying yamcs-web from {}", source);
