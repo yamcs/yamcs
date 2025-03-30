@@ -77,6 +77,31 @@
   grid-column: remote;
 }
 
+label {
+  margin: -3px 0 20px 0;
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  line-height: 12px;
+  color: black;
+  text-transform: inherit;
+  cursor: default;
+  position: relative;
+  font-family: Roboto, sans-serif;
+}
+
+label,
+label input[type="text"],
+label input[type="number"],
+label input[type="password"],
+label textarea,
+label select,
+label .date-time-input {
+  margin: 5px 0 0;
+  display: block;
+  width: 100%;
+}
+
 .buckets-column.header > label {
   position: absolute;
   bottom: 0;

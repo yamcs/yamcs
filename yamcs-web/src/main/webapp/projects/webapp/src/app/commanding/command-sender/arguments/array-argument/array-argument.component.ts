@@ -41,7 +41,7 @@ import { TimeArgumentComponent } from '../time-argument/time-argument.component'
 @Component({
   selector: 'app-array-argument',
   templateUrl: './array-argument.component.html',
-  styleUrls: ['../arguments.css', './array-argument.component.css'],
+  styleUrl: '../arguments.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   viewProviders: [
     {

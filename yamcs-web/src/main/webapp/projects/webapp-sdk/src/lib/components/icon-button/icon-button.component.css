@@ -1,0 +1,51 @@
+:host {
+  display: inline-block;
+}
+
+button {
+  width: 100%;
+}
+
+button {
+  height: 24px;
+  border: 1px solid #d3d3d3;
+  background-color: #fff;
+  outline: none;
+  color: rgba(0, 0, 0, 0.75);
+  padding: 1px 6px;
+  margin: 0;
+  border-radius: 1px;
+  background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.02));
+  cursor: pointer;
+  font:
+    400 12px / 12px Roboto,
+    sans-serif;
+  display: flex;
+  align-items: center;
+}
+
+button:active {
+  border-color: #bbb;
+  color: rgba(0, 0, 0, 0.75);
+  background-image: linear-gradient(rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.04));
+}
+
+button:hover {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+button.toggled {
+  color: var(--y-accent);
+}
+
+button .material-symbols {
+  font-size: 14px;
+  height: 14px;
+  width: 14px;
+  vertical-align: middle;
+}

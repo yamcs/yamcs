@@ -1,0 +1,14 @@
+<div class="field-label">
+  @if (templateLabel) {
+    <ng-template [cdkPortalOutlet]="templateLabel" />
+  } @else {
+    {{ textLabel() }}
+  }
+
+  @if (hint(); as hint) {
+    <span class="field-hint">{{ hint }}</span>
+  }
+  <ng-content select="ya-help" />
+  <ng-content select="ya-errors" />
+</div>
+<ng-content />

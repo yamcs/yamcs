@@ -3,6 +3,8 @@
   top: 0;
   left: 63px;
   background-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .legend-box {
@@ -17,11 +19,11 @@
   position: relative;
 }
 
-.label {
+.trace-label {
   cursor: pointer;
 }
 
-.label:hover {
+.trace-label:hover {
   opacity: 0.7;
 }
 

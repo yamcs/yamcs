@@ -13,6 +13,7 @@ export interface LinkActionDialogData {
 
 @Component({
   templateUrl: './link-action-dialog.component.html',
+  styleUrl: './link-action-dialog.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     BooleanOptionComponent,

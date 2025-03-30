@@ -1,4 +1,4 @@
-<div class="label">
+<ya-field [label]="label">
   <div class="meta" [class.error]="err.invalid$ | async">
     @if (type.rangeMin !== undefined || type.rangeMax !== undefined) {
       <div class="item">
@@ -36,7 +36,6 @@
     }
   </div>
 
-  {{ label }}
   @if (description) {
     <ya-help>
       {{ description }}
@@ -45,10 +44,9 @@
 
   <ya-errors #err [controlName]="controlName" />
 
-  @if (!(hexToggle$ | async)) {
-    <input [formControl]="formControl" type="text" autocomplete="off" />
-  }
   @if (hexToggle$ | async) {
     <ya-hex-integer-input [formControl]="formControl" />
+  } @else {
+    <input [formControl]="formControl" type="text" autocomplete="off" />
   }
-</div>
+</ya-field>

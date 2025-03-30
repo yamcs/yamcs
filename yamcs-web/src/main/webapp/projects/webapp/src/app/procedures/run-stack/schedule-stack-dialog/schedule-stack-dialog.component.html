@@ -5,22 +5,17 @@
     <p>This stack will be submitted to the Yamcs Timeline, for execution at a later time.</p>
   </div>
   <form [formGroup]="form" class="ya-form">
-    <div class="label">
-      Execution time
-      <br />
+    <ya-field label="Execution time">
       <ya-date-time-input formControlName="executionTime" [showMillis]="true" [showNow]="true" />
-    </div>
-    <hr class="half-break" />
-    <div class="label">
-      Timeline tags
-      <span class="hint">(optional)</span>
+    </ya-field>
+
+    <ya-field label="Timeline tags" hint="(optional)">
       <ya-help dialogTitle="Timeline Tags">
         Tags allow to categorise items per band. Bands only show items for which one of the tags is
         matching.
       </ya-help>
-      <br />
       <ya-tag-select formControlName="tags" />
-    </div>
+    </ya-field>
   </form>
 </mat-dialog-content>
 

@@ -5,37 +5,28 @@
     <mat-tab-group class="small-tabs" [mat-stretch-tabs]="false">
       <mat-tab label="Content">
         <div style="margin-top: 1em">
-          <div class="label">
-            Start
+          <ya-field label="Start">
             <ya-date-time-input cdkFocusRegionstart formControlName="start" />
-          </div>
-          <hr class="half-break" />
-          <div class="label">
-            Stop
+          </ya-field>
+
+          <ya-field label="Stop">
             <ya-date-time-input formControlName="stop" />
-          </div>
-          <hr class="half-break" />
-          <div class="label">
-            Interval (ms)
-            <span class="hint">(optional)</span>
-            <br />
+          </ya-field>
+
+          <ya-field label="Interval (ms)" hint="(optional)">
             <input formControlName="interval" class="ya-input" type="text" />
-          </div>
+          </ya-field>
         </div>
       </mat-tab>
       <mat-tab label="Format">
         <div style="margin-top: 1em">
-          <div class="label">
-            CSV column delimiter
-            <br />
+          <ya-field label="CSV column delimiter">
             <ya-select formControlName="delimiter" [options]="delimiterOptions" />
-          </div>
-          <hr class="half-break" />
-          <div class="label">
-            Header
-            <br />
+          </ya-field>
+
+          <ya-field label="Header">
             <ya-select formControlName="header" [options]="headerOptions" />
-          </div>
+          </ya-field>
         </div>
       </mat-tab>
     </mat-tab-group>

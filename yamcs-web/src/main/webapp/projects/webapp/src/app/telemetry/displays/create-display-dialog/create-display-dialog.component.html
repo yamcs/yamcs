@@ -3,19 +3,17 @@
 <mat-dialog-content>
   @if (page === 1) {
     <form [formGroup]="typeForm" class="ya-form">
-      <label>
-        Type
-        <select formControlName="type">
-          <option value="par">Parameter Table</option>
-        </select>
-      </label>
+      <ya-field label="Type">
+        <ya-select formControlName="type">
+          <ya-option id="par" label="Parameter Table" />
+        </ya-select>
+      </ya-field>
     </form>
   }
 
   @if (page === 2) {
     <form [formGroup]="filenameForm" class="ya-form">
-      <label [class.invalid]="filenameForm.get('name')?.invalid">
-        Name
+      <ya-field label="Name" [class.invalid]="filenameForm.get('name')?.invalid">
         <input #filename type="text" formControlName="name" />
         @if (filenameForm.get("name")?.invalid) {
           <span class="error-message">
@@ -23,12 +21,11 @@
             <code>.par</code>
           </span>
         }
-      </label>
-      <br />
-      <label>
-        Path
+      </ya-field>
+
+      <ya-field label="Path">
         <input type="text" formControlName="path" />
-      </label>
+      </ya-field>
     </form>
   }
 </mat-dialog-content>

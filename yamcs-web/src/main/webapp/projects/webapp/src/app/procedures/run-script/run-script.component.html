@@ -3,17 +3,13 @@
 
   <div class="form-content ya-form">
     <form [formGroup]="form" novalidate autocomplete="off">
-      <div class="label">
-        Script
-        <span class="hint">(required)</span>
-        <br />
+      <ya-field label="Script" hint="(required)">
         <ya-select formControlName="script" [options]="scriptOptions$ | async" />
-      </div>
-      <br />
-      <div class="label">
-        Script arguments
+      </ya-field>
+
+      <ya-field label="Script arguments">
         <input type="text" formControlName="args" />
-      </div>
+      </ya-field>
     </form>
     <p>&nbsp;</p>
     <mat-toolbar>

@@ -1,5 +1,4 @@
-<div class="label">
-  {{ label }}
+<ya-field [label]="label">
   @if (description) {
     <ya-help>
       {{ description }}
@@ -13,82 +12,83 @@
   </div>
 
   <div class="entries" [formArrayName]="name">
-    @for (control of formArray.controls; track control; let i = $index) {
-      @switch (type.elementType!.engType) {
-        @case ("aggregate") {
-          <app-aggregate-argument
-            [name]="name"
-            [type]="type.elementType"
-            [index]="i"
-            [dimensions]="ownDimensions"
-            [initialValue]="entryInitialValues[i]" />
+    @for (control of formArray.controls; track control; let i = $index; let isFirst = $first) {
+      <div [style.paddingTop.px]="isFirst ? 0 : 10">
+        @switch (type.elementType!.engType) {
+          @case ("aggregate") {
+            <app-aggregate-argument
+              [name]="name"
+              [type]="type.elementType"
+              [index]="i"
+              [dimensions]="ownDimensions"
+              [initialValue]="entryInitialValues[i]" />
+          }
+          @case ("binary") {
+            <app-binary-argument
+              [name]="name"
+              [type]="type.elementType"
+              [index]="i"
+              [dimensions]="ownDimensions"
+              [formControlName]="i" />
+          }
+          @case ("boolean") {
+            <app-boolean-argument
+              [name]="name"
+              [type]="type.elementType"
+              [index]="i"
+              [dimensions]="ownDimensions"
+              [formControlName]="i" />
+          }
+          @case ("enumeration") {
+            <app-enumeration-argument
+              [name]="name"
+              [type]="type.elementType"
+              [index]="i"
+              [dimensions]="ownDimensions"
+              [formControlName]="i" />
+          }
+          @case ("float") {
+            <app-float-argument
+              [name]="name"
+              [type]="type.elementType"
+              [index]="i"
+              [dimensions]="ownDimensions"
+              [formControlName]="i" />
+          }
+          @case ("integer") {
+            <app-integer-argument
+              [name]="name"
+              [type]="type.elementType"
+              [index]="i"
+              [dimensions]="ownDimensions"
+              [formControlName]="i" />
+          }
+          @case ("string") {
+            <app-string-argument
+              [name]="name"
+              [type]="type.elementType"
+              [index]="i"
+              [dimensions]="ownDimensions"
+              [formControlName]="i" />
+          }
+          @case ("time") {
+            <app-time-argument
+              [name]="name"
+              [type]="type.elementType"
+              [index]="i"
+              [dimensions]="ownDimensions"
+              [formControlName]="i" />
+          }
+          @case (type.elementType!.engType.endsWith("[]") ? type.elementType!.engType : "") {
+            <app-array-argument
+              [name]="i"
+              [type]="type.elementType"
+              [index]="i"
+              [dimensions]="ownDimensions"
+              [initialValue]="entryInitialValues[i]" />
+          }
         }
-        @case ("binary") {
-          <app-binary-argument
-            [name]="name"
-            [type]="type.elementType"
-            [index]="i"
-            [dimensions]="ownDimensions"
-            [formControlName]="i" />
-        }
-        @case ("boolean") {
-          <app-boolean-argument
-            [name]="name"
-            [type]="type.elementType"
-            [index]="i"
-            [dimensions]="ownDimensions"
-            [formControlName]="i" />
-        }
-        @case ("enumeration") {
-          <app-enumeration-argument
-            [name]="name"
-            [type]="type.elementType"
-            [index]="i"
-            [dimensions]="ownDimensions"
-            [formControlName]="i" />
-        }
-        @case ("float") {
-          <app-float-argument
-            [name]="name"
-            [type]="type.elementType"
-            [index]="i"
-            [dimensions]="ownDimensions"
-            [formControlName]="i" />
-        }
-        @case ("integer") {
-          <app-integer-argument
-            [name]="name"
-            [type]="type.elementType"
-            [index]="i"
-            [dimensions]="ownDimensions"
-            [formControlName]="i" />
-        }
-        @case ("string") {
-          <app-string-argument
-            [name]="name"
-            [type]="type.elementType"
-            [index]="i"
-            [dimensions]="ownDimensions"
-            [formControlName]="i" />
-        }
-        @case ("time") {
-          <app-time-argument
-            [name]="name"
-            [type]="type.elementType"
-            [index]="i"
-            [dimensions]="ownDimensions"
-            [formControlName]="i" />
-        }
-        @case (type.elementType!.engType.endsWith("[]") ? type.elementType!.engType : "") {
-          <app-array-argument
-            [name]="i"
-            [type]="type.elementType"
-            [index]="i"
-            [dimensions]="ownDimensions"
-            [initialValue]="entryInitialValues[i]" />
-        }
-      }
-      <br />
+      </div>
     }
   </div>
-</div>
+</ya-field>

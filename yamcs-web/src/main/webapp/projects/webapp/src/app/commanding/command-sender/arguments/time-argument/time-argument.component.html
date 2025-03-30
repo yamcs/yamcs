@@ -1,9 +1,8 @@
-<div class="label">
+<ya-field [label]="label">
   <div class="meta" [class.error]="err.invalid$ | async">
     <div class="item">{{ type.engType }}</div>
   </div>
 
-  {{ label }}
   @if (description) {
     <ya-help>
       {{ description }}
@@ -13,4 +12,4 @@
   <ya-errors #err [controlName]="controlName" />
 
   <ya-date-time-input [formControl]="formControl" [showMillis]="true" [showNow]="true" />
-</div>
+</ya-field>

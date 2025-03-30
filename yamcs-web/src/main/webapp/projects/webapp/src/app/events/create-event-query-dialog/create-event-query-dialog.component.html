@@ -2,19 +2,13 @@
 
 <mat-dialog-content>
   <form [formGroup]="form" class="ya-form">
-    <div class="label">
-      Name
+    <ya-field label="Name">
       <input formControlName="name" type="text" />
-    </div>
-    <hr class="half-break" />
-    <div class="label">
-      Query
+    </ya-field>
+    <ya-field label="Query">
       <ya-filter-textarea formControlName="filter" />
-    </div>
-    <hr class="half-break" />
-    <label>
-      Severity
-      <br />
+    </ya-field>
+    <ya-field label="Severity">
       <ya-select formControlName="severity">
         <ya-option id="INFO" label="Info level" />
         <ya-option id="WATCH" label="Watch level" />
@@ -23,22 +17,16 @@
         <ya-option id="CRITICAL" label="Critical level" />
         <ya-option id="SEVERE" label="Severe level" />
       </ya-select>
-    </label>
-    <hr class="half-break" />
-    <label>
-      Source
-      <br />
+    </ya-field>
+    <ya-field label="Source">
       <ya-multi-select
         formControlName="source"
         [options]="data.sourceOptions"
         emptyOption="Any source" />
-    </label>
-    <hr class="half-break" />
-    <div class="label">
-      Share with other users
-      <br />
+    </ya-field>
+    <ya-field label="Share with other users">
       <mat-slide-toggle formControlName="shared" />
-    </div>
+    </ya-field>
   </form>
 </mat-dialog-content>
 

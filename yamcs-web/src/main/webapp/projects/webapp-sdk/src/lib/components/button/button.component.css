@@ -20,6 +20,8 @@ button {
   font:
     400 12px / 12px Roboto,
     sans-serif;
+  display: flex;
+  align-items: center;
 }
 
 button:active {
@@ -42,11 +44,14 @@ button.toggled {
   color: var(--y-accent);
 }
 
+button .icon {
+  margin-right: 6px;
+}
+
 button .material-symbols {
   font-size: 14px;
   height: 14px;
   width: 14px;
-  /*display: inline-flex;*/
   vertical-align: middle;
 }
 

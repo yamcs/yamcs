@@ -6,46 +6,44 @@
 
   <div class="form-content ya-form">
     <form [formGroup]="form" novalidate>
-      <label>
-        Group name
-        <br />
+      <ya-field label="Group name">
         <input formControlName="name" type="text" />
-      </label>
-      <br />
-      <label>
-        Description
-        <textarea formControlName="description" rows="5"></textarea>
-      </label>
-    </form>
-    <p>&nbsp;</p>
-    <ya-button (click)="showAddMembersDialog()" icon="add_circle_outline">Add members</ya-button>
+      </ya-field>
 
-    <p>&nbsp;</p>
-    @if (memberItems$ | async; as memberItems) {
-      <table yaDataTable style="width: 100%">
-        <tr>
-          <th width="1">Type</th>
-          <th>Member</th>
-          <th></th>
-        </tr>
-        @if (!memberItems.length) {
+      <ya-field label="Description">
+        <textarea formControlName="description" rows="5"></textarea>
+      </ya-field>
+
+      <ya-field-divider />
+
+      <ya-button (click)="showAddMembersDialog()" icon="add_circle_outline">Add members</ya-button>
+
+      @if (memberItems$ | async; as memberItems) {
+        <table yaDataTable style="width: 100%; margin-top: 16px">
           <tr>
-            <td colspan="3">No rows to display</td>
+            <th width="1">Type</th>
+            <th>Member</th>
+            <th></th>
           </tr>
-        }
-        @for (item of memberItems; track item) {
-          <tr>
-            <td>
-              <mat-icon matTooltip="User" style="vertical-align: middle">person</mat-icon>
-            </td>
-            <td>{{ item.label }}</td>
-            <td style="text-align: right">
-              <ya-text-action icon="delete" (click)="deleteItem(item)">DELETE</ya-text-action>
-            </td>
-          </tr>
-        }
-      </table>
-    }
+          @if (!memberItems.length) {
+            <tr>
+              <td colspan="3">No rows to display</td>
+            </tr>
+          }
+          @for (item of memberItems; track item) {
+            <tr>
+              <td>
+                <mat-icon matTooltip="User" style="vertical-align: middle">person</mat-icon>
+              </td>
+              <td>{{ item.label }}</td>
+              <td style="text-align: right">
+                <ya-text-action icon="delete" (click)="deleteItem(item)">DELETE</ya-text-action>
+              </td>
+            </tr>
+          }
+        </table>
+      }
+    </form>
 
     <p>&nbsp;</p>
     <div class="action-bar">

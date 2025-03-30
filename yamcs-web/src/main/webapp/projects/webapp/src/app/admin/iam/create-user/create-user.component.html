@@ -6,47 +6,31 @@
 
   <div class="form-content ya-form">
     <form [formGroup]="form" novalidate autocomplete="off">
-      <label>
-        Username
-        <span class="hint">(required)</span>
-        <br />
+      <ya-field label="Username" hint="(required)">
         <input formControlName="name" type="text" />
-      </label>
-      <br />
-      <label>
-        Display name
-        <span class="hint">(optional)</span>
-        <br />
+      </ya-field>
+
+      <ya-field label="Display name" hint="(optional)">
         <input formControlName="displayName" type="text" />
-      </label>
-      <br />
-      <label>
-        Email
-        <span class="hint">(optional)</span>
-        <br />
+      </ya-field>
+
+      <ya-field label="Email" hint="(optional)">
         <input formControlName="email" type="text" />
-      </label>
-      <p>&nbsp;</p>
-      <div class="section-divider">
-        <mat-divider />
-      </div>
-      <br />
-      <label>
-        Password
-        <span class="hint">(optional)</span>
-        <br />
+      </ya-field>
+
+      <ya-field-divider />
+
+      <ya-field label="Password" hint="(optional)">
         <span class="hint">
           User without a password may still be able to login if an external identity provider is
           configured.
         </span>
         <input formControlName="password" type="password" />
-      </label>
-      <br />
-      <label>
-        Password confirmation
-        <br />
+      </ya-field>
+
+      <ya-field label="Password confirmation">
         <input formControlName="passwordConfirmation" type="password" />
-      </label>
+      </ya-field>
     </form>
 
     <p>&nbsp;</p>

@@ -1,4 +1,4 @@
-<div class="label">
+<ya-field [label]="label">
   <div class="meta" [class.error]="err.invalid$ | async">
     @if (type.rangeMin !== undefined || type.rangeMax !== undefined) {
       <div class="item">
@@ -16,7 +16,6 @@
     <div class="item">{{ type.engType }}</div>
   </div>
 
-  {{ label }}
   @if (description) {
     <ya-help>
       {{ description }}
@@ -26,4 +25,4 @@
   <ya-errors #err [controlName]="controlName" />
 
   <input [formControl]="formControl" type="text" autocomplete="off" />
-</div>
+</ya-field>

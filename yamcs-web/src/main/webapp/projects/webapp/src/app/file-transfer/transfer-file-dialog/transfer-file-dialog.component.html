@@ -15,7 +15,6 @@
     </h2>
 
     <div class="grid-container">
-      <!-- BUCKETS COLUMN -->
       <div class="buckets-column header">
         <label class="table-caption">
           Buckets
@@ -53,7 +52,6 @@
         </table>
       </div>
 
-      <!-- LOCAL COLUMN -->
       <div class="local-column header">
         <label class="table-caption">
           Local {{ service.localEntities && service.localEntities.length ? "Entity" : "" }}
@@ -117,7 +115,6 @@
         }
       </div>
 
-      <!-- REMOTE COLUMN -->
       @if (
         (service.remoteEntities && service.remoteEntities.length) || service.capabilities.fileList
       ) {
