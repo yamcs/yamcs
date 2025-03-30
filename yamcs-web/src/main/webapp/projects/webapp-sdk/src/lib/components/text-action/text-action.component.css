@@ -6,8 +6,6 @@
   color: #000;
   cursor: pointer;
   user-select: none;
-  -moz-user-select: none;
-  -khtml-user-select: none;
   -webkit-user-select: none;
   font-size: 12px;
 }

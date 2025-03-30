@@ -5,24 +5,13 @@
 
   <div class="form-content ya-form">
     <form [formGroup]="form" novalidate autocomplete="off">
-      <label>
-        Label
-        <span class="hint">(required)</span>
-        <br />
-        <input type="text" formControlName="name" style="width: 100%" />
-      </label>
-      <br />
-      <label>
-        Description
-        <span class="hint">(optional)</span>
-        <br />
-        <textarea formControlName="description" rows="3"></textarea>
-      </label>
+      <ya-field label="Label" hint="(required)">
+        <input type="text" formControlName="name" />
+      </ya-field>
 
-      <br />
-      <div class="section-divider">
-        <mat-divider />
-      </div>
+      <ya-field label="Description" hint="(optional)">
+        <textarea formControlName="description" rows="3"></textarea>
+      </ya-field>
     </form>
     <p>&nbsp;</p>
     <div class="action-bar">

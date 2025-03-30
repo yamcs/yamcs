@@ -22,10 +22,6 @@ table {
   color: LightGrey;
 }
 
-.no-select {
-  user-select: none;
-}
-
 td.status {
   padding: 0;
   padding-left: 0 !important;
@@ -35,4 +31,9 @@ td.status {
 .ya-data-table td.status + td,
 .ya-data-table th.status + th {
   padding-left: 2px !important;
+}
+
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
 }

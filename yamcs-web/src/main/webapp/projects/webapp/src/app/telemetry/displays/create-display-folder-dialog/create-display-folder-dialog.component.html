@@ -2,10 +2,9 @@
 
 <mat-dialog-content>
   <form [formGroup]="form" class="ya-form">
-    <label>
-      Folder name
+    <ya-field label="Folder name">
       <input type="text" formControlName="name" pattern="\w[\w\s\.\-\(\)\[\]]*" />
-    </label>
+    </ya-field>
   </form>
 </mat-dialog-content>
 

@@ -27,7 +27,6 @@ import { TraceStylesComponent } from '../trace-styles/trace-styles.component';
 @Component({
   selector: 'app-edit-parameter-plot',
   templateUrl: './edit-parameter-plot.component.html',
-  styleUrl: './edit-parameter-plot.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ParameterPlotStylesComponent,

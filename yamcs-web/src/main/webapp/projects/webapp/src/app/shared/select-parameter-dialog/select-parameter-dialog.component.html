@@ -1,8 +1,7 @@
 <h2 mat-dialog-title>{{ label }}</h2>
 
 <mat-dialog-content class="ya-form">
-  <label>
-    {{ label }}
+  <ya-field [label]="label">
     <input type="text" [formControl]="parameter" [matAutocomplete]="auto" />
     <mat-autocomplete class="ya-autocomplete" #auto>
       @for (option of filteredOptions | async; track option) {
@@ -14,7 +13,7 @@
     @if (hint) {
       <span class="hint">{{ hint }}</span>
     }
-  </label>
+  </ya-field>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">

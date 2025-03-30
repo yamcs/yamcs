@@ -54,13 +54,13 @@
           </td>
         </ng-container>
         <ng-container matColumnDef="hasCommandPrivileges">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>May Command</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>May command</th>
           <td mat-cell *matCellDef="let clearance">
             {{ clearance.hasCommandPrivileges ? "Yes" : "-" }}
           </td>
         </ng-container>
         <ng-container matColumnDef="level">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>Clearance Level</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Clearance level</th>
           <td mat-cell *matCellDef="let clearance">
             @if (!clearance.level) {
               No clearance

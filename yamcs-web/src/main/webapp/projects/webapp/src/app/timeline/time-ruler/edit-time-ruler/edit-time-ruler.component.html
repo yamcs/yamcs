@@ -1,25 +1,17 @@
 @if (formConfigured$ | async) {
   <form [formGroup]="form">
-    <label>
-      Label
-      <span class="hint">(required)</span>
-      <br />
-      <input type="text" formControlName="name" style="width: 100%" />
-    </label>
-    <br />
-    <label>
-      Description
-      <span class="hint">(optional)</span>
-      <br />
+    <ya-field label="Label" hint="(required)">
+      <input type="text" formControlName="name" />
+    </ya-field>
+
+    <ya-field label="Description" hint="(optional)">
       <textarea formControlName="description" rows="3"></textarea>
-    </label>
+    </ya-field>
+
     <ng-container formGroupName="properties">
-      <br />
-      <label>
-        Timezone
-        <br />
+      <ya-field label="Timezone">
         <ya-timezone-select formControlName="timezone" />
-      </label>
+      </ya-field>
     </ng-container>
   </form>
 }

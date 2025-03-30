@@ -1,9 +1,8 @@
-<div class="label">
+<ya-field [label]="label">
   <div class="meta" [class.error]="err.invalid$ | async">
     <div class="item">{{ type.engType }}</div>
   </div>
 
-  {{ label }}
   @if (description) {
     <ya-help>
       {{ description }}
@@ -14,9 +13,9 @@
   <div class="control-group">
     <ya-select [formControl]="formControl" [options]="selectOptions$ | async" />
     &nbsp;
-    <ya-button
+    <ya-icon-button
       matTooltip="Lookup enumeration state"
       (click)="openSelectEnumerationDialog()"
-      icon="search"></ya-button>
+      icon="search" />
   </div>
-</div>
+</ya-field>

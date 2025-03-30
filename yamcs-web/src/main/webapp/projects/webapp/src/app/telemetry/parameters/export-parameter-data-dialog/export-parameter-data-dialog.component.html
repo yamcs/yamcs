@@ -2,30 +2,21 @@
 
 <mat-dialog-content class="ya-form">
   <form [formGroup]="form">
-    <label>
-      Start
-      <span class="hint">(optional)</span>
+    <ya-field label="Start" hint="(optional)">
       <ya-date-time-input formControlName="start" />
-    </label>
-    <br />
-    <label>
-      Stop
-      <span class="hint">(optional)</span>
+    </ya-field>
+
+    <ya-field label="Stop" hint="(optional)">
       <ya-date-time-input formControlName="stop" />
-    </label>
-    <br />
-    <label>
-      CSV column delimiter
-      <br />
+    </ya-field>
+
+    <ya-field label="CSV column delimiter">
       <ya-select formControlName="delimiter" [options]="delimiterOptions" />
-    </label>
-    <br />
-    <label>
-      Interval (ms)
-      <span class="hint">(optional)</span>
-      <br />
+    </ya-field>
+
+    <ya-field label="Interval (ms)" hint="(optional)">
       <input formControlName="interval" class="ya-input" type="text" />
-    </label>
+    </ya-field>
   </form>
 </mat-dialog-content>
 

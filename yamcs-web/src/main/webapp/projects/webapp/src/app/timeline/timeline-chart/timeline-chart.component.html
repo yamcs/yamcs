@@ -65,19 +65,19 @@
     }
   </app-instance-toolbar>
 
-  <div style="height: 24px; margin: 6px">
-    <ya-button (click)="pageLeft()" icon="west" />
-    <ya-button
+  <div style="height: 24px; margin: 6px; display: flex; align-items: center">
+    <ya-icon-button (click)="pageLeft()" icon="west" />
+    <ya-icon-button
       (mousedown)="toggleMove(-50)"
       (mouseup)="untoggleMove()"
       (mouseleave)="untoggleMove()"
       icon="chevron_left" />
-    <ya-button
+    <ya-icon-button
       (mousedown)="toggleMove(50)"
       (mouseup)="untoggleMove()"
       (mouseleave)="untoggleMove()"
       icon="chevron_right" />
-    <ya-button (click)="pageRight()" icon="east" />
+    <ya-icon-button (click)="pageRight()" icon="east" />
     &nbsp;
     <ya-button (click)="jumpToToday()" icon="today">Today</ya-button>
     <ya-button (click)="jumpToNow()" icon="my_location">Now</ya-button>
@@ -87,8 +87,8 @@
     <ya-button (click)="show1Hour()">1 hour</ya-button>
     <ya-button (click)="show10Minutes()">10 min</ya-button>
     &nbsp;
-    <ya-button (click)="zoomIn()" icon="add" />
-    <ya-button (click)="zoomOut()" icon="remove" />
+    <ya-icon-button (click)="zoomIn()" icon="add" />
+    <ya-icon-button (click)="zoomOut()" icon="remove" />
   </div>
 
   <div #container class="timeline-container"></div>

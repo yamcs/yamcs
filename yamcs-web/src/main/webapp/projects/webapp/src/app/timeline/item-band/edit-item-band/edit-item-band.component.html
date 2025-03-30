@@ -1,28 +1,19 @@
 @if (formConfigured$ | async) {
   <form [formGroup]="form">
-    <label>
-      Label
-      <span class="hint">(required)</span>
-      <br />
+    <ya-field label="Label" hint="(required)">
       <input type="text" formControlName="name" />
-    </label>
-    <br />
-    <label>
-      Description
-      <span class="hint">(optional)</span>
-      <br />
+    </ya-field>
+
+    <ya-field label="Description" hint="(optional)">
       <textarea formControlName="description" rows="3"></textarea>
-    </label>
-    <br />
-    <label>
-      Tags
-      <br />
+    </ya-field>
+
+    <ya-field label="Tags">
       <ya-tag-select formControlName="tags" />
-    </label>
-    <br />
-    <div class="section-divider">
-      <mat-divider />
-    </div>
+    </ya-field>
+
+    <ya-field-divider />
+
     <h4>Styles</h4>
     <app-item-band-styles [form]="form" />
   </form>

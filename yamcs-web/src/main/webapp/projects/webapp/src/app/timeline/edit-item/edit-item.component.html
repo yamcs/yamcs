@@ -3,44 +3,32 @@
     <app-instance-toolbar>Edit item</app-instance-toolbar>
     <div class="form-content ya-form">
       <form [formGroup]="form" novalidate autocomplete="off">
-        <div class="label">
-          Name
-          <span class="hint">(required)</span>
-          <br />
+        <ya-field label="Name" hint="(required)">
           <input type="text" formControlName="name" />
-        </div>
-        <br />
-        <div class="label">
-          Tags
+        </ya-field>
+
+        <ya-field label="Tags">
           <ya-help dialogTitle="Tags">
             Tags allow to categorise items per band. Bands only show items for which one of the tags
             is matching.
           </ya-help>
-          <br />
           <ya-tag-select formControlName="tags" />
-        </div>
-        <br />
-        <div class="label">
-          Duration
+        </ya-field>
+
+        <ya-field label="Duration">
           <ya-duration-input formControlName="duration" />
-        </div>
-        <br />
-        <div class="section-divider">
-          <mat-divider />
-        </div>
-        <br />
-        <div class="label">
-          Start
-          <br />
+        </ya-field>
+
+        <ya-field-divider />
+
+        <ya-field label="Start">
           <ya-date-time-input formControlName="start" />
-        </div>
-        <br />
-        <div class="section-divider">
-          <mat-divider />
-        </div>
+        </ya-field>
+
+        <ya-field-divider />
+
         <h4>Styles</h4>
         <app-item-styles [form]="form" />
-        <br />
       </form>
       <p>&nbsp;</p>
       <div class="action-bar">

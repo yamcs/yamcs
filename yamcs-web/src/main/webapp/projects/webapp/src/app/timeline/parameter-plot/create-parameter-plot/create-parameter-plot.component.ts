@@ -17,7 +17,6 @@ import { TraceStylesComponent } from '../trace-styles/trace-styles.component';
 @Component({
   selector: 'app-create-parameter-plot',
   templateUrl: './create-parameter-plot.component.html',
-  styleUrl: './create-parameter-plot.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CreateBandWizardStepComponent,

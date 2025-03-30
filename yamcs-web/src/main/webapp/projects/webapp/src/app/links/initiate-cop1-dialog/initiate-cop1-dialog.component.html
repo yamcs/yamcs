@@ -2,28 +2,32 @@
 
 <mat-dialog-content>
   <form [formGroup]="form" class="ya-form">
-    <label>
-      <input type="radio" formControlName="type" value="WITHOUT_CLCW_CHECK" />
-      <span style="font-weight: normal">Without CLCW check</span>
-    </label>
-    <label>
-      <input type="radio" formControlName="type" value="WITH_CLCW_CHECK" />
-      <span style="font-weight: normal">With CLCW check</span>
-    </label>
-    <label>
-      <input type="radio" formControlName="type" value="UNLOCK" />
-      <span style="font-weight: normal">With Unlock</span>
-    </label>
-    <label>
-      <input type="radio" formControlName="type" value="SET_VR" />
-      <span style="font-weight: normal">With Set V(R)</span>
-    </label>
+    <ya-field>
+      <div class="radio-group">
+        <label class="radio" [class.checked]="form.value.type === 'WITHOUT_CLCW_CHECK'">
+          <input type="radio" formControlName="type" value="WITHOUT_CLCW_CHECK" />
+          Without CLCW check
+        </label>
+        <label class="radio" [class.checked]="form.value.type === 'WITH_CLCW_CHECK'">
+          <input type="radio" formControlName="type" value="WITH_CLCW_CHECK" />
+          With CLCW check
+        </label>
+        <label class="radio" [class.checked]="form.value.type === 'UNLOCK'">
+          <input type="radio" formControlName="type" value="UNLOCK" />
+          With Unlock
+        </label>
+        <label class="radio" [class.checked]="form.value.type === 'SET_VR'">
+          <input type="radio" formControlName="type" value="SET_VR" />
+          With Set V(R)
+        </label>
+      </div>
+    </ya-field>
 
     @if (form.controls.type.value == "WITH_CLCW_CHECK" || form.controls.type.value == "SET_VR") {
-      <mat-divider style="margin-top: 1em; margin-bottom: 1em" />
+      <ya-field-divider />
+
       @if (form.controls.type.value == "WITH_CLCW_CHECK") {
-        <label>
-          CLCW check timeout (milliseconds)
+        <ya-field label="CLCW check timeout (milliseconds)">
           <ya-help dialogTitle="CLCW Check Timeout">
             <p>
               Timeout associated to acknowledgment CLCWs. If a command frame is not acknowledged
@@ -38,11 +42,9 @@
             </p>
           </ya-help>
           <input type="text" formControlName="clcwCheckTimeout" />
-        </label>
-      }
-      @if (form.controls.type.value == "SET_VR") {
-        <label>
-          V(R)
+        </ya-field>
+      } @else if (form.controls.type.value == "SET_VR") {
+        <ya-field label="V(R)">
           <ya-help dialogTitle="V(R)">
             <p>
               The N(S) frame sequence number expected to be seen by FARM-1 in the next Type-AD
@@ -55,7 +57,7 @@
             </p>
           </ya-help>
           <input type="text" formControlName="vr" />
-        </label>
+        </ya-field>
       }
     }
   </form>

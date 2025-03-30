@@ -2,10 +2,9 @@
 
 <mat-dialog-content>
   <form [formGroup]="filenameForm" class="ya-form">
-    <label [class.invalid]="filenameForm.get('name')?.invalid">
-      Name
+    <ya-field label="Name" [class.invalid]="filenameForm.get('name')?.invalid">
       <input #filename type="text" formControlName="name" />
-    </label>
+    </ya-field>
   </form>
 </mat-dialog-content>
 

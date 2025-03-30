@@ -2,20 +2,14 @@
   <form [formGroup]="form" class="ya-form">
     <ya-stepper>
       <ya-stepper-step label="General" [expanded]="true">
-        <label>
-          Label
-          <span class="hint">(required)</span>
-          <br />
-          <input type="text" formControlName="name" style="width: 100%" />
-        </label>
-        <br />
-        <label>
-          Description
-          <span class="hint">(optional)</span>
-          <br />
+        <ya-field label="Label" hint="(required)">
+          <input type="text" formControlName="name" />
+        </ya-field>
+
+        <ya-field label="Description" hint="(optional)">
           <textarea formControlName="description" rows="3"></textarea>
-        </label>
-        <br />
+        </ya-field>
+
         <app-parameter-plot-styles [form]="form" />
       </ya-stepper-step>
 
