@@ -2,14 +2,13 @@
 
 <mat-dialog-content class="ya-form">
   <form [formGroup]="form">
-    <label>
-      Start
+    <ya-field label="Start">
       <ya-date-time-input formControlName="start" />
-    </label>
-    <label>
-      Stop
+    </ya-field>
+
+    <ya-field label="Stop">
       <ya-date-time-input formControlName="stop" />
-    </label>
+    </ya-field>
   </form>
 </mat-dialog-content>
 

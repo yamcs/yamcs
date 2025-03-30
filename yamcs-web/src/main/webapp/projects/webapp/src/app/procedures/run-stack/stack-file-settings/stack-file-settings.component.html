@@ -21,10 +21,12 @@
     <div class="tab-content">
       <form [formGroup]="stackOptionsForm" class="ya-form">
         <h3>Commanding</h3>
-        <div class="label">
-          Advance when
-          <app-advance-ack-help [extra]="extraAcknowledgments" />
-          <br />
+        <ya-field>
+          <ng-template ya-field-label>
+            Advance when
+            <app-advance-ack-help [extra]="extraAcknowledgments" />
+          </ng-template>
+
           <div style="display: flex; align-items: flex-start">
             <ya-select
               #ackSelect
@@ -38,15 +40,13 @@
                 style="width: 200px; margin-left: -1px" />
             }
           </div>
-        </div>
-        <br />
-        <div class="label">
-          Wait (ms)
+        </ya-field>
+
+        <ya-field label="Wait (ms)">
           <ya-help dialogTitle="Wait time">
             <p>Wait time before advancing to the next command in the stack.</p>
             <p>This triggers after successful acknowledgment.</p>
           </ya-help>
-          <br />
           <input
             type="number"
             formControlName="advancementWait"
@@ -54,7 +54,7 @@
             step="1000"
             min="0"
             style="width: 120px" />
-        </div>
+        </ya-field>
       </form>
     </div>
   </div>

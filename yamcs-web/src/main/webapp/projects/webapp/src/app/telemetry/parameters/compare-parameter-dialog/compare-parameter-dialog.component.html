@@ -1,6 +1,5 @@
 <mat-dialog-content class="ya-form">
-  <label>
-    Search parameter for comparison
+  <ya-field label="Search parameter for comparison">
     <input type="text" [formControl]="parameter" [matAutocomplete]="auto" />
     <mat-autocomplete class="ya-autocomplete" #auto>
       @for (option of filteredOptions | async; track option) {
@@ -9,15 +8,15 @@
         </mat-option>
       }
     </mat-autocomplete>
-  </label>
+  </ya-field>
 
-  <br />
-  <label>Color</label>
-  <app-color-palette #palette />
+  <ya-field label="Color">
+    <app-color-palette #palette />
+  </ya-field>
 
-  <br />
-  <label>Thickness</label>
-  <app-thickness #thickness [color]="palette.selectedColor" />
+  <ya-field label="Thickness">
+    <app-thickness #thickness [color]="palette.selectedColor" />
+  </ya-field>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">

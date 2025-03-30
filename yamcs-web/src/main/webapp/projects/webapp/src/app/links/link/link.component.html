@@ -109,19 +109,17 @@
             @if (mayControlLinks()) {
               <div style="float: right">
                 @if (!status.cop1Active) {
-                  <ya-text-action icon="adjust" (click)="openInitiateCop1Dialog(link.name)">
-                    INITIATE AD
-                  </ya-text-action>
+                  <ya-button icon="adjust" (click)="openInitiateCop1Dialog(link.name)">
+                    Initiate AD
+                  </ya-button>
                 }
                 @if (status.state === "SUSPENDED") {
-                  <ya-text-action icon="redo" (click)="resumeCop1(link.name)">
-                    RESUME AD
-                  </ya-text-action>
+                  <ya-button icon="redo" (click)="resumeCop1(link.name)">Resume AD</ya-button>
                 }
                 @if (status.cop1Active) {
-                  <ya-text-action icon="not_interested" (click)="disableCop1(link.name)">
-                    TERMINATE AD
-                  </ya-text-action>
+                  <ya-button icon="not_interested" (click)="disableCop1(link.name)">
+                    Terminate AD
+                  </ya-button>
                 }
               </div>
             }

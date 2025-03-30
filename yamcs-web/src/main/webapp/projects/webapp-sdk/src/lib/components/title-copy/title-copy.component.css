@@ -2,8 +2,6 @@
   margin-left: 10px;
   cursor: pointer;
   user-select: none;
-  -moz-user-select: none;
-  -khtml-user-select: none;
   -webkit-user-select: none;
 }
 

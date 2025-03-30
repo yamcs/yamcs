@@ -1,12 +1,9 @@
 @if (option(); as option) {
-  <div class="label">
+  <ya-field [label]="option.name" [hint]="option.required ? undefined : '(optional)'">
     <div class="meta" [class.error]="err.invalid$ | async">
       <div class="item">boolean</div>
     </div>
-    {{ option.name }}
-    @if (!option.required) {
-      <span class="hint">(optional)</span>
-    }
+
     @if (option.description?.length) {
       <ya-help>
         @for (description of option.description; track description) {
@@ -15,12 +12,17 @@
       </ya-help>
     }
     <ya-errors #err [controlName]="option.name" />
-    <br />
-    <ng-container [formGroup]="formGroup">
-      <input type="radio" formControlName="enabled" value="true" />
-      True
-      <input type="radio" formControlName="enabled" value="false" />
-      False
-    </ng-container>
-  </div>
+
+    <div class="radio-group" [formGroup]="formGroup">
+      <label class="radio" [class.checked]="formGroup.value.enabled === 'true'">
+        <input type="radio" formControlName="enabled" value="true" />
+        True
+      </label>
+
+      <label class="radio" [class.checked]="formGroup.value.enabled === 'false'">
+        <input type="radio" formControlName="enabled" value="false" />
+        False
+      </label>
+    </div>
+  </ya-field>
 }

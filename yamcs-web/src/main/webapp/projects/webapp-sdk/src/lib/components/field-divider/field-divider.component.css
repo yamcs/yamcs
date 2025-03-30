@@ -1,0 +1,8 @@
+:host {
+  display: block;
+  margin: 0;
+  margin-bottom: 16px;
+  border-top-style: solid;
+  border-top-color: var(--y-border-color);
+  border-top-width: 1px;
+}

@@ -9,6 +9,7 @@
 
 :host ::ng-deep .condition-table input {
   margin: 0 !important;
+  width: 100%;
 }
 
 :host ::ng-deep ya-select.operator ya-button {

@@ -23,10 +23,13 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
+import { YaIconButton } from '../public-api';
+import { YaActionLogSummary } from './components/action-log-summary/action-log-summary.component';
 import { YaBinaryInput } from './components/binary-input/binary-input.component';
 import { YaBreadcrumbTrail } from './components/breadcrumb/breadcrumb-trail.component';
 import { YaBreadcrumb } from './components/breadcrumb/breadcrumb.component';
 import { YaButton } from './components/button/button.component';
+import { YaColorInput } from './components/color-input/color-input.component';
 import { YaColumnChooser } from './components/column-chooser/column-chooser.component';
 import { YaDateTimeInput } from './components/date-time-input/date-time-input.component';
 import { YaDetailPane } from './components/detail-pane/detail-pane.component';
@@ -38,6 +41,9 @@ import { YaDurationInput } from './components/duration-input/duration-input.comp
 import { YaEmptyMessage } from './components/empty-message/empty-message.component';
 import { YaErrors } from './components/errors/errors.component';
 import { YaExpirable } from './components/expirable/expirable.component';
+import { YaFieldDivider } from './components/field-divider/field-divider.component';
+import { YaFieldLabel } from './components/field/field-label.directive';
+import { YaField } from './components/field/field.component';
 import { YaFilterInput } from './components/filter/filter-input.component';
 import { YaFilterTextarea } from './components/filter/filter-textarea.component';
 import { YaHelp } from './components/help/help.component';
@@ -56,6 +62,7 @@ import { YaMultiSelect } from './components/multi-select/multi-select.component'
 import { YaOption } from './components/option/option.component';
 import { YaPageButton } from './components/page-button/page-button.component';
 import { YaPageIconButton } from './components/page-icon-button/page-icon-button.component';
+import { YaPanel } from './components/panel/panel.component';
 import { YaProgress } from './components/progress/progress.component';
 import { YaSearchFilter } from './components/search-filter/search-filter.component';
 import { YaSearchFilter2 } from './components/search-filter2/search-filter2.component';
@@ -77,10 +84,6 @@ import { YaWarningMessage } from './components/warning-message/warning-message.c
 import { DataTableDirective } from './directives/data-table.directive';
 import { SimpleTableDirective } from './directives/simple-table.directive';
 import { TableDirective } from './directives/table.directive';
-
-import { YaColorInput } from '../public-api';
-import { YaActionLogSummary } from './components/action-log-summary/action-log-summary.component';
-import { YaPanel } from './components/panel/panel.component';
 import { AliasPipe } from './pipes/alias.pipe';
 import { ArrayContainsPipe } from './pipes/array-contains.pipe';
 import { BasenamePipe } from './pipes/basename.pipe';
@@ -156,6 +159,7 @@ const directives = [
   PrintableDirective,
   SimpleTableDirective,
   TableDirective,
+  YaFieldLabel,
   YaHref,
 ];
 
@@ -177,6 +181,8 @@ const sharedComponents = [
   YaEmptyMessage,
   YaErrors,
   YaExpirable,
+  YaField,
+  YaFieldDivider,
   YaFilterInput,
   YaFilterTextarea,
   YaHelp,
@@ -184,6 +190,7 @@ const sharedComponents = [
   YaHexIntegerInput,
   YaHighlight,
   YaIconAction,
+  YaIconButton,
   YaInterval,
   YaLabel,
   YaLabels,

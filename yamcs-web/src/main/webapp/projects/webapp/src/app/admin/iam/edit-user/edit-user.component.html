@@ -1,17 +1,13 @@
 @if (user$ | async; as user) {
   <app-admin-page>
-    <app-admin-toolbar>Edit User: {{ user.displayName || user.name }}</app-admin-toolbar>
+    <app-admin-toolbar>Edit user: {{ user.displayName || user.name }}</app-admin-toolbar>
     <div class="form-content ya-form">
       <form [formGroup]="form" novalidate autocomplete="off">
-        <div class="label">
-          Username
-          <br />
+        <ya-field label="Username">
           <input disabled type="text" [value]="user.name" />
-        </div>
-        <br />
-        <div class="label">
-          Display name
-          <br />
+        </ya-field>
+
+        <ya-field label="Display name">
           <input formControlName="displayName" type="text" />
           @if (user.identities && user.identities.length > 0) {
             <span class="hint">
@@ -19,11 +15,9 @@
               login.
             </span>
           }
-        </div>
-        <br />
-        <div class="label">
-          Email
-          <br />
+        </ya-field>
+
+        <ya-field label="Email">
           <input formControlName="email" type="text" />
           @if (user.identities && user.identities.length > 0) {
             <span class="hint">
@@ -31,33 +25,31 @@
               login.
             </span>
           }
-        </div>
-        <br />
-        <div class="label">
-          Active
-          <br />
+        </ya-field>
+
+        <ya-field label="Active">
           <mat-slide-toggle formControlName="active" />
           <br />
           <span class="hint">
             Inactive users are considered "blocked". They are not or no longer able to login.
           </span>
-        </div>
-        <br />
-        <div class="label">
-          Superuser
-          <br />
+        </ya-field>
+
+        <ya-field label="Superuser">
           <mat-slide-toggle formControlName="superuser" />
           <br />
           <span class="hint">
             Superusers bypass any permission checks. This attribute is intended for system
             administrators only.
           </span>
-        </div>
-        <p>&nbsp;</p>
+        </ya-field>
+
+        <ya-field-divider />
+
         <ya-button (click)="showAddRolesDialog()" icon="add_circle_outline">Add roles</ya-button>
-        <p>&nbsp;</p>
+
         @if (roleItems$ | async; as roleItems) {
-          <table yaDataTable style="width: 100%">
+          <table yaDataTable style="margin-top: 16px; width: 100%">
             <tr>
               <th>Role</th>
               <th></th>

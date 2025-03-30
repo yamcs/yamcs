@@ -31,18 +31,18 @@
 
   <div style="height: 24px; margin: 6px">
     <form [formGroup]="filterForm">
-      <ya-button (click)="pageLeft()" icon="west" />
-      <ya-button
+      <ya-icon-button (click)="pageLeft()" icon="west" />
+      <ya-icon-button
         (mousedown)="toggleMove(-50)"
         (mouseup)="untoggleMove()"
         (mouseleave)="untoggleMove()"
-        icon="chevron_left"></ya-button>
-      <ya-button
+        icon="chevron_left" />
+      <ya-icon-button
         (mousedown)="toggleMove(50)"
         (mouseup)="untoggleMove()"
         (mouseleave)="untoggleMove()"
-        icon="chevron_right"></ya-button>
-      <ya-button (click)="pageRight()" icon="east" />
+        icon="chevron_right" />
+      <ya-icon-button (click)="pageRight()" icon="east" />
       &nbsp;
       <ya-button (click)="fitAll()" matTooltip="Show all archive data" icon="fit_screen">
         Fit all
@@ -57,18 +57,18 @@
         </ya-button>
       }
       <ya-button (click)="jumpToToday()" icon="today">Today</ya-button>
-      <ya-button (click)="jumpToNow()" icon="my_location" />
+      <ya-icon-button (click)="jumpToNow()" icon="my_location" />
       <ya-button (click)="openJumpToDialog()" icon="directions">Jump to...</ya-button>
       &nbsp;
-      <ya-button (click)="zoomIn()" icon="add" />
-      <ya-button (click)="zoomOut()" icon="remove" />
+      <ya-icon-button (click)="zoomIn()" icon="add" />
+      <ya-icon-button (click)="zoomOut()" icon="remove" />
       &nbsp;
-      <ya-button
+      <ya-icon-button
         [toggled]="(tool$ | async) === 'hand'"
         (click)="setTool('hand')"
         matTooltip="Use pan tool"
         icon="pan_tool" />
-      <ya-button
+      <ya-icon-button
         [toggled]="(tool$ | async) === 'range-select'"
         (click)="setTool('range-select')"
         matTooltip="Use range selection tool"
@@ -76,7 +76,7 @@
 
       &nbsp;&nbsp;&nbsp;&nbsp;
       @for (option of legendOptions; track option) {
-        <label class="legend no-select" [style.background]="option.bg" [style.color]="option.fg">
+        <label class="legend" [style.background]="option.bg" [style.color]="option.fg">
           <input type="checkbox" [formControlName]="option.id" (change)="updateLegend()" />
           {{ option.name }}
         </label>

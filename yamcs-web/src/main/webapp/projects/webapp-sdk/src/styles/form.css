@@ -1,53 +1,3 @@
-.ya-form label,
-.ya-form div.label {
-  margin: -3px 0 20px 0;
-  font-weight: 500;
-  font-size: 11px;
-  letter-spacing: 0.02em;
-  line-height: 12px;
-  color: black;
-  text-transform: inherit;
-  cursor: default;
-  position: relative;
-  font-family: Roboto, sans-serif;
-}
-
-.ya-form label.invalid,
-.ya-form div.label.invalid {
-  color: var(--y-error-color);
-}
-
-.ya-form .control-group {
-  display: flex;
-  align-items: center;
-}
-
-.ya-form label,
-.ya-form label input[type="text"],
-.ya-form label input[type="number"],
-.ya-form label input[type="password"],
-.ya-form label textarea,
-.ya-form label select,
-.ya-form label .date-time-input,
-.ya-form div.label,
-.ya-form div.label input[type="text"],
-.ya-form div.label input[type="number"],
-.ya-form div.label input[type="password"],
-.ya-form div.label textarea,
-.ya-form div.label select,
-.ya-form div.label .date-time-input,
-.ya-form div.label ya-filter-input,
-.ya-form div.label ya-filter-textarea {
-  margin: 5px 0 0;
-  display: block;
-  width: 100%;
-}
-
-.ya-form div.label ya-button {
-  margin: 5px 0 0;
-  display: inline-block;
-}
-
 .ya-form input[type="text"],
 .ya-form input[type="number"],
 .ya-form input[type="color"],
@@ -118,6 +68,13 @@
   border: 1px solid transparent;
   box-sizing: border-box;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-size: 11px;
+  line-height: 12px;
+  color: black;
+  font-family: Roboto, sans-serif;
+  width: 100%;
 }
 
 .ya-form div.radio-group .radio:hover {

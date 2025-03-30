@@ -2,23 +2,18 @@
 
 <mat-dialog-content>
   <form [formGroup]="form" class="ya-form">
-    <label>
-      Start time
-      <br />
+    <ya-field label="Start time">
       <ya-date-time-input formControlName="start" />
-    </label>
-    <br />
-    <label>
-      Stop time
-      <span class="hint">(optional)</span>
+    </ya-field>
+
+    <ya-field label="Stop time" hint="(optional)">
       <ya-date-time-input formControlName="stop" />
-    </label>
-    <br />
-    <label>
-      Processor name
+    </ya-field>
+
+    <ya-field label="Processor name">
       <input type="text" formControlName="name" />
       <span class="hint">Must be unique. Other users can join your replay via this name</span>
-    </label>
+    </ya-field>
   </form>
 </mat-dialog-content>
 

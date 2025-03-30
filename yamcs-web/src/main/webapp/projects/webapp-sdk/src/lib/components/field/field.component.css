@@ -1,0 +1,51 @@
+:host {
+  display: block;
+  margin: 0;
+  cursor: default;
+  position: relative;
+}
+
+:host.invalid {
+  color: var(--y-error-color);
+}
+
+.field-label {
+  color: black;
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+
+.field-hint {
+  color: grey;
+  font-weight: 400;
+}
+
+.field-label,
+.field-hint {
+  font-size: 11px;
+  line-height: 12px;
+  text-transform: inherit;
+  font-family: Roboto, sans-serif;
+}
+
+:host ::ng-deep input[type="text"],
+:host ::ng-deep input[type="number"],
+:host ::ng-deep input[type="password"],
+:host ::ng-deep textarea,
+:host ::ng-deep select,
+:host ::ng-deep .date-time-input,
+:host ::ng-deep ya-filter-input,
+:host ::ng-deep ya-filter-textarea {
+  margin: 0;
+  display: block;
+  width: 100%;
+}
+
+:host ::ng-deep ya-button {
+  margin: 0;
+  display: inline-block;
+}
+
+:host:not(:last-child) {
+  margin-bottom: 16px;
+}

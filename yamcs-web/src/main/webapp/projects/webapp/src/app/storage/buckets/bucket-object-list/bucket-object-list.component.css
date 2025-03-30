@@ -18,8 +18,6 @@ mat-toolbar-row {
   overflow: auto;
   user-select: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
-  -khtml-user-select: none;
 }
 
 .droparea-overlay {
@@ -34,8 +32,6 @@ mat-toolbar-row {
   z-index: 10;
   user-select: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
-  -khtml-user-select: none;
 }
 
 ::ng-deep .progress-dialog .mat-mdc-dialog-container {
@@ -72,8 +68,6 @@ mat-toolbar-row {
   cursor: ew-resize;
   user-select: none;
   -webkit-user-select: none;
-  -moz-user-select: none;
-  -khtml-user-select: none;
 }
 
 .mat-sidenav-container img {

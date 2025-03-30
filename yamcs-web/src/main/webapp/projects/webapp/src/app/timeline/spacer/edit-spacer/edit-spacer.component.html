@@ -1,22 +1,15 @@
 @if (formConfigured$ | async) {
   <form [formGroup]="form">
-    <label>
-      Label
-      <span class="hint">(optional)</span>
-      <br />
+    <ya-field label="Label" hint="(optional)">
       <input type="text" formControlName="name" style="width: 100%" />
-    </label>
-    <br />
-    <label>
-      Description
-      <span class="hint">(optional)</span>
-      <br />
+    </ya-field>
+
+    <ya-field label="Description" hint="(optional)">
       <textarea formControlName="description" rows="3"></textarea>
-    </label>
-    <br />
-    <div class="section-divider">
-      <mat-divider />
-    </div>
+    </ya-field>
+
+    <ya-field-divider />
+
     <h4>Styles</h4>
     <app-spacer-styles [form]="form" />
   </form>

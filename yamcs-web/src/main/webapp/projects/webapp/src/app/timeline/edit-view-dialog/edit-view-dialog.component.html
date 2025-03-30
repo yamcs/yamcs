@@ -1,17 +1,11 @@
 <div class="ya-form" style="max-width: 600px">
   <form [formGroup]="form" novalidate autocomplete="off">
     <h2>Edit View</h2>
-    <label>
-      Name
-      <span class="hint">(required)</span>
-      <br />
+    <ya-field label="Name" hint="(required)">
       <input type="text" formControlName="name" />
-    </label>
+    </ya-field>
 
-    <br />
-    <div class="section-divider">
-      <mat-divider />
-    </div>
+    <ya-field-divider />
 
     <h4>Bands</h4>
     <app-band-multi-select formControlName="bands" />

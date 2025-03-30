@@ -1,12 +1,14 @@
-span.label {
+span.ya-label {
   padding: 4px;
   margin-right: 5px;
   border-radius: 12px;
   white-space: nowrap;
   border: 1px solid transparent;
+  font-size: 11px;
+  line-height: 12px;
 }
 
-span.label .mat-icon {
+span.ya-label .mat-icon {
   vertical-align: middle;
   font-size: 12px !important;
   line-height: 16px;

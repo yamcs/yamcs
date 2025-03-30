@@ -3,6 +3,8 @@
   top: 0;
   right: 0;
   display: flex;
+  font-size: 11px;
+  line-height: 12px;
 }
 
 .meta .item {

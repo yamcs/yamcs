@@ -2,9 +2,7 @@
 
 <mat-dialog-content>
   <form [formGroup]="form" class="ya-form">
-    <div class="label">
-      Parameters
-      <br />
+    <ya-field label="Parameters">
       <table class="parameter-table" style="width: 100%" formArrayName="parameters">
         @for (
           parameter of parameterControls;
@@ -34,18 +32,15 @@
         }
         <tr>
           <td colspan="1">
-            <ya-button icon="add_circle_outline" (click)="addParameterControl()">
-              &nbsp;Add
-            </ya-button>
+            <ya-button icon="add_circle_outline" (click)="addParameterControl()">Add</ya-button>
           </td>
         </tr>
       </table>
-    </div>
-    <br />
-    <div class="label">
-      Comment
+    </ya-field>
+
+    <ya-field label="Comment">
       <app-markdown-input formControlName="comment" />
-    </div>
+    </ya-field>
   </form>
 </mat-dialog-content>
 

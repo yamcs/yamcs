@@ -2,21 +2,17 @@
 
 <mat-dialog-content>
   <form [formGroup]="form" class="ya-form">
-    <label>
-      Message
+    <ya-field label="Message">
       <textarea formControlName="message" rows="3"></textarea>
-    </label>
-    <br />
-    <label>
-      Severity
-      <br />
+    </ya-field>
+
+    <ya-field label="Severity">
       <ya-select formControlName="severity" [options]="severityOptions" />
-    </label>
-    <br />
-    <label>
-      Event time
+    </ya-field>
+
+    <ya-field label="Event time">
       <ya-date-time-input formControlName="time" step="1" [showNow]="true" />
-    </label>
+    </ya-field>
   </form>
 </mat-dialog-content>
 
