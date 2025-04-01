@@ -238,6 +238,10 @@ public class XtceToGpbAssembler {
             throw new IllegalStateException("Unexpected reference location " + e);
         }
 
+        if (e.getRepeatEntry() != null) {
+            b.setRepeat(toRepeatInfo(e.getRepeatEntry(), detail));
+        }
+
         if (e instanceof ContainerEntry ce) {
             if (detail == DetailLevel.SUMMARY) {
                 b.setContainer(toContainerInfo(ce.getRefContainer(), DetailLevel.LINK));
