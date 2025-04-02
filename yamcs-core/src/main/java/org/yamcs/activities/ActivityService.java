@@ -196,7 +196,6 @@ public class ActivityService extends AbstractService {
 
         ongoingActivities.put(activity.getId(), ongoingActivity);
         listeners.forEach(l -> l.onActivityUpdated(activity));
-
     }
 
     private void onActivityFinished(OngoingActivity ongoingActivity, ActivityExecution execution) {

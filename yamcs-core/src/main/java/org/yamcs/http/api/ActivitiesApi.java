@@ -290,7 +290,7 @@ public class ActivitiesApi extends AbstractActivitiesApi<Context> {
         }
     }
 
-    private static ActivityInfo toActivityInfo(Activity activity) {
+    public static ActivityInfo toActivityInfo(Activity activity) {
         var activityb = ActivityInfo.newBuilder()
                 .setStart(TimeEncoding.toProtobufTimestamp(activity.getStart()))
                 .setSeq(activity.getSeq())
