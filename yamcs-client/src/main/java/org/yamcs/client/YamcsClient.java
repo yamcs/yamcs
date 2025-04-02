@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 import javax.net.ssl.SSLException;
 
 import org.yamcs.api.MethodHandler;
+import org.yamcs.client.activity.ActivityClient;
 import org.yamcs.client.archive.ArchiveClient;
 import org.yamcs.client.base.HttpMethodHandler;
 import org.yamcs.client.base.ResponseObserver;
@@ -525,9 +526,14 @@ public class YamcsClient {
         return new ProcessorClient(methodHandler, instance, processor);
     }
 
-    public TimelineClient createTimelineClient(String instance, String processor) {
+    public TimelineClient createTimelineClient(String instance) {
         instance = Objects.requireNonNull(instance);
         return new TimelineClient(methodHandler, instance);
+    }
+
+    public ActivityClient createActivityClient(String instance) {
+        instance = Objects.requireNonNull(instance);
+        return new ActivityClient(methodHandler, instance);
     }
 
     public String getHost() {
