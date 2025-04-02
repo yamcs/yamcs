@@ -33,8 +33,6 @@ import com.google.protobuf.util.Durations;
  * <p>
  * Each item is identified by an id (UUID).
  * 
- * @author nm
- *
  */
 public abstract class TimelineItem {
     protected final String id;
@@ -46,6 +44,7 @@ public abstract class TimelineItem {
     // if relativeItemUuid!= null -> the item start is relative to another item
     protected UUID relativeItemUuid;
     protected long relativeStart;
+
 
     // if the item is part of a group
     protected UUID groupUuid;
@@ -180,6 +179,10 @@ public abstract class TimelineItem {
         return properties;
     }
 
+    public String displayName() {
+        return name == null ? id : name + "(" + id + ")";
+    }
+
     public void setProperties(Map<String, String> properties) {
         this.properties.clear();
         this.properties.putAll(properties);
@@ -194,6 +197,7 @@ public abstract class TimelineItem {
                 .setStart(TimeEncoding.toProtobufTimestamp(start))
                 .setDuration(Durations.fromMillis(duration))
                 .putAllProperties(properties);
+
         if (name != null) {
             protob.setName(name);
         }

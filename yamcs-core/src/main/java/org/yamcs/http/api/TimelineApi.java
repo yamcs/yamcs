@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 
 import org.yamcs.YamcsServer;
@@ -43,6 +44,7 @@ import org.yamcs.protobuf.ListViewsRequest;
 import org.yamcs.protobuf.ListViewsResponse;
 import org.yamcs.protobuf.LogEntry;
 import org.yamcs.protobuf.RelativeTime;
+import org.yamcs.protobuf.StartActivityRequest;
 import org.yamcs.protobuf.TimelineBand;
 import org.yamcs.protobuf.TimelineItem;
 import org.yamcs.protobuf.TimelineItemLog;
@@ -51,6 +53,7 @@ import org.yamcs.protobuf.TimelineView;
 import org.yamcs.protobuf.UpdateBandRequest;
 import org.yamcs.protobuf.UpdateItemRequest;
 import org.yamcs.protobuf.UpdateViewRequest;
+import org.yamcs.protobuf.activities.ActivityInfo;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.timeline.ActivityGroup;
 import org.yamcs.timeline.BandListener;
@@ -623,6 +626,29 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         } else {
             observer.complete(item.toProtoBuf(true));
         }
+    }
+
+    @Override
+    public void startActivity(Context ctx, StartActivityRequest request, Observer<ActivityInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlTimeline);
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlActivities);
+
+        TimelineService timelineService = verifyService(request.getInstance());
+        UUID uuid = verifyUuid(request.hasId(), request.getId());
+
+        var scheduler = timelineService.getActivityScheduler();
+        scheduler.startActivity(uuid.toString()).whenComplete((activity, err) -> {
+            if (err != null) {
+                Throwable cause = (err instanceof CompletionException) ? err.getCause() : err;
+                if (cause instanceof IllegalArgumentException || cause instanceof IllegalStateException) {
+                    observer.completeExceptionally(new BadRequestException(cause.getMessage()));
+                } else {
+                    observer.completeExceptionally(new InternalServerErrorException(cause));
+                }
+            } else {
+                observer.complete(ActivitiesApi.toActivityInfo(activity));
+            }
+        });
 
     }
 
@@ -689,13 +715,14 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         case ACTIVITY:
             var activity = new TimelineActivity(id);
             item = activity;
-            if (request.hasActivityDefinition()) { // If missing, it's a 'manual' activity
+            if (request.hasActivityDefinition()) {
                 var defInfo = request.getActivityDefinition();
                 activity.setActivityDefinition(ActivityDefinition.newBuilder()
                         .setType(defInfo.getType())
                         .setArgs(defInfo.getArgs())
                         .build());
-            }
+                activity.setAutoStart(true); // may be changed below if the autoStart was specified in the request
+            } // else it's a 'manual' activity
             break;
         case ACTIVITY_GROUP:
             ActivityGroup activityGroup = new ActivityGroup(id);
@@ -710,12 +737,16 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         }
 
         if (request.hasStart()) {
-            if (request.hasRelativeTime()) {
-                throw new BadRequestException("Cannot specify both start and relative time");
+            if (request.hasRelativeTime() || request.getDependsOnCount() > 0) {
+                throw new BadRequestException(
+                        "Cannot specify start when relative time or dependsOn are also specified");
             }
             item.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
-
         } else if (request.hasRelativeTime()) {
+            if (request.getDependsOnCount() > 0) {
+                throw new BadRequestException(
+                        "Cannot specify both relative time and dependsOn");
+            }
             RelativeTime relt = request.getRelativeTime();
             if (!relt.hasRelto()) {
                 throw new BadRequestException("relto item is required when using relative time");
@@ -725,8 +756,14 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
             }
             item.setRelativeItemUuid(parseUuid(relt.getRelto()));
             item.setRelativeStart(Durations.toMillis(relt.getRelativeStart()));
+        } else if (request.getDependsOnCount() > 0) {
+            if (item instanceof TimelineActivity ta) {
+                request.getDependsOnList().forEach(d -> ta.addDependsOn(d));
+            } else {
+                throw new BadRequestException("dependsOn can only be specified for activities");
+            }
         } else {
-            throw new BadRequestException("One of start or relativeTime has to be specified");
+            throw new BadRequestException("One of start, relativeTime or dependsOn has to be specified");
         }
         if (!request.hasDuration()) {
             throw new BadRequestException("Duration is mandatory");
@@ -738,6 +775,14 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         }
         if (request.hasDescription()) {
             item.setDescription(request.getDescription());
+        }
+
+        if (request.hasAutoStart()) {
+            if (item instanceof TimelineActivity ta) {
+                ta.setAutoStart(request.getAutoStart());
+            } else {
+                throw new BadRequestException("dependsOn can only be specified for activities");
+            }
         }
 
         item.setTags(request.getTagsList());
@@ -836,4 +881,5 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
     static final String MSG_VIEW_NOT_FOUND(String id) {
         return "View " + id + " not found";
     }
+
 }
