@@ -403,8 +403,8 @@ message ActivityDependency {
 	// the id of the activity or item it depends on
 	optional string id = 1;
 
-	//if not specified,  START_ALWAYS will be used
-	// if the dependent id refers to a non-activity item, the condition has either to be skipped or set to START_ALWAYS
+	//if not specified, START_ALWAYS will be used
+	// if the dependent id refers to a non-activity item, the condition can be left out, or set to START_ALWAYS
 	optional ActivityDependencyCondition condition = 2;
 }
 
