@@ -376,8 +376,8 @@ message CreateItemRequest {
 
   // Can be used only if ``type`` is ACTIVITY
   // It specifies which other activities/items this activity depends on
-  // The dependence conditions implicitly specify the start time as the end of the latest dependence
-  repeated ActivityDependence dependsOn = 14;
+  // The dependency conditions implicitly specify the start time as the end of the latest dependency
+  repeated ActivityDependency dependsOn = 14;
 
   // TODO possible future additions to activities:
   // startNotEarlierThan
@@ -387,7 +387,7 @@ message CreateItemRequest {
 //
 // Defines the conditions under which an activity that depends on another activity should be started.
 //
-enum ActivityDependenceCondition {
+enum ActivityDependencyCondition {
   // Start this activity regardless of the outcome of the dependent activity.
   // This can be used to make activities depend on other non-activity items
   START_ALWAYS = 1;
@@ -399,13 +399,13 @@ enum ActivityDependenceCondition {
   START_ON_FAILURE = 3;
 }
 
-message ActivityDependence {
+message ActivityDependency {
 	// the id of the activity or item it depends on
 	optional string id = 1;
 
 	//if not specified,  START_ALWAYS will be used
 	// if the dependent id refers to a non-activity item, the condition has either to be skipped or set to START_ALWAYS
-	optional ActivityDependenceCondition condition = 2;
+	optional ActivityDependencyCondition condition = 2;
 }
 
 message GetItemRequest {
