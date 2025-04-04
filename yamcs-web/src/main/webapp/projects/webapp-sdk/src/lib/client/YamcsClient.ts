@@ -2264,7 +2264,7 @@ export default class YamcsClient implements HttpHandler {
       } else if (!init.headers) {
         init.headers = new Headers();
       }
-      const headers = init.headers as Headers;
+      const headers = new Headers(init.headers);
       headers.append('Authorization', `Bearer ${this.accessToken}`);
     }
 
