@@ -250,10 +250,14 @@ message AlarmInfo {
 }
 
 message ContextAlarmInfo {
-  repeated ComparisonInfo comparison = 1;
+  // Use ``context`` instead
+  repeated ComparisonInfo comparison = 1 [deprecated=true];
+
   optional AlarmInfo alarm = 2;
-  
-  // This can be used in UpdateParameterRequest to pass a context
+
+  // Expression describing the context when this alarm applies.
+  //
+  // Can also be used in UpdateParameterRequest to pass a context
   // that is parsed on the server, according to the rules in the
   // excel spreadsheet. Either this or a comparison has to be
   // used (not both at the same time)
@@ -273,16 +277,21 @@ message DataEncodingInfo {
   optional int32 sizeInBits = 3;
   optional string encoding = 4;
   optional CalibratorInfo defaultCalibrator = 6;
+
   // Deprecated, use ``contextCalibrators`` instead
   repeated ContextCalibratorInfo contextCalibrator = 7 [deprecated=true];
   repeated ContextCalibratorInfo contextCalibrators = 8;
 }
 
 message ContextCalibratorInfo {
-  repeated ComparisonInfo comparison = 1;
+  // Use ``context`` instead
+  repeated ComparisonInfo comparison = 1 [deprecated=true];
+
   optional CalibratorInfo calibrator = 2;
 
-  // This can be used in UpdateParameterRequest to pass a context
+  // Expression describing the context when this calibrator applies
+  //
+  // Can also be used in UpdateParameterRequest to pass a context
   // that is parsed on the server, according to the rules in the
   // excel spreadsheet. Either this or a comparison has to be
   // used (not both at the same time)
@@ -425,18 +434,18 @@ message NumberFormatTypeInfo {
 }
 
 message GetContainerRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Container name.
+  // Container name
   optional string name = 2;
 }
 
 message GetParameterTypeRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
-  // Parameter type name.
+  // Parameter type name
   optional string name = 2;
 }
 

@@ -50,7 +50,9 @@
       [templateProvider]="templateProvider$ | async">
       <ng-container head>
         <ya-stepper-step label="Constraints" [expanded]="true" [visible]="!!command()?.constraint">
-          <app-command-constraints [command]="command()" />
+          <app-command-constraints
+            [command]="command()"
+            [relto]="command()?.qualifiedName | spaceSystemName" />
         </ya-stepper-step>
       </ng-container>
     </app-command-form>

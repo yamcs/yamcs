@@ -42,7 +42,9 @@
         [routerLink]="['/mdb/commands/', command.baseCommand.qualifiedName]"
         [queryParams]="{ c: yamcs.context }"
         class="ya-link">
-        {{ command.baseCommand.qualifiedName }}
+        {{
+          command.baseCommand.qualifiedName | relativize: (command.qualifiedName | spaceSystemName)
+        }}
       </a>
     </dd>
   } @else {
@@ -139,8 +141,12 @@
         </tr>
         @for (constraint of command.constraint; track constraint) {
           <tr>
-            <td>{{ constraint.expression }}</td>
-            <td>{{ constraint.timeout || "-" }}</td>
+            <td>
+              <app-expression
+                [expression]="constraint.expression"
+                [relto]="command.qualifiedName | spaceSystemName" />
+            </td>
+            <td>{{ (constraint.timeout | millisDuration) || "-" }}</td>
           </tr>
         }
       </table>
@@ -186,14 +192,20 @@
                 <a
                   [routerLink]="['/mdb/algorithms/', verifier.algorithm.qualifiedName]"
                   [queryParams]="{ c: yamcs.context }">
-                  {{ verifier.algorithm.qualifiedName }}
+                  {{
+                    verifier.algorithm.qualifiedName
+                      | relativize: (command.qualifiedName | spaceSystemName)
+                  }}
                 </a>
               }
               @if (verifier.container) {
                 <a
                   [routerLink]="['/mdb/containers/', verifier.container.qualifiedName]"
                   [queryParams]="{ c: yamcs.context }">
-                  {{ verifier.container.qualifiedName }}
+                  {{
+                    verifier.container.qualifiedName
+                      | relativize: (command.qualifiedName | spaceSystemName)
+                  }}
                 </a>
               }
               @if (verifier.expression) {
@@ -201,9 +213,9 @@
               }
             </td>
             <td>
-              [{{ verifier.checkWindow.timeToStartChecking || "0" }},{{
-                verifier.checkWindow.timeToStopChecking || "0"
-              }}]
+              <ya-interval
+                [left]="verifier.checkWindow.timeToStartChecking | millisDuration"
+                [right]="verifier.checkWindow.timeToStopChecking | millisDuration" />
             </td>
             <td>{{ verifier.checkWindow.relativeTo }}</td>
             <td>{{ verifier.onSuccess || "-" }}</td>
@@ -226,19 +238,24 @@
     @if (command.commandContainer?.entry) {
       <table yaDataTable>
         <tr>
+          <th>Loc ref</th>
+          <th>Loc</th>
+          <th>Bits</th>
           <th>Type</th>
           <th>Ref</th>
-          <th>Size in bits</th>
-          <th>Location in bits</th>
-          <th>Reference location</th>
+          <th class="wrap200">Description</th>
         </tr>
         @for (entry of command.commandContainer?.entry; track entry) {
           <tr>
+            <td>{{ entry.referenceLocation }}</td>
+            <td>{{ entry.locationInBits }}</td>
             @if (entry.argument) {
+              <td>{{ entry.argument.type.dataEncoding?.sizeInBits ?? "-" }}</td>
               <td>Argument</td>
               <td>{{ entry.argument.name }}</td>
-              <td>{{ entry.argument.type.dataEncoding?.sizeInBits ?? "-" }}</td>
+              <td class="wrap200">{{ entry.argument.description || "-" }}</td>
             } @else if (entry.parameter) {
+              <td>{{ entry.parameter.type?.dataEncoding?.sizeInBits ?? "-" }}</td>
               <td>Parameter</td>
               <td>
                 <a
@@ -248,12 +265,16 @@
                   {{ entry.parameter.qualifiedName }}
                 </a>
               </td>
-              <td>{{ entry.parameter.type?.dataEncoding?.sizeInBits ?? "-" }}</td>
+              <td class="wrap200">
+                {{ entry.parameter.shortDescription || "-" }}
+              </td>
             } @else if (entry.fixedValue) {
+              <td>{{ entry.fixedValue.sizeInBits }}</td>
               <td>Fixed value</td>
               <td>{{ entry.fixedValue.name }}: 0x{{ entry.fixedValue.hexValue }}</td>
-              <td>{{ entry.fixedValue.sizeInBits }}</td>
+              <td class="wrap200">-</td>
             } @else if (entry.indirectParameterRef) {
+              <td>-</td>
               <td>Indirect parameter</td>
               <td>
                 <a
@@ -269,10 +290,10 @@
                   }
                 </a>
               </td>
-              <td>-</td>
+              <td class="wrap200">
+                {{ entry.indirectParameterRef.parameter.shortDescription || "-" }}
+              </td>
             }
-            <td>{{ entry.locationInBits }}</td>
-            <td>{{ entry.referenceLocation }}</td>
           </tr>
         }
       </table>

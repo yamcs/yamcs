@@ -42,10 +42,13 @@
           <td mat-cell *matCellDef="let container">
             @if (container.baseContainer) {
               <a
-                [routerLink]="['/mdb/containers/', container.baseContainer?.qualifiedName]"
+                [routerLink]="['/mdb/containers/', container.baseContainer.qualifiedName]"
                 [queryParams]="{ c: yamcs.context }"
                 class="secundary">
-                {{ container.baseContainer?.qualifiedName || "-" }}
+                {{
+                  container.baseContainer.qualifiedName
+                    | relativize: (container.qualifiedName | spaceSystemName)
+                }}
               </a>
             } @else {
               <span>-</span>
@@ -58,7 +61,13 @@
             mat-cell
             *matCellDef="let container"
             [class.mono]="!!container.restrictionCriteriaExpression">
-            {{ container.restrictionCriteriaExpression || "-" }}
+            @if (container.restrictionCriteriaExpression) {
+              <app-expression
+                [expression]="container.restrictionCriteriaExpression"
+                [relto]="container.qualifiedName | spaceSystemName" />
+            } @else {
+              -
+            }
           </td>
         </ng-container>
         <ng-container matColumnDef="archivePartition">

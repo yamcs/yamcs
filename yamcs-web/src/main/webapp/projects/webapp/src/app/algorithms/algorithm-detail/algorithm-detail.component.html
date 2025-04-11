@@ -193,7 +193,10 @@
                 <a
                   [routerLink]="'/telemetry/parameters' + inputParameter.parameter.qualifiedName"
                   [queryParams]="{ c: yamcs.context }">
-                  {{ inputParameter.parameter.qualifiedName }}
+                  {{
+                    inputParameter.parameter.qualifiedName
+                      | relativize: (algorithm.qualifiedName | spaceSystemName)
+                  }}
                 </a>
               } @else if (inputParameter.argument) {
                 {{ inputParameter.argument.name }}
@@ -234,7 +237,10 @@
               <a
                 [routerLink]="'/telemetry/parameters' + outputParameter.parameter!.qualifiedName"
                 [queryParams]="{ c: yamcs.context }">
-                {{ outputParameter.parameter!.qualifiedName }}
+                {{
+                  outputParameter.parameter!.qualifiedName
+                    | relativize: (algorithm.qualifiedName | spaceSystemName)
+                }}
               </a>
             </td>
           </tr>
@@ -264,7 +270,9 @@
               <a
                 [routerLink]="'/telemetry/parameters' + trigger.qualifiedName"
                 [queryParams]="{ c: yamcs.context }">
-                {{ trigger.qualifiedName }}
+                {{
+                  trigger.qualifiedName | relativize: (algorithm.qualifiedName | spaceSystemName)
+                }}
               </a>
             </td>
           </tr>

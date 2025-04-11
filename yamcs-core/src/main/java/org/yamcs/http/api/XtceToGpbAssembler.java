@@ -1100,6 +1100,7 @@ public class XtceToGpbAssembler {
                 for (ContextCalibrator contextCalibrator : fde.getContextCalibratorList()) {
                     ContextCalibratorInfo.Builder contextCalibratorb = ContextCalibratorInfo.newBuilder();
                     MatchCriteria matchCriteria = contextCalibrator.getContextMatch();
+                    contextCalibratorb.setContext(toExpressionString(matchCriteria));
                     contextCalibratorb.addAllComparison(toComparisons(matchCriteria));
                     contextCalibratorb.setCalibrator(toCalibratorInfo(contextCalibrator.getCalibrator()));
                     infob.addContextCalibrators(contextCalibratorb);
@@ -1123,6 +1124,7 @@ public class XtceToGpbAssembler {
                 for (ContextCalibrator contextCalibrator : ide.getContextCalibratorList()) {
                     ContextCalibratorInfo.Builder contextCalibratorb = ContextCalibratorInfo.newBuilder();
                     MatchCriteria matchCriteria = contextCalibrator.getContextMatch();
+                    contextCalibratorb.setContext(toExpressionString(matchCriteria));
                     contextCalibratorb.addAllComparison(toComparisons(matchCriteria));
                     contextCalibratorb.setCalibrator(toCalibratorInfo(contextCalibrator.getCalibrator()));
                     infob.addContextCalibrators(contextCalibratorb);

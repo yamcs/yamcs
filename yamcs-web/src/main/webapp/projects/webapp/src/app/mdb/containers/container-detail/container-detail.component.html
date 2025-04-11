@@ -51,7 +51,10 @@
         [routerLink]="['/mdb/containers/', container.baseContainer.qualifiedName]"
         [queryParams]="{ c: yamcs.context }"
         class="ya-link">
-        {{ container.baseContainer.qualifiedName || "-" }}
+        {{
+          container.baseContainer.qualifiedName
+            | relativize: (container.qualifiedName | spaceSystemName)
+        }}
       </a>
     } @else {
       <span>-</span>
@@ -60,7 +63,13 @@
 
   <dt>Restriction criteria</dt>
   <dd class="mono">
-    {{ container.restrictionCriteriaExpression || "-" }}
+    @if (container.restrictionCriteriaExpression) {
+      <app-expression
+        [expression]="container.restrictionCriteriaExpression"
+        [relto]="container.qualifiedName | spaceSystemName" />
+    } @else {
+      -
+    }
   </dd>
 
   <dt>Archive partition</dt>
@@ -103,7 +112,10 @@
                   [routerLink]="['/mdb/parameters/', entry.parameter.qualifiedName]"
                   [queryParams]="{ c: yamcs.context }"
                   class="ya-link">
-                  {{ entry.parameter.qualifiedName }}
+                  {{
+                    entry.parameter.qualifiedName
+                      | relativize: (container.qualifiedName | spaceSystemName)
+                  }}
                 </a>
               </td>
               <td>
@@ -115,7 +127,10 @@
                       [routerLink]="['/mdb/parameters/', entry.repeat.dynamicCount.qualifiedName]"
                       [queryParams]="{ c: yamcs.context }"
                       class="ya-link">
-                      {{ entry.repeat.dynamicCount.qualifiedName }}
+                      {{
+                        entry.repeat.dynamicCount.qualifiedName
+                          | relativize: (container.qualifiedName | spaceSystemName)
+                      }}
                     </a>
                     times
                   }
@@ -135,7 +150,10 @@
                   [routerLink]="['/mdb/containers/', entry.container.qualifiedName]"
                   [queryParams]="{ c: yamcs.context }"
                   class="ya-link">
-                  {{ entry.container.qualifiedName }}
+                  {{
+                    entry.container.qualifiedName
+                      | relativize: (container.qualifiedName | spaceSystemName)
+                  }}
                 </a>
               </td>
               <td>
