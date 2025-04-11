@@ -9,9 +9,9 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.mdb.Mdb;
 
 /**
  * Stores the value of the streamConfiguration parameter from yamcs.instance.yaml Used to create the streams at Yamcs
@@ -56,11 +56,6 @@ public class StreamConfig {
         YConfiguration streamConfigAll = instanceConfig.getConfig("streamConfig");
 
         for (String streamType : streamConfigAll.getRoot().keySet()) {
-            if ("alarm".equals(streamType)) {
-                log.warn("Deprecation in streamConfig, please change 'alarm' into 'parameterAlarm'"
-                        + " (since version 4.10 there is also eventAlarm)");
-                streamType = "parameterAlarm";
-            }
             StandardStreamType type = null;
             try {
                 type = StandardStreamType.fromString(streamType);

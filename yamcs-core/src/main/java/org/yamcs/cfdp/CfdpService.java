@@ -215,10 +215,6 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
         Spec spec = new Spec();
         spec.addOption("inStream", OptionType.STRING).withDefault("cfdp_in");
         spec.addOption("outStream", OptionType.STRING).withDefault("cfdp_out");
-        spec.addOption("sourceId", OptionType.INTEGER)
-                .withDeprecationMessage("please use the localEntities");
-        spec.addOption("destinationId", OptionType.INTEGER)
-                .withDeprecationMessage("please use the remoteEntities");
         spec.addOption("incomingBucket", OptionType.STRING).withDefault("cfdpDown");
         spec.addOption("allowRemoteProvidedBucket", OptionType.BOOLEAN).withDefault(false);
         spec.addOption("allowRemoteProvidedSubdirectory", OptionType.BOOLEAN).withDefault(false);
@@ -381,13 +377,6 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
     }
 
     private void initSrcDst(YConfiguration config) throws InitException {
-        if (config.containsKey("sourceId")) {
-            localEntities.put("default", new EntityConf(config.getLong("sourceId"), "default", null));
-        }
-
-        if (config.containsKey("destinationId")) {
-            remoteEntities.put("default", new EntityConf(config.getLong("destinationId"), "default", null));
-        }
         if (config.containsKey("localEntities")) {
             for (YConfiguration c : config.getConfigList("localEntities")) {
                 long id = c.getLong("id");

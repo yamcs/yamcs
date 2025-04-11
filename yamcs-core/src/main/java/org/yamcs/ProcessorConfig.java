@@ -138,16 +138,7 @@ public class ProcessorConfig {
     }
 
     private void parseAlarmConfig(YConfiguration alarmConfig) {
-
-        if (alarmConfig.containsKey("check")) {
-            throw new ConfigurationException(
-                    "Deprecation: in processor.yaml, please replace config -> alarm -> check with config -> alarm -> parameterCheck");
-        }
         checkParameterAlarms = alarmConfig.getBoolean("parameterCheck", checkParameterAlarms);
-        if (alarmConfig.containsKey("server")) {
-            throw new ConfigurationException(
-                    "Deprecation: in processor.yaml, please replace config -> alarm -> server with config -> alarm -> parameterServer");
-        }
         if (alarmConfig.containsKey("parameterServer")) {
             parameterAlarmServerEnabled = "enabled".equalsIgnoreCase(alarmConfig.getString("parameterServer"));
         }
