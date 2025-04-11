@@ -395,7 +395,7 @@ export interface ComparisonInfo {
 export interface SequenceEntry {
   locationInBits: number;
   referenceLocation: 'CONTAINER_START' | 'PREVIOUS_ENTRY';
-  repeat: RepeatInfo;
+  repeat?: RepeatInfo;
 
   container?: Container;
   parameter?: Parameter;
