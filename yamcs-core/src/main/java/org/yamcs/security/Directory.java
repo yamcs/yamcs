@@ -1,7 +1,6 @@
 package org.yamcs.security;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -35,10 +34,10 @@ public class Directory {
     // Users and groups used to be stored in "ProtobufDatabase", but we're slowly phasing that
     // out in favor of tables in the Yamcs DB, now that this has the functionality we need.
     //
-    // Current phase: mirror Yamcs DB to ProtobufDB, and read from Yamcs DB.
+    // Current phase: upgrade on startup from ProtobufDB to Yamcs DB, no backwards compatibility.
     //
     // Next planned phases:
-    // - remove mirror (it is only done for backwards compatibility), only upgrade on-start.
+    // - determine IDs from database sequence, instead of AtomicInteger
     // - remove ProtobufDB (long-term, no rush)
 
     private static final Log log = new Log(Directory.class);
@@ -52,13 +51,6 @@ public class Directory {
     private AtomicInteger accountIdSequence = new AtomicInteger((int) ID_START);
     @Deprecated
     private AtomicInteger groupIdSequence = new AtomicInteger((int) ID_START);
-
-    @Deprecated
-    private Map<String, User> users = new ConcurrentHashMap<>();
-    @Deprecated
-    private Map<String, ServiceAccount> serviceAccounts = new ConcurrentHashMap<>();
-    @Deprecated
-    private Map<String, Group> groups = new ConcurrentHashMap<>();
 
     private Map<String, Role> roles = new ConcurrentHashMap<>();
 
@@ -75,19 +67,15 @@ public class Directory {
                 migrateFromProtobufDatabase();
             }
 
-            // Populate in-memory model required for legacy ProtobufDatabase
-            // During this migration also the ID is determined from memory (as opposed to using the DB sequence)
+            // Determine ID from memory (as opposed to using the DB sequence)
             for (var account : db.listAccounts()) {
                 if (account instanceof User) {
-                    users.put(account.getName(), (User) account);
                     accountIdSequence.set((int) Math.max(accountIdSequence.get(), account.getId()));
                 } else if (account instanceof ServiceAccount) {
-                    serviceAccounts.put(account.getName(), (ServiceAccount) account);
                     accountIdSequence.set((int) Math.max(accountIdSequence.get(), account.getId()));
                 }
             }
             for (var group : db.listGroups()) {
-                groups.put(group.getName(), group);
                 groupIdSequence.set((int) Math.max(groupIdSequence.get(), group.getId()));
             }
         } catch (YarchException | IOException e) {
@@ -150,8 +138,6 @@ public class Directory {
         }
         log.info("Saving new user {}", user);
         setUserPrivileges(user);
-        users.put(user.getName(), user);
-        mirrorToProtobufDatabase();
         db.addAccount(user);
     }
 
@@ -160,8 +146,6 @@ public class Directory {
             throw new UnsupportedOperationException();
         }
         setUserPrivileges(user);
-        users.put(user.getName(), user);
-        mirrorToProtobufDatabase();
         db.updateAccount(user);
     }
 
@@ -189,8 +173,6 @@ public class Directory {
                 db.updateGroup(group);
             }
         }
-        users.remove(user.getName());
-        mirrorToProtobufDatabase();
         db.deleteAccount(user);
     }
 
@@ -203,8 +185,6 @@ public class Directory {
         group.setId(id);
 
         log.info("Saving new group {}", group);
-        groups.put(group.getName(), group);
-        mirrorToProtobufDatabase();
         db.addGroup(group);
     }
 
@@ -214,22 +194,14 @@ public class Directory {
         }
         var group = db.findGroupByName(from);
         group.setName(to);
-
-        groups.remove(from);
-        groups.put(to, group);
-        mirrorToProtobufDatabase();
         db.updateGroup(group);
     }
 
     public synchronized void updateGroupProperties(Group group) {
-        groups.put(group.getName(), group);
-        mirrorToProtobufDatabase();
         db.updateGroup(group);
     }
 
     public synchronized void deleteGroup(Group group) {
-        groups.remove(group.getName());
-        mirrorToProtobufDatabase();
         db.deleteGroup(group);
     }
 
@@ -253,22 +225,16 @@ public class Directory {
         service.setApplicationHash(applicationHash);
 
         log.info("Saving new service account {}", service);
-        serviceAccounts.put(service.getName(), service);
-        mirrorToProtobufDatabase();
         db.addAccount(service);
 
         return new ApplicationCredentials(applicationId, applicationSecret /* not the hash */);
     }
 
     public synchronized void deleteServiceAccount(ServiceAccount service) {
-        serviceAccounts.remove(service.getName());
-        mirrorToProtobufDatabase();
         db.deleteAccount(service);
     }
 
     public synchronized void updateApplicationProperties(ServiceAccount service) {
-        serviceAccounts.put(service.getName(), service);
-        mirrorToProtobufDatabase();
         db.updateAccount(service);
     }
 
@@ -304,33 +270,6 @@ public class Directory {
                 }
                 roles.put(role.getName(), role);
             }
-        }
-    }
-
-    /**
-     * For backwards compatibility reasons, copy the Yamcs DB in full to the legacy Protobuf Database. This can be
-     * removed in a year or so.
-     */
-    @Deprecated
-    private synchronized void mirrorToProtobufDatabase() {
-        AccountCollection.Builder accountsb = AccountCollection.newBuilder();
-        accountsb.setSeq(accountIdSequence.get());
-        for (User user : users.values()) {
-            accountsb.addRecords(user.toRecord());
-        }
-        for (ServiceAccount service : serviceAccounts.values()) {
-            accountsb.addRecords(service.toRecord());
-        }
-        GroupCollection.Builder groupsb = GroupCollection.newBuilder();
-        groupsb.setSeq(groupIdSequence.get());
-        for (Group group : groups.values()) {
-            groupsb.addRecords(group.toRecord());
-        }
-        try {
-            protobufDatabase.save(ACCOUNT_COLLECTION, accountsb.build());
-            protobufDatabase.save(GROUP_COLLECTION, groupsb.build());
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
         }
     }
 
@@ -374,8 +313,6 @@ public class Directory {
         if (!validateUserPassword(user.getName(), password)) {
             String hash = hasher.createHash(password);
             user.setHash(hash);
-            users.put(user.name, user);
-            mirrorToProtobufDatabase();
             db.updateAccount(user);
         }
     }
