@@ -134,7 +134,6 @@ export interface AlarmInfo {
 }
 
 export interface ContextAlarmInfo {
-  comparison: ComparisonInfo[];
   context: string;
   alarm: AlarmInfo;
 }
@@ -161,9 +160,8 @@ export interface Calibrator {
 }
 
 export interface ContextCalibrator {
-  comparison: ComparisonInfo[];
-  calibrator: Calibrator;
   context: string;
+  calibrator: Calibrator;
 }
 
 export interface PolynomialCalibrator {
@@ -376,20 +374,6 @@ export interface Container extends NameDescription {
   archivePartition: boolean;
   restrictionCriteriaExpression?: string;
   entry?: SequenceEntry[];
-}
-
-export type OperatorType =
-  | 'EQUAL_TO'
-  | 'NOT_EQUAL_TO'
-  | 'GREATER_THAN'
-  | 'GREATER_THAN_OR_EQUAL_TO'
-  | 'SMALLER_THAN'
-  | 'SMALLER_THAN_OR_EQUAL_TO';
-
-export interface ComparisonInfo {
-  parameter: Parameter;
-  operator: OperatorType;
-  value: string;
 }
 
 export interface SequenceEntry {

@@ -17,10 +17,10 @@ export type RangeForm = 'inside' | 'outside';
 })
 export class YaInterval implements OnChanges {
   @Input()
-  left: number;
+  left: number | string;
 
   @Input()
-  right: number;
+  right: number | string;
 
   @Input()
   leftInclusive = true;

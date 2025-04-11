@@ -47,6 +47,10 @@ import {
       white-space: normal;
       word-break: break-word;
     }
+
+    .ya-data-table th.wrap200 {
+      min-width: 200px;
+    }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,

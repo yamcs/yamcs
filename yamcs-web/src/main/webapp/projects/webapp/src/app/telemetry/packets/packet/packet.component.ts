@@ -45,6 +45,7 @@ export interface SimpleParameterNode extends INode {
   location: number;
   size: number;
   parameter: Parameter;
+  relto: Container;
 }
 
 export interface AggregateParameterNode extends INode {
@@ -52,6 +53,7 @@ export interface AggregateParameterNode extends INode {
   location: number;
   size: number;
   parameter: Parameter;
+  relto: Container;
 }
 
 export interface ArrayParameterNode extends INode {
@@ -59,6 +61,7 @@ export interface ArrayParameterNode extends INode {
   location: number;
   size: number;
   parameter: Parameter;
+  relto: Container;
 }
 
 export interface SimpleValueNode extends INode {
@@ -210,7 +213,7 @@ export class PacketComponent extends BaseComponent implements OnInit {
   }
 
   private addParameterNodes(
-    parent: Node,
+    parent: ContainerNode,
     pval: ExtractedParameter,
     nodes: Node[],
   ) {
@@ -225,6 +228,7 @@ export class PacketComponent extends BaseComponent implements OnInit {
         rawValue,
         engValue,
         size,
+        relto: parent.container,
       };
       nodes.push(arrayNode);
 
@@ -255,6 +259,7 @@ export class PacketComponent extends BaseComponent implements OnInit {
         rawValue,
         engValue,
         size,
+        relto: parent.container,
       };
       nodes.push(aggregateNode);
 
@@ -285,6 +290,7 @@ export class PacketComponent extends BaseComponent implements OnInit {
         rawValue,
         engValue,
         size,
+        relto: parent.container,
       });
     }
   }

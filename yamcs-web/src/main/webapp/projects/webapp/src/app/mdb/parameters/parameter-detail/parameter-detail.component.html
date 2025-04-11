@@ -160,7 +160,9 @@
             <a
               [routerLink]="['/mdb/algorithms/', algorithm.qualifiedName]"
               [queryParams]="{ c: yamcs.context }">
-              {{ algorithm.qualifiedName }}
+              {{
+                algorithm.qualifiedName | relativize: (parameter.qualifiedName | spaceSystemName)
+              }}
             </a>
           </td>
           <td class="wrap200">{{ algorithm.shortDescription || "-" }}</td>
@@ -173,7 +175,9 @@
             <a
               [routerLink]="['/mdb/containers/', container.qualifiedName]"
               [queryParams]="{ c: yamcs.context }">
-              {{ container.qualifiedName }}
+              {{
+                container.qualifiedName | relativize: (parameter.qualifiedName | spaceSystemName)
+              }}
             </a>
           </td>
           <td class="wrap200">{{ container.shortDescription || "-" }}</td>
@@ -214,7 +218,9 @@
     </div>
 
     <h4>Calibration</h4>
-    <app-parameter-calibration [ptype]="entry.type" />
+    <app-parameter-calibration
+      [ptype]="entry.type"
+      [relto]="parameter.qualifiedName | spaceSystemName" />
     <p>&nbsp;</p>
   }
 
@@ -231,21 +237,11 @@
           <th style="width: 100px">Label</th>
           <th style="width: 300px">Description</th>
           <th>Alarm level (default)</th>
-          @for (context of entry.type?.contextAlarm; track context) {
+          @for (contextAlarm of entry.type?.contextAlarm; track contextAlarm) {
             <th>
-              @for (comparison of context.comparison; track comparison; let first = $first) {
-                @if (!first) {
-                  ,
-                }
-                <a
-                  [routerLink]="['/mdb/parameters/', comparison.parameter.qualifiedName]"
-                  [queryParams]="{ c: yamcs.context }"
-                  class="secundary">
-                  {{ comparison.parameter.name }}
-                </a>
-                {{ comparison.operator | operator }}
-                {{ comparison.value }}
-              }
+              <app-expression
+                [expression]="contextAlarm.context"
+                [relto]="parameter.qualifiedName | spaceSystemName" />
             </th>
           }
         </tr>
@@ -262,9 +258,9 @@
                 <span>-</span>
               }
             </td>
-            @for (context of entry.type!.contextAlarm; track context) {
+            @for (contextAlarm of entry.type!.contextAlarm; track contextAlarm) {
               <td>
-                @if (getEnumerationAlarmLevel(context, enumValue.label); as level) {
+                @if (getEnumerationAlarmLevel(contextAlarm, enumValue.label); as level) {
                   <app-alarm-level [level]="level" [grayscale]="true" />
                   {{ level }}
                 } @else {
@@ -379,7 +375,9 @@
         }
         <h5>
           Context:
-          <code>{{ contextAlarm.context }}</code>
+          <app-expression
+            [expression]="contextAlarm.context"
+            [relto]="parameter.qualifiedName | spaceSystemName" />
         </h5>
         <dl class="dl-horizontal">
           <dt>Min. violations</dt>

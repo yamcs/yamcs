@@ -532,6 +532,44 @@ export function getBasename(path: string | null): string | null {
 }
 
 /**
+ * Relativizes a path to another.
+ *
+ * This is a simplified implementation that assumes that
+ * both paths are provided as fully qualified names.
+ */
+export function relativizePath(path: string, relto: string) {
+  if (relto.endsWith('/')) {
+    relto = relto.slice(0, -1);
+  }
+
+  const aSegments = relto.split('/');
+  const bSegments = path.split('/');
+  let commonSegments: string[] = [];
+  for (let i = 0; i < Math.min(aSegments.length, bSegments.length); i++) {
+    if (aSegments[i] === bSegments[i]) {
+      commonSegments.push(aSegments[i]);
+    }
+  }
+
+  const commonPrefix = commonSegments.join('/') || '/';
+  if (commonPrefix === '/') {
+    return path;
+  } else {
+    let result = '';
+    for (let i = commonSegments.length; i < aSegments.length; i++) {
+      result += '../';
+    }
+    for (let i = commonSegments.length; i < bSegments.length; i++) {
+      if (i > commonSegments.length) {
+        result += '/';
+      }
+      result += bSegments[i];
+    }
+    return result;
+  }
+}
+
+/**
  * Outputs the filename of a path string. The path may end with a trailing slash which is preserved.
  */
 export function getFilename(path: string): string | null {
