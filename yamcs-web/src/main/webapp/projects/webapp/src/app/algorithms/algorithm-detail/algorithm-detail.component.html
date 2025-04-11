@@ -251,29 +251,33 @@
 <dl class="dl-horizontal">
   <dt>Triggers</dt>
   <dd>
-    <table yaDataTable>
-      <tr>
-        <th>Type</th>
-        <th>Value</th>
-      </tr>
-      @for (trigger of algorithm.onParameterUpdate; track trigger) {
+    @if (algorithm.onParameterUpdate || algorithm.onPeriodicRate) {
+      <table yaDataTable>
         <tr>
-          <td>OnParameterUpdate</td>
-          <td>
-            <a
-              [routerLink]="'/telemetry/parameters' + trigger.qualifiedName"
-              [queryParams]="{ c: yamcs.context }">
-              {{ trigger.qualifiedName }}
-            </a>
-          </td>
+          <th>Type</th>
+          <th>Value</th>
         </tr>
-      }
-      @if (algorithm.onPeriodicRate) {
-        <tr>
-          <td>OnPeriodicRate</td>
-          <td>{{ algorithm.onPeriodicRate }} ms</td>
-        </tr>
-      }
-    </table>
+        @for (trigger of algorithm.onParameterUpdate; track trigger) {
+          <tr>
+            <td>OnParameterUpdate</td>
+            <td>
+              <a
+                [routerLink]="'/telemetry/parameters' + trigger.qualifiedName"
+                [queryParams]="{ c: yamcs.context }">
+                {{ trigger.qualifiedName }}
+              </a>
+            </td>
+          </tr>
+        }
+        @if (algorithm.onPeriodicRate) {
+          <tr>
+            <td>OnPeriodicRate</td>
+            <td>{{ algorithm.onPeriodicRate }} ms</td>
+          </tr>
+        }
+      </table>
+    } @else {
+      -
+    }
   </dd>
 </dl>

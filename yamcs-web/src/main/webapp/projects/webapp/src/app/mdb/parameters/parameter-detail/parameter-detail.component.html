@@ -151,6 +151,7 @@
       <tr>
         <th>Type</th>
         <th>Ref</th>
+        <th class="wrap200">Description</th>
       </tr>
       @for (algorithm of $any(entry).usedBy?.algorithm; track algorithm) {
         <tr>
@@ -162,6 +163,7 @@
               {{ algorithm.qualifiedName }}
             </a>
           </td>
+          <td class="wrap200">{{ algorithm.shortDescription || "-" }}</td>
         </tr>
       }
       @for (container of $any(entry).usedBy?.container; track container) {
@@ -174,6 +176,7 @@
               {{ container.qualifiedName }}
             </a>
           </td>
+          <td class="wrap200">{{ container.shortDescription || "-" }}</td>
         </tr>
       }
     </table>
@@ -193,7 +196,7 @@
         <dt>Byte order</dt>
         <dd>
           @if (dataEncoding?.littleEndian !== undefined) {
-            {{ dataEncoding?.littleEndian ? "Little Endian" : "Big Endian" }}
+            {{ dataEncoding?.littleEndian ? "Little endian" : "Big endian" }}
           }
           @if (dataEncoding?.littleEndian === undefined) {
             -
@@ -331,7 +334,7 @@
       <mat-divider />
     </div>
 
-    <h4>Alarm Info</h4>
+    <h4>Alarm info</h4>
     @if (entry.type?.defaultAlarm || entry.type?.contextAlarm) {
       @if (entry.type?.defaultAlarm; as alarm) {
         <dl class="dl-horizontal">

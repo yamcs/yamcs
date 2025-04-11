@@ -107,7 +107,7 @@
             <td>{{ argument.type.dataEncoding?.encoding || "-" }}</td>
             <td>{{ argument.type.dataEncoding?.sizeInBits | nvl: "-" }}</td>
             <td>
-              {{ argument.type.dataEncoding?.littleEndian ? "Little Endian" : "Big Endian" }}
+              {{ argument.type.dataEncoding?.littleEndian ? "Little endian" : "Big endian" }}
             </td>
             <td>
               @if (argument.type.rangeMin || argument.type.rangeMax) {
