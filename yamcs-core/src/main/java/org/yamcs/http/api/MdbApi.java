@@ -431,7 +431,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
             List<SequenceContainer> unsortedContainers = new ArrayList<>(usingContainers);
             Collections.sort(unsortedContainers, (c1, c2) -> c1.getQualifiedName().compareTo(c2.getQualifiedName()));
             for (SequenceContainer seqContainer : unsortedContainers) {
-                ContainerInfo usingContainer = XtceToGpbAssembler.toContainerInfo(seqContainer, DetailLevel.LINK);
+                ContainerInfo usingContainer = XtceToGpbAssembler.toContainerInfo(seqContainer, DetailLevel.SUMMARY);
                 usedByb.addContainer(usingContainer);
             }
             pinfob.setUsedBy(usedByb);
@@ -803,7 +803,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
             List<SequenceContainer> unsortedContainers = new ArrayList<>(usingContainers);
             Collections.sort(unsortedContainers, (c1, c2) -> c1.getQualifiedName().compareTo(c2.getQualifiedName()));
             for (SequenceContainer seqContainer : unsortedContainers) {
-                ContainerInfo usingContainer = XtceToGpbAssembler.toContainerInfo(seqContainer, DetailLevel.LINK);
+                ContainerInfo usingContainer = XtceToGpbAssembler.toContainerInfo(seqContainer, DetailLevel.SUMMARY);
                 usedByb.addContainer(usingContainer);
             }
             cinfob.setUsedBy(usedByb);

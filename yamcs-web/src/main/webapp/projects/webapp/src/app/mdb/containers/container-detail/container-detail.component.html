@@ -77,15 +77,26 @@
     @if (container.entry) {
       <table yaDataTable>
         <tr>
+          <th>Loc ref</th>
+          <th>Loc</th>
+          <th>Bits</th>
           <th>Type</th>
           <th>Ref</th>
-          <th>Size in bits</th>
-          <th>Location in bits</th>
-          <th>Reference location</th>
+          <th>Repeat</th>
+          <th>Description</th>
         </tr>
         @for (entry of container.entry; track entry) {
           <tr>
+            <td>
+              @if (entry.referenceLocation === "CONTAINER_START") {
+                Container start
+              } @else if (entry.referenceLocation === "PREVIOUS_ENTRY") {
+                Previous entry
+              }
+            </td>
+            <td>{{ entry.locationInBits }}</td>
             @if (entry.parameter) {
+              <td>{{ entry.parameter.type?.dataEncoding?.sizeInBits ?? "-" }}</td>
               <td>Parameter</td>
               <td>
                 <a
@@ -95,9 +106,29 @@
                   {{ entry.parameter.qualifiedName }}
                 </a>
               </td>
-              <td>{{ entry.parameter.type?.dataEncoding?.sizeInBits ?? "-" }}</td>
+              <td>
+                @if (entry.repeat) {
+                  @if (entry.repeat.fixedCount !== undefined) {
+                    {{ entry.repeat.fixedCount }} times
+                  } @else if (entry.repeat.dynamicCount) {
+                    <a
+                      [routerLink]="['/mdb/parameters/', entry.repeat.dynamicCount.qualifiedName]"
+                      [queryParams]="{ c: yamcs.context }"
+                      class="ya-link">
+                      {{ entry.repeat.dynamicCount.qualifiedName }}
+                    </a>
+                    times
+                  }
+                } @else {
+                  -
+                }
+              </td>
+              <td class="wrap200">
+                {{ entry.parameter.shortDescription || "-" }}
+              </td>
             }
             @if (entry.container) {
+              <td>{{ entry.container.sizeInBits ?? "-" }}</td>
               <td>Container</td>
               <td>
                 <a
@@ -107,10 +138,27 @@
                   {{ entry.container.qualifiedName }}
                 </a>
               </td>
-              <td>{{ entry.container.sizeInBits ?? "-" }}</td>
+              <td>
+                @if (entry.repeat) {
+                  @if (entry.repeat.fixedCount !== undefined) {
+                    {{ entry.repeat.fixedCount }} times
+                  } @else if (entry.repeat.dynamicCount) {
+                    <a
+                      [routerLink]="['/mdb/parameters/', entry.repeat.dynamicCount.qualifiedName]"
+                      [queryParams]="{ c: yamcs.context }"
+                      class="ya-link">
+                      {{ entry.repeat.dynamicCount.qualifiedName }}
+                    </a>
+                    times
+                  }
+                } @else {
+                  -
+                }
+              </td>
+              <td>
+                {{ entry.container.shortDescription || "-" }}
+              </td>
             }
-            <td>{{ entry.locationInBits }}</td>
-            <td>{{ entry.referenceLocation }}</td>
           </tr>
         }
       </table>
