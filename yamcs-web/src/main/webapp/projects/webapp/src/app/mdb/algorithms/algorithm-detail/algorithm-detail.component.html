@@ -130,7 +130,10 @@
                 <a
                   [routerLink]="['/mdb/parameters/', inputParameter.parameter.qualifiedName]"
                   [queryParams]="{ c: yamcs.context }">
-                  {{ inputParameter.parameter.qualifiedName }}
+                  {{
+                    inputParameter.parameter.qualifiedName
+                      | relativize: (algorithm.qualifiedName | spaceSystemName)
+                  }}
                 </a>
               } @else if (inputParameter.argument) {
                 {{ inputParameter.argument.name }}
@@ -171,7 +174,10 @@
               <a
                 [routerLink]="['/mdb/parameters/', outputParameter.parameter!.qualifiedName]"
                 [queryParams]="{ c: yamcs.context }">
-                {{ outputParameter.parameter!.qualifiedName }}
+                {{
+                  outputParameter.parameter!.qualifiedName
+                    | relativize: (algorithm.qualifiedName | spaceSystemName)
+                }}
               </a>
             </td>
           </tr>
@@ -201,7 +207,9 @@
               <a
                 [routerLink]="['/mdb/parameters/', trigger.qualifiedName]"
                 [queryParams]="{ c: yamcs.context }">
-                {{ trigger.qualifiedName }}
+                {{
+                  trigger.qualifiedName | relativize: (algorithm.qualifiedName | spaceSystemName)
+                }}
               </a>
             </td>
           </tr>

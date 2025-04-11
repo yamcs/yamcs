@@ -23,7 +23,6 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
-import { YaIconButton } from '../public-api';
 import { YaActionLogSummary } from './components/action-log-summary/action-log-summary.component';
 import { YaBinaryInput } from './components/binary-input/binary-input.component';
 import { YaBreadcrumbTrail } from './components/breadcrumb/breadcrumb-trail.component';
@@ -52,6 +51,7 @@ import { YaHexIntegerInput } from './components/hex-integer-input/hex-integer-in
 import { YaHighlight } from './components/highlight/highlight.component';
 import { YaHref } from './components/href/href.directive';
 import { YaIconAction } from './components/icon-action/icon-action.component';
+import { YaIconButton } from './components/icon-button/icon-button.component';
 import { YaInterval } from './components/interval/interval.component';
 import { YaLabel } from './components/label/label.component';
 import { YaLabels } from './components/labels/labels.component';
@@ -104,11 +104,11 @@ import { MemberPathPipe } from './pipes/member-path.pipe';
 import { MillisDurationPipe } from './pipes/millis-duration.pipe';
 import { NanosDurationPipe } from './pipes/nanos-duration.pipe';
 import { NvlPipe } from './pipes/nvl.pipe';
-import { OperatorPipe } from './pipes/operator.pipe';
 import { ParameterTypeForPathPipe } from './pipes/parameter-type-for-path.pipe';
 import { ParentsPipe } from './pipes/parents.pipe';
 import { PrintJsonPipe } from './pipes/print-json.pipe';
 import { PrintObjPipe } from './pipes/print-obj.pipe';
+import { RelativizePipe } from './pipes/relativize.pipe';
 import { ReversePipe } from './pipes/reverse.pipe';
 import { ShortNamePipe } from './pipes/short-name.pipe';
 import { SpaceSystemPipe } from './pipes/space-system.pipe';
@@ -140,11 +140,11 @@ const pipes = [
   MillisDurationPipe,
   NanosDurationPipe,
   NvlPipe,
-  OperatorPipe,
   ParameterTypeForPathPipe,
   ParentsPipe,
   PrintJsonPipe,
   PrintObjPipe,
+  RelativizePipe,
   ReversePipe,
   ShortNamePipe,
   SpaceSystemPipe,

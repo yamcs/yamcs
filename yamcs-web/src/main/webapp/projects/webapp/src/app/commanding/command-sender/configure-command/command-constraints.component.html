@@ -11,7 +11,7 @@
     </tr>
     @for (constraint of command.constraint; track constraint) {
       <tr>
-        <td>{{ constraint.expression }}</td>
+        <td><app-expression [expression]="constraint.expression" [relto]="relto()" /></td>
         <td style="white-space: nowrap">{{ (constraint.timeout | millisDuration) || "-" }}</td>
         <td style="white-space: nowrap">
           @if (expr.result() === true) {

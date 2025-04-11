@@ -250,21 +250,11 @@
         <th style="width: 100px">Label</th>
         <th style="width: 300px">Description</th>
         <th>Alarm level (default)</th>
-        @for (context of entry.type?.contextAlarm; track context) {
+        @for (contextAlarm of entry.type?.contextAlarm; track contextAlarm) {
           <th>
-            @for (comparison of context.comparison; track comparison; let first = $first) {
-              @if (!first) {
-                ,
-              }
-              <a
-                [routerLink]="['/mdb/parameters/', comparison.parameter.qualifiedName]"
-                [queryParams]="{ c: yamcs.context }"
-                class="secundary">
-                {{ comparison.parameter.name }}
-              </a>
-              {{ comparison.operator | operator }}
-              {{ comparison.value }}
-            }
+            <app-expression
+              [expression]="contextAlarm.context"
+              [relto]="parameter.qualifiedName | spaceSystemName" />
           </th>
         }
       </tr>
@@ -281,9 +271,9 @@
               <span>-</span>
             }
           </td>
-          @for (context of entry.type!.contextAlarm; track context) {
+          @for (contextAlarm of entry.type!.contextAlarm; track contextAlarm) {
             <td>
-              @if (getEnumerationAlarmLevel(context, enumValue.label); as level) {
+              @if (getEnumerationAlarmLevel(contextAlarm, enumValue.label); as level) {
                 <app-alarm-level [level]="level" [grayscale]="true" />
                 {{ level }}
               } @else {
