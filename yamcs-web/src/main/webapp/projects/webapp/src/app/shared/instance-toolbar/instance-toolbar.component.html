@@ -46,12 +46,12 @@
               (click)="exitFullScreen()"
               matTooltip="Exit full screen" />
           }
-          @if (!(fullScreenMode$ | async) && (zenMode$ | async)) {
+          @if (!(fullScreenMode$ | async) && (focusMode$ | async)) {
             <ya-icon-action
               class="icon-action"
               icon="fullscreen_exit"
-              (click)="exitZenMode()"
-              matTooltip="Exit zen mode" />
+              (click)="exitFocusMode()"
+              matTooltip="Exit focus mode" />
           }
           @if (!(fullScreenMode$ | async)) {
             <ya-icon-action
@@ -70,14 +70,14 @@
       overlapTrigger="false"
       xPosition="before"
       yPosition="below">
-      @if (!(zenMode$ | async)) {
-        <button mat-menu-item [disabled]="fullScreenMode$ | async" (click)="enterZenMode()">
-          Enter zen mode
+      @if (!(focusMode$ | async)) {
+        <button mat-menu-item [disabled]="fullScreenMode$ | async" (click)="enterFocusMode()">
+          Enter focus mode
         </button>
       }
-      @if (zenMode$ | async) {
-        <button mat-menu-item [disabled]="fullScreenMode$ | async" (click)="exitZenMode()">
-          Exit zen mode
+      @if (focusMode$ | async) {
+        <button mat-menu-item [disabled]="fullScreenMode$ | async" (click)="exitFocusMode()">
+          Exit focus mode
         </button>
       }
       @if (!(fullScreenMode$ | async)) {

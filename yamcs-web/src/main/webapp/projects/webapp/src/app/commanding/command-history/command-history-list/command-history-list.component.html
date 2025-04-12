@@ -75,14 +75,14 @@
               xPosition="before">
               <button
                 mat-menu-item
-                matTooltip="Print preview with one page per command"
+                matTooltip="Print preview with one command per page"
                 matTooltipPosition="right"
                 (click)="printReport()">
                 Printer-friendly
               </button>
               <button
                 mat-menu-item
-                matTooltip="Command table, one row per command"
+                matTooltip="Command table, one command per row"
                 matTooltipPosition="right"
                 (click)="exportCsv()">
                 CSV format
@@ -398,14 +398,7 @@
                       @if (row.completed?.returnValue; as rv) {
                         @switch (rv.type) {
                           @case ("BINARY") {
-                            <div class="no-print" style="margin-top: 4px">
-                              <app-hex [base64String]="rv.binaryValue" />
-                            </div>
-                            <div class="print-only">
-                              <pre style="margin: 0; line-height: 1em">{{
-                                (rv.binaryValue | hexDump) || "-"
-                              }}</pre>
-                            </div>
+                            <app-hex [base64String]="rv.binaryValue" />
                           }
                           @case ("STRING") {
                             <pre style="margin: 0; margin-top: 4px; line-height: 1em">{{

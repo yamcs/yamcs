@@ -1,5 +1,5 @@
 <div #extensionInitializers></div>
-<mat-toolbar color="primary" [class.zen]="zenMode$ | async">
+<mat-toolbar color="primary" [class.focus]="focusMode$ | async">
   <mat-toolbar-row
     class="app-bar"
     [class.replay]="(connectionInfo$ | async)?.processor?.replay"

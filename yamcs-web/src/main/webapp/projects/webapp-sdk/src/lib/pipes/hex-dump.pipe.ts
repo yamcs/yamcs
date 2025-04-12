@@ -7,7 +7,7 @@ import { Formatter } from '../services/formatter.service';
 export class HexDumpPipe implements PipeTransform {
   constructor(private formatter: Formatter) {}
 
-  transform(value: string | null): string | null {
+  transform(value: string | null | undefined): string | null {
     if (!value) {
       return null;
     }

@@ -10,7 +10,7 @@ mat-sidenav-container {
   background-color: var(--y-background-color);
 }
 
-mat-sidenav-container.zen {
+mat-sidenav-container.focus {
   --top-height: 0;
 }
 
