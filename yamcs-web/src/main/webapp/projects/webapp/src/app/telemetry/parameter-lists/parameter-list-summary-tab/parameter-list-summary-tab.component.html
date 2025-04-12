@@ -1,11 +1,12 @@
 <ya-panel>
   @if (plist$ | async; as plist) {
-    <div class="filter-bar">
+    <ya-filter-bar>
       <ya-column-chooser #columnChooser [columns]="columns" preferenceKey="tmParameters" />
       @if (dataSource.loading$ | async) {
         <ya-dots />
       }
-    </div>
+    </ya-filter-bar>
+
     <table
       mat-table
       class="ya-data-table expand"

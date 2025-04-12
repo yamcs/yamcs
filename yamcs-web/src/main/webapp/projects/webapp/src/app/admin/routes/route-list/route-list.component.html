@@ -17,9 +17,9 @@
 
   <div class="table-wrapper">
     <ya-panel>
-      <div class="filter-bar">
+      <ya-filter-bar>
         <ya-search-filter [formControl]="filterControl" placeholder="Filter routes" />
-      </div>
+      </ya-filter-bar>
       <table
         mat-table
         [dataSource]="dataSource"

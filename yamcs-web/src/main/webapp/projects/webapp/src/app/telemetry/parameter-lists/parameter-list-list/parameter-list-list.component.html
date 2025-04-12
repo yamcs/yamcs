@@ -12,9 +12,10 @@
   </app-instance-toolbar>
 
   <ya-panel>
-    <div class="filter-bar">
+    <ya-filter-bar>
       <ya-search-filter [formControl]="filterControl" placeholder="Filter lists" />
-    </div>
+    </ya-filter-bar>
+
     <table mat-table [dataSource]="dataSource" class="ya-data-table expand">
       <ng-container matColumnDef="name">
         <th mat-header-cell *matHeaderCellDef>Name</th>

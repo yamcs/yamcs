@@ -74,3 +74,8 @@ button.text-only:hover {
 button.text-only:hover:not(:disabled) {
   background-color: #e6f1ef;
 }
+
+button.right-align {
+  display: flex;
+  justify-content: end;
+}

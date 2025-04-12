@@ -36,14 +36,14 @@
 </mat-toolbar>
 
 <ya-panel>
-  <div class="filter-bar">
+  <ya-filter-bar>
     <ya-search-filter
       [formControl]="filterControl"
       placeholder="Filter instances"
       (onArrowDown)="selectNext()"
       (onArrowUp)="selectPrevious()"
       (onEnter)="applySelection()" />
-  </div>
+  </ya-filter-bar>
   <table
     mat-table
     [dataSource]="dataSource"

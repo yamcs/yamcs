@@ -193,19 +193,9 @@ input.ng-invalid:not(.ng-pristine),
   text-transform: uppercase;
 }
 
-.filter-bar {
-  height: 24px;
-  margin-bottom: 12px;
-  display: flex;
-}
-
 input[type="checkbox"],
 input[type="radio"] {
   accent-color: var(--y-accent);
-}
-
-.action-bar {
-  padding-top: 16px;
 }
 
 .mat-mdc-dialog-content .hint {
@@ -224,18 +214,8 @@ input[type="radio"] {
   color: whitesmoke !important;
 }
 
-.action-bar ya-button,
-.mat-mdc-dialog-actions ya-button:not(:last-child),
-.filter-bar > .date-time-input,
-.filter-bar > ya-button,
-.filter-bar > ya-select,
-.filter-bar > ya-multi-select,
-.filter-bar .search-input {
+.mat-mdc-dialog-actions ya-button:not(:last-child) {
   margin-right: 7px;
-}
-
-.filter-bar ya-button.no-margin {
-  margin-right: 0;
 }
 
 .mat-mdc-paginator {
@@ -285,8 +265,7 @@ p {
 
 @media print {
   .mat-drawer,
-  .mat-toolbar,
-  .filter-bar {
+  .mat-toolbar {
     display: none !important;
   }
 

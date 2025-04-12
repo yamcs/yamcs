@@ -14,6 +14,9 @@ export type YaButtonAppearance = 'basic' | 'text' | 'primary';
   templateUrl: './button.component.html',
   styleUrl: './button.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    class: 'ya-button',
+  },
   imports: [MatIcon],
 })
 export class YaButton {
@@ -22,6 +25,7 @@ export class YaButton {
   disabled = input(false, { transform: booleanAttribute });
   dropdown = input(false, { transform: booleanAttribute });
   toggled = input(false, { transform: booleanAttribute });
+  rightAlign = input(false, { transform: booleanAttribute });
 
   click = output<MouseEvent>();
 

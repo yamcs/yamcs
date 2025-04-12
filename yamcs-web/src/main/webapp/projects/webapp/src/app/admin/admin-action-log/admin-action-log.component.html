@@ -2,19 +2,17 @@
   <app-admin-toolbar>Action log</app-admin-toolbar>
 
   <ya-panel>
-    <form [formGroup]="filterForm">
-      <div class="filter-bar">
-        <ya-search-filter formControlName="filter" placeholder="Filter by text search" />
-        <ya-select [options]="intervalOptions" icon="access_time" formControlName="interval" />
-        @if (filterForm.value["interval"] === "CUSTOM") {
-          <ya-date-time-input formControlName="customStart" />
-          <ya-date-time-input formControlName="customStop" />
-          <ya-button (click)="applyCustomDates()" [disabled]="filterForm.invalid">Apply</ya-button>
-        } @else {
-          <ya-button (click)="jumpToNow()">Jump to now</ya-button>
-        }
-      </div>
-    </form>
+    <ya-filter-bar [formGroup]="filterForm">
+      <ya-search-filter formControlName="filter" placeholder="Filter by text search" />
+      <ya-select [options]="intervalOptions" icon="access_time" formControlName="interval" />
+      @if (filterForm.value["interval"] === "CUSTOM") {
+        <ya-date-time-input formControlName="customStart" />
+        <ya-date-time-input formControlName="customStop" />
+        <ya-button (click)="applyCustomDates()" [disabled]="filterForm.invalid">Apply</ya-button>
+      } @else {
+        <ya-button (click)="jumpToNow()">Jump to now</ya-button>
+      }
+    </ya-filter-bar>
 
     @for (rowGroup of rowGroups$ | async; track rowGroup; let isFirst = $first) {
       <h4 [class.first]="isFirst">{{ rowGroup.grouper }}</h4>
