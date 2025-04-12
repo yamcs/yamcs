@@ -1,4 +1,4 @@
-.icon-action {
+:host {
   text-decoration: none;
   display: inline-flex;
   vertical-align: middle;
@@ -8,49 +8,28 @@
   user-select: none;
   -webkit-user-select: none;
   font-size: 12px;
+  height: 18px;
 }
 
-.icon-action:hover {
+:host:hover {
   color: #009e87;
 }
 
-:host.active .icon-action {
-  color: #009e87;
-}
-
-:host.active .action-content {
-  color: #009e87;
-  margin-bottom: -2px;
-  border-bottom: 2px solid #009e87;
-}
-
-:host.disabled .icon-action {
+:host.disabled {
   cursor: not-allowed;
-}
-
-:host.disabled .icon-action {
   color: #aaa;
 }
 
-:host.disabled .action-content {
-  color: #aaa;
-}
-
-:host.padding .icon-action {
+:host.padding {
   padding-left: 6px;
   padding-right: 6px;
 }
 
-:host {
-  display: inline-block;
-  height: 20px;
-}
-
 .material-symbols {
   vertical-align: middle;
-  font-size: 20px !important;
-  height: 20px !important;
-  width: 20px !important;
+  font-size: 18px !important;
+  height: 18px !important;
+  width: 18px !important;
 }
 
 .material-symbols:hover {

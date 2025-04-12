@@ -1,6 +1,7 @@
-.text-action {
+:host {
   text-decoration: none;
   display: inline-flex;
+  column-gap: 4px;
   vertical-align: middle;
   align-items: center;
   color: #000;
@@ -10,37 +11,30 @@
   font-size: 12px;
 }
 
-.text-action:hover {
+:host:hover {
   color: #009e87;
 }
 
-:host.active .text-action {
-  color: #009e87;
-}
-
-:host.active .action-content {
+:host.active {
   color: #009e87;
   margin-bottom: -2px;
   border-bottom: 2px solid #009e87;
 }
 
-:host.disabled .text-action {
+:host.disabled {
   cursor: not-allowed;
-}
-
-:host.disabled .text-action {
   color: #aaa;
 }
 
-:host.disabled .action-content {
-  color: #aaa;
-}
-
-:host.padding .text-action {
+:host.padding {
   padding-left: 6px;
   padding-right: 6px;
 }
 
-.icon14 {
+.material-symbols {
+  font-size: 16px !important;
+  height: 16px !important;
+  width: 16px !important;
+  line-height: 16px;
   vertical-align: middle;
 }
