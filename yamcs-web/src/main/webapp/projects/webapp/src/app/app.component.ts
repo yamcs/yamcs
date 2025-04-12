@@ -51,7 +51,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   showMdbItem$ = new BehaviorSubject<boolean>(false);
   sidebar$: Observable<boolean>;
-  zenMode$: Observable<boolean>;
+  focusMode$: Observable<boolean>;
 
   userSubscription: Subscription;
 
@@ -66,7 +66,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     appearanceService: AppearanceService,
     private configService: ConfigService,
   ) {
-    this.zenMode$ = appearanceService.zenMode$;
+    this.focusMode$ = appearanceService.focusMode$;
     this.tag = configService.getTag();
     this.authInfo = configService.getAuthInfo();
     this.siteLinks = configService.getSiteLinks();

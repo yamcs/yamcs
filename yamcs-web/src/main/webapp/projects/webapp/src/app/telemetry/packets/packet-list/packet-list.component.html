@@ -57,9 +57,7 @@
               </ya-download-menu-item>
             </ya-more>
           </ng-template>
-          <div style="margin-top: 4px">
-            <app-hex #hexdump [base64String]="detailPacket.packet" />
-          </div>
+          <app-hex #hexdump [base64String]="detailPacket.packet" />
         </ya-attr>
       </ya-attr-list>
     } @else {

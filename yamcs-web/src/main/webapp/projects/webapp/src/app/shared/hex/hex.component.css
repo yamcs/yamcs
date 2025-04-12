@@ -2,3 +2,7 @@
   user-select: none;
   -webkit-user-select: none;
 }
+
+canvas {
+  margin-top: 4px;
+}

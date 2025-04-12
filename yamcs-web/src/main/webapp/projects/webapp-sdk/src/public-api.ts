@@ -108,6 +108,8 @@ export * from './lib/pipes/storage-url.pipe';
 export * from './lib/pipes/to-value.pipe';
 export * from './lib/pipes/units.pipe';
 export * from './lib/pipes/value.pipe';
+export * from './lib/print/print-zone-hide.directive';
+export * from './lib/print/print-zone-show.directive';
 export * from './lib/print/print-zone.component';
 export * from './lib/print/print.service';
 export * from './lib/print/Printable';

@@ -12,7 +12,12 @@ import {
   ViewChild,
 } from '@angular/core';
 import { EventHandler, Graphics } from '@fqqb/timeline';
-import { BitRange } from '@yamcs/webapp-sdk';
+import {
+  BitRange,
+  HexDumpPipe,
+  YaPrintZoneHide,
+  YaPrintZoneShow,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { HexModel, Line } from './model';
 
@@ -21,6 +26,7 @@ import { HexModel, Line } from './model';
   templateUrl: './hex.component.html',
   styleUrl: './hex.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [HexDumpPipe, YaPrintZoneHide, YaPrintZoneShow],
 })
 export class HexComponent implements AfterViewInit, OnChanges, OnDestroy {
   fontPreloaded$: Promise<boolean>;

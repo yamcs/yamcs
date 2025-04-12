@@ -23,7 +23,14 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
-import { YaAttr, YaAttrDivider, YaAttrLabel, YaAttrList } from '../public-api';
+import {
+  YaAttr,
+  YaAttrDivider,
+  YaAttrLabel,
+  YaAttrList,
+  YaPrintZoneHide,
+  YaPrintZoneShow,
+} from '../public-api';
 import { YaActionLogSummary } from './components/action-log-summary/action-log-summary.component';
 import { YaBinaryInput } from './components/binary-input/binary-input.component';
 import { YaBreadcrumbTrail } from './components/breadcrumb/breadcrumb-trail.component';
@@ -163,6 +170,8 @@ const directives = [
   YaAttrLabel,
   YaFieldLabel,
   YaHref,
+  YaPrintZoneHide,
+  YaPrintZoneShow,
 ];
 
 const sharedComponents = [

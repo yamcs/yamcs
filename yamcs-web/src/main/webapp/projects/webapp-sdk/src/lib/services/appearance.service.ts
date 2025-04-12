@@ -7,7 +7,7 @@ export class AppearanceService implements OnDestroy {
   public fullScreenRequested = signal(false);
 
   public fullScreenMode$ = new BehaviorSubject<boolean>(false);
-  public zenMode$ = new BehaviorSubject<boolean>(false);
+  public focusMode$ = new BehaviorSubject<boolean>(false);
   public detailPane$ = new BehaviorSubject<boolean>(false);
 
   private fullScreenChangeListener = () => {
@@ -16,7 +16,7 @@ export class AppearanceService implements OnDestroy {
     } else {
       this.fullScreenRequested.set(false);
       this.fullScreenMode$.next(false);
-      this.zenMode$.next(false);
+      this.focusMode$.next(false);
     }
   };
 
