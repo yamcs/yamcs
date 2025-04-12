@@ -81,7 +81,10 @@ export class YaPrintZone {
         margin-top: 1em;
         font-weight: bold;
       }
-      .no-print, .no-print * {
+      .ya-print-zone-show {
+        display: unset !important;
+      }
+      .ya-print-zone-hide, .ya-print-zone-hide * {
         display: none !important;
       }
       </style>

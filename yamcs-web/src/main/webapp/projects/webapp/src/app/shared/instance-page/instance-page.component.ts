@@ -77,7 +77,7 @@ export class InstancePageComponent implements OnInit, OnDestroy {
   extraItems: NavItem[] = [];
 
   fullScreenMode$: Observable<boolean>;
-  zenMode$: Observable<boolean>;
+  focusMode$: Observable<boolean>;
 
   private routerSubscription: Subscription;
 
@@ -92,7 +92,7 @@ export class InstancePageComponent implements OnInit, OnDestroy {
   ) {
     this.connectionInfo$ = this.yamcs.connectionInfo$;
     this.fullScreenMode$ = appearanceService.fullScreenMode$;
-    this.zenMode$ = appearanceService.zenMode$;
+    this.focusMode$ = appearanceService.focusMode$;
     this.config = configService.getConfig();
     this.user = authService.getUser()!;
 

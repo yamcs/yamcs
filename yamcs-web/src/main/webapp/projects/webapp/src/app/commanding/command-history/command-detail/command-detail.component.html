@@ -12,18 +12,12 @@
     <ya-attr>
       <ng-template ya-attr-label>
         Unprocessed binary
-        <ya-more icon="more_horiz">
+        <ya-more icon="more_horiz" yaPrintZoneHide>
           <button mat-menu-item (click)="copyHex(command.unprocessedBinary)">Copy hex</button>
           <button mat-menu-item (click)="copyBinary(command.unprocessedBinary)">Copy binary</button>
         </ya-more>
       </ng-template>
-
-      <div class="no-print" style="margin-top: 4px">
-        <app-hex [base64String]="command.unprocessedBinary" />
-      </div>
-      <div class="print-only">
-        <pre>{{ (command.unprocessedBinary | hexDump) || "-" }}</pre>
-      </div>
+      <app-hex [base64String]="command.unprocessedBinary" />
     </ya-attr>
   }
 
@@ -31,18 +25,12 @@
     <ya-attr>
       <ng-template ya-attr-label>
         Binary
-        <ya-more icon="more_horiz">
+        <ya-more icon="more_horiz" yaPrintZoneHide>
           <button mat-menu-item (click)="copyHex(command.binary)">Copy hex</button>
           <button mat-menu-item (click)="copyBinary(command.binary)">Copy binary</button>
         </ya-more>
       </ng-template>
-
-      <div class="no-print" style="margin-top: 4px">
-        <app-hex [base64String]="command.binary" />
-      </div>
-      <div class="print-only">
-        <pre>{{ (command.binary | hexDump) || "-" }}</pre>
-      </div>
+      <app-hex [base64String]="command.binary" />
     </ya-attr>
   }
 
@@ -80,7 +68,7 @@
         <ng-template ya-attr-label>
           {{ extra.name }}
           @if (extra.value.type === "BINARY") {
-            <ya-more icon="more_horiz">
+            <ya-more icon="more_horiz" yaPrintZoneHide>
               <button mat-menu-item (click)="copyHex(extra.value.binaryValue!)">Copy hex</button>
               <button mat-menu-item (click)="copyBinary(extra.value.binaryValue!)">
                 Copy binary
@@ -91,12 +79,7 @@
 
         @switch (extra.value.type) {
           @case ("BINARY") {
-            <div class="no-print" style="margin-top: 4px">
-              <app-hex [base64String]="extra.value.binaryValue" />
-            </div>
-            <div class="print-only">
-              <pre>{{ (extra.value.binaryValue! | hexDump) || "-" }}</pre>
-            </div>
+            <app-hex [base64String]="extra.value.binaryValue" />
           }
           @default {
             {{ extra.value | value }}
@@ -123,7 +106,7 @@
       <ng-template ya-attr-label>
         Return value
         @if (value.type === "BINARY") {
-          <ya-more icon="more_horiz">
+          <ya-more icon="more_horiz" yaPrintZoneHide>
             <button mat-menu-item (click)="copyHex(value.binaryValue!)">Copy hex</button>
             <button mat-menu-item (click)="copyBinary(value.binaryValue!)">Copy binary</button>
           </ya-more>
@@ -132,12 +115,7 @@
 
       @switch (value.type) {
         @case ("BINARY") {
-          <div class="no-print" style="margin-top: 4px">
-            <app-hex [base64String]="value.binaryValue" />
-          </div>
-          <div class="print-only">
-            <pre>{{ (value.binaryValue! | hexDump) || "-" }}</pre>
-          </div>
+          <app-hex [base64String]="value.binaryValue" />
         }
         @case ("STRING") {
           <pre style="margin: 0; line-height: 1em">{{ value.stringValue }}</pre>

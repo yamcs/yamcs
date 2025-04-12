@@ -11,7 +11,7 @@ mat-toolbar-row {
   padding-right: calc(24px - 16px);
 }
 
-.mat-toolbar.zen {
+.mat-toolbar.focus {
   display: none;
 }
 

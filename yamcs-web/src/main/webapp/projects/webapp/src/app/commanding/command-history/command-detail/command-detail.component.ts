@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import {
   CommandHistoryRecord,
   WebappSdkModule,
+  YaPrintZoneHide,
   utils,
 } from '@yamcs/webapp-sdk';
 import { HexComponent } from '../../../shared/hex/hex.component';
@@ -15,6 +16,9 @@ import { YamcsAcknowledgmentsTableComponent } from '../yamcs-acknowledgments-tab
   selector: 'app-command-detail2',
   templateUrl: './command-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[style.display]': '"block"',
+  },
   imports: [
     CascadingPrefixPipe,
     CommandArgumentsComponent,
@@ -22,6 +26,7 @@ import { YamcsAcknowledgmentsTableComponent } from '../yamcs-acknowledgments-tab
     HexComponent,
     WebappSdkModule,
     YamcsAcknowledgmentsTableComponent,
+    YaPrintZoneHide,
   ],
 })
 export class CommandDetailComponent {
