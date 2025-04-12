@@ -1,9 +1,6 @@
-<div class="text-action">
-  <span class="action-content">
-    @if (icon) {
-      <mat-icon class="icon14">{{ icon }}</mat-icon>
-      &nbsp;
-    }
-    <ng-content />
-  </span>
-</div>
+@if (icon(); as icon) {
+  <mat-icon>{{ icon }}</mat-icon>
+}
+<span>
+  <ng-content />
+</span>
