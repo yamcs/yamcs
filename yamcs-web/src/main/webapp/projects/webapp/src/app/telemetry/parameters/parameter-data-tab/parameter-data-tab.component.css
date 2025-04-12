@@ -29,3 +29,23 @@
   font-size: 12px;
   padding-right: 6px;
 }
+
+.meta {
+  position: absolute;
+  top: calc((20px - 12px) / 2);
+  right: 0;
+  display: flex;
+  font-size: 11px;
+  line-height: 12px;
+}
+
+.meta .item {
+  flex: none;
+  background-color: #eee;
+  font-weight: normal;
+  font-family: "Roboto Mono", monospace;
+  color: rgba(0, 0, 0, 0.654);
+  padding-left: 2px;
+  padding-right: 2px;
+  margin-left: 10px;
+}

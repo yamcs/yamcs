@@ -41,9 +41,10 @@
     <ng-container matColumnDef="issuer">
       <th mat-header-cell *matHeaderCellDef mat-sort-header>Issuer</th>
       <td mat-cell *matCellDef="let entry">
-        {{ entry.username }}
         @if (entry.origin) {
-          <span>&#64;{{ entry.origin }}</span>
+          {{ entry.username }}&#64;{{ entry.origin }}
+        } @else {
+          {{ entry.username }}
         }
       </td>
     </ng-container>

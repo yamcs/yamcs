@@ -1,11 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import {
-  Alarm,
-  BaseComponent,
-  WebappSdkModule,
-  YamcsService,
-} from '@yamcs/webapp-sdk';
+import { Alarm, BaseComponent, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { AgoComponent } from '../../shared/ago/ago.component';
 import { AlarmLevelComponent } from '../../shared/alarm-level/alarm-level.component';
 import { AlarmStateIconComponent } from '../alarm-state-icon/alarm-state-icon.component';
@@ -65,10 +60,6 @@ export class AlarmsTableComponent extends BaseComponent implements OnInit {
   tableTrackerFn = (index: number, alarm: Alarm) => {
     return `${alarm.triggerTime}__${alarm.id.namespace}__${alarm.id.name}__${alarm.seqNum}`;
   };
-
-  constructor(readonly yamcs: YamcsService) {
-    super();
-  }
 
   ngOnInit(): void {
     if (this.view === 'pending') {

@@ -20,7 +20,6 @@ import {
   Value,
   WebappSdkModule,
   YaSelectOption,
-  YamcsService,
   utils,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
@@ -159,7 +158,6 @@ export class PacketComponent extends BaseComponent implements OnInit {
 
   constructor(
     readonly route: ActivatedRoute,
-    readonly yamcs: YamcsService,
     private clipboard: Clipboard,
   ) {
     super();

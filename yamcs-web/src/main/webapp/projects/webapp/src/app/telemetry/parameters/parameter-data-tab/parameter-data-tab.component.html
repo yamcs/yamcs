@@ -1,51 +1,69 @@
 <ya-detail-pane>
   @if (table.selectedValue | async; as pval) {
     <ya-detail-toolbar>Value detail</ya-detail-toolbar>
-    <div style="padding: 0 16px">
-      <div class="block-title">Severity</div>
-      <div class="block">
+
+    <ya-attr-list style="padding: 0 16px">
+      <ya-attr label="Severity">
         @if (pval.monitoringResult) {
           <app-alarm-level [level]="pval.monitoringResult" />
-        }
-        @if (!pval.monitoringResult) {
+        } @else {
           <span>-</span>
         }
-      </div>
-      <div class="block-title">Generation time</div>
-      <div class="block">
+      </ya-attr>
+
+      <ya-attr label="Generation time">
         {{ pval.generationTime | datetime }}
-      </div>
-      <div class="block-title">Valid for</div>
-      <div class="block">
+      </ya-attr>
+
+      <ya-attr label="Valid for">
         {{ (pval.expireMillis | millisDuration) || "-" }}
-      </div>
-      <div class="block-title">
-        Raw value
-        <ng-container *ngTemplateOutlet="valueActionsTemplate; context: { value: pval.rawValue }" />
-      </div>
-      <div class="block">
+      </ya-attr>
+
+      <ya-attr>
+        <ng-template ya-attr-label>
+          Raw value
+          <ng-container
+            *ngTemplateOutlet="valueActionsTemplate; context: { value: pval.rawValue }" />
+          @if (pval.rawValue) {
+            <div class="meta">
+              <div class="item">
+                {{ pval.rawValue.type | lowercase }}
+              </div>
+            </div>
+          }
+        </ng-template>
         <ng-container *ngTemplateOutlet="valueTemplate; context: { value: pval.rawValue }" />
-      </div>
-      <div class="block-title">
-        Engineering value
-        <ng-container *ngTemplateOutlet="valueActionsTemplate; context: { value: pval.engValue }" />
-      </div>
-      <div class="block">
+      </ya-attr>
+
+      <ya-attr>
+        <ng-template ya-attr-label>
+          Engineering value
+          <ng-container
+            *ngTemplateOutlet="valueActionsTemplate; context: { value: pval.engValue }" />
+          @if (pval.engValue) {
+            <div class="meta">
+              <div class="item">
+                {{ pval.engValue.type | lowercase }}
+              </div>
+            </div>
+          }
+        </ng-template>
         <ng-container *ngTemplateOutlet="valueTemplate; context: { value: pval.engValue }" />
-      </div>
-      <div class="block-title">Range condition</div>
-      <div class="block">
+      </ya-attr>
+
+      <ya-attr label="Range condition">
         {{ pval.rangeCondition || "-" }}
-      </div>
-      <div class="block-title">Acquisition status</div>
-      <div class="block">
+      </ya-attr>
+
+      <ya-attr label="Acquisition status">
         {{ pval.acquisitionStatus || "-" }}
-      </div>
-    </div>
+      </ya-attr>
+    </ya-attr-list>
   } @else {
     <ya-detail-toolbar>Select a value</ya-detail-toolbar>
   }
 </ya-detail-pane>
+
 <div class="table-wrapper">
   <ya-panel>
     <form [formGroup]="filterForm">

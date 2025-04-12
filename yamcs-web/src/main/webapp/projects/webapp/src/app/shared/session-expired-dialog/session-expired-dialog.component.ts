@@ -5,6 +5,7 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
 @Component({
   selector: 'app-session-expired-dialog',
   templateUrl: './session-expired-dialog.component.html',
+  styleUrl: './session-expired-dialog.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })

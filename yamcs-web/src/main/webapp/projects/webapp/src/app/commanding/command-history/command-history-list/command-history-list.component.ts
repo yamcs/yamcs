@@ -21,7 +21,6 @@ import {
   WebsiteConfig,
   YaColumnChooser,
   YaColumnInfo,
-  YamcsService,
   utils,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
@@ -108,7 +107,6 @@ export class CommandHistoryListComponent
   private subscriptions: Subscription[] = [];
 
   constructor(
-    readonly yamcs: YamcsService,
     configService: ConfigService,
     authService: AuthService,
     private route: ActivatedRoute,

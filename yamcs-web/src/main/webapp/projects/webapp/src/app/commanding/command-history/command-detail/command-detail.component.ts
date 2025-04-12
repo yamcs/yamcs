@@ -14,7 +14,6 @@ import { YamcsAcknowledgmentsTableComponent } from '../yamcs-acknowledgments-tab
 @Component({
   selector: 'app-command-detail2',
   templateUrl: './command-detail.component.html',
-  styleUrl: './command-detail.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CascadingPrefixPipe,

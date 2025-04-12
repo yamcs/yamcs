@@ -16,50 +16,52 @@
   <ya-detail-pane>
     @if (detailPacket$ | async; as detailPacket) {
       <ya-detail-toolbar>Packet detail</ya-detail-toolbar>
-      <div style="padding: 0 16px">
-        <div class="block-title">Packet name</div>
-        <div class="block">
+      <ya-attr-list style="padding: 0 16px 16px 16px">
+        <ya-attr label="Packet name">
           {{ detailPacket.id.name }}
-        </div>
-        <div class="block-title">Generation time</div>
-        <div class="block">
+        </ya-attr>
+
+        <ya-attr label="Generation time">
           {{ detailPacket.generationTime | datetime }}
-        </div>
-        <div class="block-title">Earth reception time</div>
-        <div class="block">
+        </ya-attr>
+
+        <ya-attr label="Earth reception time">
           {{ (detailPacket.earthReceptionTime | datetime) || "-" }}
           @if (detailPacket.earthReceptionTime) {
             ({{ detailPacket.earthReceptionTime | deltaWith: detailPacket.generationTime }})
           }
-        </div>
-        <div class="block-title">Reception time</div>
-        <div class="block">
+        </ya-attr>
+
+        <ya-attr label="Reception time">
           {{ detailPacket.receptionTime | datetime }}
           ({{ detailPacket.receptionTime | deltaWith: detailPacket.generationTime }})
-        </div>
-        <div class="block-title">Link</div>
-        <div class="block">
+        </ya-attr>
+
+        <ya-attr label="Link">
           {{ detailPacket.link || "-" }}
-        </div>
-        <div class="block-title">Size</div>
-        <div class="block">
+        </ya-attr>
+
+        <ya-attr label="Size">
           {{ detailPacket.size | formatBytes }}
-        </div>
-        <div class="block-title">
-          Data
-          <ya-more icon="more_horiz">
-            <button mat-menu-item (click)="copyHex(detailPacket)">Copy hex</button>
-            <button mat-menu-item (click)="copyBinary(detailPacket)">Copy binary</button>
-            <mat-divider />
-            <ya-download-menu-item [link]="detailPacket | packetDownloadLink">
-              Download
-            </ya-download-menu-item>
-          </ya-more>
-        </div>
-        <div class="block" style="margin-top: 4px">
-          <app-hex #hexdump [base64String]="detailPacket.packet" />
-        </div>
-      </div>
+        </ya-attr>
+
+        <ya-attr>
+          <ng-template ya-attr-label>
+            Data
+            <ya-more icon="more_horiz">
+              <button mat-menu-item (click)="copyHex(detailPacket)">Copy hex</button>
+              <button mat-menu-item (click)="copyBinary(detailPacket)">Copy binary</button>
+              <mat-divider />
+              <ya-download-menu-item [link]="detailPacket | packetDownloadLink">
+                Download
+              </ya-download-menu-item>
+            </ya-more>
+          </ng-template>
+          <div style="margin-top: 4px">
+            <app-hex #hexdump [base64String]="detailPacket.packet" />
+          </div>
+        </ya-attr>
+      </ya-attr-list>
     } @else {
       <ya-detail-toolbar>Select a packet</ya-detail-toolbar>
     }

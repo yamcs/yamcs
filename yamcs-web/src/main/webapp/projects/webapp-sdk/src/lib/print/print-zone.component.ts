@@ -70,11 +70,14 @@ export class YaPrintZone {
     iframeDoc.title = pageTitle;
 
     iframeDoc.open();
-    iframeDoc.write('<!doctype html>\n');
-    iframeDoc.write('<head>\n');
-    iframeDoc.write(`
+    iframeDoc.writeln('<!doctype html>');
+    iframeDoc.writeln('<head>');
+    iframeDoc.writeln(`
       <style>
-      .block-title {
+      body {
+        font: 400 12px / 14px Roboto, sans-serif;
+      }
+      .ya-attr-label {
         margin-top: 1em;
         font-weight: bold;
       }
@@ -83,13 +86,13 @@ export class YaPrintZone {
       }
       </style>
     `);
-    iframeDoc.write('</head>\n');
+    iframeDoc.writeln('</head>');
 
-    iframeDoc.write('<body onload="window.print()">\n');
+    iframeDoc.writeln('<body onload="window.print()">');
     const printableEl = this.printableContent.nativeElement as HTMLDivElement;
-    iframeDoc.write(printableEl.innerHTML);
-    iframeDoc.write('</body>\n');
-    iframeDoc.write('</html>\n');
+    iframeDoc.writeln(printableEl.innerHTML);
+    iframeDoc.writeln('</body>');
+    iframeDoc.writeln('</html>');
     iframeDoc.close();
   }
 }

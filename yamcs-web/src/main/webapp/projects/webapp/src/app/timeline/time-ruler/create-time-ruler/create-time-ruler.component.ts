@@ -4,11 +4,7 @@ import {
   UntypedFormGroup,
   Validators,
 } from '@angular/forms';
-import {
-  BaseComponent,
-  WebappSdkModule,
-  YamcsService,
-} from '@yamcs/webapp-sdk';
+import { BaseComponent, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { CreateBandWizardStepComponent } from '../../create-band-wizard-step/create-band-wizard-step.component';
@@ -26,10 +22,7 @@ import { CreateBandWizardStepComponent } from '../../create-band-wizard-step/cre
 export class CreateTimeRulerComponent extends BaseComponent {
   form: UntypedFormGroup;
 
-  constructor(
-    formBuilder: UntypedFormBuilder,
-    readonly yamcs: YamcsService,
-  ) {
+  constructor(formBuilder: UntypedFormBuilder) {
     super();
     this.setTitle('Configure Time Ruler');
 

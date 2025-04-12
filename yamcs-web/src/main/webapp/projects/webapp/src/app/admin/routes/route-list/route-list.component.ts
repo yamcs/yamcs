@@ -8,12 +8,7 @@ import { UntypedFormControl } from '@angular/forms';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute } from '@angular/router';
-import {
-  BaseComponent,
-  Route,
-  WebappSdkModule,
-  YamcsService,
-} from '@yamcs/webapp-sdk';
+import { BaseComponent, Route, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AdminPageTemplateComponent } from '../../shared/admin-page-template/admin-page-template.component';
 import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.component';
@@ -49,10 +44,7 @@ export class RouteListComponent extends BaseComponent implements AfterViewInit {
 
   selectedRoute$ = new BehaviorSubject<Route | null>(null);
 
-  constructor(
-    private yamcs: YamcsService,
-    private route: ActivatedRoute,
-  ) {
+  constructor(private route: ActivatedRoute) {
     super();
     this.setTitle('API routes');
     this.dataSource.filterPredicate = (rec, filter) => {

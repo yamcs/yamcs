@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { AppearanceService } from './appearance.service';
+import { YamcsService } from './yamcs.service';
 
 /**
  * Provides access to services from the main webapp.
@@ -19,4 +20,9 @@ export class SdkBridge {
    * The main webapp appearance service
    */
   appearanceService: AppearanceService;
+
+  /**
+   * The main webapp Yamcs service
+   */
+  yamcs: YamcsService;
 }

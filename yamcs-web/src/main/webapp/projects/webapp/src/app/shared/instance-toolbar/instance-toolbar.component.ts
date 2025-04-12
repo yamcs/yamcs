@@ -86,7 +86,11 @@ export class InstanceToolbarComponent implements OnDestroy {
 
     this.connectedSubscription = this.connected$.subscribe((connected) => {
       if (!connected && authService.user$.value) {
-        dialog.open(SessionExpiredDialogComponent);
+        dialog.open(SessionExpiredDialogComponent, {
+          disableClose: true,
+          width: '400px',
+          height: '200px',
+        });
       }
     });
 

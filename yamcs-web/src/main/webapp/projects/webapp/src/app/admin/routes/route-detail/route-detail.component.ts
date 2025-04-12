@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Route, WebappSdkModule } from '@yamcs/webapp-sdk';
+import { Route, YaAttr, YaAttrList } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-route-detail',
   templateUrl: './route-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [WebappSdkModule],
+  imports: [YaAttr, YaAttrList],
 })
 export class RouteDetailComponent {
   @Input()

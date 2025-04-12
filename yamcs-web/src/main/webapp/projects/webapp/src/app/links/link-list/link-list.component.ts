@@ -15,7 +15,6 @@ import {
   LinkSubscription,
   WebappSdkModule,
   YaColumnInfo,
-  YamcsService,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
@@ -69,7 +68,6 @@ export class LinkListComponent
   private itemsByName: { [key: string]: LinkItem } = {};
 
   constructor(
-    readonly yamcs: YamcsService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private linkService: LinkService,
