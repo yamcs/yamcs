@@ -66,28 +66,25 @@
   </ya-detail-pane>
   <div class="table-wrapper">
     <ya-panel>
-      <form [formGroup]="filterForm">
-        <div class="filter-bar">
-          <ya-select [options]="nameOptions$ | async" formControlName="name" />
-          <ya-select [options]="linkOptions$ | async" formControlName="link" />
-          <ya-select [options]="intervalOptions" icon="access_time" formControlName="interval" />
-          @if (filterForm.value["interval"] === "CUSTOM") {
-            <ya-date-time-input formControlName="customStart" />
-            <ya-date-time-input formControlName="customStop" />
-            <ya-button (click)="applyCustomDates()" [disabled]="filterForm.invalid">
-              Apply
-            </ya-button>
-          }
-          @if (filterForm.value["interval"] !== "CUSTOM") {
-            <ya-button (click)="jumpToNow()">Jump to now</ya-button>
-          }
-          <ya-column-chooser #columnChooser [columns]="columns" preferenceKey="tmPackets" />
+      <ya-filter-bar [formGroup]="filterForm">
+        <ya-select [options]="nameOptions$ | async" formControlName="name" />
+        <ya-select [options]="linkOptions$ | async" formControlName="link" />
+        <ya-select [options]="intervalOptions" icon="access_time" formControlName="interval" />
+        @if (filterForm.value["interval"] === "CUSTOM") {
+          <ya-date-time-input formControlName="customStart" />
+          <ya-date-time-input formControlName="customStop" />
+          <ya-button (click)="applyCustomDates()" [disabled]="filterForm.invalid">Apply</ya-button>
+        }
+        @if (filterForm.value["interval"] !== "CUSTOM") {
+          <ya-button (click)="jumpToNow()">Jump to now</ya-button>
+        }
+        <ya-column-chooser #columnChooser [columns]="columns" preferenceKey="tmPackets" />
 
-          @if (dataSource.loading$ | async) {
-            <ya-dots />
-          }
-        </div>
-      </form>
+        @if (dataSource.loading$ | async) {
+          <ya-dots />
+        }
+      </ya-filter-bar>
+
       <table mat-table [dataSource]="dataSource" class="ya-data-table expand">
         <ng-container matColumnDef="packetName">
           <th mat-header-cell *matHeaderCellDef>Packet name</th>

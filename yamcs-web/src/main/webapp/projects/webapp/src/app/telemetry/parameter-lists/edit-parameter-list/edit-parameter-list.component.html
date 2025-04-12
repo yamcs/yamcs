@@ -47,7 +47,7 @@
       </form>
 
       <p>&nbsp;</p>
-      <div class="action-bar">
+      <ya-toolbar appearance="bottom">
         <ya-button (click)="location.back()">Cancel</ya-button>
         <ya-button
           appearance="primary"
@@ -55,7 +55,7 @@
           [disabled]="!(dirty$ | async) || !form.valid">
           SAVE CHANGES
         </ya-button>
-      </div>
+      </ya-toolbar>
     </div>
   </app-instance-page>
 }

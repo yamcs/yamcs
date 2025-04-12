@@ -1,23 +1,19 @@
 <ya-panel>
-  <form [formGroup]="filter">
-    <div class="filter-bar">
-      <ya-select formControlName="interval" [options]="intervalOptions" icon="access_time" />
+  <ya-filter-bar [formGroup]="filter">
+    <ya-select formControlName="interval" [options]="intervalOptions" icon="access_time" />
 
-      @if (filter.value["interval"] === "CUSTOM") {
-        <ya-date-time-input formControlName="customStart" />
-        <ya-date-time-input formControlName="customStop" />
-        <ya-button (click)="applyCustomDates()" [disabled]="filter.invalid">Apply</ya-button>
-      }
+    @if (filter.value["interval"] === "CUSTOM") {
+      <ya-date-time-input formControlName="customStart" />
+      <ya-date-time-input formControlName="customStop" />
+      <ya-button (click)="applyCustomDates()" [disabled]="filter.invalid">Apply</ya-button>
+    } @else {
+      <ya-button (click)="jumpToNow()">Jump to now</ya-button>
+    }
 
-      @if (filter.value["interval"] !== "CUSTOM") {
-        <ya-button (click)="jumpToNow()">Jump to now</ya-button>
-      }
-
-      @if (dataSource.loading$ | async) {
-        <ya-dots />
-      }
-    </div>
-  </form>
+    @if (dataSource.loading$ | async) {
+      <ya-dots />
+    }
+  </ya-filter-bar>
 
   <div class="table-status">
     @switch (appliedInterval) {

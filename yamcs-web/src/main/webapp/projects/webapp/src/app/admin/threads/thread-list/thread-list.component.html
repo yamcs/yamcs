@@ -8,9 +8,9 @@
   </app-admin-toolbar>
 
   <ya-panel>
-    <div class="filter-bar">
+    <ya-filter-bar>
       <ya-search-filter [formControl]="filterControl" placeholder="Filter threads" />
-    </div>
+    </ya-filter-bar>
     <mat-tab-group animationDuration="0ms" class="secondary" [mat-stretch-tabs]="false">
       <mat-tab>
         <ng-template mat-tab-label>ALL ({{ allThreadCount$ | async }})</ng-template>

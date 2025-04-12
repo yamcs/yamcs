@@ -28,8 +28,10 @@ import {
   YaAttrDivider,
   YaAttrLabel,
   YaAttrList,
+  YaFilterBar,
   YaPrintZoneHide,
   YaPrintZoneShow,
+  YaToolbar,
 } from '../public-api';
 import { YaActionLogSummary } from './components/action-log-summary/action-log-summary.component';
 import { YaBinaryInput } from './components/binary-input/binary-input.component';
@@ -86,7 +88,6 @@ import { YaTagSelect } from './components/tag-select/tag-select.component';
 import { YaTextAction } from './components/text-action/text-action.component';
 import { YaTimezoneSelect } from './components/timezone-select/timezone-select.component';
 import { YaTitleCopy } from './components/title-copy/title-copy.component';
-import { YaToolbarActions } from './components/toolbar-actions/toolbar-actions.component';
 import { YaValue } from './components/value/value.component';
 import { YaWarningMessage } from './components/warning-message/warning-message.component';
 import { DataTableDirective } from './directives/data-table.directive';
@@ -197,6 +198,7 @@ const sharedComponents = [
   YaExpirable,
   YaField,
   YaFieldDivider,
+  YaFilterBar,
   YaFilterInput,
   YaFilterTextarea,
   YaHelp,
@@ -232,7 +234,7 @@ const sharedComponents = [
   YaTextAction,
   YaTimezoneSelect,
   YaTitleCopy,
-  YaToolbarActions,
+  YaToolbar,
   YaValue,
   YaWarningMessage,
 ];

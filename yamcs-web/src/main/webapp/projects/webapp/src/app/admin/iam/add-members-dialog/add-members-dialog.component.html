@@ -1,9 +1,13 @@
 <h2 mat-dialog-title>Add members</h2>
 
 <mat-dialog-content>
-  <div class="filter-bar">
-    <ya-search-filter [formControl]="filterControl" placeholder="Filter users" />
-  </div>
+  <ya-filter-bar>
+    <ya-search-filter
+      [formControl]="filterControl"
+      placeholder="Filter users"
+      width="100%"
+      style="flex: 1 1 auto" />
+  </ya-filter-bar>
   @if (dataSource) {
     <table mat-table [dataSource]="dataSource" class="ya-data-table" style="width: 100%">
       <ng-container matColumnDef="select">

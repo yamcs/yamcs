@@ -103,7 +103,7 @@
 </ya-attr-list>
 
 @if (mayControl && !alarm.readonly) {
-  <div class="action-bar">
+  <ya-toolbar appearance="bottom">
     @if (!alarm.shelveInfo && !alarm.acknowledged) {
       <ya-button (click)="acknowledgeAlarm.emit(alarm)" icon="notifications_off">
         ACKNOWLEDGE
@@ -116,5 +116,5 @@
       <ya-button (click)="unshelveAlarm.emit(alarm)" icon="timer_off">UNSHELVE</ya-button>
     }
     <ya-button (click)="clearAlarm.emit(alarm)" icon="clear_all">CLEAR</ya-button>
-  </div>
+  </ya-toolbar>
 }

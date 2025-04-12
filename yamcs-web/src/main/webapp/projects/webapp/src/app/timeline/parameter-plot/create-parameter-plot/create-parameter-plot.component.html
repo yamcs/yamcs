@@ -47,12 +47,13 @@
         }
       </ya-stepper>
     </form>
+
     <p>&nbsp;</p>
-    <div class="action-bar">
+    <ya-toolbar appearance="bottom">
       <ya-button routerLink="../.." [queryParams]="{ c: yamcs.context }">Cancel</ya-button>
       <ya-button appearance="primary" (click)="onConfirm()" [disabled]="!form.valid">
         CREATE
       </ya-button>
-    </div>
+    </ya-toolbar>
   </div>
 </app-instance-page>

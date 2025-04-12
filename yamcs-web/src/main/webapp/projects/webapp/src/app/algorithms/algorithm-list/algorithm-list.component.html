@@ -3,36 +3,34 @@
   <span #top></span>
 
   <ya-panel>
-    <form [formGroup]="filterForm">
-      @if (breadcrumb$ | async; as breadcrumb) {
-        @if (breadcrumb.length) {
-          <div class="filter-bar">
-            <ya-breadcrumb-trail>
+    @if (breadcrumb$ | async; as breadcrumb) {
+      @if (breadcrumb.length) {
+        <ya-filter-bar>
+          <ya-breadcrumb-trail>
+            <ya-breadcrumb
+              link="/algorithms"
+              [queryParams]="{ c: yamcs.context }"
+              icon="account_tree" />
+            @for (item of breadcrumb; track item) {
               <ya-breadcrumb
-                link="/algorithms"
-                [queryParams]="{ c: yamcs.context }"
-                icon="account_tree" />
-              @for (item of breadcrumb; track item) {
-                <ya-breadcrumb
-                  [link]="item.route"
-                  [queryParams]="item.queryParams"
-                  [label]="item.name" />
-              }
-            </ya-breadcrumb-trail>
-          </div>
-        }
+                [link]="item.route"
+                [queryParams]="item.queryParams"
+                [label]="item.name" />
+            }
+          </ya-breadcrumb-trail>
+        </ya-filter-bar>
       }
-      <div class="filter-bar">
-        <ya-search-filter
-          [formControl]="filterForm.controls['filter']"
-          placeholder="Search by name"
-          icon="search"
-          (onArrowDown)="selectNext()"
-          (onArrowUp)="selectPrevious()"
-          (onEnter)="applySelection()" />
-        <ya-select [options]="scopeOptions" formControlName="scope" />
-      </div>
-    </form>
+    }
+    <ya-filter-bar [formGroup]="filterForm">
+      <ya-search-filter
+        formControlName="filter"
+        placeholder="Search by name"
+        icon="search"
+        (onArrowDown)="selectNext()"
+        (onArrowUp)="selectPrevious()"
+        (onEnter)="applySelection()" />
+      <ya-select formControlName="scope" [options]="scopeOptions" />
+    </ya-filter-bar>
 
     @if (dataSource) {
       <table mat-table class="ya-data-table expand" [dataSource]="dataSource">

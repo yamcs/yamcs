@@ -2,6 +2,7 @@
   [class.text-only]="appearance() === 'text'"
   [class.primary]="appearance() === 'primary'"
   [class.toggled]="toggled()"
+  [class.right-align]="rightAlign()"
   [disabled]="disabled()"
   (click)="onClick($event)">
   @if (icon(); as icon) {

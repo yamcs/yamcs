@@ -9,7 +9,7 @@
       <div [class.noDisplay]="!connectionInfo.processor?.hasCommanding">
         @if (breadcrumb$ | async; as breadcrumb) {
           @if (breadcrumb.length) {
-            <div class="filter-bar">
+            <ya-filter-bar>
               <ya-breadcrumb-trail>
                 <ya-breadcrumb
                   link="/commanding/send"
@@ -22,10 +22,10 @@
                     [label]="item.name" />
                 }
               </ya-breadcrumb-trail>
-            </div>
+            </ya-filter-bar>
           }
         }
-        <div class="filter-bar">
+        <ya-filter-bar>
           <ya-search-filter
             [formControl]="filterControl"
             placeholder="Search by name"
@@ -34,7 +34,8 @@
             (onArrowUp)="selectPrevious()"
             (onEnter)="applySelection()" />
           <ya-column-chooser #columnChooser [columns]="columns" preferenceKey="sendCommand" />
-        </div>
+        </ya-filter-bar>
+
         @if (dataSource) {
           <table mat-table class="ya-data-table expand" [dataSource]="dataSource">
             <ng-container matColumnDef="significance">

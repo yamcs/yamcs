@@ -42,12 +42,13 @@
         }
       }
     </form>
+
     <p>&nbsp;</p>
-    <div class="action-bar">
+    <ya-toolbar appearance="bottom">
       <ya-button routerLink="/">CANCEL</ya-button>
       <ya-button appearance="primary" (click)="onConfirm()" [disabled]="!form.valid">
         CREATE
       </ya-button>
-    </div>
+    </ya-toolbar>
   </div>
 }

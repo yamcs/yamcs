@@ -5,11 +5,10 @@
   </app-admin-toolbar>
 
   <ya-panel>
-    <form [formGroup]="filterForm">
-      <div class="filter-bar">
-        <ya-select [options]="instanceOptions$ | async" formControlName="instance" />
-      </div>
-    </form>
+    <ya-filter-bar [formGroup]="filterForm">
+      <ya-select [options]="instanceOptions$ | async" formControlName="instance" />
+    </ya-filter-bar>
+
     <app-services-table
       [dataSource]="dataSource"
       (startService)="startService($event)"

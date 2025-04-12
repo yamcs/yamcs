@@ -34,50 +34,48 @@
           Save query
         </ya-button>
       </app-events-page-tabs>
-      <form [formGroup]="filterForm">
-        <div class="filter-bar query" style="margin-top: 16px">
-          <ya-select icon="access_time" formControlName="interval">
-            <ya-option id="PT1H" label="Last hour" />
-            <ya-option id="PT6H" label="Last 6 hours" />
-            <ya-option id="P1D" label="Last 24 hours" />
-            <ya-option id="NO_LIMIT" label="No limit" />
-            <ya-option id="CUSTOM" label="Custom" group="true" />
-          </ya-select>
-          @if (filterForm.value["interval"] === "CUSTOM") {
-            <ya-date-time-input formControlName="customStart" />
-            <ya-date-time-input formControlName="customStop" />
-            <ya-button (click)="applyCustomDates()" [disabled]="filterForm.invalid">
-              Apply
-            </ya-button>
-          }
-          <ya-search-filter2
-            #searchFilter
-            formControlName="filter"
-            placeholder="Search events"
-            style="flex: 1 1 auto; margin-right: 7px"
-            [completions]="completions"
-            [expanded]="multilineControl.value"
-            (typedValue)="parseQuery($event)" />
-          <ya-select formControlName="severity">
-            <ya-option id="INFO" label="Info level" />
-            <ya-option id="WATCH" label="Watch level" />
-            <ya-option id="WARNING" label="Warning level" />
-            <ya-option id="DISTRESS" label="Distress level" />
-            <ya-option id="CRITICAL" label="Critical level" />
-            <ya-option id="SEVERE" label="Severe level" />
-          </ya-select>
-          <ya-multi-select
-            [options]="sourceOptions$ | async"
-            formControlName="source"
-            emptyOption="Any source" />
-          @if (filterForm.value["interval"] !== "CUSTOM") {
-            <ya-button (click)="jumpToNow()">Jump to now</ya-button>
-          }
-          <mat-slide-toggle [disableRipple]="true" [formControl]="multilineControl">
-            Multiline
-          </mat-slide-toggle>
-        </div>
-      </form>
+
+      <ya-filter-bar [formGroup]="filterForm" class="query" style="margin-top: 16px">
+        <ya-select icon="access_time" formControlName="interval">
+          <ya-option id="PT1H" label="Last hour" />
+          <ya-option id="PT6H" label="Last 6 hours" />
+          <ya-option id="P1D" label="Last 24 hours" />
+          <ya-option id="NO_LIMIT" label="No limit" />
+          <ya-option id="CUSTOM" label="Custom" group="true" />
+        </ya-select>
+        @if (filterForm.value["interval"] === "CUSTOM") {
+          <ya-date-time-input formControlName="customStart" />
+          <ya-date-time-input formControlName="customStop" />
+          <ya-button (click)="applyCustomDates()" [disabled]="filterForm.invalid">Apply</ya-button>
+        }
+        <ya-search-filter2
+          #searchFilter
+          formControlName="filter"
+          placeholder="Search events"
+          style="flex: 1 1 auto"
+          [completions]="completions"
+          [expanded]="multilineControl.value"
+          (typedValue)="parseQuery($event)" />
+        <ya-select formControlName="severity">
+          <ya-option id="INFO" label="Info level" />
+          <ya-option id="WATCH" label="Watch level" />
+          <ya-option id="WARNING" label="Warning level" />
+          <ya-option id="DISTRESS" label="Distress level" />
+          <ya-option id="CRITICAL" label="Critical level" />
+          <ya-option id="SEVERE" label="Severe level" />
+        </ya-select>
+        <ya-multi-select
+          [options]="sourceOptions$ | async"
+          formControlName="source"
+          emptyOption="Any source" />
+        @if (filterForm.value["interval"] !== "CUSTOM") {
+          <ya-button (click)="jumpToNow()">Jump to now</ya-button>
+        }
+        <mat-slide-toggle [disableRipple]="true" [formControl]="multilineControl">
+          Multiline
+        </mat-slide-toggle>
+      </ya-filter-bar>
+
       <div class="table-actions">
         <div>
           @switch (appliedInterval) {

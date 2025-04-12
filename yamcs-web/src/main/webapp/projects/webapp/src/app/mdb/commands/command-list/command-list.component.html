@@ -3,7 +3,7 @@
   <span #top></span>
 
   <ya-panel>
-    <div class="filter-bar">
+    <ya-filter-bar>
       <ya-search-filter
         [formControl]="filterControl"
         placeholder="Filter commands"
@@ -11,7 +11,7 @@
         (onArrowUp)="selectPrevious()"
         (onEnter)="applySelection()" />
       <ya-column-chooser #columnChooser [columns]="columns" preferenceKey="mdb-commands" />
-    </div>
+    </ya-filter-bar>
 
     @if (dataSource) {
       <table mat-table class="ya-data-table expand" [dataSource]="dataSource">
@@ -25,6 +25,7 @@
             }
           </td>
         </ng-container>
+
         <ng-container matColumnDef="name">
           <th mat-header-cell *matHeaderCellDef>Name</th>
           <td mat-cell *matCellDef="let command">
@@ -37,12 +38,14 @@
             </a>
           </td>
         </ng-container>
+
         <ng-container matColumnDef="abstract">
           <th mat-header-cell *matHeaderCellDef>Abstract</th>
           <td mat-cell *matCellDef="let command">
             {{ command.abstract ? "Yes" : "-" }}
           </td>
         </ng-container>
+
         <ng-container matColumnDef="shortDescription">
           <th mat-header-cell *matHeaderCellDef>Description</th>
           <td mat-cell *matCellDef="let command" class="wrap400">
@@ -53,6 +56,7 @@
             }
           </td>
         </ng-container>
+
         @for (aliasColumn of aliasColumns$ | async; track aliasColumn) {
           <ng-container [matColumnDef]="aliasColumn.id">
             <th mat-header-cell *matHeaderCellDef>
@@ -67,10 +71,12 @@
             </td>
           </ng-container>
         }
+
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef class="expand"></th>
           <td mat-cell *matCellDef="let row"></td>
         </ng-container>
+
         <tr mat-header-row *matHeaderRowDef="columnChooser.displayedColumns$ | async"></tr>
         <tr
           mat-row

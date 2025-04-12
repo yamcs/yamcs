@@ -49,83 +49,76 @@
   <div class="table-wrapper">
     @if (dataSource) {
       <ya-panel>
-        <form [formGroup]="filterForm">
-          <div class="filter-bar">
-            <ya-search-filter formControlName="filter" placeholder="Filter by text search" />
-            <ya-column-chooser #columnChooser [columns]="columns" preferenceKey="cmdhist" />
+        <ya-filter-bar [formGroup]="filterForm">
+          <ya-search-filter formControlName="filter" placeholder="Filter by text search" />
+          <ya-column-chooser #columnChooser [columns]="columns" preferenceKey="cmdhist" />
 
-            <div style="flex: 1 1 auto"></div>
+          <div style="flex: 1 1 auto"></div>
 
-            @if (showCommandExports()) {
-              <ya-button
-                appearance="primary"
-                class="no-margin"
-                [matMenuTriggerFor]="exportMenu"
-                [disabled]="!(dataSource.records$ | async)?.length"
-                dropdown="true"
-                icon="download">
-                Export
-              </ya-button>
-            }
+          @if (showCommandExports()) {
+            <ya-button
+              appearance="primary"
+              [matMenuTriggerFor]="exportMenu"
+              [disabled]="!(dataSource.records$ | async)?.length"
+              dropdown="true"
+              icon="download">
+              Export
+            </ya-button>
+          }
 
-            <mat-menu
-              #exportMenu="matMenu"
-              class="ya-menu"
-              overlapTrigger="false"
-              xPosition="before">
-              <button
-                mat-menu-item
-                matTooltip="Print preview with one command per page"
-                matTooltipPosition="right"
-                (click)="printReport()">
-                Printer-friendly
-              </button>
-              <button
-                mat-menu-item
-                matTooltip="Command table, one command per row"
-                matTooltipPosition="right"
-                (click)="exportCsv()">
-                CSV format
-              </button>
-            </mat-menu>
-          </div>
-          <div class="filter-bar">
-            <ya-select formControlName="queue">
-              <ya-option id="" label="Any queue" />
-              @for (queue of config.queueNames; track queue) {
-                <ya-option [id]="queue" [label]="queue" />
-              }
-            </ya-select>
-            <ya-select icon="access_time" formControlName="interval">
-              <ya-option id="PT1H" label="Last hour" />
-              <ya-option id="PT6H" label="Last 6 hours" />
-              <ya-option id="P1D" label="Last 24 hours" />
-              <ya-option id="NO_LIMIT" label="No limit" />
-              <ya-option id="CUSTOM" label="Custom" group="true" />
-            </ya-select>
-            @if (filterForm.value["interval"] === "CUSTOM") {
-              <ya-date-time-input formControlName="customStart" />
-              <ya-date-time-input formControlName="customStop" />
-              <ya-button (click)="applyCustomDates()" [disabled]="filterForm.invalid">
-                Apply
-              </ya-button>
-            }
-            @if (filterForm.value["interval"] !== "CUSTOM") {
-              <ya-button (click)="jumpToNow()">Jump to now</ya-button>
-            }
+          <mat-menu #exportMenu="matMenu" class="ya-menu" overlapTrigger="false" xPosition="before">
+            <button
+              mat-menu-item
+              matTooltip="Print preview with one command per page"
+              matTooltipPosition="right"
+              (click)="printReport()">
+              Printer-friendly
+            </button>
+            <button
+              mat-menu-item
+              matTooltip="Command table, one command per row"
+              matTooltipPosition="right"
+              (click)="exportCsv()">
+              CSV format
+            </button>
+          </mat-menu>
+        </ya-filter-bar>
 
-            @if (dataSource.loading$ | async) {
-              <ya-dots />
+        <ya-filter-bar [formGroup]="filterForm">
+          <ya-select formControlName="queue">
+            <ya-option id="" label="Any queue" />
+            @for (queue of config.queueNames; track queue) {
+              <ya-option [id]="queue" [label]="queue" />
             }
+          </ya-select>
+          <ya-select icon="access_time" formControlName="interval">
+            <ya-option id="PT1H" label="Last hour" />
+            <ya-option id="PT6H" label="Last 6 hours" />
+            <ya-option id="P1D" label="Last 24 hours" />
+            <ya-option id="NO_LIMIT" label="No limit" />
+            <ya-option id="CUSTOM" label="Custom" group="true" />
+          </ya-select>
+          @if (filterForm.value["interval"] === "CUSTOM") {
+            <ya-date-time-input formControlName="customStart" />
+            <ya-date-time-input formControlName="customStop" />
+            <ya-button (click)="applyCustomDates()" [disabled]="filterForm.invalid">
+              Apply
+            </ya-button>
+          } @else {
+            <ya-button (click)="jumpToNow()">Jump to now</ya-button>
+          }
 
-            @if (dataSource.streaming$ | async) {
-              <div style="text-align: right; flex: 1 1 150px">
-                Listening for commands
-                <ya-dots fontSize="16" />
-              </div>
-            }
-          </div>
-        </form>
+          @if (dataSource.loading$ | async) {
+            <ya-dots />
+          }
+
+          @if (dataSource.streaming$ | async) {
+            <div style="text-align: right; flex: 1 1 150px">
+              Listening for commands
+              <ya-dots fontSize="16" />
+            </div>
+          }
+        </ya-filter-bar>
 
         <div class="table-status">
           <div class="toggles">
