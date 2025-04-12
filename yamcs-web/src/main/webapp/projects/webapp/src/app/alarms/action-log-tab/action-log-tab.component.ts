@@ -13,7 +13,6 @@ import {
   GetAuditRecordsOptions,
   WebappSdkModule,
   YaSelectOption,
-  YamcsService,
   utils,
 } from '@yamcs/webapp-sdk';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
@@ -62,10 +61,7 @@ export class ActionLogTabComponent extends BaseComponent implements OnInit {
 
   dataSource = new MatTableDataSource<AuditRecord>();
 
-  constructor(
-    readonly yamcs: YamcsService,
-    private route: ActivatedRoute,
-  ) {
+  constructor(private route: ActivatedRoute) {
     super();
     this.setTitle('Alarm action log');
   }

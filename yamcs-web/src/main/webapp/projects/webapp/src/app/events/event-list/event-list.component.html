@@ -132,7 +132,7 @@
         @if (dataSource.streaming$ | async) {
           <div style="text-align: right; flex: 1 1 150px">
             Listening for events
-            <ya-dots fontSize="16px" />
+            <ya-dots fontSize="16" />
           </div>
         }
         <ya-button appearance="text" icon="download" (click)="exportEvents()">Export CSV</ya-button>

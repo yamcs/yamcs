@@ -1,14 +1,13 @@
-<div class="block-title">Input Type</div>
-<div class="block">
-  {{ route.inputType }}
-</div>
+<ya-attr-list>
+  <ya-attr label="Input type">
+    {{ route.inputType }}
+  </ya-attr>
 
-<div class="block-title">Output Type</div>
-<div class="block">
-  {{ route.outputType }}
-</div>
+  <ya-attr label="Output type">
+    {{ route.outputType }}
+  </ya-attr>
 
-<div class="block-title">Log Format</div>
-<div class="block">
-  {{ route.logFormat || "-" }}
-</div>
+  <ya-attr label="Log format">
+    {{ route.logFormat || "-" }}
+  </ya-attr>
+</ya-attr-list>

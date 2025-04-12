@@ -1,189 +1,190 @@
-<div class="block-title" style="padding-top: 0">ID</div>
-<div class="block">
-  {{ command.id }}
-</div>
+<ya-attr-list>
+  <ya-attr label="ID">
+    {{ command.id }}
+  </ya-attr>
 
-<div class="block-title">Command</div>
-<div class="block command-text">
-  {{ command.commandName }}
-  <app-command-arguments [command]="command" />
-</div>
+  <ya-attr label="Command">
+    {{ command.commandName }}
+    <app-command-arguments [command]="command" />
+  </ya-attr>
 
-@if (command.unprocessedBinary && command.unprocessedBinary !== command.binary) {
-  <div class="block-title">
-    Unprocessed binary
-    <ya-more icon="more_horiz">
-      <button mat-menu-item (click)="copyHex(command.unprocessedBinary)">Copy hex</button>
-      <button mat-menu-item (click)="copyBinary(command.unprocessedBinary)">Copy binary</button>
-    </ya-more>
-  </div>
-  <div class="block no-print" style="margin-top: 4px">
-    <app-hex [base64String]="command.unprocessedBinary" />
-  </div>
-  <div class="block print-only">
-    <pre>{{ (command.unprocessedBinary | hexDump) || "-" }}</pre>
-  </div>
-}
-
-@if (command.binary) {
-  <div class="block-title">
-    Binary
-    <ya-more icon="more_horiz">
-      <button mat-menu-item (click)="copyHex(command.binary)">Copy hex</button>
-      <button mat-menu-item (click)="copyBinary(command.binary)">Copy binary</button>
-    </ya-more>
-  </div>
-  <div class="block no-print" style="margin-top: 4px">
-    <app-hex [base64String]="command.binary" />
-  </div>
-  <div class="block print-only">
-    <pre>{{ (command.binary | hexDump) || "-" }}</pre>
-  </div>
-}
-
-<mat-divider style="margin-top: 1em; margin-bottom: 1em" />
-
-<div class="block-title" style="padding-top: 0">Time</div>
-<div class="block">
-  {{ command.generationTime | datetime }}
-</div>
-
-<div class="block-title">Issuer</div>
-<div class="block">
-  {{ command.username }}
-  @if (command.origin) {
-    &#64;{{ command.origin }}
-  }
-</div>
-
-@if (command.queue) {
-  <div class="block-title">Queue</div>
-  <div class="block">
-    {{ command.queue || "-" }}
-  </div>
-}
-
-@if (command.comment) {
-  <mat-divider style="margin-top: 1em; margin-bottom: 1em" />
-  <div class="block-title" style="padding-top: 0">Comment</div>
-  <div class="block">
-    {{ command.comment }}
-  </div>
-}
-
-@if (command.extra.length) {
-  <mat-divider style="margin-top: 1em; margin-bottom: 1em" />
-  @for (extra of command.extra; track extra.name; let first = $first) {
-    <div class="block-title" [class.first]="first">
-      {{ extra.name }}
-      @if (extra.value.type === "BINARY") {
+  @if (command.unprocessedBinary && command.unprocessedBinary !== command.binary) {
+    <ya-attr>
+      <ng-template ya-attr-label>
+        Unprocessed binary
         <ya-more icon="more_horiz">
-          <button mat-menu-item (click)="copyHex(extra.value.binaryValue!)">Copy hex</button>
-          <button mat-menu-item (click)="copyBinary(extra.value.binaryValue!)">Copy binary</button>
+          <button mat-menu-item (click)="copyHex(command.unprocessedBinary)">Copy hex</button>
+          <button mat-menu-item (click)="copyBinary(command.unprocessedBinary)">Copy binary</button>
         </ya-more>
+      </ng-template>
+
+      <div class="no-print" style="margin-top: 4px">
+        <app-hex [base64String]="command.unprocessedBinary" />
+      </div>
+      <div class="print-only">
+        <pre>{{ (command.unprocessedBinary | hexDump) || "-" }}</pre>
+      </div>
+    </ya-attr>
+  }
+
+  @if (command.binary) {
+    <ya-attr>
+      <ng-template ya-attr-label>
+        Binary
+        <ya-more icon="more_horiz">
+          <button mat-menu-item (click)="copyHex(command.binary)">Copy hex</button>
+          <button mat-menu-item (click)="copyBinary(command.binary)">Copy binary</button>
+        </ya-more>
+      </ng-template>
+
+      <div class="no-print" style="margin-top: 4px">
+        <app-hex [base64String]="command.binary" />
+      </div>
+      <div class="print-only">
+        <pre>{{ (command.binary | hexDump) || "-" }}</pre>
+      </div>
+    </ya-attr>
+  }
+
+  <ya-attr-divider />
+
+  <ya-attr label="Time">
+    {{ command.generationTime | datetime }}
+  </ya-attr>
+
+  <ya-attr label="Issuer">
+    @if (command.origin) {
+      {{ command.username }}&#64;{{ command.origin }}
+    } @else {
+      {{ command.username }}
+    }
+  </ya-attr>
+
+  @if (command.queue) {
+    <ya-attr label="Queue">
+      {{ command.queue || "-" }}
+    </ya-attr>
+  }
+
+  @if (command.comment) {
+    <ya-attr-divider />
+    <ya-attr label="Comment">
+      {{ command.comment }}
+    </ya-attr>
+  }
+
+  @if (command.extra.length) {
+    <ya-attr-divider />
+    @for (extra of command.extra; track extra.name; let first = $first) {
+      <ya-attr>
+        <ng-template ya-attr-label>
+          {{ extra.name }}
+          @if (extra.value.type === "BINARY") {
+            <ya-more icon="more_horiz">
+              <button mat-menu-item (click)="copyHex(extra.value.binaryValue!)">Copy hex</button>
+              <button mat-menu-item (click)="copyBinary(extra.value.binaryValue!)">
+                Copy binary
+              </button>
+            </ya-more>
+          }
+        </ng-template>
+
+        @switch (extra.value.type) {
+          @case ("BINARY") {
+            <div class="no-print" style="margin-top: 4px">
+              <app-hex [base64String]="extra.value.binaryValue" />
+            </div>
+            <div class="print-only">
+              <pre>{{ (extra.value.binaryValue! | hexDump) || "-" }}</pre>
+            </div>
+          }
+          @default {
+            {{ extra.value | value }}
+          }
+        }
+      </ya-attr>
+    }
+  }
+
+  <ya-attr-divider />
+  <ya-attr label="Yamcs acknowledgments">
+    <app-yamcs-acknowledgments-table [command]="command" [showIcons]="showIcons" />
+  </ya-attr>
+
+  @if (command.extraAcks.length) {
+    <ya-attr label="Extra acknowledgments">
+      <app-extra-acknowledgments-table [command]="command" [showIcons]="showIcons" />
+    </ya-attr>
+  }
+
+  @if (command.completed?.returnValue; as value) {
+    <ya-attr-divider />
+    <ya-attr>
+      <ng-template ya-attr-label>
+        Return value
+        @if (value.type === "BINARY") {
+          <ya-more icon="more_horiz">
+            <button mat-menu-item (click)="copyHex(value.binaryValue!)">Copy hex</button>
+            <button mat-menu-item (click)="copyBinary(value.binaryValue!)">Copy binary</button>
+          </ya-more>
+        }
+      </ng-template>
+
+      @switch (value.type) {
+        @case ("BINARY") {
+          <div class="no-print" style="margin-top: 4px">
+            <app-hex [base64String]="value.binaryValue" />
+          </div>
+          <div class="print-only">
+            <pre>{{ (value.binaryValue! | hexDump) || "-" }}</pre>
+          </div>
+        }
+        @case ("STRING") {
+          <pre style="margin: 0; line-height: 1em">{{ value.stringValue }}</pre>
+        }
+        @default {
+          {{ value | value }}
+        }
       }
-    </div>
-    @switch (extra.value.type) {
-      @case ("BINARY") {
-        <div class="block no-print" style="margin-top: 4px">
-          <app-hex [base64String]="extra.value.binaryValue" />
-        </div>
-        <div class="block print-only">
-          <pre>{{ (extra.value.binaryValue! | hexDump) || "-" }}</pre>
-        </div>
-      }
-      @default {
-        <div class="block">
-          {{ extra.value | value }}
-        </div>
-      }
-    }
+    </ya-attr>
   }
-}
 
-<mat-divider style="margin-top: 1em; margin-bottom: 1em" />
-<div class="block-title" style="padding-top: 0">Yamcs acknowledgments</div>
-<div class="block">
-  <app-yamcs-acknowledgments-table [command]="command" [showIcons]="showIcons" />
-</div>
-
-@if (command.extraAcks.length) {
-  <div class="block-title">Extra acknowledgments</div>
-  <div class="block">
-    <app-extra-acknowledgments-table [command]="command" [showIcons]="showIcons" />
-  </div>
-}
-
-@if (command.completed?.returnValue; as value) {
-  <mat-divider style="margin-top: 1em; margin-bottom: 1em" />
-  <div class="block-title" style="padding-top: 0">
-    Return value
-    @if (value.type === "BINARY") {
-      <ya-more icon="more_horiz">
-        <button mat-menu-item (click)="copyHex(value.binaryValue!)">Copy hex</button>
-        <button mat-menu-item (click)="copyBinary(value.binaryValue!)">Copy binary</button>
-      </ya-more>
-    }
-  </div>
-  @switch (value.type) {
-    @case ("BINARY") {
-      <div class="block no-print" style="margin-top: 4px">
-        <app-hex [base64String]="value.binaryValue" />
-      </div>
-      <div class="block print-only">
-        <pre>{{ (value.binaryValue! | hexDump) || "-" }}</pre>
-      </div>
-    }
-    @case ("STRING") {
-      <div class="block">
-        <pre style="margin: 0; line-height: 1em">{{ value.stringValue }}</pre>
-      </div>
-    }
-    @default {
-      <div class="block">
-        {{ value | value }}
-      </div>
-    }
-  }
-}
-
-<div class="block-title">Completion</div>
-<div class="block">
-  @if (command.completed?.status === "OK") {
-    SUCCESS
-  }
-  @if (command.completed?.status === "NOK") {
-    FAILURE: {{ command.completed?.message }}
-  }
-  @if (!command.completed) {
-    -
-  }
-</div>
-
-@for (upstream of command.cascadedRecordsByPrefix | keyvalue; track upstream.key) {
-  <mat-divider style="margin-top: 1em; margin-bottom: 1em" />
-  <div class="block-title" style="padding-top: 0">
-    {{ upstream.key | cascadingPrefix }} acknowledgments
-  </div>
-  <div class="block">
-    <app-yamcs-acknowledgments-table [command]="upstream.value" [showIcons]="showIcons" />
-  </div>
-  @if (upstream.value.extraAcks.length) {
-    <div class="block-title">{{ upstream.key | cascadingPrefix }} extra acknowledgments</div>
-    <div class="block">
-      <app-extra-acknowledgments-table [command]="upstream.value" [showIcons]="showIcons" />
-    </div>
-  }
-  <div class="block-title">{{ upstream.key | cascadingPrefix }} completion</div>
-  <div class="block">
-    @if (upstream.value.completed?.status === "OK") {
+  <ya-attr label="Completion">
+    @if (command.completed?.status === "OK") {
       SUCCESS
-    }
-    @if (upstream.value.completed?.status === "NOK") {
-      FAILURE: {{ upstream.value.completed?.message }}
-    }
-    @if (!upstream.value.completed) {
+    } @else if (command.completed?.status === "NOK") {
+      FAILURE: {{ command.completed?.message }}
+    } @else {
       -
     }
-  </div>
-}
+  </ya-attr>
+
+  @for (upstream of command.cascadedRecordsByPrefix | keyvalue; track upstream.key) {
+    <ya-attr-divider />
+    <ya-attr>
+      <ng-template ya-attr-label>{{ upstream.key | cascadingPrefix }} acknowledgments</ng-template>
+      <app-yamcs-acknowledgments-table [command]="upstream.value" [showIcons]="showIcons" />
+    </ya-attr>
+
+    @if (upstream.value.extraAcks.length) {
+      <ya-attr>
+        <ng-template ya-attr-label>
+          {{ upstream.key | cascadingPrefix }} extra acknowledgments
+        </ng-template>
+        <app-extra-acknowledgments-table [command]="upstream.value" [showIcons]="showIcons" />
+      </ya-attr>
+    }
+
+    <ya-attr>
+      <ng-template ya-attr-label>{{ upstream.key | cascadingPrefix }} completion</ng-template>
+
+      @if (upstream.value.completed?.status === "OK") {
+        SUCCESS
+      } @else if (upstream.value.completed?.status === "NOK") {
+        FAILURE: {{ upstream.value.completed?.message }}
+      } @else {
+        -
+      }
+    </ya-attr>
+  }
+</ya-attr-list>
