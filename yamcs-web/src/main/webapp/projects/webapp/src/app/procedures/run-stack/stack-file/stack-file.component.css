@@ -118,3 +118,9 @@ div.entry div.out .body.err {
 .comment .title .display-text {
   margin-left: 5px;
 }
+
+.block {
+  font-weight: normal;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.654);
+}

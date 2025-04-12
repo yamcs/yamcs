@@ -140,20 +140,6 @@ input.ng-invalid:not(.ng-pristine),
   min-height: 24px;
 }
 
-.block-title {
-  font-weight: 500;
-  font-size: 12px;
-  padding-bottom: 0;
-  padding-top: 1em;
-  margin: 0;
-}
-
-.block {
-  font-weight: normal;
-  font-size: 12px;
-  color: rgba(0, 0, 0, 0.654);
-}
-
 .badge {
   position: relative;
   color: #ffffff;

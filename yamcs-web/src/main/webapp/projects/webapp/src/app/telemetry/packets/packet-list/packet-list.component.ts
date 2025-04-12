@@ -10,7 +10,6 @@ import {
   WebappSdkModule,
   YaColumnInfo,
   YaSelectOption,
-  YamcsService,
   utils,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
@@ -90,7 +89,6 @@ export class PacketListComponent extends BaseComponent {
   private link: string;
 
   constructor(
-    readonly yamcs: YamcsService,
     private route: ActivatedRoute,
     private clipboard: Clipboard,
   ) {
@@ -99,26 +97,28 @@ export class PacketListComponent extends BaseComponent {
 
     this.dataSource = new PacketsDataSource(this.yamcs, this.synchronizer);
 
-    yamcs.yamcsClient.getPacketNames(yamcs.instance!).then((message) => {
-      for (const name of message.packets || []) {
-        this.nameOptions$.next([
-          ...this.nameOptions$.value,
-          {
-            id: name,
-            label: name,
-          },
-        ]);
-      }
-      for (const name of message.links || []) {
-        this.linkOptions$.next([
-          ...this.linkOptions$.value,
-          {
-            id: name,
-            label: name,
-          },
-        ]);
-      }
-    });
+    this.yamcs.yamcsClient
+      .getPacketNames(this.yamcs.instance!)
+      .then((message) => {
+        for (const name of message.packets || []) {
+          this.nameOptions$.next([
+            ...this.nameOptions$.value,
+            {
+              id: name,
+              label: name,
+            },
+          ]);
+        }
+        for (const name of message.links || []) {
+          this.linkOptions$.next([
+            ...this.linkOptions$.value,
+            {
+              id: name,
+              label: name,
+            },
+          ]);
+        }
+      });
 
     this.initializeOptions();
     this.loadData();
@@ -149,7 +149,7 @@ export class PacketListComponent extends BaseComponent {
         this.appliedInterval = nextInterval;
         this.loadData();
       } else {
-        this.validStop = yamcs.getMissionTime();
+        this.validStop = this.yamcs.getMissionTime();
         this.validStart = utils.subtractDuration(this.validStop, nextInterval);
         this.appliedInterval = nextInterval;
         this.loadData();

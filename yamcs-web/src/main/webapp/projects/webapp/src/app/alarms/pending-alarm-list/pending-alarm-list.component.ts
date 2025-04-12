@@ -4,7 +4,6 @@ import {
   BaseComponent,
   TrackBySelectionModel,
   WebappSdkModule,
-  YamcsService,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
@@ -43,10 +42,7 @@ export class PendingAlarmListComponent
 
   private alarmsSubscription: Subscription;
 
-  constructor(
-    private authService: AuthService,
-    readonly yamcs: YamcsService,
-  ) {
+  constructor(private authService: AuthService) {
     super();
     this.setTitle('Pending alarms');
 

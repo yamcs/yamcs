@@ -5,6 +5,7 @@ import { AppearanceService } from '../services/appearance.service';
 import { MessageService } from '../services/message.service';
 import { SdkBridge } from '../services/sdk-bridge.service';
 import { Synchronizer } from '../services/synchronizer.service';
+import { YamcsService } from '../services/yamcs.service';
 
 @Directive()
 export abstract class BaseComponent {
@@ -15,6 +16,7 @@ export abstract class BaseComponent {
   protected sdkBridge: SdkBridge;
   protected synchronizer: Synchronizer;
   protected title: Title;
+  protected yamcs: YamcsService;
 
   constructor() {
     this.changeDetection = inject(ChangeDetectorRef);
@@ -25,6 +27,7 @@ export abstract class BaseComponent {
 
     this.appearanceService = this.sdkBridge.appearanceService;
     this.router = this.sdkBridge.router;
+    this.yamcs = this.sdkBridge.yamcs;
   }
 
   setTitle(title: string) {

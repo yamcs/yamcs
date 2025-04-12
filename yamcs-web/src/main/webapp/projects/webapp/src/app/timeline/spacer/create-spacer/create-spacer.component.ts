@@ -25,10 +25,7 @@ import { SpacerStylesComponent } from '../spacer-styles/spacer-styles.component'
 export class CreateSpacerComponent extends BaseComponent {
   form: FormGroup;
 
-  constructor(
-    formBuilder: FormBuilder,
-    readonly yamcs: YamcsService,
-  ) {
+  constructor(formBuilder: FormBuilder) {
     super();
     this.setTitle('Configure Spacer');
     this.form = formBuilder.group({

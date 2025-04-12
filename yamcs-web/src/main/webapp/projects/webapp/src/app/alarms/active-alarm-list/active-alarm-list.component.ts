@@ -8,7 +8,6 @@ import {
   TrackBySelectionModel,
   WebappSdkModule,
   YaSelectOption,
-  YamcsService,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
@@ -73,7 +72,6 @@ export class ActiveAlarmListComponent
   private filter: string;
 
   constructor(
-    readonly yamcs: YamcsService,
     private route: ActivatedRoute,
     private dialog: MatDialog,
     private authService: AuthService,

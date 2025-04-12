@@ -7,10 +7,10 @@
       New
       {{
         service.capabilities.download && service.capabilities.upload
-          ? "Transfer"
+          ? "transfer"
           : service.capabilities.upload
-            ? "Upload"
-            : "Download"
+            ? "upload"
+            : "download"
       }}
     </h2>
 
@@ -54,7 +54,7 @@
 
       <div class="local-column header">
         <label class="table-caption">
-          Local {{ service.localEntities && service.localEntities.length ? "Entity" : "" }}
+          Local {{ service.localEntities && service.localEntities.length ? "entity" : "" }}
           <select
             formControlName="localEntity"
             [ngStyle]="
@@ -122,7 +122,7 @@
           class="remote-column header"
           [ngClass]="{ 'no-filelist': !service.capabilities.fileList }">
           <label class="table-caption">
-            Remote {{ service.remoteEntities && service.remoteEntities.length ? "Entity" : "" }}
+            Remote {{ service.remoteEntities && service.remoteEntities.length ? "entity" : "" }}
             <select
               formControlName="remoteEntity"
               [ngStyle]="

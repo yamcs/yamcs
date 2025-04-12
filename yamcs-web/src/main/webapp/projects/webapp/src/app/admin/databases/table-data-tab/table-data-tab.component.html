@@ -2,7 +2,7 @@
   <ya-detail-pane>
     @if (selectedRecord$ | async; as selectedRecord) {
       <ya-detail-toolbar>Record</ya-detail-toolbar>
-      <div style="padding: 0 16px">
+      <div style="padding: 0 16px 16px 16px">
         <app-record [table]="table" [record]="selectedRecord" />
       </div>
     } @else {

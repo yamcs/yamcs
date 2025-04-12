@@ -23,6 +23,7 @@ import { UtcDateAdapter } from './components/date-time-input/UtcDateAdapter';
 import { AppearanceService } from './services/appearance.service';
 import { ConfigService } from './services/config.service';
 import { SdkBridge } from './services/sdk-bridge.service';
+import { YamcsService } from './services/yamcs.service';
 
 const matTooltipOptions: MatTooltipDefaultOptions = {
   ...MAT_TOOLTIP_DEFAULT_OPTIONS_FACTORY(),
@@ -86,8 +87,9 @@ export function provideSdkBridge(): EnvironmentProviders[] {
   return [
     provideAppInitializer(() => {
       const sdkBridge = inject(SdkBridge);
-      sdkBridge.router = inject(Router);
       sdkBridge.appearanceService = inject(AppearanceService);
+      sdkBridge.router = inject(Router);
+      sdkBridge.yamcs = inject(YamcsService);
     }),
   ];
 }

@@ -1,57 +1,50 @@
-<div class="block-title">Name</div>
-<div class="block">
-  {{ link.name }}
-</div>
+<ya-attr-list>
+  <ya-attr label="Name">
+    {{ link.name }}
+  </ya-attr>
 
-<div class="block-title">Class</div>
-<div class="block">
-  {{ link.type }}
-</div>
+  <ya-attr label="Class">
+    {{ link.type }}
+  </ya-attr>
 
-<br />
-<mat-divider />
+  <ya-attr-divider />
 
-<div class="block-title">Status</div>
-<div class="block">
-  <app-link-status [link]="link" />
-  {{ link.status }}
-</div>
+  <ya-attr label="Status">
+    <app-link-status [link]="link" />
+    {{ link.status }}
+  </ya-attr>
 
-<div class="block-title">In count</div>
-<div class="block">
-  {{ link.dataInCount | number }}
-</div>
+  <ya-attr label="In count">
+    {{ link.dataInCount | number }}
+  </ya-attr>
 
-<div class="block-title">Out count</div>
-<div class="block">
-  {{ link.dataOutCount | number }}
-</div>
+  <ya-attr label="Out count">
+    {{ link.dataOutCount | number }}
+  </ya-attr>
 
-<div class="block-title">Detail</div>
-<div class="block">
-  {{ link.detailedStatus || "-" }}
-</div>
+  <ya-attr label="Detail">
+    {{ link.detailedStatus || "-" }}
+  </ya-attr>
 
-@if (link.extra) {
-  <br />
-  <mat-divider />
-  @for (entry of link.extra | keyvalue; track entry) {
-    <div class="block-title">{{ entry.key }}</div>
-    <div class="block">
-      @if (getEntriesForValue(entry.value); as subentries) {
-        @if (subentries.length) {
-          @for (subentry of subentries; track subentry) {
-            {{ subentry || "-" }}
-            <br />
+  @if (link.extra) {
+    <ya-attr-divider />
+    @for (entry of link.extra | keyvalue; track entry) {
+      <ya-attr [label]="entry.key">
+        @if (getEntriesForValue(entry.value); as subentries) {
+          @if (subentries.length) {
+            @for (subentry of subentries; track subentry) {
+              {{ subentry || "-" }}
+              <br />
+            }
+          }
+          @if (!subentries.length) {
+            -
           }
         }
-        @if (!subentries.length) {
-          -
-        }
-      }
-    </div>
+      </ya-attr>
+    }
   }
-}
+</ya-attr-list>
 
 @if (mayControlLinks()) {
   <div class="action-bar">

@@ -8,7 +8,6 @@ import {
   GetAlarmsOptions,
   WebappSdkModule,
   YaSelectOption,
-  YamcsService,
   utils,
 } from '@yamcs/webapp-sdk';
 import { addHours } from 'date-fns';
@@ -65,10 +64,7 @@ export class AlarmHistoryComponent extends BaseComponent {
 
   dataSource = new MatTableDataSource<Alarm>();
 
-  constructor(
-    readonly yamcs: YamcsService,
-    private route: ActivatedRoute,
-  ) {
+  constructor(private route: ActivatedRoute) {
     super();
     this.setTitle('Alarm history');
     this.initializeOptions();
