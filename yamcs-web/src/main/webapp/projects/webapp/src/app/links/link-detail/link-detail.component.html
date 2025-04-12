@@ -47,7 +47,7 @@
 </ya-attr-list>
 
 @if (mayControlLinks()) {
-  <div class="action-bar">
+  <ya-toolbar appearance="bottom">
     @if (link.status === "DISABLED") {
       <ya-button (click)="enableLink()">Enable link</ya-button>
     }
@@ -76,5 +76,5 @@
         }
       </ng-template>
     </mat-menu>
-  </div>
+  </ya-toolbar>
 }

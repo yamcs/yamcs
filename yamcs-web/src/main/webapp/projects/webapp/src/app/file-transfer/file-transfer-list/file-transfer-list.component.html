@@ -45,28 +45,23 @@
     <ya-panel>
       <app-file-transfer-tabs />
 
-      <form [formGroup]="filterForm" style="margin-top: 16px">
-        <div class="filter-bar">
-          <ya-select [options]="directionOptions" formControlName="direction" />
-          <ya-multi-select
-            [options]="stateOptions"
-            formControlName="state"
-            emptyOption="Any status" />
-          <ya-select [options]="localEntityOptions()" formControlName="localEntityId" />
-          <ya-select [options]="remoteEntityOptions()" formControlName="remoteEntityId" />
-          <ya-select [options]="intervalOptions" icon="access_time" formControlName="interval" />
-          @if (filterForm.value["interval"] === "CUSTOM") {
-            <ya-date-time-input formControlName="customStart" />
-            <ya-date-time-input formControlName="customStop" />
-            <ya-button (click)="applyCustomDates()" [disabled]="filterForm.invalid">
-              Apply
-            </ya-button>
-          }
-          @if (filterForm.value["interval"] !== "CUSTOM") {
-            <ya-button (click)="jumpToNow()">Jump to now</ya-button>
-          }
-        </div>
-      </form>
+      <ya-filter-bar [formGroup]="filterForm" style="margin-top: 16px">
+        <ya-select [options]="directionOptions" formControlName="direction" />
+        <ya-multi-select
+          [options]="stateOptions"
+          formControlName="state"
+          emptyOption="Any status" />
+        <ya-select [options]="localEntityOptions()" formControlName="localEntityId" />
+        <ya-select [options]="remoteEntityOptions()" formControlName="remoteEntityId" />
+        <ya-select [options]="intervalOptions" icon="access_time" formControlName="interval" />
+        @if (filterForm.value["interval"] === "CUSTOM") {
+          <ya-date-time-input formControlName="customStart" />
+          <ya-date-time-input formControlName="customStop" />
+          <ya-button (click)="applyCustomDates()" [disabled]="filterForm.invalid">Apply</ya-button>
+        } @else {
+          <ya-button (click)="jumpToNow()">Jump to now</ya-button>
+        }
+      </ya-filter-bar>
 
       <table mat-table [dataSource]="dataSource" class="ya-data-table expand" multiTemplateDataRows>
         <ng-container matColumnDef="startTime">

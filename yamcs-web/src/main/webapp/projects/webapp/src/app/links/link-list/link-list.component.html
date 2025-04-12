@@ -71,7 +71,7 @@
   <div class="table-wrapper">
     <ya-panel>
       <app-links-page-tabs />
-      <div class="filter-bar" style="margin-top: 16px">
+      <ya-filter-bar style="margin-top: 16px">
         <ya-search-filter
           [formControl]="filterControl"
           placeholder="Filter links"
@@ -79,7 +79,7 @@
           (onArrowUp)="selectPrevious()"
           (onEnter)="applySelection()" />
         <ya-column-chooser #columnChooser [columns]="columns" preferenceKey="links" />
-      </div>
+      </ya-filter-bar>
       <table
         mat-table
         [dataSource]="dataSource"

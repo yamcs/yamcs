@@ -82,6 +82,7 @@
     @if (dataSource) {
       <ya-panel>
         <app-alarms-page-tabs />
+
         <dl class="dl-horizontal">
           <dt>Unacknowledged alarms:</dt>
           <dd>
@@ -96,12 +97,12 @@
             <strong>{{ (dataSource.shelvedAlarms$ | async)?.length }}</strong>
           </dd>
         </dl>
-        <form [formGroup]="filterForm">
-          <div class="filter-bar">
-            <ya-search-filter formControlName="filter" placeholder="Filter by text search" />
-            <ya-select [options]="viewOptions" formControlName="view" />
-          </div>
-        </form>
+
+        <ya-filter-bar [formGroup]="filterForm">
+          <ya-search-filter formControlName="filter" placeholder="Filter by text search" />
+          <ya-select [options]="viewOptions" formControlName="view" />
+        </ya-filter-bar>
+
         <app-alarms-table
           [dataSource]="dataSource"
           [selection]="selection"

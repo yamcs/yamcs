@@ -1,18 +1,17 @@
 <div style="display: flex">
   <div class="bands-from">
-    <table mat-table [dataSource]="availableDataSource" class="ya-data-table" style="width: 100%">
+    <table
+      mat-table
+      [dataSource]="availableDataSource"
+      class="ya-data-table no-frame"
+      style="width: 100%">
       <ng-container cdkColumnDef="name">
         <th mat-header-cell *cdkHeaderCellDef>Available</th>
         <td mat-cell *cdkCellDef="let item">
           @if (item.name) {
             {{ item.name }}
-          }
-          @if (!item.name) {
+          } @else {
             <i>(no name)</i>
-          }
-          @if (item.description) {
-            <br />
-            <span class="hint">{{ item.description }}</span>
           }
         </td>
       </ng-container>
@@ -26,32 +25,30 @@
     </table>
   </div>
 
-  <div style="display: inline-block; margin: 1em; align-self: center">
-    <ya-button style="width: 90px" [disabled]="!isAnyLeftSelected()" (click)="moveRight()">
+  <div class="shared-actions">
+    <ya-button [rightAlign]="true" [disabled]="!isAnyLeftSelected()" (click)="moveRight()">
       Add
       <mat-icon class="icon12">chevron_right</mat-icon>
     </ya-button>
-    <br />
-    <ya-button style="width: 90px" [disabled]="!isAnyRightSelected()" (click)="moveLeft()">
+    <ya-button [disabled]="!isAnyRightSelected()" (click)="moveLeft()">
       <mat-icon class="icon12">chevron_left</mat-icon>
       Remove
     </ya-button>
   </div>
 
   <div class="bands-to">
-    <table mat-table [dataSource]="selectedDataSource" class="ya-data-table" style="width: 100%">
+    <table
+      mat-table
+      [dataSource]="selectedDataSource"
+      class="ya-data-table no-frame"
+      style="width: 100%">
       <ng-container cdkColumnDef="name">
         <th mat-header-cell *cdkHeaderCellDef>Selected</th>
         <td mat-cell *cdkCellDef="let item">
           @if (item.name) {
             {{ item.name }}
-          }
-          @if (!item.name) {
+          } @else {
             <i>(no name)</i>
-          }
-          @if (item.description) {
-            <br />
-            <span class="hint">{{ item.description }}</span>
           }
         </td>
       </ng-container>
@@ -65,7 +62,11 @@
     </table>
   </div>
 </div>
-<div style="text-align: right">
-  <ya-button [disabled]="!isAnyRightSelected()" (click)="moveDown()" icon="keyboard_arrow_down" />
-  <ya-button [disabled]="!isAnyRightSelected()" (click)="moveUp()" icon="keyboard_arrow_up" />
+<div class="bottom-actions">
+  <div style="flex: 1 1 auto"></div>
+  <ya-icon-button
+    [disabled]="!isAnyRightSelected()"
+    (click)="moveDown()"
+    icon="keyboard_arrow_down" />
+  <ya-icon-button [disabled]="!isAnyRightSelected()" (click)="moveUp()" icon="keyboard_arrow_up" />
 </div>

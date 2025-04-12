@@ -3,42 +3,41 @@
   <span #top></span>
 
   <ya-panel>
-    <form [formGroup]="filterForm">
-      @if (breadcrumb$ | async; as breadcrumb) {
-        @if (breadcrumb.length) {
-          <div class="filter-bar">
-            <ya-breadcrumb-trail>
+    @if (breadcrumb$ | async; as breadcrumb) {
+      @if (breadcrumb.length) {
+        <ya-filter-bar>
+          <ya-breadcrumb-trail>
+            <ya-breadcrumb
+              link="/telemetry/parameters"
+              [queryParams]="{ c: yamcs.context }"
+              icon="account_tree" />
+            @for (item of breadcrumb; track item) {
               <ya-breadcrumb
-                link="/telemetry/parameters"
-                [queryParams]="{ c: yamcs.context }"
-                icon="account_tree" />
-              @for (item of breadcrumb; track item) {
-                <ya-breadcrumb
-                  [link]="item.route"
-                  [queryParams]="item.queryParams"
-                  [label]="item.name" />
-              }
-            </ya-breadcrumb-trail>
-          </div>
-        }
+                [link]="item.route"
+                [queryParams]="item.queryParams"
+                [label]="item.name" />
+            }
+          </ya-breadcrumb-trail>
+        </ya-filter-bar>
       }
-      <div class="filter-bar">
-        <ya-search-filter
-          [formControl]="filterForm.controls['filter']"
-          placeholder="Search by name"
-          icon="search"
-          (onArrowDown)="selectNext()"
-          (onArrowUp)="selectPrevious()"
-          (onEnter)="applySelection()" />
-        <ya-select [options]="typeOptions" formControlName="type" />
-        <ya-select [options]="sourceOptions" formControlName="source" />
-        <ya-column-chooser #columnChooser [columns]="columns" preferenceKey="tmParameters" />
+    }
+    <ya-filter-bar [formGroup]="filterForm">
+      <ya-search-filter
+        [formControl]="filterForm.controls['filter']"
+        placeholder="Search by name"
+        icon="search"
+        (onArrowDown)="selectNext()"
+        (onArrowUp)="selectPrevious()"
+        (onEnter)="applySelection()" />
+      <ya-select [options]="typeOptions" formControlName="type" />
+      <ya-select [options]="sourceOptions" formControlName="source" />
+      <ya-column-chooser #columnChooser [columns]="columns" preferenceKey="tmParameters" />
 
-        @if (dataSource.loading$ | async) {
-          <ya-dots />
-        }
-      </div>
-    </form>
+      @if (dataSource.loading$ | async) {
+        <ya-dots />
+      }
+    </ya-filter-bar>
+
     <table mat-table class="ya-data-table expand" [dataSource]="dataSource">
       <ng-container matColumnDef="name">
         <th mat-header-cell *matHeaderCellDef>Name</th>
@@ -188,6 +187,7 @@
       [showFirstLastButtons]="true"
       [length]="dataSource.totalSize$ | async" />
   </ya-panel>
+
   <ng-template #empty>
     <ya-panel>
       The Mission Database for
