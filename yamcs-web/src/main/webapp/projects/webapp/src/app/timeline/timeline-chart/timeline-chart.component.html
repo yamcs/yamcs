@@ -4,7 +4,11 @@
 
     @if (views$ | async; as views) {
       @if ((view$ | async) && mayControlTimeline()) {
-        <ya-page-button [matMenuTriggerFor]="viewMenu" dropdown="true">
+        <ya-page-button
+          [matMenuTriggerFor]="viewMenu"
+          primary="true"
+          dropdown="true"
+          icon="view_timeline">
           {{ (view$ | async)?.name || "select view" }}
         </ya-page-button>
       }
