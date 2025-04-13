@@ -9,7 +9,7 @@
 
   <ya-attr-divider />
 
-  <ya-attr label="Status">
+  <ya-attr label="Status" class="link-status">
     <app-link-status [link]="link" />
     {{ link.status }}
   </ya-attr>
@@ -36,8 +36,7 @@
               {{ subentry || "-" }}
               <br />
             }
-          }
-          @if (!subentries.length) {
+          } @else {
             -
           }
         }
@@ -50,8 +49,7 @@
   <ya-toolbar appearance="bottom">
     @if (link.status === "DISABLED") {
       <ya-button (click)="enableLink()">Enable link</ya-button>
-    }
-    @if (link.status !== "DISABLED") {
+    } @else {
       <ya-button (click)="disableLink()">Disable link</ya-button>
     }
     <ya-button [matMenuTriggerFor]="moreActions" dropdown="true">More</ya-button>
