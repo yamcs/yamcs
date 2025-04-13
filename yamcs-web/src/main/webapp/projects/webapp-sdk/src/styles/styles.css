@@ -168,11 +168,6 @@ input.ng-invalid:not(.ng-pristine),
   font-weight: 400;
 }
 
-.mat-toolbar.top .mat-mdc-button {
-  text-transform: uppercase;
-  padding: 0 16px;
-}
-
 .mat-toolbar.top .mat-mdc-button.icon {
   min-width: unset;
 }
@@ -190,7 +185,6 @@ input.ng-invalid:not(.ng-pristine),
   height: 36px;
   min-width: 0;
   font-size: 13px;
-  text-transform: uppercase;
 }
 
 input[type="checkbox"],

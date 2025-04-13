@@ -11,6 +11,7 @@ import { MatIcon } from '@angular/material/icon';
 @Component({
   selector: 'ya-page-button',
   templateUrl: './page-button.component.html',
+  styleUrl: './page-button.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [MatButton, MatIcon],
 })
@@ -20,6 +21,7 @@ export class YaPageButton {
   disabled = input(false, { transform: booleanAttribute });
   dropdown = input(false, { transform: booleanAttribute });
   color = input<string>('primary');
+  primary = input(false, { transform: booleanAttribute });
 
   clicked = output<MouseEvent>();
 

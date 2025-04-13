@@ -3,7 +3,11 @@
     File transfer&nbsp;&nbsp;&nbsp;&nbsp;
 
     @if (services().length) {
-      <ya-page-button [matMenuTriggerFor]="serviceMenu" dropdown="true">
+      <ya-page-button
+        [matMenuTriggerFor]="serviceMenu"
+        primary="true"
+        dropdown="true"
+        icon="file_copy">
         {{ service()?.name || "select service" }}
       </ya-page-button>
       <mat-menu #serviceMenu="matMenu" class="ya-menu">
