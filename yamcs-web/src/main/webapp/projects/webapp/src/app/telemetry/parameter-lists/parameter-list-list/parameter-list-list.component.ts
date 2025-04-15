@@ -8,23 +8,17 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
+  AuthService,
   MessageService,
   ParameterList,
   WebappSdkModule,
   YamcsService,
 } from '@yamcs/webapp-sdk';
-import { AuthService } from '../../../core/services/AuthService';
-import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 
 @Component({
   templateUrl: './parameter-list-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class ParameterListListComponent implements AfterViewInit {
   filterControl = new UntypedFormControl();

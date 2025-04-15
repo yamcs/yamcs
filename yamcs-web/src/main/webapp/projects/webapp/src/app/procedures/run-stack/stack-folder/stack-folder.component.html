@@ -1,5 +1,5 @@
-<app-instance-page>
-  <app-instance-toolbar label="Stacks">
+<ya-instance-page>
+  <ya-instance-toolbar label="Stacks">
     @if (mayManageStacks()) {
       <ya-page-button (clicked)="createStack()" icon="add_box">Create stack</ya-page-button>
     }
@@ -22,7 +22,7 @@
         Delete
       </ya-page-button>
     }
-  </app-instance-toolbar>
+  </ya-instance-toolbar>
 
   <div
     #droparea
@@ -174,4 +174,4 @@
       }
     </ya-panel>
   </div>
-</app-instance-page>
+</ya-instance-page>

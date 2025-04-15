@@ -1,5 +1,5 @@
-<app-instance-page>
-  <app-instance-toolbar label="Command history">
+<ya-instance-page>
+  <ya-instance-toolbar label="Command history">
     @if (!(dataSource.streaming$ | async)) {
       <ya-page-button (clicked)="startStreaming()" icon="play_arrow">
         Start streaming
@@ -18,7 +18,7 @@
     <ya-page-button matTooltip="Jump to now" color="primary" (clicked)="jumpToNow()" icon="refresh">
       Refresh
     </ya-page-button>
-  </app-instance-toolbar>
+  </ya-instance-toolbar>
 
   <ya-detail-pane>
     @if (selectedRecord$ | async; as selectedRecord) {
@@ -437,4 +437,4 @@
       </ya-panel>
     }
   </div>
-</app-instance-page>
+</ya-instance-page>

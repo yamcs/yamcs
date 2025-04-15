@@ -5,8 +5,6 @@ import {
   CreateTimelineBandRequest,
   WebappSdkModule,
 } from '@yamcs/webapp-sdk';
-import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { CreateBandWizardStepComponent } from '../../create-band-wizard-step/create-band-wizard-step.component';
 import { removeUnsetProperties } from '../../shared/properties';
 import { DEFAULT_COLORS, propertyInfo } from '../ParameterPlot';
@@ -19,8 +17,6 @@ import { TraceStylesComponent } from '../trace-styles/trace-styles.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CreateBandWizardStepComponent,
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
     ParameterPlotStylesComponent,
     TraceStylesComponent,
     WebappSdkModule,

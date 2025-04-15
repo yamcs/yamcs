@@ -16,8 +16,6 @@ import {
   YamcsService,
   utils,
 } from '@yamcs/webapp-sdk';
-import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
 import { FileTransferTabsComponent } from '../file-transfer-tabs/file-transfer-tabs.component';
@@ -26,12 +24,7 @@ import { FileTransferTabsComponent } from '../file-transfer-tabs/file-transfer-t
   selector: 'app-file-transfer-action-log-tab',
   templateUrl: './action-log-tab.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    FileTransferTabsComponent,
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    WebappSdkModule,
-  ],
+  imports: [FileTransferTabsComponent, WebappSdkModule],
 })
 export class ActionLogTabComponent implements OnInit {
   interval = input<string>();

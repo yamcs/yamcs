@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import {
+  AuthService,
   ConfigService,
   TMStatisticsSubscription,
   TmStatistics,
@@ -10,20 +11,12 @@ import {
   YamcsService,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { AuthService } from '../../core/services/AuthService';
-import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { TmStatsTableComponent } from '../tm-stats-table/tm-stats-table.component';
 
 @Component({
   templateUrl: './instance-home.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    WebappSdkModule,
-    TmStatsTableComponent,
-  ],
+  imports: [WebappSdkModule, TmStatsTableComponent],
 })
 export class InstanceHomeComponent implements OnDestroy {
   private user: User;

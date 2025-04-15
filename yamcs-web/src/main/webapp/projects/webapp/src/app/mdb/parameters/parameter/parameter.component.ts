@@ -3,22 +3,13 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { Parameter, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
-import { AppInstanceToolbarLabel } from '../../../shared/instance-toolbar/instance-toolbar-label.directive';
-import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { ParameterDetailComponent } from '../parameter-detail/parameter-detail.component';
 
 @Component({
   templateUrl: './parameter.component.html',
   styleUrl: './parameter.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AppInstanceToolbarLabel,
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    ParameterDetailComponent,
-    WebappSdkModule,
-  ],
+  imports: [ParameterDetailComponent, WebappSdkModule],
 })
 export class ParameterComponent {
   parameter$ = new BehaviorSubject<Parameter | null>(null);

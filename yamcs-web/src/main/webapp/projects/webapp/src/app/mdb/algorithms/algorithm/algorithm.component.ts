@@ -2,21 +2,12 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { Algorithm, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
-import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
-import { AppInstanceToolbarLabel } from '../../../shared/instance-toolbar/instance-toolbar-label.directive';
-import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { AlgorithmDetailComponent } from '../algorithm-detail/algorithm-detail.component';
 
 @Component({
   templateUrl: './algorithm.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AlgorithmDetailComponent,
-    AppInstanceToolbarLabel,
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    WebappSdkModule,
-  ],
+  imports: [AlgorithmDetailComponent, WebappSdkModule],
 })
 export class AlgorithmComponent {
   algorithm$: Promise<Algorithm>;

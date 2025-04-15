@@ -16,6 +16,7 @@ import { MatStepperIcon, MatStepperModule } from '@angular/material/stepper';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
+  AuthService,
   Clearance,
   Command,
   CommandHistoryEntry,
@@ -28,9 +29,6 @@ import {
   YaStepperStep,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { AuthService } from '../../../core/services/AuthService';
-import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { MarkdownComponent } from '../../../shared/markdown/markdown.component';
 import { SignificanceLevelComponent } from '../../../shared/significance-level/significance-level.component';
 import { CommandFormComponent } from '../command-form/command-form.component';
@@ -46,8 +44,6 @@ import { CommandHistoryTemplateProvider } from './CommandHistoryTemplateProvider
   imports: [
     CommandConstraintsComponent,
     CommandFormComponent,
-    InstancePageTemplateComponent,
-    InstanceToolbarComponent,
     MarkdownComponent,
     MatIconModule,
     MatStepperIcon,

@@ -16,8 +16,6 @@ import {
   YamcsService,
   utils,
 } from '@yamcs/webapp-sdk';
-import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { LinksPageTabsComponent } from '../links-page-tabs/links-page-tabs.component';
 
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
@@ -26,12 +24,7 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
   selector: 'app-links-action-log-tab',
   templateUrl: './action-log-tab.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    LinksPageTabsComponent,
-    WebappSdkModule,
-  ],
+  imports: [LinksPageTabsComponent, WebappSdkModule],
 })
 export class ActionLogTabComponent implements OnInit {
   interval = input<string>();

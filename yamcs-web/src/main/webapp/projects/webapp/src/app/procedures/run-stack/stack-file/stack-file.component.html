@@ -1,6 +1,6 @@
-<app-instance-page>
-  <app-instance-toolbar>
-    <ng-template app-instance-toolbar-label>
+<ya-instance-page>
+  <ya-instance-toolbar>
+    <ng-template ya-instance-toolbar-label>
       <ya-page-icon-button
         [routerLink]="folderLink"
         [queryParams]="{ c: yamcs.context }"
@@ -124,7 +124,7 @@
         </span>
       </a>
     </mat-menu>
-  </app-instance-toolbar>
+  </ya-instance-toolbar>
 
   <div class="main-pane">
     <app-stack-file-page-tabs [objectName]="objectName">
@@ -231,4 +231,4 @@
       </div>
     </div>
   </div>
-</app-instance-page>
+</ya-instance-page>

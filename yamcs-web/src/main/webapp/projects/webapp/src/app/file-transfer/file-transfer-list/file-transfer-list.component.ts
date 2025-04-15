@@ -12,6 +12,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
+  AuthService,
   FileTransferService,
   GetFileTransfersOptions,
   MessageService,
@@ -23,9 +24,6 @@ import {
   utils,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { AuthService } from '../../core/services/AuthService';
-import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { FileTransferTabsComponent } from '../file-transfer-tabs/file-transfer-tabs.component';
 import { TransferFileDialogComponent } from '../transfer-file-dialog/transfer-file-dialog.component';
 import { FileTransferIconComponent } from './file-transfer-icon.component';
@@ -41,8 +39,6 @@ const defaultInterval = 'NO_LIMIT';
   imports: [
     FileTransferIconComponent,
     FileTransferTabsComponent,
-    InstancePageTemplateComponent,
-    InstanceToolbarComponent,
     WebappSdkModule,
   ],
 })

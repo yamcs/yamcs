@@ -1,7 +1,7 @@
 @if (command$ | async; as command) {
-  <app-instance-page>
-    <app-instance-toolbar>
-      <ng-template app-instance-toolbar-label>
+  <ya-instance-page>
+    <ya-instance-toolbar>
+      <ng-template ya-instance-toolbar-label>
         @if (command.qualifiedName | spaceSystemName; as spaceSystemName) {
           <a
             routerLink="/mdb/commands"
@@ -13,10 +13,10 @@
           <ya-title-copy [text]="command.qualifiedName" />
         }
       </ng-template>
-    </app-instance-toolbar>
+    </ya-instance-toolbar>
 
     <ya-panel>
       <app-command-detail [command]="command" />
     </ya-panel>
-  </app-instance-page>
+  </ya-instance-page>
 }

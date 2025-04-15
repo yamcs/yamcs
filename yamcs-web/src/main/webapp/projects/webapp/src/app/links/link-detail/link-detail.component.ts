@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import {
   ActionInfo,
+  AuthService,
   Link,
   MessageService,
   WebappSdkModule,
   YamcsService,
 } from '@yamcs/webapp-sdk';
-import { AuthService } from '../../core/services/AuthService';
 import { LinkStatusComponent } from '../link-status/link-status.component';
 import { LinkService } from '../shared/link.service';
 

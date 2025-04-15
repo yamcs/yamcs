@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import {
+  AuthService,
   GlobalActivityStatus,
   GlobalActivityStatusSubscription,
   WebappSdkModule,
   YamcsService,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { AuthService } from '../../core/services/AuthService';
 
 @Component({
   selector: 'app-activities-label',

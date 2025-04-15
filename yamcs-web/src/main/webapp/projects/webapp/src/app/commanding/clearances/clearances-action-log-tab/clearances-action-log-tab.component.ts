@@ -16,8 +16,6 @@ import {
   YamcsService,
   utils,
 } from '@yamcs/webapp-sdk';
-import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { ClearancesPageTabsComponent } from '../clearances-page-tabs/clearances-page-tabs.component';
 
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
@@ -26,12 +24,7 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
   selector: 'app-clearances-action-log-tab',
   templateUrl: './clearances-action-log-tab.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    ClearancesPageTabsComponent,
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    WebappSdkModule,
-  ],
+  imports: [ClearancesPageTabsComponent, WebappSdkModule],
 })
 export class ClearancesActionLogTabComponent implements OnInit {
   interval = input<string>();
