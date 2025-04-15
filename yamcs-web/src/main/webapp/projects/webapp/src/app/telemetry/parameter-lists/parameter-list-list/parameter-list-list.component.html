@@ -1,11 +1,11 @@
-<app-instance-page>
-  <app-instance-toolbar label="Parameter lists">
+<ya-instance-page>
+  <ya-instance-toolbar label="Parameter lists">
     @if (mayManageParameterLists()) {
       <ya-page-button routerLink="create" [queryParams]="{ c: yamcs.context }" icon="add_box">
         Create list
       </ya-page-button>
     }
-  </app-instance-toolbar>
+  </ya-instance-toolbar>
 
   <ya-panel>
     <ya-filter-bar>
@@ -46,4 +46,4 @@
       <ya-empty-message>No rows to display</ya-empty-message>
     }
   </ya-panel>
-</app-instance-page>
+</ya-instance-page>

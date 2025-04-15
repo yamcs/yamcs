@@ -16,13 +16,13 @@ import {
   Algorithm,
   AlgorithmOverrides,
   AlgorithmStatus,
+  AuthService,
   MessageService,
   WebappSdkModule,
   YamcsService,
 } from '@yamcs/webapp-sdk';
 import { EditorView, basicSetup } from 'codemirror';
 import { BehaviorSubject } from 'rxjs';
-import { AuthService } from '../../core/services/AuthService';
 import { MarkdownComponent } from '../../shared/markdown/markdown.component';
 import { AlgorithmStatusComponent } from '../algorithm-status/algorithm-status.component';
 

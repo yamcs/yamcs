@@ -1,0 +1,23 @@
+<h2 mat-dialog-title>Start replay processor</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="ya-form">
+    <ya-field label="Start time">
+      <ya-date-time-input formControlName="start" />
+    </ya-field>
+
+    <ya-field label="Stop time" hint="(optional)">
+      <ya-date-time-input formControlName="stop" />
+    </ya-field>
+
+    <ya-field label="Processor name">
+      <input type="text" formControlName="name" />
+      <span class="hint">Must be unique. Other users can join your replay via this name</span>
+    </ya-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <ya-button mat-dialog-close>CANCEL</ya-button>
+  <ya-button appearance="primary" (click)="start()" [disabled]="!form.valid">START</ya-button>
+</mat-dialog-actions>

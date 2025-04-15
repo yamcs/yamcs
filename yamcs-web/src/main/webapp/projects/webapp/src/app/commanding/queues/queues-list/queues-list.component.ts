@@ -19,21 +19,12 @@ import {
   YamcsService,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
-import { AppInstanceToolbarLabel } from '../../../shared/instance-toolbar/instance-toolbar-label.directive';
-import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { SignificanceLevelComponent } from '../../../shared/significance-level/significance-level.component';
 
 @Component({
   templateUrl: './queues-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AppInstanceToolbarLabel,
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    WebappSdkModule,
-    SignificanceLevelComponent,
-  ],
+  imports: [WebappSdkModule, SignificanceLevelComponent],
 })
 export class QueuesListComponent implements AfterViewInit, OnDestroy {
   connectionInfo$: Observable<ConnectionInfo | null>;

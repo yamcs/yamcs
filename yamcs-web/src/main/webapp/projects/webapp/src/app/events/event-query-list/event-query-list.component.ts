@@ -8,20 +8,13 @@ import {
   YamcsService,
   YaSelectOption,
 } from '@yamcs/webapp-sdk';
-import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { EditEventQueryDialogComponent } from '../edit-event-query-dialog/edit-event-query-dialog.component';
 import { EventsPageTabsComponent } from '../events-page-tabs/events-page-tabs.component';
 
 @Component({
   selector: 'app-event-query-list',
   templateUrl: './event-query-list.component.html',
-  imports: [
-    InstancePageTemplateComponent,
-    InstanceToolbarComponent,
-    EventsPageTabsComponent,
-    WebappSdkModule,
-  ],
+  imports: [EventsPageTabsComponent, WebappSdkModule],
 })
 export class EventQueryListComponent {
   displayedColumns = ['name', 'visibility', 'actions'];

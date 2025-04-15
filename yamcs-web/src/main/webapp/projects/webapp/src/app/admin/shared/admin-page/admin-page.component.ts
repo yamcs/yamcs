@@ -1,13 +1,13 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import {
+  AuthService,
   ConfigService,
   User,
   WebappSdkModule,
   WebsiteConfig,
 } from '@yamcs/webapp-sdk';
 import { Subscription, filter } from 'rxjs';
-import { AuthService } from '../../../core/services/AuthService';
 
 @Component({
   templateUrl: './admin-page.component.html',

@@ -9,6 +9,7 @@ import { javascript } from '@codemirror/lang-javascript';
 import { EditorState, Extension } from '@codemirror/state';
 import { keymap } from '@codemirror/view';
 import {
+  AuthService,
   ConfigService,
   MessageService,
   StorageClient,
@@ -17,7 +18,6 @@ import {
 } from '@yamcs/webapp-sdk';
 import { EditorView, basicSetup } from 'codemirror';
 import { BehaviorSubject } from 'rxjs';
-import { AuthService } from '../../../../core/services/AuthService';
 import { Viewer } from '../Viewer';
 
 @Component({

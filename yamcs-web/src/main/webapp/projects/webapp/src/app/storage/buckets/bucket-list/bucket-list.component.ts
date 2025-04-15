@@ -12,13 +12,13 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
+  AuthService,
   Bucket,
   MessageService,
   StorageClient,
   WebappSdkModule,
   YamcsService,
 } from '@yamcs/webapp-sdk';
-import { AuthService } from '../../../core/services/AuthService';
 import { StoragePageTemplateComponent } from '../../storage-page-template/storage-page-template.component';
 import { StorageToolbarComponent } from '../../storage-toolbar/storage-toolbar.component';
 import { CreateBucketDialogComponent } from '../create-bucket-dialog/create-bucket-dialog.component';

@@ -14,8 +14,6 @@ import {
   YamcsService,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { CommandDetailComponent } from '../../command-history/command-detail/command-detail.component';
 import { SendCommandWizardStepComponent } from '../send-command-wizard-step/send-command-wizard-step.component';
 
@@ -24,8 +22,6 @@ import { SendCommandWizardStepComponent } from '../send-command-wizard-step/send
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommandDetailComponent,
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
     SendCommandWizardStepComponent,
     WebappSdkModule,
   ],

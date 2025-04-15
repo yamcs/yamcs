@@ -1,9 +1,8 @@
 import { Component } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ConfigService, WebappSdkModule } from '@yamcs/webapp-sdk';
+import { AuthService, ConfigService, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { AuthService } from '../../../../core/services/AuthService';
 import { SelectParameterDialogComponent } from '../../../../shared/select-parameter-dialog/select-parameter-dialog.component';
 import { ExportArchiveDataDialogComponent } from '../../export-archive-data-dialog/export-archive-data-dialog.component';
 import { ParameterTableViewerComponent } from '../parameter-table-viewer/parameter-table-viewer.component';

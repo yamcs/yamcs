@@ -11,10 +11,6 @@ import {
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { AuthService } from '../../core/services/AuthService';
-import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
-import { AppInstanceToolbarLabel } from '../../shared/instance-toolbar/instance-toolbar-label.directive';
-import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { AcknowledgeAlarmDialogComponent } from '../acknowledge-alarm-dialog/acknowledge-alarm-dialog.component';
 import { AlarmDetailComponent } from '../alarm-detail/alarm-detail.component';
 import { AlarmsPageTabsComponent } from '../alarms-page-tabs/alarms-page-tabs.component';
@@ -27,12 +23,9 @@ import { ShelveAlarmDialogComponent } from '../shelve-alarm-dialog/shelve-alarm-
   styleUrl: './active-alarm-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    AppInstanceToolbarLabel,
     AlarmDetailComponent,
     AlarmsPageTabsComponent,
     AlarmsTableComponent,
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
     WebappSdkModule,
   ],
 })
@@ -76,7 +69,6 @@ export class ActiveAlarmListComponent
   constructor(
     private route: ActivatedRoute,
     private dialog: MatDialog,
-    private authService: AuthService,
   ) {
     super();
     this.setTitle('Alarms');

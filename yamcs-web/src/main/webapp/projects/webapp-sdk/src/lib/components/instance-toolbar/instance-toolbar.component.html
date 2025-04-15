@@ -1,11 +1,11 @@
-<div class="app-instance-toolbar-label">
+<div class="ya-instance-toolbar-label">
   @if (templateLabel) {
     <ng-template [cdkPortalOutlet]="templateLabel" />
   } @else {
     {{ textLabel() }}
   }
 </div>
-<div class="app-instance-toolbar-content">
+<div class="ya-instance-toolbar-content">
   <ng-content />
 </div>
 
@@ -30,7 +30,7 @@
           PLAY
         </ya-page-button>
       }
-      @if (showRange$ | async) {
+      @if (showRange()) {
         <ya-text-action class="range" matTooltip="Lookback period" [matMenuTriggerFor]="rangeMenu">
           {{ range$ | async | duration }} ▾
         </ya-text-action>

@@ -1,5 +1,5 @@
-<app-instance-page>
-  <app-instance-toolbar label="Activities">
+<ya-instance-page>
+  <ya-instance-toolbar label="Activities">
     @if (mayControlActivities()) {
       <ya-page-button
         [disabled]="!isGroupCancelEnabled()"
@@ -8,7 +8,7 @@
         Cancel
       </ya-page-button>
     }
-  </app-instance-toolbar>
+  </ya-instance-toolbar>
 
   <ya-panel>
     <ya-filter-bar [formGroup]="filterForm">
@@ -195,4 +195,4 @@
       <span style="flex: 1 1 auto"></span>
     </mat-toolbar>
   </ya-panel>
-</app-instance-page>
+</ya-instance-page>

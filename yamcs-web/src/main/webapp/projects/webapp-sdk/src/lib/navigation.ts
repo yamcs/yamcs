@@ -21,15 +21,3 @@ export interface NavItem {
    */
   order?: number;
 }
-
-export interface PageSettings {
-  /**
-   * Disable automatic padding around the page content.
-   */
-  disablePadding?: boolean;
-
-  /**
-   * Disable automatic scrollbars around the page content.
-   */
-  disableScroll?: boolean;
-}

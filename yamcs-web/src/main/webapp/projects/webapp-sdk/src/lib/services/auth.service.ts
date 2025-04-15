@@ -1,18 +1,18 @@
 import { APP_BASE_HREF } from '@angular/common';
 import { Inject, Injectable, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import {
   AuthInfo,
-  ConfigService,
   HttpHandler,
   OpenIDConnectInfo,
-  Synchronizer,
   TokenResponse,
-  User,
   UserInfo,
-  YamcsService,
-} from '@yamcs/webapp-sdk';
-import { BehaviorSubject, Subscription } from 'rxjs';
+} from '../client';
+import { User } from '../User';
+import { ConfigService } from './config.service';
+import { Synchronizer } from './synchronizer.service';
+import { YamcsService } from './yamcs.service';
 
 export interface Claims {
   iss: string;

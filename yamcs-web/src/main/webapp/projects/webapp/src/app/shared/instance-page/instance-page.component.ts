@@ -16,6 +16,7 @@ import {
 import { NavigationEnd, Router } from '@angular/router';
 import {
   AppearanceService,
+  AuthService,
   ConfigService,
   ConnectionInfo,
   ExtensionService,
@@ -29,7 +30,6 @@ import {
 } from '@yamcs/webapp-sdk';
 import { Observable, Subscription, of } from 'rxjs';
 import { debounceTime, filter, map, switchMap } from 'rxjs/operators';
-import { AuthService } from '../../core/services/AuthService';
 import { ActivitiesLabelComponent } from '../activities-label/activities-label.component';
 import { AlarmLabelComponent } from '../alarm-label/alarm-label.component';
 

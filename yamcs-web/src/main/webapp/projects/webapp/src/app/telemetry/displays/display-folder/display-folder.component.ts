@@ -11,6 +11,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import {
+  AuthService,
   ConfigService,
   ListObjectsOptions,
   ListObjectsResponse,
@@ -21,10 +22,7 @@ import {
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { AuthService } from '../../../core/services/AuthService';
 import * as dnd from '../../../shared/dnd';
-import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { CreateDisplayDialogComponent } from '../create-display-dialog/create-display-dialog.component';
 import { CreateDisplayFolderDialogComponent } from '../create-display-folder-dialog/create-display-folder-dialog.component';
 import { RenameDisplayDialogComponent } from '../rename-display-dialog/rename-display-dialog.component';
@@ -34,12 +32,7 @@ import { DisplayTypePipe } from './display-type.pipe';
   templateUrl: './display-folder.component.html',
   styleUrl: './display-folder.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    DisplayTypePipe,
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    WebappSdkModule,
-  ],
+  imports: [DisplayTypePipe, WebappSdkModule],
 })
 export class DisplayFolderComponent implements OnDestroy {
   @ViewChild('droparea', { static: true })

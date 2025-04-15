@@ -1,7 +1,7 @@
 @if (parameter$ | async; as parameter) {
-  <app-instance-page>
-    <app-instance-toolbar>
-      <ng-template app-instance-toolbar-label>
+  <ya-instance-page>
+    <ya-instance-toolbar>
+      <ng-template ya-instance-toolbar-label>
         @if (parameter.qualifiedName | spaceSystemName; as spaceSystemName) {
           <a
             routerLink="/mdb/parameters"
@@ -13,9 +13,9 @@
           <ya-title-copy [text]="parameter.qualifiedName + ((offset$ | async) || '')" />
         }
       </ng-template>
-    </app-instance-toolbar>
+    </ya-instance-toolbar>
     <ya-panel>
       <app-parameter-detail [parameter]="parameter" [offset]="offset$ | async" />
     </ya-panel>
-  </app-instance-page>
+  </ya-instance-page>
 }

@@ -17,8 +17,6 @@ import {
   YamcsService,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { EditCommandBandComponent } from '../command-band/edit-command-band/edit-command-band.component';
 import { EditItemBandComponent } from '../item-band/edit-item-band/edit-item-band.component';
 import { EditParameterPlotComponent } from '../parameter-plot/edit-parameter-plot/edit-parameter-plot.component';
@@ -37,8 +35,6 @@ import { EditTimeRulerComponent } from '../time-ruler/edit-time-ruler/edit-time-
     EditParameterStatesComponent,
     EditSpacerComponent,
     EditTimeRulerComponent,
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
     WebappSdkModule,
   ],
 })

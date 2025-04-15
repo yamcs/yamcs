@@ -1,0 +1,8 @@
+.title-bar {
+  display: flex;
+  align-items: center;
+}
+
+.title-bar .material-symbols {
+  padding-right: 4px;
+}
