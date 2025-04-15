@@ -1,6 +1,7 @@
 @if (item$ | async; as item) {
   <app-instance-page>
-    <app-instance-toolbar>Edit item</app-instance-toolbar>
+    <app-instance-toolbar label="Edit item" />
+
     <div class="form-content ya-form">
       <form [formGroup]="form" novalidate autocomplete="off">
         <ya-field label="Name" hint="(required)">

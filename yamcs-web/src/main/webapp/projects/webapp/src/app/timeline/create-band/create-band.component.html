@@ -1,7 +1,9 @@
 <app-instance-page>
   <app-instance-toolbar>
-    <ya-page-icon-button routerLink=".." [queryParams]="{ c: yamcs.context }" icon="arrow_back" />
-    Create band
+    <ng-template app-instance-toolbar-label>
+      <ya-page-icon-button routerLink=".." [queryParams]="{ c: yamcs.context }" icon="arrow_back" />
+      Create band
+    </ng-template>
   </app-instance-toolbar>
 
   <app-create-band-wizard-step step="1"></app-create-band-wizard-step>

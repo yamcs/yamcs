@@ -1,9 +1,6 @@
 <app-instance-page>
-  <app-instance-toolbar>
-    Items &nbsp;&nbsp;&nbsp;
-    <ya-page-button [matMenuTriggerFor]="itemMenu" icon="add_circle_outline">
-      Create item
-    </ya-page-button>
+  <app-instance-toolbar label="Items">
+    <ya-page-button [matMenuTriggerFor]="itemMenu" icon="add_box">Create item</ya-page-button>
     <mat-menu #itemMenu="matMenu" class="ya-menu" [overlapTrigger]="false">
       <button
         mat-menu-item

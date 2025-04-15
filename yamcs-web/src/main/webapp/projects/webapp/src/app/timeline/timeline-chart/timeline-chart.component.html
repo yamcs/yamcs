@@ -1,7 +1,5 @@
 <app-instance-page [noscroll]="true">
-  <app-instance-toolbar>
-    Timeline chart &nbsp;&nbsp;&nbsp;
-
+  <app-instance-toolbar label="Timeline chart">
     @if (views$ | async; as views) {
       @if ((view$ | async) && mayControlTimeline()) {
         <ya-page-button
@@ -20,7 +18,7 @@
         }
         <mat-divider />
         <a mat-menu-item routerLink="/timeline/views/create" [queryParams]="{ c: yamcs.context }">
-          <mat-icon>add_circle_outline</mat-icon>
+          <mat-icon>add_circle</mat-icon>
           Create view
         </a>
       </mat-menu>
@@ -31,7 +29,7 @@
         <ya-page-button
           routerLink="/timeline/views/create"
           [queryParams]="{ c: yamcs.context }"
-          icon="add_circle_outline">
+          icon="add_circle">
           Create view
         </ya-page-button>
       }
@@ -41,9 +39,7 @@
         </ya-page-button>
       }
       @if (view$ | async) {
-        <ya-page-button [matMenuTriggerFor]="itemMenu" icon="add_circle_outline">
-          Add item
-        </ya-page-button>
+        <ya-page-button [matMenuTriggerFor]="itemMenu" icon="add_box">Add item</ya-page-button>
       }
       <mat-menu #itemMenu="matMenu" class="ya-menu" [overlapTrigger]="false">
         <button

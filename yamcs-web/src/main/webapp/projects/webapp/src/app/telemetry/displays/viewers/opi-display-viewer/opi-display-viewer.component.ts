@@ -15,8 +15,8 @@ import {
   PV,
   PVProvider,
   Sample,
+  Widget,
 } from '@yamcs/opi';
-import { Widget } from '@yamcs/opi/dist/types/Widget';
 import {
   ConfigService,
   Formatter,

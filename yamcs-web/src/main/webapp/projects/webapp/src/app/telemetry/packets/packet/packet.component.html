@@ -1,14 +1,16 @@
 @if (packet$ | async; as packet) {
   <app-instance-page>
     <app-instance-toolbar>
-      <ya-page-icon-button
-        routerLink="/telemetry/packets"
-        [queryParams]="{ c: yamcs.context }"
-        icon="arrow_back" />
-      {{ packet.id.name }} / {{ packet.generationTime }} / {{ packet.sequenceNumber }}
-      &nbsp;&nbsp;&nbsp;
-      <ya-page-button (clicked)="expandAll()" icon="unfold_more">Expand all</ya-page-button>
-      <ya-page-button (clicked)="collapseAll()" icon="unfold_less">Collapse all</ya-page-button>
+      <ng-template app-instance-toolbar-label>
+        <ya-page-icon-button
+          routerLink="/telemetry/packets"
+          [queryParams]="{ c: yamcs.context }"
+          icon="arrow_back" />
+        {{ packet.id.name }} / {{ packet.generationTime }} / {{ packet.sequenceNumber }}
+        &nbsp;&nbsp;&nbsp;
+        <ya-page-button (clicked)="expandAll()" icon="unfold_more">Expand all</ya-page-button>
+        <ya-page-button (clicked)="collapseAll()" icon="unfold_less">Collapse all</ya-page-button>
+      </ng-template>
     </app-instance-toolbar>
 
     <ya-detail-pane [alwaysOpen]="true">

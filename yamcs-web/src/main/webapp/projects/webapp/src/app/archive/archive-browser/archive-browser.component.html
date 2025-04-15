@@ -1,6 +1,5 @@
 <app-instance-page noscroll="true">
-  <app-instance-toolbar>
-    Archive browser &nbsp;&nbsp;&nbsp;
+  <app-instance-toolbar label="Archive browser">
     <ya-page-button
       (clicked)="replayRange()"
       [disabled]="!(rangeSelection$ | async)"
@@ -26,7 +25,9 @@
       Download dump
     </ya-page-button>
 
-    <ya-page-icon-button (click)="refreshData()" matTooltip="Refresh view" icon="refresh" />
+    <ya-page-button (clicked)="refreshData()" matTooltip="Refresh view" icon="refresh">
+      Refresh
+    </ya-page-button>
   </app-instance-toolbar>
 
   <div style="height: 24px; margin: 6px">

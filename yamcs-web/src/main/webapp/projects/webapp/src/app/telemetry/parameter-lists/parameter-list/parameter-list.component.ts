@@ -11,12 +11,14 @@ import {
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../../core/services/AuthService';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
+import { AppInstanceToolbarLabel } from '../../../shared/instance-toolbar/instance-toolbar-label.directive';
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 
 @Component({
   templateUrl: './parameter-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    AppInstanceToolbarLabel,
     InstanceToolbarComponent,
     InstancePageTemplateComponent,
     WebappSdkModule,

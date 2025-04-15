@@ -1,6 +1,7 @@
 @if (band$ | async; as band) {
   <app-instance-page>
-    <app-instance-toolbar>Edit band</app-instance-toolbar>
+    <app-instance-toolbar label="Edit band" />
+
     <div class="form-content ya-form">
       <form [formGroup]="form" novalidate autocomplete="off">
         @if (band.type === "ITEM_BAND") {

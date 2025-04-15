@@ -1,17 +1,20 @@
 @if (container$ | async; as container) {
   <app-instance-page>
     <app-instance-toolbar>
-      @if (container.qualifiedName | spaceSystemName; as spaceSystemName) {
-        <a
-          routerLink="/mdb/containers"
-          [queryParams]="{ c: yamcs.context, filter: spaceSystemName }"
-          class="ya-link ya-header-link">
-          {{ spaceSystemName }}
-        </a>
-        /{{ container.qualifiedName | shortName }}
-        <ya-title-copy [text]="container.qualifiedName" />
-      }
+      <ng-template app-instance-toolbar-label>
+        @if (container.qualifiedName | spaceSystemName; as spaceSystemName) {
+          <a
+            routerLink="/mdb/containers"
+            [queryParams]="{ c: yamcs.context, filter: spaceSystemName }"
+            class="ya-link ya-header-link">
+            {{ spaceSystemName }}
+          </a>
+          /{{ container.qualifiedName | shortName }}
+          <ya-title-copy [text]="container.qualifiedName" />
+        }
+      </ng-template>
     </app-instance-toolbar>
+
     <ya-panel>
       <app-container-detail [container]="container" />
     </ya-panel>
