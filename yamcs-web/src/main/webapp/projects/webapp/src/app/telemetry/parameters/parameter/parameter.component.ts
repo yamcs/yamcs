@@ -26,12 +26,14 @@ import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/insta
 import { SetParameterDialogComponent } from '../set-parameter-dialog/set-parameter-dialog.component';
 
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
+import { AppInstanceToolbarLabel } from '../../../shared/instance-toolbar/instance-toolbar-label.directive';
 
 @Component({
   templateUrl: './parameter.component.html',
   styleUrl: './parameter.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    AppInstanceToolbarLabel,
     InstanceToolbarComponent,
     InstancePageTemplateComponent,
     WebappSdkModule,

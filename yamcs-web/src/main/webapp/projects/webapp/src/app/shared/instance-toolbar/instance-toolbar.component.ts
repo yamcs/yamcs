@@ -1,29 +1,85 @@
-import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { CdkPortalOutlet } from '@angular/cdk/portal';
+import { AsyncPipe } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ContentChild,
+  input,
+  OnDestroy,
+} from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { MatIcon } from '@angular/material/icon';
+import { MatDivider } from '@angular/material/list';
+import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatTooltip } from '@angular/material/tooltip';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   AppearanceService,
   ConnectionInfo,
+  DateTimePipe,
+  DurationPipe,
   MessageService,
   Processor,
   ProcessorSubscription,
-  WebappSdkModule,
+  YaIconAction,
   YamcsService,
+  YaPageButton,
+  YaTextAction,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, map, Observable, Subscription } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 import { SessionExpiredDialogComponent } from '../session-expired-dialog/session-expired-dialog.component';
 import { StartReplayDialogComponent } from '../start-replay-dialog/start-replay-dialog.component';
+import {
+  APP_INSTANCE_TOOLBAR,
+  AppInstanceToolbarLabel,
+} from './instance-toolbar-label.directive';
 
 @Component({
   selector: 'app-instance-toolbar',
   templateUrl: './instance-toolbar.component.html',
   styleUrl: './instance-toolbar.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [WebappSdkModule],
+  providers: [
+    {
+      provide: APP_INSTANCE_TOOLBAR,
+      useExisting: InstanceToolbarComponent,
+    },
+  ],
+  imports: [
+    AsyncPipe,
+    CdkPortalOutlet,
+    DateTimePipe,
+    DurationPipe,
+    MatDivider,
+    MatIcon,
+    MatMenu,
+    MatMenuItem,
+    MatMenuTrigger,
+    MatTooltip,
+    YaIconAction,
+    YaPageButton,
+    YaTextAction,
+  ],
 })
 export class InstanceToolbarComponent implements OnDestroy {
+  // Plain text label, used when there is no template label
+  textLabel = input<string | undefined>(undefined, { alias: 'label' });
+
+  private _templateLabel: AppInstanceToolbarLabel;
+
+  // Content for the attr label given by `<ng-template app-instance-toolbar-label>`
+  @ContentChild(AppInstanceToolbarLabel)
+  get templateLabel(): AppInstanceToolbarLabel {
+    return this._templateLabel;
+  }
+  set templateLabel(value: AppInstanceToolbarLabel | undefined) {
+    if (value && value._closestToolbar === this) {
+      this._templateLabel = value;
+    }
+  }
+
   processor$ = new BehaviorSubject<Processor | null>(null);
   processorSubscription: ProcessorSubscription;
 

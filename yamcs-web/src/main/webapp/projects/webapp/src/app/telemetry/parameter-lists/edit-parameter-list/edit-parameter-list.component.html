@@ -1,6 +1,7 @@
 @if (plist$ | async; as plist) {
   <app-instance-page>
-    <app-instance-toolbar>Edit list: {{ plist.name }}</app-instance-toolbar>
+    <app-instance-toolbar [label]="'Edit list: ' + plist.name" />
+
     <div class="form-content ya-form">
       <form [formGroup]="form" novalidate>
         <ya-field label="Name">
@@ -13,7 +14,7 @@
 
         <ya-field-divider />
 
-        <ya-button (click)="showAddPatternDialog()" icon="add_circle_outline">
+        <ya-button (click)="showAddPatternDialog()" icon="add_circle">
           Add parameter or pattern
         </ya-button>
 

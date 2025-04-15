@@ -1,20 +1,22 @@
 @if (parameter$ | async; as parameter) {
   <app-instance-page>
     <app-instance-toolbar>
-      @for (parent of parameter.qualifiedName | parents; track parent; let isFirst = $first) {
-        @if (!isFirst) {
-          <a
-            routerLink="/telemetry/parameters"
-            class="ya-link ya-header-link"
-            [queryParams]="{ c: yamcs.context, system: parent.path }">
-            {{ parent.name }}
-          </a>
+      <ng-template app-instance-toolbar-label>
+        @for (parent of parameter.qualifiedName | parents; track parent; let isFirst = $first) {
+          @if (!isFirst) {
+            <a
+              routerLink="/telemetry/parameters"
+              class="ya-link ya-header-link"
+              [queryParams]="{ c: yamcs.context, system: parent.path }">
+              {{ parent.name }}
+            </a>
+          }
+          /
         }
-        /
-      }
-      <span>{{ parameter.qualifiedName | shortName }}{{ offset$ | async }}</span>
-      <ya-title-copy [text]="parameter.qualifiedName + ((offset$ | async) || '')" />
-      &nbsp;&nbsp;&nbsp;
+        <span>{{ parameter.qualifiedName | shortName }}{{ offset$ | async }}</span>
+        <ya-title-copy [text]="parameter.qualifiedName + ((offset$ | async) || '')" />
+      </ng-template>
+
       @if (isWritable() && maySetParameter() && !(offset$ | async)) {
         <ya-page-button (clicked)="setParameter()" icon="edit">Set value</ya-page-button>
       }

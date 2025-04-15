@@ -16,6 +16,7 @@ import {
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
+import { AppInstanceToolbarLabel } from '../../shared/instance-toolbar/instance-toolbar-label.directive';
 import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { BandMultiSelectComponent } from '../shared/band-multi-select/band-multi-select.component';
 
@@ -23,6 +24,7 @@ import { BandMultiSelectComponent } from '../shared/band-multi-select/band-multi
   templateUrl: './edit-view.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    AppInstanceToolbarLabel,
     BandMultiSelectComponent,
     InstanceToolbarComponent,
     InstancePageTemplateComponent,
@@ -44,7 +46,7 @@ export class EditViewComponent implements OnDestroy {
     readonly location: Location,
     formBuilder: UntypedFormBuilder,
   ) {
-    title.setTitle('Edit View');
+    title.setTitle('Edit view');
     const id = route.snapshot.paramMap.get('view')!;
     this.form = formBuilder.group({
       name: [null, Validators.required],

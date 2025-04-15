@@ -1,11 +1,7 @@
 <app-instance-page>
-  <app-instance-toolbar>
-    Parameter lists &nbsp;&nbsp;&nbsp;
+  <app-instance-toolbar label="Parameter lists">
     @if (mayManageParameterLists()) {
-      <ya-page-button
-        routerLink="create"
-        [queryParams]="{ c: yamcs.context }"
-        icon="add_circle_outline">
+      <ya-page-button routerLink="create" [queryParams]="{ c: yamcs.context }" icon="add_box">
         Create list
       </ya-page-button>
     }

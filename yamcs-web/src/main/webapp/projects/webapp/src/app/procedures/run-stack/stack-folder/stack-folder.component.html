@@ -1,10 +1,7 @@
 <app-instance-page>
-  <app-instance-toolbar>
-    Stacks &nbsp;&nbsp;&nbsp;
+  <app-instance-toolbar label="Stacks">
     @if (mayManageStacks()) {
-      <ya-page-button (clicked)="createStack()" icon="add_circle_outline">
-        Create stack
-      </ya-page-button>
+      <ya-page-button (clicked)="createStack()" icon="add_box">Create stack</ya-page-button>
     }
     @if (mayManageStacks()) {
       <ya-page-button (clicked)="openUploadDialog()" icon="file_upload">

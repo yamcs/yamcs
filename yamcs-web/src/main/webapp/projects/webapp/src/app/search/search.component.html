@@ -1,12 +1,14 @@
 <app-instance-page>
-  <app-instance-toolbar>Search results</app-instance-toolbar>
+  <app-instance-toolbar label="Search results" />
 
   <ya-panel>
     @if (result$ | async; as result) {
       <div style="margin-bottom: 1em">
-        Showing {{ result.resources.length }} of {{ result.totalSize }} result
+        Showing {{ result.resources.length }} of {{ result.totalSize }}
         @if (result.totalSize !== 1) {
-          s
+          results
+        } @else {
+          result
         }
         for "{{ term$ | async }}".
       </div>
