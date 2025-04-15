@@ -12,6 +12,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { Clearance, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
+import { AppInstanceToolbarLabel } from '../../../shared/instance-toolbar/instance-toolbar-label.directive';
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { SignificanceLevelComponent } from '../../../shared/significance-level/significance-level.component';
 import { ChangeLevelDialogComponent } from '../change-level-dialog/change-level-dialog.component';
@@ -21,6 +22,7 @@ import { ClearancesPageTabsComponent } from '../clearances-page-tabs/clearances-
   templateUrl: './clearances-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    AppInstanceToolbarLabel,
     ClearancesPageTabsComponent,
     InstanceToolbarComponent,
     InstancePageTemplateComponent,

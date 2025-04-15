@@ -1,9 +1,14 @@
 @if (link$ | async; as link) {
   <app-instance-page>
     <app-instance-toolbar>
-      <ya-page-icon-button routerLink=".." [queryParams]="{ c: yamcs.context }" icon="arrow_back" />
-      Links / {{ link.name }}
-      &nbsp;&nbsp;&nbsp;
+      <ng-template app-instance-toolbar-label>
+        <ya-page-icon-button
+          routerLink=".."
+          [queryParams]="{ c: yamcs.context }"
+          icon="arrow_back" />
+        Links / {{ link.name }}
+      </ng-template>
+
       @if (mayControlLinks()) {
         <ya-page-button [disabled]="!link.disabled" (clicked)="enableLink(link.name)" icon="link">
           Enable
@@ -42,6 +47,7 @@
         </ng-template>
       </mat-menu>
     </app-instance-toolbar>
+
     <div class="form-content">
       <dl class="dl-horizontal" style="margin-top: 0">
         <dt>Type</dt>

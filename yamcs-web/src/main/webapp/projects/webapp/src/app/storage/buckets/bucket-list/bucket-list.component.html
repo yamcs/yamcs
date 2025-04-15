@@ -2,9 +2,7 @@
   <app-storage-toolbar>
     Storage &nbsp;&nbsp;&nbsp;
     @if (mayManageBuckets()) {
-      <ya-page-button (clicked)="createBucket()" icon="add_circle_outline">
-        Create bucket
-      </ya-page-button>
+      <ya-page-button (clicked)="createBucket()" icon="add_box">Create bucket</ya-page-button>
     }
     @if (mayManageBuckets()) {
       <ya-page-button

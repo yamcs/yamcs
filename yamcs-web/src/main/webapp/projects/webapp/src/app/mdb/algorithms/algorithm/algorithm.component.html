@@ -1,16 +1,18 @@
 @if (algorithm$ | async; as algorithm) {
   <app-instance-page>
     <app-instance-toolbar>
-      @if (algorithm.qualifiedName | spaceSystemName; as spaceSystemName) {
-        <a
-          routerLink="/mdb/algorithms"
-          [queryParams]="{ c: yamcs.context, filter: spaceSystemName }"
-          class="ya-link ya-header-link">
-          {{ spaceSystemName }}
-        </a>
-        /{{ algorithm.qualifiedName | shortName }}
-        <ya-title-copy [text]="algorithm.qualifiedName" />
-      }
+      <ng-template app-instance-toolbar-label>
+        @if (algorithm.qualifiedName | spaceSystemName; as spaceSystemName) {
+          <a
+            routerLink="/mdb/algorithms"
+            [queryParams]="{ c: yamcs.context, filter: spaceSystemName }"
+            class="ya-link ya-header-link">
+            {{ spaceSystemName }}
+          </a>
+          /{{ algorithm.qualifiedName | shortName }}
+          <ya-title-copy [text]="algorithm.qualifiedName" />
+        }
+      </ng-template>
     </app-instance-toolbar>
     <ya-panel>
       <app-algorithm-detail [algorithm]="algorithm" />

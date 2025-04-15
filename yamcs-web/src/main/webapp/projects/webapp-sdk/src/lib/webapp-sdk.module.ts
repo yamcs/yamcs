@@ -23,17 +23,13 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
-import {
-  YaAttr,
-  YaAttrDivider,
-  YaAttrLabel,
-  YaAttrList,
-  YaFilterBar,
-  YaPrintZoneHide,
-  YaPrintZoneShow,
-  YaToolbar,
-} from '../public-api';
+import { YaPrintZoneHide } from '../lib/print/print-zone-hide.directive';
+import { YaPrintZoneShow } from '../lib/print/print-zone-show.directive';
 import { YaActionLogSummary } from './components/action-log-summary/action-log-summary.component';
+import { YaAttrDivider } from './components/attr-list/attr-divider.component';
+import { YaAttrLabel } from './components/attr-list/attr-label.directive';
+import { YaAttrList } from './components/attr-list/attr-list.component';
+import { YaAttr } from './components/attr-list/attr.component';
 import { YaBinaryInput } from './components/binary-input/binary-input.component';
 import { YaBreadcrumbTrail } from './components/breadcrumb/breadcrumb-trail.component';
 import { YaBreadcrumb } from './components/breadcrumb/breadcrumb.component';
@@ -53,6 +49,7 @@ import { YaExpirable } from './components/expirable/expirable.component';
 import { YaFieldDivider } from './components/field-divider/field-divider.component';
 import { YaFieldLabel } from './components/field/field-label.directive';
 import { YaField } from './components/field/field.component';
+import { YaFilterBar } from './components/filter-bar/filter-bar.component';
 import { YaFilterInput } from './components/filter/filter-input.component';
 import { YaFilterTextarea } from './components/filter/filter-textarea.component';
 import { YaHelp } from './components/help/help.component';
@@ -88,7 +85,9 @@ import { YaTagSelect } from './components/tag-select/tag-select.component';
 import { YaTextAction } from './components/text-action/text-action.component';
 import { YaTimezoneSelect } from './components/timezone-select/timezone-select.component';
 import { YaTitleCopy } from './components/title-copy/title-copy.component';
+import { YaToolbar } from './components/toolbar/toolbar.component';
 import { YaValue } from './components/value/value.component';
+import { YaVerticalDivider } from './components/vertical-divider/vertical-divider.component';
 import { YaWarningMessage } from './components/warning-message/warning-message.component';
 import { DataTableDirective } from './directives/data-table.directive';
 import { SimpleTableDirective } from './directives/simple-table.directive';
@@ -236,6 +235,7 @@ const sharedComponents = [
   YaTitleCopy,
   YaToolbar,
   YaValue,
+  YaVerticalDivider,
   YaWarningMessage,
 ];
 

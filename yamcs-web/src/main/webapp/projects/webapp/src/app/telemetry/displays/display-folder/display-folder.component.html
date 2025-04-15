@@ -1,10 +1,7 @@
 <app-instance-page>
-  <app-instance-toolbar>
-    Displays &nbsp;&nbsp;&nbsp;
+  <app-instance-toolbar label="Displays">
     @if (mayManageDisplays()) {
-      <ya-page-button (clicked)="createDisplay()" icon="add_circle_outline">
-        Create display
-      </ya-page-button>
+      <ya-page-button (clicked)="createDisplay()" icon="add_box">Create display</ya-page-button>
     }
     @if (mayManageDisplays()) {
       <ya-page-button (clicked)="uploader.click()" icon="file_upload">

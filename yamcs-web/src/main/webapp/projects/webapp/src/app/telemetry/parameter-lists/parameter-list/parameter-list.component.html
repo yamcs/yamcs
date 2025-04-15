@@ -1,9 +1,14 @@
 @if (plist$ | async; as plist) {
   <app-instance-page>
     <app-instance-toolbar>
-      <ya-page-icon-button routerLink=".." [queryParams]="{ c: yamcs.context }" icon="arrow_back" />
-      {{ plist.name }}
-      &nbsp;&nbsp;&nbsp;
+      <ng-template app-instance-toolbar-label>
+        <ya-page-icon-button
+          routerLink=".."
+          [queryParams]="{ c: yamcs.context }"
+          icon="arrow_back" />
+        {{ plist.name }}
+      </ng-template>
+
       @if (mayManageParameterLists()) {
         <ya-page-button routerLink="edit" [queryParams]="{ c: yamcs.context }" icon="edit">
           Edit list

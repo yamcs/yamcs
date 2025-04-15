@@ -31,10 +31,7 @@
               matTooltip="Remove trace"
               [disabled]="traces.controls.length <= 1"
               (click)="removeTrace(i)" />
-            <ya-icon-action
-              icon="add_circle_outline"
-              matTooltip="Add trace below"
-              (click)="addTrace(i)" />
+            <ya-icon-action icon="add_circle" matTooltip="Add trace below" (click)="addTrace(i)" />
           </ya-stepper-step-actions>
 
           <app-trace-styles [form]="traceForm" />

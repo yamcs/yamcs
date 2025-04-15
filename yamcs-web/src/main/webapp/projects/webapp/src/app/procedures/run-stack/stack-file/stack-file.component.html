@@ -1,11 +1,13 @@
 <app-instance-page>
   <app-instance-toolbar>
-    <ya-page-icon-button
-      [routerLink]="folderLink"
-      [queryParams]="{ c: yamcs.context }"
-      icon="arrow_back" />
-    {{ filename | basename }}
-    &nbsp;&nbsp;&nbsp;
+    <ng-template app-instance-toolbar-label>
+      <ya-page-icon-button
+        [routerLink]="folderLink"
+        [queryParams]="{ c: yamcs.context }"
+        icon="arrow_back" />
+      {{ filename | basename }}
+    </ng-template>
+
     <ya-page-button
       matTooltip="Save stack"
       (clicked)="stackFileService.saveStack()"
@@ -13,12 +15,14 @@
       icon="save">
       Save
     </ya-page-button>
-    <mat-divider vertical style="height: 100%" />
+
+    <ya-vertical-divider />
+
     <ya-page-button
       matTooltip="Add a step below"
       [disabled]="!format || (running$ | async)"
       [matMenuTriggerFor]="addEntryMenu"
-      icon="add_circle_outline"
+      icon="add_box"
       dropdown="true">
       Add step
     </ya-page-button>
@@ -62,7 +66,9 @@
       [disabled]="!format || (running$ | async) || !(clipboardEntry$ | async)"
       (clicked)="pasteEntry()"
       icon="content_paste" />
-    <mat-divider vertical style="height: 100%" />
+
+    <ya-vertical-divider />
+
     <ya-page-icon-button
       matTooltip="Run the selected step"
       [disabled]="!format || (running$ | async) || !(selectedEntry$ | async)"
@@ -83,7 +89,9 @@
       [disabled]="!format || (running$ | async) || !(selectedEntry$ | async)"
       (clicked)="runFromSelection()"
       icon="playlist_play" />
-    <mat-divider vertical style="height: 100%" />
+
+    <ya-vertical-divider />
+
     @if (showSchedule()) {
       <ya-page-button
         matTooltip="Run stack at a later time"
@@ -93,7 +101,8 @@
         Schedule
       </ya-page-button>
     }
-    <mat-divider vertical style="height: 100%" />
+    <ya-vertical-divider />
+
     <ya-page-button
       matTooltip="Export stack"
       [matMenuTriggerFor]="exportMenu"
@@ -135,7 +144,7 @@
         Empty stack
         <br />
         Click
-        <mat-icon inline style="vertical-align: bottom">add_circle_outline</mat-icon>
+        <mat-icon inline style="vertical-align: bottom">add_box</mat-icon>
         to start adding steps
       </ya-empty-message>
     }

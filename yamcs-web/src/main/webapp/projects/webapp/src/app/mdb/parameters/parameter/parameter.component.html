@@ -1,16 +1,18 @@
 @if (parameter$ | async; as parameter) {
   <app-instance-page>
     <app-instance-toolbar>
-      @if (parameter.qualifiedName | spaceSystemName; as spaceSystemName) {
-        <a
-          routerLink="/mdb/parameters"
-          [queryParams]="{ c: yamcs.context, filter: spaceSystemName }"
-          class="ya-link ya-header-link">
-          {{ spaceSystemName }}
-        </a>
-        /{{ parameter.qualifiedName | shortName }}{{ offset$ | async }}
-        <ya-title-copy [text]="parameter.qualifiedName + ((offset$ | async) || '')" />
-      }
+      <ng-template app-instance-toolbar-label>
+        @if (parameter.qualifiedName | spaceSystemName; as spaceSystemName) {
+          <a
+            routerLink="/mdb/parameters"
+            [queryParams]="{ c: yamcs.context, filter: spaceSystemName }"
+            class="ya-link ya-header-link">
+            {{ spaceSystemName }}
+          </a>
+          /{{ parameter.qualifiedName | shortName }}{{ offset$ | async }}
+          <ya-title-copy [text]="parameter.qualifiedName + ((offset$ | async) || '')" />
+        }
+      </ng-template>
     </app-instance-toolbar>
     <ya-panel>
       <app-parameter-detail [parameter]="parameter" [offset]="offset$ | async" />

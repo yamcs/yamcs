@@ -2,9 +2,7 @@
   <div style="padding-left: 12px; padding-right: 12px; padding-top: 12px">
     @if (range$ | async; as range) {
       <div class="plot-top-actions">
-        <ya-text-action icon="add_circle_outline" (click)="compareParameter()">
-          Comparison
-        </ya-text-action>
+        <ya-text-action icon="add_circle" (click)="compareParameter()">Comparison</ya-text-action>
         <span class="separator"></span>
         <ya-text-action (click)="chooseRange()" icon="date_range" [active]="range === 'CUSTOM'">
           @if (range !== "CUSTOM") {

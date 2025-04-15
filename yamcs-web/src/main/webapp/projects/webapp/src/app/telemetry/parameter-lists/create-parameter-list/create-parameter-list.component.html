@@ -1,7 +1,9 @@
 <app-instance-page>
   <app-instance-toolbar>
-    <ya-page-icon-button routerLink=".." [queryParams]="{ c: yamcs.context }" icon="arrow_back" />
-    Create parameter list
+    <ng-template app-instance-toolbar-label>
+      <ya-page-icon-button routerLink=".." [queryParams]="{ c: yamcs.context }" icon="arrow_back" />
+      Create parameter list
+    </ng-template>
   </app-instance-toolbar>
 
   <div class="form-content ya-form">
@@ -16,7 +18,7 @@
 
       <ya-field-divider />
 
-      <ya-button (click)="showAddPatternDialog()" icon="add_circle_outline">
+      <ya-button (click)="showAddPatternDialog()" icon="add_circle">
         Add parameter or pattern
       </ya-button>
 

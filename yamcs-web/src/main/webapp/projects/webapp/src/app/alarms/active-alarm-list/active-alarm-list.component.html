@@ -1,48 +1,52 @@
 <app-instance-page>
   <app-instance-toolbar>
-    Alarms
-    <ya-help>
-      An alarm can be in these states:
-      <table class="ya-data-table">
-        <tr>
-          <td width="1">
-            <mat-icon class="icon16" style="vertical-align: middle">
-              notification_important
-            </mat-icon>
-          </td>
-          <td>The alarm is unacknowledged and the cause of the alarm still exists.</td>
-        </tr>
-        <tr>
-          <td>
-            <mat-icon class="icon16" style="vertical-align: middle">notifications_none</mat-icon>
-          </td>
-          <td>
-            The alarm is unacknowledged and the cause that generated the alarm no longer exists.
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <mat-icon class="icon16" style="vertical-align: middle">check_circle</mat-icon>
-          </td>
-          <td>The alarm is acknowledged and the cause of the alarm still exists.</td>
-        </tr>
-        <tr>
-          <td>
-            <mat-icon class="icon16" style="vertical-align: middle">check_circle_outline</mat-icon>
-          </td>
-          <td>
-            The alarm is acknowledged and the cause that generated the alarm no longer exists.
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <mat-icon class="icon16" style="vertical-align: middle">timer</mat-icon>
-          </td>
-          <td>The alarm was shelved.</td>
-        </tr>
-      </table>
-    </ya-help>
-    &nbsp;&nbsp;&nbsp;
+    <ng-template app-instance-toolbar-label>
+      Alarms
+      <ya-help>
+        An alarm can be in these states:
+        <table class="ya-data-table">
+          <tr>
+            <td width="1">
+              <mat-icon class="icon16" style="vertical-align: middle">
+                notification_important
+              </mat-icon>
+            </td>
+            <td>The alarm is unacknowledged and the cause of the alarm still exists.</td>
+          </tr>
+          <tr>
+            <td>
+              <mat-icon class="icon16" style="vertical-align: middle">notifications_none</mat-icon>
+            </td>
+            <td>
+              The alarm is unacknowledged and the cause that generated the alarm no longer exists.
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <mat-icon class="icon16" style="vertical-align: middle">check_circle</mat-icon>
+            </td>
+            <td>The alarm is acknowledged and the cause of the alarm still exists.</td>
+          </tr>
+          <tr>
+            <td>
+              <mat-icon class="icon16" style="vertical-align: middle">
+                check_circle_outline
+              </mat-icon>
+            </td>
+            <td>
+              The alarm is acknowledged and the cause that generated the alarm no longer exists.
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <mat-icon class="icon16" style="vertical-align: middle">timer</mat-icon>
+            </td>
+            <td>The alarm was shelved.</td>
+          </tr>
+        </table>
+      </ya-help>
+    </ng-template>
+
     @if (mayControlAlarms()) {
       <ya-page-button
         (clicked)="acknowledgeAlarms(selection.selected)"

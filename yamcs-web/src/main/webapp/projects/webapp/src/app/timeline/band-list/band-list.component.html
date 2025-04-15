@@ -1,10 +1,6 @@
 <app-instance-page>
-  <app-instance-toolbar>
-    Bands &nbsp;&nbsp;&nbsp;
-    <ya-page-button
-      routerLink="create"
-      [queryParams]="{ c: yamcs.context }"
-      icon="add_circle_outline">
+  <app-instance-toolbar label="Bands">
+    <ya-page-button routerLink="create" [queryParams]="{ c: yamcs.context }" icon="add_box">
       Create band
     </ya-page-button>
     <ya-page-button

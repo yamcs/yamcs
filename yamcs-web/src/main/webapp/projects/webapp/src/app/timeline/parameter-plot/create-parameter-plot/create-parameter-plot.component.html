@@ -1,5 +1,5 @@
 <app-instance-page>
-  <app-instance-toolbar>Create band</app-instance-toolbar>
+  <app-instance-toolbar label="Create band" />
 
   <app-create-band-wizard-step step="2" />
 
@@ -37,7 +37,7 @@
                 [disabled]="traces.controls.length <= 1"
                 (click)="removeTrace(i)" />
               <ya-icon-action
-                icon="add_circle_outline"
+                icon="add_circle"
                 matTooltip="Add trace below"
                 (click)="addTrace(i)" />
             </ya-stepper-step-actions>

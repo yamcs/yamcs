@@ -17,6 +17,7 @@ import {
 import { BehaviorSubject } from 'rxjs';
 import { AuthService } from '../../core/services/AuthService';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
+import { AppInstanceToolbarLabel } from '../../shared/instance-toolbar/instance-toolbar-label.directive';
 import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { InitiateCop1DialogComponent } from '../initiate-cop1-dialog/initiate-cop1-dialog.component';
 import { LinkStatusComponent } from '../link-status/link-status.component';
@@ -26,6 +27,7 @@ import { LinkService } from '../shared/link.service';
   templateUrl: './link.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    AppInstanceToolbarLabel,
     InstanceToolbarComponent,
     InstancePageTemplateComponent,
     LinkStatusComponent,

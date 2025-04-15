@@ -1,8 +1,14 @@
 @if (activity$ | async; as activity) {
   <app-instance-page>
     <app-instance-toolbar>
-      <ya-page-icon-button routerLink=".." [queryParams]="{ c: yamcs.context }" icon="arrow_back" />
-      Activity details &nbsp;&nbsp;&nbsp;
+      <ng-template app-instance-toolbar-label>
+        <ya-page-icon-button
+          routerLink=".."
+          [queryParams]="{ c: yamcs.context }"
+          icon="arrow_back" />
+        Activity details
+      </ng-template>
+
       @if (activity.type === "MANUAL" && activity.status === "RUNNING" && mayControlActivities()) {
         <ya-page-button (clicked)="setSuccessful(activity)" icon="thumb_up">
           Set successful
@@ -20,6 +26,7 @@
         </ya-page-button>
       }
     </app-instance-toolbar>
+
     <div class="activity-header">
       <div class="activity-header-left">
         <span class="title">{{ activity.detail }}</span>
@@ -33,6 +40,7 @@
         <app-activity-status [activity]="activity" />
       </div>
     </div>
+
     <nav #tabs mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
       <a
         mat-tab-link
@@ -53,6 +61,7 @@
         Details
       </a>
     </nav>
+
     <div class="tab-content-wrapper">
       <mat-tab-nav-panel #tabPanel>
         <router-outlet />

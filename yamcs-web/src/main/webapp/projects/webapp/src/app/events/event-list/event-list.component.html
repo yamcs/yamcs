@@ -1,10 +1,7 @@
 <app-instance-page>
-  <app-instance-toolbar>
-    Events &nbsp;&nbsp;&nbsp;
+  <app-instance-toolbar label="Events">
     @if (mayWriteEvents()) {
-      <ya-page-button (clicked)="createEvent()" icon="add_circle_outline">
-        Create event
-      </ya-page-button>
+      <ya-page-button (clicked)="createEvent()" icon="add_box">Create event</ya-page-button>
     }
 
     @if (dataSource.streaming$ | async) {
@@ -17,7 +14,9 @@
       </ya-page-button>
     }
 
-    <ya-page-icon-button matTooltip="Jump to now" (clicked)="jumpToNow()" icon="refresh" />
+    <ya-page-button matTooltip="Jump to now" (clicked)="jumpToNow()" icon="refresh">
+      Jump to now
+    </ya-page-button>
   </app-instance-toolbar>
 
   @if (dataSource) {

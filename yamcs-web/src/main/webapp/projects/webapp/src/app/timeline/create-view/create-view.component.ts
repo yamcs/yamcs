@@ -13,6 +13,7 @@ import {
   YamcsService,
 } from '@yamcs/webapp-sdk';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
+import { AppInstanceToolbarLabel } from '../../shared/instance-toolbar/instance-toolbar-label.directive';
 import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { BandMultiSelectComponent } from '../shared/band-multi-select/band-multi-select.component';
 
@@ -20,6 +21,7 @@ import { BandMultiSelectComponent } from '../shared/band-multi-select/band-multi
   templateUrl: './create-view.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    AppInstanceToolbarLabel,
     BandMultiSelectComponent,
     InstanceToolbarComponent,
     InstancePageTemplateComponent,
@@ -36,7 +38,7 @@ export class CreateViewComponent {
     private messageService: MessageService,
     private router: Router,
   ) {
-    title.setTitle('Create a View');
+    title.setTitle('Create a view');
     this.form = this.formBuilder.group({
       name: ['', [Validators.required]],
       bands: [[], []],

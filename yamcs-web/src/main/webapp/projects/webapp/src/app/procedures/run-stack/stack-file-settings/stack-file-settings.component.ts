@@ -12,6 +12,7 @@ import {
   YaSelectOption,
 } from '@yamcs/webapp-sdk';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
+import { AppInstanceToolbarLabel } from '../../../shared/instance-toolbar/instance-toolbar-label.directive';
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { AdvanceAckHelpComponent } from '../advance-ack-help/advance-ack-help.component';
 import { StackFilePageTabsComponent } from '../stack-file-page-tabs/stack-file-page-tabs.component';
@@ -24,6 +25,7 @@ import { StackFileService } from '../stack-file/StackFileService';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AdvanceAckHelpComponent,
+    AppInstanceToolbarLabel,
     InstancePageTemplateComponent,
     InstanceToolbarComponent,
     StackFilePageTabsComponent,

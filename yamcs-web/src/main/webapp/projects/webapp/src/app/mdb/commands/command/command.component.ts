@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Command, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
+import { AppInstanceToolbarLabel } from '../../../shared/instance-toolbar/instance-toolbar-label.directive';
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { CommandDetailComponent } from '../command-detail/command-detail.component';
 
@@ -11,6 +12,7 @@ import { CommandDetailComponent } from '../command-detail/command-detail.compone
   templateUrl: './command.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    AppInstanceToolbarLabel,
     CommandDetailComponent,
     InstanceToolbarComponent,
     InstancePageTemplateComponent,

@@ -31,6 +31,7 @@ import {
   utils,
   WebappSdkModule,
   YamcsService,
+  YaVerticalDivider,
 } from '@yamcs/webapp-sdk';
 import {
   BehaviorSubject,
@@ -46,6 +47,7 @@ import { ExtraAcknowledgmentsTableComponent } from '../../../commanding/command-
 import { YamcsAcknowledgmentsTableComponent } from '../../../commanding/command-history/yamcs-acknowledgments-table/yamcs-acknowledgments-table.component';
 import { AuthService } from '../../../core/services/AuthService';
 import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
+import { AppInstanceToolbarLabel } from '../../../shared/instance-toolbar/instance-toolbar-label.directive';
 import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { MarkdownComponent } from '../../../shared/markdown/markdown.component';
 import { AdvanceAckHelpComponent } from '../advance-ack-help/advance-ack-help.component';
@@ -78,6 +80,7 @@ import { StackFileService } from './StackFileService';
   styleUrl: './stack-file.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    AppInstanceToolbarLabel,
     AdvanceAckHelpComponent,
     ExtraAcknowledgmentsTableComponent,
     InstancePageTemplateComponent,
@@ -91,6 +94,7 @@ import { StackFileService } from './StackFileService';
     VerifyTableComponent,
     WebappSdkModule,
     YamcsAcknowledgmentsTableComponent,
+    YaVerticalDivider,
   ],
 })
 export class StackFileComponent implements OnInit, OnDestroy {

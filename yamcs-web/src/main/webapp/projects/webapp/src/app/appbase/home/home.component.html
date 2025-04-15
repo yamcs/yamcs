@@ -4,9 +4,7 @@
   <mat-toolbar-row>
     Instances &nbsp;&nbsp;&nbsp;
     @if (isCreateInstanceEnabled()) {
-      <ya-page-button routerLink="create-instance" icon="add_circle_outline">
-        Create instance
-      </ya-page-button>
+      <ya-page-button routerLink="create-instance" icon="add_box">Create instance</ya-page-button>
     }
     @if (mayControlServices()) {
       <ya-page-button

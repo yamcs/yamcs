@@ -1,17 +1,19 @@
 <app-instance-page>
   <app-instance-toolbar>
-    Clearances
-    <ya-help>
-      <p>
-        Clearances allow central control over the level of commands that users are able to send.
-      </p>
-      <p>
-        Clearance works in addition to regular permission checks. So if a user does anyway not have
-        authorization to send certain commands, giving this user clearance will not change this
-        fact.
-      </p>
-    </ya-help>
-    &nbsp;&nbsp;&nbsp;
+    <ng-template app-instance-toolbar-label>
+      Clearances
+      <ya-help>
+        <p>
+          Clearances allow central control over the level of commands that users are able to send.
+        </p>
+        <p>
+          Clearance works in addition to regular permission checks. So if a user does anyway not
+          have authorization to send certain commands, giving this user clearance will not change
+          this fact.
+        </p>
+      </ya-help>
+    </ng-template>
+
     <ya-page-button
       [disabled]="!isGroupChangeLevelEnabled()"
       (clicked)="openChangeLevelDialog()"

@@ -46,7 +46,7 @@
 
         <ya-field-divider />
 
-        <ya-button (click)="showAddRolesDialog()" icon="add_circle_outline">Add roles</ya-button>
+        <ya-button (click)="showAddRolesDialog()" icon="add_circle">Add roles</ya-button>
 
         @if (roleItems$ | async; as roleItems) {
           <table yaDataTable style="margin-top: 16px; width: 100%">

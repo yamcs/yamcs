@@ -17,6 +17,7 @@ import {
 } from '@fqqb/timeline';
 import { WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
+import { AppInstanceToolbarLabel } from '../../shared/instance-toolbar/instance-toolbar-label.directive';
 import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { CreateBandWizardStepComponent } from '../create-band-wizard-step/create-band-wizard-step.component';
 
@@ -25,6 +26,7 @@ import { CreateBandWizardStepComponent } from '../create-band-wizard-step/create
   styleUrl: './create-band.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    AppInstanceToolbarLabel,
     CreateBandWizardStepComponent,
     InstanceToolbarComponent,
     InstancePageTemplateComponent,

@@ -1,6 +1,5 @@
 <app-instance-page>
-  <app-instance-toolbar>
-    Packets &nbsp;&nbsp;&nbsp;
+  <app-instance-toolbar label="Packets">
     <mat-menu #exportMenu="matMenu" class="ya-menu">
       <ya-download-menu-item [link]="downloadURL$ | async">Raw dump</ya-download-menu-item>
     </mat-menu>
@@ -10,7 +9,9 @@
       icon="save_alt">
       Export
     </ya-page-button>
-    <ya-page-icon-button matTooltip="Jump to now" (clicked)="jumpToNow()" icon="refresh" />
+    <ya-page-button matTooltip="Jump to now" (clicked)="jumpToNow()" icon="refresh">
+      Jump to now
+    </ya-page-button>
   </app-instance-toolbar>
 
   <ya-detail-pane>

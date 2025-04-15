@@ -1,32 +1,34 @@
 <app-instance-page>
   <app-instance-toolbar>
-    Queues
-    <ya-help>
-      <p>
-        A queue is a temporary holding location for issued commands that are waiting to enter the
-        next stage of processing.
-      </p>
-      <p>Queues are an ordered list. Issued commands are offered to the first matching queue.</p>
-      <p>A queue can perform these actions:</p>
-      <table yaSimpleTable style="width: 100%">
-        <tr>
-          <th width="1">ACCEPT</th>
-          <td>The queue accepts and releases commands.</td>
-        </tr>
-        <tr>
-          <th>HOLD</th>
-          <td>
-            The queue accepts commands but does not release them. These commands may be released
-            manually, or automatically as soon as the queue action changes to ACCEPT.
-          </td>
-        </tr>
-        <tr>
-          <th>REJECT</th>
-          <td>The queue does not accept commands. Matching commands fail immediately.</td>
-        </tr>
-      </table>
-    </ya-help>
-    &nbsp;&nbsp;&nbsp;
+    <ng-template app-instance-toolbar-label>
+      Queues
+      <ya-help>
+        <p>
+          A queue is a temporary holding location for issued commands that are waiting to enter the
+          next stage of processing.
+        </p>
+        <p>Queues are an ordered list. Issued commands are offered to the first matching queue.</p>
+        <p>A queue can perform these actions:</p>
+        <table yaSimpleTable style="width: 100%">
+          <tr>
+            <th width="1">ACCEPT</th>
+            <td>The queue accepts and releases commands.</td>
+          </tr>
+          <tr>
+            <th>HOLD</th>
+            <td>
+              The queue accepts commands but does not release them. These commands may be released
+              manually, or automatically as soon as the queue action changes to ACCEPT.
+            </td>
+          </tr>
+          <tr>
+            <th>REJECT</th>
+            <td>The queue does not accept commands. Matching commands fail immediately.</td>
+          </tr>
+        </table>
+      </ya-help>
+    </ng-template>
+
     <ya-page-button
       [matMenuTriggerFor]="actionMenu"
       [disabled]="selection.isEmpty()"

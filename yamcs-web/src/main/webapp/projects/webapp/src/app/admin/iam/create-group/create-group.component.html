@@ -16,7 +16,7 @@
 
       <ya-field-divider />
 
-      <ya-button (click)="showAddMembersDialog()" icon="add_circle_outline">Add members</ya-button>
+      <ya-button (click)="showAddMembersDialog()" icon="add_circle">Add members</ya-button>
 
       @if (memberItems$ | async; as memberItems) {
         <table yaDataTable style="width: 100%; margin-top: 16px">
