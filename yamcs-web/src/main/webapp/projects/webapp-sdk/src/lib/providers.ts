@@ -21,6 +21,7 @@ import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
 import { UtcDateAdapter } from './components/date-time-input/UtcDateAdapter';
 import { AppearanceService } from './services/appearance.service';
+import { AuthService } from './services/auth.service';
 import { ConfigService } from './services/config.service';
 import { SdkBridge } from './services/sdk-bridge.service';
 import { YamcsService } from './services/yamcs.service';
@@ -87,6 +88,7 @@ export function provideSdkBridge(): EnvironmentProviders[] {
   return [
     provideAppInitializer(() => {
       const sdkBridge = inject(SdkBridge);
+      sdkBridge.authService = inject(AuthService);
       sdkBridge.appearanceService = inject(AppearanceService);
       sdkBridge.router = inject(Router);
       sdkBridge.yamcs = inject(YamcsService);

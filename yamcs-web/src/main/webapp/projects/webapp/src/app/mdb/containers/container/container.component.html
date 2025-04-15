@@ -1,7 +1,7 @@
 @if (container$ | async; as container) {
-  <app-instance-page>
-    <app-instance-toolbar>
-      <ng-template app-instance-toolbar-label>
+  <ya-instance-page>
+    <ya-instance-toolbar>
+      <ng-template ya-instance-toolbar-label>
         @if (container.qualifiedName | spaceSystemName; as spaceSystemName) {
           <a
             routerLink="/mdb/containers"
@@ -13,10 +13,10 @@
           <ya-title-copy [text]="container.qualifiedName" />
         }
       </ng-template>
-    </app-instance-toolbar>
+    </ya-instance-toolbar>
 
     <ya-panel>
       <app-container-detail [container]="container" />
     </ya-panel>
-  </app-instance-page>
+  </ya-instance-page>
 }

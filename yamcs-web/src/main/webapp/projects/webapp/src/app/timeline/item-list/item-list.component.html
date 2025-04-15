@@ -1,5 +1,5 @@
-<app-instance-page>
-  <app-instance-toolbar label="Items">
+<ya-instance-page>
+  <ya-instance-toolbar label="Items">
     <ya-page-button [matMenuTriggerFor]="itemMenu" icon="add_box">Create item</ya-page-button>
     <mat-menu #itemMenu="matMenu" class="ya-menu" [overlapTrigger]="false">
       <button
@@ -23,7 +23,7 @@
       icon="close">
       Delete
     </ya-page-button>
-  </app-instance-toolbar>
+  </ya-instance-toolbar>
 
   <ya-panel>
     @if (dataSource) {
@@ -106,4 +106,4 @@
       </table>
     }
   </ya-panel>
-</app-instance-page>
+</ya-instance-page>

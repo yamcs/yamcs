@@ -1,7 +1,7 @@
 @if (ptype$ | async; as ptype) {
-  <app-instance-page>
-    <app-instance-toolbar>
-      <ng-template app-instance-toolbar-label>
+  <ya-instance-page>
+    <ya-instance-toolbar>
+      <ng-template ya-instance-toolbar-label>
         @if (ptype.qualifiedName | spaceSystemName; as spaceSystemName) {
           <a
             routerLink="/mdb/parameter-types"
@@ -13,10 +13,10 @@
           <ya-title-copy [text]="ptype.qualifiedName" />
         }
       </ng-template>
-    </app-instance-toolbar>
+    </ya-instance-toolbar>
 
     <ya-panel>
       <app-parameter-type-detail [parameterType]="ptype" />
     </ya-panel>
-  </app-instance-page>
+  </ya-instance-page>
 }

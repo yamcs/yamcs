@@ -20,8 +20,6 @@ import {
   YamcsService,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { SignificanceLevelComponent } from '../../../shared/significance-level/significance-level.component';
 import { SendCommandWizardStepComponent } from '../send-command-wizard-step/send-command-wizard-step.component';
 import { CommandsDataSource, ListItem } from './commands.datasource';
@@ -31,8 +29,6 @@ import { CommandsDataSource, ListItem } from './commands.datasource';
   styleUrl: './send-command.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
     SendCommandWizardStepComponent,
     WebappSdkModule,
     SignificanceLevelComponent,

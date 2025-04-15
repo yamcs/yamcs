@@ -21,19 +21,12 @@ import {
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { ExpressionComponent } from '../../../shared/expression/expression.component';
-import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { ContainersDataSource } from './containers.datasource';
 
 @Component({
   templateUrl: './container-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    ExpressionComponent,
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    WebappSdkModule,
-  ],
+  imports: [ExpressionComponent, WebappSdkModule],
 })
 export class ContainerListComponent implements AfterViewInit {
   shortName = false;

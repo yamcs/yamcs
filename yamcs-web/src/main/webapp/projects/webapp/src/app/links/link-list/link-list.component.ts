@@ -17,9 +17,6 @@ import {
   YaColumnInfo,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { AuthService } from '../../core/services/AuthService';
-import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { LinkDetailComponent } from '../link-detail/link-detail.component';
 import { LinkStatusComponent } from '../link-status/link-status.component';
 import { LinksPageTabsComponent } from '../links-page-tabs/links-page-tabs.component';
@@ -31,8 +28,6 @@ import { LinkItem } from './model';
   styleUrl: './link-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
     LinkDetailComponent,
     LinkStatusComponent,
     LinksPageTabsComponent,
@@ -68,7 +63,6 @@ export class LinkListComponent
   private itemsByName: { [key: string]: LinkItem } = {};
 
   constructor(
-    private authService: AuthService,
     private route: ActivatedRoute,
     private linkService: LinkService,
   ) {

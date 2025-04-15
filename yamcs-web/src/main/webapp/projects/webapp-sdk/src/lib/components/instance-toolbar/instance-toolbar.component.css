@@ -13,13 +13,13 @@
   letter-spacing: 0.25px;
 }
 
-.app-instance-toolbar-label {
+.ya-instance-toolbar-label {
   display: inline-flex;
   align-items: center;
   margin-right: 48px;
 }
 
-.app-instance-toolbar-content {
+.ya-instance-toolbar-content {
   display: inline-flex;
   align-items: center;
   column-gap: 8px;

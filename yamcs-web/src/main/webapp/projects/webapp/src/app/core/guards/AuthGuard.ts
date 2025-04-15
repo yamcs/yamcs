@@ -9,12 +9,12 @@ import {
 } from '@angular/router';
 import {
   AuthInfo,
+  AuthService,
   ConfigService,
   OpenIDConnectInfo,
   YamcsService,
   utils,
 } from '@yamcs/webapp-sdk';
-import { AuthService } from '../services/AuthService';
 
 export const authGuardFn: CanActivateFn = (
   route: ActivatedRouteSnapshot,

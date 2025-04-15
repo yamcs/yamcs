@@ -20,20 +20,13 @@ import {
   YamcsService,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { SignificanceLevelComponent } from '../../../shared/significance-level/significance-level.component';
 import { CommandsDataSource } from './commands.datasource';
 
 @Component({
   templateUrl: './command-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    WebappSdkModule,
-    SignificanceLevelComponent,
-  ],
+  imports: [WebappSdkModule, SignificanceLevelComponent],
 })
 export class CommandListComponent implements AfterViewInit {
   shortName = false;

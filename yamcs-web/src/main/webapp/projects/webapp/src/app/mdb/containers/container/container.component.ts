@@ -3,21 +3,12 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { Container, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
-import { AppInstanceToolbarLabel } from '../../../shared/instance-toolbar/instance-toolbar-label.directive';
-import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { ContainerDetailComponent } from '../container-detail/container-detail.component';
 
 @Component({
   templateUrl: './container.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AppInstanceToolbarLabel,
-    ContainerDetailComponent,
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    WebappSdkModule,
-  ],
+  imports: [ContainerDetailComponent, WebappSdkModule],
 })
 export class ContainerComponent {
   container$ = new BehaviorSubject<Container | null>(null);

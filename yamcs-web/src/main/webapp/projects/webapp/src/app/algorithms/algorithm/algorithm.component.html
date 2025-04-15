@@ -1,7 +1,7 @@
 @if (algorithm$ | async; as algorithm) {
-  <app-instance-page>
-    <app-instance-toolbar>
-      <ng-template app-instance-toolbar-label>
+  <ya-instance-page>
+    <ya-instance-toolbar>
+      <ng-template ya-instance-toolbar-label>
         @for (parent of algorithm.qualifiedName | parents; track parent; let isFirst = $first) {
           @if (!isFirst) {
             <a
@@ -16,7 +16,7 @@
         <span>{{ algorithm.qualifiedName | shortName }}</span>
         <ya-title-copy [text]="algorithm.qualifiedName" />
       </ng-template>
-    </app-instance-toolbar>
+    </ya-instance-toolbar>
 
     <nav #tabs mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
       <a
@@ -45,5 +45,5 @@
         <router-outlet />
       </mat-tab-nav-panel>
     </div>
-  </app-instance-page>
+  </ya-instance-page>
 }

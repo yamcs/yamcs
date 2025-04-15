@@ -6,7 +6,7 @@ import {
   Router,
   RouterStateSnapshot,
 } from '@angular/router';
-import { AuthService } from '../services/AuthService';
+import { AuthService } from '@yamcs/webapp-sdk';
 
 export const mayControlArchivingGuardFn: CanActivateFn = (
   route: ActivatedRouteSnapshot,

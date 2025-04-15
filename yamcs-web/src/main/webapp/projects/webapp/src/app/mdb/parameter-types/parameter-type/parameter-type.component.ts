@@ -7,21 +7,12 @@ import {
   YamcsService,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
-import { AppInstanceToolbarLabel } from '../../../shared/instance-toolbar/instance-toolbar-label.directive';
-import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { ParameterTypeDetailComponent } from '../parameter-type-detail/parameter-type-detail.component';
 
 @Component({
   templateUrl: './parameter-type.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AppInstanceToolbarLabel,
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    ParameterTypeDetailComponent,
-    WebappSdkModule,
-  ],
+  imports: [ParameterTypeDetailComponent, WebappSdkModule],
 })
 export class ParameterTypeComponent {
   ptype$ = new BehaviorSubject<ParameterType | null>(null);

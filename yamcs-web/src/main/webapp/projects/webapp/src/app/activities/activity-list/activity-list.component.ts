@@ -6,6 +6,7 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   Activity,
+  AuthService,
   GetActivitiesOptions,
   MessageService,
   Synchronizer,
@@ -16,9 +17,6 @@ import {
   utils,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, debounceTime } from 'rxjs';
-import { AuthService } from '../../core/services/AuthService';
-import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { SetFailedDialogComponent } from '../set-failed-dialog/set-failed-dialog.component';
 import { ActivityDurationComponent } from '../shared/activity-duration.component';
 import { ActivityIconComponent } from '../shared/activity-icon.component';
@@ -30,13 +28,7 @@ const defaultInterval = 'NO_LIMIT';
   templateUrl: './activity-list.component.html',
   styleUrl: './activity-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    ActivityDurationComponent,
-    ActivityIconComponent,
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    WebappSdkModule,
-  ],
+  imports: [ActivityDurationComponent, ActivityIconComponent, WebappSdkModule],
 })
 export class ActivityListComponent {
   validStart: Date | null;

@@ -1,5 +1,5 @@
-<app-instance-page>
-  <app-instance-toolbar label="Displays">
+<ya-instance-page>
+  <ya-instance-toolbar label="Displays">
     @if (mayManageDisplays()) {
       <ya-page-button (clicked)="createDisplay()" icon="add_box">Create display</ya-page-button>
     }
@@ -22,7 +22,7 @@
         Delete
       </ya-page-button>
     }
-  </app-instance-toolbar>
+  </ya-instance-toolbar>
 
   <div
     #droparea
@@ -147,4 +147,4 @@
       }
     </ya-panel>
   </div>
-</app-instance-page>
+</ya-instance-page>

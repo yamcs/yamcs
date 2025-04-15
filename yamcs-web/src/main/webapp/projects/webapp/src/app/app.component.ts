@@ -12,6 +12,7 @@ import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import {
   AppearanceService,
   AuthInfo,
+  AuthService,
   ConfigService,
   ConnectionInfo,
   ExtensionService,
@@ -23,7 +24,6 @@ import {
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
-import { AuthService } from './core/services/AuthService';
 import { SelectInstanceDialogComponent } from './shared/select-instance-dialog/select-instance-dialog.component';
 
 @Component({
@@ -85,6 +85,13 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     this.sidebar$ = router.events.pipe(
       filter((evt) => evt instanceof NavigationEnd),
       map((evt) => {
+        // Emit ActivatedRoute updates for use in webcomponents
+        window.dispatchEvent(
+          new CustomEvent('YA_ACTIVATED_ROUTE', {
+            detail: { route },
+          }),
+        );
+
         let child = route;
         while (child.firstChild) {
           child = child.firstChild;

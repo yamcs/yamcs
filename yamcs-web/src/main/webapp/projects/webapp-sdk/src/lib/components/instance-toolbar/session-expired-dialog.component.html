@@ -1,0 +1,10 @@
+<div class="title-bar" mat-dialog-title>
+  <mat-icon>offline_bolt</mat-icon>
+  No connection
+</div>
+
+<mat-dialog-content>Connection to Yamcs was lost.</mat-dialog-content>
+
+<mat-dialog-actions>
+  <ya-button appearance="primary" mat-dialog-close (click)="reload()">RELOAD</ya-button>
+</mat-dialog-actions>

@@ -1,7 +1,7 @@
 @if (link$ | async; as link) {
-  <app-instance-page>
-    <app-instance-toolbar>
-      <ng-template app-instance-toolbar-label>
+  <ya-instance-page>
+    <ya-instance-toolbar>
+      <ng-template ya-instance-toolbar-label>
         <ya-page-icon-button
           routerLink=".."
           [queryParams]="{ c: yamcs.context }"
@@ -46,7 +46,7 @@
           }
         </ng-template>
       </mat-menu>
-    </app-instance-toolbar>
+    </ya-instance-toolbar>
 
     <div class="form-content">
       <dl class="dl-horizontal" style="margin-top: 0">
@@ -216,5 +216,5 @@
         }
       }
     </div>
-  </app-instance-page>
+  </ya-instance-page>
 }

@@ -5,19 +5,12 @@ import {
   Validators,
 } from '@angular/forms';
 import { BaseComponent, WebappSdkModule } from '@yamcs/webapp-sdk';
-import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { CreateBandWizardStepComponent } from '../../create-band-wizard-step/create-band-wizard-step.component';
 
 @Component({
   templateUrl: './create-time-ruler.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    CreateBandWizardStepComponent,
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    WebappSdkModule,
-  ],
+  imports: [CreateBandWizardStepComponent, WebappSdkModule],
 })
 export class CreateTimeRulerComponent extends BaseComponent {
   form: UntypedFormGroup;

@@ -11,6 +11,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import {
+  AuthService,
   ConfigService,
   ListObjectsOptions,
   ListObjectsResponse,
@@ -20,10 +21,7 @@ import {
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { AuthService } from '../../../core/services/AuthService';
 import * as dnd from '../../../shared/dnd';
-import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { CreateStackDialogComponent } from '../create-stack-dialog/create-stack-dialog.component';
 import { CreateStackFolderDialogComponent } from '../create-stack-folder-dialog/create-stack-folder-dialog.component';
 import { RenameStackDialogComponent } from '../rename-stack-dialog/rename-stack-dialog.component';
@@ -34,11 +32,7 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
   templateUrl: './stack-folder.component.html',
   styleUrl: './stack-folder.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class StackFolderComponent implements OnDestroy {
   @ViewChild('droparea', { static: true })

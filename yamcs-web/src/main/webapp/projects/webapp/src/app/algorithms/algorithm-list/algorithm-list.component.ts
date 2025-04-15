@@ -18,19 +18,13 @@ import {
   YamcsService,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { AlgorithmsDataSource, ListItem } from './algorithms.datasource';
 
 @Component({
   templateUrl: './algorithm-list.component.html',
   styleUrl: './algorithm-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class AlgorithmListComponent implements AfterViewInit, OnDestroy {
   filterForm = new UntypedFormGroup({

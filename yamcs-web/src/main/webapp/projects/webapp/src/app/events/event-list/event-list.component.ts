@@ -12,6 +12,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
+  AuthService,
   ConfigService,
   EventSeverity,
   ExtraColumnInfo,
@@ -28,9 +29,6 @@ import {
   utils,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { AuthService } from '../../core/services/AuthService';
-import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { CreateEventDialogComponent } from '../create-event-dialog/create-event-dialog.component';
 import { CreateEventQueryDialogComponent } from '../create-event-query-dialog/create-event-query-dialog.component';
 import { EventMessageComponent } from '../event-message/event-message.component';
@@ -50,8 +48,6 @@ const defaultInterval = 'PT1H';
     EventMessageComponent,
     EventsPageTabsComponent,
     EventSeverityComponent,
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
     WebappSdkModule,
   ],
 })

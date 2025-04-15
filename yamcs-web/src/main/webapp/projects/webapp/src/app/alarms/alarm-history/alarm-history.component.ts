@@ -12,20 +12,12 @@ import {
 } from '@yamcs/webapp-sdk';
 import { addHours } from 'date-fns';
 import { AlarmLevelComponent } from '../../shared/alarm-level/alarm-level.component';
-import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { AlarmsPageTabsComponent } from '../alarms-page-tabs/alarms-page-tabs.component';
 
 @Component({
   templateUrl: './alarm-history.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AlarmLevelComponent,
-    AlarmsPageTabsComponent,
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    WebappSdkModule,
-  ],
+  imports: [AlarmLevelComponent, AlarmsPageTabsComponent, WebappSdkModule],
 })
 export class AlarmHistoryComponent extends BaseComponent {
   validStart: Date | null;

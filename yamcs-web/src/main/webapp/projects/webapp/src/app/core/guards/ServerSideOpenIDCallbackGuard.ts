@@ -1,7 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivateFn, Router } from '@angular/router';
-import { utils } from '@yamcs/webapp-sdk';
-import { AuthService } from '../services/AuthService';
+import { AuthService, utils } from '@yamcs/webapp-sdk';
 
 export const serverSideOpenIDCallbackGuardFn: CanActivateFn = (
   route: ActivatedRouteSnapshot,

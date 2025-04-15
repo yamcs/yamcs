@@ -2,9 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 import { CanDeactivateFn } from '@angular/router';
-import { ConfigService } from '@yamcs/webapp-sdk';
+import { AuthService, ConfigService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Observer, of } from 'rxjs';
-import { AuthService } from '../../../core/services/AuthService';
 import { DisplayFileComponent } from '../display-file/display-file.component';
 import { DisplayFilePageDirtyDialogComponent } from './display-file-dirty-dialog.component';
 

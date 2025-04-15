@@ -8,6 +8,7 @@ import {
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import {
+  AuthService,
   ConfigService,
   Formatter,
   MessageService,
@@ -20,24 +21,15 @@ import {
   utils,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { AuthService } from '../../../core/services/AuthService';
-import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { SetParameterDialogComponent } from '../set-parameter-dialog/set-parameter-dialog.component';
 
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
-import { AppInstanceToolbarLabel } from '../../../shared/instance-toolbar/instance-toolbar-label.directive';
 
 @Component({
   templateUrl: './parameter.component.html',
   styleUrl: './parameter.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AppInstanceToolbarLabel,
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class ParameterComponent implements OnChanges, OnDestroy {
   qualifiedName = input.required<string>({ alias: 'parameter' });

@@ -14,8 +14,6 @@ import {
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { HexComponent } from '../../../shared/hex/hex.component';
-import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { PacketDownloadLinkPipe } from './packet-download-link.pipe';
 import { PacketsDataSource } from './packets.datasource';
 
@@ -25,13 +23,7 @@ const defaultInterval = 'PT1H';
   templateUrl: './packet-list.component.html',
   styleUrl: './packet-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    HexComponent,
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    PacketDownloadLinkPipe,
-    WebappSdkModule,
-  ],
+  imports: [HexComponent, PacketDownloadLinkPipe, WebappSdkModule],
 })
 export class PacketListComponent extends BaseComponent {
   columns: YaColumnInfo[] = [

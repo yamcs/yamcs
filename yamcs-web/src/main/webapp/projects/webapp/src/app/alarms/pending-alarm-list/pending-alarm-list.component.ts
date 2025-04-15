@@ -6,9 +6,6 @@ import {
   WebappSdkModule,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { AuthService } from '../../core/services/AuthService';
-import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { AlarmsPageTabsComponent } from '../alarms-page-tabs/alarms-page-tabs.component';
 import { AlarmsTableComponent } from '../alarms-table/alarm-table.component';
 import { AlarmsDataSource } from '../alarms.datasource';
@@ -16,13 +13,7 @@ import { AlarmsDataSource } from '../alarms.datasource';
 @Component({
   templateUrl: './pending-alarm-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AlarmsPageTabsComponent,
-    AlarmsTableComponent,
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    WebappSdkModule,
-  ],
+  imports: [AlarmsPageTabsComponent, AlarmsTableComponent, WebappSdkModule],
 })
 export class PendingAlarmListComponent
   extends BaseComponent
@@ -42,7 +33,7 @@ export class PendingAlarmListComponent
 
   private alarmsSubscription: Subscription;
 
-  constructor(private authService: AuthService) {
+  constructor() {
     super();
     this.setTitle('Pending alarms');
 

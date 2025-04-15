@@ -1,7 +1,7 @@
 @if (activity$ | async; as activity) {
-  <app-instance-page>
-    <app-instance-toolbar>
-      <ng-template app-instance-toolbar-label>
+  <ya-instance-page>
+    <ya-instance-toolbar>
+      <ng-template ya-instance-toolbar-label>
         <ya-page-icon-button
           routerLink=".."
           [queryParams]="{ c: yamcs.context }"
@@ -25,7 +25,7 @@
           Cancel
         </ya-page-button>
       }
-    </app-instance-toolbar>
+    </ya-instance-toolbar>
 
     <div class="activity-header">
       <div class="activity-header-left">
@@ -67,5 +67,5 @@
         <router-outlet />
       </mat-tab-nav-panel>
     </div>
-  </app-instance-page>
+  </ya-instance-page>
 }

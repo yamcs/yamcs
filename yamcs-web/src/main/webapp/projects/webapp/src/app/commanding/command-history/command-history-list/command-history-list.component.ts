@@ -11,6 +11,7 @@ import { FormControl, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute } from '@angular/router';
 import {
+  AuthService,
   BaseComponent,
   CommandHistoryRecord,
   ConfigService,
@@ -25,10 +26,7 @@ import {
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { AuthService } from '../../../core/services/AuthService';
 import { HexComponent } from '../../../shared/hex/hex.component';
-import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { AcknowledgmentIconComponent } from '../acknowledgment-icon/acknowledgment-icon.component';
 import { CommandArgumentsComponent } from '../command-arguments/command-arguments.component';
 import { CommandDetailComponent } from '../command-detail/command-detail.component';
@@ -50,8 +48,6 @@ const defaultInterval = 'PT1H';
     CommandDetailComponent,
     CommandDownloadLinkPipe,
     HexComponent,
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
     WebappSdkModule,
     TransmissionConstraintsIconComponent,
   ],

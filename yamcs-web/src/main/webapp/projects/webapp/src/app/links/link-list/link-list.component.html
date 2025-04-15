@@ -1,5 +1,5 @@
-<app-instance-page>
-  <app-instance-toolbar label="Links">
+<ya-instance-page>
+  <ya-instance-toolbar label="Links">
     @if (mayControlLinks()) {
       <ya-page-button
         (clicked)="enableSelectedLinks()"
@@ -51,7 +51,7 @@
         }
       </ng-template>
     </mat-menu>
-  </app-instance-toolbar>
+  </ya-instance-toolbar>
 
   <ya-detail-pane>
     @if (detailLink$ | async; as selectedItem) {
@@ -228,4 +228,4 @@
       </div>
     </ya-panel>
   </div>
-</app-instance-page>
+</ya-instance-page>

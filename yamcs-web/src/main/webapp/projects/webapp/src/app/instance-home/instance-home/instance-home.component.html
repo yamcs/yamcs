@@ -1,9 +1,9 @@
-<app-instance-page>
-  <app-instance-toolbar label="Home" />
+<ya-instance-page>
+  <ya-instance-toolbar label="Home" />
 
   <ya-panel>
     @if (showPackets()) {
       <app-tmstats-table [tmstats$]="tmstats$" />
     }
   </ya-panel>
-</app-instance-page>
+</ya-instance-page>

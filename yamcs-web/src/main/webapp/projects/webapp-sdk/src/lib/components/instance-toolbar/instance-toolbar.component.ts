@@ -3,6 +3,7 @@ import { AsyncPipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   ContentChild,
   input,
   OnDestroy,
@@ -13,38 +14,30 @@ import { MatDivider } from '@angular/material/list';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltip } from '@angular/material/tooltip';
-import { ActivatedRoute, Router } from '@angular/router';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { BaseComponent } from '../../abc/BaseComponent';
+import { ConnectionInfo, Processor, ProcessorSubscription } from '../../client';
+import { DateTimePipe } from '../../pipes/datetime.pipe';
+import { DurationPipe } from '../../pipes/duration.pipe';
+import { YaIconAction } from '../icon-action/icon-action.component';
+import { YaPageButton } from '../page-button/page-button.component';
+import { YaTextAction } from '../text-action/text-action.component';
 import {
-  AppearanceService,
-  ConnectionInfo,
-  DateTimePipe,
-  DurationPipe,
-  MessageService,
-  Processor,
-  ProcessorSubscription,
-  YaIconAction,
-  YamcsService,
-  YaPageButton,
-  YaTextAction,
-} from '@yamcs/webapp-sdk';
-import { BehaviorSubject, map, Observable, Subscription } from 'rxjs';
-import { AuthService } from '../../core/services/AuthService';
-import { SessionExpiredDialogComponent } from '../session-expired-dialog/session-expired-dialog.component';
-import { StartReplayDialogComponent } from '../start-replay-dialog/start-replay-dialog.component';
-import {
-  APP_INSTANCE_TOOLBAR,
-  AppInstanceToolbarLabel,
+  YA_INSTANCE_TOOLBAR,
+  YaInstanceToolbarLabel,
 } from './instance-toolbar-label.directive';
+import { SessionExpiredDialogComponent } from './session-expired-dialog.component';
+import { StartReplayDialogComponent } from './start-replay-dialog.component';
 
 @Component({
-  selector: 'app-instance-toolbar',
+  selector: 'ya-instance-toolbar',
   templateUrl: './instance-toolbar.component.html',
   styleUrl: './instance-toolbar.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
-      provide: APP_INSTANCE_TOOLBAR,
-      useExisting: InstanceToolbarComponent,
+      provide: YA_INSTANCE_TOOLBAR,
+      useExisting: YaInstanceToolbar,
     },
   ],
   imports: [
@@ -63,18 +56,18 @@ import {
     YaTextAction,
   ],
 })
-export class InstanceToolbarComponent implements OnDestroy {
+export class YaInstanceToolbar extends BaseComponent implements OnDestroy {
   // Plain text label, used when there is no template label
   textLabel = input<string | undefined>(undefined, { alias: 'label' });
 
-  private _templateLabel: AppInstanceToolbarLabel;
+  private _templateLabel: YaInstanceToolbarLabel;
 
-  // Content for the attr label given by `<ng-template app-instance-toolbar-label>`
-  @ContentChild(AppInstanceToolbarLabel)
-  get templateLabel(): AppInstanceToolbarLabel {
+  // Content for the attr label given by `<ng-template ya-instance-toolbar-label>`
+  @ContentChild(YaInstanceToolbarLabel)
+  get templateLabel(): YaInstanceToolbarLabel {
     return this._templateLabel;
   }
-  set templateLabel(value: AppInstanceToolbarLabel | undefined) {
+  set templateLabel(value: YaInstanceToolbarLabel | undefined) {
     if (value && value._closestToolbar === this) {
       this._templateLabel = value;
     }
@@ -85,7 +78,10 @@ export class InstanceToolbarComponent implements OnDestroy {
 
   time$: Observable<string | null>;
 
-  showRange$: Observable<boolean>;
+  showRange = computed(() => {
+    const m = this.routeData();
+    return m.get('showRangeSelector') === true;
+  });
   range$: Observable<string>;
 
   connected$: Observable<boolean>;
@@ -100,18 +96,14 @@ export class InstanceToolbarComponent implements OnDestroy {
 
   constructor(
     private dialog: MatDialog,
-    readonly yamcs: YamcsService,
     private snackBar: MatSnackBar,
-    private messageService: MessageService,
-    private appearanceService: AppearanceService,
-    authService: AuthService,
-    route: ActivatedRoute,
-    router: Router,
   ) {
+    super();
+    const { yamcs } = this;
     this.processor$.next(yamcs.getProcessor());
     if (yamcs.processor) {
       this.processorSubscription =
-        this.yamcs.yamcsClient.createProcessorSubscription(
+        yamcs.yamcsClient.createProcessorSubscription(
           {
             instance: yamcs.instance!,
             processor: yamcs.processor,
@@ -122,26 +114,14 @@ export class InstanceToolbarComponent implements OnDestroy {
         );
     }
 
-    this.showRange$ = router.events.pipe(
-      map((evt) => {
-        let child = route;
-        while (child.firstChild) {
-          child = child.firstChild;
-        }
-
-        const data = child.snapshot.data;
-        return data && data['showRangeSelector'] === true;
-      }),
-    );
-
     this.connected$ = this.yamcs.yamcsClient.connected$;
     this.time$ = this.yamcs.time$;
     this.range$ = this.yamcs.range$;
-    this.fullScreenMode$ = appearanceService.fullScreenMode$;
-    this.focusMode$ = appearanceService.focusMode$;
+    this.fullScreenMode$ = this.appearanceService.fullScreenMode$;
+    this.focusMode$ = this.appearanceService.focusMode$;
 
     this.connectedSubscription = this.connected$.subscribe((connected) => {
-      if (!connected && authService.user$.value) {
+      if (!connected && this.authService.user$.value) {
         dialog.open(SessionExpiredDialogComponent, {
           disableClose: true,
           width: '400px',

@@ -12,21 +12,12 @@ import {
   WebappSdkModule,
   YamcsService,
 } from '@yamcs/webapp-sdk';
-import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
-import { AppInstanceToolbarLabel } from '../../shared/instance-toolbar/instance-toolbar-label.directive';
-import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { BandMultiSelectComponent } from '../shared/band-multi-select/band-multi-select.component';
 
 @Component({
   templateUrl: './create-view.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AppInstanceToolbarLabel,
-    BandMultiSelectComponent,
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    WebappSdkModule,
-  ],
+  imports: [BandMultiSelectComponent, WebappSdkModule],
 })
 export class CreateViewComponent {
   form: UntypedFormGroup;

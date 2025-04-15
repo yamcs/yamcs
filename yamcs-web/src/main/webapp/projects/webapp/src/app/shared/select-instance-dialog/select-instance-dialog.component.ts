@@ -10,12 +10,12 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import {
+  AuthService,
   ConfigService,
   Instance,
   WebappSdkModule,
   YamcsService,
 } from '@yamcs/webapp-sdk';
-import { AuthService } from '../../core/services/AuthService';
 
 @Component({
   templateUrl: './select-instance-dialog.component.html',

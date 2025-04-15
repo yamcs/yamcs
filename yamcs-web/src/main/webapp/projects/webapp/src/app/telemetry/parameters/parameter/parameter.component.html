@@ -1,7 +1,7 @@
 @if (parameter$ | async; as parameter) {
-  <app-instance-page>
-    <app-instance-toolbar>
-      <ng-template app-instance-toolbar-label>
+  <ya-instance-page>
+    <ya-instance-toolbar>
+      <ng-template ya-instance-toolbar-label>
         @for (parent of parameter.qualifiedName | parents; track parent; let isFirst = $first) {
           @if (!isFirst) {
             <a
@@ -28,7 +28,7 @@
           View in MDB
         </ya-page-button>
       }
-    </app-instance-toolbar>
+    </ya-instance-toolbar>
     <nav #tabs mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
       <a
         mat-tab-link
@@ -78,5 +78,5 @@
         <router-outlet />
       </mat-tab-nav-panel>
     </div>
-  </app-instance-page>
+  </ya-instance-page>
 }

@@ -16,9 +16,6 @@ import {
 } from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
-import { AppInstanceToolbarLabel } from '../../../shared/instance-toolbar/instance-toolbar-label.directive';
-import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { Viewer } from '../viewers/Viewer';
 import { ImageViewerComponent } from '../viewers/image-viewer/image-viewer.component';
 import { OpiDisplayViewerControlsComponent } from '../viewers/opi-display-viewer-controls/opi-display-viewer-controls.component';
@@ -35,10 +32,7 @@ import { ViewerHostDirective } from './viewer-host.directive';
   templateUrl: './display-file.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    AppInstanceToolbarLabel,
     ImageViewerComponent,
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
     OpiDisplayViewerComponent,
     OpiDisplayViewerControlsComponent,
     ParameterTableViewerComponent,

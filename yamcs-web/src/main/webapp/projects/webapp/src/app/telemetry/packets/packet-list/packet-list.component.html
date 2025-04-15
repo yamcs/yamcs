@@ -1,5 +1,5 @@
-<app-instance-page>
-  <app-instance-toolbar label="Packets">
+<ya-instance-page>
+  <ya-instance-toolbar label="Packets">
     <mat-menu #exportMenu="matMenu" class="ya-menu">
       <ya-download-menu-item [link]="downloadURL$ | async">Raw dump</ya-download-menu-item>
     </mat-menu>
@@ -12,7 +12,7 @@
     <ya-page-button matTooltip="Jump to now" (clicked)="jumpToNow()" icon="refresh">
       Jump to now
     </ya-page-button>
-  </app-instance-toolbar>
+  </ya-instance-toolbar>
 
   <ya-detail-pane>
     @if (detailPacket$ | async; as detailPacket) {
@@ -166,4 +166,4 @@
       </mat-toolbar>
     </ya-panel>
   </div>
-</app-instance-page>
+</ya-instance-page>

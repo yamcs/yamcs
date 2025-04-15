@@ -9,15 +9,12 @@ import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import {
   Activity,
+  AuthService,
   MessageService,
   WebappSdkModule,
   YamcsService,
 } from '@yamcs/webapp-sdk';
 import { Observable, tap } from 'rxjs';
-import { AuthService } from '../../core/services/AuthService';
-import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
-import { AppInstanceToolbarLabel } from '../../shared/instance-toolbar/instance-toolbar-label.directive';
-import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { SetFailedDialogComponent } from '../set-failed-dialog/set-failed-dialog.component';
 import { ActivityStatusComponent } from '../shared/activity-status.component';
 import { ActivityService } from '../shared/activity.service';
@@ -26,13 +23,7 @@ import { ActivityService } from '../shared/activity.service';
   templateUrl: './activity.component.html',
   styleUrl: './activity.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    ActivityStatusComponent,
-    AppInstanceToolbarLabel,
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    WebappSdkModule,
-  ],
+  imports: [ActivityStatusComponent, WebappSdkModule],
 })
 export class ActivityComponent implements OnInit, OnDestroy {
   activityId = input.required<string>();

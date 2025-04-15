@@ -1,7 +1,7 @@
 @if (algorithm$ | async; as algorithm) {
-  <app-instance-page>
-    <app-instance-toolbar>
-      <ng-template app-instance-toolbar-label>
+  <ya-instance-page>
+    <ya-instance-toolbar>
+      <ng-template ya-instance-toolbar-label>
         @if (algorithm.qualifiedName | spaceSystemName; as spaceSystemName) {
           <a
             routerLink="/mdb/algorithms"
@@ -13,9 +13,9 @@
           <ya-title-copy [text]="algorithm.qualifiedName" />
         }
       </ng-template>
-    </app-instance-toolbar>
+    </ya-instance-toolbar>
     <ya-panel>
       <app-algorithm-detail [algorithm]="algorithm" />
     </ya-panel>
-  </app-instance-page>
+  </ya-instance-page>
 }

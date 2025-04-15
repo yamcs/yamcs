@@ -1,6 +1,6 @@
-<app-instance-page>
-  <app-instance-toolbar>
-    <ng-template app-instance-toolbar-label>
+<ya-instance-page>
+  <ya-instance-toolbar>
+    <ng-template ya-instance-toolbar-label>
       Queues
       <ya-help>
         <p>
@@ -49,7 +49,7 @@
         REJECT
       </button>
     </mat-menu>
-  </app-instance-toolbar>
+  </ya-instance-toolbar>
 
   <ya-panel>
     @if ((connectionInfo$ | async)?.processor?.hasCommanding) {
@@ -215,4 +215,4 @@
       }
     }
   </ya-panel>
-</app-instance-page>
+</ya-instance-page>

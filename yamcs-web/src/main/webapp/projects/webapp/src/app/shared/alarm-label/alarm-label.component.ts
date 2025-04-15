@@ -1,6 +1,7 @@
 import { LowerCasePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import {
+  AuthService,
   FaviconService,
   GlobalAlarmStatus,
   GlobalAlarmStatusSubscription,
@@ -8,7 +9,6 @@ import {
   YamcsService,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { AuthService } from '../../core/services/AuthService';
 
 @Component({
   selector: 'app-alarm-label',

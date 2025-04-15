@@ -1,6 +1,6 @@
-<app-instance-page>
-  <app-instance-toolbar>
-    <ng-template app-instance-toolbar-label>
+<ya-instance-page>
+  <ya-instance-toolbar>
+    <ng-template ya-instance-toolbar-label>
       Alarms
       <ya-help>
         An alarm can be in these states:
@@ -63,7 +63,7 @@
         Shelve
       </ya-page-button>
     }
-  </app-instance-toolbar>
+  </ya-instance-toolbar>
 
   <ya-detail-pane>
     @if (detailAlarm$ | async; as detailAlarm) {
@@ -118,4 +118,4 @@
       </ya-panel>
     }
   </div>
-</app-instance-page>
+</ya-instance-page>

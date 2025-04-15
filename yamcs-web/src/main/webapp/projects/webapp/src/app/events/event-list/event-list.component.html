@@ -1,5 +1,5 @@
-<app-instance-page>
-  <app-instance-toolbar label="Events">
+<ya-instance-page>
+  <ya-instance-toolbar label="Events">
     @if (mayWriteEvents()) {
       <ya-page-button (clicked)="createEvent()" icon="add_box">Create event</ya-page-button>
     }
@@ -17,7 +17,7 @@
     <ya-page-button matTooltip="Jump to now" (clicked)="jumpToNow()" icon="refresh">
       Jump to now
     </ya-page-button>
-  </app-instance-toolbar>
+  </ya-instance-toolbar>
 
   @if (dataSource) {
     <ya-panel>
@@ -233,4 +233,4 @@
       </mat-toolbar>
     </ya-panel>
   }
-</app-instance-page>
+</ya-instance-page>

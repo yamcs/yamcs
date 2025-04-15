@@ -8,8 +8,6 @@ import {
   YamcsService,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { InstancePageTemplateComponent } from '../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../shared/instance-toolbar/instance-toolbar.component';
 
 interface Result {
   resources: Resource[];
@@ -26,11 +24,7 @@ interface Resource {
 @Component({
   templateUrl: './search.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class SearchComponent {
   term$ = new BehaviorSubject<string | null>(null);

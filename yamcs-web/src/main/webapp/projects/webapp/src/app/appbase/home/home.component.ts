@@ -13,6 +13,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
+  AuthService,
   ConfigService,
   Instance,
   InstancesSubscription,
@@ -20,7 +21,6 @@ import {
   YamcsService,
   utils,
 } from '@yamcs/webapp-sdk';
-import { AuthService } from '../../core/services/AuthService';
 
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
 

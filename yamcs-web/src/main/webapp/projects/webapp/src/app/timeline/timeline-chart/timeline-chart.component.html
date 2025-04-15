@@ -1,5 +1,5 @@
-<app-instance-page [noscroll]="true">
-  <app-instance-toolbar label="Timeline chart">
+<ya-instance-page [noscroll]="true">
+  <ya-instance-toolbar label="Timeline chart">
     @if (views$ | async; as views) {
       @if ((view$ | async) && mayControlTimeline()) {
         <ya-page-button
@@ -63,7 +63,7 @@
         </ya-page-button>
       }
     }
-  </app-instance-toolbar>
+  </ya-instance-toolbar>
 
   <div style="height: 24px; margin: 6px; display: flex; align-items: center">
     <ya-icon-button (click)="pageLeft()" icon="west" />
@@ -100,4 +100,4 @@
       </span>
     }
   </div>
-</app-instance-page>
+</ya-instance-page>

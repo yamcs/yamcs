@@ -5,6 +5,7 @@ import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import {
   ActivityDefinition,
+  AuthService,
   CreateTimelineItemRequest,
   MessageService,
   WebappSdkModule,
@@ -13,19 +14,12 @@ import {
   YamcsService,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { AuthService } from '../../core/services/AuthService';
-import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { ScheduleScriptDialogComponent } from '../schedule-script-dialog/schedule-script-dialog.component';
 
 @Component({
   templateUrl: './run-script.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class RunScriptComponent {
   form: FormGroup;

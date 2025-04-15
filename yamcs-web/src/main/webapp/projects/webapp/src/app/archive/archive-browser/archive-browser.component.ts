@@ -35,8 +35,6 @@ import {
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { StartReplayDialogComponent } from '../../shared/start-replay-dialog/start-replay-dialog.component';
 import { HoveredDateAnnotation } from '../../timeline/timeline-chart/HoveredDateAnnotation';
 import { DownloadDumpDialogComponent } from '../download-dump-dialog/download-dump-dialog.component';
@@ -79,11 +77,7 @@ function makeGradient(rgb: RGB) {
   templateUrl: './archive-browser.component.html',
   styleUrl: './archive-browser.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
   legendOptions = [

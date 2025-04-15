@@ -1,5 +1,5 @@
-<app-instance-page noscroll="true">
-  <app-instance-toolbar label="Archive browser">
+<ya-instance-page noscroll="true">
+  <ya-instance-toolbar label="Archive browser">
     <ya-page-button
       (clicked)="replayRange()"
       [disabled]="!(rangeSelection$ | async)"
@@ -28,7 +28,7 @@
     <ya-page-button (clicked)="refreshData()" matTooltip="Refresh view" icon="refresh">
       Refresh
     </ya-page-button>
-  </app-instance-toolbar>
+  </ya-instance-toolbar>
 
   <div style="height: 24px; margin: 6px">
     <form [formGroup]="filterForm">
@@ -114,4 +114,4 @@
       <p>Pan around by grabbing the canvas.</p>
     </ya-help>
   </div>
-</app-instance-page>
+</ya-instance-page>

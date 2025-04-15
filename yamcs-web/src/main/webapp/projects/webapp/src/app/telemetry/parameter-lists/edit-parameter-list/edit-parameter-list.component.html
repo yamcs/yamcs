@@ -1,6 +1,6 @@
 @if (plist$ | async; as plist) {
-  <app-instance-page>
-    <app-instance-toolbar [label]="'Edit list: ' + plist.name" />
+  <ya-instance-page>
+    <ya-instance-toolbar [label]="'Edit list: ' + plist.name" />
 
     <div class="form-content ya-form">
       <form [formGroup]="form" novalidate>
@@ -58,5 +58,5 @@
         </ya-button>
       </ya-toolbar>
     </div>
-  </app-instance-page>
+  </ya-instance-page>
 }

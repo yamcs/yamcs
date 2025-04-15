@@ -15,20 +15,13 @@ import {
   YaSelectOption,
   utils,
 } from '@yamcs/webapp-sdk';
-import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { AlarmsPageTabsComponent } from '../alarms-page-tabs/alarms-page-tabs.component';
 
 @Component({
   selector: 'app-alarms-action-log-tab',
   templateUrl: './action-log-tab.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AlarmsPageTabsComponent,
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    WebappSdkModule,
-  ],
+  imports: [AlarmsPageTabsComponent, WebappSdkModule],
 })
 export class ActionLogTabComponent extends BaseComponent implements OnInit {
   interval = input<string>();

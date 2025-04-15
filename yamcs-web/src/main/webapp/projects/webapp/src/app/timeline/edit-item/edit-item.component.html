@@ -1,6 +1,6 @@
 @if (item$ | async; as item) {
-  <app-instance-page>
-    <app-instance-toolbar label="Edit item" />
+  <ya-instance-page>
+    <ya-instance-toolbar label="Edit item" />
 
     <div class="form-content ya-form">
       <form [formGroup]="form" novalidate autocomplete="off">
@@ -43,5 +43,5 @@
         </ya-button>
       </ya-toolbar>
     </div>
-  </app-instance-page>
+  </ya-instance-page>
 }
