@@ -17,7 +17,8 @@ import {
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AdminPageTemplateComponent } from '../../shared/admin-page-template/admin-page-template.component';
-import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.component';
+import { AppAdminToolbarLabel } from '../../shared/admin-toolbar/admin-toolbar-label.directive';
+import { AppAdminToolbar } from '../../shared/admin-toolbar/admin-toolbar.component';
 import {
   AddMembersDialogComponent,
   MemberItem,
@@ -26,7 +27,12 @@ import {
 @Component({
   templateUrl: './create-group.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AdminPageTemplateComponent, AdminToolbarComponent, WebappSdkModule],
+  imports: [
+    AdminPageTemplateComponent,
+    AppAdminToolbar,
+    AppAdminToolbarLabel,
+    WebappSdkModule,
+  ],
 })
 export class CreateGroupComponent {
   form: UntypedFormGroup;
@@ -43,7 +49,7 @@ export class CreateGroupComponent {
     private messageService: MessageService,
     readonly location: Location,
   ) {
-    title.setTitle('Create a Group');
+    title.setTitle('Create a group');
     this.form = formBuilder.group({
       name: new UntypedFormControl('', [Validators.required]),
       description: new UntypedFormControl(),

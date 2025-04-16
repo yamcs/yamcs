@@ -35,10 +35,6 @@
   visibility: hidden;
 }
 
-.toolbar-text {
-  font-size: 12px;
-}
-
 .range,
 .processor-time {
   font-size: 12px;

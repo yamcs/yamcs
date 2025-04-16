@@ -8,12 +8,14 @@ import {
   WebsiteConfig,
 } from '@yamcs/webapp-sdk';
 import { Subscription, filter } from 'rxjs';
+import { AppAppBaseToolbarLabel } from '../../../appbase/appbase-toolbar/appbase-toolbar-label.directive';
+import { AppAppBaseToolbar } from '../../../appbase/appbase-toolbar/appbase-toolbar.component';
 
 @Component({
   templateUrl: './admin-page.component.html',
   styleUrl: './admin-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [WebappSdkModule],
+  imports: [AppAppBaseToolbar, AppAppBaseToolbarLabel, WebappSdkModule],
 })
 export class AdminPageComponent implements OnDestroy {
   user: User;

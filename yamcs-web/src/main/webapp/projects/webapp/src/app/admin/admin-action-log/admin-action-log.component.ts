@@ -19,7 +19,7 @@ import {
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, debounceTime } from 'rxjs';
 import { AdminPageTemplateComponent } from '../shared/admin-page-template/admin-page-template.component';
-import { AdminToolbarComponent } from '../shared/admin-toolbar/admin-toolbar.component';
+import { AppAdminToolbar } from '../shared/admin-toolbar/admin-toolbar.component';
 import { RequestOption, Row, RowGroup } from './model';
 
 const defaultInterval = 'NO_LIMIT';
@@ -28,7 +28,7 @@ const defaultInterval = 'NO_LIMIT';
   templateUrl: './admin-action-log.component.html',
   styleUrl: './admin-action-log.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AdminPageTemplateComponent, AdminToolbarComponent, WebappSdkModule],
+  imports: [AdminPageTemplateComponent, AppAdminToolbar, WebappSdkModule],
 })
 export class AdminActionLogComponent implements OnInit {
   filter = input<string>();
@@ -70,7 +70,7 @@ export class AdminActionLogComponent implements OnInit {
     private messageService: MessageService,
     title: Title,
   ) {
-    title.setTitle('Admin Area');
+    title.setTitle('Admin area');
   }
 
   ngOnInit(): void {

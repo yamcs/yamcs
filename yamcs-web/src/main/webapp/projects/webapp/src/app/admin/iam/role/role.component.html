@@ -1,8 +1,7 @@
 @if (role$ | async; as role) {
   <app-admin-page>
-    <app-admin-toolbar>
-      {{ role.name }}
-    </app-admin-toolbar>
+    <app-admin-toolbar [label]="role.name" />
+
     <ya-panel class="ya-link">
       <h4>Description</h4>
       <div style="white-space: pre-wrap">{{ role.description || "-" }}</div>

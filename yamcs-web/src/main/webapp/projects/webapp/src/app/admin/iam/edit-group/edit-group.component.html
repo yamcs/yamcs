@@ -1,6 +1,7 @@
 @if (group$ | async; as group) {
   <app-admin-page>
-    <app-admin-toolbar>Edit Group: {{ group.name }}</app-admin-toolbar>
+    <app-admin-toolbar [label]="'Edit Group: ' + group.name" />
+
     <div class="form-content ya-form">
       <form [formGroup]="form" novalidate autocomplete="off">
         <ya-field label="Name">

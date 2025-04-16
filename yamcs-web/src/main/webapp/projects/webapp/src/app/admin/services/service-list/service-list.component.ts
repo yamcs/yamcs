@@ -11,7 +11,7 @@ import {
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AdminPageTemplateComponent } from '../../shared/admin-page-template/admin-page-template.component';
-import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.component';
+import { AppAdminToolbar } from '../../shared/admin-toolbar/admin-toolbar.component';
 import { ServicesTableComponent } from '../services-table/services-table.component';
 
 @Component({
@@ -19,7 +19,7 @@ import { ServicesTableComponent } from '../services-table/services-table.compone
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AdminPageTemplateComponent,
-    AdminToolbarComponent,
+    AppAdminToolbar,
     ServicesTableComponent,
     WebappSdkModule,
   ],

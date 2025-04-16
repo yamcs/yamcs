@@ -1,37 +1,34 @@
 <ya-message-bar #messageBar />
 
-<mat-toolbar class="top">
-  <mat-toolbar-row>
-    Instances &nbsp;&nbsp;&nbsp;
-    @if (isCreateInstanceEnabled()) {
-      <ya-page-button routerLink="create-instance" icon="add_box">Create instance</ya-page-button>
-    }
-    @if (mayControlServices()) {
-      <ya-page-button
-        [disabled]="!isGroupStartEnabled()"
-        (clicked)="startSelectedInstances()"
-        icon="play_arrow">
-        Start
-      </ya-page-button>
-    }
-    @if (mayControlServices()) {
-      <ya-page-button
-        [disabled]="!isGroupStopEnabled()"
-        (clicked)="stopSelectedInstances()"
-        icon="stop">
-        Stop
-      </ya-page-button>
-    }
-    @if (mayControlServices()) {
-      <ya-page-button
-        [disabled]="!isGroupRestartEnabled()"
-        (clicked)="restartSelectedInstances()"
-        icon="sync_problem">
-        Restart
-      </ya-page-button>
-    }
-  </mat-toolbar-row>
-</mat-toolbar>
+<app-appbase-toolbar label="Instances">
+  @if (isCreateInstanceEnabled()) {
+    <ya-page-button routerLink="create-instance" icon="add_box">Create instance</ya-page-button>
+  }
+  @if (mayControlServices()) {
+    <ya-page-button
+      [disabled]="!isGroupStartEnabled()"
+      (clicked)="startSelectedInstances()"
+      icon="play_arrow">
+      Start
+    </ya-page-button>
+  }
+  @if (mayControlServices()) {
+    <ya-page-button
+      [disabled]="!isGroupStopEnabled()"
+      (clicked)="stopSelectedInstances()"
+      icon="stop">
+      Stop
+    </ya-page-button>
+  }
+  @if (mayControlServices()) {
+    <ya-page-button
+      [disabled]="!isGroupRestartEnabled()"
+      (clicked)="restartSelectedInstances()"
+      icon="sync_problem">
+      Restart
+    </ya-page-button>
+  }
+</app-appbase-toolbar>
 
 <ya-panel>
   <ya-filter-bar>
@@ -42,6 +39,7 @@
       (onArrowUp)="selectPrevious()"
       (onEnter)="applySelection()" />
   </ya-filter-bar>
+
   <table
     mat-table
     [dataSource]="dataSource"
