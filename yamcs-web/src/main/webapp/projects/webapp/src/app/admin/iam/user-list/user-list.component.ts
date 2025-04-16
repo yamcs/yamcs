@@ -15,7 +15,7 @@ import {
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { AdminPageTemplateComponent } from '../../shared/admin-page-template/admin-page-template.component';
-import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.component';
+import { AppAdminToolbar } from '../../shared/admin-toolbar/admin-toolbar.component';
 import { UsersTableComponent } from '../users-table/users-table.component';
 
 @Component({
@@ -23,7 +23,7 @@ import { UsersTableComponent } from '../users-table/users-table.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AdminPageTemplateComponent,
-    AdminToolbarComponent,
+    AppAdminToolbar,
     WebappSdkModule,
     UsersTableComponent,
   ],

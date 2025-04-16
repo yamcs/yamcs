@@ -17,7 +17,7 @@ import {
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { AdminPageTemplateComponent } from '../../shared/admin-page-template/admin-page-template.component';
-import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.component';
+import { AppAdminToolbar } from '../../shared/admin-toolbar/admin-toolbar.component';
 import {
   AddMembersDialogComponent,
   MemberItem,
@@ -26,7 +26,7 @@ import {
 @Component({
   templateUrl: './edit-group.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AdminPageTemplateComponent, AdminToolbarComponent, WebappSdkModule],
+  imports: [AdminPageTemplateComponent, AppAdminToolbar, WebappSdkModule],
 })
 export class EditGroupComponent implements OnDestroy {
   form: UntypedFormGroup;
@@ -48,7 +48,7 @@ export class EditGroupComponent implements OnDestroy {
     private dialog: MatDialog,
     readonly location: Location,
   ) {
-    title.setTitle('Edit Group');
+    title.setTitle('Edit group');
     const name = route.snapshot.paramMap.get('name')!;
     this.group$ = yamcs.yamcsClient.getGroup(name);
     this.group$.then((group) => {

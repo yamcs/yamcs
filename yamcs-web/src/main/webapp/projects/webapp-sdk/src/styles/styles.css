@@ -159,23 +159,6 @@ input.ng-invalid:not(.ng-pristine),
   padding-bottom: 12px;
 }
 
-.mat-toolbar.top {
-  min-height: 48px;
-}
-
-.mat-toolbar.top .mat-toolbar-row {
-  height: 48px;
-  font-weight: 400;
-}
-
-.mat-toolbar.top .mat-mdc-button.icon {
-  min-width: unset;
-}
-
-.mat-toolbar.top .mat-mdc-button.icon > mat-icon {
-  margin-right: 0;
-}
-
 .mat-mdc-tab-link:hover {
   background-color: rgba(0, 0, 0, 0.04);
 }

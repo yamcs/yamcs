@@ -1,9 +1,9 @@
-<mat-toolbar class="top">
-  <mat-toolbar-row>
+<app-appbase-toolbar>
+  <ng-template app-appbase-toolbar-label>
     <ya-page-icon-button routerLink="/" color="primary" icon="arrow_back" />
     Create an instance
-  </mat-toolbar-row>
-</mat-toolbar>
+  </ng-template>
+</app-appbase-toolbar>
 
 <app-create-instance-wizard-step step="1" />
 

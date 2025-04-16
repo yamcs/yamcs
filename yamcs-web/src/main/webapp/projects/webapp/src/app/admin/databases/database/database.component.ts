@@ -11,7 +11,8 @@ import {
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { AdminPageTemplateComponent } from '../../shared/admin-page-template/admin-page-template.component';
-import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.component';
+import { AppAdminToolbarLabel } from '../../shared/admin-toolbar/admin-toolbar-label.directive';
+import { AppAdminToolbar } from '../../shared/admin-toolbar/admin-toolbar.component';
 
 interface DatabaseObject {
   type: 'table' | 'stream';
@@ -22,7 +23,12 @@ interface DatabaseObject {
   templateUrl: './database.component.html',
   styleUrl: './database.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AdminPageTemplateComponent, AdminToolbarComponent, WebappSdkModule],
+  imports: [
+    AdminPageTemplateComponent,
+    AppAdminToolbar,
+    AppAdminToolbarLabel,
+    WebappSdkModule,
+  ],
 })
 export class DatabaseComponent implements OnDestroy {
   database$: Promise<Database>;

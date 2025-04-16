@@ -17,7 +17,7 @@ import {
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { AdminPageTemplateComponent } from '../../shared/admin-page-template/admin-page-template.component';
-import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.component';
+import { AppAdminToolbar } from '../../shared/admin-toolbar/admin-toolbar.component';
 import {
   AddRolesDialogComponent,
   RoleItem,
@@ -26,7 +26,7 @@ import {
 @Component({
   templateUrl: './edit-user.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AdminPageTemplateComponent, AdminToolbarComponent, WebappSdkModule],
+  imports: [AdminPageTemplateComponent, AppAdminToolbar, WebappSdkModule],
 })
 export class EditUserComponent implements OnDestroy {
   form: UntypedFormGroup;
@@ -48,7 +48,7 @@ export class EditUserComponent implements OnDestroy {
     private dialog: MatDialog,
     readonly location: Location,
   ) {
-    title.setTitle('Edit User');
+    title.setTitle('Edit user');
     const username = route.snapshot.paramMap.get('username')!;
     this.user$ = yamcs.yamcsClient.getUser(username);
     this.user$.then((user) => {

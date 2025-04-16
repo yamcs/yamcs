@@ -16,12 +16,19 @@ import { BehaviorSubject } from 'rxjs';
 import { CreateInstanceWizardStepComponent } from '../create-instance-wizard-step/create-instance-wizard-step.component';
 
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
+import { AppAppBaseToolbarLabel } from '../appbase-toolbar/appbase-toolbar-label.directive';
+import { AppAppBaseToolbar } from '../appbase-toolbar/appbase-toolbar.component';
 
 @Component({
   templateUrl: './create-instance-page2.component.html',
   styleUrl: './create-instance-page2.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CreateInstanceWizardStepComponent, WebappSdkModule],
+  imports: [
+    AppAppBaseToolbar,
+    AppAppBaseToolbarLabel,
+    CreateInstanceWizardStepComponent,
+    WebappSdkModule,
+  ],
 })
 export class CreateInstancePage2Component {
   form: UntypedFormGroup;
@@ -35,7 +42,7 @@ export class CreateInstancePage2Component {
     title: Title,
     route: ActivatedRoute,
   ) {
-    title.setTitle('Create an Instance');
+    title.setTitle('Create an instance');
     this.form = formBuilder.group({
       name: new UntypedFormControl('', [Validators.required]),
     });

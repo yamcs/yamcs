@@ -1,6 +1,5 @@
 <app-admin-page>
-  <app-admin-toolbar>
-    Threads &nbsp;&nbsp;&nbsp;
+  <app-admin-toolbar label="Threads">
     <a mat-button color="primary" [href]="threadDumpURL">
       <mat-icon>notes</mat-icon>
       Text dump
@@ -17,11 +16,13 @@
         <br />
         <app-threads-table [threads]="allThreads$ | async" [filter]="filterValue$ | async" />
       </mat-tab>
+
       <mat-tab>
         <ng-template mat-tab-label>RUNNABLE ({{ runnableThreadCount$ | async }})</ng-template>
         <br />
         <app-threads-table [threads]="runnableThreads$ | async" [filter]="filterValue$ | async" />
       </mat-tab>
+
       <mat-tab>
         <ng-template mat-tab-label>
           TIMED WAITING ({{ timedWaitingThreadCount$ | async }})
@@ -31,11 +32,13 @@
           [threads]="timedWaitingThreads$ | async"
           [filter]="filterValue$ | async" />
       </mat-tab>
+
       <mat-tab>
         <ng-template mat-tab-label>WAITING ({{ waitingThreadCount$ | async }})</ng-template>
         <br />
         <app-threads-table [threads]="waitingThreads$ | async" [filter]="filterValue$ | async" />
       </mat-tab>
+
       <mat-tab>
         <ng-template mat-tab-label>BLOCKED ({{ blockedThreadCount$ | async }})</ng-template>
         <br />

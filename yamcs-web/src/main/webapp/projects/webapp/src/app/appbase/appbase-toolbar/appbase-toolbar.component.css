@@ -13,14 +13,19 @@
   letter-spacing: 0.25px;
 }
 
-.app-storage-toolbar-label {
+.app-appbase-toolbar-label {
   display: inline-flex;
   align-items: center;
   margin-right: 48px;
 }
 
-.app-storage-toolbar-content {
+.app-appbase-toolbar-content {
   display: inline-flex;
   align-items: center;
   column-gap: 8px;
+}
+
+.icon-action {
+  display: flex;
+  align-items: center;
 }

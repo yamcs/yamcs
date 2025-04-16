@@ -1,7 +1,9 @@
 <app-admin-page>
   <app-admin-toolbar>
-    <ya-page-icon-button routerLink=".." icon="arrow_back" />
-    Create group
+    <ng-template app-admin-toolbar-label>
+      <ya-page-icon-button routerLink=".." icon="arrow_back" />
+      Create group
+    </ng-template>
   </app-admin-toolbar>
 
   <div class="form-content ya-form">

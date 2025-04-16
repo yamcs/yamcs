@@ -7,10 +7,10 @@
           [queryParams]="{ c: yamcs.context }"
           icon="arrow_back" />
         {{ packet.id.name }} / {{ packet.generationTime }} / {{ packet.sequenceNumber }}
-        &nbsp;&nbsp;&nbsp;
-        <ya-page-button (clicked)="expandAll()" icon="unfold_more">Expand all</ya-page-button>
-        <ya-page-button (clicked)="collapseAll()" icon="unfold_less">Collapse all</ya-page-button>
       </ng-template>
+
+      <ya-page-button (clicked)="expandAll()" icon="unfold_more">Expand all</ya-page-button>
+      <ya-page-button (clicked)="collapseAll()" icon="unfold_less">Collapse all</ya-page-button>
     </ya-instance-toolbar>
 
     <ya-detail-pane [alwaysOpen]="true">
