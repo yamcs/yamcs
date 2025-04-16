@@ -1,3 +1,25 @@
+.style-table {
+  width: 100%;
+  overflow: auto;
+  border-spacing: 0;
+  border-collapse: collapse;
+}
+
+.style-table th,
+.style-table td {
+  border-top: 1px solid rgba(0, 0, 0, 0.03);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.style-table th {
+  background-color: var(--y-background-color);
+  text-align: left;
+  font-weight: 500;
+  color: black;
+  width: 150px;
+  vertical-align: top;
+}
+
 .style-table .property {
   font-weight: 500;
   font-size: 11px;

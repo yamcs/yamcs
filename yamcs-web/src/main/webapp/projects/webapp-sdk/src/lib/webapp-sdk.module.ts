@@ -33,6 +33,7 @@ import { YaAttr } from './components/attr-list/attr.component';
 import { YaBinaryInput } from './components/binary-input/binary-input.component';
 import { YaBreadcrumbTrail } from './components/breadcrumb/breadcrumb-trail.component';
 import { YaBreadcrumb } from './components/breadcrumb/breadcrumb.component';
+import { YaButtonGroup } from './components/button-group/button-group.component';
 import { YaButton } from './components/button/button.component';
 import { YaColorInput } from './components/color-input/color-input.component';
 import { YaColumnChooser } from './components/column-chooser/column-chooser.component';
@@ -93,12 +94,9 @@ import { YaValue } from './components/value/value.component';
 import { YaVerticalDivider } from './components/vertical-divider/vertical-divider.component';
 import { YaWarningMessage } from './components/warning-message/warning-message.component';
 import { DataTableDirective } from './directives/data-table.directive';
-import { SimpleTableDirective } from './directives/simple-table.directive';
-import { TableDirective } from './directives/table.directive';
 import { AliasPipe } from './pipes/alias.pipe';
 import { ArrayContainsPipe } from './pipes/array-contains.pipe';
 import { BasenamePipe } from './pipes/basename.pipe';
-import { ClassNameHtmlPipe } from './pipes/class-name-html.pipe';
 import { DataRatePipe } from './pipes/data-rate.pipe';
 import { DateTimePipe } from './pipes/datetime.pipe';
 import { DefaultProcessorPipe } from './pipes/default-processor.pipe';
@@ -134,7 +132,6 @@ const pipes = [
   AliasPipe,
   ArrayContainsPipe,
   BasenamePipe,
-  ClassNameHtmlPipe,
   DataRatePipe,
   DateTimePipe,
   DefaultProcessorPipe,
@@ -168,8 +165,6 @@ const pipes = [
 const directives = [
   DataTableDirective,
   PrintableDirective,
-  SimpleTableDirective,
-  TableDirective,
   YaAttrLabel,
   YaFieldLabel,
   YaHref,
@@ -186,6 +181,7 @@ const sharedComponents = [
   YaBreadcrumb,
   YaBreadcrumbTrail,
   YaButton,
+  YaButtonGroup,
   YaColorInput,
   YaColumnChooser,
   YaDateTimeInput,

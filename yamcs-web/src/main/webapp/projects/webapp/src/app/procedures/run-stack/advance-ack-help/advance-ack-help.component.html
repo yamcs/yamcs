@@ -3,7 +3,7 @@
     Configure the acknowledgment which is required to be successful before advancing to the next
     command in the stack.
   </p>
-  <table yaSimpleTable style="width: 100%">
+  <table yaDataTable style="width: 100%">
     <tr>
       <th width="1">Queued</th>
       <td>The command was accepted into a Yamcs queue.</td>
@@ -14,7 +14,7 @@
     </tr>
     <tr>
       <th>Sent</th>
-      <td>The command was processed by a Yamcs link.</td>
+      <td>The command went through a Yamcs link.</td>
     </tr>
     <tr>
       <th>Completed</th>
@@ -30,7 +30,7 @@
   @if (verifiers.length) {
     <p>&nbsp;</p>
     <p>Verifiers:</p>
-    <table yaSimpleTable style="width: 100%">
+    <table yaDataTable style="width: 100%">
       @for (ack of verifiers; track ack) {
         <tr>
           <th>{{ ack.name }}</th>
@@ -42,7 +42,7 @@
   @if (extra.length) {
     <p>&nbsp;</p>
     <p>Extra acknowledgments:</p>
-    <table yaSimpleTable style="width: 100%">
+    <table yaDataTable style="width: 100%">
       @for (ack of extra; track ack) {
         <tr>
           <th>{{ ack.name.replace("Acknowledge_", "") }}</th>

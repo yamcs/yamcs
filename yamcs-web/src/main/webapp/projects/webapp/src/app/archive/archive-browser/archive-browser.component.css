@@ -1,7 +1,5 @@
 .tooltip {
   position: absolute;
-  /*background-color: red;*/
-  /*display: none;*/
 }
 
 .timeline-container {
@@ -50,12 +48,20 @@
 }
 
 label.legend {
+  height: 22px;
   font-size: 12px;
   padding: 0 5px;
-  margin-right: 10px;
   border: 1px solid rgba(0, 0, 0, 0.1);
   display: inline-flex;
   align-items: center;
   user-select: none;
   -webkit-user-select: none;
+}
+
+.controls {
+  height: 24px;
+  margin: 6px;
+  display: flex;
+  align-items: center;
+  column-gap: 7px;
 }
