@@ -40,6 +40,9 @@ import { StartReplayDialogComponent } from './start-replay-dialog.component';
       useExisting: YaInstanceToolbar,
     },
   ],
+  host: {
+    class: 'ya-instance-toolbar',
+  },
   imports: [
     AsyncPipe,
     CdkPortalOutlet,

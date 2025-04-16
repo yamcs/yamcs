@@ -9,12 +9,13 @@ import {
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { SignificanceLevelComponent } from '../../shared/significance-level/significance-level.component';
+import { AppAppBaseToolbar } from '../appbase-toolbar/appbase-toolbar.component';
 
 @Component({
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [WebappSdkModule, SignificanceLevelComponent],
+  imports: [AppAppBaseToolbar, WebappSdkModule, SignificanceLevelComponent],
 })
 export class ProfileComponent {
   user$ = new BehaviorSubject<User | null>(null);

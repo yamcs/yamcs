@@ -1,6 +1,5 @@
 <app-storage-page>
-  <app-storage-toolbar>
-    Storage &nbsp;&nbsp;&nbsp;
+  <app-storage-toolbar label="Storage">
     @if (mayManageBuckets()) {
       <ya-page-button (clicked)="createBucket()" icon="add_box">Create bucket</ya-page-button>
     }

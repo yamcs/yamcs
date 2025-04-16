@@ -11,7 +11,7 @@ import {
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AdminPageTemplateComponent } from '../../shared/admin-page-template/admin-page-template.component';
-import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.component';
+import { AppAdminToolbar } from '../../shared/admin-toolbar/admin-toolbar.component';
 import { ReplicationStateComponent } from '../replication-state/replication-state.component';
 import { ShowStreamsDialogComponent } from '../show-streams-dialog/show-streams-dialog.component';
 
@@ -21,7 +21,7 @@ import { ShowStreamsDialogComponent } from '../show-streams-dialog/show-streams-
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AdminPageTemplateComponent,
-    AdminToolbarComponent,
+    AppAdminToolbar,
     ReplicationStateComponent,
     WebappSdkModule,
   ],

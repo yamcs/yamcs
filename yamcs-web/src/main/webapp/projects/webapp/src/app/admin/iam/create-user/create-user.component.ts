@@ -14,12 +14,18 @@ import {
   YamcsService,
 } from '@yamcs/webapp-sdk';
 import { AdminPageTemplateComponent } from '../../shared/admin-page-template/admin-page-template.component';
-import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.component';
+import { AppAdminToolbarLabel } from '../../shared/admin-toolbar/admin-toolbar-label.directive';
+import { AppAdminToolbar } from '../../shared/admin-toolbar/admin-toolbar.component';
 
 @Component({
   templateUrl: './create-user.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AdminPageTemplateComponent, AdminToolbarComponent, WebappSdkModule],
+  imports: [
+    AdminPageTemplateComponent,
+    AppAdminToolbar,
+    AppAdminToolbarLabel,
+    WebappSdkModule,
+  ],
 })
 export class CreateUserComponent {
   form: UntypedFormGroup;
@@ -31,7 +37,7 @@ export class CreateUserComponent {
     private yamcs: YamcsService,
     private messageService: MessageService,
   ) {
-    title.setTitle('Create a User');
+    title.setTitle('Create a user');
     this.form = formBuilder.group({
       name: new UntypedFormControl('', [Validators.required]),
       displayName: new UntypedFormControl(),

@@ -5,12 +5,18 @@ import { InstanceTemplate, YamcsService } from '@yamcs/webapp-sdk';
 import { CreateInstanceWizardStepComponent } from '../create-instance-wizard-step/create-instance-wizard-step.component';
 
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
+import { AppAppBaseToolbarLabel } from '../appbase-toolbar/appbase-toolbar-label.directive';
+import { AppAppBaseToolbar } from '../appbase-toolbar/appbase-toolbar.component';
 
 @Component({
   templateUrl: './create-instance-page1.component.html',
-  styleUrl: './create-instance-page1.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CreateInstanceWizardStepComponent, WebappSdkModule],
+  imports: [
+    AppAppBaseToolbar,
+    AppAppBaseToolbarLabel,
+    CreateInstanceWizardStepComponent,
+    WebappSdkModule,
+  ],
 })
 export class CreateInstancePage1Component {
   dataSource = new MatTableDataSource<InstanceTemplate>([]);
@@ -21,7 +27,7 @@ export class CreateInstancePage1Component {
     private yamcs: YamcsService,
     title: Title,
   ) {
-    title.setTitle('Create an Instance');
+    title.setTitle('Create an instance');
     this.yamcs.yamcsClient.getInstanceTemplates().then((templates) => {
       this.dataSource.data = templates;
     });

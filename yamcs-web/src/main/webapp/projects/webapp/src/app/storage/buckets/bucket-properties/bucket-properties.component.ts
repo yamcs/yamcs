@@ -9,7 +9,8 @@ import {
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { StoragePageTemplateComponent } from '../../storage-page-template/storage-page-template.component';
-import { StorageToolbarComponent } from '../../storage-toolbar/storage-toolbar.component';
+import { AppStorageToolbarLabel } from '../../storage-toolbar/storage-toolbar-label.directive';
+import { AppStorageToolbar } from '../../storage-toolbar/storage-toolbar.component';
 import { BucketPageTabsComponent } from '../bucket-page-tabs/bucket-page-tabs.component';
 
 @Component({
@@ -17,10 +18,11 @@ import { BucketPageTabsComponent } from '../bucket-page-tabs/bucket-page-tabs.co
   styleUrl: './bucket-properties.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    AppStorageToolbar,
+    AppStorageToolbarLabel,
     BucketPageTabsComponent,
-    WebappSdkModule,
     StoragePageTemplateComponent,
-    StorageToolbarComponent,
+    WebappSdkModule,
   ],
 })
 export class BucketPropertiesComponent {

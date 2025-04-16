@@ -1,9 +1,12 @@
 @if (thread$ | async; as thread) {
   <app-admin-page>
     <app-admin-toolbar>
-      <ya-page-icon-button routerLink=".." icon="arrow_back" />
-      {{ thread.name }}
+      <ng-template app-admin-toolbar-label>
+        <ya-page-icon-button routerLink=".." icon="arrow_back" />
+        {{ thread.name }}
+      </ng-template>
     </app-admin-toolbar>
+
     <ya-panel class="ya-link">
       <dl class="dl-horizontal no-lead">
         <dt>ID</dt>

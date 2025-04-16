@@ -1,31 +1,34 @@
 @if (database$ | async; as database) {
   <app-admin-page>
     <app-admin-toolbar>
-      <ya-page-icon-button routerLink="/admin/databases" icon="account_tree" />
-      <mat-icon class="icon14 sep">navigate_next</mat-icon>
-      <a class="ya-link ya-header-link" [routerLink]="['/admin/databases', database.name]">
-        {{ database.name }}
-      </a>
-      @if (object$ | async; as obj) {
+      <ng-template app-admin-toolbar-label>
+        <ya-page-icon-button routerLink="/admin/databases" icon="account_tree" />
         <mat-icon class="icon14 sep">navigate_next</mat-icon>
-        @if (obj.type === "table") {
-          <a
-            class="ya-link ya-header-link"
-            [routerLink]="['/admin/databases', database.name, 'tables']">
-            Tables
-          </a>
+        <a class="ya-link ya-header-link" [routerLink]="['/admin/databases', database.name]">
+          {{ database.name }}
+        </a>
+        @if (object$ | async; as obj) {
+          <mat-icon class="icon14 sep">navigate_next</mat-icon>
+          @if (obj.type === "table") {
+            <a
+              class="ya-link ya-header-link"
+              [routerLink]="['/admin/databases', database.name, 'tables']">
+              Tables
+            </a>
+          }
+          @if (obj.type === "stream") {
+            <a
+              class="ya-link ya-header-link"
+              [routerLink]="['/admin/databases', database.name, 'streams']">
+              Streams
+            </a>
+          }
+          <mat-icon class="icon14 sep">navigate_next</mat-icon>
+          {{ obj.name }}
         }
-        @if (obj.type === "stream") {
-          <a
-            class="ya-link ya-header-link"
-            [routerLink]="['/admin/databases', database.name, 'streams']">
-            Streams
-          </a>
-        }
-        <mat-icon class="icon14 sep">navigate_next</mat-icon>
-        {{ obj.name }}
-      }
+      </ng-template>
     </app-admin-toolbar>
+
     <nav mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
       @if (!(object$ | async)) {
         <a

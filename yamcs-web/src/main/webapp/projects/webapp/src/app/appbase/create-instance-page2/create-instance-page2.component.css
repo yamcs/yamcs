@@ -1,18 +1,3 @@
-mat-toolbar {
-  border-bottom: 1px solid #d3d3d3;
-  background-color: #fff;
-  box-sizing: content-box;
-  color: rgba(0, 0, 0, 0.654);
-}
-
-mat-toolbar-row {
-  padding-left: 24px;
-}
-
-.toolbar-text {
-  font-size: 12px;
-}
-
 .form-content {
   font:
     400 12px / 20px Roboto,

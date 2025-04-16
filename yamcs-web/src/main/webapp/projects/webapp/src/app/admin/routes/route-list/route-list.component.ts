@@ -11,7 +11,7 @@ import { ActivatedRoute } from '@angular/router';
 import { BaseComponent, Route, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AdminPageTemplateComponent } from '../../shared/admin-page-template/admin-page-template.component';
-import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.component';
+import { AppAdminToolbar } from '../../shared/admin-toolbar/admin-toolbar.component';
 import { RouteDetailComponent } from '../route-detail/route-detail.component';
 
 @Component({
@@ -20,7 +20,7 @@ import { RouteDetailComponent } from '../route-detail/route-detail.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AdminPageTemplateComponent,
-    AdminToolbarComponent,
+    AppAdminToolbar,
     RouteDetailComponent,
     WebappSdkModule,
   ],

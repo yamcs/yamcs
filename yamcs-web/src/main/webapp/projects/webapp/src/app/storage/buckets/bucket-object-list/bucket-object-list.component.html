@@ -1,9 +1,10 @@
 <app-storage-page>
   <app-storage-toolbar>
-    <ya-page-icon-button routerLink="/storage/buckets" icon="arrow_back" />
-    {{ name }}
+    <ng-template app-storage-toolbar-label>
+      <ya-page-icon-button routerLink="/storage/buckets" icon="arrow_back" />
+      {{ name }}
+    </ng-template>
 
-    &nbsp;&nbsp;&nbsp;
     <ya-page-button (clicked)="uploader.click()" icon="file_upload">
       Upload files
       <input #uploader type="file" hidden multiple (change)="uploadObjects()" />

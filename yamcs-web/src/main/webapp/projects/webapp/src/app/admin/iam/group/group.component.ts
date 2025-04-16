@@ -4,12 +4,12 @@ import { ActivatedRoute } from '@angular/router';
 import { GroupInfo, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AdminPageTemplateComponent } from '../../shared/admin-page-template/admin-page-template.component';
-import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.component';
+import { AppAdminToolbar } from '../../shared/admin-toolbar/admin-toolbar.component';
 
 @Component({
   templateUrl: './group.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AdminPageTemplateComponent, AdminToolbarComponent, WebappSdkModule],
+  imports: [AdminPageTemplateComponent, AppAdminToolbar, WebappSdkModule],
 })
 export class GroupComponent {
   group$ = new BehaviorSubject<GroupInfo | null>(null);

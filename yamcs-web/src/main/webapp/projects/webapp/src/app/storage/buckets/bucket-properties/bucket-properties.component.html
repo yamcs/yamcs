@@ -1,11 +1,13 @@
 <app-storage-page>
   <app-storage-toolbar>
-    <ya-page-icon-button routerLink="/storage/buckets" icon="arrow_back" />
-    {{ name }}
+    <ng-template app-storage-toolbar-label>
+      <ya-page-icon-button routerLink="/storage/buckets" icon="arrow_back" />
+      {{ name }}
+    </ng-template>
   </app-storage-toolbar>
 
   <ya-panel>
-    <app-bucket-page-tabs [bucket]="name"></app-bucket-page-tabs>
+    <app-bucket-page-tabs [bucket]="name" />
     @if (bucket$ | async; as bucket) {
       <div class="small" style="margin-top: 16px">
         <dl class="dl-horizontal">

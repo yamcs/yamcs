@@ -1,7 +1,6 @@
 <app-admin-page>
-  <app-admin-toolbar>
-    Services &nbsp;&nbsp;&nbsp;
-    <ya-page-icon-button (clicked)="refresh()" matTooltip="Refresh view" icon="refresh" />
+  <app-admin-toolbar label="Services">
+    <ya-page-button (clicked)="refresh()" icon="refresh">Refresh view</ya-page-button>
   </app-admin-toolbar>
 
   <ya-panel>

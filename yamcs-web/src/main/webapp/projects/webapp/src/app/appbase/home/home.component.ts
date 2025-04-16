@@ -18,17 +18,17 @@ import {
   Instance,
   InstancesSubscription,
   MessageService,
+  WebappSdkModule,
   YamcsService,
   utils,
 } from '@yamcs/webapp-sdk';
-
-import { WebappSdkModule } from '@yamcs/webapp-sdk';
+import { AppAppBaseToolbar } from '../appbase-toolbar/appbase-toolbar.component';
 
 @Component({
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [WebappSdkModule],
+  imports: [AppAppBaseToolbar, WebappSdkModule],
 })
 export class HomeComponent implements AfterViewInit, OnDestroy {
   filterControl = new UntypedFormControl();

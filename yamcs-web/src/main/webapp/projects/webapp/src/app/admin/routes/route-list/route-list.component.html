@@ -1,7 +1,6 @@
 <app-admin-page>
-  <app-admin-toolbar>
-    API routes &nbsp;&nbsp;&nbsp;
-    <ya-page-icon-button (clicked)="refresh()" matTooltip="Refresh view" icon="refresh" />
+  <app-admin-toolbar label="API routes">
+    <ya-page-button (clicked)="refresh()" icon="refresh">Refresh view</ya-page-button>
   </app-admin-toolbar>
 
   <ya-detail-pane>

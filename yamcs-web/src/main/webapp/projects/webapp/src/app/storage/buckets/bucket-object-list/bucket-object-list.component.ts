@@ -22,7 +22,8 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import * as dnd from '../../../shared/dnd';
 import { StoragePageTemplateComponent } from '../../storage-page-template/storage-page-template.component';
-import { StorageToolbarComponent } from '../../storage-toolbar/storage-toolbar.component';
+import { AppStorageToolbarLabel } from '../../storage-toolbar/storage-toolbar-label.directive';
+import { AppStorageToolbar } from '../../storage-toolbar/storage-toolbar.component';
 import { BucketPageTabsComponent } from '../bucket-page-tabs/bucket-page-tabs.component';
 import { CreateFolderDialogComponent } from '../create-folder-dialog/create-folder-dialog.component';
 import { RenameObjectDialogComponent } from '../rename-object-dialog/rename-object-dialog.component';
@@ -35,10 +36,11 @@ import { ViewObjectMetadataDialogComponent } from '../view-object-metadata-dialo
   styleUrl: './bucket-object-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    AppStorageToolbar,
+    AppStorageToolbarLabel,
     BucketPageTabsComponent,
-    WebappSdkModule,
     StoragePageTemplateComponent,
-    StorageToolbarComponent,
+    WebappSdkModule,
   ],
 })
 export class BucketObjectListComponent implements OnDestroy {

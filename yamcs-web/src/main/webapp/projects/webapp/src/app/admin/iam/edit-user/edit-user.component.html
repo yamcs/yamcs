@@ -1,6 +1,7 @@
 @if (user$ | async; as user) {
   <app-admin-page>
-    <app-admin-toolbar>Edit user: {{ user.displayName || user.name }}</app-admin-toolbar>
+    <app-admin-toolbar [label]="'Edit user: ' + (user.displayName || user.name)" />
+
     <div class="form-content ya-form">
       <form [formGroup]="form" novalidate autocomplete="off">
         <ya-field label="Username">

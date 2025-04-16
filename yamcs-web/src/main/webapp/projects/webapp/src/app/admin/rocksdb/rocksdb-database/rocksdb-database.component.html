@@ -1,9 +1,11 @@
 @if (properties$ | async; as properties) {
   <app-admin-page>
     <app-admin-toolbar>
-      <ya-page-icon-button routerLink="/admin/rocksdb/databases" icon="arrow_back" />
-      {{ tablespace }}://{{ dbPath }}
-      &nbsp;&nbsp;&nbsp;
+      <ng-template app-admin-toolbar-label>
+        <ya-page-icon-button routerLink="/admin/rocksdb/databases" icon="arrow_back" />
+        {{ tablespace }}://{{ dbPath }}
+      </ng-template>
+
       <ya-page-button [matMenuTriggerFor]="compactMenu" icon="fullscreen_exit" dropdown="true">
         Compact
       </ya-page-button>
@@ -38,6 +40,7 @@
         </button>
       </mat-menu>
     </app-admin-toolbar>
+
     <ya-panel>
       <dl class="dl-horizontal">
         <dt>Tablespace</dt>
