@@ -18,3 +18,11 @@
   font-size: 12px;
   line-height: 12px;
 }
+
+.controls {
+  height: 24px;
+  margin: 6px;
+  display: flex;
+  align-items: center;
+  column-gap: 7px;
+}

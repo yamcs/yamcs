@@ -1814,7 +1814,8 @@ export default class YamcsClient implements HttpHandler {
   }
 
   async getParameter(instance: string, qualifiedName: string) {
-    const url = `${this.apiUrl}/mdb/${instance}/parameters${qualifiedName}`;
+    const encodedName = this.encodeParameterName(qualifiedName);
+    const url = `${this.apiUrl}/mdb/${instance}/parameters${encodedName}`;
     const response = await this.doFetch(url);
     return (await response.json()) as Parameter;
   }
@@ -1841,7 +1842,8 @@ export default class YamcsClient implements HttpHandler {
   }
 
   async getParameterType(instance: string, qualifiedName: string) {
-    const url = `${this.apiUrl}/mdb/${instance}/parameter-types${qualifiedName}`;
+    const encodedName = this.encodeParameterName(qualifiedName);
+    const url = `${this.apiUrl}/mdb/${instance}/parameter-types${encodedName}`;
     const response = await this.doFetch(url);
     return (await response.json()) as ParameterType;
   }

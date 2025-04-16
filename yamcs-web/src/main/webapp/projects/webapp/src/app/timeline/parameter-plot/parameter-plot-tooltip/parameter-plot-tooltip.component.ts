@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, signal, ViewChild } from '@angular/core';
 import { LinePlotPoint } from '@fqqb/timeline';
-import { DateTimePipe, SimpleTableDirective } from '@yamcs/webapp-sdk';
+import { DateTimePipe } from '@yamcs/webapp-sdk';
 
 interface Legend {
   color: string;
@@ -13,7 +13,7 @@ interface Legend {
   selector: 'app-parameter-plot-tooltip',
   templateUrl: './parameter-plot-tooltip.component.html',
   styleUrl: './parameter-plot-tooltip.component.css',
-  imports: [CommonModule, DateTimePipe, SimpleTableDirective],
+  imports: [CommonModule, DateTimePipe],
 })
 export class ParameterPlotTooltipComponent {
   @ViewChild('tt', { static: true })

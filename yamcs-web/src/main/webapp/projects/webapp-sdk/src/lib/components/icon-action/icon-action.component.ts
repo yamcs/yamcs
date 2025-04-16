@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   input,
+  output,
 } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 
@@ -22,4 +23,13 @@ export class YaIconAction {
   icon = input.required<string>();
   padding = input(true, { transform: booleanAttribute });
   disabled = input(false, { transform: booleanAttribute });
+
+  click = output<MouseEvent>();
+
+  onClick(event: MouseEvent) {
+    event.stopPropagation();
+    if (!this.disabled()) {
+      this.click.emit(event);
+    }
+  }
 }

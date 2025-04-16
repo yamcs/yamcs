@@ -20,7 +20,7 @@
 
         <ya-stepper-step label="Value mapping" [expanded]="true">
           @if (valueMappings.length) {
-            <table yaSimpleTable class="mappings" formArrayName="valueMappings">
+            <table class="mappings" formArrayName="valueMappings">
               <tr>
                 <th>Type</th>
                 <th>
@@ -83,7 +83,6 @@
                     <ya-icon-action
                       icon="delete_outline"
                       matTooltip="Remove mapping"
-                      [disabled]="valueMappings.controls.length <= 1"
                       (click)="removeMapping(i)" />
                   </td>
                 </tr>
