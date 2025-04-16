@@ -65,30 +65,38 @@
     }
   </ya-instance-toolbar>
 
-  <div style="height: 24px; margin: 6px; display: flex; align-items: center">
-    <ya-icon-button (click)="pageLeft()" icon="west" />
-    <ya-icon-button
-      (mousedown)="toggleMove(-50)"
-      (mouseup)="untoggleMove()"
-      (mouseleave)="untoggleMove()"
-      icon="chevron_left" />
-    <ya-icon-button
-      (mousedown)="toggleMove(50)"
-      (mouseup)="untoggleMove()"
-      (mouseleave)="untoggleMove()"
-      icon="chevron_right" />
-    <ya-icon-button (click)="pageRight()" icon="east" />
-    &nbsp;
-    <ya-button (click)="jumpToToday()" icon="today">Today</ya-button>
-    <ya-button (click)="jumpToNow()" icon="my_location">Now</ya-button>
-    <ya-button (click)="openJumpToDialog()" icon="directions">Jump to...</ya-button>
-    &nbsp;
-    <ya-button (click)="show3Hours()">3 hours</ya-button>
-    <ya-button (click)="show1Hour()">1 hour</ya-button>
-    <ya-button (click)="show10Minutes()">10 min</ya-button>
-    &nbsp;
-    <ya-icon-button (click)="zoomIn()" icon="add" />
-    <ya-icon-button (click)="zoomOut()" icon="remove" />
+  <div class="controls">
+    <ya-button-group>
+      <ya-icon-button (click)="pageLeft()" icon="west" />
+      <ya-icon-button
+        (mousedown)="toggleMove(-50)"
+        (mouseup)="untoggleMove()"
+        (mouseleave)="untoggleMove()"
+        icon="chevron_left" />
+      <ya-icon-button
+        (mousedown)="toggleMove(50)"
+        (mouseup)="untoggleMove()"
+        (mouseleave)="untoggleMove()"
+        icon="chevron_right" />
+      <ya-icon-button (click)="pageRight()" icon="east" />
+    </ya-button-group>
+
+    <ya-button-group>
+      <ya-button (click)="jumpToToday()" icon="today">Today</ya-button>
+      <ya-button (click)="jumpToNow()" icon="my_location">Now</ya-button>
+      <ya-button (click)="openJumpToDialog()" icon="directions">Jump to...</ya-button>
+    </ya-button-group>
+
+    <ya-button-group>
+      <ya-button (click)="show3Hours()">3 hours</ya-button>
+      <ya-button (click)="show1Hour()">1 hour</ya-button>
+      <ya-button (click)="show10Minutes()">10 min</ya-button>
+    </ya-button-group>
+
+    <ya-button-group>
+      <ya-icon-button (click)="zoomIn()" icon="add" />
+      <ya-icon-button (click)="zoomOut()" icon="remove" />
+    </ya-button-group>
   </div>
 
   <div #container class="timeline-container"></div>

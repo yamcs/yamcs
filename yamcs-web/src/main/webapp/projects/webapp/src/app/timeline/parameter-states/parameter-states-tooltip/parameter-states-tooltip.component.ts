@@ -1,11 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, signal, ViewChild } from '@angular/core';
 import { Item } from '@fqqb/timeline';
-import {
-  DateTimePipe,
-  Formatter,
-  SimpleTableDirective,
-} from '@yamcs/webapp-sdk';
+import { DateTimePipe, Formatter } from '@yamcs/webapp-sdk';
 import { LegendEntry } from '../LegendEntry';
 import { State } from '../State';
 import { StateLegend } from '../StateLegend';
@@ -14,7 +10,7 @@ import { StateLegend } from '../StateLegend';
   selector: 'app-parameter-states-tooltip',
   templateUrl: './parameter-states-tooltip.component.html',
   styleUrl: './parameter-states-tooltip.component.css',
-  imports: [CommonModule, DateTimePipe, SimpleTableDirective],
+  imports: [CommonModule, DateTimePipe],
 })
 export class ParameterStatesTooltipComponent {
   @ViewChild('tt', { static: true })

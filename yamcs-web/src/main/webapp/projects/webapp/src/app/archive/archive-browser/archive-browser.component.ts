@@ -90,7 +90,7 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
     },
     {
       id: 'parameters',
-      name: 'Parameter Groups',
+      name: 'Parameter groups',
       bg: makeGradient(PARAMETERS_BG),
       fg: PARAMETERS_FG.toCssString(),
       checked: true,
