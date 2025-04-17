@@ -27,7 +27,7 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-float-argument',
   templateUrl: './float-argument.component.html',
-  styleUrls: ['../arguments.css', './float-argument.component.css'],
+  styleUrl: './float-argument.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {

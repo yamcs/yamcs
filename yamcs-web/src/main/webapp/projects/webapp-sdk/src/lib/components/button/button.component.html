@@ -6,10 +6,10 @@
   [disabled]="disabled()"
   (click)="onClick($event)">
   @if (icon(); as icon) {
-    <mat-icon class="icon icon12">{{ icon }}</mat-icon>
+    <mat-icon class="icon">{{ icon }}</mat-icon>
   }
   <ng-content />
   @if (dropdown()) {
-    <mat-icon class="icon12">arrow_drop_down</mat-icon>
+    <mat-icon>arrow_drop_down</mat-icon>
   }
 </button>

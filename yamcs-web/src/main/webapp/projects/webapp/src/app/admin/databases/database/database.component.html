@@ -29,22 +29,20 @@
       </ng-template>
     </app-admin-toolbar>
 
-    <nav mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
+    <ya-page-tabs>
       @if (!(object$ | async)) {
         <a
-          mat-tab-link
           [routerLink]="['/admin/databases', database.name, 'tables']"
           routerLinkActive
           #rla="routerLinkActive"
-          [active]="rla.isActive">
+          [class.active]="rla.isActive">
           Tables
         </a>
         <a
-          mat-tab-link
           [routerLink]="['/admin/databases', database.name, 'streams']"
           routerLinkActive
           #rlb="routerLinkActive"
-          [active]="rlb.isActive">
+          [class.active]="rlb.isActive">
           Streams
         </a>
         @if (database.name !== "_global") {
@@ -60,62 +58,55 @@
       @if (object$ | async; as obj) {
         @if (obj.type === "table") {
           <a
-            mat-tab-link
             [routerLink]="['/admin/databases', database.name, 'tables', obj.name, 'info']"
             routerLinkActive
             #rla1="routerLinkActive"
-            [active]="rla1.isActive">
+            [class.active]="rla1.isActive">
             Info
           </a>
           <a
-            mat-tab-link
             [routerLink]="['/admin/databases', database.name, 'tables', obj.name, 'data']"
             routerLinkActive
             #rla2="routerLinkActive"
-            [active]="rla2.isActive">
+            [class.active]="rla2.isActive">
             Data
           </a>
           <a
-            mat-tab-link
             [routerLink]="['/admin/databases', database.name, 'tables', obj.name, 'script']"
             routerLinkActive
             #rla3="routerLinkActive"
-            [active]="rla3.isActive">
+            [class.active]="rla3.isActive">
             Script
           </a>
         }
         @if (obj.type === "stream") {
           <a
-            mat-tab-link
             [routerLink]="['/admin/databases', database.name, 'streams', obj.name, 'columns']"
             routerLinkActive
             #rlb1="routerLinkActive"
-            [active]="rlb1.isActive">
+            [class.active]="rlb1.isActive">
             Columns
           </a>
           <a
-            mat-tab-link
             [routerLink]="['/admin/databases', database.name, 'streams', obj.name, 'data']"
             routerLinkActive
             #rlb2="routerLinkActive"
-            [active]="rlb2.isActive">
+            [class.active]="rlb2.isActive">
             Data
           </a>
           <a
-            mat-tab-link
             [routerLink]="['/admin/databases', database.name, 'streams', obj.name, 'script']"
             routerLinkActive
             #rlb3="routerLinkActive"
-            [active]="rlb3.isActive">
+            [class.active]="rlb3.isActive">
             Script
           </a>
         }
       }
-    </nav>
+    </ya-page-tabs>
+
     <div class="outlet-wrapper">
-      <mat-tab-nav-panel #tabPanel>
-        <router-outlet />
-      </mat-tab-nav-panel>
+      <router-outlet />
     </div>
   </app-admin-page>
 }

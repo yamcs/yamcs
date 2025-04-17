@@ -1,8 +1,9 @@
 @if (option(); as option) {
-  <ya-field [label]="option.name" [hint]="option.required ? undefined : '(optional)'">
-    <div class="meta" [class.error]="err.invalid$ | async">
-      <div class="item">boolean</div>
-    </div>
+  <ya-field
+    [label]="option.name"
+    [hint]="option.required ? undefined : '(optional)'"
+    [class.error]="err.invalid$ | async">
+    <ya-meta>boolean</ya-meta>
 
     @if (option.description?.length) {
       <ya-help>
@@ -11,6 +12,7 @@
         }
       </ya-help>
     }
+
     <ya-errors #err [controlName]="option.name" />
 
     <div class="radio-group" [formGroup]="formGroup">

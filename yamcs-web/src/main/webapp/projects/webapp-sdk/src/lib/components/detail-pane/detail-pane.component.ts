@@ -2,6 +2,7 @@ import {
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
+  computed,
   input,
   OnDestroy,
   OnInit,
@@ -12,13 +13,21 @@ import { BaseComponent } from '../../abc/BaseComponent';
 
 @Component({
   selector: 'ya-detail-pane',
-  templateUrl: './detail-pane.component.html',
+  template: '<ng-content />',
   styleUrl: './detail-pane.component.css',
+  host: {
+    class: 'ya-detail-pane',
+    '[class.hidden]': 'hidden()',
+  },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class YaDetailPane extends BaseComponent implements OnInit, OnDestroy {
   alwaysOpen = input(false, { transform: booleanAttribute });
   closed = signal(true);
+
+  hidden = computed(() => {
+    return !this.alwaysOpen() && this.closed();
+  });
 
   private detailPaneSubscription?: Subscription;
 

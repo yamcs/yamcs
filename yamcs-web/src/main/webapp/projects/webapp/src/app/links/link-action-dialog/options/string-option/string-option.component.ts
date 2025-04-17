@@ -23,7 +23,7 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-string-option',
   templateUrl: './string-option.component.html',
-  styleUrls: ['../options.css', './string-option.component.css'],
+  styleUrl: './string-option.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
   providers: [

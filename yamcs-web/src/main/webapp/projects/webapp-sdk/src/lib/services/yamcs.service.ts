@@ -92,18 +92,22 @@ export class YamcsService implements FrameLossListener, SessionListener {
         }
       }
       this.clearContext();
-      this.yamcsClient
-        .getInstance(instanceId)
-        .then((instance) => {
-          this.connectionInfo$.next({ instance });
+      Promise.all([
+        this.yamcsClient.getInstance(instanceId),
+        this.yamcsClient.getInstanceConfig(instanceId),
+      ])
+        .then((result) => {
+          this.connectionInfo$.next({ instance: result[0] });
 
           // Don't wait on WebSocket. Lots of pages require mission time
-          this.time$.next(instance.missionTime);
+          this.time$.next(result[0].missionTime);
+
+          this.configService.setInstanceConfig(result[1]);
 
           // Listen to time updates, so that we can easily provide actual mission time to components
           this.timeSubscription = this.yamcsClient.createTimeSubscription(
             {
-              instance: instance.name,
+              instance: instanceId,
             },
             (time) => {
               this.time$.next(time.value);

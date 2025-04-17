@@ -14,6 +14,10 @@ import { MatIcon } from '@angular/material/icon';
   styleUrl: './page-button.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [MatButton, MatIcon],
+  host: {
+    class: 'ya-page-button',
+    '[class.disabled]': 'disabled()',
+  },
 })
 export class YaPageButton {
   icon = input<string>();

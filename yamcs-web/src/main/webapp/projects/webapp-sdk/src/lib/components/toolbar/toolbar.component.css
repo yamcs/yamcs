@@ -8,6 +8,10 @@
   margin-top: 16px;
 }
 
+:host.ya-toolbar-center {
+  justify-content: center;
+}
+
 @media print {
   :host {
     display: none !important;

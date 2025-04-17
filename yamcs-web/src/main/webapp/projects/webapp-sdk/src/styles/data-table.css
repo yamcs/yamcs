@@ -174,19 +174,6 @@ a.ya-link:hover {
   border-top: none;
 }
 
-.table-status {
-  font-family: Roboto, sans-serif;
-}
-
-.table-actions {
-  font-family: Roboto, sans-serif;
-  display: flex;
-}
-
-.table-actions ya-button {
-  margin-left: 7px;
-}
-
 @media print {
   .ya-data-table {
     width: auto !important;

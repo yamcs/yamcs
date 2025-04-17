@@ -6,16 +6,19 @@
         <app-alarm-level [level]="alarm.severity" [grayscale]="true" />
       </td>
     </ng-container>
+
     <ng-container matColumnDef="start">
       <th mat-header-cell *matHeaderCellDef>Start</th>
       <td mat-cell *matCellDef="let alarm">{{ (alarm.triggerTime | datetime) || "-" }}</td>
     </ng-container>
+
     <ng-container matColumnDef="stop">
       <th mat-header-cell *matHeaderCellDef>Stop</th>
       <td mat-cell *matCellDef="let alarm">
         {{ (alarm.updateTime | datetime) || "-" }}
       </td>
     </ng-container>
+
     <ng-container matColumnDef="triggerValue">
       <th mat-header-cell *matHeaderCellDef>Trip value</th>
       <td mat-cell *matCellDef="let alarm" class="wrap200">
@@ -30,6 +33,7 @@
         }
       </td>
     </ng-container>
+
     <ng-container matColumnDef="duration">
       <th mat-header-cell *matHeaderCellDef>Duration</th>
       <td mat-cell *matCellDef="let alarm">
@@ -44,6 +48,7 @@
         }
       </td>
     </ng-container>
+
     <ng-container matColumnDef="violations">
       <th mat-header-cell *matHeaderCellDef style="text-align: right">Violations</th>
       <td mat-cell *matCellDef="let alarm" style="text-align: right">
@@ -55,13 +60,15 @@
         }
       </td>
     </ng-container>
+
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef class="expand"></th>
       <td mat-cell *matCellDef="let row">
-        <ya-text-action icon="show_chart" (click)="showChart(row)">SHOW CHART</ya-text-action>
-        <ya-text-action icon="view_headline" (click)="showData(row)">SHOW DATA</ya-text-action>
+        <ya-text-action icon="show_chart" (click)="showChart(row)">Show chart</ya-text-action>
+        <ya-text-action icon="view_headline" (click)="showData(row)">Show data</ya-text-action>
       </td>
     </ng-container>
+
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
     <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
   </table>

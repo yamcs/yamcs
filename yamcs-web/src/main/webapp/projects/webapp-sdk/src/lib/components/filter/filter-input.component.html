@@ -2,12 +2,12 @@
 
 @if (icon(); as icon) {
   <div class="icon">
-    <mat-icon class="icon16">{{ icon }}</mat-icon>
+    <mat-icon>{{ icon }}</mat-icon>
   </div>
 }
 
 @if (showClear()) {
   <div class="clear" (click)="clearInput()">
-    <mat-icon class="icon16">close</mat-icon>
+    <mat-icon>close</mat-icon>
   </div>
 }

@@ -10,7 +10,7 @@
     (dateInput)="fireChange()"
     (paste)="processPaste($event)" />
   <div class="cal">
-    <mat-icon class="icon14" (click)="picker.open()">calendar_today</mat-icon>
+    <mat-icon (click)="picker.open()">calendar_today</mat-icon>
   </div>
   <mat-datepicker #picker [restoreFocus]="false" />
   <input

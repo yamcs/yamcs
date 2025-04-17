@@ -24,7 +24,7 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-boolean-option',
   templateUrl: './boolean-option.component.html',
-  styleUrls: ['../options.css', './boolean-option.component.css'],
+  styleUrl: './boolean-option.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
   providers: [

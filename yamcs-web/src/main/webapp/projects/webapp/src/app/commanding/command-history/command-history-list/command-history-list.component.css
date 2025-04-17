@@ -4,22 +4,6 @@
   height: 100%;
 }
 
-.table-status {
-  background-color: var(--y-background-color);
-  height: 24px;
-  line-height: 24px;
-  font-size: 12px;
-  padding-left: 6px;
-}
-
-.table-status .toggles {
-  float: right;
-  height: 24px;
-  line-height: 24px;
-  font-size: 12px;
-  padding-right: 6px;
-}
-
 .mat-mdc-row {
   cursor: pointer;
 }

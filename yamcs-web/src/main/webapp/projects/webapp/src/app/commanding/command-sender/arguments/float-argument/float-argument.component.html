@@ -1,20 +1,19 @@
-<ya-field [label]="label">
-  <div class="meta" [class.error]="err.invalid$ | async">
-    @if (type.rangeMin !== undefined || type.rangeMax !== undefined) {
-      <div class="item">
-        <ya-interval [left]="type.rangeMin" [right]="type.rangeMax" />
-      </div>
-    }
-    @if (type.unitSet) {
-      <div class="item">
-        {{ type.unitSet | units }}
-      </div>
-    }
-    @if (type.signed === false) {
-      <div class="item">unsigned</div>
-    }
-    <div class="item">{{ type.engType }}</div>
-  </div>
+<ya-field [label]="label" [class.error]="err.invalid$ | async">
+  @if (type.rangeMin !== undefined || type.rangeMax !== undefined) {
+    <ya-meta>
+      <ya-interval [left]="type.rangeMin" [right]="type.rangeMax" />
+    </ya-meta>
+  }
+
+  @if (type.unitSet) {
+    <ya-meta>{{ type.unitSet | units }}</ya-meta>
+  }
+
+  @if (type.signed === false) {
+    <ya-meta>unsigned</ya-meta>
+  }
+
+  <ya-meta>{{ type.engType }}</ya-meta>
 
   @if (description) {
     <ya-help>

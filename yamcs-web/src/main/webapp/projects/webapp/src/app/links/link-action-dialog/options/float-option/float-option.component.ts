@@ -23,7 +23,7 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-float-option',
   templateUrl: './float-option.component.html',
-  styleUrls: ['../options.css', './float-option.component.css'],
+  styleUrl: './float-option.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
   providers: [

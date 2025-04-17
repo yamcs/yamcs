@@ -1,15 +1,13 @@
-<ya-field [label]="label">
+<ya-field [label]="label" [class.error]="err.invalid$ | async">
   @if (description) {
     <ya-help>
       {{ description }}
     </ya-help>
   }
 
-  <ya-errors #err [controlName]="name" />
+  <ya-meta>{{ engType$ | async }}</ya-meta>
 
-  <div class="meta" [class.error]="err.invalid$ | async">
-    <div class="item">{{ engType$ | async }}</div>
-  </div>
+  <ya-errors #err [controlName]="name" />
 
   <div class="entries" [formArrayName]="name">
     @for (control of formArray.controls; track control; let i = $index; let isFirst = $first) {

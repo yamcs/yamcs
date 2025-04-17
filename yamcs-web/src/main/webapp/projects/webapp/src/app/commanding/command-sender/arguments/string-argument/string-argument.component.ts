@@ -22,7 +22,7 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-string-argument',
   templateUrl: './string-argument.component.html',
-  styleUrls: ['../arguments.css', './string-argument.component.css'],
+  styleUrl: './string-argument.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {

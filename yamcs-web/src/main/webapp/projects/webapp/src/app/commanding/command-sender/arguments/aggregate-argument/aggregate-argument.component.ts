@@ -28,7 +28,7 @@ import { TimeArgumentComponent } from '../time-argument/time-argument.component'
 @Component({
   selector: 'app-aggregate-argument',
   templateUrl: './aggregate-argument.component.html',
-  styleUrl: '../arguments.css',
+  styleUrl: './aggregate-argument.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   viewProviders: [
     {

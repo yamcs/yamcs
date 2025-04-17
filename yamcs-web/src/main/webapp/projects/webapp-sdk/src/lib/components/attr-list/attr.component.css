@@ -19,3 +19,11 @@
   font-size: 12px;
   color: rgba(0, 0, 0, 0.654);
 }
+
+.ya-attr-meta {
+  position: absolute;
+  top: calc((20px - 12px) / 2);
+  right: 0;
+  display: flex;
+  column-gap: 5px;
+}

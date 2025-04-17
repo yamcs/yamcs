@@ -22,7 +22,7 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-time-argument',
   templateUrl: './time-argument.component.html',
-  styleUrls: ['../arguments.css', './time-argument.component.css'],
+  styleUrl: './time-argument.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {

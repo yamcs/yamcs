@@ -27,7 +27,7 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-binary-argument',
   templateUrl: './binary-argument.component.html',
-  styleUrls: ['../arguments.css', './binary-argument.component.css'],
+  styleUrl: './binary-argument.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {

@@ -1,3 +1,7 @@
 :host ::ng-deep .mdc-button.primary {
   border: 1px solid var(--y-accent);
 }
+
+:host.disabled {
+  pointer-events: none;
+}

@@ -5,7 +5,6 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { MatBadgeModule } from '@angular/material/badge';
 import { MatButtonModule } from '@angular/material/button';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -68,11 +67,13 @@ import { YaLabel } from './components/label/label.component';
 import { YaLabels } from './components/labels/labels.component';
 import { YaLed } from './components/led/led.component';
 import { YaMessageBar } from './components/message-bar/message-bar.component';
+import { YaMeta } from './components/meta/meta.component';
 import { YaMore } from './components/more/more.component';
 import { YaMultiSelect } from './components/multi-select/multi-select.component';
 import { YaOption } from './components/option/option.component';
 import { YaPageButton } from './components/page-button/page-button.component';
 import { YaPageIconButton } from './components/page-icon-button/page-icon-button.component';
+import { YaPageTabs } from './components/page-tabs/page-tabs.component';
 import { YaPanel } from './components/panel/panel.component';
 import { YaProgress } from './components/progress/progress.component';
 import { YaSearchFilter } from './components/search-filter/search-filter.component';
@@ -86,6 +87,7 @@ import { YaStepper } from './components/stepper/stepper.component';
 import { YaTableCheckbox } from './components/table-checkbox/table-checkbox.component';
 import { YaTableToggle } from './components/table-toggle/table-toggle.component';
 import { YaTableTop } from './components/table-top/table-top.component';
+import { YaTableWindow } from './components/table-window/table-window.component';
 import { YaTagSelect } from './components/tag-select/tag-select.component';
 import { YaTextAction } from './components/text-action/text-action.component';
 import { YaTimezoneSelect } from './components/timezone-select/timezone-select.component';
@@ -214,11 +216,13 @@ const sharedComponents = [
   YaLabels,
   YaLed,
   YaMessageBar,
+  YaMeta,
   YaMore,
   YaMultiSelect,
   YaOption,
   YaPageButton,
   YaPageIconButton,
+  YaPageTabs,
   YaPanel,
   YaProgress,
   YaPrintZone,
@@ -233,6 +237,7 @@ const sharedComponents = [
   YaTableCheckbox,
   YaTableToggle,
   YaTableTop,
+  YaTableWindow,
   YaTagSelect,
   YaTextAction,
   YaTimezoneSelect,
@@ -248,7 +253,6 @@ const materialModules = [
   CdkTableModule,
   DragDropModule,
   MatAutocompleteModule,
-  MatBadgeModule,
   MatButtonModule,
   MatDatepickerModule,
   MatDialogModule,
