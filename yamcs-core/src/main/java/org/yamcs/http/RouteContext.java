@@ -5,7 +5,9 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
@@ -42,7 +44,7 @@ public class RouteContext extends Context {
     private Matcher regexMatch;
 
     private int maxBodySize;
-    private String fieldMaskRoot;
+    private Set<String> fieldMaskRoots = new HashSet<>(1);
 
     RouteContext(HttpServer httpServer, ChannelHandlerContext nettyContext, User user, HttpRequest nettyRequest,
             Route route, Matcher regexMatch) {
@@ -54,8 +56,10 @@ public class RouteContext extends Context {
 
         route.incrementRequestCount();
 
-        fieldMaskRoot = route.getFieldMaskRoot();
-        if (fieldMaskRoot == null) {
+        var fieldMaskRoot = route.getFieldMaskRoot();
+        if (fieldMaskRoot != null) {
+            fieldMaskRoots.add(fieldMaskRoot);
+        } else {
             // If the response message looks like a list response, use the convention
             // that the fieldmask applies to each repeated resource message.
             Descriptor responseDescriptor = getResponsePrototype().getDescriptorForType();
@@ -64,7 +68,13 @@ public class RouteContext extends Context {
                         .filter(f -> f.isRepeated())
                         .collect(Collectors.toList());
                 if (repeatedFields.size() == 1) {
-                    fieldMaskRoot = repeatedFields.get(0).getName();
+                    fieldMaskRoots.add(repeatedFields.get(0).getName());
+                } else if (repeatedFields.size() == 2
+                        && (repeatedFields.get(0).getOptions().getDeprecated()
+                                || repeatedFields.get(1).getOptions().getDeprecated())) {
+                    // Exceptionally, detect an ongoing field-rename migration
+                    fieldMaskRoots.add(repeatedFields.get(0).getName());
+                    fieldMaskRoots.add(repeatedFields.get(1).getName());
                 }
             }
         }
@@ -120,8 +130,8 @@ public class RouteContext extends Context {
         return route.getBody();
     }
 
-    public String getFieldMaskRoot() {
-        return fieldMaskRoot;
+    public Set<String> getFieldMaskRoots() {
+        return fieldMaskRoots;
     }
 
     public int getMaxBodySize() {

@@ -322,9 +322,9 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
       .then((res) => {
         const startPromise = res[0];
         const stopPromise = res[1];
-        if (startPromise.packet?.length && stopPromise.packet?.length) {
-          const start = utils.toDate(startPromise.packet[0].generationTime);
-          const stop = utils.toDate(stopPromise.packet[0].generationTime);
+        if (startPromise.packets?.length && stopPromise.packets?.length) {
+          const start = utils.toDate(startPromise.packets[0].generationTime);
+          const stop = utils.toDate(stopPromise.packets[0].generationTime);
           this.timeline.setViewRange(start.getTime(), stop.getTime());
         }
       })

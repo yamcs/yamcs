@@ -122,31 +122,33 @@ public class CallObserver implements Observer<Message> {
         HttpRequest req = ctx.nettyRequest;
 
         if (ctx.fieldMask != null) {
-            if (ctx.getFieldMaskRoot() == null) {
+            if (ctx.getFieldMaskRoots().isEmpty()) {
                 Builder builder = responseMsg.newBuilderForType();
                 FieldMaskUtil.merge(ctx.fieldMask, responseMsg, builder);
                 responseMsg = (T) builder.buildPartial();
             } else {
-                FieldDescriptor maskRoot = responseMsg.getDescriptorForType()
-                        .findFieldByName(ctx.getFieldMaskRoot());
-                if (maskRoot != null) {
-                    Builder builder = responseMsg.toBuilder();
-                    builder.clearField(maskRoot);
-                    if (maskRoot.isRepeated()) {
-                        int n = responseMsg.getRepeatedFieldCount(maskRoot);
-                        for (int i = 0; i < n; i++) {
-                            Message repeatedMessage = (Message) responseMsg.getRepeatedField(maskRoot, i);
-                            Builder repeatedBuilder = repeatedMessage.newBuilderForType();
-                            FieldMaskUtil.merge(ctx.fieldMask, repeatedMessage, repeatedBuilder);
-                            builder.addRepeatedField(maskRoot, repeatedBuilder.buildPartial());
+                for (var fieldName : ctx.getFieldMaskRoots()) {
+                    FieldDescriptor maskRoot = responseMsg.getDescriptorForType()
+                            .findFieldByName(fieldName);
+                    if (maskRoot != null) {
+                        Builder builder = responseMsg.toBuilder();
+                        builder.clearField(maskRoot);
+                        if (maskRoot.isRepeated()) {
+                            int n = responseMsg.getRepeatedFieldCount(maskRoot);
+                            for (int i = 0; i < n; i++) {
+                                Message repeatedMessage = (Message) responseMsg.getRepeatedField(maskRoot, i);
+                                Builder repeatedBuilder = repeatedMessage.newBuilderForType();
+                                FieldMaskUtil.merge(ctx.fieldMask, repeatedMessage, repeatedBuilder);
+                                builder.addRepeatedField(maskRoot, repeatedBuilder.buildPartial());
+                            }
+                            responseMsg = (T) builder.buildPartial();
+                        } else if (responseMsg.hasField(maskRoot)) {
+                            Message subMessage = (Message) responseMsg.getField(maskRoot);
+                            Builder subBuilder = responseMsg.newBuilderForType();
+                            FieldMaskUtil.merge(ctx.fieldMask, subMessage, subBuilder);
+                            builder.setField(maskRoot, subBuilder.buildPartial());
+                            responseMsg = (T) builder.buildPartial();
                         }
-                        responseMsg = (T) builder.buildPartial();
-                    } else if (responseMsg.hasField(maskRoot)) {
-                        Message subMessage = (Message) responseMsg.getField(maskRoot);
-                        Builder subBuilder = responseMsg.newBuilderForType();
-                        FieldMaskUtil.merge(ctx.fieldMask, subMessage, subBuilder);
-                        builder.setField(maskRoot, subBuilder.buildPartial());
-                        responseMsg = (T) builder.buildPartial();
                     }
                 }
             }

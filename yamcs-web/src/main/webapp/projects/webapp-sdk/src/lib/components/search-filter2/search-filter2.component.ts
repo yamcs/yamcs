@@ -4,6 +4,7 @@ import {
   Component,
   forwardRef,
   input,
+  model,
   OnDestroy,
   output,
   signal,
@@ -16,13 +17,16 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { MatIcon } from '@angular/material/icon';
+import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { MatTooltip } from '@angular/material/tooltip';
 import { Completion } from '@codemirror/autocomplete';
 import { BehaviorSubject, debounceTime, Subscription } from 'rxjs';
+import { YaButtonGroup } from '../button-group/button-group.component';
 import { YaButton } from '../button/button.component';
 import { YaFilterInput } from '../filter/filter-input.component';
 import { YaFilterTextarea } from '../filter/filter-textarea.component';
 import { FilterErrorMark } from '../filter/FilterErrorMark';
+import { YaIconButton } from '../icon-button/icon-button.component';
 
 interface ErrorState {
   message: string;
@@ -44,18 +48,23 @@ interface ErrorState {
   imports: [
     AsyncPipe,
     MatIcon,
+    MatMenu,
+    MatMenuItem,
+    MatMenuTrigger,
     MatTooltip,
     ReactiveFormsModule,
     YaButton,
+    YaButtonGroup,
     YaFilterInput,
     YaFilterTextarea,
+    YaIconButton,
   ],
 })
 export class YaSearchFilter2 implements ControlValueAccessor, OnDestroy {
   placeholder = input<string>('Filter');
   width = input<string>('100%');
   debounceTime = input<number>(400);
-  expanded = input<boolean>(false);
+  expanded = model<boolean>(false);
   completions = input<Completion[]>();
 
   /**
@@ -137,6 +146,10 @@ export class YaSearchFilter2 implements ControlValueAccessor, OnDestroy {
   writeValue(value: any) {
     this.value = value ?? null;
     this.formControl.setValue(this.value);
+
+    if ((this.value || '').indexOf('\n') !== -1) {
+      this.expanded.set(true);
+    }
   }
 
   registerOnChange(fn: any) {

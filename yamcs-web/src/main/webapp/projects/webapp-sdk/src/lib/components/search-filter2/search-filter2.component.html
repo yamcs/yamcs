@@ -23,7 +23,22 @@
     }
   </div>
 
-  <ya-button appearance="primary" (click)="doSearch()" [disabled]="!!(errorState$ | async)">
-    Search
-  </ya-button>
+  <ya-button-group>
+    <ya-button class="search" (click)="doSearch()" [disabled]="!!(errorState$ | async)">
+      Search
+    </ya-button>
+    <ya-icon-button [matMenuTriggerFor]="moreMenu" icon="arrow_drop_down" />
+    <mat-menu
+      #moreMenu="matMenu"
+      overlapTrigger="false"
+      class="ya-menu"
+      xPosition="before"
+      yPosition="below">
+      @if (expanded()) {
+        <button mat-menu-item (click)="expanded.set(false)">Multiline: on</button>
+      } @else {
+        <button mat-menu-item (click)="expanded.set(true)">Multiline: off</button>
+      }
+    </mat-menu>
+  </ya-button-group>
 </div>

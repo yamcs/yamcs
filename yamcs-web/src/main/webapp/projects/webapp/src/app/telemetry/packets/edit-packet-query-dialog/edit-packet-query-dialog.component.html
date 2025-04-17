@@ -1,0 +1,30 @@
+<h2 mat-dialog-title>Edit query</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="ya-form">
+    <ya-field label="Query name">
+      <input formControlName="queryName" type="text" />
+    </ya-field>
+
+    <ya-field label="Query">
+      <ya-filter-textarea formControlName="filter" />
+    </ya-field>
+
+    <ya-field label="Packet name">
+      <ya-select formControlName="name" [options]="data.nameOptions" emptyOption="Any name" />
+    </ya-field>
+
+    <ya-field label="Link">
+      <ya-select formControlName="link" [options]="data.linkOptions" emptyOption="Any link" />
+    </ya-field>
+
+    <ya-field label="Share with other users">
+      <mat-slide-toggle formControlName="shared" />
+    </ya-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <ya-button mat-dialog-close>CANCEL</ya-button>
+  <ya-button appearance="primary" (click)="save()" [disabled]="!form.valid">SAVE</ya-button>
+</mat-dialog-actions>

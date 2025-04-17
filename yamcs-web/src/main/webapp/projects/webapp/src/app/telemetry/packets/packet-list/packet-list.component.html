@@ -1,17 +1,6 @@
 <ya-instance-page>
   <ya-instance-toolbar label="Packets">
-    <mat-menu #exportMenu="matMenu" class="ya-menu">
-      <ya-download-menu-item [link]="downloadURL$ | async">Raw dump</ya-download-menu-item>
-    </mat-menu>
-    <ya-page-button
-      [matMenuTriggerFor]="exportMenu"
-      [disabled]="!(dataSource.packets$ | async)?.length"
-      icon="save_alt">
-      Export
-    </ya-page-button>
-    <ya-page-button matTooltip="Jump to now" (clicked)="jumpToNow()" icon="refresh">
-      Jump to now
-    </ya-page-button>
+    <ya-page-button (clicked)="jumpToNow()" icon="refresh">Jump to now</ya-page-button>
   </ya-instance-toolbar>
 
   <ya-detail-pane>
@@ -48,7 +37,7 @@
 
         <ya-attr>
           <ng-template ya-attr-label>
-            Data
+            Binary
             <ya-more icon="more_horiz">
               <button mat-menu-item (click)="copyHex(detailPacket)">Copy hex</button>
               <button mat-menu-item (click)="copyBinary(detailPacket)">Copy binary</button>
@@ -65,27 +54,128 @@
       <ya-detail-toolbar>Select a packet</ya-detail-toolbar>
     }
   </ya-detail-pane>
+
   <div class="table-wrapper">
     <ya-panel>
-      <ya-filter-bar [formGroup]="filterForm">
-        <ya-select [options]="nameOptions$ | async" formControlName="name" />
-        <ya-select [options]="linkOptions$ | async" formControlName="link" />
-        <ya-select [options]="intervalOptions" icon="access_time" formControlName="interval" />
+      <app-packets-page-tabs>
+        <ya-button
+          appearance="text"
+          icon="clear"
+          (click)="clearQuery()"
+          [disabled]="!isClearQueryEnabled()">
+          Clear query
+        </ya-button>
+        <ya-button appearance="text" icon="save" (click)="openSaveQueryDialog()">
+          Save query
+        </ya-button>
+      </app-packets-page-tabs>
+
+      <ya-filter-bar [formGroup]="filterForm" class="query" style="margin-top: 16px">
+        <ya-select icon="access_time" formControlName="interval">
+          <ya-option id="PT1H" label="Last hour" />
+          <ya-option id="PT6H" label="Last 6 hours" />
+          <ya-option id="P1D" label="Last 24 hours" />
+          <ya-option id="NO_LIMIT" label="No limit" />
+          <ya-option id="CUSTOM" label="Custom" group="true" />
+        </ya-select>
         @if (filterForm.value["interval"] === "CUSTOM") {
           <ya-date-time-input formControlName="customStart" />
           <ya-date-time-input formControlName="customStop" />
           <ya-button (click)="applyCustomDates()" [disabled]="filterForm.invalid">Apply</ya-button>
         }
-        @if (filterForm.value["interval"] !== "CUSTOM") {
-          <ya-button (click)="jumpToNow()">Jump to now</ya-button>
-        }
-        <ya-column-chooser #columnChooser [columns]="columns" preferenceKey="tmPackets" />
+        <ya-search-filter2
+          #searchFilter
+          formControlName="filter"
+          placeholder="Search packets"
+          style="flex: 1 1 auto"
+          [completions]="completions"
+          (typedValue)="parseQuery($event)" />
+        <ya-select [options]="nameOptions$ | async" formControlName="name" />
+        <ya-select [options]="linkOptions$ | async" formControlName="link" />
+      </ya-filter-bar>
 
+      <div class="table-actions">
+        <div>
+          @switch (appliedInterval) {
+            @case ("PT1H") {
+              <span>
+                Showing packets from
+                <b>the last hour</b>
+                ending at
+                <b>{{ validStop | datetime }}</b>
+                (Mission Time)
+              </span>
+            }
+            @case ("PT6H") {
+              <span>
+                Showing packets from
+                <b>the last 6 hours</b>
+                ending at
+                <b>{{ validStop | datetime }}</b>
+                (Mission Time)
+              </span>
+            }
+            @case ("P1D") {
+              <span>
+                Showing packets from
+                <b>the last 24 hours</b>
+                ending at
+                <b>{{ validStop | datetime }}</b>
+                (Mission Time)
+              </span>
+            }
+            @case ("NO_LIMIT") {
+              <span>
+                Showing packets from
+                <b>all time</b>
+              </span>
+            }
+            @case ("CUSTOM") {
+              <span>
+                Showing packets from
+                <b>{{ validStart | datetime }}</b>
+                to
+                <b>{{ validStop | datetime }}</b>
+                (Mission Time)
+              </span>
+            }
+          }
+        </div>
+        <div style="flex: 1 1 auto"></div>
         @if (dataSource.loading$ | async) {
           <ya-dots />
         }
-      </ya-filter-bar>
+        <mat-menu #exportMenu="matMenu" class="ya-menu">
+          <ya-download-menu-item [link]="downloadURL$ | async">Raw dump</ya-download-menu-item>
+        </mat-menu>
+        <ya-button
+          [matMenuTriggerFor]="exportMenu"
+          [disabled]="!(dataSource.packets$ | async)?.length"
+          icon="download"
+          appearance="text"
+          dropdown="true">
+          Export
+        </ya-button>
+        <ya-column-chooser
+          #columnChooser
+          [columns]="columns"
+          preferenceKey="tmPackets"
+          appearance="text"
+          icon="view_columns" />
+      </div>
 
+      @if (searchFilter.dirty()) {
+        <ya-table-top>
+          The search filter has changed.
+          @if (!(searchFilter.errorState$ | async)) {
+            &nbsp;
+            <a href class="ya-link" (click)="searchFilter.doSearch(); $event.preventDefault()">
+              Apply filter
+            </a>
+            .
+          }
+        </ya-table-top>
+      }
       <table mat-table [dataSource]="dataSource" class="ya-data-table expand">
         <ng-container matColumnDef="packetName">
           <th mat-header-cell *matHeaderCellDef>Packet name</th>

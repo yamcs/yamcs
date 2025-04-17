@@ -14,9 +14,7 @@
       </ya-page-button>
     }
 
-    <ya-page-button matTooltip="Jump to now" (clicked)="jumpToNow()" icon="refresh">
-      Jump to now
-    </ya-page-button>
+    <ya-page-button (clicked)="jumpToNow()" icon="refresh">Jump to now</ya-page-button>
   </ya-instance-toolbar>
 
   @if (dataSource) {
@@ -53,7 +51,6 @@
           placeholder="Search events"
           style="flex: 1 1 auto"
           [completions]="completions"
-          [expanded]="multilineControl.value"
           (typedValue)="parseQuery($event)" />
         <ya-select formControlName="severity">
           <ya-option id="INFO" label="Info level" />
@@ -67,12 +64,6 @@
           [options]="sourceOptions$ | async"
           formControlName="source"
           emptyOption="Any source" />
-        @if (filterForm.value["interval"] !== "CUSTOM") {
-          <ya-button (click)="jumpToNow()">Jump to now</ya-button>
-        }
-        <mat-slide-toggle [disableRipple]="true" [formControl]="multilineControl">
-          Multiline
-        </mat-slide-toggle>
       </ya-filter-bar>
 
       <div class="table-actions">

@@ -1,3 +1,7 @@
+.ya-filter-bar.query {
+  height: unset;
+}
+
 .detail {
   background-color: #fcfcfc;
   float: right;

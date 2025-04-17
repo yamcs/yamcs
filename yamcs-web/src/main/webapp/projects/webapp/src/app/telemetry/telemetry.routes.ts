@@ -13,7 +13,9 @@ import { DisplayFolderComponent } from './displays/display-folder/display-folder
 import { DisplayPage } from './displays/display-page/display-page.component';
 import { DisplaysPage } from './displays/displays-page/displays-page.component';
 import { PacketListComponent } from './packets/packet-list/packet-list.component';
+import { PacketQueryListComponent } from './packets/packet-query-list/packet-query-list.component';
 import { PacketComponent } from './packets/packet/packet.component';
+import { resolveParseFilterSubscription } from './packets/packets.resolvers';
 import { CreateParameterListComponent } from './parameter-lists/create-parameter-list/create-parameter-list.component';
 import { EditParameterListComponent } from './parameter-lists/edit-parameter-list/edit-parameter-list.component';
 import { ParameterListHistoricalDataTabComponent } from './parameter-lists/parameter-list-historical-data-tab/parameter-list-historical-data-tab.component';
@@ -113,6 +115,13 @@ export const ROUTES: Routes = [
             path: '',
             pathMatch: 'full',
             component: PacketListComponent,
+            resolve: {
+              parseFilterSubscription: resolveParseFilterSubscription,
+            },
+          },
+          {
+            path: 'queries',
+            component: PacketQueryListComponent,
           },
           {
             matcher: packetMatcher,

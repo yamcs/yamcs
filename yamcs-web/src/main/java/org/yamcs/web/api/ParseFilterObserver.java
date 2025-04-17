@@ -4,6 +4,7 @@ import org.yamcs.api.FilterSyntaxException;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.api.EventFilterFactory;
+import org.yamcs.http.api.PacketFilterFactory;
 
 public class ParseFilterObserver implements Observer<ParseFilterRequest> {
 
@@ -19,6 +20,9 @@ public class ParseFilterObserver implements Observer<ParseFilterRequest> {
             switch (request.getResource()) {
             case "events":
                 EventFilterFactory.create(request.getFilter());
+                break;
+            case "packets":
+                PacketFilterFactory.create(request.getFilter());
                 break;
             default:
                 throw new IllegalStateException("Unexpected resource: '" + request.getResource() + "'");
