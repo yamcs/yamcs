@@ -287,20 +287,6 @@ export class LinkListComponent
     return false;
   }
 
-  isAllSelected() {
-    const numSelected = this.selection.selected.length;
-    const numRows = this.dataSource.filteredData.length;
-    return numSelected === numRows && numRows > 0;
-  }
-
-  masterToggle() {
-    this.isAllSelected()
-      ? this.selection.clear()
-      : this.dataSource.filteredData.forEach((row) =>
-          this.selection.select(row),
-        );
-  }
-
   toggleOne(row: LinkItem) {
     if (!this.selection.isSelected(row) || this.selection.selected.length > 1) {
       this.selection.clear();

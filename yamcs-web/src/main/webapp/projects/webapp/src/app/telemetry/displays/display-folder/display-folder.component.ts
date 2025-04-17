@@ -4,6 +4,7 @@ import {
   Component,
   ElementRef,
   OnDestroy,
+  signal,
   ViewChild,
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
@@ -44,7 +45,7 @@ export class DisplayFolderComponent implements OnDestroy {
   breadcrumb$ = new BehaviorSubject<BreadCrumbItem[]>([]);
   dragActive$ = new BehaviorSubject<boolean>(false);
 
-  displayedColumns = ['select', 'name', 'type', 'modified', 'actions'];
+  displayedColumns = signal<string[]>(['name', 'type', 'modified', 'actions']);
   dataSource = new MatTableDataSource<BrowseItem>([]);
   selection = new SelectionModel<BrowseItem>(true, []);
 
@@ -74,6 +75,10 @@ export class DisplayFolderComponent implements OnDestroy {
       .subscribe(() => {
         this.loadCurrentFolder();
       });
+
+    if (this.mayManageDisplays()) {
+      this.displayedColumns.set(['select', ...this.displayedColumns()]);
+    }
   }
 
   private loadCurrentFolder() {
@@ -114,20 +119,6 @@ export class DisplayFolderComponent implements OnDestroy {
       });
     }
     this.dataSource.data = items;
-  }
-
-  isAllSelected() {
-    const numSelected = this.selection.selected.length;
-    const numRows = this.dataSource.filteredData.length;
-    return numSelected === numRows && numRows > 0;
-  }
-
-  masterToggle() {
-    this.isAllSelected()
-      ? this.selection.clear()
-      : this.dataSource.filteredData.forEach((row) =>
-          this.selection.select(row),
-        );
   }
 
   toggleOne(row: BrowseItem) {
