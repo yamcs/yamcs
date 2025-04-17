@@ -1205,8 +1205,19 @@ export default class YamcsClient implements HttpHandler {
   }
 
   async getPackets(instance: string, options: GetPacketsOptions = {}) {
-    const url = `${this.apiUrl}/archive/${instance}/packets`;
-    const response = await this.doFetch(url + this.queryString(options));
+    let url = `${this.apiUrl}/archive/${instance}/packets:list`;
+    let body: string;
+    if (options.fields?.length) {
+      url += this.queryString({ fields: options.fields });
+      delete options.fields;
+      body = JSON.stringify(options);
+    } else {
+      body = JSON.stringify(options);
+    }
+    const response = await this.doFetch(url, {
+      body,
+      method: 'POST',
+    });
     return (await response.json()) as ListPacketsResponse;
   }
 

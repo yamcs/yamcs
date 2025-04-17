@@ -177,7 +177,8 @@ export interface GetPacketsOptions {
    * Exclusive upper bound
    */
   stop?: string;
-  name?: string | string[];
+  filter?: string;
+  name?: string[];
   link?: string;
   next?: string;
   limit?: number;
@@ -186,7 +187,7 @@ export interface GetPacketsOptions {
 }
 
 export interface ListPacketsResponse {
-  packet?: Packet[];
+  packets?: Packet[];
   continuationToken?: string;
 }
 

@@ -1,6 +1,7 @@
 .search-input {
   position: relative;
   display: flex;
+  align-items: start;
 }
 
 .search-input input {
@@ -18,4 +19,8 @@
 
 .query-error {
   color: var(--y-error-color);
+}
+
+:host .ya-button.search ::ng-deep button {
+  border-left: none;
 }

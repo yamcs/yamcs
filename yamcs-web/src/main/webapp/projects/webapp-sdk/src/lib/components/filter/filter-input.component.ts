@@ -117,6 +117,7 @@ export class YaFilterInput
   clearInput() {
     this.writeValue(null);
     this.focus();
+    this.onEnter.emit('');
   }
 
   private initializeEditor(targetEl: HTMLDivElement) {

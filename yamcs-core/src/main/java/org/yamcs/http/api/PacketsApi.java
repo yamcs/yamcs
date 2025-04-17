@@ -28,6 +28,7 @@ import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.MediaType;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
+import org.yamcs.logging.Log;
 import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.mdb.ProcessorData;
@@ -69,6 +70,8 @@ import com.google.gson.Gson;
 import com.google.protobuf.ByteString;
 
 public class PacketsApi extends AbstractPacketsApi<Context> {
+
+    private static final Log log = new Log(PacketsApi.class);
 
     @Override
     public void listPacketNames(Context ctx, ListPacketNamesRequest request,
@@ -114,9 +117,13 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
     public void listPackets(Context ctx, ListPacketsRequest request, Observer<ListPacketsResponse> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
 
-        long pos = request.hasPos() ? request.getPos() : 0;
+        Long pos = request.hasPos() ? request.getPos() : null;
         int limit = request.hasLimit() ? request.getLimit() : 100;
         boolean desc = !request.getOrder().equals("asc");
+
+        if (pos != null) {
+            log.warn("DEPRECATION WARNING: Do not use pos, use continuationToken instead");
+        }
 
         ctx.checkObjectPrivileges(ObjectPrivilegeType.ReadPacket, request.getNameList());
         Set<String> nameSet = new HashSet<>(request.getNameList());
@@ -161,9 +168,16 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
         }
 
         sqlb.descend(desc);
-        sqlb.limit(pos, limit + 1l); // one more to detect hasMore
 
-        ListPacketsResponse.Builder responseb = ListPacketsResponse.newBuilder();
+        if (pos != null) {
+            sqlb.limit(pos, limit + 1l); // one more to detect hasMore
+        }
+
+        var filter = request.hasFilter()
+                ? PacketFilterFactory.create(request.getFilter())
+                : null;
+
+        var responseb = ListPacketsResponse.newBuilder();
         StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
 
             TmPacketData last;
@@ -171,8 +185,13 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
 
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
+                if (filter != null && !filter.matches(tuple)) {
+                    return;
+                }
+
                 if (++count <= limit) {
                     TmPacketData pdata = GPBHelper.tupleToTmPacketData(tuple);
+                    responseb.addPackets(pdata);
                     responseb.addPacket(pdata);
                     last = pdata;
                 }
