@@ -710,12 +710,16 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         }
 
         if (request.hasStart()) {
-            if (request.hasRelativeTime()) {
-                throw new BadRequestException("Cannot specify both start and relative time");
+            if (request.hasRelativeTime() || request.getDependsOnCount() > 0) {
+                throw new BadRequestException(
+                        "Cannot specify both start when relative time or dependsOn are also specified");
             }
             item.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
-
         } else if (request.hasRelativeTime()) {
+            if (request.getDependsOnCount() > 0) {
+                throw new BadRequestException(
+                        "Cannot specify both relative time and dependsOn");
+            }
             RelativeTime relt = request.getRelativeTime();
             if (!relt.hasRelto()) {
                 throw new BadRequestException("relto item is required when using relative time");
@@ -725,8 +729,14 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
             }
             item.setRelativeItemUuid(parseUuid(relt.getRelto()));
             item.setRelativeStart(Durations.toMillis(relt.getRelativeStart()));
+        } else if (request.getDependsOnCount() > 0) {
+            if (item instanceof TimelineActivity ta) {
+                request.getDependsOnList().forEach(d -> ta.addDependsOn(d));
+            } else {
+                throw new BadRequestException("dependsOn can only be specified for activities");
+            }
         } else {
-            throw new BadRequestException("One of start or relativeTime has to be specified");
+            throw new BadRequestException("One of start, relativeTime or dependsOn has to be specified");
         }
         if (!request.hasDuration()) {
             throw new BadRequestException("Duration is mandatory");

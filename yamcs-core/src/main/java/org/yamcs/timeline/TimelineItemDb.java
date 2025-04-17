@@ -61,6 +61,8 @@ public class TimelineItemDb implements ItemProvider {
     public static final String CNAME_DESCRIPTION = "description";
     public static final String CNAME_FAILURE_REASON = "failure_reason";
     public static final String CNAME_ACTIVITY_DEFINITION = "activity_definition";
+    public static final String CNAME_DEPENDENCIES = "dependencies";
+    public static final String CNAME_DEPENDENCIES_CONDITIONS = "dependencies_conditions";
     public static final String CNAME_RUNS = "runs";
     public static final String CRIT_KEY_TAG = "tag";
 
@@ -76,6 +78,8 @@ public class TimelineItemDb implements ItemProvider {
         TIMELINE_DEF.addColumn(CNAME_RELTIME_START, DataType.LONG);
         TIMELINE_DEF.addColumn(CNAME_ACTIVITY_DEFINITION, DataType.protobuf(ActivityDefinition.class));
         TIMELINE_DEF.addColumn(CNAME_RUNS, DataType.array(DataType.UUID));
+        TIMELINE_DEF.addColumn(CNAME_DEPENDENCIES, DataType.array(DataType.UUID));
+        TIMELINE_DEF.addColumn(CNAME_DEPENDENCIES_CONDITIONS, DataType.array(DataType.ENUM));
     }
     final Log log;
     final private ReadWriteLock rwlock = new ReentrantReadWriteLock();
@@ -201,7 +205,7 @@ public class TimelineItemDb implements ItemProvider {
             log.debug("Updating timeline item in RDB: {}", tuple);
             timelineStream.emitTuple(tuple);
 
-            updateDependentStart(item);
+            updateRelativeToStart(item);
         } finally {
             rwlock.writeLock().unlock();
         }
@@ -211,7 +215,7 @@ public class TimelineItemDb implements ItemProvider {
     }
 
     // update the start time of all items having their time specified as relative to this
-    private void updateDependentStart(TimelineItem item) {
+    private void updateRelativeToStart(TimelineItem item) {
         String query = "update " + TABLE_NAME + " set start = " + CNAME_RELTIME_START + " + ? where "
                 + CNAME_RELTIME_ID + " = ?";
         StreamSqlResult r = ydb.executeUnchecked(query, item.getStart(), item.getId());
@@ -271,6 +275,10 @@ public class TimelineItemDb implements ItemProvider {
     @Override
     public TimelineItem getItem(String id) {
         UUID uuid = UUID.fromString(id);
+        return getItem(uuid);
+    }
+
+    public TimelineItem getItem(UUID uuid) {
         rwlock.readLock().lock();
         try {
             return fromCache(uuid);
@@ -308,7 +316,7 @@ public class TimelineItemDb implements ItemProvider {
                     UUID id = r.next().getColumn(CNAME_ID);
                     r.close();
                     throw new InvalidRequestException(
-                            "Cannot delete " + uuid + " because item " + id + " time depends on it");
+                            "Cannot delete " + uuid + " because item " + id + " time is relative to it");
                 }
             } finally {
                 r.close();

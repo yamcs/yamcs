@@ -195,6 +195,7 @@ enum ExecutionStatus {
   COMPLETED = 3;
   ABORTED = 4;
   FAILED = 5;
+  SKIPPED = 6;
 }
 
 message TimelineItem {
@@ -246,6 +247,11 @@ message TimelineItem {
   // Identifiers of activity runs matching this item.
   // Set if ``type`` is ACTIVITY.
   repeated string runs = 15;
+  
+  // Can be used only if ``type`` is ACTIVITY
+  // It specifies which other activities/items this activity depends on
+  // The dependency conditions implicitly specify the start time as the end of the latest dependency
+  repeated ActivityDependency dependsOn = 16;
 }
 
 message LogEntry {

@@ -84,6 +84,11 @@ public class TimelineClient {
         if (item.hasDescription()) {
             requestb.setDescription(item.getDescription());
         }
+        
+        if (item.getDependsOnCount() > 0) {
+            requestb.addAllDependsOn(item.getDependsOnList());
+        }
+
         CompletableFuture<TimelineItem> f = new CompletableFuture<>();
         timelineService.createItem(null, requestb.build(), new ResponseObserver<>(f));
         return f;

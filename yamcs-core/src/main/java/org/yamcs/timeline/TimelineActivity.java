@@ -4,12 +4,17 @@ import static org.yamcs.timeline.TimelineItemDb.CNAME_ACTIVITY_DEFINITION;
 import static org.yamcs.timeline.TimelineItemDb.CNAME_FAILURE_REASON;
 import static org.yamcs.timeline.TimelineItemDb.CNAME_RUNS;
 import static org.yamcs.timeline.TimelineItemDb.CNAME_STATUS;
+import static org.yamcs.timeline.TimelineItemDb.CNAME_DEPENDENCIES;
+import static org.yamcs.timeline.TimelineItemDb.CNAME_DEPENDENCIES_CONDITIONS;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import org.yamcs.activities.protobuf.ActivityDefinition;
+import org.yamcs.logging.Log;
+import org.yamcs.protobuf.ActivityDependency;
+import org.yamcs.protobuf.ActivityDependencyCondition;
 import org.yamcs.protobuf.ExecutionStatus;
 import org.yamcs.protobuf.TimelineItem.Builder;
 import org.yamcs.protobuf.TimelineItemType;
@@ -19,8 +24,9 @@ import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Tuple;
 
 public class TimelineActivity extends TimelineItem implements Comparable<TimelineActivity> {
+    static Log log = new Log(TimelineActivity.class);
 
-    protected List<Dependence> dependsOn;
+    protected List<Dependency> dependsOn = new ArrayList<>();
     protected ExecutionStatus status = ExecutionStatus.PLANNED;
     protected String failureReason;
     protected List<UUID> runs = new ArrayList<>();
@@ -47,6 +53,19 @@ public class TimelineActivity extends TimelineItem implements Comparable<Timelin
         }
         if (tuple.hasColumn(CNAME_ACTIVITY_DEFINITION)) {
             this.activityDefinition = tuple.getColumn(CNAME_ACTIVITY_DEFINITION);
+        }
+
+        if (tuple.hasColumn(CNAME_DEPENDENCIES) && tuple.hasColumn(CNAME_DEPENDENCIES_CONDITIONS)) {
+            List<UUID> deps = tuple.getColumn(CNAME_DEPENDENCIES);
+            List<String> depsCond = tuple.getColumn(CNAME_DEPENDENCIES_CONDITIONS);
+            if (deps.size() == depsCond.size()) {
+                for (int i = 0; i < deps.size(); i++) {
+                    var cond = ActivityDependencyCondition.valueOf(depsCond.get(i));
+                    this.dependsOn.add(new Dependency(deps.get(i), cond));
+                }
+            } else {
+                log.warn("Encountred invalid activity; dependencies: {}, dependencies conditions: {}", deps, depsCond);
+            }
         }
     }
 
@@ -82,6 +101,11 @@ public class TimelineActivity extends TimelineItem implements Comparable<Timelin
         runs.add(runId);
     }
 
+    public void addDependsOn(ActivityDependency d) {
+        UUID uuid = UUID.fromString(d.getId());
+        dependsOn.add(new Dependency(uuid, d.getCondition()));
+    }
+
     @Override
     protected void addToProto(boolean detail, Builder protob) {
         protob.setStatus(status);
@@ -95,6 +119,9 @@ public class TimelineActivity extends TimelineItem implements Comparable<Timelin
             protob.setActivityDefinition(b);
         }
         runs.forEach(runId -> protob.addRuns(runId.toString()));
+        dependsOn.forEach(d -> protob.addDependsOn(
+                ActivityDependency.newBuilder().setId(d.id().toString()).setCondition(d.condition).build()));
+
     }
 
     @Override
@@ -111,6 +138,15 @@ public class TimelineActivity extends TimelineItem implements Comparable<Timelin
             tuple.addColumn(CNAME_RUNS, DataType.array(DataType.UUID), null);
         } else {
             tuple.addColumn(CNAME_RUNS, DataType.array(DataType.UUID), runs);
+        }
+        if (dependsOn.isEmpty()) {
+            tuple.addColumn(CNAME_DEPENDENCIES, DataType.array(DataType.UUID), null);
+            tuple.addColumn(CNAME_DEPENDENCIES_CONDITIONS, DataType.array(DataType.ENUM), null);
+        } else {
+            tuple.addColumn(CNAME_DEPENDENCIES, DataType.array(DataType.UUID),
+                    dependsOn.stream().map(c -> c.id()).toList());
+            tuple.addColumn(CNAME_DEPENDENCIES_CONDITIONS, DataType.array(DataType.ENUM),
+                    dependsOn.stream().map(c -> c.condition().name()).toList());
         }
     }
 
@@ -139,7 +175,13 @@ public class TimelineActivity extends TimelineItem implements Comparable<Timelin
         return String.format("[id=%s, start=%s]", id, TimeEncoding.toString(start));
     }
 
-    static class Dependence {
-        UUID id;
+    /**
+     * Represents a dependency relationship between two activities.
+     * <p>
+     * An activity can depend on another activity, and this class specifies the dependent activity's unique identifier
+     * and the condition that determines whether it should start.
+     */
+    static record Dependency(UUID id, ActivityDependencyCondition condition) {
     }
+
 }

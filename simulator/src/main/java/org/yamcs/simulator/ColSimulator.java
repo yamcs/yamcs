@@ -363,7 +363,7 @@ public class ColSimulator extends AbstractSimulator {
         String joined = String.join(" ", dumps);
         byte[] b = joined.getBytes();
 
-        ColumbusCcsdsPacket packet = new ColumbusCcsdsPacket(0, b.length + 1, 9, false);
+        ColumbusCcsdsPacket packet = new ColumbusCcsdsPacket(MAIN_APID, b.length + 1, 9, false);
         packet.getUserDataBuffer().put(b);
 
         transmitRealtimeTM(packet);
