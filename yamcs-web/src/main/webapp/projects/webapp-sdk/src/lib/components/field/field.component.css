@@ -49,3 +49,11 @@
 :host:not(:last-child) {
   margin-bottom: 16px;
 }
+
+.ya-field-meta {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  column-gap: 5px;
+}

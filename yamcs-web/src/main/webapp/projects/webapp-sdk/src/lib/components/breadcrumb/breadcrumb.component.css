@@ -9,6 +9,9 @@
 
 .mat-icon {
   vertical-align: middle;
+  font-size: 12px !important;
+  height: 12px !important;
+  width: 12px !important;
 }
 
 .action {

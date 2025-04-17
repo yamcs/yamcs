@@ -1,18 +1,16 @@
-<ya-field [label]="label">
-  <div class="meta" [class.error]="err.invalid$ | async">
-    @if (type.minChars !== undefined || type.maxChars !== undefined) {
-      <div class="item">
-        chars:
-        <ya-interval [left]="type.minChars" [right]="type.maxChars" [singleValueIfEqual]="true" />
-      </div>
-    }
-    @if (type.unitSet) {
-      <div class="item">
-        {{ type.unitSet | units }}
-      </div>
-    }
-    <div class="item">{{ type.engType }}</div>
-  </div>
+<ya-field [label]="label" [class.error]="err.invalid$ | async">
+  @if (type.minChars !== undefined || type.maxChars !== undefined) {
+    <ya-meta>
+      chars:
+      <ya-interval [left]="type.minChars" [right]="type.maxChars" [singleValueIfEqual]="true" />
+    </ya-meta>
+  }
+  @if (type.unitSet) {
+    <ya-meta>
+      {{ type.unitSet | units }}
+    </ya-meta>
+  }
+  <ya-meta>{{ type.engType }}</ya-meta>
 
   @if (description) {
     <ya-help>

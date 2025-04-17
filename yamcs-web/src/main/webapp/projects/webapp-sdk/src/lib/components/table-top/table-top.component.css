@@ -18,4 +18,7 @@
 
 :host > mat-icon {
   margin-right: 4px;
+  font-size: 14px !important;
+  height: 14px !important;
+  width: 14px !important;
 }

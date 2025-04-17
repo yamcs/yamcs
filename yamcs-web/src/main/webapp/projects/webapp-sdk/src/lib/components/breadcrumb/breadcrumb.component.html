@@ -1,7 +1,7 @@
 @if (link) {
   <a class="ya-link" [yaHref]="link" [queryParams]="queryParams">
     @if (icon) {
-      <mat-icon class="icon12 item" [class.with-label]="label">
+      <mat-icon class="item" [class.with-label]="label">
         {{ icon }}
       </mat-icon>
     }
@@ -9,11 +9,11 @@
       {{ label }}
     }
   </a>
-  <mat-icon class="icon12 sep">navigate_next</mat-icon>
+  <mat-icon class="sep">navigate_next</mat-icon>
 } @else if (action) {
   <a class="ya-link action">
     @if (icon) {
-      <mat-icon class="icon12 item" [class.with-label]="label">
+      <mat-icon class="item" [class.with-label]="label">
         {{ icon }}
       </mat-icon>
     }
@@ -21,7 +21,7 @@
       {{ label }}
     }
   </a>
-  <mat-icon class="icon12 sep">navigate_next</mat-icon>
+  <mat-icon class="sep">navigate_next</mat-icon>
 } @else {
   {{ label }}
 }

@@ -94,54 +94,7 @@
         <ya-select [options]="linkOptions$ | async" formControlName="link" />
       </ya-filter-bar>
 
-      <div class="table-actions">
-        <div>
-          @switch (appliedInterval) {
-            @case ("PT1H") {
-              <span>
-                Showing packets from
-                <b>the last hour</b>
-                ending at
-                <b>{{ validStop | datetime }}</b>
-                (Mission Time)
-              </span>
-            }
-            @case ("PT6H") {
-              <span>
-                Showing packets from
-                <b>the last 6 hours</b>
-                ending at
-                <b>{{ validStop | datetime }}</b>
-                (Mission Time)
-              </span>
-            }
-            @case ("P1D") {
-              <span>
-                Showing packets from
-                <b>the last 24 hours</b>
-                ending at
-                <b>{{ validStop | datetime }}</b>
-                (Mission Time)
-              </span>
-            }
-            @case ("NO_LIMIT") {
-              <span>
-                Showing packets from
-                <b>all time</b>
-              </span>
-            }
-            @case ("CUSTOM") {
-              <span>
-                Showing packets from
-                <b>{{ validStart | datetime }}</b>
-                to
-                <b>{{ validStop | datetime }}</b>
-                (Mission Time)
-              </span>
-            }
-          }
-        </div>
-        <div style="flex: 1 1 auto"></div>
+      <ya-table-window [duration]="appliedInterval" [start]="validStart" [stop]="validStop">
         @if (dataSource.loading$ | async) {
           <ya-dots />
         }
@@ -162,7 +115,7 @@
           preferenceKey="tmPackets"
           appearance="text"
           icon="view_columns" />
-      </div>
+      </ya-table-window>
 
       @if (searchFilter.dirty()) {
         <ya-table-top>
@@ -249,11 +202,9 @@
           [class.selected]="isSelected(row)"></tr>
       </table>
 
-      <mat-toolbar>
-        <span style="flex: 1 1 auto"></span>
+      <ya-toolbar appearance="bottom" align="center">
         <ya-button [disabled]="!dataSource.hasMore()" (click)="loadMoreData()">Load more</ya-button>
-        <span style="flex: 1 1 auto"></span>
-      </mat-toolbar>
+      </ya-toolbar>
     </ya-panel>
   </div>
 </ya-instance-page>

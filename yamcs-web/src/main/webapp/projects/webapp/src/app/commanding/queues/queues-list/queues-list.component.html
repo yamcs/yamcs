@@ -187,30 +187,26 @@
         </table>
       }
       <p>&nbsp;</p>
-      <nav mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
+      <ya-page-tabs>
         <a
-          mat-tab-link
           routerLink="/commanding/queues/pending"
           routerLinkActive
           #rla="routerLinkActive"
-          [active]="rla.isActive"
+          [class.active]="rla.isActive"
           [queryParams]="{ c: yamcs.context }">
           Pending
         </a>
         <a
-          mat-tab-link
           routerLink="/commanding/queues/log"
           routerLinkActive
           #rlb="routerLinkActive"
-          [active]="rlb.isActive"
+          [class.active]="rlb.isActive"
           [queryParams]="{ c: yamcs.context }">
           Action log
         </a>
-      </nav>
+      </ya-page-tabs>
       <div style="margin-top: 16px">
-        <mat-tab-nav-panel #tabPanel>
-          <router-outlet />
-        </mat-tab-nav-panel>
+        <router-outlet />
       </div>
     } @else {
       @if (connectionInfo$ | async; as connectionInfo) {

@@ -41,31 +41,26 @@
       </div>
     </div>
 
-    <nav #tabs mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
+    <ya-page-tabs>
       <a
-        mat-tab-link
         routerLink="log"
         routerLinkActive
         #rla="routerLinkActive"
-        [active]="rla.isActive"
+        [class.active]="rla.isActive"
         [queryParams]="{ c: yamcs.context }">
-        Activity Log
+        Activity log
       </a>
       <a
-        mat-tab-link
         routerLink="details"
         routerLinkActive
         #rlb="routerLinkActive"
-        [active]="rlb.isActive"
+        [class.active]="rlb.isActive"
         [queryParams]="{ c: yamcs.context }">
         Details
       </a>
-    </nav>
-
+    </ya-page-tabs>
     <div class="tab-content-wrapper">
-      <mat-tab-nav-panel #tabPanel>
-        <router-outlet />
-      </mat-tab-nav-panel>
+      <router-outlet />
     </div>
   </ya-instance-page>
 }

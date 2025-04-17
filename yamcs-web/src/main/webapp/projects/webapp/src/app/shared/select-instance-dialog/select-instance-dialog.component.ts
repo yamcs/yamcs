@@ -32,7 +32,7 @@ export class SelectInstanceDialogComponent implements AfterViewInit {
   dataSource = new MatTableDataSource<Instance>([]);
   selection = new SelectionModel<Instance>();
 
-  displayedColumns = ['selected', 'name', 'processor'];
+  displayedColumns = ['selected', 'name', 'processor', 'actions'];
 
   constructor(
     private dialogRef: MatDialogRef<SelectInstanceDialogComponent>,
@@ -51,13 +51,6 @@ export class SelectInstanceDialogComponent implements AfterViewInit {
       .then((instances) => {
         this.dataSource.data = instances;
       });
-  }
-
-  isCreateInstanceEnabled() {
-    const user = this.authService.getUser()!;
-    return (
-      this.config.hasTemplates() && user.hasSystemPrivilege('CreateInstances')
-    );
   }
 
   ngAfterViewInit() {
@@ -104,10 +97,14 @@ export class SelectInstanceDialogComponent implements AfterViewInit {
     const selected = this.selection.selected;
     if (selected.length) {
       const selectedInstance = this.selection.selected[0];
-      this.dialogRef.close();
-      if (this.yamcs.instance !== selectedInstance.name) {
-        this.yamcs.switchContext(selectedInstance.name);
-      }
+      this.selectInstance(selectedInstance);
+    }
+  }
+
+  selectInstance(instance: Instance) {
+    this.dialogRef.close();
+    if (this.yamcs.instance !== instance.name) {
+      this.yamcs.switchContext(instance.name);
     }
   }
 }

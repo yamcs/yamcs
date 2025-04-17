@@ -10,7 +10,7 @@
 
     <mat-tab-group animationDuration="0ms" class="secondary" [mat-stretch-tabs]="false">
       <mat-tab>
-        <ng-template mat-tab-label>ACTIVE ({{ activeUserCount$ | async }})</ng-template>
+        <ng-template mat-tab-label>Active ({{ activeUserCount$ | async }})</ng-template>
         <br />
         <app-users-table
           [users]="activeUsers$ | async"
@@ -18,8 +18,8 @@
           (deleteUser)="deleteUser($event)" />
       </mat-tab>
 
-      <mat-tab>
-        <ng-template mat-tab-label>SUPERUSERS ({{ superUserCount$ | async }})</ng-template>
+      <mat-tab [disabled]="true">
+        <ng-template mat-tab-label>Superusers ({{ superUserCount$ | async }})</ng-template>
         <br />
         <app-users-table
           [users]="superUsers$ | async"
@@ -28,7 +28,7 @@
       </mat-tab>
 
       <mat-tab>
-        <ng-template mat-tab-label>INTERNAL ({{ internalUserCount$ | async }})</ng-template>
+        <ng-template mat-tab-label>Internal ({{ internalUserCount$ | async }})</ng-template>
         <br />
         <app-users-table
           [users]="internalUsers$ | async"
@@ -37,7 +37,7 @@
       </mat-tab>
 
       <mat-tab>
-        <ng-template mat-tab-label>BLOCKED ({{ blockedUserCount$ | async }})</ng-template>
+        <ng-template mat-tab-label>Blocked ({{ blockedUserCount$ | async }})</ng-template>
         <br />
         <app-users-table
           [users]="blockedUsers$ | async"

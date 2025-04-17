@@ -9,7 +9,6 @@ import {
   YamcsService,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { filter } from 'rxjs/operators';
 import { AdminPageTemplateComponent } from '../../shared/admin-page-template/admin-page-template.component';
 import { AppAdminToolbarLabel } from '../../shared/admin-toolbar/admin-toolbar-label.directive';
 import { AppAdminToolbar } from '../../shared/admin-toolbar/admin-toolbar.component';
@@ -45,24 +44,22 @@ export class DatabaseComponent implements OnDestroy {
     authService: AuthService,
   ) {
     this.user = authService.getUser()!;
-    this.routerSubscription = router.events
-      .pipe(filter((evt) => evt instanceof NavigationEnd))
-      .subscribe((evt: NavigationEnd) => {
-        const activeChild = route.snapshot.firstChild!;
-        let objectName = activeChild.paramMap.get('table');
-        if (objectName) {
-          this.object$.next({ type: 'table', name: objectName });
-          return;
-        }
+    this.routerSubscription = router.events.subscribe((evt: NavigationEnd) => {
+      const activeChild = route.snapshot.firstChild!;
+      let objectName = activeChild.paramMap.get('table');
+      if (objectName) {
+        this.object$.next({ type: 'table', name: objectName });
+        return;
+      }
 
-        objectName = activeChild.paramMap.get('stream');
-        if (objectName) {
-          this.object$.next({ type: 'stream', name: objectName });
-          return;
-        }
+      objectName = activeChild.paramMap.get('stream');
+      if (objectName) {
+        this.object$.next({ type: 'stream', name: objectName });
+        return;
+      }
 
-        this.object$.next(null);
-      });
+      this.object$.next(null);
+    });
     const name = route.snapshot.paramMap.get('database')!;
     title.setTitle(name);
     this.database$ = yamcs.yamcsClient.getDatabase(name);

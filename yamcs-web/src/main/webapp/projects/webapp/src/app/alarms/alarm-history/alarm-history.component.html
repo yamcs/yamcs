@@ -142,12 +142,12 @@
             <td mat-cell *matCellDef="let row">
               @if (row.parameterDetail) {
                 <ya-text-action icon="show_chart" (click)="showChart(row)">
-                  SHOW CHART
+                  Show chart
                 </ya-text-action>
               }
               @if (row.parameterDetail) {
                 <ya-text-action icon="view_headline" (click)="showData(row)">
-                  SHOW DATA
+                  Show data
                 </ya-text-action>
               }
             </td>
@@ -158,11 +158,9 @@
         </table>
       }
 
-      <mat-toolbar>
-        <span style="flex: 1 1 auto"></span>
+      <ya-toolbar appearance="bottom" align="center">
         <ya-button [disabled]="true">Load more</ya-button>
-        <span style="flex: 1 1 auto"></span>
-      </mat-toolbar>
+      </ya-toolbar>
     </ya-panel>
   </div>
 </ya-instance-page>

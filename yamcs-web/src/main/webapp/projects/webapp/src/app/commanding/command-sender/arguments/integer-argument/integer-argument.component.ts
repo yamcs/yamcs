@@ -27,7 +27,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 @Component({
   selector: 'app-integer-argument',
   templateUrl: './integer-argument.component.html',
-  styleUrls: ['../arguments.css', './integer-argument.component.css'],
+  styleUrl: './integer-argument.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {

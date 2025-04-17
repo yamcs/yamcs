@@ -6,11 +6,11 @@
     [placeholder]="placeholder"
     (keydown)="onKeydown($event)" />
   <div class="filter">
-    <mat-icon class="icon16">{{ icon }}</mat-icon>
+    <mat-icon>{{ icon }}</mat-icon>
   </div>
   @if (showClear$ | async) {
     <div class="clear" (click)="clearInput()">
-      <mat-icon class="icon16">close</mat-icon>
+      <mat-icon>close</mat-icon>
     </div>
   }
 </div>

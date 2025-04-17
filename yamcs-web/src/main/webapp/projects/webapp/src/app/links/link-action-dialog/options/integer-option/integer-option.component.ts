@@ -23,7 +23,7 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-integer-option',
   templateUrl: './integer-option.component.html',
-  styleUrls: ['../options.css', './integer-option.component.css'],
+  styleUrl: './integer-option.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
   providers: [

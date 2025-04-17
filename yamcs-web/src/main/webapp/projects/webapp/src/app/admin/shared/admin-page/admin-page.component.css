@@ -50,3 +50,10 @@ mat-toolbar {
   height: 48px;
   font-weight: 400;
 }
+
+.mat-toolbar.module-title mat-icon {
+  font-size: 32px !important;
+  height: 32px !important;
+  width: 32px !important;
+  margin-right: 16px;
+}

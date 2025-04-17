@@ -8,3 +8,9 @@
   color: rgba(0, 0, 0, 0.654);
   border-bottom: 1px solid #d3d3d3;
 }
+
+mat-icon {
+  font-size: 12px !important;
+  height: 12px !important;
+  width: 12px !important;
+}
