@@ -181,8 +181,8 @@ export class EventsDataSource extends DataSource<Event> {
 
   private matchesFilter(event: Event) {
     if (this.options) {
-      if (this.options.source) {
-        if (event.source !== this.options.source) {
+      if (this.options.source?.length) {
+        if (this.options.source.indexOf(event.source) === -1) {
           return false;
         }
       }

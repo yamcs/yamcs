@@ -104,6 +104,9 @@ public class WebApi extends AbstractWebApi<Context> {
         QueryDb.getInstance(instance);
 
         var sqlb = new SqlBuilder(QueryDb.TABLE_NAME);
+        if (request.hasResource()) {
+            sqlb.where(QueryDb.CNAME_RESOURCE + " = ?", request.getResource());
+        }
 
         var queries = new ArrayList<Query>();
         StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {

@@ -81,15 +81,15 @@ export class PacketsDataSource extends DataSource<Packet> {
       })
       .then((page) => {
         this.continuationToken = page.continuationToken;
-        return page.packet || [];
+        return page.packets || [];
       });
   }
 
-  loadMoreData(options: GetPacketsOptions) {
+  async loadMoreData(options: GetPacketsOptions) {
     if (!this.continuationToken) {
       return;
     }
-    this.loadPage({
+    return this.loadPage({
       ...options,
       next: this.continuationToken,
       limit: this.pageSize,

@@ -1,5 +1,4 @@
 import {
-  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   OnDestroy,
@@ -51,7 +50,7 @@ const defaultInterval = 'PT1H';
     WebappSdkModule,
   ],
 })
-export class EventListComponent implements OnInit, AfterViewInit, OnDestroy {
+export class EventListComponent implements OnInit, OnDestroy {
   filter = input<string>();
   severity = input<EventSeverity>();
   source = input([], { transform: stringArrayAttribute });
@@ -81,14 +80,6 @@ export class EventListComponent implements OnInit, AfterViewInit, OnDestroy {
     customStart: new FormControl<string | null>(null),
     customStop: new FormControl<string | null>(null),
   });
-  multilineControl = new FormControl<boolean>(false);
-
-  isClearQueryEnabled() {
-    const fv = this.filterForm.value;
-    return (
-      this.searchFilter().empty() || fv.severity !== 'INFO' || fv.source?.length
-    );
-  }
 
   dataSource: EventsDataSource;
 
@@ -213,12 +204,6 @@ export class EventListComponent implements OnInit, AfterViewInit, OnDestroy {
         this.loadData();
       }
     });
-  }
-
-  ngAfterViewInit(): void {
-    if ((this.filter() || '').indexOf('\n') !== -1) {
-      this.multilineControl.setValue(true);
-    }
   }
 
   private initializeOptions() {
@@ -402,6 +387,13 @@ export class EventListComponent implements OnInit, AfterViewInit, OnDestroy {
       resource: 'events',
       filter: typedQuery,
     });
+  }
+
+  isClearQueryEnabled() {
+    const fv = this.filterForm.value;
+    return (
+      this.searchFilter().empty() || fv.severity !== 'INFO' || fv.source?.length
+    );
   }
 
   mayWriteEvents() {

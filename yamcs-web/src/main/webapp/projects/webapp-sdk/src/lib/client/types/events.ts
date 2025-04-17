@@ -47,7 +47,7 @@ export interface GetEventsOptions {
    */
   filter?: string;
   severity?: EventSeverity;
-  source?: string | string[];
+  source?: string[];
   limit?: number;
   order?: 'asc' | 'desc';
 }

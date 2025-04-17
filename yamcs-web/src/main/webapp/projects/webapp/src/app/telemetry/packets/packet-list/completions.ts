@@ -14,17 +14,6 @@ function applyString(
   view.dispatch(tr);
 }
 
-function applyEnum(
-  view: EditorView,
-  completion: Completion,
-  from: number,
-  to: number,
-) {
-  view.dispatch(
-    insertCompletionText(view.state, completion.label + ' = ', from, to),
-  );
-}
-
 function applyNumber(
   view: EditorView,
   completion: Completion,
@@ -47,71 +36,71 @@ function applyLogicalOperator(
   );
 }
 
-export const EVENT_COMPLETIONS: Completion[] = [
+export const PACKET_COMPLETIONS: Completion[] = [
   {
-    label: 'message',
+    label: 'name',
     type: 'method',
-    info: 'Filter by event message',
+    info: 'Filter by packet name',
+    apply: applyString,
+  },
+  {
+    label: 'binary',
+    type: 'method',
+    info: 'Filter by hex packet binary',
+    apply: applyString,
+  },
+  {
+    label: 'link',
+    type: 'method',
+    info: 'Filter by link',
     apply: applyString,
   },
   {
     label: 'seqNumber',
     type: 'method',
-    info: 'Filter by event sequence number',
+    info: 'Filter by packet sequence number',
     apply: applyNumber,
   },
   {
-    label: 'severity',
+    label: 'size',
     type: 'method',
-    info: 'Filter by event severity (info, watch, warning, distress, critical, severe)',
-    apply: applyEnum,
+    info: 'Filter by packet size',
+    apply: applyNumber,
   },
   {
-    label: 'source',
+    section: 'Exclude packets',
+    label: '-name',
     type: 'method',
-    info: 'Filter by event source',
+    info: 'Exclude packets based on name',
     apply: applyString,
   },
   {
-    label: 'type',
+    section: 'Exclude packets',
+    label: '-binary',
     type: 'method',
-    info: 'Filter by event type',
+    info: 'Exclude packets based on hex packet binary',
     apply: applyString,
   },
   {
-    section: 'Exclude events',
-    label: '-message',
+    section: 'Exclude packets',
+    label: '-link',
     type: 'method',
-    info: 'Exclude events based on message',
+    info: 'Exclude packets based on link',
     apply: applyString,
   },
   {
-    section: 'Exclude events',
+    section: 'Exclude packets',
     label: '-seqNumber',
     type: 'method',
-    info: 'Exclude events based on sequence number',
+    info: 'Exclude packets based on sequence number',
     apply: applyNumber,
   },
   {
-    section: 'Exclude events',
-    label: '-severity',
+    section: 'Exclude packets',
+    label: '-size',
     type: 'method',
-    info: 'Exclude events based on severity (info, watch, warning, distress, critical, severe)',
-    apply: applyEnum,
-  },
-  {
-    section: 'Exclude events',
-    label: '-source',
-    type: 'method',
-    info: 'Exclude events based on source',
-    apply: applyString,
-  },
-  {
-    section: 'Exclude events',
-    label: '-type',
-    type: 'method',
-    info: 'Exclude events based on type',
-    apply: applyString,
+    info: 'Exclude packets based on packet size',
+    apply: applyNumber,
   },
   {
     section: 'Logical operators',
