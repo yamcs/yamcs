@@ -51,26 +51,12 @@ export class ItemListComponent implements AfterViewInit {
     private messageService: MessageService,
     private dialog: MatDialog,
   ) {
-    title.setTitle('Timeline Items');
+    title.setTitle('Timeline items');
     this.refreshData();
   }
 
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
-  }
-
-  isAllSelected() {
-    const numSelected = this.selection.selected.length;
-    const numRows = this.dataSource.filteredData.length;
-    return numSelected === numRows && numRows > 0;
-  }
-
-  masterToggle() {
-    this.isAllSelected()
-      ? this.selection.clear()
-      : this.dataSource.filteredData.forEach((row) =>
-          this.selection.select(row),
-        );
   }
 
   toggleOne(row: TimelineItem) {

@@ -67,6 +67,7 @@ export * from './lib/components/sidebar/sidebar-nav-item.component';
 export * from './lib/components/stepper/stepper-step-actions.component';
 export * from './lib/components/stepper/stepper-step.component';
 export * from './lib/components/stepper/stepper.component';
+export * from './lib/components/table-checkbox/table-checkbox.component';
 export * from './lib/components/table-toggle/table-toggle.component';
 export * from './lib/components/table-top/table-top.component';
 export * from './lib/components/tag-select/tag-select.component';

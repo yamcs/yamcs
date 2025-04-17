@@ -35,32 +35,40 @@
         matSortDirection="asc"
         matSortDisableClear>
         <ng-container cdkColumnDef="select">
-          <th mat-header-cell *cdkHeaderCellDef class="checkbox">
-            <input
-              type="checkbox"
-              (change)="$event ? masterToggle() : null"
-              [checked]="selection.hasValue() && isAllSelected()" />
+          <th
+            mat-header-cell
+            *cdkHeaderCellDef
+            class="checkbox"
+            (click)="cb.toggle(); $event.stopPropagation()">
+            <ya-table-checkbox #cb [dataSource]="dataSource" [selection]="selection" />
           </th>
-          <td mat-cell *cdkCellDef="let row" class="checkbox">
-            <input
-              type="checkbox"
-              (click)="$event.stopPropagation()"
-              (change)="$event ? selection.toggle(row) : null"
-              [checked]="selection.isSelected(row)" />
+          <td
+            mat-cell
+            *cdkCellDef="let item"
+            class="checkbox"
+            (click)="cb.toggle(); $event.stopPropagation()">
+            <ya-table-checkbox
+              #cb
+              [dataSource]="dataSource"
+              [selection]="selection"
+              [item]="item" />
           </td>
         </ng-container>
+
         <ng-container matColumnDef="username">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Username</th>
           <td mat-cell *matCellDef="let clearance">
             {{ clearance.username }}
           </td>
         </ng-container>
+
         <ng-container matColumnDef="hasCommandPrivileges">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>May command</th>
           <td mat-cell *matCellDef="let clearance">
             {{ clearance.hasCommandPrivileges ? "Yes" : "-" }}
           </td>
         </ng-container>
+
         <ng-container matColumnDef="level">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Clearance level</th>
           <td mat-cell *matCellDef="let clearance">
@@ -71,6 +79,7 @@
             }
           </td>
         </ng-container>
+
         <ng-container matColumnDef="issued">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Issued</th>
           <td mat-cell *matCellDef="let clearance">
@@ -80,10 +89,12 @@
             }
           </td>
         </ng-container>
+
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef></th>
           <td mat-cell *matCellDef="let row" class="expand"></td>
         </ng-container>
+
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr
           mat-row
