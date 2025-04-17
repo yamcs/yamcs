@@ -155,20 +155,6 @@ export class QueuesListComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  isAllSelected() {
-    const numSelected = this.selection.selected.length;
-    const numRows = this.dataSource.filteredData.length;
-    return numSelected === numRows && numRows > 0;
-  }
-
-  masterToggle() {
-    this.isAllSelected()
-      ? this.selection.clear()
-      : this.dataSource.filteredData.forEach((row) =>
-          this.selection.select(row),
-        );
-  }
-
   toggleOne(row: CommandQueue) {
     if (!this.selection.isSelected(row) || this.selection.selected.length > 1) {
       this.selection.clear();

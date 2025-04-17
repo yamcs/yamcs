@@ -32,22 +32,19 @@
       matSortDirection="asc"
       matSortDisableClear>
       <ng-container cdkColumnDef="select">
-        <th mat-header-cell *cdkHeaderCellDef class="checkbox">
-          @if (mayManageBuckets()) {
-            <input
-              type="checkbox"
-              (change)="$event ? masterToggle() : null"
-              [checked]="selection.hasValue() && isAllSelected()" />
-          }
+        <th
+          mat-header-cell
+          *cdkHeaderCellDef
+          class="checkbox"
+          (click)="cb.toggle(); $event.stopPropagation()">
+          <ya-table-checkbox #cb [dataSource]="dataSource" [selection]="selection" />
         </th>
-        <td mat-cell *cdkCellDef="let row" class="checkbox">
-          @if (mayManageBuckets()) {
-            <input
-              type="checkbox"
-              (click)="$event.stopPropagation()"
-              (change)="$event ? selection.toggle(row) : null"
-              [checked]="selection.isSelected(row)" />
-          }
+        <td
+          mat-cell
+          *cdkCellDef="let item"
+          class="checkbox"
+          (click)="cb.toggle(); $event.stopPropagation()">
+          <ya-table-checkbox #cb [dataSource]="dataSource" [selection]="selection" [item]="item" />
         </td>
       </ng-container>
 
@@ -130,10 +127,10 @@
         </td>
       </ng-container>
 
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
       <tr
         mat-row
-        *matRowDef="let row; columns: displayedColumns"
+        *matRowDef="let row; columns: displayedColumns()"
         [class.selected]="selection.isSelected(row)"
         (click)="toggleOne(row)"></tr>
     </table>

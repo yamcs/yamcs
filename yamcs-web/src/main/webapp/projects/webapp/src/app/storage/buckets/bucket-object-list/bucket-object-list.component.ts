@@ -130,20 +130,6 @@ export class BucketObjectListComponent implements OnDestroy {
     this.dataSource.data = items;
   }
 
-  isAllSelected() {
-    const numSelected = this.selection.selected.length;
-    const numRows = this.dataSource.filteredData.length;
-    return numSelected === numRows && numRows > 0;
-  }
-
-  masterToggle() {
-    this.isAllSelected()
-      ? this.selection.clear()
-      : this.dataSource.filteredData.forEach((row) =>
-          this.selection.select(row),
-        );
-  }
-
   toggleOne(row: BrowseItem) {
     if (!this.selection.isSelected(row) || this.selection.selected.length > 1) {
       this.selection.clear();

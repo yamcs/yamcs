@@ -71,6 +71,8 @@ export class MultipleParameterTableComponent
 
   displayedColumns: string[];
 
+  transformRowForSelection = (item: ParameterTableRecord) => item.name;
+
   constructor(
     readonly yamcs: YamcsService,
     private changeDetector: ChangeDetectorRef,
@@ -104,20 +106,6 @@ export class MultipleParameterTableComponent
     } else {
       this.displayedColumns = this.defaultColumns;
     }
-  }
-
-  isAllSelected() {
-    const numSelected = this.selection.selected.length;
-    const numRows = this.dataSource.filteredData.length;
-    return numSelected === numRows && numRows > 0;
-  }
-
-  masterToggle() {
-    this.isAllSelected()
-      ? this.selection.clear()
-      : this.dataSource.filteredData.forEach((row) =>
-          this.selection.select(row.name),
-        );
   }
 
   toggleOne(name: string) {

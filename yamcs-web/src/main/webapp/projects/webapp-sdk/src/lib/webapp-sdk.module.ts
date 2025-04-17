@@ -83,6 +83,7 @@ import { YaSidebarNavItem } from './components/sidebar/sidebar-nav-item.componen
 import { YaStepperStepActions } from './components/stepper/stepper-step-actions.component';
 import { YaStepperStep } from './components/stepper/stepper-step.component';
 import { YaStepper } from './components/stepper/stepper.component';
+import { YaTableCheckbox } from './components/table-checkbox/table-checkbox.component';
 import { YaTableToggle } from './components/table-toggle/table-toggle.component';
 import { YaTableTop } from './components/table-top/table-top.component';
 import { YaTagSelect } from './components/tag-select/tag-select.component';
@@ -229,6 +230,7 @@ const sharedComponents = [
   YaStepper,
   YaStepperStep,
   YaStepperStepActions,
+  YaTableCheckbox,
   YaTableToggle,
   YaTableTop,
   YaTagSelect,

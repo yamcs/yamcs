@@ -3,6 +3,7 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  signal,
   ViewChild,
 } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
@@ -34,8 +35,7 @@ export class BucketListComponent implements AfterViewInit {
   @ViewChild(MatSort, { static: true })
   sort: MatSort;
 
-  displayedColumns = [
-    'select',
+  displayedColumns = signal<string[]>([
     'name',
     'created',
     'size',
@@ -46,7 +46,7 @@ export class BucketListComponent implements AfterViewInit {
     'pctObjects',
     'location',
     'actions',
-  ];
+  ]);
 
   dataSource = new MatTableDataSource<Bucket>();
   selection = new SelectionModel<Bucket>(true, []);
@@ -67,6 +67,10 @@ export class BucketListComponent implements AfterViewInit {
 
     this.initializeOptions();
     this.refreshView();
+
+    if (this.mayManageBuckets()) {
+      this.displayedColumns.set(['select', ...this.displayedColumns()]);
+    }
   }
 
   ngAfterViewInit() {
@@ -91,20 +95,6 @@ export class BucketListComponent implements AfterViewInit {
         }
       }
     });
-  }
-
-  isAllSelected() {
-    const numSelected = this.selection.selected.length;
-    const numRows = this.dataSource.filteredData.length;
-    return numSelected === numRows && numRows > 0;
-  }
-
-  masterToggle() {
-    this.isAllSelected()
-      ? this.selection.clear()
-      : this.dataSource.filteredData.forEach((row) =>
-          this.selection.select(row),
-        );
   }
 
   toggleOne(row: Bucket) {
