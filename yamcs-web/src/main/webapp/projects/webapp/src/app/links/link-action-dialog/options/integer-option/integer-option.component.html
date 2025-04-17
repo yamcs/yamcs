@@ -1,8 +1,9 @@
 @if (option(); as option) {
-  <ya-field [label]="option.name" [hint]="option.required ? undefined : '(optional)'">
-    <div class="meta" [class.error]="err.invalid$ | async">
-      <div class="item">integer</div>
-    </div>
+  <ya-field
+    [label]="option.name"
+    [hint]="option.required ? undefined : '(optional)'"
+    [class.error]="err.invalid$ | async">
+    <ya-meta>integer</ya-meta>
 
     @if (option.description?.length) {
       <ya-help>
@@ -11,7 +12,9 @@
         }
       </ya-help>
     }
+
     <ya-errors #err [controlName]="option.name" />
+
     <input [formControl]="formControl" type="text" autocomplete="off" />
   </ya-field>
 }

@@ -209,6 +209,7 @@ export class InstancePageComponent implements OnInit, OnDestroy {
         const url = evt.url as string;
         this.mdbActive = false;
         this.commandingActive = false;
+        this.proceduresActive = false;
         this.telemetryActive = false;
         this.timelineActive = false;
         this.collapseAllGroups();

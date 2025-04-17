@@ -18,32 +18,28 @@
       </ng-template>
     </ya-instance-toolbar>
 
-    <nav #tabs mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
+    <ya-page-tabs>
       <a
-        mat-tab-link
         routerLink="-/summary"
         routerLinkActive
         #rla="routerLinkActive"
-        [active]="rla.isActive"
+        [class.active]="rla.isActive"
         [queryParams]="{ c: yamcs.context }">
         Summary
       </a>
       <a
-        mat-tab-link
         routerLink="-/trace"
         routerLinkActive
         #rlb="routerLinkActive"
-        [active]="rlb.isActive"
+        [class.active]="rlb.isActive"
         [queryParams]="{ c: yamcs.context }"
-        [disabled]="algorithm.scope !== 'GLOBAL'">
+        [class.disabled]="algorithm.scope !== 'GLOBAL'">
         Trace
       </a>
-    </nav>
+    </ya-page-tabs>
 
     <div class="tab-content-wrapper">
-      <mat-tab-nav-panel #tabPanel>
-        <router-outlet />
-      </mat-tab-nav-panel>
+      <router-outlet />
     </div>
   </ya-instance-page>
 }

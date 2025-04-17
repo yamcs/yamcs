@@ -22,13 +22,11 @@
         </div>
       }
       @if (result.resources.length) {
-        <mat-toolbar>
-          <span style="flex: 1 1 auto"></span>
+        <ya-toolbar appearance="bottom" align="center">
           <ya-button [disabled]="!result.continuationToken" (click)="loadMoreData()">
             Load more
           </ya-button>
-          <span style="flex: 1 1 auto"></span>
-        </mat-toolbar>
+        </ya-toolbar>
       }
     }
   </ya-panel>

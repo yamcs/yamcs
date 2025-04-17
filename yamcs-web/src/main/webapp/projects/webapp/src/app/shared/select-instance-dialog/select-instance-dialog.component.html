@@ -37,6 +37,13 @@
         </td>
       </ng-container>
 
+      <ng-container cdkColumnDef="actions">
+        <th mat-header-cell *cdkHeaderCellDef class="expand"></th>
+        <td mat-cell *cdkCellDef="let row">
+          <ya-text-action icon="play_arrow" (click)="selectInstance(row)">Select</ya-text-action>
+        </td>
+      </ng-container>
+
       <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
       <tr
         mat-row
@@ -44,10 +51,6 @@
         [class.selected]="selection.isSelected(row)"
         (click)="selection.toggle(row)"></tr>
     </table>
-
-    @if (isCreateInstanceEnabled()) {
-      <a mat-button routerLink="/create-instance" mat-dialog-close color="primary">NEW INSTANCE</a>
-    }
   </div>
 </mat-dialog-content>
 
@@ -55,7 +58,7 @@
   <mat-paginator [pageSize]="100" [hidePageSize]="true" [showFirstLastButtons]="true" />
   <div style="flex: 1 1 auto"></div>
 
-  <ya-button mat-dialog-close>CANCEL</ya-button>
+  <ya-button mat-dialog-close>Cancel</ya-button>
 
   <ya-button appearance="primary" [disabled]="selection.isEmpty()" (click)="applySelection()">
     SELECT

@@ -3,5 +3,7 @@ services:
 
 instances: []
 
+secretKey: changeme
+
 yamcs-web:
   tag: "Example: templates"

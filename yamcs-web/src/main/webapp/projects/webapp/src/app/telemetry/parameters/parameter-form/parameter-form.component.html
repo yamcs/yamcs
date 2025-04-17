@@ -2,11 +2,9 @@
   <ng-container [formGroup]="formGroup">
     @switch (parameter.type?.engType) {
       @case ("enumeration") {
-        <ya-field [label]="parameter.name">
-          <div class="meta">
-            <div class="item">{{ parameter.type?.engType }}</div>
-          </div>
-          <ya-errors [controlName]="controlName" />
+        <ya-field [label]="parameter.name" [class.error]="err.invalid$ | async">
+          <ya-meta>{{ parameter.type?.engType }}</ya-meta>
+          <ya-errors #err [controlName]="controlName" />
           <ya-select [formControlName]="controlName">
             @for (enumValue of parameter.type?.enumValues; track enumValue) {
               <ya-option [id]="enumValue.label" [label]="enumValue.label" />
@@ -15,8 +13,9 @@
         </ya-field>
       }
       @case ("boolean") {
-        <ya-field [label]="parameter.name">
-          <ya-errors [controlName]="controlName" />
+        <ya-field [label]="parameter.name" [class.error]="err.invalid$ | async">
+          <ya-meta>{{ parameter.type?.engType }}</ya-meta>
+          <ya-errors #err [controlName]="controlName" />
           <div class="radio-group">
             <label class="radio" [class.checked]="formGroup.controls[controlName].value === 'true'">
               <input type="radio" [formControlName]="controlName" value="true" />
@@ -32,27 +31,22 @@
         </ya-field>
       }
       @case ("time") {
-        <ya-field [label]="parameter.name">
-          <ya-errors [controlName]="controlName" />
+        <ya-field [label]="parameter.name" [class.error]="err.invalid$ | async">
+          <ya-meta>{{ parameter.type?.engType }}</ya-meta>
+          <ya-errors #err [controlName]="controlName" />
           <ya-date-time-input [formControlName]="controlName" />
         </ya-field>
       }
       @case ("binary") {
-        <ya-field [label]="parameter.name">
-          <div class="meta">
-            <div class="item" [class.error]="err.invalid$ | async">
-              {{ parameter.type?.engType }}
-            </div>
-          </div>
+        <ya-field [label]="parameter.name" [class.error]="err.invalid$ | async">
+          <ya-meta>{{ parameter.type?.engType }}</ya-meta>
           <ya-errors #err [controlName]="controlName" />
           <ya-binary-input [formControlName]="controlName" />
         </ya-field>
       }
       @case ("aggregate") {
         <ya-field [label]="parameter.name">
-          <div class="meta">
-            <div class="item">{{ parameter.type?.engType }}</div>
-          </div>
+          <ya-meta>{{ parameter.type?.engType }}</ya-meta>
           <div class="members">
             @for (member of parameter.type?.member; track member) {
               <app-parameter-form
@@ -65,59 +59,51 @@
         </ya-field>
       }
       @case ("integer") {
-        <ya-field [label]="parameter.name">
-          <div class="meta" [class.error]="err.invalid$ | async">
-            @if (parameter.type?.unitSet) {
-              <div class="item">
-                {{ parameter.type?.unitSet | units }}
-              </div>
-            }
-            @if (parameter.type?.signed === false) {
-              <div class="item">unsigned</div>
-            }
-            <div class="item">{{ parameter.type?.engType }}</div>
-          </div>
+        <ya-field [label]="parameter.name" [class.error]="err.invalid$ | async">
+          @if (parameter.type?.unitSet) {
+            <ya-meta>{{ parameter.type?.unitSet | units }}</ya-meta>
+          }
+          @if (parameter.type?.signed === false) {
+            <ya-meta>unsigned</ya-meta>
+          }
+          <ya-meta>{{ parameter.type?.engType }}</ya-meta>
           <ya-errors #err [controlName]="controlName" />
           <input type="text" [formControlName]="controlName" />
         </ya-field>
       }
       @case ("float[]") {
-        Setting array values via this website is not yet supported.
+        Setting array values via this website is not currently supported.
       }
       @case ("double[]") {
-        Setting array values via this website is not yet supported.
+        Setting array values via this website is not currently supported.
       }
       @case ("integer[]") {
-        Setting array values via this website is not yet supported.
+        Setting array values via this website is not currently supported.
       }
       @case ("enumeration[]") {
-        Setting array values via this website is not yet supported.
+        Setting array values via this website is not currently supported.
       }
       @case ("string[]") {
-        Setting array values via this website is not yet supported.
+        Setting array values via this website is not currently supported.
       }
       @case ("boolean[]") {
-        Setting array values via this website is not yet supported.
+        Setting array values via this website is not currently supported.
       }
       @case ("time[]") {
-        Setting array values via this website is not yet supported.
+        Setting array values via this website is not currently supported.
       }
       @case ("binary[]") {
-        Setting array values via this website is not yet supported.
+        Setting array values via this website is not currently supported.
       }
       @case ("aggregate[]") {
-        Setting array values via this website is not yet supported.
+        Setting array values via this website is not currently supported.
       }
       @default {
-        <ya-field [label]="parameter.name">
-          <div class="meta" [class.error]="err.invalid$ | async">
-            @if (parameter.type?.unitSet) {
-              <div class="item">
-                {{ parameter.type?.unitSet | units }}
-              </div>
-            }
-            <div class="item">{{ parameter.type?.engType }}</div>
-          </div>
+        <ya-field [label]="parameter.name" [class.error]="err.invalid$ | async">
+          @if (parameter.type?.unitSet; as unitSet) {
+            <ya-meta>{{ unitSet | units }}</ya-meta>
+          }
+          <ya-meta>{{ parameter.type?.engType }}</ya-meta>
           <ya-errors #err [controlName]="controlName" />
           <input type="text" [formControlName]="controlName" />
         </ya-field>

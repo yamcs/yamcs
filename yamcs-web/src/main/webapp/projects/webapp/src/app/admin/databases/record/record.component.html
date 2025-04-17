@@ -7,23 +7,23 @@
       </ng-template>
       {{ (record.column | columnValue: column.name | value) || "-" }}
     </ya-attr>
+  }
 
-    @for (column of table.valueColumn; track column) {
-      <ya-attr [label]="column.name">
-        @if (
-          column.type === "BINARY" ||
-          (column.type !== "PROTOBUF(com.google.protobuf.Struct)" &&
-            column.type.startsWith("PROTOBUF"))
-        ) {
-          @if (record.column | columnValue: column.name; as value) {
-            <app-hex [base64String]="value.binaryValue" />
-          } @else {
-            -
-          }
+  @for (column of table.valueColumn; track column) {
+    <ya-attr [label]="column.name">
+      @if (
+        column.type === "BINARY" ||
+        (column.type !== "PROTOBUF(com.google.protobuf.Struct)" &&
+          column.type.startsWith("PROTOBUF"))
+      ) {
+        @if (record.column | columnValue: column.name; as value) {
+          <app-hex [base64String]="value.binaryValue" />
         } @else {
-          {{ (record.column | columnValue: column.name | value) || "-" }}
+          -
         }
-      </ya-attr>
-    }
+      } @else {
+        {{ (record.column | columnValue: column.name | value) || "-" }}
+      }
+    </ya-attr>
   }
 </ya-attr-list>

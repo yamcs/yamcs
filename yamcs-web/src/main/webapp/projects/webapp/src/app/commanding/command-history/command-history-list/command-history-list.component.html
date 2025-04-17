@@ -15,8 +15,8 @@
       </ya-page-button>
     }
 
-    <ya-page-button matTooltip="Jump to now" color="primary" (clicked)="jumpToNow()" icon="refresh">
-      Refresh
+    <ya-page-button color="primary" (clicked)="jumpToNow()" icon="refresh">
+      Jump to now
     </ya-page-button>
   </ya-instance-toolbar>
 
@@ -100,8 +100,6 @@
             <ya-button (click)="applyCustomDates()" [disabled]="filterForm.invalid">
               Apply
             </ya-button>
-          } @else {
-            <ya-button (click)="jumpToNow()">Jump to now</ya-button>
           }
 
           @if (dataSource.loading$ | async) {
@@ -116,58 +114,10 @@
           }
         </ya-filter-bar>
 
-        <div class="table-status">
-          <div class="toggles">
-            <ya-table-toggle #args preferenceKey="cmdhist.arguments">Arguments</ya-table-toggle>
-            &nbsp;&nbsp;
-            <ya-table-toggle #rv preferenceKey="cmdhist.returnValue">Return value</ya-table-toggle>
-          </div>
-
-          @switch (appliedInterval) {
-            @case ("PT1H") {
-              <span>
-                Showing entries from
-                <b>the last hour</b>
-                ending at
-                <b>{{ validStop | datetime }}</b>
-                (Mission Time)
-              </span>
-            }
-            @case ("PT6H") {
-              <span>
-                Showing entries from
-                <b>the last 6 hours</b>
-                ending at
-                <b>{{ validStop | datetime }}</b>
-                (Mission Time)
-              </span>
-            }
-            @case ("P1D") {
-              <span>
-                Showing entries from
-                <b>the last 24 hours</b>
-                ending at
-                <b>{{ validStop | datetime }}</b>
-                (Mission Time)
-              </span>
-            }
-            @case ("NO_LIMIT") {
-              <span>
-                Showing entries from
-                <b>all time</b>
-              </span>
-            }
-            @case ("CUSTOM") {
-              <span>
-                Showing entries from
-                <b>{{ validStart | datetime }}</b>
-                to
-                <b>{{ validStop | datetime }}</b>
-                (Mission Time)
-              </span>
-            }
-          }
-        </div>
+        <ya-table-window [duration]="appliedInterval" [start]="validStart" [stop]="validStop">
+          <ya-table-toggle #args preferenceKey="cmdhist.arguments">Arguments</ya-table-toggle>
+          <ya-table-toggle #rv preferenceKey="cmdhist.returnValue">Return value</ya-table-toggle>
+        </ya-table-window>
 
         <table
           mat-table
@@ -427,13 +377,11 @@
             (click)="selectRecord(row)"></tr>
         </table>
 
-        <mat-toolbar>
-          <span style="flex: 1 1 auto"></span>
+        <ya-toolbar appearance="bottom" align="center">
           <ya-button [disabled]="!dataSource.hasMore()" (click)="loadMoreData()">
             Load more
           </ya-button>
-          <span style="flex: 1 1 auto"></span>
-        </mat-toolbar>
+        </ya-toolbar>
       </ya-panel>
     }
   </div>

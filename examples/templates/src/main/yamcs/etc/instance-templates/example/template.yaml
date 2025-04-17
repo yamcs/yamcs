@@ -1,4 +1,4 @@
-# Variables are used like this: {{ foo }} anywhere in this file.
+# Variables are used like this: {{ spaceSystem }} anywhere in this file.
 # Yaml parsing only happens after variable substitution.
 
 {% if optional_foo %}

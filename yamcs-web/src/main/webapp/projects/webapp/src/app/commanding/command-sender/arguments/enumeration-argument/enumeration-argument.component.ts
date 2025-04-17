@@ -30,7 +30,7 @@ import { SelectEnumerationDialogComponent } from '../../select-enumeration-dialo
 @Component({
   selector: 'app-enumeration-argument',
   templateUrl: './enumeration-argument.component.html',
-  styleUrls: ['../arguments.css', './enumeration-argument.component.css'],
+  styleUrl: './enumeration-argument.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {

@@ -1,0 +1,22 @@
+:host {
+  flex: none;
+  background-color: #eee;
+  font-weight: normal;
+  font-family: "Roboto Mono", monospace;
+  font-size: 11px;
+  line-height: 12px;
+  color: rgba(0, 0, 0, 0.654);
+  padding-left: 2px;
+  padding-right: 2px;
+}
+
+:host.ya-meta-action:hover {
+  background-color: #009e97;
+  color: white;
+  cursor: pointer;
+}
+
+:host-context(.error) {
+  background-color: var(--y-error-color);
+  color: white;
+}

@@ -1,40 +1,39 @@
-<ya-field [label]="label">
-  <div class="meta" [class.error]="err.invalid$ | async">
-    @if (type.rangeMin !== undefined || type.rangeMax !== undefined) {
-      <div class="item">
-        <ya-interval [left]="type.rangeMin" [right]="type.rangeMax" />
-      </div>
-    }
-    @if (type.unitSet) {
-      <div class="item">
-        {{ type.unitSet | units }}
-      </div>
-    }
-    @if (type.signed === false) {
-      <div class="item">unsigned</div>
-    }
-    <div class="item">{{ type.engType }}</div>
+<ya-field [label]="label" [class.error]="err.invalid$ | async">
+  @if (type.rangeMin !== undefined || type.rangeMax !== undefined) {
+    <ya-meta>
+      <ya-interval [left]="type.rangeMin" [right]="type.rangeMax" />
+    </ya-meta>
+  }
 
-    <mat-menu #argMenu="matMenu" class="ya-menu">
-      <button mat-menu-item (click)="hexToggle$.next(true)">
-        <mat-icon [style.visibility]="(hexToggle$ | async) ? 'visible' : 'hidden'">check</mat-icon>
-        Hex input
-      </button>
-      <button mat-menu-item (click)="hexToggle$.next(false)">
-        <mat-icon [style.visibility]="(hexToggle$ | async) ? 'hidden' : 'visible'">check</mat-icon>
-        Decimal input
-      </button>
-    </mat-menu>
-    @if (type.signed === false) {
-      <div
-        class="item menu"
-        matTooltip="Input options"
-        [matMenuTriggerFor]="argMenu"
-        (click)="$event.stopPropagation()">
-        &#x2630;
-      </div>
-    }
-  </div>
+  @if (type.unitSet) {
+    <ya-meta>{{ type.unitSet | units }}</ya-meta>
+  }
+
+  @if (type.signed === false) {
+    <ya-meta>unsigned</ya-meta>
+  }
+
+  <ya-meta>{{ type.engType }}</ya-meta>
+
+  @if (type.signed === false) {
+    <ya-meta
+      action="true"
+      matTooltip="Input options"
+      [matMenuTriggerFor]="argMenu"
+      (click)="$event.stopPropagation()">
+      &#x2630;
+    </ya-meta>
+  }
+  <mat-menu #argMenu="matMenu" class="ya-menu">
+    <button mat-menu-item (click)="hexToggle$.next(true)">
+      <mat-icon [style.visibility]="(hexToggle$ | async) ? 'visible' : 'hidden'">check</mat-icon>
+      Hex input
+    </button>
+    <button mat-menu-item (click)="hexToggle$.next(false)">
+      <mat-icon [style.visibility]="(hexToggle$ | async) ? 'hidden' : 'visible'">check</mat-icon>
+      Decimal input
+    </button>
+  </mat-menu>
 
   @if (description) {
     <ya-help>

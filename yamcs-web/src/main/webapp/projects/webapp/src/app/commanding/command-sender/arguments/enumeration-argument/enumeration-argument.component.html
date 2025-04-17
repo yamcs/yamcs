@@ -1,7 +1,5 @@
-<ya-field [label]="label">
-  <div class="meta" [class.error]="err.invalid$ | async">
-    <div class="item">{{ type.engType }}</div>
-  </div>
+<ya-field [label]="label" [class.error]="err.invalid$ | async">
+  <ya-meta>{{ type.engType }}</ya-meta>
 
   @if (description) {
     <ya-help>

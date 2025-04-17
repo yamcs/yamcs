@@ -24,7 +24,7 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-boolean-argument',
   templateUrl: './boolean-argument.component.html',
-  styleUrls: ['../arguments.css', './boolean-argument.component.css'],
+  styleUrl: './boolean-argument.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {

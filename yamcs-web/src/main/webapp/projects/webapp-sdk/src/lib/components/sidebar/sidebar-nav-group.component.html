@@ -4,9 +4,9 @@
   [class.expanded]="expanded"
   (click)="toggle.emit(!expanded)">
   @if (expanded) {
-    <mat-icon class="arrow icon16">arrow_drop_down</mat-icon>
+    <mat-icon class="arrow">arrow_drop_down</mat-icon>
   } @else {
-    <mat-icon class="arrow icon16">arrow_right</mat-icon>
+    <mat-icon class="arrow">arrow_right</mat-icon>
   }
   <mat-icon class="item-icon" [class.svg-icon]="!!svgIcon" [svgIcon]="svgIcon">{{ icon }}</mat-icon>
   {{ label }}

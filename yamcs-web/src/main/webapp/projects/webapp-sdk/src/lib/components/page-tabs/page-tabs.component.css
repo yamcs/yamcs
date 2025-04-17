@@ -1,0 +1,47 @@
+:host {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--y-border-color);
+  height: calc(36px + 1px);
+  box-sizing: border-box;
+}
+
+:host ::ng-deep a {
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+  outline: none;
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+  z-index: 1;
+  height: 36px;
+  line-height: calc(36px + 1px);
+  font-size: 13px;
+  text-decoration: none;
+  padding: 0 24px;
+  font-weight: 500;
+  letter-spacing: 1.16071px;
+  color: rgba(0, 0, 0, 0.6);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+:host ::ng-deep a.active {
+  color: var(--y-accent);
+  border-bottom: 2px solid var(--y-accent);
+}
+
+:host ::ng-deep a.disabled {
+  pointer-events: none;
+  color: #0005;
+}
+
+:host ::ng-deep a:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+}

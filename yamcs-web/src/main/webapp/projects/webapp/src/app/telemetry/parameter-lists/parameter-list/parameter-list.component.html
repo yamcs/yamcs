@@ -15,32 +15,30 @@
         </ya-page-button>
       }
     </ya-instance-toolbar>
-    <nav #tabs mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
+
+    <ya-page-tabs>
       <a
-        mat-tab-link
         routerLink="realtime"
         routerLinkActive
         #rla="routerLinkActive"
-        [active]="rla.isActive"
+        [class.active]="rla.isActive"
         [queryParams]="{ c: yamcs.context }">
         Realtime
       </a>
       @if (config.tmArchive) {
         <a
-          mat-tab-link
           routerLink="data"
           routerLinkActive
           #rlb="routerLinkActive"
-          [active]="rlb.isActive"
+          [class.active]="rlb.isActive"
           [queryParams]="{ c: yamcs.context }">
-          Historical Data
+          Historical data
         </a>
       }
-    </nav>
+    </ya-page-tabs>
+
     <div class="tab-content-wrapper">
-      <mat-tab-nav-panel #tabPanel>
-        <router-outlet />
-      </mat-tab-nav-panel>
+      <router-outlet />
     </div>
   </ya-instance-page>
 }

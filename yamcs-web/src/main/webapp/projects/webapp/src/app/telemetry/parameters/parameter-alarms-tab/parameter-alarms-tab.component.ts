@@ -20,7 +20,6 @@ const defaultInterval = 'P1M';
 
 @Component({
   templateUrl: './parameter-alarms-tab.component.html',
-  styleUrl: './parameter-alarms-tab.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ParameterAlarmsTableComponent, WebappSdkModule],
 })
@@ -28,9 +27,9 @@ export class ParameterAlarmsTabComponent implements OnInit, OnDestroy {
   qualifiedName = input.required<string>({ alias: 'parameter' });
 
   intervalOptions: YaSelectOption[] = [
-    { id: 'P1M', label: 'Last Month' },
-    { id: 'P1Y', label: 'Last Year' },
-    { id: 'NO_LIMIT', label: 'No Limit' },
+    { id: 'P1M', label: 'Last month' },
+    { id: 'P1Y', label: 'Last year' },
+    { id: 'NO_LIMIT', label: 'No limit' },
     { id: 'CUSTOM', label: 'Custom' },
   ];
 

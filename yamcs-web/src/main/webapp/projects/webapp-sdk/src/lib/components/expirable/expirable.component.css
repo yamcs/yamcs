@@ -4,8 +4,11 @@
 
 mat-icon {
   color: #1b61b9;
+  font-size: 12px !important;
+  height: 12px !important;
+  width: 12px !important;
 }
 
-::ng-deep .mat-tooltip {
+:host ::ng-deep .mat-tooltip {
   white-space: pre-line;
 }
