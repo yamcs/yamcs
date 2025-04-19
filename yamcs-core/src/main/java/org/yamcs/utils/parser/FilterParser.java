@@ -2,6 +2,7 @@
 package org.yamcs.utils.parser;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.HexFormat;
@@ -32,7 +33,9 @@ public class FilterParser<T> implements FilterParserConstants {
     // Resolvers by lowercase field
     private Map<String, BiFunction<T, String, String>> prefixResolvers = new HashMap<String, BiFunction<T, String, String>>();
     private Map<String, Function<T, String>> stringResolvers = new HashMap<String, Function<T, String>>();
+    private Map<String, Function<T, Collection<String>>> stringCollectionResolvers = new HashMap<String, Function<T, Collection<String>>>();
     private Map<String, Function<T, Number>> numberResolvers = new HashMap<String, Function<T, Number>>();
+    private Map<String, Function<T, Collection<? extends Number>>> numberCollectionResolvers = new HashMap<String, Function<T, Collection<? extends Number>>>();
     private Map<String, Function<T, Boolean>> booleanResolvers = new HashMap<String, Function<T, Boolean>>();
     private Map<String, Function<T, byte[]>> binaryResolvers = new HashMap<String, Function<T, byte[]>>();
     private Map<String, Function<T, ? extends Enum<?>>> enumResolvers = new HashMap<String, Function<T, ? extends Enum<?>>>();
@@ -60,6 +63,12 @@ public class FilterParser<T> implements FilterParserConstants {
         stringResolvers.put(lcField, resolver);
     }
 
+    public void addStringCollectionField(String field, Function<T, Collection<String>> resolver) {
+        String lcField = field.toLowerCase();
+        fields.add(lcField);
+        stringCollectionResolvers.put(lcField, resolver);
+    }
+
     public <E extends Enum<?>> void addEnumField(String field, Class<E> enumClass, Function<T, E> resolver) {
         String lcField = field.toLowerCase();
         fields.add(lcField);
@@ -71,6 +80,12 @@ public class FilterParser<T> implements FilterParserConstants {
         String lcField = field.toLowerCase();
         fields.add(lcField);
         numberResolvers.put(lcField, resolver);
+    }
+
+    public void addNumberCollectionField(String field, Function<T, Collection<? extends Number>> resolver) {
+        String lcField = field.toLowerCase();
+        fields.add(lcField);
+        numberCollectionResolvers.put(lcField, resolver);
     }
 
     public void addBooleanField(String field, Function<T, Boolean> resolver) {
@@ -98,8 +113,16 @@ public class FilterParser<T> implements FilterParserConstants {
         return stringResolvers.get(field);
     }
 
+    public Function<T, Collection<String>> getStringCollectionResolver(String field) {
+        return stringCollectionResolvers.get(field);
+    }
+
     public Function<T, Number> getNumberResolver(String field) {
         return numberResolvers.get(field);
+    }
+
+    public Function<T, Collection<? extends Number>> getNumberCollectionResolver(String field) {
+        return numberCollectionResolvers.get(field);
     }
 
     public Function<T, Boolean> getBooleanResolver(String field) {
@@ -360,7 +383,7 @@ public class FilterParser<T> implements FilterParserConstants {
             if (!value.equalsIgnoreCase("null")) {
                 try {
                     binary = HEX.parseHex(value);
-                } catch (NumberFormatException e) {
+                } catch (IllegalArgumentException e) {
                     {if (true) throw new IncorrectTypeException(value, token, tokenImage);}
                 }
             }
@@ -484,6 +507,66 @@ public class FilterParser<T> implements FilterParserConstants {
     try { return !jj_3_6(); }
     catch(LookaheadSuccess ls) { return true; }
     finally { jj_save(5, xla); }
+  }
+
+  private boolean jj_3_3() {
+    if (jj_scan_token(WS)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_3()) jj_scanpos = xsp;
+    if (jj_3R_4()) return true;
+    return false;
+  }
+
+  private boolean jj_3_6() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(2)) jj_scanpos = xsp;
+    if (jj_3R_6()) return true;
+    xsp = jj_scanpos;
+    if (jj_scan_token(2)) jj_scanpos = xsp;
+    if (jj_3R_7()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_9() {
+    if (jj_3R_4()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_25() {
+    if (jj_3R_7()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_5() {
+    if (jj_3R_9()) return true;
+    return false;
+  }
+
+  private boolean jj_3_1() {
+    if (jj_scan_token(WS)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_24() {
+    if (jj_3R_25()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_23() {
+    if (jj_scan_token(LPAREN)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_22() {
+    if (jj_scan_token(MINUS)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_21() {
+    if (jj_scan_token(NOT)) return true;
+    return false;
   }
 
   private boolean jj_3R_18() {
@@ -631,66 +714,6 @@ public class FilterParser<T> implements FilterParserConstants {
 
   private boolean jj_3_2() {
     if (jj_scan_token(WS)) return true;
-    return false;
-  }
-
-  private boolean jj_3_3() {
-    if (jj_scan_token(WS)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_3()) jj_scanpos = xsp;
-    if (jj_3R_4()) return true;
-    return false;
-  }
-
-  private boolean jj_3_6() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_scan_token(2)) jj_scanpos = xsp;
-    if (jj_3R_6()) return true;
-    xsp = jj_scanpos;
-    if (jj_scan_token(2)) jj_scanpos = xsp;
-    if (jj_3R_7()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_9() {
-    if (jj_3R_4()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_25() {
-    if (jj_3R_7()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_5() {
-    if (jj_3R_9()) return true;
-    return false;
-  }
-
-  private boolean jj_3_1() {
-    if (jj_scan_token(WS)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_24() {
-    if (jj_3R_25()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_23() {
-    if (jj_scan_token(LPAREN)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_22() {
-    if (jj_scan_token(MINUS)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_21() {
-    if (jj_scan_token(NOT)) return true;
     return false;
   }
 

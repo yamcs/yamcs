@@ -3,6 +3,7 @@ package org.yamcs.web.api;
 import org.yamcs.api.FilterSyntaxException;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
+import org.yamcs.http.api.ArchivedParameterFilterFactory;
 import org.yamcs.http.api.EventFilterFactory;
 import org.yamcs.http.api.PacketFilterFactory;
 
@@ -23,6 +24,9 @@ public class ParseFilterObserver implements Observer<ParseFilterRequest> {
                 break;
             case "packets":
                 PacketFilterFactory.create(request.getFilter());
+                break;
+            case "pids":
+                ArchivedParameterFilterFactory.create(request.getFilter());
                 break;
             default:
                 throw new IllegalStateException("Unexpected resource: '" + request.getResource() + "'");
