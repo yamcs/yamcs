@@ -499,3 +499,22 @@ export interface ReplicationSlave {
   pullFrom?: string;
   tx: number;
 }
+
+export interface ParameterId {
+  pid: number;
+  parameter: string;
+  rawType: string;
+  engType: string;
+  gids?: number[];
+}
+
+export interface GetParameterArchivePidsOptions {
+  filter?: string;
+  limit?: number;
+  next?: string;
+}
+
+export interface GetParameterArchivePidsPage {
+  pids?: ParameterId[];
+  continuationToken?: string;
+}

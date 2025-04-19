@@ -1,6 +1,7 @@
 package org.yamcs.http.api;
 
 import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
@@ -58,6 +59,7 @@ import org.yamcs.utils.SortedIntArray;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 
+import com.google.gson.Gson;
 import com.google.protobuf.Empty;
 
 public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
@@ -380,32 +382,52 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         ParameterIdDb pdb = parchive.getParameterIdDb();
         ParameterGroupIdDb pgdb = parchive.getParameterGroupIdDb();
 
-        ArchivedParametersInfoResponse.Builder respb = ArchivedParametersInfoResponse.newBuilder();
+        var responseb = ArchivedParametersInfoResponse.newBuilder();
         int limit = request.hasLimit() ? request.getLimit() : 100;
 
+        var filter = request.hasFilter()
+                ? ArchivedParameterFilterFactory.create(request.getFilter())
+                : null;
+
+        var nextToken = request.hasNext() ? PidPageToken.decode(request.getNext()) : null;
+
         pdb.iterate((fqn, pid) -> {
-            if (request.hasSystem() && !fqn.startsWith(request.getSystem())) {
-                return true;
+            if (nextToken != null && pid.getPid() <= nextToken.pid) {
+                return true; // Continue
             }
-            if (request.hasQ() && !fqn.contains(request.getQ())) {
-                return true;
+            if (!pid.isSimple()) {
+                return true; // Continue;
             }
-            ArchivedParameterInfo.Builder apib = ArchivedParameterInfo.newBuilder().setFqn(fqn).setPid(pid.getPid());
+
+            var infob = ArchivedParameterInfo.newBuilder()
+                    .setParameter(fqn)
+                    .setPid(pid.getPid());
             if (pid.getEngType() != null) {
-                apib.setEngType(pid.getEngType());
+                infob.setEngType(pid.getEngType());
             }
             if (pid.getRawType() != null) {
-                apib.setRawType(pid.getRawType());
+                infob.setRawType(pid.getRawType());
             }
             for (int gid : pgdb.getAllGroups(pid.getPid())) {
-                apib.addGids(gid);
+                infob.addGids(gid);
             }
 
-            respb.addParameters(apib.build());
-            return respb.getParametersCount() < limit;
+            var info = infob.build();
+
+            if (filter != null && !filter.matches(info)) {
+                return true; // Continue
+            }
+
+            responseb.addPids(info);
+            return responseb.getPidsCount() < limit;
         });
 
-        observer.complete(respb.build());
+        if (responseb.getPidsCount() > 0) {
+            var lastPid = responseb.getPids(responseb.getPidsCount() - 1).getPid();
+            var token = new PidPageToken(lastPid);
+            responseb.setContinuationToken(token.encodeAsString());
+        }
+        observer.complete(responseb.build());
     }
 
     @Override
@@ -440,7 +462,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
             throw new NotFoundException("Unknown parameter id " + pid);
         }
 
-        paraInfo.setFqn(paraId.getParamFqn());
+        paraInfo.setParameter(paraId.getParamFqn());
         paraInfo.setEngType(paraId.getEngType());
         paraInfo.setRawType(paraId.getRawType());
         paraInfo.setPid(pid);
@@ -484,7 +506,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         pdb.iterate((fqn, paraId) -> {
             if (sortedPids.contains(paraId.getPid())) {
                 ArchivedParameterInfo.Builder paraInfo = ArchivedParameterInfo.newBuilder()
-                        .setFqn(fqn);
+                        .setParameter(fqn);
                 if (paraId.getEngType() != null) {
                     paraInfo.setEngType(paraId.getEngType());
                 }
@@ -543,5 +565,27 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
             throw new BadRequestException("Backfiller not enabled");
         }
         return backfiller;
+    }
+
+    private static class PidPageToken {
+
+        /**
+         * PID associated with the last object that was emitted.
+         */
+        public int pid;
+
+        public PidPageToken(int pid) {
+            this.pid = pid;
+        }
+
+        public static PidPageToken decode(String encoded) {
+            String decoded = new String(Base64.getUrlDecoder().decode(encoded));
+            return new Gson().fromJson(decoded, PidPageToken.class);
+        }
+
+        public String encodeAsString() {
+            String json = new Gson().toJson(this);
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(json.getBytes());
+        }
     }
 }

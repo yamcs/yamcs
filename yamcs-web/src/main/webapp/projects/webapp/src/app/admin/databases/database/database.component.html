@@ -47,6 +47,15 @@
           [active]="rlb.isActive">
           Streams
         </a>
+        @if (database.name !== "_global") {
+          <a
+            [routerLink]="['/admin/databases', database.name, 'parameter-archive']"
+            routerLinkActive
+            #rlc="routerLinkActive"
+            [class.active]="rlc.isActive">
+            Parameter archive
+          </a>
+        }
       }
       @if (object$ | async; as obj) {
         @if (obj.type === "table") {

@@ -9,6 +9,7 @@ import { mayReadSystemInfoGuardFn } from '../core/guards/MayReadSystemInfoGuard'
 import { AdminActionLogComponent } from './admin-action-log/admin-action-log.component';
 import { DatabaseListComponent } from './databases/database-list/database-list.component';
 import { DatabaseComponent } from './databases/database/database.component';
+import { ParameterArchiveComponent } from './databases/parameter-archive/parameter-archive.component';
 import { StreamColumnListComponent } from './databases/stream-column-list/stream-column-list.component';
 import { StreamDataTabComponent } from './databases/stream-data-tab/stream-data-tab.component';
 import { StreamListComponent } from './databases/stream-list/stream-list.component';
@@ -33,6 +34,7 @@ import { ServiceAccountListComponent } from './iam/service-account-list/service-
 import { UserListComponent } from './iam/user-list/user-list.component';
 import { UserComponent } from './iam/user/user.component';
 import { LeapSecondsComponent } from './leap-seconds/leap-seconds.component';
+import { resolveParseFilterSubscription } from './pids.resolvers';
 import { ProcessorTypesComponent } from './processor-types/processor-types.component';
 import { ReplicationComponent } from './replication/replication/replication.component';
 import { RocksDbDatabasesComponent } from './rocksdb/rocksdb-database-list/rocksdb-database-list.component';
@@ -166,6 +168,13 @@ export const ROUTES: Routes = [
                     component: StreamScriptTabComponent,
                   },
                 ],
+              },
+              {
+                path: 'parameter-archive',
+                component: ParameterArchiveComponent,
+                resolve: {
+                  parseFilterSubscription: resolveParseFilterSubscription,
+                },
               },
             ],
           },
