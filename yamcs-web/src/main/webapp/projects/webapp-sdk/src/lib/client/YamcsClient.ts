@@ -207,6 +207,8 @@ import {
   EditUserRequest,
   GeneralInfo,
   GetAuditRecordsOptions,
+  GetParameterArchivePidsOptions,
+  GetParameterArchivePidsPage,
   GroupInfo,
   HttpTraffic,
   HttpTrafficSubscription,
@@ -1658,6 +1660,15 @@ export default class YamcsClient implements HttpHandler {
       method: 'POST',
     });
     return (await response.json()) as ResultSet;
+  }
+
+  async getParameterArchivePids(
+    instance: string,
+    options: GetParameterArchivePidsOptions,
+  ) {
+    const url = `${this.apiUrl}/parameter-archive/${instance}/pids`;
+    const response = await this.doFetch(url + this.queryString(options));
+    return (await response.json()) as GetParameterArchivePidsPage;
   }
 
   async getPacketNames(instance: string) {

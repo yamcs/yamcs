@@ -1,0 +1,90 @@
+<ya-panel>
+  <ya-filter-bar [formGroup]="filterForm" class="query">
+    <ya-search-filter2
+      #searchFilter
+      formControlName="filter"
+      placeholder="Search PIDs"
+      style="flex: 1 1 auto"
+      [completions]="completions"
+      [expanded]="false"
+      (typedValue)="parseQuery($event)" />
+  </ya-filter-bar>
+
+  @if (searchFilter.dirty()) {
+    <ya-table-top>
+      The search filter has changed.
+      @if (!(searchFilter.errorState$ | async)) {
+        &nbsp;
+        <a href class="ya-link" (click)="searchFilter.doSearch(); $event.preventDefault()">
+          Apply filter
+        </a>
+        .
+      }
+    </ya-table-top>
+  }
+  <table mat-table [dataSource]="dataSource" class="ya-data-table expand">
+    <ng-container matColumnDef="pid">
+      <th mat-header-cell *matHeaderCellDef>PID</th>
+      <td mat-cell *matCellDef="let item">
+        {{ item.pid }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="parameter">
+      <th mat-header-cell *matHeaderCellDef>Parameter name</th>
+      <td mat-cell *matCellDef="let item">
+        {{ item.parameter || "-" }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="rawType">
+      <th mat-header-cell *matHeaderCellDef>Raw type</th>
+      <td mat-cell *matCellDef="let item">
+        @if (item.rawType) {
+          <span class="mono">{{ item.rawType | lowercase }}</span>
+        } @else {
+          -
+        }
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="engType">
+      <th mat-header-cell *matHeaderCellDef>Engineering type</th>
+      <td mat-cell *matCellDef="let item">
+        @if (item.engType) {
+          <span class="mono">{{ item.engType | lowercase }}</span>
+        } @else {
+          -
+        }
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="gids">
+      <th mat-header-cell *matHeaderCellDef>GIDs</th>
+      <td mat-cell *matCellDef="let item">
+        @for (gid of item.gids || []; track gid; let last = $last) {
+          {{ gid }}
+          @if (!last) {
+            ,
+          }
+        } @empty {
+          -
+        }
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef class="expand"></th>
+      <td mat-cell *matCellDef="let row"></td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+  </table>
+
+  <ya-toolbar appearance="bottom" align="center">
+    <ya-button [disabled]="!continuationToken()" (click)="loadData(continuationToken())">
+      Load more
+    </ya-button>
+  </ya-toolbar>
+</ya-panel>

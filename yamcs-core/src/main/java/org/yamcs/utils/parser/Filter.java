@@ -2,6 +2,7 @@ package org.yamcs.utils.parser;
 
 import java.io.StringReader;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -52,12 +53,20 @@ public abstract class Filter<T> {
         parser.addStringField(field, resolver);
     }
 
+    protected void addStringCollectionField(String field, Function<T, Collection<String>> resolver) {
+        parser.addStringCollectionField(field, resolver);
+    }
+
     protected <E extends Enum<?>> void addEnumField(String field, Class<E> enumClass, Function<T, E> resolver) {
         parser.addEnumField(field, enumClass, resolver);
     }
 
     protected void addNumberField(String field, Function<T, Number> resolver) {
         parser.addNumberField(field, resolver);
+    }
+
+    protected void addNumberCollectionField(String field, Function<T, Collection<? extends Number>> resolver) {
+        parser.addNumberCollectionField(field, resolver);
     }
 
     protected void addBooleanField(String field, Function<T, Boolean> resolver) {
@@ -165,6 +174,17 @@ public abstract class Filter<T> {
             return matchStringComparison(comparison, fieldValue);
         }
 
+        var stringCollectionResolver = parser.getStringCollectionResolver(comparison.comparable);
+        if (stringCollectionResolver != null) {
+            var fieldValue = stringCollectionResolver.apply(item);
+            return matchStringCollectionComparison(comparison, fieldValue);
+        }
+
+        var numberCollectionResolver = parser.getNumberCollectionResolver(comparison.comparable);
+        if (numberCollectionResolver != null) {
+            return matchNumberCollectionComparison(comparison, item, numberCollectionResolver);
+        }
+
         throw new IllegalArgumentException("Unexpected field '" + comparison.comparable + "'");
     }
 
@@ -188,6 +208,76 @@ public abstract class Filter<T> {
             return testRegexMatch(fieldValue, comparison.pattern);
         case RE_NOT_EQUAL_TO:
             return !testRegexMatch(fieldValue, comparison.pattern);
+        default:
+            throw new IllegalStateException("Unexpected comparator " + comparison.comparator);
+        }
+    }
+
+    private boolean matchStringCollectionComparison(Comparison comparison, Collection<String> fieldValue) {
+        switch (comparison.comparator) {
+        case EQUAL_TO:
+            for (var fieldItem : fieldValue) {
+                if (isEqual(fieldItem, comparison.value)) { // Faster than compare
+                    return true;
+                }
+            }
+            return false;
+        case NOT_EQUAL_TO:
+            for (var fieldItem : fieldValue) {
+                if (!isEqual(fieldItem, comparison.value)) { // Faster than compare
+                    return true;
+                }
+            }
+            return false;
+        case GREATER_THAN:
+            for (var fieldItem : fieldValue) {
+                if (compareStringField(fieldItem, comparison.value) > 0) {
+                    return true;
+                }
+            }
+            return false;
+        case GREATER_THAN_OR_EQUAL_TO:
+            for (var fieldItem : fieldValue) {
+                if (compareStringField(fieldItem, comparison.value) >= 0) {
+                    return true;
+                }
+            }
+            return false;
+        case LESS_THAN:
+            for (var fieldItem : fieldValue) {
+                if (compareStringField(fieldItem, comparison.value) < 0) {
+                    return true;
+                }
+            }
+            return false;
+        case LESS_THAN_OR_EQUAL_TO:
+            for (var fieldItem : fieldValue) {
+                if (compareStringField(fieldItem, comparison.value) <= 0) {
+                    return true;
+                }
+            }
+            return false;
+        case HAS:
+            for (var fieldItem : fieldValue) {
+                if (testStringFieldContains(fieldItem, comparison.value)) {
+                    return true;
+                }
+            }
+            return false;
+        case RE_EQUAL_TO:
+            for (var fieldItem : fieldValue) {
+                if (testRegexMatch(fieldItem, comparison.pattern)) {
+                    return true;
+                }
+            }
+            return false;
+        case RE_NOT_EQUAL_TO:
+            for (var fieldItem : fieldValue) {
+                if (!testRegexMatch(fieldItem, comparison.pattern)) {
+                    return true;
+                }
+            }
+            return false;
         default:
             throw new IllegalStateException("Unexpected comparator " + comparison.comparator);
         }
@@ -244,6 +334,64 @@ public abstract class Filter<T> {
             return compareNumberField(fieldValue, comparand) < 0;
         case LESS_THAN_OR_EQUAL_TO:
             return compareNumberField(fieldValue, comparand) <= 0;
+        default:
+            throw new IllegalStateException("Unexpected comparator " + comparison.comparator);
+        }
+    }
+
+    private boolean matchNumberCollectionComparison(Comparison comparison, T item,
+            Function<T, Collection<? extends Number>> resolver) {
+        var fieldValue = resolver.apply(item);
+        var comparand = comparison.value.equalsIgnoreCase("null")
+                ? null
+                : Double.parseDouble(comparison.value);
+
+        switch (comparison.comparator) {
+        case EQUAL_TO:
+        case HAS:
+        case RE_EQUAL_TO:
+            for (var fieldItem : fieldValue) {
+                if (compareNumberField(fieldItem, comparand) == 0) {
+                    return true;
+                }
+            }
+            return false;
+        case NOT_EQUAL_TO:
+        case RE_NOT_EQUAL_TO:
+            for (var fieldItem : fieldValue) {
+                if (compareNumberField(fieldItem, comparand) != 0) {
+                    return true;
+                }
+            }
+            return false;
+        case GREATER_THAN:
+            for (var fieldItem : fieldValue) {
+                if (compareNumberField(fieldItem, comparand) > 0) {
+                    return true;
+                }
+            }
+            return false;
+        case GREATER_THAN_OR_EQUAL_TO:
+            for (var fieldItem : fieldValue) {
+                if (compareNumberField(fieldItem, comparand) >= 0) {
+                    return true;
+                }
+            }
+            return false;
+        case LESS_THAN:
+            for (var fieldItem : fieldValue) {
+                if (compareNumberField(fieldItem, comparand) < 0) {
+                    return true;
+                }
+            }
+            return false;
+        case LESS_THAN_OR_EQUAL_TO:
+            for (var fieldItem : fieldValue) {
+                if (compareNumberField(fieldItem, comparand) <= 0) {
+                    return true;
+                }
+                return false;
+            }
         default:
             throw new IllegalStateException("Unexpected comparator " + comparison.comparator);
         }

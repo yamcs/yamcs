@@ -19,12 +19,12 @@ public class FilterParserTest {
 
     private static final HexFormat HEX = HexFormat.of();
 
-    private Item a = new Item("round horn", EventSeverity.INFO, false, 1, HEX.parseHex("aabb"));
-    private Item b = new Item("wacky hippo", EventSeverity.WATCH, true, 2, HEX.parseHex("bbcc"));
-    private Item c = new Item("icy wombat", EventSeverity.WARNING, true, 3, HEX.parseHex("ccdd"));
-    private Item d = new Item("lush ghost", EventSeverity.DISTRESS, false, 4, HEX.parseHex("ddee"));
-    private Item e = new Item("rich sea", EventSeverity.CRITICAL, false, 5, HEX.parseHex("eeff"));
-    private Item f = new Item("heavy lake", null, false, 6, HEX.parseHex("ff00"));
+    private Item a = new Item("round horn", EventSeverity.INFO, false, 1, HEX.parseHex("aabb"), List.of("foo", "bar"));
+    private Item b = new Item("wacky hippo", EventSeverity.WATCH, true, 2, HEX.parseHex("bbcc"), List.of("foo"));
+    private Item c = new Item("icy wombat", EventSeverity.WARNING, true, 3, HEX.parseHex("ccdd"), List.of("bar"));
+    private Item d = new Item("lush ghost", EventSeverity.DISTRESS, false, 4, HEX.parseHex("ddee"), List.of());
+    private Item e = new Item("rich sea", EventSeverity.CRITICAL, false, 5, HEX.parseHex("eeff"), List.of("baz"));
+    private Item f = new Item("heavy lake", null, false, 6, HEX.parseHex("ff00"), List.of());
 
     private List<Item> allItems = asList(a, b, c, d, e, f);
 
@@ -64,25 +64,25 @@ public class FilterParserTest {
         var filter = new ItemFilter("severity=null");
         assertEquals(asList(f), filterItems(filter));
 
-        var nullString = new Item(null, EventSeverity.INFO, false, 1, null);
+        var nullString = new Item(null, EventSeverity.INFO, false, 1, null, List.of());
         var extendedItems = new ArrayList<>(allItems);
         extendedItems.add(nullString);
         filter = new ItemFilter("name = null");
         assertEquals(asList(nullString), extendedItems.stream().filter(filter::matches).toList());
 
-        var nullBoolean = new Item("swift gopher", EventSeverity.INFO, null, 1, null);
+        var nullBoolean = new Item("swift gopher", EventSeverity.INFO, null, 1, null, List.of());
         extendedItems = new ArrayList<>(allItems);
         extendedItems.add(nullBoolean);
         filter = new ItemFilter("animal = null");
         assertEquals(asList(nullBoolean), extendedItems.stream().filter(filter::matches).toList());
 
-        var nullNumber = new Item("swift gopher", EventSeverity.INFO, true, null, null);
+        var nullNumber = new Item("swift gopher", EventSeverity.INFO, true, null, null, List.of());
         extendedItems = new ArrayList<>(allItems);
         extendedItems.add(nullNumber);
         filter = new ItemFilter("order = null");
         assertEquals(asList(nullNumber), extendedItems.stream().filter(filter::matches).toList());
 
-        var nullBinary = new Item("swift gopher", EventSeverity.INFO, true, 1, null);
+        var nullBinary = new Item("swift gopher", EventSeverity.INFO, true, 1, null, List.of());
         extendedItems = new ArrayList<>(allItems);
         extendedItems.add(nullBinary);
         filter = new ItemFilter("binary = null");
@@ -328,7 +328,14 @@ public class FilterParserTest {
         assertEquals(asList(c), filterItems(filter));
     }
 
-    public static record Item(String name, EventSeverity severity, Boolean animal, Integer order, byte[] binary) {
+    @Test
+    public void testStringArray() throws ParseException {
+        var filter = new ItemFilter("tag=foo");
+        assertEquals(asList(a, b), filterItems(filter));
+    }
+
+    public static record Item(String name, EventSeverity severity, Boolean animal, Integer order, byte[] binary,
+            List<String> tags) {
         @Override
         public String toString() {
             return name;
@@ -340,6 +347,7 @@ public class FilterParserTest {
         public ItemFilter(String query) throws ParseException {
             super(query);
             addStringField("name", item -> item.name());
+            addStringCollectionField("tag", item -> item.tags);
             addEnumField("severity", EventSeverity.class, item -> item.severity());
             addBooleanField("animal", item -> item.animal());
             addNumberField("order", item -> item.order());
