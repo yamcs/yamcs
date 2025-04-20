@@ -65,6 +65,7 @@ public class ParameterRetrievalService extends AbstractYamcsService {
     // filler is not enabled
     boolean pcacheConfigured;
 
+    @Override
     public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
         super.init(yamcsInstance, serviceName, config);
         this.procName = config.getString("processor", DEFAULT_PROCESSOR);
@@ -89,7 +90,7 @@ public class ParameterRetrievalService extends AbstractYamcsService {
         if (!l.isEmpty()) {
             parchive = l.get(0);
         } else {
-            log.info("The parameter archive service has not been found");
+            log.info("The parameter archive service was not found");
         }
         if ((parchive == null || parchive.getRealtimeFiller() == null) && !pcacheConfigured) {
             cacheConfig = new ParameterCacheConfig(YConfiguration.emptyConfig(), log);
@@ -98,8 +99,12 @@ public class ParameterRetrievalService extends AbstractYamcsService {
         if (cacheConfig != null) {
             pcache = new ArrayParameterCache(yamcsInstance, cacheConfig);
             var proc = ysi.getProcessor(procName);
-            proc.getParameterRequestManager()
-                    .subscribeAll((id, items) -> pcache.update(items));
+            if (proc == null) {
+                log.info("No processor '" + procName + '"');
+            } else {
+                proc.getParameterRequestManager()
+                        .subscribeAll((id, items) -> pcache.update(items));
+            }
         }
 
         notifyStarted();
