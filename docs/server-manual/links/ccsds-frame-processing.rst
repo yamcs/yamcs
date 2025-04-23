@@ -57,8 +57,14 @@ An example of a UDP TM frame link specification is below:
         clcwStream: clcw
         goodFrameStream: good_frames
         badFrameStream: bad_frames
+        encryption:
+          - spi: 1
+            keyFile: etc/sdls-presharedkey-256bit
+          - spi: 2
+            keyFile: etc/sdls-presharedkey-256bit
         virtualChannels:
           - vcId: 0
+            encryptionSpi: 1
             ocfPresent: true
             service: "PACKET"
             maxPacketLength: 2048
@@ -67,6 +73,7 @@ An example of a UDP TM frame link specification is below:
               [...]
             stream: "tm_realtime"
           - vcId: 1
+            encryptionSpi: 1
             ocfPresent: true
             service: "PACKET"
             maxPacketLength: 2048
@@ -76,6 +83,7 @@ An example of a UDP TM frame link specification is below:
               [...]
             stream: "tm2_realtime"
           - vcId: 2
+            encryptionSpi: 2
             ocfPresent: true
             service: "PACKET" 
             maxPacketLength: 2048
@@ -127,6 +135,17 @@ goodFrameStream (string)
 badFrameStream (string)
     If specified, the bad frames will be sent on a stream with that name. Bad frames are considered as those that fail decoding for various reasons: length in the header does not match the size of the data received, frame version does not match, bad CRC, bad spacecraft id, bad vcid.
 
+encryption (list of map)
+    If specified, channels on the link can use one of the configured SPIs to encrypt frames.
+
+For each item in the ``encryption`` list, the following parameters can be used:
+
+spi (integer)
+    **Required.** Specifies the Security Parameter Identifier (SPI) that uniquely identifies this encryption key for the link.
+
+keyFile (string)
+    **Required.** Specifies the path to the 256-bit encryption key for symmetric encryption.
+
 virtualChannels (map)
     **Required.** Used to specify the Virtual Channel specific configuration.
 
@@ -134,6 +153,9 @@ For each Virtual Channel in the ``virtualChannels`` map, the following parameter
 
 vcId (integer)
     **Required.** The configured Virtual Channel identifier.
+
+encryptionSpi (integer)
+    If specified, instructs the virtual channel to encrypt and authenticate frames, using the specified Security Parameter Identifier. The ``encryptionSpi`` must be one of the ``spi`` values in the ``encryption`` list for the link.
 
 ocfPresent: (boolean)
     Used for AOS frames to indicate that the Virtual Channel uses the  Operational Control Field (OCF) Service to transport the CLCW containing acknowledgments for the uplinked TC frames. For TM and USLP frames, there is a flag in each frame that indicates the presence or absence of OCF.
@@ -196,8 +218,16 @@ An example of a UDP TC frame link specification is below:
       cltuEncoding: BCH
       priorityScheme: FIFO
       randomizeCltu: false
+      encryption:
+        - spi: 1
+          keyFile: etc/sdls-presharedkey-256bit
+        - spi: 2
+          keyFile: etc/sdls-presharedkey-256bit
+        - spi: 3
+          keyFile: etc/sdls-presharedkey-256bit
       virtualChannels:
           - vcId: 0
+            encryptionSpi: 1
             service: "PACKET"
             mapId: 1
             priority: 1
@@ -238,6 +268,17 @@ randomizeCltu (boolean)
     Used if cltuEncoding is BCH or CUSTOM to enable/disable the randomization. For LDPC encoding, randomization is always on.
     Note that as per issue 4 of CCSDS 231.0 (TC Synchronization and Channel Coding), the randomization is done before the encoding when BCH is enabled whereas if LDPC encoding is enabled, the randomization is done after the encoding. This has been changed in Yamcs version 5.5.4 - in versions 5.5.3 and earlier the randomization was always applied before the encoding (as per issue 3 of the CCSDS standard). If CUSTOM CLTU encoding is used, the custom encoder is responsible for the randomization - it can use this option or its own separate option for configuration.
 
+encryption (list of map)
+    If specified, channels on the link can use one of the configured SPIs to encrypt frames.
+
+For each item in the ``encryption`` list, the following parameters can be used:
+
+spi (integer)
+    **Required.** Specifies the Security Parameter Identifier (SPI) that uniquely identifies this encryption key for the link.
+
+keyFile (string)
+    **Required.** Specifies the path to the 256-bit encryption key for symmetric encryption.
+
 skipRandomizationForVcs (list of integers) added in Yamcs 5.5.6
     If randomizeCltu is true, this option can define a list of virtual channels for which randomization is not performed. This is not as per CCSDS standard which specifies that the randomization is enabled/disabled at the physical channel level.
  
@@ -262,6 +303,9 @@ For each Virtual Channel in the ``virtualChannels`` map, the following parameter
 
 vcId (integer)
     **Required.** The Virtual Channel identifier to be used in the frames. You can define multiple entries in the map with the same vcId, if the data is coming from different streams.
+
+encryptionSpi (integer)
+    If specified, instructs the virtual channel to encrypt and authenticate frames, using the specified Security Parameter Identifier. The ``encryptionSpi`` must be one of the ``spi`` values in the ``encryption`` list for the link.
 
 service (string)
     Currently the only supported option is ``PACKET`` which is also the default.
