@@ -1,6 +1,5 @@
 package org.yamcs.tctm.ccsds;
 
-import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.security.SdlsSecurityAssociation;
 
@@ -33,7 +32,7 @@ public abstract class UplinkManagedParameters {
     /**
      * A map of Security Parameter Indices to Security Associations
      */
-    Map<Short, SdlsSecurityAssociation> sdlsSecurityAssociations = new HashMap<>();
+    final Map<Short, SdlsSecurityAssociation> sdlsSecurityAssociations = new HashMap<>();
 
     public UplinkManagedParameters(YConfiguration config) {
         this.spacecraftId = config.getInt("spacecraftId");
@@ -51,8 +50,10 @@ public abstract class UplinkManagedParameters {
                     throw new RuntimeException(e);
                 }
 
+                int encryptionSeqNumWindow = Math.abs(saDef.getInt("seqNumWindow"));
+
                 // Save the SPI and its security association
-                sdlsSecurityAssociations.put(spi, new SdlsSecurityAssociation(sdlsKey, spi));
+                sdlsSecurityAssociations.put(spi, new SdlsSecurityAssociation(sdlsKey, spi, encryptionSeqNumWindow));
             }
         }
     }

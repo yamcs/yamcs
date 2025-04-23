@@ -1,5 +1,7 @@
 package org.yamcs.security;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.utils.ByteArrayUtils;
 
 import javax.crypto.*;
@@ -33,19 +35,36 @@ public class SdlsSecurityAssociation {
      * Security parameter index: identifier shared between sender and receiver, specifies which security association is
      * used
      */
-    private final short spi;
+    public final short spi;
+
+    /**
+     * Anti-replay sequence number
+     */
+    private int seqNum;
+
+    /**
+     * Anti-replay sequence number window.
+     * Specifies the range of sequence number around the current number that will be accepted.
+     */
+    final int seqNumWindow;
+
     /**
      * Secret key used for encryption and decryption
      */
-    private final SecretKey secretKey;
+    private SecretKey secretKey;
+
+    private static final Logger log = LoggerFactory.getLogger(SdlsSecurityAssociation.class);
 
     /**
      * @param key the 256-bit key used for encryption/decryption
      * @param spi the security parameter index, shared between sender and receiver.
+     * @param seqNumWindow a positive integer; only frames whose sequence number differs by this integer at
+     *                     maximum will be accepted.
      */
-    public SdlsSecurityAssociation(byte[] key, short spi) {
+    public SdlsSecurityAssociation(byte[] key, short spi, int seqNumWindow) {
         this.secretKey = new SecretKeySpec(key, secretKeyAlgorithm);
-
+        this.seqNum = 0;
+        this.seqNumWindow = Math.abs(seqNumWindow); // just to ensure it's not negative
         this.spi = spi;
     }
 
@@ -60,10 +79,9 @@ public class SdlsSecurityAssociation {
      * @return Size of security header in bytes
      */
     public static int getHeaderSize() {
-        // 16-bit SPI + size of IV.
-        // no sequence number for AES-GCM - already includes an increasing counter
+        // 16-bit SPI + size of IV + 32-bit sequence number.
         // no padding for AES-GCM - it works almost like a stream cipher
-        return 2 + GCM_IV_LEN_BYTES;
+        return 2 + GCM_IV_LEN_BYTES + 4;
     }
 
     /**
@@ -88,8 +106,13 @@ public class SdlsSecurityAssociation {
         // Add a mask for the security header
         int secAuthMaskStart = partialAuthMask.length;
         // We want to authenticate the SPI field (first 16 bits)
-        authMaskFull[secAuthMaskStart] = 1;
-        authMaskFull[secAuthMaskStart + 1] = 1;
+        authMaskFull[secAuthMaskStart] = (byte) 0xff;
+        authMaskFull[secAuthMaskStart + 1] = (byte) 0xff;
+        // And the sequence number (last 32 bits)
+        authMaskFull[authMaskFull.length - 4] = (byte) 0xff;
+        authMaskFull[authMaskFull.length - 3] = (byte) 0xff;
+        authMaskFull[authMaskFull.length - 2] = (byte) 0xff;
+        authMaskFull[authMaskFull.length - 1] = (byte) 0xff;
 
         // Set final authMask for primary + sec header
         return authMaskFull;
@@ -104,13 +127,10 @@ public class SdlsSecurityAssociation {
      * @param secTrailerEnd   First byte following the security trailer
      * @param partialAuthMask Mask to authenticate header data (does not include the security header, this is
      *                        automatically authenticated by the SDLS implementation)
-     * @throws GeneralSecurityException
+     * @throws GeneralSecurityException if encryption fails
      */
     public void applySecurity(byte[] transferFrame, int frameStart, int dataStart, int secTrailerEnd,
                               byte[] partialAuthMask) throws GeneralSecurityException {
-        // Size of all headers
-        int headersSize = dataStart - frameStart;
-
         // IV must never be re-used with same key for AES-GCM, so we generate a random
         // one for every encryption.
         byte[] iv = new byte[GCM_IV_LEN_BYTES];
@@ -120,8 +140,18 @@ public class SdlsSecurityAssociation {
         // first two bytes are SPI
         int secHeaderStart = dataStart - getHeaderSize();
         ByteArrayUtils.encodeUnsignedShort(spi, transferFrame, secHeaderStart);
-        // the rest is IV
+        // the next are IV
         System.arraycopy(iv, 0, transferFrame, secHeaderStart + 2, iv.length);
+        // and the last four bytes are sequence number
+
+        // Increment the sequence number, handling overflow
+        try {
+            seqNum = Math.incrementExact(seqNum);
+        } catch (ArithmeticException e) {
+            seqNum = 0;
+        }
+        // Place it in the security header
+        ByteArrayUtils.encodeInt(seqNum, transferFrame, secHeaderStart + 2 + iv.length);
 
         // create data to authenticate by masking frame headers with authMask
         byte[] authMask = completeAuthMask(partialAuthMask);
@@ -148,7 +178,7 @@ public class SdlsSecurityAssociation {
         // Encrypt and authenticate data
         byte[] cipherText = cipher.doFinal(plaintext);
 
-        // cipherText nowc ontains plaintext.length + GCM_IV_LEN_BYTES data
+        // cipherText now contains plaintext.length + GCM_IV_LEN_BYTES data
         // cipherText is [encrypted data | security trailer (MAC)]
         assert cipherText.length == secTrailerEnd - dataStart;
 
@@ -190,10 +220,10 @@ public class SdlsSecurityAssociation {
          */
         DecryptionFailed,
 
-        // This code is not used; AES-GCM does not use an additional sequence number,
-        // because
-        // the cipher mode already includes an increasing counter (see CCSDS 355.0-B-2).
-        // AntiReplaySequenceNumberFailure,
+        /**
+         * The sequence number was outside the acceptable window.
+         */
+        AntiReplaySequenceNumberFailure,
         // This code is not used; AES-GCM does not require padding (see CCSDS
         // 355.0-B-2).
         // PaddingError,
@@ -212,9 +242,6 @@ public class SdlsSecurityAssociation {
      */
     public VerificationStatusCode processSecurity(byte[] transferFrame, int frameStart, int dataStart, int secTrailerEnd,
                                                   byte[] partialAuthMask) {
-        // Size of all headers
-        int headersSize = dataStart - frameStart;
-
         // Read security header
         // first two bytes are SPI
         int secHeaderStart = dataStart - getHeaderSize();
@@ -222,10 +249,11 @@ public class SdlsSecurityAssociation {
 
         // Check that the received SPI is the SPI for this SA
         if (receivedSpi != spi) {
+            log.error("Expected SPI {}, received SPI {}", spi, receivedSpi);
             return VerificationStatusCode.InvalidSPI;
         }
 
-        // the rest of the header is IV
+        // Next bytes of the header are IV
         byte[] receivedIv = new byte[GCM_IV_LEN_BYTES];
         System.arraycopy(transferFrame, secHeaderStart + 2, receivedIv, 0, GCM_IV_LEN_BYTES);
 
@@ -258,7 +286,7 @@ public class SdlsSecurityAssociation {
         cipher.updateAAD(aad);
 
         // And try to verify & decrypt
-        byte[] plaintext = null;
+        byte[] plaintext;
         try {
             plaintext = cipher.doFinal(transferFrame, dataStart, secTrailerEnd - dataStart);
         } catch (AEADBadTagException e) {
@@ -270,10 +298,50 @@ public class SdlsSecurityAssociation {
         // Copy the decrypted plaintext back into the frame
         System.arraycopy(plaintext, 0, transferFrame, dataStart, plaintext.length);
 
+        // Check the sequence number
+        int receivedSeqNum = ByteArrayUtils.decodeInt(transferFrame, secHeaderStart + 2 + GCM_IV_LEN_BYTES);
+        int minAllowedSeqNum = seqNum - seqNumWindow;
+        int maxAllowedSeqNum = seqNum + seqNumWindow;
+
+        if (receivedSeqNum < minAllowedSeqNum || receivedSeqNum > maxAllowedSeqNum) {
+            log.error("Received sequence number {} outside of range [{}..{}]", receivedSeqNum, minAllowedSeqNum,
+                    maxAllowedSeqNum);
+            return VerificationStatusCode.AntiReplaySequenceNumberFailure;
+        }
+        seqNum = receivedSeqNum;
+
         // Zero the sec header and sec trailer
         Arrays.fill(transferFrame, dataStart - getHeaderSize(), dataStart, (byte) 0);
         Arrays.fill(transferFrame, secTrailerEnd - getTrailerSize(), secTrailerEnd, (byte) 0);
 
+        log.debug("Processed security SPI {}, seq num {}", receivedSpi, seqNum);
         return VerificationStatusCode.NoFailure;
     }
+
+    /* Methods used by HTTP API */
+
+    /**
+     * Update the secret key
+     * @param secretKey a 256-bit key to be used by AES-GCM
+     */
+    public void setSecretKey(byte[] secretKey) {
+        this.secretKey = new SecretKeySpec(secretKey, secretKeyAlgorithm);
+        log.error("New secret key: {}", this.secretKey);
+    }
+
+    /**
+     * Reset the anti-replay sequence number
+     */
+    public void resetSeqNum() {
+        this.seqNum = 0;
+    }
+
+    /**
+     * Get the current sequence number
+     * @return the current sequence number
+     */
+    public int getSeqNum() {
+        return seqNum;
+    }
+
 }

@@ -103,6 +103,10 @@ public class AosFrameDecoder implements TransferFrameDecoder {
             int decryptionDataStart = dataOffset;
             decryptionDataStart += SdlsSecurityAssociation.getHeaderSize();
 
+            // Simulator does not insert FHP until after encryption
+            if (vmp.service == ServiceType.PACKET)
+                decryptionDataStart += 2;
+
             int decryptionTrailerEnd = dataEnd;
 
             SdlsSecurityAssociation.VerificationStatusCode decryptionResult = sdlsSecurityAssociation.processSecurity(data, offset, decryptionDataStart, decryptionTrailerEnd, vmp.authMask);
@@ -117,7 +121,11 @@ public class AosFrameDecoder implements TransferFrameDecoder {
 
 
         if (vmp.service == ServiceType.PACKET) {
-            int fhp = ByteArrayUtils.decodeUnsignedShort(data, dataOffset) & 0x7FF;
+            int fhpOffset = dataOffset;
+            if (sdlsSecurityAssociation != null)
+                fhpOffset -= SdlsSecurityAssociation.getHeaderSize(); // FHP is before security header
+
+            int fhp = ByteArrayUtils.decodeUnsignedShort(data, fhpOffset) & 0x7FF;
             dataOffset += 2;
             if (fhp == 0x7FF) {
                 fhp = -1;

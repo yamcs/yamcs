@@ -1,19 +1,21 @@
 package org.yamcs.tctm.ccsds;
 
+import com.google.common.util.concurrent.RateLimiter;
+import org.yamcs.ConfigurationException;
+import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
+import org.yamcs.YConfiguration;
+import org.yamcs.security.SdlsSecurityAssociation;
+import org.yamcs.utils.StringConverter;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collection;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-
-import org.yamcs.ConfigurationException;
-import org.yamcs.Spec;
-import org.yamcs.Spec.OptionType;
-import org.yamcs.YConfiguration;
-import org.yamcs.utils.StringConverter;
-
-import com.google.common.util.concurrent.RateLimiter;
 
 /**
  * Sends TC as TC frames (CCSDS 232.0-B-3) or TC frames embedded in CLTU (CCSDS 231.0-B-3).
@@ -152,5 +154,13 @@ public class UdpTcFrameLink extends AbstractTcFrameLink implements Runnable {
     @Override
     protected Status connectionStatus() {
         return Status.OK;
+    }
+
+    public Optional<SdlsSecurityAssociation> getSdls(short spi) {
+        SdlsSecurityAssociation sa = this.multiplexer.tcManagedParameters.sdlsSecurityAssociations.get(spi);
+        return (sa == null) ? Optional.empty() : Optional.of(sa);
+    }
+    public Collection<SdlsSecurityAssociation> getSdls() {
+        return this.multiplexer.tcManagedParameters.sdlsSecurityAssociations.values();
     }
 }

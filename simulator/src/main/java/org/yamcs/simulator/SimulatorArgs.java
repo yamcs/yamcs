@@ -61,4 +61,6 @@ public class SimulatorArgs {
     @Parameter(names = "--encryption-key-file", description = "path to key file for SDLS encryption of frames")
     public String encryptionKeyFile;
 
+    @Parameter(names = "--encryption-seq-num-window", description =  "a positive integer that defines the range of sequence numbers that can be accepted")
+    public int encryptionSeqNumWindow = 5;
 }

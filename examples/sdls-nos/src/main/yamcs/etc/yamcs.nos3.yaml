@@ -21,6 +21,23 @@ services:
   - class: org.yamcs.timeline.TimelineService
 
 dataLinks:
+  - name: radio-out
+    class: org.yamcs.tctm.ccsds.UdpTcFrameLink
+    host: 192.168.56.101 #host and port where to send the frames to
+    port: 8010
+    spacecraftId: 0x3
+    maxFrameLength: 1024
+    errorDetection: CRC16
+    encryption:
+      - spi: 4
+        keyFile: etc/noskey
+        seqNumWindow: 10
+    virtualChannels:
+         - vcId: 4
+           encryptionSpi: 4
+           commandPostprocessorClassName: org.yamcs.tctm.cfs.CfsCommandPostprocessor
+           stream: "tc_realtime" #which yamcs stream to get the data from
+
   - name: radio-in
     class: org.yamcs.tctm.ccsds.UdpTmFrameLink
     frameType: "TM"
@@ -31,6 +48,8 @@ dataLinks:
     encryption:
       - spi: 2
         keyFile: etc/noskey
+        # the window of acceptable sequence numbers (i.e. current minus this value, current plus this value)
+        seqNumWindow: 10
     frameLength: 1790
     virtualChannels:
       - vcId: 1
@@ -41,22 +60,6 @@ dataLinks:
         packetPreprocessorClassName: org.yamcs.tctm.cfs.CfsPacketPreprocessor
         packetPreprocessorArgs:
           useLocalGenerationTime: true
-
-  - name: radio-out
-    class: org.yamcs.tctm.ccsds.UdpTcFrameLink
-    host: localhost #host and port where to send the frames to
-    port: 8010
-    spacecraftId: 0x3
-    maxFrameLength: 1024
-    errorDetection: CRC16
-    encryption:
-      - spi: 4
-        keyFile: etc/noskey
-    virtualChannels:
-         - vcId: 4
-           encryptionSpi: 4
-           commandPostprocessorClassName: org.yamcs.tctm.cfs.CfsCommandPostprocessor
-           stream: "tc_realtime" #which yamcs stream to get the data from
 
   - name: debug-in
     class: org.yamcs.tctm.UdpTmDataLink

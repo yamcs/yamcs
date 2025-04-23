@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class SdlsSecurityAssociationTest {
     final Path RESOURCE_DIR = Paths.get("src", "test", "resources", "sdls");
     byte[] key, authMask, frame, inputPlaintext, inputPrimaryHeader;
-    int dataStart, dataEnd;
+    int dataStart, dataEnd, seqNumWindow;
     SdlsSecurityAssociation sa;
 
     @BeforeEach
@@ -26,12 +26,11 @@ public class SdlsSecurityAssociationTest {
         this.key = Files.readAllBytes(keypath);
 
         // We have an example frame of length:
-        int frameLength = 38;
+        int frameLength = 42;
         frame = new byte[frameLength];
         // Header size is 6 for primary header + security header size
-        int headerSize = 6 + SdlsSecurityAssociation.getHeaderSize();
         // So data start is after the headers
-        dataStart = headerSize;
+        dataStart = 6 + SdlsSecurityAssociation.getHeaderSize();
         // And data end is before security trailer
         dataEnd = frameLength - SdlsSecurityAssociation.getTrailerSize();
 
@@ -51,8 +50,10 @@ public class SdlsSecurityAssociationTest {
         //new Random().nextBytes(inputPlaintext);
         System.arraycopy(inputPlaintext, 0, frame, dataStart, inputPlaintext.length);
 
+        seqNumWindow = 5;
+
         // Create SA
-        sa = new SdlsSecurityAssociation(key, (short) 42);
+        sa = new SdlsSecurityAssociation(key, (short) 42, seqNumWindow);
 
     }
 
@@ -64,7 +65,7 @@ public class SdlsSecurityAssociationTest {
         // Try to decrypt with a wrong key, and fail
         Path wrongKeypath = RESOURCE_DIR.resolve("wrong-presharedkey");
         byte[] wrongKey = Files.readAllBytes(wrongKeypath);
-        SdlsSecurityAssociation wrongSa = new SdlsSecurityAssociation(wrongKey, (short) 42);
+        SdlsSecurityAssociation wrongSa = new SdlsSecurityAssociation(wrongKey, (short) 42, seqNumWindow);
         assertEquals(VerificationStatusCode.MacVerificationFailure, wrongSa.processSecurity(frame, 0, dataStart, frame.length, authMask));
     }
 
@@ -76,7 +77,7 @@ public class SdlsSecurityAssociationTest {
         // Try to decrypt with a wrong SPI
         Path wrongKeypath = RESOURCE_DIR.resolve("presharedkey");
         byte[] wrongKey = Files.readAllBytes(wrongKeypath);
-        SdlsSecurityAssociation wrongSa = new SdlsSecurityAssociation(wrongKey, (short) 1);
+        SdlsSecurityAssociation wrongSa = new SdlsSecurityAssociation(wrongKey, (short) 1, seqNumWindow);
         assertEquals(VerificationStatusCode.InvalidSPI, wrongSa.processSecurity(frame, 0, dataStart, frame.length, authMask));
     }
 
@@ -87,7 +88,6 @@ public class SdlsSecurityAssociationTest {
 
         // Bitflip VCID of primary header
         int vcid_octet_frame_primary_header = 1;
-        byte oldValue = frame[vcid_octet_frame_primary_header];
         frame[vcid_octet_frame_primary_header] = 0b0000_1100;
 
         assertEquals(VerificationStatusCode.MacVerificationFailure, sa.processSecurity(frame, 0, dataStart, frame.length, authMask));
@@ -101,7 +101,7 @@ public class SdlsSecurityAssociationTest {
         // Bit-flip SPID of security header
         int spid_octet_sec_header = 6;
         byte oldValue = frame[spid_octet_sec_header];
-        frame[spid_octet_sec_header] = (byte)(oldValue ^ 1);
+        frame[spid_octet_sec_header] = (byte) (oldValue ^ 1);
 
         assertEquals(VerificationStatusCode.InvalidSPI, sa.processSecurity(frame, 0, dataStart, frame.length, authMask));
     }
@@ -116,7 +116,7 @@ public class SdlsSecurityAssociationTest {
         int mc_frcnt_octet_fph = 2;
         // Need to make a copy here because decryption will succeed
         byte oldValue = frame[mc_frcnt_octet_fph];
-        frame[mc_frcnt_octet_fph] = (byte)(oldValue ^ 1);
+        frame[mc_frcnt_octet_fph] = (byte) (oldValue ^ 1);
 
         assertEquals(VerificationStatusCode.NoFailure, sa.processSecurity(frame, 0, dataStart, frame.length, authMask));
 
@@ -172,16 +172,30 @@ public class SdlsSecurityAssociationTest {
     void testIvNotReused() {
         // Encrypt once, get IV
         assertDoesNotThrow(() -> sa.applySecurity(frame, 0, dataStart, frame.length, authMask));
-        int firstSpi = ByteArrayUtils.decodeUnsignedShort(frame, dataStart - SdlsSecurityAssociation.GCM_IV_LEN_BYTES - 2);
-        byte[] firstIv = Arrays.copyOfRange(frame, dataStart - SdlsSecurityAssociation.GCM_IV_LEN_BYTES, dataStart);
+
+        int secHeaderStart = dataStart - SdlsSecurityAssociation.getHeaderSize();
+        int firstSpi = ByteArrayUtils.decodeUnsignedShort(frame, secHeaderStart);
+        byte[] firstIv = Arrays.copyOfRange(frame, secHeaderStart + 2, secHeaderStart + SdlsSecurityAssociation.GCM_IV_LEN_BYTES);
 
         // Encrypt again, get IV (we can use the already encrypted data, the actual content doesn't matter in this test)
         assertDoesNotThrow(() -> sa.applySecurity(frame, 0, dataStart, frame.length, authMask));
-        int secondSpi = ByteArrayUtils.decodeUnsignedShort(frame, dataStart - SdlsSecurityAssociation.GCM_IV_LEN_BYTES - 2);
-        byte[] secondIv = Arrays.copyOfRange(frame, dataStart - SdlsSecurityAssociation.GCM_IV_LEN_BYTES, dataStart);
+        int secondSpi = ByteArrayUtils.decodeUnsignedShort(frame, secHeaderStart);
+        byte[] secondIv = Arrays.copyOfRange(frame, secHeaderStart + 2,
+                secHeaderStart + SdlsSecurityAssociation.GCM_IV_LEN_BYTES);
 
         // Check that the SPI is the same, but the IV changes
         assertEquals(firstSpi, secondSpi);
         assertFalse(Arrays.equals(firstIv, secondIv));
     }
+
+    @Test
+    void testSeqNumChanged_failVerify() {
+        // Encrypt frame
+        assertDoesNotThrow(() -> sa.applySecurity(frame, 0, dataStart, frame.length, authMask));
+        // Modify sequence number
+        ByteArrayUtils.encodeInt(2, frame, dataStart - 4);
+        // Try to decrypt, assert that verification fails
+        assertEquals(VerificationStatusCode.MacVerificationFailure, sa.processSecurity(frame, 0, dataStart, frame.length, authMask));
+    }
 }
+

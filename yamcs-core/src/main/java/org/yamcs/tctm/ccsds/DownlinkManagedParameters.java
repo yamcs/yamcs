@@ -31,7 +31,7 @@ public abstract class DownlinkManagedParameters {
     /**
      * A map of Security Parameter Indices to Security Associations
      */
-    Map<Short, SdlsSecurityAssociation> sdlsSecurityAssociations = new HashMap<>();
+    final Map<Short, SdlsSecurityAssociation> sdlsSecurityAssociations = new HashMap<>();
 
     public DownlinkManagedParameters(YConfiguration config) {
         this.spacecraftId = config.getInt("spacecraftId");
@@ -42,7 +42,6 @@ public abstract class DownlinkManagedParameters {
             List<YConfiguration> encryptionConfigs = config.getConfigList("encryption");
             // Create all security associations according to the config
             for (YConfiguration saDef : encryptionConfigs) {
-                byte[] authMask;
                 short spi = (short) saDef.getInt("spi");
                 byte[] sdlsKey;
                 try {
@@ -50,9 +49,10 @@ public abstract class DownlinkManagedParameters {
                 } catch (IOException e) {
                     throw new ConfigurationException(e);
                 }
+                int encryptionSeqNumWindow = Math.abs(saDef.getInt("seqNumWindow"));
 
                 // Save the SPI and its security association
-                sdlsSecurityAssociations.put(spi, new SdlsSecurityAssociation(sdlsKey, spi));
+                sdlsSecurityAssociations.put(spi, new SdlsSecurityAssociation(sdlsKey, spi, encryptionSeqNumWindow));
             }
         }
     }
