@@ -1,0 +1,17 @@
+# System-wide services
+services:
+  - class: org.yamcs.http.HttpServer
+
+#instances (or domains). One yarch database will be created for each of them
+# instance specific properties go into the file yamcs.{instance}.yaml
+instances:
+  - ccsds-frames-sdls
+
+dataDir: /storage/yamcs-data
+
+# Secret key unique to a particular Yamcs installation.
+# This is used to provide cryptographic signing.
+secretKey: "changeme"
+
+yamcs-web:
+  tag: "Example: ccsds-frames-sdls"

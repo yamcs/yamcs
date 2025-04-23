@@ -46,7 +46,7 @@ public class UslpManagedParameters extends DownlinkManagedParameters {
 
         List<YConfiguration> l = config.getConfigList("virtualChannels");
         for (YConfiguration yc : l) {
-            UslpVcManagedParameters ump = new UslpVcManagedParameters(yc);
+            UslpVcManagedParameters ump = new UslpVcManagedParameters(yc, this);
             if (vcParams.containsKey(ump.vcId)) {
                 throw new ConfigurationException("duplicate configuration of vcId " + ump.vcId);
             }
@@ -68,14 +68,20 @@ public class UslpManagedParameters extends DownlinkManagedParameters {
         int vcCountLengthForExpeditedQos;
         int truncatedTransferFrameLength;
 
-        public UslpVcManagedParameters(YConfiguration config) {
-            super(config);
+        public UslpVcManagedParameters(YConfiguration config, UslpManagedParameters uslpParams) {
+            super(config, uslpParams);
             service = config.getEnum("service", ServiceType.class);
             if (service == ServiceType.PACKET) {
                 parsePacketConfig();
             } else if (service == ServiceType.VCA) {
                 parseVcaConfig();
             }
+            // Auth mask with the size of the USLP primary header
+            authMask = new byte[14];
+            // Authenticate virtual channel ID and MAP ID
+            authMask[2] = 0b111; // top 3 bits of vcid
+            authMask[3] = (byte) 0b1111_1110; // bottom 3 bits of vcid, 4 bits of map id
+            // We never authenticate the optional insert zone.
         }
 
     }

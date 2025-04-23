@@ -1,5 +1,8 @@
 package org.yamcs.tctm.ccsds;
 
+import java.security.GeneralSecurityException;
+
+import org.yamcs.security.SdlsSecurityAssociation;
 import org.yamcs.tctm.ccsds.TcManagedParameters.TcVcManagedParameters;
 import org.yamcs.tctm.ccsds.TcTransferFrame.SegmentHeader;
 import org.yamcs.tctm.ccsds.UplinkManagedParameters.FrameErrorDetection;
@@ -25,7 +28,7 @@ public class TcFrameFactory {
 
     /**
      * Makes a new frame of the given length with the generation time set to the current wall clock time
-     * 
+     *
      * @param dataLength
      * @return
      */
@@ -62,6 +65,13 @@ public class TcFrameFactory {
             dataStart += 1;
         }
 
+        short spi = vcParams.encryptionSpi;
+        boolean isEncrypted = tcParams.sdlsSecurityAssociations.containsKey(spi);
+
+        // Increase the used length to accunt for SDLS overhead
+        if (isEncrypted)
+            length += SdlsSecurityAssociation.getOverheadBytes();
+
         if (length > tcParams.getMaxFrameLength()) {
             throw new IllegalArgumentException("Resulting frame length " + length + " is more than the maximum allowed "
                     + tcParams.getMaxFrameLength());
@@ -76,6 +86,13 @@ public class TcFrameFactory {
         ttf.setDataStart(dataStart);
         ttf.setDataEnd(dataStart + dataLength);
 
+        if (isEncrypted) {
+            // Move data start forward to leave space for header
+            ttf.setDataStart(ttf.getDataStart() + SdlsSecurityAssociation.getHeaderSize());
+            // Move data end forward to account for header
+            ttf.setDataEnd(ttf.getDataEnd() + SdlsSecurityAssociation.getHeaderSize());
+        }
+
         return ttf;
     }
 
@@ -86,6 +103,11 @@ public class TcFrameFactory {
         int length = 5;
         if (crc != null) {
             length += 2;
+        }
+
+        short spi = vcParams.encryptionSpi;
+        if (tcParams.sdlsSecurityAssociations.containsKey(spi)) {
+            length += SdlsSecurityAssociation.getOverheadBytes();
         }
         return length;
     }
@@ -107,6 +129,20 @@ public class TcFrameFactory {
         if (ttf.segmentHeader != null) {
             data[5] = ttf.segmentHeader.get();
         }
+
+        // Get the SPI associated with this channel
+        short spi = vcParams.encryptionSpi;
+        // Get the SA associated with the SPI
+        SdlsSecurityAssociation sa = tcParams.sdlsSecurityAssociations.get(spi);
+        // And potentially encrypt the data
+        if (sa != null) {
+            try {
+                sa.applySecurity(data, 0, ttf.getDataStart(), ttf.getDataEnd() + SdlsSecurityAssociation.getTrailerSize(), vcParams.authMask);
+            } catch (GeneralSecurityException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
         if (crc != null) {
             int c = crc.compute(data, 0, data.length - 2);
             ByteArrayUtils.encodeUnsignedShort(c, data, data.length - 2);

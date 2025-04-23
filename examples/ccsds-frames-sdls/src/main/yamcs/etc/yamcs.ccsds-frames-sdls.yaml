@@ -18,6 +18,12 @@ services:
       type: "realtime"
   - class: org.yamcs.archive.CommandHistoryRecorder
   - class: org.yamcs.parameterarchive.ParameterArchive
+    args:
+      realtimeFiller:
+        enabled: false
+      backFiller:
+        enabled: true
+        warmupTime: 60
   - class: org.yamcs.timeline.TimelineService
   - class: org.yamcs.simulator.SimulatorCommander
     args:
@@ -38,9 +44,18 @@ services:
       frame: #send TM UDP frames
         tmPort: 10017
         tmHost: "localhost"
-        type: AOS # AOS, TM or USLP
+        type: USLP # AOS, TM or USLP
         tmFrameLength: 1115
         tmFrameFreq: 10 # how many frames to send per second. If the simulator does not produce so many frames, it will send idle frames
+        # Enable SDLS encryption (AES256-GCM) of incoming/outgoing frames
+        encryption:
+          # SPI - Security Parameter Index - 'identifier' for security
+          # configuration, shared between sender and receiver.
+          spi: 1
+          # 256-bit key to encrypt/decrypt data
+          keyFile: etc/sdls-presharedkey-256bit
+          seqNumWindow: 10
+          # verifySeqNum: true  # default
 
 dataLinks:
   - name: UDP_FRAME_OUT
@@ -55,8 +70,30 @@ dataLinks:
     #the following option can be used to skip randomization for certain virtual channels
     #skipRandomizationForVcs: [1, 0]
     errorDetection: CRC16
+
+    # Enable SDLS encryption/decryption on this link.
+    # A link can have multiple encryption keys, each identified by a Security Parameter Index (SPI).
+    # A virtual channel is then configured to use a particular SPI.
+    # This basically defines the security associations on the link.
+    encryption:
+      - spi: 1
+        keyFile: etc/sdls-presharedkey-256bit
+        # the window of acceptable sequence numbers (i.e. current minus this value, current plus this value)
+        seqNumWindow: 10
+        # verifySeqNum: true  # default
+      - spi: 2
+        keyFile: etc/sdls-presharedkey-256bit
+        seqNumWindow: 10
+        # verifySeqNum: true  # default
+      - spi: 3
+        keyFile: etc/sdls-presharedkey-256bit
+        seqNumWindow: 10
+        # verifySeqNum: true
     virtualChannels:
          - vcId: 0
+           # This channel is encrypted with SDLS, using SPI 1 (defined above).
+           # The encryption SPI must match an SPI defined on the link.
+           encryptionSpi: 1
            service: "PACKET"
            commandPostprocessorClassName: org.yamcs.tctm.IssCommandPostprocessor
            commandPostprocessorArgs:
@@ -80,7 +117,24 @@ dataLinks:
     #   errorCorrectionCapability: 16 #8 or 16
     #   derandomize: true
     ### Frame type has to be AOS (CCSDS 732.0-B-3), TM (CCSDS 132.0-B-2) or USLP (CCSDS 732.1-B-1)
-    frameType: "AOS"
+    frameType: "USLP"
+
+    # Enable SDLS encryption/decryption on this link.
+    # A link can have multiple encryption keys, each identified by a Security Parameter Index (SPI).
+    # A virtual channel is then configured to use a particular SPI.
+    encryption:
+      - spi: 1
+        keyFile: etc/sdls-presharedkey-256bit
+        seqNumWindow: 10
+        # verifySeqNum: true  # default
+      - spi: 2
+        keyFile: etc/sdls-presharedkey-256bit
+        seqNumWindow: 10
+        # verifySeqNum: true  # default
+      - spi: 3
+        keyFile: etc/sdls-presharedkey-256bit
+        seqNumWindow: 10
+        # verifySeqNum: true  # default
     spacecraftId: 0xAB
     frameLength: 1115 #decoded frame length
     frameHeaderErrorControlPresent: true #2 bytes of reed-solomon (10,6) in the header of all frames
@@ -96,6 +150,9 @@ dataLinks:
             maxPacketLength: 2048
             packetPreprocessorClassName: org.yamcs.tctm.IssPacketPreprocessor
             stream: "tm_realtime" #which yamcs stream to put the data on
+            # This channel is encrypted with SDLS, using SPI 1 (defined above).
+            # The encryption SPI must match an SPI defined on the link.
+            encryptionSpi: 1
           - vcId: 1
             ocfPresent: true
             service: "PACKET"
@@ -110,12 +167,18 @@ dataLinks:
             stream: "tm2_realtime"
             invalidPackets: DIVERT
             invalidPacketsStream: invalid_tm_stream
+            # This channel is encrypted with SDLS, using SPI 1 (defined above).
+            # The encryption SPI must match an SPI defined on the link.
+            encryptionSpi: 1
           - vcId: 2
             ocfPresent: true
             service: "PACKET"
             maxPacketLength: 2048
             packetPreprocessorClassName: org.yamcs.tctm.IssPacketPreprocessor
             stream: "tm_dump"
+            # This channel is encrypted with SDLS, using SPI 1 (defined above).
+            # The encryption SPI must match an SPI defined on the link.
+            encryptionSpi: 1
           #vcId 63 is reserved for idle data and it does not have to be defined
   - name: UDP_CUSTOM_CLTU_OUT
     class: org.yamcs.tctm.ccsds.UdpTcFrameLink

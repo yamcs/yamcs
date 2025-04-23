@@ -3,10 +3,11 @@ package org.yamcs.tctm.ccsds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.rs.ReedSolomonException;
+import org.yamcs.security.SdlsSecurityAssociation;
 import org.yamcs.tctm.TcTmException;
+import org.yamcs.tctm.ccsds.AosManagedParameters.AosVcManagedParameters;
 import org.yamcs.tctm.ccsds.AosManagedParameters.ServiceType;
 import org.yamcs.tctm.ccsds.DownlinkManagedParameters.FrameErrorDetection;
-import org.yamcs.tctm.ccsds.AosManagedParameters.AosVcManagedParameters;
 import org.yamcs.tctm.ccsds.error.AosFrameHeaderErrorCorr;
 import org.yamcs.tctm.ccsds.error.AosFrameHeaderErrorCorr.DecoderResult;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
@@ -43,7 +44,6 @@ public class AosFrameDecoder implements TransferFrameDecoder {
             throw new TcTmException("Bad frame length " + length + "; expected " + aosParams.frameLength);
         }
         int dataEnd = offset + length;
-        
 
         if (crc != null) {
             dataEnd -= 2;
@@ -96,8 +96,35 @@ public class AosFrameDecoder implements TransferFrameDecoder {
             atf.setOcf(ByteArrayUtils.decodeInt(data, dataEnd));
         }
 
+        SdlsSecurityAssociation sdlsSecurityAssociation = aosParams.sdlsSecurityAssociations.get(vmp.encryptionSpi);
+        // If we're decrypting, do so
+        if (sdlsSecurityAssociation != null) {
+            int decryptionDataStart = dataOffset;
+            decryptionDataStart += SdlsSecurityAssociation.getHeaderSize();
+
+            // Simulator does not insert FHP until after encryption
+            if (vmp.service == ServiceType.PACKET)
+                decryptionDataStart += 2;
+
+            int decryptionTrailerEnd = dataEnd;
+
+            SdlsSecurityAssociation.VerificationStatusCode decryptionResult = sdlsSecurityAssociation.processSecurity(data, offset, decryptionDataStart, decryptionTrailerEnd, vmp.authMask);
+            if (decryptionResult != SdlsSecurityAssociation.VerificationStatusCode.NoFailure) {
+                log.warn("Couldn't decrypt frame: {}", decryptionResult);
+            }
+
+            // Update the offsets
+            dataOffset += SdlsSecurityAssociation.getHeaderSize();
+            dataEnd -= SdlsSecurityAssociation.getTrailerSize();
+        }
+
+
         if (vmp.service == ServiceType.PACKET) {
-            int fhp = ByteArrayUtils.decodeUnsignedShort(data, dataOffset) & 0x7FF;
+            int fhpOffset = dataOffset;
+            if (sdlsSecurityAssociation != null)
+                fhpOffset -= SdlsSecurityAssociation.getHeaderSize(); // FHP is before security header
+
+            int fhp = ByteArrayUtils.decodeUnsignedShort(data, fhpOffset) & 0x7FF;
             dataOffset += 2;
             if (fhp == 0x7FF) {
                 fhp = -1;

@@ -2,6 +2,8 @@ package org.yamcs.tctm.ccsds;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.security.SdlsSecurityAssociation;
+import org.yamcs.security.SdlsSecurityAssociation.VerificationStatusCode;
 import org.yamcs.tctm.TcTmException;
 import org.yamcs.tctm.ccsds.DownlinkManagedParameters.FrameErrorDetection;
 import org.yamcs.tctm.ccsds.TmManagedParameters.ServiceType;
@@ -83,6 +85,26 @@ public class TmFrameDecoder implements TransferFrameDecoder {
             ttf.setShLength(secHeaderLength);
             dataOffset += secHeaderLength;
         }
+
+        SdlsSecurityAssociation sdlsSa = tmParams.sdlsSecurityAssociations.get(vmp.encryptionSpi);
+        if (sdlsSa != null) {
+            int sdlsHeaderSize = SdlsSecurityAssociation.getHeaderSize();
+
+            int decryptionDataStart = dataOffset + sdlsHeaderSize;
+
+            int decryptionDataEnd = dataEnd;
+
+            VerificationStatusCode decryptionStatus = sdlsSa.processSecurity(data, offset, decryptionDataStart,
+                    decryptionDataEnd, vmp.authMask);
+            if (decryptionStatus != VerificationStatusCode.NoFailure) {
+                throw new TcTmException("Could not decrypt frame: " + decryptionStatus);
+            }
+
+            // Update the offsets
+            dataEnd -= SdlsSecurityAssociation.getTrailerSize();
+            dataOffset += SdlsSecurityAssociation.getHeaderSize();
+        }
+
         if (vmp.service == ServiceType.PACKET) {
             if (syncFlag) {
                 throw new TcTmException("VC " + virtualChannelId + " "

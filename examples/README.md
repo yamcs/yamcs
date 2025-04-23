@@ -16,6 +16,10 @@ Basic TC/TM using a trivial simulation of a landing spacecraft. The simulator is
 ## ccsds-frames
 The same simulator is connected via AOS and TC frames on UDP links. COP1 is used for command frame acknowledgment. TC frames can be optionally emebedded into CLTU. TM or USLP frames can be used instead of AOS frames.
 
+## ccsds-frames-sdls
+As in the example `ccsds-frames`, but SDLS encryption is used on links to the simulator.
+By default, USLP frames are used, but AOS/TM/TC are also supported.
+The SDLS implementation for TM and TC frames has been tested with [NOS3](https://github.com/nasa/nos3); see https://github.com/yamcs/snippets/tree/main/sdls-nos.
 
 ## replication1, replication2 and replication3
 Demonstrate the usage of replication between two or three instances. Into a real environment the instances should be deployed on different Yamcs servers. This is done for redundancy purposes or for security reasons (i.e. one server running in an restricted operational environment and the other one into DMZ accessed by external users).
@@ -23,7 +27,7 @@ The README file in each directory contains a description of the respective setup
 
 ## cfdp & cfdp-udp
 Demonstrates the usage of CCSDS File Delivery Protocol:
-_cfdp_ uses the built-in simulator (which works with CFDP encapsulated in CCSDS packets), while _cfdp-udp_ expects an external UDP connection to transmit and receive raw CFDP PDUs. 
+_cfdp_ uses the built-in simulator (which works with CFDP encapsulated in CCSDS packets), while _cfdp-udp_ expects an external UDP connection to transmit and receive raw CFDP PDUs.
 
 ## pus
 Simulator using PUS (Packet Utilization Standard - ECSS-E-ST-70-41C) also connected via TCP links. Please read the README inside to understand what services are simulated.

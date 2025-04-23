@@ -26,7 +26,7 @@ import org.yamcs.utils.YObjectLoader;
 
 /**
  * Sends TC as TC frames (CCSDS 232.0-B-3) or TC frames embedded in CLTU (CCSDS 231.0-B-3).
- * 
+ *
  */
 public abstract class AbstractTcFrameLink extends AbstractLink implements AggregatedDataLink, TcDataLink {
     // all the TC frame links should move the TC frame config under this section, to allow having both TM and TC frame
@@ -62,6 +62,13 @@ public abstract class AbstractTcFrameLink extends AbstractLink implements Aggreg
         spec.addOption("spacecraftId", OptionType.INTEGER);
         spec.addOption("physicalChannelName", OptionType.STRING);
         spec.addOption("errorDetection", OptionType.STRING);
+
+        Spec frameEncryptionSpec = new Spec();
+        frameEncryptionSpec.addOption("keyFile", OptionType.STRING).withRequired(true);
+        frameEncryptionSpec.addOption("spi", OptionType.INTEGER).withRequired(true);
+        frameEncryptionSpec.addOption("seqNumWindow", OptionType.INTEGER).withRequired(true);
+        frameEncryptionSpec.addOption("verifySeqNum", OptionType.BOOLEAN).withDefault(true);
+        spec.addOption("encryption", OptionType.LIST).withElementType(OptionType.MAP).withSpec(frameEncryptionSpec);
 
         spec.addOption("frameLength", OptionType.INTEGER);
         spec.addOption("insertZoneLength", OptionType.INTEGER);
@@ -185,7 +192,7 @@ public abstract class AbstractTcFrameLink extends AbstractLink implements Aggreg
 
     /**
      * Ack the BD frames Note: the AD frames are acknowledged in the when the COP1 ack is received
-     * 
+     *
      * @param tf
      */
     protected void ackBypassFrame(TcTransferFrame tf) {

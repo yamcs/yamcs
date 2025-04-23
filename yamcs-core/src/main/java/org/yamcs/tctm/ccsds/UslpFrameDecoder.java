@@ -2,6 +2,7 @@ package org.yamcs.tctm.ccsds;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.security.SdlsSecurityAssociation;
 import org.yamcs.tctm.ErrorDetectionWordCalculator;
 import org.yamcs.tctm.TcTmException;
 import org.yamcs.tctm.ccsds.DownlinkManagedParameters.FrameErrorDetection;
@@ -13,14 +14,14 @@ import org.yamcs.utils.ByteArrayUtils;
 
 /**
  * Decodes frames as per CCSDS 732.1-B-1
- * 
+ *
  * @author nm
  *
  */
 public class UslpFrameDecoder implements TransferFrameDecoder {
-    UslpManagedParameters uslpParams;
+    final UslpManagedParameters uslpParams;
     ErrorDetectionWordCalculator crc;
-    static Logger log = LoggerFactory.getLogger(TransferFrameDecoder.class.getName());
+    static final Logger log = LoggerFactory.getLogger(TransferFrameDecoder.class.getName());
 
     public UslpFrameDecoder(UslpManagedParameters uslpParams) {
         this.uslpParams = uslpParams;
@@ -36,17 +37,18 @@ public class UslpFrameDecoder implements TransferFrameDecoder {
         log.trace("decoding frame buf length: {}, dataOffset: {} , dataLength: {}", data.length, offset, length);
 
         int version = (data[offset] & 0xFF) >> 4;
-        if(version != 12) {
+        if (version != 12) {
             throw new TcTmException("Bad frame version number " + version + "; expected 12 (USLP)");
         }
-        
+
         if (uslpParams.frameLength != -1) {
             if (length != uslpParams.frameLength) {
                 throw new TcTmException("Bad frame length " + length + "; expected fixed length " + uslpParams.frameLength);
             }
         } else {
             if (length < uslpParams.minFrameLength || length > uslpParams.maxFrameLength) {
-                throw new TcTmException("Bad frame length " + length + "; expected length between" + uslpParams.minFrameLength + " and " + uslpParams.maxFrameLength);
+                throw new TcTmException("Bad frame length " + length + "; expected length between" + uslpParams.minFrameLength
+                        + " and " + uslpParams.maxFrameLength);
             }
         }
 
@@ -77,7 +79,7 @@ public class UslpFrameDecoder implements TransferFrameDecoder {
         if (vn != 12) {
             throw new TcTmException("Invalid USLP frame version number " + vn + "; expected " + 12);
         }
-        int spacecraftId = (f4b >>> 12)&0xFFFF;
+        int spacecraftId = (f4b >>> 12) & 0xFFFF;
         int virtualChannelId = (f4b >> 5) & 0x3F;
         int mapId = (f4b >> 1) & 0xF;
         boolean truncatedFrame = (f4b & 1) == 1;
@@ -167,15 +169,37 @@ public class UslpFrameDecoder implements TransferFrameDecoder {
                 }
 
                 utf.setFirstHeaderPointer(fhp);
-            } else if(constrRules == 0b111) {
+            } else if (constrRules == 0b111) {
                 // This construction rule logic is also valid for other TFDZ construction rules
                 // with variable length.
                 dataOffset += 1;
-                utf.setFirstHeaderPointer(dataOffset);   
+                utf.setFirstHeaderPointer(dataOffset);
             } else {
                 throw new TcTmException(
                         "Invalid TFDZ Construction Rule Value " + constrRules + " Expected 0 for packet data.");
             }
+        }
+
+        SdlsSecurityAssociation sdlsSecurityAssociation = uslpParams.sdlsSecurityAssociations.get(vmp.encryptionSpi);
+        // If we're decrypting, do so
+        if (sdlsSecurityAssociation != null) {
+            int decryptionDataStart = dataOffset;
+            int decryptionTrailerEnd = dataEnd;
+
+            decryptionDataStart += SdlsSecurityAssociation.getHeaderSize();
+
+            SdlsSecurityAssociation.VerificationStatusCode decryptionResult = sdlsSecurityAssociation.processSecurity(data,
+                    offset, decryptionDataStart, decryptionTrailerEnd, vmp.authMask);
+            if (decryptionResult != SdlsSecurityAssociation.VerificationStatusCode.NoFailure) {
+                log.warn("Couldn't decrypt frame: {}", decryptionResult);
+            }
+
+            // Update offsets
+            dataOffset += SdlsSecurityAssociation.getHeaderSize();
+            dataEnd -= SdlsSecurityAssociation.getTrailerSize();
+
+            if (vmp.service == ServiceType.PACKET)
+                utf.setFirstHeaderPointer(dataOffset);
         }
 
         utf.setDataStart(dataOffset);
