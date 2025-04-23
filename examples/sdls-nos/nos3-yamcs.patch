@@ -1,0 +1,130 @@
+diff --git a/cfg/nos3_defs/toolchain-i386-linux-gnu.cmake b/cfg/nos3_defs/toolchain-i386-linux-gnu.cmake
+index b254cc7..e58a643 100644
+--- a/cfg/nos3_defs/toolchain-i386-linux-gnu.cmake
++++ b/cfg/nos3_defs/toolchain-i386-linux-gnu.cmake
+@@ -30,5 +30,5 @@ SET(CMAKE_C_FLAGS_INIT "-m32" CACHE STRING "C Flags required by platform")
+ add_definitions(-DBYTE_ORDER_LE)
+ add_definitions(-D_LINUX_OS_)
+ 
+-set(CI_TRANSPORT udp)
+-set(TO_TRANSPORT udp)
++set(CI_TRANSPORT udp_tf)
++set(TO_TRANSPORT udp_tf)
+diff --git a/cfg/sims/nos3-simulator.xml b/cfg/sims/nos3-simulator.xml
+index 48d6308..87734e0 100644
+--- a/cfg/sims/nos3-simulator.xml
++++ b/cfg/sims/nos3-simulator.xml
+@@ -532,15 +532,15 @@
+                         <tlm-port>6011</tlm-port>
+                         -->
+                         <!-- CryptoLib TC Only -->
++                        <!--
+                         <ip>cosmos</ip>
+                         <cmd-port>8010</cmd-port>
+                         <tlm-port>6011</tlm-port>
++                        -->
+                         <!-- CryptoLib TC & TM -->
+-                        <!--
+-                        <ip>cryptolib</ip>
++                        <ip>172.17.0.1</ip>
+                         <cmd-port>8010</cmd-port>
+                         <tlm-port>8011</tlm-port>
+-                        -->
+                     </connection>
+                     <connection>
+                         <name>prox</name>
+Submodule components/cryptolib contains modified content
+diff --git a/components/cryptolib/src/core/crypto_config.c b/components/cryptolib/src/core/crypto_config.c
+index 7dec1c9..ea1d40c 100644
+--- a/components/cryptolib/src/core/crypto_config.c
++++ b/components/cryptolib/src/core/crypto_config.c
+@@ -54,16 +54,17 @@ int32_t crypto_free_config_structs(void);
+ int32_t Crypto_SC_Init(void)
+ {
+     int32_t status = CRYPTO_LIB_SUCCESS;
+-    Crypto_Config_CryptoLib(KEY_TYPE_INTERNAL, MC_TYPE_INTERNAL, SA_TYPE_INMEMORY, CRYPTOGRAPHY_TYPE_LIBGCRYPT, 
+-                            IV_INTERNAL, CRYPTO_TC_CREATE_FECF_TRUE, TC_PROCESS_SDLS_PDUS_TRUE, 
+-                            TC_HAS_PUS_HDR, TC_IGNORE_SA_STATE_FALSE, TC_IGNORE_ANTI_REPLAY_FALSE, 
+-                            TC_UNIQUE_SA_PER_MAP_ID_FALSE, TC_CHECK_FECF_TRUE, 0x3F, 
++    Crypto_Config_CryptoLib(KEY_TYPE_INTERNAL, MC_TYPE_INTERNAL, SA_TYPE_INMEMORY, CRYPTOGRAPHY_TYPE_LIBGCRYPT,
++                            IV_INTERNAL, CRYPTO_TC_CREATE_FECF_TRUE | CRYPTO_TM_CREATE_FECF_TRUE, TC_PROCESS_SDLS_PDUS_TRUE,
++                            TC_HAS_PUS_HDR, TC_IGNORE_SA_STATE_FALSE, TC_IGNORE_ANTI_REPLAY_TRUE,
++                            TC_UNIQUE_SA_PER_MAP_ID_FALSE, TC_CHECK_FECF_TRUE, 0x3F,
+                             SA_INCREMENT_NONTRANSMITTED_IV_TRUE);
+     // TC
+     Crypto_Config_Add_Gvcid_Managed_Parameter(0, 0x0003, 0, TC_HAS_FECF, TC_HAS_SEGMENT_HDRS, 1024, AOS_FHEC_NA, AOS_IZ_NA, 0);
+-    Crypto_Config_Add_Gvcid_Managed_Parameter(0, 0x0003, 4, TC_HAS_FECF, TC_HAS_SEGMENT_HDRS, 1024, AOS_FHEC_NA, AOS_IZ_NA, 0);
++    Crypto_Config_Add_Gvcid_Managed_Parameter(0, 0x0003, 4, TC_HAS_FECF, TC_NO_SEGMENT_HDRS, 1024, AOS_FHEC_NA, AOS_IZ_NA, 0);
+ 
+     // TM
++    // tfvn, scid, vcid, has_fecf, has_segmentation_hdr, max_frame_size, aos_has_fhec, aos_has_iz, aos_iz_len
+     Crypto_Config_Add_Gvcid_Managed_Parameter(0, 0x0003, 1, TM_HAS_FECF, TM_SEGMENT_HDRS_NA, 1786, AOS_FHEC_NA, AOS_IZ_NA, 0);
+     status = Crypto_Init();
+     return status;
+diff --git a/components/cryptolib/src/sa/internal/sa_interface_inmemory.template.c b/components/cryptolib/src/sa/internal/sa_interface_inmemory.template.c
+index 060c501..cc0f6d9 100644
+--- a/components/cryptolib/src/sa/internal/sa_interface_inmemory.template.c
++++ b/components/cryptolib/src/sa/internal/sa_interface_inmemory.template.c
+@@ -88,14 +88,24 @@ int32_t sa_config(void)
+     sa[1].gvcid_blk.vcid = 0;
+     sa[1].gvcid_blk.mapid = TYPE_TC;
+ 
+-    // SA 2 - TM CLEAR MODE
+-    sa[2].spi = 8;
++    // SA 2 - TM authenc
++    sa[2].spi = 2;
++    sa[2].ekid = 130;
+     sa[2].sa_state = SA_OPERATIONAL;
+-    sa[2].est = 0;
+-    sa[2].ast = 0;
+-    sa[2].arsn_len = 1;
++    sa[2].est = 1;
++    sa[2].ast = 1;
++    sa[2].ecs_len = 1;
++    sa[2].ecs = CRYPTO_CIPHER_AES256_GCM;
++    sa[2].shivf_len = 12;
++    sa[2].iv_len = 12;
++    sa[2].stmacf_len = 16;
++    for (int i = 0; i < sa[2].iv_len; ++i)
++        sa[2].iv[i] = i+1;
++    sa[2].abm_len = ABM_SIZE; // 20
++    sa[2].abm[1] = 14;
+     sa[2].arsnw_len = 1;
+     sa[2].arsnw = 5;
++    sa[2].arsn_len = 0;
+     sa[2].gvcid_blk.tfvn = 0;
+     sa[2].gvcid_blk.scid = SCID & 0x3FF;
+     sa[2].gvcid_blk.vcid = 1;
+@@ -130,7 +140,8 @@ int32_t sa_config(void)
+     sa[4].iv_len = 12;
+     sa[4].stmacf_len = 16;
+     *(sa[4].iv + 11) = 0;
+-    sa[4].abm_len = ABM_SIZE; // 20
++    sa[4].abm_len = 19; // 20
++    sa[4].abm[2] = 252;
+     sa[4].arsnw_len = 1;
+     sa[4].arsnw = 5;
+     sa[4].arsn_len = 0;
+Submodule fsw/apps/to contains modified content
+diff --git a/fsw/apps/to/fsw/examples/udp_tf/to_custom.c b/fsw/apps/to/fsw/examples/udp_tf/to_custom.c
+index 48b9f80..9b22e89 100644
+--- a/fsw/apps/to/fsw/examples/udp_tf/to_custom.c
++++ b/fsw/apps/to/fsw/examples/udp_tf/to_custom.c
+@@ -269,8 +269,6 @@ int32 TO_CustomFrameSend(uint16 usRouteId, int32 iInStatus)
+     uint8* pMcFrameCnt = NULL;
+     uint8* pOcf = NULL;
+ 
+-    SecurityAssociation_t* sa_ptr = NULL;
+-
+     pChnl = TO_CustomGetChnl(usRouteId);
+     if (!pChnl)
+     {
+@@ -318,7 +316,7 @@ int32 TO_CustomFrameSend(uint16 usRouteId, int32 iInStatus)
+     }
+ 
+     /* Perform SDLS */
+-    iStatus = Crypto_TM_ApplySecurity(pFrameInfo->frame);
++    iStatus = Crypto_TM_ApplySecurity((uint8_t*) pFrameInfo->frame);
+     if (iStatus != TO_SUCCESS)
+     {
+         goto end_of_function;

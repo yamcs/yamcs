@@ -29,8 +29,11 @@ public abstract class UplinkManagedParameters {
     protected String physicalChannelName;
     protected int spacecraftId;
     protected FrameErrorDetection errorDetection;
-    Map<Short, SdlsSecurityAssociation> sdlsSecurityAssociations = new HashMap<>();
 
+    /**
+     * A map of Security Parameter Indices to Security Associations
+     */
+    Map<Short, SdlsSecurityAssociation> sdlsSecurityAssociations = new HashMap<>();
 
     public UplinkManagedParameters(YConfiguration config) {
         this.spacecraftId = config.getInt("spacecraftId");
@@ -52,6 +55,7 @@ public abstract class UplinkManagedParameters {
                 // (source: McGrew and Viega, "The Galois/Counter Mode of Operation (GCM)").
                 // Create an auth mask for the primary header, according to CCSDS Standard for
                 // Space Data Link Security (CCSDS 355.0-B-2).
+                // The SDLS implementation automatically adds the security header to authenticated data.
                 // TODO: check if this is correct. account for max header size.
                 if (this instanceof TcManagedParameters) {
                     // Create an auth mask with the size of the TC primary header
@@ -63,6 +67,7 @@ public abstract class UplinkManagedParameters {
                     throw new ConfigurationException("Encryption not supported for " + this);
                 }
 
+                // Save the SPI and its security association
                 sdlsSecurityAssociations.put(spi, new SdlsSecurityAssociation(sdlsKey, spi, authMask));
             }
         }

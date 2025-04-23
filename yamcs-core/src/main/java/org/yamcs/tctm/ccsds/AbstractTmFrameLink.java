@@ -25,8 +25,6 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
     protected long errFrameCount;
     protected RawFrameDecoder rawFrameDecoder;
 
-
-
     @Override
     public Spec getDefaultSpec() {
         var spec = super.getDefaultSpec();
@@ -92,7 +90,6 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
                 l.setParent(this);
             }
         }
-
     }
 
     /**

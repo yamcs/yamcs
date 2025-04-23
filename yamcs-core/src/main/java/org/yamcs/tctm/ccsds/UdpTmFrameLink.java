@@ -24,6 +24,9 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
     private DatagramSocket tmSocket;
     private int port;
 
+    /**
+     * Bytes to ignore at the start of the frame
+     */
     protected int initialBytesToStrip;
     DatagramPacket datagram;
 
@@ -77,16 +80,14 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
 
     @Override
     public void run() {
-        byte[] frame = null;
         while (isRunningAndEnabled()) {
             try {
                 tmSocket.receive(datagram);
-                dataIn(1, datagram.getLength());
-
                 if (log.isTraceEnabled()) {
                     log.trace("Received datagram of length {}: {}", datagram.getLength(), StringConverter
                             .arrayToHexString(datagram.getData(), datagram.getOffset(), datagram.getLength(), true));
                 }
+                dataIn(1, datagram.getLength());
                 handleFrame(timeService.getHresMissionTime(), datagram.getData(), datagram.getOffset() + initialBytesToStrip,
                         datagram.getLength());
 

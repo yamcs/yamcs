@@ -34,20 +34,22 @@ public class TcVcFrameLink {
 
     int farmBCounter;
 
+    // Optionally, a security association to encrypt/decrypt data on the link
     Optional<SdlsSecurityAssociation> maybeSdls = Optional.empty();
 
     public TcVcFrameLink(ColSimulator simulator, int vcId, Optional<byte[]> maybeSdlsKey, short encryptionSpi) {
         this.simulator = simulator;
         this.vcId = vcId;
 
-        // Create an auth mask for the TC primary header,
-        // the frame data is already part of authentication.
-        // No need to authenticate data, already part of GCM
-        // Authenticate virtual channel ID; no segment header is present
-        byte[] authMask = new byte[5];
-        authMask[2] = (byte) 0b1111_1100; // authenticate virtual channel ID
-
+        // If we have an encryption key, configure encryption
         if (maybeSdlsKey.isPresent()) {
+            // Create an auth mask for the TC primary header,
+            // the frame data is already part of authentication.
+            // No need to authenticate data, already part of GCM
+            // Authenticate virtual channel ID; no segment header is present
+            byte[] authMask = new byte[5];
+            authMask[2] = (byte) 0b1111_1100; // authenticate virtual channel ID
+
             this.maybeSdls = Optional.of(new SdlsSecurityAssociation(maybeSdlsKey.get(), encryptionSpi, authMask));
         }
     }
@@ -79,7 +81,6 @@ public class TcVcFrameLink {
             log.warn("Bad decoded frame length {}, expected max {}", frameLength, length);
             return;
         }
-
         int c1 = crc.compute(data, offset, frameLength - 2);
         int c2 = ByteArrayUtils.decodeShort(data, offset + frameLength - 2) & 0xFFFF;
         if (c1 != c2) {
@@ -87,19 +88,26 @@ public class TcVcFrameLink {
                     StringConverter.arrayToHexString(data, offset, frameLength, true));
             return;
         }
-
         int cmdLength = frameLength - 7;
         offset += 5;
 
+        // If the link is encrypted, decrypt data
         if (maybeSdls.isPresent()) {
             var sa = maybeSdls.get();
+
+            // Data is preceded by a security header
             var dataStart = offset + SdlsSecurityAssociation.getHeaderSize();
-            var secTrailerEnd = frameLength - 2;
+            // And followed by a security trailer
+            var secTrailerEnd = frameLength - 2; // last 2 bytes of frame are CRC
+
+            // Try to verify and decrypt it, handle any errors
             var decryptionStatus = sa.processSecurity(data, offset - 5, dataStart, secTrailerEnd);
             if (decryptionStatus != SdlsSecurityAssociation.VerificationStatusCode.NoFailure) {
                 log.error("Could not decrypt frame: {}", decryptionStatus);
                 return;
             }
+
+            // Adjustments to account for security header/trailer
             cmdLength -= SdlsSecurityAssociation.getOverheadBytes();
             offset += SdlsSecurityAssociation.getHeaderSize();
         }

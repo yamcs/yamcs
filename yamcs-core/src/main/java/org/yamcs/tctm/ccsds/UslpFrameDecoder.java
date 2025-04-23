@@ -19,196 +19,190 @@ import org.yamcs.utils.ByteArrayUtils;
  *
  */
 public class UslpFrameDecoder implements TransferFrameDecoder {
-  UslpManagedParameters uslpParams;
-  ErrorDetectionWordCalculator crc;
-  static Logger log = LoggerFactory.getLogger(TransferFrameDecoder.class.getName());
+    UslpManagedParameters uslpParams;
+    ErrorDetectionWordCalculator crc;
+    static Logger log = LoggerFactory.getLogger(TransferFrameDecoder.class.getName());
 
-  public UslpFrameDecoder(UslpManagedParameters uslpParams) {
-    this.uslpParams = uslpParams;
-    if (uslpParams.errorDetection == FrameErrorDetection.CRC16) {
-      crc = new CrcCciitCalculator();
-    } else if (uslpParams.errorDetection == FrameErrorDetection.CRC32) {
-      crc = new ProximityCrc32();
-    }
-  }
-
-  @Override
-  public DownlinkTransferFrame decode(byte[] data, int offset, int length) throws TcTmException {
-    log.trace("decoding frame buf length: {}, dataOffset: {} , dataLength: {}", data.length, offset, length);
-
-    int version = (data[offset] & 0xFF) >> 4;
-    if (version != 12) {
-      throw new TcTmException("Bad frame version number " + version + "; expected 12 (USLP)");
-    }
-
-    if (uslpParams.frameLength != -1) {
-      if (length != uslpParams.frameLength) {
-        throw new TcTmException("Bad frame length " + length + "; expected fixed length " + uslpParams.frameLength);
-      }
-    } else {
-      if (length < uslpParams.minFrameLength || length > uslpParams.maxFrameLength) {
-        throw new TcTmException("Bad frame length " + length + "; expected length between" + uslpParams.minFrameLength
-            + " and " + uslpParams.maxFrameLength);
-      }
-    }
-
-    int dataEnd = offset + length;
-
-    if (uslpParams.errorDetection == FrameErrorDetection.CRC16) {
-      dataEnd -= 2;
-      int c1 = crc.compute(data, offset, dataEnd - offset);
-      int c2 = ByteArrayUtils.decodeUnsignedShort(data, dataEnd);
-      if (c1 != c2) {
-        throw new CorruptedFrameException("Bad CRC computed: " + c1 + " in the frame: " + c2);
-      }
-    } else if (uslpParams.errorDetection == FrameErrorDetection.CRC32) {
-      dataEnd -= 4;
-      int c1 = crc.compute(data, offset, dataEnd - offset);
-      int c2 = ByteArrayUtils.decodeInt(data, dataEnd);
-      if (c1 != c2) {
-        throw new CorruptedFrameException("Bad CRC computed: " + Integer.toUnsignedString(c1)
-            + " in the frame: " + Integer.toUnsignedString(c2));
-      }
-    }
-
-    int f4b = ByteArrayUtils.decodeInt(data, offset);// first four bytes
-
-    int dataOffset = offset + 4;
-
-    int vn = f4b >>> 28;
-    if (vn != 12) {
-      throw new TcTmException("Invalid USLP frame version number " + vn + "; expected " + 12);
-    }
-    int spacecraftId = (f4b >>> 12) & 0xFFFF;
-    int virtualChannelId = (f4b >> 5) & 0x3F;
-    int mapId = (f4b >> 1) & 0xF;
-    boolean truncatedFrame = (f4b & 1) == 1;
-
-    UslpTransferFrame utf = new UslpTransferFrame(data, spacecraftId, virtualChannelId);
-
-    UslpVcManagedParameters vmp = uslpParams.vcParams.get(virtualChannelId);
-    if (vmp == null) {
-      if (virtualChannelId == 63) {
-        utf.setServiceType(ServiceType.IDLE);
-        return utf;
-      } else {
-        throw new TcTmException("Received data for unknown VirtualChannel " + virtualChannelId);
-      }
-    }
-
-    long vcfFrameSeq;
-    if (truncatedFrame) {
-      if (length != vmp.truncatedTransferFrameLength) {
-        throw new TcTmException("Received truncated frame on VC " + virtualChannelId + " whose length ("
-            + length + ") does not match the configured truncatedTranferFrameLength("
-            + vmp.truncatedTransferFrameLength + ")");
-      }
-      vcfFrameSeq = -1;
-    } else {
-
-      int encodedFrameLength = ByteArrayUtils.decodeShort(data, dataOffset);
-      if (encodedFrameLength != length - 1) {
-        throw new TcTmException(
-            "Encoded frame length does not match received data length: " + encodedFrameLength
-                + " != (" + length + "-1)");
-      }
-      dataOffset += 2;
-
-      byte b6 = data[dataOffset];
-      // bit 48 Bypass/Sequence Control Flag - don't care for TM
-      // bit 49 Protocol Control Command Flag - don't care for TM
-      // bit 52 OCF flag
-      boolean ocfPresent = ((b6 >> 3) & 1) == 1;
-      if (ocfPresent) {
-        dataEnd -= 4;
-        utf.setOcf(ByteArrayUtils.decodeInt(data, dataEnd));
-      }
-      // bit2 53-55 - the length of the VCF count field
-      int vcfCountLength = b6 & 0x7;
-
-      dataOffset += 1;
-
-      if (vcfCountLength == 0) {
-        vcfFrameSeq = -1;
-      } else {
-        vcfFrameSeq = 0;
-        for (int i = 0; i < vcfCountLength; i++) {
-          vcfFrameSeq = (vcfFrameSeq << 8) + (data[dataOffset++] & 0xFF);
+    public UslpFrameDecoder(UslpManagedParameters uslpParams) {
+        this.uslpParams = uslpParams;
+        if (uslpParams.errorDetection == FrameErrorDetection.CRC16) {
+            crc = new CrcCciitCalculator();
+        } else if (uslpParams.errorDetection == FrameErrorDetection.CRC32) {
+            crc = new ProximityCrc32();
         }
-      }
-
-      dataOffset += uslpParams.insertZoneLength;
     }
 
-    utf.setVcFrameSeq(vcfFrameSeq);
-    utf.setMapId(mapId);
+    @Override
+    public DownlinkTransferFrame decode(byte[] data, int offset, int length) throws TcTmException {
+        log.trace("decoding frame buf length: {}, dataOffset: {} , dataLength: {}", data.length, offset, length);
 
-    SdlsSecurityAssociation sdlsSecurityAssociation = uslpParams.sdlsSecurityAssociations.get(vmp.encryptionSpi);
-    byte dataHeader = data[dataOffset];
-    int constrRules = (dataHeader & 0xFF) >> 5;
-    int protId = dataHeader & 0x1F;
-    if (vmp.service == ServiceType.PACKET) {
+        int version = (data[offset] & 0xFF) >> 4;
+        if (version != 12) {
+            throw new TcTmException("Bad frame version number " + version + "; expected 12 (USLP)");
+        }
 
-      if (protId != 0) {
-        throw new TcTmException("Invalid Protocol Id " + protId + " Expected 0 for packet data.");
-      }
-
-      if (constrRules == 0b000) {
-        // This construction rule logic is also valid for 0b010 and 0b001 (fixed size)
-        int fhp = ByteArrayUtils.decodeShort(data, dataOffset + 1);
-        dataOffset += 3;
-
-        if (fhp == 0xFFFF) {
-          fhp = -1;
+        if (uslpParams.frameLength != -1) {
+            if (length != uslpParams.frameLength) {
+                throw new TcTmException("Bad frame length " + length + "; expected fixed length " + uslpParams.frameLength);
+            }
         } else {
-          fhp += dataOffset;
-          if (sdlsSecurityAssociation != null)
-            fhp += SdlsSecurityAssociation.getHeaderSize();
-          if (fhp > dataEnd) {
-            throw new TcTmException(
-                "First header pointer in the date header part of USLP frame is outside the data "
-                    + (fhp - dataOffset) + ">" + (dataEnd - dataOffset));
-          }
+            if (length < uslpParams.minFrameLength || length > uslpParams.maxFrameLength) {
+                throw new TcTmException("Bad frame length " + length + "; expected length between" + uslpParams.minFrameLength
+                        + " and " + uslpParams.maxFrameLength);
+            }
         }
 
-        utf.setFirstHeaderPointer(fhp);
-      } else if (constrRules == 0b111) {
-        // This construction rule logic is also valid for other TFDZ construction rules
-        // with variable length.
-        dataOffset += 1;
+        int dataEnd = offset + length;
 
+        if (uslpParams.errorDetection == FrameErrorDetection.CRC16) {
+            dataEnd -= 2;
+            int c1 = crc.compute(data, offset, dataEnd - offset);
+            int c2 = ByteArrayUtils.decodeUnsignedShort(data, dataEnd);
+            if (c1 != c2) {
+                throw new CorruptedFrameException("Bad CRC computed: " + c1 + " in the frame: " + c2);
+            }
+        } else if (uslpParams.errorDetection == FrameErrorDetection.CRC32) {
+            dataEnd -= 4;
+            int c1 = crc.compute(data, offset, dataEnd - offset);
+            int c2 = ByteArrayUtils.decodeInt(data, dataEnd);
+            if (c1 != c2) {
+                throw new CorruptedFrameException("Bad CRC computed: " + Integer.toUnsignedString(c1)
+                        + " in the frame: " + Integer.toUnsignedString(c2));
+            }
+        }
+
+        int f4b = ByteArrayUtils.decodeInt(data, offset);// first four bytes
+
+        int dataOffset = offset + 4;
+
+        int vn = f4b >>> 28;
+        if (vn != 12) {
+            throw new TcTmException("Invalid USLP frame version number " + vn + "; expected " + 12);
+        }
+        int spacecraftId = (f4b >>> 12) & 0xFFFF;
+        int virtualChannelId = (f4b >> 5) & 0x3F;
+        int mapId = (f4b >> 1) & 0xF;
+        boolean truncatedFrame = (f4b & 1) == 1;
+
+        UslpTransferFrame utf = new UslpTransferFrame(data, spacecraftId, virtualChannelId);
+
+        UslpVcManagedParameters vmp = uslpParams.vcParams.get(virtualChannelId);
+        if (vmp == null) {
+            if (virtualChannelId == 63) {
+                utf.setServiceType(ServiceType.IDLE);
+                return utf;
+            } else {
+                throw new TcTmException("Received data for unknown VirtualChannel " + virtualChannelId);
+            }
+        }
+
+        long vcfFrameSeq;
+        if (truncatedFrame) {
+            if (length != vmp.truncatedTransferFrameLength) {
+                throw new TcTmException("Received truncated frame on VC " + virtualChannelId + " whose length ("
+                        + length + ") does not match the configured truncatedTranferFrameLength("
+                        + vmp.truncatedTransferFrameLength + ")");
+            }
+            vcfFrameSeq = -1;
+        } else {
+
+            int encodedFrameLength = ByteArrayUtils.decodeShort(data, dataOffset);
+            if (encodedFrameLength != length - 1) {
+                throw new TcTmException(
+                        "Encoded frame length does not match received data length: " + encodedFrameLength
+                                + " != (" + length + "-1)");
+            }
+            dataOffset += 2;
+
+            byte b6 = data[dataOffset];
+            // bit 48 Bypass/Sequence Control Flag - don't care for TM
+            // bit 49 Protocol Control Command Flag - don't care for TM
+            // bit 52 OCF flag
+            boolean ocfPresent = ((b6 >> 3) & 1) == 1;
+            if (ocfPresent) {
+                dataEnd -= 4;
+                utf.setOcf(ByteArrayUtils.decodeInt(data, dataEnd));
+            }
+            // bit2 53-55 - the length of the VCF count field
+            int vcfCountLength = b6 & 0x7;
+
+            dataOffset += 1;
+
+            if (vcfCountLength == 0) {
+                vcfFrameSeq = -1;
+            } else {
+                vcfFrameSeq = 0;
+                for (int i = 0; i < vcfCountLength; i++) {
+                    vcfFrameSeq = (vcfFrameSeq << 8) + (data[dataOffset++] & 0xFF);
+                }
+            }
+
+            dataOffset += uslpParams.insertZoneLength;
+        }
+
+        utf.setVcFrameSeq(vcfFrameSeq);
+        utf.setMapId(mapId);
+
+        SdlsSecurityAssociation sdlsSecurityAssociation = uslpParams.sdlsSecurityAssociations.get(vmp.encryptionSpi);
+        // If we're decrypting, do so
         if (sdlsSecurityAssociation != null) {
-          utf.setFirstHeaderPointer(dataOffset + SdlsSecurityAssociation.getHeaderSize());
-        } else {
-          utf.setFirstHeaderPointer(dataOffset);
+            int decryptionDataStart = dataOffset;
+
+            decryptionDataStart += SdlsSecurityAssociation.getHeaderSize();
+
+            int decryptionTrailerEnd = dataEnd;
+
+            SdlsSecurityAssociation.VerificationStatusCode decryptionResult = sdlsSecurityAssociation.processSecurity(data,
+                    offset, decryptionDataStart, decryptionTrailerEnd);
+            if (decryptionResult != SdlsSecurityAssociation.VerificationStatusCode.NoFailure) {
+                log.error("Couldn't decrypt frame: {}", decryptionResult);
+            }
+
+            // Update offsets
+            dataOffset += SdlsSecurityAssociation.getHeaderSize();
+            dataEnd -= SdlsSecurityAssociation.getTrailerSize();
         }
-      } else {
-        throw new TcTmException(
-            "Invalid TFDZ Construction Rule Value " + constrRules + " Expected 0 for packet data.");
-      }
+
+        byte dataHeader = data[dataOffset];
+        int constrRules = (dataHeader & 0xFF) >> 5;
+        int protId = dataHeader & 0x1F;
+        if (vmp.service == ServiceType.PACKET) {
+
+            if (protId != 0) {
+                throw new TcTmException("Invalid Protocol Id " + protId + " Expected 0 for packet data.");
+            }
+
+            if (constrRules == 0b000) {
+                // This construction rule logic is also valid for 0b010 and 0b001 (fixed size)
+                int fhp = ByteArrayUtils.decodeShort(data, dataOffset + 1);
+                dataOffset += 3;
+
+                if (fhp == 0xFFFF) {
+                    fhp = -1;
+                } else {
+                    fhp += dataOffset;
+                    if (fhp > dataEnd) {
+                        throw new TcTmException(
+                                "First header pointer in the date header part of USLP frame is outside the data "
+                                        + (fhp - dataOffset) + ">" + (dataEnd - dataOffset));
+                    }
+                }
+
+                utf.setFirstHeaderPointer(fhp);
+            } else if (constrRules == 0b111) {
+                // This construction rule logic is also valid for other TFDZ construction rules
+                // with variable length.
+                dataOffset += 1;
+                utf.setFirstHeaderPointer(dataOffset);
+            } else {
+                throw new TcTmException(
+                        "Invalid TFDZ Construction Rule Value " + constrRules + " Expected 0 for packet data.");
+            }
+        }
+
+        utf.setDataStart(dataOffset);
+        utf.setDataEnd(dataEnd);
+        return utf;
     }
-
-    if (sdlsSecurityAssociation != null) {
-      int decryptionDataStart = dataOffset;
-
-      decryptionDataStart += SdlsSecurityAssociation.getHeaderSize();
-
-      // order dependency: assume dataEnd already has subtracted size of crc and size
-      // of ocf
-      int decryptionTrailerEnd = dataEnd;
-
-      SdlsSecurityAssociation.VerificationStatusCode decryptionResult = sdlsSecurityAssociation.processSecurity(data,
-          offset, decryptionDataStart, decryptionTrailerEnd);
-      if (decryptionResult != SdlsSecurityAssociation.VerificationStatusCode.NoFailure) {
-        log.error("Couldn't decrypt frame: {}", decryptionResult);
-      }
-      dataOffset += SdlsSecurityAssociation.getHeaderSize();
-      dataEnd -= SdlsSecurityAssociation.getTrailerSize();
-    }
-
-    utf.setDataStart(dataOffset);
-    utf.setDataEnd(dataEnd);
-    return utf;
-  }
 
 }
