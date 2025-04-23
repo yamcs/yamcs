@@ -58,8 +58,16 @@ dataLinks:
     #the following option can be used to skip randomization for certain virtual channels
     #skipRandomizationForVcs: [1, 0]
     errorDetection: CRC16
+    encryption:
+      - spi: 1
+        keyFile: /path/to/presharedkey
+      - spi: 2
+        keyFile: /path/to/presharedkey
+      - spi: 3
+        keyFile: /path/to/presharedkey
     virtualChannels:
          - vcId: 0
+           encryptionSpi: 1
            service: "PACKET"
            commandPostprocessorClassName: org.yamcs.tctm.IssCommandPostprocessor
            commandPostprocessorArgs:

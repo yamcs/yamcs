@@ -257,7 +257,7 @@ public class SimulatorCommander extends ProcessRunner {
                     maybeSdlsKey = Optional.empty();
                 }
 
-                UdpTcFrameLink tcFrameLink = new UdpTcFrameLink(sim, runtimeOptions.tcFramePort);
+                UdpTcFrameLink tcFrameLink = new UdpTcFrameLink(sim, runtimeOptions.tcFramePort, maybeSdlsKey, (short) runtimeOptions.encryptionSpi);
                 UdpTmFrameLink frameLink = new UdpTmFrameLink(runtimeOptions.tmFrameType, runtimeOptions.tmFrameHost,
                         runtimeOptions.tmFramePort,
                         runtimeOptions.tmFrameLength, runtimeOptions.tmFrameFreq, () -> {
