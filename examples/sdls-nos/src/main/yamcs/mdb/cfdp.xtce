@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xtce:SpaceSystem xmlns:xtce="http://www.omg.org/space/xtce" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="CFDP" xsi:schemaLocation="http://www.omg.org/space/xtce http://www.omg.org/spec/XTCE/20061101/06-11-06.xsd">
+  <xtce:TelemetryMetaData>
+    <xtce:ParameterTypeSet>
+      <xtce:IntegerParameterType name="PKT_ID_Type" shortDescription="CFDP_ENGINE_PACKETID" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+      <xtce:IntegerParameterType name="ENG_SOURCEID_Type" shortDescription="ENG_SOURCEID" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+      <xtce:StringParameterType name="ENG_LASTFAILEDTRANS_Type" characterWidth="8" shortDescription="Last failed transaction destination name">
+        <xtce:StringDataEncoding encoding="UTF-8">
+          <xtce:SizeInBits>
+            <xtce:Fixed>
+              <xtce:FixedValue>512</xtce:FixedValue>
+            </xtce:Fixed>
+          </xtce:SizeInBits>
+        </xtce:StringDataEncoding>
+      </xtce:StringParameterType>
+      <xtce:StringParameterType name="ENG_UP_LASTFILEUPLINKED_Type" characterWidth="8" shortDescription="Last file uplinked">
+        <xtce:StringDataEncoding encoding="UTF-8">
+          <xtce:SizeInBits>
+            <xtce:Fixed>
+              <xtce:FixedValue>512</xtce:FixedValue>
+            </xtce:Fixed>
+          </xtce:SizeInBits>
+        </xtce:StringDataEncoding>
+      </xtce:StringParameterType>
+      <xtce:StringParameterType name="ENG_DOWN_LASTFILEDOWNLINKED_Type" characterWidth="8" shortDescription="Last file downlinked">
+        <xtce:StringDataEncoding encoding="UTF-8">
+          <xtce:SizeInBits>
+            <xtce:Fixed>
+              <xtce:FixedValue>512</xtce:FixedValue>
+            </xtce:Fixed>
+          </xtce:SizeInBits>
+        </xtce:StringDataEncoding>
+      </xtce:StringParameterType>
+      <xtce:IntegerParameterType name="ENG_TOTALERRORS_Type" shortDescription="ENG_TOTALERRORS" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+      <xtce:IntegerParameterType name="ENG_PDUSRECEIVED_Type" shortDescription="ENG_PDUSRECEIVED" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+      <xtce:IntegerParameterType name="ENG_PDUSREJECTED_Type" shortDescription="ENG_PDUSREJECTED" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+      <xtce:IntegerParameterType name="ENG_INPROGRESSTRANS_Type" shortDescription="ENG_INPROGRESSTRANS" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+      <xtce:IntegerParameterType name="ENG_TOTALSUCCESSTRANS_Type" shortDescription="ENG_TOTALFAILEDTRANS" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+      <xtce:IntegerParameterType name="ENG_TOTALFAILEDTRANS_Type" shortDescription="ENG_TOTALFAILEDTRANS" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+      <xtce:IntegerParameterType name="COND_POSACKNUM_Type" shortDescription="COND_POSACKNUM" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+      <xtce:IntegerParameterType name="COND_FILESTOREREJNUM_Type" shortDescription="COND_FILESTOREREJNUM" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+      <xtce:IntegerParameterType name="COND_FILECHECKSUMNUM_Type" shortDescription="COND_FILECHECKSUMNUM" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+      <xtce:IntegerParameterType name="COND_FILESIZENUM_Type" shortDescription="COND_FILESIZENUM" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+      <xtce:IntegerParameterType name="COND_NAKLIMITNUM_Type" shortDescription="COND_NAKLIMITNUM" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+      <xtce:IntegerParameterType name="COND_INACTIVENUM_Type" shortDescription="COND_INACTIVENUM" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+      <xtce:IntegerParameterType name="ENG_TOTALFILESSENT_Type" shortDescription="ENG_TOTALFILESSENT" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+      <xtce:IntegerParameterType name="ENG_TOTALFILESRCVD_Type" shortDescription="ENG_TOTALFILESRCVD" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+      <xtce:IntegerParameterType name="ENG_RCVD_METADATA_Type" shortDescription="ENG_RCVD_METADATA" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+      <xtce:IntegerParameterType name="ENG_RCVD_FILEDATA_Type" shortDescription="ENG_RCVD_FILEDATA" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+      <xtce:IntegerParameterType name="ENG_RCVD_EOF_Type" shortDescription="ENG_RCVD_EOF" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+      <xtce:IntegerParameterType name="ENG_RCVD_FINISHED_Type" shortDescription="ENG_RCVD_FINISHED" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+      <xtce:IntegerParameterType name="ENG_RCVD_NAK_Type" shortDescription="ENG_RCVD_NAK" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+      <xtce:IntegerParameterType name="ENG_RCVD_ACK_Type" shortDescription="ENG_RCVD_ACK" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+      <xtce:IntegerParameterType name="ENG_SENT_METADATA_Type" shortDescription="ENG_SENT_METADATA" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+      <xtce:IntegerParameterType name="ENG_SENT_FILEDATA_Type" shortDescription="ENG_SENT_FILEDATA" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+      <xtce:IntegerParameterType name="ENG_SENT_EOF_Type" shortDescription="ENG_SENT_EOF" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+      <xtce:IntegerParameterType name="ENG_SENT_FINISHED_Type" shortDescription="ENG_SENT_FINISHED" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+      <xtce:IntegerParameterType name="ENG_SENT_NAK_Type" shortDescription="ENG_SENT_NAK" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+      <xtce:IntegerParameterType name="ENG_SENT_ACK_Type" shortDescription="ENG_SENT_ACK" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+      <xtce:IntegerParameterType name="ENG_UP_SUCCESSCOUNTER_Type" shortDescription="ENG_UP_SUCCESSCOUNTER" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+      <xtce:IntegerParameterType name="ENG_UP_FAILEDCOUNTER_Type" shortDescription="ENG_UP_FAILEDCOUNTER" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+      <xtce:IntegerParameterType name="ENG_DOWN_SUCCESSDOWNLINKS_Type" shortDescription="ENG_DOWN_SUCCESSDOWNLINKS" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+      <xtce:IntegerParameterType name="ENG_DOWN_FAILEDDOWNLINKS_Type" shortDescription="ENG_DOWN_FAILEDDOWNLINKS" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="64" encoding="unsigned"/>
+      </xtce:IntegerParameterType>
+    </xtce:ParameterTypeSet>
+    <xtce:ParameterSet>
+      <xtce:Parameter name="PKT_ID" parameterTypeRef="PKT_ID_Type"/>
+      <xtce:Parameter name="ENG_SOURCEID" parameterTypeRef="ENG_SOURCEID_Type"/>
+      <xtce:Parameter name="ENG_LASTFAILEDTRANS" parameterTypeRef="ENG_LASTFAILEDTRANS_Type"/>
+      <xtce:Parameter name="ENG_UP_LASTFILEUPLINKED" parameterTypeRef="ENG_UP_LASTFILEUPLINKED_Type"/>
+      <xtce:Parameter name="ENG_DOWN_LASTFILEDOWNLINKED" parameterTypeRef="ENG_DOWN_LASTFILEDOWNLINKED_Type"/>
+      <xtce:Parameter name="ENG_TOTALERRORS" parameterTypeRef="ENG_TOTALERRORS_Type"/>
+      <xtce:Parameter name="ENG_PDUSRECEIVED" parameterTypeRef="ENG_PDUSRECEIVED_Type"/>
+      <xtce:Parameter name="ENG_PDUSREJECTED" parameterTypeRef="ENG_PDUSREJECTED_Type"/>
+      <xtce:Parameter name="ENG_INPROGRESSTRANS" parameterTypeRef="ENG_INPROGRESSTRANS_Type"/>
+      <xtce:Parameter name="ENG_TOTALSUCCESSTRANS" parameterTypeRef="ENG_TOTALSUCCESSTRANS_Type"/>
+      <xtce:Parameter name="ENG_TOTALFAILEDTRANS" parameterTypeRef="ENG_TOTALFAILEDTRANS_Type"/>
+      <xtce:Parameter name="COND_POSACKNUM" parameterTypeRef="COND_POSACKNUM_Type"/>
+      <xtce:Parameter name="COND_FILESTOREREJNUM" parameterTypeRef="COND_FILESTOREREJNUM_Type"/>
+      <xtce:Parameter name="COND_FILECHECKSUMNUM" parameterTypeRef="COND_FILECHECKSUMNUM_Type"/>
+      <xtce:Parameter name="COND_FILESIZENUM" parameterTypeRef="COND_FILESIZENUM_Type"/>
+      <xtce:Parameter name="COND_NAKLIMITNUM" parameterTypeRef="COND_NAKLIMITNUM_Type"/>
+      <xtce:Parameter name="COND_INACTIVENUM" parameterTypeRef="COND_INACTIVENUM_Type"/>
+      <xtce:Parameter name="ENG_TOTALFILESSENT" parameterTypeRef="ENG_TOTALFILESSENT_Type"/>
+      <xtce:Parameter name="ENG_TOTALFILESRCVD" parameterTypeRef="ENG_TOTALFILESRCVD_Type"/>
+      <xtce:Parameter name="ENG_RCVD_METADATA" parameterTypeRef="ENG_RCVD_METADATA_Type"/>
+      <xtce:Parameter name="ENG_RCVD_FILEDATA" parameterTypeRef="ENG_RCVD_FILEDATA_Type"/>
+      <xtce:Parameter name="ENG_RCVD_EOF" parameterTypeRef="ENG_RCVD_EOF_Type"/>
+      <xtce:Parameter name="ENG_RCVD_FINISHED" parameterTypeRef="ENG_RCVD_FINISHED_Type"/>
+      <xtce:Parameter name="ENG_RCVD_NAK" parameterTypeRef="ENG_RCVD_NAK_Type"/>
+      <xtce:Parameter name="ENG_RCVD_ACK" parameterTypeRef="ENG_RCVD_ACK_Type"/>
+      <xtce:Parameter name="ENG_SENT_METADATA" parameterTypeRef="ENG_SENT_METADATA_Type"/>
+      <xtce:Parameter name="ENG_SENT_FILEDATA" parameterTypeRef="ENG_SENT_FILEDATA_Type"/>
+      <xtce:Parameter name="ENG_SENT_EOF" parameterTypeRef="ENG_SENT_EOF_Type"/>
+      <xtce:Parameter name="ENG_SENT_FINISHED" parameterTypeRef="ENG_SENT_FINISHED_Type"/>
+      <xtce:Parameter name="ENG_SENT_NAK" parameterTypeRef="ENG_SENT_NAK_Type"/>
+      <xtce:Parameter name="ENG_SENT_ACK" parameterTypeRef="ENG_SENT_ACK_Type"/>
+      <xtce:Parameter name="ENG_UP_SUCCESSCOUNTER" parameterTypeRef="ENG_UP_SUCCESSCOUNTER_Type"/>
+      <xtce:Parameter name="ENG_UP_FAILEDCOUNTER" parameterTypeRef="ENG_UP_FAILEDCOUNTER_Type"/>
+      <xtce:Parameter name="ENG_DOWN_SUCCESSDOWNLINKS" parameterTypeRef="ENG_DOWN_SUCCESSDOWNLINKS_Type"/>
+      <xtce:Parameter name="ENG_DOWN_FAILEDDOWNLINKS" parameterTypeRef="ENG_DOWN_FAILEDDOWNLINKS_Type"/>
+    </xtce:ParameterSet>
+    <xtce:ContainerSet>
+      <xtce:SequenceContainer name="CFDP_ENGINE_HK" shortDescription="CFDP Engine HK Packet">
+        <xtce:EntryList>
+          <xtce:ParameterRefEntry parameterRef="PKT_ID"/>
+          <xtce:ParameterRefEntry parameterRef="ENG_SOURCEID"/>
+          <xtce:ParameterRefEntry parameterRef="ENG_LASTFAILEDTRANS"/>
+          <xtce:ParameterRefEntry parameterRef="ENG_UP_LASTFILEUPLINKED"/>
+          <xtce:ParameterRefEntry parameterRef="ENG_DOWN_LASTFILEDOWNLINKED"/>
+          <xtce:ParameterRefEntry parameterRef="ENG_TOTALERRORS"/>
+          <xtce:ParameterRefEntry parameterRef="ENG_PDUSRECEIVED"/>
+          <xtce:ParameterRefEntry parameterRef="ENG_PDUSREJECTED"/>
+          <xtce:ParameterRefEntry parameterRef="ENG_INPROGRESSTRANS"/>
+          <xtce:ParameterRefEntry parameterRef="ENG_TOTALSUCCESSTRANS"/>
+          <xtce:ParameterRefEntry parameterRef="ENG_TOTALFAILEDTRANS"/>
+          <xtce:ParameterRefEntry parameterRef="COND_POSACKNUM"/>
+          <xtce:ParameterRefEntry parameterRef="COND_FILESTOREREJNUM"/>
+          <xtce:ParameterRefEntry parameterRef="COND_FILECHECKSUMNUM"/>
+          <xtce:ParameterRefEntry parameterRef="COND_FILESIZENUM"/>
+          <xtce:ParameterRefEntry parameterRef="COND_NAKLIMITNUM"/>
+          <xtce:ParameterRefEntry parameterRef="COND_INACTIVENUM"/>
+          <xtce:ParameterRefEntry parameterRef="ENG_TOTALFILESSENT"/>
+          <xtce:ParameterRefEntry parameterRef="ENG_TOTALFILESRCVD"/>
+          <xtce:ParameterRefEntry parameterRef="ENG_RCVD_METADATA"/>
+          <xtce:ParameterRefEntry parameterRef="ENG_RCVD_FILEDATA"/>
+          <xtce:ParameterRefEntry parameterRef="ENG_RCVD_EOF"/>
+          <xtce:ParameterRefEntry parameterRef="ENG_RCVD_FINISHED"/>
+          <xtce:ParameterRefEntry parameterRef="ENG_RCVD_NAK"/>
+          <xtce:ParameterRefEntry parameterRef="ENG_RCVD_ACK"/>
+          <xtce:ParameterRefEntry parameterRef="ENG_SENT_METADATA"/>
+          <xtce:ParameterRefEntry parameterRef="ENG_SENT_FILEDATA"/>
+          <xtce:ParameterRefEntry parameterRef="ENG_SENT_EOF"/>
+          <xtce:ParameterRefEntry parameterRef="ENG_SENT_FINISHED"/>
+          <xtce:ParameterRefEntry parameterRef="ENG_SENT_NAK"/>
+          <xtce:ParameterRefEntry parameterRef="ENG_SENT_ACK"/>
+          <xtce:ParameterRefEntry parameterRef="ENG_UP_SUCCESSCOUNTER"/>
+          <xtce:ParameterRefEntry parameterRef="ENG_UP_FAILEDCOUNTER"/>
+          <xtce:ParameterRefEntry parameterRef="ENG_DOWN_SUCCESSDOWNLINKS"/>
+          <xtce:ParameterRefEntry parameterRef="ENG_DOWN_FAILEDDOWNLINKS"/>
+        </xtce:EntryList>
+        <xtce:EntryList/>
+        <xtce:BaseContainer containerRef="/CCSDS/CCSDS_TM">
+          <xtce:RestrictionCriteria>
+            <xtce:ComparisonList>
+              <xtce:Comparison parameterRef="PKT_ID" value="73969072883787"/>
+            </xtce:ComparisonList>
+          </xtce:RestrictionCriteria>
+        </xtce:BaseContainer>
+      </xtce:SequenceContainer>
+    </xtce:ContainerSet>
+  </xtce:TelemetryMetaData>
+  <xtce:CommandMetaData>
+    <xtce:ArgumentTypeSet>
+      <xtce:IntegerArgumentType name="FUNC_ID_Type" initialValue="1240995113189960404548" shortDescription="CFDP SEND_FILE CODE" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="72" encoding="unsigned"/>
+        <xtce:ValidRange minInclusive="1240995113189960404548" maxInclusive="1240995113189960404548"/>
+      </xtce:IntegerArgumentType>
+      <xtce:IntegerArgumentType name="CLASS_Type" initialValue="2" shortDescription="CFDP Class 1 or 2" signed="false">
+        <xtce:IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+        <xtce:ValidRange minInclusive="1" maxInclusive="2"/>
+      </xtce:IntegerArgumentType>
+      <xtce:StringArgumentType name="DEST_ID_Type" characterWidth="8" initialValue="&quot;24&quot;" shortDescription="Destination ID - 2 bytes">
+        <xtce:StringDataEncoding encoding="UTF-8">
+          <xtce:SizeInBits>
+            <xtce:Fixed>
+              <xtce:FixedValue>128</xtce:FixedValue>
+            </xtce:Fixed>
+          </xtce:SizeInBits>
+        </xtce:StringDataEncoding>
+      </xtce:StringArgumentType>
+      <xtce:StringArgumentType name="SRCFILENAME_Type" characterWidth="8" initialValue="&quot;/media/sf_gtosat/gsw/scripts/launch.sh&quot;" shortDescription="Path/Filename to send">
+        <xtce:StringDataEncoding encoding="UTF-8">
+          <xtce:SizeInBits>
+            <xtce:Fixed>
+              <xtce:FixedValue>512</xtce:FixedValue>
+            </xtce:Fixed>
+          </xtce:SizeInBits>
+        </xtce:StringDataEncoding>
+      </xtce:StringArgumentType>
+      <xtce:StringArgumentType name="DSTFILENAME_Type" characterWidth="8" initialValue="&quot;/cf/launch.sh&quot;" shortDescription="Path/Filename at destination">
+        <xtce:StringDataEncoding encoding="UTF-8">
+          <xtce:SizeInBits>
+            <xtce:Fixed>
+              <xtce:FixedValue>512</xtce:FixedValue>
+            </xtce:Fixed>
+          </xtce:SizeInBits>
+        </xtce:StringDataEncoding>
+      </xtce:StringArgumentType>
+    </xtce:ArgumentTypeSet>
+    <xtce:MetaCommandSet>
+      <xtce:MetaCommand name="SEND_FILE_Base" abstract="true">
+        <xtce:ArgumentList>
+          <xtce:Argument name="FUNC_ID" argumentTypeRef="FUNC_ID_Type"/>
+          <xtce:Argument name="CLASS" argumentTypeRef="CLASS_Type"/>
+          <xtce:Argument name="DEST_ID" argumentTypeRef="DEST_ID_Type"/>
+          <xtce:Argument name="SRCFILENAME" argumentTypeRef="SRCFILENAME_Type"/>
+          <xtce:Argument name="DSTFILENAME" argumentTypeRef="DSTFILENAME_Type"/>
+        </xtce:ArgumentList>
+        <xtce:CommandContainer name="CFDP_SEND_FILE_CommandContainer">
+          <xtce:EntryList>
+            <xtce:ArgumentRefEntry argumentRef="FUNC_ID"/>
+            <xtce:ArgumentRefEntry argumentRef="CLASS"/>
+            <xtce:ArgumentRefEntry argumentRef="DEST_ID"/>
+            <xtce:ArgumentRefEntry argumentRef="SRCFILENAME"/>
+            <xtce:ArgumentRefEntry argumentRef="DSTFILENAME"/>
+          </xtce:EntryList>
+        </xtce:CommandContainer>
+      </xtce:MetaCommand>
+      <xtce:MetaCommand name="SEND_FILE" shortDescription="Starts sending file with CFDP">
+        <xtce:BaseMetaCommand metaCommandRef="SEND_FILE_Base">
+          <xtce:ArgumentAssignmentList>
+            <xtce:ArgumentAssignment argumentName="FUNC_ID" argumentValue="1240995113189960404548"/>
+          </xtce:ArgumentAssignmentList>
+        </xtce:BaseMetaCommand>
+      </xtce:MetaCommand>
+    </xtce:MetaCommandSet>
+  </xtce:CommandMetaData>
+</xtce:SpaceSystem>

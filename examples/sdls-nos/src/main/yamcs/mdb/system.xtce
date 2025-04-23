@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xtce:SpaceSystem xmlns:xtce="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="SYSTEM" xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
+  <xtce:SpaceSystem name="META">
+    <xtce:TelemetryMetaData>
+      <xtce:ParameterTypeSet>
+        <xtce:IntegerParameterType name="PKTID_Type" shortDescription="Packet Id" signed="false">
+          <xtce:IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+        </xtce:IntegerParameterType>
+        <xtce:StringParameterType name="CONFIG_Type" characterWidth="8" shortDescription="Configuration Name">
+          <xtce:StringDataEncoding encoding="UTF-8">
+            <xtce:SizeInBits>
+              <xtce:Fixed>
+                <xtce:FixedValue>256</xtce:FixedValue>
+              </xtce:Fixed>
+            </xtce:SizeInBits>
+          </xtce:StringDataEncoding>
+        </xtce:StringParameterType>
+        <xtce:StringParameterType name="COSMOS_VERSION_Type" characterWidth="8" shortDescription="COSMOS Version">
+          <xtce:StringDataEncoding encoding="UTF-8">
+            <xtce:SizeInBits>
+              <xtce:Fixed>
+                <xtce:FixedValue>240</xtce:FixedValue>
+              </xtce:Fixed>
+            </xtce:SizeInBits>
+          </xtce:StringDataEncoding>
+        </xtce:StringParameterType>
+        <xtce:StringParameterType name="USER_VERSION_Type" characterWidth="8" shortDescription="User Project Version">
+          <xtce:StringDataEncoding encoding="UTF-8">
+            <xtce:SizeInBits>
+              <xtce:Fixed>
+                <xtce:FixedValue>240</xtce:FixedValue>
+              </xtce:Fixed>
+            </xtce:SizeInBits>
+          </xtce:StringDataEncoding>
+        </xtce:StringParameterType>
+        <xtce:StringParameterType name="RUBY_VERSION_Type" characterWidth="8" shortDescription="Ruby Version">
+          <xtce:StringDataEncoding encoding="UTF-8">
+            <xtce:SizeInBits>
+              <xtce:Fixed>
+                <xtce:FixedValue>240</xtce:FixedValue>
+              </xtce:Fixed>
+            </xtce:SizeInBits>
+          </xtce:StringDataEncoding>
+        </xtce:StringParameterType>
+      </xtce:ParameterTypeSet>
+      <xtce:ParameterSet>
+        <xtce:Parameter name="PKTID" parameterTypeRef="PKTID_Type"/>
+        <xtce:Parameter name="CONFIG" parameterTypeRef="CONFIG_Type"/>
+        <xtce:Parameter name="COSMOS_VERSION" parameterTypeRef="COSMOS_VERSION_Type"/>
+        <xtce:Parameter name="USER_VERSION" parameterTypeRef="USER_VERSION_Type"/>
+        <xtce:Parameter name="RUBY_VERSION" parameterTypeRef="RUBY_VERSION_Type"/>
+      </xtce:ParameterSet>
+      <xtce:ContainerSet>
+        <xtce:SequenceContainer name="META" shortDescription="System Meta Data Telemetry Packet">
+          <xtce:EntryList>
+            <xtce:ParameterRefEntry parameterRef="PKTID"/>
+            <xtce:ParameterRefEntry parameterRef="CONFIG"/>
+            <xtce:ParameterRefEntry parameterRef="COSMOS_VERSION"/>
+            <xtce:ParameterRefEntry parameterRef="USER_VERSION"/>
+            <xtce:ParameterRefEntry parameterRef="RUBY_VERSION"/>
+          </xtce:EntryList>
+          <xtce:BaseContainer containerRef="/CCSDS/CCSDS_TM">
+            <xtce:RestrictionCriteria>
+              <xtce:ComparisonList>
+                <xtce:Comparison parameterRef="PKTID" value="1"/>
+              </xtce:ComparisonList>
+            </xtce:RestrictionCriteria>
+          </xtce:BaseContainer>
+        </xtce:SequenceContainer>
+      </xtce:ContainerSet>
+    </xtce:TelemetryMetaData>
+  </xtce:SpaceSystem>
+  <xtce:SpaceSystem name="CMD"/>
+</xtce:SpaceSystem>

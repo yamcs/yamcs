@@ -1,0 +1,62 @@
+realtime:
+  services:
+    - class: org.yamcs.StreamTmPacketProvider
+    - class: org.yamcs.StreamTcCommandReleaser
+    - class: org.yamcs.tctm.StreamParameterProvider
+      args:
+        streams: ["pp_realtime", "sys_param"]
+    - class: org.yamcs.algorithms.AlgorithmManager
+    - class: org.yamcs.parameter.LocalParameterManager
+  config:
+    subscribeAll: true
+    persistParameters: true
+    # Check alarms and also enable the alarm server (that keeps track of unacknowledged alarms)
+    alarm:
+      parameterCheck: true
+      parameterServer: enabled
+    parameterCache:
+      enabled: false
+    tmProcessor:
+      # If container entries fit outside the binary packet, setting this to true causes the error
+      # to be ignored, otherwise an exception will be printed in Yamcs log output
+      ignoreOutOfContainerEntries: false
+    # Record all the parameters that have initial values at the start of the processor
+    recordInitialValues: true
+    # Record the local values
+    recordLocalValues: true
+
+
+# Used to perform step-by-step archive replays to displays, etc
+Archive:
+  services:
+    - class: org.yamcs.tctm.ReplayService
+    - class: org.yamcs.algorithms.AlgorithmManager
+  config:
+    # Keep a small cache in case new displays are open while the replay is paused, to have the parameters readily available
+    parameterCache:
+      enabled: true
+      cacheAll: true
+      maxNumEntries: 8
+
+
+# Used by the ParameterArchive when rebuilding the parameter archive
+# no need for parameter cache
+ParameterArchive:
+  services:
+    - class: org.yamcs.tctm.ReplayService
+    - class: org.yamcs.algorithms.AlgorithmManager
+  config:
+    parameterCache:
+      enabled: false
+
+
+# Used for performing archive retrievals via replays (e.g. GET /api/archive/{instance}/parameters/{name*}?source=replay)
+# we do not want cache in order to extract the minimum data necessary
+ArchiveRetrieval:
+  services:
+    - class: org.yamcs.tctm.ReplayService
+    - class: org.yamcs.algorithms.AlgorithmManager
+  config:
+    parameterCache:
+      enabled: false
+    subscribeContainerArchivePartitions: false

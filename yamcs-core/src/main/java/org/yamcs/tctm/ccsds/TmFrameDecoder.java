@@ -29,7 +29,7 @@ public class TmFrameDecoder implements TransferFrameDecoder {
 
     @Override
     public TmTransferFrame decode(byte[] data, int offset, int length) throws TcTmException {
-        int dataEnd = offset + length;
+        int dataEnd = length;
         int dataOffset = offset + 6;
 
         int tfdfs = ByteArrayUtils.decodeShort(data, offset + 4);
@@ -85,7 +85,7 @@ public class TmFrameDecoder implements TransferFrameDecoder {
             }
         }
 
-        // TODO: maybe CRC should be computed on encrypted data?
+        // TODO: CRC should be computed on encrypted data
         if (crc != null) {
             dataEnd -= 2;
             int c1 = crc.compute(data, offset, dataEnd - offset);

@@ -143,7 +143,7 @@ public class SdlsSecurityAssociation {
 
         // create data to authenticate by masking frame headers with authMask
         byte[] aad = new byte[headersSize];
-        for (int i = 0; i < dataStart; ++i) {
+        for (int i = 0; i < (dataStart - frameStart); ++i) {
             aad[i] = (byte) (transferFrame[frameStart + i] & authMask[i]);
         }
 

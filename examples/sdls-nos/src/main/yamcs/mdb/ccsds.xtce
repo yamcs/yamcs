@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xtce:SpaceSystem xmlns:xtce="http://www.omg.org/space/xtce"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="CCSDS"
+    xsi:schemaLocation="http://www.omg.org/space/xtce https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
+    <xtce:TelemetryMetaData>
+        <xtce:ParameterTypeSet>
+            <xtce:IntegerParameterType name="CCSDS_STREAMID_Type"
+                shortDescription="CCSDS Packet Identification" signed="false">
+                <xtce:IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
+            </xtce:IntegerParameterType>
+            <xtce:IntegerParameterType name="CCSDS_SEQUENCE_Type"
+                shortDescription="CCSDS Packet Sequence Control" signed="false">
+                <xtce:IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
+            </xtce:IntegerParameterType>
+            <xtce:IntegerParameterType name="CCSDS_LENGTH_Type"
+                shortDescription="CCSDS Packet Data Length" signed="false">
+                <xtce:IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
+            </xtce:IntegerParameterType>
+            <xtce:IntegerParameterType name="CCSDS_SECONDS_Type"
+                shortDescription="CCSDS Telemetry Secondary Header (seconds)" signed="false">
+                <xtce:IntegerDataEncoding sizeInBits="32" encoding="unsigned" />
+            </xtce:IntegerParameterType>
+            <xtce:IntegerParameterType name="CCSDS_SUBSECS_Type"
+                shortDescription="CCSDS Telemetry Secondary Header (subseconds)" signed="false">
+                <xtce:IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
+            </xtce:IntegerParameterType>
+            <xtce:IntegerParameterType name="CCSDS_SPARE_Type" shortDescription="" signed="false">
+                <xtce:IntegerDataEncoding sizeInBits="32" encoding="unsigned"
+                    byteOrder="leastSignificantByteFirst" />
+            </xtce:IntegerParameterType>
+            <xtce:IntegerParameterType name="CMDCOUNTER_Type"
+                shortDescription="Count of all commands received." signed="false">
+                <xtce:IntegerDataEncoding sizeInBits="16" encoding="unsigned"
+                    byteOrder="leastSignificantByteFirst" />
+            </xtce:IntegerParameterType>
+            <xtce:IntegerParameterType name="ERRCOUNTER_Type"
+                shortDescription="Count of command errors." signed="false">
+                <xtce:IntegerDataEncoding sizeInBits="16" encoding="unsigned"
+                    byteOrder="leastSignificantByteFirst" />
+            </xtce:IntegerParameterType>
+        </xtce:ParameterTypeSet>
+        <xtce:ParameterSet>
+            <xtce:Parameter name="CCSDS_STREAMID" parameterTypeRef="CCSDS_STREAMID_Type" />
+            <xtce:Parameter name="CCSDS_SEQUENCE" parameterTypeRef="CCSDS_SEQUENCE_Type" />
+            <xtce:Parameter name="CCSDS_LENGTH" parameterTypeRef="CCSDS_LENGTH_Type" />
+            <xtce:Parameter name="CCSDS_SECONDS" parameterTypeRef="CCSDS_SECONDS_Type" />
+            <xtce:Parameter name="CCSDS_SUBSECS" parameterTypeRef="CCSDS_SUBSECS_Type" />
+            <xtce:Parameter name="CCSDS_SPARE" parameterTypeRef="CCSDS_SPARE_Type" />
+        </xtce:ParameterSet>
+        <xtce:ContainerSet>
+            <xtce:SequenceContainer name="CCSDS_TM">
+                <xtce:EntryList>
+                    <xtce:ParameterRefEntry parameterRef="CCSDS_STREAMID" />
+                    <xtce:ParameterRefEntry parameterRef="CCSDS_SEQUENCE" />
+                    <xtce:ParameterRefEntry parameterRef="CCSDS_LENGTH" />
+                    <xtce:ParameterRefEntry parameterRef="CCSDS_SECONDS" />
+                    <xtce:ParameterRefEntry parameterRef="CCSDS_SUBSECS" />
+                    <xtce:ParameterRefEntry parameterRef="CCSDS_SPARE" />
+                </xtce:EntryList>
+            </xtce:SequenceContainer>
+        </xtce:ContainerSet>
+    </xtce:TelemetryMetaData>
+    <xtce:CommandMetaData>
+        <xtce:ArgumentTypeSet>
+            <xtce:IntegerArgumentType name="CCSDS_STREAMID_Type"
+                shortDescription="CCSDS Packet Identification" signed="false">
+                <xtce:IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
+                <xtce:ValidRange minInclusive="0" maxInclusive="65535" />
+            </xtce:IntegerArgumentType>
+            <xtce:IntegerArgumentType name="CCSDS_SEQUENCE_Type" initialValue="49152"
+                shortDescription="CCSDS Packet Sequence Control" signed="false">
+                <xtce:IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
+                <xtce:ValidRange minInclusive="0" maxInclusive="65535" />
+            </xtce:IntegerArgumentType>
+            <xtce:IntegerArgumentType name="CCSDS_LENGTH_Type" initialValue="1"
+                shortDescription="CCSDS Packet Data Length" signed="false">
+                <xtce:IntegerDataEncoding sizeInBits="16" encoding="unsigned" />
+                <xtce:ValidRange minInclusive="0" maxInclusive="65535" />
+            </xtce:IntegerArgumentType>
+            <xtce:IntegerArgumentType name="CCSDS_FC_Type" initialValue="7"
+                shortDescription="CCSDS Command Function Code" signed="false">
+                <xtce:IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+                <xtce:ValidRange minInclusive="0" maxInclusive="255" />
+            </xtce:IntegerArgumentType>
+            <xtce:IntegerArgumentType name="CCSDS_CHECKSUM_Type" initialValue="0"
+                shortDescription="CCSDS Command Checksum" signed="false">
+                <xtce:IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+                <xtce:ValidRange minInclusive="0" maxInclusive="255" />
+            </xtce:IntegerArgumentType>
+        </xtce:ArgumentTypeSet>
+        <xtce:MetaCommandSet>
+            <xtce:MetaCommand name="CCSDS_TC" abstract="true">
+                <xtce:ArgumentList>
+                    <xtce:Argument name="CCSDS_STREAMID" argumentTypeRef="CCSDS_STREAMID_Type" />
+                    <xtce:Argument name="CCSDS_FC" argumentTypeRef="CCSDS_FC_Type" />                    
+                </xtce:ArgumentList>
+                <xtce:CommandContainer name="CCSDS_TC_CommandContainer">
+                    <xtce:EntryList>
+                      <xtce:ArgumentRefEntry argumentRef="CCSDS_STREAMID"/>
+                      <xtce:FixedValueEntry name="CCSDS_SEQUENCE" sizeInBits="16" binaryValue="0000"/>
+                      <xtce:FixedValueEntry name="CCSDS_LENGTH" sizeInBits="16" binaryValue="0000"/>
+                      <xtce:ArgumentRefEntry argumentRef="CCSDS_FC"/>
+                      <xtce:FixedValueEntry name="CCSDS_CHECKSUM" sizeInBits="8" binaryValue="00"/>                      
+                    </xtce:EntryList>
+                  </xtce:CommandContainer>
+            </xtce:MetaCommand>
+        </xtce:MetaCommandSet>
+    </xtce:CommandMetaData>
+</xtce:SpaceSystem>
