@@ -44,7 +44,7 @@ services:
       frame: #send TM UDP frames
         tmPort: 10017
         tmHost: "localhost"
-        type: AOS # AOS, TM or USLP
+        type: USLP # AOS, TM or USLP
         tmFrameLength: 1115
         tmFrameFreq: 10 # how many frames to send per second. If the simulator does not produce so many frames, it will send idle frames
         # Enable SDLS encryption (AES256-GCM) of incoming/outgoing frames
@@ -53,7 +53,7 @@ services:
           # configuration, shared between sender and receiver.
           spi: 1
           # 256-bit key to encrypt/decrypt data
-          keyFile: /path/to/presharedkey
+          keyFile: etc/sdls-presharedkey-256bit
 
 dataLinks:
   - name: UDP_FRAME_OUT
@@ -74,11 +74,11 @@ dataLinks:
     # A virtual channel is then configured to use a particular SPI.
     encryption:
       - spi: 1
-        keyFile: /path/to/presharedkey
+        keyFile: etc/sdls-presharedkey-256bit
       - spi: 2
-        keyFile: /path/to/presharedkey
+        keyFile: etc/sdls-presharedkey-256bit
       - spi: 3
-        keyFile: /path/to/presharedkey
+        keyFile: etc/sdls-presharedkey-256bit
     virtualChannels:
          - vcId: 0
            # This channel is encrypted with SDLS, using SPI 1 (defined above).
@@ -107,18 +107,18 @@ dataLinks:
     #   errorCorrectionCapability: 16 #8 or 16
     #   derandomize: true
     ### Frame type has to be AOS (CCSDS 732.0-B-3), TM (CCSDS 132.0-B-2) or USLP (CCSDS 732.1-B-1)
-    frameType: "AOS"
+    frameType: "USLP"
 
     # Enable SDLS encryption/decryption on this link.
     # A link can have multiple encryption keys, each identified by a Security Parameter Index (SPI).
     # A virtual channel is then configured to use a particular SPI.
     encryption:
       - spi: 1
-        keyFile: /path/to/presharedkey
+        keyFile: etc/sdls-presharedkey-256bit
       - spi: 2
-        keyFile: /path/to/presharedkey
+        keyFile: etc/sdls-presharedkey-256bit
       - spi: 3
-        keyFile: /path/to/presharedkey
+        keyFile: etc/sdls-presharedkey-256bit
     spacecraftId: 0xAB
     frameLength: 1115 #decoded frame length
     frameHeaderErrorControlPresent: true #2 bytes of reed-solomon (10,6) in the header of all frames
