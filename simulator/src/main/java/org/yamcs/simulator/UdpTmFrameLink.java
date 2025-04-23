@@ -503,7 +503,8 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
             if (maybeSdlsKey.isPresent()) {
                 byte[] authMask = new byte[primaryHdrSize()];
-                // TODO: set authMask
+                authMask[2] = 0b111; // top 3 bits of vcid
+                authMask[3] = (byte) 0b1111_1110; // bottom 3 bits of vcid, 4 bits of map id
                 this.maybeSdls = Optional.of(new SdlsSecurityAssociation(maybeSdlsKey.get(), sdlsSpi, authMask));
 
                 // SDLS reduces end of data by the size of the trailer
@@ -543,13 +544,20 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         @Override
         public byte[] getIdleFrame() {
             vcSeqCount++;
+            if (this.maybeSdls.isPresent()) {
+                encryptFrame();
+            }
             encodeHeaderAndTrailer();
             return data;
         }
 
         @Override
         void encryptFrame() {
-            // TODO: unimplemented
+            try {
+                this.maybeSdls.get().applySecurity(data, 0, hdrSize(), dataEnd + SdlsSecurityAssociation.getTrailerSize());
+            } catch (GeneralSecurityException e) {
+                log.error("could not encrypt frame: {}", e);
+            }
         }
     }
 }
