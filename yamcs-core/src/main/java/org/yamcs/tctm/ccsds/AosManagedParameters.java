@@ -1,11 +1,15 @@
 package org.yamcs.tctm.ccsds;
 
+import org.yamcs.ConfigurationException;
+import org.yamcs.YConfiguration;
+import org.yamcs.security.SdlsSecurityAssociation;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.yamcs.ConfigurationException;
-import org.yamcs.YConfiguration;
 
 public class AosManagedParameters extends DownlinkManagedParameters {
     enum ServiceType {
@@ -27,6 +31,7 @@ public class AosManagedParameters extends DownlinkManagedParameters {
     Map<Integer, AosVcManagedParameters> vcParams = new HashMap<>();
 
     public boolean frameHeaderErrorControlPresent;
+    Map<Short, SdlsSecurityAssociation> sdlsSecurityAssociations = new HashMap<>();
 
     public AosManagedParameters(YConfiguration config) {
         super(config);
@@ -52,6 +57,28 @@ public class AosManagedParameters extends DownlinkManagedParameters {
                 throw new ConfigurationException("duplicate configuration of vcId " + vmp.vcId);
             }
             vcParams.put(vmp.vcId, vmp);
+        }
+        if (config.containsKey("encryption")) {
+            List<YConfiguration> encryptionConfigs = config.getConfigList("encryption");
+            for (YConfiguration saDef : encryptionConfigs) {
+                short spi = (short) saDef.getInt("spi");
+                byte[] sdlsKey;
+                try {
+                    sdlsKey = Files.readAllBytes(Path.of(saDef.getString("keyFile")));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                // Create an auth mask for the primary header,
+                // the frame data is already part of authentication.
+                // No need to authenticate data, already part of GCM.
+                // We never authenticate the optional insert zone
+                // TODO: cite
+                byte[] authMask = new byte[10];
+                authMask[1] = 0b0011_1111; // authenticate only virtual channel ID
+
+                sdlsSecurityAssociations.put(spi, new SdlsSecurityAssociation(sdlsKey, spi, authMask));
+            }
         }
 
     }
@@ -93,9 +120,13 @@ public class AosManagedParameters extends DownlinkManagedParameters {
     static class AosVcManagedParameters extends VcDownlinkManagedParameters {
         ServiceType service;
         boolean ocfPresent;
+        short encryptionSpi;
 
         public AosVcManagedParameters(YConfiguration config) {
             super(config);
+            if (config.containsKey("encryptionSpi")) {
+                encryptionSpi = (short) config.getInt("encryptionSpi");
+            }
 
             if (vcId < 0 || vcId > 63) {
                 throw new ConfigurationException("Invalid vcId: " + vcId + ". Allowed values are from 0 to 63.");

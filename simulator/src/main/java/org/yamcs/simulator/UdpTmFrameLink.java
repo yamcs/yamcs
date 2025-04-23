@@ -71,9 +71,9 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
         if ("AOS".equalsIgnoreCase(frameType)) {
             for (int i = 0; i < NUM_VC; i++) {
-                builders[i] = new AosVcSender(i, frameLength);
+                builders[i] = new AosVcSender(i, frameLength, maybeSdlsKey, sdlsSpi);
             }
-            idleFrameBuilder = new AosVcSender(63, frameLength);
+            idleFrameBuilder = new AosVcSender(63, frameLength, maybeSdlsKey, sdlsSpi);
         } else if ("TM".equalsIgnoreCase(frameType)) {
             for (int i = 0; i < NUM_VC; i++) {
                 builders[i] = new TmVcSender(i, frameLength, maybeSdlsKey, sdlsSpi);
@@ -298,7 +298,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
     static class AosVcSender extends VcBuilder {
 
-        public AosVcSender(int vcId, int frameSize) {
+        public AosVcSender(int vcId, int frameSize, Optional<byte[]> maybeSdlsKey, short sdlsSpi) {
             super(vcId);
             if ((vcId < 0) || (vcId > 63)) {
                 throw new IllegalArgumentException("Invalid virtual channel id " + vcId);
@@ -306,6 +306,21 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
             this.data = new byte[frameSize];
             dataEnd = frameSize - 6;// last 6 bytes are the OCF and CRC
+
+            if (maybeSdlsKey.isPresent()) {
+                // Create an auth mask for the primary header,
+                // the frame data is already part of authentication.
+                // No need to authenticate data, already part of GCM
+                byte[] authMask = new byte[primaryHdrSize()];
+                authMask[1] = 0b0011_1111; // authenticate only virtual channel ID
+
+                this.maybeSdls = Optional.of(new SdlsSecurityAssociation(maybeSdlsKey.get(), sdlsSpi, authMask));
+
+                // SDLS reduces end of data by the size of the trailer
+                dataEnd -= SdlsSecurityAssociation.getTrailerSize();
+                dataOffset = hdrSize();
+            }
+
             writeGvcId(data, vcId);
 
         }
@@ -314,8 +329,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
             ByteArrayUtils.encodeUnsignedShort((1 << 14) + (SPACECRAFT_ID << 6) + vcId, frameData, 0);
         }
 
-        @Override
-        int hdrSize() {
+        int primaryHdrSize() {
             // 2 bytes master channel id
             // 3 bytes virtual channel frame count
             // 1 byte signaling field
@@ -328,7 +342,25 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         }
 
         @Override
+        int hdrSize() {
+            return this.maybeSdls
+                    .map(sdlsSecurityAssociation -> primaryHdrSize() + sdlsSecurityAssociation.getHeaderSize())
+                    .orElse(primaryHdrSize());
+        }
+
+        @Override
         void encodeHeaderAndTrailer() {
+            // Zero out security header/trailer
+            if (this.maybeSdls.isPresent()) {
+                int secHeaderOffset = primaryHdrSize(); // size of primary header
+                int secHeaderSize = SdlsSecurityAssociation.getHeaderSize();
+                Arrays.fill(data, secHeaderOffset, secHeaderOffset + secHeaderSize, (byte) 0);
+
+                int secTrailerSize = SdlsSecurityAssociation.getTrailerSize();
+                int secTrailerOffset = data.length - 6 - secTrailerSize; // 6 is size of CRC + clcw
+                Arrays.fill(data, secTrailerOffset, secTrailerOffset + secTrailerSize, (byte) 0);
+            }
+
             // set the frame sequence count
 
             ByteArrayUtils.encodeUnsigned3Bytes((int) vcSeqCount, data, 2);
@@ -356,12 +388,23 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         public byte[] getIdleFrame() {
             vcSeqCount++;
             encodeHeaderAndTrailer();
+            if (this.maybeSdls.isPresent()) {
+                try {
+                    this.maybeSdls.get().applySecurity(data, 0, hdrSize(), dataEnd + SdlsSecurityAssociation.getTrailerSize());
+                } catch (GeneralSecurityException e) {
+                    log.error("could not encrypt idle frame: {}", e);
+                }
+            }
             return data;
         }
 
         @Override
         void encryptFrame() {
-            // TODO: unimplemented
+            try {
+                this.maybeSdls.get().applySecurity(data, 0, hdrSize(), dataEnd + SdlsSecurityAssociation.getTrailerSize());
+            } catch (GeneralSecurityException e) {
+                log.error("could not encrypt frame: {}", e);
+            }
         }
     }
 

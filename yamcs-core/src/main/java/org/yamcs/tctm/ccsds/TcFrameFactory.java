@@ -66,7 +66,7 @@ public class TcFrameFactory {
       dataStart += 1;
     }
 
-    short spi = tcParams.vcParams.get(vcId).encryptionSpi;
+    short spi = tcParams.vcParams.get(vcParams.vcId).encryptionSpi;
     boolean isEncrypted = tcParams.sdlsSecurityAssociations.containsKey(spi);
 
     if (isEncrypted)
