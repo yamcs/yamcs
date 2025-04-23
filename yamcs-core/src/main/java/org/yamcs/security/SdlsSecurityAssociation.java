@@ -35,10 +35,6 @@ public class SdlsSecurityAssociation {
         // Create final authMask for primary + sec header
         this.authMask = authMaskFull;
 
-        // TODO: create a list of SAs at some level above links. Maps SPIs to SAs.
-        //   The SPI allows multiple SAs to be used on a single link, because SPI uniquely identifies SA applicable to a given frame.
-        //   Maybe as part of MasterChannelFrameHandler? And pass it as parameter to decoder interface? SPI should be set in config file
-        //   Define list of SAs in config for link, then define one per channel. Like is in config now
         this.spi = spi;
     }
 

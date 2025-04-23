@@ -166,6 +166,11 @@ public class TcManagedParameters extends UplinkManagedParameters {
             super(config);
             if (config.containsKey("encryptionSpi")) {
                 encryptionSpi = (short) config.getInt("encryptionSpi");
+                if (!tcParams.sdlsSecurityAssociations.containsKey(encryptionSpi)) {
+                    throw new ConfigurationException("Encryption SPI " + encryptionSpi
+                            + " configured for vcId "
+                            + vcId + " is not configured for link " + config.getString("linkName"));
+                }
             }
             this.tcParams = tcParams;
             this.errorDetection = config.getEnum("errorDetection", FrameErrorDetection.class,

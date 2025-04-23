@@ -51,7 +51,7 @@ public class UslpManagedParameters extends DownlinkManagedParameters {
 
         List<YConfiguration> l = config.getConfigList("virtualChannels");
         for (YConfiguration yc : l) {
-            UslpVcManagedParameters ump = new UslpVcManagedParameters(yc);
+            UslpVcManagedParameters ump = new UslpVcManagedParameters(yc, this);
             if (vcParams.containsKey(ump.vcId)) {
                 throw new ConfigurationException("duplicate configuration of vcId " + ump.vcId);
             }
@@ -94,10 +94,15 @@ public class UslpManagedParameters extends DownlinkManagedParameters {
         int truncatedTransferFrameLength;
         short encryptionSpi;
 
-        public UslpVcManagedParameters(YConfiguration config) {
+        public UslpVcManagedParameters(YConfiguration config, UslpManagedParameters uslpParams) {
             super(config);
             if (config.containsKey("encryptionSpi")) {
                 encryptionSpi = (short) config.getInt("encryptionSpi");
+                if (!uslpParams.sdlsSecurityAssociations.containsKey(encryptionSpi)) {
+                    throw new ConfigurationException("Encryption SPI " + encryptionSpi
+                            + " configured for vcId "
+                            + vcId + " is not configured for link " + config.getString("linkName"));
+                }
             }
             service = config.getEnum("service", ServiceType.class);
             if (service == ServiceType.PACKET) {
