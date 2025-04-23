@@ -2,15 +2,9 @@ package org.yamcs.tctm.ccsds;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
-import org.yamcs.security.SdlsSecurityAssociation;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 /**
@@ -28,32 +22,9 @@ public class TcManagedParameters extends UplinkManagedParameters {
 
     List<TcVcManagedParameters> vcParams = new ArrayList<>();
 
-    Map<Short, SdlsSecurityAssociation> sdlsSecurityAssociations = new HashMap<>();
-
     public TcManagedParameters(YConfiguration config) {
         super(config);
 
-        if (config.containsKey("encryption")) {
-            List<YConfiguration> encryptionConfigs = config.getConfigList("encryption");
-            for (YConfiguration saDef : encryptionConfigs) {
-                short spi = (short) saDef.getInt("spi");
-                byte[] sdlsKey;
-                try {
-                    sdlsKey = Files.readAllBytes(Path.of(saDef.getString("keyFile")));
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-
-                // Create an auth mask for the TC primary header,
-                // the frame data is already part of authentication.
-                // No need to authenticate data, already part of GCM
-                // Authenticate virtual channel ID; no segment header is present
-                byte[] authMask = new byte[5];
-                authMask[2] = (byte) 0b1111_1100; // authenticate virtual channel ID
-
-                sdlsSecurityAssociations.put(spi, new SdlsSecurityAssociation(sdlsKey, spi, authMask));
-            }
-        }
         maxFrameLength = config.getInt("maxFrameLength");
 
         if (maxFrameLength < 8 || maxFrameLength > 0xFFFF) {
@@ -149,7 +120,6 @@ public class TcManagedParameters extends UplinkManagedParameters {
         FrameErrorDetection errorDetection;
 
         ServiceType service;
-        short encryptionSpi;
         boolean useCop1;
         int maxFrameLength = -1;
         public boolean multiplePacketsPerFrame;
@@ -163,15 +133,7 @@ public class TcManagedParameters extends UplinkManagedParameters {
         String linkName;
 
         public TcVcManagedParameters(YConfiguration config, TcManagedParameters tcParams) {
-            super(config);
-            if (config.containsKey("encryptionSpi")) {
-                encryptionSpi = (short) config.getInt("encryptionSpi");
-                if (!tcParams.sdlsSecurityAssociations.containsKey(encryptionSpi)) {
-                    throw new ConfigurationException("Encryption SPI " + encryptionSpi
-                            + " configured for vcId "
-                            + vcId + " is not configured for link " + config.getString("linkName"));
-                }
-            }
+            super(config, tcParams);
             this.tcParams = tcParams;
             this.errorDetection = config.getEnum("errorDetection", FrameErrorDetection.class,
                     null);

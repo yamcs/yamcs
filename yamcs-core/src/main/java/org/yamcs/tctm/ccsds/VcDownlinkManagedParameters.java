@@ -20,15 +20,24 @@ public class VcDownlinkManagedParameters {
     YConfiguration packetPreprocessorArgs;
     final YConfiguration config;
     protected String vcaHandlerClassName;
-    
+    short encryptionSpi;
+
     public VcDownlinkManagedParameters(int vcId) {
         this.vcId = vcId;
         this.config = null;
     }
     
-    public VcDownlinkManagedParameters(YConfiguration config) {
+    public VcDownlinkManagedParameters(YConfiguration config, DownlinkManagedParameters params) {
         this.config = config;
         this.vcId = config.getInt("vcId");
+        if (config.containsKey("encryptionSpi")) {
+            encryptionSpi = (short) config.getInt("encryptionSpi");
+            if (!params.sdlsSecurityAssociations.containsKey(encryptionSpi)) {
+                throw new ConfigurationException("Encryption SPI " + encryptionSpi
+                        + " configured for vcId "
+                        + vcId + " is not configured for link " + config.getString("linkName"));
+            }
+        }
     }
     
     
