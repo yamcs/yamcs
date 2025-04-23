@@ -4,17 +4,15 @@ import java.nio.ByteBuffer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.security.SdlsSecurityAssociation;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.StringConverter;
 
 /**
  * Works as a child of {@link UdpTcFrameLink} and handles commands for one VC.
- * 
- * * It implements FARM part of the COP-1 protocol
- * CCSDS 232.1-B-2 ( COMMUNICATIONS OPERATION PROCEDURE-1)
- * 
- * @author nm
+ *
+ * * It implements FARM part of the COP-1 protocol CCSDS 232.1-B-2 ( COMMUNICATIONS OPERATION PROCEDURE-1)
  *
  */
 public class TcVcFrameLink {
@@ -32,9 +30,31 @@ public class TcVcFrameLink {
 
     int farmBCounter;
 
-    public TcVcFrameLink(ColSimulator simulator, int vcId) {
+    byte[] authMask;
+
+    // Optionally, a security association to encrypt/decrypt data on the link
+    SdlsSecurityAssociation maybeSdls = null;
+
+    public TcVcFrameLink(ColSimulator simulator, int vcId, byte[] maybeSdlsKey, short encryptionSpi,
+            int encryptionSeqNumWindow, boolean verifySeqNum) {
         this.simulator = simulator;
         this.vcId = vcId;
+
+        // If we have an encryption key, configure encryption
+        if (maybeSdlsKey != null) {
+            // Create an auth mask for the TC primary header,
+            // the frame data is already part of authentication.
+            // No need to authenticate data, already part of GCM
+            // Authenticate virtual channel ID; no segment header is present
+            authMask = new byte[5];
+            authMask[2] = (byte) 0b1111_1100; // authenticate virtual channel ID
+
+            this.maybeSdls = new SdlsSecurityAssociation(maybeSdlsKey, encryptionSpi,
+                    encryptionSeqNumWindow, verifySeqNum);
+            // Don't verify the first TC sequence number, because Yamcs has sequence number persistence and the
+            // simulator does not.
+            maybeSdls.skipVerifyingNextSeqNum();
+        }
     }
 
     void processTcFrame(byte[] data, int offset, int length) {
@@ -53,7 +73,8 @@ public class TcVcFrameLink {
 
         int frameSeq = data[offset + 4] & 0xFF;
         log.info(
-                "Received TC frame data length: {}, frameLength: {}, spacecraftId: {}, VC: {}, frameSeq: {}, bypassFlag: {}",
+                "Received TC frame data length: {}, frameLength: {}, spacecraftId: {}, VC: {}, frameSeq: {}, " +
+                        "bypassFlag: {}",
                 length, frameLength, spacecraftId, virtualChannelId, frameSeq, bypassFlag);
 
         if (vn != 0) {
@@ -73,6 +94,24 @@ public class TcVcFrameLink {
         }
         int cmdLength = frameLength - 7;
         offset += 5;
+
+        // If the link is encrypted, decrypt data
+        if (maybeSdls != null) {
+            // And followed by a security trailer
+            int secTrailerEnd = frameLength - 2; // last 2 bytes of frame are CRC
+            // Try to verify and decrypt it, handle any errors
+            SdlsSecurityAssociation.VerificationStatusCode decryptionStatus = maybeSdls.processSecurity(data,
+                    offset - 5, offset, secTrailerEnd, authMask);
+            if (decryptionStatus != SdlsSecurityAssociation.VerificationStatusCode.NoFailure) {
+                log.warn("Could not decrypt frame: {}", decryptionStatus);
+                return;
+            }
+
+            // Adjustments to account for security header/trailer
+            cmdLength -= SdlsSecurityAssociation.getOverheadBytes();
+            offset += SdlsSecurityAssociation.getHeaderSize();
+        }
+
         if (controlCommand) {// BC frame
             if (bypassFlag) {
                 log.warn("Invalid frame with both control and bypass flags set, ignoring");

@@ -1,0 +1,238 @@
+services:
+  - class: org.yamcs.archive.XtceTmRecorder
+  - class: org.yamcs.archive.ParameterRecorder
+  - class: org.yamcs.archive.AlarmRecorder
+  - class: org.yamcs.archive.EventRecorder
+  - class: org.yamcs.archive.ReplayServer
+  - class: org.yamcs.archive.CcsdsTmIndex
+    args:
+      streams:
+        - tm_realtime
+        - tm_dump
+  - class: org.yamcs.parameter.SystemParametersService
+    args:
+      producers: ['jvm', 'fs']
+  - class: org.yamcs.ProcessorCreatorService
+    args:
+      name: "realtime"
+      type: "realtime"
+  - class: org.yamcs.archive.CommandHistoryRecorder
+  - class: org.yamcs.parameterarchive.ParameterArchive
+    args:
+      realtimeFiller:
+        enabled: false
+      backFiller:
+        enabled: true
+        warmupTime: 60
+  - class: org.yamcs.timeline.TimelineService
+  - class: org.yamcs.simulator.SimulatorCommander
+    args:
+      telnet:
+        port: 10023
+      tctm:
+        tmPort: 10015
+        tcPort: 10025
+        losPort: 10115
+        tm2Port: 10016
+      # Simulator can send some packets to test the performance of Yamcs.
+      # Make sure the yamcs.simulator.yaml, mdb section contains a database generator for these packets, such that they are processed by Yamcs
+      # if numPackets is greater than 0, the simulator will send <numPackets> packets of size <packetSize> at each <interval> (in ms)
+      perfTest:
+        numPackets: 0
+        packetSize: 1476 #length of the performance testing packets
+        interval: 10
+      frame: #send TM UDP frames
+        tmPort: 10017
+        tmHost: "localhost"
+        type: USLP # AOS, TM or USLP
+        tmFrameLength: 1115
+        tmFrameFreq: 10 # how many frames to send per second. If the simulator does not produce so many frames, it will send idle frames
+        # Enable SDLS encryption (AES256-GCM) of incoming/outgoing frames
+        encryption:
+          # SPI - Security Parameter Index - 'identifier' for security
+          # configuration, shared between sender and receiver.
+          spi: 1
+          # 256-bit key to encrypt/decrypt data
+          keyFile: etc/sdls-presharedkey-256bit
+          seqNumWindow: 10
+          # verifySeqNum: true  # default
+
+dataLinks:
+  - name: UDP_FRAME_OUT
+    class: org.yamcs.tctm.ccsds.UdpTcFrameLink
+    host: localhost #host and port where to send the frames to
+    port: 10018
+    spacecraftId: 0xAB
+    maxFrameLength: 1024
+    cltuEncoding: BCH
+    #the following option can be commented out to randomize the CLTUs. Note that the simulator does not understand randmized data though.
+    #randomizeCltu: false
+    #the following option can be used to skip randomization for certain virtual channels
+    #skipRandomizationForVcs: [1, 0]
+    errorDetection: CRC16
+
+    # Enable SDLS encryption/decryption on this link.
+    # A link can have multiple encryption keys, each identified by a Security Parameter Index (SPI).
+    # A virtual channel is then configured to use a particular SPI.
+    # This basically defines the security associations on the link.
+    encryption:
+      - spi: 1
+        keyFile: etc/sdls-presharedkey-256bit
+      - spi: 2
+        keyFile: etc/sdls-presharedkey-256bit
+      - spi: 3
+        keyFile: etc/sdls-presharedkey-256bit
+        # verifySeqNum: true
+    virtualChannels:
+         - vcId: 0
+           # This channel is encrypted with SDLS, using SPI 1 (defined above).
+           # The encryption SPI must match an SPI defined on the link.
+           encryptionSpi: 1
+           service: "PACKET"
+           commandPostprocessorClassName: org.yamcs.tctm.IssCommandPostprocessor
+           commandPostprocessorArgs:
+              errorDetection:
+                  type: 16-SUM
+              enforceEvenNumberOfBytes: true
+           stream: "tc_realtime" #which yamcs stream to get the data from
+           useCop1: true #enable FOP1 (the transmitter part of COP1, see CCSDS 232.1-B-2) for this VC
+           clcwStream: "clcw" #the name of the stream where the CLCW is received from, mandatory if FOP1 is used
+           initialClcwWait: 3600 #how many seconds to wait at startup for an initial CLCW, before going to state 6(initial). If not configured or negative, start directly in state 6
+  # The link below receives AOS frames (CCSDS 732.0-B-3) on three virtual channels and
+  # distributes them on the the three streams like the TCP links above
+  # This works as alternative to the TCP links
+  - name: UDP_FRAME_IN
+    class: org.yamcs.tctm.ccsds.UdpTmFrameLink
+    port: 10017 #UDP port to listen to
+    #### Raw frame decoder example. It is commented out because the simulator does not support generating encoded frames
+    #rawFrameDecoder:
+    #   codec: NONE
+    #   interleavingDepth: 5 # 1, 2, 3, 4, 5 or 8
+    #   errorCorrectionCapability: 16 #8 or 16
+    #   derandomize: true
+    ### Frame type has to be AOS (CCSDS 732.0-B-3), TM (CCSDS 132.0-B-2) or USLP (CCSDS 732.1-B-1)
+    frameType: USLP
+
+    # Enable SDLS encryption/decryption on this link.
+    # A link can have multiple encryption keys, each identified by a Security Parameter Index (SPI).
+    # A virtual channel is then configured to use a particular SPI.
+    encryption:
+      - spi: 1
+        keyFile: etc/sdls-presharedkey-256bit
+        # the window of acceptable sequence numbers (i.e. current minus this value, current plus this value)
+        seqNumWindow: 10
+        # verifySeqNum: false  # default
+      - spi: 2
+        keyFile: etc/sdls-presharedkey-256bit
+        seqNumWindow: 10
+        # verifySeqNum: false  # default
+      - spi: 3
+        keyFile: etc/sdls-presharedkey-256bit
+        seqNumWindow: 10
+        # verifySeqNum: false  # default
+    spacecraftId: 0xAB
+    frameLength: 1115 #decoded frame length
+    frameHeaderErrorControlPresent: true #2 bytes of reed-solomon (10,6) in the header of all frames
+    insertZoneLength: 0
+    errorDetection: CRC16 #NONE, CRC16 or CRC32 (only for USLP)
+    clcwStream: "clcw"    #publish the received CLCW (what they call OCF in the CCSDS AOS/TM/USLP standards) to this stream, to be used by the FOP1
+    goodFrameStream: "good_frame_stream" #publish the good frames on this stream
+    badFrameStream: "bad_frame_stream"   #publish the bad frames on this stream
+    virtualChannels:
+          - vcId: 0
+            ocfPresent: true
+            service: "PACKET"  #supported services are PACKET(M_PDU) or VCA (using a custom handler configured with vcaHandlerClassName)
+            maxPacketLength: 2048
+            packetPreprocessorClassName: org.yamcs.tctm.IssPacketPreprocessor
+            stream: "tm_realtime" #which yamcs stream to put the data on
+            # This channel is encrypted with SDLS, using SPI 1 (defined above).
+            # The encryption SPI must match an SPI defined on the link.
+            encryptionSpis: [1]
+          - vcId: 1
+            ocfPresent: true
+            service: "PACKET"
+            maxPacketLength: 2048
+            stripEncapsulationHeader: true # drop the header before passing the packet to the preprocessor
+            packetPreprocessorClassName: org.yamcs.tctm.GenericPacketPreprocessor
+            packetPreprocessorArgs:
+              timestampOffset: 2 #where to read the 8 bytes timestamp offset from
+              seqCountOffset: 10 #where to read the 4 bytes sequence count from
+              errorDetection: #last two bytes are used for the error detection
+                type: "CRC-16-CCIIT"
+            stream: "tm2_realtime"
+            invalidPackets: DIVERT
+            invalidPacketsStream: invalid_tm_stream
+            # This channel is encrypted with SDLS, using SPI 1 (defined above).
+            # The encryption SPI must match an SPI defined on the link.
+            encryptionSpis: [1]
+          - vcId: 2
+            ocfPresent: true
+            service: "PACKET"
+            maxPacketLength: 2048
+            packetPreprocessorClassName: org.yamcs.tctm.IssPacketPreprocessor
+            stream: "tm_dump"
+            # This channel is encrypted with SDLS, using SPI 1 (defined above).
+            # The encryption SPI must match an SPI defined on the link.
+            encryptionSpis: [1]
+          #vcId 63 is reserved for idle data and it does not have to be defined
+  - name: UDP_CUSTOM_CLTU_OUT
+    class: org.yamcs.tctm.ccsds.UdpTcFrameLink
+    enabledAtStartup: false
+    host: localhost #host and port where to send the frames to
+    port: 10019
+    spacecraftId: 0xAB
+    maxFrameLength: 1024
+    cltuEncoding: CUSTOM
+    cltuGeneratorClassName: org.yamcs.examples.ccsdsframes.SampleCltuGenerator
+    cltuGeneratorArgs:
+      frameMultiple: 256
+    virtualChannels:
+         - vcId: 0
+           service: "PACKET"
+           commandPostprocessorClassName: org.yamcs.tctm.IssCommandPostprocessor
+           commandPostprocessorArgs:
+              errorDetection:
+                  type: 16-SUM
+              enforceEvenNumberOfBytes: true
+           stream: "tc_realtime" #which yamcs stream to get the data from
+           useCop1: true #enable FOP1 (the transmitter part of COP1, see CCSDS 232.1-B-2) for this VC
+           clcwStream: "clcw" #the name of the stream where the CLCW is received from, mandatory if FOP1 is used
+           initialClcwWait: 3600 #how many seconds to wait at startup for an initial CLCW, before going to state 6(initial). If not configured or negative, start directly in state 6
+
+mdb:
+  # Configuration of the active loaders
+  # Valid loaders are: sheet, xtce or fully qualified name of the class
+  - type: "sheet"
+    spec: "mdb/simulator-ccsds.xls"
+    subLoaders:
+      - type: "sheet"
+        spec: "mdb/landing.xls"
+  - type: "org.yamcs.tse.TseLoader"
+    subLoaders:
+      - type: "sheet"
+        spec: "mdb/tse/simulator.xls"
+  #Loads the performance testing mission database
+  - type: "org.yamcs.simulator.PerfMdbLoader"
+    args:
+      numPackets: 18
+      packetSize: 1476
+
+#Configuration for streams created at server startup
+streamConfig:
+  tm:
+    - name: "tm_realtime"
+      processor: "realtime"
+    - name: "tm2_realtime"
+      rootContainer: "/YSS/SIMULATOR/tm2_container"
+      processor: "realtime"
+    - name: "tm_dump"
+  invalidTm: "invalid_tm_stream"
+  cmdHist: ["cmdhist_realtime", "cmdhist_dump"]
+  event: ["events_realtime", "events_dump"]
+  param: ["pp_realtime", "pp_tse", "sys_param", "proc_param"]
+  parameterAlarm: ["alarms_realtime"]
+  eventAlarm: ["event_alarms_realtime"]
+  tc:
+    - name: "tc_realtime"
+      processor: "realtime"
+  sqlFile: "etc/extra_streams.sql"

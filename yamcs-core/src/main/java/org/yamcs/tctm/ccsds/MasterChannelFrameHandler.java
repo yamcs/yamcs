@@ -53,17 +53,17 @@ public class MasterChannelFrameHandler {
 
         switch (frameType) {
         case AOS:
-            AosManagedParameters amp = new AosManagedParameters(config);
+            AosManagedParameters amp = new AosManagedParameters(config, yamcsInstance, linkName);
             frameDecoder = new AosFrameDecoder(amp);
             params = amp;
             break;
         case TM:
-            TmManagedParameters tmp = new TmManagedParameters(config);
+            TmManagedParameters tmp = new TmManagedParameters(config, yamcsInstance, linkName);
             frameDecoder = new TmFrameDecoder(tmp);
             params = tmp;
             break;
         case USLP:
-            UslpManagedParameters ump = new UslpManagedParameters(config);
+            UslpManagedParameters ump = new UslpManagedParameters(config, yamcsInstance, linkName);
             frameDecoder = new UslpFrameDecoder(ump);
             params = ump;
             break;

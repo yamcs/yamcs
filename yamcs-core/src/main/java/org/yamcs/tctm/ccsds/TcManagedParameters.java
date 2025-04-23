@@ -22,8 +22,8 @@ public class TcManagedParameters extends UplinkManagedParameters {
 
     List<TcVcManagedParameters> vcParams = new ArrayList<>();
 
-    public TcManagedParameters(YConfiguration config) {
-        super(config);
+    public TcManagedParameters(YConfiguration config, String yamcsInstance, String linkName) {
+        super(config, yamcsInstance, linkName);
         maxFrameLength = config.getInt("maxFrameLength");
 
         if (maxFrameLength < 8 || maxFrameLength > 0xFFFF) {
@@ -120,7 +120,7 @@ public class TcManagedParameters extends UplinkManagedParameters {
 
         ServiceType service;
         boolean useCop1;
-        int maxFrameLength = -1;
+        int maxFrameLength;
         public boolean multiplePacketsPerFrame;
         public boolean bdAbsolutePriority;
 
@@ -132,7 +132,7 @@ public class TcManagedParameters extends UplinkManagedParameters {
         String linkName;
 
         public TcVcManagedParameters(YConfiguration config, TcManagedParameters tcParams) {
-            super(config);
+            super(config, tcParams);
             this.tcParams = tcParams;
             this.errorDetection = config.getEnum("errorDetection", FrameErrorDetection.class,
                     null);
@@ -159,6 +159,22 @@ public class TcManagedParameters extends UplinkManagedParameters {
             if (mapId < -1 || mapId > 15) {
                 throw new ConfigurationException("Invalid mapId " + mapId
                         + ". It has to be either -1 (meaning that the MAP service is not used) or between 0 and 15");
+            }
+
+            int authMaskSize = 5;
+            if (mapId >= 0) {
+                authMaskSize += 1;
+            }
+
+            // No need to authenticate data, already part of GCM
+            // (source: McGrew and Viega, "The Galois/Counter Mode of Operation (GCM)").
+            // Create an auth mask for the primary header, according to CCSDS Standard for
+            // Space Data Link Security (CCSDS 355.0-B-2).
+            // The SDLS implementation automatically adds the security header to authenticated data.
+            authMask = new byte[authMaskSize];
+            authMask[2] = (byte) 0b1111_1100; // authenticate virtual channel ID
+            if (mapId >= 0) {
+                authMask[4] = (byte) 0xff; // authenticate segment header
             }
         }
 

@@ -4,12 +4,15 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.security.GeneralSecurityException;
+import java.util.Arrays;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.function.IntSupplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.security.SdlsSecurityAssociation;
 import org.yamcs.tctm.ccsds.error.AosFrameHeaderErrorCorr;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.utils.ByteArrayUtils;
@@ -27,7 +30,6 @@ import com.google.common.util.concurrent.AbstractScheduledService;
  * 
  * Sends frames of predefined size at a configured frequency. If there is no data to send, it sends idle frames.
  * 
- * @author nm
  */
 public class UdpTmFrameLink extends AbstractScheduledService {
     final String frameType;
@@ -51,30 +53,43 @@ public class UdpTmFrameLink extends AbstractScheduledService {
     IntSupplier clcwSupplier;
 
     public UdpTmFrameLink(int scid, String frameType, String host, int port, int frameLength, double framesPerSec,
-            IntSupplier clcwSupplier) {
+            IntSupplier clcwSupplier, byte[] maybeSdlsKey, short sdlsSpi,
+            int encryptionSeqNumWindow, boolean verifySeqNum) {
         this.scid = scid;
+
+        SdlsSecurityAssociation maybeSdls = null;
+
         this.frameType = frameType;
         this.host = host;
         this.port = port;
-        this.frameSize = frameLength;
+
+        // If the link should be encrypted, the maximum amount of data is reduced because of encryption overhead.
+        if (maybeSdlsKey != null) {
+            this.frameSize = frameLength - SdlsSecurityAssociation.getOverheadBytes();
+            maybeSdls = new SdlsSecurityAssociation(maybeSdlsKey, sdlsSpi,
+                    encryptionSeqNumWindow, verifySeqNum);
+        } else {
+            this.frameSize = frameLength;
+        }
+
         this.framesPerSec = framesPerSec;
         this.clcwSupplier = clcwSupplier;
 
         if ("AOS".equalsIgnoreCase(frameType)) {
             for (int i = 0; i < NUM_VC; i++) {
-                builders[i] = new AosVcSender(scid, i, frameLength);
+                builders[i] = new AosVcSender(scid, i, frameLength, maybeSdls);
             }
-            idleFrameBuilder = new AosVcSender(scid, 63, frameLength);
+            idleFrameBuilder = new AosVcSender(scid, 63, frameLength, maybeSdls);
         } else if ("TM".equalsIgnoreCase(frameType)) {
             for (int i = 0; i < NUM_VC; i++) {
-                builders[i] = new TmVcSender(scid, i, frameLength);
+                builders[i] = new TmVcSender(scid, i, frameLength, true, maybeSdls);
             }
             idleFrameBuilder = builders[0];
         } else if ("USLP".equalsIgnoreCase(frameType)) {
             for (int i = 0; i < NUM_VC; i++) {
-                builders[i] = new UslpVcSender(scid, i, frameLength);
+                builders[i] = new UslpVcSender(scid, i, frameLength, true, maybeSdls);
             }
-            idleFrameBuilder = new UslpVcSender(scid, 63, frameLength);
+            idleFrameBuilder = new UslpVcSender(scid, 63, frameLength, true, maybeSdls);
         }
     }
 
@@ -140,7 +155,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
     /**
      * queue packet for virtual channel
-     * 
+     *
      * @param vcId
      * @param packet
      */
@@ -155,25 +170,33 @@ public class UdpTmFrameLink extends AbstractScheduledService {
     static abstract class VcBuilder {
         protected final int scid;
         final int vcId;
+        final FrameOffsets offsets;
 
         protected long vcSeqCount = 0;
         ArrayBlockingQueue<byte[]> queue = new ArrayBlockingQueue<>(100);
+
+        // this is updated as data is written to the frame
         protected int dataOffset;
 
         byte[] pendingPacket;
         int pendingPacketOffset;
         byte[] data;
 
+        // Optionally, a security association to use for an encrypted link
+        SdlsSecurityAssociation maybeSdls = null;
+        byte[] authMask;
+
         boolean firstPacketInFrame = true;
         int firstHeaderPointer = -1;
-        int dataEnd;
 
         protected int clcw;
 
-        public VcBuilder(int scid, int vcId) {
+        public VcBuilder(int scid, int vcId, FrameOffsets offsets) {
             this.scid = scid;
             this.vcId = vcId;
-            this.dataOffset = hdrSize();
+            this.offsets = offsets;
+            this.dataOffset = offsets.pduDataStart;
+
             if ((scid < 0) || (scid > 255)) {
                 throw new IllegalArgumentException("Invalid spacecraft identifier " + scid);
             }
@@ -184,30 +207,51 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         }
 
         public int emtySpaceLength() {
-            return dataEnd - dataOffset;
+            return offsets.pduDataEnd - dataOffset;
         }
+
+        abstract void encryptFrame();
 
         public byte[] getFrame() {
             encodeHeaderAndTrailer();
+
+            // Encrypt the frame if we have a security association
+            if (maybeSdls != null) {
+                encryptFrame();
+            }
+
+            fillChecksum();
             return data;
         }
 
         public boolean isEmpty() {
-            return dataOffset == hdrSize();
+            return dataOffset == offsets.pduDataStart();
         }
 
         public boolean isFull() {
-            return dataOffset == dataEnd;
+            return dataOffset == offsets.pduDataEnd;
         }
 
         void reset() {
             vcSeqCount++;
             firstPacketInFrame = true;
-            dataOffset = hdrSize();
+            dataOffset = offsets.pduDataStart;
+
+            // If we're running with SDLS, zero the security header and trailer
+            if (this.maybeSdls != null) {
+                int secHeaderSize = SdlsSecurityAssociation.getHeaderSize();
+                Arrays.fill(data, offsets.secHeaderStart, offsets.secHeaderStart + secHeaderSize, (byte) 0);
+
+                int secTrailerSize = SdlsSecurityAssociation.getTrailerSize();
+                Arrays.fill(data, offsets.secTrailerStart, offsets.secTrailerStart + secTrailerSize, (byte) 0);
+            }
         }
 
         /**
          * Copy data from the queue into the frame
+         *
+         * @return
+         * @throws IOException
          */
         void dequeue() throws IOException {
             if (pendingPacket != null) {
@@ -216,13 +260,13 @@ public class UdpTmFrameLink extends AbstractScheduledService {
                     return;
                 }
             }
-            while (dataOffset < dataEnd) {
+            while (dataOffset < offsets.pduDataEnd) {
                 pendingPacket = queue.poll();
                 if (pendingPacket == null) {
                     break;
                 }
                 if (firstPacketInFrame) {
-                    firstHeaderPointer = dataOffset - hdrSize();
+                    firstHeaderPointer = dataOffset - offsets.pduDataStart();
                     firstPacketInFrame = false;
                 }
                 pendingPacketOffset = 0;
@@ -234,10 +278,10 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         }
 
         void copyPendingToBuffer() {
-            int length = Math.min(pendingPacket.length - pendingPacketOffset, dataEnd - dataOffset);
+            int length = Math.min(pendingPacket.length - pendingPacketOffset, offsets.pduDataEnd - dataOffset);
             log.trace("VC{} writing {} bytes from packet of length {} at offset {}",
                     vcId, length, pendingPacket.length, dataOffset);
-            ;
+
             System.arraycopy(pendingPacket, pendingPacketOffset, data, dataOffset, length);
             dataOffset += length;
             pendingPacketOffset += length;
@@ -247,7 +291,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         }
 
         private void fillIdlePacket() {
-            int n = dataEnd - dataOffset;
+            int n = offsets.pduDataEnd - dataOffset;
             log.trace("VC{} writing idle packet of size {} at offset {}", vcId, n, dataOffset);
             if (n == 0) {
                 return;
@@ -264,25 +308,37 @@ public class UdpTmFrameLink extends AbstractScheduledService {
             dataOffset += n;
         }
 
-        abstract int hdrSize();
-
+        // this will be called before encryption
         abstract void encodeHeaderAndTrailer();
+
+        // this will be called after encryption
+        abstract void fillChecksum();
 
         abstract public byte[] getIdleFrame();
     }
 
     static class AosVcSender extends VcBuilder {
 
-        public AosVcSender(int scid, int vcId, int frameSize) {
-            super(scid, vcId);
+        public AosVcSender(int scid, int vcId, int frameSize, SdlsSecurityAssociation maybeLinkSdls) {
+
+            super(scid, vcId, FrameOffsets.aosOffsets(frameSize, true, maybeLinkSdls));
             if ((vcId < 0) || (vcId > 63)) {
                 throw new IllegalArgumentException("Invalid virtual channel id " + vcId);
             }
 
             this.data = new byte[frameSize];
-            dataEnd = frameSize - 6;// last 6 bytes are the OCF and CRC
-            writeGvcId(data, vcId);
 
+            // Optionally encrypt the data
+            if (maybeLinkSdls != null) {
+                maybeSdls = maybeLinkSdls;
+                // Create an auth mask for the primary header,
+                // the frame data is already part of authentication.
+                // No need to authenticate data, already part of GCM
+                authMask = new byte[offsets.secHeaderStart];
+                authMask[1] = 0b0011_1111; // authenticate only virtual channel ID
+            }
+
+            writeGvcId(data, vcId);
         }
 
         void writeGvcId(byte[] frameData, int vcId) {
@@ -290,40 +346,26 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         }
 
         @Override
-        int hdrSize() {
-            // 2 bytes master channel id
-            // 3 bytes virtual channel frame count
-            // 1 byte signaling field
-            // 2 bytes frame header error control
-            // 2 bytes M_PDU header
-
-            // NOTE: there is no insert zone; if there should be any, its size should be added as part of the header
-            // size
-            return 10;
-        }
-
-        @Override
         void encodeHeaderAndTrailer() {
             // set the frame sequence count
-
             ByteArrayUtils.encodeUnsigned3Bytes((int) vcSeqCount, data, 2);
             data[5] = (byte) (0x60 + ((vcSeqCount >>> 24) & 0xF));
 
             ByteArrayUtils.encodeInt(clcw, data, data.length - 6);
 
-            ByteArrayUtils.encodeUnsignedShort(firstHeaderPointer, data, 8);
-            fillChecksums(data);
+            ByteArrayUtils.encodeUnsignedShort(firstHeaderPointer, data, offsets.frameDataStart);
 
-        }
-
-        static void fillChecksums(byte[] data) {
-            // first Reed-Solomon the header
+            // Reed-Solomon the header
             int gvcid = ByteArrayUtils.decodeUnsignedShort(data, 0);
             int x = AosFrameHeaderErrorCorr.encode(gvcid, data[5]);
             ByteArrayUtils.encodeUnsignedShort(x, data, 6);
 
-            // then overall CRC
-            x = crc.compute(data, 0, data.length - 2);
+        }
+
+        @Override
+        void fillChecksum() {
+            // CRC at the end of the frame
+            int x = crc.compute(data, 0, data.length - 2);
             ByteArrayUtils.encodeUnsignedShort(x, data, data.length - 2);
         }
 
@@ -331,24 +373,44 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         public byte[] getIdleFrame() {
             vcSeqCount++;
             encodeHeaderAndTrailer();
+            if (this.maybeSdls != null) {
+                encryptFrame();
+            }
+            fillChecksum();
             return data;
+        }
+
+        @Override
+        void encryptFrame() {
+            try {
+                this.maybeSdls.applySecurity(data, 0, offsets.secHeaderStart,
+                        offsets.secTrailerStart + SdlsSecurityAssociation.getTrailerSize(), authMask);
+            } catch (GeneralSecurityException e) {
+                log.warn("could not encrypt frame: {}", e);
+            }
         }
     }
 
     static class TmVcSender extends VcBuilder {
         byte[] idleFrameData;
-        int ocfFlag = 1;
+        final int ocfFlag;
 
-        public TmVcSender(int scid, int vcId, int frameSize) {
-            super(scid, vcId);
+        public TmVcSender(int scid, int vcId, int frameSize, boolean ocf, SdlsSecurityAssociation maybeLinkSdls) {
+            super(scid, vcId, FrameOffsets.tmOffsets(frameSize, ocf, maybeLinkSdls));
+            this.ocfFlag = ocf ? 1 : 0;
             this.data = new byte[frameSize];
-            dataEnd = frameSize - 4 - 2 * ocfFlag; // last 6 bytes are the OCF and CRC
-            writeGvcId(data, vcId);
-        }
 
-        @Override
-        int hdrSize() {
-            return 6;
+            // Optionally encrypt the frame
+            if (maybeLinkSdls != null) {
+                // Create an auth mask for the primary header,
+                // the frame data is already part of authentication.
+                // No need to authenticate data, already part of GCM
+                authMask = new byte[offsets.secHeaderStart];
+                authMask[1] = 0b0000_1110; // authenticate virtual channel ID
+
+                this.maybeSdls = maybeLinkSdls;
+            }
+            writeGvcId(data, vcId);
         }
 
         void writeGvcId(byte[] frameData, int vcId) {
@@ -364,14 +426,19 @@ public class UdpTmFrameLink extends AbstractScheduledService {
             ByteArrayUtils.encodeUnsignedShort(firstHeaderPointer, data, 4);
 
             ByteArrayUtils.encodeInt(clcw, data, data.length - 6);
-
-            // compute crc
-            int x = crc.compute(data, 0, data.length - 2);
-            ByteArrayUtils.encodeUnsignedShort(x, data, data.length - 2);
         }
 
         @Override
         public byte[] getIdleFrame() {
+            if (this.maybeSdls != null) {
+                try {
+                    this.maybeSdls.applySecurity(data, 0, offsets.secHeaderStart,
+                            offsets.pduDataEnd + SdlsSecurityAssociation.getTrailerSize(), authMask);
+                } catch (GeneralSecurityException e) {
+                    log.warn("could not encrypt idle frame: {}", e);
+                }
+            }
+
             ByteArrayUtils.encodeUnsignedShort(0x7FE, data, 4);
             int x = crc.compute(data, 0, data.length - 2);
             ByteArrayUtils.encodeUnsignedShort(x, data, data.length - 2);
@@ -379,7 +446,23 @@ public class UdpTmFrameLink extends AbstractScheduledService {
             vcSeqCount++;
 
             return data;
+        }
 
+        @Override
+        void encryptFrame() {
+            try {
+                this.maybeSdls.applySecurity(data, 0, offsets.secHeaderStart,
+                        offsets.secTrailerStart + SdlsSecurityAssociation.getTrailerSize(), authMask);
+            } catch (GeneralSecurityException e) {
+                log.warn("could not encrypt frame: {}", e);
+            }
+        }
+
+        @Override
+        void fillChecksum() {
+            // compute crc
+            int x = crc.compute(data, 0, data.length - 2);
+            ByteArrayUtils.encodeUnsignedShort(x, data, data.length - 2);
         }
     }
 
@@ -389,12 +472,12 @@ public class UdpTmFrameLink extends AbstractScheduledService {
      */
     static class UslpVcSender extends VcBuilder {
         byte[] idleFrameData;
-        int ocfFlag = 1;
+        final int ocfFlag;
 
-        public UslpVcSender(int scid, int vcId, int frameLength) {
-            super(scid, vcId);
+        public UslpVcSender(int scid, int vcId, int frameLength, boolean ocf, SdlsSecurityAssociation maybeLinkSdls) {
+            super(scid, vcId, FrameOffsets.uslpOffsets(frameLength, ocf, maybeLinkSdls));
             this.data = new byte[frameLength];
-            dataEnd = frameLength - 4 - 2 * ocfFlag; // last 6 bytes are the OCF and CRC
+            this.ocfFlag = ocf ? 1 : 0;
 
             ByteArrayUtils.encodeInt((12 << 28) + (scid << 12) + (vcId << 5), data, 0);
 
@@ -403,13 +486,13 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
             data[6] = 0x0C; // ocfFlag = 1, vc frame count = 100(in binary)
 
-        }
-
-        @Override
-        int hdrSize() {
-            // 11 for the primary header (with a 32 bit frame length)
-            // 3 bytes for the data field header
-            return 14;
+            // Optionally encrypt the data
+            if (maybeLinkSdls != null) {
+                authMask = new byte[offsets.secHeaderStart];
+                authMask[2] = 0b111; // top 3 bits of vcid
+                authMask[3] = (byte) 0b1111_1110; // bottom 3 bits of vcid, 4 bits of map id
+                this.maybeSdls = maybeLinkSdls;
+            }
         }
 
         @Override
@@ -417,22 +500,139 @@ public class UdpTmFrameLink extends AbstractScheduledService {
             // set the frame sequence count
             ByteArrayUtils.encodeInt((int) vcSeqCount, data, 7);
 
+            // clear the data field header first byte to indicate packet data (in case it was changed by the
+            // encryption)
+            data[offsets.frameDataStart] = 0;
             // write the first header pointer
-            ByteArrayUtils.encodeUnsignedShort(firstHeaderPointer, data, 12);
+            ByteArrayUtils.encodeUnsignedShort(firstHeaderPointer, data, offsets.frameDataStart + 1);
 
             if (ocfFlag == 1) {
                 ByteArrayUtils.encodeInt(clcw, data, data.length - 6);
             }
-            // compute crc
-            int x = crc.compute(data, 0, data.length - 2);
-            ByteArrayUtils.encodeUnsignedShort(x, data, data.length - 2);
         }
 
         @Override
         public byte[] getIdleFrame() {
             vcSeqCount++;
             encodeHeaderAndTrailer();
+            if (this.maybeSdls != null) {
+                encryptFrame();
+            }
+            fillChecksum();
             return data;
+        }
+
+        @Override
+        void encryptFrame() {
+            try {
+                int secTrailerEnd = offsets.secTrailerStart + SdlsSecurityAssociation.getTrailerSize();
+                this.maybeSdls.applySecurity(data, 0, offsets.secHeaderStart, secTrailerEnd, authMask);
+            } catch (GeneralSecurityException e) {
+                log.warn("could not encrypt frame: {}", e);
+            }
+        }
+
+        @Override
+        void fillChecksum() {
+            // compute crc
+            int x = crc.compute(data, 0, data.length - 2);
+            ByteArrayUtils.encodeUnsignedShort(x, data, data.length - 2);
+        }
+    }
+
+    /**
+     * Offsets in the frame:
+     * 
+     * secHeaderStart: start of the security header if present otherwise -1
+     * <p>
+     * frameDataStart: start of the frame data. For AOS and USLP this is where the first header pointer (fhp) goes to.
+     * For TM, the fhp is part of the primary header
+     * <p>
+     * pduDataStart: start of the PDU (packet) data. This is where packets are concatenated one after the other (the
+     * first and last packets may be incomplete)
+     * <p>
+     * pduDataEnd: end of the PDU (packet) data
+     * 
+     */
+    record FrameOffsets(int secHeaderStart, int frameDataStart, int pduDataStart, int pduDataEnd, int secTrailerStart) {
+        static FrameOffsets aosOffsets(int frameSize, boolean ocf, SdlsSecurityAssociation maybeSdls) {
+            // AOS Frame header
+            // 2 bytes master channel id
+            // 3 bytes virtual channel frame count
+            // 1 byte signaling field
+            // 2 bytes frame header error control
+
+            // AOS Frame trailer
+            // 4 bytes are the OCF
+            // 2 bytes CRC
+            int secHeaderStart, frameDataStart, pduDataStart, pduDataEnd, secTrailerStart;
+
+            if (maybeSdls == null) {
+                secHeaderStart = secTrailerStart = -1;
+                frameDataStart = 8;
+                pduDataEnd = frameSize - 2 - (ocf ? 4 : 0);
+                ;
+            } else {
+                secHeaderStart = 8;
+                frameDataStart = secHeaderStart + SdlsSecurityAssociation.getHeaderSize();
+                secTrailerStart = frameSize - 2 - (ocf ? 4 : 0) - SdlsSecurityAssociation.getTrailerSize();
+                pduDataEnd = secTrailerStart;
+            }
+            pduDataStart = frameDataStart + 2;
+            return new FrameOffsets(secHeaderStart, frameDataStart, pduDataStart, pduDataEnd, secTrailerStart);
+        }
+
+        static FrameOffsets tmOffsets(int frameSize, boolean ocf, SdlsSecurityAssociation maybeSdls) {
+            // TM Frame header
+            // 2 bits transfer frame version number
+            // 10 bits spacecraft id
+            // 3 bits virtual channel id
+            // 1 bit OCF flag
+            // 8 bits master channel frame count
+            // 8 bits virtual channel frame count
+            // 16 vits transfer frame data field status
+
+            // TM Frame trailer
+            // 4 bytes OCF
+            // 2 bytes CRC
+            int secHeaderStart, frameDataStart, pduDataStart, pduDataEnd, secTrailerStart;
+
+            if (maybeSdls == null) {
+                secHeaderStart = secTrailerStart = -1;
+                frameDataStart = 6;
+                pduDataEnd = frameSize - 2 - (ocf ? 4 : 0);
+            } else {
+                secHeaderStart = 6;
+                frameDataStart = secHeaderStart + SdlsSecurityAssociation.getHeaderSize();
+                secTrailerStart = frameSize - 2 - (ocf ? 4 : 0) - SdlsSecurityAssociation.getTrailerSize();
+                pduDataEnd = secTrailerStart;
+            }
+            pduDataStart = frameDataStart;
+            return new FrameOffsets(secHeaderStart, frameDataStart, pduDataStart, pduDataEnd, secTrailerStart);
+        }
+
+        static FrameOffsets uslpOffsets(int frameSize, boolean ocf, SdlsSecurityAssociation maybeSdls) {
+            // USLP Frame header
+            // 11 bytes (assuming a 32 bit sequence count)
+            // Transfer frame data field header 3 bytes
+            // Transfer frame data zone
+            // USLP Frame trailer
+            // 4 bytes OCF
+            // 2 bytes CRC
+            int secHeaderStart, frameDataStart, pduDataStart, pduDataEnd, secTrailerStart;
+
+            if (maybeSdls == null) {
+                secHeaderStart = secTrailerStart = -1;
+                frameDataStart = 11;
+                pduDataEnd = frameSize - 2 - (ocf ? 4 : 0);
+            } else {
+                secHeaderStart = 11;
+                frameDataStart = secHeaderStart + SdlsSecurityAssociation.getHeaderSize();
+                secTrailerStart = frameSize - 2 - (ocf ? 4 : 0) - SdlsSecurityAssociation.getTrailerSize();
+                pduDataEnd = secTrailerStart;
+            }
+            pduDataStart = frameDataStart + 3;
+            return new FrameOffsets(secHeaderStart, frameDataStart, pduDataStart, pduDataEnd, secTrailerStart);
         }
     }
 }

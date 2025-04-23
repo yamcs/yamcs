@@ -2,6 +2,7 @@ package org.yamcs.tctm.ccsds;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.security.SdlsSecurityAssociation;
 import org.yamcs.tctm.TcTmException;
 import org.yamcs.tctm.ccsds.DownlinkManagedParameters.FrameErrorDetection;
 import org.yamcs.tctm.ccsds.TmManagedParameters.ServiceType;
@@ -73,6 +74,7 @@ public class TmFrameDecoder implements TransferFrameDecoder {
             ttf.setOcf(ByteArrayUtils.decodeInt(data, dataEnd));
         }
 
+        // Transfer frame data field status
         int tfdfs = ByteArrayUtils.decodeShort(data, offset + 4);
         boolean secHeaderPresent = (tfdfs & 0x8000) == 0x8000;
         boolean syncFlag = (tfdfs & 0x4000) == 0x4000;
@@ -83,6 +85,32 @@ public class TmFrameDecoder implements TransferFrameDecoder {
             ttf.setShLength(secHeaderLength);
             dataOffset += secHeaderLength;
         }
+
+        if (vmp.encryptionSpis.length > 0) {
+            // encrypted channel,
+            // the security header follows after the frame header and insert zone
+            // first two bytes are the spi
+            short receivedSpi = ByteArrayUtils.decodeShort(data, dataOffset);
+            var sdlsSa = tmParams.sdlsSecurityAssociations.get(receivedSpi);
+            if (sdlsSa == null) {
+                throw new TcTmException("Received TM frame with unknown SPI " + receivedSpi);
+            }
+            int secHeaderStart = dataOffset;
+
+            int decryptionTrailerEnd = dataEnd;
+            // try to decrypt the frame
+            SdlsSecurityAssociation.VerificationStatusCode decryptionStatus = sdlsSa.processSecurity(data, offset,
+                    secHeaderStart, decryptionTrailerEnd, vmp.authMask);
+
+            if (decryptionStatus != SdlsSecurityAssociation.VerificationStatusCode.NoFailure) {
+                throw new TcTmException("Failed to decrypt TM frame for SPI " + receivedSpi + ": " + decryptionStatus);
+            }
+
+            // Update the offsets
+            dataOffset += SdlsSecurityAssociation.getHeaderSize();
+            dataEnd -= SdlsSecurityAssociation.getTrailerSize();
+        }
+
         if (vmp.service == ServiceType.PACKET) {
             if (syncFlag) {
                 throw new TcTmException("VC " + virtualChannelId + " "

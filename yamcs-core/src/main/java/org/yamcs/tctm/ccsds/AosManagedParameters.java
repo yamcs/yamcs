@@ -28,8 +28,8 @@ public class AosManagedParameters extends DownlinkManagedParameters {
 
     public boolean frameHeaderErrorControlPresent;
 
-    public AosManagedParameters(YConfiguration config) {
-        super(config);
+    public AosManagedParameters(YConfiguration config, String yamcsInstance, String linkName) {
+        super(config, yamcsInstance, linkName);
         frameLength = config.getInt("frameLength");
         if (frameLength < 8 || frameLength > 0xFFFF) {
             throw new ConfigurationException("Invalid frame length " + frameLength);
@@ -47,7 +47,7 @@ public class AosManagedParameters extends DownlinkManagedParameters {
 
         List<YConfiguration> l = config.getConfigList("virtualChannels");
         for (YConfiguration yc : l) {
-            AosVcManagedParameters vmp = new AosVcManagedParameters(yc);
+            AosVcManagedParameters vmp = new AosVcManagedParameters(yc, this);
             if (vcParams.containsKey(vmp.vcId)) {
                 throw new ConfigurationException("duplicate configuration of vcId " + vmp.vcId);
             }
@@ -94,8 +94,8 @@ public class AosManagedParameters extends DownlinkManagedParameters {
         ServiceType service;
         boolean ocfPresent;
 
-        public AosVcManagedParameters(YConfiguration config) {
-            super(config);
+        public AosVcManagedParameters(YConfiguration config, AosManagedParameters aosParams) {
+            super(config, aosParams);
 
             if (vcId < 0 || vcId > 63) {
                 throw new ConfigurationException("Invalid vcId: " + vcId + ". Allowed values are from 0 to 63.");
@@ -112,10 +112,18 @@ public class AosManagedParameters extends DownlinkManagedParameters {
             } else if (service == ServiceType.VCA) {
                 parseVcaConfig();
             }
+
+            // Auth mask with the size of the AOS primary header + insert zone
+            int length = 6 + (aosParams.frameHeaderErrorControlPresent ? 2 : 0) + aosParams.insertZoneLength;
+            authMask = new byte[length];
+            // Authenticate only virtual channel ID.
+            // We never authenticate the optional insert zone or Frame Header Error Control field.
+            authMask[1] = 0b0011_1111;
         }
 
-        AosVcManagedParameters() {
-            super(YConfiguration.emptyConfig());
+        AosVcManagedParameters(String yamcsInstance, String linkName) {
+            super(YConfiguration.emptyConfig(), new AosManagedParameters(YConfiguration.emptyConfig(), yamcsInstance,
+                    linkName));
         }
     }
 

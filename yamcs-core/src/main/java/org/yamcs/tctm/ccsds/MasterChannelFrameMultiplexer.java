@@ -37,7 +37,7 @@ public class MasterChannelFrameMultiplexer {
     Log log;
 
     public MasterChannelFrameMultiplexer(String yamcsInstance, String linkName, YConfiguration config) {
-        tcManagedParameters = new TcManagedParameters(config);
+        tcManagedParameters = new TcManagedParameters(config, yamcsInstance, linkName);
         handlers = tcManagedParameters.createVcHandlers(yamcsInstance, linkName, executor);
         log = new Log(getClass(), yamcsInstance);
         log.setContext(linkName);

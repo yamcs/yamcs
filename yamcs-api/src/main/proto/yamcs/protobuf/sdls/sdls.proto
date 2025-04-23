@@ -1,0 +1,127 @@
+syntax="proto2";
+
+package yamcs.protobuf.sdls;
+
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "SdlsProto";
+option java_multiple_files = true;
+
+import "google/protobuf/empty.proto";
+
+import "yamcs/api/annotations.proto";
+import "yamcs/api/httpbody.proto";
+
+service SdlsApi {
+  // Get the sequence number
+  rpc GetSeqCtr(GetSeqCtrRequest) returns (GetSeqCtrResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/sdls/{instance}/{linkName}/{spi}/seq"
+    };
+  }
+
+  // Set the sequence counter
+  rpc SetSeqCtr(SetSeqCtrRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      put: "/api/sdls/{instance}/{linkName}/{spi}/seq"
+      body: "body",
+    };
+  }
+
+  // Set the key
+  rpc SetKey(SetKeyRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      put: "/api/sdls/{instance}/{linkName}/{spi}/key",
+      body: "data",
+    };
+  }
+
+  // Set the SPI used by a VC to a single SPI
+  rpc SetSpi(SetSpiRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      put: "/api/sdls/{instance}/{linkName}/{vcId}/spi",
+      body: "body",
+    };
+  }
+
+  // Set the SPIs used by a VC to one or more SPIs.
+  // Only valid for incoming links.
+  rpc SetSpis(SetSpisRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      put: "/api/sdls/{instance}/{linkName}/{vcId}/spis",
+      body: "body",
+    };
+  }
+}
+
+message SetSpiRequest {
+  // The Yamcs instance
+  optional string instance = 1;
+  // The name of the encrypted link
+  optional string linkName = 2;
+  // The vcId to modify
+  optional uint32 vcId = 3;
+  // The desired SPI
+  required SetSpiRequestBody body = 4;
+}
+
+message SetSpiRequestBody {
+  // The desired SPI
+  required uint32 spi = 1;
+}
+
+message SetSpisRequest {
+  // The Yamcs instance
+  optional string instance = 1;
+  // The name of the encrypted link
+  optional string linkName = 2;
+  // The vcId to modify
+  optional uint32 vcId = 3;
+  // The body of the request, containing the SPIs
+  required SetSpisRequestBody body = 4;
+}
+
+message SetSpisRequestBody {
+  // The desired SPIs
+  repeated uint32 spis = 1;
+}
+
+message GetSeqCtrRequest {
+  // The Yamcs instance
+  required string instance = 1;
+  // The name of the encrypted link
+  required string linkName = 2;
+  // The Security Parameter Index
+  required uint32 spi = 3;
+}
+
+message GetSeqCtrResponse {
+  // The current sequence number in big-endian order
+  required bytes seq = 1;
+}
+
+message SetSeqCtrRequest {
+  // The Yamcs instance
+  required string instance = 1;
+  // The name of the encrypted link
+  required string linkName = 2;
+  // The Security Parameter Index
+  required uint32 spi = 3;
+  // The body of the request, containing the sequence number
+  required SetSeqCtrRequestBody body = 4;
+}
+
+message SetSeqCtrRequestBody {
+  // The desired sequence number in big-endian order
+  required bytes seq = 1;
+}
+
+message SetKeyRequest {
+  // The Yamcs instance
+  required string instance = 1;
+  // The name of the encrypted link
+  required string linkName = 2;
+  // The Security Parameter Index
+  required uint32 spi = 3;
+  // The 256-bit key
+  required yamcs.api.HttpBody data = 4;
+}
