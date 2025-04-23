@@ -1,11 +1,15 @@
 package org.yamcs.tctm.ccsds;
 
+import org.yamcs.ConfigurationException;
+import org.yamcs.YConfiguration;
+import org.yamcs.security.SdlsSecurityAssociation;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.yamcs.ConfigurationException;
-import org.yamcs.YConfiguration;
 
 public class UslpManagedParameters extends DownlinkManagedParameters {
 
@@ -31,6 +35,7 @@ public class UslpManagedParameters extends DownlinkManagedParameters {
 
     int fshLength; // 0 means not present
     Map<Integer, UslpVcManagedParameters> vcParams = new HashMap<>();
+    Map<Short, SdlsSecurityAssociation> sdlsSecurityAssociations = new HashMap<>();
 
     public UslpManagedParameters(YConfiguration config) {
         super(config);
@@ -57,6 +62,26 @@ public class UslpManagedParameters extends DownlinkManagedParameters {
         if (insertZoneLength < 0 || insertZoneLength > minFrameLength - 6) {
             throw new ConfigurationException("Invalid insert zone length " + insertZoneLength);
         }
+
+        if (config.containsKey("encryption")) {
+            List<YConfiguration> encryptionConfigs = config.getConfigList("encryption");
+            for (YConfiguration saDef : encryptionConfigs) {
+                short spi = (short) saDef.getInt("spi");
+                byte[] sdlsKey;
+                try {
+                    sdlsKey = Files.readAllBytes(Path.of(saDef.getString("keyFile")));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                // Authenticate virtual channel ID and MAP ID
+                byte[] authMask = new byte[14];
+                authMask[2] = 0b111; // top 3 bits of vcid
+                authMask[3] = (byte) 0b1111_1110; // bottom 3 bits of vcid, 4 bits of map id
+
+                sdlsSecurityAssociations.put(spi, new SdlsSecurityAssociation(sdlsKey, spi, authMask));
+            }
+        }
     }
 
     static class UslpVcManagedParameters extends VcDownlinkManagedParameters {
@@ -67,9 +92,13 @@ public class UslpManagedParameters extends DownlinkManagedParameters {
         int vcCountLengthForSeqControlQos;
         int vcCountLengthForExpeditedQos;
         int truncatedTransferFrameLength;
+        short encryptionSpi;
 
         public UslpVcManagedParameters(YConfiguration config) {
             super(config);
+            if (config.containsKey("encryptionSpi")) {
+                encryptionSpi = (short) config.getInt("encryptionSpi");
+            }
             service = config.getEnum("service", ServiceType.class);
             if (service == ServiceType.PACKET) {
                 parsePacketConfig();
