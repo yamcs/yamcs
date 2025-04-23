@@ -94,7 +94,7 @@ public class TmFrameDecoder implements TransferFrameDecoder {
 
             int decryptionDataEnd = dataEnd;
 
-            VerificationStatusCode decryptionStatus = sdlsSa.processSecurity(data, offset, decryptionDataStart, decryptionDataEnd);
+            VerificationStatusCode decryptionStatus = sdlsSa.processSecurity(data, offset, decryptionDataStart, decryptionDataEnd, vmp.authMask);
             if (decryptionStatus != VerificationStatusCode.NoFailure) {
                 throw new TcTmException("Could not decrypt frame: " + decryptionStatus);
             }

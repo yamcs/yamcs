@@ -25,6 +25,7 @@ public class VcDownlinkManagedParameters {
      * The Security Parameter Index used on this channel
      */
     short encryptionSpi;
+    byte[] authMask;
 
     public VcDownlinkManagedParameters(int vcId) {
         this.vcId = vcId;

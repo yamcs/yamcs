@@ -51,37 +51,8 @@ public abstract class DownlinkManagedParameters {
                     throw new ConfigurationException(e);
                 }
 
-                // No need to authenticate data, already part of GCM
-                // (source: McGrew and Viega, "The Galois/Counter Mode of Operation (GCM)").
-                // Create an auth mask for the primary header, according to CCSDS Standard for
-                // Space Data Link Security (CCSDS 355.0-B-2).
-                // The SDLS implementation automatically adds the security header to authenticated data.
-                // TODO: check all these masks are correct. account for maximum header size.
-                if (this instanceof AosManagedParameters) {
-                    // Auth mask with the size of the AOS primary header
-                    authMask = new byte[10];
-                    // Authenticate only virtual channel ID.
-                    // We never authenticate the optional insert zone or Frame Header Error Control field.
-                    authMask[1] = 0b0011_1111;
-                } else if (this instanceof TmManagedParameters) {
-                    // Auth mask with the size of the TM primary header
-                    authMask = new byte[6];
-                    // Authenticate only virtual channel ID.
-                    // We never authenticate the Master Channel Frame Count field.
-                    authMask[1] = 0b0000_1110;
-                } else if (this instanceof UslpManagedParameters) {
-                    // Auth mask with the size of the USLP primary header
-                    authMask = new byte[14];
-                    // Authenticate virtual channel ID and MAP ID
-                    authMask[2] = 0b111; // top 3 bits of vcid
-                    authMask[3] = (byte) 0b1111_1110; // bottom 3 bits of vcid, 4 bits of map id
-                    // We never authenticate the optional insert zone.
-                } else {
-                    throw new ConfigurationException("Encryption not yet supported for " + this);
-                }
-
                 // Save the SPI and its security association
-                sdlsSecurityAssociations.put(spi, new SdlsSecurityAssociation(sdlsKey, spi, authMask));
+                sdlsSecurityAssociations.put(spi, new SdlsSecurityAssociation(sdlsKey, spi));
             }
         }
     }

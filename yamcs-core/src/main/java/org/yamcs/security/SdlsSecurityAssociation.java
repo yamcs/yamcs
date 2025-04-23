@@ -1,6 +1,5 @@
 package org.yamcs.security;
 
-
 import org.yamcs.utils.ByteArrayUtils;
 
 import javax.crypto.*;
@@ -11,8 +10,8 @@ import java.security.spec.AlgorithmParameterSpec;
 import java.util.Arrays;
 
 /**
- * A Security Association for SDLS encryption/decryption (CCSDS 355.0-B-2).
- * This class is hard-coded to use AES-256-GCM as its underlying cipher suite.
+ * A Security Association for SDLS encryption/decryption (CCSDS 355.0-B-2). This class is hard-coded to use AES-256-GCM
+ * as its underlying cipher suite.
  */
 public class SdlsSecurityAssociation {
     /**
@@ -31,11 +30,8 @@ public class SdlsSecurityAssociation {
     private final SecureRandom secureRandom = new SecureRandom();
 
     /**
-     * Mask to authenticate additional header data (this implementation automatically extends the mask to include the security header)
-     */
-    private final byte[] authMask;
-    /**
-     * Security parameter index: identifier shared between sender and receiver, specifies which security association is used
+     * Security parameter index: identifier shared between sender and receiver, specifies which security association is
+     * used
      */
     private final short spi;
     /**
@@ -46,23 +42,9 @@ public class SdlsSecurityAssociation {
     /**
      * @param key the 256-bit key used for encryption/decryption
      * @param spi the security parameter index, shared between sender and receiver.
-     * @param primaryAuthMask the mask to authenticate additional header data, does not include the security header.
      */
-    public SdlsSecurityAssociation(byte[] key, short spi, byte[] primaryAuthMask) {
+    public SdlsSecurityAssociation(byte[] key, short spi) {
         this.secretKey = new SecretKeySpec(key, secretKeyAlgorithm);
-
-        // Create a new authentication mask that will include the security header
-        byte[] authMaskFull = new byte[primaryAuthMask.length + getHeaderSize()];
-        System.arraycopy(primaryAuthMask, 0, authMaskFull, 0, primaryAuthMask.length);
-
-        // Add a mask for the security header
-        int secAuthMaskStart = primaryAuthMask.length;
-        // We want to authenticate the SPI field (first 16 bits)
-        authMaskFull[secAuthMaskStart] = 1;
-        authMaskFull[secAuthMaskStart + 1] = 1;
-
-        // Set final authMask for primary + sec header
-        this.authMask = authMaskFull;
 
         this.spi = spi;
     }
@@ -92,20 +74,45 @@ public class SdlsSecurityAssociation {
         return (GCM_TAG_LEN_BITS / 8);
     }
 
+    /**
+     * Complete the authentication mask to include the security header
+     *
+     * @param partialAuthMask The authentication mask as provided by the user (excludes security header).
+     * @return The authentication mask, extended to include the security header.
+     */
+    byte[] completeAuthMask(byte[] partialAuthMask) {
+        // Create a new authentication mask that will include the security header
+        byte[] authMaskFull = new byte[partialAuthMask.length + getHeaderSize()];
+        System.arraycopy(partialAuthMask, 0, authMaskFull, 0, partialAuthMask.length);
+
+        // Add a mask for the security header
+        int secAuthMaskStart = partialAuthMask.length;
+        // We want to authenticate the SPI field (first 16 bits)
+        authMaskFull[secAuthMaskStart] = 1;
+        authMaskFull[secAuthMaskStart + 1] = 1;
+
+        // Set final authMask for primary + sec header
+        return authMaskFull;
+    }
 
     /**
      * Encrypt the provided trasferFrame and authenticate data.
-     * @param transferFrame The full transfer frame, including empty security header and trailer
-     * @param frameStart The first byte of the frae
-     * @param dataStart     First byte of frame data
-     * @param secTrailerEnd First byte following the security trailer
+     *
+     * @param transferFrame   The full transfer frame, including empty security header and trailer
+     * @param frameStart      The first byte of the frae
+     * @param dataStart       First byte of frame data
+     * @param secTrailerEnd   First byte following the security trailer
+     * @param partialAuthMask Mask to authenticate header data (does not include the security header, this is
+     *                        automatically authenticated by the SDLS implementation)
      * @throws GeneralSecurityException
      */
-    public void applySecurity(byte[] transferFrame, int frameStart, int dataStart, int secTrailerEnd) throws GeneralSecurityException {
+    public void applySecurity(byte[] transferFrame, int frameStart, int dataStart, int secTrailerEnd,
+                              byte[] partialAuthMask) throws GeneralSecurityException {
         // Size of all headers
         int headersSize = dataStart - frameStart;
 
-        // IV must never be re-used with same key for AES-GCM, so we generate a random one for every encryption.
+        // IV must never be re-used with same key for AES-GCM, so we generate a random
+        // one for every encryption.
         byte[] iv = new byte[GCM_IV_LEN_BYTES];
         secureRandom.nextBytes(iv);
 
@@ -117,8 +124,9 @@ public class SdlsSecurityAssociation {
         System.arraycopy(iv, 0, transferFrame, secHeaderStart + 2, iv.length);
 
         // create data to authenticate by masking frame headers with authMask
-        byte[] aad = new byte[headersSize];
-        for (int i = 0; i < dataStart; ++i) {
+        byte[] authMask = completeAuthMask(partialAuthMask);
+        byte[] aad = new byte[authMask.length];
+        for (int i = 0; i < authMask.length; ++i) {
             aad[i] = (byte) (transferFrame[frameStart + i] & authMask[i]);
         }
 
@@ -144,7 +152,8 @@ public class SdlsSecurityAssociation {
         // cipherText is [encrypted data | security trailer (MAC)]
         assert cipherText.length == secTrailerEnd - dataStart;
 
-        // copy the result back into the frame, overwriting data & empty trailer with actual MAC
+        // copy the result back into the frame, overwriting data & empty trailer with
+        // actual MAC
         System.arraycopy(cipherText, 0, transferFrame, dataStart, cipherText.length);
     }
 
@@ -181,22 +190,28 @@ public class SdlsSecurityAssociation {
          */
         DecryptionFailed,
 
-        // This code is not used; AES-GCM does not use an additional sequence number, because
+        // This code is not used; AES-GCM does not use an additional sequence number,
+        // because
         // the cipher mode already includes an increasing counter (see CCSDS 355.0-B-2).
         // AntiReplaySequenceNumberFailure,
-        // This code is not used; AES-GCM does not require padding (see CCSDS 355.0-B-2).
+        // This code is not used; AES-GCM does not require padding (see CCSDS
+        // 355.0-B-2).
         // PaddingError,
     }
 
     /**
      * Verify and decrypt a transferFrame.
-     * @param transferFrame the entire transfer frame
-     * @param frameStart the index of the first byte of the transfer frame
-     * @param dataStart     index of the first byte of frame data
-     * @param secTrailerEnd index of the first byte after the security trailer
+     *
+     * @param transferFrame   the entire transfer frame
+     * @param frameStart      the index of the first byte of the transfer frame
+     * @param dataStart       index of the first byte of frame data
+     * @param secTrailerEnd   index of the first byte after the security trailer
+     * @param partialAuthMask Mask to authenticate header data (does not include the security header, this is
+     *                        automatically authenticated by the SDLS implementation)
      * @return a code indicating the verification/decryption status
      */
-    public VerificationStatusCode processSecurity(byte[] transferFrame, int frameStart, int dataStart, int secTrailerEnd) {
+    public VerificationStatusCode processSecurity(byte[] transferFrame, int frameStart, int dataStart, int secTrailerEnd,
+                                                  byte[] partialAuthMask) {
         // Size of all headers
         int headersSize = dataStart - frameStart;
 
@@ -215,8 +230,9 @@ public class SdlsSecurityAssociation {
         System.arraycopy(transferFrame, secHeaderStart + 2, receivedIv, 0, GCM_IV_LEN_BYTES);
 
         // create data to authenticate by masking frame headers with authMask
-        byte[] aad = new byte[headersSize];
-        for (int i = 0; i < (dataStart - frameStart); ++i) {
+        byte[] authMask = completeAuthMask(partialAuthMask);
+        byte[] aad = new byte[authMask.length];
+        for (int i = 0; i < authMask.length; ++i) {
             aad[i] = (byte) (transferFrame[frameStart + i] & authMask[i]);
         }
 

@@ -34,6 +34,8 @@ public class TcVcFrameLink {
 
     int farmBCounter;
 
+    byte[] authMask;
+
     // Optionally, a security association to encrypt/decrypt data on the link
     Optional<SdlsSecurityAssociation> maybeSdls = Optional.empty();
 
@@ -50,7 +52,7 @@ public class TcVcFrameLink {
             byte[] authMask = new byte[5];
             authMask[2] = (byte) 0b1111_1100; // authenticate virtual channel ID
 
-            this.maybeSdls = Optional.of(new SdlsSecurityAssociation(maybeSdlsKey.get(), encryptionSpi, authMask));
+            this.maybeSdls = Optional.of(new SdlsSecurityAssociation(maybeSdlsKey.get(), encryptionSpi));
         }
     }
 
@@ -101,7 +103,7 @@ public class TcVcFrameLink {
             var secTrailerEnd = frameLength - 2; // last 2 bytes of frame are CRC
 
             // Try to verify and decrypt it, handle any errors
-            var decryptionStatus = sa.processSecurity(data, offset - 5, dataStart, secTrailerEnd);
+            var decryptionStatus = sa.processSecurity(data, offset - 5, dataStart, secTrailerEnd, authMask);
             if (decryptionStatus != SdlsSecurityAssociation.VerificationStatusCode.NoFailure) {
                 log.error("Could not decrypt frame: {}", decryptionStatus);
                 return;
