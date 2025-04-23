@@ -419,7 +419,7 @@ public class ParameterIdDb {
         int fhash = paramFqn.hashCode() & (fqnHtable.length - 1);
         int idx = fqnHtable[fhash];
         if (idx == UNSET) {
-            pid = addAggArray(paramFqn, components);
+            pid = addAggArray(paramFqn, numericType, components);
             addEntry(new AggArrayEntry(pid, paramFqn, numericType, components));
         } else {
             Entry e = entries[idx];
@@ -439,17 +439,18 @@ public class ParameterIdDb {
             }
         }
         if (pid == -1) {
-            pid = addAggArray(paramFqn, components);
+            pid = addAggArray(paramFqn, numericType, components);
             addEntry(new AggArrayEntry(pid, paramFqn, numericType, components));
         }
 
         return pid;
     }
 
-    private int addAggArray(String paramFqn, IntArray aggArray) {
+    private int addAggArray(String paramFqn, int numericType, IntArray aggArray) {
         TablespaceRecord.Builder trb = TablespaceRecord.newBuilder()
                 .setType(TablespaceRecord.Type.PARCHIVE_AGGARR_INFO)
-                .setParameterFqn(paramFqn);
+                .setParameterFqn(paramFqn)
+                .setNumericType(numericType);
         aggArray.stream().forEach(x -> trb.addMemberId(x));
 
         TablespaceRecord tr;
