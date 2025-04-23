@@ -326,7 +326,6 @@ public class SdlsSecurityAssociation {
      */
     public void setSecretKey(byte[] secretKey) {
         this.secretKey = new SecretKeySpec(secretKey, secretKeyAlgorithm);
-        log.error("New secret key: {}", this.secretKey);
     }
 
     /**

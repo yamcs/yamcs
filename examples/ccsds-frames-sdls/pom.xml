@@ -5,15 +5,15 @@
   <parent>
     <groupId>org.yamcs.examples</groupId>
     <artifactId>examples</artifactId>
-    <version>5.11.1-SNAPSHOT</version>
+    <version>5.11.3-SNAPSHOT</version>
   </parent>
 
   <artifactId>ccsds-frames</artifactId>
   <packaging>jar</packaging>
 
-  <name>Yamcs :: Examples :: CCSDS Frames</name>
+  <name>Yamcs :: Examples :: CCSDS Frames (SDLS)</name>
   <description>
-    Example demonstrating the use of CCSDS Frames - AOS for telemetry and CLTU for telecommand. 
+    Example demonstrating the use of CCSDS Frames with SDLS
   </description>
 
   <dependencies>
