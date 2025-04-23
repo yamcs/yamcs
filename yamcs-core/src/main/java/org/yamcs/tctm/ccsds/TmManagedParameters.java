@@ -59,7 +59,7 @@ public class TmManagedParameters extends DownlinkManagedParameters {
 
         List<YConfiguration> l = config.getConfigList("virtualChannels");
         for (YConfiguration yc : l) {
-            TmVcManagedParameters vmp = new TmVcManagedParameters(yc);
+            TmVcManagedParameters vmp = new TmVcManagedParameters(yc, this);
             if (vcParams.containsKey(vmp.vcId)) {
                 throw new ConfigurationException("duplicate configuration of vcId " + vmp.vcId);
             }
@@ -99,10 +99,15 @@ public class TmManagedParameters extends DownlinkManagedParameters {
         ServiceType service;
         short encryptionSpi;
 
-        public TmVcManagedParameters(YConfiguration config) {
+        public TmVcManagedParameters(YConfiguration config, TmManagedParameters tmParams) {
             super(config);
             if (config.containsKey("encryptionSpi")) {
                 encryptionSpi = (short) config.getInt("encryptionSpi");
+                if (!tmParams.sdlsSecurityAssociations.containsKey(encryptionSpi)) {
+                    throw new ConfigurationException("Encryption SPI " + encryptionSpi
+                            + " configured for vcId "
+                            + vcId + " is not configured for link " + config.getString("linkName"));
+                }
             }
             if (vcId < 0 || vcId > 7) {
                 throw new ConfigurationException("Invalid vcId: " + vcId + ". Allowed values are from 0 to 7.");
