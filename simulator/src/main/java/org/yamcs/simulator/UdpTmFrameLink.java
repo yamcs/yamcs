@@ -195,10 +195,10 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
         abstract void encryptFrame();
         public byte[] getFrame() {
-            encodeHeaderAndTrailer();
             if (maybeSdls.isPresent()) {
                 encryptFrame();
             }
+            encodeHeaderAndTrailer();
             return data;
         }
 
@@ -453,16 +453,6 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
         @Override
         void encodeHeaderAndTrailer() {
-            if (this.maybeSdls.isPresent()) {
-                int secHeaderOffset = 6; // size of primary header
-                int secHeaderSize = SdlsSecurityAssociation.getHeaderSize();
-                Arrays.fill(data, secHeaderOffset, secHeaderOffset + secHeaderSize, (byte) 0);
-
-                int secTrailerSize = SdlsSecurityAssociation.getTrailerSize();
-                int secTrailerOffset = data.length - 6 - secTrailerSize; // 6 is size of CRC + clcw
-                Arrays.fill(data, secTrailerOffset, secTrailerOffset + secTrailerSize, (byte) 0);
-            }
-
             // set the frame sequence count
             data[3] = (byte) (vcSeqCount);
 
@@ -478,10 +468,6 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
         @Override
         public byte[] getIdleFrame() {
-            ByteArrayUtils.encodeUnsignedShort(0x7FE, data, 4);
-            int x = crc.compute(data, 0, data.length - 2);
-            ByteArrayUtils.encodeUnsignedShort(x, data, data.length - 2);
-
             if (this.maybeSdls.isPresent()) {
                 try {
                     this.maybeSdls.get().applySecurity(data, 0, hdrSize(), dataEnd + SdlsSecurityAssociation.getTrailerSize());
@@ -489,6 +475,10 @@ public class UdpTmFrameLink extends AbstractScheduledService {
                     log.error("could not encrypt idle frame: {}", e);
                 }
             }
+
+            ByteArrayUtils.encodeUnsignedShort(0x7FE, data, 4);
+            int x = crc.compute(data, 0, data.length - 2);
+            ByteArrayUtils.encodeUnsignedShort(x, data, data.length - 2);
 
             vcSeqCount++;
 
