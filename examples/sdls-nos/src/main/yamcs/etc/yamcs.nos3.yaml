@@ -17,13 +17,6 @@ services:
       name: realtime
       type: realtime
   - class: org.yamcs.archive.CommandHistoryRecorder
-  - class: org.yamcs.parameterarchive.ParameterArchive
-    args:
-      realtimeFiller:
-        enabled: true
-      backFiller:
-        enabled: false
-        warmupTime: 60
   - class: org.yamcs.plists.ParameterListService
   - class: org.yamcs.timeline.TimelineService
 
@@ -48,6 +41,23 @@ dataLinks:
         packetPreprocessorClassName: org.yamcs.tctm.cfs.CfsPacketPreprocessor
         packetPreprocessorArgs:
           useLocalGenerationTime: true
+
+  - name: radio-out
+    class: org.yamcs.tctm.ccsds.UdpTcFrameLink
+    host: localhost #host and port where to send the frames to
+    port: 8010
+    spacecraftId: 0x3
+    maxFrameLength: 1024
+    errorDetection: CRC16
+    encryption:
+      - spi: 4
+        keyFile: /home/abalgavy/noskey
+    virtualChannels:
+         - vcId: 4
+           # TODO: validate that this refers to an actual SPI
+           encryptionSpi: 4
+           commandPostprocessorClassName: org.yamcs.tctm.cfs.CfsCommandPostprocessor
+           stream: "tc_realtime" #which yamcs stream to get the data from
 
   - name: debug-in
     class: org.yamcs.tctm.UdpTmDataLink
