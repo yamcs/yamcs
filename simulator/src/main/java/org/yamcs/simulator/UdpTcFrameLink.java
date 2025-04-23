@@ -36,11 +36,11 @@ public class UdpTcFrameLink extends AbstractExecutionThreadService {
     TcVcFrameLink[] vcHandlers;
     int[] clcw;
 
-    public UdpTcFrameLink(ColSimulator simulator, int port, Optional<byte[]> maybeSdlsKey, short encryptionSpi) {
+    public UdpTcFrameLink(ColSimulator simulator, int port, Optional<byte[]> maybeSdlsKey, short encryptionSpi, int encryptionSeqNumWindow) {
         this.simulator = simulator;
         this.port = port;
         datagram = new DatagramPacket(new byte[2048], 2048);
-        vcHandlers = new TcVcFrameLink[] { new TcVcFrameLink(simulator, 0, maybeSdlsKey, encryptionSpi) };
+        vcHandlers = new TcVcFrameLink[] { new TcVcFrameLink(simulator, 0, maybeSdlsKey, encryptionSpi, encryptionSeqNumWindow) };
         clcw = new int[] { vcHandlers[0].getCLCW() };
     }
 

@@ -54,6 +54,7 @@ services:
           spi: 1
           # 256-bit key to encrypt/decrypt data
           keyFile: etc/sdls-presharedkey-256bit
+          seqNumWindow: 10
 
 dataLinks:
   - name: UDP_FRAME_OUT
@@ -72,13 +73,18 @@ dataLinks:
     # Enable SDLS encryption/decryption on this link.
     # A link can have multiple encryption keys, each identified by a Security Parameter Index (SPI).
     # A virtual channel is then configured to use a particular SPI.
+    # This basically defines the security associations on the link.
     encryption:
       - spi: 1
         keyFile: etc/sdls-presharedkey-256bit
+        # the window of acceptable sequence numbers (i.e. current minus this value, current plus this value)
+        seqNumWindow: 10
       - spi: 2
         keyFile: etc/sdls-presharedkey-256bit
+        seqNumWindow: 10
       - spi: 3
         keyFile: etc/sdls-presharedkey-256bit
+        seqNumWindow: 10
     virtualChannels:
          - vcId: 0
            # This channel is encrypted with SDLS, using SPI 1 (defined above).
@@ -115,10 +121,13 @@ dataLinks:
     encryption:
       - spi: 1
         keyFile: etc/sdls-presharedkey-256bit
+        seqNumWindow: 10
       - spi: 2
         keyFile: etc/sdls-presharedkey-256bit
+        seqNumWindow: 10
       - spi: 3
         keyFile: etc/sdls-presharedkey-256bit
+        seqNumWindow: 10
     spacecraftId: 0xAB
     frameLength: 1115 #decoded frame length
     frameHeaderErrorControlPresent: true #2 bytes of reed-solomon (10,6) in the header of all frames

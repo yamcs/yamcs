@@ -60,8 +60,10 @@ An example of a UDP TM frame link specification is below:
         encryption:
           - spi: 1
             keyFile: etc/sdls-presharedkey-256bit
+            encryptionSeqNumWindow: 1
           - spi: 2
             keyFile: etc/sdls-presharedkey-256bit
+            encryptionSeqNumWindow: 1
         virtualChannels:
           - vcId: 0
             encryptionSpi: 1
@@ -149,13 +151,16 @@ spi (integer)
 keyFile (string)
     **Required.** Specifies the path to the 256-bit encryption key for symmetric encryption.
 
+encryptionSeqNumWindow (integer)
+    **Required.** If SDLS encryption is used, this defines the maximum value by which the sequence number of incoming frames can differ from the current sequence number.
+
 For each Virtual Channel in the ``virtualChannels`` map, the following parameters can be used:
 
 vcId (integer)
     **Required.** The configured Virtual Channel identifier.
 
 encryptionSpi (integer)
-    If specified, instructs the virtual channel to encrypt and authenticate frames, using the specified Security Parameter Index. The ``encryptionSpi`` must be one of the ``spi`` values in the ``encryption`` list for the link.
+    If specified, instructs the virtual channel to use SDLS for frame encryption and authentication, using the specified Security Parameter Index. The ``encryptionSpi`` must be one of the ``spi`` values in the ``encryption`` list for the link.
 
 ocfPresent: (boolean)
     Used for AOS frames to indicate that the Virtual Channel uses the  Operational Control Field (OCF) Service to transport the CLCW containing acknowledgments for the uplinked TC frames. For TM and USLP frames, there is a flag in each frame that indicates the presence or absence of OCF.
@@ -221,10 +226,13 @@ An example of a UDP TC frame link specification is below:
       encryption:
         - spi: 1
           keyFile: etc/sdls-presharedkey-256bit
+          encryptionSeqNumWindow: 1
         - spi: 2
           keyFile: etc/sdls-presharedkey-256bit
+          encryptionSeqNumWindow: 1
         - spi: 3
           keyFile: etc/sdls-presharedkey-256bit
+          encryptionSeqNumWindow: 1
       virtualChannels:
           - vcId: 0
             encryptionSpi: 1
@@ -305,6 +313,9 @@ vcId (integer)
 
 encryptionSpi (integer)
     If specified, instructs the virtual channel to encrypt and authenticate frames, using the specified Security Parameter Index. The ``encryptionSpi`` must be one of the ``spi`` values in the ``encryption`` list for the link.
+
+encryptionSeqNumWindow (integer)
+    If SDLS encryption is used, this defines the maximum value by which the sequence number of incoming frames can differ from the current sequence number.
 
 service (string)
     Currently the only supported option is ``PACKET`` which is also the default.

@@ -38,6 +38,7 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
         Spec frameEncryptionSpec = new Spec();
         frameEncryptionSpec.addOption("keyFile", OptionType.STRING).withRequired(true);
         frameEncryptionSpec.addOption("spi", OptionType.INTEGER).withRequired(true);
+        frameEncryptionSpec.addOption("seqNumWindow", OptionType.INTEGER).withRequired(true);
         spec.addOption("encryption", OptionType.LIST).withElementType(OptionType.MAP).withSpec(frameEncryptionSpec);
 
         spec.addOption("clcwStream", OptionType.STRING);

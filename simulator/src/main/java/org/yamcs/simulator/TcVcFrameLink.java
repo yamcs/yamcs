@@ -39,7 +39,8 @@ public class TcVcFrameLink {
     // Optionally, a security association to encrypt/decrypt data on the link
     Optional<SdlsSecurityAssociation> maybeSdls = Optional.empty();
 
-    public TcVcFrameLink(ColSimulator simulator, int vcId, Optional<byte[]> maybeSdlsKey, short encryptionSpi) {
+    public TcVcFrameLink(ColSimulator simulator, int vcId, Optional<byte[]> maybeSdlsKey, short encryptionSpi,
+                         int encryptionSeqNumWindow) {
         this.simulator = simulator;
         this.vcId = vcId;
 
@@ -49,10 +50,10 @@ public class TcVcFrameLink {
             // the frame data is already part of authentication.
             // No need to authenticate data, already part of GCM
             // Authenticate virtual channel ID; no segment header is present
-            byte[] authMask = new byte[5];
+            authMask = new byte[5];
             authMask[2] = (byte) 0b1111_1100; // authenticate virtual channel ID
 
-            this.maybeSdls = Optional.of(new SdlsSecurityAssociation(maybeSdlsKey.get(), encryptionSpi));
+            this.maybeSdls = Optional.of(new SdlsSecurityAssociation(maybeSdlsKey.get(), encryptionSpi, encryptionSeqNumWindow));
         }
     }
 
