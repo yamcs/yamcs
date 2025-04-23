@@ -1,9 +1,6 @@
 package org.yamcs.simulator;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-
+import com.google.common.util.concurrent.AbstractExecutionThreadService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.tctm.ccsds.error.BchCltuGenerator.BchEncoder;
@@ -11,7 +8,10 @@ import org.yamcs.tctm.ccsds.error.CltuGenerator.Encoding;
 import org.yamcs.tctm.ccsds.error.Ldpc64CltuGenerator.Ldpc64Encoder;
 import org.yamcs.utils.ByteArrayUtils;
 
-import com.google.common.util.concurrent.AbstractExecutionThreadService;
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.util.Optional;
 
 /**
  * Simulator TC link implementing the
@@ -36,11 +36,11 @@ public class UdpTcFrameLink extends AbstractExecutionThreadService {
     TcVcFrameLink[] vcHandlers;
     int[] clcw;
 
-    public UdpTcFrameLink(ColSimulator simulator, int port) {
+    public UdpTcFrameLink(ColSimulator simulator, int port, Optional<byte[]> maybeSdlsKey, short encryptionSpi) {
         this.simulator = simulator;
         this.port = port;
         datagram = new DatagramPacket(new byte[2048], 2048);
-        vcHandlers = new TcVcFrameLink[] { new TcVcFrameLink(simulator, 0) };
+        vcHandlers = new TcVcFrameLink[] { new TcVcFrameLink(simulator, 0, maybeSdlsKey, encryptionSpi) };
         clcw = new int[] { vcHandlers[0].getCLCW() };
     }
 

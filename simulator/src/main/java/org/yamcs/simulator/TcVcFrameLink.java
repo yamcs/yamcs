@@ -1,12 +1,14 @@
 package org.yamcs.simulator;
 
-import java.nio.ByteBuffer;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.security.SdlsSecurityAssociation;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.StringConverter;
+
+import java.nio.ByteBuffer;
+import java.util.Optional;
 
 /**
  * Works as a child of {@link UdpTcFrameLink} and handles commands for one VC.
@@ -32,9 +34,22 @@ public class TcVcFrameLink {
 
     int farmBCounter;
 
-    public TcVcFrameLink(ColSimulator simulator, int vcId) {
+    Optional<SdlsSecurityAssociation> maybeSdls = Optional.empty();
+
+    public TcVcFrameLink(ColSimulator simulator, int vcId, Optional<byte[]> maybeSdlsKey, short encryptionSpi) {
         this.simulator = simulator;
         this.vcId = vcId;
+
+        // Create an auth mask for the TC primary header,
+        // the frame data is already part of authentication.
+        // No need to authenticate data, already part of GCM
+        // Authenticate virtual channel ID; no segment header is present
+        byte[] authMask = new byte[5];
+        authMask[2] = (byte) 0b1111_1100; // authenticate virtual channel ID
+
+        if (maybeSdlsKey.isPresent()) {
+            this.maybeSdls = Optional.of(new SdlsSecurityAssociation(maybeSdlsKey.get(), encryptionSpi, authMask));
+        }
     }
 
     void processTcFrame(byte[] data, int offset, int length) {
@@ -64,6 +79,18 @@ public class TcVcFrameLink {
             log.warn("Bad decoded frame length {}, expected max {}", frameLength, length);
             return;
         }
+
+        if (maybeSdls.isPresent()) {
+            var sa = maybeSdls.get();
+            var dataStart = offset + 5 + SdlsSecurityAssociation.getHeaderSize();
+            var secTrailerEnd = frameLength - 2;
+            var decryptionStatus = sa.processSecurity(data, offset, dataStart, secTrailerEnd);
+            if (decryptionStatus != SdlsSecurityAssociation.VerificationStatusCode.NoFailure) {
+                log.error("Could not decrypt frame: {}", decryptionStatus);
+                return;
+            }
+        }
+
         int c1 = crc.compute(data, offset, frameLength - 2);
         int c2 = ByteArrayUtils.decodeShort(data, offset + frameLength - 2) & 0xFFFF;
         if (c1 != c2) {
@@ -71,8 +98,15 @@ public class TcVcFrameLink {
                     StringConverter.arrayToHexString(data, offset, frameLength, true));
             return;
         }
+
         int cmdLength = frameLength - 7;
         offset += 5;
+
+        if (maybeSdls.isPresent()) {
+            cmdLength -= SdlsSecurityAssociation.getOverheadBytes();
+            offset += SdlsSecurityAssociation.getHeaderSize();
+        }
+
         if (controlCommand) {// BC frame
             if (bypassFlag) {
                 log.warn("Invalid frame with both control and bypass flags set, ignoring");
