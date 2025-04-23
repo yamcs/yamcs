@@ -64,28 +64,6 @@ public class TmFrameDecoder implements TransferFrameDecoder {
             throw new TcTmException("Received data for unknown VirtualChannel " + virtualChannelId);
         }
 
-        SdlsSecurityAssociation sdlsSa = tmParams.sdlsSecurityAssociations.get(vmp.encryptionSpi);
-        if (sdlsSa != null) {
-            int sdlsHeaderSize = SdlsSecurityAssociation.getHeaderSize();
-            int decryptionDataStart = dataOffset + sdlsHeaderSize;
-            if (secHeaderPresent) {
-                int secHeaderLength = 1 + data[dataOffset] & 0x3F;
-                decryptionDataStart += secHeaderLength;
-            }
-            int decryptionDataEnd = dataEnd;
-            if (crc != null) {
-                decryptionDataEnd -= 2;
-            }
-            if (ocfPresent) {
-                decryptionDataEnd -= 4;
-            }
-            VerificationStatusCode decryptionStatus = sdlsSa.processSecurity(data, offset, decryptionDataStart, decryptionDataEnd);
-            if (decryptionStatus != VerificationStatusCode.NoFailure) {
-                throw new TcTmException("Could not decrypt frame: " + decryptionStatus);
-            }
-        }
-
-        // TODO: CRC should be computed on encrypted data
         if (crc != null) {
             dataEnd -= 2;
             int c1 = crc.compute(data, offset, dataEnd - offset);
@@ -102,11 +80,6 @@ public class TmFrameDecoder implements TransferFrameDecoder {
             dataEnd -= 4;
             ttf.setOcf(ByteArrayUtils.decodeInt(data, dataEnd));
         }
-
-        if (sdlsSa != null) {
-            dataEnd -= SdlsSecurityAssociation.getTrailerSize();
-        }
-
         boolean syncFlag = (tfdfs & 0x4000) == 0x4000;
 
         if (secHeaderPresent) {
@@ -115,7 +88,23 @@ public class TmFrameDecoder implements TransferFrameDecoder {
             ttf.setShLength(secHeaderLength);
             dataOffset += secHeaderLength;
         }
+
+        SdlsSecurityAssociation sdlsSa = tmParams.sdlsSecurityAssociations.get(vmp.encryptionSpi);
         if (sdlsSa != null) {
+            int sdlsHeaderSize = SdlsSecurityAssociation.getHeaderSize();
+
+            // order dependency: assume dataOffset already has size of secondary header added
+            int decryptionDataStart = dataOffset + sdlsHeaderSize;
+
+            // order dependency: assume dataEnd already has subtracted: size of crc, size of ocf
+            int decryptionDataEnd = dataEnd;
+
+            VerificationStatusCode decryptionStatus = sdlsSa.processSecurity(data, offset, decryptionDataStart, decryptionDataEnd);
+            if (decryptionStatus != VerificationStatusCode.NoFailure) {
+                throw new TcTmException("Could not decrypt frame: " + decryptionStatus);
+            }
+
+            dataEnd -= SdlsSecurityAssociation.getTrailerSize();
             dataOffset += SdlsSecurityAssociation.getHeaderSize();
         }
 
