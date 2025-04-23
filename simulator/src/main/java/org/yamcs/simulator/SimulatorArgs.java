@@ -55,4 +55,10 @@ public class SimulatorArgs {
     @Parameter(names = "--type", description = "one of pus or columbus")
     public String type;
 
+    @Parameter(names = "--encryption-spi", description = "SPI to use for SDLS encryption of frames")
+    public int encryptionSpi;
+
+    @Parameter(names = "--encryption-key-file", description = "path to key file for SDLS encryption of frames")
+    public String encryptionKeyFile;
+
 }

@@ -1,10 +1,10 @@
 package org.yamcs.tctm.ccsds;
 
-import java.util.Map;
-
 import org.yamcs.YConfiguration;
 import org.yamcs.tctm.Link;
 import org.yamcs.utils.YObjectLoader;
+
+import java.util.Map;
 
 /**
  * Stores configuration related to Master channels for downlink.

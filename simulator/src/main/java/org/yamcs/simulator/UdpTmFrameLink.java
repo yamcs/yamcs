@@ -1,20 +1,23 @@
 package org.yamcs.simulator;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.function.IntSupplier;
-
+import com.google.common.util.concurrent.AbstractScheduledService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.security.SdlsSecurityAssociation;
 import org.yamcs.tctm.ccsds.error.AosFrameHeaderErrorCorr;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.utils.ByteArrayUtils;
 
-import com.google.common.util.concurrent.AbstractScheduledService;
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.security.GeneralSecurityException;
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.function.IntSupplier;
 
 /**
  * Simulator link implementing the TM frames using one of the three CCSDS specs:
@@ -52,11 +55,17 @@ public class UdpTmFrameLink extends AbstractScheduledService {
     IntSupplier clcwSupplier;
 
     public UdpTmFrameLink(String frameType, String host, int port, int frameLength, double framesPerSec,
-            IntSupplier clcwSupplier) {
+                          IntSupplier clcwSupplier, Optional<byte[]> maybeSdlsKey, short sdlsSpi) {
         this.frameType = frameType;
         this.host = host;
         this.port = port;
-        this.frameSize = frameLength;
+
+        if (maybeSdlsKey.isPresent()) {
+            this.frameSize = frameLength - SdlsSecurityAssociation.getOverheadBytes();
+        } else {
+            this.frameSize = frameLength;
+        }
+
         this.framesPerSec = framesPerSec;
         this.clcwSupplier = clcwSupplier;
 
@@ -67,7 +76,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
             idleFrameBuilder = new AosVcSender(63, frameLength);
         } else if ("TM".equalsIgnoreCase(frameType)) {
             for (int i = 0; i < NUM_VC; i++) {
-                builders[i] = new TmVcSender(i, frameLength);
+                builders[i] = new TmVcSender(i, frameLength, maybeSdlsKey, sdlsSpi);
             }
             idleFrameBuilder = builders[0];
         } else if ("USLP".equalsIgnoreCase(frameType)) {
@@ -163,6 +172,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         byte[] pendingPacket;
         int pendingPacketOffset;
         byte[] data;
+        Optional<SdlsSecurityAssociation> maybeSdls = Optional.empty();
 
         boolean firstPacketInFrame = true;
         int firstHeaderPointer = -1;
@@ -173,7 +183,6 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         public VcBuilder(int vcId) {
             this.vcId = vcId;
             this.dataOffset = hdrSize();
-
         }
 
         public void setCLCW(int clcw) {
@@ -184,8 +193,12 @@ public class UdpTmFrameLink extends AbstractScheduledService {
             return dataEnd - dataOffset;
         }
 
+        abstract void encryptFrame();
         public byte[] getFrame() {
             encodeHeaderAndTrailer();
+            if (maybeSdls.isPresent()) {
+                encryptFrame();
+            }
             return data;
         }
 
@@ -201,12 +214,23 @@ public class UdpTmFrameLink extends AbstractScheduledService {
             vcSeqCount++;
             firstPacketInFrame = true;
             dataOffset = hdrSize();
+
+            // CRC is computed on user data, not SDLS, so that must remain constant
+            // If we're running with SDLS, zero the security header and trailer
+            if (this.maybeSdls.isPresent()) {
+                int secHeaderSize = SdlsSecurityAssociation.getHeaderSize();
+                int secHeaderOffset = dataOffset - secHeaderSize;
+                Arrays.fill(data, secHeaderOffset, secHeaderOffset + secHeaderSize, (byte) 0);
+
+                int secTrailerSize = SdlsSecurityAssociation.getTrailerSize();
+                int secTrailerOffset = dataEnd;
+                Arrays.fill(data, secTrailerOffset, secTrailerOffset + secTrailerSize, (byte) 0);
+            }
         }
 
         /**
          * Copy data from the queue into the frame
          * 
-         * @param q
          * @return
          * @throws IOException
          */
@@ -334,21 +358,49 @@ public class UdpTmFrameLink extends AbstractScheduledService {
             encodeHeaderAndTrailer();
             return data;
         }
+
+        @Override
+        void encryptFrame() {
+            // TODO: unimplemented
+        }
     }
 
     static class TmVcSender extends VcBuilder {
         byte[] idleFrameData;
         int ocfFlag = 1;
 
-        public TmVcSender(int vcId, int frameSize) {
+        public TmVcSender(int vcId, int frameSize, Optional<byte[]> maybeSdlsKey, short sdlsSpi) {
             super(vcId);
             this.data = new byte[frameSize];
             dataEnd = frameSize - 4 - 2 * ocfFlag; // last 6 bytes are the OCF and CRC
+
+            if (maybeSdlsKey.isPresent()) {
+                // Create an auth mask for the primary header,
+                // the frame data is already part of authentication.
+                // No need to authenticate data, already part of GCM
+                byte[] authMask = new byte[primaryHdrSize()];
+                authMask[1] = 0b0000_1110; // authenticate virtual channel ID
+
+                this.maybeSdls = Optional.of(new SdlsSecurityAssociation(maybeSdlsKey.get(), sdlsSpi, authMask));
+
+                // SDLS reduces end of data by the size of the trailer
+                dataEnd -= SdlsSecurityAssociation.getTrailerSize();
+                dataOffset = hdrSize();
+            }
             writeGvcId(data, vcId);
+
         }
 
         @Override
         int hdrSize() {
+            // SDLS encryption increases header size
+            return this.maybeSdls
+                    .map(sdlsSecurityAssociation -> primaryHdrSize() + sdlsSecurityAssociation.getHeaderSize())
+                    .orElse(primaryHdrSize());
+        }
+
+        // Without encryption
+        int primaryHdrSize() {
             return 6;
         }
 
@@ -358,6 +410,16 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
         @Override
         void encodeHeaderAndTrailer() {
+            if (this.maybeSdls.isPresent()) {
+                int secHeaderOffset = 6; // size of primary header
+                int secHeaderSize = SdlsSecurityAssociation.getHeaderSize();
+                Arrays.fill(data, secHeaderOffset, secHeaderOffset + secHeaderSize, (byte) 0);
+
+                int secTrailerSize = SdlsSecurityAssociation.getTrailerSize();
+                int secTrailerOffset = data.length - 6 - secTrailerSize; // 6 is size of CRC + clcw
+                Arrays.fill(data, secTrailerOffset, secTrailerOffset + secTrailerSize, (byte) 0);
+            }
+
             // set the frame sequence count
             data[3] = (byte) (vcSeqCount);
 
@@ -377,11 +439,29 @@ public class UdpTmFrameLink extends AbstractScheduledService {
             int x = crc.compute(data, 0, data.length - 2);
             ByteArrayUtils.encodeUnsignedShort(x, data, data.length - 2);
 
+            if (this.maybeSdls.isPresent()) {
+                try {
+                    this.maybeSdls.get().applySecurity(data, 0, hdrSize(), dataEnd + SdlsSecurityAssociation.getTrailerSize());
+                } catch (GeneralSecurityException e) {
+                    log.error("could not encrypt idle frame: {}", e);
+                }
+            }
+
             vcSeqCount++;
 
             return data;
 
         }
+
+        @Override
+        void encryptFrame() {
+            try {
+                this.maybeSdls.get().applySecurity(data, 0, hdrSize(), dataEnd + SdlsSecurityAssociation.getTrailerSize());
+            } catch (GeneralSecurityException e) {
+                log.error("could not encrypt frame: {}", e);
+            }
+        }
+
     }
 
     /**
@@ -434,6 +514,11 @@ public class UdpTmFrameLink extends AbstractScheduledService {
             vcSeqCount++;
             encodeHeaderAndTrailer();
             return data;
+        }
+
+        @Override
+        void encryptFrame() {
+            // TODO: unimplemented
         }
     }
 }

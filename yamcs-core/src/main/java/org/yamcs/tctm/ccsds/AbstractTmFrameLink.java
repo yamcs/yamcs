@@ -1,20 +1,16 @@
 package org.yamcs.tctm.ccsds;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
-
 import org.yamcs.ConfigurationException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
-import org.yamcs.tctm.AbstractLink;
-import org.yamcs.tctm.AggregatedDataLink;
-import org.yamcs.tctm.Link;
-import org.yamcs.tctm.RawFrameDecoder;
-import org.yamcs.tctm.TcTmException;
+import org.yamcs.tctm.*;
 import org.yamcs.tctm.ccsds.TransferFrameDecoder.CcsdsFrameType;
 import org.yamcs.time.Instant;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class AbstractTmFrameLink extends AbstractLink implements AggregatedDataLink {
     // all the TM frame links should move the TM frame config under this section, to allow having both TM and TC frame
@@ -29,6 +25,8 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
     protected long errFrameCount;
     protected RawFrameDecoder rawFrameDecoder;
 
+
+
     @Override
     public Spec getDefaultSpec() {
         var spec = super.getDefaultSpec();
@@ -38,6 +36,12 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
 
     public static Spec addDefaultOptions(Spec spec) {
         spec.addOption("frameType", OptionType.STRING).withChoices(CcsdsFrameType.class);
+
+        Spec frameEncryptionSpec = new Spec();
+        frameEncryptionSpec.addOption("keyFile", OptionType.STRING).withRequired(true);
+        frameEncryptionSpec.addOption("spi", OptionType.INTEGER).withRequired(true);
+        spec.addOption("encryption", OptionType.LIST).withElementType(OptionType.MAP).withSpec(frameEncryptionSpec);
+
         spec.addOption("clcwStream", OptionType.STRING);
         spec.addOption("goodFrameStream", OptionType.STRING);
         spec.addOption("badFrameStream", OptionType.STRING);
@@ -88,6 +92,7 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
                 l.setParent(this);
             }
         }
+
     }
 
     /**
