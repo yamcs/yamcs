@@ -3,10 +3,12 @@ package org.yamcs.tctm.ccsds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.rs.ReedSolomonException;
+import org.yamcs.security.SdlsSecurityAssociation;
+import org.yamcs.security.SdlsSecurityAssociation.VerificationStatusCode;
 import org.yamcs.tctm.TcTmException;
+import org.yamcs.tctm.ccsds.AosManagedParameters.AosVcManagedParameters;
 import org.yamcs.tctm.ccsds.AosManagedParameters.ServiceType;
 import org.yamcs.tctm.ccsds.DownlinkManagedParameters.FrameErrorDetection;
-import org.yamcs.tctm.ccsds.AosManagedParameters.AosVcManagedParameters;
 import org.yamcs.tctm.ccsds.error.AosFrameHeaderErrorCorr;
 import org.yamcs.tctm.ccsds.error.AosFrameHeaderErrorCorr.DecoderResult;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
@@ -43,16 +45,8 @@ public class AosFrameDecoder implements TransferFrameDecoder {
             throw new TcTmException("Bad frame length " + length + "; expected " + aosParams.frameLength);
         }
         int dataEnd = offset + length;
-        
 
-        if (crc != null) {
-            dataEnd -= 2;
-            int c1 = crc.compute(data, offset, dataEnd - offset);
-            int c2 = ByteArrayUtils.decodeUnsignedShort(data, dataEnd);
-            if (c1 != c2) {
-                throw new CorruptedFrameException("Bad CRC computed: " + c1 + " in the frame: " + c2);
-            }
-        }
+
         int gvcid;
         int dataOffset = offset + 6;
 
@@ -68,17 +62,15 @@ public class AosFrameDecoder implements TransferFrameDecoder {
         } else {
             gvcid = ByteArrayUtils.decodeUnsignedShort(data, offset);
         }
+        int virtualChannelId = gvcid & 0x3F;
+        AosVcManagedParameters vmp = aosParams.vcParams.get(virtualChannelId);
 
         int vn = gvcid >> 14;
         if (vn != 1) {
             throw new TcTmException("Invalid AOS frame version number " + vn + "; expected " + 1);
         }
         int spacecraftId = (gvcid >> 6)&0xFF;
-        int virtualChannelId = gvcid & 0x3F;
-
         AosTransferFrame atf = new AosTransferFrame(data, spacecraftId, virtualChannelId);
-
-        AosVcManagedParameters vmp = aosParams.vcParams.get(virtualChannelId);
         if (vmp == null) {
             if (virtualChannelId == 63) {
                 atf.setServiceType(ServiceType.IDLE);
@@ -87,6 +79,40 @@ public class AosFrameDecoder implements TransferFrameDecoder {
             throw new TcTmException("Received data for unknown VirtualChannel " + virtualChannelId);
         }
 
+        SdlsSecurityAssociation sdlsSecurityAssociation = aosParams.sdlsSecurityAssociations.get(vmp.encryptionSpi);
+
+        if (sdlsSecurityAssociation != null) {
+            int decryptionDataStart = dataOffset;
+
+            if (vmp.service == ServiceType.PACKET)
+                decryptionDataStart += 2;
+
+            decryptionDataStart += aosParams.insertZoneLength;
+
+            decryptionDataStart += SdlsSecurityAssociation.getHeaderSize();
+
+            int decryptionTrailerEnd = dataEnd;
+            if (crc != null)
+                decryptionTrailerEnd -= 2;
+
+            if (vmp.ocfPresent)
+                decryptionTrailerEnd -= 4;
+
+            VerificationStatusCode decryptionResult = sdlsSecurityAssociation.processSecurity(data, offset, decryptionDataStart, decryptionTrailerEnd);
+            if (decryptionResult != VerificationStatusCode.NoFailure) {
+                log.error("Couldn't decrypt frame: {}", decryptionResult);
+            }
+        }
+        if (crc != null) {
+            dataEnd -= 2;
+            int c1 = crc.compute(data, offset, dataEnd - offset);
+            int c2 = ByteArrayUtils.decodeUnsignedShort(data, dataEnd);
+            if (c1 != c2) {
+                throw new CorruptedFrameException("Bad CRC computed: " + c1 + " in the frame: " + c2);
+            }
+        }
+
+
         dataOffset += aosParams.insertZoneLength;
 
         atf.setVcFrameSeq(ByteArrayUtils.decodeUnsigned3Bytes(data, offset + 2));
@@ -94,6 +120,11 @@ public class AosFrameDecoder implements TransferFrameDecoder {
         if (vmp.ocfPresent) {
             dataEnd -= 4;
             atf.setOcf(ByteArrayUtils.decodeInt(data, dataEnd));
+        }
+
+        if (sdlsSecurityAssociation != null) {
+            dataOffset += SdlsSecurityAssociation.getHeaderSize();
+            dataEnd -= SdlsSecurityAssociation.getTrailerSize();
         }
 
         if (vmp.service == ServiceType.PACKET) {
