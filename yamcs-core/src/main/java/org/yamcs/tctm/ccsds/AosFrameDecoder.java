@@ -105,7 +105,7 @@ public class AosFrameDecoder implements TransferFrameDecoder {
 
             int decryptionTrailerEnd = dataEnd;
 
-            SdlsSecurityAssociation.VerificationStatusCode decryptionResult = sdlsSecurityAssociation.processSecurity(data, offset, decryptionDataStart, decryptionTrailerEnd);
+            SdlsSecurityAssociation.VerificationStatusCode decryptionResult = sdlsSecurityAssociation.processSecurity(data, offset, decryptionDataStart, decryptionTrailerEnd, vmp.authMask);
             if (decryptionResult != SdlsSecurityAssociation.VerificationStatusCode.NoFailure) {
                 log.error("Couldn't decrypt frame: {}", decryptionResult);
             }

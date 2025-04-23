@@ -112,6 +112,12 @@ public class AosManagedParameters extends DownlinkManagedParameters {
             } else if (service == ServiceType.VCA) {
                 parseVcaConfig();
             }
+
+            // Auth mask with the size of the AOS primary header
+            authMask = new byte[10];
+            // Authenticate only virtual channel ID.
+            // We never authenticate the optional insert zone or Frame Header Error Control field.
+            authMask[1] = 0b0011_1111;
         }
 
         AosVcManagedParameters() {

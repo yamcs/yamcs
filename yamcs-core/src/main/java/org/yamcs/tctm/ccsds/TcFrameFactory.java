@@ -66,7 +66,7 @@ public class TcFrameFactory {
             dataStart += 1;
         }
 
-        short spi = tcParams.getVcParams(vcParams.vcId).encryptionSpi;
+        short spi = vcParams.encryptionSpi;
         boolean isEncrypted = tcParams.sdlsSecurityAssociations.containsKey(spi);
 
         // Increase the used length to accunt for SDLS overhead
@@ -106,7 +106,7 @@ public class TcFrameFactory {
             length += 2;
         }
 
-        short spi = tcParams.getVcParams(vcId).encryptionSpi;
+        short spi = vcParams.encryptionSpi;
         if (tcParams.sdlsSecurityAssociations.containsKey(spi)) {
             length += SdlsSecurityAssociation.getOverheadBytes();
         }
@@ -132,13 +132,13 @@ public class TcFrameFactory {
         }
 
         // Get the SPI associated with this channel
-        short spi = tcParams.getVcParams(ttf.getVirtualChannelId()).encryptionSpi;
+        short spi = vcParams.encryptionSpi;
         // Get the SA associated with the SPI
         SdlsSecurityAssociation sa = tcParams.sdlsSecurityAssociations.get(spi);
         // And potentially encrypt the data
         if (sa != null) {
             try {
-                sa.applySecurity(data, 0, ttf.getDataStart(), ttf.getDataEnd() + SdlsSecurityAssociation.getTrailerSize());
+                sa.applySecurity(data, 0, ttf.getDataStart(), ttf.getDataEnd() + SdlsSecurityAssociation.getTrailerSize(), vcParams.authMask);
             } catch (GeneralSecurityException e) {
                 throw new RuntimeException(e);
             }

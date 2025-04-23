@@ -83,6 +83,13 @@ public class TmManagedParameters extends DownlinkManagedParameters {
             } else if (service == ServiceType.VCA) {
                 parseVcaConfig();
             }
+
+            // Auth mask with the size of the TM primary header
+            authMask = new byte[6];
+            // Authenticate only virtual channel ID.
+            // We never authenticate the Master Channel Frame Count field.
+            authMask[1] = 0b0000_1110;
+
         }
     }
 
