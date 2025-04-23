@@ -66,7 +66,7 @@ public class TcFrameFactory {
       dataStart += 1;
     }
 
-    short spi = tcParams.vcParams.get(vcParams.vcId).encryptionSpi;
+    short spi = tcParams.getVcParams(vcParams.vcId).encryptionSpi;
     boolean isEncrypted = tcParams.sdlsSecurityAssociations.containsKey(spi);
 
     if (isEncrypted)
@@ -104,7 +104,8 @@ public class TcFrameFactory {
     if (crc != null) {
       length += 2;
     }
-    short spi = (short) tcParams.vcParams.get(vcId).encryptionSpi;
+
+    short spi = tcParams.getVcParams(vcId).encryptionSpi;
     if (tcParams.sdlsSecurityAssociations.containsKey(spi)) {
       length += SdlsSecurityAssociation.getOverheadBytes();
     }
@@ -128,12 +129,8 @@ public class TcFrameFactory {
     if (ttf.segmentHeader != null) {
       data[5] = ttf.segmentHeader.get();
     }
-    if (crc != null) {
-      int c = crc.compute(data, 0, data.length - 2);
-      ByteArrayUtils.encodeUnsignedShort(c, data, data.length - 2);
-    }
 
-    short spi = tcParams.vcParams.get(ttf.getVirtualChannelId()).encryptionSpi;
+    short spi = tcParams.getVcParams(ttf.getVirtualChannelId()).encryptionSpi;
     SdlsSecurityAssociation sa = tcParams.sdlsSecurityAssociations.get(spi);
     if (sa != null) {
       try {
@@ -142,6 +139,11 @@ public class TcFrameFactory {
         throw new RuntimeException(e);
       }
     }
+    if (crc != null) {
+      int c = crc.compute(data, 0, data.length - 2);
+      ByteArrayUtils.encodeUnsignedShort(c, data, data.length - 2);
+    }
+
     return data;
   }
 }

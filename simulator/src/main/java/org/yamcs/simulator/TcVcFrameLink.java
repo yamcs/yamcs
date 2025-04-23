@@ -80,17 +80,6 @@ public class TcVcFrameLink {
             return;
         }
 
-        if (maybeSdls.isPresent()) {
-            var sa = maybeSdls.get();
-            var dataStart = offset + 5 + SdlsSecurityAssociation.getHeaderSize();
-            var secTrailerEnd = frameLength - 2;
-            var decryptionStatus = sa.processSecurity(data, offset, dataStart, secTrailerEnd);
-            if (decryptionStatus != SdlsSecurityAssociation.VerificationStatusCode.NoFailure) {
-                log.error("Could not decrypt frame: {}", decryptionStatus);
-                return;
-            }
-        }
-
         int c1 = crc.compute(data, offset, frameLength - 2);
         int c2 = ByteArrayUtils.decodeShort(data, offset + frameLength - 2) & 0xFFFF;
         if (c1 != c2) {
@@ -103,6 +92,14 @@ public class TcVcFrameLink {
         offset += 5;
 
         if (maybeSdls.isPresent()) {
+            var sa = maybeSdls.get();
+            var dataStart = offset + SdlsSecurityAssociation.getHeaderSize();
+            var secTrailerEnd = frameLength - 2;
+            var decryptionStatus = sa.processSecurity(data, offset - 5, dataStart, secTrailerEnd);
+            if (decryptionStatus != SdlsSecurityAssociation.VerificationStatusCode.NoFailure) {
+                log.error("Could not decrypt frame: {}", decryptionStatus);
+                return;
+            }
             cmdLength -= SdlsSecurityAssociation.getOverheadBytes();
             offset += SdlsSecurityAssociation.getHeaderSize();
         }
