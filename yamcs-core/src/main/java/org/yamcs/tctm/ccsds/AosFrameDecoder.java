@@ -79,30 +79,6 @@ public class AosFrameDecoder implements TransferFrameDecoder {
             throw new TcTmException("Received data for unknown VirtualChannel " + virtualChannelId);
         }
 
-        SdlsSecurityAssociation sdlsSecurityAssociation = aosParams.sdlsSecurityAssociations.get(vmp.encryptionSpi);
-
-        if (sdlsSecurityAssociation != null) {
-            int decryptionDataStart = dataOffset;
-
-            if (vmp.service == ServiceType.PACKET)
-                decryptionDataStart += 2;
-
-            decryptionDataStart += aosParams.insertZoneLength;
-
-            decryptionDataStart += SdlsSecurityAssociation.getHeaderSize();
-
-            int decryptionTrailerEnd = dataEnd;
-            if (crc != null)
-                decryptionTrailerEnd -= 2;
-
-            if (vmp.ocfPresent)
-                decryptionTrailerEnd -= 4;
-
-            VerificationStatusCode decryptionResult = sdlsSecurityAssociation.processSecurity(data, offset, decryptionDataStart, decryptionTrailerEnd);
-            if (decryptionResult != VerificationStatusCode.NoFailure) {
-                log.error("Couldn't decrypt frame: {}", decryptionResult);
-            }
-        }
         if (crc != null) {
             dataEnd -= 2;
             int c1 = crc.compute(data, offset, dataEnd - offset);
@@ -122,7 +98,26 @@ public class AosFrameDecoder implements TransferFrameDecoder {
             atf.setOcf(ByteArrayUtils.decodeInt(data, dataEnd));
         }
 
+
+        SdlsSecurityAssociation sdlsSecurityAssociation = aosParams.sdlsSecurityAssociations.get(vmp.encryptionSpi);
+
         if (sdlsSecurityAssociation != null) {
+            // order dependency: assume dataOffset already has insert zone length added
+            int decryptionDataStart = dataOffset;
+
+            // skip over first header pointer
+            if (vmp.service == ServiceType.PACKET)
+                decryptionDataStart += 2;
+
+            decryptionDataStart += SdlsSecurityAssociation.getHeaderSize();
+
+            // order dependency: assume dataEnd already has subtracted size of crc and size of ocf
+            int decryptionTrailerEnd = dataEnd;
+
+            VerificationStatusCode decryptionResult = sdlsSecurityAssociation.processSecurity(data, offset, decryptionDataStart, decryptionTrailerEnd);
+            if (decryptionResult != VerificationStatusCode.NoFailure) {
+                log.error("Couldn't decrypt frame: {}", decryptionResult);
+            }
             dataOffset += SdlsSecurityAssociation.getHeaderSize();
             dataEnd -= SdlsSecurityAssociation.getTrailerSize();
         }

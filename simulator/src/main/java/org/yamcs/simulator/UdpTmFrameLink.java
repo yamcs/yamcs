@@ -350,19 +350,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
         @Override
         void encodeHeaderAndTrailer() {
-            // Zero out security header/trailer
-            if (this.maybeSdls.isPresent()) {
-                int secHeaderOffset = primaryHdrSize(); // size of primary header
-                int secHeaderSize = SdlsSecurityAssociation.getHeaderSize();
-                Arrays.fill(data, secHeaderOffset, secHeaderOffset + secHeaderSize, (byte) 0);
-
-                int secTrailerSize = SdlsSecurityAssociation.getTrailerSize();
-                int secTrailerOffset = data.length - 6 - secTrailerSize; // 6 is size of CRC + clcw
-                Arrays.fill(data, secTrailerOffset, secTrailerOffset + secTrailerSize, (byte) 0);
-            }
-
             // set the frame sequence count
-
             ByteArrayUtils.encodeUnsigned3Bytes((int) vcSeqCount, data, 2);
             data[5] = (byte) (0x60 + ((vcSeqCount >>> 24) & 0xF));
 
@@ -387,14 +375,10 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         @Override
         public byte[] getIdleFrame() {
             vcSeqCount++;
-            encodeHeaderAndTrailer();
             if (this.maybeSdls.isPresent()) {
-                try {
-                    this.maybeSdls.get().applySecurity(data, 0, hdrSize(), dataEnd + SdlsSecurityAssociation.getTrailerSize());
-                } catch (GeneralSecurityException e) {
-                    log.error("could not encrypt idle frame: {}", e);
-                }
+                encryptFrame();
             }
+            encodeHeaderAndTrailer();
             return data;
         }
 
