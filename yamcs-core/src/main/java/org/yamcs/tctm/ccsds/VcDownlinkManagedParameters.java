@@ -20,6 +20,10 @@ public class VcDownlinkManagedParameters {
     YConfiguration packetPreprocessorArgs;
     final YConfiguration config;
     protected String vcaHandlerClassName;
+
+    /**
+     * The Security Parameter Index used on this channel
+     */
     short encryptionSpi;
 
     public VcDownlinkManagedParameters(int vcId) {
@@ -32,6 +36,7 @@ public class VcDownlinkManagedParameters {
         this.vcId = config.getInt("vcId");
         if (config.containsKey("encryptionSpi")) {
             encryptionSpi = (short) config.getInt("encryptionSpi");
+            // If there is no security association for this SPI, it's a configuration error.
             if (!params.sdlsSecurityAssociations.containsKey(encryptionSpi)) {
                 throw new ConfigurationException("Encryption SPI " + encryptionSpi
                         + " configured for vcId "

@@ -245,6 +245,7 @@ public class SimulatorCommander extends ProcessRunner {
             ColSimulator sim = (ColSimulator) simulator;
             if (runtimeOptions.tmFrameLength > 0) {
 
+                // Load a key for encryption/decryption if one was provided
                 final Optional<byte[]> maybeSdlsKey;
                 String keyFile = runtimeOptions.encryptionKeyFile;
                 if (keyFile != null) {
@@ -262,7 +263,7 @@ public class SimulatorCommander extends ProcessRunner {
                         runtimeOptions.tmFramePort,
                         runtimeOptions.tmFrameLength, runtimeOptions.tmFrameFreq, () -> {
                             return tcFrameLink.getClcw();
-                        }, maybeSdlsKey, (short)runtimeOptions.encryptionSpi);
+                        }, maybeSdlsKey, (short) runtimeOptions.encryptionSpi);
                 services.add(tcFrameLink);
                 services.add(frameLink);
                 sim.setTmFrameLink(frameLink);

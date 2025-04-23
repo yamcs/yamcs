@@ -17,6 +17,9 @@ public class VcUplinkManagedParameters {
     protected int priority;
 
     final YConfiguration config;
+    /**
+     * The Security Parameter Index used on this channel
+     */
     short encryptionSpi;
 
     public VcUplinkManagedParameters(int vcId) {
@@ -30,6 +33,7 @@ public class VcUplinkManagedParameters {
         this.priority = config.getInt("priority", 1);
         if (config.containsKey("encryptionSpi")) {
             encryptionSpi = (short) config.getInt("encryptionSpi");
+            // If there is no security association for this SPI, it's a configuration error.
             if (!params.sdlsSecurityAssociations.containsKey(encryptionSpi)) {
                 throw new ConfigurationException("Encryption SPI " + encryptionSpi
                         + " configured for vcId "

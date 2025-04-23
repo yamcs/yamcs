@@ -27,14 +27,20 @@ public abstract class DownlinkManagedParameters {
     protected String physicalChannelName;
     protected int spacecraftId;
     protected FrameErrorDetection errorDetection;
+
+    /**
+     * A map of Security Parameter Indices to Security Associations
+     */
     Map<Short, SdlsSecurityAssociation> sdlsSecurityAssociations = new HashMap<>();
 
     public DownlinkManagedParameters(YConfiguration config) {
         this.spacecraftId = config.getInt("spacecraftId");
         this.physicalChannelName = config.getString("physicalChannelName", null);
         errorDetection = config.getEnum("errorDetection", FrameErrorDetection.class);
+
         if (config.containsKey("encryption")) {
             List<YConfiguration> encryptionConfigs = config.getConfigList("encryption");
+            // Create all security associations according to the config
             for (YConfiguration saDef : encryptionConfigs) {
                 byte[] authMask;
                 short spi = (short) saDef.getInt("spi");
@@ -42,7 +48,7 @@ public abstract class DownlinkManagedParameters {
                 try {
                     sdlsKey = Files.readAllBytes(Path.of(saDef.getString("keyFile")));
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    throw new ConfigurationException(e);
                 }
 
                 // No need to authenticate data, already part of GCM
@@ -74,6 +80,7 @@ public abstract class DownlinkManagedParameters {
                     throw new ConfigurationException("Encryption not yet supported for " + this);
                 }
 
+                // Save the SPI and its security association
                 sdlsSecurityAssociations.put(spi, new SdlsSecurityAssociation(sdlsKey, spi, authMask));
             }
         }

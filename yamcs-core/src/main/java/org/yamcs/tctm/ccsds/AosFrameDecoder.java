@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.rs.ReedSolomonException;
 import org.yamcs.security.SdlsSecurityAssociation;
-import org.yamcs.security.SdlsSecurityAssociation.VerificationStatusCode;
 import org.yamcs.tctm.TcTmException;
 import org.yamcs.tctm.ccsds.AosManagedParameters.AosVcManagedParameters;
 import org.yamcs.tctm.ccsds.AosManagedParameters.ServiceType;
@@ -47,6 +46,14 @@ public class AosFrameDecoder implements TransferFrameDecoder {
         int dataEnd = offset + length;
 
 
+        if (crc != null) {
+            dataEnd -= 2;
+            int c1 = crc.compute(data, offset, dataEnd - offset);
+            int c2 = ByteArrayUtils.decodeUnsignedShort(data, dataEnd);
+            if (c1 != c2) {
+                throw new CorruptedFrameException("Bad CRC computed: " + c1 + " in the frame: " + c2);
+            }
+        }
         int gvcid;
         int dataOffset = offset + 6;
 
@@ -62,15 +69,17 @@ public class AosFrameDecoder implements TransferFrameDecoder {
         } else {
             gvcid = ByteArrayUtils.decodeUnsignedShort(data, offset);
         }
-        int virtualChannelId = gvcid & 0x3F;
-        AosVcManagedParameters vmp = aosParams.vcParams.get(virtualChannelId);
 
         int vn = gvcid >> 14;
         if (vn != 1) {
             throw new TcTmException("Invalid AOS frame version number " + vn + "; expected " + 1);
         }
         int spacecraftId = (gvcid >> 6)&0xFF;
+        int virtualChannelId = gvcid & 0x3F;
+
         AosTransferFrame atf = new AosTransferFrame(data, spacecraftId, virtualChannelId);
+
+        AosVcManagedParameters vmp = aosParams.vcParams.get(virtualChannelId);
         if (vmp == null) {
             if (virtualChannelId == 63) {
                 atf.setServiceType(ServiceType.IDLE);
@@ -78,16 +87,6 @@ public class AosFrameDecoder implements TransferFrameDecoder {
             }
             throw new TcTmException("Received data for unknown VirtualChannel " + virtualChannelId);
         }
-
-        if (crc != null) {
-            dataEnd -= 2;
-            int c1 = crc.compute(data, offset, dataEnd - offset);
-            int c2 = ByteArrayUtils.decodeUnsignedShort(data, dataEnd);
-            if (c1 != c2) {
-                throw new CorruptedFrameException("Bad CRC computed: " + c1 + " in the frame: " + c2);
-            }
-        }
-
 
         dataOffset += aosParams.insertZoneLength;
 
@@ -98,29 +97,24 @@ public class AosFrameDecoder implements TransferFrameDecoder {
             atf.setOcf(ByteArrayUtils.decodeInt(data, dataEnd));
         }
 
-
         SdlsSecurityAssociation sdlsSecurityAssociation = aosParams.sdlsSecurityAssociations.get(vmp.encryptionSpi);
-
+        // If we're decrypting, do so
         if (sdlsSecurityAssociation != null) {
-            // order dependency: assume dataOffset already has insert zone length added
             int decryptionDataStart = dataOffset;
-
-            // skip over first header pointer
-            if (vmp.service == ServiceType.PACKET)
-                decryptionDataStart += 2;
-
             decryptionDataStart += SdlsSecurityAssociation.getHeaderSize();
 
-            // order dependency: assume dataEnd already has subtracted size of crc and size of ocf
             int decryptionTrailerEnd = dataEnd;
 
-            VerificationStatusCode decryptionResult = sdlsSecurityAssociation.processSecurity(data, offset, decryptionDataStart, decryptionTrailerEnd);
-            if (decryptionResult != VerificationStatusCode.NoFailure) {
+            SdlsSecurityAssociation.VerificationStatusCode decryptionResult = sdlsSecurityAssociation.processSecurity(data, offset, decryptionDataStart, decryptionTrailerEnd);
+            if (decryptionResult != SdlsSecurityAssociation.VerificationStatusCode.NoFailure) {
                 log.error("Couldn't decrypt frame: {}", decryptionResult);
             }
+
+            // Update the offsets
             dataOffset += SdlsSecurityAssociation.getHeaderSize();
             dataEnd -= SdlsSecurityAssociation.getTrailerSize();
         }
+
 
         if (vmp.service == ServiceType.PACKET) {
             int fhp = ByteArrayUtils.decodeUnsignedShort(data, dataOffset) & 0x7FF;

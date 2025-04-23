@@ -30,7 +30,7 @@ dataLinks:
     errorDetection: CRC16 #NONE, CRC16 or CRC32 (only for USLP)
     encryption:
       - spi: 2
-        keyFile: /home/abalgavy/noskey
+        keyFile: etc/noskey
     frameLength: 1790
     virtualChannels:
       - vcId: 1
@@ -51,10 +51,9 @@ dataLinks:
     errorDetection: CRC16
     encryption:
       - spi: 4
-        keyFile: /home/abalgavy/noskey
+        keyFile: etc/noskey
     virtualChannels:
          - vcId: 4
-           # TODO: validate that this refers to an actual SPI
            encryptionSpi: 4
            commandPostprocessorClassName: org.yamcs.tctm.cfs.CfsCommandPostprocessor
            stream: "tc_realtime" #which yamcs stream to get the data from

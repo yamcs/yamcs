@@ -60,6 +60,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         this.host = host;
         this.port = port;
 
+        // If the link should be encrypted, the maximum amount of data is reduced because of encryption overhead.
         if (maybeSdlsKey.isPresent()) {
             this.frameSize = frameLength - SdlsSecurityAssociation.getOverheadBytes();
         } else {
@@ -172,6 +173,8 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         byte[] pendingPacket;
         int pendingPacketOffset;
         byte[] data;
+
+        // Optionally, a security assciation to use for an encrypted link
         Optional<SdlsSecurityAssociation> maybeSdls = Optional.empty();
 
         boolean firstPacketInFrame = true;
@@ -183,6 +186,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         public VcBuilder(int vcId) {
             this.vcId = vcId;
             this.dataOffset = hdrSize();
+
         }
 
         public void setCLCW(int clcw) {
@@ -194,7 +198,9 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         }
 
         abstract void encryptFrame();
+
         public byte[] getFrame() {
+            // Encrypt the frame if we have a security association
             if (maybeSdls.isPresent()) {
                 encryptFrame();
             }
@@ -215,7 +221,6 @@ public class UdpTmFrameLink extends AbstractScheduledService {
             firstPacketInFrame = true;
             dataOffset = hdrSize();
 
-            // CRC is computed on user data, not SDLS, so that must remain constant
             // If we're running with SDLS, zero the security header and trailer
             if (this.maybeSdls.isPresent()) {
                 int secHeaderSize = SdlsSecurityAssociation.getHeaderSize();
@@ -307,6 +312,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
             this.data = new byte[frameSize];
             dataEnd = frameSize - 6;// last 6 bytes are the OCF and CRC
 
+            // Optionally encrypt the data
             if (maybeSdlsKey.isPresent()) {
                 // Create an auth mask for the primary header,
                 // the frame data is already part of authentication.
@@ -318,6 +324,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
                 // SDLS reduces end of data by the size of the trailer
                 dataEnd -= SdlsSecurityAssociation.getTrailerSize();
+                // And the start of data by the size of the headers
                 dataOffset = hdrSize();
             }
 
@@ -343,6 +350,8 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
         @Override
         int hdrSize() {
+            // If we're encrypting, the header size includes the security header.
+            // Otherwise, it's just the primary header.
             return this.maybeSdls
                     .map(sdlsSecurityAssociation -> primaryHdrSize() + sdlsSecurityAssociation.getHeaderSize())
                     .orElse(primaryHdrSize());
@@ -351,6 +360,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         @Override
         void encodeHeaderAndTrailer() {
             // set the frame sequence count
+
             ByteArrayUtils.encodeUnsigned3Bytes((int) vcSeqCount, data, 2);
             data[5] = (byte) (0x60 + ((vcSeqCount >>> 24) & 0xF));
 
@@ -401,6 +411,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
             this.data = new byte[frameSize];
             dataEnd = frameSize - 4 - 2 * ocfFlag; // last 6 bytes are the OCF and CRC
 
+            // Optionally encrypt the frame
             if (maybeSdlsKey.isPresent()) {
                 // Create an auth mask for the primary header,
                 // the frame data is already part of authentication.
@@ -412,6 +423,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
                 // SDLS reduces end of data by the size of the trailer
                 dataEnd -= SdlsSecurityAssociation.getTrailerSize();
+                // And start of data by the headers
                 dataOffset = hdrSize();
             }
             writeGvcId(data, vcId);
@@ -420,7 +432,8 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
         @Override
         int hdrSize() {
-            // SDLS encryption increases header size
+            // If we're encrypting, the header size includes the security header.
+            // Otherwise, it's just the primary header.
             return this.maybeSdls
                     .map(sdlsSecurityAssociation -> primaryHdrSize() + sdlsSecurityAssociation.getHeaderSize())
                     .orElse(primaryHdrSize());
@@ -501,6 +514,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
             data[6] = 0x0C; // ocfFlag = 1, vc frame count = 100(in binary)
 
+            // Optionally encrypt the data
             if (maybeSdlsKey.isPresent()) {
                 byte[] authMask = new byte[primaryHdrSize()];
                 authMask[2] = 0b111; // top 3 bits of vcid
@@ -515,6 +529,8 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
         @Override
         int hdrSize() {
+            // If we're encrypting, the header size includes the security header.
+            // Otherwise, it's just the primary header.
             return this.maybeSdls
                     .map(sdlsSecurityAssociation -> primaryHdrSize() + SdlsSecurityAssociation.getHeaderSize())
                     .orElse(primaryHdrSize());
@@ -525,6 +541,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
             // 3 bytes for the data field header
             return 14;
         }
+
         @Override
         void encodeHeaderAndTrailer() {
             // set the frame sequence count
