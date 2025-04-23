@@ -1,15 +1,20 @@
 package org.yamcs.tctm.ccsds;
 
+import org.yamcs.ConfigurationException;
+import org.yamcs.YConfiguration;
+import org.yamcs.security.SdlsSecurityAssociation;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.yamcs.ConfigurationException;
-import org.yamcs.YConfiguration;
-
 public class TmManagedParameters extends DownlinkManagedParameters {
     int frameLength;
     int fshLength; // 0 means not present
+    Map<Short, SdlsSecurityAssociation> sdlsSecurityAssociations = new HashMap<>();
 
     enum ServiceType {
         PACKET,
@@ -21,6 +26,27 @@ public class TmManagedParameters extends DownlinkManagedParameters {
 
     public TmManagedParameters(YConfiguration config) {
         super(config);
+
+        if (config.containsKey("encryption")) {
+            List<YConfiguration> encryptionConfigs = config.getConfigList("encryption");
+            for (YConfiguration saDef : encryptionConfigs) {
+                short spi = (short) saDef.getInt("spi");
+                byte[] sdlsKey;
+                try {
+                    sdlsKey = Files.readAllBytes(Path.of(saDef.getString("keyFile")));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                // Create an auth mask for the primary header,
+                // the frame data is already part of authentication.
+                // No need to authenticate data, already part of GCM
+                byte[] authMask = new byte[6];
+                authMask[1] = 0b0000_1110; // authenticate virtual channel ID
+
+                sdlsSecurityAssociations.put(spi, new SdlsSecurityAssociation(sdlsKey, spi, authMask));
+            }
+        }
 
         frameLength = config.getInt("frameLength");
         if (frameLength < 8 || frameLength > 0xFFFF) {
@@ -71,10 +97,13 @@ public class TmManagedParameters extends DownlinkManagedParameters {
 
     static class TmVcManagedParameters extends VcDownlinkManagedParameters {
         ServiceType service;
+        short encryptionSpi;
 
         public TmVcManagedParameters(YConfiguration config) {
             super(config);
-
+            if (config.containsKey("encryptionSpi")) {
+                encryptionSpi = (short) config.getInt("encryptionSpi");
+            }
             if (vcId < 0 || vcId > 7) {
                 throw new ConfigurationException("Invalid vcId: " + vcId + ". Allowed values are from 0 to 7.");
             }

@@ -1,31 +1,23 @@
 package org.yamcs.simulator;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.logging.LogManager;
-
-import org.yamcs.ConfigurationException;
-import org.yamcs.InitException;
-import org.yamcs.ProcessRunner;
-import org.yamcs.Spec;
-import org.yamcs.Spec.OptionType;
-import org.yamcs.ValidationException;
-import org.yamcs.YConfiguration;
-import org.yamcs.simulator.pus.PusSimulator;
-import org.yamcs.utils.TimeEncoding;
-
 import com.beust.jcommander.JCommander;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.ServiceManager;
+import org.yamcs.*;
+import org.yamcs.Spec.OptionType;
+import org.yamcs.simulator.pus.PusSimulator;
+import org.yamcs.utils.TimeEncoding;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.LogManager;
 
 /**
  * Starts the simulator.
@@ -48,6 +40,10 @@ public class SimulatorCommander extends ProcessRunner {
         tmtcSpec.addOption("losPort", OptionType.INTEGER);
         tmtcSpec.addOption("tm2Port", OptionType.INTEGER);
 
+        Spec frameEncryptionSpec = new Spec();
+        frameEncryptionSpec.addOption("keyFile", OptionType.STRING).withRequired(true);
+        frameEncryptionSpec.addOption("spi", OptionType.INTEGER).withRequired(true);
+
         Spec frameSpec = new Spec();
         frameSpec.addOption("type", OptionType.STRING);
         frameSpec.addOption("tmPort", OptionType.INTEGER);
@@ -55,6 +51,7 @@ public class SimulatorCommander extends ProcessRunner {
         frameSpec.addOption("tmFrameLength", OptionType.INTEGER);
         frameSpec.addOption("tmFrameFreq", OptionType.FLOAT);
         frameSpec.addOption("tcPort", OptionType.INTEGER);
+        frameSpec.addOption("encryption", OptionType.MAP).withSpec(frameEncryptionSpec);
 
         Spec perfTestSpec = new Spec();
         perfTestSpec.addOption("numPackets", OptionType.INTEGER);
@@ -79,6 +76,8 @@ public class SimulatorCommander extends ProcessRunner {
         List<String> cmdl = new ArrayList<>();
 
         cmdl.add(new File(System.getProperty("java.home"), "bin/java").toString());
+        // Debugging:
+        // cmdl.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8989");
         cmdl.add(SimulatorCommander.class.getName());
         if (config.containsKey("telnet")) {
             YConfiguration telnetArgs = config.getConfig("telnet");
@@ -112,6 +111,14 @@ public class SimulatorCommander extends ProcessRunner {
             int tmFrameSize = frameArgs.getInt("tmFrameLength", defaultOptions.tmFrameLength);
             double tmFrameFreq = frameArgs.getDouble("tmFrameFreq", defaultOptions.tmFrameFreq);
             int tcFramePort = frameArgs.getInt("tcFramePort", defaultOptions.tcFramePort);
+
+            if (frameArgs.containsKey("encryption")) {
+                YConfiguration frameEncryption = frameArgs.getConfig("encryption");
+                String encryptionKeyFile = frameEncryption.getString("keyFile", defaultOptions.encryptionKeyFile);
+                short encryptionSpi = (short) frameEncryption.getInt("spi", defaultOptions.encryptionSpi);
+                cmdl.addAll(Arrays.asList("--encryption-key-file", "" + encryptionKeyFile,
+                        "--encryption-spi", "" + encryptionSpi));
+            }
 
             cmdl.addAll(Arrays.asList("--tm-frame-type", "" + tmFrameType,
                     "--tm-frame-host", "" + tmFrameHost,
@@ -209,7 +216,7 @@ public class SimulatorCommander extends ProcessRunner {
             pktFactory = TcPacketFactory.PUS_PACKET_FACTORY;
             simulator = new PusSimulator(dataDir);
         } else {
-            throw new ConfigurationException("Unknonw simulatior type '" + runtimeOptions.type + "'. Use COL or PUS");
+            throw new ConfigurationException("Unknown simulatior type '" + runtimeOptions.type + "'. Use COL or PUS");
         }
 
         List<Service> services = new ArrayList<>();
@@ -237,12 +244,25 @@ public class SimulatorCommander extends ProcessRunner {
         if (simulator instanceof ColSimulator) {
             ColSimulator sim = (ColSimulator) simulator;
             if (runtimeOptions.tmFrameLength > 0) {
+
+                final Optional<byte[]> maybeSdlsKey;
+                String keyFile = runtimeOptions.encryptionKeyFile;
+                if (keyFile != null) {
+                    try {
+                        maybeSdlsKey = Optional.of(Files.readAllBytes(Path.of(keyFile)));
+                    } catch (IOException e) {
+                        throw new RuntimeException("Cannot read file " + keyFile + ": " + e);
+                    }
+                } else {
+                    maybeSdlsKey = Optional.empty();
+                }
+
                 UdpTcFrameLink tcFrameLink = new UdpTcFrameLink(sim, runtimeOptions.tcFramePort);
                 UdpTmFrameLink frameLink = new UdpTmFrameLink(runtimeOptions.tmFrameType, runtimeOptions.tmFrameHost,
                         runtimeOptions.tmFramePort,
                         runtimeOptions.tmFrameLength, runtimeOptions.tmFrameFreq, () -> {
                             return tcFrameLink.getClcw();
-                        });
+                        }, maybeSdlsKey, (short)runtimeOptions.encryptionSpi);
                 services.add(tcFrameLink);
                 services.add(frameLink);
                 sim.setTmFrameLink(frameLink);

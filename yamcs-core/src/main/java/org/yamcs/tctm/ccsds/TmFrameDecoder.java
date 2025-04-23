@@ -2,6 +2,8 @@ package org.yamcs.tctm.ccsds;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.security.SdlsSecurityAssociation;
+import org.yamcs.security.SdlsSecurityAssociation.VerificationStatusCode;
 import org.yamcs.tctm.TcTmException;
 import org.yamcs.tctm.ccsds.DownlinkManagedParameters.FrameErrorDetection;
 import org.yamcs.tctm.ccsds.TmManagedParameters.ServiceType;
@@ -27,6 +29,14 @@ public class TmFrameDecoder implements TransferFrameDecoder {
 
     @Override
     public TmTransferFrame decode(byte[] data, int offset, int length) throws TcTmException {
+        int dataEnd = offset + length;
+        int dataOffset = offset + 6;
+
+        int tfdfs = ByteArrayUtils.decodeShort(data, offset + 4);
+        boolean secHeaderPresent = (tfdfs & 0x8000) == 0x8000;
+
+        boolean ocfPresent = (data[offset + 1] & 1) == 1;
+
         if (log.isTraceEnabled()) {
             log.trace("decoding frame buf length: {}, dataOffset: {} , dataLength: {}", data.length, offset, length);
         }
@@ -39,18 +49,8 @@ public class TmFrameDecoder implements TransferFrameDecoder {
         if (length != tmParams.frameLength) {
             throw new TcTmException("Bad frame length " + length + "; expected " + tmParams.frameLength);
         }
-        int dataEnd = offset + length;
-        if (crc != null) {
-            dataEnd -= 2;
-            int c1 = crc.compute(data, offset, dataEnd - offset);
-            int c2 = ByteArrayUtils.decodeUnsignedShort(data, dataEnd);
-            if (c1 != c2) {
-                throw new CorruptedFrameException("Bad CRC computed: " + c1 + " in the frame: " + c2);
-            }
-        }
-        int gvcid;
-        int dataOffset = offset + 6;
-        gvcid = ByteArrayUtils.decodeShort(data, offset) >> 1;
+
+        int gvcid = ByteArrayUtils.decodeShort(data, offset) >> 1;
 
         int vn = gvcid >> 13;
         if (vn != 0) {
@@ -64,17 +64,49 @@ public class TmFrameDecoder implements TransferFrameDecoder {
             throw new TcTmException("Received data for unknown VirtualChannel " + virtualChannelId);
         }
 
+        SdlsSecurityAssociation sdlsSa = tmParams.sdlsSecurityAssociations.get(vmp.encryptionSpi);
+        if (sdlsSa != null) {
+            int sdlsHeaderSize = SdlsSecurityAssociation.getHeaderSize();
+            int decryptionDataStart = dataOffset + sdlsHeaderSize;
+            if (secHeaderPresent) {
+                int secHeaderLength = 1 + data[dataOffset] & 0x3F;
+                decryptionDataStart += secHeaderLength;
+            }
+            int decryptionDataEnd = dataEnd;
+            if (crc != null) {
+                decryptionDataEnd -= 2;
+            }
+            if (ocfPresent) {
+                decryptionDataEnd -= 4;
+            }
+            VerificationStatusCode decryptionStatus = sdlsSa.processSecurity(data, offset, decryptionDataStart, decryptionDataEnd);
+            if (decryptionStatus != VerificationStatusCode.NoFailure) {
+                throw new TcTmException("Could not decrypt frame: " + decryptionStatus);
+            }
+        }
+
+        // TODO: maybe CRC should be computed on encrypted data?
+        if (crc != null) {
+            dataEnd -= 2;
+            int c1 = crc.compute(data, offset, dataEnd - offset);
+            int c2 = ByteArrayUtils.decodeUnsignedShort(data, dataEnd);
+            if (c1 != c2) {
+                throw new CorruptedFrameException("Bad CRC computed: " + c1 + " in the frame: " + c2);
+            }
+        }
+
         TmTransferFrame ttf = new TmTransferFrame(data, spacecraftId, virtualChannelId);
         ttf.setVcFrameSeq(data[3] & 0xFF);
 
-        boolean ocfPresent = (data[offset + 1] & 1) == 1;
         if (ocfPresent) {
             dataEnd -= 4;
             ttf.setOcf(ByteArrayUtils.decodeInt(data, dataEnd));
         }
 
-        int tfdfs = ByteArrayUtils.decodeShort(data, offset + 4);
-        boolean secHeaderPresent = (tfdfs & 0x8000) == 0x8000;
+        if (sdlsSa != null) {
+            dataEnd -= SdlsSecurityAssociation.getTrailerSize();
+        }
+
         boolean syncFlag = (tfdfs & 0x4000) == 0x4000;
 
         if (secHeaderPresent) {
@@ -83,6 +115,10 @@ public class TmFrameDecoder implements TransferFrameDecoder {
             ttf.setShLength(secHeaderLength);
             dataOffset += secHeaderLength;
         }
+        if (sdlsSa != null) {
+            dataOffset += SdlsSecurityAssociation.getHeaderSize();
+        }
+
         if (vmp.service == ServiceType.PACKET) {
             if (syncFlag) {
                 throw new TcTmException("VC " + virtualChannelId + " "
