@@ -5,6 +5,7 @@ import static org.yamcs.YamcsServer.CFG_CRASH_HANDLER_KEY;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -336,7 +337,11 @@ public class YamcsServerInstance extends YamcsInstanceService {
     }
 
     public List<ServiceWithConfig> getServices() {
-        return new ArrayList<>(services);
+        if (services != null) {
+            return new ArrayList<>(services);
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     public void startService(String serviceName) throws ConfigurationException, ValidationException, InitException {
