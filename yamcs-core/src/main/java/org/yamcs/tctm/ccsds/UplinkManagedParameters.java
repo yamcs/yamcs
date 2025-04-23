@@ -48,12 +48,16 @@ public abstract class UplinkManagedParameters {
                     throw new RuntimeException(e);
                 }
 
+                // No need to authenticate data, already part of GCM
+                // (source: McGrew and Viega, "The Galois/Counter Mode of Operation (GCM)").
+                // Create an auth mask for the primary header, according to CCSDS Standard for
+                // Space Data Link Security (CCSDS 355.0-B-2).
+                // TODO: check if this is correct. account for max header size.
                 if (this instanceof TcManagedParameters) {
-                    // Create an auth mask for the TC primary header,
-                    // the frame data is already part of authentication.
-                    // No need to authenticate data, already part of GCM
-                    // Authenticate virtual channel ID; no segment header is present
+                    // Create an auth mask with the size of the TC primary header
                     authMask = new byte[5];
+                    // Authenticate virtual channel ID
+                    // TODO: double check segment header
                     authMask[2] = (byte) 0b1111_1100; // authenticate virtual channel ID
                 } else {
                     throw new ConfigurationException("Encryption not supported for " + this);

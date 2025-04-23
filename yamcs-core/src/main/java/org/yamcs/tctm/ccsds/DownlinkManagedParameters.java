@@ -45,25 +45,31 @@ public abstract class DownlinkManagedParameters {
                     throw new RuntimeException(e);
                 }
 
+                // No need to authenticate data, already part of GCM
+                // (source: McGrew and Viega, "The Galois/Counter Mode of Operation (GCM)").
+                // Create an auth mask for the primary header, according to CCSDS Standard for
+                // Space Data Link Security (CCSDS 355.0-B-2).
+                // The SDLS implementation automatically adds the security header to authenticated data.
+                // TODO: check all these masks are correct. account for maximum header size.
                 if (this instanceof AosManagedParameters) {
-                    // Create an auth mask for the primary header,
-                    // the frame data is already part of authentication.
-                    // No need to authenticate data, already part of GCM.
-                    // We never authenticate the optional insert zone
-                    // TODO: cite
+                    // Auth mask with the size of the AOS primary header
                     authMask = new byte[10];
-                    authMask[1] = 0b0011_1111; // authenticate only virtual channel ID
+                    // Authenticate only virtual channel ID.
+                    // We never authenticate the optional insert zone or Frame Header Error Control field.
+                    authMask[1] = 0b0011_1111;
                 } else if (this instanceof TmManagedParameters) {
-                    // Create an auth mask for the primary header,
-                    // the frame data is already part of authentication.
-                    // No need to authenticate data, already part of GCM
+                    // Auth mask with the size of the TM primary header
                     authMask = new byte[6];
-                    authMask[1] = 0b0000_1110; // authenticate virtual channel ID
+                    // Authenticate only virtual channel ID.
+                    // We never authenticate the Master Channel Frame Count field.
+                    authMask[1] = 0b0000_1110;
                 } else if (this instanceof UslpManagedParameters) {
-                    // Authenticate virtual channel ID and MAP ID
+                    // Auth mask with the size of the USLP primary header
                     authMask = new byte[14];
+                    // Authenticate virtual channel ID and MAP ID
                     authMask[2] = 0b111; // top 3 bits of vcid
                     authMask[3] = (byte) 0b1111_1110; // bottom 3 bits of vcid, 4 bits of map id
+                    // We never authenticate the optional insert zone.
                 } else {
                     throw new ConfigurationException("Encryption not yet supported for " + this);
                 }
