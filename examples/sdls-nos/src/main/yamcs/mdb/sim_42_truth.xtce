@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xtce:SpaceSystem xmlns:xtce="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="SIM_42_TRUTH" xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
+  <xtce:SpaceSystem name="SIM_42_TRUTH_DATA">
+    <xtce:TelemetryMetaData>
+      <xtce:ParameterTypeSet>
+        <xtce:IntegerParameterType name="YEAR_Type" shortDescription="Year" signed="true">
+          <xtce:IntegerDataEncoding sizeInBits="16" encoding="twosComplement"/>
+        </xtce:IntegerParameterType>
+        <xtce:IntegerParameterType name="DOY_Type" shortDescription="Day of Year" signed="true">
+          <xtce:IntegerDataEncoding sizeInBits="16" encoding="twosComplement"/>
+        </xtce:IntegerParameterType>
+        <xtce:IntegerParameterType name="MONTH_Type" shortDescription="Month" signed="true">
+          <xtce:IntegerDataEncoding sizeInBits="16" encoding="twosComplement"/>
+        </xtce:IntegerParameterType>
+        <xtce:IntegerParameterType name="DAY_Type" shortDescription="Day" signed="true">
+          <xtce:IntegerDataEncoding sizeInBits="16" encoding="twosComplement"/>
+        </xtce:IntegerParameterType>
+        <xtce:IntegerParameterType name="UTC_HOUR_Type" shortDescription="UTC Hour" signed="true">
+          <xtce:IntegerDataEncoding sizeInBits="16" encoding="twosComplement"/>
+        </xtce:IntegerParameterType>
+        <xtce:IntegerParameterType name="UTC_MINUTE_Type" shortDescription="UTC Minute" signed="true">
+          <xtce:IntegerDataEncoding sizeInBits="16" encoding="twosComplement"/>
+        </xtce:IntegerParameterType>
+        <xtce:FloatParameterType name="UTC_SECOND_Type" sizeInBits="64" shortDescription="UTC Second">
+          <xtce:FloatDataEncoding sizeInBits="64" encoding="IEEE754_1985"/>
+        </xtce:FloatParameterType>
+        <xtce:FloatParameterType name="POSITION_N_1_Type" sizeInBits="64" shortDescription="Inertial Position (m). Byte 1">
+          <xtce:FloatDataEncoding sizeInBits="64" encoding="IEEE754_1985"/>
+        </xtce:FloatParameterType>
+        <xtce:FloatParameterType name="POSITION_N_2_Type" sizeInBits="64" shortDescription="Inertial Position (m). Byte 2">
+          <xtce:FloatDataEncoding sizeInBits="64" encoding="IEEE754_1985"/>
+        </xtce:FloatParameterType>
+        <xtce:FloatParameterType name="POSITION_N_3_Type" sizeInBits="64" shortDescription="Inertial Position (m). Byte 3">
+          <xtce:FloatDataEncoding sizeInBits="64" encoding="IEEE754_1985"/>
+        </xtce:FloatParameterType>
+        <xtce:FloatParameterType name="VELOCITY_N_1_Type" sizeInBits="64" shortDescription="Inertial Velocity (m/s). Byte 1">
+          <xtce:FloatDataEncoding sizeInBits="64" encoding="IEEE754_1985"/>
+        </xtce:FloatParameterType>
+        <xtce:FloatParameterType name="VELOCITY_N_2_Type" sizeInBits="64" shortDescription="Inertial Velocity (m/s). Byte 2">
+          <xtce:FloatDataEncoding sizeInBits="64" encoding="IEEE754_1985"/>
+        </xtce:FloatParameterType>
+        <xtce:FloatParameterType name="VELOCITY_N_3_Type" sizeInBits="64" shortDescription="Inertial Velocity (m/s). Byte 3">
+          <xtce:FloatDataEncoding sizeInBits="64" encoding="IEEE754_1985"/>
+        </xtce:FloatParameterType>
+        <xtce:FloatParameterType name="SVB_1_Type" sizeInBits="64" shortDescription="Sun Unit Vector in Body Frame. Byte 1">
+          <xtce:FloatDataEncoding sizeInBits="64" encoding="IEEE754_1985"/>
+        </xtce:FloatParameterType>
+        <xtce:FloatParameterType name="SVB_2_Type" sizeInBits="64" shortDescription="Sun Unit Vector in Body Frame. Byte 2">
+          <xtce:FloatDataEncoding sizeInBits="64" encoding="IEEE754_1985"/>
+        </xtce:FloatParameterType>
+        <xtce:FloatParameterType name="SVB_3_Type" sizeInBits="64" shortDescription="Sun Unit Vector in Body Frame. Byte 3">
+          <xtce:FloatDataEncoding sizeInBits="64" encoding="IEEE754_1985"/>
+        </xtce:FloatParameterType>
+        <xtce:FloatParameterType name="BVB_1_Type" sizeInBits="64" shortDescription="Magnetic Field Vector in Body Frame (T). Byte 1">
+          <xtce:FloatDataEncoding sizeInBits="64" encoding="IEEE754_1985"/>
+        </xtce:FloatParameterType>
+        <xtce:FloatParameterType name="BVB_2_Type" sizeInBits="64" shortDescription="Magnetic Field Vector in Body Frame (T). Byte 2">
+          <xtce:FloatDataEncoding sizeInBits="64" encoding="IEEE754_1985"/>
+        </xtce:FloatParameterType>
+        <xtce:FloatParameterType name="BVB_3_Type" sizeInBits="64" shortDescription="Magnetic Field Vector in Body Frame (T). Byte 3">
+          <xtce:FloatDataEncoding sizeInBits="64" encoding="IEEE754_1985"/>
+        </xtce:FloatParameterType>
+        <xtce:FloatParameterType name="HVB_1_Type" sizeInBits="64" shortDescription="Angular Momentum Vector in Body Frame (Nms). Byte 1">
+          <xtce:FloatDataEncoding sizeInBits="64" encoding="IEEE754_1985"/>
+        </xtce:FloatParameterType>
+        <xtce:FloatParameterType name="HVB_2_Type" sizeInBits="64" shortDescription="Angular Momentum Vector in Body Frame (Nms). Byte 2">
+          <xtce:FloatDataEncoding sizeInBits="64" encoding="IEEE754_1985"/>
+        </xtce:FloatParameterType>
+        <xtce:FloatParameterType name="HVB_3_Type" sizeInBits="64" shortDescription="Angular Momentum Vector in Body Frame (Nms). Byte 3">
+          <xtce:FloatDataEncoding sizeInBits="64" encoding="IEEE754_1985"/>
+        </xtce:FloatParameterType>
+        <xtce:FloatParameterType name="WN_1_Type" sizeInBits="64" shortDescription="Body Angular Rate in Body Frame (rad/s). Byte 1">
+          <xtce:FloatDataEncoding sizeInBits="64" encoding="IEEE754_1985"/>
+        </xtce:FloatParameterType>
+        <xtce:FloatParameterType name="WN_2_Type" sizeInBits="64" shortDescription="Body Angular Rate in Body Frame (rad/s). Byte 2">
+          <xtce:FloatDataEncoding sizeInBits="64" encoding="IEEE754_1985"/>
+        </xtce:FloatParameterType>
+        <xtce:FloatParameterType name="WN_3_Type" sizeInBits="64" shortDescription="Body Angular Rate in Body Frame (rad/s). Byte 3">
+          <xtce:FloatDataEncoding sizeInBits="64" encoding="IEEE754_1985"/>
+        </xtce:FloatParameterType>
+        <xtce:FloatParameterType name="QN_1_Type" sizeInBits="64" shortDescription="Body Quaternion in Inertial Frame. Byte 1">
+          <xtce:FloatDataEncoding sizeInBits="64" encoding="IEEE754_1985"/>
+        </xtce:FloatParameterType>
+        <xtce:FloatParameterType name="QN_2_Type" sizeInBits="64" shortDescription="Body Quaternion in Inertial Frame. Byte 2">
+          <xtce:FloatDataEncoding sizeInBits="64" encoding="IEEE754_1985"/>
+        </xtce:FloatParameterType>
+        <xtce:FloatParameterType name="QN_3_Type" sizeInBits="64" shortDescription="Body Quaternion in Inertial Frame. Byte 3">
+          <xtce:FloatDataEncoding sizeInBits="64" encoding="IEEE754_1985"/>
+        </xtce:FloatParameterType>
+        <xtce:FloatParameterType name="QN_4_Type" sizeInBits="64" shortDescription="Body Quaternion in Inertial Frame. Byte 4">
+          <xtce:FloatDataEncoding sizeInBits="64" encoding="IEEE754_1985"/>
+        </xtce:FloatParameterType>
+        <xtce:IntegerParameterType name="NEWLINE_Type" shortDescription="Newline character" signed="false">
+          <xtce:IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+        </xtce:IntegerParameterType>
+      </xtce:ParameterTypeSet>
+      <xtce:ParameterSet>
+        <xtce:Parameter name="YEAR" parameterTypeRef="YEAR_Type"/>
+        <xtce:Parameter name="DOY" parameterTypeRef="DOY_Type"/>
+        <xtce:Parameter name="MONTH" parameterTypeRef="MONTH_Type"/>
+        <xtce:Parameter name="DAY" parameterTypeRef="DAY_Type"/>
+        <xtce:Parameter name="UTC_HOUR" parameterTypeRef="UTC_HOUR_Type"/>
+        <xtce:Parameter name="UTC_MINUTE" parameterTypeRef="UTC_MINUTE_Type"/>
+        <xtce:Parameter name="UTC_SECOND" parameterTypeRef="UTC_SECOND_Type"/>
+        <xtce:Parameter name="POSITION_N_1" parameterTypeRef="POSITION_N_1_Type"/>
+        <xtce:Parameter name="POSITION_N_2" parameterTypeRef="POSITION_N_2_Type"/>
+        <xtce:Parameter name="POSITION_N_3" parameterTypeRef="POSITION_N_3_Type"/>
+        <xtce:Parameter name="VELOCITY_N_1" parameterTypeRef="VELOCITY_N_1_Type"/>
+        <xtce:Parameter name="VELOCITY_N_2" parameterTypeRef="VELOCITY_N_2_Type"/>
+        <xtce:Parameter name="VELOCITY_N_3" parameterTypeRef="VELOCITY_N_3_Type"/>
+        <xtce:Parameter name="SVB_1" parameterTypeRef="SVB_1_Type"/>
+        <xtce:Parameter name="SVB_2" parameterTypeRef="SVB_2_Type"/>
+        <xtce:Parameter name="SVB_3" parameterTypeRef="SVB_3_Type"/>
+        <xtce:Parameter name="BVB_1" parameterTypeRef="BVB_1_Type"/>
+        <xtce:Parameter name="BVB_2" parameterTypeRef="BVB_2_Type"/>
+        <xtce:Parameter name="BVB_3" parameterTypeRef="BVB_3_Type"/>
+        <xtce:Parameter name="HVB_1" parameterTypeRef="HVB_1_Type"/>
+        <xtce:Parameter name="HVB_2" parameterTypeRef="HVB_2_Type"/>
+        <xtce:Parameter name="HVB_3" parameterTypeRef="HVB_3_Type"/>
+        <xtce:Parameter name="WN_1" parameterTypeRef="WN_1_Type"/>
+        <xtce:Parameter name="WN_2" parameterTypeRef="WN_2_Type"/>
+        <xtce:Parameter name="WN_3" parameterTypeRef="WN_3_Type"/>
+        <xtce:Parameter name="QN_1" parameterTypeRef="QN_1_Type"/>
+        <xtce:Parameter name="QN_2" parameterTypeRef="QN_2_Type"/>
+        <xtce:Parameter name="QN_3" parameterTypeRef="QN_3_Type"/>
+        <xtce:Parameter name="QN_4" parameterTypeRef="QN_4_Type"/>
+        <xtce:Parameter name="NEWLINE" parameterTypeRef="NEWLINE_Type"/>
+      </xtce:ParameterSet>
+      <xtce:ContainerSet>
+        <xtce:SequenceContainer name="SIM_42_TRUTH_DATA" shortDescription="Simulation Truth Data from 42">
+          <xtce:EntryList>
+            <xtce:ParameterRefEntry parameterRef="YEAR"/>
+            <xtce:ParameterRefEntry parameterRef="DOY"/>
+            <xtce:ParameterRefEntry parameterRef="MONTH"/>
+            <xtce:ParameterRefEntry parameterRef="DAY"/>
+            <xtce:ParameterRefEntry parameterRef="UTC_HOUR"/>
+            <xtce:ParameterRefEntry parameterRef="UTC_MINUTE"/>
+            <xtce:ParameterRefEntry parameterRef="UTC_SECOND"/>
+            <xtce:ParameterRefEntry parameterRef="POSITION_N_1"/>
+            <xtce:ParameterRefEntry parameterRef="POSITION_N_2"/>
+            <xtce:ParameterRefEntry parameterRef="POSITION_N_3"/>
+            <xtce:ParameterRefEntry parameterRef="VELOCITY_N_1"/>
+            <xtce:ParameterRefEntry parameterRef="VELOCITY_N_2"/>
+            <xtce:ParameterRefEntry parameterRef="VELOCITY_N_3"/>
+            <xtce:ParameterRefEntry parameterRef="SVB_1"/>
+            <xtce:ParameterRefEntry parameterRef="SVB_2"/>
+            <xtce:ParameterRefEntry parameterRef="SVB_3"/>
+            <xtce:ParameterRefEntry parameterRef="BVB_1"/>
+            <xtce:ParameterRefEntry parameterRef="BVB_2"/>
+            <xtce:ParameterRefEntry parameterRef="BVB_3"/>
+            <xtce:ParameterRefEntry parameterRef="HVB_1"/>
+            <xtce:ParameterRefEntry parameterRef="HVB_2"/>
+            <xtce:ParameterRefEntry parameterRef="HVB_3"/>
+            <xtce:ParameterRefEntry parameterRef="WN_1"/>
+            <xtce:ParameterRefEntry parameterRef="WN_2"/>
+            <xtce:ParameterRefEntry parameterRef="WN_3"/>
+            <xtce:ParameterRefEntry parameterRef="QN_1"/>
+            <xtce:ParameterRefEntry parameterRef="QN_2"/>
+            <xtce:ParameterRefEntry parameterRef="QN_3"/>
+            <xtce:ParameterRefEntry parameterRef="QN_4"/>
+            <xtce:ParameterRefEntry parameterRef="NEWLINE"/>
+          </xtce:EntryList>
+        </xtce:SequenceContainer>
+      </xtce:ContainerSet>
+    </xtce:TelemetryMetaData>
+  </xtce:SpaceSystem>
+  <xtce:SpaceSystem name="CMD"/>
+</xtce:SpaceSystem>

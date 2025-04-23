@@ -81,9 +81,9 @@ public class UdpTmFrameLink extends AbstractScheduledService {
             idleFrameBuilder = builders[0];
         } else if ("USLP".equalsIgnoreCase(frameType)) {
             for (int i = 0; i < NUM_VC; i++) {
-                builders[i] = new UslpVcSender(i, frameLength);
+                builders[i] = new UslpVcSender(i, frameLength, maybeSdlsKey, sdlsSpi);
             }
-            idleFrameBuilder = new UslpVcSender(63, frameLength);
+            idleFrameBuilder = new UslpVcSender(63, frameLength, maybeSdlsKey, sdlsSpi);
         }
 
     }
@@ -515,7 +515,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         byte[] idleFrameData;
         int ocfFlag = 1;
 
-        public UslpVcSender(int vcId, int frameLength) {
+        public UslpVcSender(int vcId, int frameLength, Optional<byte[]> maybeSdlsKey, short sdlsSpi) {
             super(vcId);
             this.data = new byte[frameLength];
             dataEnd = frameLength - 4 - 2 * ocfFlag; // last 6 bytes are the OCF and CRC
@@ -527,15 +527,29 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
             data[6] = 0x0C; // ocfFlag = 1, vc frame count = 100(in binary)
 
+            if (maybeSdlsKey.isPresent()) {
+                byte[] authMask = new byte[primaryHdrSize()];
+                // TODO: set authMask
+                this.maybeSdls = Optional.of(new SdlsSecurityAssociation(maybeSdlsKey.get(), sdlsSpi, authMask));
+
+                // SDLS reduces end of data by the size of the trailer
+                dataEnd -= SdlsSecurityAssociation.getTrailerSize();
+                dataOffset = hdrSize();
+            }
         }
 
         @Override
         int hdrSize() {
+            return this.maybeSdls
+                    .map(sdlsSecurityAssociation -> primaryHdrSize() + SdlsSecurityAssociation.getHeaderSize())
+                    .orElse(primaryHdrSize());
+        }
+
+        int primaryHdrSize() {
             // 11 for the primary header (with a 32 bit frame length)
             // 3 bytes for the data field header
             return 14;
         }
-
         @Override
         void encodeHeaderAndTrailer() {
             // set the frame sequence count
