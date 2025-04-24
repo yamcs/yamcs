@@ -132,24 +132,6 @@ public class AggregateDataTypeTest {
     }
 
     @Test
-    public void testConvertTypeIllegal4() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            apt.convertType("{m2: 3}");
-        });
-    }
-
-    @Test
-    public void testConvertTypeIllegal5() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            String s = "{\"m1\":{\"m11\":3},\"m2\":4}";
-            Map<String, Object> m = apt.convertType(s);
-            m.remove("m1");
-
-            apt.convertType(m);
-        });
-    }
-
-    @Test
     public void testConvertTypeIllegal6() {
         assertThrows(IllegalArgumentException.class, () -> {
             String s = "{\"m1\":{\"m11\":3},\"m2\":4}";

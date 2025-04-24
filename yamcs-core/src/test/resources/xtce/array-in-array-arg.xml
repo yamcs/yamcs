@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xi="http://www.w3.org/2001/XInclude" name="ArrayInArrayArgTest"
+	shortDescription="Test of array in array argument" xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
+
+    <CommandMetaData>
+        <ArgumentTypeSet>
+        	<IntegerArgumentType name="uint8">
+				<IntegerDataEncoding sizeInBits="8" />
+			</IntegerArgumentType>
+			<IntegerArgumentType name="uint16">
+				<IntegerDataEncoding sizeInBits="16" />
+			</IntegerArgumentType>		
+			<IntegerArgumentType name="uint32">
+				<IntegerDataEncoding sizeInBits="32" />
+			</IntegerArgumentType>        	
+            <ArrayArgumentType name="inner_array" arrayTypeRef="uint16">
+                <DimensionList>
+                    <Dimension>
+                        <StartingIndex>
+                            <FixedValue>0</FixedValue>
+                        </StartingIndex>
+                        <EndingIndex>
+                            <DynamicValue>
+                                <ArgumentInstanceRef argumentRef="inner_array_length" />
+                                <LinearAdjustment intercept="-1" />
+                            </DynamicValue>
+                        </EndingIndex>
+                    </Dimension>
+                </DimensionList>
+            </ArrayArgumentType>
+			<AggregateArgumentType name="aggr_type">
+                <MemberList>              
+                    <Member name="inner_array_length" typeRef="uint8"/>
+                    <Member name="inner_array" typeRef="inner_array"/>
+                </MemberList>
+            </AggregateArgumentType>
+             <ArrayArgumentType name="outer_array_type" arrayTypeRef="aggr_type">
+                <DimensionList>
+                    <Dimension>
+                        <StartingIndex>
+                            <FixedValue>0</FixedValue>
+                        </StartingIndex>
+                        <EndingIndex>
+                            <DynamicValue>
+                                <ArgumentInstanceRef argumentRef="outer_array_length" />
+                                <LinearAdjustment intercept="-1" />
+                            </DynamicValue>
+                        </EndingIndex>
+                    </Dimension>
+                </DimensionList>
+            </ArrayArgumentType>
+        </ArgumentTypeSet>
+        <MetaCommandSet>
+            <MetaCommand name="cmd1">                
+                <ArgumentList>
+                    <Argument name="outer_array_length" argumentTypeRef="uint16"/>
+                    <Argument name="outer_array" argumentTypeRef="outer_array_type"/>
+                </ArgumentList>
+                <CommandContainer name="cmd1_container">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="outer_array_length"/>
+                        <ArgumentRefEntry argumentRef="outer_array"/>                       
+                    </EntryList>                    
+                </CommandContainer>
+            </MetaCommand>
+        </MetaCommandSet>
+    </CommandMetaData>
+</SpaceSystem>

@@ -128,8 +128,7 @@ public class MetaCommandProcessor {
                     }
                 }
                 try {
-                    pcontext.argumentTypeProcessor.checkRange(a.getArgumentType(), argObj);
-                    argValue = DataTypeProcessor.getValueForType(a.getArgumentType(), argObj);
+                    argValue = pcontext.argumentTypeProcessor.checkRangeAndConvertToValue(a.getArgumentType(), argObj);
                 } catch (Exception e) {
                     throw new ErrorInCommand("Cannot assign value to " + a.getName() + ": " + e.getMessage());
                 }

@@ -2,6 +2,7 @@ package org.yamcs.xtce;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -125,7 +126,10 @@ public class AggregateDataType extends NameDescription implements DataType {
      * Parse the initial value as a JSON string.
      * <p>
      * This allows to specify only partially the values, the rest are copied from the member initial value or the type
-     * definition (an exception is thrown if there is any member for which the value cannot be determined).
+     * definition.
+     * <p>
+     * Since Yamcs 5.11.9, it does not enforce that all members are present. This is because some values may be deduced
+     * from array lengths
      * 
      * @return a map containing the values for all members.
      * @throws IllegalArgumentException
@@ -171,11 +175,9 @@ public class AggregateDataType extends NameDescription implements DataType {
                 if (v == null) {
                     v = memb.getType().getInitialValue();
                 }
-                if (v == null) {
-                    throw new IllegalArgumentException("No value could be determined for member '"
-                            + memb.getName() + "' (its corresponding type does not have an initial value)");
+                if (v != null) {
+                    r.put(memb.getName(), v);
                 }
-                r.put(memb.getName(), v);
             }
         }
         if (input.size() > 0) {
@@ -188,7 +190,7 @@ public class AggregateDataType extends NameDescription implements DataType {
     private Map<String, Object> fromMap(Map<String, Object> map) {
         // Provided map may be immutable. So make a copy where we can remove.
         Map<String, Object> input = new HashMap<>(map);
-        Map<String, Object> r = new HashMap<>(input.size());
+        Map<String, Object> r = new LinkedHashMap<>(input.size());
         for (Member memb : memberList) {
             if (input.containsKey(memb.getName())) {
                 Object el = input.remove(memb.getName());
@@ -198,11 +200,10 @@ public class AggregateDataType extends NameDescription implements DataType {
                 if (v == null) {
                     v = memb.getType().getInitialValue();
                 }
-                if (v == null) {
-                    throw new IllegalArgumentException("No value could be determined for member '"
-                            + memb.getName() + "' (its corresponding type does not have an initial value)");
+                if (v != null) {
+                    r.put(memb.getName(), v);
                 }
-                r.put(memb.getName(), v);
+
             }
         }
         if (input.size() > 0) {
