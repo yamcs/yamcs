@@ -50,8 +50,7 @@ public class ParameterValuesApi extends AbstractParameterValuesApi<Context> {
                     var pvals = new ArrayList<ParameterValue>(valueCount);
                     for (var update : request.getValuesList()) {
                         var pid = MdbApi.verifyParameterWithId(ctx, mdb, update.getParameter());
-                        ctx.checkObjectPrivileges(ObjectPrivilegeType.WriteParameter,
-                                pid.getParameter().getQualifiedName());
+                        ctx.checkParameterPrivilege(ObjectPrivilegeType.WriteParameter, pid.getParameter());
 
                         var pval = new ParameterValue(pid.getParameter());
                         pval.setAcquisitionTime(acquisitionTime);

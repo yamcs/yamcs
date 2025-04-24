@@ -251,7 +251,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
 
         if (pids.isEmpty()) {
             for (Parameter p : mdb.getParameters()) {
-                if (ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
+                if (ctx.user.hasParameterPrivilege(ObjectPrivilegeType.ReadParameter, p)) {
                     var id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build();
                     pids.add(new ParameterWithId(p, id, null));
                 }
@@ -323,7 +323,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             var plistService = ParameterListsApi.verifyService(instance);
             var plist = ParameterListsApi.verifyParameterList(plistService, request.getList());
             for (Parameter p : ParameterListsApi.resolveParameters(ctx, mdb, plist)) {
-                if (!ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
+                if (!ctx.user.hasParameterPrivilege(ObjectPrivilegeType.ReadParameter, p)) {
                     continue;
                 }
                 if (namespace != null) {
@@ -341,7 +341,7 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             }
         } else if (ids.isEmpty()) {
             for (Parameter p : mdb.getParameters()) {
-                if (!ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
+                if (!ctx.user.hasParameterPrivilege(ObjectPrivilegeType.ReadParameter, p)) {
                     continue;
                 }
                 if (namespace != null) {

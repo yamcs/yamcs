@@ -298,7 +298,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
 
         Predicate<Parameter> hasPrivilege = p -> {
             return ctx.user.hasSystemPrivilege(SystemPrivilege.GetMissionDatabase)
-                    || ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, p.getQualifiedName());
+                    || ctx.user.hasParameterPrivilege(ObjectPrivilegeType.ReadParameter, p);
         };
 
         // Establish only the parameters and space-systems that the user is authorised for
@@ -597,7 +597,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
             if (p == null) {
                 throw new BadRequestException("Invalid parameter name specified " + id);
             }
-            if (!ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
+            if (!ctx.user.hasParameterPrivilege(ObjectPrivilegeType.ReadParameter, p)) {
                 log.warn("Not providing information about parameter {} because no privileges exists",
                         p.getQualifiedName());
                 continue;
@@ -1194,7 +1194,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
             if (p == null) {
                 throw new BadRequestException("Invalid parameter name specified " + id);
             }
-            ctx.checkObjectPrivileges(ObjectPrivilegeType.ReadParameter, p.getQualifiedName());
+            ctx.checkParameterPrivilege(ObjectPrivilegeType.ReadParameter, p);
             return new ParameterWithId(p, id, null);
         } else {
             return verifyParameterWithId(ctx, mdb, id.getName());
@@ -1234,12 +1234,11 @@ public class MdbApi extends AbstractMdbApi<Context> {
             p = mdb.getParameter(namespace, name);
         }
 
-        if (p != null && !ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, p.getQualifiedName())) {
-            throw new ForbiddenException("Insufficient privileges to access parameter " + p.getQualifiedName());
-        }
         if (p == null) {
             throw new NotFoundException("No parameter named " + pathName);
         }
+
+        ctx.checkParameterPrivilege(ObjectPrivilegeType.ReadParameter, p);
 
         if (aggPath != null) {
             if (!AggregateUtil.verifyPath(p.getParameterType(), aggPath)) {
