@@ -264,7 +264,7 @@ public class User extends Account {
         if (type != ObjectPrivilegeType.ReadParameter && type != ObjectPrivilegeType.WriteParameter) {
             throw new IllegalStateException("Type can only one of the parameter object privilege types");
         }
-        String opsName = parameter.getOpsNameOrNull();
+        String opsName = parameter.getOpsName();
         return hasObjectPrivilege(type, parameter.getQualifiedName())
                 || (opsName != null && !hasObjectPrivilege(type, PRIVILEGE_OPS_NAME_PREFIX + opsName));
     }
