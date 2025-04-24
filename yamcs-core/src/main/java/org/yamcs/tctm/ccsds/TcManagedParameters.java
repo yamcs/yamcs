@@ -1,11 +1,11 @@
 package org.yamcs.tctm.ccsds;
 
-import org.yamcs.ConfigurationException;
-import org.yamcs.YConfiguration;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+
+import org.yamcs.ConfigurationException;
+import org.yamcs.YConfiguration;
 
 /**
  * Configuration (managed parameters) used for generation of TC frames as per CCSDS 232.0-B-3
@@ -120,7 +120,7 @@ public class TcManagedParameters extends UplinkManagedParameters {
 
         ServiceType service;
         boolean useCop1;
-        int maxFrameLength = -1;
+        int maxFrameLength;
         public boolean multiplePacketsPerFrame;
         public boolean bdAbsolutePriority;
 

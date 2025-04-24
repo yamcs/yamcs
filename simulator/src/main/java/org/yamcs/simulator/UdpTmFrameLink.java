@@ -1,13 +1,5 @@
 package org.yamcs.simulator;
 
-import com.google.common.util.concurrent.AbstractScheduledService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.yamcs.security.SdlsSecurityAssociation;
-import org.yamcs.tctm.ccsds.error.AosFrameHeaderErrorCorr;
-import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
-import org.yamcs.utils.ByteArrayUtils;
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -18,6 +10,15 @@ import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.function.IntSupplier;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.yamcs.security.SdlsSecurityAssociation;
+import org.yamcs.tctm.ccsds.error.AosFrameHeaderErrorCorr;
+import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
+import org.yamcs.utils.ByteArrayUtils;
+
+import com.google.common.util.concurrent.AbstractScheduledService;
 
 /**
  * Simulator link implementing the TM frames using one of the three CCSDS specs:

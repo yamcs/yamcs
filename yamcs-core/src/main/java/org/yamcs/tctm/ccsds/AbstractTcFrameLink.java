@@ -1,5 +1,8 @@
 package org.yamcs.tctm.ccsds;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.yamcs.ConfigurationException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
@@ -20,9 +23,6 @@ import org.yamcs.tctm.ccsds.error.Ldpc64CltuGenerator;
 import org.yamcs.utils.IntArray;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Sends TC as TC frames (CCSDS 232.0-B-3) or TC frames embedded in CLTU (CCSDS 231.0-B-3).

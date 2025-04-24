@@ -1,20 +1,19 @@
 package org.yamcs.tctm.ccsds;
 
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.SocketException;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Optional;
+
 import org.yamcs.ConfigurationException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.security.SdlsSecurityAssociation;
 import org.yamcs.utils.StringConverter;
-
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.SocketException;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
 
 /**
  * Receives telemetry fames via UDP. One UDP datagram = one TM frame.
@@ -146,9 +145,5 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
     public Optional<SdlsSecurityAssociation> getSdls(short spi) {
         SdlsSecurityAssociation sa = this.frameHandler.params.sdlsSecurityAssociations.get(spi);
         return (sa == null) ? Optional.empty() : Optional.of(sa);
-    }
-
-    public Collection<SdlsSecurityAssociation> getSdls() {
-        return this.frameHandler.params.sdlsSecurityAssociations.values();
     }
 }

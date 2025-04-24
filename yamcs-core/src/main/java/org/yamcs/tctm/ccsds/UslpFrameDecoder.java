@@ -19,9 +19,9 @@ import org.yamcs.utils.ByteArrayUtils;
  *
  */
 public class UslpFrameDecoder implements TransferFrameDecoder {
-    UslpManagedParameters uslpParams;
+    final UslpManagedParameters uslpParams;
     ErrorDetectionWordCalculator crc;
-    static Logger log = LoggerFactory.getLogger(TransferFrameDecoder.class.getName());
+    static final Logger log = LoggerFactory.getLogger(TransferFrameDecoder.class.getName());
 
     public UslpFrameDecoder(UslpManagedParameters uslpParams) {
         this.uslpParams = uslpParams;

@@ -1,5 +1,71 @@
 package org.yamcs.http;
 
+import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+
+import javax.net.ssl.SSLException;
+
+import org.yamcs.AbstractYamcsService;
+import org.yamcs.InitException;
+import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
+import org.yamcs.YConfiguration;
+import org.yamcs.api.Api;
+import org.yamcs.api.HttpRoute;
+import org.yamcs.api.WebSocketTopic;
+import org.yamcs.http.api.ActivitiesApi;
+import org.yamcs.http.api.AlarmsApi;
+import org.yamcs.http.api.AuditApi;
+import org.yamcs.http.api.BucketsApi;
+import org.yamcs.http.api.ClearanceApi;
+import org.yamcs.http.api.CommandsApi;
+import org.yamcs.http.api.Cop1Api;
+import org.yamcs.http.api.DatabaseApi;
+import org.yamcs.http.api.EventsApi;
+import org.yamcs.http.api.FileTransferApi;
+import org.yamcs.http.api.IamApi;
+import org.yamcs.http.api.IndexesApi;
+import org.yamcs.http.api.InstancesApi;
+import org.yamcs.http.api.LinksApi;
+import org.yamcs.http.api.MdbApi;
+import org.yamcs.http.api.MdbOverrideApi;
+import org.yamcs.http.api.PacketsApi;
+import org.yamcs.http.api.ParameterArchiveApi;
+import org.yamcs.http.api.ParameterListsApi;
+import org.yamcs.http.api.ParameterValuesApi;
+import org.yamcs.http.api.ProcessingApi;
+import org.yamcs.http.api.QueuesApi;
+import org.yamcs.http.api.ReplicationApi;
+import org.yamcs.http.api.RocksDbApi;
+import org.yamcs.http.api.SdlsApi;
+import org.yamcs.http.api.ServerApi;
+import org.yamcs.http.api.ServicesApi;
+import org.yamcs.http.api.SessionsApi;
+import org.yamcs.http.api.StreamArchiveApi;
+import org.yamcs.http.api.TableApi;
+import org.yamcs.http.api.TimeApi;
+import org.yamcs.http.api.TimeCorrelationApi;
+import org.yamcs.http.api.TimelineApi;
+import org.yamcs.http.audit.AuditLog;
+import org.yamcs.http.auth.AuthHandler;
+import org.yamcs.http.auth.TokenStore;
+import org.yamcs.protobuf.CancelOptions;
+import org.yamcs.protobuf.Reply;
+import org.yamcs.utils.ExceptionUtil;
+
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -8,6 +74,7 @@ import com.google.common.util.concurrent.ServiceManager;
 import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.util.JsonFormat;
 import com.google.protobuf.util.JsonFormat.TypeRegistry;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
@@ -28,33 +95,6 @@ import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import io.netty.util.concurrent.ThreadPerTaskExecutor;
-import org.yamcs.AbstractYamcsService;
-import org.yamcs.InitException;
-import org.yamcs.Spec;
-import org.yamcs.Spec.OptionType;
-import org.yamcs.YConfiguration;
-import org.yamcs.api.Api;
-import org.yamcs.api.HttpRoute;
-import org.yamcs.api.WebSocketTopic;
-import org.yamcs.http.api.*;
-import org.yamcs.http.audit.AuditLog;
-import org.yamcs.http.auth.AuthHandler;
-import org.yamcs.http.auth.TokenStore;
-import org.yamcs.protobuf.CancelOptions;
-import org.yamcs.protobuf.Reply;
-import org.yamcs.utils.ExceptionUtil;
-
-import javax.net.ssl.SSLException;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
-
-import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
 
 /**
  * Server-wide HTTP server based on Netty that provides a number of Yamcs web services:

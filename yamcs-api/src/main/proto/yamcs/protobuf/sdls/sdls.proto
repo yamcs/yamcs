@@ -7,7 +7,6 @@ option java_outer_classname = "SdlsProto";
 option java_multiple_files = true;
 
 import "google/protobuf/empty.proto";
-import "google/protobuf/timestamp.proto";
 
 import "yamcs/api/annotations.proto";
 import "yamcs/api/httpbody.proto";
@@ -34,49 +33,38 @@ service SdlsApi {
       body: "data",
     };
   }
-
-  // Get SDLS statistics for the instance
-  rpc GetStats(GetStatsRequest) returns (GetStatsResponse) {
-    option (yamcs.api.route) = {
-      get: "/api/sdls/{instance}/stats"
-    };
-  }
 }
 
 message GetSeqCtrRequest {
+  // The Yamcs instance
   required string instance = 1;
+  // The name of the encrypted link
   required string linkName = 2;
+  // The Security Parameter Index
   required uint32 spi = 3;
 }
 
 message GetSeqCtrResponse {
+  // The current sequence number
   required uint64 seq = 1;
 }
 
 message ResetSeqCtrRequest {
+  // The Yamcs instance
   required string instance = 1;
+  // The name of the encrypted link
   required string linkName = 2;
+  // The Security Parameter Index
   required uint32 spi = 3;
 }
 
 message SetKeyRequest {
+  // The Yamcs instance
   required string instance = 1;
+  // The name of the encrypted link
   required string linkName = 2;
+  // The Security Parameter Index
   required uint32 spi = 3;
+  // The 256-bit key
   required yamcs.api.HttpBody data = 4;
-}
-
-message GetStatsRequest {
-  required string instance = 1;
-}
-
-message GetStatsResponse {
-  repeated SdlsStats stats = 1;
-}
-
-message SdlsStats {
-  required string instance = 1;
-  required string linkName = 2;
-  required uint32 spi = 3;
-  required uint64 seqCtr = 4;
 }
