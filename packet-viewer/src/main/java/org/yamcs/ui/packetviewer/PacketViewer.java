@@ -107,6 +107,7 @@ import org.yamcs.ui.packetviewer.filter.ParseException;
 import org.yamcs.ui.packetviewer.filter.TokenMgrError;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
+import org.yamcs.xtce.NameDescription;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 
@@ -888,7 +889,7 @@ public class PacketViewer extends JFrame implements ActionListener,
             Hashtable<String, TreeContainer> containers = new Hashtable<>();
 
             DefaultMutableTreeNode getTreeNode(int startOffset, SequenceContainer sc) {
-                String sckey = startOffset + ":" + sc.getOpsName();
+                String sckey = startOffset + ":" + getOpsName(sc);
 
                 if (sc.getBaseContainer() == null) {
                     if (startOffset == 0) {
@@ -985,7 +986,7 @@ public class PacketViewer extends JFrame implements ActionListener,
     @SuppressWarnings("serial")
     class TreeContainer extends DefaultMutableTreeNode {
         TreeContainer(SequenceContainer sc) {
-            super(sc.getOpsName(), true);
+            super(getOpsName(sc), true);
         }
     }
 
@@ -995,7 +996,7 @@ public class PacketViewer extends JFrame implements ActionListener,
 
         TreeEntry(ContainerParameterValue value) {
             super(String.format("%d/%d %s", value.getAbsoluteBitOffset(), value.getBitSize(),
-                    value.getParameter().getOpsName()), false);
+                    getOpsName(value.getParameter())), false);
             bitOffset = value.getAbsoluteBitOffset();
             bitSize = value.getBitSize();
         }
@@ -1357,5 +1358,18 @@ public class PacketViewer extends JFrame implements ActionListener,
                     defaultFormatName, defaultPacketInputStreamClassName, defaultPacketInputStreamArgs,
                     realtimePacketPreprocessor));
         }
+    }
+
+    /**
+     * OPS name, in XTCE defined as alias for namespace "MDB:OPS Name"
+     *
+     * @return OPS Name alias if defined, otherwise name in the default namespace
+     */
+    private String getOpsName(NameDescription nameDescription) {
+        String alias = nameDescription.getOpsName();
+        if (alias != null) {
+            return alias;
+        }
+        return nameDescription.getName();
     }
 }
