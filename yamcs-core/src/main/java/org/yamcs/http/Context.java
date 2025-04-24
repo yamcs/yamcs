@@ -13,6 +13,7 @@ import org.yamcs.logging.Log;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
+import org.yamcs.xtce.Parameter;
 
 import com.google.protobuf.Descriptors.MethodDescriptor;
 import com.google.protobuf.FieldMask;
@@ -181,6 +182,18 @@ public abstract class Context {
         for (String object : objects) {
             if (!user.hasObjectPrivilege(type, object)) {
                 throw new ForbiddenException("No " + type + " authorization for '" + object + "'");
+            }
+        }
+    }
+
+    public void checkParameterPrivilege(ObjectPrivilegeType type, Collection<Parameter> objects) throws ForbiddenException {
+        checkParameterPrivilege(type, objects.toArray(new Parameter[objects.size()]));
+    }
+
+    public void checkParameterPrivilege(ObjectPrivilegeType type, Parameter... parameters) throws ForbiddenException  {
+        for (Parameter parameter : parameters) {
+            if (!user.hasParameterPrivilege(type, parameter)) {
+                throw new ForbiddenException("No " + type + " authorization for '" + parameter.getQualifiedName() + "'");
             }
         }
     }

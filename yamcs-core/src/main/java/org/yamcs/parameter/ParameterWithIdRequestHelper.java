@@ -69,8 +69,9 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         List<ParameterWithId> plist = checkNames(idList);
         Subscription subscr = new Subscription(checkExpiration);
         for (int i = 0; i < idList.size(); i++) {
-            checkParameterPrivilege(user, plist.get(i).p.getQualifiedName());
-            subscr.add(plist.get(i));
+            ParameterWithId pwid = plist.get(i);
+            checkParameterPrivilege(user, pwid.p);
+            subscr.add(pwid);
         }
         int subscriptionId = prm.addRequest(plist.stream().map(pwid -> pwid.p).collect(Collectors.toList()), this);
         subscriptions.put(subscriptionId, subscr);
@@ -89,7 +90,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         synchronized (subscr) {
             for (int i = 0; i < idList.size(); i++) {
                 Parameter p = plist.get(i).p;
-                checkParameterPrivilege(user, p.getQualifiedName());
+                checkParameterPrivilege(user, p);
                 NamedObjectId id = idList.get(i);
                 if (!subscr.add(plist.get(i))) {
                     log.info("Ignoring duplicate subscription for '{}', id: {}", p.getName(),
@@ -204,7 +205,9 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     }
 
     public int subscribeAll(User user) throws NoPermissionException {
-        checkParameterPrivilege(user, ".*");
+        if(!user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, ".*")) {
+            throw new NoPermissionException("User " + user + " has no permission for parameter .*");
+        }
         subscribeAllId = prm.subscribeAll(this);
         return subscribeAllId;
     }
@@ -260,7 +263,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         ListMultimap<Parameter, ParameterWithId> lm = ArrayListMultimap.create();
         for (int i = 0; i < idList.size(); i++) {
             ParameterWithId pwid = plist.get(i);
-            checkParameterPrivilege(user, pwid.p.getQualifiedName());
+            checkParameterPrivilege(user, pwid.p);
             lm.put(pwid.p, pwid);
         }
 
@@ -382,7 +385,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
 
                 for (int i = 0; i < plist.size(); i++) {
                     ParameterWithId pwid = plist.get(i);
-                    checkParameterPrivilege(user, pwid.p.getQualifiedName());
+                    checkParameterPrivilege(user, pwid.p);
                     subscr1.add(pwid);
                 }
                 prm.addRequest(subscriptionId, plist.stream().map(pwid -> pwid.p).collect(Collectors.toList()), this);
@@ -492,15 +495,15 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
 
     /**
      * Check if the user has a privilege for the specified parameter name
-     * 
-     * @param authToken
-     * @param parameterName
+     *
+     * @param user user to check permissions for
+     * @param parameter parameter to check
      * @throws NoPermissionException
      */
-    private void checkParameterPrivilege(User user, String parameterName)
+    private void checkParameterPrivilege(User user, Parameter parameter)
             throws NoPermissionException {
-        if (!user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, parameterName)) {
-            throw new NoPermissionException("User " + user + " has no permission for parameter " + parameterName);
+        if (!user.hasParameterPrivilege(ObjectPrivilegeType.ReadParameter, parameter)) {
+            throw new NoPermissionException("User " + user + " has no permission for parameter " + parameter.getQualifiedName());
         }
     }
 

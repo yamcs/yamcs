@@ -13,6 +13,7 @@ import org.yamcs.security.protobuf.AccountRecord;
 import org.yamcs.security.protobuf.Clearance;
 import org.yamcs.security.protobuf.ExternalIdentity;
 import org.yamcs.security.protobuf.UserAccountRecordDetail;
+import org.yamcs.xtce.Parameter;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Tuple;
 
@@ -55,6 +56,8 @@ public class User extends Account {
     private Map<ObjectPrivilegeType, Set<ObjectPrivilege>> objectPrivileges = new HashMap<>();
 
     private Set<ClearanceListener> clearanceListeners = new CopyOnWriteArraySet<>();
+
+    private final String PRIVILEGE_OPS_NAME_PREFIX = "ops://";
 
     public User(String username, User createdBy) {
         super(username, createdBy);
@@ -246,6 +249,24 @@ public class User extends Account {
         }
 
         return false;
+    }
+
+    /**
+     * Special privilege check helper method for parameter permissions, allowing to check against both the qualified
+     * name of a parameter and its OPS name (if any), returning true when the user has the privilege
+     * (OPS name: in XTCE defined as alias for namespace "MDB:OPS Name")
+     *
+     * @param type parameter privilege type (either ObjectPrivilegeType.ReadParameter or ObjectPrivilegeType.WriteParameter)
+     * @param parameter parameter to check against
+     * @return whether the user has the given privilege type for the parameter
+     */
+    public boolean hasParameterPrivilege(ObjectPrivilegeType type, Parameter parameter) {
+        if (type != ObjectPrivilegeType.ReadParameter && type != ObjectPrivilegeType.WriteParameter) {
+            throw new IllegalStateException("Type can only one of the parameter object privilege types");
+        }
+        String opsName = parameter.getOpsNameOrNull();
+        return hasObjectPrivilege(type, parameter.getQualifiedName())
+                || (opsName != null && !hasObjectPrivilege(type, PRIVILEGE_OPS_NAME_PREFIX + opsName));
     }
 
     public void addClearanceListener(ClearanceListener listener) {

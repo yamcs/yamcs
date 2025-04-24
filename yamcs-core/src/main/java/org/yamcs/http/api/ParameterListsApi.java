@@ -190,7 +190,7 @@ public class ParameterListsApi extends AbstractParameterListsApi<Context> {
         }
 
         return parameters.stream()
-                .filter(p -> ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, p.getQualifiedName()))
+                .filter(p -> ctx.user.hasParameterPrivilege(ObjectPrivilegeType.ReadParameter, p))
                 .collect(Collectors.toList());
     }
 
