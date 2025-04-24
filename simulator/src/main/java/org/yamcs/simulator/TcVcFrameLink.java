@@ -1,14 +1,14 @@
 package org.yamcs.simulator;
 
+import java.nio.ByteBuffer;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.security.SdlsSecurityAssociation;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.StringConverter;
-
-import java.nio.ByteBuffer;
-import java.util.Optional;
 
 /**
  * Works as a child of {@link UdpTcFrameLink} and handles commands for one VC.

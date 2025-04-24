@@ -1,5 +1,7 @@
 package org.yamcs.tctm.ccsds;
 
+import java.security.GeneralSecurityException;
+
 import org.yamcs.security.SdlsSecurityAssociation;
 import org.yamcs.tctm.ccsds.TcManagedParameters.TcVcManagedParameters;
 import org.yamcs.tctm.ccsds.TcTransferFrame.SegmentHeader;
@@ -7,8 +9,6 @@ import org.yamcs.tctm.ccsds.UplinkManagedParameters.FrameErrorDetection;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
-
-import java.security.GeneralSecurityException;
 
 public class TcFrameFactory {
     final private TcManagedParameters tcParams;

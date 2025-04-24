@@ -1,6 +1,10 @@
 package org.yamcs.simulator;
 
-import com.google.common.util.concurrent.AbstractExecutionThreadService;
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.tctm.ccsds.error.BchCltuGenerator.BchEncoder;
@@ -8,10 +12,7 @@ import org.yamcs.tctm.ccsds.error.CltuGenerator.Encoding;
 import org.yamcs.tctm.ccsds.error.Ldpc64CltuGenerator.Ldpc64Encoder;
 import org.yamcs.utils.ByteArrayUtils;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.util.Optional;
+import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
 /**
  * Simulator TC link implementing the

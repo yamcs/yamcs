@@ -1,17 +1,17 @@
 package org.yamcs.tctm.ccsds;
 
-import org.yamcs.ConfigurationException;
-import org.yamcs.YConfiguration;
-import org.yamcs.security.SdlsSecurityAssociation;
-import org.yamcs.tctm.Link;
-import org.yamcs.utils.YObjectLoader;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.yamcs.ConfigurationException;
+import org.yamcs.YConfiguration;
+import org.yamcs.security.SdlsSecurityAssociation;
+import org.yamcs.tctm.Link;
+import org.yamcs.utils.YObjectLoader;
 
 /**
  * Stores configuration related to Master channels for downlink.

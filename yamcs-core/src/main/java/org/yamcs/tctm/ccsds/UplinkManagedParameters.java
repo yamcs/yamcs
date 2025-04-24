@@ -1,8 +1,5 @@
 package org.yamcs.tctm.ccsds;
 
-import org.yamcs.YConfiguration;
-import org.yamcs.security.SdlsSecurityAssociation;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,6 +7,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+
+import org.yamcs.YConfiguration;
+import org.yamcs.security.SdlsSecurityAssociation;
 
 /**
  * Stores configuration related to Master channels for uplink.
@@ -41,7 +41,6 @@ public abstract class UplinkManagedParameters {
         if (config.containsKey("encryption")) {
             List<YConfiguration> encryptionConfigs = config.getConfigList("encryption");
             for (YConfiguration saDef : encryptionConfigs) {
-                byte[] authMask;
                 short spi = (short) saDef.getInt("spi");
                 byte[] sdlsKey;
                 try {

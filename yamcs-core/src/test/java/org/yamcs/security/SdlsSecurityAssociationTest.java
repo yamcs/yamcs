@@ -1,9 +1,6 @@
 package org.yamcs.security;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.yamcs.security.SdlsSecurityAssociation.VerificationStatusCode;
-import org.yamcs.utils.ByteArrayUtils;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,7 +8,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.yamcs.security.SdlsSecurityAssociation.VerificationStatusCode;
+import org.yamcs.utils.ByteArrayUtils;
 
 public class SdlsSecurityAssociationTest {
     final Path RESOURCE_DIR = Paths.get("src", "test", "resources", "sdls");
@@ -198,4 +198,3 @@ public class SdlsSecurityAssociationTest {
         assertEquals(VerificationStatusCode.MacVerificationFailure, sa.processSecurity(frame, 0, dataStart, frame.length, authMask));
     }
 }
-

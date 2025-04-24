@@ -1,23 +1,34 @@
 package org.yamcs.simulator;
 
-import com.beust.jcommander.JCommander;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.google.common.util.concurrent.Service;
-import com.google.common.util.concurrent.ServiceManager;
-import org.yamcs.*;
-import org.yamcs.Spec.OptionType;
-import org.yamcs.simulator.pus.PusSimulator;
-import org.yamcs.utils.TimeEncoding;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.LogManager;
+
+import org.yamcs.ConfigurationException;
+import org.yamcs.InitException;
+import org.yamcs.ProcessRunner;
+import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
+import org.yamcs.ValidationException;
+import org.yamcs.YConfiguration;
+import org.yamcs.simulator.pus.PusSimulator;
+import org.yamcs.utils.TimeEncoding;
+
+import com.beust.jcommander.JCommander;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.Service;
+import com.google.common.util.concurrent.ServiceManager;
 
 /**
  * Starts the simulator.

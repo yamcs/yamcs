@@ -45,7 +45,6 @@ public class AosFrameDecoder implements TransferFrameDecoder {
         }
         int dataEnd = offset + length;
 
-
         if (crc != null) {
             dataEnd -= 2;
             int c1 = crc.compute(data, offset, dataEnd - offset);

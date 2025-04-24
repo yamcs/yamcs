@@ -1,12 +1,12 @@
 package org.yamcs.tctm;
 
+import java.util.Map;
+
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.parameter.SystemParametersService;
-
-import java.util.Map;
 
 /**
  * A source of data into yamcs; Currently TM, TC and Parameter

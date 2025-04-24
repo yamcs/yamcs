@@ -1,6 +1,7 @@
 package org.yamcs.http.api;
 
-import com.google.protobuf.Empty;
+import java.util.Optional;
+
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.api.Observer;
@@ -8,15 +9,18 @@ import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.management.LinkManager;
-import org.yamcs.protobuf.*;
+import org.yamcs.protobuf.AbstractSdlsApi;
+import org.yamcs.protobuf.GetSeqCtrRequest;
+import org.yamcs.protobuf.GetSeqCtrResponse;
+import org.yamcs.protobuf.ResetSeqCtrRequest;
+import org.yamcs.protobuf.SetKeyRequest;
 import org.yamcs.security.SdlsSecurityAssociation;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.tctm.Link;
 import org.yamcs.tctm.ccsds.UdpTcFrameLink;
 import org.yamcs.tctm.ccsds.UdpTmFrameLink;
 
-import java.util.Collection;
-import java.util.Optional;
+import com.google.protobuf.Empty;
 
 public class SdlsApi extends AbstractSdlsApi<Context> {
     private static YamcsServerInstance verifyInstanceObj(String instance) {
@@ -45,11 +49,9 @@ public class SdlsApi extends AbstractSdlsApi<Context> {
 
     private SdlsSecurityAssociation getSa(Link link, short spi) {
         Optional<SdlsSecurityAssociation> maybeSdls;
-        if (link instanceof UdpTmFrameLink) {
-            UdpTmFrameLink l = (UdpTmFrameLink) link;
+        if (link instanceof UdpTmFrameLink l) {
             maybeSdls = l.getSdls(spi);
-        } else if (link instanceof UdpTcFrameLink) {
-            UdpTcFrameLink l = (UdpTcFrameLink) link;
+        } else if (link instanceof UdpTcFrameLink l) {
             maybeSdls = l.getSdls(spi);
         } else {
             throw new BadRequestException(String.format("Link %s is not a UDP TM or TC frame link",
@@ -104,43 +106,4 @@ public class SdlsApi extends AbstractSdlsApi<Context> {
         sdls.setSecretKey(newKey);
         observer.complete(Empty.getDefaultInstance());
     }
-
-    @Override
-    public void getStats(Context ctx, GetStatsRequest request, Observer<GetStatsResponse> response) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ControlLinks);
-
-        String instance = request.getInstance();
-        LinkManager lmgr = verifyInstanceObj(instance).getLinkManager();
-        GetStatsResponse.Builder gsrb = GetStatsResponse.newBuilder();
-
-        for (Link link : lmgr.getLinks()) {
-            if (link.isDisabled()) {
-                continue;
-            }
-
-            String linkName = link.getName();
-
-            Collection<SdlsSecurityAssociation> linkSdls;
-            if (link instanceof UdpTmFrameLink) {
-                UdpTmFrameLink l = (UdpTmFrameLink) link;
-                linkSdls = l.getSdls();
-            } else if (link instanceof UdpTcFrameLink) {
-                UdpTcFrameLink l = (UdpTcFrameLink) link;
-                linkSdls = l.getSdls();
-            } else {
-                continue;
-            }
-
-            linkSdls.stream().map(sdls -> SdlsStats.newBuilder()
-                    .setInstance(instance)
-                    .setLinkName(linkName)
-                    .setSpi(sdls.spi)
-                    .setSeqCtr(sdls.getSeqNum())
-                    .build()).forEach(gsrb::addStats);
-
-        }
-
-        response.complete(gsrb.build());
-    }
-
 }

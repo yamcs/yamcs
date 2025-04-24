@@ -1,11 +1,11 @@
 package org.yamcs.tctm.ccsds;
 
-import org.yamcs.ConfigurationException;
-import org.yamcs.YConfiguration;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.yamcs.ConfigurationException;
+import org.yamcs.YConfiguration;
 
 public class AosManagedParameters extends DownlinkManagedParameters {
     enum ServiceType {

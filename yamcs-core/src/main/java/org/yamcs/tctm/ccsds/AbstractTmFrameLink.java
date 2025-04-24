@@ -1,16 +1,20 @@
 package org.yamcs.tctm.ccsds;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.yamcs.ConfigurationException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
-import org.yamcs.tctm.*;
+import org.yamcs.tctm.AbstractLink;
+import org.yamcs.tctm.AggregatedDataLink;
+import org.yamcs.tctm.Link;
+import org.yamcs.tctm.RawFrameDecoder;
+import org.yamcs.tctm.TcTmException;
 import org.yamcs.tctm.ccsds.TransferFrameDecoder.CcsdsFrameType;
 import org.yamcs.time.Instant;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class AbstractTmFrameLink extends AbstractLink implements AggregatedDataLink {
     // all the TM frame links should move the TM frame config under this section, to allow having both TM and TC frame
