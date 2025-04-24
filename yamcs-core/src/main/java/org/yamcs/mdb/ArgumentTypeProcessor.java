@@ -1,11 +1,14 @@
 package org.yamcs.mdb;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import org.yamcs.ErrorInCommand;
 import org.yamcs.commanding.ArgumentValue;
 import org.yamcs.logging.Log;
+import org.yamcs.mdb.TcProcessingContext.AggregateWithValue;
 import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ArrayValue;
 import org.yamcs.parameter.EnumeratedValue;
@@ -16,6 +19,7 @@ import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.AbsoluteTimeArgumentType;
 import org.yamcs.xtce.AggregateArgumentType;
+import org.yamcs.xtce.AggregateDataType;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentInstanceRef;
 import org.yamcs.xtce.ArgumentType;
@@ -44,6 +48,7 @@ import org.yamcs.xtce.StringDataEncoding;
 import org.yamcs.xtce.TimeEpoch;
 import org.yamcs.xtce.TimeEpoch.CommonEpochs;
 import org.yamcs.xtce.ValueEnumeration;
+import org.yamcs.xtce.ValueEnumerationRange;
 
 /**
  * Handles conversions from engineering value to raw value according to the parameter type and encoding
@@ -285,12 +290,10 @@ public class ArgumentTypeProcessor {
         return rv;
     }
 
-    public void checkRange(ArgumentType type, Object o) throws ErrorInCommand {
-        if (type instanceof IntegerArgumentType) {
-            IntegerArgumentType intType = (IntegerArgumentType) type;
-
-            long l = (Long) o;
-            IntegerValidRange vr = ((IntegerArgumentType) type).getValidRange();
+    public Value checkRangeAndConvertToValue(ArgumentType type, Object o) throws ErrorInCommand {
+        if (type instanceof IntegerArgumentType intType) {
+            Long l = (Long) o;
+            IntegerValidRange vr = intType.getValidRange();
             if (vr != null) {
                 if (intType.isSigned() && !ValidRangeChecker.checkIntegerRange(vr, l)) {
                     throw new ErrorInCommand("Value " + l + " is not in the range " + vr);
@@ -298,17 +301,35 @@ public class ArgumentTypeProcessor {
                     throw new ErrorInCommand("Value " + l + " is not in the range " + vr);
                 }
             }
-        } else if (type instanceof FloatArgumentType) {
-            double d = (Double) o;
-            FloatValidRange vr = ((FloatArgumentType) type).getValidRange();
+            if (intType.getSizeInBits() <= 32) {
+                if (intType.isSigned()) {
+                    return ValueUtility.getSint32Value(l.intValue());
+                } else {
+                    return ValueUtility.getUint32Value(l.intValue());
+                }
+            } else {
+                if (intType.isSigned()) {
+                    return ValueUtility.getSint64Value(l);
+                } else {
+                    return ValueUtility.getUint64Value(l);
+                }
+            }
+        } else if (type instanceof FloatArgumentType floatType) {
+            Double d = (Double) o;
+            FloatValidRange vr = floatType.getValidRange();
             if (vr != null) {
                 if (!ValidRangeChecker.checkFloatRange(vr, d)) {
                     throw new ErrorInCommand("Value " + d + " is not in the range " + vr);
                 }
             }
-        } else if (type instanceof StringArgumentType) {
+            if (floatType.getSizeInBits() <= 32) {
+                return ValueUtility.getFloatValue(d.floatValue());
+            } else {
+                return ValueUtility.getDoubleValue(d);
+            }
+        } else if (type instanceof StringArgumentType stringType) {
             String v = (String) o;
-            IntegerRange r = ((StringArgumentType) type).getSizeRangeInCharacters();
+            IntegerRange r = stringType.getSizeRangeInCharacters();
 
             if (r != null) {
                 int length = v.length();
@@ -321,10 +342,10 @@ public class ArgumentTypeProcessor {
                             + " does not satisfy maximum length of " + r.getMaxInclusive());
                 }
             }
-
-        } else if (type instanceof BinaryArgumentType) {
+            return ValueUtility.getStringValue(v);
+        } else if (type instanceof BinaryArgumentType binaryType) {
             byte[] b = (byte[]) o;
-            IntegerRange r = ((BinaryArgumentType) type).getSizeRangeInBytes();
+            IntegerRange r = binaryType.getSizeRangeInBytes();
 
             if (r != null) {
                 int length = b.length;
@@ -339,51 +360,91 @@ public class ArgumentTypeProcessor {
                                     + " does not satisfy maximum length of " + r.getMaxInclusive());
                 }
             }
-        } else if (type instanceof EnumeratedArgumentType) {
-            EnumeratedArgumentType enumType = (EnumeratedArgumentType) type;
+            return ValueUtility.getBinaryValue(b);
+        } else if (type instanceof EnumeratedArgumentType enumType) {
             List<ValueEnumeration> vlist = enumType.getValueEnumerationList();
-            boolean found = false;
             String v = (String) o;
-
-            for (ValueEnumeration ve : vlist) {
-                if (ve.getLabel().equals(v)) {
-                    found = true;
-                }
+            ValueEnumeration ve = enumType.enumValue(v);
+            if (ve != null) {
+                return ValueUtility.getEnumeratedValue(ve.getValue(), ve.getLabel());
             }
-            if (!found) {
-                throw new ErrorInCommand("Value '" + v
-                        + "' supplied for enumeration argument cannot be found in enumeration list " + vlist);
-            }
-        } else if (type instanceof AggregateArgumentType) {
-            AggregateArgumentType atype = (AggregateArgumentType) type;
-            Map<String, Object> mvalue = (Map<String, Object>) o;
 
-            for (Member m : atype.getMemberList()) {
-
-                if (!mvalue.containsKey(m.getName())) {
-                    throw new ErrorInCommand("Value for aggregate argument '" + type.getName()
-                            + "' does not contain a value for member " + m.getName());
-                }
-                checkRange((ArgumentType) m.getType(), mvalue.get(m.getName()));
+            ValueEnumerationRange ver = enumType.enumValueRange(v);
+            if (ver != null) {
+                return ValueUtility.getEnumeratedValue((long) ver.getOneInRange(), ver.getLabel());
             }
-        } else if (type instanceof ArrayArgumentType) {
-            ArrayArgumentType arrType = (ArrayArgumentType) type;
-            checkArrayRange(arrType, arrType.getNumberOfDimensions() - 1, (Object[]) o);
-        } else if (type instanceof BooleanArgumentType || type instanceof AbsoluteTimeArgumentType) {
-            // nothing to check
+
+            throw new ErrorInCommand("Value '" + v
+                    + "' supplied for enumeration argument cannot be found in enumeration list " + vlist);
+
+        } else if (type instanceof BooleanArgumentType) {
+            return ValueUtility.getBooleanValue((Boolean) o);
+        } else if (type instanceof AbsoluteTimeArgumentType) {
+            return ValueUtility.getTimestampValue(TimeEncoding.parse((String) o));
+        } else if (type instanceof AggregateArgumentType atype) {
+            return chackAndGetAggregateValue((AggregateDataType) type, (Map<String, Object>) o);
+        } else if (type instanceof ArrayArgumentType arrType) {
+            return checkAndGetArrayValue(arrType, arrType.getNumberOfDimensions() - 1, (Object[]) o);
         } else {
             throw new IllegalArgumentException("Cannot process values of type " + type);
         }
     }
 
-    private void checkArrayRange(ArrayArgumentType type, int n, Object[] elements)
+    private AggregateValue chackAndGetAggregateValue(AggregateDataType aggregateDataType,
+            Map<String, Object> o) throws ErrorInCommand {
+        pcontext.pushCurrentAggregate(new AggregateWithValue(aggregateDataType, o));
+
+        AggregateValue v = new AggregateValue(aggregateDataType.getMemberNames());
+        boolean updated, allFound;
+        // when converting arrays, the length of the array may reference an aggregate member. In this case if the value
+        // of the member is not set, it will be set when processing the array, deduced from the real array length.
+        // this is why we have to try multiple times to resolve the member
+        do {
+            allFound = true;
+            updated = false;
+            for (Member m : aggregateDataType.getMemberList()) {
+                if (v.getMemberValue(m.getName()) == null) {
+                    Object o1 = o.get(m.getName());
+                    if (o1 != null) {
+                        v.setMemberValue(m.getName(), checkRangeAndConvertToValue((ArgumentType) m.getType(), o1));
+                        updated = true;
+                    } else {
+                        allFound = false;
+                    }
+                }
+            }
+        } while (updated && !allFound);
+
+        if (!allFound) {
+            List<String> notFound = new ArrayList<>();
+            for (Member m : aggregateDataType.getMemberList()) {
+                if (v.getMemberValue(m.getName()) == null) {
+                    notFound.add(m.getName());
+                }
+            }
+            throw new IllegalArgumentException("No value provided for members " + notFound);
+        }
+
+        pcontext.popCurrentAggregate();
+
+        if (v.numMembers() > 0) {
+            return v;
+        } else {
+            return null;
+        }
+    }
+
+    private ArrayValue checkAndGetArrayValue(ArrayArgumentType type, int numDimensions, Object[] elements)
             throws ErrorInCommand {
-        type.getNumberOfDimensions();
-        IntegerValue iv = type.getDimension(n);
+        if (type.getNumberOfDimensions() != 1) {
+            throw new UnsupportedOperationException("TODO");
+        }
+
+        IntegerValue iv = type.getDimension(numDimensions);
         if (iv instanceof FixedIntegerValue) {
             FixedIntegerValue fiv = (FixedIntegerValue) iv;
             if (elements.length != fiv.getValue()) {
-                throw new ErrorInCommand(getSizeError(type, n, fiv.getValue(), elements.length));
+                throw new ErrorInCommand(getSizeError(type, numDimensions, fiv.getValue(), elements.length));
             }
         } else {
             DynamicIntegerValue div = (DynamicIntegerValue) iv;
@@ -401,39 +462,67 @@ public class ArgumentTypeProcessor {
                         + "(used in " + type.getName() + ")");
             }
 
-            ArgumentValue argValue = pcontext.getArgumentValue(lengthAref.getName());
-            if (argValue != null) {
-                // the command contains a value for the argument giving the length, verify that it matches the length of
-                // the array
-                long expectedSize = div.transform(argValue.getEngValue().toLong());
-                if (elements.length != expectedSize) {
-                    throw new ErrorInCommand(getSizeError(type, n, expectedSize, elements.length));
+            String lengthRef = lengthAref.getName();
+
+            // Since Yamcs 5.11.9: try to resolve the reference in the aggregate members (possibly traversing up to
+            // the parents)
+            AggregateWithValue awv = pcontext.getAggregateReference(lengthRef);
+            if (awv != null) {
+                // reference found, check if we have a value for it
+                Object o = awv.value().get(lengthRef);
+                if (o != null) {
+                    // we have a value for it, check the correct type and that the value matches the array length
+                    if (o instanceof Long l) {
+                        long expectedSize = div.transform(l);
+                        if (elements.length != expectedSize) {
+                            throw new ErrorInCommand(getSizeError(type, numDimensions, expectedSize, elements.length));
+                        }
+                    } else {
+                        throw new ErrorInCommand("Found a value for the array length reference '" + lengthRef
+                                + "' but it is of type " + o.getClass() + " instead of Long: " + o);
+                    }
+                } else {
+                    // there is no value for it, set it from the length of the array
+                    // it may be there is another array referencing it, so this way when that one will be converted the
+                    // code above will find the reference and check that the size of the other array is the same with
+                    // this one
+                    long lengthArgValue = div.reverse(elements.length);
+                    awv.value().put(lengthAref.getName(), lengthArgValue);
                 }
             } else {
-                // the argument specifying the length is not present, compute it automatically based on the length of
-                // the array
-                Argument lengthArg = pcontext.getArgument(lengthAref.getName());
-                if (lengthArg == null) {
-                    throw new ErrorInCommand("length of array " + type.getName()
-                            + " makes reference to non-existent argument '" + lengthAref.getName()
-                            + "' for command " + pcontext.getCommand());
+                // reference could not be resolved in the aggregate members, try into the argument values
+                ArgumentValue argValue = pcontext.getArgumentValue(lengthRef);
+
+                if (argValue != null) {
+                    // the command contains a value for the argument giving the length, verify that it matches the
+                    // length of the array
+                    long expectedSize = div.transform(argValue.getEngValue().toLong());
+                    if (elements.length != expectedSize) {
+                        throw new ErrorInCommand(getSizeError(type, numDimensions, expectedSize, elements.length));
+                    }
+                } else {
+                    // the argument specifying the length is not present, compute it automatically based on the length
+                    // of
+                    // the array
+                    Argument lengthArg = pcontext.getArgument(lengthAref.getName());
+                    if (lengthArg == null) {
+                        throw new ErrorInCommand("length of array " + type.getName()
+                                + " makes reference to non-existent argument '" + lengthAref.getName()
+                                + "' for command " + pcontext.getCommand());
+                    }
+                    long lengthArgValue = div.reverse(elements.length);
+                    Value v = checkRangeAndConvertToValue(lengthArg.getArgumentType(), lengthArgValue);
+                    pcontext.addArgumentValue(lengthArg, v);
                 }
-                long lengthArgValue = div.reverse(elements.length);
-                checkRange(lengthArg.getArgumentType(), lengthArgValue);
-                Value v = DataTypeProcessor.getValueForType(lengthArg.getArgumentType(), Long.valueOf(lengthArgValue));
-                pcontext.addArgumentValue(lengthArg, v);
             }
         }
 
-        if (n == 0) {
-            for (Object elementValue : elements) {
-                checkRange((ArgumentType) type.getElementType(), elementValue);
-            }
-        } else {
-            for (Object elementValue : elements) {
-                checkArrayRange(type, n - 1, (Object[]) elementValue);
-            }
+        ArrayValue v = new ArrayValue(new int[] { elements.length }, type.getElementType().getValueType());
+        for (int i = 0; i < elements.length; i++) {
+            v.setElementValue(i, checkRangeAndConvertToValue((ArgumentType) type.getElementType(), elements[i]));
         }
+
+        return v;
     }
 
     private static String getSizeError(ArrayArgumentType type, int dim, long expected, long actual) {

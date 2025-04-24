@@ -5,9 +5,6 @@ import org.yamcs.protobuf.Yamcs.Value;
 /**
  * Interface for all XTCE data types.
  *
- * 
- * @author nm
- *
  */
 public interface DataType {
     /**

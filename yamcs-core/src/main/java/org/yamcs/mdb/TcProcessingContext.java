@@ -1,5 +1,7 @@
 package org.yamcs.mdb;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -8,6 +10,7 @@ import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.utils.BitBuffer;
+import org.yamcs.xtce.AggregateDataType;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Parameter;
@@ -29,6 +32,20 @@ public class TcProcessingContext extends ProcessingContext {
 
     private int size;
     final MetaCommand metaCmd;
+
+    /**
+     * Since Yamcs 5.11.9 this is used when processing command arguments to allow referencing values inside the same
+     * aggregate.
+     * <p>
+     * The aggregates may be nested, so they are stored in a stack
+     * <p>
+     * Note that the values in the stack may be modified during processing: that is if a reference to an array length is
+     * found and without a corresponding value in the aggregate member, it will be set from the length of the array.
+     * <p>
+     * See {@link ArgumentTypeProcessor}
+     *
+     */
+    private final Deque<AggregateWithValue> aggregateStack = new ArrayDeque<>();
 
     public TcProcessingContext(MetaCommand metaCmd, ProcessorData pdata, Map<Parameter, Value> paramValues,
             BitBuffer bitbuf, int bitPosition, long generationTime) {
@@ -62,6 +79,24 @@ public class TcProcessingContext extends ProcessingContext {
         return null;
     }
 
+    /**
+     * Lookup the argument by name in the stack of aggregates
+     * <p>
+     * The returned AggregateWithValue may not have the value set
+     *
+     * @param argName
+     *            the name of the aggregate member to look up
+     * @return the argument value, if found, or null
+     */
+    public AggregateWithValue getAggregateReference(String argName) {
+        for (AggregateWithValue agg : aggregateStack) {
+            if (agg.type.getMember(argName) != null) {
+                return agg;
+            }
+        }
+        return null;
+    }
+
     public Value getRawParameterValue(Parameter param) {
         Value v = paramValues.get(param);
         if (v == null) {
@@ -83,6 +118,25 @@ public class TcProcessingContext extends ProcessingContext {
 
     public boolean hasArgumentValue(Argument a) {
         return cmdArgs.containsKey(a);
+    }
+
+    /**
+     * Pushes a new current aggregate onto the stack.
+     *
+     * @param newAggregate
+     *            the aggregate to push
+     */
+    public void pushCurrentAggregate(AggregateWithValue newAggregate) {
+        aggregateStack.push(newAggregate);
+    }
+
+    /**
+     * Pops the current aggregate from the stack and returns it.
+     *
+     * @return the previous current aggregate, or null if the stack is empty
+     */
+    public AggregateWithValue popCurrentAggregate() {
+        return aggregateStack.isEmpty() ? null : aggregateStack.pop();
     }
 
     public void addArgumentValue(Argument a, Value argValue) {
@@ -114,4 +168,6 @@ public class TcProcessingContext extends ProcessingContext {
         return metaCmd;
     }
 
+    public static record AggregateWithValue(AggregateDataType type, Map<String, Object> value) {
+    }
 }

@@ -53,4 +53,8 @@ public class ValueEnumerationRange implements Serializable {
     public boolean getMaxInclusive() {
         return isMaxInclusive;
     }
+
+    public double getOneInRange() {
+        return min / 2 + max / 2;
+    }
 }

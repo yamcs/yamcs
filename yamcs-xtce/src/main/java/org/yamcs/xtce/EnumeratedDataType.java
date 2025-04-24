@@ -74,10 +74,29 @@ public class EnumeratedDataType extends BaseDataType {
         return null;
     }
 
+    /**
+     * Returns the enumeration value that maps to the given label or null if it does not exist.
+     * <p>
+     * It does not look through the ranges
+     */
     public ValueEnumeration enumValue(String label) {
         for (ValueEnumeration enumeration : enumerationList) {
             if (enumeration.getLabel().equals(label)) {
                 return enumeration;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the enumeration value range that maps to the given label or null if it does not exist.
+     * <p>
+     * It does not look through the regular enumerations
+     */
+    public ValueEnumerationRange enumValueRange(String label) {
+        for (ValueEnumerationRange range : ranges) {
+            if (range.getLabel().equals(label)) {
+                return range;
             }
         }
         return null;
