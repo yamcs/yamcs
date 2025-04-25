@@ -34,6 +34,7 @@ import com.google.common.util.concurrent.ServiceManager;
  * <p>
  * This class is configured as a service inside Yamcs but it starts itself as an external process via the
  * {@link #main(String[])} function.
+ *
  */
 public class SimulatorCommander extends ProcessRunner {
 

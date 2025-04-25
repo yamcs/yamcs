@@ -13,6 +13,7 @@ import org.yamcs.utils.ByteArrayUtils;
 
 /**
  * Decodes frames as per CCSDS 132.0-B-3
+ *
  */
 public class TmFrameDecoder implements TransferFrameDecoder {
     TmManagedParameters tmParams;

@@ -143,7 +143,6 @@ public class UslpFrameDecoder implements TransferFrameDecoder {
         utf.setVcFrameSeq(vcfFrameSeq);
         utf.setMapId(mapId);
 
-
         byte dataHeader = data[dataOffset];
         int constrRules = (dataHeader & 0xFF) >> 5;
         int protId = dataHeader & 0x1F;

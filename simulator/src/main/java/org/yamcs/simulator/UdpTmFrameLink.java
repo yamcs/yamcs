@@ -21,13 +21,17 @@ import com.google.common.util.concurrent.AbstractScheduledService;
 
 /**
  * Simulator link implementing the TM frames using one of the three CCSDS specs:
- * <p>
- * AOS CCSDS 732.0-B-3 TM CCSDS 132.0-B-2 USLP CCSDS 732.1-B-1
- * <p>
- * <p>
+ *
+ * AOS CCSDS 732.0-B-3
+ * TM CCSDS 132.0-B-2
+ * USLP CCSDS 732.1-B-1
+ *
+ *
  * Sends frames of predefined size at a configured frequency. If there is no data to send, it sends idle frames.
  *
+ *
  * @author nm
+ *
  */
 public class UdpTmFrameLink extends AbstractScheduledService {
     final String frameType;
@@ -512,6 +516,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
     /**
      * This builds USLP frames with complete primary header, OCF , no insert data, and 32 bits frame count
+     *
      */
     static class UslpVcSender extends VcBuilder {
         byte[] idleFrameData;
