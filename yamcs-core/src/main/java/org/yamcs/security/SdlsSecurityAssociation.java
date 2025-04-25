@@ -53,8 +53,8 @@ public class SdlsSecurityAssociation {
     private int seqNum;
 
     /**
-     * Anti-replay sequence number window.
-     * Specifies the range of sequence number around the current number that will be accepted.
+     * Anti-replay sequence number window. Specifies the range of sequence number around the current number that will be
+     * accepted.
      */
     final int seqNumWindow;
 
@@ -66,10 +66,10 @@ public class SdlsSecurityAssociation {
     private static final Logger log = LoggerFactory.getLogger(SdlsSecurityAssociation.class);
 
     /**
-     * @param key the 256-bit key used for encryption/decryption
-     * @param spi the security parameter index, shared between sender and receiver.
-     * @param seqNumWindow a positive integer; only frames whose sequence number differs by this integer at
-     *                     maximum will be accepted.
+     * @param key          the 256-bit key used for encryption/decryption
+     * @param spi          the security parameter index, shared between sender and receiver.
+     * @param seqNumWindow a positive integer; only frames whose sequence number differs by this integer at maximum will
+     *                     be accepted.
      */
     public SdlsSecurityAssociation(byte[] key, short spi, int seqNumWindow) {
         this.secretKey = new SecretKeySpec(key, secretKeyAlgorithm);
@@ -240,6 +240,38 @@ public class SdlsSecurityAssociation {
     }
 
     /**
+     * Validate a received sequence number, accounting for rollover.
+     *
+     * @param receivedSeqNum the sequence number to validate
+     * @return whether or not the sequence number is valid, accounting for rollover
+     */
+    public boolean seqNumValid(int receivedSeqNum) {
+        try {
+            // Try to verify normally
+            int maxAllowedSeqNum = Math.addExact(seqNum, seqNumWindow);
+            if (receivedSeqNum < seqNum || receivedSeqNum > maxAllowedSeqNum) {
+                log.warn("Received sequence number {} outside of range [{}..{}]", receivedSeqNum, seqNum,
+                        maxAllowedSeqNum);
+                return false;
+            }
+        } catch (ArithmeticException e) {
+            // In case there's a possible sequence number rollover:
+            // Sequence number can be in range [seq, MAX_INT]
+            boolean seqNumInHighRange = receivedSeqNum >= seqNum; // always <= MAX_INT
+            // Or in range [0, seqNumWindow-(MAX_INT-seqNum)]
+            int usedWindow = Integer.MAX_VALUE - seqNum;
+            int remainingWindow = seqNumWindow - usedWindow;
+            boolean seqNumInLowRange = receivedSeqNum >= 0 && receivedSeqNum <= remainingWindow;
+            if (!seqNumInHighRange && !seqNumInLowRange) {
+                log.warn("Received sequence number {} outside of range [{}..{}, 0..{}]", receivedSeqNum, seqNum,
+                        Integer.MAX_VALUE, remainingWindow);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Verify and decrypt a transferFrame.
      *
      * @param transferFrame   the entire transfer frame
@@ -250,7 +282,8 @@ public class SdlsSecurityAssociation {
      *                        automatically authenticated by the SDLS implementation)
      * @return a code indicating the verification/decryption status
      */
-    public VerificationStatusCode processSecurity(byte[] transferFrame, int frameStart, int dataStart, int secTrailerEnd,
+    public VerificationStatusCode processSecurity(byte[] transferFrame, int frameStart, int dataStart,
+                                                  int secTrailerEnd,
                                                   byte[] partialAuthMask) {
         // Read security header
         // first two bytes are SPI
@@ -310,12 +343,8 @@ public class SdlsSecurityAssociation {
 
         // Check the sequence number
         int receivedSeqNum = ByteArrayUtils.decodeInt(transferFrame, secHeaderStart + 2 + GCM_IV_LEN_BYTES);
-        int minAllowedSeqNum = seqNum - seqNumWindow;
-        int maxAllowedSeqNum = seqNum + seqNumWindow;
 
-        if (receivedSeqNum < minAllowedSeqNum || receivedSeqNum > maxAllowedSeqNum) {
-            log.error("Received sequence number {} outside of range [{}..{}]", receivedSeqNum, minAllowedSeqNum,
-                    maxAllowedSeqNum);
+        if (!seqNumValid(receivedSeqNum)) {
             return VerificationStatusCode.AntiReplaySequenceNumberFailure;
         }
         seqNum = receivedSeqNum;
@@ -332,6 +361,7 @@ public class SdlsSecurityAssociation {
 
     /**
      * Update the secret key
+     *
      * @param secretKey a 256-bit key to be used by AES-GCM
      */
     public void setSecretKey(byte[] secretKey) {
@@ -347,6 +377,7 @@ public class SdlsSecurityAssociation {
 
     /**
      * Get the current sequence number
+     *
      * @return the current sequence number
      */
     public int getSeqNum() {
