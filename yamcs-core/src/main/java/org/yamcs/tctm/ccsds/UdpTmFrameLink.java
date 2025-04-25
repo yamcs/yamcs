@@ -6,7 +6,6 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Optional;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.Spec;
@@ -142,8 +141,7 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
         return Status.OK;
     }
 
-    public Optional<SdlsSecurityAssociation> getSdls(short spi) {
-        SdlsSecurityAssociation sa = this.frameHandler.params.sdlsSecurityAssociations.get(spi);
-        return (sa == null) ? Optional.empty() : Optional.of(sa);
+    public SdlsSecurityAssociation getSdls(short spi) {
+        return this.frameHandler.params.sdlsSecurityAssociations.get(spi);
     }
 }

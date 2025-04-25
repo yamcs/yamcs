@@ -5,7 +5,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import org.yamcs.ConfigurationException;
@@ -156,8 +155,7 @@ public class UdpTcFrameLink extends AbstractTcFrameLink implements Runnable {
         return Status.OK;
     }
 
-    public Optional<SdlsSecurityAssociation> getSdls(short spi) {
-        SdlsSecurityAssociation sa = this.multiplexer.tcManagedParameters.sdlsSecurityAssociations.get(spi);
-        return (sa == null) ? Optional.empty() : Optional.of(sa);
+    public SdlsSecurityAssociation getSdls(short spi) {
+        return this.multiplexer.tcManagedParameters.sdlsSecurityAssociations.get(spi);
     }
 }

@@ -1,7 +1,6 @@
 package org.yamcs.simulator;
 
 import java.nio.ByteBuffer;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,15 +34,15 @@ public class TcVcFrameLink {
     byte[] authMask;
 
     // Optionally, a security association to encrypt/decrypt data on the link
-    Optional<SdlsSecurityAssociation> maybeSdls = Optional.empty();
+    SdlsSecurityAssociation maybeSdls = null;
 
-    public TcVcFrameLink(ColSimulator simulator, int vcId, Optional<byte[]> maybeSdlsKey, short encryptionSpi,
+    public TcVcFrameLink(ColSimulator simulator, int vcId, byte[] maybeSdlsKey, short encryptionSpi,
                          int encryptionSeqNumWindow, boolean verifySeqNum) {
         this.simulator = simulator;
         this.vcId = vcId;
 
         // If we have an encryption key, configure encryption
-        if (maybeSdlsKey.isPresent()) {
+        if (maybeSdlsKey != null) {
             // Create an auth mask for the TC primary header,
             // the frame data is already part of authentication.
             // No need to authenticate data, already part of GCM
@@ -51,8 +50,8 @@ public class TcVcFrameLink {
             authMask = new byte[5];
             authMask[2] = (byte) 0b1111_1100; // authenticate virtual channel ID
 
-            this.maybeSdls = Optional.of(new SdlsSecurityAssociation(maybeSdlsKey.get(), encryptionSpi,
-                    encryptionSeqNumWindow, verifySeqNum));
+            this.maybeSdls = new SdlsSecurityAssociation(maybeSdlsKey, encryptionSpi,
+                    encryptionSeqNumWindow, verifySeqNum);
         }
     }
 
@@ -95,16 +94,14 @@ public class TcVcFrameLink {
         offset += 5;
 
         // If the link is encrypted, decrypt data
-        if (maybeSdls.isPresent()) {
-            var sa = maybeSdls.get();
-
+        if (maybeSdls != null) {
             // Data is preceded by a security header
-            var dataStart = offset + SdlsSecurityAssociation.getHeaderSize();
+            int dataStart = offset + SdlsSecurityAssociation.getHeaderSize();
             // And followed by a security trailer
-            var secTrailerEnd = frameLength - 2; // last 2 bytes of frame are CRC
+            int secTrailerEnd = frameLength - 2; // last 2 bytes of frame are CRC
 
             // Try to verify and decrypt it, handle any errors
-            var decryptionStatus = sa.processSecurity(data, offset - 5, dataStart, secTrailerEnd, authMask);
+            SdlsSecurityAssociation.VerificationStatusCode decryptionStatus = maybeSdls.processSecurity(data, offset - 5, dataStart, secTrailerEnd, authMask);
             if (decryptionStatus != SdlsSecurityAssociation.VerificationStatusCode.NoFailure) {
                 log.warn("Could not decrypt frame: {}", decryptionStatus);
                 return;

@@ -3,7 +3,6 @@ package org.yamcs.simulator;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +33,7 @@ public class UdpTcFrameLink extends AbstractExecutionThreadService {
     TcVcFrameLink[] vcHandlers;
     int[] clcw;
 
-    public UdpTcFrameLink(ColSimulator simulator, int port, Optional<byte[]> maybeSdlsKey, short encryptionSpi,
+    public UdpTcFrameLink(ColSimulator simulator, int port, byte[] maybeSdlsKey, short encryptionSpi,
                           int encryptionSeqNumWindow, boolean verifySeqNum) {
         this.simulator = simulator;
         this.port = port;

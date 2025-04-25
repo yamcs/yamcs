@@ -1,7 +1,5 @@
 package org.yamcs.http.api;
 
-import java.util.Optional;
-
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.api.Observer;
@@ -48,7 +46,7 @@ public class SdlsApi extends AbstractSdlsApi<Context> {
     }
 
     private SdlsSecurityAssociation getSa(Link link, short spi) {
-        Optional<SdlsSecurityAssociation> maybeSdls;
+        SdlsSecurityAssociation maybeSdls;
         if (link instanceof UdpTmFrameLink l) {
             maybeSdls = l.getSdls(spi);
         } else if (link instanceof UdpTcFrameLink l) {
@@ -57,11 +55,11 @@ public class SdlsApi extends AbstractSdlsApi<Context> {
             throw new BadRequestException(String.format("Link %s is not a UDP TM or TC frame link",
                     link.getName()));
         }
-        if (maybeSdls.isEmpty()) {
+        if (maybeSdls == null) {
             throw new BadRequestException(String.format("No SDLS SA found with SPI %s on link %s",
                     spi, link.getName()));
         }
-        return maybeSdls.get();
+        return maybeSdls;
     }
 
     @Override
@@ -98,7 +96,7 @@ public class SdlsApi extends AbstractSdlsApi<Context> {
 
         SdlsSecurityAssociation sdls = getSa(link, spi);
 
-        var newKey = request.getData().getData().toByteArray();
+        byte[] newKey = request.getData().getData().toByteArray();
         if (newKey.length != 32) {
             throw new BadRequestException(String.format("AES-256-GCM expects a 256-bit key, %s bits provided",
                     newKey.length * 8));
