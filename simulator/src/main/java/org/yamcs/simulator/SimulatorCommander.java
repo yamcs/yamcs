@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.LogManager;
@@ -266,16 +265,16 @@ public class SimulatorCommander extends ProcessRunner {
             if (runtimeOptions.tmFrameLength > 0) {
 
                 // Load a key for encryption/decryption if one was provided
-                final Optional<byte[]> maybeSdlsKey;
+                final byte[] maybeSdlsKey;
                 String keyFile = runtimeOptions.encryptionKeyFile;
                 if (keyFile != null) {
                     try {
-                        maybeSdlsKey = Optional.of(Files.readAllBytes(Path.of(keyFile)));
+                        maybeSdlsKey = Files.readAllBytes(Path.of(keyFile));
                     } catch (IOException e) {
                         throw new RuntimeException("Cannot read file " + keyFile + ": " + e);
                     }
                 } else {
-                    maybeSdlsKey = Optional.empty();
+                    maybeSdlsKey = null;
                 }
 
                 UdpTcFrameLink tcFrameLink = new UdpTcFrameLink(sim, runtimeOptions.tcFramePort, maybeSdlsKey,
