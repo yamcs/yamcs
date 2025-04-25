@@ -293,7 +293,7 @@ public class SdlsSecurityAssociation {
 
         // Check that the received SPI is the SPI for this SA
         if (receivedSpi != spi) {
-            log.error("Expected SPI {}, received SPI {}", spi, receivedSpi);
+            log.warn("Expected SPI {}, received SPI {}", spi, receivedSpi);
             return VerificationStatusCode.InvalidSPI;
         }
 
