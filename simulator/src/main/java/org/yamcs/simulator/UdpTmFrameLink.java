@@ -399,13 +399,13 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         @Override
         void encryptFrame() {
             if (this.maybeSdls.isEmpty()) {
-                log.error("Tried to encrypt a frame, but no Security Association is present");
+                log.warn("Tried to encrypt a frame, but no Security Association is present");
                 return;
             }
             try {
                 this.maybeSdls.get().applySecurity(data, 0, hdrSize(), dataEnd + SdlsSecurityAssociation.getTrailerSize(), authMask);
             } catch (GeneralSecurityException e) {
-                log.error("could not encrypt frame: {}", e);
+                log.warn("could not encrypt frame: {}", e);
             }
         }
     }
@@ -477,7 +477,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
                 try {
                     this.maybeSdls.get().applySecurity(data, 0, hdrSize(), dataEnd + SdlsSecurityAssociation.getTrailerSize(), authMask);
                 } catch (GeneralSecurityException e) {
-                    log.error("could not encrypt idle frame: {}", e);
+                    log.warn("could not encrypt idle frame: {}", e);
                 }
             }
 
@@ -494,13 +494,13 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         @Override
         void encryptFrame() {
             if (this.maybeSdls.isEmpty()) {
-                log.error("Tried to encrypt a frame, but no Security Association is present");
+                log.warn("Tried to encrypt a frame, but no Security Association is present");
                 return;
             }
             try {
                 this.maybeSdls.get().applySecurity(data, 0, hdrSize(), dataEnd + SdlsSecurityAssociation.getTrailerSize(), authMask);
             } catch (GeneralSecurityException e) {
-                log.error("could not encrypt frame: {}", e);
+                log.warn("could not encrypt frame: {}", e);
             }
         }
 
@@ -583,7 +583,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         @Override
         void encryptFrame() {
             if (this.maybeSdls.isEmpty()) {
-                log.error("Tried to encrypt a frame, but no Security Association is present");
+                log.warn("Tried to encrypt a frame, but no Security Association is present");
                 return;
             }
             try {
@@ -591,7 +591,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
                 int secTrailerEnd = dataEnd + SdlsSecurityAssociation.getTrailerSize();
                 this.maybeSdls.get().applySecurity(data, 0, dataStart, secTrailerEnd, authMask);
             } catch (GeneralSecurityException e) {
-                log.error("could not encrypt frame: {}", e);
+                log.warn("could not encrypt frame: {}", e);
             }
         }
     }

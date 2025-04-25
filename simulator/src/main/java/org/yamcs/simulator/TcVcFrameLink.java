@@ -106,7 +106,7 @@ public class TcVcFrameLink {
             // Try to verify and decrypt it, handle any errors
             var decryptionStatus = sa.processSecurity(data, offset - 5, dataStart, secTrailerEnd, authMask);
             if (decryptionStatus != SdlsSecurityAssociation.VerificationStatusCode.NoFailure) {
-                log.error("Could not decrypt frame: {}", decryptionStatus);
+                log.warn("Could not decrypt frame: {}", decryptionStatus);
                 return;
             }
 

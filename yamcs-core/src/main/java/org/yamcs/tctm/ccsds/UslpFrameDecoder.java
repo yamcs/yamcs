@@ -192,7 +192,7 @@ public class UslpFrameDecoder implements TransferFrameDecoder {
             SdlsSecurityAssociation.VerificationStatusCode decryptionResult = sdlsSecurityAssociation.processSecurity(data,
                     offset, decryptionDataStart, decryptionTrailerEnd, vmp.authMask);
             if (decryptionResult != SdlsSecurityAssociation.VerificationStatusCode.NoFailure) {
-                log.error("Couldn't decrypt frame: {}", decryptionResult);
+                log.warn("Couldn't decrypt frame: {}", decryptionResult);
             }
 
             // Update offsets
