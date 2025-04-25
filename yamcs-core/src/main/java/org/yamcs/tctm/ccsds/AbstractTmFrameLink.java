@@ -101,10 +101,14 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
     /**
      * sends a frame to the multiplexer, after decoding and derandomizing it (if necessary)
      *
-     * @param ert    - earth reception time
-     * @param data   - buffer containing frame data
-     * @param offset - offset in the buffer where the frame data starts
-     * @param length - length of the frame data
+     * @param ert
+     *            - earth reception time
+     * @param data
+     *            - buffer containing frame data
+     * @param offset
+     *            - offset in the buffer where the frame data starts
+     * @param length
+     *            - length of the frame data
      */
     protected void handleFrame(Instant ert, byte[] data, int offset, int length) {
         try {

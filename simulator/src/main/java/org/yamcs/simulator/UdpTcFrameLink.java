@@ -14,12 +14,15 @@ import org.yamcs.utils.ByteArrayUtils;
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
 
 /**
- * Simulator TC link implementing the CCSDS 232.0-B-3 (TC SPACE DATA LINK PROTOCOL)
+ * Simulator TC link implementing the
+ * CCSDS 232.0-B-3 (TC SPACE DATA LINK PROTOCOL)
  * <p>
- * and partly CCSDS 231.0-B-3 (TC SYNCHRONIZATION AND CHANNEL CODING)
+ * and partly
+ * CCSDS 231.0-B-3 (TC SYNCHRONIZATION AND CHANNEL CODING)
  * <p>
- * <p>
+ *
  * It receives TCs as CLTUs via UDP (one UDP frame = one CLTU)
+ *
  */
 public class UdpTcFrameLink extends AbstractExecutionThreadService {
     final ColSimulator simulator;

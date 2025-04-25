@@ -11,10 +11,12 @@ import org.yamcs.utils.StringConverter;
 
 /**
  * Works as a child of {@link UdpTcFrameLink} and handles commands for one VC.
- * <p>
- * * It implements FARM part of the COP-1 protocol CCSDS 232.1-B-2 ( COMMUNICATIONS OPERATION PROCEDURE-1)
+ *
+ * * It implements FARM part of the COP-1 protocol
+ * CCSDS 232.1-B-2 ( COMMUNICATIONS OPERATION PROCEDURE-1)
  *
  * @author nm
+ *
  */
 public class TcVcFrameLink {
     private static final Logger log = LoggerFactory.getLogger(TcVcFrameLink.class);
