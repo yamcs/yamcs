@@ -19,7 +19,15 @@ import { TimeArgumentComponent } from '../time-argument/time-argument.component'
   viewProviders: [{
     provide: ControlContainer,
     useFactory: (formArrayName: FormArrayName, formGroupName: FormGroupName) => {
-      return formArrayName || formGroupName;
+      if (!formArrayName) {
+        return formGroupName;
+      } else {
+        if (formArrayName.control.parent === formGroupName.control) {
+          return formArrayName;
+        } else {
+          return formGroupName;
+        }
+      }
     },
     deps: [[new SkipSelf(), new Optional(), FormArrayName], FormGroupName],
   }],
