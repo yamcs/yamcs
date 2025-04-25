@@ -315,7 +315,7 @@ encryptionSpi (integer)
     If specified, instructs the virtual channel to encrypt and authenticate frames, using the specified Security Parameter Index. The ``encryptionSpi`` must be one of the ``spi`` values in the ``encryption`` list for the link.
 
 seqNumWindow (integer)
-    If SDLS encryption is used, this defines the maximum value by which the sequence number of incoming frames can differ from the current sequence number.
+    If SDLS encryption is used, this defines the maximum value by which the sequence number of incoming frames can differ from the current sequence number. The sequence number is 32 bits in size; as a potential future improvement, this could be made user-configurable.
 
 service (string)
     Currently the only supported option is ``PACKET`` which is also the default.
