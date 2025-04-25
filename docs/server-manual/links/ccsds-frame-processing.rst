@@ -419,3 +419,28 @@ The CCSDS Standard distinguishes between three types of TC frames (the type is e
 To send BD frames with Yamcs, you can use an attribute on the command called ``cop1Bypass``. If the link finds this attribute set to true, it will send the command in a BD frame, bypassing the COP-1 verification. The BC frames are sent only by the COP-1 state machine and it is not possible to send them from the user.
 
 The user interface allows also to deactivate the COP-1 and the user can opt for sending all the commands as AD frames or BD frames regardless of the cop1Bypass attribute.
+
+
+SDLS Support
+************
+
+
+SDLS is the protocol specified in `CCSDS 355.0-B-2 <https://ccsds.org/wp-content/uploads/gravity_forms/5-448e85c647331d9cbaf66c096458bdd5/2025/01//355x0b2.pdf>`_ for encrypting CCSDS frames.
+
+Managed Parameters:
+
+* Security Parameter Index (SPI): configurable by user in the Yamcs instance config file
+* Security Association Service Type: Authenticated Encryption is supported; not user-configurable.
+* Security Association Context: GVCID is supported. A Security Association is associated with a virtual channel, so changing the MAP ID will not affect the SPI used for SDLS.
+* Transmitted length of Initialization Vector: set to 12 octets (OWASP recommendation, baseline SDLS); not user-configurable.
+* Transmitted length of Sequence Number: set to 4 octets; not user-configurable.
+* Transmitted length of Pad Length: padding is not used; not user-configurable.
+* Transmitted length of MAC: set to 16 octets (baseline SDLS); not user-configurable.
+* Authentication algorithm: GCM is supported; not user-configurable.
+* Authentication mask: set as dictated by the standard; not user-configurable
+* Sequence number window: configurable by user in the Yamcs instance config file
+* Encryption algorithm: AES-GCM is supported; not user-configurable.
+* Authentication key: length is 256 bits, key is configured by user in the Yamcs configuration
+* Encryption key: the same key as in authentication is used, because AES-GCM provides authenticated encryption. Length is 256 bits, key is configured by user in the Yamcs configuration.
+* Sequence number: set to 0 when a Security Association is created. Not user-configurable, but can be reset via the API.
+* Encryption initialization vector: initialized with a random value on every encryption; not user-configurable.
