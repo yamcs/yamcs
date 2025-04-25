@@ -22,17 +22,13 @@ import com.google.common.util.concurrent.AbstractScheduledService;
 
 /**
  * Simulator link implementing the TM frames using one of the three CCSDS specs:
- * 
- * AOS CCSDS 732.0-B-3
- * TM CCSDS 132.0-B-2
- * USLP CCSDS 732.1-B-1
- * 
- * 
+ * <p>
+ * AOS CCSDS 732.0-B-3 TM CCSDS 132.0-B-2 USLP CCSDS 732.1-B-1
+ * <p>
+ * <p>
  * Sends frames of predefined size at a configured frequency. If there is no data to send, it sends idle frames.
- * 
- * 
- * @author nm
  *
+ * @author nm
  */
 public class UdpTmFrameLink extends AbstractScheduledService {
     final String frameType;
@@ -58,7 +54,8 @@ public class UdpTmFrameLink extends AbstractScheduledService {
     Optional<SdlsSecurityAssociation> maybeSdls = Optional.empty();
 
     public UdpTmFrameLink(String frameType, String host, int port, int frameLength, double framesPerSec,
-                          IntSupplier clcwSupplier, Optional<byte[]> maybeSdlsKey, short sdlsSpi, int encryptionSeqNumWindow) {
+                          IntSupplier clcwSupplier, Optional<byte[]> maybeSdlsKey, short sdlsSpi,
+                          int encryptionSeqNumWindow, boolean verifySeqNum) {
         this.frameType = frameType;
         this.host = host;
         this.port = port;
@@ -66,7 +63,8 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         // If the link should be encrypted, the maximum amount of data is reduced because of encryption overhead.
         if (maybeSdlsKey.isPresent()) {
             this.frameSize = frameLength - SdlsSecurityAssociation.getOverheadBytes();
-            this.maybeSdls = Optional.of(new SdlsSecurityAssociation(maybeSdlsKey.get(), sdlsSpi, encryptionSeqNumWindow));
+            this.maybeSdls = Optional.of(new SdlsSecurityAssociation(maybeSdlsKey.get(), sdlsSpi,
+                    encryptionSeqNumWindow, verifySeqNum));
         } else {
             this.frameSize = frameLength;
         }
@@ -155,7 +153,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
     /**
      * queue packet for virtual channel
-     * 
+     *
      * @param vcId
      * @param packet
      */
@@ -240,7 +238,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
         /**
          * Copy data from the queue into the frame
-         * 
+         *
          * @return
          * @throws IOException
          */
@@ -403,7 +401,8 @@ public class UdpTmFrameLink extends AbstractScheduledService {
                 return;
             }
             try {
-                this.maybeSdls.get().applySecurity(data, 0, hdrSize(), dataEnd + SdlsSecurityAssociation.getTrailerSize(), authMask);
+                this.maybeSdls.get().applySecurity(data, 0, hdrSize(),
+                        dataEnd + SdlsSecurityAssociation.getTrailerSize(), authMask);
             } catch (GeneralSecurityException e) {
                 log.warn("could not encrypt frame: {}", e);
             }
@@ -475,7 +474,8 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         public byte[] getIdleFrame() {
             if (this.maybeSdls.isPresent()) {
                 try {
-                    this.maybeSdls.get().applySecurity(data, 0, hdrSize(), dataEnd + SdlsSecurityAssociation.getTrailerSize(), authMask);
+                    this.maybeSdls.get().applySecurity(data, 0, hdrSize(),
+                            dataEnd + SdlsSecurityAssociation.getTrailerSize(), authMask);
                 } catch (GeneralSecurityException e) {
                     log.warn("could not encrypt idle frame: {}", e);
                 }
@@ -498,7 +498,8 @@ public class UdpTmFrameLink extends AbstractScheduledService {
                 return;
             }
             try {
-                this.maybeSdls.get().applySecurity(data, 0, hdrSize(), dataEnd + SdlsSecurityAssociation.getTrailerSize(), authMask);
+                this.maybeSdls.get().applySecurity(data, 0, hdrSize(),
+                        dataEnd + SdlsSecurityAssociation.getTrailerSize(), authMask);
             } catch (GeneralSecurityException e) {
                 log.warn("could not encrypt frame: {}", e);
             }
@@ -508,7 +509,6 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
     /**
      * This builds USLP frames with complete primary header, OCF , no insert data, and 32 bits frame count
-     *
      */
     static class UslpVcSender extends VcBuilder {
         byte[] idleFrameData;

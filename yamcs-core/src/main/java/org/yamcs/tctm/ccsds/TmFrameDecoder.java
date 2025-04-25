@@ -13,7 +13,6 @@ import org.yamcs.utils.ByteArrayUtils;
 
 /**
  * Decodes frames as per CCSDS 132.0-B-3
- *
  */
 public class TmFrameDecoder implements TransferFrameDecoder {
     TmManagedParameters tmParams;
@@ -94,7 +93,8 @@ public class TmFrameDecoder implements TransferFrameDecoder {
 
             int decryptionDataEnd = dataEnd;
 
-            VerificationStatusCode decryptionStatus = sdlsSa.processSecurity(data, offset, decryptionDataStart, decryptionDataEnd, vmp.authMask);
+            VerificationStatusCode decryptionStatus = sdlsSa.processSecurity(data, offset, decryptionDataStart,
+                    decryptionDataEnd, vmp.authMask);
             if (decryptionStatus != VerificationStatusCode.NoFailure) {
                 throw new TcTmException("Could not decrypt frame: " + decryptionStatus);
             }

@@ -12,12 +12,10 @@ import org.yamcs.utils.StringConverter;
 
 /**
  * Works as a child of {@link UdpTcFrameLink} and handles commands for one VC.
- * 
- * * It implements FARM part of the COP-1 protocol
- * CCSDS 232.1-B-2 ( COMMUNICATIONS OPERATION PROCEDURE-1)
- * 
- * @author nm
+ * <p>
+ * * It implements FARM part of the COP-1 protocol CCSDS 232.1-B-2 ( COMMUNICATIONS OPERATION PROCEDURE-1)
  *
+ * @author nm
  */
 public class TcVcFrameLink {
     private static final Logger log = LoggerFactory.getLogger(TcVcFrameLink.class);
@@ -40,7 +38,7 @@ public class TcVcFrameLink {
     Optional<SdlsSecurityAssociation> maybeSdls = Optional.empty();
 
     public TcVcFrameLink(ColSimulator simulator, int vcId, Optional<byte[]> maybeSdlsKey, short encryptionSpi,
-                         int encryptionSeqNumWindow) {
+                         int encryptionSeqNumWindow, boolean verifySeqNum) {
         this.simulator = simulator;
         this.vcId = vcId;
 
@@ -53,7 +51,8 @@ public class TcVcFrameLink {
             authMask = new byte[5];
             authMask[2] = (byte) 0b1111_1100; // authenticate virtual channel ID
 
-            this.maybeSdls = Optional.of(new SdlsSecurityAssociation(maybeSdlsKey.get(), encryptionSpi, encryptionSeqNumWindow));
+            this.maybeSdls = Optional.of(new SdlsSecurityAssociation(maybeSdlsKey.get(), encryptionSpi,
+                    encryptionSeqNumWindow, verifySeqNum));
         }
     }
 
@@ -73,7 +72,8 @@ public class TcVcFrameLink {
 
         int frameSeq = data[offset + 4] & 0xFF;
         log.info(
-                "Received TC frame data length: {}, frameLength: {}, spacecraftId: {}, VC: {}, frameSeq: {}, bypassFlag: {}",
+                "Received TC frame data length: {}, frameLength: {}, spacecraftId: {}, VC: {}, frameSeq: {}, " +
+                        "bypassFlag: {}",
                 length, frameLength, spacecraftId, virtualChannelId, frameSeq, bypassFlag);
 
         if (vn != 0) {

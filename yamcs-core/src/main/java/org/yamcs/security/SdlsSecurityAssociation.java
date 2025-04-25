@@ -53,6 +53,11 @@ public class SdlsSecurityAssociation {
     private long seqNum;
 
     /**
+     * Whether to verify the received anti-replay sequence number
+     */
+    private final boolean verifySeqNum;
+
+    /**
      * Anti-replay sequence number window. Specifies the range of sequence number around the current number that will be
      * accepted.
      */
@@ -70,12 +75,14 @@ public class SdlsSecurityAssociation {
      * @param spi          the security parameter index, shared between sender and receiver.
      * @param seqNumWindow a positive integer; only frames whose sequence number differs by this integer at maximum will
      *                     be accepted.
+     * @param verifySeqNum whether to verify the received anti-replay sequence number based on the seqNumWindow.
      */
-    public SdlsSecurityAssociation(byte[] key, short spi, int seqNumWindow) {
+    public SdlsSecurityAssociation(byte[] key, short spi, int seqNumWindow, boolean verifySeqNum) {
         this.secretKey = new SecretKeySpec(key, secretKeyAlgorithm);
         this.seqNum = 0;
         this.seqNumWindow = Math.abs(seqNumWindow); // just to ensure it's not negative
         this.spi = spi;
+        this.verifySeqNum = verifySeqNum;
     }
 
     /**
@@ -246,6 +253,10 @@ public class SdlsSecurityAssociation {
      * @return whether or not the sequence number is valid, accounting for rollover
      */
     public boolean seqNumValid(int receivedSeqNum) {
+        if (!verifySeqNum) {
+            return true;
+        }
+
         int truncatedSeqNum = (int) seqNum;
         try {
             // Try to verify normally
@@ -264,7 +275,8 @@ public class SdlsSecurityAssociation {
             int remainingWindow = seqNumWindow - usedWindow;
             boolean seqNumInLowRange = receivedSeqNum >= 0 && receivedSeqNum <= remainingWindow;
             if (!seqNumInHighRange && !seqNumInLowRange) {
-                log.warn("Received sequence number {} outside of range [{}..{}, 0..{}]", receivedSeqNum, truncatedSeqNum,
+                log.warn("Received sequence number {} outside of range [{}..{}, 0..{}]", receivedSeqNum,
+                        truncatedSeqNum,
                         Integer.MAX_VALUE, remainingWindow);
                 return false;
             }

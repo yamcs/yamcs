@@ -15,9 +15,8 @@ import org.yamcs.utils.YObjectLoader;
 
 /**
  * Stores configuration related to Master channels for downlink.
- * 
- * @author nm
  *
+ * @author nm
  */
 public abstract class DownlinkManagedParameters {
     public enum FrameErrorDetection {
@@ -50,9 +49,11 @@ public abstract class DownlinkManagedParameters {
                     throw new ConfigurationException(e);
                 }
                 int encryptionSeqNumWindow = Math.abs(saDef.getInt("seqNumWindow"));
+                boolean verifySeqNum = saDef.getBoolean("verifySeqNum");
 
                 // Save the SPI and its security association
-                sdlsSecurityAssociations.put(spi, new SdlsSecurityAssociation(sdlsKey, spi, encryptionSeqNumWindow));
+                sdlsSecurityAssociations.put(spi, new SdlsSecurityAssociation(sdlsKey, spi, encryptionSeqNumWindow,
+                        verifySeqNum));
             }
         }
     }
@@ -64,7 +65,7 @@ public abstract class DownlinkManagedParameters {
     abstract public Map<Integer, VcDownlinkHandler> createVcHandlers(String yamcsInstance, String linkName);
 
     protected VcDownlinkHandler createVcaHandler(String yamcsInstance, String linkName,
-            VcDownlinkManagedParameters vmp) {
+                                                 VcDownlinkManagedParameters vmp) {
         VcDownlinkHandler handler = YObjectLoader.loadObject(vmp.vcaHandlerClassName);
         if (handler instanceof Link) {
             ((Link) handler).init(yamcsInstance, linkName + ".vc" + vmp.vcId, vmp.config);
