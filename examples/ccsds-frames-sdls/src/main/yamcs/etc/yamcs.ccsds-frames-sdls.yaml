@@ -55,6 +55,7 @@ services:
           # 256-bit key to encrypt/decrypt data
           keyFile: etc/sdls-presharedkey-256bit
           seqNumWindow: 10
+          # verifySeqNum: true  # default
 
 dataLinks:
   - name: UDP_FRAME_OUT
@@ -79,12 +80,15 @@ dataLinks:
         keyFile: etc/sdls-presharedkey-256bit
         # the window of acceptable sequence numbers (i.e. current minus this value, current plus this value)
         seqNumWindow: 10
+        # verifySeqNum: true  # default
       - spi: 2
         keyFile: etc/sdls-presharedkey-256bit
         seqNumWindow: 10
+        # verifySeqNum: true  # default
       - spi: 3
         keyFile: etc/sdls-presharedkey-256bit
         seqNumWindow: 10
+        # verifySeqNum: true
     virtualChannels:
          - vcId: 0
            # This channel is encrypted with SDLS, using SPI 1 (defined above).
@@ -122,12 +126,15 @@ dataLinks:
       - spi: 1
         keyFile: etc/sdls-presharedkey-256bit
         seqNumWindow: 10
+        # verifySeqNum: true  # default
       - spi: 2
         keyFile: etc/sdls-presharedkey-256bit
         seqNumWindow: 10
+        # verifySeqNum: true  # default
       - spi: 3
         keyFile: etc/sdls-presharedkey-256bit
         seqNumWindow: 10
+        # verifySeqNum: true  # default
     spacecraftId: 0xAB
     frameLength: 1115 #decoded frame length
     frameHeaderErrorControlPresent: true #2 bytes of reed-solomon (10,6) in the header of all frames

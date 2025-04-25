@@ -64,6 +64,7 @@ An example of a UDP TM frame link specification is below:
           - spi: 2
             keyFile: etc/sdls-presharedkey-256bit
             seqNumWindow: 1
+            verifySeqNum: false
         virtualChannels:
           - vcId: 0
             encryptionSpi: 1
@@ -153,6 +154,9 @@ keyFile (string)
 
 seqNumWindow (integer)
     **Required.** If SDLS encryption is used, this defines the maximum value by which the sequence number of incoming frames can differ from the current sequence number.
+
+verifySeqNum (boolean)
+    If SDLS encryption is used, this defines whether received sequence numbers are verified according to the ``seqNumWindow``. Defaults to true.
 
 For each Virtual Channel in the ``virtualChannels`` map, the following parameters can be used:
 
@@ -316,6 +320,9 @@ encryptionSpi (integer)
 
 seqNumWindow (integer)
     If SDLS encryption is used, this defines the maximum value by which the sequence number of incoming frames can differ from the current sequence number. The sequence number is 32 bits in size; as a potential future improvement, this could be made user-configurable.
+
+verifySeqNum (boolean)
+    If SDLS encryption is used, this defines whether received sequence numbers are verified according to the ``seqNumWindow``. Defaults to true.
 
 service (string)
     Currently the only supported option is ``PACKET`` which is also the default.

@@ -35,7 +35,6 @@ import com.google.common.util.concurrent.ServiceManager;
  * <p>
  * This class is configured as a service inside Yamcs but it starts itself as an external process via the
  * {@link #main(String[])} function.
- *
  */
 public class SimulatorCommander extends ProcessRunner {
 
@@ -55,6 +54,7 @@ public class SimulatorCommander extends ProcessRunner {
         frameEncryptionSpec.addOption("keyFile", OptionType.STRING).withRequired(true);
         frameEncryptionSpec.addOption("spi", OptionType.INTEGER).withRequired(true);
         frameEncryptionSpec.addOption("seqNumWindow", OptionType.INTEGER);
+        frameEncryptionSpec.addOption("verifySeqNum", OptionType.BOOLEAN).withDefault(true);
 
         Spec frameSpec = new Spec();
         frameSpec.addOption("type", OptionType.STRING);
@@ -133,6 +133,11 @@ public class SimulatorCommander extends ProcessRunner {
                 cmdl.addAll(Arrays.asList("--encryption-key-file", "" + encryptionKeyFile,
                         "--encryption-spi", "" + encryptionSpi,
                         "--encryption-seq-num-window", "" + encryptionSeqNumWindow));
+
+                boolean verifySeqNum = frameEncryption.getBoolean("verifySeqNum", defaultOptions.verifySeqNum);
+                if (verifySeqNum) {
+                    cmdl.add("--encryption-verify-seq-num");
+                }
             }
 
             cmdl.addAll(Arrays.asList("--tm-frame-type", "" + tmFrameType,
@@ -274,12 +279,14 @@ public class SimulatorCommander extends ProcessRunner {
                 }
 
                 UdpTcFrameLink tcFrameLink = new UdpTcFrameLink(sim, runtimeOptions.tcFramePort, maybeSdlsKey,
-                        (short) runtimeOptions.encryptionSpi, runtimeOptions.encryptionSeqNumWindow);
+                        (short) runtimeOptions.encryptionSpi, runtimeOptions.encryptionSeqNumWindow,
+                        runtimeOptions.verifySeqNum);
                 UdpTmFrameLink frameLink = new UdpTmFrameLink(runtimeOptions.tmFrameType, runtimeOptions.tmFrameHost,
                         runtimeOptions.tmFramePort,
                         runtimeOptions.tmFrameLength, runtimeOptions.tmFrameFreq, () -> {
-                            return tcFrameLink.getClcw();
-                        }, maybeSdlsKey, (short) runtimeOptions.encryptionSpi, runtimeOptions.encryptionSeqNumWindow);
+                    return tcFrameLink.getClcw();
+                }, maybeSdlsKey, (short) runtimeOptions.encryptionSpi, runtimeOptions.encryptionSeqNumWindow,
+                        runtimeOptions.verifySeqNum);
                 services.add(tcFrameLink);
                 services.add(frameLink);
                 sim.setTmFrameLink(frameLink);

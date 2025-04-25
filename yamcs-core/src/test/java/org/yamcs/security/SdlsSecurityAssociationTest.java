@@ -53,7 +53,7 @@ public class SdlsSecurityAssociationTest {
         seqNumWindow = 5;
 
         // Create SA
-        sa = new SdlsSecurityAssociation(key, (short) 42, seqNumWindow);
+        sa = new SdlsSecurityAssociation(key, (short) 42, seqNumWindow, true);
 
     }
 
@@ -65,8 +65,9 @@ public class SdlsSecurityAssociationTest {
         // Try to decrypt with a wrong key, and fail
         Path wrongKeypath = RESOURCE_DIR.resolve("wrong-presharedkey");
         byte[] wrongKey = Files.readAllBytes(wrongKeypath);
-        SdlsSecurityAssociation wrongSa = new SdlsSecurityAssociation(wrongKey, (short) 42, seqNumWindow);
-        assertEquals(VerificationStatusCode.MacVerificationFailure, wrongSa.processSecurity(frame, 0, dataStart, frame.length, authMask));
+        SdlsSecurityAssociation wrongSa = new SdlsSecurityAssociation(wrongKey, (short) 42, seqNumWindow, true);
+        assertEquals(VerificationStatusCode.MacVerificationFailure, wrongSa.processSecurity(frame, 0, dataStart,
+                frame.length, authMask));
     }
 
     @Test
@@ -77,8 +78,9 @@ public class SdlsSecurityAssociationTest {
         // Try to decrypt with a wrong SPI
         Path wrongKeypath = RESOURCE_DIR.resolve("presharedkey");
         byte[] wrongKey = Files.readAllBytes(wrongKeypath);
-        SdlsSecurityAssociation wrongSa = new SdlsSecurityAssociation(wrongKey, (short) 1, seqNumWindow);
-        assertEquals(VerificationStatusCode.InvalidSPI, wrongSa.processSecurity(frame, 0, dataStart, frame.length, authMask));
+        SdlsSecurityAssociation wrongSa = new SdlsSecurityAssociation(wrongKey, (short) 1, seqNumWindow, true);
+        assertEquals(VerificationStatusCode.InvalidSPI, wrongSa.processSecurity(frame, 0, dataStart, frame.length,
+                authMask));
     }
 
     @Test
@@ -90,7 +92,8 @@ public class SdlsSecurityAssociationTest {
         int vcid_octet_frame_primary_header = 1;
         frame[vcid_octet_frame_primary_header] = 0b0000_1100;
 
-        assertEquals(VerificationStatusCode.MacVerificationFailure, sa.processSecurity(frame, 0, dataStart, frame.length, authMask));
+        assertEquals(VerificationStatusCode.MacVerificationFailure, sa.processSecurity(frame, 0, dataStart,
+                frame.length, authMask));
     }
 
     @Test
@@ -103,7 +106,8 @@ public class SdlsSecurityAssociationTest {
         byte oldValue = frame[spid_octet_sec_header];
         frame[spid_octet_sec_header] = (byte) (oldValue ^ 1);
 
-        assertEquals(VerificationStatusCode.InvalidSPI, sa.processSecurity(frame, 0, dataStart, frame.length, authMask));
+        assertEquals(VerificationStatusCode.InvalidSPI, sa.processSecurity(frame, 0, dataStart, frame.length,
+                authMask));
     }
 
     @Test
@@ -135,7 +139,8 @@ public class SdlsSecurityAssociationTest {
         byte oldValue = frame[security_tag_first_byte];
         frame[security_tag_first_byte] = (byte) (oldValue ^ 1);
 
-        assertEquals(VerificationStatusCode.MacVerificationFailure, sa.processSecurity(frame, 0, dataStart, frame.length, authMask));
+        assertEquals(VerificationStatusCode.MacVerificationFailure, sa.processSecurity(frame, 0, dataStart,
+                frame.length, authMask));
     }
 
     @Test
@@ -148,7 +153,8 @@ public class SdlsSecurityAssociationTest {
         byte oldValue = frame[second_ciphertext_byte];
         frame[second_ciphertext_byte] = (byte) (oldValue ^ 1);
 
-        assertEquals(VerificationStatusCode.MacVerificationFailure, sa.processSecurity(frame, 0, dataStart, frame.length, authMask));
+        assertEquals(VerificationStatusCode.MacVerificationFailure, sa.processSecurity(frame, 0, dataStart,
+                frame.length, authMask));
     }
 
     @Test
@@ -175,7 +181,8 @@ public class SdlsSecurityAssociationTest {
 
         int secHeaderStart = dataStart - SdlsSecurityAssociation.getHeaderSize();
         int firstSpi = ByteArrayUtils.decodeUnsignedShort(frame, secHeaderStart);
-        byte[] firstIv = Arrays.copyOfRange(frame, secHeaderStart + 2, secHeaderStart + SdlsSecurityAssociation.GCM_IV_LEN_BYTES);
+        byte[] firstIv = Arrays.copyOfRange(frame, secHeaderStart + 2,
+                secHeaderStart + SdlsSecurityAssociation.GCM_IV_LEN_BYTES);
 
         // Encrypt again, get IV (we can use the already encrypted data, the actual content doesn't matter in this test)
         assertDoesNotThrow(() -> sa.applySecurity(frame, 0, dataStart, frame.length, authMask));
@@ -195,6 +202,7 @@ public class SdlsSecurityAssociationTest {
         // Modify sequence number
         ByteArrayUtils.encodeInt(2, frame, dataStart - 4);
         // Try to decrypt, assert that verification fails
-        assertEquals(VerificationStatusCode.MacVerificationFailure, sa.processSecurity(frame, 0, dataStart, frame.length, authMask));
+        assertEquals(VerificationStatusCode.MacVerificationFailure, sa.processSecurity(frame, 0, dataStart,
+                frame.length, authMask));
     }
 }
