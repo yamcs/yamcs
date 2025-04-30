@@ -198,14 +198,10 @@ public class NameDescription implements Serializable {
     /**
      * OPS name, in XTCE defined as alias for namespace "MDB:OPS Name"
      *
-     * @return OPS Name alias if defined, otherwise name in the default namespace
+     * @return OPS Name alias if defined, otherwise null
      */
     public String getOpsName() {
-        String alias = xtceAliasSet.getAlias("MDB:OPS Name");
-        if (alias != null) {
-            return alias;
-        }
-        return name;
+        return xtceAliasSet.getAlias("MDB:OPS Name");
     }
 
     /**

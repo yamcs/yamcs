@@ -278,7 +278,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         Mdb mdb = MdbFactory.getInstance(processor.getInstance());
 
         ParameterWithId pid = MdbApi.verifyParameterWithId(ctx, mdb, request.getName());
-        ctx.checkObjectPrivileges(ObjectPrivilegeType.WriteParameter, pid.getParameter().getQualifiedName());
+        ctx.checkParameterPrivilege(ObjectPrivilegeType.WriteParameter, pid.getParameter());
 
         SoftwareParameterManager mgr = verifySoftwareParameterManager(processor, pid.getParameter().getDataSource());
 
@@ -401,14 +401,15 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         } catch (InvalidIdentification e) {
             throw new BadRequestException("InvalidIdentification: " + e.getMessage());
         }
-        ctx.checkObjectPrivileges(ObjectPrivilegeType.WriteParameter,
-                pidList.stream().map(p -> p.getParameter().getQualifiedName()).collect(Collectors.toList()));
 
         Map<DataSource, List<org.yamcs.parameter.ParameterValue>> pvmap = new HashMap<>();
         for (int i = 0; i < pidList.size(); i++) {
             BatchSetParameterValuesRequest.SetParameterValueRequest r = request.getRequest(i);
             ParameterWithId pid = pidList.get(i);
             Parameter p = pid.getParameter();
+
+            ctx.checkParameterPrivilege(ObjectPrivilegeType.WriteParameter, p);
+
             org.yamcs.parameter.ParameterValue pv;
             if (pid.getPath() == null) {
                 pv = new org.yamcs.parameter.ParameterValue(p);

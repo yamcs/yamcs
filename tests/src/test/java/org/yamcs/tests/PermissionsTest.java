@@ -83,7 +83,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
             fail("Should generate an exception");
         } catch (ExecutionException e) {
             ClientException clientException = (ClientException) e.getCause();
-            assertTrue(clientException.getMessage().contains("Insufficient"));
+            assertTrue(clientException.getMessage().contains("No ReadParameter authorization"));
         }
     }
 
