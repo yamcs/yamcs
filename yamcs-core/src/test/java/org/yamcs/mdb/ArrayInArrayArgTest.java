@@ -53,37 +53,37 @@ public class ArrayInArrayArgTest {
         args.put("outer_array", Arrays.asList(a1, a2));
 
         // test with all array lengths set
-        byte[] b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        byte[] b = metaCommandProcessor.buildCommand(mc, args, 0).getCmdPacket();
         assertEquals("00020200AB00CD010088", StringConverter.arrayToHexString(b));
 
         // test with the a2 length not set
         a2.remove("inner_array_length");
-        b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        b = metaCommandProcessor.buildCommand(mc, args, 0).getCmdPacket();
         assertEquals("00020200AB00CD010088", StringConverter.arrayToHexString(b));
 
         // test with the a2 length set to the wrong value
         a2.put("inner_array_length", 5);
         assertThrows(ErrorInCommand.class, () -> {
-            metaCommandProcessor.buildCommand(mc, args);
+            metaCommandProcessor.buildCommand(mc, args, 0);
         });
 
         // test with the a2 length set to the wrong type
         a2.put("inner_array_length", "s");
         assertThrows(ErrorInCommand.class, () -> {
-            metaCommandProcessor.buildCommand(mc, args);
+            metaCommandProcessor.buildCommand(mc, args, 0);
         });
 
         // test with no length set
         a2.remove("inner_array_length");
         a1.remove("inner_array_length");
         args.remove("outer_array_length");
-        b = metaCommandProcessor.buildCommand(mc, args).getCmdPacket();
+        b = metaCommandProcessor.buildCommand(mc, args, 0).getCmdPacket();
         assertEquals("00020200AB00CD010088", StringConverter.arrayToHexString(b));
 
         // test with outer length set to the wrong value
         args.put("outer_array_length", 20);
         assertThrows(ErrorInCommand.class, () -> {
-            metaCommandProcessor.buildCommand(mc, args);
+            metaCommandProcessor.buildCommand(mc, args, 0);
         });
     }
 
