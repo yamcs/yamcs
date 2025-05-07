@@ -41,7 +41,7 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
 
     @BeforeEach
     public void prepareTests() throws Exception {
-        timelineClient = yamcsClient.createTimelineClient(yamcsInstance, "realtime");
+        timelineClient = yamcsClient.createTimelineClient(yamcsInstance);
         ydb = YarchDatabase.getInstance(yamcsInstance);
 
         for (TimelineItem item : timelineClient.getItems(null, null, null).get()) {

@@ -6,10 +6,12 @@ import static org.yamcs.timeline.TimelineItemDb.CNAME_STATUS;
 import static org.yamcs.timeline.TimelineItemDb.TABLE_NAME;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -51,10 +53,13 @@ public class ActivityScheduler extends AbstractYamcsService implements ItemListe
     ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
 
     // Keep track of ongoing timeline activities, for the purpose of copying the activity result
-    private ConcurrentMap<UUID, TimelineActivity> ongoingItemsByRunId = new ConcurrentHashMap<>();
+    private ConcurrentMap<UUID, TimelineActivity> ongoingActivitiesByRunId = new ConcurrentHashMap<>();
 
     // list of activities that depend on others to be able to start
     List<TimelineActivity> dependentActivities = new ArrayList<>();
+
+    // list of activities that could be started but have the autoStart = false so they wait for manual start
+    Map<String, TimelineActivity> readyToStart = new HashMap<>();
 
     // when retrieving activities to run, load the ones that are missionTime-schedulingMargin
     long schedulingMargin = 10 * 1000;
@@ -73,7 +78,6 @@ public class ActivityScheduler extends AbstractYamcsService implements ItemListe
 
     @Override
     protected void doStart() {
-        System.out.println(" activity scheduler started");
         timelineItemDb.addItemListener(this);
         activityService.addActivityListener(this);
         executor.submit(this::replan);
@@ -86,6 +90,25 @@ public class ActivityScheduler extends AbstractYamcsService implements ItemListe
         activityService.removeActivityListener(this);
         executor.shutdown();
         notifyStopped();
+    }
+
+    /**
+     * starts an activity that is in the READY state
+     * 
+     * @param id
+     * @return
+     */
+    public CompletableFuture<Activity> startActivity(String id) {
+        return CompletableFuture.supplyAsync(() -> {
+            TimelineActivity activity = readyToStart.remove(id);
+
+            if (activity == null) {
+                throw new IllegalArgumentException("No READY activity found with ID " + id);
+            }
+
+            return doStartActivity(activity);
+
+        }, executor);
     }
 
     @Override
@@ -111,9 +134,10 @@ public class ActivityScheduler extends AbstractYamcsService implements ItemListe
 
     @Override
     public void onActivityUpdated(Activity activity) {
-        var item = ongoingItemsByRunId.get(activity.getId());
+
+        var item = ongoingActivitiesByRunId.get(activity.getId());
         if (item != null && activity.isStopped()) {
-            ongoingItemsByRunId.remove(activity.getId());
+            ongoingActivitiesByRunId.remove(activity.getId());
 
             switch (activity.getStatus()) {
             case SUCCESSFUL:
@@ -142,23 +166,27 @@ public class ActivityScheduler extends AbstractYamcsService implements ItemListe
             var sqlb = new SqlBuilder(TABLE_NAME);
             sqlb.whereColAfterOrEqual(CNAME_START, timeService.getMissionTime() - schedulingMargin);
             sqlb.where(CNAME_TYPE + " = '" + TimelineItemType.ACTIVITY.name() + "'");
-            sqlb.where(CNAME_STATUS + " = '" + ExecutionStatus.PLANNED.name() + "'");
+            
+            sqlb.where(String.format("%s IN ('%s', '%s', '%s')", CNAME_STATUS, ExecutionStatus.PLANNED.name(),
+                    ExecutionStatus.READY.name(), ExecutionStatus.WAITING_ON_DEPENDENCY.name()));
+
             var ydb = YarchDatabase.getInstance(yamcsInstance);
 
             var result = ydb.execute(sqlb.toString(), sqlb.getQueryArguments());
-            System.out.println("in replan result: " + result);
             while (result.hasNext()) {
                 var tuple = result.next();
-                System.out.println("tuple: " + tuple);
+
                 try {
                     var activity = new TimelineActivity(TimelineItemType.ACTIVITY, tuple);
-                    if (activity.dependsOn != null && !activity.dependsOn.isEmpty()) {
+                    if (activity.status == ExecutionStatus.READY) {
+                        readyToStart.put(activity.getId(), activity);
+                    } else if (activity.dependsOn != null && !activity.dependsOn.isEmpty()) {
                         dependentActivities.add(activity);
                     } else {
                         planned.add(activity);
                     }
                 } catch (Exception e) {
-                    log.warn("Unable to load active alarm from tuple {}: {}", tuple, e);
+                    log.warn("Unable to load activity from tuple {}: {}", tuple, e);
                 }
             }
             if (!planned.isEmpty()) {
@@ -169,13 +197,37 @@ public class ActivityScheduler extends AbstractYamcsService implements ItemListe
                 startActivities();
             }
 
-        } catch (ParseException | StreamSqlException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
             log.warn("Error retrieving activities: ", e);
         }
         startActivitiesDependentOnOthers();
     }
 
+    private void startActivities() {
+        TimelineActivity nextActivity;
+        var now = timeService.getMissionTime();
+        while ((nextActivity = planned.poll()) != null) {
+            if (now < nextActivity.start) {
+                executor.schedule(this::startActivities, nextActivity.start - now, TimeUnit.MILLISECONDS);
+                break;
+            } else {
+                if (nextActivity.autoStart) {
+                    doStartActivity(nextActivity);
+                } else {
+                    log.debug("Marking activity {} as ready", nextActivity.displayName());
+                    nextActivity.setStatus(ExecutionStatus.READY);
+                    timelineItemDb.updateItem(nextActivity);
+                    readyToStart.put(nextActivity.getId(), nextActivity);
+                }
+            }
+        }
+    }
+
     private void startActivitiesDependentOnOthers() {
+        var now = timeService.getMissionTime();
+        long nextSchedule = -1;
+
         for (var activity : dependentActivities) {
             boolean start = true;
             boolean skip = false;
@@ -191,13 +243,18 @@ public class ActivityScheduler extends AbstractYamcsService implements ItemListe
                     ExecutionStatus status = ta.getStatus();
                     switch (status) {
                     case PLANNED:
+                    case READY:
+                    case WAITING_ON_DEPENDENCY:
+                    case WAITING_FOR_INPUT:
+                    case PAUSED:
                     case IN_PROGRESS: // intentional fall through
                         start = false;
                         skip = false;
                         break outerloop;
-                    case ABORTED: // intentional fall through
+                    case ABORTED:
                     case FAILED:
-                    case SKIPPED:
+                    case CANCELED:
+                    case SKIPPED:// intentional fall through
                         if (dependency.condition() == ActivityDependencyCondition.START_ON_SUCCESS) {
                             start = false;
                             skip = true;
@@ -218,7 +275,6 @@ public class ActivityScheduler extends AbstractYamcsService implements ItemListe
                     }
                 } else {
                     // for dependencies which are not activities, check their end
-                    var now = timeService.getMissionTime();
                     if (item.getStart() + item.getDuration() > now) {
                         start = false;
                         skip = false;
@@ -227,32 +283,41 @@ public class ActivityScheduler extends AbstractYamcsService implements ItemListe
                 }
             }
             if (start) {
-                log.debug("Starting activity {}", activity.displayName());
-                startActivity(activity);
+                if (activity.autoStart) {
+                    log.debug("Starting activity {}", activity.displayName());
+                    doStartActivity(activity);
+                } else {
+                    if (activity.getStatus() != ExecutionStatus.READY) {
+                        log.debug("Marking activity {} as ready", activity.displayName());
+                        activity.setStatus(ExecutionStatus.READY);
+                        timelineItemDb.updateItem(activity);
+                    }
+                }
             } else if (skip) {
+                log.debug("Marking activity {} as skipped", activity.displayName());
                 activity.setStatus(ExecutionStatus.SKIPPED);
                 activity.setFailureReason(skipReason);
                 timelineItemDb.updateItem(activity);
+            } else if (activity.getStart() <= now) {
+                if (activity.getStatus() != ExecutionStatus.WAITING_ON_DEPENDENCY) {
+                    log.debug("Marking activity {} as waiting on dependency", activity.displayName());
+                    activity.setStatus(ExecutionStatus.WAITING_ON_DEPENDENCY);
+                    timelineItemDb.updateItem(activity);
+                }
+            } else if (nextSchedule < 0 || nextSchedule > activity.getStart() - now) {
+                nextSchedule = activity.getStart() - now;
             }
+        }
+
+        if (nextSchedule > 0) {
+            log.debug("Scheduling startActivitiesDependentOnOthers in {} millis", nextSchedule);
+            executor.schedule(this::startActivitiesDependentOnOthers, nextSchedule, TimeUnit.MILLISECONDS);
         }
     }
 
-    private void startActivities() {
-        TimelineActivity nextActivity;
-        while ((nextActivity = planned.poll()) != null) {
-            var now = timeService.getMissionTime();
-            if (now < nextActivity.start) {
-                executor.schedule(this::startActivities, nextActivity.start - now, TimeUnit.MILLISECONDS);
-                break;
-            } else {
-                startActivity(nextActivity);
-            }
-        }
-    }
-
-    private void startActivity(TimelineActivity item) {
+    private Activity doStartActivity(TimelineActivity item) {
         var systemUser = YamcsServer.getServer().getSecurityStore().getSystemUser();
-
+        log.debug("Starting activity {}", item.displayName());
         Activity activity;
         var def = item.getActivityDefinition();
         if (def == null) {
@@ -265,13 +330,15 @@ public class ActivityScheduler extends AbstractYamcsService implements ItemListe
             var executorArgs = GpbWellKnownHelper.toJava(def.getArgs());
             activity = activityService.prepareActivity(executorType, executorArgs, systemUser, null);
         }
-        ongoingItemsByRunId.put(activity.getId(), item);
+        ongoingActivitiesByRunId.put(activity.getId(), item);
 
         item.setStatus(ExecutionStatus.IN_PROGRESS);
         item.addRun(activity.getId());
         timelineItemDb.updateItem(item);
 
         activityService.startActivity(activity, systemUser);
+
+        return activity;
     }
 
 }

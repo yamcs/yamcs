@@ -27,12 +27,14 @@ import org.yamcs.protobuf.ListSourcesRequest;
 import org.yamcs.protobuf.ListSourcesResponse;
 import org.yamcs.protobuf.ListTimelineTagsRequest;
 import org.yamcs.protobuf.ListTimelineTagsResponse;
+import org.yamcs.protobuf.StartActivityRequest;
 import org.yamcs.protobuf.TimelineApiClient;
 import org.yamcs.protobuf.TimelineBand;
 import org.yamcs.protobuf.TimelineItem;
 import org.yamcs.protobuf.TimelineItemLog;
 import org.yamcs.protobuf.TimelineSourceCapabilities;
 import org.yamcs.protobuf.UpdateItemRequest;
+import org.yamcs.protobuf.activities.ActivityInfo;
 
 public class TimelineClient {
     static public final String RDB_TIMELINE_SOURCE = "rdb";
@@ -68,6 +70,10 @@ public class TimelineClient {
                 .setType(item.getType())
                 .setInstance(instance)
                 .setSource(source);
+        if (item.hasName()) {
+            requestb.setName(item.getName());
+        }
+
         if (item.hasStart()) {
             requestb.setStart(item.getStart());
         }
@@ -84,9 +90,12 @@ public class TimelineClient {
         if (item.hasDescription()) {
             requestb.setDescription(item.getDescription());
         }
-        
+
         if (item.getDependsOnCount() > 0) {
             requestb.addAllDependsOn(item.getDependsOnList());
+        }
+        if (item.hasAutoStart()) {
+            requestb.setAutoStart(item.getAutoStart());
         }
 
         CompletableFuture<TimelineItem> f = new CompletableFuture<>();
@@ -250,6 +259,14 @@ public class TimelineClient {
 
         CompletableFuture<TimelineBand> f = new CompletableFuture<>();
         timelineService.addBand(null, requestb.build(), new ResponseObserver<>(f));
+        return f;
+    }
+
+    public CompletableFuture<ActivityInfo> startActivity(String id) {
+        StartActivityRequest req = StartActivityRequest.newBuilder().setInstance(instance).setId(id).build();
+
+        CompletableFuture<ActivityInfo> f = new CompletableFuture<>();
+        timelineService.startActivity(null, req, new ResponseObserver<>(f));
         return f;
     }
 }

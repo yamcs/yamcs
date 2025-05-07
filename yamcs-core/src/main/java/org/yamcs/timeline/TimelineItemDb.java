@@ -23,6 +23,7 @@ import org.yamcs.protobuf.ItemFilter.FilterCriterion;
 import org.yamcs.protobuf.LogEntry;
 import org.yamcs.protobuf.TimelineItemLog;
 import org.yamcs.protobuf.TimelineSourceCapabilities;
+import org.yamcs.timeline.TimelineActivity.Dependency;
 import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.InvalidRequestException;
 import org.yamcs.utils.TimeInterval;
@@ -62,6 +63,7 @@ public class TimelineItemDb implements ItemProvider {
     public static final String CNAME_FAILURE_REASON = "failure_reason";
     public static final String CNAME_ACTIVITY_DEFINITION = "activity_definition";
     public static final String CNAME_DEPENDENCIES = "dependencies";
+    public static final String CNAME_AUTO_START = "auto_start";
     public static final String CNAME_DEPENDENCIES_CONDITIONS = "dependencies_conditions";
     public static final String CNAME_RUNS = "runs";
     public static final String CRIT_KEY_TAG = "tag";
@@ -72,12 +74,14 @@ public class TimelineItemDb implements ItemProvider {
         TIMELINE_DEF.addColumn(CNAME_ID, DataType.UUID);
         TIMELINE_DEF.addColumn(CNAME_NAME, DataType.STRING);
         TIMELINE_DEF.addColumn(CNAME_TYPE, DataType.ENUM);
+        TIMELINE_DEF.addColumn(CNAME_STATUS, DataType.ENUM);
         TIMELINE_DEF.addColumn(CNAME_TAGS, DataType.array(DataType.ENUM));
         TIMELINE_DEF.addColumn(CNAME_GROUP_ID, DataType.UUID);
         TIMELINE_DEF.addColumn(CNAME_RELTIME_ID, DataType.UUID);
         TIMELINE_DEF.addColumn(CNAME_RELTIME_START, DataType.LONG);
         TIMELINE_DEF.addColumn(CNAME_ACTIVITY_DEFINITION, DataType.protobuf(ActivityDefinition.class));
         TIMELINE_DEF.addColumn(CNAME_RUNS, DataType.array(DataType.UUID));
+        TIMELINE_DEF.addColumn(CNAME_AUTO_START, DataType.BOOLEAN);
         TIMELINE_DEF.addColumn(CNAME_DEPENDENCIES, DataType.array(DataType.UUID));
         TIMELINE_DEF.addColumn(CNAME_DEPENDENCIES_CONDITIONS, DataType.array(DataType.ENUM));
     }
@@ -138,10 +142,27 @@ public class TimelineItemDb implements ItemProvider {
                 TimelineItem relItem = fromCache(item.getRelativeItemUuid());
                 if (relItem == null) {
                     throw new InvalidRequestException(
-                            "Referenced relative item uuid " + item.getRelativeItemUuid() + " does not exist");
+                            "The specified relative item with UUID " + item.getRelativeItemUuid() + " was not found.");
                 }
                 item.setStart(relItem.getStart() + item.getRelativeStart());
             }
+
+            if (item instanceof TimelineActivity activity && (!activity.dependsOn.isEmpty())) {
+                // set the start based on the end of the dependency which ends last
+                long t = 0;
+                for (Dependency dep : activity.dependsOn) {
+                    var depItem = fromCache(dep.id());
+                    if (depItem == null) {
+                        throw new InvalidRequestException(
+                                "The item with ID " + dep.id() + " referenced as a dependency was not found.");
+                    }
+                    if (depItem.getStart() + depItem.getDuration() > t) {
+                        t = depItem.getStart() + depItem.getDuration();
+                    }
+                }
+                activity.setStart(t);
+            }
+
             if (item.getGroupUuid() != null) {
                 TimelineItem groupItem = fromCache(item.getGroupUuid());
                 if (groupItem == null) {

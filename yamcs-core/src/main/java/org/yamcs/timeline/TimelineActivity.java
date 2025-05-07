@@ -1,11 +1,6 @@
 package org.yamcs.timeline;
 
-import static org.yamcs.timeline.TimelineItemDb.CNAME_ACTIVITY_DEFINITION;
-import static org.yamcs.timeline.TimelineItemDb.CNAME_FAILURE_REASON;
-import static org.yamcs.timeline.TimelineItemDb.CNAME_RUNS;
-import static org.yamcs.timeline.TimelineItemDb.CNAME_STATUS;
-import static org.yamcs.timeline.TimelineItemDb.CNAME_DEPENDENCIES;
-import static org.yamcs.timeline.TimelineItemDb.CNAME_DEPENDENCIES_CONDITIONS;
+import static org.yamcs.timeline.TimelineItemDb.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +26,7 @@ public class TimelineActivity extends TimelineItem implements Comparable<Timelin
     protected String failureReason;
     protected List<UUID> runs = new ArrayList<>();
     protected ActivityDefinition activityDefinition;
+    protected boolean autoStart;
 
     public TimelineActivity(UUID id) {
         super(TimelineItemType.ACTIVITY, id.toString());
@@ -54,7 +50,9 @@ public class TimelineActivity extends TimelineItem implements Comparable<Timelin
         if (tuple.hasColumn(CNAME_ACTIVITY_DEFINITION)) {
             this.activityDefinition = tuple.getColumn(CNAME_ACTIVITY_DEFINITION);
         }
-
+        if (tuple.hasColumn(CNAME_AUTO_START)) {
+            this.autoStart = tuple.getColumn(CNAME_AUTO_START);
+        }
         if (tuple.hasColumn(CNAME_DEPENDENCIES) && tuple.hasColumn(CNAME_DEPENDENCIES_CONDITIONS)) {
             List<UUID> deps = tuple.getColumn(CNAME_DEPENDENCIES);
             List<String> depsCond = tuple.getColumn(CNAME_DEPENDENCIES_CONDITIONS);
@@ -106,6 +104,14 @@ public class TimelineActivity extends TimelineItem implements Comparable<Timelin
         dependsOn.add(new Dependency(uuid, d.getCondition()));
     }
 
+    public boolean isAutoStart() {
+        return autoStart;
+    }
+
+    public void setAutoStart(boolean autoStart) {
+        this.autoStart = autoStart;
+    }
+
     @Override
     protected void addToProto(boolean detail, Builder protob) {
         protob.setStatus(status);
@@ -118,6 +124,7 @@ public class TimelineActivity extends TimelineItem implements Comparable<Timelin
                     .setArgs(activityDefinition.getArgs());
             protob.setActivityDefinition(b);
         }
+        protob.setAutoStart(autoStart);
         runs.forEach(runId -> protob.addRuns(runId.toString()));
         dependsOn.forEach(d -> protob.addDependsOn(
                 ActivityDependency.newBuilder().setId(d.id().toString()).setCondition(d.condition).build()));
@@ -127,6 +134,8 @@ public class TimelineActivity extends TimelineItem implements Comparable<Timelin
     @Override
     protected void addToTuple(Tuple tuple) {
         tuple.addEnumColumn(CNAME_STATUS, status.name());
+        tuple.addColumn(CNAME_AUTO_START, autoStart);
+
         if (failureReason != null) {
             tuple.addColumn(CNAME_FAILURE_REASON, failureReason);
         }

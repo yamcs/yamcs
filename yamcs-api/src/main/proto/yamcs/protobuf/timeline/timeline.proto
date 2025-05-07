@@ -165,6 +165,14 @@ service TimelineApi {
       delete: "/api/timeline/{instance}/views/{id}"
     };
   }
+  
+  // Starts an activity that is in the state READY
+  rpc StartActivity(StartActivityRequest) returns (yamcs.protobuf.activities.ActivityInfo) {
+    option (yamcs.api.route) = {
+      put: "/api/timeline/{instance}/items/{id}:startActivity"
+      body: "*"
+    };
+  } 
 }
 
 message RelativeTime {
@@ -189,14 +197,44 @@ enum TimelineItemType {
 }
 
 // Execution status of an activity
+
 enum ExecutionStatus {
+  // The activity is planned for future execution. Not yet eligible to start.
   PLANNED = 1;
+  
+  // The activity is waiting to be started manually by an operator.
+  // This is typically the case for activities with autoStart = false.
+  READY = 7;
+  
+  // The activity will be able to start once its dependencies have completed.
+  WAITING_ON_DEPENDENCY = 8;
+  
+  // The activity is currently running 
   IN_PROGRESS = 2;
+  
+  // The activity has been completed successfully
   COMPLETED = 3;
+  
+  // The activity started but was manually aborted by the operator.
   ABORTED = 4;
+  
+  // The activity has completed with failure.
   FAILED = 5;
+    
+  // The activity was skipped because a dependency was not met.
   SKIPPED = 6;
+  
+  // The activity was canceled before starting, typically by operator action.
+  CANCELED = 9;
+  
+  // The activity was paused explicitly by the operator.
+  PAUSED = 10;
+  
+  // The activity is paused during execution, waiting for user input or intervention.
+  // Once input is received, execution may continue automatically.
+  WAITING_FOR_INPUT = 11;
 }
+
 
 message TimelineItem {
   // Item identifier.
@@ -252,6 +290,10 @@ message TimelineItem {
   // It specifies which other activities/items this activity depends on
   // The dependency conditions implicitly specify the start time as the end of the latest dependency
   repeated ActivityDependency dependsOn = 16;
+  
+  // Can be used only if ``type`` is ACTIVITY
+  // Indicates if the activity should start automatically. If it is false, the activity will be moved to READY state waiting to be started manually.  
+  optional bool autoStart = 17;  
 }
 
 message LogEntry {
@@ -384,6 +426,12 @@ message CreateItemRequest {
   // It specifies which other activities/items this activity depends on
   // The dependency conditions implicitly specify the start time as the end of the latest dependency
   repeated ActivityDependency dependsOn = 14;
+  
+  // Can be used only if ``type`` is ACTIVITY
+  // Indicates if the activity should start automatically.
+  // If it is false, the activity will be moved to READY state waiting to be started manually.
+  // It defaults to false for manual activities and true for automated ones   
+  optional bool autoStart = 17;  
 
   // TODO possible future additions to activities:
   // startNotEarlierThan
@@ -510,6 +558,8 @@ message DeleteItemRequest {
   // Item identifier
   optional string id = 3;
 }
+
+
 
 
 message GetItemLogRequest {
@@ -765,3 +815,18 @@ message ItemFilter {
 
  repeated FilterCriterion criteria = 1;
 }
+
+
+message StartActivityRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  /* Item source
+  	 For the moment only activities stored in the internal db are possible 
+   	optional string source = 2;
+   */
+
+  // Item identifier. Has to refer to an activity
+  optional string id = 3;
+}
+

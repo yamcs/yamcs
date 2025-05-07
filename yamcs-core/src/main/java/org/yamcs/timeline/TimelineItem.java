@@ -197,6 +197,7 @@ public abstract class TimelineItem {
                 .setStart(TimeEncoding.toProtobufTimestamp(start))
                 .setDuration(Durations.fromMillis(duration))
                 .putAllProperties(properties);
+
         if (name != null) {
             protob.setName(name);
         }
