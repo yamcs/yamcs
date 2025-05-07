@@ -14,7 +14,8 @@ public class TmManagedParameters extends DownlinkManagedParameters {
     enum ServiceType {
         PACKET,
         /** Virtual Channel Access Service Data Unit */
-        VCA
+        VCA,
+        IDLE
     };
 
     Map<Integer, TmVcManagedParameters> vcParams = new HashMap<>();
@@ -63,6 +64,9 @@ public class TmManagedParameters extends DownlinkManagedParameters {
                 break;
             case VCA:
                 m.put(vmp.vcId, createVcaHandler(yamcsInstance, linkName, vmp));
+                break;
+            case IDLE:
+                m.put(vmp.vcId, new IdleFrameHandler());
                 break;
             }
         }
