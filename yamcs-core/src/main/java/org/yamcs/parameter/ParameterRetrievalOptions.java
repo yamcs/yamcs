@@ -1,6 +1,7 @@
 package org.yamcs.parameter;
 
 import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
+import org.yamcs.utils.TimeEncoding;
 
 /**
  * Contains retrieval options used when retrieving parameters.
@@ -30,8 +31,9 @@ public record ParameterRetrievalOptions(
         PacketReplayRequest packetReplayRequest) {
 
     public static class Builder {
-        private long start;
-        private long stop;
+        // invalid start and/or stop means open ended interval
+        private long start = TimeEncoding.INVALID_INSTANT;
+        private long stop = TimeEncoding.INVALID_INSTANT;
         private boolean ascending = true;
         private boolean retrieveEngineeringValues = true;
         private boolean retrieveRawValues = true;
