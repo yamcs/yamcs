@@ -1,0 +1,4 @@
+This contains an example that is functionally identical to `ccsds-frames`, but with the addition of SDLS encryption.
+Encryption uses AES256-GCM (256-bit key, authenticated encryption).
+The following frame types can be encrypted: TM, TC, AOS, USLP.
+Encryption keys are configured on the data link level, and virtual channels on a link are associated with a particular key, by means of a Security Parameter Index (SPI, a number shared between the sender and the receiver).

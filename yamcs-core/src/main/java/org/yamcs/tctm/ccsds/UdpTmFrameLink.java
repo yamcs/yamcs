@@ -11,6 +11,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
+import org.yamcs.security.SdlsSecurityAssociation;
 import org.yamcs.utils.StringConverter;
 
 /**
@@ -24,12 +25,17 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
     private DatagramSocket tmSocket;
     private int port;
 
+    /**
+     * Bytes to ignore at the start of the frame
+     */
+    protected int initialBytesToStrip;
     DatagramPacket datagram;
 
     @Override
     public Spec getSpec() {
         var spec = getDefaultSpec();
         spec.addOption("port", OptionType.INTEGER);
+        spec.addOption("initialBytesToStrip", OptionType.INTEGER).withDefault(0);
         return spec;
     }
 
@@ -44,6 +50,7 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
         super.init(instance, name, config);
         port = config.getInt("port");
         int maxLength = frameHandler.getMaxFrameSize();
+        initialBytesToStrip = config.getInt("initialBytesToStrip", 0);
         datagram = new DatagramPacket(new byte[maxLength], maxLength);
     }
 
@@ -82,7 +89,7 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
                             .arrayToHexString(datagram.getData(), datagram.getOffset(), datagram.getLength(), true));
                 }
                 dataIn(1, datagram.getLength());
-                handleFrame(timeService.getHresMissionTime(), datagram.getData(), datagram.getOffset(),
+                handleFrame(timeService.getHresMissionTime(), datagram.getData(), datagram.getOffset() + initialBytesToStrip,
                         datagram.getLength());
 
             } catch (IOException e) {
@@ -132,5 +139,9 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
     @Override
     protected Status connectionStatus() {
         return Status.OK;
+    }
+
+    public SdlsSecurityAssociation getSdls(short spi) {
+        return this.frameHandler.params.sdlsSecurityAssociations.get(spi);
     }
 }
