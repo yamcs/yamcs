@@ -50,6 +50,7 @@ import org.yamcs.protobuf.Yamcs.ReplaySpeed.ReplaySpeedType;
 import org.yamcs.protobuf.Yamcs.ReplayStatus;
 import org.yamcs.protobuf.Yamcs.ReplayStatus.ReplayState;
 import org.yamcs.security.SecurityStore;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.mdb.Mdb;
@@ -431,7 +432,11 @@ public class ReplayService extends AbstractProcessorService
         if (yarchReplay != null) {
             return yarchReplay.getReplayTime();
         } else {
-            return originalReplayRequest.getRangeStart();
+            long t = originalReplayRequest.getRangeStart();
+            if (t < TimeEncoding.MIN_INSTANT) {
+                t = TimeEncoding.MIN_INSTANT;
+            }
+            return t;
         }
     }
 
