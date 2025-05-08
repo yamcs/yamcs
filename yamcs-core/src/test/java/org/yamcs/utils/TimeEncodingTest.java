@@ -240,10 +240,11 @@ public class TimeEncodingTest {
         // Assert that TimeEncoding can encode/decode with MAX_INSTANT
         String sMax = TimeEncoding.toString(TimeEncoding.MAX_INSTANT);
         long decodedMax = TimeEncoding.parse(sMax);
-        String sRMax = TimeEncoding.toString(decodedMax);
-        assertTrue(sMax.equals(sRMax));
+        assertEquals(TimeEncoding.MAX_INSTANT, decodedMax);
 
-        // Assert that TimeEncoding fails to encode/decode with MAX_INSTANT + 1
+        String sRMax = TimeEncoding.toString(decodedMax);
+        assertEquals(sMax, sRMax);
+
         assertEquals("+inf", TimeEncoding.toString(TimeEncoding.MAX_INSTANT + 1));
     }
 }

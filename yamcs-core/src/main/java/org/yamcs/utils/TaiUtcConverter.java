@@ -180,7 +180,7 @@ public class TaiUtcConverter {
     private long caldateToMjd(DateTimeComponents dtc) {
         int y;
         int m;
-        int d;
+        long d;
 
         d = dtc.day - 678882;
         m = dtc.month - 1;
