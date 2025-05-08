@@ -276,7 +276,7 @@ public class RDBFactory implements Runnable {
             try (BackupEngineOptions opt = new BackupEngineOptions(backupDir);
                     BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);) {
                 db = getRdb(relativePath, false);
-                backupEngine.createNewBackup(db.getDb());
+                backupEngine.createNewBackup(db.getDb(), true);
                 cf.complete(null);
             } catch (Exception e) {
                 log.warn("Got error when creating the backup: {} ", e.getMessage());
