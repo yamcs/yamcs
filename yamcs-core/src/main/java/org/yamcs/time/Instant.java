@@ -15,8 +15,8 @@ public class Instant implements Comparable<Instant> {
     public static final Instant INVALID_INSTANT = new Instant(TimeEncoding.INVALID_INSTANT);
     static final long PICOS_PER_MILLIS = 1000_000_000;
 
-    public static final long MIN_INSTANT = Long.MIN_VALUE + 1;
-    public static final long MAX_INSTANT = 185539080470435999L;
+    public static final long MIN_INSTANT = TimeEncoding.MIN_INSTANT;
+    public static final long MAX_INSTANT = TimeEncoding.MAX_INSTANT;
 
     private final long millis;
     private final int picos;

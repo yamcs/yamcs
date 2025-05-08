@@ -205,9 +205,9 @@ public class BackFiller implements StreamSubscriber {
                 List<YConfiguration> l = config.getConfigList("streamUpdateFillPolicy");
                 for (YConfiguration sch : l) {
                     long dataAge = (long) (sch.getDouble("dataAge") * 3600_000);
-                        long fillFrequency = sch.getLong("fillFrequency", 3600) * 1000;
-                        long quietThreshold = sch.getLong("quietThreshold") * 1000;
-                        streamUpdatePolicy.add(new StreamUpdatePolicyEnter(dataAge, fillFrequency, quietThreshold));
+                    long fillFrequency = sch.getLong("fillFrequency", 3600) * 1000;
+                    long quietThreshold = sch.getLong("quietThreshold") * 1000;
+                    streamUpdatePolicy.add(new StreamUpdatePolicyEnter(dataAge, fillFrequency, quietThreshold));
                 }
                 streamUpdatePolicy.sort(Comparator.comparingLong(StreamUpdatePolicyEnter::dataAge));
             } else if (config.containsKey("streamUpdateFillFrequency")) {
@@ -247,7 +247,14 @@ public class BackFiller implements StreamSubscriber {
             String timePeriod = '[' + TimeEncoding.toString(start) + "-" + TimeEncoding.toString(stop) + ')';
             log.debug("Starting parameter archive fillup for interval {}", timePeriod);
             long t0 = System.nanoTime();
-            ReplayOptions rrb = ReplayOptions.getAfapReplay(start - warmupTime, stop, false);
+            long replayStart;
+            if (start < TimeEncoding.MIN_INSTANT + warmupTime) {
+                replayStart = TimeEncoding.MIN_INSTANT;
+            } else {
+                replayStart = start - warmupTime;
+            }
+
+            ReplayOptions rrb = ReplayOptions.getAfapReplay(replayStart, stop, false);
             Processor proc = ProcessorFactory.create(parchive.getYamcsInstance(),
                     "ParameterArchive-backfilling_" + count.incrementAndGet(), "ParameterArchive", "internal",
                     rrb);

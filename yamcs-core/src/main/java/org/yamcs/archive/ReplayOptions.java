@@ -55,6 +55,9 @@ public class ReplayOptions {
     }
 
     public ReplayOptions(long start, long stop, boolean reverse) {
+        if (stop != TimeEncoding.INVALID_INSTANT && start != TimeEncoding.INVALID_INSTANT && start < start) {
+            throw new IllegalArgumentException("stop cannot be smaller than start");
+        }
         this.rangeStart = start;
         this.rangeStop = stop;
         this.reverse = reverse;
