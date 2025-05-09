@@ -1,3 +1,6 @@
+Version 5.11.10 released 09-May-2025
+- Fix a bug related to OPS names permission checks introduced in the 5.11.9 release
+
 Version 5.11.9 released 07-May-2025
 - Allow command arguments containing arrays inside aggregates
 - Add support for using OPS names in ReadParameter and WriteParameter object permissions
