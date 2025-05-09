@@ -266,7 +266,7 @@ public class User extends Account {
         }
         String opsName = parameter.getOpsName();
         return hasObjectPrivilege(type, parameter.getQualifiedName())
-                || (opsName != null && !hasObjectPrivilege(type, PRIVILEGE_OPS_NAME_PREFIX + opsName));
+                || (opsName != null && hasObjectPrivilege(type, PRIVILEGE_OPS_NAME_PREFIX + opsName));
     }
 
     public void addClearanceListener(ClearanceListener listener) {
