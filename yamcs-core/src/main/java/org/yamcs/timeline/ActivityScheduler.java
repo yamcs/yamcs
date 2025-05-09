@@ -162,6 +162,11 @@ public class ActivityScheduler extends AbstractYamcsService implements ItemListe
         try {
             planned.clear();
             dependentActivities.clear();
+            var ydb = YarchDatabase.getInstance(yamcsInstance);
+            var tblDef = ydb.getTable(TABLE_NAME);
+            if (tblDef == null || tblDef.getColumnDefinition(CNAME_STATUS) == null) {
+                return;
+            }
 
             var sqlb = new SqlBuilder(TABLE_NAME);
             sqlb.whereColAfterOrEqual(CNAME_START, timeService.getMissionTime() - schedulingMargin);
@@ -170,7 +175,7 @@ public class ActivityScheduler extends AbstractYamcsService implements ItemListe
             sqlb.where(String.format("%s IN ('%s', '%s', '%s')", CNAME_STATUS, ExecutionStatus.PLANNED.name(),
                     ExecutionStatus.READY.name(), ExecutionStatus.WAITING_ON_DEPENDENCY.name()));
 
-            var ydb = YarchDatabase.getInstance(yamcsInstance);
+
 
             var result = ydb.execute(sqlb.toString(), sqlb.getQueryArguments());
             while (result.hasNext()) {
