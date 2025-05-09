@@ -1,5 +1,9 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import {
+  UntypedFormBuilder,
+  UntypedFormGroup,
+  Validators,
+} from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
 
@@ -7,12 +11,9 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
   selector: 'app-schedule-stack-dialog',
   templateUrl: './schedule-stack-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class ScheduleStackDialogComponent {
-
   form: UntypedFormGroup;
 
   constructor(

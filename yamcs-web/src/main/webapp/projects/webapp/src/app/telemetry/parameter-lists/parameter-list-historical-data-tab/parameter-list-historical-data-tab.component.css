@@ -19,22 +19,6 @@
   background-color: #ffffff;
 }
 
-.table-status {
-  background-color: var(--y-background-color);
-  height: 24px;
-  line-height: 24px;
-  font-size: 12px;
-  padding-left: 6px;
-}
-
-.table-status .toggles {
-  float: right;
-  height: 24px;
-  line-height: 24px;
-  font-size: 12px;
-  padding-right: 6px;
-}
-
 .table-container table th:first-child,
 .table-container table td:first-child {
   background-color: var(--y-background-color);

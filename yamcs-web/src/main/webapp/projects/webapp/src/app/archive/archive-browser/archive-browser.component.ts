@@ -1,17 +1,40 @@
 import { Overlay } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  HostListener,
+  OnDestroy,
+  ViewChild,
+} from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Params, Router } from '@angular/router';
-import { MouseTracker, TimeLocator, TimeRuler, Timeline, Tool } from '@fqqb/timeline';
-import { ArchiveRecord, EditReplayProcessorRequest, Formatter, MessageService, Processor, ProcessorSubscription, Synchronizer, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  MouseTracker,
+  TimeLocator,
+  TimeRuler,
+  Timeline,
+  Tool,
+} from '@fqqb/timeline';
+import {
+  ArchiveRecord,
+  EditReplayProcessorRequest,
+  Formatter,
+  MessageService,
+  Processor,
+  ProcessorSubscription,
+  Synchronizer,
+  WebappSdkModule,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { StartReplayDialogComponent } from '../../shared/start-replay-dialog/start-replay-dialog.component';
 import { HoveredDateAnnotation } from '../../timeline/timeline-chart/HoveredDateAnnotation';
 import { DownloadDumpDialogComponent } from '../download-dump-dialog/download-dump-dialog.component';
@@ -41,21 +64,22 @@ interface DateRange {
 }
 
 function makeGradient(rgb: RGB) {
-  return 'linear-gradient(to right, ' + rgb.toCssString(0.3) + ' 30%, ' + rgb.toCssString() + ')';
+  return (
+    'linear-gradient(to right, ' +
+    rgb.toCssString(0.3) +
+    ' 30%, ' +
+    rgb.toCssString() +
+    ')'
+  );
 }
 
 @Component({
   templateUrl: './archive-browser.component.html',
   styleUrl: './archive-browser.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
-
   legendOptions = [
     {
       id: 'packets',
@@ -66,7 +90,7 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
     },
     {
       id: 'parameters',
-      name: 'Parameter Groups',
+      name: 'Parameter groups',
       bg: makeGradient(PARAMETERS_BG),
       fg: PARAMETERS_FG.toCssString(),
       checked: true,
@@ -120,7 +144,8 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
   ) {
     title.setTitle('Archive browser');
 
-    const capabilities = yamcs.connectionInfo$.value?.instance?.capabilities || [];
+    const capabilities =
+      yamcs.connectionInfo$.value?.instance?.capabilities || [];
     if (capabilities.indexOf('ccsds-completeness') !== -1) {
       this.legendOptions = [
         {
@@ -130,18 +155,22 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
           fg: COMPLETENESS_FG.toCssString(),
           checked: true,
         },
-        ... this.legendOptions,
+        ...this.legendOptions,
       ];
     }
 
     this.processor$.next(yamcs.getProcessor());
     if (yamcs.processor) {
-      this.processorSubscription = this.yamcs.yamcsClient.createProcessorSubscription({
-        instance: yamcs.instance!,
-        processor: yamcs.processor,
-      }, processor => {
-        this.processor$.next(processor);
-      });
+      this.processorSubscription =
+        this.yamcs.yamcsClient.createProcessorSubscription(
+          {
+            instance: yamcs.instance!,
+            processor: yamcs.processor,
+          },
+          (processor) => {
+            this.processor$.next(processor);
+          },
+        );
     }
 
     this.filterForm = new UntypedFormGroup({});
@@ -155,13 +184,18 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
     }
 
     const bodyRef = new ElementRef(document.body);
-    const positionStrategy = this.overlay.position().flexibleConnectedTo(bodyRef)
-      .withPositions([{
-        originX: 'start',
-        originY: 'top',
-        overlayX: 'start',
-        overlayY: 'top',
-      }]).withPush(false);
+    const positionStrategy = this.overlay
+      .position()
+      .flexibleConnectedTo(bodyRef)
+      .withPositions([
+        {
+          originX: 'start',
+          originY: 'top',
+          overlayX: 'start',
+          overlayY: 'top',
+        },
+      ])
+      .withPush(false);
 
     const overlayRef = this.overlay.create({ positionStrategy });
     const tooltipPortal = new ComponentPortal(TimelineTooltipComponent);
@@ -176,24 +210,24 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     // Fetch archive packets to ensure we can always show bands
     // even if there's no data for the visible range
-    this.yamcs.yamcsClient.getPacketNames(this.yamcs.instance!).then(response => {
-      this.packetNames = response.packets || [];
-      this.initializeTimeline();
-    });
+    this.yamcs.yamcsClient
+      .getPacketNames(this.yamcs.instance!)
+      .then((response) => {
+        this.packetNames = response.packets || [];
+        this.initializeTimeline();
+      });
   }
 
   private initializeTimeline() {
     this.timeline = new Timeline(this.container.nativeElement);
 
-    this.timeline.addViewportChangeListener(event => {
+    this.timeline.addViewportChangeListener((event) => {
       this.viewportRange$.next({
         start: new Date(event.start),
         stop: new Date(event.stop),
       });
     });
-    this.viewportRange$.pipe(
-      debounceTime(400),
-    ).forEach(range => {
+    this.viewportRange$.pipe(debounceTime(400)).forEach((range) => {
       this.refreshData();
       const legendParams: Params = {};
       for (const option of this.legendOptions) {
@@ -207,16 +241,18 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
           start: new Date(range!.start).toISOString(),
           stop: new Date(range!.stop).toISOString(),
           ...legendParams,
-        }
+        },
       });
     });
 
-    this.timeline.addViewportDoubleClickListener(event => {
+    this.timeline.addViewportDoubleClickListener((event) => {
       const processor = this.yamcs.getProcessor();
       if (processor?.replay) {
-        this.yamcs.yamcsClient.editReplayProcessor(this.yamcs.instance!, this.yamcs.processor!, {
-          seek: new Date(event.time).toISOString(),
-        }).catch(err => this.messageService.showError(err));
+        this.yamcs.yamcsClient
+          .editReplayProcessor(this.yamcs.instance!, this.yamcs.processor!, {
+            seek: new Date(event.time).toISOString(),
+          })
+          .catch((err) => this.messageService.showError(err));
       }
     });
 
@@ -244,7 +280,7 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
 
         const replayRequest = this.processor$.value?.replayRequest;
         replayOverlay.replayRequest = replayRequest;
-      })
+      }),
     );
 
     new MouseTracker(this.timeline);
@@ -256,7 +292,7 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
     axis.frozen = true;
     axis.fullHeight = 'underlay';
 
-    this.timeline.addViewportSelectionListener(evt => {
+    this.timeline.addViewportSelectionListener((evt) => {
       if (evt.selection) {
         this.rangeSelection$.next({
           start: new Date(evt.selection.start),
@@ -270,23 +306,29 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
 
   fitAll() {
     const promises = [];
-    promises.push(this.yamcs.yamcsClient.getPackets(this.yamcs.instance!, {
-      limit: 1,
-      order: 'asc',
-    }));
-    promises.push(this.yamcs.yamcsClient.getPackets(this.yamcs.instance!, {
-      limit: 1,
-      order: 'desc',
-    }));
-    Promise.all(promises).then(res => {
-      const startPromise = res[0];
-      const stopPromise = res[1];
-      if (startPromise.packet?.length && stopPromise.packet?.length) {
-        const start = utils.toDate(startPromise.packet[0].generationTime);
-        const stop = utils.toDate(stopPromise.packet[0].generationTime);
-        this.timeline.setViewRange(start.getTime(), stop.getTime());
-      }
-    }).catch(err => this.messageService.showError(err));
+    promises.push(
+      this.yamcs.yamcsClient.getPackets(this.yamcs.instance!, {
+        limit: 1,
+        order: 'asc',
+      }),
+    );
+    promises.push(
+      this.yamcs.yamcsClient.getPackets(this.yamcs.instance!, {
+        limit: 1,
+        order: 'desc',
+      }),
+    );
+    Promise.all(promises)
+      .then((res) => {
+        const startPromise = res[0];
+        const stopPromise = res[1];
+        if (startPromise.packets?.length && stopPromise.packets?.length) {
+          const start = utils.toDate(startPromise.packets[0].generationTime);
+          const stop = utils.toDate(stopPromise.packets[0].generationTime);
+          this.timeline.setViewRange(start.getTime(), stop.getTime());
+        }
+      })
+      .catch((err) => this.messageService.showError(err));
   }
 
   fitSelection() {
@@ -317,7 +359,7 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
       width: '400px',
       data: { date: new Date(currentDate) },
     });
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.timeline.panTo(result.date.getTime());
       }
@@ -373,56 +415,70 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
   }
 
   private startReplay(range: DateRange) {
-    this.dialog.open(StartReplayDialogComponent, {
-      width: '400px',
-      data: {
-        start: range.start,
-        stop: range.stop,
-      },
-    }).afterClosed().subscribe(result => {
-      if (result) {
-        this.snackBar.open('Initializing replay...', undefined, {
-          horizontalPosition: 'end',
-        });
-        this.yamcs.yamcsClient.createProcessor(result).then(() => {
-          this.yamcs.switchContext(this.yamcs.instance!, result.name);
-          this.snackBar.open('Joining replay', undefined, {
-            duration: 3000,
+    this.dialog
+      .open(StartReplayDialogComponent, {
+        width: '400px',
+        data: {
+          start: range.start,
+          stop: range.stop,
+        },
+      })
+      .afterClosed()
+      .subscribe((result) => {
+        if (result) {
+          this.snackBar.open('Initializing replay...', undefined, {
             horizontalPosition: 'end',
           });
-        }).catch(err => {
-          this.snackBar.open('Failed to initialize replay', undefined, {
-            duration: 3000,
-            horizontalPosition: 'end',
-          });
-        });
-      }
-    });
+          this.yamcs.yamcsClient
+            .createProcessor(result)
+            .then(() => {
+              this.yamcs.switchContext(this.yamcs.instance!, result.name);
+              this.snackBar.open('Joining replay', undefined, {
+                duration: 3000,
+                horizontalPosition: 'end',
+              });
+            })
+            .catch((err) => {
+              this.snackBar.open('Failed to initialize replay', undefined, {
+                duration: 3000,
+                horizontalPosition: 'end',
+              });
+            });
+        }
+      });
   }
 
   private modifyReplay(processor: Processor, range: DateRange) {
-    this.dialog.open(ModifyReplayDialogComponent, {
-      width: '400px',
-      data: {
-        start: range.start,
-        stop: range.stop,
-      },
-    }).afterClosed().subscribe((result: EditReplayProcessorRequest) => {
-      if (result) {
-        this.snackBar.open('Updating replay...', undefined, {
-          horizontalPosition: 'end',
-        });
-        this.yamcs.yamcsClient.editReplayProcessor(processor.instance, processor.name, result).catch(err => {
-          this.messageService.showError(err);
-        }).finally(() => this.snackBar.dismiss());
-      }
-    });
+    this.dialog
+      .open(ModifyReplayDialogComponent, {
+        width: '400px',
+        data: {
+          start: range.start,
+          stop: range.stop,
+        },
+      })
+      .afterClosed()
+      .subscribe((result: EditReplayProcessorRequest) => {
+        if (result) {
+          this.snackBar.open('Updating replay...', undefined, {
+            horizontalPosition: 'end',
+          });
+          this.yamcs.yamcsClient
+            .editReplayProcessor(processor.instance, processor.name, result)
+            .catch((err) => {
+              this.messageService.showError(err);
+            })
+            .finally(() => this.snackBar.dismiss());
+        }
+      });
   }
 
   enableLoop(processor: Processor, loop: boolean) {
-    this.yamcs.yamcsClient.editReplayProcessor(processor.instance, processor.name, {
-      loop,
-    }).catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .editReplayProcessor(processor.instance, processor.name, {
+        loop,
+      })
+      .catch((err) => this.messageService.showError(err));
   }
 
   downloadDump() {
@@ -445,41 +501,56 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
   refreshData() {
     // Load beyond the edges (for pan purposes)
     const viewportRange = this.timeline.stop - this.timeline.start;
-    const start = utils.clampDate(this.timeline.start - viewportRange).toISOString();
-    const stop = utils.clampDate(this.timeline.stop + viewportRange).toISOString();
+    const start = utils
+      .clampDate(this.timeline.start - viewportRange)
+      .toISOString();
+    const stop = utils
+      .clampDate(this.timeline.stop + viewportRange)
+      .toISOString();
 
-    const mergeTime = Math.min(Math.floor(viewportRange / 1000), 0x7FFFFFFF);
+    const mergeTime = Math.min(Math.floor(viewportRange / 1000), 0x7fffffff);
 
-    let completenessPromise: Promise<ArchiveRecordGroup[]> = Promise.resolve([]);
+    let completenessPromise: Promise<ArchiveRecordGroup[]> = Promise.resolve(
+      [],
+    );
     if (this.filterForm.value['completeness']) {
-      completenessPromise = this.yamcs.yamcsClient.streamCompletenessIndex(
-        this.yamcs.instance!, { start, stop, mergeTime }).then(records => {
+      completenessPromise = this.yamcs.yamcsClient
+        .streamCompletenessIndex(this.yamcs.instance!, {
+          start,
+          stop,
+          mergeTime,
+        })
+        .then((records) => {
           return this.groupRecordsByName(records);
         });
     }
 
     let tmPromise: Promise<ArchiveRecordGroup[]> = Promise.resolve([]);
     if (this.filterForm.value['packets']) {
-      tmPromise = this.yamcs.yamcsClient.streamPacketIndex(
-        this.yamcs.instance!, { start, stop, mergeTime }).then(records => this.groupRecordsByName(records));
+      tmPromise = this.yamcs.yamcsClient
+        .streamPacketIndex(this.yamcs.instance!, { start, stop, mergeTime })
+        .then((records) => this.groupRecordsByName(records));
     }
 
     let parameterPromise: Promise<ArchiveRecordGroup[]> = Promise.resolve([]);
     if (this.filterForm.value['parameters']) {
-      parameterPromise = this.yamcs.yamcsClient.streamParameterIndex(
-        this.yamcs.instance!, { start, stop, mergeTime }).then(records => this.groupRecordsByName(records));
+      parameterPromise = this.yamcs.yamcsClient
+        .streamParameterIndex(this.yamcs.instance!, { start, stop, mergeTime })
+        .then((records) => this.groupRecordsByName(records));
     }
 
     let commandPromise: Promise<ArchiveRecordGroup[]> = Promise.resolve([]);
     if (this.filterForm.value['commands']) {
-      commandPromise = this.yamcs.yamcsClient.streamCommandIndex(
-        this.yamcs.instance!, { start, stop, mergeTime }).then(records => this.groupRecordsByName(records));
+      commandPromise = this.yamcs.yamcsClient
+        .streamCommandIndex(this.yamcs.instance!, { start, stop, mergeTime })
+        .then((records) => this.groupRecordsByName(records));
     }
 
     let eventPromise: Promise<ArchiveRecordGroup[]> = Promise.resolve([]);
     if (this.filterForm.value['events']) {
-      eventPromise = this.yamcs.yamcsClient.streamEventIndex(
-        this.yamcs.instance!, { start, stop, mergeTime }).then(records => this.groupRecordsByName(records));
+      eventPromise = this.yamcs.yamcsClient
+        .streamEventIndex(this.yamcs.instance!, { start, stop, mergeTime })
+        .then((records) => this.groupRecordsByName(records));
     }
 
     Promise.all([
@@ -488,7 +559,7 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
       parameterPromise,
       commandPromise,
       eventPromise,
-    ]).then(responses => {
+    ]).then((responses) => {
       const completenessGroups = responses[0];
       const tmGroups = responses[1];
       const parameterGroups = responses[2];
@@ -506,9 +577,16 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
           new TitleBand(this.timeline, 'Completeness');
         }
         const group = completenessGroups[i];
-        const band = new IndexGroupBand(this.timeline, group.name, COMPLETENESS_BG, COMPLETENESS_FG, this.formatter);
+        const band = new IndexGroupBand(
+          this.timeline,
+          group.name,
+          COMPLETENESS_BG,
+          COMPLETENESS_FG,
+          this.formatter,
+        );
         band.borderWidth = i === completenessGroups.length - 1 ? 1 : 0;
-        band.paddingBottom = i === completenessGroups.length - 1 ? 20 : PADDING_TB;
+        band.paddingBottom =
+          i === completenessGroups.length - 1 ? 20 : PADDING_TB;
         band.setupTooltip(this.tooltipInstance);
         band.loadData(group);
       }
@@ -519,11 +597,20 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
             new TitleBand(this.timeline, 'Packets');
           }
           const packetName = this.packetNames[i];
-          const band = new IndexGroupBand(this.timeline, packetName, PACKETS_BG, PACKETS_FG, this.formatter);
+          const band = new IndexGroupBand(
+            this.timeline,
+            packetName,
+            PACKETS_BG,
+            PACKETS_FG,
+            this.formatter,
+          );
           band.borderWidth = i === this.packetNames.length - 1 ? 1 : 0;
-          band.paddingBottom = i === this.packetNames.length - 1 ? 20 : PADDING_TB;
+          band.paddingBottom =
+            i === this.packetNames.length - 1 ? 20 : PADDING_TB;
           band.setupTooltip(this.tooltipInstance);
-          const group = tmGroups.find(candidate => candidate.name === packetName);
+          const group = tmGroups.find(
+            (candidate) => candidate.name === packetName,
+          );
           if (group) {
             band.loadData(group);
           }
@@ -536,7 +623,13 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
           new TitleBand(this.timeline, 'Parameter Groups');
         }
         const group = parameterGroups[i];
-        const band = new IndexGroupBand(this.timeline, group.name, PARAMETERS_BG, PARAMETERS_FG, this.formatter);
+        const band = new IndexGroupBand(
+          this.timeline,
+          group.name,
+          PARAMETERS_BG,
+          PARAMETERS_FG,
+          this.formatter,
+        );
         band.borderWidth = i === parameterGroups.length - 1 ? 1 : 0;
         band.paddingBottom = i === parameterGroups.length - 1 ? 20 : PADDING_TB;
         band.setupTooltip(this.tooltipInstance);
@@ -549,7 +642,13 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
           new TitleBand(this.timeline, 'Commands');
         }
         const group = commandGroups[i];
-        const band = new IndexGroupBand(this.timeline, group.name, COMMANDS_BG, COMMANDS_FG, this.formatter);
+        const band = new IndexGroupBand(
+          this.timeline,
+          group.name,
+          COMMANDS_BG,
+          COMMANDS_FG,
+          this.formatter,
+        );
         band.borderWidth = i === commandGroups.length - 1 ? 1 : 0;
         band.paddingBottom = i === commandGroups.length - 1 ? 30 : PADDING_TB;
         band.setupTooltip(this.tooltipInstance);
@@ -562,7 +661,13 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
           new TitleBand(this.timeline, 'Events');
         }
         const group = eventGroups[i];
-        const band = new IndexGroupBand(this.timeline, group.name, EVENTS_BG, EVENTS_FG, this.formatter);
+        const band = new IndexGroupBand(
+          this.timeline,
+          group.name,
+          EVENTS_BG,
+          EVENTS_FG,
+          this.formatter,
+        );
         band.borderWidth = i === eventGroups.length - 1 ? 1 : 0;
         band.paddingBottom = i === eventGroups.length - 1 ? 20 : PADDING_TB;
         band.setupTooltip(this.tooltipInstance);
@@ -586,7 +691,7 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     this.processorSubscription?.cancel();
-    this.subscriptions.forEach(subscription => subscription.unsubscribe());
+    this.subscriptions.forEach((subscription) => subscription.unsubscribe());
     this.timeline.disconnect();
   }
 }

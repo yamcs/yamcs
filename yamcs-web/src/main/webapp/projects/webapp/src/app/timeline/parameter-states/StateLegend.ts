@@ -2,7 +2,6 @@ import { ColorMap } from './ColorMap';
 import { State } from './State';
 
 export class StateLegend {
-
   private colorByValue = new Map<string, string>();
   private colorMap = new ColorMap();
 
@@ -48,7 +47,10 @@ export class StateLegend {
   }
 
   getBackground(state: State) {
-    return state.mostFrequentValue.color ?? this.colorMap.colorForValue(state.mostFrequentValue.value);
+    return (
+      state.mostFrequentValue.color ??
+      this.colorMap.colorForValue(state.mostFrequentValue.value)
+    );
   }
 
   getForeground(state: State) {
@@ -61,10 +63,11 @@ export class StateLegend {
   }
 
   private isDark(hexColor: string) {
-    const color = (hexColor.charAt(0) === '#') ? hexColor.substring(1, 7) : hexColor;
+    const color =
+      hexColor.charAt(0) === '#' ? hexColor.substring(1, 7) : hexColor;
     const r = parseInt(color.substring(0, 2), 16);
     const g = parseInt(color.substring(2, 4), 16);
     const b = parseInt(color.substring(4, 6), 16);
-    return ((r * 0.299) + (g * 0.587) + (b * 0.114)) <= 186;
+    return r * 0.299 + g * 0.587 + b * 0.114 <= 186;
   }
 }

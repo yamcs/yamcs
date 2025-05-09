@@ -1,59 +1,54 @@
 <ya-message-bar #messageBar />
 
-<mat-toolbar class="top">
-  <mat-toolbar-row>
+<app-appbase-toolbar>
+  <ng-template app-appbase-toolbar-label>
     <ya-page-icon-button routerLink=".." icon="arrow_back" />
     Create an instance
-  </mat-toolbar-row>
-</mat-toolbar>
+  </ng-template>
+</app-appbase-toolbar>
 
 <app-create-instance-wizard-step step="2" />
 
 @if (template$ | async; as template) {
   <div class="form-content ya-form">
     <form [formGroup]="form" novalidate>
-      <div class="label">
-        Instance name
-        <br />
+      <ya-field label="Instance name">
         <input formControlName="name" type="text" />
-      </div>
+      </ya-field>
+
       @for (v of template?.variables; track v) {
-        <br />
         @if (v.choices) {
-          <label>
-            {{ v.label || v.name }}
+          <ya-field [label]="v.label || v.name">
             @if (v.help) {
               <ya-help [dialogTitle]="v.label || v.name">
                 <div [innerHTML]="v.help"></div>
               </ya-help>
             }
-            <select [formControlName]="v.name">
+            <ya-select [formControlName]="v.name">
               @for (choice of v.choices; track choice) {
-                <option [value]="choice">{{ choice }}</option>
+                <ya-option [id]="choice" [label]="choice" />
               }
-            </select>
-          </label>
-        }
-        @if (!v.choices) {
-          <label>
-            {{ v.label || v.name }}
+            </ya-select>
+          </ya-field>
+        } @else {
+          <ya-field [label]="v.label || v.name">
             @if (v.help) {
               <ya-help [dialogTitle]="v.label || v.name">
                 <div [innerHTML]="v.help"></div>
               </ya-help>
             }
-            <br />
             <input [formControlName]="v.name" type="text" />
-          </label>
+          </ya-field>
         }
       }
     </form>
+
     <p>&nbsp;</p>
-    <div class="action-bar">
+    <ya-toolbar appearance="bottom">
       <ya-button routerLink="/">CANCEL</ya-button>
       <ya-button appearance="primary" (click)="onConfirm()" [disabled]="!form.valid">
         CREATE
       </ya-button>
-    </div>
+    </ya-toolbar>
   </div>
 }

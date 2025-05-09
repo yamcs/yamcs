@@ -41,3 +41,19 @@ mat-toolbar {
 .navbar-logo img {
   max-width: 100%;
 }
+
+.mat-toolbar.module-title {
+  min-height: 48px;
+}
+
+.mat-toolbar.module-title .mat-toolbar-row {
+  height: 48px;
+  font-weight: 400;
+}
+
+.mat-toolbar.module-title mat-icon {
+  font-size: 32px !important;
+  height: 32px !important;
+  width: 32px !important;
+  margin-right: 16px;
+}

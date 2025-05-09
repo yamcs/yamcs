@@ -1,9 +1,11 @@
 import { TitleCasePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { BaseComponent, CreateTimelineBandRequest, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
-import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
+import {
+  BaseComponent,
+  CreateTimelineBandRequest,
+  WebappSdkModule,
+} from '@yamcs/webapp-sdk';
 import { CreateBandWizardStepComponent } from '../../create-band-wizard-step/create-band-wizard-step.component';
 import { removeUnsetProperties } from '../../shared/properties';
 import { ParameterStatesStylesComponent } from '../parameter-states-styles/parameter-states-styles.component';
@@ -16,21 +18,15 @@ import { propertyInfo } from '../ParameterStateBand';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CreateBandWizardStepComponent,
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
     ParameterStatesStylesComponent,
     TitleCasePipe,
     WebappSdkModule,
   ],
 })
 export class CreateParameterStatesComponent extends BaseComponent {
-
   form: FormGroup;
 
-  constructor(
-    private formBuilder: FormBuilder,
-    readonly yamcs: YamcsService,
-  ) {
+  constructor(private formBuilder: FormBuilder) {
     super();
     this.setTitle('Configure parameter states');
 
@@ -116,7 +112,11 @@ export class CreateParameterStatesComponent extends BaseComponent {
 
     removeUnsetProperties(options.properties || {});
 
-    this.yamcs.yamcsClient.createTimelineBand(this.yamcs.instance!, options).then(() => this.router.navigateByUrl(`/timeline/bands?c=${this.yamcs.context}`))
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .createTimelineBand(this.yamcs.instance!, options)
+      .then(() =>
+        this.router.navigateByUrl(`/timeline/bands?c=${this.yamcs.context}`),
+      )
+      .catch((err) => this.messageService.showError(err));
   }
 }

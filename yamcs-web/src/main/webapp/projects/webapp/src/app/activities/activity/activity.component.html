@@ -1,8 +1,14 @@
 @if (activity$ | async; as activity) {
-  <app-instance-page>
-    <app-instance-toolbar>
-      <ya-page-icon-button routerLink=".." [queryParams]="{ c: yamcs.context }" icon="arrow_back" />
-      Activity details &nbsp;&nbsp;&nbsp;
+  <ya-instance-page>
+    <ya-instance-toolbar>
+      <ng-template ya-instance-toolbar-label>
+        <ya-page-icon-button
+          routerLink=".."
+          [queryParams]="{ c: yamcs.context }"
+          icon="arrow_back" />
+        Activity details
+      </ng-template>
+
       @if (activity.type === "MANUAL" && activity.status === "RUNNING" && mayControlActivities()) {
         <ya-page-button (clicked)="setSuccessful(activity)" icon="thumb_up">
           Set successful
@@ -19,7 +25,8 @@
           Cancel
         </ya-page-button>
       }
-    </app-instance-toolbar>
+    </ya-instance-toolbar>
+
     <div class="activity-header">
       <div class="activity-header-left">
         <span class="title">{{ activity.detail }}</span>
@@ -33,30 +40,27 @@
         <app-activity-status [activity]="activity" />
       </div>
     </div>
-    <nav #tabs mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
+
+    <ya-page-tabs>
       <a
-        mat-tab-link
         routerLink="log"
         routerLinkActive
         #rla="routerLinkActive"
-        [active]="rla.isActive"
+        [class.active]="rla.isActive"
         [queryParams]="{ c: yamcs.context }">
-        Activity Log
+        Activity log
       </a>
       <a
-        mat-tab-link
         routerLink="details"
         routerLinkActive
         #rlb="routerLinkActive"
-        [active]="rlb.isActive"
+        [class.active]="rlb.isActive"
         [queryParams]="{ c: yamcs.context }">
         Details
       </a>
-    </nav>
+    </ya-page-tabs>
     <div class="tab-content-wrapper">
-      <mat-tab-nav-panel #tabPanel>
-        <router-outlet />
-      </mat-tab-nav-panel>
+      <router-outlet />
     </div>
-  </app-instance-page>
+  </ya-instance-page>
 }

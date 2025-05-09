@@ -1,0 +1,12 @@
+:host {
+  display: inline-flex;
+}
+
+span {
+  vertical-align: baseline;
+  font-family: "Roboto Mono", monospace;
+}
+
+.jpackage {
+  color: #999;
+}

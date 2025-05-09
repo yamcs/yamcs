@@ -20,7 +20,6 @@ export type ServerMessage = {
 };
 
 export class WebSocketClient {
-
   readonly connected$ = new BehaviorSubject<boolean>(false);
 
   private webSocket$: WebSocketSubject<{}>; // Unsubscribing from this closes the connection
@@ -28,7 +27,10 @@ export class WebSocketClient {
 
   private requestSequence = 0;
 
-  constructor(apiUrl: string, private frameLossListener: FrameLossListener) {
+  constructor(
+    apiUrl: string,
+    private frameLossListener: FrameLossListener,
+  ) {
     const currentLocation = window.location;
     let url = 'ws://';
     if (currentLocation.protocol === 'https:') {
@@ -40,18 +42,20 @@ export class WebSocketClient {
       url,
       protocol: 'json',
       closeObserver: {
-        next: () => this.connected$.next(false)
+        next: () => this.connected$.next(false),
       },
       openObserver: {
-        next: () => this.connected$.next(true)
-      }
+        next: () => this.connected$.next(true),
+      },
     });
 
-    this.webSocket$.pipe(
-      tap((msg: ServerMessage) => {
-        this.calls.forEach(call => call.consume(msg));
-      })
-    ).subscribe();
+    this.webSocket$
+      .pipe(
+        tap((msg: ServerMessage) => {
+          this.calls.forEach((call) => call.consume(msg));
+        }),
+      )
+      .subscribe();
   }
 
   /**
@@ -60,7 +64,11 @@ export class WebSocketClient {
    * be received. If we cannot read sufficiently fast, Yamcs will close the
    * entire connection (shared with other subscriptions).
    */
-  createSubscription<O, D>(type: string, options: O, observer: (data: D) => void) {
+  createSubscription<O, D>(
+    type: string,
+    options: O,
+    observer: (data: D) => void,
+  ) {
     return this.doCreateSubscription(type, false, options, observer);
   }
 
@@ -69,11 +77,20 @@ export class WebSocketClient {
    * drop WebSocket frames coming from this type of subscription, if we are not able
    * to read fast enough.
    */
-  createLowPrioritySubscription<O, D>(type: string, options: O, observer: (data: D) => void) {
+  createLowPrioritySubscription<O, D>(
+    type: string,
+    options: O,
+    observer: (data: D) => void,
+  ) {
     return this.doCreateSubscription(type, true, options, observer);
   }
 
-  private doCreateSubscription<O, D>(type: string, lowPriority: boolean, options: O, observer: (data: D) => void) {
+  private doCreateSubscription<O, D>(
+    type: string,
+    lowPriority: boolean,
+    options: O,
+    observer: (data: D) => void,
+  ) {
     const id = ++this.requestSequence;
     const call = new WebSocketCall(this, id, type, observer);
     call.addFrameLossListener(() => {

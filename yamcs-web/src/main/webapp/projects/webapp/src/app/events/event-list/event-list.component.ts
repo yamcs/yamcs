@@ -1,13 +1,33 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, OnInit, input, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  OnInit,
+  input,
+  viewChild,
+} from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ConfigService, EventSeverity, ExtraColumnInfo, GetEventsOptions, MessageService, ParseFilterSubscription, Synchronizer, WebappSdkModule, YaColumnInfo, YaSearchFilter2, YaSelectOption, YamcsService, stringArrayAttribute, utils } from '@yamcs/webapp-sdk';
+import {
+  AuthService,
+  ConfigService,
+  EventSeverity,
+  ExtraColumnInfo,
+  GetEventsOptions,
+  MessageService,
+  ParseFilterSubscription,
+  Synchronizer,
+  WebappSdkModule,
+  YaColumnInfo,
+  YaSearchFilter2,
+  YaSelectOption,
+  YamcsService,
+  stringArrayAttribute,
+  utils,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { AuthService } from '../../core/services/AuthService';
-import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { CreateEventDialogComponent } from '../create-event-dialog/create-event-dialog.component';
 import { CreateEventQueryDialogComponent } from '../create-event-query-dialog/create-event-query-dialog.component';
 import { EventMessageComponent } from '../event-message/event-message.component';
@@ -16,7 +36,6 @@ import { EventsPageTabsComponent } from '../events-page-tabs/events-page-tabs.co
 import { ExportEventsDialogComponent } from '../export-events-dialog/export-events-dialog.component';
 import { EVENT_COMPLETIONS } from './completions';
 import { EventsDataSource } from './events.datasource';
-
 
 const defaultInterval = 'PT1H';
 
@@ -28,13 +47,10 @@ const defaultInterval = 'PT1H';
     EventMessageComponent,
     EventsPageTabsComponent,
     EventSeverityComponent,
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
     WebappSdkModule,
   ],
 })
-export class EventListComponent implements OnInit, AfterViewInit, OnDestroy {
-
+export class EventListComponent implements OnInit, OnDestroy {
   filter = input<string>();
   severity = input<EventSeverity>();
   source = input([], { transform: stringArrayAttribute });
@@ -64,12 +80,6 @@ export class EventListComponent implements OnInit, AfterViewInit, OnDestroy {
     customStart: new FormControl<string | null>(null),
     customStop: new FormControl<string | null>(null),
   });
-  multilineControl = new FormControl<boolean>(false);
-
-  isClearQueryEnabled() {
-    const fv = this.filterForm.value;
-    return this.searchFilter().empty() || fv.severity !== 'INFO' || fv.source?.length;
-  }
 
   dataSource: EventsDataSource;
 
@@ -119,7 +129,7 @@ export class EventListComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
 
-    yamcs.yamcsClient.getEventSources(yamcs.instance!).then(sources => {
+    yamcs.yamcsClient.getEventSources(yamcs.instance!).then((sources) => {
       for (const source of sources) {
         this.sourceOptions$.next([
           ...this.sourceOptions$.value,
@@ -134,15 +144,17 @@ export class EventListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.dataSource = new EventsDataSource(yamcs, synchronizer);
 
     // Add new sources to source filter
-    this.dataSource.sources$.subscribe(sources => {
-      this.sourceOptions$.next(sources.map(source => {
-        return { id: source, label: source };
-      }));
+    this.dataSource.sources$.subscribe((sources) => {
+      this.sourceOptions$.next(
+        sources.map((source) => {
+          return { id: source, label: source };
+        }),
+      );
     });
   }
 
   ngOnInit(): void {
-    this.parseFilterSubscription().addMessageListener(data => {
+    this.parseFilterSubscription().addMessageListener((data) => {
       if (data.errorMessage) {
         this.searchFilter().addErrorMark(data.errorMessage, {
           beginLine: data.beginLine!,
@@ -158,24 +170,28 @@ export class EventListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.initializeOptions();
     this.loadData();
 
-    this.filterForm.get('filter')!.valueChanges.forEach(filter => {
+    this.filterForm.get('filter')!.valueChanges.forEach((filter) => {
       this.loadData();
     });
 
-    this.filterForm.get('severity')!.valueChanges.forEach(severity => {
+    this.filterForm.get('severity')!.valueChanges.forEach((severity) => {
       this.loadData();
     });
 
-    this.filterForm.get('source')!.valueChanges.forEach(source => {
+    this.filterForm.get('source')!.valueChanges.forEach((source) => {
       this.loadData();
     });
 
-    this.filterForm.get('interval')!.valueChanges.forEach(nextInterval => {
+    this.filterForm.get('interval')!.valueChanges.forEach((nextInterval) => {
       if (nextInterval === 'CUSTOM') {
         const customStart = this.validStart || this.yamcs.getMissionTime();
         const customStop = this.validStop || this.yamcs.getMissionTime();
-        this.filterForm.get('customStart')!.setValue(utils.toISOString(customStart));
-        this.filterForm.get('customStop')!.setValue(utils.toISOString(customStop));
+        this.filterForm
+          .get('customStart')!
+          .setValue(utils.toISOString(customStart));
+        this.filterForm
+          .get('customStop')!
+          .setValue(utils.toISOString(customStop));
       } else if (nextInterval === 'NO_LIMIT') {
         this.validStart = null;
         this.validStop = null;
@@ -188,12 +204,6 @@ export class EventListComponent implements OnInit, AfterViewInit, OnDestroy {
         this.loadData();
       }
     });
-  };
-
-  ngAfterViewInit(): void {
-    if ((this.filter() || '').indexOf('\n') !== -1) {
-      this.multilineControl.setValue(true);
-    }
   }
 
   private initializeOptions() {
@@ -224,7 +234,10 @@ export class EventListComponent implements OnInit, AfterViewInit, OnDestroy {
         this.validStop = null;
       } else {
         this.validStop = this.yamcs.getMissionTime();
-        this.validStart = utils.subtractDuration(this.validStop, this.appliedInterval);
+        this.validStart = utils.subtractDuration(
+          this.validStop,
+          this.appliedInterval,
+        );
       }
     } else {
       this.appliedInterval = defaultInterval;
@@ -290,8 +303,9 @@ export class EventListComponent implements OnInit, AfterViewInit, OnDestroy {
       options.source = source;
     }
 
-    this.dataSource.loadEvents(options)
-      .catch(err => this.messageService.showError(err));
+    this.dataSource
+      .loadEvents(options)
+      .catch((err) => this.messageService.showError(err));
   }
 
   loadMoreData() {
@@ -311,8 +325,9 @@ export class EventListComponent implements OnInit, AfterViewInit, OnDestroy {
       options.source = source;
     }
 
-    this.dataSource.loadMoreData(options)
-      .catch(err => this.messageService.showError(err));
+    this.dataSource
+      .loadMoreData(options)
+      .catch((err) => this.messageService.showError(err));
   }
 
   private updateURL() {
@@ -325,8 +340,14 @@ export class EventListComponent implements OnInit, AfterViewInit, OnDestroy {
         severity: controls['severity'].value,
         source: controls['source'].value ? controls['source'].value : null,
         interval: this.appliedInterval,
-        customStart: this.appliedInterval === 'CUSTOM' ? controls['customStart'].value : null,
-        customStop: this.appliedInterval === 'CUSTOM' ? controls['customStop'].value : null,
+        customStart:
+          this.appliedInterval === 'CUSTOM'
+            ? controls['customStart'].value
+            : null,
+        customStop:
+          this.appliedInterval === 'CUSTOM'
+            ? controls['customStop'].value
+            : null,
       },
       queryParamsHandling: 'merge',
     });
@@ -342,20 +363,23 @@ export class EventListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   openSaveQueryDialog() {
     const { controls } = this.filterForm;
-    this.dialog.open(CreateEventQueryDialogComponent, {
-      width: '800px',
-      data: {
-        severity: controls['severity'].value,
-        // Use currently typed value (even if not submitted)
-        filter: this.searchFilter().getTypedValue(),
-        source: controls['source'].value,
-        sourceOptions: this.sourceOptions$.value,
-      },
-    }).afterClosed().subscribe(res => {
-      if (res) {
-        this.messageService.showInfo('Query saved');
-      }
-    });
+    this.dialog
+      .open(CreateEventQueryDialogComponent, {
+        width: '800px',
+        data: {
+          severity: controls['severity'].value,
+          // Use currently typed value (even if not submitted)
+          filter: this.searchFilter().getTypedValue(),
+          source: controls['source'].value,
+          sourceOptions: this.sourceOptions$.value,
+        },
+      })
+      .afterClosed()
+      .subscribe((res) => {
+        if (res) {
+          this.messageService.showInfo('Query saved');
+        }
+      });
   }
 
   parseQuery(typedQuery: string) {
@@ -363,6 +387,13 @@ export class EventListComponent implements OnInit, AfterViewInit, OnDestroy {
       resource: 'events',
       filter: typedQuery,
     });
+  }
+
+  isClearQueryEnabled() {
+    const fv = this.filterForm.value;
+    return (
+      this.searchFilter().empty() || fv.severity !== 'INFO' || fv.source?.length
+    );
   }
 
   mayWriteEvents() {
@@ -373,7 +404,7 @@ export class EventListComponent implements OnInit, AfterViewInit, OnDestroy {
     const dialogInstance = this.dialog.open(CreateEventDialogComponent, {
       width: '400px',
     });
-    dialogInstance.afterClosed().subscribe(result => {
+    dialogInstance.afterClosed().subscribe((result) => {
       if (result) {
         this.jumpToNow();
       }

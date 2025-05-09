@@ -1,7 +1,22 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, ViewChild, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  input,
+} from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BackfillingSubscription, ConfigService, Parameter, Synchronizer, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  BackfillingSubscription,
+  ConfigService,
+  Parameter,
+  Synchronizer,
+  WebappSdkModule,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { DyDataSource } from '../../../shared/parameter-plot/DyDataSource';
 import { ParameterPlotComponent } from '../../../shared/parameter-plot/parameter-plot.component';
@@ -13,14 +28,9 @@ import { SelectRangeDialogComponent } from '../select-range-dialog/select-range-
   templateUrl: './parameter-chart-tab.component.html',
   styleUrl: './parameter-chart-tab.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    ParameterPlotComponent,
-    ParameterSeriesComponent,
-    WebappSdkModule,
-  ],
+  imports: [ParameterPlotComponent, ParameterSeriesComponent, WebappSdkModule],
 })
 export class ParameterChartTabComponent implements OnInit, OnDestroy {
-
   qualifiedName = input.required<string>({ alias: 'parameter' });
 
   @ViewChild(ParameterPlotComponent)
@@ -43,16 +53,23 @@ export class ParameterChartTabComponent implements OnInit, OnDestroy {
     private dialog: MatDialog,
     private synchronizer: Synchronizer,
     private configService: ConfigService,
-  ) { }
+  ) {}
 
   ngOnInit() {
     this.missionTime = this.yamcs.getMissionTime();
     this.initializeOptions();
 
     const qualifiedName = this.qualifiedName();
-    this.dataSource = new DyDataSource(this.yamcs, this.synchronizer, this.configService);
-    this.parameter$ = this.yamcs.yamcsClient.getParameter(this.yamcs.instance!, qualifiedName);
-    this.parameter$.then(parameter => {
+    this.dataSource = new DyDataSource(
+      this.yamcs,
+      this.synchronizer,
+      this.configService,
+    );
+    this.parameter$ = this.yamcs.yamcsClient.getParameter(
+      this.yamcs.instance!,
+      qualifiedName,
+    );
+    this.parameter$.then((parameter) => {
       // Override qualified name for possible array or aggregate offsets
       parameter.qualifiedName = qualifiedName;
       this.dataSource.addParameter(parameter);
@@ -77,13 +94,17 @@ export class ParameterChartTabComponent implements OnInit, OnDestroy {
         }
       });
 
-      this.backfillSubscription = this.yamcs.yamcsClient.createBackfillingSubscription({
-        instance: this.yamcs.instance!
-      }, update => {
-        if (update.finished) {
-          this.dataSource.reloadVisibleRange();
-        }
-      });
+      this.backfillSubscription =
+        this.yamcs.yamcsClient.createBackfillingSubscription(
+          {
+            instance: this.yamcs.instance!,
+          },
+          (update) => {
+            if (update.finished) {
+              this.dataSource.reloadVisibleRange();
+            }
+          },
+        );
     });
   }
 
@@ -127,7 +148,7 @@ export class ParameterChartTabComponent implements OnInit, OnDestroy {
         },
       });
 
-      dialogRef.afterClosed().subscribe(result => {
+      dialogRef.afterClosed().subscribe((result) => {
         if (result) {
           this.range$.next('CUSTOM');
           this.customStart$.next(result.start);
@@ -144,19 +165,21 @@ export class ParameterChartTabComponent implements OnInit, OnDestroy {
       width: '600px',
       data: {
         exclude: this.plot.getParameters(),
-      }
+      },
     });
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.yamcs.yamcsClient.getParameter(this.yamcs.instance!, result.qualifiedName).then(parameter => {
-          const parameterConfig = new ParameterSeriesComponent();
-          parameterConfig.parameter = result.qualifiedName;
-          parameterConfig.color = result.color;
-          parameterConfig.strokeWidth = result.thickness;
-          // Override qualified name for possible array or aggregate offsets
-          parameter.qualifiedName = result.qualifiedName;
-          this.plot.addParameter(parameter, parameterConfig);
-        });
+        this.yamcs.yamcsClient
+          .getParameter(this.yamcs.instance!, result.qualifiedName)
+          .then((parameter) => {
+            const parameterConfig = new ParameterSeriesComponent();
+            parameterConfig.parameter = result.qualifiedName;
+            parameterConfig.color = result.color;
+            parameterConfig.strokeWidth = result.thickness;
+            // Override qualified name for possible array or aggregate offsets
+            parameter.qualifiedName = result.qualifiedName;
+            this.plot.addParameter(parameter, parameterConfig);
+          });
       }
     });
   }
@@ -167,8 +190,10 @@ export class ParameterChartTabComponent implements OnInit, OnDestroy {
       relativeTo: this.route,
       queryParams: {
         interval: this.range$.value,
-        customStart: this.range$.value === 'CUSTOM' ? this.customStart$.value : null,
-        customStop: this.range$.value === 'CUSTOM' ? this.customStop$.value : null,
+        customStart:
+          this.range$.value === 'CUSTOM' ? this.customStart$.value : null,
+        customStop:
+          this.range$.value === 'CUSTOM' ? this.customStop$.value : null,
       },
       queryParamsHandling: 'merge',
     });

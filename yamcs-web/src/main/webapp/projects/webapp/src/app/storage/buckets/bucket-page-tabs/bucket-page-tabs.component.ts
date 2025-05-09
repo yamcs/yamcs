@@ -6,15 +6,11 @@ import { WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
   templateUrl: './bucket-page-tabs.component.html',
   styleUrl: './bucket-page-tabs.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class BucketPageTabsComponent {
-
   @Input()
   bucket: string;
 
-  constructor(readonly yamcs: YamcsService) {
-  }
+  constructor(readonly yamcs: YamcsService) {}
 }

@@ -15,6 +15,18 @@
   padding-bottom: 6px;
 }
 
+table {
+  width: 100%;
+  overflow: auto;
+  border-spacing: 0;
+  border-collapse: collapse;
+}
+
+td {
+  border-top: 1px solid rgba(0, 0, 0, 0.03);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+}
+
 tr.most-frequent {
   background: #eee;
 }

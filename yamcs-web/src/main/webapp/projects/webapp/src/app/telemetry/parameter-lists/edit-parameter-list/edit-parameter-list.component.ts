@@ -1,26 +1,30 @@
 import { Location } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import {
+  UntypedFormBuilder,
+  UntypedFormControl,
+  UntypedFormGroup,
+  Validators,
+} from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MessageService, ParameterList, UpdateParameterListRequest, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  MessageService,
+  ParameterList,
+  UpdateParameterListRequest,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { SelectParameterDialogComponent } from '../../../shared/select-parameter-dialog/select-parameter-dialog.component';
 
 @Component({
   templateUrl: './edit-parameter-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class EditParameterListComponent implements OnDestroy {
-
   form: UntypedFormGroup;
   plist$: Promise<ParameterList>;
   private plist: ParameterList;
@@ -43,7 +47,7 @@ export class EditParameterListComponent implements OnDestroy {
     title.setTitle('Edit Parameter List');
     const plistId = route.snapshot.paramMap.get('list')!;
     this.plist$ = yamcs.yamcsClient.getParameterList(yamcs.instance!, plistId);
-    this.plist$.then(plist => {
+    this.plist$.then((plist) => {
       this.plist = plist;
       this.form = formBuilder.group({
         name: new UntypedFormControl(plist.name, [Validators.required]),
@@ -65,12 +69,9 @@ export class EditParameterListComponent implements OnDestroy {
         hint: 'Either an exact parameter name, or a glob pattern with *, **, or ? wildcards.',
       },
     });
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.patterns$.next([
-          ...this.patterns$.value,
-          result,
-        ]);
+        this.patterns$.next([...this.patterns$.value, result]);
         this.dirty$.next(true);
       }
     });
@@ -118,11 +119,16 @@ export class EditParameterListComponent implements OnDestroy {
       description: this.form.value.description,
       patternDefinition: {
         patterns: [...this.patterns$.value],
-      }
+      },
     };
-    this.yamcs.yamcsClient.updateParameterList(this.yamcs.instance!, this.plist.id, options)
-      .then(() => this.router.navigateByUrl(`/telemetry/parameter-lists/${this.plist.id}?c=${this.yamcs.context}`))
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .updateParameterList(this.yamcs.instance!, this.plist.id, options)
+      .then(() =>
+        this.router.navigateByUrl(
+          `/telemetry/parameter-lists/${this.plist.id}?c=${this.yamcs.context}`,
+        ),
+      )
+      .catch((err) => this.messageService.showError(err));
   }
 
   ngOnDestroy() {

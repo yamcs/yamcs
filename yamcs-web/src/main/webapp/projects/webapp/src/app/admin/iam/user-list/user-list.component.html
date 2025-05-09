@@ -1,40 +1,43 @@
 <app-admin-page>
-  <app-admin-toolbar>
-    Users &nbsp;&nbsp;&nbsp;
-    <ya-page-button routerLink="create" icon="add_circle_outline">Create user</ya-page-button>
+  <app-admin-toolbar label="Users">
+    <ya-page-button routerLink="create" icon="add_box">Create user</ya-page-button>
   </app-admin-toolbar>
 
-  <div class="panel-content">
-    <div class="filter-bar">
+  <ya-panel>
+    <ya-filter-bar>
       <ya-search-filter [formControl]="filterControl" placeholder="Filter users" />
-    </div>
+    </ya-filter-bar>
+
     <mat-tab-group animationDuration="0ms" class="secondary" [mat-stretch-tabs]="false">
       <mat-tab>
-        <ng-template mat-tab-label>ACTIVE ({{ activeUserCount$ | async }})</ng-template>
+        <ng-template mat-tab-label>Active ({{ activeUserCount$ | async }})</ng-template>
         <br />
         <app-users-table
           [users]="activeUsers$ | async"
           [filter]="filterValue$ | async"
           (deleteUser)="deleteUser($event)" />
       </mat-tab>
-      <mat-tab>
-        <ng-template mat-tab-label>SUPERUSERS ({{ superUserCount$ | async }})</ng-template>
+
+      <mat-tab [disabled]="true">
+        <ng-template mat-tab-label>Superusers ({{ superUserCount$ | async }})</ng-template>
         <br />
         <app-users-table
           [users]="superUsers$ | async"
           [filter]="filterValue$ | async"
           (deleteUser)="deleteUser($event)" />
       </mat-tab>
+
       <mat-tab>
-        <ng-template mat-tab-label>INTERNAL ({{ internalUserCount$ | async }})</ng-template>
+        <ng-template mat-tab-label>Internal ({{ internalUserCount$ | async }})</ng-template>
         <br />
         <app-users-table
           [users]="internalUsers$ | async"
           [filter]="filterValue$ | async"
           (deleteUser)="deleteUser($event)" />
       </mat-tab>
+
       <mat-tab>
-        <ng-template mat-tab-label>BLOCKED ({{ blockedUserCount$ | async }})</ng-template>
+        <ng-template mat-tab-label>Blocked ({{ blockedUserCount$ | async }})</ng-template>
         <br />
         <app-users-table
           [users]="blockedUsers$ | async"
@@ -42,5 +45,5 @@
           (deleteUser)="deleteUser($event)" />
       </mat-tab>
     </mat-tab-group>
-  </div>
+  </ya-panel>
 </app-admin-page>

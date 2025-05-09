@@ -1,5 +1,13 @@
 import { WebSocketCall } from '../WebSocketCall';
-import { AlgorithmStatus, Container, DataSource, EnumRange, EnumValue, NamedObjectId, Parameter } from './mdb';
+import {
+  AlgorithmStatus,
+  Container,
+  DataSource,
+  EnumRange,
+  EnumValue,
+  NamedObjectId,
+  Parameter,
+} from './mdb';
 import { ParameterValue, Value } from './monitoring';
 import { Service, ServiceState } from './system';
 
@@ -63,8 +71,8 @@ export interface SubscribeParametersRequest {
 }
 
 export interface SubscribeParametersData {
-  mapping: { [key: number]: NamedObjectId; };
-  info: { [key: number]: SubscribedParameterInfo; };
+  mapping: { [key: number]: NamedObjectId };
+  info: { [key: number]: SubscribedParameterInfo };
   invalid: NamedObjectId[];
   values: ParameterValue[];
 }
@@ -145,12 +153,27 @@ export interface DownloadCommandsOptions {
   delimiter?: 'COMMA' | 'SEMICOLON' | 'TAB';
 }
 
-export type TMStatisticsSubscription = WebSocketCall<SubscribeTMStatisticsRequest, Statistics>;
+export type TMStatisticsSubscription = WebSocketCall<
+  SubscribeTMStatisticsRequest,
+  Statistics
+>;
 
-export type AlgorithmStatusSubscription = WebSocketCall<SubscribeAlgorithmStatusRequest, AlgorithmStatus>;
+export type AlgorithmStatusSubscription = WebSocketCall<
+  SubscribeAlgorithmStatusRequest,
+  AlgorithmStatus
+>;
 
-export type ParameterSubscription = WebSocketCall<SubscribeParametersRequest, SubscribeParametersData>;
+export type ParameterSubscription = WebSocketCall<
+  SubscribeParametersRequest,
+  SubscribeParametersData
+>;
 
-export type ProcessorSubscription = WebSocketCall<SubscribeProcessorsRequest, Processor>;
+export type ProcessorSubscription = WebSocketCall<
+  SubscribeProcessorsRequest,
+  Processor
+>;
 
-export type BackfillingSubscription = WebSocketCall<SubscribeBackfillingRequest, SubscribeBackfillingData>;
+export type BackfillingSubscription = WebSocketCall<
+  SubscribeBackfillingRequest,
+  SubscribeBackfillingData
+>;

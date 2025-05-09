@@ -1,10 +1,29 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostBinding, OnDestroy, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  HostBinding,
+  OnDestroy,
+  ViewChild,
+} from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { AppearanceService, AuthInfo, ConfigService, ConnectionInfo, ExtensionService, PreferenceStore, SiteLink, User, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  AppearanceService,
+  AuthInfo,
+  AuthService,
+  ConfigService,
+  ConnectionInfo,
+  ExtensionService,
+  PreferenceStore,
+  SiteLink,
+  User,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
-import { AuthService } from './core/services/AuthService';
 import { SelectInstanceDialogComponent } from './shared/select-instance-dialog/select-instance-dialog.component';
 
 @Component({
@@ -12,12 +31,9 @@ import { SelectInstanceDialogComponent } from './shared/select-instance-dialog/s
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class AppComponent implements AfterViewInit, OnDestroy {
-
   @HostBinding('class')
   componentCssClass: string;
 
@@ -35,7 +51,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   showMdbItem$ = new BehaviorSubject<boolean>(false);
   sidebar$: Observable<boolean>;
-  zenMode$: Observable<boolean>;
+  focusMode$: Observable<boolean>;
 
   userSubscription: Subscription;
 
@@ -50,7 +66,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     appearanceService: AppearanceService,
     private configService: ConfigService,
   ) {
-    this.zenMode$ = appearanceService.zenMode$;
+    this.focusMode$ = appearanceService.focusMode$;
     this.tag = configService.getTag();
     this.authInfo = configService.getAuthInfo();
     this.siteLinks = configService.getSiteLinks();
@@ -58,7 +74,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     this.connectionInfo$ = yamcs.connectionInfo$;
     this.user$ = authService.user$;
 
-    this.userSubscription = this.user$.subscribe(user => {
+    this.userSubscription = this.user$.subscribe((user) => {
       if (user) {
         this.showMdbItem$.next(user.hasSystemPrivilege('GetMissionDatabase'));
       } else {
@@ -67,14 +83,24 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     });
 
     this.sidebar$ = router.events.pipe(
-      filter(evt => evt instanceof NavigationEnd),
-      map(evt => {
+      filter((evt) => evt instanceof NavigationEnd),
+      map((evt) => {
+        // Emit ActivatedRoute updates for use in webcomponents
+        window.dispatchEvent(
+          new CustomEvent('YA_ACTIVATED_ROUTE', {
+            detail: { route },
+          }),
+        );
+
         let child = route;
         while (child.firstChild) {
           child = child.firstChild;
         }
 
-        if (child.snapshot.data && child.snapshot.data['hasSidebar'] === false) {
+        if (
+          child.snapshot.data &&
+          child.snapshot.data['hasSidebar'] === false
+        ) {
           return false;
         } else {
           return true;
@@ -87,8 +113,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     // Call custom elements named after each plugin id.
     // This allows extensions to hook some custom initialization
     // logic (for example: add to sidebar)
-    var html = this.configService.getPluginIds()
-      .map(id => `<${id}></${id}>`)
+    var html = this.configService
+      .getPluginIds()
+      .map((id) => `<${id}></${id}>`)
       .join('');
     this.extensionInitializersRef.nativeElement.innerHTML = html;
     var childNodes = this.extensionInitializersRef.nativeElement.childNodes;
@@ -105,7 +132,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   }
 
   toggleSidebar() {
-    this.preferenceStore.setValue('sidebar', !this.preferenceStore.getValue('sidebar'));
+    this.preferenceStore.setValue(
+      'sidebar',
+      !this.preferenceStore.getValue('sidebar'),
+    );
   }
 
   logout() {

@@ -1,6 +1,10 @@
+:host:not(.connected) {
+  display: none;
+}
+
 @keyframes blink {
   0% {
-    opacity: .2;
+    opacity: 0.2;
   }
 
   20% {
@@ -8,11 +12,13 @@
   }
 
   100% {
-    opacity: .2;
+    opacity: 0.2;
   }
 }
 
-.dot1, .dot2, .dot3 {
+.dot1,
+.dot2,
+.dot3 {
   animation-name: blink;
   animation-duration: 1.4s;
   animation-iteration-count: infinite;

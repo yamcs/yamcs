@@ -7,12 +7,9 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
   templateUrl: './item-styles.component.html',
   styleUrl: '../../shared/StyleTable.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class ItemStylesComponent {
-
   @Input()
   form: UntypedFormGroup;
 }

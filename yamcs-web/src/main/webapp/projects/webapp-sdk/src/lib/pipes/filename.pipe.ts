@@ -8,7 +8,6 @@ import { getFilename } from '../utils';
   name: 'filename',
 })
 export class FilenamePipe implements PipeTransform {
-
   transform(path: string): string | null {
     return getFilename(path);
   }

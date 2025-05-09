@@ -5,7 +5,6 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { MatBadgeModule } from '@angular/material/badge';
 import { MatButtonModule } from '@angular/material/button';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -23,10 +22,19 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
+import { YaPrintZoneHide } from '../lib/print/print-zone-hide.directive';
+import { YaPrintZoneShow } from '../lib/print/print-zone-show.directive';
+import { YaActionLogSummary } from './components/action-log-summary/action-log-summary.component';
+import { YaAttrDivider } from './components/attr-list/attr-divider.component';
+import { YaAttrLabel } from './components/attr-list/attr-label.directive';
+import { YaAttrList } from './components/attr-list/attr-list.component';
+import { YaAttr } from './components/attr-list/attr.component';
 import { YaBinaryInput } from './components/binary-input/binary-input.component';
 import { YaBreadcrumbTrail } from './components/breadcrumb/breadcrumb-trail.component';
 import { YaBreadcrumb } from './components/breadcrumb/breadcrumb.component';
+import { YaButtonGroup } from './components/button-group/button-group.component';
 import { YaButton } from './components/button/button.component';
+import { YaColorInput } from './components/color-input/color-input.component';
 import { YaColumnChooser } from './components/column-chooser/column-chooser.component';
 import { YaDateTimeInput } from './components/date-time-input/date-time-input.component';
 import { YaDetailPane } from './components/detail-pane/detail-pane.component';
@@ -38,6 +46,10 @@ import { YaDurationInput } from './components/duration-input/duration-input.comp
 import { YaEmptyMessage } from './components/empty-message/empty-message.component';
 import { YaErrors } from './components/errors/errors.component';
 import { YaExpirable } from './components/expirable/expirable.component';
+import { YaFieldDivider } from './components/field-divider/field-divider.component';
+import { YaFieldLabel } from './components/field/field-label.directive';
+import { YaField } from './components/field/field.component';
+import { YaFilterBar } from './components/filter-bar/filter-bar.component';
 import { YaFilterInput } from './components/filter/filter-input.component';
 import { YaFilterTextarea } from './components/filter/filter-textarea.component';
 import { YaHelp } from './components/help/help.component';
@@ -46,16 +58,23 @@ import { YaHexIntegerInput } from './components/hex-integer-input/hex-integer-in
 import { YaHighlight } from './components/highlight/highlight.component';
 import { YaHref } from './components/href/href.directive';
 import { YaIconAction } from './components/icon-action/icon-action.component';
+import { YaIconButton } from './components/icon-button/icon-button.component';
+import { YaInstancePage } from './components/instance-page/instance-page.component';
+import { YaInstanceToolbarLabel } from './components/instance-toolbar/instance-toolbar-label.directive';
+import { YaInstanceToolbar } from './components/instance-toolbar/instance-toolbar.component';
 import { YaInterval } from './components/interval/interval.component';
 import { YaLabel } from './components/label/label.component';
 import { YaLabels } from './components/labels/labels.component';
 import { YaLed } from './components/led/led.component';
 import { YaMessageBar } from './components/message-bar/message-bar.component';
+import { YaMeta } from './components/meta/meta.component';
 import { YaMore } from './components/more/more.component';
 import { YaMultiSelect } from './components/multi-select/multi-select.component';
 import { YaOption } from './components/option/option.component';
 import { YaPageButton } from './components/page-button/page-button.component';
 import { YaPageIconButton } from './components/page-icon-button/page-icon-button.component';
+import { YaPageTabs } from './components/page-tabs/page-tabs.component';
+import { YaPanel } from './components/panel/panel.component';
 import { YaProgress } from './components/progress/progress.component';
 import { YaSearchFilter } from './components/search-filter/search-filter.component';
 import { YaSearchFilter2 } from './components/search-filter2/search-filter2.component';
@@ -65,25 +84,22 @@ import { YaSidebarNavItem } from './components/sidebar/sidebar-nav-item.componen
 import { YaStepperStepActions } from './components/stepper/stepper-step-actions.component';
 import { YaStepperStep } from './components/stepper/stepper-step.component';
 import { YaStepper } from './components/stepper/stepper.component';
+import { YaTableCheckbox } from './components/table-checkbox/table-checkbox.component';
 import { YaTableToggle } from './components/table-toggle/table-toggle.component';
 import { YaTableTop } from './components/table-top/table-top.component';
+import { YaTableWindow } from './components/table-window/table-window.component';
 import { YaTagSelect } from './components/tag-select/tag-select.component';
 import { YaTextAction } from './components/text-action/text-action.component';
 import { YaTimezoneSelect } from './components/timezone-select/timezone-select.component';
 import { YaTitleCopy } from './components/title-copy/title-copy.component';
-import { YaToolbarActions } from './components/toolbar-actions/toolbar-actions.component';
+import { YaToolbar } from './components/toolbar/toolbar.component';
 import { YaValue } from './components/value/value.component';
+import { YaVerticalDivider } from './components/vertical-divider/vertical-divider.component';
 import { YaWarningMessage } from './components/warning-message/warning-message.component';
 import { DataTableDirective } from './directives/data-table.directive';
-import { SimpleTableDirective } from './directives/simple-table.directive';
-import { TableDirective } from './directives/table.directive';
-
-import { YaColorInput } from '../public-api';
-import { YaActionLogSummary } from './components/action-log-summary/action-log-summary.component';
 import { AliasPipe } from './pipes/alias.pipe';
 import { ArrayContainsPipe } from './pipes/array-contains.pipe';
 import { BasenamePipe } from './pipes/basename.pipe';
-import { ClassNameHtmlPipe } from './pipes/class-name-html.pipe';
 import { DataRatePipe } from './pipes/data-rate.pipe';
 import { DateTimePipe } from './pipes/datetime.pipe';
 import { DefaultProcessorPipe } from './pipes/default-processor.pipe';
@@ -100,11 +116,11 @@ import { MemberPathPipe } from './pipes/member-path.pipe';
 import { MillisDurationPipe } from './pipes/millis-duration.pipe';
 import { NanosDurationPipe } from './pipes/nanos-duration.pipe';
 import { NvlPipe } from './pipes/nvl.pipe';
-import { OperatorPipe } from './pipes/operator.pipe';
 import { ParameterTypeForPathPipe } from './pipes/parameter-type-for-path.pipe';
 import { ParentsPipe } from './pipes/parents.pipe';
 import { PrintJsonPipe } from './pipes/print-json.pipe';
 import { PrintObjPipe } from './pipes/print-obj.pipe';
+import { RelativizePipe } from './pipes/relativize.pipe';
 import { ReversePipe } from './pipes/reverse.pipe';
 import { ShortNamePipe } from './pipes/short-name.pipe';
 import { SpaceSystemPipe } from './pipes/space-system.pipe';
@@ -119,7 +135,6 @@ const pipes = [
   AliasPipe,
   ArrayContainsPipe,
   BasenamePipe,
-  ClassNameHtmlPipe,
   DataRatePipe,
   DateTimePipe,
   DefaultProcessorPipe,
@@ -136,11 +151,11 @@ const pipes = [
   MillisDurationPipe,
   NanosDurationPipe,
   NvlPipe,
-  OperatorPipe,
   ParameterTypeForPathPipe,
   ParentsPipe,
   PrintJsonPipe,
   PrintObjPipe,
+  RelativizePipe,
   ReversePipe,
   ShortNamePipe,
   SpaceSystemPipe,
@@ -153,17 +168,23 @@ const pipes = [
 const directives = [
   DataTableDirective,
   PrintableDirective,
-  SimpleTableDirective,
-  TableDirective,
+  YaAttrLabel,
+  YaFieldLabel,
   YaHref,
+  YaPrintZoneHide,
+  YaPrintZoneShow,
 ];
 
 const sharedComponents = [
   YaActionLogSummary,
+  YaAttr,
+  YaAttrDivider,
+  YaAttrList,
   YaBinaryInput,
   YaBreadcrumb,
   YaBreadcrumbTrail,
   YaButton,
+  YaButtonGroup,
   YaColorInput,
   YaColumnChooser,
   YaDateTimeInput,
@@ -176,6 +197,9 @@ const sharedComponents = [
   YaEmptyMessage,
   YaErrors,
   YaExpirable,
+  YaField,
+  YaFieldDivider,
+  YaFilterBar,
   YaFilterInput,
   YaFilterTextarea,
   YaHelp,
@@ -183,16 +207,23 @@ const sharedComponents = [
   YaHexIntegerInput,
   YaHighlight,
   YaIconAction,
+  YaIconButton,
   YaInterval,
+  YaInstancePage,
+  YaInstanceToolbar,
+  YaInstanceToolbarLabel,
   YaLabel,
   YaLabels,
   YaLed,
   YaMessageBar,
+  YaMeta,
   YaMore,
   YaMultiSelect,
   YaOption,
   YaPageButton,
   YaPageIconButton,
+  YaPageTabs,
+  YaPanel,
   YaProgress,
   YaPrintZone,
   YaSearchFilter,
@@ -203,24 +234,25 @@ const sharedComponents = [
   YaStepper,
   YaStepperStep,
   YaStepperStepActions,
+  YaTableCheckbox,
   YaTableToggle,
   YaTableTop,
+  YaTableWindow,
   YaTagSelect,
   YaTextAction,
   YaTimezoneSelect,
   YaTitleCopy,
-  YaToolbarActions,
+  YaToolbar,
   YaValue,
+  YaVerticalDivider,
   YaWarningMessage,
 ];
-
 
 const materialModules = [
   OverlayModule,
   CdkTableModule,
   DragDropModule,
   MatAutocompleteModule,
-  MatBadgeModule,
   MatButtonModule,
   MatDatepickerModule,
   MatDialogModule,
@@ -259,4 +291,4 @@ const materialModules = [
     pipes,
   ],
 })
-export class WebappSdkModule { }
+export class WebappSdkModule {}

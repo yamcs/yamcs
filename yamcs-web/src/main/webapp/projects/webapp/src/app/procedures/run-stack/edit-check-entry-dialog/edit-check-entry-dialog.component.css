@@ -1,8 +1,7 @@
 .parameter-table td:first-child {
   margin-left: 0;
-  padding-left: 0
+  padding-left: 0;
 }
-
 
 :host ::ng-deep .parameter-table input {
   margin: 0 !important;

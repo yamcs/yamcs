@@ -1,14 +1,32 @@
 import { AsyncPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, forwardRef, input, OnDestroy, output, signal, viewChild } from '@angular/core';
-import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  forwardRef,
+  input,
+  model,
+  OnDestroy,
+  output,
+  signal,
+  viewChild,
+} from '@angular/core';
+import {
+  ControlValueAccessor,
+  FormControl,
+  NG_VALUE_ACCESSOR,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { MatIcon } from '@angular/material/icon';
+import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { MatTooltip } from '@angular/material/tooltip';
 import { Completion } from '@codemirror/autocomplete';
 import { BehaviorSubject, debounceTime, Subscription } from 'rxjs';
+import { YaButtonGroup } from '../button-group/button-group.component';
 import { YaButton } from '../button/button.component';
 import { YaFilterInput } from '../filter/filter-input.component';
 import { YaFilterTextarea } from '../filter/filter-textarea.component';
 import { FilterErrorMark } from '../filter/FilterErrorMark';
+import { YaIconButton } from '../icon-button/icon-button.component';
 
 interface ErrorState {
   message: string;
@@ -20,27 +38,33 @@ interface ErrorState {
   templateUrl: './search-filter2.component.html',
   styleUrl: './search-filter2.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => YaSearchFilter2),
-    multi: true,
-  }],
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => YaSearchFilter2),
+      multi: true,
+    },
+  ],
   imports: [
     AsyncPipe,
     MatIcon,
+    MatMenu,
+    MatMenuItem,
+    MatMenuTrigger,
     MatTooltip,
     ReactiveFormsModule,
     YaButton,
+    YaButtonGroup,
     YaFilterInput,
     YaFilterTextarea,
+    YaIconButton,
   ],
 })
 export class YaSearchFilter2 implements ControlValueAccessor, OnDestroy {
-
   placeholder = input<string>('Filter');
   width = input<string>('100%');
   debounceTime = input<number>(400);
-  expanded = input<boolean>(false);
+  expanded = model<boolean>(false);
   completions = input<Completion[]>();
 
   /**
@@ -75,7 +99,7 @@ export class YaSearchFilter2 implements ControlValueAccessor, OnDestroy {
   // When it's a signal, mysterious things happen with CM duplicating.
   errorState$ = new BehaviorSubject<ErrorState | null>(null);
 
-  private onChange = (_: string | null) => { };
+  private onChange = (_: string | null) => {};
 
   // Form model, either managed with an HTML Input, or a CodeMirror editor.
   // This control updates instantly, as opposed to the exposed value.
@@ -84,17 +108,19 @@ export class YaSearchFilter2 implements ControlValueAccessor, OnDestroy {
   private subscriptions: Subscription[] = [];
 
   constructor() {
-    const formSubscription = this.formControl.valueChanges.subscribe(value => {
-      this.empty.set(!!value);
-      this.dirty.set((this.value || '') !== (value || ''));
-    });
+    const formSubscription = this.formControl.valueChanges.subscribe(
+      (value) => {
+        this.empty.set(!!value);
+        this.dirty.set((this.value || '') !== (value || ''));
+      },
+    );
     this.subscriptions.push(formSubscription);
 
-    const delayedFormSubscription = this.formControl.valueChanges.pipe(
-      debounceTime(this.debounceTime()),
-    ).subscribe(value => {
-      this.typedValue.emit(value || '');
-    });
+    const delayedFormSubscription = this.formControl.valueChanges
+      .pipe(debounceTime(this.debounceTime()))
+      .subscribe((value) => {
+        this.typedValue.emit(value || '');
+      });
     this.subscriptions.push(delayedFormSubscription);
   }
 
@@ -120,14 +146,17 @@ export class YaSearchFilter2 implements ControlValueAccessor, OnDestroy {
   writeValue(value: any) {
     this.value = value ?? null;
     this.formControl.setValue(this.value);
+
+    if ((this.value || '').indexOf('\n') !== -1) {
+      this.expanded.set(true);
+    }
   }
 
   registerOnChange(fn: any) {
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any) {
-  }
+  registerOnTouched(fn: any) {}
 
   doSearch() {
     if (this.errorState$.value) {
@@ -140,6 +169,6 @@ export class YaSearchFilter2 implements ControlValueAccessor, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.subscriptions.forEach(s => s.unsubscribe());
+    this.subscriptions.forEach((s) => s.unsubscribe());
   }
 }

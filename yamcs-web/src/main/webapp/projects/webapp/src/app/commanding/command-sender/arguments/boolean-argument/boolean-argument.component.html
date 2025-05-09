@@ -1,22 +1,20 @@
-<div class="label">
-  <div class="meta" [class.error]="err.invalid$ | async">
-    @if (type.rangeMin !== undefined || type.rangeMax !== undefined) {
-      <div class="item">
-        <ya-interval [left]="type.rangeMin" [right]="type.rangeMax" />
-      </div>
-    }
-    @if (type.unitSet) {
-      <div class="item">
-        {{ type.unitSet | units }}
-      </div>
-    }
-    @if (type.signed === false) {
-      <div class="item">unsigned</div>
-    }
-    <div class="item">{{ type.engType }}</div>
-  </div>
+<ya-field [label]="label" [class.error]="err.invalid$ | async">
+  @if (type.rangeMin !== undefined || type.rangeMax !== undefined) {
+    <ya-meta>
+      <ya-interval [left]="type.rangeMin" [right]="type.rangeMax" />
+    </ya-meta>
+  }
+  @if (type.unitSet) {
+    <ya-meta>
+      {{ type.unitSet | units }}
+    </ya-meta>
+  }
+  @if (type.signed === false) {
+    <ya-meta>unsigned</ya-meta>
+  }
 
-  {{ label }}
+  <ya-meta>{{ type.engType }}</ya-meta>
+
   @if (description) {
     <ya-help>
       {{ description }}
@@ -24,9 +22,15 @@
   }
 
   <ya-errors #err [controlName]="controlName" />
-  <br />
-  <ng-container [formGroup]="formGroup">
-    <input type="radio" formControlName="enabled" value="true" /> {{ type.oneStringValue }}
-    <input type="radio" formControlName="enabled" value="false" /> {{ type.zeroStringValue }}
-  </ng-container>
-</div>
+
+  <div class="radio-group" [formGroup]="formGroup">
+    <label class="radio" [class.checked]="formGroup.controls['enabled'].value === 'true'">
+      <input type="radio" formControlName="enabled" value="true" />
+      {{ type.oneStringValue }}
+    </label>
+    <label class="radio" [class.checked]="formGroup.controls['enabled'].value === 'false'">
+      <input type="radio" formControlName="enabled" value="false" />
+      {{ type.zeroStringValue }}
+    </label>
+  </div>
+</ya-field>

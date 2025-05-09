@@ -1,13 +1,29 @@
-import { ChangeDetectionStrategy, Component, OnInit, Signal, computed, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  Signal,
+  computed,
+  input,
+  signal,
+} from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FileTransferService, GetFileTransfersOptions, MessageService, Synchronizer, Transfer, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  AuthService,
+  FileTransferService,
+  GetFileTransfersOptions,
+  MessageService,
+  Synchronizer,
+  Transfer,
+  WebappSdkModule,
+  YaSelectOption,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { AuthService } from '../../core/services/AuthService';
-import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { FileTransferTabsComponent } from '../file-transfer-tabs/file-transfer-tabs.component';
 import { TransferFileDialogComponent } from '../transfer-file-dialog/transfer-file-dialog.component';
 import { FileTransferIconComponent } from './file-transfer-icon.component';
@@ -23,13 +39,10 @@ const defaultInterval = 'NO_LIMIT';
   imports: [
     FileTransferIconComponent,
     FileTransferTabsComponent,
-    InstancePageTemplateComponent,
-    InstanceToolbarComponent,
     WebappSdkModule,
   ],
 })
 export class FileTransferListComponent implements OnInit {
-
   services = input.required<FileTransferService[]>();
   requestedServiceName = input<string | null>(null, { alias: 'service' });
   requestedService = computed(() => {
@@ -145,7 +158,11 @@ export class FileTransferListComponent implements OnInit {
   ) {
     title.setTitle('File transfer');
     const storageClient = yamcs.createStorageClient();
-    this.dataSource = new FileTransferDataSource(yamcs, synchronizer, storageClient);
+    this.dataSource = new FileTransferDataSource(
+      yamcs,
+      synchronizer,
+      storageClient,
+    );
   }
 
   ngOnInit() {
@@ -178,32 +195,40 @@ export class FileTransferListComponent implements OnInit {
     this.initializeOptions();
     this.loadData();
 
-    this.filterForm.get('direction')!.valueChanges.forEach(direction => {
-      this.direction = (direction !== 'ANY') ? direction : null;
+    this.filterForm.get('direction')!.valueChanges.forEach((direction) => {
+      this.direction = direction !== 'ANY' ? direction : null;
       this.loadData();
     });
 
-    this.filterForm.get('state')!.valueChanges.forEach(state => {
+    this.filterForm.get('state')!.valueChanges.forEach((state) => {
       this.state = state;
       this.loadData();
     });
 
-    this.filterForm.get('localEntityId')!.valueChanges.forEach(localEntityId => {
-      this.localEntityId = (localEntityId !== 'ANY') ? localEntityId : null;
-      this.loadData();
-    });
+    this.filterForm
+      .get('localEntityId')!
+      .valueChanges.forEach((localEntityId) => {
+        this.localEntityId = localEntityId !== 'ANY' ? localEntityId : null;
+        this.loadData();
+      });
 
-    this.filterForm.get('remoteEntityId')!.valueChanges.forEach(remoteEntityId => {
-      this.remoteEntityId = (remoteEntityId !== 'ANY') ? remoteEntityId : null;
-      this.loadData();
-    });
+    this.filterForm
+      .get('remoteEntityId')!
+      .valueChanges.forEach((remoteEntityId) => {
+        this.remoteEntityId = remoteEntityId !== 'ANY' ? remoteEntityId : null;
+        this.loadData();
+      });
 
-    this.filterForm.get('interval')!.valueChanges.forEach(nextInterval => {
+    this.filterForm.get('interval')!.valueChanges.forEach((nextInterval) => {
       if (nextInterval === 'CUSTOM') {
         const customStart = this.validStart || this.yamcs.getMissionTime();
         const customStop = this.validStop || this.yamcs.getMissionTime();
-        this.filterForm.get('customStart')!.setValue(utils.toISOString(customStart));
-        this.filterForm.get('customStop')!.setValue(utils.toISOString(customStop));
+        this.filterForm
+          .get('customStart')!
+          .setValue(utils.toISOString(customStart));
+        this.filterForm
+          .get('customStop')!
+          .setValue(utils.toISOString(customStop));
       } else if (nextInterval === 'NO_LIMIT') {
         this.validStart = null;
         this.validStop = null;
@@ -251,7 +276,10 @@ export class FileTransferListComponent implements OnInit {
         this.validStop = null;
       } else {
         this.validStop = this.yamcs.getMissionTime();
-        this.validStart = utils.subtractDuration(this.validStop, this.appliedInterval);
+        this.validStart = utils.subtractDuration(
+          this.validStop,
+          this.appliedInterval,
+        );
       }
     } else {
       this.appliedInterval = defaultInterval;
@@ -261,7 +289,9 @@ export class FileTransferListComponent implements OnInit {
   }
 
   mayControlFileTransfers() {
-    return this.authService.getUser()!.hasSystemPrivilege('ControlFileTransfers');
+    return this.authService
+      .getUser()!
+      .hasSystemPrivilege('ControlFileTransfers');
   }
 
   showCreateTransferDialog(service: FileTransferService) {
@@ -273,7 +303,7 @@ export class FileTransferListComponent implements OnInit {
         right: '0',
       },
       panelClass: 'dialog-full-size',
-      data: { service, }
+      data: { service },
     });
   }
 
@@ -290,8 +320,7 @@ export class FileTransferListComponent implements OnInit {
 
   loadData() {
     this.updateURL();
-    const options: GetFileTransfersOptions = {
-    };
+    const options: GetFileTransfersOptions = {};
     if (this.validStart) {
       options.start = this.validStart.toISOString();
     }
@@ -313,8 +342,9 @@ export class FileTransferListComponent implements OnInit {
 
     const service = this.service();
     if (service) {
-      this.dataSource.loadTransfers(service, options)
-        .catch(err => this.messageService.showError(err));
+      this.dataSource
+        .loadTransfers(service, options)
+        .catch((err) => this.messageService.showError(err));
     }
   }
 
@@ -328,38 +358,52 @@ export class FileTransferListComponent implements OnInit {
         localEntityId: this.localEntityId || null,
         remoteEntityId: this.remoteEntityId || null,
         interval: this.appliedInterval,
-        customStart: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStart'] : null,
-        customStop: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStop'] : null,
+        customStart:
+          this.appliedInterval === 'CUSTOM'
+            ? this.filterForm.value['customStart']
+            : null,
+        customStop:
+          this.appliedInterval === 'CUSTOM'
+            ? this.filterForm.value['customStop']
+            : null,
       },
       queryParamsHandling: 'merge',
     });
   }
 
   transferPercent(transfer: Transfer) {
-    return transfer.totalSize != 0 ? (transfer.sizeTransferred / transfer.totalSize) : 0;
+    return transfer.totalSize != 0
+      ? transfer.sizeTransferred / transfer.totalSize
+      : 0;
   }
 
   pauseTransfer(transfer: Transfer) {
     const id = transfer.id;
     const serviceName = this.service()!.name;
-    this.yamcs.yamcsClient.pauseFileTransfer(this.yamcs.instance!, serviceName, id).catch(err => {
-      this.messageService.showError(err);
-    });
+    this.yamcs.yamcsClient
+      .pauseFileTransfer(this.yamcs.instance!, serviceName, id)
+      .catch((err) => {
+        this.messageService.showError(err);
+      });
   }
 
   resumeTransfer(transfer: Transfer) {
     const id = transfer.id;
     const serviceName = this.service()!.name;
-    this.yamcs.yamcsClient.resumeFileTransfer(this.yamcs.instance!, serviceName, id).catch(err => {
-      this.messageService.showError(err);
-    });
+    this.yamcs.yamcsClient
+      .resumeFileTransfer(this.yamcs.instance!, serviceName, id)
+      .catch((err) => {
+        this.messageService.showError(err);
+      });
   }
 
   cancelTransfer(transfer: Transfer) {
     const id = transfer.id;
     const serviceName = this.service()!.name;
-    this.yamcs.yamcsClient.cancelFileTransfer(this.yamcs.instance!, serviceName, id).catch(err => {
-      this.messageService.showError(err);
-    });
+    this.yamcs.yamcsClient
+      .cancelFileTransfer(this.yamcs.instance!, serviceName, id)
+      .catch((err) => {
+        this.messageService.showError(err);
+      });
   }
 }

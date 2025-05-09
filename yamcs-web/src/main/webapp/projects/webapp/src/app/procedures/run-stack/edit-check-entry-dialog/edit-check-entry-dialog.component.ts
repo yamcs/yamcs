@@ -11,19 +11,15 @@ import { StackedCheckEntry } from '../stack-file/StackedEntry';
   templateUrl: './edit-check-entry-dialog.component.html',
   styleUrl: './edit-check-entry-dialog.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AppMarkdownInput,
-    AppParameterInput,
-    WebappSdkModule,
-  ],
+  imports: [AppMarkdownInput, AppParameterInput, WebappSdkModule],
 })
 export class EditCheckEntryDialogComponent {
-
   form: FormGroup;
 
   constructor(
     private dialogRef: MatDialogRef<EditCheckEntryDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) readonly data: { edit: boolean, entry?: StackedCheckEntry; },
+    @Inject(MAT_DIALOG_DATA)
+    readonly data: { edit: boolean; entry?: StackedCheckEntry },
   ) {
     this.form = new FormGroup({
       parameters: new FormArray([]),
@@ -31,14 +27,14 @@ export class EditCheckEntryDialogComponent {
     });
 
     if (data.entry) {
-      const parameters = (data.entry.parameters || []).map(c => c.parameter);
+      const parameters = (data.entry.parameters || []).map((c) => c.parameter);
       for (const check of parameters) {
         this.addParameterControl();
       }
 
       this.form.setValue({
-        'parameters': parameters || [],
-        'comment': data.entry.comment || '',
+        parameters: parameters || [],
+        comment: data.entry.comment || '',
       });
     }
 

@@ -24,10 +24,13 @@ input.day {
   left: 0;
 }
 
-.cal .material-icons {
+.cal .material-symbols {
   color: darkgrey;
   padding: 3px;
   cursor: pointer;
+  font-size: 14px !important;
+  height: 14px !important;
+  width: 14px !important;
 }
 
 input.hh,

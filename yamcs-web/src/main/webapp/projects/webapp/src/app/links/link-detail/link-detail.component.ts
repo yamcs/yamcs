@@ -1,20 +1,23 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { ActionInfo, Link, MessageService, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
-import { AuthService } from '../../core/services/AuthService';
+import {
+  ActionInfo,
+  AuthService,
+  Link,
+  MessageService,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { LinkStatusComponent } from '../link-status/link-status.component';
 import { LinkService } from '../shared/link.service';
 
 @Component({
   selector: 'app-link-detail',
   templateUrl: './link-detail.component.html',
+  styleUrl: './link-detail.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    LinkStatusComponent,
-    WebappSdkModule,
-  ],
+  imports: [LinkStatusComponent, WebappSdkModule],
 })
 export class LinkDetailComponent {
-
   @Input()
   link: Link;
 
@@ -23,25 +26,28 @@ export class LinkDetailComponent {
     private yamcs: YamcsService,
     private messageService: MessageService,
     private linkService: LinkService,
-  ) { }
+  ) {}
 
   mayControlLinks() {
     return this.authService.getUser()!.hasSystemPrivilege('ControlLinks');
   }
 
   enableLink() {
-    this.yamcs.yamcsClient.enableLink(this.link.instance, this.link.name)
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .enableLink(this.link.instance, this.link.name)
+      .catch((err) => this.messageService.showError(err));
   }
 
   disableLink() {
-    this.yamcs.yamcsClient.disableLink(this.link.instance, this.link.name)
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .disableLink(this.link.instance, this.link.name)
+      .catch((err) => this.messageService.showError(err));
   }
 
   resetCounters() {
-    this.yamcs.yamcsClient.resetLinkCounters(this.link.instance, this.link.name)
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .resetLinkCounters(this.link.instance, this.link.name)
+      .catch((err) => this.messageService.showError(err));
   }
 
   runAction(action: ActionInfo) {

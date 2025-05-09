@@ -1,11 +1,13 @@
-<app-instance-page>
-  <app-instance-toolbar>
-    <ya-page-icon-button
-      [routerLink]="folderLink()"
-      [queryParams]="{ c: yamcs.context }"
-      icon="arrow_back" />
-    {{ objectName() | basename }}
-    &nbsp;&nbsp;&nbsp;
+<ya-instance-page>
+  <ya-instance-toolbar>
+    <ng-template ya-instance-toolbar-label>
+      <ya-page-icon-button
+        [routerLink]="folderLink()"
+        [queryParams]="{ c: yamcs.context }"
+        icon="arrow_back" />
+      {{ objectName() | basename }}
+    </ng-template>
+
     <ya-page-button
       matTooltip="Save stack"
       (clicked)="stackFileService.saveStack()"
@@ -13,7 +15,7 @@
       icon="save">
       Save
     </ya-page-button>
-  </app-instance-toolbar>
+  </ya-instance-toolbar>
 
   <div class="main-pane">
     <app-stack-file-page-tabs [objectName]="objectName()" />
@@ -32,4 +34,4 @@
       </table>
     </div>
   </div>
-</app-instance-page>
+</ya-instance-page>

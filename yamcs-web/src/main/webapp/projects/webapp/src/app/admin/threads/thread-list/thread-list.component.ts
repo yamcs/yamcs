@@ -1,12 +1,22 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+} from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Synchronizer, ThreadInfo, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  Synchronizer,
+  ThreadInfo,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subject, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { AdminPageTemplateComponent } from '../../shared/admin-page-template/admin-page-template.component';
-import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.component';
+import { AppAdminToolbar } from '../../shared/admin-toolbar/admin-toolbar.component';
 import { ThreadsTableComponent } from '../threads-table/threads-table.component';
 
 @Component({
@@ -14,45 +24,42 @@ import { ThreadsTableComponent } from '../threads-table/threads-table.component'
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AdminPageTemplateComponent,
-    AdminToolbarComponent,
+    AppAdminToolbar,
     WebappSdkModule,
     ThreadsTableComponent,
   ],
 })
 export class ThreadListComponent implements AfterViewInit, OnDestroy {
-
   filterControl = new UntypedFormControl();
 
   filterValue$ = new BehaviorSubject<string | null>(null);
 
   allThreads$ = new Subject<ThreadInfo[]>();
 
-  allThreadCount$ = this.allThreads$.pipe(
-    map(threads => threads.length),
-  );
+  allThreadCount$ = this.allThreads$.pipe(map((threads) => threads.length));
   runnableThreads$ = this.allThreads$.pipe(
-    map(threads => threads.filter(t => t.state === 'RUNNABLE')),
+    map((threads) => threads.filter((t) => t.state === 'RUNNABLE')),
   );
   runnableThreadCount$ = this.runnableThreads$.pipe(
-    map(threads => threads.length),
+    map((threads) => threads.length),
   );
   timedWaitingThreads$ = this.allThreads$.pipe(
-    map(threads => threads.filter(t => t.state === 'TIMED_WAITING')),
+    map((threads) => threads.filter((t) => t.state === 'TIMED_WAITING')),
   );
   timedWaitingThreadCount$ = this.timedWaitingThreads$.pipe(
-    map(threads => threads.length),
+    map((threads) => threads.length),
   );
   waitingThreads$ = this.allThreads$.pipe(
-    map(threads => threads.filter(t => t.state === 'WAITING')),
+    map((threads) => threads.filter((t) => t.state === 'WAITING')),
   );
   waitingThreadCount$ = this.waitingThreads$.pipe(
-    map(threads => threads.length),
+    map((threads) => threads.length),
   );
   blockedThreads$ = this.allThreads$.pipe(
-    map(threads => threads.filter(t => t.state === 'BLOCKED')),
+    map((threads) => threads.filter((t) => t.state === 'BLOCKED')),
   );
   blockedThreadCount$ = this.blockedThreads$.pipe(
-    map(threads => threads.length),
+    map((threads) => threads.length),
   );
 
   threadDumpURL: string;
@@ -74,7 +81,7 @@ export class ThreadListComponent implements AfterViewInit, OnDestroy {
   }
 
   private refresh() {
-    this.yamcs.yamcsClient.getThreads().then(response => {
+    this.yamcs.yamcsClient.getThreads().then((response) => {
       this.allThreads$.next(response.threads || []);
     });
   }

@@ -1,18 +1,22 @@
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { Database, User, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  AuthService,
+  Database,
+  User,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { filter } from 'rxjs/operators';
-import { AuthService } from '../../../core/services/AuthService';
 import { AdminPageTemplateComponent } from '../../shared/admin-page-template/admin-page-template.component';
-import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.component';
+import { AppAdminToolbarLabel } from '../../shared/admin-toolbar/admin-toolbar-label.directive';
+import { AppAdminToolbar } from '../../shared/admin-toolbar/admin-toolbar.component';
 
 interface DatabaseObject {
   type: 'table' | 'stream';
   name: string;
 }
-
 
 @Component({
   templateUrl: './database.component.html',
@@ -20,12 +24,12 @@ interface DatabaseObject {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AdminPageTemplateComponent,
-    AdminToolbarComponent,
+    AppAdminToolbar,
+    AppAdminToolbarLabel,
     WebappSdkModule,
   ],
 })
 export class DatabaseComponent implements OnDestroy {
-
   database$: Promise<Database>;
   object$ = new BehaviorSubject<DatabaseObject | null>(null);
 
@@ -40,9 +44,7 @@ export class DatabaseComponent implements OnDestroy {
     authService: AuthService,
   ) {
     this.user = authService.getUser()!;
-    this.routerSubscription = router.events.pipe(
-      filter(evt => evt instanceof NavigationEnd)
-    ).subscribe((evt: NavigationEnd) => {
+    this.routerSubscription = router.events.subscribe((evt: NavigationEnd) => {
       const activeChild = route.snapshot.firstChild!;
       let objectName = activeChild.paramMap.get('table');
       if (objectName) {

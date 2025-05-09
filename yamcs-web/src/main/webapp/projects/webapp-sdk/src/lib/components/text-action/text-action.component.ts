@@ -1,5 +1,9 @@
-
-import { ChangeDetectionStrategy, Component, HostBinding, Input } from '@angular/core';
+import {
+  booleanAttribute,
+  ChangeDetectionStrategy,
+  Component,
+  input,
+} from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 
 @Component({
@@ -7,24 +11,17 @@ import { MatIcon } from '@angular/material/icon';
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './text-action.component.html',
   styleUrl: './text-action.component.css',
-  imports: [
-    MatIcon
-  ],
+  host: {
+    class: 'ya-text-action',
+    '[class.active]': 'active()',
+    '[class.padding]': 'padding()',
+    '[class.disabled]': 'disabled()',
+  },
+  imports: [MatIcon],
 })
 export class YaTextAction {
-
-  @Input()
-  icon: string;
-
-  @Input()
-  @HostBinding('class.active')
-  active: boolean;
-
-  @Input()
-  @HostBinding('class.padding')
-  padding = true;
-
-  @Input()
-  @HostBinding('class.disabled')
-  disabled = false;
+  icon = input<string>();
+  active = input(false, { transform: booleanAttribute });
+  padding = input(true, { transform: booleanAttribute });
+  disabled = input(false, { transform: booleanAttribute });
 }

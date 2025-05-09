@@ -1,0 +1,11 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+}
+
+:host ::ng-deep > *:not(:last-child) {
+  /**
+   * Collapse borders
+   */
+  margin-right: -1px;
+}

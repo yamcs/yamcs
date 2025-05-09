@@ -1,18 +1,26 @@
 import { Component, Inject, OnDestroy } from '@angular/core';
-import { FormControl, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import {
+  FormControl,
+  UntypedFormControl,
+  UntypedFormGroup,
+  Validators,
+} from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { DownloadParameterValuesOptions, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  DownloadParameterValuesOptions,
+  WebappSdkModule,
+  YaSelectOption,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-export-archive-data-dialog',
   templateUrl: './export-archive-data-dialog.component.html',
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class ExportArchiveDataDialogComponent implements OnDestroy {
-
   delimiterOptions: YaSelectOption[] = [
     { id: 'COMMA', label: 'Comma' },
     { id: 'SEMICOLON', label: 'Semicolon' },
@@ -92,7 +100,10 @@ export class ExportArchiveDataDialogComponent implements OnDestroy {
       if (this.data.filename) {
         dlOptions.filename = this.data.filename;
       }
-      const url = this.yamcs.yamcsClient.getParameterValuesDownloadURL(this.yamcs.instance!, dlOptions);
+      const url = this.yamcs.yamcsClient.getParameterValuesDownloadURL(
+        this.yamcs.instance!,
+        dlOptions,
+      );
       this.downloadURL$.next(url);
     } else {
       this.downloadURL$.next(null);

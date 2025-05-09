@@ -2,13 +2,14 @@
   [class.text-only]="appearance() === 'text'"
   [class.primary]="appearance() === 'primary'"
   [class.toggled]="toggled()"
+  [class.right-align]="rightAlign()"
   [disabled]="disabled()"
   (click)="onClick($event)">
   @if (icon(); as icon) {
-    <mat-icon class="icon12">{{ icon }}</mat-icon>
+    <mat-icon class="icon">{{ icon }}</mat-icon>
   }
   <ng-content />
   @if (dropdown()) {
-    <mat-icon class="icon12">arrow_drop_down</mat-icon>
+    <mat-icon>arrow_drop_down</mat-icon>
   }
 </button>

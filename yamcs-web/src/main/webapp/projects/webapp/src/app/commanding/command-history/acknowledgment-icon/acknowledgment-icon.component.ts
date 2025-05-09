@@ -6,12 +6,9 @@ import { Acknowledgment, WebappSdkModule } from '@yamcs/webapp-sdk';
   templateUrl: './acknowledgment-icon.component.html',
   styleUrl: './acknowledgment-icon.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class AcknowledgmentIconComponent {
-
   @Input()
   ack: Acknowledgment;
 }

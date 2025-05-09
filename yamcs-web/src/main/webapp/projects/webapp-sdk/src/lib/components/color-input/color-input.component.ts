@@ -1,5 +1,17 @@
-import { ChangeDetectionStrategy, Component, ElementRef, forwardRef, input, ViewChild } from '@angular/core';
-import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  forwardRef,
+  input,
+  ViewChild,
+} from '@angular/core';
+import {
+  ControlValueAccessor,
+  FormControl,
+  NG_VALUE_ACCESSOR,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
 import { YaIconAction } from '../icon-action/icon-action.component';
@@ -9,20 +21,16 @@ import { YaIconAction } from '../icon-action/icon-action.component';
   templateUrl: './color-input.component.html',
   styleUrl: './color-input.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => YaColorInput),
-    multi: true,
-  }],
-  imports: [
-    MatIcon,
-    MatTooltip,
-    ReactiveFormsModule,
-    YaIconAction,
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => YaColorInput),
+      multi: true,
+    },
   ],
+  imports: [MatIcon, MatTooltip, ReactiveFormsModule, YaIconAction],
 })
 export class YaColorInput implements ControlValueAccessor {
-
   label = input('Set color');
 
   @ViewChild('colorInput')
@@ -33,10 +41,10 @@ export class YaColorInput implements ControlValueAccessor {
   // Follows the HTML5 color input, but could also be null
   selectedColor: string | null = null;
 
-  private onChange = (_: string | null) => { };
+  private onChange = (_: string | null) => {};
 
   constructor() {
-    this.colorControl.valueChanges.subscribe(value => {
+    this.colorControl.valueChanges.subscribe((value) => {
       this.selectedColor = value;
       this.onChange(value);
     });
@@ -54,8 +62,7 @@ export class YaColorInput implements ControlValueAccessor {
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any): void {
-  }
+  registerOnTouched(fn: any): void {}
 
   openColorPicker() {
     this.colorInput.nativeElement.click();

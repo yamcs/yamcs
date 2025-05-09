@@ -4,12 +4,12 @@
 
 .condition-table td:first-child {
   margin-left: 0;
-  padding-left: 0
+  padding-left: 0;
 }
-
 
 :host ::ng-deep .condition-table input {
   margin: 0 !important;
+  width: 100%;
 }
 
 :host ::ng-deep ya-select.operator ya-button {

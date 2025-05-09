@@ -11,7 +11,7 @@ tr.item-detail td {
   align-items: center;
 }
 
-.detail-layout>* {
+.detail-layout > * {
   margin-left: 20px;
 }
 

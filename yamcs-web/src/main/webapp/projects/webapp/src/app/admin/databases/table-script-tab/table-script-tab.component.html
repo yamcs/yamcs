@@ -1,5 +1,5 @@
 @if (table$ | async; as table) {
-  <div class="panel-content sql">
+  <ya-panel class="sql">
     <code [innerHTML]="formatSQL(table.script)"></code>
-  </div>
+  </ya-panel>
 }

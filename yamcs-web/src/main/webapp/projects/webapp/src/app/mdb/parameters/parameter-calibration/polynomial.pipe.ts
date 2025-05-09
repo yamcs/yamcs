@@ -4,7 +4,6 @@ import { Pipe, PipeTransform } from '@angular/core';
   name: 'polynomial',
 })
 export class PolynomialPipe implements PipeTransform {
-
   transform(coefficients?: number[]): string | null {
     if (!coefficients || !coefficients.length) {
       return null;

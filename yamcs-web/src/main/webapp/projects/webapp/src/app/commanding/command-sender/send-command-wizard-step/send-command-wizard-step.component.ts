@@ -6,12 +6,9 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
   templateUrl: './send-command-wizard-step.component.html',
   styleUrl: './send-command-wizard-step.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class SendCommandWizardStepComponent {
-
   @Input()
   step: number;
 }

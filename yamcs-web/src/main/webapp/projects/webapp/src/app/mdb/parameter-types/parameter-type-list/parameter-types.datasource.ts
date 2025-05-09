@@ -1,9 +1,12 @@
 import { DataSource } from '@angular/cdk/table';
-import { GetParameterTypesOptions, ParameterType, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  GetParameterTypesOptions,
+  ParameterType,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 
 export class ParameterTypesDataSource extends DataSource<ParameterType> {
-
   parameterTypes$ = new BehaviorSubject<ParameterType[]>([]);
   totalSize$ = new BehaviorSubject<number>(0);
   loading$ = new BehaviorSubject<boolean>(false);
@@ -18,11 +21,13 @@ export class ParameterTypesDataSource extends DataSource<ParameterType> {
 
   loadParameterTypes(options: GetParameterTypesOptions) {
     this.loading$.next(true);
-    return this.yamcs.yamcsClient.getParameterTypes(this.yamcs.instance!, options).then(page => {
-      this.loading$.next(false);
-      this.totalSize$.next(page.totalSize);
-      this.parameterTypes$.next(page.parameterTypes || []);
-    });
+    return this.yamcs.yamcsClient
+      .getParameterTypes(this.yamcs.instance!, options)
+      .then((page) => {
+        this.loading$.next(false);
+        this.totalSize$.next(page.totalSize);
+        this.parameterTypes$.next(page.parameterTypes || []);
+      });
   }
 
   getAliasNamespaces() {

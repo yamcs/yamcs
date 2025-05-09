@@ -5,9 +5,7 @@ import { YamcsService } from '@yamcs/webapp-sdk';
   name: 'ago',
 })
 export class AgoPipe implements PipeTransform {
-
-  constructor(private yamcs: YamcsService) {
-  }
+  constructor(private yamcs: YamcsService) {}
 
   transform(value: string, useMissionTime = true): string | null {
     if (!value) {

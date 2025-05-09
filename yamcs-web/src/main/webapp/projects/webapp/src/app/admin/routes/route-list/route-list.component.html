@@ -1,7 +1,6 @@
 <app-admin-page>
-  <app-admin-toolbar>
-    API routes &nbsp;&nbsp;&nbsp;
-    <ya-page-icon-button (clicked)="refresh()" matTooltip="Refresh view" icon="refresh" />
+  <app-admin-toolbar label="API routes">
+    <ya-page-button (clicked)="refresh()" icon="refresh">Refresh view</ya-page-button>
   </app-admin-toolbar>
 
   <ya-detail-pane>
@@ -16,10 +15,10 @@
   </ya-detail-pane>
 
   <div class="table-wrapper">
-    <div class="panel-content">
-      <div class="filter-bar">
+    <ya-panel>
+      <ya-filter-bar>
         <ya-search-filter [formControl]="filterControl" placeholder="Filter routes" />
-      </div>
+      </ya-filter-bar>
       <table
         mat-table
         [dataSource]="dataSource"
@@ -66,6 +65,6 @@
           [ngClass]="{ selected: row === (selectedRoute$ | async) }"
           [class.deprecated]="row.deprecated"></tr>
       </table>
-    </div>
+    </ya-panel>
   </div>
 </app-admin-page>

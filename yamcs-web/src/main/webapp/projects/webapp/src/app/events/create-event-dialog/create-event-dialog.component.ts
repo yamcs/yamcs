@@ -1,18 +1,24 @@
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import {
+  UntypedFormBuilder,
+  UntypedFormGroup,
+  Validators,
+} from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  WebappSdkModule,
+  YaSelectOption,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-create-event-dialog',
   templateUrl: './create-event-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class CreateEventDialogComponent {
-
   form: UntypedFormGroup;
 
   severityOptions: YaSelectOption[] = [
@@ -38,10 +44,12 @@ export class CreateEventDialogComponent {
   }
 
   save() {
-    this.yamcs.yamcsClient.createEvent(this.yamcs.instance!, {
-      message: this.form.value['message'],
-      severity: this.form.value['severity'],
-      time: utils.toISOString(this.form.value['time']),
-    }).then(event => this.dialogRef.close(event));
+    this.yamcs.yamcsClient
+      .createEvent(this.yamcs.instance!, {
+        message: this.form.value['message'],
+        severity: this.form.value['severity'],
+        time: utils.toISOString(this.form.value['time']),
+      })
+      .then((event) => this.dialogRef.close(event));
   }
 }

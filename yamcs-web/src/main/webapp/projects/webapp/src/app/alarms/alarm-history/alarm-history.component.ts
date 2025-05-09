@@ -2,26 +2,24 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute } from '@angular/router';
-import { Alarm, BaseComponent, GetAlarmsOptions, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  Alarm,
+  BaseComponent,
+  GetAlarmsOptions,
+  WebappSdkModule,
+  YaSelectOption,
+  utils,
+} from '@yamcs/webapp-sdk';
 import { addHours } from 'date-fns';
 import { AlarmLevelComponent } from '../../shared/alarm-level/alarm-level.component';
-import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { AlarmsPageTabsComponent } from '../alarms-page-tabs/alarms-page-tabs.component';
 
 @Component({
   templateUrl: './alarm-history.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AlarmLevelComponent,
-    AlarmsPageTabsComponent,
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    WebappSdkModule,
-  ],
+  imports: [AlarmLevelComponent, AlarmsPageTabsComponent, WebappSdkModule],
 })
 export class AlarmHistoryComponent extends BaseComponent {
-
   validStart: Date | null;
   validStop: Date | null;
 
@@ -58,22 +56,23 @@ export class AlarmHistoryComponent extends BaseComponent {
 
   dataSource = new MatTableDataSource<Alarm>();
 
-  constructor(
-    readonly yamcs: YamcsService,
-    private route: ActivatedRoute,
-  ) {
+  constructor(private route: ActivatedRoute) {
     super();
     this.setTitle('Alarm history');
     this.initializeOptions();
     this.loadData();
 
-    this.filterForm.get('interval')!.valueChanges.forEach(nextInterval => {
+    this.filterForm.get('interval')!.valueChanges.forEach((nextInterval) => {
       if (nextInterval === 'CUSTOM') {
         const now = new Date();
         const customStart = this.validStart || now;
         const customStop = this.validStop || now;
-        this.filterForm.get('customStart')!.setValue(utils.toISOString(customStart));
-        this.filterForm.get('customStop')!.setValue(utils.toISOString(customStop));
+        this.filterForm
+          .get('customStart')!
+          .setValue(utils.toISOString(customStart));
+        this.filterForm
+          .get('customStop')!
+          .setValue(utils.toISOString(customStop));
       } else if (nextInterval === 'NO_LIMIT') {
         this.validStart = null;
         this.validStop = null;
@@ -105,7 +104,10 @@ export class AlarmHistoryComponent extends BaseComponent {
         this.validStop = null;
       } else {
         this.validStop = new Date();
-        this.validStart = utils.subtractDuration(this.validStop, this.appliedInterval);
+        this.validStart = utils.subtractDuration(
+          this.validStop,
+          this.appliedInterval,
+        );
       }
     } else {
       this.appliedInterval = 'NO_LIMIT';
@@ -127,8 +129,7 @@ export class AlarmHistoryComponent extends BaseComponent {
 
   loadData(next?: string) {
     this.updateURL();
-    const options: GetAlarmsOptions = {
-    };
+    const options: GetAlarmsOptions = {};
     if (this.validStart) {
       options.start = this.validStart.toISOString();
     }
@@ -136,9 +137,10 @@ export class AlarmHistoryComponent extends BaseComponent {
       options.stop = this.validStop.toISOString();
     }
 
-    this.yamcs.yamcsClient.getAlarms(this.yamcs.instance!, options)
-      .then(alarms => this.dataSource.data = alarms)
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .getAlarms(this.yamcs.instance!, options)
+      .then((alarms) => (this.dataSource.data = alarms))
+      .catch((err) => this.messageService.showError(err));
   }
 
   private updateURL() {
@@ -147,8 +149,14 @@ export class AlarmHistoryComponent extends BaseComponent {
       relativeTo: this.route,
       queryParams: {
         interval: this.appliedInterval,
-        customStart: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStart'] : null,
-        customStop: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStop'] : null,
+        customStart:
+          this.appliedInterval === 'CUSTOM'
+            ? this.filterForm.value['customStart']
+            : null,
+        customStop:
+          this.appliedInterval === 'CUSTOM'
+            ? this.filterForm.value['customStop']
+            : null,
       },
       queryParamsHandling: 'merge',
     });
@@ -158,7 +166,10 @@ export class AlarmHistoryComponent extends BaseComponent {
     if (!alarm.updateTime) {
       return undefined;
     }
-    return utils.toDate(alarm.updateTime).getTime() - utils.toDate(alarm.triggerTime).getTime();
+    return (
+      utils.toDate(alarm.updateTime).getTime() -
+      utils.toDate(alarm.triggerTime).getTime()
+    );
   }
 
   showChart(alarm: Alarm) {
@@ -175,18 +186,21 @@ export class AlarmHistoryComponent extends BaseComponent {
       stop = addHours(utils.toDate(startIso), 1).toISOString();
     }
 
-    this.router.navigate([
-      '/telemetry/parameters' + alarm.parameterDetail?.triggerValue.id.name,
-      '-',
-      'chart',
-    ], {
-      queryParams: {
-        c: this.yamcs.context,
-        interval: 'CUSTOM',
-        customStart: start,
-        customStop: stop,
+    this.router.navigate(
+      [
+        '/telemetry/parameters' + alarm.parameterDetail?.triggerValue.id.name,
+        '-',
+        'chart',
+      ],
+      {
+        queryParams: {
+          c: this.yamcs.context,
+          interval: 'CUSTOM',
+          customStart: start,
+          customStop: stop,
+        },
       },
-    });
+    );
   }
 
   showData(alarm: Alarm) {
@@ -203,17 +217,20 @@ export class AlarmHistoryComponent extends BaseComponent {
       stop = addHours(utils.toDate(startIso), 1).toISOString();
     }
 
-    this.router.navigate([
-      '/telemetry/parameters' + alarm.parameterDetail?.triggerValue.id.name,
-      '-',
-      'data',
-    ], {
-      queryParams: {
-        c: this.yamcs.context,
-        interval: 'CUSTOM',
-        customStart: start,
-        customStop: stop,
+    this.router.navigate(
+      [
+        '/telemetry/parameters' + alarm.parameterDetail?.triggerValue.id.name,
+        '-',
+        'data',
+      ],
+      {
+        queryParams: {
+          c: this.yamcs.context,
+          interval: 'CUSTOM',
+          customStart: start,
+          customStop: stop,
+        },
       },
-    });
+    );
   }
 }

@@ -1,9 +1,14 @@
 @if (link$ | async; as link) {
-  <app-instance-page>
-    <app-instance-toolbar>
-      <ya-page-icon-button routerLink=".." [queryParams]="{ c: yamcs.context }" icon="arrow_back" />
-      Links / {{ link.name }}
-      &nbsp;&nbsp;&nbsp;
+  <ya-instance-page>
+    <ya-instance-toolbar>
+      <ng-template ya-instance-toolbar-label>
+        <ya-page-icon-button
+          routerLink=".."
+          [queryParams]="{ c: yamcs.context }"
+          icon="arrow_back" />
+        Links / {{ link.name }}
+      </ng-template>
+
       @if (mayControlLinks()) {
         <ya-page-button [disabled]="!link.disabled" (clicked)="enableLink(link.name)" icon="link">
           Enable
@@ -41,7 +46,8 @@
           }
         </ng-template>
       </mat-menu>
-    </app-instance-toolbar>
+    </ya-instance-toolbar>
+
     <div class="form-content">
       <dl class="dl-horizontal" style="margin-top: 0">
         <dt>Type</dt>
@@ -109,19 +115,17 @@
             @if (mayControlLinks()) {
               <div style="float: right">
                 @if (!status.cop1Active) {
-                  <ya-text-action icon="adjust" (click)="openInitiateCop1Dialog(link.name)">
-                    INITIATE AD
-                  </ya-text-action>
+                  <ya-button icon="adjust" (click)="openInitiateCop1Dialog(link.name)">
+                    Initiate AD
+                  </ya-button>
                 }
                 @if (status.state === "SUSPENDED") {
-                  <ya-text-action icon="redo" (click)="resumeCop1(link.name)">
-                    RESUME AD
-                  </ya-text-action>
+                  <ya-button icon="redo" (click)="resumeCop1(link.name)">Resume AD</ya-button>
                 }
                 @if (status.cop1Active) {
-                  <ya-text-action icon="not_interested" (click)="disableCop1(link.name)">
-                    TERMINATE AD
-                  </ya-text-action>
+                  <ya-button icon="not_interested" (click)="disableCop1(link.name)">
+                    Terminate AD
+                  </ya-button>
                 }
               </div>
             }
@@ -212,5 +216,5 @@
         }
       }
     </div>
-  </app-instance-page>
+  </ya-instance-page>
 }

@@ -2,7 +2,7 @@ import { WebSocketCall } from '../WebSocketCall';
 
 export interface CreateQueryRequest {
   name: string;
-  query: { [key: string]: any; };
+  query: { [key: string]: any };
   shared: boolean;
 }
 
@@ -10,7 +10,7 @@ export interface Query {
   id: string;
   name: string;
   shared: boolean;
-  query: { [key: string]: any; };
+  query: { [key: string]: any };
 }
 
 export interface ListQueriesResponse {
@@ -20,7 +20,7 @@ export interface ListQueriesResponse {
 export interface EditQueryRequest {
   name: string;
   shared: boolean;
-  query: { [key: string]: any; };
+  query: { [key: string]: any };
 }
 
 export interface ParseFilterRequest {
@@ -36,4 +36,7 @@ export interface ParseFilterData {
   endColumn?: number;
 }
 
-export type ParseFilterSubscription = WebSocketCall<ParseFilterRequest, ParseFilterData>;
+export type ParseFilterSubscription = WebSocketCall<
+  ParseFilterRequest,
+  ParseFilterData
+>;

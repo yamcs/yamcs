@@ -1,7 +1,19 @@
 import { CdkColumnDef } from '@angular/cdk/table';
-import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, QueryList, ViewChildren } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  QueryList,
+  ViewChildren,
+} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { BaseComponent, StreamData, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  BaseComponent,
+  StreamData,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { ColumnValuePipe } from '../shared/column-value.pipe';
 import { StreamDataComponent } from '../stream-data/stream-data.component';
@@ -11,14 +23,12 @@ import { StreamDataDataSource } from './stream-data.datasource';
   templateUrl: './stream-data-tab.component.html',
   styleUrl: './stream-data-tab.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    ColumnValuePipe,
-    WebappSdkModule,
-    StreamDataComponent,
-  ],
+  imports: [ColumnValuePipe, WebappSdkModule, StreamDataComponent],
 })
-export class StreamDataTabComponent extends BaseComponent implements AfterViewInit, OnDestroy {
-
+export class StreamDataTabComponent
+  extends BaseComponent
+  implements AfterViewInit, OnDestroy
+{
   dataSource: StreamDataDataSource;
 
   availableColumns$: Observable<string[]>;
@@ -35,7 +45,12 @@ export class StreamDataTabComponent extends BaseComponent implements AfterViewIn
     const parent = route.snapshot.parent!;
     const database = parent.parent!.paramMap.get('database')!;
     const name = parent.paramMap.get('stream')!;
-    this.dataSource = new StreamDataDataSource(yamcs, this.synchronizer, database, name);
+    this.dataSource = new StreamDataDataSource(
+      yamcs,
+      this.synchronizer,
+      database,
+      name,
+    );
     this.availableColumns$ = this.dataSource.columns$;
   }
 
@@ -43,13 +58,18 @@ export class StreamDataTabComponent extends BaseComponent implements AfterViewIn
   // are realised, before attempting to show them via
   // displayedColumns.
   ngAfterViewInit() {
-    this.columnDefinitionsSubscription = this.columnDefinitions.changes.subscribe(() => {
-      this.columnDefinitions.forEach(def => {
-        if (this.displayedColumns.indexOf(def.name) === -1) {
-          this.displayedColumns.splice(this.displayedColumns.length - 1, 0, def.name);
-        }
+    this.columnDefinitionsSubscription =
+      this.columnDefinitions.changes.subscribe(() => {
+        this.columnDefinitions.forEach((def) => {
+          if (this.displayedColumns.indexOf(def.name) === -1) {
+            this.displayedColumns.splice(
+              this.displayedColumns.length - 1,
+              0,
+              def.name,
+            );
+          }
+        });
       });
-    });
 
     this.dataSource.startStreaming();
   }

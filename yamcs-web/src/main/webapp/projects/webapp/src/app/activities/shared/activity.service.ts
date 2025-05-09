@@ -1,5 +1,10 @@
 import { Injectable, inject } from '@angular/core';
-import { Activity, ActivitySubscription, MessageService, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  Activity,
+  ActivitySubscription,
+  MessageService,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 
 /**
@@ -9,7 +14,6 @@ import { BehaviorSubject } from 'rxjs';
   providedIn: 'root',
 })
 export class ActivityService {
-
   private yamcs = inject(YamcsService);
   private messageService = inject(MessageService);
 
@@ -22,18 +26,24 @@ export class ActivityService {
     let initialReplyReceived = false;
 
     this.activitySubscription?.cancel();
-    this.activitySubscription = yamcs.yamcsClient.createActivitySubscription({
-      instance: yamcs.instance!,
-    }, activity => {
-      if (initialReplyReceived && activity.id === activityId) {
-        this.activity$.next(activity);
-      }
-    });
+    this.activitySubscription = yamcs.yamcsClient.createActivitySubscription(
+      {
+        instance: yamcs.instance!,
+      },
+      (activity) => {
+        if (initialReplyReceived && activity.id === activityId) {
+          this.activity$.next(activity);
+        }
+      },
+    );
 
-    yamcs.yamcsClient.getActivity(yamcs.instance!, activityId).then(activity => {
-      this.activity$.next(activity);
-      initialReplyReceived = true;
-    }).catch(err => this.messageService.showError(err));
+    yamcs.yamcsClient
+      .getActivity(yamcs.instance!, activityId)
+      .then((activity) => {
+        this.activity$.next(activity);
+        initialReplyReceived = true;
+      })
+      .catch((err) => this.messageService.showError(err));
   }
 
   disconnect() {

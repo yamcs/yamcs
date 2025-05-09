@@ -1,5 +1,11 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ElementRef, Type, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  Type,
+  ViewChild,
+} from '@angular/core';
 import { Printable } from './Printable';
 import { PrintService } from './print.service';
 import { PrintableDirective } from './printable.directive';
@@ -9,13 +15,9 @@ import { PrintableDirective } from './printable.directive';
   templateUrl: './print-zone.component.html',
   styleUrl: './print-zone.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    NgTemplateOutlet,
-    PrintableDirective,
-  ],
+  imports: [NgTemplateOutlet, PrintableDirective],
 })
 export class YaPrintZone {
-
   /*
    * Implementation note:
    *
@@ -36,12 +38,16 @@ export class YaPrintZone {
   private printableHost: PrintableDirective;
 
   constructor(private printService: PrintService) {
-    this.printService.printOrders$.subscribe(order => {
+    this.printService.printOrders$.subscribe((order) => {
       this.createAndPrint(order.componentType, order.title, order.data);
     });
   }
 
-  private createAndPrint(componentType: Type<Printable>, pageTitle: string, data: any) {
+  private createAndPrint(
+    componentType: Type<Printable>,
+    pageTitle: string,
+    data: any,
+  ) {
     const viewContainerRef = this.printableHost.viewContainerRef;
     viewContainerRef.clear();
     const componentRef = viewContainerRef.createComponent(componentType);
@@ -64,26 +70,32 @@ export class YaPrintZone {
     iframeDoc.title = pageTitle;
 
     iframeDoc.open();
-    iframeDoc.write('<!doctype html>\n');
-    iframeDoc.write('<head>\n');
-    iframeDoc.write(`
+    iframeDoc.writeln('<!doctype html>');
+    iframeDoc.writeln('<head>');
+    iframeDoc.writeln(`
       <style>
-      .block-title {
+      body {
+        font: 400 12px / 14px Roboto, sans-serif;
+      }
+      .ya-attr-label {
         margin-top: 1em;
         font-weight: bold;
       }
-      .no-print, .no-print * {
+      .ya-print-zone-show {
+        display: unset !important;
+      }
+      .ya-print-zone-hide, .ya-print-zone-hide * {
         display: none !important;
       }
       </style>
     `);
-    iframeDoc.write('</head>\n');
+    iframeDoc.writeln('</head>');
 
-    iframeDoc.write('<body onload="window.print()">\n');
+    iframeDoc.writeln('<body onload="window.print()">');
     const printableEl = this.printableContent.nativeElement as HTMLDivElement;
-    iframeDoc.write(printableEl.innerHTML);
-    iframeDoc.write('</body>\n');
-    iframeDoc.write('</html>\n');
+    iframeDoc.writeln(printableEl.innerHTML);
+    iframeDoc.writeln('</body>');
+    iframeDoc.writeln('</html>');
     iframeDoc.close();
   }
 }

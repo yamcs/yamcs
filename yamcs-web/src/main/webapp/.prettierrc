@@ -8,6 +8,18 @@
         "printWidth": 100,
         "htmlWhitespaceSensitivity": "ignore"
       }
+    },
+    {
+      "files": "*.js",
+      "options": {
+        "singleQuote": true
+      }
+    },
+    {
+      "files": "*.ts",
+      "options": {
+        "singleQuote": true
+      }
     }
   ]
 }

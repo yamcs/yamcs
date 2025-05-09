@@ -77,13 +77,38 @@
   grid-column: remote;
 }
 
-.buckets-column.header>label {
+label {
+  margin: -3px 0 20px 0;
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  line-height: 12px;
+  color: black;
+  text-transform: inherit;
+  cursor: default;
+  position: relative;
+  font-family: Roboto, sans-serif;
+}
+
+label,
+label input[type="text"],
+label input[type="number"],
+label input[type="password"],
+label textarea,
+label select,
+label .date-time-input {
+  margin: 5px 0 0;
+  display: block;
+  width: 100%;
+}
+
+.buckets-column.header > label {
   position: absolute;
   bottom: 0;
   line-height: 24px;
 }
 
-.buckets-column.header>label>a {
+.buckets-column.header > label > a {
   float: right;
 }
 
@@ -117,7 +142,7 @@ a.column-action:hover {
   align-items: flex-end;
 }
 
-.remote-column.header.no-filelist>ya-breadcrumb-trail {
+.remote-column.header.no-filelist > ya-breadcrumb-trail {
   visibility: hidden;
 }
 
@@ -142,16 +167,16 @@ ya-breadcrumb-trail {
   float: right;
 }
 
-.footer>button,
-.footer>input {
+.footer > button,
+.footer > input {
   flex-shrink: 1;
 }
 
-.footer>button {
+.footer > button {
   flex-grow: 1;
 }
 
-.footer>input {
+.footer > input {
   flex-grow: 5;
 }
 

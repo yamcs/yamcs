@@ -1,6 +1,5 @@
-<app-instance-page>
-  <app-instance-toolbar>
-    Links &nbsp;&nbsp;&nbsp;
+<ya-instance-page>
+  <ya-instance-toolbar label="Links">
     @if (mayControlLinks()) {
       <ya-page-button
         (clicked)="enableSelectedLinks()"
@@ -52,7 +51,7 @@
         }
       </ng-template>
     </mat-menu>
-  </app-instance-toolbar>
+  </ya-instance-toolbar>
 
   <ya-detail-pane>
     @if (detailLink$ | async; as selectedItem) {
@@ -69,9 +68,9 @@
   </ya-detail-pane>
 
   <div class="table-wrapper">
-    <div class="panel-content">
+    <ya-panel>
       <app-links-page-tabs />
-      <div class="filter-bar" style="margin-top: 16px">
+      <ya-filter-bar style="margin-top: 16px">
         <ya-search-filter
           [formControl]="filterControl"
           placeholder="Filter links"
@@ -79,25 +78,30 @@
           (onArrowUp)="selectPrevious()"
           (onEnter)="applySelection()" />
         <ya-column-chooser #columnChooser [columns]="columns" preferenceKey="links" />
-      </div>
+      </ya-filter-bar>
       <table
         mat-table
         [dataSource]="dataSource"
         [trackBy]="tableTrackerFn"
         class="ya-data-table expand">
         <ng-container cdkColumnDef="select">
-          <th mat-header-cell *cdkHeaderCellDef class="checkbox">
-            <input
-              type="checkbox"
-              (change)="$event ? masterToggle() : null"
-              [checked]="selection.hasValue() && isAllSelected()" />
+          <th
+            mat-header-cell
+            *cdkHeaderCellDef
+            class="checkbox"
+            (click)="cb.toggle(); $event.stopPropagation()">
+            <ya-table-checkbox #cb [dataSource]="dataSource" [selection]="selection" />
           </th>
-          <td mat-cell *cdkCellDef="let row" class="checkbox">
-            <input
-              type="checkbox"
-              (click)="$event.stopPropagation()"
-              (change)="$event ? selection.toggle(row) : null"
-              [checked]="selection.isSelected(row)" />
+          <td
+            mat-cell
+            *cdkCellDef="let item"
+            class="checkbox"
+            (click)="cb.toggle(); $event.stopPropagation()">
+            <ya-table-checkbox
+              #cb
+              [dataSource]="dataSource"
+              [selection]="selection"
+              [item]="item" />
           </td>
         </ng-container>
 
@@ -227,6 +231,6 @@
           Disabled
         </div>
       </div>
-    </div>
+    </ya-panel>
   </div>
-</app-instance-page>
+</ya-instance-page>

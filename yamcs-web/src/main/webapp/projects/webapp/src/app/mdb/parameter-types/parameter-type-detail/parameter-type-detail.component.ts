@@ -1,6 +1,12 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { ContextAlarmInfo, ParameterType, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  ContextAlarmInfo,
+  ParameterType,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { AlarmLevelComponent } from '../../../shared/alarm-level/alarm-level.component';
+import { ExpressionComponent } from '../../../shared/expression/expression.component';
 import { MarkdownComponent } from '../../../shared/markdown/markdown.component';
 import { ParameterCalibrationComponent } from '../../parameters/parameter-calibration/parameter-calibration.component';
 
@@ -11,18 +17,17 @@ import { ParameterCalibrationComponent } from '../../parameters/parameter-calibr
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AlarmLevelComponent,
+    ExpressionComponent,
     MarkdownComponent,
     ParameterCalibrationComponent,
     WebappSdkModule,
   ],
 })
 export class ParameterTypeDetailComponent {
-
   @Input()
   parameterType: ParameterType;
 
-  constructor(readonly yamcs: YamcsService) {
-  }
+  constructor(readonly yamcs: YamcsService) {}
 
   getDefaultAlarmLevel(ptype: ParameterType, label: string) {
     if (ptype && ptype.defaultAlarm) {

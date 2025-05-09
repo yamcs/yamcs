@@ -1,18 +1,14 @@
 import { Component } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ConfigService, WebappSdkModule } from '@yamcs/webapp-sdk';
+import { AuthService, ConfigService, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { AuthService } from '../../../../core/services/AuthService';
 import { ScriptViewerComponent } from '../script-viewer/script-viewer.component';
 
 @Component({
   templateUrl: './script-viewer-controls.component.html',
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class ScriptViewerControlsComponent {
-
   private bucket: string;
 
   initialized$ = new BehaviorSubject<boolean>(false);
@@ -34,17 +30,22 @@ export class ScriptViewerControlsComponent {
 
   mayManageDisplays() {
     const user = this.authService.getUser()!;
-    return user.hasObjectPrivilege('ManageBucket', this.bucket)
-      || user.hasSystemPrivilege('ManageAnyBucket');
+    return (
+      user.hasObjectPrivilege('ManageBucket', this.bucket) ||
+      user.hasSystemPrivilege('ManageAnyBucket')
+    );
   }
 
   save() {
-    this.viewer.save().then(() => {
-      this.snackbar.open('Changes saved', undefined, {
-        duration: 1000,
+    this.viewer
+      .save()
+      .then(() => {
+        this.snackbar.open('Changes saved', undefined, {
+          duration: 1000,
+        });
+      })
+      .catch((err) => {
+        this.snackbar.open('Failed to save changes: ' + err);
       });
-    }).catch(err => {
-      this.snackbar.open('Failed to save changes: ' + err);
-    });
   }
 }

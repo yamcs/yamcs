@@ -6,21 +6,26 @@ import { ActionLogTabComponent } from './action-log-tab/action-log-tab.component
 import { FileTransferListComponent } from './file-transfer-list/file-transfer-list.component';
 import { resolveServices } from './file-transfer.resolvers';
 
-export const ROUTES: Routes = [{
-  path: '',
-  canActivate: [authGuardFn, attachContextGuardFn],
-  canActivateChild: [authGuardChildFn],
-  runGuardsAndResolvers: 'always',
-  component: InstancePageComponent,
-  children: [{
+export const ROUTES: Routes = [
+  {
     path: '',
-    pathMatch: 'full',
-    component: FileTransferListComponent,
-    resolve: {
-      services: resolveServices,
-    },
-  }, {
-    path: 'log',
-    component: ActionLogTabComponent,
-  }]
-}];
+    canActivate: [authGuardFn, attachContextGuardFn],
+    canActivateChild: [authGuardChildFn],
+    runGuardsAndResolvers: 'always',
+    component: InstancePageComponent,
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        component: FileTransferListComponent,
+        resolve: {
+          services: resolveServices,
+        },
+      },
+      {
+        path: 'log',
+        component: ActionLogTabComponent,
+      },
+    ],
+  },
+];

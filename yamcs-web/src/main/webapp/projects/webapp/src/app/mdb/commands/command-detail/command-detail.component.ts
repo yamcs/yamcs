@@ -1,6 +1,12 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { Argument, Command, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  Argument,
+  Command,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
+import { ExpressionComponent } from '../../../shared/expression/expression.component';
 import { MarkdownComponent } from '../../../shared/markdown/markdown.component';
 import { SignificanceLevelComponent } from '../../../shared/significance-level/significance-level.component';
 import { ArgumentEnumDialogComponent } from '../argument-enum-dialog/argument-enum-dialog.component';
@@ -11,18 +17,20 @@ import { ArgumentEnumDialogComponent } from '../argument-enum-dialog/argument-en
   styleUrl: './command-detail.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    ExpressionComponent,
     MarkdownComponent,
-    WebappSdkModule,
     SignificanceLevelComponent,
+    WebappSdkModule,
   ],
 })
 export class CommandDetailComponent {
-
   @Input()
   command: Command;
 
-  constructor(readonly yamcs: YamcsService, private dialog: MatDialog) {
-  }
+  constructor(
+    readonly yamcs: YamcsService,
+    private dialog: MatDialog,
+  ) {}
 
   showEnum(argument: Argument) {
     this.dialog.open(ArgumentEnumDialogComponent, {

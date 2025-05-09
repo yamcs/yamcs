@@ -1,20 +1,23 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { ConfigService, User, WebappSdkModule, WebsiteConfig, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  ConfigService,
+  User,
+  WebappSdkModule,
+  WebsiteConfig,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { SignificanceLevelComponent } from '../../shared/significance-level/significance-level.component';
+import { AppAppBaseToolbar } from '../appbase-toolbar/appbase-toolbar.component';
 
 @Component({
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-    SignificanceLevelComponent,
-  ],
+  imports: [AppAppBaseToolbar, WebappSdkModule, SignificanceLevelComponent],
 })
 export class ProfileComponent {
-
   user$ = new BehaviorSubject<User | null>(null);
   config: WebsiteConfig;
 
@@ -24,7 +27,7 @@ export class ProfileComponent {
 
     // Fetch a fresh copy instead of using the one from AuthService,
     // there may have been updates (clearance in particular)
-    yamcs.yamcsClient.getUserInfo().then(userinfo => {
+    yamcs.yamcsClient.getUserInfo().then((userinfo) => {
       this.user$.next(new User(userinfo));
     });
   }

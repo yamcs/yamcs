@@ -11,9 +11,6 @@ import { RouterOutlet } from '@angular/router';
   selector: 'app-stacks-page',
   template: '<router-outlet />',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    RouterOutlet,
-  ],
+  imports: [RouterOutlet],
 })
-export class StacksPageComponent {
-}
+export class StacksPageComponent {}

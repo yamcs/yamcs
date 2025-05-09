@@ -4,19 +4,14 @@ import { ActivatedRoute } from '@angular/router';
 import { RoleInfo, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AdminPageTemplateComponent } from '../../shared/admin-page-template/admin-page-template.component';
-import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.component';
+import { AppAdminToolbar } from '../../shared/admin-toolbar/admin-toolbar.component';
 
 @Component({
   templateUrl: './role.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AdminPageTemplateComponent,
-    AdminToolbarComponent,
-    WebappSdkModule,
-  ],
+  imports: [AdminPageTemplateComponent, AppAdminToolbar, WebappSdkModule],
 })
 export class RoleComponent {
-
   role$ = new BehaviorSubject<RoleInfo | null>(null);
 
   constructor(
@@ -24,14 +19,14 @@ export class RoleComponent {
     private yamcs: YamcsService,
     private title: Title,
   ) {
-    route.paramMap.subscribe(params => {
+    route.paramMap.subscribe((params) => {
       const name = params.get('name')!;
       this.changeRole(name);
     });
   }
 
   private changeRole(name: string) {
-    this.yamcs.yamcsClient.getRole(name).then(role => {
+    this.yamcs.yamcsClient.getRole(name).then((role) => {
       this.role$.next(role);
       this.title.setTitle(role.name);
     });

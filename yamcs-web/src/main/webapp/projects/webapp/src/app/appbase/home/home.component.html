@@ -1,49 +1,45 @@
 <ya-message-bar #messageBar />
 
-<mat-toolbar class="top">
-  <mat-toolbar-row>
-    Instances &nbsp;&nbsp;&nbsp;
-    @if (isCreateInstanceEnabled()) {
-      <ya-page-button routerLink="create-instance" icon="add_circle_outline">
-        Create instance
-      </ya-page-button>
-    }
-    @if (mayControlServices()) {
-      <ya-page-button
-        [disabled]="!isGroupStartEnabled()"
-        (clicked)="startSelectedInstances()"
-        icon="play_arrow">
-        Start
-      </ya-page-button>
-    }
-    @if (mayControlServices()) {
-      <ya-page-button
-        [disabled]="!isGroupStopEnabled()"
-        (clicked)="stopSelectedInstances()"
-        icon="stop">
-        Stop
-      </ya-page-button>
-    }
-    @if (mayControlServices()) {
-      <ya-page-button
-        [disabled]="!isGroupRestartEnabled()"
-        (clicked)="restartSelectedInstances()"
-        icon="sync_problem">
-        Restart
-      </ya-page-button>
-    }
-  </mat-toolbar-row>
-</mat-toolbar>
+<app-appbase-toolbar label="Instances">
+  @if (isCreateInstanceEnabled()) {
+    <ya-page-button routerLink="create-instance" icon="add_box">Create instance</ya-page-button>
+  }
+  @if (mayControlServices()) {
+    <ya-page-button
+      [disabled]="!isGroupStartEnabled()"
+      (clicked)="startSelectedInstances()"
+      icon="play_arrow">
+      Start
+    </ya-page-button>
+  }
+  @if (mayControlServices()) {
+    <ya-page-button
+      [disabled]="!isGroupStopEnabled()"
+      (clicked)="stopSelectedInstances()"
+      icon="stop">
+      Stop
+    </ya-page-button>
+  }
+  @if (mayControlServices()) {
+    <ya-page-button
+      [disabled]="!isGroupRestartEnabled()"
+      (clicked)="restartSelectedInstances()"
+      icon="sync_problem">
+      Restart
+    </ya-page-button>
+  }
+</app-appbase-toolbar>
 
-<div class="panel-content">
-  <div class="filter-bar">
+<ya-panel>
+  <ya-filter-bar>
     <ya-search-filter
       [formControl]="filterControl"
       placeholder="Filter instances"
       (onArrowDown)="selectNext()"
       (onArrowUp)="selectPrevious()"
       (onEnter)="applySelection()" />
-  </div>
+  </ya-filter-bar>
+
   <table
     mat-table
     [dataSource]="dataSource"
@@ -53,18 +49,19 @@
     matSortDirection="asc"
     matSortDisableClear>
     <ng-container cdkColumnDef="select">
-      <th mat-header-cell *cdkHeaderCellDef class="checkbox">
-        <input
-          type="checkbox"
-          (change)="$event ? masterToggle() : null"
-          [checked]="selection.hasValue() && isAllSelected()" />
+      <th
+        mat-header-cell
+        *cdkHeaderCellDef
+        class="checkbox"
+        (click)="cb.toggle(); $event.stopPropagation()">
+        <ya-table-checkbox #cb [dataSource]="dataSource" [selection]="selection" />
       </th>
-      <td mat-cell *cdkCellDef="let row" class="checkbox">
-        <input
-          type="checkbox"
-          (click)="$event.stopPropagation()"
-          (change)="$event ? selection.toggle(row) : null"
-          [checked]="selection.isSelected(row)" />
+      <td
+        mat-cell
+        *cdkCellDef="let item"
+        class="checkbox"
+        (click)="cb.toggle(); $event.stopPropagation()">
+        <ya-table-checkbox #cb [dataSource]="dataSource" [selection]="selection" [item]="item" />
       </td>
     </ng-container>
 
@@ -184,4 +181,4 @@
   </table>
 
   <mat-paginator [pageSize]="100" [hidePageSize]="true" [showFirstLastButtons]="true" />
-</div>
+</ya-panel>

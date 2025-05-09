@@ -1,6 +1,8 @@
 * {
   user-select: none;
-  -moz-user-select: none;
-  -khtml-user-select: none;
   -webkit-user-select: none;
+}
+
+canvas {
+  margin-top: 4px;
 }

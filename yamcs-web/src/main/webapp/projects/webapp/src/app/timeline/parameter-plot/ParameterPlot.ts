@@ -2,9 +2,23 @@ import { Overlay } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { ElementRef } from '@angular/core';
 import { Line, LinePlot } from '@fqqb/timeline';
-import { BackfillingSubscription, ConfigService, Synchronizer, TimelineBand, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  BackfillingSubscription,
+  ConfigService,
+  Synchronizer,
+  TimelineBand,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { NamedParameterType } from '../../shared/parameter-plot/NamedParameterType';
-import { BooleanProperty, ColorProperty, convertColor, NumberProperty, PropertyInfoSet, resolveProperties, TextProperty } from '../shared/properties';
+import {
+  BooleanProperty,
+  ColorProperty,
+  convertColor,
+  NumberProperty,
+  PropertyInfoSet,
+  resolveProperties,
+  TextProperty,
+} from '../shared/properties';
 import { TimelineChartComponent } from '../timeline-chart/timeline-chart.component';
 import { ParameterPlotTooltipComponent } from './parameter-plot-tooltip/parameter-plot-tooltip.component';
 import { PlotDataSource } from './PlotDataSource';
@@ -20,7 +34,10 @@ export const propertyInfo: PropertyInfoSet = {
   maximumFractionDigits: new NumberProperty(2),
 };
 
-export function createTracePropertyInfo(index: number, color: string): PropertyInfoSet {
+export function createTracePropertyInfo(
+  index: number,
+  color: string,
+): PropertyInfoSet {
   const set: PropertyInfoSet = {};
   set[`trace_${index}_parameter`] = new TextProperty('');
   set[`trace_${index}_lineColor`] = new ColorProperty(color);
@@ -33,10 +50,14 @@ export function createTracePropertyInfo(index: number, color: string): PropertyI
   return set;
 }
 
-export function resolveTraceProperties(index: number, info: PropertyInfoSet, properties: { [key: string]: any; }) {
+export function resolveTraceProperties(
+  index: number,
+  info: PropertyInfoSet,
+  properties: { [key: string]: any },
+) {
   const prefix = `trace_${index}_`;
   const prefixedResult = resolveProperties(info, properties);
-  const lstripped: { [key: string]: any; } = {};
+  const lstripped: { [key: string]: any } = {};
   for (const key in prefixedResult) {
     lstripped[key.slice(prefix.length)] = prefixedResult[key];
   }
@@ -53,7 +74,6 @@ export const DEFAULT_COLORS = [
 ];
 
 export class ParameterPlot extends LinePlot {
-
   private dataSource: PlotDataSource;
 
   private tooltipInstance: ParameterPlotTooltipComponent;
@@ -71,41 +91,59 @@ export class ParameterPlot extends LinePlot {
     this.label = bandInfo.name;
     this.data = { band: bandInfo };
 
-    const properties = resolveProperties(propertyInfo, bandInfo.properties || {});
+    const properties = resolveProperties(
+      propertyInfo,
+      bandInfo.properties || {},
+    );
     this.frozen = properties.frozen ?? propertyInfo.frozen.defaultValue;
     this.contentHeight = properties.height ?? propertyInfo.height.defaultValue;
     this.labelBackground = 'rgba(255, 255, 255, 0.75)';
     this.minimum = properties.minimum ?? propertyInfo.minimum.defaultValue;
     this.maximum = properties.maximum ?? propertyInfo.maximum.defaultValue;
-    this.zeroLineWidth = properties.zeroLineWidth ?? propertyInfo.zeroLineWidth.defaultValue;
-    this.zeroLineColor = properties.zeroLineColor ?? propertyInfo.zeroLineColor.defaultValue;
+    this.zeroLineWidth =
+      properties.zeroLineWidth ?? propertyInfo.zeroLineWidth.defaultValue;
+    this.zeroLineColor =
+      properties.zeroLineColor ?? propertyInfo.zeroLineColor.defaultValue;
 
     const numberFormat = Intl.NumberFormat('en-US', {
-      minimumFractionDigits: properties.minimumFractionDigits ?? propertyInfo.minimumFractionDigits.defaultValue,
-      maximumFractionDigits: properties.maximumFractionDigits ?? propertyInfo.maximumFractionDigits.defaultValue,
+      minimumFractionDigits:
+        properties.minimumFractionDigits ??
+        propertyInfo.minimumFractionDigits.defaultValue,
+      maximumFractionDigits:
+        properties.maximumFractionDigits ??
+        propertyInfo.maximumFractionDigits.defaultValue,
       useGrouping: false,
     });
-    this.labelFormatter = value => numberFormat.format(value);
+    this.labelFormatter = (value) => numberFormat.format(value);
 
     const bodyRef = new ElementRef(document.body);
-    const positionStrategy = overlay.position().flexibleConnectedTo(bodyRef)
-      .withPositions([{
-        originX: 'start',
-        originY: 'top',
-        overlayX: 'start',
-        overlayY: 'top',
-      }]).withPush(false);
+    const positionStrategy = overlay
+      .position()
+      .flexibleConnectedTo(bodyRef)
+      .withPositions([
+        {
+          originX: 'start',
+          originY: 'top',
+          overlayX: 'start',
+          overlayY: 'top',
+        },
+      ])
+      .withPush(false);
 
     const overlayRef = overlay.create({ positionStrategy });
     const tooltipPortal = new ComponentPortal(ParameterPlotTooltipComponent);
     this.tooltipInstance = overlayRef.attach(tooltipPortal).instance;
 
-    const traces: Array<{ [key: string]: any; }> = [];
+    const traces: Array<{ [key: string]: any }> = [];
 
     let idx = 1;
     while (true) {
       const tracePropertyInfo = createTracePropertyInfo(idx, '#zzzzzz');
-      const traceProperties = resolveTraceProperties(idx, tracePropertyInfo, bandInfo.properties || {});
+      const traceProperties = resolveTraceProperties(
+        idx,
+        tracePropertyInfo,
+        bandInfo.properties || {},
+      );
       if (!traceProperties.parameter) {
         break;
       }
@@ -114,7 +152,7 @@ export class ParameterPlot extends LinePlot {
     }
 
     this.dataSource = new PlotDataSource(yamcs, synchronizer, configService);
-    this.dataSource.data$.subscribe(data => {
+    this.dataSource.data$.subscribe((data) => {
       const lines: Line[] = [];
       for (let i = 0; i < traces.length; i++) {
         const trace = traces[i];
@@ -128,7 +166,7 @@ export class ParameterPlot extends LinePlot {
             minMax.set(point.time, null);
           } else {
             const prevIsGap = j === 0 || series[j - 1].n === 0;
-            const nextIsGap = (j === series.length - 1) || (series[j + 1].n === 0);
+            const nextIsGap = j === series.length - 1 || series[j + 1].n === 0;
 
             let time: number;
             if (prevIsGap && !nextIsGap) {
@@ -158,13 +196,16 @@ export class ParameterPlot extends LinePlot {
       this.lines = lines;
     });
 
-    this.backfillSubscription = yamcs.yamcsClient.createBackfillingSubscription({
-      instance: yamcs.instance!
-    }, update => {
-      if (update.finished) {
-        this.dataSource.reloadVisibleRange();
-      }
-    });
+    this.backfillSubscription = yamcs.yamcsClient.createBackfillingSubscription(
+      {
+        instance: yamcs.instance!,
+      },
+      (update) => {
+        if (update.finished) {
+          this.dataSource.reloadVisibleRange();
+        }
+      },
+    );
 
     const toAdd: NamedParameterType[] = [];
     for (let i = 0; i < traces.length; i++) {
@@ -174,10 +215,17 @@ export class ParameterPlot extends LinePlot {
       this.dataSource.addParameter(...toAdd);
     }
 
-    this.addMouseMoveListener(evt => {
-      this.tooltipInstance.show(evt.clientX, evt.clientY, new Date(evt.time), traces, evt.points, this.labelFormatter);
+    this.addMouseMoveListener((evt) => {
+      this.tooltipInstance.show(
+        evt.clientX,
+        evt.clientY,
+        new Date(evt.time),
+        traces,
+        evt.points,
+        this.labelFormatter,
+      );
     });
-    this.addMouseLeaveListener(evt => {
+    this.addMouseLeaveListener((evt) => {
       this.tooltipInstance.hide();
     });
   }

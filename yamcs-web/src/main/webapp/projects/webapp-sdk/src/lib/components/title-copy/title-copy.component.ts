@@ -1,25 +1,25 @@
 import { Clipboard } from '@angular/cdk/clipboard';
 import { AsyncPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  ViewChild,
+} from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
 import { BehaviorSubject } from 'rxjs';
 
-const defaultText = "Copy to clipboard";
+const defaultText = 'Copy to clipboard';
 
 @Component({
   selector: 'ya-title-copy',
   templateUrl: './title-copy.component.html',
   styleUrl: './title-copy.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AsyncPipe,
-    MatIcon,
-    MatTooltip,
-  ],
+  imports: [AsyncPipe, MatIcon, MatTooltip],
 })
 export class YaTitleCopy {
-
   @Input()
   text: string;
 
@@ -28,14 +28,13 @@ export class YaTitleCopy {
 
   tooltip$ = new BehaviorSubject<string>(defaultText);
 
-  constructor(private clipboard: Clipboard) {
-  }
+  constructor(private clipboard: Clipboard) {}
 
   doCopy() {
     if (this.clipboard.copy(this.text)) {
-      this.tooltip$.next("Copied!");
+      this.tooltip$.next('Copied!');
     } else {
-      this.tooltip$.next("Copy failed!");
+      this.tooltip$.next('Copy failed!');
     }
     this.tooltip.show();
     setTimeout(() => {

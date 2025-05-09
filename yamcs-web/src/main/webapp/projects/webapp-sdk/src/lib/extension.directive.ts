@@ -8,7 +8,6 @@ import { YamcsService } from './services/yamcs.service';
 
 @Directive()
 export abstract class YamcsWebExtension {
-
   private _extensionService: ExtensionService;
   sdkBridge = inject(SdkBridge);
 
@@ -16,13 +15,17 @@ export abstract class YamcsWebExtension {
   public subroute: string;
 
   @Input()
-  get extensionService() { return this._extensionService; }
+  get extensionService() {
+    return this._extensionService;
+  }
   set extensionService(extensionService: ExtensionService) {
     this._extensionService = extensionService;
 
-    // Configure bridge to use router of main webapp.
-    this.sdkBridge.router = extensionService.router;
+    // Configure bridge to use services of main webapp
+    this.sdkBridge.authService = extensionService.authService;
     this.sdkBridge.appearanceService = extensionService.appearanceService;
+    this.sdkBridge.router = extensionService.router;
+    this.sdkBridge.yamcs = extensionService.yamcs;
 
     this.onExtensionInit();
   }

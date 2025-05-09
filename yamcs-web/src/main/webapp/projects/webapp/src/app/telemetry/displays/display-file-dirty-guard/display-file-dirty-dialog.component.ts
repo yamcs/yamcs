@@ -5,15 +5,12 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
 @Component({
   selector: 'app-display-file-page-dirty-dialog',
   templateUrl: './display-file-dirty-dialog.component.html',
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class DisplayFilePageDirtyDialogComponent {
-
   constructor(
     private dialogRef: MatDialogRef<DisplayFilePageDirtyDialogComponent>,
-  ) { }
+  ) {}
 
   confirmDiscard() {
     this.dialogRef.close(true);

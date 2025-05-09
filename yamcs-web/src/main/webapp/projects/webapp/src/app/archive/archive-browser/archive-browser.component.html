@@ -1,6 +1,5 @@
-<app-instance-page noscroll="true">
-  <app-instance-toolbar>
-    Archive browser &nbsp;&nbsp;&nbsp;
+<ya-instance-page noscroll="true">
+  <ya-instance-toolbar label="Archive browser">
     <ya-page-button
       (clicked)="replayRange()"
       [disabled]="!(rangeSelection$ | async)"
@@ -26,24 +25,28 @@
       Download dump
     </ya-page-button>
 
-    <ya-page-icon-button (click)="refreshData()" matTooltip="Refresh view" icon="refresh" />
-  </app-instance-toolbar>
+    <ya-page-button (clicked)="refreshData()" matTooltip="Refresh view" icon="refresh">
+      Refresh
+    </ya-page-button>
+  </ya-instance-toolbar>
 
-  <div style="height: 24px; margin: 6px">
-    <form [formGroup]="filterForm">
-      <ya-button (click)="pageLeft()" icon="west" />
-      <ya-button
+  <div class="controls" [formGroup]="filterForm">
+    <ya-button-group>
+      <ya-icon-button (click)="pageLeft()" icon="west" />
+      <ya-icon-button
         (mousedown)="toggleMove(-50)"
         (mouseup)="untoggleMove()"
         (mouseleave)="untoggleMove()"
-        icon="chevron_left"></ya-button>
-      <ya-button
+        icon="chevron_left" />
+      <ya-icon-button
         (mousedown)="toggleMove(50)"
         (mouseup)="untoggleMove()"
         (mouseleave)="untoggleMove()"
-        icon="chevron_right"></ya-button>
-      <ya-button (click)="pageRight()" icon="east" />
-      &nbsp;
+        icon="chevron_right" />
+      <ya-icon-button (click)="pageRight()" icon="east" />
+    </ya-button-group>
+
+    <ya-button-group>
       <ya-button (click)="fitAll()" matTooltip="Show all archive data" icon="fit_screen">
         Fit all
       </ya-button>
@@ -57,31 +60,38 @@
         </ya-button>
       }
       <ya-button (click)="jumpToToday()" icon="today">Today</ya-button>
-      <ya-button (click)="jumpToNow()" icon="my_location" />
+      <ya-icon-button (click)="jumpToNow()" icon="my_location" />
       <ya-button (click)="openJumpToDialog()" icon="directions">Jump to...</ya-button>
-      &nbsp;
-      <ya-button (click)="zoomIn()" icon="add" />
-      <ya-button (click)="zoomOut()" icon="remove" />
-      &nbsp;
-      <ya-button
+    </ya-button-group>
+
+    <ya-button-group>
+      <ya-icon-button (click)="zoomIn()" icon="add" />
+      <ya-icon-button (click)="zoomOut()" icon="remove" />
+    </ya-button-group>
+
+    <ya-button-group>
+      <ya-icon-button
         [toggled]="(tool$ | async) === 'hand'"
         (click)="setTool('hand')"
         matTooltip="Use pan tool"
         icon="pan_tool" />
-      <ya-button
+      <ya-icon-button
         [toggled]="(tool$ | async) === 'range-select'"
         (click)="setTool('range-select')"
         matTooltip="Use range selection tool"
         icon="highlight_alt" />
+    </ya-button-group>
 
-      &nbsp;&nbsp;&nbsp;&nbsp;
+    <ya-button-group>
       @for (option of legendOptions; track option) {
-        <label class="legend no-select" [style.background]="option.bg" [style.color]="option.fg">
+        <label
+          class="legend"
+          [ngStyle]="{ background: option.bg, color: option.fg, backgroundClip: 'padding-box' }">
           <input type="checkbox" [formControlName]="option.id" (change)="updateLegend()" />
           {{ option.name }}
         </label>
       }
-    </form>
+    </ya-button-group>
   </div>
 
   <div #container class="timeline-container"></div>
@@ -113,4 +123,4 @@
       <p>Pan around by grabbing the canvas.</p>
     </ya-help>
   </div>
-</app-instance-page>
+</ya-instance-page>

@@ -4,14 +4,16 @@ import { Alarm, GetAlarmsOptions, YamcsService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 
 export class ParameterAlarmsDataSource extends DataSource<Alarm> {
-
   pageSize = 100;
   offscreenRecord: Alarm | null;
 
   alarms$ = new BehaviorSubject<Alarm[]>([]);
   public loading$ = new BehaviorSubject<boolean>(false);
 
-  constructor(private yamcs: YamcsService, private qualifiedName: string) {
+  constructor(
+    private yamcs: YamcsService,
+    private qualifiedName: string,
+  ) {
     super();
   }
 
@@ -28,7 +30,7 @@ export class ParameterAlarmsDataSource extends DataSource<Alarm> {
     return this.loadPage({
       ...options,
       limit: this.pageSize + 1, // One extra to detect hasMore
-    }).then(alarms => {
+    }).then((alarms) => {
       this.loading$.next(false);
       this.alarms$.next(alarms);
     });
@@ -44,14 +46,16 @@ export class ParameterAlarmsDataSource extends DataSource<Alarm> {
    * be used for the next page (start/stop are inclusive).
    */
   private loadPage(options: GetAlarmsOptions) {
-    return this.yamcs.yamcsClient.getAlarmsForParameter(this.yamcs.instance!, this.qualifiedName, options).then(alarms => {
-      if (alarms.length > this.pageSize) {
-        this.offscreenRecord = alarms.splice(alarms.length - 1, 1)[0];
-      } else {
-        this.offscreenRecord = null;
-      }
-      return alarms;
-    });
+    return this.yamcs.yamcsClient
+      .getAlarmsForParameter(this.yamcs.instance!, this.qualifiedName, options)
+      .then((alarms) => {
+        if (alarms.length > this.pageSize) {
+          this.offscreenRecord = alarms.splice(alarms.length - 1, 1)[0];
+        } else {
+          this.offscreenRecord = null;
+        }
+        return alarms;
+      });
   }
 
   /**
@@ -68,7 +72,7 @@ export class ParameterAlarmsDataSource extends DataSource<Alarm> {
       ...options,
       stop: this.offscreenRecord.triggerTime,
       limit: this.pageSize + 1, // One extra to detect hasMore
-    }).then(alarms => {
+    }).then((alarms) => {
       const combinedAlarms = this.alarms$.getValue().concat(alarms);
       this.alarms$.next(combinedAlarms);
     });

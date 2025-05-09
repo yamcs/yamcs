@@ -18,74 +18,93 @@ import { CreateTimeRulerComponent } from './time-ruler/create-time-ruler/create-
 import { TimelineChartComponent } from './timeline-chart/timeline-chart.component';
 import { ViewListComponent } from './view-list/view-list.component';
 
-export const ROUTES: Routes = [{
-  path: '',
-  canActivate: [authGuardFn, attachContextGuardFn],
-  canActivateChild: [authGuardChildFn],
-  runGuardsAndResolvers: 'always',
-  component: InstancePageComponent,
-  children: [{
+export const ROUTES: Routes = [
+  {
     path: '',
-    pathMatch: 'full',
-    redirectTo: 'chart',
-  }, {
-    path: 'chart',
-    component: TimelineChartComponent,
-  }, {
-    path: 'views',
-    pathMatch: 'full',
-    component: ViewListComponent,
-  }, {
-    path: 'views/create',
-    pathMatch: 'full',
-    component: CreateViewComponent,
-  }, {
-    path: 'views/:view',
-    pathMatch: 'full',
-    component: EditViewComponent,
-  }, {
-    path: 'bands',
-    pathMatch: 'full',
-    component: BandListComponent,
-  }, {
-    path: 'bands/create',
-    pathMatch: 'full',
-    component: CreateBandComponent,
-  }, {
-    path: 'bands/create/item-band',
-    pathMatch: 'full',
-    component: CreateItemBandComponent,
-  }, {
-    path: 'bands/create/spacer',
-    pathMatch: 'full',
-    component: CreateSpacerComponent,
-  }, {
-    path: 'bands/create/time-ruler',
-    pathMatch: 'full',
-    component: CreateTimeRulerComponent,
-  }, {
-    path: 'bands/create/parameter-plot',
-    pathMatch: 'full',
-    component: CreateParameterPlotComponent,
-  }, {
-    path: 'bands/create/parameter-states',
-    pathMatch: 'full',
-    component: CreateParameterStatesComponent,
-  }, {
-    path: 'bands/create/command-band',
-    pathMatch: 'full',
-    component: CreateCommandBandComponent,
-  }, {
-    path: 'bands/:band',
-    pathMatch: 'full',
-    component: EditBandComponent,
-  }, {
-    path: 'items',
-    pathMatch: 'full',
-    component: ItemListComponent,
-  }, {
-    path: 'items/:item',
-    pathMatch: 'full',
-    component: EditItemComponent,
-  }]
-}];
+    canActivate: [authGuardFn, attachContextGuardFn],
+    canActivateChild: [authGuardChildFn],
+    runGuardsAndResolvers: 'always',
+    component: InstancePageComponent,
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        redirectTo: 'chart',
+      },
+      {
+        path: 'chart',
+        component: TimelineChartComponent,
+      },
+      {
+        path: 'views',
+        pathMatch: 'full',
+        component: ViewListComponent,
+      },
+      {
+        path: 'views/create',
+        pathMatch: 'full',
+        component: CreateViewComponent,
+      },
+      {
+        path: 'views/:view',
+        pathMatch: 'full',
+        component: EditViewComponent,
+      },
+      {
+        path: 'bands',
+        pathMatch: 'full',
+        component: BandListComponent,
+      },
+      {
+        path: 'bands/create',
+        pathMatch: 'full',
+        component: CreateBandComponent,
+      },
+      {
+        path: 'bands/create/item-band',
+        pathMatch: 'full',
+        component: CreateItemBandComponent,
+      },
+      {
+        path: 'bands/create/spacer',
+        pathMatch: 'full',
+        component: CreateSpacerComponent,
+      },
+      {
+        path: 'bands/create/time-ruler',
+        pathMatch: 'full',
+        component: CreateTimeRulerComponent,
+      },
+      {
+        path: 'bands/create/parameter-plot',
+        pathMatch: 'full',
+        component: CreateParameterPlotComponent,
+      },
+      {
+        path: 'bands/create/parameter-states',
+        pathMatch: 'full',
+        component: CreateParameterStatesComponent,
+      },
+      {
+        path: 'bands/create/command-band',
+        pathMatch: 'full',
+        component: CreateCommandBandComponent,
+      },
+      {
+        path: 'bands/:band',
+        pathMatch: 'full',
+        component: EditBandComponent,
+      },
+      {
+        path: 'items',
+        pathMatch: 'full',
+        component: ItemListComponent,
+      },
+      {
+        path: 'items/:item',
+        pathMatch: 'full',
+        component: EditItemComponent,
+      },
+    ],
+  },
+];

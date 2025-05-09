@@ -1,6 +1,7 @@
 @if (band$ | async; as band) {
-  <app-instance-page>
-    <app-instance-toolbar>Edit band</app-instance-toolbar>
+  <ya-instance-page>
+    <ya-instance-toolbar label="Edit band" />
+
     <div class="form-content ya-form">
       <form [formGroup]="form" novalidate autocomplete="off">
         @if (band.type === "ITEM_BAND") {
@@ -17,8 +18,9 @@
           <app-edit-parameter-states [form]="form" [band]="band" />
         }
       </form>
+
       <p>&nbsp;</p>
-      <div class="action-bar">
+      <ya-toolbar appearance="bottom">
         <ya-button (click)="location.back()">Cancel</ya-button>
         <ya-button
           appearance="primary"
@@ -26,7 +28,7 @@
           [disabled]="!(dirty$ | async) || !form.valid">
           SAVE CHANGES
         </ya-button>
-      </div>
+      </ya-toolbar>
     </div>
-  </app-instance-page>
+  </ya-instance-page>
 }

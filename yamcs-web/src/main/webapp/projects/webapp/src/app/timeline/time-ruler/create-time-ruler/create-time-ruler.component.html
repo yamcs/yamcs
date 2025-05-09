@@ -1,38 +1,31 @@
-<app-instance-page>
-  <app-instance-toolbar>Create band</app-instance-toolbar>
+<ya-instance-page>
+  <ya-instance-toolbar label="Create band" />
 
   <app-create-band-wizard-step step="2" />
 
   <div class="form-content ya-form">
     <form [formGroup]="form" novalidate autocomplete="off">
-      <label>
-        Label
-        <span class="hint">(required)</span>
-        <br />
-        <input type="text" formControlName="name" style="width: 100%" />
-      </label>
-      <br />
-      <label>
-        Description
-        <span class="hint">(optional)</span>
-        <br />
+      <ya-field label="Label" hint="(required)">
+        <input type="text" formControlName="name" />
+      </ya-field>
+
+      <ya-field label="Description" hint="(optional)">
         <textarea formControlName="description" rows="3"></textarea>
-      </label>
+      </ya-field>
+
       <ng-container formGroupName="properties">
-        <br />
-        <label>
-          Timezone
-          <br />
+        <ya-field label="Timezone">
           <ya-timezone-select formControlName="timezone" />
-        </label>
+        </ya-field>
       </ng-container>
     </form>
+
     <p>&nbsp;</p>
-    <div class="action-bar">
+    <ya-toolbar appearance="bottom">
       <ya-button routerLink="../.." [queryParams]="{ c: yamcs.context }">Cancel</ya-button>
       <ya-button appearance="primary" (click)="onConfirm()" [disabled]="!form.valid">
         CREATE
       </ya-button>
-    </div>
+    </ya-toolbar>
   </div>
-</app-instance-page>
+</ya-instance-page>

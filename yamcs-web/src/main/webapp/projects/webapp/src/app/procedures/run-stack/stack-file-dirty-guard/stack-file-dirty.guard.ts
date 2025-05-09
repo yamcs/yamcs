@@ -2,19 +2,19 @@ import { Injectable, inject } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 import { CanDeactivateFn } from '@angular/router';
-import { ConfigService } from '@yamcs/webapp-sdk';
+import { AuthService, ConfigService } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Observer, of } from 'rxjs';
-import { AuthService } from '../../../core/services/AuthService';
 import { StackFileService } from '../stack-file/StackFileService';
 import { StackFilePageDirtyDialog } from './stack-file-dirty-guard-dialog.component';
 
-export const stackFilePageDirtyGuardFn: CanDeactivateFn<unknown> = (component: unknown) => {
+export const stackFilePageDirtyGuardFn: CanDeactivateFn<unknown> = (
+  component: unknown,
+) => {
   return inject(StackFilePageDirtyGuard).canDeactivate(component);
 };
 
 @Injectable()
 export class StackFilePageDirtyGuard {
-
   private bucket: string;
 
   // TODO this is just a workaround around the fact that our current version
@@ -36,14 +36,14 @@ export class StackFilePageDirtyGuard {
     if (this.dialogOpen$.value) {
       return new Observable((observer: Observer<boolean>) => {
         this.dialogRef.afterClosed().subscribe({
-          next: result => {
+          next: (result) => {
             observer.next(result === true);
             observer.complete();
           },
           error: () => {
             observer.next(false);
             observer.complete();
-          }
+          },
         });
       });
     }
@@ -53,9 +53,12 @@ export class StackFilePageDirtyGuard {
         this.dialogOpen$.next(true);
         this.dialogRef = this.dialog.open(StackFilePageDirtyDialog, {
           width: '400px',
+          data: {
+            stackFileService: this.stackFileService,
+          },
         });
         this.dialogRef.afterClosed().subscribe({
-          next: result => {
+          next: (result) => {
             this.dialogOpen$.next(false);
             observer.next(result === true);
             observer.complete();
@@ -64,7 +67,7 @@ export class StackFilePageDirtyGuard {
             this.dialogOpen$.next(false);
             observer.next(false);
             observer.complete();
-          }
+          },
         });
       });
     } else {
@@ -74,7 +77,9 @@ export class StackFilePageDirtyGuard {
 
   private mayManageStacks() {
     const user = this.authService.getUser()!;
-    return user.hasObjectPrivilege('ManageBucket', this.bucket)
-      || user.hasSystemPrivilege('ManageAnyBucket');
+    return (
+      user.hasObjectPrivilege('ManageBucket', this.bucket) ||
+      user.hasSystemPrivilege('ManageAnyBucket')
+    );
   }
 }

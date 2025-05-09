@@ -1,21 +1,29 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnChanges, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  Input,
+  OnChanges,
+  ViewChild,
+} from '@angular/core';
 import { AlarmRange, ParameterValue } from '@yamcs/webapp-sdk';
 
 const XMLNS = 'http://www.w3.org/2000/svg';
 
 @Component({
   selector: 'app-severity-meter',
-  template: `
-    <svg #container
-         width="100%" height="8px"
-         viewBox="0 0 100 100"
-         preserveAspectRatio="none"
-         style="overflow: visible">
-    </svg>`,
+  template: ` <svg
+    #container
+    width="100%"
+    height="8px"
+    viewBox="0 0 100 100"
+    preserveAspectRatio="none"
+    style="overflow: visible"
+  ></svg>`,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SeverityMeterComponent implements AfterViewInit, OnChanges {
-
   @Input()
   pval: ParameterValue;
 
@@ -32,6 +40,12 @@ export class SeverityMeterComponent implements AfterViewInit, OnChanges {
   private criticalHighRange: SVGRectElement;
   private severeLowRange: SVGRectElement;
   private severeHighRange: SVGRectElement;
+
+  private watchColor = '#ffff98';
+  private warningColor = '#ffff00';
+  private distressColor = '#ff6600';
+  private criticalColor = '#ff0000';
+  private severeColor = '#800000';
 
   private indicator: SVGPolygonElement;
 
@@ -59,7 +73,7 @@ export class SeverityMeterComponent implements AfterViewInit, OnChanges {
     this.watchLowRange.setAttribute('width', '0');
     this.watchLowRange.setAttribute('height', '50');
     this.watchLowRange.setAttribute('shape-rendering', 'crispEdges');
-    this.watchLowRange.style.fill = '#ffff98';
+    this.watchLowRange.style.fill = this.watchColor;
     targetEl.appendChild(this.watchLowRange);
 
     this.watchHighRange = document.createElementNS(XMLNS, 'rect');
@@ -68,7 +82,7 @@ export class SeverityMeterComponent implements AfterViewInit, OnChanges {
     this.watchHighRange.setAttribute('width', '0');
     this.watchHighRange.setAttribute('height', '50');
     this.watchHighRange.setAttribute('shape-rendering', 'crispEdges');
-    this.watchHighRange.style.fill = '#ffff98';
+    this.watchHighRange.style.fill = this.watchColor;
     targetEl.appendChild(this.watchHighRange);
 
     this.warningLowRange = document.createElementNS(XMLNS, 'rect');
@@ -77,7 +91,7 @@ export class SeverityMeterComponent implements AfterViewInit, OnChanges {
     this.warningLowRange.setAttribute('width', '0');
     this.warningLowRange.setAttribute('height', '50');
     this.warningLowRange.setAttribute('shape-rendering', 'crispEdges');
-    this.warningLowRange.style.fill = '#ffff00';
+    this.warningLowRange.style.fill = this.warningColor;
     targetEl.appendChild(this.warningLowRange);
 
     this.warningHighRange = document.createElementNS(XMLNS, 'rect');
@@ -86,7 +100,7 @@ export class SeverityMeterComponent implements AfterViewInit, OnChanges {
     this.warningHighRange.setAttribute('width', '0');
     this.warningHighRange.setAttribute('height', '50');
     this.warningHighRange.setAttribute('shape-rendering', 'crispEdges');
-    this.warningHighRange.style.fill = '#ffff00';
+    this.warningHighRange.style.fill = this.warningColor;
     targetEl.appendChild(this.warningHighRange);
 
     this.distressLowRange = document.createElementNS(XMLNS, 'rect');
@@ -95,7 +109,7 @@ export class SeverityMeterComponent implements AfterViewInit, OnChanges {
     this.distressLowRange.setAttribute('width', '0');
     this.distressLowRange.setAttribute('height', '50');
     this.distressLowRange.setAttribute('shape-rendering', 'crispEdges');
-    this.distressLowRange.style.fill = '#ff6600';
+    this.distressLowRange.style.fill = this.distressColor;
     targetEl.appendChild(this.distressLowRange);
 
     this.distressHighRange = document.createElementNS(XMLNS, 'rect');
@@ -104,7 +118,7 @@ export class SeverityMeterComponent implements AfterViewInit, OnChanges {
     this.distressHighRange.setAttribute('width', '0');
     this.distressHighRange.setAttribute('height', '50');
     this.distressHighRange.setAttribute('shape-rendering', 'crispEdges');
-    this.distressHighRange.style.fill = '#ff6600';
+    this.distressHighRange.style.fill = this.distressColor;
     targetEl.appendChild(this.distressHighRange);
 
     this.criticalLowRange = document.createElementNS(XMLNS, 'rect');
@@ -113,7 +127,7 @@ export class SeverityMeterComponent implements AfterViewInit, OnChanges {
     this.criticalLowRange.setAttribute('width', '0');
     this.criticalLowRange.setAttribute('height', '50');
     this.criticalLowRange.setAttribute('shape-rendering', 'crispEdges');
-    this.criticalLowRange.style.fill = 'red';
+    this.criticalLowRange.style.fill = this.criticalColor;
     targetEl.appendChild(this.criticalLowRange);
 
     this.criticalHighRange = document.createElementNS(XMLNS, 'rect');
@@ -122,7 +136,7 @@ export class SeverityMeterComponent implements AfterViewInit, OnChanges {
     this.criticalHighRange.setAttribute('width', '0');
     this.criticalHighRange.setAttribute('height', '50');
     this.criticalHighRange.setAttribute('shape-rendering', 'crispEdges');
-    this.criticalHighRange.style.fill = 'red';
+    this.criticalHighRange.style.fill = this.criticalColor;
     targetEl.appendChild(this.criticalHighRange);
 
     this.severeLowRange = document.createElementNS(XMLNS, 'rect');
@@ -131,7 +145,7 @@ export class SeverityMeterComponent implements AfterViewInit, OnChanges {
     this.severeLowRange.setAttribute('width', '0');
     this.severeLowRange.setAttribute('height', '50');
     this.severeLowRange.setAttribute('shape-rendering', 'crispEdges');
-    this.severeLowRange.style.fill = '#800000';
+    this.severeLowRange.style.fill = this.severeColor;
     targetEl.appendChild(this.severeLowRange);
 
     this.severeHighRange = document.createElementNS(XMLNS, 'rect');
@@ -140,7 +154,7 @@ export class SeverityMeterComponent implements AfterViewInit, OnChanges {
     this.severeHighRange.setAttribute('width', '0');
     this.severeHighRange.setAttribute('height', '50');
     this.severeHighRange.setAttribute('shape-rendering', 'crispEdges');
-    this.severeHighRange.style.fill = '#800000';
+    this.severeHighRange.style.fill = this.severeColor;
     targetEl.appendChild(this.severeHighRange);
 
     this.indicator = document.createElementNS(XMLNS, 'polygon');
@@ -189,7 +203,11 @@ export class SeverityMeterComponent implements AfterViewInit, OnChanges {
     this.criticalLowRange.setAttribute('width', '0');
     this.indicator.style.visibility = 'hidden';
 
-    if (minLimit !== undefined && maxLimit !== undefined && minLimit !== maxLimit) {
+    if (
+      minLimit !== undefined &&
+      maxLimit !== undefined &&
+      minLimit !== maxLimit
+    ) {
       const meterMin = minLimit - (maxLimit - minLimit) / 5;
       const meterMax = maxLimit + (maxLimit - minLimit) / 5;
       const ratio = 100 / (meterMax - meterMin);
@@ -296,9 +314,15 @@ export class SeverityMeterComponent implements AfterViewInit, OnChanges {
 
       const currentValue = this.getNumericValue(this.pval);
       if (currentValue !== undefined) {
-        const constrained = Math.min(Math.max(currentValue, meterMin), meterMax);
+        const constrained = Math.min(
+          Math.max(currentValue, meterMin),
+          meterMax,
+        );
         const pos = (constrained - meterMin) * ratio;
-        this.indicator.setAttribute('points', `${pos},25 ${pos - 3.5},100 ${pos + 3.5},100`);
+        this.indicator.setAttribute(
+          'points',
+          `${pos},25 ${pos - 3.5},100 ${pos + 3.5},100`,
+        );
         this.indicator.style.visibility = 'visible';
       } else {
         this.indicator.style.visibility = 'hidden';

@@ -1,10 +1,7 @@
 <app-storage-page>
-  <app-storage-toolbar>
-    Storage &nbsp;&nbsp;&nbsp;
+  <app-storage-toolbar label="Storage">
     @if (mayManageBuckets()) {
-      <ya-page-button (clicked)="createBucket()" icon="add_circle_outline">
-        Create bucket
-      </ya-page-button>
+      <ya-page-button (clicked)="createBucket()" icon="add_box">Create bucket</ya-page-button>
     }
     @if (mayManageBuckets()) {
       <ya-page-button
@@ -16,15 +13,16 @@
     }
   </app-storage-toolbar>
 
-  <div class="panel-content">
-    <div class="filter-bar">
+  <ya-panel>
+    <ya-filter-bar>
       <ya-search-filter
         [formControl]="filterControl"
         placeholder="Filter buckets"
         (onArrowDown)="selectNext()"
         (onArrowUp)="selectPrevious()"
         (onEnter)="applySelection()" />
-    </div>
+    </ya-filter-bar>
+
     <table
       mat-table
       [dataSource]="dataSource"
@@ -34,22 +32,19 @@
       matSortDirection="asc"
       matSortDisableClear>
       <ng-container cdkColumnDef="select">
-        <th mat-header-cell *cdkHeaderCellDef class="checkbox">
-          @if (mayManageBuckets()) {
-            <input
-              type="checkbox"
-              (change)="$event ? masterToggle() : null"
-              [checked]="selection.hasValue() && isAllSelected()" />
-          }
+        <th
+          mat-header-cell
+          *cdkHeaderCellDef
+          class="checkbox"
+          (click)="cb.toggle(); $event.stopPropagation()">
+          <ya-table-checkbox #cb [dataSource]="dataSource" [selection]="selection" />
         </th>
-        <td mat-cell *cdkCellDef="let row" class="checkbox">
-          @if (mayManageBuckets()) {
-            <input
-              type="checkbox"
-              (click)="$event.stopPropagation()"
-              (change)="$event ? selection.toggle(row) : null"
-              [checked]="selection.isSelected(row)" />
-          }
+        <td
+          mat-cell
+          *cdkCellDef="let item"
+          class="checkbox"
+          (click)="cb.toggle(); $event.stopPropagation()">
+          <ya-table-checkbox #cb [dataSource]="dataSource" [selection]="selection" [item]="item" />
         </td>
       </ng-container>
 
@@ -132,12 +127,12 @@
         </td>
       </ng-container>
 
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
       <tr
         mat-row
-        *matRowDef="let row; columns: displayedColumns"
+        *matRowDef="let row; columns: displayedColumns()"
         [class.selected]="selection.isSelected(row)"
         (click)="toggleOne(row)"></tr>
     </table>
-  </div>
+  </ya-panel>
 </app-storage-page>

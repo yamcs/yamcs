@@ -1,32 +1,44 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+} from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
-import { CommandQueue, ConnectionInfo, MessageService, QueueEventsSubscription, QueueStatisticsSubscription, Synchronizer, TrackBySelectionModel, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  CommandQueue,
+  ConnectionInfo,
+  MessageService,
+  QueueEventsSubscription,
+  QueueStatisticsSubscription,
+  Synchronizer,
+  TrackBySelectionModel,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { SignificanceLevelComponent } from '../../../shared/significance-level/significance-level.component';
 
 @Component({
   templateUrl: './queues-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    WebappSdkModule,
-    SignificanceLevelComponent,
-  ],
+  imports: [WebappSdkModule, SignificanceLevelComponent],
 })
 export class QueuesListComponent implements AfterViewInit, OnDestroy {
-
   connectionInfo$: Observable<ConnectionInfo | null>;
 
   cqueues$ = new BehaviorSubject<CommandQueue[]>([]);
 
   dataSource = new MatTableDataSource<CommandQueue>();
-  selection = new TrackBySelectionModel<CommandQueue>((index: number, queue: CommandQueue) => {
-    return queue.name;
-  }, true, []);
+  selection = new TrackBySelectionModel<CommandQueue>(
+    (index: number, queue: CommandQueue) => {
+      return queue.name;
+    },
+    true,
+    [],
+  );
 
   // trackBy is needed to prevent menu from closing when the queue object is updated
   tableTrackerFn = (index: number, queue: CommandQueue) => queue.name;
@@ -50,7 +62,7 @@ export class QueuesListComponent implements AfterViewInit, OnDestroy {
   private queueEventSubscription: QueueEventsSubscription;
 
   // Regroup WebSocket updates (which are for 1 queue at a time)
-  private cqueueByName: { [key: string]: CommandQueue; } = {};
+  private cqueueByName: { [key: string]: CommandQueue } = {};
 
   constructor(
     readonly yamcs: YamcsService,
@@ -62,86 +74,85 @@ export class QueuesListComponent implements AfterViewInit, OnDestroy {
     title.setTitle('Queues');
     this.connectionInfo$ = yamcs.connectionInfo$;
 
-    yamcs.yamcsClient.getCommandQueues(yamcs.instance!, yamcs.processor!).then(cqueues => {
-      for (const cqueue of cqueues) {
-        this.cqueueByName[cqueue.name] = cqueue;
-      }
-      this.emitChange();
-    }).catch(err => messageService.showError(err));
+    yamcs.yamcsClient
+      .getCommandQueues(yamcs.instance!, yamcs.processor!)
+      .then((cqueues) => {
+        for (const cqueue of cqueues) {
+          this.cqueueByName[cqueue.name] = cqueue;
+        }
+        this.emitChange();
+      })
+      .catch((err) => messageService.showError(err));
 
     this.syncSubscription = synchronizer.syncFast(() => {
       this.visibility$.next(!this.visibility$.value);
     });
 
-    this.queueSubscription = yamcs.yamcsClient.createQueueStatisticsSubscription({
-      instance: yamcs.instance!,
-      processor: yamcs.processor!,
-    }, queue => {
-      const existingQueue = this.cqueueByName[queue.name];
-      if (existingQueue) {
-        // Update queue (but keep already known entries)
-        queue.entries = existingQueue.entries;
-        this.cqueueByName[queue.name] = queue;
-        this.emitChange();
-      }
-    });
-
-    this.queueEventSubscription = yamcs.yamcsClient.createQueueEventsSubscription({
-      instance: yamcs.instance!,
-      processor: yamcs.processor!,
-    }, queueEvent => {
-      const queue = this.cqueueByName[queueEvent.data.queueName];
-      if (queue) {
-        if (queueEvent.type === 'COMMAND_ADDED') {
-          queue.entries = queue.entries || [];
-          queue.entries.push(queueEvent.data);
-        } else if (queueEvent.type === 'COMMAND_UPDATED') {
-          const idx = (queue.entries || []).findIndex(entries => {
-            return entries.id === queueEvent.data.id;
-          });
-          if (idx !== -1) {
-            queue.entries[idx] = queueEvent.data;
+    this.queueSubscription =
+      yamcs.yamcsClient.createQueueStatisticsSubscription(
+        {
+          instance: yamcs.instance!,
+          processor: yamcs.processor!,
+        },
+        (queue) => {
+          const existingQueue = this.cqueueByName[queue.name];
+          if (existingQueue) {
+            // Update queue (but keep already known entries)
+            queue.entries = existingQueue.entries;
+            this.cqueueByName[queue.name] = queue;
+            this.emitChange();
           }
-        } else if (queueEvent.type === 'COMMAND_REJECTED') {
-          queue.entries = queue.entries || [];
-          queue.entries = queue.entries.filter(entry => {
-            return entry.id !== queueEvent.data.id;
-          });
-        } else if (queueEvent.type === 'COMMAND_SENT') {
-          queue.entries = queue.entries || [];
-          queue.entries = queue.entries.filter(entry => {
-            return entry.id !== queueEvent.data.id;
-          });
-        } else {
-          throw new Error(`Unexpected queue event ${queueEvent.type}`);
-        }
-        this.emitChange();
-      } else {
-        console.warn('Received an event for an unknown queue', queueEvent);
-      }
-    });
+        },
+      );
+
+    this.queueEventSubscription =
+      yamcs.yamcsClient.createQueueEventsSubscription(
+        {
+          instance: yamcs.instance!,
+          processor: yamcs.processor!,
+        },
+        (queueEvent) => {
+          const queue = this.cqueueByName[queueEvent.data.queueName];
+          if (queue) {
+            if (queueEvent.type === 'COMMAND_ADDED') {
+              queue.entries = queue.entries || [];
+              queue.entries.push(queueEvent.data);
+            } else if (queueEvent.type === 'COMMAND_UPDATED') {
+              const idx = (queue.entries || []).findIndex((entries) => {
+                return entries.id === queueEvent.data.id;
+              });
+              if (idx !== -1) {
+                queue.entries[idx] = queueEvent.data;
+              }
+            } else if (queueEvent.type === 'COMMAND_REJECTED') {
+              queue.entries = queue.entries || [];
+              queue.entries = queue.entries.filter((entry) => {
+                return entry.id !== queueEvent.data.id;
+              });
+            } else if (queueEvent.type === 'COMMAND_SENT') {
+              queue.entries = queue.entries || [];
+              queue.entries = queue.entries.filter((entry) => {
+                return entry.id !== queueEvent.data.id;
+              });
+            } else {
+              throw new Error(`Unexpected queue event ${queueEvent.type}`);
+            }
+            this.emitChange();
+          } else {
+            console.warn('Received an event for an unknown queue', queueEvent);
+          }
+        },
+      );
   }
 
   ngAfterViewInit() {
-    this.cqueues$.subscribe(cqueues => {
+    this.cqueues$.subscribe((cqueues) => {
       this.dataSource.data = cqueues;
       this.selection.matchNewValues(cqueues);
 
       // Needed to show table updates in combination with trackBy
       this.changeDetection.detectChanges();
     });
-  }
-
-  isAllSelected() {
-    const numSelected = this.selection.selected.length;
-    const numRows = this.dataSource.filteredData.length;
-    return numSelected === numRows && numRows > 0;
-  }
-
-  masterToggle() {
-    this.isAllSelected() ?
-      this.selection.clear() :
-      this.dataSource.filteredData.forEach(row => this.selection.select(row));
   }
 
   toggleOne(row: CommandQueue) {
@@ -169,7 +180,11 @@ export class QueuesListComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
-    this.yamcs.yamcsClient.enableCommandQueue(queue.instance, queue.processorName, queue.name);
+    this.yamcs.yamcsClient.enableCommandQueue(
+      queue.instance,
+      queue.processorName,
+      queue.name,
+    );
   }
 
   disableSelectedQueues() {
@@ -190,7 +205,11 @@ export class QueuesListComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
-    this.yamcs.yamcsClient.disableCommandQueue(queue.instance, queue.processorName, queue.name);
+    this.yamcs.yamcsClient.disableCommandQueue(
+      queue.instance,
+      queue.processorName,
+      queue.name,
+    );
   }
 
   blockSelectedQueues() {
@@ -200,7 +219,11 @@ export class QueuesListComponent implements AfterViewInit, OnDestroy {
   }
 
   blockQueue(queue: CommandQueue) {
-    this.yamcs.yamcsClient.blockCommandQueue(queue.instance, queue.processorName, queue.name);
+    this.yamcs.yamcsClient.blockCommandQueue(
+      queue.instance,
+      queue.processorName,
+      queue.name,
+    );
   }
 
   private emitChange() {

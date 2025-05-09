@@ -5,9 +5,7 @@ import { Packet, YamcsService } from '@yamcs/webapp-sdk';
   name: 'packetDownloadLink',
 })
 export class PacketDownloadLinkPipe implements PipeTransform {
-
-  constructor(private yamcs: YamcsService) {
-  }
+  constructor(private yamcs: YamcsService) {}
 
   transform(packet: Packet | null): string | null {
     if (!packet) {
@@ -16,6 +14,10 @@ export class PacketDownloadLinkPipe implements PipeTransform {
 
     const instance = this.yamcs.instance!;
     return this.yamcs.yamcsClient.getPacketDownloadURL(
-      instance, packet.id.name, packet.generationTime, packet.sequenceNumber);
+      instance,
+      packet.id.name,
+      packet.generationTime,
+      packet.sequenceNumber,
+    );
   }
 }

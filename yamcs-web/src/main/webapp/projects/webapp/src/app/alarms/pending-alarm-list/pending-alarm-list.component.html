@@ -1,8 +1,8 @@
-<app-instance-page>
-  <app-instance-toolbar>Alarms</app-instance-toolbar>
+<ya-instance-page>
+  <ya-instance-toolbar label="Alarms" />
 
   <div class="table-wrapper">
-    <div class="panel-content">
+    <ya-panel>
       <app-alarms-page-tabs />
       <div style="margin-top: 16px"></div>
       <app-alarms-table
@@ -10,6 +10,6 @@
         [selection]="selection"
         view="pending"
         [mayControl]="mayControlAlarms()" />
-    </div>
+    </ya-panel>
   </div>
-</app-instance-page>
+</ya-instance-page>

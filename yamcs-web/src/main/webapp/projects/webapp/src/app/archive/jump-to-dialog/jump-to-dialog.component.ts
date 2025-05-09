@@ -6,12 +6,9 @@ import { WebappSdkModule, utils } from '@yamcs/webapp-sdk';
 @Component({
   selector: 'app-jump-to-dialog',
   templateUrl: './jump-to-dialog.component.html',
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class JumpToDialogComponent {
-
   date = new UntypedFormControl(null, [Validators.required]);
 
   constructor(

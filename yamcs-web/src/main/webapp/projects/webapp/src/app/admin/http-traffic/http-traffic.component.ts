@@ -1,12 +1,24 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  ViewChild,
+} from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
-import { ClientConnectionInfo, HttpTraffic, HttpTrafficSubscription, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  ClientConnectionInfo,
+  HttpTraffic,
+  HttpTrafficSubscription,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AdminPageTemplateComponent } from '../shared/admin-page-template/admin-page-template.component';
-import { AdminToolbarComponent } from '../shared/admin-toolbar/admin-toolbar.component';
+import { AppAdminToolbar } from '../shared/admin-toolbar/admin-toolbar.component';
 import { UserAgentPipe } from './user-agent.pipe';
 
 @Component({
@@ -14,13 +26,12 @@ import { UserAgentPipe } from './user-agent.pipe';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AdminPageTemplateComponent,
-    AdminToolbarComponent,
+    AppAdminToolbar,
     WebappSdkModule,
     UserAgentPipe,
   ],
 })
 export class HttpTrafficComponent implements AfterViewInit, OnDestroy {
-
   @ViewChild(MatSort)
   sort: MatSort;
 
@@ -47,15 +58,13 @@ export class HttpTrafficComponent implements AfterViewInit, OnDestroy {
 
   private httpTrafficSubscription: HttpTrafficSubscription;
 
-  constructor(
-    yamcs: YamcsService,
-    title: Title,
-  ) {
+  constructor(yamcs: YamcsService, title: Title) {
     title.setTitle('HTTP traffic');
-    this.httpTrafficSubscription = yamcs.yamcsClient.createHttpTrafficSubscription(traffic => {
-      this.traffic$.next(traffic);
-      this.dataSource.data = traffic.connections;
-    });
+    this.httpTrafficSubscription =
+      yamcs.yamcsClient.createHttpTrafficSubscription((traffic) => {
+        this.traffic$.next(traffic);
+        this.dataSource.data = traffic.connections;
+      });
   }
 
   ngAfterViewInit() {

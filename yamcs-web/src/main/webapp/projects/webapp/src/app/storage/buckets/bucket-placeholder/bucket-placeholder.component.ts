@@ -11,9 +11,6 @@ import { RouterOutlet } from '@angular/router';
   selector: 'app-bucket-placeholder',
   template: '<router-outlet />',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    RouterOutlet,
-  ],
+  imports: [RouterOutlet],
 })
-export class BucketPlaceholderComponent {
-}
+export class BucketPlaceholderComponent {}

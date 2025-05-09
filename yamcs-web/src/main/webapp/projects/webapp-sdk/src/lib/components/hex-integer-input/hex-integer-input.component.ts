@@ -1,5 +1,17 @@
-import { ChangeDetectionStrategy, Component, ElementRef, forwardRef, ViewChild } from '@angular/core';
-import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormControl, Validator } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  forwardRef,
+  ViewChild,
+} from '@angular/core';
+import {
+  ControlValueAccessor,
+  NG_VALIDATORS,
+  NG_VALUE_ACCESSOR,
+  UntypedFormControl,
+  Validator,
+} from '@angular/forms';
 
 @Component({
   selector: 'ya-hex-integer-input',
@@ -11,7 +23,8 @@ import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormCont
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => YaHexIntegerInput),
       multi: true,
-    }, {
+    },
+    {
       provide: NG_VALIDATORS,
       useExisting: forwardRef(() => YaHexIntegerInput),
       multi: true,
@@ -19,11 +32,10 @@ import { ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, UntypedFormCont
   ],
 })
 export class YaHexIntegerInput implements ControlValueAccessor, Validator {
-
   @ViewChild('input', { static: true })
   private inputComponent: ElementRef;
 
-  private onChange = (_: number | null) => { };
+  private onChange = (_: number | null) => {};
 
   // Called for initial values, assuming decimal
   writeValue(value: any) {
@@ -62,13 +74,12 @@ export class YaHexIntegerInput implements ControlValueAccessor, Validator {
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any) {
-  }
+  registerOnTouched(fn: any) {}
 
   validate(control: UntypedFormControl) {
     if (!control.value) {
       return null;
     }
-    return isNaN(control.value) ? { 'notHex': true } : null;
+    return isNaN(control.value) ? { notHex: true } : null;
   }
 }

@@ -1,7 +1,22 @@
-import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
-import { ContextAlarmInfo, Parameter, ParameterMember, ParameterType, ParameterValue, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnChanges,
+} from '@angular/core';
+import {
+  ContextAlarmInfo,
+  Parameter,
+  ParameterMember,
+  ParameterType,
+  ParameterValue,
+  WebappSdkModule,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AlarmLevelComponent } from '../../../shared/alarm-level/alarm-level.component';
+import { ExpressionComponent } from '../../../shared/expression/expression.component';
 import { MarkdownComponent } from '../../../shared/markdown/markdown.component';
 import { SeverityMeterComponent } from '../severity-meter/severity-meter.component';
 
@@ -12,13 +27,13 @@ import { SeverityMeterComponent } from '../severity-meter/severity-meter.compone
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AlarmLevelComponent,
+    ExpressionComponent,
     MarkdownComponent,
     SeverityMeterComponent,
     WebappSdkModule,
   ],
 })
 export class ParameterDetailComponent implements OnChanges {
-
   @Input()
   parameter: Parameter;
 
@@ -33,8 +48,7 @@ export class ParameterDetailComponent implements OnChanges {
   entry$ = new BehaviorSubject<Parameter | ParameterMember | null>(null);
   ptype$ = new BehaviorSubject<ParameterType | null>(null);
 
-  constructor(readonly yamcs: YamcsService) {
-  }
+  constructor(readonly yamcs: YamcsService) {}
 
   ngOnChanges() {
     if (this.parameter) {

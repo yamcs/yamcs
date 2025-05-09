@@ -7,15 +7,14 @@
       New
       {{
         service.capabilities.download && service.capabilities.upload
-          ? "Transfer"
+          ? "transfer"
           : service.capabilities.upload
-            ? "Upload"
-            : "Download"
+            ? "upload"
+            : "download"
       }}
     </h2>
 
     <div class="grid-container">
-      <!-- BUCKETS COLUMN -->
       <div class="buckets-column header">
         <label class="table-caption">
           Buckets
@@ -53,10 +52,9 @@
         </table>
       </div>
 
-      <!-- LOCAL COLUMN -->
       <div class="local-column header">
         <label class="table-caption">
-          Local {{ service.localEntities && service.localEntities.length ? "Entity" : "" }}
+          Local {{ service.localEntities && service.localEntities.length ? "entity" : "" }}
           <select
             formControlName="localEntity"
             [ngStyle]="
@@ -117,7 +115,6 @@
         }
       </div>
 
-      <!-- REMOTE COLUMN -->
       @if (
         (service.remoteEntities && service.remoteEntities.length) || service.capabilities.fileList
       ) {
@@ -125,7 +122,7 @@
           class="remote-column header"
           [ngClass]="{ 'no-filelist': !service.capabilities.fileList }">
           <label class="table-caption">
-            Remote {{ service.remoteEntities && service.remoteEntities.length ? "Entity" : "" }}
+            Remote {{ service.remoteEntities && service.remoteEntities.length ? "entity" : "" }}
             <select
               formControlName="remoteEntity"
               [ngStyle]="

@@ -1,18 +1,16 @@
 <app-admin-page>
-  <app-admin-toolbar>
-    Services &nbsp;&nbsp;&nbsp;
-    <ya-page-icon-button (clicked)="refresh()" matTooltip="Refresh view" icon="refresh" />
+  <app-admin-toolbar label="Services">
+    <ya-page-button (clicked)="refresh()" icon="refresh">Refresh view</ya-page-button>
   </app-admin-toolbar>
 
-  <div class="panel-content">
-    <form [formGroup]="filterForm">
-      <div class="filter-bar">
-        <ya-select [options]="instanceOptions$ | async" formControlName="instance" />
-      </div>
-    </form>
+  <ya-panel>
+    <ya-filter-bar [formGroup]="filterForm">
+      <ya-select [options]="instanceOptions$ | async" formControlName="instance" />
+    </ya-filter-bar>
+
     <app-services-table
       [dataSource]="dataSource"
       (startService)="startService($event)"
       (stopService)="stopService($event)" />
-  </div>
+  </ya-panel>
 </app-admin-page>

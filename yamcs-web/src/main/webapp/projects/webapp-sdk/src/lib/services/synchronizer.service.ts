@@ -3,10 +3,9 @@ import { Observable, Subscription, timer } from 'rxjs';
 import { share } from 'rxjs/operators';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class Synchronizer {
-
   /**
    * Shared observable that emits every second.
    */
@@ -15,15 +14,9 @@ export class Synchronizer {
   private everyHalfSecond$: Observable<number>;
 
   constructor() {
-    this.everyFiveSeconds$ = timer(5000, 5000).pipe(
-      share(),
-    );
-    this.everySecond$ = timer(1000, 1000).pipe(
-      share(),
-    );
-    this.everyHalfSecond$ = timer(500, 500).pipe(
-      share(),
-    );
+    this.everyFiveSeconds$ = timer(5000, 5000).pipe(share());
+    this.everySecond$ = timer(1000, 1000).pipe(share());
+    this.everyHalfSecond$ = timer(500, 500).pipe(share());
   }
 
   /**

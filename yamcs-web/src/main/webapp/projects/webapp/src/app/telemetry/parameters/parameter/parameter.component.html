@@ -1,20 +1,22 @@
 @if (parameter$ | async; as parameter) {
-  <app-instance-page>
-    <app-instance-toolbar>
-      @for (parent of parameter.qualifiedName | parents; track parent; let isFirst = $first) {
-        @if (!isFirst) {
-          <a
-            routerLink="/telemetry/parameters"
-            class="ya-link ya-header-link"
-            [queryParams]="{ c: yamcs.context, system: parent.path }">
-            {{ parent.name }}
-          </a>
+  <ya-instance-page>
+    <ya-instance-toolbar>
+      <ng-template ya-instance-toolbar-label>
+        @for (parent of parameter.qualifiedName | parents; track parent; let isFirst = $first) {
+          @if (!isFirst) {
+            <a
+              routerLink="/telemetry/parameters"
+              class="ya-link ya-header-link"
+              [queryParams]="{ c: yamcs.context, system: parent.path }">
+              {{ parent.name }}
+            </a>
+          }
+          /
         }
-        /
-      }
-      <span>{{ parameter.qualifiedName | shortName }}{{ offset$ | async }}</span>
-      <ya-title-copy [text]="parameter.qualifiedName + ((offset$ | async) || '')" />
-      &nbsp;&nbsp;&nbsp;
+        <span>{{ parameter.qualifiedName | shortName }}{{ offset$ | async }}</span>
+        <ya-title-copy [text]="parameter.qualifiedName + ((offset$ | async) || '')" />
+      </ng-template>
+
       @if (isWritable() && maySetParameter() && !(offset$ | async)) {
         <ya-page-button (clicked)="setParameter()" icon="edit">Set value</ya-page-button>
       }
@@ -26,55 +28,51 @@
           View in MDB
         </ya-page-button>
       }
-    </app-instance-toolbar>
-    <nav #tabs mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
+    </ya-instance-toolbar>
+
+    <ya-page-tabs #tabs>
       <a
-        mat-tab-link
         routerLink="-/summary"
         routerLinkActive
         #rla="routerLinkActive"
-        [active]="rla.isActive"
+        [class.active]="rla.isActive"
         [queryParams]="{ c: yamcs.context }">
         Summary
       </a>
       @if (config.tmArchive) {
         <a
-          mat-tab-link
           routerLink="-/chart"
           routerLinkActive
           #rlb="routerLinkActive"
-          [active]="rlb.isActive"
+          [class.active]="rlb.isActive"
           [queryParams]="{ c: yamcs.context }">
           Chart
         </a>
       }
       @if (mayReadAlarms()) {
         <a
-          mat-tab-link
           routerLink="-/alarms"
           routerLinkActive
           #rlc="routerLinkActive"
-          [active]="rlc.isActive"
+          [class.active]="rlc.isActive"
           [queryParams]="{ c: yamcs.context }">
-          Alarm History
+          Alarm history
         </a>
       }
       @if (config.tmArchive) {
         <a
-          mat-tab-link
           routerLink="-/data"
           routerLinkActive
           #rld="routerLinkActive"
-          [active]="rld.isActive"
+          [class.active]="rld.isActive"
           [queryParams]="{ c: yamcs.context }">
-          Historical Data
+          Historical data
         </a>
       }
-    </nav>
+    </ya-page-tabs>
+
     <div class="tab-content-wrapper" [class.noscroll]="tabs.selectedIndex === 1">
-      <mat-tab-nav-panel #tabPanel>
-        <router-outlet />
-      </mat-tab-nav-panel>
+      <router-outlet />
     </div>
-  </app-instance-page>
+  </ya-instance-page>
 }

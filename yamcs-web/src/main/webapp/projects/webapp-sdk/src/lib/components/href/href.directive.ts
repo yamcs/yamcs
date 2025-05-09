@@ -1,6 +1,24 @@
 import { LocationStrategy } from '@angular/common';
-import { booleanAttribute, Directive, ElementRef, HostBinding, HostListener, Input, OnChanges, OnDestroy, Renderer2, ɵɵsanitizeUrlOrResourceUrl } from '@angular/core';
-import { Event, NavigationEnd, Params, QueryParamsHandling, Router, UrlTree } from '@angular/router';
+import {
+  booleanAttribute,
+  Directive,
+  ElementRef,
+  HostBinding,
+  HostListener,
+  Input,
+  OnChanges,
+  OnDestroy,
+  Renderer2,
+  ɵɵsanitizeUrlOrResourceUrl,
+} from '@angular/core';
+import {
+  Event,
+  NavigationEnd,
+  Params,
+  QueryParamsHandling,
+  Router,
+  UrlTree,
+} from '@angular/router';
 import { Subscription } from 'rxjs';
 import { SdkBridge } from '../../services/sdk-bridge.service';
 
@@ -14,12 +32,11 @@ import { SdkBridge } from '../../services/sdk-bridge.service';
   selector: '[yaHref]',
 })
 export class YaHref implements OnChanges, OnDestroy {
-
   @HostBinding('attr.target') @Input() target?: string;
   @Input() queryParams?: Params | null;
   @Input() queryParamsHandling?: QueryParamsHandling | null;
   @Input() fragment?: string;
-  @Input() state?: { [k: string]: any; };
+  @Input() state?: { [k: string]: any };
   @Input() info?: unknown;
   @Input({ transform: booleanAttribute }) preserveFragment: boolean = false;
   @Input({ transform: booleanAttribute }) skipLocationChange: boolean = false;
@@ -75,17 +92,19 @@ export class YaHref implements OnChanges, OnDestroy {
     const urlTree = this.urlTree;
     this.href =
       urlTree !== null && this.locationStrategy
-        ? this.locationStrategy?.prepareExternalUrl(this.router.serializeUrl(urlTree))
+        ? this.locationStrategy?.prepareExternalUrl(
+            this.router.serializeUrl(urlTree),
+          )
         : null;
 
     const sanitizedValue =
       this.href === null
         ? null
         : ɵɵsanitizeUrlOrResourceUrl(
-          this.href,
-          this.el.nativeElement.tagName.toLowerCase(),
-          'href',
-        );
+            this.href,
+            this.el.nativeElement.tagName.toLowerCase(),
+            'href',
+          );
     this.applyAttributeValue('href', sanitizedValue);
   }
 

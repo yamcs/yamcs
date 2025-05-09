@@ -1,81 +1,24 @@
 @if (plist$ | async; as plist) {
-  <div class="panel-content">
-    <form [formGroup]="filterForm">
-      <div class="filter-bar">
-        <ya-select icon="access_time" formControlName="interval" [options]="intervalOptions" />
+  <ya-panel>
+    <ya-filter-bar [formGroup]="filterForm">
+      <ya-select icon="access_time" formControlName="interval" [options]="intervalOptions" />
 
-        @if (filterForm.value["interval"] === "CUSTOM") {
-          <ya-date-time-input formControlName="customStart" />
-          <ya-date-time-input formControlName="customStop" />
-          <ya-button (click)="applyCustomDates()" [disabled]="filterForm.invalid">Apply</ya-button>
-        }
-
-        @if (filterForm.value["interval"] !== "CUSTOM") {
-          <ya-button (click)="jumpToNow()">Jump to now</ya-button>
-        }
-
-        <div style="flex: 1 1 auto"></div>
-
-        <ya-button
-          appearance="primary"
-          class="no-margin"
-          (click)="exportParameterData()"
-          icon="download">
-          Export CSV
-        </ya-button>
-      </div>
-    </form>
-
-    <div class="table-status">
-      <div class="toggles">
-        <!--ya-table-toggle #preserveLast preferenceKey="tmParameters.preserveLast">Preserve last value</ya-table-toggle-->
-      </div>
-
-      @switch (appliedInterval) {
-        @case ("PT1H") {
-          <span>
-            Showing data from
-            <b>the last hour</b>
-            ending at
-            <b>{{ validStop | datetime }}</b>
-            (Mission Time)
-          </span>
-        }
-        @case ("PT6H") {
-          <span>
-            Showing data from
-            <b>the last 6 hours</b>
-            ending at
-            <b>{{ validStop | datetime }}</b>
-            (Mission Time)
-          </span>
-        }
-        @case ("P1D") {
-          <span>
-            Showing data from
-            <b>the last 24 hours</b>
-            ending at
-            <b>{{ validStop | datetime }}</b>
-            (Mission Time)
-          </span>
-        }
-        @case ("NO_LIMIT") {
-          <span>
-            Showing data from
-            <b>all time</b>
-          </span>
-        }
-        @case ("CUSTOM") {
-          <span>
-            Showing data from
-            <b>{{ validStart | datetime }}</b>
-            to
-            <b>{{ validStop | datetime }}</b>
-            (Mission Time)
-          </span>
-        }
+      @if (filterForm.value["interval"] === "CUSTOM") {
+        <ya-date-time-input formControlName="customStart" />
+        <ya-date-time-input formControlName="customStop" />
+        <ya-button (click)="applyCustomDates()" [disabled]="filterForm.invalid">Apply</ya-button>
+      } @else {
+        <ya-button (click)="jumpToNow()">Jump to now</ya-button>
       }
-    </div>
+
+      <div style="flex: 1 1 auto"></div>
+
+      <ya-button appearance="primary" (click)="exportParameterData()" icon="download">
+        Export CSV
+      </ya-button>
+    </ya-filter-bar>
+
+    <ya-table-window [duration]="appliedInterval" [start]="validStart" [stop]="validStop" />
 
     @if (exportData$ | async; as exportData) {
       <div class="table-container">
@@ -106,5 +49,5 @@
         </table>
       </div>
     }
-  </div>
+  </ya-panel>
 }

@@ -1,0 +1,68 @@
+@switch (duration()) {
+  @case ("PT1H") {
+    <span>
+      Showing data from
+      <strong>the last hour</strong>
+      ending at
+      <strong>{{ stop() | datetime }}</strong>
+      (Mission Time)
+    </span>
+  }
+  @case ("PT6H") {
+    <span>
+      Showing data from
+      <strong>the last 6 hours</strong>
+      ending at
+      <strong>{{ stop() | datetime }}</strong>
+      (Mission Time)
+    </span>
+  }
+  @case ("P1D") {
+    <span>
+      Showing data from
+      <strong>the last 24 hours</strong>
+      ending at
+      <strong>{{ stop() | datetime }}</strong>
+      (Mission Time)
+    </span>
+  }
+  @case ("P1M") {
+    <span>
+      Showing data from
+      <strong>the last month</strong>
+      ending at
+      <strong>{{ stop() | datetime }}</strong>
+      (Mission Time)
+    </span>
+  }
+  @case ("P1Y") {
+    <span>
+      Showing data from
+      <strong>the last year</strong>
+      ending at
+      <strong>{{ stop() | datetime }}</strong>
+      (Mission Time)
+    </span>
+  }
+  @case ("NO_LIMIT") {
+    <span>
+      Showing data from
+      <strong>all time</strong>
+    </span>
+  }
+  @case ("CUSTOM") {
+    <span>
+      Showing data from
+      <strong>{{ start() | datetime }}</strong>
+      to
+      <strong>{{ stop() | datetime }}</strong>
+      (Mission Time)
+    </span>
+  }
+}
+
+<div style="flex: 1 1 auto"></div>
+
+<div class="ya-table-window-actions">
+  <ng-content />
+</div>

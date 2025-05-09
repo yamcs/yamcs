@@ -6,7 +6,8 @@ export type CustomBarsValue = [number, number, number] | null;
  * Sample for a time-based plot.
  * http://dygraphs.com/data.html#array
  */
-export type DySample = [Date, CustomBarsValue]
+export type DySample =
+  | [Date, CustomBarsValue]
   | [Date, CustomBarsValue, CustomBarsValue]
   | [Date, CustomBarsValue, CustomBarsValue, CustomBarsValue]
   | [Date, CustomBarsValue, CustomBarsValue, CustomBarsValue, CustomBarsValue];
@@ -128,11 +129,17 @@ export function analyzeStaticValueRanges(parameter: NamedParameterType) {
 
 function colorForLevel(level: string) {
   switch (level) {
-    case 'WATCH': return '#ffdddb';
-    case 'WARNING': return '#ffc3c1';
-    case 'DISTRESS': return '#ffaaa8';
-    case 'CRITICAL': return '#c35e5c';
-    case 'SEVERE': return '#a94442';
-    default: console.error('Unknown level ' + level);
+    case 'WATCH':
+      return '#ffdddb';
+    case 'WARNING':
+      return '#ffc3c1';
+    case 'DISTRESS':
+      return '#ffaaa8';
+    case 'CRITICAL':
+      return '#c35e5c';
+    case 'SEVERE':
+      return '#a94442';
+    default:
+      console.error('Unknown level ' + level);
   }
 }

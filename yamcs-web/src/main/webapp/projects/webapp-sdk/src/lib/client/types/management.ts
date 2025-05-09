@@ -9,8 +9,8 @@ export interface ListInstancesOptions {
 export interface CreateInstanceRequest {
   name: string;
   template: string;
-  templateArgs?: { [key: string]: string; };
-  labels?: { [key: string]: string; };
+  templateArgs?: { [key: string]: string };
+  labels?: { [key: string]: string };
 }
 
 export interface LinkEvent {
@@ -31,7 +31,7 @@ export interface Link {
   detailedStatus: string;
   parentName?: string;
   actions?: ActionInfo[];
-  extra?: { [key: string]: any; };
+  extra?: { [key: string]: any };
   parameters?: string[];
 }
 

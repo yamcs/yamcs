@@ -1,13 +1,16 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ViewChild,
+} from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { Clearance, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
-import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { SignificanceLevelComponent } from '../../../shared/significance-level/significance-level.component';
 import { ChangeLevelDialogComponent } from '../change-level-dialog/change-level-dialog.component';
 import { ClearancesPageTabsComponent } from '../clearances-page-tabs/clearances-page-tabs.component';
@@ -17,14 +20,11 @@ import { ClearancesPageTabsComponent } from '../clearances-page-tabs/clearances-
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ClearancesPageTabsComponent,
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
     WebappSdkModule,
     SignificanceLevelComponent,
   ],
 })
 export class ClearancesListComponent implements AfterViewInit {
-
   @ViewChild(MatSort)
   sort: MatSort;
 
@@ -43,7 +43,11 @@ export class ClearancesListComponent implements AfterViewInit {
   dataSource = new MatTableDataSource<Clearance>();
   selection = new SelectionModel<Clearance>(true, []);
 
-  constructor(private yamcs: YamcsService, title: Title, private dialog: MatDialog) {
+  constructor(
+    private yamcs: YamcsService,
+    title: Title,
+    private dialog: MatDialog,
+  ) {
     title.setTitle('Clearances');
     this.refresh();
   }
@@ -51,18 +55,6 @@ export class ClearancesListComponent implements AfterViewInit {
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
     this.dataSource.paginator = this.paginator;
-  }
-
-  isAllSelected() {
-    const numSelected = this.selection.selected.length;
-    const numRows = this.dataSource.filteredData.length;
-    return numSelected === numRows && numRows > 0;
-  }
-
-  masterToggle() {
-    this.isAllSelected() ?
-      this.selection.clear() :
-      this.dataSource.filteredData.forEach(row => this.selection.select(row));
   }
 
   toggleOne(row: Clearance) {
@@ -74,7 +66,7 @@ export class ClearancesListComponent implements AfterViewInit {
 
   refresh() {
     this.selection.clear();
-    this.yamcs.yamcsClient.getClearances().then(page => {
+    this.yamcs.yamcsClient.getClearances().then((page) => {
       this.dataSource.data = page.clearances || [];
     });
   }
@@ -93,18 +85,22 @@ export class ClearancesListComponent implements AfterViewInit {
       data: { clearance },
       width: '400px',
     });
-    dialogRef.afterClosed().subscribe(response => {
+    dialogRef.afterClosed().subscribe((response) => {
       if (response) {
         const promises: Array<Promise<any>> = [];
         if (response.level) {
           for (const clearance of this.selection.selected) {
-            promises.push(this.yamcs.yamcsClient.changeClearance(clearance.username, {
-              level: response.level
-            }));
+            promises.push(
+              this.yamcs.yamcsClient.changeClearance(clearance.username, {
+                level: response.level,
+              }),
+            );
           }
         } else {
           for (const clearance of this.selection.selected) {
-            promises.push(this.yamcs.yamcsClient.deleteClearance(clearance.username));
+            promises.push(
+              this.yamcs.yamcsClient.deleteClearance(clearance.username),
+            );
           }
         }
         if (promises.length) {

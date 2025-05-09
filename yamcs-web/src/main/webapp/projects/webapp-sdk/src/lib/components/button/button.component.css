@@ -17,7 +17,11 @@ button {
   border-radius: 1px;
   background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.02));
   cursor: pointer;
-  font: 400 12px / 12px Roboto, sans-serif;
+  font:
+    400 12px / 12px Roboto,
+    sans-serif;
+  display: flex;
+  align-items: center;
 }
 
 button:active {
@@ -40,11 +44,14 @@ button.toggled {
   color: var(--y-accent);
 }
 
-button .material-icons {
+button .icon {
+  margin-right: 6px;
+}
+
+button .material-symbols {
   font-size: 14px;
   height: 14px;
   width: 14px;
-  /*display: inline-flex;*/
   vertical-align: middle;
 }
 
@@ -66,4 +73,9 @@ button.text-only:hover {
 
 button.text-only:hover:not(:disabled) {
   background-color: #e6f1ef;
+}
+
+button.right-align {
+  display: flex;
+  justify-content: end;
 }

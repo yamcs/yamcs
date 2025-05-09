@@ -6,12 +6,9 @@ import { Service, WebappSdkModule } from '@yamcs/webapp-sdk';
   templateUrl: './service-state.component.html',
   styleUrl: './service-state.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class ServiceStateComponent {
-
   @Input()
   service: Service;
 }

@@ -1,35 +1,41 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  signal,
+  ViewChild,
+} from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Bucket, MessageService, StorageClient, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
-import { AuthService } from '../../../core/services/AuthService';
+import {
+  AuthService,
+  Bucket,
+  MessageService,
+  StorageClient,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { StoragePageTemplateComponent } from '../../storage-page-template/storage-page-template.component';
-import { StorageToolbarComponent } from '../../storage-toolbar/storage-toolbar.component';
+import { AppStorageToolbar } from '../../storage-toolbar/storage-toolbar.component';
 import { CreateBucketDialogComponent } from '../create-bucket-dialog/create-bucket-dialog.component';
 
 @Component({
   templateUrl: './bucket-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-    StoragePageTemplateComponent,
-    StorageToolbarComponent,
-  ],
+  imports: [AppStorageToolbar, StoragePageTemplateComponent, WebappSdkModule],
 })
 export class BucketListComponent implements AfterViewInit {
-
   filterControl = new UntypedFormControl();
 
   @ViewChild(MatSort, { static: true })
   sort: MatSort;
 
-  displayedColumns = [
-    'select',
+  displayedColumns = signal<string[]>([
     'name',
     'created',
     'size',
@@ -40,7 +46,7 @@ export class BucketListComponent implements AfterViewInit {
     'pctObjects',
     'location',
     'actions',
-  ];
+  ]);
 
   dataSource = new MatTableDataSource<Bucket>();
   selection = new SelectionModel<Bucket>(true, []);
@@ -61,6 +67,10 @@ export class BucketListComponent implements AfterViewInit {
 
     this.initializeOptions();
     this.refreshView();
+
+    if (this.mayManageBuckets()) {
+      this.displayedColumns.set(['select', ...this.displayedColumns()]);
+    }
   }
 
   ngAfterViewInit() {
@@ -87,18 +97,6 @@ export class BucketListComponent implements AfterViewInit {
     });
   }
 
-  isAllSelected() {
-    const numSelected = this.selection.selected.length;
-    const numRows = this.dataSource.filteredData.length;
-    return numSelected === numRows && numRows > 0;
-  }
-
-  masterToggle() {
-    this.isAllSelected() ?
-      this.selection.clear() :
-      this.dataSource.filteredData.forEach(row => this.selection.select(row));
-  }
-
   toggleOne(row: Bucket) {
     if (!this.selection.isSelected(row) || this.selection.selected.length > 1) {
       this.selection.clear();
@@ -110,7 +108,7 @@ export class BucketListComponent implements AfterViewInit {
     const dialogRef = this.dialog.open(CreateBucketDialogComponent, {
       width: '400px',
     });
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.refreshView();
       }
@@ -142,10 +140,13 @@ export class BucketListComponent implements AfterViewInit {
 
   deleteBucket(bucket: Bucket) {
     if (confirm(`Are you sure you want to delete the bucket ${bucket.name}?`)) {
-      this.storageClient.deleteBucket(bucket.name).then(() => {
-        this.selection.clear();
-        this.refreshView();
-      }).catch(err => this.messageService.showError(err));
+      this.storageClient
+        .deleteBucket(bucket.name)
+        .then(() => {
+          this.selection.clear();
+          this.refreshView();
+        })
+        .catch((err) => this.messageService.showError(err));
     }
   }
 
@@ -153,7 +154,8 @@ export class BucketListComponent implements AfterViewInit {
     const items = this.dataSource.filteredData;
     let idx = 0;
     if (this.selection.hasValue()) {
-      const currentItem = this.selection.selected[this.selection.selected.length - 1];
+      const currentItem =
+        this.selection.selected[this.selection.selected.length - 1];
       if (items.indexOf(currentItem) !== -1) {
         idx = Math.min(items.indexOf(currentItem) + 1, items.length - 1);
       }
@@ -184,9 +186,12 @@ export class BucketListComponent implements AfterViewInit {
 
   private refreshView() {
     this.updateURL();
-    this.storageClient.getBuckets().then(buckets => {
-      this.dataSource.data = buckets;
-    }).catch(err => this.messageService.showError(err));
+    this.storageClient
+      .getBuckets()
+      .then((buckets) => {
+        this.dataSource.data = buckets;
+      })
+      .catch((err) => this.messageService.showError(err));
   }
 
   private updateURL() {

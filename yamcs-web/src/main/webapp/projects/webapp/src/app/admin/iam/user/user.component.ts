@@ -2,10 +2,17 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
-import { ExternalIdentity, MessageService, UserInfo, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  ExternalIdentity,
+  MessageService,
+  UserInfo,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AdminPageTemplateComponent } from '../../shared/admin-page-template/admin-page-template.component';
-import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.component';
+import { AppAdminToolbarLabel } from '../../shared/admin-toolbar/admin-toolbar-label.directive';
+import { AppAdminToolbar } from '../../shared/admin-toolbar/admin-toolbar.component';
 import { ChangeUserPasswordDialogComponent } from '../change-user-password-dialog/change-user-password-dialog.component';
 
 @Component({
@@ -13,12 +20,12 @@ import { ChangeUserPasswordDialogComponent } from '../change-user-password-dialo
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AdminPageTemplateComponent,
-    AdminToolbarComponent,
+    AppAdminToolbar,
+    AppAdminToolbarLabel,
     WebappSdkModule,
   ],
 })
 export class UserComponent {
-
   user$ = new BehaviorSubject<UserInfo | null>(null);
 
   constructor(
@@ -28,28 +35,32 @@ export class UserComponent {
     private dialog: MatDialog,
     private messageService: MessageService,
   ) {
-
     // When clicking links pointing to this same component, Angular will not reinstantiate
     // the component. Therefore subscribe to routeParams
-    route.paramMap.subscribe(params => {
+    route.paramMap.subscribe((params) => {
       const username = params.get('username')!;
       this.changeUser(username);
     });
   }
 
   private changeUser(username: string) {
-    this.yamcs.yamcsClient.getUser(username).then(user => {
+    this.yamcs.yamcsClient.getUser(username).then((user) => {
       this.user$.next(user);
       this.title.setTitle(user.name);
     });
   }
 
   deleteIdentity(identity: ExternalIdentity) {
-    if (confirm(`Are you sure you want to delete the ${identity.provider} identity?`)) {
+    if (
+      confirm(
+        `Are you sure you want to delete the ${identity.provider} identity?`,
+      )
+    ) {
       const username = this.user$.value!.name;
-      this.yamcs.yamcsClient.deleteIdentity(username, identity.provider)
+      this.yamcs.yamcsClient
+        .deleteIdentity(username, identity.provider)
         .then(() => this.changeUser(username))
-        .catch(err => this.messageService.showError(err));
+        .catch((err) => this.messageService.showError(err));
     }
   }
 

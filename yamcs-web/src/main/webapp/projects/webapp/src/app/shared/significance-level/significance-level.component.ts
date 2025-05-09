@@ -1,4 +1,3 @@
-
 import { NgClass, NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { MatTooltip } from '@angular/material/tooltip';
@@ -8,14 +7,9 @@ import { MatTooltip } from '@angular/material/tooltip';
   templateUrl: './significance-level.component.html',
   styleUrl: './significance-level.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    MatTooltip,
-    NgClass,
-    NgTemplateOutlet,
-  ],
+  imports: [MatTooltip, NgClass, NgTemplateOutlet],
 })
 export class SignificanceLevelComponent {
-
   @Input()
   level: string;
 

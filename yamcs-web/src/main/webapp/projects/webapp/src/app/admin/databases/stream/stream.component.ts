@@ -7,15 +7,16 @@ import { Stream, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
   selector: 'app-stream-page',
   templateUrl: './stream.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class StreamComponent {
-
   stream$: Promise<Stream>;
 
-  constructor(route: ActivatedRoute, readonly yamcs: YamcsService, title: Title) {
+  constructor(
+    route: ActivatedRoute,
+    readonly yamcs: YamcsService,
+    title: Title,
+  ) {
     const snapshot = route.snapshot;
     const database = snapshot.parent!.paramMap.get('database')!;
     const name = snapshot.paramMap.get('stream')!;

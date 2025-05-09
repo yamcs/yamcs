@@ -1,13 +1,25 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  OnDestroy,
+  ViewChild,
+} from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
-import { ConnectionInfo, GetCommandsOptions, WebappSdkModule, YaColumnChooser, YaColumnInfo, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  ConnectionInfo,
+  GetCommandsOptions,
+  WebappSdkModule,
+  YaColumnChooser,
+  YaColumnInfo,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
 import { SignificanceLevelComponent } from '../../../shared/significance-level/significance-level.component';
 import { SendCommandWizardStepComponent } from '../send-command-wizard-step/send-command-wizard-step.component';
 import { CommandsDataSource, ListItem } from './commands.datasource';
@@ -17,15 +29,12 @@ import { CommandsDataSource, ListItem } from './commands.datasource';
   styleUrl: './send-command.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
     SendCommandWizardStepComponent,
     WebappSdkModule,
     SignificanceLevelComponent,
   ],
 })
 export class SendCommandComponent implements AfterViewInit, OnDestroy {
-
   connectionInfo$: Observable<ConnectionInfo | null>;
 
   pageSize = 100;
@@ -72,14 +81,18 @@ export class SendCommandComponent implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    this.filterControl.setValue(this.route.snapshot.queryParamMap.get('filter'));
+    this.filterControl.setValue(
+      this.route.snapshot.queryParamMap.get('filter'),
+    );
     this.changeSystem(this.route.snapshot.queryParamMap);
 
-    this.queryParamMapSubscription = this.route.queryParamMap.subscribe(map => {
-      if (map.get('system') !== this.system) {
-        this.changeSystem(map);
-      }
-    });
+    this.queryParamMapSubscription = this.route.queryParamMap.subscribe(
+      (map) => {
+        if (map.get('system') !== this.system) {
+          this.changeSystem(map);
+        }
+      },
+    );
     this.filterControl.valueChanges.subscribe(() => {
       this.paginator.pageIndex = 0;
       this.updateDataSource();
@@ -110,7 +123,13 @@ export class SendCommandComponent implements AfterViewInit, OnDestroy {
       details: true,
       pos: this.paginator.pageIndex * this.pageSize,
       limit: this.pageSize,
-      fields: ['name', 'qualifiedName', 'alias', 'effectiveSignificance', 'shortDescription'],
+      fields: [
+        'name',
+        'qualifiedName',
+        'alias',
+        'effectiveSignificance',
+        'shortDescription',
+      ],
     };
     const filterValue = this.filterControl.value;
     if (filterValue) {
@@ -129,7 +148,11 @@ export class SendCommandComponent implements AfterViewInit, OnDestroy {
       }
       const aliasColumns = [];
       for (const namespace of this.dataSource.getAliasNamespaces()) {
-        const aliasColumn = { id: namespace, label: namespace, alwaysVisible: true };
+        const aliasColumn = {
+          id: namespace,
+          label: namespace,
+          alwaysVisible: true,
+        };
         aliasColumns.push(aliasColumn);
       }
       this.columns.splice(1, 0, ...aliasColumns); // Insert after name column
@@ -197,9 +220,12 @@ export class SendCommandComponent implements AfterViewInit, OnDestroy {
       const item = this.selection.selected[0];
       const items = this.dataSource.items$.value;
       if (item.command && items.indexOf(item) !== -1) {
-        this.router.navigate(['/commanding/send' + item.command?.qualifiedName], {
-          queryParams: { c: this.yamcs.context }
-        });
+        this.router.navigate(
+          ['/commanding/send' + item.command?.qualifiedName],
+          {
+            queryParams: { c: this.yamcs.context },
+          },
+        );
       }
     }
   }

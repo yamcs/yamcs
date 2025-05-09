@@ -6,12 +6,9 @@ import { OpiDisplayViewerComponent } from '../opi-display-viewer/opi-display-vie
 @Component({
   selector: 'app-opi-display-viewer-controls',
   templateUrl: './opi-display-viewer-controls.component.html',
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class OpiDisplayViewerControlsComponent {
-
   initialized$ = new BehaviorSubject<boolean>(false);
 
   viewer: OpiDisplayViewerComponent;

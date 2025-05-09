@@ -1,6 +1,9 @@
 import { CommandOption, CommandStep, Value } from '@yamcs/webapp-sdk';
 
-export function parseXML(text: string, commandOptions: CommandOption[]): CommandStep[] {
+export function parseXML(
+  text: string,
+  commandOptions: CommandOption[],
+): CommandStep[] {
   const xmlParser = new DOMParser();
   const doc = xmlParser.parseFromString(text, 'text/xml') as XMLDocument;
   return parseRoot(doc.documentElement, commandOptions);
@@ -10,7 +13,8 @@ function parseRoot(root: Node, commandOptions: CommandOption[]) {
   const entries: CommandStep[] = [];
   for (let i = 0; i < root.childNodes.length; i++) {
     const child = root.childNodes[i];
-    if (child.nodeType !== 3) { // Ignore text or whitespace
+    if (child.nodeType !== 3) {
+      // Ignore text or whitespace
       if (child.nodeName === 'command') {
         const entry = parseEntry(child as Element, commandOptions);
         entries.push(entry);
@@ -21,9 +25,12 @@ function parseRoot(root: Node, commandOptions: CommandOption[]) {
   return entries;
 }
 
-function parseEntry(node: Element, commandOptions: CommandOption[]): CommandStep {
-  const args: { [key: string]: any; } = {};
-  const extra: { [key: string]: Value; } = {};
+function parseEntry(
+  node: Element,
+  commandOptions: CommandOption[],
+): CommandStep {
+  const args: { [key: string]: any } = {};
+  const extra: { [key: string]: Value } = {};
   for (let i = 0; i < node.childNodes.length; i++) {
     const child = node.childNodes[i] as Element;
     if (child.nodeName === 'commandArgument') {
@@ -40,7 +47,11 @@ function parseEntry(node: Element, commandOptions: CommandOption[]): CommandStep
         if (extraChild.nodeName === 'extraOption') {
           const id = getStringAttribute(extraChild, 'id');
           const stringValue = getStringAttribute(extraChild, 'value');
-          const value = convertOptionStringToValue(id, stringValue, commandOptions);
+          const value = convertOptionStringToValue(
+            id,
+            stringValue,
+            commandOptions,
+          );
           if (value) {
             extra[id] = value;
           }
@@ -71,7 +82,11 @@ function getStringAttribute(node: Node, name: string) {
   }
 }
 
-function convertOptionStringToValue(id: string, value: string, commandOptions: CommandOption[]): Value | null {
+function convertOptionStringToValue(
+  id: string,
+  value: string,
+  commandOptions: CommandOption[],
+): Value | null {
   for (const option of commandOptions) {
     if (option.id === id) {
       switch (option.type) {

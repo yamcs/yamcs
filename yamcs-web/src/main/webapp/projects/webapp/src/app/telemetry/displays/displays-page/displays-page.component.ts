@@ -11,9 +11,6 @@ import { RouterOutlet } from '@angular/router';
   selector: 'app-displays-page',
   template: '<router-outlet />',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    RouterOutlet,
-  ],
+  imports: [RouterOutlet],
 })
-export class DisplaysPage {
-}
+export class DisplaysPage {}

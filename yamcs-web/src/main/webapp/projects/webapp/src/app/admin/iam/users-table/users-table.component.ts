@@ -1,4 +1,13 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { UserInfo, WebappSdkModule } from '@yamcs/webapp-sdk';
@@ -7,12 +16,9 @@ import { UserInfo, WebappSdkModule } from '@yamcs/webapp-sdk';
   selector: 'app-users-table',
   templateUrl: './users-table.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class UsersTableComponent implements AfterViewInit, OnChanges {
-
   displayedColumns = [
     'name',
     'displayName',

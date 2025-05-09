@@ -28,7 +28,8 @@ tr.item-detail:not(.expanded) {
   border-right: 1px solid #e5e5e5;
 }
 
-.dl-horizontal dt, .dl-horizontal dd {
+.dl-horizontal dt,
+.dl-horizontal dd {
   line-height: 20px;
 }
 

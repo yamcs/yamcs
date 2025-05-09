@@ -1,20 +1,17 @@
-<app-instance-page>
-  <app-instance-toolbar>
-    Parameter lists &nbsp;&nbsp;&nbsp;
+<ya-instance-page>
+  <ya-instance-toolbar label="Parameter lists">
     @if (mayManageParameterLists()) {
-      <ya-page-button
-        routerLink="create"
-        [queryParams]="{ c: yamcs.context }"
-        icon="add_circle_outline">
+      <ya-page-button routerLink="create" [queryParams]="{ c: yamcs.context }" icon="add_box">
         Create list
       </ya-page-button>
     }
-  </app-instance-toolbar>
+  </ya-instance-toolbar>
 
-  <div class="panel-content">
-    <div class="filter-bar">
+  <ya-panel>
+    <ya-filter-bar>
       <ya-search-filter [formControl]="filterControl" placeholder="Filter lists" />
-    </div>
+    </ya-filter-bar>
+
     <table mat-table [dataSource]="dataSource" class="ya-data-table expand">
       <ng-container matColumnDef="name">
         <th mat-header-cell *matHeaderCellDef>Name</th>
@@ -48,5 +45,5 @@
     @if (!dataSource.data.length) {
       <ya-empty-message>No rows to display</ya-empty-message>
     }
-  </div>
-</app-instance-page>
+  </ya-panel>
+</ya-instance-page>

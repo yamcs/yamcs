@@ -1,0 +1,55 @@
+:host {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  font-weight: 400;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  background-color: var(--y-background-color);
+  box-sizing: content-box;
+  padding: 0 16px 0 24px;
+  font:
+    400 20px / 28px Roboto,
+    sans-serif;
+  letter-spacing: 0.25px;
+}
+
+.ya-instance-toolbar-label {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 48px;
+}
+
+.ya-instance-toolbar-content {
+  display: inline-flex;
+  align-items: center;
+  column-gap: 8px;
+}
+
+.drop-down {
+  border-left: 1px solid #d3d3d3;
+  min-width: 0;
+  padding: 0 8px;
+}
+
+.hide {
+  visibility: hidden;
+}
+
+.range,
+.processor-time {
+  font-size: 12px;
+  letter-spacing: 1.07143px;
+}
+
+.processor-time {
+  margin-right: 8px;
+}
+
+.processor-time.paused {
+  font-style: italic;
+}
+
+.icon-action {
+  display: flex;
+  align-items: center;
+}

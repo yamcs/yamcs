@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, SecurityContext } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  SecurityContext,
+} from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 
 /**
@@ -10,7 +17,6 @@ import { DomSanitizer } from '@angular/platform-browser';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class YaActionLogSummary {
-
   sanitizer = inject(DomSanitizer);
 
   text = input<string>();

@@ -1,10 +1,7 @@
-<app-instance-page>
-  <app-instance-toolbar>
-    Displays &nbsp;&nbsp;&nbsp;
+<ya-instance-page>
+  <ya-instance-toolbar label="Displays">
     @if (mayManageDisplays()) {
-      <ya-page-button (clicked)="createDisplay()" icon="add_circle_outline">
-        Create display
-      </ya-page-button>
+      <ya-page-button (clicked)="createDisplay()" icon="add_box">Create display</ya-page-button>
     }
     @if (mayManageDisplays()) {
       <ya-page-button (clicked)="uploader.click()" icon="file_upload">
@@ -25,7 +22,7 @@
         Delete
       </ya-page-button>
     }
-  </app-instance-toolbar>
+  </ya-instance-toolbar>
 
   <div
     #droparea
@@ -39,7 +36,7 @@
       (dragleave)="dragLeave($event)"
       (drop)="drop($event)"></div>
 
-    <div class="panel-content">
+    <ya-panel>
       @if (breadcrumb$ | async; as breadcrumb) {
         @if (breadcrumb.length) {
           <ya-breadcrumb-trail>
@@ -59,24 +56,26 @@
       @if (dataSource && dataSource.data.length) {
         <table mat-table [dataSource]="dataSource" class="ya-data-table expand">
           <ng-container cdkColumnDef="select">
-            <th mat-header-cell *cdkHeaderCellDef class="checkbox">
-              @if (mayManageDisplays()) {
-                <input
-                  type="checkbox"
-                  (change)="$event ? masterToggle() : null"
-                  [checked]="selection.hasValue() && isAllSelected()" />
-              }
+            <th
+              mat-header-cell
+              *cdkHeaderCellDef
+              class="checkbox"
+              (click)="cb.toggle(); $event.stopPropagation()">
+              <ya-table-checkbox #cb [dataSource]="dataSource" [selection]="selection" />
             </th>
-            <td mat-cell *cdkCellDef="let row" class="checkbox">
-              @if (mayManageDisplays()) {
-                <input
-                  type="checkbox"
-                  (click)="$event.stopPropagation()"
-                  (change)="$event ? selection.toggle(row) : null"
-                  [checked]="selection.isSelected(row)" />
-              }
+            <td
+              mat-cell
+              *cdkCellDef="let item"
+              class="checkbox"
+              (click)="cb.toggle(); $event.stopPropagation()">
+              <ya-table-checkbox
+                #cb
+                [dataSource]="dataSource"
+                [selection]="selection"
+                [item]="item" />
             </td>
           </ng-container>
+
           <ng-container cdkColumnDef="name">
             <th mat-header-cell *cdkHeaderCellDef>Name</th>
             <td mat-cell *cdkCellDef="let item">
@@ -103,6 +102,7 @@
               }
             </td>
           </ng-container>
+
           <ng-container cdkColumnDef="type">
             <th mat-header-cell *cdkHeaderCellDef>Type</th>
             <td mat-cell *cdkCellDef="let item">
@@ -113,6 +113,7 @@
               }
             </td>
           </ng-container>
+
           <ng-container cdkColumnDef="visibility">
             <th mat-header-cell *cdkHeaderCellDef>Visibility</th>
             <td mat-cell *cdkCellDef="let item">Private</td>
@@ -123,6 +124,7 @@
               {{ (item.modified | datetime) || "-" }}
             </td>
           </ng-container>
+
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef class="expand"></th>
             <td mat-cell *matCellDef="let item">
@@ -138,16 +140,17 @@
               }
             </td>
           </ng-container>
-          <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
+
+          <tr mat-header-row *cdkHeaderRowDef="displayedColumns()"></tr>
           <tr
             mat-row
-            *cdkRowDef="let row; columns: displayedColumns"
+            *cdkRowDef="let row; columns: displayedColumns()"
             [class.selected]="selection.isSelected(row)"
             (click)="toggleOne(row)"></tr>
         </table>
       } @else {
         <ya-empty-message>Empty directory.</ya-empty-message>
       }
-    </div>
+    </ya-panel>
   </div>
-</app-instance-page>
+</ya-instance-page>

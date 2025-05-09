@@ -39,7 +39,8 @@ export interface HistoryInfo {
   author: string;
 }
 
-export type DataSource = 'COMMAND'
+export type DataSource =
+  | 'COMMAND'
   | 'COMMAND_HISTORY'
   | 'CONSTANT'
   | 'DERIVED'
@@ -133,7 +134,6 @@ export interface AlarmInfo {
 }
 
 export interface ContextAlarmInfo {
-  comparison: ComparisonInfo[];
   context: string;
   alarm: AlarmInfo;
 }
@@ -160,9 +160,8 @@ export interface Calibrator {
 }
 
 export interface ContextCalibrator {
-  comparison: ComparisonInfo[];
-  calibrator: Calibrator;
   context: string;
+  calibrator: Calibrator;
 }
 
 export interface PolynomialCalibrator {
@@ -259,7 +258,13 @@ export interface ArgumentAssignment {
 }
 
 export interface Significance {
-  consequenceLevel: 'NONE' | 'WATCH' | 'WARNING' | 'DISTRESS' | 'CRITICAL' | 'SEVERE';
+  consequenceLevel:
+    | 'NONE'
+    | 'WATCH'
+    | 'WARNING'
+    | 'DISTRESS'
+    | 'CRITICAL'
+    | 'SEVERE';
   reasonForWarning: string;
 }
 
@@ -283,7 +288,13 @@ export interface EnumRange {
   description?: string;
 }
 
-export type AlarmLevelType = 'NORMAL' | 'WATCH' | 'WARNING' | 'DISTRESS' | 'CRITICAL' | 'SEVERE';
+export type AlarmLevelType =
+  | 'NORMAL'
+  | 'WATCH'
+  | 'WARNING'
+  | 'DISTRESS'
+  | 'CRITICAL'
+  | 'SEVERE';
 
 export interface AlarmRange {
   level: AlarmLevelType;
@@ -365,23 +376,10 @@ export interface Container extends NameDescription {
   entry?: SequenceEntry[];
 }
 
-export type OperatorType = 'EQUAL_TO'
-  | 'NOT_EQUAL_TO'
-  | 'GREATER_THAN'
-  | 'GREATER_THAN_OR_EQUAL_TO'
-  | 'SMALLER_THAN'
-  | 'SMALLER_THAN_OR_EQUAL_TO';
-
-export interface ComparisonInfo {
-  parameter: Parameter;
-  operator: OperatorType;
-  value: string;
-}
-
 export interface SequenceEntry {
   locationInBits: number;
   referenceLocation: 'CONTAINER_START' | 'PREVIOUS_ENTRY';
-  repeat: RepeatInfo;
+  repeat?: RepeatInfo;
 
   container?: Container;
   parameter?: Parameter;

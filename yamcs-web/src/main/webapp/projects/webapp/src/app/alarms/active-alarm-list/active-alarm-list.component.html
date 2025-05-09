@@ -1,48 +1,52 @@
-<app-instance-page>
-  <app-instance-toolbar>
-    Alarms
-    <ya-help>
-      An alarm can be in these states:
-      <table class="ya-data-table">
-        <tr>
-          <td width="1">
-            <mat-icon class="icon16" style="vertical-align: middle">
-              notification_important
-            </mat-icon>
-          </td>
-          <td>The alarm is unacknowledged and the cause of the alarm still exists.</td>
-        </tr>
-        <tr>
-          <td>
-            <mat-icon class="icon16" style="vertical-align: middle">notifications_none</mat-icon>
-          </td>
-          <td>
-            The alarm is unacknowledged and the cause that generated the alarm no longer exists.
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <mat-icon class="icon16" style="vertical-align: middle">check_circle</mat-icon>
-          </td>
-          <td>The alarm is acknowledged and the cause of the alarm still exists.</td>
-        </tr>
-        <tr>
-          <td>
-            <mat-icon class="icon16" style="vertical-align: middle">check_circle_outline</mat-icon>
-          </td>
-          <td>
-            The alarm is acknowledged and the cause that generated the alarm no longer exists.
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <mat-icon class="icon16" style="vertical-align: middle">timer</mat-icon>
-          </td>
-          <td>The alarm was shelved.</td>
-        </tr>
-      </table>
-    </ya-help>
-    &nbsp;&nbsp;&nbsp;
+<ya-instance-page>
+  <ya-instance-toolbar>
+    <ng-template ya-instance-toolbar-label>
+      Alarms
+      <ya-help>
+        An alarm can be in these states:
+        <table class="ya-data-table">
+          <tr>
+            <td width="1">
+              <mat-icon class="icon16" style="vertical-align: middle">
+                notification_important
+              </mat-icon>
+            </td>
+            <td>The alarm is unacknowledged and the cause of the alarm still exists.</td>
+          </tr>
+          <tr>
+            <td>
+              <mat-icon class="icon16" style="vertical-align: middle">notifications_none</mat-icon>
+            </td>
+            <td>
+              The alarm is unacknowledged and the cause that generated the alarm no longer exists.
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <mat-icon class="icon16" style="vertical-align: middle">check_circle</mat-icon>
+            </td>
+            <td>The alarm is acknowledged and the cause of the alarm still exists.</td>
+          </tr>
+          <tr>
+            <td>
+              <mat-icon class="icon16" style="vertical-align: middle">
+                check_circle_outline
+              </mat-icon>
+            </td>
+            <td>
+              The alarm is acknowledged and the cause that generated the alarm no longer exists.
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <mat-icon class="icon16" style="vertical-align: middle">timer</mat-icon>
+            </td>
+            <td>The alarm was shelved.</td>
+          </tr>
+        </table>
+      </ya-help>
+    </ng-template>
+
     @if (mayControlAlarms()) {
       <ya-page-button
         (clicked)="acknowledgeAlarms(selection.selected)"
@@ -59,7 +63,7 @@
         Shelve
       </ya-page-button>
     }
-  </app-instance-toolbar>
+  </ya-instance-toolbar>
 
   <ya-detail-pane>
     @if (detailAlarm$ | async; as detailAlarm) {
@@ -80,8 +84,9 @@
 
   <div class="table-wrapper">
     @if (dataSource) {
-      <div class="panel-content">
+      <ya-panel>
         <app-alarms-page-tabs />
+
         <dl class="dl-horizontal">
           <dt>Unacknowledged alarms:</dt>
           <dd>
@@ -96,12 +101,12 @@
             <strong>{{ (dataSource.shelvedAlarms$ | async)?.length }}</strong>
           </dd>
         </dl>
-        <form [formGroup]="filterForm">
-          <div class="filter-bar">
-            <ya-search-filter formControlName="filter" placeholder="Filter by text search" />
-            <ya-select [options]="viewOptions" formControlName="view" />
-          </div>
-        </form>
+
+        <ya-filter-bar [formGroup]="filterForm">
+          <ya-search-filter formControlName="filter" placeholder="Filter by text search" />
+          <ya-select [options]="viewOptions" formControlName="view" />
+        </ya-filter-bar>
+
         <app-alarms-table
           [dataSource]="dataSource"
           [selection]="selection"
@@ -110,7 +115,7 @@
           (acknowledgeAlarm)="acknowledgeAlarms([$event])"
           (shelveAlarm)="shelveAlarms([$event])"
           (unshelveAlarm)="unshelveAlarms([$event])" />
-      </div>
+      </ya-panel>
     }
   </div>
-</app-instance-page>
+</ya-instance-page>

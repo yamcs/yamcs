@@ -1,0 +1,12 @@
+:host {
+  display: flex;
+  column-gap: 7px;
+  height: 24px;
+  margin-bottom: 12px;
+}
+
+@media print {
+  :host {
+    display: none !important;
+  }
+}

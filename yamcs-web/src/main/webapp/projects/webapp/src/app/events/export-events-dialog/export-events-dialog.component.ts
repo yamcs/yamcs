@@ -1,17 +1,23 @@
 import { Component, Inject, OnDestroy } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import {
+  UntypedFormControl,
+  UntypedFormGroup,
+  Validators,
+} from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { DownloadEventsOptions, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  DownloadEventsOptions,
+  WebappSdkModule,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 @Component({
   templateUrl: './export-events-dialog.component.html',
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class ExportEventsDialogComponent implements OnDestroy {
-
   private formChangeSubscription: Subscription;
 
   downloadURL$ = new BehaviorSubject<string | null>(null);
@@ -69,7 +75,10 @@ export class ExportEventsDialogComponent implements OnDestroy {
         const source = this.form.value['source'];
         dlOptions.source = source;
       }
-      const url = this.yamcs.yamcsClient.getEventsDownloadURL(this.yamcs.instance!, dlOptions);
+      const url = this.yamcs.yamcsClient.getEventsDownloadURL(
+        this.yamcs.instance!,
+        dlOptions,
+      );
       this.downloadURL$.next(url);
     } else {
       this.downloadURL$.next(null);

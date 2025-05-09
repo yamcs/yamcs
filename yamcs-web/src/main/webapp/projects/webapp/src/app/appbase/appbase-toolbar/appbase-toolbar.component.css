@@ -1,0 +1,31 @@
+:host {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  font-weight: 400;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  background-color: var(--y-background-color);
+  box-sizing: content-box;
+  padding: 0 16px 0 24px;
+  font:
+    400 20px / 28px Roboto,
+    sans-serif;
+  letter-spacing: 0.25px;
+}
+
+.app-appbase-toolbar-label {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 48px;
+}
+
+.app-appbase-toolbar-content {
+  display: inline-flex;
+  align-items: center;
+  column-gap: 8px;
+}
+
+.icon-action {
+  display: flex;
+  align-items: center;
+}

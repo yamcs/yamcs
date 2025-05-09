@@ -1,9 +1,12 @@
 import { DataSource } from '@angular/cdk/table';
-import { Algorithm, GetAlgorithmsOptions, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  Algorithm,
+  GetAlgorithmsOptions,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 
 export class AlgorithmsDataSource extends DataSource<Algorithm> {
-
   algorithms$ = new BehaviorSubject<Algorithm[]>([]);
   totalSize$ = new BehaviorSubject<number>(0);
   loading$ = new BehaviorSubject<boolean>(false);
@@ -18,11 +21,13 @@ export class AlgorithmsDataSource extends DataSource<Algorithm> {
 
   loadAlgorithms(options: GetAlgorithmsOptions) {
     this.loading$.next(true);
-    return this.yamcs.yamcsClient.getAlgorithms(this.yamcs.instance!, options).then(page => {
-      this.loading$.next(false);
-      this.totalSize$.next(page.totalSize);
-      this.algorithms$.next(page.algorithms || []);
-    });
+    return this.yamcs.yamcsClient
+      .getAlgorithms(this.yamcs.instance!, options)
+      .then((page) => {
+        this.loading$.next(false);
+        this.totalSize$.next(page.totalSize);
+        this.algorithms$.next(page.algorithms || []);
+      });
   }
 
   disconnect() {

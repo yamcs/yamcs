@@ -13,7 +13,6 @@ import { Pipe, PipeTransform } from '@angular/core';
   name: 'userAgent',
 })
 export class UserAgentPipe implements PipeTransform {
-
   transform(value: string): string {
     if (!value) {
       return value;

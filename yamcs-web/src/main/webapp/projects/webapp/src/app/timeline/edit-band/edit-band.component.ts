@@ -1,12 +1,22 @@
 import { Location } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import { FormArray, FormGroup, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import {
+  FormArray,
+  FormGroup,
+  UntypedFormBuilder,
+  UntypedFormGroup,
+  Validators,
+} from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MessageService, TimelineBand, UpdateTimelineBandRequest, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  MessageService,
+  TimelineBand,
+  UpdateTimelineBandRequest,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { InstancePageTemplateComponent } from '../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../shared/instance-toolbar/instance-toolbar.component';
 import { EditCommandBandComponent } from '../command-band/edit-command-band/edit-command-band.component';
 import { EditItemBandComponent } from '../item-band/edit-item-band/edit-item-band.component';
 import { EditParameterPlotComponent } from '../parameter-plot/edit-parameter-plot/edit-parameter-plot.component';
@@ -25,13 +35,10 @@ import { EditTimeRulerComponent } from '../time-ruler/edit-time-ruler/edit-time-
     EditParameterStatesComponent,
     EditSpacerComponent,
     EditTimeRulerComponent,
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
     WebappSdkModule,
   ],
 })
 export class EditBandComponent implements OnDestroy {
-
   form: UntypedFormGroup;
   dirty$ = new BehaviorSubject<boolean>(false);
 
@@ -51,19 +58,21 @@ export class EditBandComponent implements OnDestroy {
     title.setTitle('Edit band');
     const id = route.snapshot.paramMap.get('band')!;
     this.band$ = yamcs.yamcsClient.getTimelineBand(yamcs.instance!, id);
-    this.band$.then(band => {
-      this.form = formBuilder.group({
-        name: [band.name, [Validators.required]],
-        description: [band.description || ''],
-        tags: [band.tags || []],
-        traces: formBuilder.array([]), // Used by parameter plot
-        valueMappings: formBuilder.array([]), // Used by parameter states
-        properties: formBuilder.group({}), // Properties are added in sub-components
-      });
-      this.formSubscription = this.form.valueChanges.subscribe(() => {
-        this.dirty$.next(true);
-      });
-    }).catch(err => this.messageService.showError(err));
+    this.band$
+      .then((band) => {
+        this.form = formBuilder.group({
+          name: [band.name, [Validators.required]],
+          description: [band.description || ''],
+          tags: [band.tags || []],
+          traces: formBuilder.array([]), // Used by parameter plot
+          valueMappings: formBuilder.array([]), // Used by parameter states
+          properties: formBuilder.group({}), // Properties are added in sub-components
+        });
+        this.formSubscription = this.form.valueChanges.subscribe(() => {
+          this.dirty$.next(true);
+        });
+      })
+      .catch((err) => this.messageService.showError(err));
   }
 
   doOnConfirm() {
@@ -97,9 +106,12 @@ export class EditBandComponent implements OnDestroy {
 
     removeUnsetProperties(options.properties || {});
 
-    this.yamcs.yamcsClient.updateTimelineBand(this.yamcs.instance!, id, options)
-      .then(() => this.router.navigateByUrl(`/timeline/bands?c=${this.yamcs.context}`))
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .updateTimelineBand(this.yamcs.instance!, id, options)
+      .then(() =>
+        this.router.navigateByUrl(`/timeline/bands?c=${this.yamcs.context}`),
+      )
+      .catch((err) => this.messageService.showError(err));
   }
 
   get traces() {

@@ -1,21 +1,22 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit,
+  inject,
+} from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { PreferenceStore } from '../../services/preference-store.service';
-
 
 @Component({
   selector: 'ya-table-toggle',
   templateUrl: './table-toggle.component.html',
   styleUrl: './table-toggle.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    MatSlideToggle,
-    ReactiveFormsModule,
-  ],
+  imports: [MatSlideToggle, ReactiveFormsModule],
 })
 export class YaTableToggle implements OnInit {
-
   @Input()
   preferenceKey: string;
 
@@ -28,7 +29,7 @@ export class YaTableToggle implements OnInit {
       this.preferenceStore.addPreference$(this.preferenceKey, false);
       const checked = this.preferenceStore.getValue(this.preferenceKey);
       this.formControl.setValue(checked);
-      this.formControl.valueChanges.subscribe(checked => {
+      this.formControl.valueChanges.subscribe((checked) => {
         this.preferenceStore.setValue(this.preferenceKey, checked);
       });
     }

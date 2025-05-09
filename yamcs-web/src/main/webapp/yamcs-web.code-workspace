@@ -1,53 +1,45 @@
 {
   "folders": [
     {
-      "path": "."
-    }
+      "path": ".",
+    },
   ],
   "extensions": {
-    "recommendations": [
-      "angular.ng-template",
-      "esbenp.prettier-vscode"
-    ]
+    "recommendations": ["angular.ng-template", "esbenp.prettier-vscode"],
   },
   "settings": {
     "css.format.enable": true,
     "editor.codeActionsOnSave": {
-      "source.organizeImports": "explicit"
+      "source.organizeImports": "explicit",
     },
     "editor.detectIndentation": false,
     "editor.tabSize": 2,
     "files.insertFinalNewline": true,
     "files.trimTrailingWhitespace": true,
     "html.format.enable": true,
-    "html.format.wrapAttributes": "preserve-aligned",
     "javascript.format.enable": true,
-    "javascript.format.semicolons": "insert",
     "javascript.preferences.importModuleSpecifier": "relative",
-    "javascript.preferences.quoteStyle": "single",
     "json.format.enable": true,
     "search.exclude": {
       "**/dist": true,
-      "**/node_modules": true
+      "**/node_modules": true,
     },
     "typescript.format.enable": true,
-    "typescript.format.semicolons": "insert",
-    "typescript.preferences.importModuleSpecifier": "relative",
-    "typescript.preferences.quoteStyle": "single",
+    "typescript.preferences.importModuleSpecifier": "project-relative",
     "[css]": {
-      "editor.defaultFormatter": "vscode.css-language-features"
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
     },
     "[html]": {
-      "editor.defaultFormatter": "esbenp.prettier-vscode"
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
     },
     "[json]": {
-      "editor.defaultFormatter": "vscode.json-language-features"
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
     },
     "[jsonc]": {
-      "editor.defaultFormatter": "vscode.json-language-features"
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
     },
     "[typescript]": {
-      "editor.defaultFormatter": "vscode.typescript-language-features"
-    }
-  }
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+    },
+  },
 }

@@ -1,12 +1,17 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ViewChild,
+} from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute } from '@angular/router';
-import { BaseComponent, Route, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import { BaseComponent, Route, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AdminPageTemplateComponent } from '../../shared/admin-page-template/admin-page-template.component';
-import { AdminToolbarComponent } from '../../shared/admin-toolbar/admin-toolbar.component';
+import { AppAdminToolbar } from '../../shared/admin-toolbar/admin-toolbar.component';
 import { RouteDetailComponent } from '../route-detail/route-detail.component';
 
 @Component({
@@ -15,13 +20,12 @@ import { RouteDetailComponent } from '../route-detail/route-detail.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AdminPageTemplateComponent,
-    AdminToolbarComponent,
+    AppAdminToolbar,
     RouteDetailComponent,
     WebappSdkModule,
   ],
 })
 export class RouteListComponent extends BaseComponent implements AfterViewInit {
-
   filterControl = new UntypedFormControl();
 
   @ViewChild(MatSort, { static: true })
@@ -40,15 +44,14 @@ export class RouteListComponent extends BaseComponent implements AfterViewInit {
 
   selectedRoute$ = new BehaviorSubject<Route | null>(null);
 
-  constructor(
-    private yamcs: YamcsService,
-    private route: ActivatedRoute,
-  ) {
+  constructor(private route: ActivatedRoute) {
     super();
     this.setTitle('API routes');
     this.dataSource.filterPredicate = (rec, filter) => {
-      return rec.url.toLowerCase().indexOf(filter) >= 0 ||
-        rec.description.toLowerCase().indexOf(filter) >= 0;
+      return (
+        rec.url.toLowerCase().indexOf(filter) >= 0 ||
+        rec.description.toLowerCase().indexOf(filter) >= 0
+      );
     };
   }
 
@@ -71,7 +74,7 @@ export class RouteListComponent extends BaseComponent implements AfterViewInit {
   }
 
   refresh() {
-    this.yamcs.yamcsClient.getRoutes().then(page => {
+    this.yamcs.yamcsClient.getRoutes().then((page) => {
       this.dataSource.data = page.routes || [];
     });
   }

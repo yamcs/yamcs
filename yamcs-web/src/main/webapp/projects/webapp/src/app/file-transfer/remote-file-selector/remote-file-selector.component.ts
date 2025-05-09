@@ -1,7 +1,24 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, forwardRef, Input, OnChanges, OnDestroy, Output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  forwardRef,
+  Input,
+  OnChanges,
+  OnDestroy,
+  Output,
+  signal,
+} from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
-import { ActionInfo, FileListExtraColumnInfo, ListFilesResponse, WebappSdkModule, YaColumnInfo } from '@yamcs/webapp-sdk';
+import {
+  ActionInfo,
+  FileListExtraColumnInfo,
+  ListFilesResponse,
+  WebappSdkModule,
+  YaColumnInfo,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 export interface FileActionRequest {
@@ -14,17 +31,18 @@ export interface FileActionRequest {
   templateUrl: './remote-file-selector.component.html',
   styleUrl: './remote-file-selector.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
+  imports: [WebappSdkModule],
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => RemoteFileSelectorComponent),
+      multi: true,
+    },
   ],
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => RemoteFileSelectorComponent),
-    multi: true
-  }]
 })
-export class RemoteFileSelectorComponent implements ControlValueAccessor, OnChanges, OnDestroy {
-
+export class RemoteFileSelectorComponent
+  implements ControlValueAccessor, OnChanges, OnDestroy
+{
   @Input()
   isMultiSelect: boolean;
 
@@ -52,7 +70,11 @@ export class RemoteFileSelectorComponent implements ControlValueAccessor, OnChan
   @Output()
   onAction = new EventEmitter<FileActionRequest>();
 
-  displayedColumns$ = new BehaviorSubject<string[]>(['name', 'size', 'modified']);
+  displayedColumns$ = new BehaviorSubject<string[]>([
+    'name',
+    'size',
+    'modified',
+  ]);
   extraColumns$ = new BehaviorSubject<YaColumnInfo[]>([]);
   dataSource = new MatTableDataSource<RemoteFileItem>([]);
   progressMessage = signal<string | null>(null);
@@ -62,13 +84,12 @@ export class RemoteFileSelectorComponent implements ControlValueAccessor, OnChan
   private selectedFileNames: Set<string> = new Set();
   private lastSelected: RemoteFileItem;
 
-  private onChange = (_: string | null) => { };
-  private onTouched = () => { };
+  private onChange = (_: string | null) => {};
+  private onTouched = () => {};
 
   private selectionSubscription: Subscription;
 
-  constructor(private changeDetection: ChangeDetectorRef) {
-  }
+  constructor(private changeDetection: ChangeDetectorRef) {}
 
   // Called when inputs have changed
   ngOnChanges() {
@@ -103,7 +124,12 @@ export class RemoteFileSelectorComponent implements ControlValueAccessor, OnChan
     // Only clear folder (and get new file list) if we are entering a different folder.
     // If the user selects the same folder at the breadcrumb we must not clear the table.
     if (newPrefix !== this.currentPrefix$.value) {
-      const dir: ListFilesResponse = { files: [], destination: '', remotePath: '', listTime: '' };
+      const dir: ListFilesResponse = {
+        files: [],
+        destination: '',
+        remotePath: '',
+        listTime: '',
+      };
       this.setFolderContent(prefix, dir);
     }
   }
@@ -152,12 +178,19 @@ export class RemoteFileSelectorComponent implements ControlValueAccessor, OnChan
       if (this.isMultiSelect && event.ctrlKey) {
         this.flipRowSelection(row);
       } else if (this.isMultiSelect && event.shiftKey) {
-        if (this.selectedFileNames.size == 0 || !this.lastSelected || this.lastSelected.name === row.name) {
+        if (
+          this.selectedFileNames.size == 0 ||
+          !this.lastSelected ||
+          this.lastSelected.name === row.name
+        ) {
           this.flipRowSelection(row);
         } else {
           let select = false;
           for (const candidate of this.dataSource.data) {
-            if (candidate.name === row.name || candidate.name === this.lastSelected.name) {
+            if (
+              candidate.name === row.name ||
+              candidate.name === this.lastSelected.name
+            ) {
               select = !select;
             }
             if (select) {
@@ -167,7 +200,10 @@ export class RemoteFileSelectorComponent implements ControlValueAccessor, OnChan
           this.selectedFileNames.add(row.name);
         }
       } else {
-        if (this.selectedFileNames.size == 1 && this.selectedFileNames.has(row.name)) {
+        if (
+          this.selectedFileNames.size == 1 &&
+          this.selectedFileNames.has(row.name)
+        ) {
           this.selectedFileNames.clear();
         } else {
           this.selectedFileNames.clear();
@@ -193,7 +229,7 @@ export class RemoteFileSelectorComponent implements ControlValueAccessor, OnChan
 
   // Update form
   private updateFileNames() {
-    this.onChange(Array.from(this.selectedFileNames).join("|"));
+    this.onChange(Array.from(this.selectedFileNames).join('|'));
   }
 
   runFileAction(file: string, action: ActionInfo) {
@@ -209,7 +245,8 @@ export class RemoteFileSelectorComponent implements ControlValueAccessor, OnChan
     if (currentPrefix) {
       const withoutTrailingSlash = currentPrefix.slice(0, -1);
       const idx = withoutTrailingSlash.lastIndexOf('/');
-      const parentPrefix = idx != -1 ? withoutTrailingSlash.substring(0, idx + 1) : undefined;
+      const parentPrefix =
+        idx != -1 ? withoutTrailingSlash.substring(0, idx + 1) : undefined;
       this.selectedFileNames.clear();
       this.updateFileNames();
       this.loadCurrentFolder(parentPrefix);
@@ -243,7 +280,7 @@ export class RemoteFileItem {
   folder: boolean;
   name: string;
   displayName: string;
-  extra: { [key: string]: any; };
+  extra: { [key: string]: any };
   modified?: string;
   size?: number;
 }

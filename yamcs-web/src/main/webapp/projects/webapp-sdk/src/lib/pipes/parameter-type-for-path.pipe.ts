@@ -6,8 +6,10 @@ import { getParameterTypeForPath } from '../utils';
   name: 'parameterTypeForPath',
 })
 export class ParameterTypeForPathPipe implements PipeTransform {
-
-  transform(parameter: Parameter, pathString?: string): ParameterType | null | undefined {
+  transform(
+    parameter: Parameter,
+    pathString?: string,
+  ): ParameterType | null | undefined {
     return getParameterTypeForPath(parameter, pathString);
   }
 }

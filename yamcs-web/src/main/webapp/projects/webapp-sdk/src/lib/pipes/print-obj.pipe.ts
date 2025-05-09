@@ -4,7 +4,6 @@ import { Pipe, PipeTransform } from '@angular/core';
   name: 'printObj',
 })
 export class PrintObjPipe implements PipeTransform {
-
   transform(obj: any): string | null {
     if (!obj) {
       return obj;
@@ -12,7 +11,7 @@ export class PrintObjPipe implements PipeTransform {
     return this.doPrint(obj);
   }
 
-  private doPrint(obj: { [key: string]: any; }): string {
+  private doPrint(obj: { [key: string]: any }): string {
     if (typeof obj === 'number') {
       return '' + obj;
     } else if (typeof obj === 'boolean') {

@@ -12,7 +12,6 @@ export interface Parent {
   name: 'parents',
 })
 export class ParentsPipe implements PipeTransform {
-
   transform(path: string | null): Parent[] | null {
     if (!path) {
       return null;
@@ -22,7 +21,6 @@ export class ParentsPipe implements PipeTransform {
     if (idx === -1) {
       return [];
     } else {
-
       const segments = path.split('/');
       if (segments.length > 1) {
         segments.splice(segments.length - 1, 1);

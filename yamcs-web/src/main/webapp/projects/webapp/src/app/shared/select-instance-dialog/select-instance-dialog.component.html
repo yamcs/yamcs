@@ -1,15 +1,17 @@
 <h2 mat-dialog-title>Select instance</h2>
 
 <mat-dialog-content>
-  <div class="filter-bar">
+  <ya-filter-bar>
     <ya-search-filter
       [formControl]="filterControl"
       placeholder="Filter instances"
       width="100%"
       (onArrowDown)="selectNext()"
       (onArrowUp)="selectPrevious()"
-      (onEnter)="applySelection()" />
-  </div>
+      (onEnter)="applySelection()"
+      style="flex: 1 1 auto" />
+  </ya-filter-bar>
+
   <div class="scrollpane">
     <table mat-table [dataSource]="dataSource" class="ya-data-table" style="width: 100%">
       <ng-container cdkColumnDef="selected">
@@ -35,6 +37,13 @@
         </td>
       </ng-container>
 
+      <ng-container cdkColumnDef="actions">
+        <th mat-header-cell *cdkHeaderCellDef class="expand"></th>
+        <td mat-cell *cdkCellDef="let row">
+          <ya-text-action icon="play_arrow" (click)="selectInstance(row)">Select</ya-text-action>
+        </td>
+      </ng-container>
+
       <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
       <tr
         mat-row
@@ -42,10 +51,6 @@
         [class.selected]="selection.isSelected(row)"
         (click)="selection.toggle(row)"></tr>
     </table>
-
-    @if (isCreateInstanceEnabled()) {
-      <a mat-button routerLink="/create-instance" mat-dialog-close color="primary">NEW INSTANCE</a>
-    }
   </div>
 </mat-dialog-content>
 
@@ -53,7 +58,7 @@
   <mat-paginator [pageSize]="100" [hidePageSize]="true" [showFirstLastButtons]="true" />
   <div style="flex: 1 1 auto"></div>
 
-  <ya-button mat-dialog-close>CANCEL</ya-button>
+  <ya-button mat-dialog-close>Cancel</ya-button>
 
   <ya-button appearance="primary" [disabled]="selection.isEmpty()" (click)="applySelection()">
     SELECT

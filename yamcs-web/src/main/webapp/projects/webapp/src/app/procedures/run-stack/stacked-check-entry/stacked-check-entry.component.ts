@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, effect, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  input,
+} from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { ParameterValue, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { AlarmLevelComponent } from '../../../shared/alarm-level/alarm-level.component';
@@ -25,7 +30,7 @@ interface Record {
 })
 export class StackedCheckEntryComponent {
   entry = input.required<StackedCheckEntry>();
-  pvals = input.required<{ [key: string]: ParameterValue; }>();
+  pvals = input.required<{ [key: string]: ParameterValue }>();
 
   dataSource = new MatTableDataSource<Record>();
   displayedColumns = ['parameter', 'level', 'value'];

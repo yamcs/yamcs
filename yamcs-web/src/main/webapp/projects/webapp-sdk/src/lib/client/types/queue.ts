@@ -42,9 +42,19 @@ export interface CommandQueue {
 }
 
 export interface CommandQueueEvent {
-  type: 'COMMAND_ADDED' | 'COMMAND_UPDATED' | 'COMMAND_REJECTED' | 'COMMAND_SENT';
+  type:
+    | 'COMMAND_ADDED'
+    | 'COMMAND_UPDATED'
+    | 'COMMAND_REJECTED'
+    | 'COMMAND_SENT';
   data: CommandQueueEntry;
 }
 
-export type QueueStatisticsSubscription = WebSocketCall<SubscribeQueueStatisticsRequest, CommandQueue>;
-export type QueueEventsSubscription = WebSocketCall<SubscribeQueueEventsRequest, CommandQueueEvent>;
+export type QueueStatisticsSubscription = WebSocketCall<
+  SubscribeQueueStatisticsRequest,
+  CommandQueue
+>;
+export type QueueEventsSubscription = WebSocketCall<
+  SubscribeQueueEventsRequest,
+  CommandQueueEvent
+>;

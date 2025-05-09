@@ -2,10 +2,9 @@ import { CountedValue } from './CountedValue';
 import { canMerge, copyState, State } from './State';
 
 export class StateRemapper {
+  private mappings: Array<{ [key: string]: any }> = [];
 
-  private mappings: Array<{ [key: string]: any; }> = [];
-
-  addMapping(mapping: { [key: string]: any; }) {
+  addMapping(mapping: { [key: string]: any }) {
     this.mappings.push(mapping);
   }
 
@@ -58,7 +57,9 @@ export class StateRemapper {
     // If there were mappings applied, we may need to combine some values together
     const squashedValues: CountedValue[] = [];
     for (const mappedValue of mappedValues) {
-      let prevMatch = squashedValues.find(candidate => candidate.value === mappedValue.value);
+      let prevMatch = squashedValues.find(
+        (candidate) => candidate.value === mappedValue.value,
+      );
       if (prevMatch) {
         prevMatch.count += mappedValue.count;
       } else {
@@ -82,9 +83,12 @@ export class StateRemapper {
       }
     }
 
-    const frequentValues = [...countsByValue.entries()].sort((a, b) => {
-      return b[1] - a[1]; // Descending by count
-    }).slice(0, maxValues).map(entry => entry[0]);
+    const frequentValues = [...countsByValue.entries()]
+      .sort((a, b) => {
+        return b[1] - a[1]; // Descending by count
+      })
+      .slice(0, maxValues)
+      .map((entry) => entry[0]);
 
     for (const state of states) {
       for (let i = state.values.length - 1; i >= 0; i--) {
@@ -109,7 +113,7 @@ export class StateRemapper {
         prevState.otherCount += state.otherCount;
         prevState.stop = state.stop;
         for (const v of state.values) {
-          let prev = prevState.values.find(x => x.value === v.value);
+          let prev = prevState.values.find((x) => x.value === v.value);
           if (prev) {
             prev.count += v.count;
           } else {

@@ -1,7 +1,6 @@
 import { CountedValue } from './CountedValue';
 
 export interface State {
-
   start: number;
 
   stop: number;
@@ -35,14 +34,23 @@ export function copyState(state: State): State {
 }
 
 export function canMerge(a: State, b: State): boolean {
-  if ((a.otherCount === 0 && b.otherCount !== 0) || (a.otherCount !== 0 && b.otherCount === 0)) {
+  if (
+    (a.otherCount === 0 && b.otherCount !== 0) ||
+    (a.otherCount !== 0 && b.otherCount === 0)
+  ) {
     return false;
   }
   if (a.stop !== b.start) {
     return false;
   }
-  const aVals = a.values.filter(countedValue => countedValue.count > 0).map(countedValue => countedValue.value).sort();
-  const bVals = b.values.filter(countedValue => countedValue.count > 0).map(countedValue => countedValue.value).sort();
+  const aVals = a.values
+    .filter((countedValue) => countedValue.count > 0)
+    .map((countedValue) => countedValue.value)
+    .sort();
+  const bVals = b.values
+    .filter((countedValue) => countedValue.count > 0)
+    .map((countedValue) => countedValue.value)
+    .sort();
   if (aVals.length !== bVals.length) {
     return false;
   }

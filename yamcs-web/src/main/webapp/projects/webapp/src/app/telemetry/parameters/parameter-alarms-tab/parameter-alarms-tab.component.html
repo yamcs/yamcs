@@ -1,61 +1,21 @@
-<div class="panel-content">
-  <form [formGroup]="filter">
-    <div class="filter-bar">
-      <ya-select formControlName="interval" [options]="intervalOptions" icon="access_time" />
+<ya-panel>
+  <ya-filter-bar [formGroup]="filter">
+    <ya-select formControlName="interval" [options]="intervalOptions" icon="access_time" />
 
-      @if (filter.value["interval"] === "CUSTOM") {
-        <ya-date-time-input formControlName="customStart" />
-        <ya-date-time-input formControlName="customStop" />
-        <ya-button (click)="applyCustomDates()" [disabled]="filter.invalid">Apply</ya-button>
-      }
-
-      @if (filter.value["interval"] !== "CUSTOM") {
-        <ya-button (click)="jumpToNow()">Jump to now</ya-button>
-      }
-
-      @if (dataSource.loading$ | async) {
-        <ya-dots />
-      }
-    </div>
-  </form>
-
-  <div class="table-status">
-    @switch (appliedInterval) {
-      @case ("P1M") {
-        <span>
-          Showing data from
-          <b>the last month</b>
-          ending at
-          <b>{{ validStop | datetime }}</b>
-          (Mission Time)
-        </span>
-      }
-      @case ("P1Y") {
-        <span>
-          Showing data from
-          <b>the last year</b>
-          ending at
-          <b>{{ validStop | datetime }}</b>
-          (Mission Time)
-        </span>
-      }
-      @case ("NO_LIMIT") {
-        <span>
-          Showing data from
-          <b>all time</b>
-        </span>
-      }
-      @case ("CUSTOM") {
-        <span>
-          Showing data from
-          <b>{{ validStart | datetime }}</b>
-          to
-          <b>{{ validStop | datetime }}</b>
-          (Mission Time)
-        </span>
-      }
+    @if (filter.value["interval"] === "CUSTOM") {
+      <ya-date-time-input formControlName="customStart" />
+      <ya-date-time-input formControlName="customStop" />
+      <ya-button (click)="applyCustomDates()" [disabled]="filter.invalid">Apply</ya-button>
+    } @else {
+      <ya-button (click)="jumpToNow()">Jump to now</ya-button>
     }
-  </div>
+
+    @if (dataSource.loading$ | async) {
+      <ya-dots />
+    }
+  </ya-filter-bar>
+
+  <ya-table-window [duration]="appliedInterval" [start]="validStart" [stop]="validStop" />
 
   <app-parameter-alarms-table [dataSource]="dataSource" />
 
@@ -66,10 +26,8 @@
   }
 
   @if (!(dataSource.loading$ | async) && !dataSource.isEmpty()) {
-    <mat-toolbar>
-      <span style="flex: 1 1 auto"></span>
+    <ya-toolbar appearance="bottom" align="center">
       <ya-button [disabled]="!dataSource.hasMore()" (click)="loadMoreData()">Load more</ya-button>
-      <span style="flex: 1 1 auto"></span>
-    </mat-toolbar>
+    </ya-toolbar>
   }
-</div>
+</ya-panel>

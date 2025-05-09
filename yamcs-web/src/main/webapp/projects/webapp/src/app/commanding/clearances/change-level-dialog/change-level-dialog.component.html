@@ -2,34 +2,38 @@
 
 <mat-dialog-content>
   <form [formGroup]="form" class="ya-form">
-    <label>
-      <input type="radio" formControlName="level" value="DISABLED" />
-      <span style="font-weight: normal">No clearance</span>
-    </label>
-    <label>
-      <input type="radio" formControlName="level" value="NONE" />
-      <app-significance-level level="NONE" [grayscale]="true" />
-    </label>
-    <label>
-      <input type="radio" formControlName="level" value="WATCH" />
-      <app-significance-level level="WATCH" [grayscale]="true" />
-    </label>
-    <label>
-      <input type="radio" formControlName="level" value="WARNING" />
-      <app-significance-level level="WARNING" [grayscale]="true" />
-    </label>
-    <label>
-      <input type="radio" formControlName="level" value="DISTRESS" />
-      <app-significance-level level="DISTRESS" [grayscale]="true" />
-    </label>
-    <label>
-      <input type="radio" formControlName="level" value="CRITICAL" />
-      <app-significance-level level="CRITICAL" [grayscale]="true" />
-    </label>
-    <label>
-      <input type="radio" formControlName="level" value="SEVERE" />
-      <app-significance-level level="SEVERE" [grayscale]="true" />
-    </label>
+    <ya-field>
+      <div class="radio-group">
+        <label class="radio" [class.checked]="form.value.level === 'DISABLED'">
+          <input type="radio" formControlName="level" value="DISABLED" />
+          No clearance
+        </label>
+        <label class="radio" [class.checked]="form.value.level === 'NONE'">
+          <input type="radio" formControlName="level" value="NONE" />
+          <app-significance-level level="NONE" [grayscale]="true" />
+        </label>
+        <label class="radio" [class.checked]="form.value.level === 'WATCH'">
+          <input type="radio" formControlName="level" value="WATCH" />
+          <app-significance-level level="WATCH" [grayscale]="true" />
+        </label>
+        <label class="radio" [class.checked]="form.value.level === 'WARNING'">
+          <input type="radio" formControlName="level" value="WARNING" />
+          <app-significance-level level="WARNING" [grayscale]="true" />
+        </label>
+        <label class="radio" [class.checked]="form.value.level === 'DISTRESS'">
+          <input type="radio" formControlName="level" value="DISTRESS" />
+          <app-significance-level level="DISTRESS" [grayscale]="true" />
+        </label>
+        <label class="radio" [class.checked]="form.value.level === 'CRITICAL'">
+          <input type="radio" formControlName="level" value="CRITICAL" />
+          <app-significance-level level="CRITICAL" [grayscale]="true" />
+        </label>
+        <label class="radio" [class.checked]="form.value.level === 'SEVERE'">
+          <input type="radio" formControlName="level" value="SEVERE" />
+          <app-significance-level level="SEVERE" [grayscale]="true" />
+        </label>
+      </div>
+    </ya-field>
   </form>
 </mat-dialog-content>
 

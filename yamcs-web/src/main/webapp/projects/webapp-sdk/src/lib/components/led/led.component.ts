@@ -1,4 +1,12 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnChanges, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  Input,
+  OnChanges,
+  ViewChild,
+} from '@angular/core';
 
 export const ON_COLOR = 'rgb(0,255,0)';
 export const OFF_COLOR = 'rgb(0,100,0)';
@@ -7,17 +15,17 @@ export let SEQ = 0;
 
 @Component({
   selector: 'ya-led',
-  template: `
-        <div #container [style.opacity]="fade ? 0.3 : 1"
-                        [style.width]="width + 'px'"
-                        [style.height]="height + 'px'"
-                        style="display: inline-block; line-height: 0">
-        </div>`,
+  template: ` <div
+    #container
+    [style.opacity]="fade ? 0.3 : 1"
+    [style.width]="width + 'px'"
+    [style.height]="height + 'px'"
+    style="display: inline-block; line-height: 0"
+  ></div>`,
   styleUrl: './led.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class YaLed implements AfterViewInit, OnChanges {
-
   @Input()
   width = 16;
 
@@ -52,8 +60,8 @@ export class YaLed implements AfterViewInit, OnChanges {
   }
 
   private render() {
-    const innerWidth = this.width - (2 * this.border);
-    const innerHeight = this.height - (2 * this.border);
+    const innerWidth = this.width - 2 * this.border;
+    const innerHeight = this.height - 2 * this.border;
     const content = `
             <svg width="${this.width}" height="${this.height}">
                 <defs>

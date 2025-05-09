@@ -11,7 +11,6 @@ const UPSTREAM_PATTERN = /yamcs<([^>]+)>_/g;
   name: 'cascadingPrefix',
 })
 export class CascadingPrefixPipe implements PipeTransform {
-
   transform(prefix: string): string | null {
     if (!prefix || !prefix.startsWith('yamcs<')) {
       return prefix;
@@ -19,7 +18,7 @@ export class CascadingPrefixPipe implements PipeTransform {
 
     let result;
     let servers = [];
-    while (result = UPSTREAM_PATTERN.exec(prefix)) {
+    while ((result = UPSTREAM_PATTERN.exec(prefix))) {
       servers.push(result[1]);
     }
 

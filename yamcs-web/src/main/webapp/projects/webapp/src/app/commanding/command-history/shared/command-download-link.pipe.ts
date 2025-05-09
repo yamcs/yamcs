@@ -5,9 +5,7 @@ import { CommandHistoryRecord, YamcsService } from '@yamcs/webapp-sdk';
   name: 'commandDownloadLink',
 })
 export class CommandDownloadLinkPipe implements PipeTransform {
-
-  constructor(private yamcs: YamcsService) {
-  }
+  constructor(private yamcs: YamcsService) {}
 
   transform(command: CommandHistoryRecord | null): string | null {
     if (!command) {

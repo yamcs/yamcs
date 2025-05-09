@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, effect, ElementRef, input, SecurityContext, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  ElementRef,
+  input,
+  SecurityContext,
+  viewChild,
+} from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { marked } from 'marked';
 
@@ -9,7 +17,6 @@ import { marked } from 'marked';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MarkdownComponent {
-
   text = input.required<string>();
   ref = viewChild<ElementRef<HTMLDivElement>>('md');
 

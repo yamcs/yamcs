@@ -6,13 +6,9 @@ import { OopsComponent } from '../oops/oops.component';
   templateUrl: './server-unavailable.component.html',
   styleUrl: './server-unavailable.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    OopsComponent,
-    WebappSdkModule,
-  ],
+  imports: [OopsComponent, WebappSdkModule],
 })
 export class ServerUnavailableComponent {
-
   reload() {
     window.location.reload();
   }

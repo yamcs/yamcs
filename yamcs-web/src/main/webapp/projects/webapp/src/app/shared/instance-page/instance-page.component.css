@@ -10,7 +10,7 @@ mat-sidenav-container {
   background-color: var(--y-background-color);
 }
 
-mat-sidenav-container.zen {
+mat-sidenav-container.focus {
   --top-height: 0;
 }
 
@@ -75,4 +75,13 @@ mat-toolbar {
 
 .navbar-logo img {
   max-width: 100%;
+}
+
+.mat-toolbar.module-title {
+  min-height: 48px;
+}
+
+.mat-toolbar.module-title .mat-toolbar-row {
+  height: 48px;
+  font-weight: 400;
 }

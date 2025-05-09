@@ -5,34 +5,27 @@
     <mat-tab-group animationDuration="0ms" class="small-tabs" [mat-stretch-tabs]="false">
       <mat-tab label="General">
         <div style="margin-top: 1em">
-          <label>
-            Name
-            <br />
-            <input cdkFocusRegionstart type="text" formControlName="name" style="width: 100%" />
-          </label>
-          <hr class="half-break" />
-          <label>
-            Tags
+          <ya-field label="Name">
+            <input cdkFocusRegionstart type="text" formControlName="name" />
+          </ya-field>
+
+          <ya-field label="Tags">
             <ya-help dialogTitle="Tags">
               Tags allow to categorise items per band. Bands only show items for which one of the
               tags is matching.
             </ya-help>
-            <br />
             <ya-tag-select formControlName="tags" />
-          </label>
-          <hr class="half-break" />
-          <label>
-            Duration
+          </ya-field>
+
+          <ya-field label="Duration">
             <ya-duration-input formControlName="duration" />
-          </label>
-          <div class="section-divider half-break">
-            <mat-divider />
-          </div>
-          <label>
-            Start
-            <br />
+          </ya-field>
+
+          <ya-field-divider />
+
+          <ya-field label="Start">
             <ya-date-time-input formControlName="start" />
-          </label>
+          </ya-field>
         </div>
       </mat-tab>
 

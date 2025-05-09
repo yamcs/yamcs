@@ -1,9 +1,6 @@
-<div class="label">
-  <div class="meta">
-    <div class="item">aggregate</div>
-  </div>
+<ya-field [label]="label">
+  <ya-meta>aggregate</ya-meta>
 
-  {{ label }}
   @if (description) {
     <ya-help>
       {{ description }}
@@ -12,7 +9,7 @@
 
   <div class="members" [formGroupName]="controlName">
     @for (member of type.member; track member; let i = $index; let isFirst = $first) {
-      <div [style.paddingTop.px]="isFirst ? 0 : 5">
+      <div [style.paddingTop.px]="isFirst ? 0 : 10">
         @switch (member.type.engType) {
           @case ("aggregate") {
             <app-aggregate-argument
@@ -81,4 +78,4 @@
       </div>
     }
   </div>
-</div>
+</ya-field>

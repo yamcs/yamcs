@@ -1,8 +1,10 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { BaseComponent, CreateTimelineBandRequest, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
-import { InstancePageTemplateComponent } from '../../../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../../../shared/instance-toolbar/instance-toolbar.component';
+import {
+  BaseComponent,
+  CreateTimelineBandRequest,
+  WebappSdkModule,
+} from '@yamcs/webapp-sdk';
 import { CreateBandWizardStepComponent } from '../../create-band-wizard-step/create-band-wizard-step.component';
 import { removeUnsetProperties } from '../../shared/properties';
 import { DEFAULT_COLORS, propertyInfo } from '../ParameterPlot';
@@ -12,25 +14,18 @@ import { TraceStylesComponent } from '../trace-styles/trace-styles.component';
 @Component({
   selector: 'app-create-parameter-plot',
   templateUrl: './create-parameter-plot.component.html',
-  styleUrl: './create-parameter-plot.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CreateBandWizardStepComponent,
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
     ParameterPlotStylesComponent,
     TraceStylesComponent,
     WebappSdkModule,
   ],
 })
 export class CreateParameterPlotComponent extends BaseComponent {
-
   form: FormGroup;
 
-  constructor(
-    private formBuilder: FormBuilder,
-    readonly yamcs: YamcsService,
-  ) {
+  constructor(private formBuilder: FormBuilder) {
     super();
     this.setTitle('Configure parameter plot');
 
@@ -43,10 +38,22 @@ export class CreateParameterPlotComponent extends BaseComponent {
         height: [propertyInfo.height.defaultValue, [Validators.required]],
         minimum: [],
         maximum: [],
-        zeroLineWidth: [propertyInfo.zeroLineWidth.defaultValue, [Validators.required]],
-        zeroLineColor: [propertyInfo.zeroLineColor.defaultValue, [Validators.required]],
-        minimumFractionDigits: [propertyInfo.minimumFractionDigits.defaultValue, [Validators.required]],
-        maximumFractionDigits: [propertyInfo.maximumFractionDigits.defaultValue, [Validators.required]],
+        zeroLineWidth: [
+          propertyInfo.zeroLineWidth.defaultValue,
+          [Validators.required],
+        ],
+        zeroLineColor: [
+          propertyInfo.zeroLineColor.defaultValue,
+          [Validators.required],
+        ],
+        minimumFractionDigits: [
+          propertyInfo.minimumFractionDigits.defaultValue,
+          [Validators.required],
+        ],
+        maximumFractionDigits: [
+          propertyInfo.maximumFractionDigits.defaultValue,
+          [Validators.required],
+        ],
       }),
     });
     this.addTrace();
@@ -57,7 +64,7 @@ export class CreateParameterPlotComponent extends BaseComponent {
   }
 
   addTrace(index?: number) {
-    const lookupIndex = index === undefined ? 0 : (index + 1);
+    const lookupIndex = index === undefined ? 0 : index + 1;
     const hexColor = DEFAULT_COLORS[lookupIndex % DEFAULT_COLORS.length];
     const traceForm = this.formBuilder.group({
       parameter: ['', [Validators.required]],
@@ -122,7 +129,11 @@ export class CreateParameterPlotComponent extends BaseComponent {
 
     removeUnsetProperties(options.properties || {});
 
-    this.yamcs.yamcsClient.createTimelineBand(this.yamcs.instance!, options).then(() => this.router.navigateByUrl(`/timeline/bands?c=${this.yamcs.context}`))
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .createTimelineBand(this.yamcs.instance!, options)
+      .then(() =>
+        this.router.navigateByUrl(`/timeline/bands?c=${this.yamcs.context}`),
+      )
+      .catch((err) => this.messageService.showError(err));
   }
 }

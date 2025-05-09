@@ -1,0 +1,13 @@
+<div class="ya-attr-label">
+  @if (templateLabel) {
+    <ng-template [cdkPortalOutlet]="templateLabel" />
+  } @else {
+    {{ textLabel() }}
+  }
+</div>
+<div class="ya-attr-content">
+  <ng-content />
+</div>
+<div class="ya-attr-meta">
+  <ng-content select="ya-meta" />
+</div>

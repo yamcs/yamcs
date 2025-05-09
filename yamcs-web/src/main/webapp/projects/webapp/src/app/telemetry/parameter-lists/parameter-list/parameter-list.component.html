@@ -1,41 +1,44 @@
 @if (plist$ | async; as plist) {
-  <app-instance-page>
-    <app-instance-toolbar>
-      <ya-page-icon-button routerLink=".." [queryParams]="{ c: yamcs.context }" icon="arrow_back" />
-      {{ plist.name }}
-      &nbsp;&nbsp;&nbsp;
+  <ya-instance-page>
+    <ya-instance-toolbar>
+      <ng-template ya-instance-toolbar-label>
+        <ya-page-icon-button
+          routerLink=".."
+          [queryParams]="{ c: yamcs.context }"
+          icon="arrow_back" />
+        {{ plist.name }}
+      </ng-template>
+
       @if (mayManageParameterLists()) {
         <ya-page-button routerLink="edit" [queryParams]="{ c: yamcs.context }" icon="edit">
           Edit list
         </ya-page-button>
       }
-    </app-instance-toolbar>
-    <nav #tabs mat-tab-nav-bar class="secondary" [mat-stretch-tabs]="false" [tabPanel]="tabPanel">
+    </ya-instance-toolbar>
+
+    <ya-page-tabs>
       <a
-        mat-tab-link
         routerLink="realtime"
         routerLinkActive
         #rla="routerLinkActive"
-        [active]="rla.isActive"
+        [class.active]="rla.isActive"
         [queryParams]="{ c: yamcs.context }">
         Realtime
       </a>
       @if (config.tmArchive) {
         <a
-          mat-tab-link
           routerLink="data"
           routerLinkActive
           #rlb="routerLinkActive"
-          [active]="rlb.isActive"
+          [class.active]="rlb.isActive"
           [queryParams]="{ c: yamcs.context }">
-          Historical Data
+          Historical data
         </a>
       }
-    </nav>
+    </ya-page-tabs>
+
     <div class="tab-content-wrapper">
-      <mat-tab-nav-panel #tabPanel>
-        <router-outlet />
-      </mat-tab-nav-panel>
+      <router-outlet />
     </div>
-  </app-instance-page>
+  </ya-instance-page>
 }

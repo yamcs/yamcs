@@ -51,7 +51,7 @@ class RealtimeBuffer {
       prev.stop = state.start;
       prev.values[0].count++;
       return;
-    } else if (prev && (prev.stop - state.start) <= this.maxGap) {
+    } else if (prev && prev.stop - state.start <= this.maxGap) {
       // Extend prev
       prev.stop = state.start;
     }
@@ -59,7 +59,11 @@ class RealtimeBuffer {
     // Can't merge: new state
     if (this.pointer < this.bufferSize) {
       this.buffer[this.pointer] = state;
-      if (this.pointer >= this.bufferWatermark && this.watermarkObserver && !this.alreadyWarned) {
+      if (
+        this.pointer >= this.bufferWatermark &&
+        this.watermarkObserver &&
+        !this.alreadyWarned
+      ) {
         this.watermarkObserver();
         this.alreadyWarned = true;
       }
@@ -68,7 +72,7 @@ class RealtimeBuffer {
   }
 
   snapshot() {
-    return this.buffer.filter(s => s !== undefined);
+    return this.buffer.filter((s) => s !== undefined);
   }
 
   reset() {
@@ -79,7 +83,6 @@ class RealtimeBuffer {
 }
 
 export class StateBuffer {
-
   private archiveData: State[] = [];
   private realtimeBuffer: RealtimeBuffer;
 
@@ -89,7 +92,11 @@ export class StateBuffer {
     private stateRemapper: StateRemapper,
     watermarkObserver: WatermarkObserver,
   ) {
-    this.realtimeBuffer = new RealtimeBuffer(maxGap, formatter, watermarkObserver);
+    this.realtimeBuffer = new RealtimeBuffer(
+      maxGap,
+      formatter,
+      watermarkObserver,
+    );
   }
 
   setArchiveData(archiveData: State[]) {
@@ -114,15 +121,16 @@ export class StateBuffer {
     if (archiveStates.length > 0 && realtimeStates.length > 0) {
       const archiveTail = archiveStates[archiveStates.length - 1];
       const realtimeHead = realtimeStates[0];
-      if ((realtimeHead.start - archiveTail.stop) <= this.maxGap) {
+      if (realtimeHead.start - archiveTail.stop <= this.maxGap) {
         archiveTail.stop = realtimeHead.start;
       }
     }
 
     // Filter out everything outside of visible window, so that
     // it doesn't impact legend calculation.
-    let allStates: State[] = [...archiveStates, ...realtimeStates]
-      .filter(state => state.stop >= start && state.start <= stop);
+    let allStates: State[] = [...archiveStates, ...realtimeStates].filter(
+      (state) => state.stop >= start && state.start <= stop,
+    );
 
     allStates = this.stateRemapper.applyMappings(allStates);
     return allStates;

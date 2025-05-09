@@ -1,6 +1,16 @@
 import { AsyncPipe } from '@angular/common';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, forwardRef } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule, UntypedFormControl } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  forwardRef,
+} from '@angular/core';
+import {
+  ControlValueAccessor,
+  NG_VALUE_ACCESSOR,
+  ReactiveFormsModule,
+  UntypedFormControl,
+} from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
 import { YaSelect, YaSelectOption } from '../select/select.component';
 import tznames from './tznames';
@@ -9,31 +19,28 @@ import tznames from './tznames';
   selector: 'ya-timezone-select',
   templateUrl: './timezone-select.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => YaTimezoneSelect),
-    multi: true,
-  }],
-  imports: [
-    AsyncPipe,
-    ReactiveFormsModule,
-    YaSelect
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => YaTimezoneSelect),
+      multi: true,
+    },
   ],
+  imports: [AsyncPipe, ReactiveFormsModule, YaSelect],
 })
 export class YaTimezoneSelect implements ControlValueAccessor {
-
   areaOptions: YaSelectOption[] = [];
   areaControl = new UntypedFormControl();
 
   locationControl = new UntypedFormControl();
-  locationOptionsByArea: { [key: string]: Array<YaSelectOption>; } = {};
+  locationOptionsByArea: { [key: string]: Array<YaSelectOption> } = {};
   locationOptions$ = new BehaviorSubject<YaSelectOption[]>([]);
 
   sublocationControl = new UntypedFormControl();
-  sublocationOptionsByLocation: { [key: string]: Array<YaSelectOption>; } = {};
+  sublocationOptionsByLocation: { [key: string]: Array<YaSelectOption> } = {};
   sublocationOptions$ = new BehaviorSubject<YaSelectOption[]>([]);
 
-  private onChange = (_: string | null) => { };
+  private onChange = (_: string | null) => {};
 
   constructor(private changeDetection: ChangeDetectorRef) {
     this.processTznames();
@@ -55,7 +62,8 @@ export class YaTimezoneSelect implements ControlValueAccessor {
         const location = this.locationControl.value;
         if (location) {
           if (this.hasSublocations(location)) {
-            const sublocationOptions = this.sublocationOptionsByLocation[location];
+            const sublocationOptions =
+              this.sublocationOptionsByLocation[location];
             this.sublocationOptions$.next(sublocationOptions);
             this.sublocationControl.setValue(sublocationOptions[0].id);
           } else {
@@ -95,27 +103,36 @@ export class YaTimezoneSelect implements ControlValueAccessor {
         let location = tz.substring(idx + 1);
         idx = location.indexOf('/');
         if (idx === -1) {
-          this.locationOptionsByArea[area].push({ id: location, label: location });
+          this.locationOptionsByArea[area].push({
+            id: location,
+            label: location,
+          });
         } else {
           const sublocation = location.substring(idx + 1);
           location = location.substring(0, idx);
           if (locations.indexOf(location) === -1) {
             locations.push(location);
-            this.locationOptionsByArea[area].push({ id: location, label: location });
+            this.locationOptionsByArea[area].push({
+              id: location,
+              label: location,
+            });
             this.sublocationOptionsByLocation[location] = [];
           }
-          this.sublocationOptionsByLocation[location].push({ id: sublocation, label: sublocation });
+          this.sublocationOptionsByLocation[location].push({
+            id: sublocation,
+            label: sublocation,
+          });
         }
       }
     }
   }
 
   private hasLocations(area: string | null) {
-    return area && (area in this.locationOptionsByArea);
+    return area && area in this.locationOptionsByArea;
   }
 
   private hasSublocations(location: string | null) {
-    return location && (location in this.sublocationOptionsByLocation);
+    return location && location in this.sublocationOptionsByLocation;
   }
 
   writeValue(value: any) {
@@ -142,6 +159,5 @@ export class YaTimezoneSelect implements ControlValueAccessor {
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any) {
-  }
+  registerOnTouched(fn: any) {}
 }

@@ -96,14 +96,18 @@ service ParameterArchiveApi {
   // For each group, the parameter archive stores one common record for the timestamps
   // and individual records for the raw and engineering values of each parameter. If a
   // parameter appears in multiple groups, retrieving its value means combining
-  // (time-based merge operation). The records beloging to the groups in which the
+  // (time-based merge operation) the records belonging to the groups in which the
   // parameter appears.
   //
   // The response to this method contains the parameter id, name, engineering type,
   // raw type and the groups of which this parameter is part of.
   rpc GetArchivedParametersInfo(GetArchivedParametersInfoRequest) returns (ArchivedParametersInfoResponse) {
     option (yamcs.api.route) = {
-      get: "/api/archive/{instance}/parameterArchive/info/parameters"
+      get: "/api/parameter-archive/{instance}/pids"
+      additional_bindings {
+        get: "/api/archive/{instance}/parameterArchive/info/parameters"
+        deprecated: true
+      }
     };
   }
 
@@ -111,14 +115,22 @@ service ParameterArchiveApi {
   // A segment contains multiple samples (maximum ~70 minutes) of the same parameter.
   rpc GetArchivedParameterSegments(GetArchivedParameterSegmentsRequest) returns (ArchivedParameterSegmentsResponse) {
     option (yamcs.api.route) = {
-      get: "/api/archive/{instance}/parameterArchive/info/segments/{pid*}"
+      get: "/api/parameter-archive/{instance}/pids/{pid}/segments"
+      additional_bindings {
+        get: "/api/archive/{instance}/parameterArchive/info/segments/{pid}"
+        deprecated: true
+      }
     };
   }
 
   // For a given group id, get the list of parameters which are part of the group
   rpc GetArchivedParameterGroup(GetArchivedParameterGroupRequest) returns (ArchivedParameterGroupResponse) {
     option (yamcs.api.route) = {
-      get: "/api/archive/{instance}/parameterArchive/info/groups/{gid*}"
+      get: "/api/parameter-archive/{instance}/gids/{gid}"
+      additional_bindings {
+        get: "/api/archive/{instance}/parameterArchive/info/groups/{gid}"
+        deprecated: true
+      }
     };
   }
 
@@ -267,81 +279,110 @@ message GetParameterRangesRequest {
 
 // Get information about the parameters stored in the Parameter Archive 
 message GetArchivedParametersInfoRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
-  // The search keywords.
-  optional string q = 2;
-
-  // List only direct child parameters of the specified system. 
-  // Only the parameters whose fully qualified name start with system will be returned.
+  // Filter query. See :doc:`../filtering` for how to write a filter query.
   //
-  // When ``system`` and ``q`` are used together, the q search will be matched on the parameters 
-  // filtered by system.
-  optional string system = 3;
+  // Literal text search matches against the field ``parameter``.
+  //
+  // Field comparisons can use any of the following fields:
+  //
+  // .. list-table::
+  //     :widths: 25 25 50
+  //
+  //     * - ``pid``
+  //       - number
+  //       -
+  //     * - ``parameter``
+  //       - string
+  //       -
+  //     * - ``rawType``
+  //       - enum
+  //       - One of ``float``, ``double``, ``uint32``, ``sint32``, ``binary``, ``string``,
+  //         ``timestamp``, ``uint64``, ``sint64``, ``boolean``, ``aggregate``, ``array``,
+  //         ``enumerated`` or ``none``.
+  //     * - ``gid``
+  //       - number
+  //       -
+  optional string filter = 4;
 
   // The maximum number of returned parameters. Choose this value too
   // high and you risk hitting the maximum response size limit enforced by the
   // server. Default: ``100``
   optional int32 limit = 7;
+
+  // Continuation token returned by a previous page response.
+  optional string next = 8;
 }
 
 message GetArchivedParameterSegmentsRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
-  //parameter id
+  // Parameter ID
   optional uint32 pid = 2;
 
-  //get the segments overlapping with [start, stop) interval
+  // Include segments after ``start`` (inclusive)
   optional google.protobuf.Timestamp start = 3;
+
+  // Include segments before ``stop`` (exclusive)
   optional google.protobuf.Timestamp stop = 4;
 }
 
 // This message contains information about one parameter in the parameter archive.
 // Each (parameter name, raw type, engineering type) is assigned a unique id and all 
-// the samples are stored with that id. 
-// If a MDB change results in the parameter having a different engineering or raw type, 
+// the samples are stored with that id.
+//
+// If an MDB change results in the parameter having a different engineering or raw type, 
 // a new pid will be allocated.
+//
 // This is why for the same parameter name, we can have multiple parameter ids.
-// The parameter archive will contain data even for parameters removed from the MDB
+//
+// The parameter archive contains data even for parameters removed from the MDB.
 message ArchivedParameterInfo {
-  //parameter id
+  // Parameter ID
   optional uint32 pid = 1;
   
-  //parameter fully qualified name
-  optional string fqn = 2;
+  // Fully-qualified parameter name
+  optional string parameter = 2;
   
-  // parameter raw type
+  // Raw type
   optional Value.Type rawType = 3;
   
-  //parameter engineering type
+  // Engineering type
   optional Value.Type engType = 4;
   
-  //the groups which this parameter is part of
+  // Groups where this parameter is included
   repeated uint32 gids = 5;
 }
 
 message ArchivedParametersInfoResponse {
-	repeated ArchivedParameterInfo parameters = 1;
+  repeated ArchivedParameterInfo pids = 1;
+
+  // Token indicating the response is only partial. More results can then
+  // be obtained by performing the same request (including all original
+  // query parameters) and setting the ``next`` parameter to this token.
+  optional string continuationToken = 2;
 }
 
 message ArchiveParameterSegmentInfo {
   // Multiple parameters are grouped such that all in one group have
   // the same timestamps. For example: all parameters extracted from
   // one TM packet usually have the same timestamp.
+  //
   // This way we have a unique segment storing the timestamps for a
   // group of parameters. The groupId can be used to retrieve all parameters
   // from the same group.
   optional uint32 groupId = 1;
   
-  //the segment start
+  // Segment start
   optional google.protobuf.Timestamp start = 2;
   
-  //the segment end 
+  // Segment end 
   optional google.protobuf.Timestamp end = 3;
   
-  //the number of samples in the segment
+  // Number of samples in the segment
   optional uint32 count = 4;
 }
 

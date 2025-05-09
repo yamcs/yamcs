@@ -1,13 +1,13 @@
 <app-admin-page>
-  <app-admin-toolbar>
-    Groups &nbsp;&nbsp;&nbsp;
-    <ya-page-button routerLink="create" icon="add_circle_outline">Create group</ya-page-button>
+  <app-admin-toolbar label="Groups">
+    <ya-page-button routerLink="create" icon="add_box">Create group</ya-page-button>
   </app-admin-toolbar>
 
-  <div class="panel-content">
-    <div class="filter-bar">
+  <ya-panel>
+    <ya-filter-bar>
       <ya-search-filter [formControl]="filterControl" placeholder="Filter groups" />
-    </div>
+    </ya-filter-bar>
+
     <table
       mat-table
       [dataSource]="dataSource"
@@ -50,5 +50,5 @@
     @if (!dataSource.data.length) {
       <ya-empty-message>No rows to display</ya-empty-message>
     }
-  </div>
+  </ya-panel>
 </app-admin-page>

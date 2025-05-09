@@ -1,0 +1,19 @@
+:host {
+  display: flex;
+  column-gap: 7px;
+  height: 24px;
+}
+
+:host.ya-toolbar-bottom {
+  margin-top: 16px;
+}
+
+:host.ya-toolbar-center {
+  justify-content: center;
+}
+
+@media print {
+  :host {
+    display: none !important;
+  }
+}

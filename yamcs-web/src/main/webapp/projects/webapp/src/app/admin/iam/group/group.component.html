@@ -1,11 +1,10 @@
 @if (group$ | async; as group) {
   <app-admin-page>
-    <app-admin-toolbar>
-      {{ group.name }}
-      &nbsp;&nbsp;&nbsp;
+    <app-admin-toolbar [label]="group.name">
       <ya-page-button routerLink="edit" icon="edit">Edit group</ya-page-button>
     </app-admin-toolbar>
-    <div class="panel-content ya-link">
+
+    <ya-panel class="ya-link">
       @if (group.description) {
         <div class="section-divider">
           <mat-divider />
@@ -26,6 +25,6 @@
           <a [routerLink]="['/admin/iam/users', user.name]">{{ user.displayName || user.name }}</a>
         </div>
       }
-    </div>
+    </ya-panel>
   </app-admin-page>
 }

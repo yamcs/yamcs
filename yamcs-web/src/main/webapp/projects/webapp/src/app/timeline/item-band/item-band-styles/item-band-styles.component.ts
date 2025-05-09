@@ -7,12 +7,9 @@ import { WebappSdkModule, YaSelectOption } from '@yamcs/webapp-sdk';
   templateUrl: './item-band-styles.component.html',
   styleUrl: '../../shared/StyleTable.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class ItemBandStylesComponent {
-
   itemTextOverflowOptions: YaSelectOption[] = [
     { id: 'show', label: 'Show' },
     { id: 'clip', label: 'Clip' },

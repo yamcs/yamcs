@@ -1,0 +1,21 @@
+<ya-page-tabs>
+  <a
+    routerLink="/telemetry/packets"
+    routerLinkActive
+    [routerLinkActiveOptions]="{ matrixParams: 'exact', paths: 'exact', queryParams: 'ignored' }"
+    #rla="routerLinkActive"
+    [class.active]="rla.isActive"
+    [queryParams]="{ c: yamcs.context }">
+    Query
+  </a>
+  <a
+    routerLink="/telemetry/packets/queries"
+    routerLinkActive
+    #rlb="routerLinkActive"
+    [class.active]="rlb.isActive"
+    [queryParams]="{ c: yamcs.context }">
+    Saved queries
+  </a>
+
+  <ng-container actions><ng-content /></ng-container>
+</ya-page-tabs>

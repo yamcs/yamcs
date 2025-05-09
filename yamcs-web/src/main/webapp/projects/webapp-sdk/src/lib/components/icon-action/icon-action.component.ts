@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, HostBinding, Input } from '@angular/core';
+import {
+  booleanAttribute,
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  output,
+} from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 
 @Component({
@@ -6,24 +12,24 @@ import { MatIcon } from '@angular/material/icon';
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './icon-action.component.html',
   styleUrl: './icon-action.component.css',
-  imports: [
-    MatIcon,
-  ],
+  host: {
+    class: 'ya-icon-action',
+    '[class.padding]': 'padding()',
+    '[class.disabled]': 'disabled()',
+  },
+  imports: [MatIcon],
 })
 export class YaIconAction {
+  icon = input.required<string>();
+  padding = input(true, { transform: booleanAttribute });
+  disabled = input(false, { transform: booleanAttribute });
 
-  @Input()
-  icon: string;
+  click = output<MouseEvent>();
 
-  @Input()
-  @HostBinding('class.active')
-  active: boolean;
-
-  @Input()
-  @HostBinding('class.padding')
-  padding = true;
-
-  @Input()
-  @HostBinding('class.disabled')
-  disabled = false;
+  onClick(event: MouseEvent) {
+    event.stopPropagation();
+    if (!this.disabled()) {
+      this.click.emit(event);
+    }
+  }
 }

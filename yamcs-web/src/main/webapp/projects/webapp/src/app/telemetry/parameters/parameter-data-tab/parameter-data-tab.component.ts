@@ -1,9 +1,23 @@
 import { Clipboard } from '@angular/cdk/clipboard';
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  OnInit,
+  input,
+} from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ConfigService, GetParameterValuesOptions, MessageService, WebappSdkModule, YaSelectOption, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  ConfigService,
+  GetParameterValuesOptions,
+  MessageService,
+  WebappSdkModule,
+  YaSelectOption,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { AlarmLevelComponent } from '../../../shared/alarm-level/alarm-level.component';
 import { HexComponent } from '../../../shared/hex/hex.component';
@@ -25,7 +39,6 @@ const defaultInterval = 'PT1H';
   ],
 })
 export class ParameterDataTabComponent implements OnInit, OnDestroy {
-
   qualifiedName = input.required<string>({ alias: 'parameter' });
 
   intervalOptions: YaSelectOption[] = [
@@ -61,7 +74,7 @@ export class ParameterDataTabComponent implements OnInit, OnDestroy {
     private clipboard: Clipboard,
     private messageService: MessageService,
     private configService: ConfigService,
-  ) { }
+  ) {}
 
   ngOnInit() {
     const qualifiedName = this.qualifiedName();
@@ -74,12 +87,16 @@ export class ParameterDataTabComponent implements OnInit, OnDestroy {
     this.initializeOptions();
     this.loadData();
 
-    this.filterForm.get('interval')!.valueChanges.forEach(nextInterval => {
+    this.filterForm.get('interval')!.valueChanges.forEach((nextInterval) => {
       if (nextInterval === 'CUSTOM') {
         const customStart = this.validStart || this.yamcs.getMissionTime();
         const customStop = this.validStop || this.yamcs.getMissionTime();
-        this.filterForm.get('customStart')!.setValue(utils.toISOString(customStart));
-        this.filterForm.get('customStop')!.setValue(utils.toISOString(customStop));
+        this.filterForm
+          .get('customStart')!
+          .setValue(utils.toISOString(customStart));
+        this.filterForm
+          .get('customStop')!
+          .setValue(utils.toISOString(customStop));
       } else if (nextInterval === 'NO_LIMIT') {
         this.validStart = null;
         this.validStop = null;
@@ -111,7 +128,10 @@ export class ParameterDataTabComponent implements OnInit, OnDestroy {
         this.validStop = null;
       } else {
         this.validStop = this.yamcs.getMissionTime();
-        this.validStart = utils.subtractDuration(this.validStop, this.appliedInterval);
+        this.validStart = utils.subtractDuration(
+          this.validStop,
+          this.appliedInterval,
+        );
       }
     } else {
       this.appliedInterval = defaultInterval;
@@ -147,7 +167,8 @@ export class ParameterDataTabComponent implements OnInit, OnDestroy {
     this.updateURL();
     const options: GetParameterValuesOptions = {
       source: this.configService.isParameterArchiveEnabled()
-        ? 'ParameterArchive' : 'replay',
+        ? 'ParameterArchive'
+        : 'replay',
     };
     if (this.validStart) {
       // When descending, Yamcs does not include start bound, so make sure
@@ -160,8 +181,9 @@ export class ParameterDataTabComponent implements OnInit, OnDestroy {
       options.stop = this.validStop.toISOString();
     }
 
-    this.dataSource.loadParameterValues(options)
-      .catch(err => this.messageService.showError(err));
+    this.dataSource
+      .loadParameterValues(options)
+      .catch((err) => this.messageService.showError(err));
   }
 
   /**
@@ -173,7 +195,8 @@ export class ParameterDataTabComponent implements OnInit, OnDestroy {
   loadMoreData() {
     const options: GetParameterValuesOptions = {
       source: this.configService.isParameterArchiveEnabled()
-        ? 'ParameterArchive' : 'replay',
+        ? 'ParameterArchive'
+        : 'replay',
     };
     if (this.validStart) {
       // When descending, Yamcs does not include start bound, so make sure
@@ -182,8 +205,9 @@ export class ParameterDataTabComponent implements OnInit, OnDestroy {
       start.setUTCMilliseconds(this.validStart.getUTCMilliseconds() - 1);
       options.start = start.toISOString();
     }
-    this.dataSource.loadMoreData(options)
-      .catch(err => this.messageService.showError(err));
+    this.dataSource
+      .loadMoreData(options)
+      .catch((err) => this.messageService.showError(err));
   }
 
   copyHex(base64: string) {
@@ -202,8 +226,14 @@ export class ParameterDataTabComponent implements OnInit, OnDestroy {
       relativeTo: this.route,
       queryParams: {
         interval: this.appliedInterval,
-        customStart: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStart'] : null,
-        customStop: this.appliedInterval === 'CUSTOM' ? this.filterForm.value['customStop'] : null,
+        customStart:
+          this.appliedInterval === 'CUSTOM'
+            ? this.filterForm.value['customStart']
+            : null,
+        customStop:
+          this.appliedInterval === 'CUSTOM'
+            ? this.filterForm.value['customStop']
+            : null,
       },
       queryParamsHandling: 'merge',
     });
@@ -216,7 +246,7 @@ export class ParameterDataTabComponent implements OnInit, OnDestroy {
         parameter: this.qualifiedName(),
         start: this.validStart,
         stop: this.validStop,
-      }
+      },
     });
   }
 

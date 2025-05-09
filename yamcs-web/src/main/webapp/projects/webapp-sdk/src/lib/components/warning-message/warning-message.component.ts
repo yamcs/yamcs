@@ -5,9 +5,6 @@ import { MatIcon } from '@angular/material/icon';
   selector: 'ya-warning-message',
   templateUrl: './warning-message.component.html',
   styleUrl: './warning-message.component.css',
-  imports: [
-    MatIcon,
-  ],
+  imports: [MatIcon],
 })
-export class YaWarningMessage {
-}
+export class YaWarningMessage {}

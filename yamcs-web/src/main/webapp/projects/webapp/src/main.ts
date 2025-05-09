@@ -1,8 +1,22 @@
-import { isDevMode, provideExperimentalZonelessChangeDetection } from '@angular/core';
+import {
+  isDevMode,
+  provideExperimentalZonelessChangeDetection,
+} from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideRouter, withComponentInputBinding, withPreloading, withRouterConfig } from '@angular/router';
+import {
+  provideRouter,
+  withComponentInputBinding,
+  withPreloading,
+  withRouterConfig,
+} from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
-import { provideBaseHrefFromIndexHtml, provideConfigInitializer, provideSdkBridge, provideYamcsMaterialConfiguration } from '@yamcs/webapp-sdk';
+import {
+  provideBaseHrefFromIndexHtml,
+  provideConfigInitializer,
+  provideSdkBridge,
+  provideYamcsMaterialConfiguration,
+} from '@yamcs/webapp-sdk';
+import { provideMaterialSymbols } from '../../webapp-sdk/src/public-api';
 import { CustomPreloadingStrategy } from './app/CustomPreloadingStrategy';
 import { AppComponent } from './app/app.component';
 import { APP_ROUTES } from './app/app.routes';
@@ -15,7 +29,9 @@ bootstrapApplication(AppComponent, {
     provideConfigInitializer(),
     provideSdkBridge(),
     provideExperimentalZonelessChangeDetection(),
-    provideRouter(APP_ROUTES,
+    provideMaterialSymbols(),
+    provideRouter(
+      APP_ROUTES,
       withComponentInputBinding(),
       withPreloading(CustomPreloadingStrategy),
       withRouterConfig({
@@ -29,4 +45,4 @@ bootstrapApplication(AppComponent, {
     }),
     AgoPipe,
   ],
-}).catch(e => console.error(e));
+}).catch((e) => console.error(e));

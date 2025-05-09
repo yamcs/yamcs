@@ -1,17 +1,19 @@
 import { Injectable, inject } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivateFn, Router } from '@angular/router';
-import { utils } from '@yamcs/webapp-sdk';
-import { AuthService } from '../services/AuthService';
+import { AuthService, utils } from '@yamcs/webapp-sdk';
 
-export const serverSideOpenIDCallbackGuardFn: CanActivateFn = (route: ActivatedRouteSnapshot) => {
+export const serverSideOpenIDCallbackGuardFn: CanActivateFn = (
+  route: ActivatedRouteSnapshot,
+) => {
   return inject(ServerSideOpenIDCallbackGuard).canActivate(route);
 };
 
 @Injectable({ providedIn: 'root' })
 class ServerSideOpenIDCallbackGuard {
-
-  constructor(private authService: AuthService, private router: Router) {
-  }
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+  ) {}
 
   async canActivate(route: ActivatedRouteSnapshot) {
     const oidcState = route.queryParamMap.get('state');

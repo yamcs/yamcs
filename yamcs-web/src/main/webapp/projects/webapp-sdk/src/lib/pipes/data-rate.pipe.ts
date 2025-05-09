@@ -6,7 +6,6 @@ const sizes = ['bps', 'kbps', 'Mbps', 'Gbps', 'Tbps'];
   name: 'dataRate',
 })
 export class DataRatePipe implements PipeTransform {
-
   transform(bps: string | number | null, decimals = 1): string | null {
     const bpsNumber = Number(bps);
     if (bpsNumber === 0) {
@@ -15,6 +14,10 @@ export class DataRatePipe implements PipeTransform {
       return null;
     }
     const i = Math.floor(Math.log(bpsNumber) / Math.log(1000));
-    return parseFloat((bpsNumber / Math.pow(1000, i)).toFixed(decimals)) + ' ' + sizes[i];
+    return (
+      parseFloat((bpsNumber / Math.pow(1000, i)).toFixed(decimals)) +
+      ' ' +
+      sizes[i]
+    );
   }
 }

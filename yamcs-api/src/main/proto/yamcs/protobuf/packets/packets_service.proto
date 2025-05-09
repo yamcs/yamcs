@@ -27,6 +27,10 @@ service PacketsApi {
   rpc ListPackets(ListPacketsRequest) returns (ListPacketsResponse) {
     option (yamcs.api.route) = {
       get: "/api/archive/{instance}/packets"
+      additional_bindings {
+        post: "/api/archive/{instance}/packets:list"
+        body: "*"
+      };
     };
   }
   
@@ -118,7 +122,7 @@ message ListPacketNamesResponse {
 }
 
 message ListPacketsRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
   // The zero-based row number at which to start outputting results.
@@ -152,10 +156,37 @@ message ListPacketsRequest {
   // Filter the upper bound of the packet's generation time. Specify a date
   // string in ISO 8601 format. This bound is exclusive.
   optional google.protobuf.Timestamp stop = 8;
+
+  // Filter query. See :doc:`../filtering` for how to write a filter query.
+  //
+  // Literal text search matches against the fields ``name`` and ``link``.
+  //
+  // Field comparisons can use any of the following fields:
+  //
+  // .. list-table::
+  //     :widths: 25 25 50
+  //
+  //     * - ``name``
+  //       - string
+  //       -
+  //     * - ``link``
+  //       - string
+  //       -
+  //     * - ``seqNumber``
+  //       - number
+  //       -
+  //     * - ``size``
+  //       - number
+  //       -
+  optional string filter = 10;
 }
 
 message ListPacketsResponse {
-  repeated TmPacketData packet = 1;
+  // Deprecated, use ``packets`` instead
+  repeated TmPacketData packet = 1 [deprecated=true];
+
+  // Page with matching packets
+  repeated TmPacketData packets = 3;
 
   // Token indicating the response is only partial. More results can then
   // be obtained by performing the same request (including all original

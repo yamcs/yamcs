@@ -6,15 +6,10 @@ import { WebappSdkModule, utils } from '@yamcs/webapp-sdk';
 @Component({
   templateUrl: './jump-to-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class JumpToDialogComponent {
-
-  date = new UntypedFormControl(null, [
-    Validators.required,
-  ]);
+  date = new UntypedFormControl(null, [Validators.required]);
 
   constructor(
     private dialogRef: MatDialogRef<JumpToDialogComponent>,

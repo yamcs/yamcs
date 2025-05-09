@@ -6,17 +6,11 @@ import * as utils from '../utils';
 @Component({
   selector: 'app-table-script-tab',
   templateUrl: './table-script-tab.component.html',
-  styleUrls: [
-    './table-script-tab.component.css',
-    '../streamsql.css',
-  ],
+  styleUrls: ['./table-script-tab.component.css', '../streamsql.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class TableScriptTabComponent {
-
   table$: Promise<Table>;
 
   constructor(route: ActivatedRoute, yamcs: YamcsService) {

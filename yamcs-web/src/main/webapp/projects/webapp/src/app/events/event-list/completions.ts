@@ -1,7 +1,12 @@
 import { Completion, insertCompletionText } from '@codemirror/autocomplete';
 import { EditorView } from 'codemirror';
 
-function applyString(view: EditorView, completion: Completion, from: number, to: number) {
+function applyString(
+  view: EditorView,
+  completion: Completion,
+  from: number,
+  to: number,
+) {
   const replacement = completion.label + ' = \"\"';
   const tr = insertCompletionText(view.state, replacement, from, to);
   // Place cursor between quotes
@@ -9,47 +14,68 @@ function applyString(view: EditorView, completion: Completion, from: number, to:
   view.dispatch(tr);
 }
 
-function applyEnum(view: EditorView, completion: Completion, from: number, to: number) {
-  view.dispatch(insertCompletionText(view.state, completion.label + ' = ', from, to));
+function applyEnum(
+  view: EditorView,
+  completion: Completion,
+  from: number,
+  to: number,
+) {
+  view.dispatch(
+    insertCompletionText(view.state, completion.label + ' = ', from, to),
+  );
 }
 
-function applyNumber(view: EditorView, completion: Completion, from: number, to: number) {
-  view.dispatch(insertCompletionText(view.state, completion.label + ' = ', from, to));
+function applyNumber(
+  view: EditorView,
+  completion: Completion,
+  from: number,
+  to: number,
+) {
+  view.dispatch(
+    insertCompletionText(view.state, completion.label + ' = ', from, to),
+  );
 }
 
-function applyLogicalOperator(view: EditorView, completion: Completion, from: number, to: number) {
-  view.dispatch(insertCompletionText(view.state, completion.label + ' ', from, to));
+function applyLogicalOperator(
+  view: EditorView,
+  completion: Completion,
+  from: number,
+  to: number,
+) {
+  view.dispatch(
+    insertCompletionText(view.state, completion.label + ' ', from, to),
+  );
 }
 
 export const EVENT_COMPLETIONS: Completion[] = [
   {
     label: 'message',
     type: 'method',
-    info: 'Filter on event message',
+    info: 'Filter by event message',
     apply: applyString,
   },
   {
     label: 'seqNumber',
     type: 'method',
-    info: 'Filter on event sequence number',
+    info: 'Filter by event sequence number',
     apply: applyNumber,
   },
   {
     label: 'severity',
     type: 'method',
-    info: 'Filter on event severity (info, watch, warning, distress, critical, severe)',
+    info: 'Filter by event severity (info, watch, warning, distress, critical, severe)',
     apply: applyEnum,
   },
   {
     label: 'source',
     type: 'method',
-    info: 'Filter on event source',
+    info: 'Filter by event source',
     apply: applyString,
   },
   {
     label: 'type',
     type: 'method',
-    info: 'Filter on event type',
+    info: 'Filter by event type',
     apply: applyString,
   },
   {

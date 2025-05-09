@@ -1,10 +1,13 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
-import { MessageService, Parameter, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
+import {
+  MessageService,
+  Parameter,
+  WebappSdkModule,
+  YamcsService,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { InstancePageTemplateComponent } from '../shared/instance-page-template/instance-page-template.component';
-import { InstanceToolbarComponent } from '../shared/instance-toolbar/instance-toolbar.component';
 
 interface Result {
   resources: Resource[];
@@ -21,14 +24,9 @@ interface Resource {
 @Component({
   templateUrl: './search.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    InstanceToolbarComponent,
-    InstancePageTemplateComponent,
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class SearchComponent {
-
   term$ = new BehaviorSubject<string | null>(null);
   result$ = new BehaviorSubject<Result | null>(null);
 
@@ -38,11 +36,11 @@ export class SearchComponent {
     route: ActivatedRoute,
     private messageService: MessageService,
   ) {
-    title.setTitle("Search");
+    title.setTitle('Search');
 
-    route.queryParamMap.subscribe(snapshot => {
+    route.queryParamMap.subscribe((snapshot) => {
       const q = snapshot.get('q') ?? '';
-      this.fetchPage(q).then(page => {
+      this.fetchPage(q).then((page) => {
         this.term$.next(q);
         this.result$.next({
           resources: this.toResources(page.parameters || []),
@@ -56,7 +54,7 @@ export class SearchComponent {
   loadMoreData() {
     const q = this.term$.value ?? '';
     const continuationToken = this.result$.value?.continuationToken;
-    this.fetchPage(q, continuationToken).then(page => {
+    this.fetchPage(q, continuationToken).then((page) => {
       const result = this.result$.value!;
       result.resources = [
         ...result.resources,
@@ -70,7 +68,7 @@ export class SearchComponent {
   }
 
   private toResources(parameters: Parameter[]): Resource[] {
-    return parameters.map(p => {
+    return parameters.map((p) => {
       return {
         label: p.qualifiedName,
         type: 'Parameter',
@@ -86,7 +84,7 @@ export class SearchComponent {
       limit: 50,
       searchMembers: true,
     });
-    promise.catch(err => this.messageService.showError(err));
+    promise.catch((err) => this.messageService.showError(err));
     return promise;
   }
 }

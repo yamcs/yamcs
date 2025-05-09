@@ -1,26 +1,36 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  ViewChild,
+} from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ConfigService, Instance, InstancesSubscription, MessageService, YamcsService, utils } from '@yamcs/webapp-sdk';
-import { AuthService } from '../../core/services/AuthService';
-
-import { WebappSdkModule } from '@yamcs/webapp-sdk';
+import {
+  AuthService,
+  ConfigService,
+  Instance,
+  InstancesSubscription,
+  MessageService,
+  WebappSdkModule,
+  YamcsService,
+  utils,
+} from '@yamcs/webapp-sdk';
+import { AppAppBaseToolbar } from '../appbase-toolbar/appbase-toolbar.component';
 
 @Component({
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [AppAppBaseToolbar, WebappSdkModule],
 })
 export class HomeComponent implements AfterViewInit, OnDestroy {
-
   filterControl = new UntypedFormControl();
 
   @ViewChild(MatSort, { static: true })
@@ -29,7 +39,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   @ViewChild(MatPaginator, { static: true })
   paginator: MatPaginator;
 
-  private instancesByName: { [key: string]: Instance; } = {};
+  private instancesByName: { [key: string]: Instance } = {};
 
   dataSource = new MatTableDataSource<Instance>([]);
   selection = new SelectionModel<Instance>(true, []);
@@ -82,32 +92,21 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
       }
     });
 
-    this.yamcs.yamcsClient.getInstances().then(instances => {
+    this.yamcs.yamcsClient.getInstances().then((instances) => {
       for (const instance of instances) {
         this.instancesByName[instance.name] = instance;
       }
       this.dataSource.data = Object.values(this.instancesByName);
 
-      this.instancesSubscription = this.yamcs.yamcsClient.createInstancesSubscription(instance => {
-        this.instancesByName[instance.name] = instance;
-        this.dataSource.data = Object.values(this.instancesByName);
-      });
+      this.instancesSubscription =
+        this.yamcs.yamcsClient.createInstancesSubscription((instance) => {
+          this.instancesByName[instance.name] = instance;
+          this.dataSource.data = Object.values(this.instancesByName);
+        });
     });
 
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
-  }
-
-  isAllSelected() {
-    const numSelected = this.selection.selected.length;
-    const numRows = this.dataSource.filteredData.length;
-    return numSelected === numRows && numRows > 0;
-  }
-
-  masterToggle() {
-    this.isAllSelected() ?
-      this.selection.clear() :
-      this.dataSource.filteredData.forEach(row => this.selection.select(row));
   }
 
   toggleOne(row: Instance) {
@@ -126,8 +125,9 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   }
 
   startInstance(instance: Instance) {
-    this.yamcs.yamcsClient.startInstance(instance.name)
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .startInstance(instance.name)
+      .catch((err) => this.messageService.showError(err));
   }
 
   restartSelectedInstances() {
@@ -139,10 +139,9 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   }
 
   restartInstance(instance: Instance) {
-    this.yamcs.yamcsClient.restartInstance(instance.name)
-      .catch(err => {
-        this.messageService.showError(err);
-      });
+    this.yamcs.yamcsClient.restartInstance(instance.name).catch((err) => {
+      this.messageService.showError(err);
+    });
   }
 
   stopSelectedInstances() {
@@ -154,8 +153,9 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   }
 
   stopInstance(instance: Instance) {
-    this.yamcs.yamcsClient.stopInstance(instance.name)
-      .catch(err => this.messageService.showError(err));
+    this.yamcs.yamcsClient
+      .stopInstance(instance.name)
+      .catch((err) => this.messageService.showError(err));
   }
 
   isGroupStartEnabled() {
@@ -194,7 +194,9 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
 
   isCreateInstanceEnabled() {
     const user = this.authService.getUser()!;
-    return this.config.hasTemplates() && user.hasSystemPrivilege('CreateInstances');
+    return (
+      this.config.hasTemplates() && user.hasSystemPrivilege('CreateInstances')
+    );
   }
 
   private updateURL() {
@@ -213,7 +215,8 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     const items = this.dataSource.filteredData;
     let idx = 0;
     if (this.selection.hasValue()) {
-      const currentItem = this.selection.selected[this.selection.selected.length - 1];
+      const currentItem =
+        this.selection.selected[this.selection.selected.length - 1];
       if (items.indexOf(currentItem) !== -1) {
         idx = Math.min(items.indexOf(currentItem) + 1, items.length - 1);
       }
@@ -242,11 +245,13 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
       if (items.indexOf(item) !== -1 && item.state !== 'OFFLINE') {
         if (item.processors?.length) {
           this.router.navigate(['/instance'], {
-            queryParams: { c: item.name + '__' + utils.getDefaultProcessor(item) }
+            queryParams: {
+              c: item.name + '__' + utils.getDefaultProcessor(item),
+            },
           });
         } else {
           this.router.navigate(['/instance'], {
-            queryParams: { c: item.name }
+            queryParams: { c: item.name },
           });
         }
       }

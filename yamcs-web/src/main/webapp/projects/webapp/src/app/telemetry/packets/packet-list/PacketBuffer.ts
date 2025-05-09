@@ -1,7 +1,6 @@
 import { Packet } from '@yamcs/webapp-sdk';
 
 export class PacketBuffer {
-
   public dirty = false;
 
   private archivePackets: Packet[] = [];

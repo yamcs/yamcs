@@ -1,4 +1,9 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  ViewChild,
+} from '@angular/core';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute } from '@angular/router';
@@ -7,12 +12,9 @@ import { Table, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 @Component({
   templateUrl: './table-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule],
 })
 export class TableListComponent implements AfterViewInit {
-
   @ViewChild(MatSort, { static: true })
   sort: MatSort;
 
@@ -20,10 +22,13 @@ export class TableListComponent implements AfterViewInit {
 
   dataSource = new MatTableDataSource<Table>();
 
-  constructor(route: ActivatedRoute, readonly yamcs: YamcsService) {
+  constructor(
+    route: ActivatedRoute,
+    readonly yamcs: YamcsService,
+  ) {
     const parent = route.snapshot.parent!;
     const name = parent.paramMap.get('database')!;
-    yamcs.yamcsClient.getTables(name).then(tables => {
+    yamcs.yamcsClient.getTables(name).then((tables) => {
       this.dataSource.data = tables;
     });
   }

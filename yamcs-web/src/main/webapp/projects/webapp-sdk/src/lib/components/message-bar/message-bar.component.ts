@@ -12,24 +12,15 @@ import { MessageService, SiteMessage } from '../../services/message.service';
   templateUrl: './message-bar.component.html',
   styleUrl: './message-bar.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AsyncPipe,
-    MatIcon,
-    MatIconButton,
-    MatToolbar,
-    MatToolbarRow
-  ],
+  imports: [AsyncPipe, MatIcon, MatIconButton, MatToolbar, MatToolbarRow],
 })
 export class YaMessageBar {
-
   siteMessage$: Observable<SiteMessage | null>;
   show$: Observable<boolean>;
 
   constructor(private messageService: MessageService) {
     this.siteMessage$ = messageService.siteMessage$;
-    this.show$ = this.siteMessage$.pipe(
-      map(msg => !!msg)
-    );
+    this.show$ = this.siteMessage$.pipe(map((msg) => !!msg));
   }
 
   dismiss() {

@@ -17,52 +17,22 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-.material-icons.icon12 {
+.material-symbols.icon12 {
   font-size: 12px !important;
   height: 12px !important;
   width: 12px !important;
 }
 
-.material-icons.icon14 {
+.material-symbols.icon14 {
   font-size: 14px !important;
   height: 14px !important;
   width: 14px !important;
 }
 
-.material-icons.icon16 {
+.material-symbols.icon16 {
   font-size: 16px !important;
   height: 16px !important;
   width: 16px !important;
-}
-
-.material-icons.icon18 {
-  font-size: 18px !important;
-  height: 18px !important;
-  width: 18px !important;
-}
-
-.material-icons.icon24 {
-  font-size: 24px !important;
-  height: 24px !important;
-  width: 24px !important;
-}
-
-.material-icons.icon32 {
-  font-size: 32px !important;
-  height: 32px !important;
-  width: 32px !important;
-}
-
-.material-icons.icon36 {
-  font-size: 36px !important;
-  height: 36px !important;
-  width: 36px !important;
-}
-
-.material-icons.icon48 {
-  font-size: 48px !important;
-  height: 48px !important;
-  width: 48px !important;
 }
 
 .mat-mdc-slide-toggle {
@@ -80,17 +50,6 @@ body {
 
 .dialog-force-no-scrollbar .mat-mdc-tab-body-content {
   overflow-y: hidden !important;
-}
-
-.no-select {
-  user-select: none;
-  -moz-user-select: none;
-  -khtml-user-select: none;
-  -webkit-user-select: none;
-}
-
-.panel-content {
-  padding: 24px;
 }
 
 .form-content {
@@ -115,8 +74,8 @@ dt {
   font-weight: bold;
 }
 
-.ya-link a .material-icons,
-a.ya-link .material-icons {
+.ya-link a .material-symbols,
+a.ya-link .material-symbols {
   text-decoration: none !important;
 }
 
@@ -125,19 +84,22 @@ a.ya-link.ya-header-link {
 }
 
 .ya-menu .mat-mdc-menu-item {
-  line-height: 24px;
-  height: 24px;
+  line-height: 32px;
+  height: 32px;
   font-size: 12px;
-  padding: 0 8px;
-  min-height: 24px;
+  padding: 0 16px;
+  min-height: 32px;
 }
 
 .ya-menu .mat-mdc-menu-content .mat-mdc-menu-item .mdc-list-item__primary-text,
 .ya-menu .mat-mdc-menu-content .mat-mdc-menu-item .mat-mdc-menu-item-text {
   font-size: 12px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
-.ya-menu .mat-mdc-menu-item .material-icons {
+.ya-menu .mat-mdc-menu-item .material-symbols {
   font-size: 14px !important;
   height: 14px !important;
   width: 14px !important;
@@ -147,12 +109,13 @@ a.ya-link.ya-header-link {
 
 .ya-menu.mat-mdc-menu-panel {
   min-height: 24px;
+  max-width: 350px;
 }
 
-.ng-invalid:not(.ng-pristine)>.date-time-input>input,
-.ng-invalid:not(.ng-pristine)>.binary-input>input,
+.ng-invalid:not(.ng-pristine) > .date-time-input > input,
+.ng-invalid:not(.ng-pristine) > .binary-input > input,
 input.ng-invalid:not(.ng-pristine),
-.ng-invalid:not(.ng-pristine)>.duration-input>input {
+.ng-invalid:not(.ng-pristine) > .duration-input > input {
   border-color: var(--y-error-color) !important;
 }
 
@@ -161,29 +124,6 @@ input.ng-invalid:not(.ng-pristine),
   line-height: 16px;
   font-size: 12px;
   min-height: 24px;
-}
-
-.block-title {
-  font-weight: 500;
-  font-size: 12px;
-  padding-bottom: 0;
-  padding-top: 1em;
-  margin: 0;
-}
-
-.block {
-  font-weight: normal;
-  font-size: 12px;
-  color: rgba(0, 0, 0, 0.654);
-}
-
-.badge {
-  position: relative;
-  color: #ffffff;
-  background-color: #ff4081;
-  border-radius: 50%;
-  padding: 4px 5px;
-  font-family: "Roboto";
 }
 
 .hide,
@@ -196,33 +136,6 @@ input.ng-invalid:not(.ng-pristine),
   padding-bottom: 12px;
 }
 
-.section-divider.half-break {
-  padding-top: 12px;
-  padding-bottom: 6px;
-}
-
-.mat-toolbar.top {
-  min-height: 48px;
-}
-
-.mat-toolbar.top .mat-toolbar-row {
-  height: 48px;
-  font-weight: 400;
-}
-
-.mat-toolbar.top .mat-mdc-button {
-  text-transform: uppercase;
-  padding: 0 16px;
-}
-
-.mat-toolbar.top .mat-mdc-button.icon {
-  min-width: unset;
-}
-
-.mat-toolbar.top .mat-mdc-button.icon>mat-icon {
-  margin-right: 0;
-}
-
 .mat-mdc-tab-link:hover {
   background-color: rgba(0, 0, 0, 0.04);
 }
@@ -232,22 +145,11 @@ input.ng-invalid:not(.ng-pristine),
   height: 36px;
   min-width: 0;
   font-size: 13px;
-  text-transform: uppercase;
-}
-
-.filter-bar {
-  height: 24px;
-  margin-bottom: 12px;
-  display: flex;
 }
 
 input[type="checkbox"],
 input[type="radio"] {
   accent-color: var(--y-accent);
-}
-
-.action-bar {
-  padding-top: 16px;
 }
 
 .mat-mdc-dialog-content .hint {
@@ -266,18 +168,8 @@ input[type="radio"] {
   color: whitesmoke !important;
 }
 
-.action-bar ya-button,
-.mat-mdc-dialog-actions ya-button:not(:last-child),
-.filter-bar>.date-time-input,
-.filter-bar>ya-button,
-.filter-bar>ya-select,
-.filter-bar>ya-multi-select,
-.filter-bar .search-input {
+.mat-mdc-dialog-actions ya-button:not(:last-child) {
   margin-right: 7px;
-}
-
-.filter-bar ya-button.no-margin {
-  margin-right: 0;
 }
 
 .mat-mdc-paginator {
@@ -288,52 +180,46 @@ input[type="radio"] {
   display: none;
 }
 
-hr.half-break {
-  visibility: hidden;
-  line-height: 0.5em;
-}
-
 h2 {
-  font: 500 20px / 32px Roboto, sans-serif;
-  letter-spacing: .0125em;
+  font:
+    500 20px / 32px Roboto,
+    sans-serif;
+  letter-spacing: 0.0125em;
   margin: 0 0 16px;
 }
 
 h3 {
-  font: 400 16px / 28px Roboto, sans-serif;
-  letter-spacing: .009375em;
+  font:
+    400 16px / 28px Roboto,
+    sans-serif;
+  letter-spacing: 0.009375em;
   margin: 0 0 16px;
 }
 
 h4 {
-  font: 400 16px / 24px Roboto, sans-serif;
-  letter-spacing: .03125em;
+  font:
+    400 16px / 24px Roboto,
+    sans-serif;
+  letter-spacing: 0.03125em;
   margin: 0 0 16px;
 }
 
 p {
   margin-top: 0;
   margin-bottom: 12px;
-  letter-spacing: .0178571429em;
+  letter-spacing: 0.0178571429em;
 }
 
 .elevation-z1 {
-  box-shadow: 0 2px 1px -1px #0003, 0 1px 1px #00000024, 0 1px 3px #0000001f;
-}
-
-/*
- * This style will be ignored in PrintZone.
- * (because it does not apply the general CSS)
- */
-.print-only {
-  display: none;
+  box-shadow:
+    0 2px 1px -1px #0003,
+    0 1px 1px #00000024,
+    0 1px 3px #0000001f;
 }
 
 @media print {
-
   .mat-drawer,
-  .mat-toolbar,
-  .filter-bar {
+  .mat-toolbar {
     display: none !important;
   }
 
@@ -344,10 +230,6 @@ p {
 
   .mat-drawer-content {
     margin: 0 !important;
-  }
-
-  .panel-content {
-    padding: 0;
   }
 
   * {
