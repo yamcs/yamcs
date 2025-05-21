@@ -6,11 +6,15 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;
@@ -43,6 +47,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
@@ -105,6 +110,7 @@ import org.yamcs.ui.PrefsObject;
 import org.yamcs.ui.packetviewer.filter.PacketFilter;
 import org.yamcs.ui.packetviewer.filter.ParseException;
 import org.yamcs.ui.packetviewer.filter.TokenMgrError;
+import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.NameDescription;
@@ -151,6 +157,7 @@ public class PacketViewer extends JFrame implements ActionListener,
     private YamcsClient client;
     private ConnectDialog connectDialog;
     private ConnectData connectData;
+    private JMenuItem copyHexItem;
     Preferences uiPrefs;
 
     // used for decoding full packets
@@ -250,6 +257,38 @@ public class PacketViewer extends JFrame implements ActionListener,
         offsetStyle = hexDoc.addStyle("offset", fixedStyle);
         StyleConstants.setForeground(offsetStyle, Color.GRAY);
         hexText.setEditable(false);
+
+        JPopupMenu hexPopup = new JPopupMenu();
+        copyHexItem = new JMenuItem("Copy hex");
+        copyHexItem.setEnabled(false);
+        hexPopup.add(copyHexItem);
+        copyHexItem.addActionListener(e -> {
+            if (currentPacket != null) {
+                var hex = StringConverter.arrayToHexString(currentPacket.buf);
+                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                StringSelection stringSelection = new StringSelection(hex);
+                clipboard.setContents(stringSelection, null);
+            }
+        });
+        hexText.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    showPopupMenu(e);
+                }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    showPopupMenu(e);
+                }
+            }
+
+            private void showPopupMenu(MouseEvent e) {
+                hexPopup.show(e.getComponent(), e.getX(), e.getY());
+            }
+        });
 
         JScrollPane hexScrollpane = new JScrollPane(hexText);
         hexScrollpane.getViewport().setBackground(hexText.getBackground());
@@ -958,6 +997,8 @@ public class PacketViewer extends JFrame implements ActionListener,
             log(msg);
             showError(msg);
         }
+
+        copyHexItem.setEnabled(currentPacket != null);
     }
 
     SequenceContainer getCurrentRootContainer() {
