@@ -15,7 +15,7 @@ import org.yamcs.xtce.Parameter;
 public class PacketsTableModel extends DefaultTableModel {
 
     private static final long serialVersionUID = 1L;
-    private static final String[] FIXED_COLUMNS = { "#", "Generation Time", "Packet Name" };
+    private static final String[] FIXED_COLUMNS = { "#", "Generation Time", "Packet Name", "Length" };
 
     private int continuousRowCount = 0; // Always increases, even when rows were removed
     private List<Parameter> shownColumnParameters = new ArrayList<>();
@@ -32,6 +32,8 @@ public class PacketsTableModel extends DefaultTableModel {
             return Long.class;
         } else if (column == 2) {
             return ListPacket.class;
+        } else if (column == 3) {
+            return Integer.class;
         } else {
             return Object.class;
         }
@@ -75,6 +77,7 @@ public class PacketsTableModel extends DefaultTableModel {
         row.add(packet.getIdentifier());
         row.add(TimeEncoding.toCombinedFormat(packet.getGenerationTime()));
         row.add(packet);
+        row.add(packet.length);
         for (Parameter p : shownColumnParameters) {
             ParameterValue pv = packet.getParameterColumn(p);
             if (pv != null) {
