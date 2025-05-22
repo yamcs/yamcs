@@ -1,0 +1,70 @@
+syntax="proto2";
+
+package yamcs.protobuf.sdls;
+
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "SdlsProto";
+option java_multiple_files = true;
+
+import "google/protobuf/empty.proto";
+
+import "yamcs/api/annotations.proto";
+import "yamcs/api/httpbody.proto";
+
+service SdlsApi {
+  // Get the sequence number
+  rpc GetSeqCtr(GetSeqCtrRequest) returns (GetSeqCtrResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/sdls/{instance}/{linkName}/{spi}/seq"
+    };
+  }
+
+  // Reset the sequence counter
+  rpc ResetSeqCtr(ResetSeqCtrRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      delete: "/api/sdls/{instance}/{linkName}/{spi}/seq"
+    };
+  }
+
+  // Set the key
+  rpc SetKey(SetKeyRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      put: "/api/sdls/{instance}/{linkName}/{spi}/key",
+      body: "data",
+    };
+  }
+}
+
+message GetSeqCtrRequest {
+  // The Yamcs instance
+  required string instance = 1;
+  // The name of the encrypted link
+  required string linkName = 2;
+  // The Security Parameter Index
+  required uint32 spi = 3;
+}
+
+message GetSeqCtrResponse {
+  // The current sequence number
+  required uint64 seq = 1;
+}
+
+message ResetSeqCtrRequest {
+  // The Yamcs instance
+  required string instance = 1;
+  // The name of the encrypted link
+  required string linkName = 2;
+  // The Security Parameter Index
+  required uint32 spi = 3;
+}
+
+message SetKeyRequest {
+  // The Yamcs instance
+  required string instance = 1;
+  // The name of the encrypted link
+  required string linkName = 2;
+  // The Security Parameter Index
+  required uint32 spi = 3;
+  // The 256-bit key
+  required yamcs.api.HttpBody data = 4;
+}

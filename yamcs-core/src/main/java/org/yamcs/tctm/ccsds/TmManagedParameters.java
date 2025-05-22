@@ -33,7 +33,7 @@ public class TmManagedParameters extends DownlinkManagedParameters {
 
         List<YConfiguration> l = config.getConfigList("virtualChannels");
         for (YConfiguration yc : l) {
-            TmVcManagedParameters vmp = new TmVcManagedParameters(yc);
+            TmVcManagedParameters vmp = new TmVcManagedParameters(yc, this);
             if (vcParams.containsKey(vmp.vcId)) {
                 throw new ConfigurationException("duplicate configuration of vcId " + vmp.vcId);
             }
@@ -72,9 +72,8 @@ public class TmManagedParameters extends DownlinkManagedParameters {
     static class TmVcManagedParameters extends VcDownlinkManagedParameters {
         ServiceType service;
 
-        public TmVcManagedParameters(YConfiguration config) {
-            super(config);
-
+        public TmVcManagedParameters(YConfiguration config, TmManagedParameters tmParams) {
+            super(config, tmParams);
             if (vcId < 0 || vcId > 7) {
                 throw new ConfigurationException("Invalid vcId: " + vcId + ". Allowed values are from 0 to 7.");
             }
@@ -84,6 +83,13 @@ public class TmManagedParameters extends DownlinkManagedParameters {
             } else if (service == ServiceType.VCA) {
                 parseVcaConfig();
             }
+
+            // Auth mask with the size of the TM primary header
+            authMask = new byte[6];
+            // Authenticate only virtual channel ID.
+            // We never authenticate the Master Channel Frame Count field.
+            authMask[1] = 0b0000_1110;
+
         }
     }
 

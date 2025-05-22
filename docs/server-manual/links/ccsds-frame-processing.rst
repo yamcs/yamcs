@@ -57,8 +57,17 @@ An example of a UDP TM frame link specification is below:
         clcwStream: clcw
         goodFrameStream: good_frames
         badFrameStream: bad_frames
+        encryption:
+          - spi: 1
+            keyFile: etc/sdls-presharedkey-256bit
+            seqNumWindow: 1
+          - spi: 2
+            keyFile: etc/sdls-presharedkey-256bit
+            seqNumWindow: 1
+            verifySeqNum: false
         virtualChannels:
           - vcId: 0
+            encryptionSpi: 1
             ocfPresent: true
             service: "PACKET"
             maxPacketLength: 2048
@@ -67,6 +76,7 @@ An example of a UDP TM frame link specification is below:
               [...]
             stream: "tm_realtime"
           - vcId: 1
+            encryptionSpi: 1
             ocfPresent: true
             service: "PACKET"
             maxPacketLength: 2048
@@ -76,8 +86,9 @@ An example of a UDP TM frame link specification is below:
               [...]
             stream: "tm2_realtime"
           - vcId: 2
+            encryptionSpi: 2
             ocfPresent: true
-            service: "PACKET" 
+            service: "PACKET"
             maxPacketLength: 2048
             packetPreprocessorClassName: org.yamcs.tctm.IssPacketPreprocessor
             stream: "tm_dump"
@@ -89,30 +100,30 @@ rawFrameDecoder (map) supported since Yamcs 5.5.7
    Decodes raw frame data using an error correction scheme and/or randomization. For the moment only the Reed-Solomon codec is supported. If this is not set, the frames are considered already decoded. See below for the options to the Reed-Solomon codec.
 
 frameType (string)
-    **Required.** One of ``AOS``, ``TM`` or ``USLP``. The first 2 bits for AOS/TM and 4 bits for USLP represent the version number and have to have the value 0, 1 or 12 respectively. If a frame is received that has a different version, it is discarded (with a warning log message). 
+    **Required.** One of ``AOS``, ``TM`` or ``USLP``. The first 2 bits for AOS/TM and 4 bits for USLP represent the version number and have to have the value 0, 1 or 12 respectively. If a frame is received that has a different version, it is discarded (with a warning log message).
 
 derandomize (boolean)
     If true, derandomize the frames with the derandomizer as per CCSDS 131.0-B-4. Default: false
-    
+
 spacecraftId (integer)
     **Required.** The expected spacecraft identifier. The spacecraftId is encoded in the frame header. If a frame with a different identifier is received, it is discarded (with a warning log message).
-    
+
 frameLength (integer)
     The expected frame length. This parameter is mandatory for AOS and TM frames and optional for USLP frames which can have variable length. If a frame is received that does not have this length, it is discarded (with a warning log message).
     For USLP frames, if this parameter is specified, the following two are ignored; Yamcs will use maxFrameLength = minFrameLength = frameLength.
 
 maxFrameLength (integer)
     Used for USLP with variable frame length to specify the maximum length of the frame. This parameter is ignored if the frameLength parameter is also specified.
-    
+
 minFrameLength (integer)
-    Used for USLP with variable frame length to specify the minimum length of the frame. This parameter is ignored if the frameLength parameter is also specified. 
+    Used for USLP with variable frame length to specify the minimum length of the frame. This parameter is ignored if the frameLength parameter is also specified.
 
 frameHeaderErrorControlPresent (boolean)
     Used only for AOS frames to specify the presence/absence of the 2 bytes Frame Header Error Control. This can be used to detect and correct errors in parts of the AOS frame headers using a  Reed-Solomon (10,6) code.
- 
+
 insertZoneLength (integer)
     The AOS and USLP frames can optionally use an Insert Service to transfer fixed-length data synchronized with the release of the frames. The insert data follows immediately the frame primary header. If the Insert Service is used, this parameter specifies the length of the insert data. If not used, please set it to 0 (default). For TM frames this parameter is ignored.
-    Currently Yamcs ignores any data in the insert zone. 
+    Currently Yamcs ignores any data in the insert zone.
 
 errorDetection (string)
     One of ``NONE``, ``CRC16`` or ``CRC32``. Specifies the error detection scheme used. TM and AOS frames support either NONE or CRC16 while USLP supports NONE, CRC16 or CRC32. If present, the last 2 respectively 4 bytes of the frame will contain an error control field. If the CRC does not match the computation, the frame will be discarded (with a warning message).
@@ -120,37 +131,57 @@ errorDetection (string)
 clcwStream (string)
     Can be used to specify the name of the stream where the Command Link Control Words (CLCW) will be sent. The CLCW is the mechanism used by COP-1 to acknowledge uplinked frames. For TM and USLP frames, there is an OCF flag part of the frame header indicating the presence or not of the CLCW. For AOS frames it has to be configured with the ``ocfPresent`` flag below.
     If present, the CLCW is also extracted from idle frames (i.e. frames that are inserted when no data needs to be transmitted in order to keep the constant bitrate required for downlink).
-    
+
 goodFrameStream (string)
     If specified, the good frames will be sent on a stream with that name. The stream will be created if it does not exist.
-    
+
 badFrameStream (string)
     If specified, the bad frames will be sent on a stream with that name. Bad frames are considered as those that fail decoding for various reasons: length in the header does not match the size of the data received, frame version does not match, bad CRC, bad spacecraft id, bad vcid.
 
+encryption (list of map)
+    If specified, channels on the link can use one of the configured SPIs to encrypt frames.
+
 virtualChannels (map)
     **Required.** Used to specify the Virtual Channel specific configuration.
+
+For each item in the ``encryption`` list, the following parameters can be used:
+
+spi (integer)
+    **Required.** Specifies the Security Parameter Index (SPI) that uniquely identifies this encryption key for the link.
+
+keyFile (string)
+    **Required.** Specifies the path to the 256-bit encryption key for symmetric encryption.
+
+seqNumWindow (integer)
+    **Required.** If SDLS encryption is used, this defines the maximum value by which the sequence number of incoming frames can differ from the current sequence number.
+
+verifySeqNum (boolean)
+    If SDLS encryption is used, this defines whether received sequence numbers are verified according to the ``seqNumWindow``. Defaults to true.
 
 For each Virtual Channel in the ``virtualChannels`` map, the following parameters can be used:
 
 vcId (integer)
     **Required.** The configured Virtual Channel identifier.
 
+encryptionSpi (integer)
+    If specified, instructs the virtual channel to use SDLS for frame encryption and authentication, using the specified Security Parameter Index. The ``encryptionSpi`` must be one of the ``spi`` values in the ``encryption`` list for the link.
+
 ocfPresent: (boolean)
     Used for AOS frames to indicate that the Virtual Channel uses the  Operational Control Field (OCF) Service to transport the CLCW containing acknowledgments for the uplinked TC frames. For TM and USLP frames, there is a flag in each frame that indicates the presence or absence of OCF.
 
 service:
     **Required.** This specifies the type of data that is part of the Virtual Channel. One of ``PACKET``, ``IDLE`` or ``VCA``
-    
+
     PACKET:
-       This is used if the data contains packets - it requires the presence of the first header pointer to indicate where in the frame the packet starts. Both CCSDS space packets and CCSDS encapsulation packets are supported (even multiplexed on the same virtual channel). The type of packet is detected based on the first 3 bits of data: 000=CCSDS space packet, 111=encapsulation packets. 
-       Idle CCSDS space packets (having APID = 0x7FF) and idle encapsulation packets (having first byte = 0x1C) are discarded.   
+       This is used if the data contains packets - it requires the presence of the first header pointer to indicate where in the frame the packet starts. Both CCSDS space packets and CCSDS encapsulation packets are supported (even multiplexed on the same virtual channel). The type of packet is detected based on the first 3 bits of data: 000=CCSDS space packet, 111=encapsulation packets.
+       Idle CCSDS space packets (having APID = 0x7FF) and idle encapsulation packets (having first byte = 0x1C) are discarded.
     IDLE:
        Supported for AOS and USLP to indicate that the Virtual Channel contains only idle frames . Normally, the AOS and USLP use the Virtual Channel 63 to transmit idle frames and you do not need to define this virtual channel (in conclusion ``IDLE`` is not very useful). The TM frames have a different mechanism to signal idle frames (first header pointer is 0x7FE).
     VCA:
        VCA stands for Virtual Channel Access - it is  a mechanism for the user to plug a custom handler for the virtual channel data. The ``vcaHandlerClassName`` property has to be defined if this option is specified (see  below).
 
 maxPacketLength:
-    **Required if service=PACKET.**  Specifies the maximum size of a packet (header included). Valid for both CCSDS Space Packets and CCSDS encapsulation packets. If the header of a packet indicates a packet size larger than this value, a warning event is raised and the packet is dropped including all the data until a new frame containing a packet start. 
+    **Required if service=PACKET.**  Specifies the maximum size of a packet (header included). Valid for both CCSDS Space Packets and CCSDS encapsulation packets. If the header of a packet indicates a packet size larger than this value, a warning event is raised and the packet is dropped including all the data until a new frame containing a packet start.
 
 packetPreprocessorClassName and packetPreprocessorArgs
     **Required if service=PACKET.** Specifies the packet pre-processor and its configuration that will be used for the packets extracted from this Virtual Channel. See :doc:`packet-preprocessor` for details.
@@ -196,8 +227,19 @@ An example of a UDP TC frame link specification is below:
       cltuEncoding: BCH
       priorityScheme: FIFO
       randomizeCltu: false
+      encryption:
+        - spi: 1
+          keyFile: etc/sdls-presharedkey-256bit
+          seqNumWindow: 1
+        - spi: 2
+          keyFile: etc/sdls-presharedkey-256bit
+          seqNumWindow: 1
+        - spi: 3
+          keyFile: etc/sdls-presharedkey-256bit
+          seqNumWindow: 1
       virtualChannels:
           - vcId: 0
+            encryptionSpi: 1
             service: "PACKET"
             mapId: 1
             priority: 1
@@ -218,13 +260,13 @@ The following general options are supported:
 
 spacecraftId (integer)
     **Required.** The spacecraftId is encoded in the TC Transfer Frame primary header.
-    
+
 maxFrameLength (integer)
     **Required.** The maximum length of the frames sent over this link. The Virtual Channel can also specify an option for this but the VC specific maximum frame length has to be smaller or equal than this. Note that since Yamcs does not support segmentation (i.e. splitting a TC packet over multiple frames), this value limits effectively the size of the TC packet that can be sent.
 
 priorityScheme (string)
     One of ``FIFO``, ``ABSOLUTE`` or ``POLLING_VECTOR``. This configures the priority of the different Virtual Channels. The different schemes are described below.
-    
+
 cltuEncoding (string)
     One of ``BCH``, ``LDPC64``, ``LDPC256``, or ``CUSTOM``. If this parameter is present, the TC transfer frames will be encoded into CLTUs and this parameter configures the code to be used. If this parameter is not present, the frames will not be encapsulated into CLTUs and the following related parameters are ignored. If the value is ``CUSTOM``, the CLTU generator class must be specified as indicated below.
 
@@ -233,14 +275,17 @@ cltuStartSequence (string)
 
 cltuTailSequence (string)
     This parameter can optionally set the CLTU tail sequence in hexadecimal if different than the CCSDS specs.
-    
+
 randomizeCltu (boolean)
     Used if cltuEncoding is BCH or CUSTOM to enable/disable the randomization. For LDPC encoding, randomization is always on.
     Note that as per issue 4 of CCSDS 231.0 (TC Synchronization and Channel Coding), the randomization is done before the encoding when BCH is enabled whereas if LDPC encoding is enabled, the randomization is done after the encoding. This has been changed in Yamcs version 5.5.4 - in versions 5.5.3 and earlier the randomization was always applied before the encoding (as per issue 3 of the CCSDS standard). If CUSTOM CLTU encoding is used, the custom encoder is responsible for the randomization - it can use this option or its own separate option for configuration.
 
+encryption (list of map)
+    If specified, channels on the link can use one of the configured SPIs to encrypt frames.
+
 skipRandomizationForVcs (list of integers) added in Yamcs 5.5.6
     If randomizeCltu is true, this option can define a list of virtual channels for which randomization is not performed. This is not as per CCSDS standard which specifies that the randomization is enabled/disabled at the physical channel level.
- 
+
 cltuGeneratorClassName (string)
     **Required if cltuEncoding is CUSTOM.** Specifies the name of the class which constructs the CLTU from the frame, if a custom format is required.
 
@@ -251,27 +296,43 @@ virtualChannels (map)
     **Required.** Used to specify the Virtual Channel specific configuration.
 
 errorDetection (string)
-    One of ``NONE`` or ``CRC16``. Specifies the error detection scheme used. If present, the last 2 bytes of the frame will contain an error control field. 
+    One of ``NONE`` or ``CRC16``. Specifies the error detection scheme used. If present, the last 2 bytes of the frame will contain an error control field.
     Default: ``CRC16``
-    
+
 frameMaxRate (double)
     maximum number of command frames to send per second. This option is specific to the UDP TC link.
 
-    
+For each item in the ``encryption`` list, the following parameters can be used:
+
+spi (integer)
+    **Required.** Specifies the Security Parameter Index (SPI) that uniquely identifies this encryption key for the link.
+
+keyFile (string)
+    **Required.** Specifies the path to the 256-bit encryption key for symmetric encryption.
+
 For each Virtual Channel in the ``virtualChannels`` map, the following parameters can be used:
 
 vcId (integer)
     **Required.** The Virtual Channel identifier to be used in the frames. You can define multiple entries in the map with the same vcId, if the data is coming from different streams.
+
+encryptionSpi (integer)
+    If specified, instructs the virtual channel to encrypt and authenticate frames, using the specified Security Parameter Index. The ``encryptionSpi`` must be one of the ``spi`` values in the ``encryption`` list for the link.
+
+seqNumWindow (integer)
+    If SDLS encryption is used, this defines the maximum value by which the sequence number of incoming frames can differ from the current sequence number. The sequence number is 32 bits in size; as a potential future improvement, this could be made user-configurable.
+
+verifySeqNum (boolean)
+    If SDLS encryption is used, this defines whether received sequence numbers are verified according to the ``seqNumWindow``. Defaults to true.
 
 service (string)
     Currently the only supported option is ``PACKET`` which is also the default.
 
 commandPostprocessorClassName (string) and commandPostprocessorArgs (string)
    **Required if service=PACKET.** Specifies the command post-processor and its configuration. See :doc:`command-post-processor` for details.
-   
+
 stream (string)
      **Required.** The stream on which the commands are received.
-     
+
 multiplePacketsPerFrame (boolean)
     If set to true (default), Yamcs sends multiple command packets in one frame if possible (i.e. if the accumulated size fits within the maximum frame size and the commands are available when a frame has to be sent).
 
@@ -294,8 +355,8 @@ slidingWindowWidth (integer)
     If COP-1 is enabled, this specifies the default value for the FOP_SLIDING_WINDOW_WIDTH (K). Default: ``10``
 
 bdAbsolutePriority (false)
-    If COP-1 is enabled, this specifies that the BD frames have absolute priority over normal AD frames. This means that if there are a number of AD frames ready to be uplinked and a TC with ``cop1Bypass`` flag is received (see below for an explanation of this flag), it will pass in front of the queue so ti will be the first frame uplinked (once the multiplexer decides to uplink frames from this Virtual Channel). This flag only applies when the COP-1 state is active, if the COP-1 synchronization has not taken place, the BD frames are uplinked anyway (because all AD frames are waiting). 
-    
+    If COP-1 is enabled, this specifies that the BD frames have absolute priority over normal AD frames. This means that if there are a number of AD frames ready to be uplinked and a TC with ``cop1Bypass`` flag is received (see below for an explanation of this flag), it will pass in front of the queue so ti will be the first frame uplinked (once the multiplexer decides to uplink frames from this Virtual Channel). This flag only applies when the COP-1 state is active, if the COP-1 synchronization has not taken place, the BD frames are uplinked anyway (because all AD frames are waiting).
+
 tcQueueSize (integer)
     This is used if COP-1 is not enabled, to determine the size of the command queue. Note that this is number of commands (not frames!). If the queue is full, the new commands will be rejected. Commands are taken from the queue by the multiplexer, according to the priority scheme defined below. Default: ``10``.
 
@@ -307,18 +368,18 @@ mapId (integer)
     If specified and positive, use the MAP service. Supported for TC frames only (not for USLP). Each frame will contain an extra byte after the primary header. The first two bits of the byte are set to 1 (i.e. unsegmented) and the last 6 bits are the map id. The default id is the one specified in this configuration. It can be overridden in the MDB or via command attributes. The map id has to be between ``0`` and ``15``.
     Default: ``-1`` (MAP service not used)
 
-           
+
 Priority Schemes
 ****************
 
-The multiplexing of command frames from the different Virtual Channels is done according to the defined priority scheme. The multiplexer is triggered by the availability of the uplink - when a command frame is to be uplinked it has to decide from which Virtual Channel it will release it. 
+The multiplexing of command frames from the different Virtual Channels is done according to the defined priority scheme. The multiplexer is triggered by the availability of the uplink - when a command frame is to be uplinked it has to decide from which Virtual Channel it will release it.
 
 ``FIFO`` means that the first frame received across all virtual channels will be the first one sent.
 
 ``ABSOLUTE`` means that the frames will be sent according to the priority set on each Virtual Channel (set by the ``priority`` parameter). This means that as long as a high priority VC has commands to be sent, the lower priority VC will not release any command.
 
 
-``POLLING_VECTOR`` means that a polling vector will be built and each Virtual Channel will have the number of entries in the vector according to its priority. The multiplexing algorithm will cycle through the vector releasing the first command available. 
+``POLLING_VECTOR`` means that a polling vector will be built and each Virtual Channel will have the number of entries in the vector according to its priority. The multiplexing algorithm will cycle through the vector releasing the first command available.
 For example if there are two VCs VC1 with priority 2 and VC2 with priority 4, the polling vector will look like: [VC1, VC1, VC2, VC2, VC2, VC2]. This means that if both VCs have a high number of frames to be sent, the multiplexer will send 2 frames from VC1 followed by 4 from VC2 and then again. If however VC2 has only one frame to be sent, it will lose its other three slots for that cycle and the multiplexer will go back to sending two frames from VC1.
 
 
@@ -335,7 +396,7 @@ The mechanism through which the on-board system reports the reception of command
    create stream clcw (clcw int)
    insert into clcw select extract_int(packet, 12) as clcw from tm_realtime where extract_short(packet, 0) = 2080
 
-The first statement creates the stream, and the second inserts 4 bytes extracted from offset 12 from all telemetry packets having the first 2 bytes equal with 2080. 
+The first statement creates the stream, and the second inserts 4 bytes extracted from offset 12 from all telemetry packets having the first 2 bytes equal with 2080.
 
 If the ``initialClcwWait`` parameter is positive, at the link startup, Yamcs waits for that number of seconds for a CLCW to be received; once it is received, Yamcs will set the value of the ground counter (called ``vS`` in the spec) to the on-board counter value (called ``nR`` in the spec) received in the CLCW. That will ensure that the next command frame sent by Yamcs will contain the counter value expected by the on-board system.
 
@@ -358,3 +419,28 @@ The CCSDS Standard distinguishes between three types of TC frames (the type is e
 To send BD frames with Yamcs, you can use an attribute on the command called ``cop1Bypass``. If the link finds this attribute set to true, it will send the command in a BD frame, bypassing the COP-1 verification. The BC frames are sent only by the COP-1 state machine and it is not possible to send them from the user.
 
 The user interface allows also to deactivate the COP-1 and the user can opt for sending all the commands as AD frames or BD frames regardless of the cop1Bypass attribute.
+
+
+SDLS Support
+************
+
+
+SDLS is the protocol specified in `CCSDS 355.0-B-2 <https://ccsds.org/wp-content/uploads/gravity_forms/5-448e85c647331d9cbaf66c096458bdd5/2025/01//355x0b2.pdf>`_ for encrypting CCSDS frames.
+
+Managed Parameters:
+
+* Security Parameter Index (SPI): configurable by user in the Yamcs instance config file
+* Security Association Service Type: Authenticated Encryption is supported; not user-configurable.
+* Security Association Context: GVCID is supported. A Security Association is associated with a virtual channel, so changing the MAP ID will not affect the SPI used for SDLS.
+* Transmitted length of Initialization Vector: set to 12 octets (OWASP recommendation, baseline SDLS); not user-configurable.
+* Transmitted length of Sequence Number: set to 4 octets; not user-configurable.
+* Transmitted length of Pad Length: padding is not used; not user-configurable.
+* Transmitted length of MAC: set to 16 octets (baseline SDLS); not user-configurable.
+* Authentication algorithm: GCM is supported; not user-configurable.
+* Authentication mask: set as dictated by the standard; not user-configurable
+* Sequence number window: configurable by user in the Yamcs instance config file
+* Encryption algorithm: AES-GCM is supported; not user-configurable.
+* Authentication key: length is 256 bits, key is configured by user in the Yamcs configuration
+* Encryption key: the same key as in authentication is used, because AES-GCM provides authenticated encryption. Length is 256 bits, key is configured by user in the Yamcs configuration.
+* Sequence number: set to 0 when a Security Association is created. Not user-configurable, but can be reset via the API.
+* Encryption initialization vector: initialized with a random value on every encryption; not user-configurable.

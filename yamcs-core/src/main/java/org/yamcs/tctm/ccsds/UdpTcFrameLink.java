@@ -11,6 +11,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
+import org.yamcs.security.SdlsSecurityAssociation;
 import org.yamcs.utils.StringConverter;
 
 import com.google.common.util.concurrent.RateLimiter;
@@ -152,5 +153,9 @@ public class UdpTcFrameLink extends AbstractTcFrameLink implements Runnable {
     @Override
     protected Status connectionStatus() {
         return Status.OK;
+    }
+
+    public SdlsSecurityAssociation getSdls(short spi) {
+        return this.multiplexer.tcManagedParameters.sdlsSecurityAssociations.get(spi);
     }
 }
