@@ -1,0 +1,14 @@
+<h2 mat-dialog-title>Add message</h2>
+
+<mat-dialog-content>
+  <ya-form [formGroup]="form">
+    <ya-field label="Message" [class.invalid]="form.get('message')?.invalid">
+      <input type="text" formControlName="message" />
+    </ya-field>
+  </ya-form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <ya-button mat-dialog-close>CANCEL</ya-button>
+  <ya-button appearance="primary" (click)="save()" [disabled]="!form.valid">SAVE</ya-button>
+</mat-dialog-actions>

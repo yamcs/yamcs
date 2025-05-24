@@ -1,5 +1,5 @@
 .completed {
-  color: #00c752;
+  color: var(--y-success-color);
 }
 
 .running {

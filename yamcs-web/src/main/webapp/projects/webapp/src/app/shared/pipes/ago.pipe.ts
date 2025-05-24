@@ -48,9 +48,9 @@ export class AgoPipe implements PipeTransform {
 
     interval = Math.floor(seconds);
     if (interval > 60) {
-      return 'about a minute ago';
+      return '1 minute ago';
     } else {
-      return 'less than a minute ago';
+      return 'just now';
     }
   }
 

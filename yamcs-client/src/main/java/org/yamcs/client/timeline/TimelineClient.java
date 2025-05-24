@@ -12,8 +12,6 @@ import org.yamcs.api.Observer;
 import org.yamcs.client.Page;
 import org.yamcs.client.base.AbstractPage;
 import org.yamcs.client.base.ResponseObserver;
-import org.yamcs.protobuf.AddBandRequest;
-import org.yamcs.protobuf.CreateItemRequest;
 import org.yamcs.protobuf.DeleteBandRequest;
 import org.yamcs.protobuf.DeleteItemRequest;
 import org.yamcs.protobuf.DeleteTimelineGroupRequest;
@@ -27,13 +25,14 @@ import org.yamcs.protobuf.ListSourcesRequest;
 import org.yamcs.protobuf.ListSourcesResponse;
 import org.yamcs.protobuf.ListTimelineTagsRequest;
 import org.yamcs.protobuf.ListTimelineTagsResponse;
+import org.yamcs.protobuf.SaveBandRequest;
+import org.yamcs.protobuf.SaveItemRequest;
 import org.yamcs.protobuf.StartActivityRequest;
 import org.yamcs.protobuf.TimelineApiClient;
 import org.yamcs.protobuf.TimelineBand;
 import org.yamcs.protobuf.TimelineItem;
 import org.yamcs.protobuf.TimelineItemLog;
 import org.yamcs.protobuf.TimelineSourceCapabilities;
-import org.yamcs.protobuf.UpdateItemRequest;
 import org.yamcs.protobuf.activities.ActivityInfo;
 
 public class TimelineClient {
@@ -62,14 +61,17 @@ public class TimelineClient {
 
     }
 
-    public CompletableFuture<TimelineItem> addItem(String source, TimelineItem item) {
+    public CompletableFuture<TimelineItem> saveItem(String source, TimelineItem item) {
         if (!item.hasType()) {
             throw new IllegalArgumentException("type is mandatory");
         }
-        CreateItemRequest.Builder requestb = CreateItemRequest.newBuilder()
+        SaveItemRequest.Builder requestb = SaveItemRequest.newBuilder()
                 .setType(item.getType())
                 .setInstance(instance)
                 .setSource(source);
+        if (item.hasId()) {
+            requestb.setId(item.getId());
+        }
         if (item.hasName()) {
             requestb.setName(item.getName());
         }
@@ -91,20 +93,20 @@ public class TimelineClient {
             requestb.setDescription(item.getDescription());
         }
 
-        if (item.getDependsOnCount() > 0) {
-            requestb.addAllDependsOn(item.getDependsOnList());
+        if (item.getPredecessorsCount() > 0) {
+            requestb.addAllPredecessors(item.getPredecessorsList());
         }
         if (item.hasAutoStart()) {
             requestb.setAutoStart(item.getAutoStart());
         }
 
         CompletableFuture<TimelineItem> f = new CompletableFuture<>();
-        timelineService.createItem(null, requestb.build(), new ResponseObserver<>(f));
+        timelineService.saveItem(null, requestb.build(), new ResponseObserver<>(f));
         return f;
     }
 
-    public CompletableFuture<TimelineItem> addItem(TimelineItem item) {
-        return addItem(RDB_TIMELINE_SOURCE, item);
+    public CompletableFuture<TimelineItem> saveItem(TimelineItem item) {
+        return saveItem(RDB_TIMELINE_SOURCE, item);
     }
 
     public CompletableFuture<TimelineItem> getItem(String source, String id) {
@@ -186,42 +188,6 @@ public class TimelineClient {
         return f.thenApply(ListTimelineTagsResponse::getTagsList);
     }
 
-    public CompletableFuture<TimelineItem> updateItem(TimelineItem item) {
-        return updateItem(RDB_TIMELINE_SOURCE, item);
-    }
-
-    public CompletableFuture<TimelineItem> updateItem(String source, TimelineItem item) {
-        if (!item.hasId()) {
-            throw new IllegalArgumentException("the item needs an id");
-        }
-
-        UpdateItemRequest.Builder requestb = UpdateItemRequest.newBuilder()
-                .setInstance(instance)
-                .setSource(source)
-                .setId(item.getId());
-
-        if (item.hasStart()) {
-            requestb.setStart(item.getStart());
-        }
-        if (item.hasRelativeTime()) {
-            requestb.setRelativeTime(item.getRelativeTime());
-        }
-        if (item.hasDuration()) {
-            requestb.setDuration(item.getDuration());
-        }
-        requestb.addAllTags(item.getTagsList());
-        if (item.hasGroupId()) {
-            requestb.setGroupId(item.getGroupId());
-        }
-        if (item.hasStatus()) {
-            requestb.setStatus(item.getStatus());
-        }
-
-        CompletableFuture<TimelineItem> f = new CompletableFuture<>();
-        timelineService.updateItem(null, requestb.build(), new ResponseObserver<>(f));
-        return f;
-    }
-
     public CompletableFuture<List<TimelineBand>> getBands() {
         ListBandsRequest.Builder request = ListBandsRequest.newBuilder().setInstance(instance);
         CompletableFuture<ListBandsResponse> f = new CompletableFuture<>();
@@ -239,16 +205,21 @@ public class TimelineClient {
     }
 
     public CompletableFuture<TimelineBand> addBand(TimelineBand band) {
-        AddBandRequest.Builder requestb = AddBandRequest.newBuilder()
+        SaveBandRequest.Builder requestb = SaveBandRequest.newBuilder()
                 .setType(band.getType())
                 .setInstance(instance);
-        requestb.addAllFilters(band.getFiltersList());
         requestb.putAllProperties(band.getPropertiesMap());
+        if (band.hasId()) {
+            requestb.setId(band.getId());
+        }
         if (band.hasName()) {
             requestb.setName(band.getName());
         }
         if (band.hasDescription()) {
             requestb.setDescription(band.getDescription());
+        }
+        if (band.hasFilter()) {
+            requestb.setFilter(band.getFilter());
         }
         if (band.hasShared()) {
             requestb.setShared(band.getShared());
@@ -258,7 +229,7 @@ public class TimelineClient {
         }
 
         CompletableFuture<TimelineBand> f = new CompletableFuture<>();
-        timelineService.addBand(null, requestb.build(), new ResponseObserver<>(f));
+        timelineService.saveBand(null, requestb.build(), new ResponseObserver<>(f));
         return f;
     }
 

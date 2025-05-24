@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.yamcs.filetransfer.InvalidRequestException;
-import org.yamcs.http.BadRequestException;
-import org.yamcs.protobuf.ItemFilter;
 import org.yamcs.protobuf.LogEntry;
 import org.yamcs.protobuf.TimelineItemLog;
 import org.yamcs.protobuf.TimelineSourceCapabilities;
@@ -14,7 +12,7 @@ public interface ItemProvider {
 
     public TimelineItem getItem(String id);
 
-    public void getItems(int limit, String next, RetrievalFilter filter, ItemReceiver consumer);
+    public void getItems(int limit, String next, Criteria criteria, ItemReceiver consumer);
 
     /**
      * Add an item and return the added item.
@@ -46,12 +44,12 @@ public interface ItemProvider {
 
     public TimelineItem deleteTimelineGroup(UUID id);
 
-    public TimelineSourceCapabilities getCapabilities();
-
     /**
-     * Checks that the source can filter based on the criteria specified
+     * Batch delete items matching the specified criteria
      */
-    public void validateFilters(List<ItemFilter> filters) throws BadRequestException;
+    public void deleteItems(List<UUID> ids, Criteria criteria, BatchObserver<DeleteItemsSummary> observer);
+
+    public TimelineSourceCapabilities getCapabilities();
 
     /**
      * Returns the item log or null if the item does not exist

@@ -4,7 +4,7 @@
     class="app-bar"
     [class.replay]="(connectionInfo$ | async)?.processor?.replay"
     [class.nosidebar]="!(sidebar$ | async)">
-    @if (tag) {
+    @if (!smallWindow() && tag) {
       <div class="tag">
         {{ tag }}
       </div>
@@ -43,7 +43,7 @@
       }
 
       @if (siteLinks.length) {
-        <a mat-icon-button matTooltip="Links">
+        <a mat-icon-button matTooltip="Links" [matMenuTriggerFor]="linkMenu">
           <mat-icon class="icon22">bookmarks</mat-icon>
         </a>
         <mat-menu #linkMenu="matMenu" overlapTrigger="false" xPosition="before" class="ya-menu">
@@ -58,6 +58,8 @@
           }
         </mat-menu>
       }
+
+      <app-notification-widget />
 
       <button
         mat-button

@@ -13,6 +13,7 @@ import { Router } from '@angular/router';
  * the URL remains invisible to the user.
  */
 @Component({
+  selector: 'app-route-refresh',
   template: '',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -1,12 +1,15 @@
+import { BreakpointObserver } from '@angular/cdk/layout';
 import {
   DOCUMENT,
   DestroyRef,
   Injectable,
+  computed,
   effect,
   inject,
   signal,
 } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { BehaviorSubject, map } from 'rxjs';
 import { Preferences } from './preferences.service';
 
 export type Theme = 'system' | 'light' | 'dark';
@@ -19,6 +22,7 @@ export class AppearanceService {
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
   private prefs = inject(Preferences);
+  private breakpointObserver = inject(BreakpointObserver);
 
   public fullScreenRequested = signal(false);
   readonly themePreference = this.prefs.watchString(
@@ -27,10 +31,40 @@ export class AppearanceService {
   );
   readonly dark = signal(false);
 
-  public collapsed$ = new BehaviorSubject<boolean>(false);
   public fullScreenMode$ = new BehaviorSubject<boolean>(false);
   public focusMode$ = new BehaviorSubject<boolean>(false);
   public detailPane$ = new BehaviorSubject<boolean>(false);
+
+  /**
+   * Reactive signal representing whether the browser window is small
+   */
+  public smallWindow = toSignal(
+    this.breakpointObserver
+      .observe('(max-width: 768px)') // 768px is the exact width of the original iPad
+      .pipe(map((result) => result.matches)),
+    { initialValue: false },
+  );
+
+  /**
+   * Reactive signal representing whether the user prefers the left sidenav to be
+   * collapsed or not.
+   */
+  private collapsedPreference = this.prefs.watchBoolean(
+    'sidenav.collapsed',
+    false,
+  );
+
+  /**
+   * Reactive signal representing whether the left sidenav should be
+   * collapsed or not.
+   *
+   * This is derived by considering:
+   * - the browser width
+   * - the collapsed/expanded user preference
+   */
+  isCollapsed = computed(() => {
+    return this.smallWindow() || this.collapsedPreference();
+  });
 
   // Follow whether system prefers dark
   private mediaQuery: MediaQueryList;

@@ -1,0 +1,64 @@
+<form [formGroup]="form">
+  <table class="ya-property-table">
+    <tr>
+      <td class="property">Parameter</td>
+      <td class="widget">
+        <app-parameter-input formControlName="parameter" [fill]="true" />
+      </td>
+    </tr>
+    <tr>
+      <td class="property">Line color</td>
+      <td class="widget">
+        <input type="color" formControlName="lineColor" />
+      </td>
+    </tr>
+    <tr>
+      <td class="property">Visible</td>
+      <td class="widget">
+        <ya-slide-toggle formControlName="visible" />
+      </td>
+    </tr>
+    <tr>
+      <td class="property">Line width</td>
+      <td class="widget">
+        <input type="number" formControlName="lineWidth" class="inline" min="0" />
+      </td>
+    </tr>
+    <tr>
+      <td class="property">Show min/max</td>
+      <td class="widget">
+        <ya-slide-toggle #minMax formControlName="minMax" />
+      </td>
+    </tr>
+    @if (minMax.checked()) {
+      <tr>
+        <td class="property">Min/max opacity</td>
+        <td class="widget">
+          <input
+            type="number"
+            formControlName="minMaxOpacity"
+            class="inline"
+            min="0"
+            max="1"
+            step="0.1"
+            lang="en" />
+          <span class="hint">Value between 0 and 1</span>
+        </td>
+      </tr>
+    }
+    <tr>
+      <td class="property">Fill</td>
+      <td class="widget">
+        <ya-slide-toggle #fill formControlName="fill" />
+      </td>
+    </tr>
+    @if (fill.checked()) {
+      <tr>
+        <td class="property">Fill color</td>
+        <td class="widget">
+          <input type="color" formControlName="fillColor" />
+        </td>
+      </tr>
+    }
+  </table>
+</form>

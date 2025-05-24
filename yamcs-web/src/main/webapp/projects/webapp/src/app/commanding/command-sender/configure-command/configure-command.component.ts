@@ -21,8 +21,8 @@ import {
   Command,
   CommandHistoryEntry,
   ConfigService,
-  CreateTimelineItemRequest,
   MessageService,
+  SaveTimelineItemRequest,
   WebappSdkModule,
   WebsiteConfig,
   YamcsService,
@@ -208,7 +208,7 @@ export class ConfigureCommandComponent
           const qname = this.qualifiedName();
           const commandConfig = this.commandForm.getResult(true);
 
-          const options: CreateTimelineItemRequest = {
+          const options: SaveTimelineItemRequest = {
             type: 'ACTIVITY',
             duration: '0s',
             name: qname,

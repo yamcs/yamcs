@@ -8,7 +8,7 @@
 }
 
 .ok {
-  color: #00c752;
+  color: var(--y-success-color);
 }
 
 .pending {

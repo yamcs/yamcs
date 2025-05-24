@@ -4,6 +4,7 @@ Configuration
 Web options are configured in the file :file:`etc/yamcs.yaml`.
 
 .. code-block:: yaml
+   :caption: :file:`etc/yamcs.yaml`
 
    yamcs-web:
      tag: Example Mission
@@ -16,6 +17,7 @@ Web options are configured in the file :file:`etc/yamcs.yaml`.
 Some options can also be configured at instance-level in the file :file:`etc/yamcs.{instance}.yaml`.
 
 .. code-block:: yaml
+   :caption: :file:`etc/yamcs.{instance}.yaml`
 
    yamcs-web:
      displayBucket: customBucket

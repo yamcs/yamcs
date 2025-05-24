@@ -1,0 +1,14 @@
+<form [formGroup]="form" class="ya-form" novalidate autocomplete="off">
+  <ya-field label="Label" hint="(required)">
+    <input type="text" formControlName="name" style="width: 100%" />
+  </ya-field>
+
+  <ya-field label="Description" hint="(optional)">
+    <textarea formControlName="description" rows="3"></textarea>
+  </ya-field>
+
+  <ya-field-divider />
+
+  <h4>Styles</h4>
+  <app-spacer-styles [form]="form" />
+</form>

@@ -1,0 +1,98 @@
+<ya-scroll-panel>
+  @if (mayControlTimeline()) {
+    <ya-control-bar>
+      <ya-button icon="add_box" [matMenuTriggerFor]="addBandMenu" [disabled]="!view()">
+        Add band ▾
+      </ya-button>
+      <ya-more [disabled]="!view()">
+        <button mat-menu-item (click)="openRenameViewDialog()">Rename this view</button>
+        <button mat-menu-item (click)="deleteView()">Delete this view</button>
+      </ya-more>
+
+      <mat-menu
+        #addBandMenu="matMenu"
+        class="ya-menu"
+        overlapTrigger="false"
+        xPosition="after"
+        yPosition="below">
+        <button mat-menu-item (click)="openCreateBandDialog()">Create new band</button>
+        <button mat-menu-item (click)="openAddBandDialog()">Add existing band</button>
+      </mat-menu>
+    </ya-control-bar>
+  }
+
+  <table
+    mat-table
+    class="ya-data-table expand"
+    [class.no-top-border]="mayControlTimeline()"
+    [class.no-control-bar]="!mayControlTimeline()"
+    [dataSource]="dataSource"
+    [trackBy]="tableTrackerFn">
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef class="wrap200">Band</th>
+      <td mat-cell *matCellDef="let row" class="wrap200">
+        @if (row.name) {
+          {{ row.name }}
+        } @else {
+          <i>(none)</i>
+        }
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="description">
+      <th mat-header-cell *matHeaderCellDef class="wrap200">Description</th>
+      <td mat-cell *matCellDef="let band" class="wrap200">
+        {{ band.description || "-" }}
+      </td>
+    </ng-container>
+
+    <ng-container cdkColumnDef="tags">
+      <th mat-header-cell *cdkHeaderCellDef>Tags</th>
+      <td mat-cell *cdkCellDef="let row">
+        @for (tag of row.tags || []; track tag) {
+          <ya-label>{{ tag }}</ya-label>
+        }
+        @if (!row.tags) {
+          -
+        }
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="type">
+      <th mat-header-cell *matHeaderCellDef>Type</th>
+      <td mat-cell *matCellDef="let band">
+        {{ band.type }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef class="expand"></th>
+      <td mat-cell *matCellDef="let row; let index = index; let first = first; let last = last">
+        @if (mayControlTimeline()) {
+          <ya-icon-action
+            icon="keyboard_arrow_down"
+            [disabled]="last"
+            (click)="moveBandDown(index)" />
+          <ya-icon-action icon="keyboard_arrow_up" [disabled]="first" (click)="moveBandUp(index)" />
+          <ya-text-action icon="edit" (click)="openEditBandDialog(row)">Edit</ya-text-action>
+          <ya-more>
+            <button mat-menu-item (click)="removeFromView(row)">Remove from view</button>
+          </ya-more>
+        }
+      </td>
+    </ng-container>
+
+    <tr class="mat-row" *matNoDataRow>
+      <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+        @if (!view()) {
+          No current view.
+        } @else {
+          No bands in this view.
+        }
+      </td>
+    </tr>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+  </table>
+</ya-scroll-panel>

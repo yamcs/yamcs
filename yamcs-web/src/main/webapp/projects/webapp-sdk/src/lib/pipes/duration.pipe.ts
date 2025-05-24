@@ -13,37 +13,35 @@ export class DurationPipe implements PipeTransform {
     const isStringifiedNumber =
       !isNaN(millis as any) && Number.isInteger(parseFloat(millis as any));
 
-    if (typeof millis === 'string' && !isStringifiedNumber) {
-      millis = convertDurationToMillis(millis);
+    let ms =
+      typeof millis === 'string' && !isStringifiedNumber
+        ? convertDurationToMillis(millis)
+        : Number(millis);
+
+    const isNegative = ms < 0;
+    const absMs = Math.abs(ms);
+
+    const totalSeconds = Math.floor(absMs / 1000);
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    const milliseconds = Math.floor(absMs % 1000);
+
+    let result = '';
+
+    if (days) {
+      result = hours ? `${days}d ${hours}h` : `${days}d`;
+    } else if (hours) {
+      result = minutes ? `${hours}h ${minutes}m` : `${hours}h`;
+    } else if (minutes) {
+      result = seconds ? `${minutes}m ${seconds}s` : `${minutes}m`;
+    } else if (seconds) {
+      result = `${seconds}s`;
+    } else {
+      result = `${milliseconds}ms`;
     }
 
-    const totalSeconds = Math.floor((millis as any) / 1000);
-    const days = Math.floor(totalSeconds / 86400);
-    const hours = Math.floor((totalSeconds - days * 86400) / 3600);
-    const minutes = Math.floor(
-      (totalSeconds - days * 86400 - hours * 3600) / 60,
-    );
-    const seconds = totalSeconds - days * 86400 - hours * 3600 - minutes * 60;
-    if (days) {
-      if (hours) {
-        return `${days}d ${hours}h`;
-      } else {
-        return `${days}d`;
-      }
-    } else if (hours) {
-      if (minutes) {
-        return `${hours}h ${minutes}m`;
-      } else {
-        return `${hours}h`;
-      }
-    } else if (minutes) {
-      if (seconds) {
-        return `${minutes}m ${seconds}s`;
-      } else {
-        return `${minutes}m`;
-      }
-    } else {
-      return `${seconds}s`;
-    }
+    return isNegative ? `-${result}` : result;
   }
 }

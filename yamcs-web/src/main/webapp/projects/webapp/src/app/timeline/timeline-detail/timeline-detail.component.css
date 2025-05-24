@@ -1,0 +1,40 @@
+:host
+  ::ng-deep
+  .mat-mdc-tab-group
+  .mat-mdc-tab-header
+  .mat-mdc-tab:last-of-type {
+  flex-basis: 0;
+  flex-grow: 1;
+  user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+}
+
+:host ::ng-deep .mat-mdc-tab {
+  position: relative;
+}
+
+:host ::ng-deep .mat-mdc-tab .mdc-tab__content {
+  position: static !important; /* Disables relative positioning on the title box */
+}
+
+:host ::ng-deep .mat-mdc-tab ya-icon-action {
+  position: absolute;
+  right: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.tab-wrapper {
+  height: 100%;
+}
+
+.viewport-range {
+  position: absolute;
+  top: 0;
+  right: 16px;
+  height: 28px;
+  line-height: 28px;
+  color: var(--y-table-foreground);
+}

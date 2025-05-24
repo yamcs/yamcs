@@ -3,7 +3,7 @@
 
   <div style="flex: 1 1 auto"></div>
 
-  @if (!collapseItem()) {
+  @if (!smallWindow() && !collapseItem()) {
     <ya-collapse-sidebar
       (click)="toggleCollapse()"
       [collapsed]="collapsed()"

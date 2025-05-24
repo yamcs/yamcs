@@ -3,9 +3,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  inject,
   input,
   signal,
 } from '@angular/core';
+import { AppearanceService } from '../../services/appearance.service';
 import { ConfigService, WebsiteConfig } from '../../services/config.service';
 import { Preferences } from '../../services/preferences.service';
 import { YaCollapseSidebar } from './collapse-sidebar.component';
@@ -16,7 +18,7 @@ import { YaCollapseSidebar } from './collapse-sidebar.component';
   styleUrl: './sidenav.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'ya-sidebar',
+    class: 'ya-sidenav',
     '[class.collapsed]': 'collapsed()',
     '[class.hover]': 'hover()',
     '[class.no-transition]': '!pageLoaded()',
@@ -28,7 +30,17 @@ import { YaCollapseSidebar } from './collapse-sidebar.component';
   imports: [YaCollapseSidebar],
 })
 export class YaSidenav implements AfterViewInit {
+  private appearanceService = inject(AppearanceService);
+
   collapsed = input.required<boolean>();
+
+  /**
+   * When in small window, the sidenav is always collapsed, and
+   * opens over the main content.
+   *
+   * We don't want to show a 'Keep expanded' action in that state.
+   */
+  smallWindow = this.appearanceService.smallWindow;
 
   pageLoaded = signal(false);
   hover = signal(false);

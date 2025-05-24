@@ -1,0 +1,63 @@
+<a
+  mat-icon-button
+  matTooltip="Notifications"
+  cdkOverlayOrigin
+  #trigger="cdkOverlayOrigin"
+  (click)="isOpen() ? closePanel() : openPanel()">
+  <mat-icon class="icon22" [matBadge]="unread() > 0 ? unread() : undefined" [aria-hidden]="false">
+    mail
+  </mat-icon>
+</a>
+<ng-template
+  cdkConnectedOverlay
+  [cdkConnectedOverlayOrigin]="trigger"
+  [cdkConnectedOverlayOpen]="isOpen()"
+  [cdkConnectedOverlayHasBackdrop]="true"
+  cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+  [cdkConnectedOverlayPush]="true"
+  [cdkConnectedOverlayFlexibleDimensions]="true"
+  (backdropClick)="closePanel()">
+  <div class="notification-panel">
+    <div class="header">Notifications</div>
+
+    @for (notification of notifications(); track notification.seq) {
+      <div class="notification" (click)="goToUrl(notification)">
+        <div class="icon-wrapper">
+          @switch (notification.type) {
+            @case ("IN_PROGRESS") {
+              <mat-icon class="icon16 in-progress">cached</mat-icon>
+            }
+            @case ("INFO") {
+              <mat-icon class="icon16 info">info</mat-icon>
+            }
+            @case ("WARNING") {
+              <mat-icon class="icon16 warning">warning</mat-icon>
+            }
+            @case ("ERROR") {
+              <mat-icon class="icon16 error">error</mat-icon>
+            }
+            @case ("SUCCESS") {
+              <mat-icon class="icon16 success">check_circle</mat-icon>
+            }
+          }
+        </div>
+
+        <div class="text">
+          <span class="title">{{ notification.title }}</span>
+          <br />
+          {{ notification.instance }}
+          @if (notification.description; as description) {
+            <br />
+            {{ description }}
+          }
+        </div>
+
+        <div class="timestamp">{{ notification.timestamp | ago: false }}</div>
+      </div>
+    } @empty {
+      <div class="notification">
+        <ya-panel padding="small">No notifications</ya-panel>
+      </div>
+    }
+  </div>
+</ng-template>
