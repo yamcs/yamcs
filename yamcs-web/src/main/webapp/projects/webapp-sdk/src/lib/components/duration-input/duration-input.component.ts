@@ -43,14 +43,14 @@ export class YaDurationInput implements ControlValueAccessor {
       const seconds = parseInt(value, 10);
       if (!isNaN(seconds)) {
         this.formattedValue = secondsToHHMMSS(seconds);
-        this.onChange(`${seconds}s`);
+        //this.onChange(`${seconds}s`);
       } else {
         this.formattedValue = '00:00:00';
-        this.onChange('0s');
+        //this.onChange('0s');
       }
     } else {
       this.formattedValue = '00:00:00';
-      this.onChange('0s');
+      //this.onChange('0s');
     }
   }
 

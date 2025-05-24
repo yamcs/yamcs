@@ -6,8 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.yamcs.client.utils.WellKnownTypes.TIMESTAMP_MAX;
 import static org.yamcs.client.utils.WellKnownTypes.TIMESTAMP_MIN;
-import static org.yamcs.client.utils.WellKnownTypes.toTimestamp;
 import static org.yamcs.client.utils.WellKnownTypes.toInstant;
+import static org.yamcs.client.utils.WellKnownTypes.toTimestamp;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -22,9 +22,9 @@ import org.yamcs.YamcsServer;
 import org.yamcs.client.Page;
 import org.yamcs.client.activity.ActivityClient;
 import org.yamcs.client.timeline.TimelineClient;
-import org.yamcs.protobuf.ActivityDependency;
-import org.yamcs.protobuf.ActivityDependencyCondition;
 import org.yamcs.protobuf.ExecutionStatus;
+import org.yamcs.protobuf.PredecessorInfo;
+import org.yamcs.protobuf.StartCondition;
 import org.yamcs.protobuf.TimelineItem;
 import org.yamcs.protobuf.TimelineItemType;
 import org.yamcs.protobuf.activities.ActivityStatus;
@@ -58,30 +58,34 @@ public class ActivityIntegrationTest extends AbstractIntegrationTest {
         var start = TimeEncoding.toJavaInstant(timeService.getMissionTime());
 
         var activity1 = a("activity1", start, onesec);
-        activity1 = timelineClient.addItem(activity1).get();
+        activity1 = timelineClient.saveItem(activity1).get();
 
-        var dep = ActivityDependency.newBuilder().setCondition(ActivityDependencyCondition.START_ON_SUCCESS)
-                .setId(activity1.getId()).build();
+        var dep = PredecessorInfo.newBuilder()
+                .setItemId(activity1.getId())
+                .setStartCondition(StartCondition.ON_SUCCESS)
+                .build();
 
         TimelineItem activity2 = a("activity2", start, onesec, Arrays.asList(dep));
         // one cannot specify both dependence and start time
-        Exception exception = assertThrows(ExecutionException.class, () -> timelineClient.addItem(activity2).get());
+        Exception exception = assertThrows(ExecutionException.class, () -> timelineClient.saveItem(activity2).get());
         assertTrue(exception.getMessage()
-                .contains("Cannot specify start when relative time or dependsOn are also specified"));
+                .contains("Cannot specify start when relative time or predecessors are also specified"));
     }
 
     @Test
     public void testActivityDependencyInvalid2() throws Exception {
         verifyEmpty();
         var id = UUID.randomUUID().toString();
-        var dep = ActivityDependency.newBuilder().setCondition(ActivityDependencyCondition.START_ON_SUCCESS)
-                .setId(id).build();
+        var dep = PredecessorInfo.newBuilder()
+                .setItemId(id)
+                .setStartCondition(StartCondition.ON_SUCCESS)
+                .build();
 
         TimelineItem activity2 = a("activity2", null, onesec, Arrays.asList(dep));
         // depends on does not exist
-        Exception exception = assertThrows(ExecutionException.class, () -> timelineClient.addItem(activity2).get());
+        Exception exception = assertThrows(ExecutionException.class, () -> timelineClient.saveItem(activity2).get());
         assertTrue(exception.getMessage()
-                .contains(id + " referenced as a dependency was not found"));
+                .contains("Predecessor item with ID " + id + " was not found"));
 
     }
 
@@ -92,27 +96,33 @@ public class ActivityIntegrationTest extends AbstractIntegrationTest {
 
         // activity1 with autoStart = false
         TimelineItem activity1 = a("activity1", start, onesec);
-        activity1 = timelineClient.addItem(activity1).get();
-
+        activity1 = timelineClient.saveItem(activity1).get();
 
         // activity1 with autoStart = true
         TimelineItem activity2 = a("activity2", start.plusMillis(1), fivesec, null, true);
-        activity2 = timelineClient.addItem(activity2).get();
+        activity2 = timelineClient.saveItem(activity2).get();
         assertTrue(activity2.getAutoStart());
 
         // activity3 depending on activity1 and activity2
-        var dep1 = ActivityDependency.newBuilder().setCondition(ActivityDependencyCondition.START_ON_SUCCESS)
-                .setId(activity1.getId()).build();
-        var dep2 = ActivityDependency.newBuilder().setCondition(ActivityDependencyCondition.START_ON_SUCCESS)
-                .setId(activity2.getId()).build();
+        var dep1 = PredecessorInfo.newBuilder()
+                .setItemId(activity1.getId())
+                .setStartCondition(StartCondition.ON_SUCCESS)
+                .build();
+        var dep2 = PredecessorInfo.newBuilder()
+                .setItemId(activity2.getId())
+                .setStartCondition(StartCondition.ON_SUCCESS)
+                .build();
 
         TimelineItem activity3 = a("activity3", null, onesec, Arrays.asList(dep1, dep2));
 
-        activity3 = timelineClient.addItem(activity3).get();
-        assertEquals(2, activity3.getDependsOnCount());
+        activity3 = timelineClient.saveItem(activity3).get();
+        assertEquals(2, activity3.getPredecessorsCount());
 
         // the activity3 start should be set to the end of activity2
         assertEquals(toInstant(activity2.getStart()).plus(fivesec), toInstant(activity3.getStart()));
+
+        // Wait a bit for async replan
+        Thread.sleep(1000);
 
         Page<TimelineItem> page = timelineClient.getItems(TIMESTAMP_MIN, TIMESTAMP_MAX, null).get();
         // check that we have three activities, first one should be READY, second one in progress and third one planned
@@ -135,11 +145,9 @@ public class ActivityIntegrationTest extends AbstractIntegrationTest {
         assertEquals("activity2", a2.getDetail());
         assertFalse(ait.hasNext());
 
-
         // start activity1
         var activity1i = timelineClient.startActivity(activity1.getId()).get();
         assertEquals(ActivityStatus.RUNNING, activity1i.getStatus());
-
 
         ait = activityClient.getActivities(TIMESTAMP_MIN, TIMESTAMP_MAX, null).get().iterator();
         var a1r = ait.next();
@@ -147,7 +155,6 @@ public class ActivityIntegrationTest extends AbstractIntegrationTest {
         var a2r = ait.next();
         assertEquals("activity2", a2r.getDetail());
         assertFalse(ait.hasNext());
-
 
         // wait that 5 seconds have elapsed so that the start of activity3 kicks in and it should be waiting for
         // dependency
@@ -175,11 +182,11 @@ public class ActivityIntegrationTest extends AbstractIntegrationTest {
         it = timelineClient.getItems(TIMESTAMP_MIN, TIMESTAMP_MAX, null).get().iterator();
         var activity1r2 = it.next();
         assertEquals(activity1.getId(), activity1r2.getId());
-        assertEquals(ExecutionStatus.COMPLETED, activity1r2.getStatus());
+        assertEquals(ExecutionStatus.SUCCEEDED, activity1r2.getStatus());
 
         var activity2r2 = it.next();
         assertEquals(activity2.getId(), activity2r2.getId());
-        assertEquals(ExecutionStatus.COMPLETED, activity2r2.getStatus());
+        assertEquals(ExecutionStatus.SUCCEEDED, activity2r2.getStatus());
 
         var activity3r2 = it.next();
         assertEquals(activity3.getId(), activity3r2.getId());
@@ -205,11 +212,12 @@ public class ActivityIntegrationTest extends AbstractIntegrationTest {
         return a(name, start, duration, null);
     }
 
-    TimelineItem a(String name, Instant start, Duration duration, List<ActivityDependency> deps) {
-        return a(name, start, duration, deps, false);
+    TimelineItem a(String name, Instant start, Duration duration, List<PredecessorInfo> predecessors) {
+        return a(name, start, duration, predecessors, false);
     }
 
-    TimelineItem a(String name, Instant start, Duration duration, List<ActivityDependency> deps, boolean autoStart) {
+    TimelineItem a(String name, Instant start, Duration duration, List<PredecessorInfo> predecessors,
+            boolean autoStart) {
         var b = TimelineItem.newBuilder()
                 .setType(TimelineItemType.ACTIVITY)
                 .setName(name)
@@ -222,8 +230,8 @@ public class ActivityIntegrationTest extends AbstractIntegrationTest {
             b.setStart(toTimestamp(start));
         }
 
-        if (deps != null) {
-            b.addAllDependsOn(deps);
+        if (predecessors != null) {
+            b.addAllPredecessors(predecessors);
         }
         return b.build();
     }

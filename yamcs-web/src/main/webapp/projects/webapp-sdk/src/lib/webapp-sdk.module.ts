@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatBadgeModule } from '@angular/material/badge';
 import { MatButtonModule } from '@angular/material/button';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -36,6 +37,7 @@ import { YaButtonGroup } from './components/button-group/button-group.component'
 import { YaButton } from './components/button/button.component';
 import { YaColorInput } from './components/color-input/color-input.component';
 import { YaColumnChooser } from './components/column-chooser/column-chooser.component';
+import { YaControlBar } from './components/control-bar/control-bar.component';
 import { YaDateTimeInput } from './components/date-time-input/date-time-input.component';
 import { YaDetailPane } from './components/detail-pane/detail-pane.component';
 import { YaDetailToolbarActions } from './components/detail-toolbar/detail-toolbar-actions.component';
@@ -80,6 +82,7 @@ import { YaPageTabs } from './components/page-tabs/page-tabs.component';
 import { YaPanel } from './components/panel/panel.component';
 import { YaParameterStatus } from './components/parameter-status/parameter-status.component';
 import { YaProgress } from './components/progress/progress.component';
+import { YaScrollPanel } from './components/scroll-panel/scroll-panel.component';
 import { YaSearchFilter } from './components/search-filter/search-filter.component';
 import { YaSearchFilter2 } from './components/search-filter2/search-filter2.component';
 import { YaSelect } from './components/select/select.component';
@@ -101,6 +104,7 @@ import { YaTextAction } from './components/text-action/text-action.component';
 import { YaTimezoneSelect } from './components/timezone-select/timezone-select.component';
 import { YaTitleCopy } from './components/title-copy/title-copy.component';
 import { YaToolbar } from './components/toolbar/toolbar.component';
+import { YaTooltip } from './components/tooltip/tooltip.component';
 import { YaValue } from './components/value/value.component';
 import { YaVerticalDivider } from './components/vertical-divider/vertical-divider.component';
 import { YaWarningMessage } from './components/warning-message/warning-message.component';
@@ -198,6 +202,7 @@ const sharedComponents = [
   YaButtonGroup,
   YaColorInput,
   YaColumnChooser,
+  YaControlBar,
   YaDateTimeInput,
   YaDetailPane,
   YaDetailToolbar,
@@ -241,6 +246,7 @@ const sharedComponents = [
   YaParameterStatus,
   YaProgress,
   YaPrintZone,
+  YaScrollPanel,
   YaSearchFilter,
   YaSearchFilter2,
   YaSelect,
@@ -262,6 +268,7 @@ const sharedComponents = [
   YaTimezoneSelect,
   YaTitleCopy,
   YaToolbar,
+  YaTooltip,
   YaValue,
   YaVerticalDivider,
   YaWarningMessage,
@@ -272,6 +279,7 @@ const materialModules = [
   CdkTableModule,
   DragDropModule,
   MatAutocompleteModule,
+  MatBadgeModule,
   MatButtonModule,
   MatDatepickerModule,
   MatDialogModule,

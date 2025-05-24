@@ -1,0 +1,61 @@
+<h2 mat-dialog-title>Add existing band</h2>
+
+<mat-dialog-content>
+  <ya-filter-bar>
+    <ya-search-filter
+      [formControl]="filterControl"
+      placeholder="Filter bands"
+      width="100%"
+      (onArrowDown)="selectNext()"
+      (onArrowUp)="selectPrevious()"
+      (onEnter)="applySelection()"
+      style="flex: 1 1 auto" />
+  </ya-filter-bar>
+
+  <div class="scrollpane">
+    <table mat-table [dataSource]="dataSource" class="ya-data-table" style="width: 100%">
+      <ng-container cdkColumnDef="name">
+        <th mat-header-cell *cdkHeaderCellDef class="wrap200">Instance</th>
+        <td mat-cell *cdkCellDef="let row" class="wrap200">
+          <strong>{{ row.name }}</strong>
+        </td>
+      </ng-container>
+
+      <ng-container cdkColumnDef="description">
+        <th mat-header-cell *cdkHeaderCellDef class="wrap200">Description</th>
+        <td mat-cell *cdkCellDef="let row" class="wrap200">
+          {{ row.description || "-" }}
+        </td>
+      </ng-container>
+
+      <ng-container cdkColumnDef="type">
+        <th mat-header-cell *cdkHeaderCellDef>Type</th>
+        <td mat-cell *cdkCellDef="let row">
+          {{ row.type || "-" }}
+        </td>
+      </ng-container>
+
+      <ng-container cdkColumnDef="actions">
+        <th mat-header-cell *cdkHeaderCellDef class="expand"></th>
+        <td mat-cell *cdkCellDef="let row"></td>
+      </ng-container>
+
+      <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
+      <tr
+        mat-row
+        *cdkRowDef="let row; columns: displayedColumns"
+        [class.selected]="selection.isSelected(row)"
+        (click)="selection.toggle(row)"></tr>
+    </table>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <div style="flex: 1 1 auto"></div>
+
+  <ya-button mat-dialog-close>Cancel</ya-button>
+
+  <ya-button appearance="primary" [disabled]="selection.isEmpty()" (click)="applySelection()">
+    Add to view
+  </ya-button>
+</mat-dialog-actions>

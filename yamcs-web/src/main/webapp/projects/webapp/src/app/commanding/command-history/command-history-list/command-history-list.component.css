@@ -10,17 +10,17 @@
 
 tr.failed td,
 tr.failed td a {
-  color: red;
+  color: var(--y-error-color);
 }
 
 tr.success td.completion {
   background-color: #e6ffed;
-  color: #00c752;
+  color: var(--y-success-color);
 }
 
 tr.failed td.completion {
   background-color: #ffeef0;
-  color: red;
+  color: var(--y-error-color);
 }
 
 th.dense,

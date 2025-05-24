@@ -57,6 +57,7 @@ export class YaSelect implements ControlValueAccessor {
   optionChildren = contentChildren(YaOption);
 
   selected = signal<string | null>(null);
+  isDisabled = signal(false);
 
   label = computed(() => {
     const selectedId = this.selected() || '';
@@ -98,4 +99,8 @@ export class YaSelect implements ControlValueAccessor {
   }
 
   registerOnTouched(fn: any) {}
+
+  setDisabledState(isDisabled: boolean): void {
+    this.isDisabled.set(isDisabled);
+  }
 }

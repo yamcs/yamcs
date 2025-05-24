@@ -55,6 +55,7 @@ export class ActivityListComponent {
     { id: 'status', label: 'Status', alwaysVisible: true },
     { id: 'id', label: 'Id', alwaysVisible: true },
     { id: 'start', label: 'Start', visible: true },
+    { id: 'label', label: 'Label', visible: true },
     { id: 'type', label: 'Type', visible: true },
     { id: 'detail', label: 'Detail', visible: true },
     { id: 'duration', label: 'Duration', visible: true },

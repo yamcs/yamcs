@@ -7,10 +7,10 @@ import java.util.Map;
 import org.yamcs.Spec;
 import org.yamcs.Spec.NamedSpec;
 import org.yamcs.Spec.OptionType;
-import org.yamcs.buckets.Bucket;
 import org.yamcs.ValidationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.buckets.Bucket;
 import org.yamcs.security.User;
 
 public class StackExecutor implements ActivityExecutor {
@@ -69,7 +69,7 @@ public class StackExecutor implements ActivityExecutor {
     @Override
     public StackExecution createExecution(Activity activity, User caller) throws ValidationException {
         var args = getActivitySpec().validate(activity.getArgs());
-        var processorName = YConfiguration.getString(args, "processor");
+        var processorName = YConfiguration.getString(args, "processor", null);
         var bucketName = YConfiguration.getString(args, "bucket");
         var stackName = YConfiguration.getString(args, "stack");
 

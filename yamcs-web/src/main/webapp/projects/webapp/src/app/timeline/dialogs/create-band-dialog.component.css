@@ -1,0 +1,17 @@
+.wrapper {
+  position: relative;
+  height: calc(100% - 48px);
+  overflow: auto;
+  font:
+    400 12px / 20px Roboto,
+    sans-serif;
+}
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  height: 64px;
+  left: 0;
+  right: 0;
+  border-top: 1px solid #d3d3d3;
+}

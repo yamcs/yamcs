@@ -267,13 +267,13 @@ Lists the tables in the current database.
 .. index:: UPDATE
    single: Statement; UPDATE
 
-UPDATE Statement
-----------------
+UPDATE TABLE Statement
+----------------------
 
 .. container:: productionlist
 
    .. productionlist:: sql-grammar
-      updateStatement: "UPDATE" "SET" `columnName` "=" `expression`
+      updateStatement: "UPDATE" `objectName` "SET" `columnName` "=" `expression`
                      : ( "," `columnName` "=" `expression` )*
                      : [ "WHERE" `expression` ]
                      : [ "LIMIT" `integer` ]

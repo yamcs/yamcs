@@ -1,10 +1,10 @@
 package org.yamcs.activities;
 
 import static org.yamcs.activities.ActivityDb.CNAME_ARGS;
-import static org.yamcs.activities.ActivityDb.CNAME_COMMENT;
 import static org.yamcs.activities.ActivityDb.CNAME_DETAIL;
 import static org.yamcs.activities.ActivityDb.CNAME_FAILURE_REASON;
 import static org.yamcs.activities.ActivityDb.CNAME_ID;
+import static org.yamcs.activities.ActivityDb.CNAME_LABEL;
 import static org.yamcs.activities.ActivityDb.CNAME_SEQ;
 import static org.yamcs.activities.ActivityDb.CNAME_START;
 import static org.yamcs.activities.ActivityDb.CNAME_STARTED_BY;
@@ -33,8 +33,8 @@ public class Activity implements Comparable<Activity> {
     private final String type;
     private final Map<String, Object> args;
     private final String startedBy;
+    private String label;
     private String detail;
-    private String comment;
 
     private ActivityStatus status = ActivityStatus.RUNNING;
 
@@ -42,13 +42,13 @@ public class Activity implements Comparable<Activity> {
     private String failureReason;
     private String stoppedBy;
 
-    public Activity(UUID id, long start, int seq, String type, Map<String, Object> args, User startedBy) {
+    public Activity(UUID id, long start, int seq, String type, Map<String, Object> args, String startedBy) {
         this.id = id;
         this.start = start;
         this.seq = seq;
         this.type = type;
         this.args = args;
-        this.startedBy = startedBy.getName();
+        this.startedBy = startedBy;
     }
 
     public Activity(Tuple tuple) {
@@ -66,8 +66,8 @@ public class Activity implements Comparable<Activity> {
 
         startedBy = tuple.getColumn(CNAME_STARTED_BY);
         stoppedBy = tuple.getColumn(CNAME_STOPPED_BY);
+        label = tuple.getColumn(CNAME_LABEL);
         detail = tuple.getColumn(CNAME_DETAIL);
-        comment = tuple.getColumn(CNAME_COMMENT);
         failureReason = tuple.getColumn(CNAME_FAILURE_REASON);
         status = ActivityStatus.valueOf(tuple.getColumn(CNAME_STATUS));
         if (tuple.hasColumn(CNAME_STOP)) {
@@ -111,12 +111,12 @@ public class Activity implements Comparable<Activity> {
         return stoppedBy;
     }
 
-    public String getComment() {
-        return comment;
+    public String getLabel() {
+        return label;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     public String getDetail() {
@@ -186,10 +186,10 @@ public class Activity implements Comparable<Activity> {
         var argsStruct = args != null ? WellKnownTypes.toStruct(args) : null;
         tuple.addColumn(CNAME_ARGS, DataType.protobuf(Struct.class), argsStruct);
         tuple.addColumn(CNAME_STATUS, status.name());
+        tuple.addColumn(CNAME_LABEL, label);
         tuple.addColumn(CNAME_DETAIL, detail);
         tuple.addColumn(CNAME_STARTED_BY, startedBy);
         tuple.addColumn(CNAME_STOPPED_BY, stoppedBy);
-        tuple.addColumn(CNAME_COMMENT, comment);
 
         if (stop != TimeEncoding.INVALID_INSTANT) {
             tuple.addColumn(CNAME_STOP, stop);

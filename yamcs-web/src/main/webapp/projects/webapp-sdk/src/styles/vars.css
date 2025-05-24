@@ -23,6 +23,7 @@ html {
   --y-app-bar-background-color: #212121;
   --y-warning-color: #ff8c00;
   --y-error-color: #ff0000;
+  --y-success-color: #00c752;
 
   --y-attr-label-foreground-color: #000000;
   --y-attr-content-foreground-color: rgba(0, 0, 0, 0.654);
@@ -35,6 +36,11 @@ html {
 
   --y-dl-horizontal-dt-foreground-color: var(--y-attr-label-foreground-color);
   --y-dl-horizontal-dd-foreground-color: var(--y-attr-content-foreground-color);
+
+  --y-progress-bar-background: #eeeeee;
+  --y-progress-bar-foreground: rgba(0, 0, 0, 0.654);
+  --y-progress-bar-fill-background: var(--y-accent);
+  --y-progress-bar-fill-foreground: var(--y-accent-foreground);
 
   --y-sidenav-background: #f7f7f7;
   --y-sidenav-border-color: var(--y-border-color);

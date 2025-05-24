@@ -1,4 +1,4 @@
-<ya-button [matMenuTriggerFor]="selMenu" [icon]="icon()" dropdown="true">
+<ya-button [matMenuTriggerFor]="selMenu" [icon]="icon()" dropdown="true" [disabled]="isDisabled()">
   @if (label(); as label) {
     {{ label }}
   } @else {
@@ -9,7 +9,7 @@
   <ya-icon-action
     icon="clear"
     [padding]="true"
-    [disabled]="!label()"
+    [disabled]="isDisabled() || !label()"
     (click)="clearValue()"
     matTooltip="Clear value" />
 }

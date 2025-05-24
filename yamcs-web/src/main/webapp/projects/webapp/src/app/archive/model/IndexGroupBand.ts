@@ -1,6 +1,5 @@
 import { DefaultSidebar, Item, ItemBand, Timeline } from '@fqqb/timeline';
-import { Formatter, utils } from '@yamcs/webapp-sdk';
-import { TimelineTooltipComponent } from '../timeline-tooltip/timeline-tooltip.component';
+import { Formatter, utils, YaTooltip } from '@yamcs/webapp-sdk';
 import { ArchiveRecordGroup } from './ArchiveRecordGroup';
 import { RGB } from './RGB';
 
@@ -38,7 +37,9 @@ export class IndexGroupBand extends ItemBand {
     this.background = 'white';
 
     this.addHeaderMouseEnterListener((ev) => {
-      this.background = (timeline.sidebar! as DefaultSidebar).hoverOverlayColor;
+      this.background = (
+        timeline.leftSidebar! as DefaultSidebar
+      ).hoverOverlayColor;
     });
     this.addHeaderMouseLeaveListener((ev) => {
       this.background = 'white';
@@ -54,7 +55,7 @@ export class IndexGroupBand extends ItemBand {
     });
   }
 
-  setupTooltip(tooltipInstance: TimelineTooltipComponent) {
+  setupTooltip(tooltipInstance: YaTooltip) {
     this.addItemMouseMoveListener((evt) => {
       const { start, stop, data } = evt.item;
       let ttText = data.name + '\n';

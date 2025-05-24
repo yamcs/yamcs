@@ -9,7 +9,7 @@ import {
   utils,
   YamcsService,
 } from '@yamcs/webapp-sdk';
-import { convertColor } from '../../../timeline/shared/properties';
+import { convertColor } from '../../../timeline/bands/properties';
 import { Legend } from './Legend';
 import { PlotData } from './PlotBuffer';
 import { PlotDataSource } from './PlotDataSource';
@@ -35,7 +35,7 @@ export class PlotBand extends LinePlot {
     legend: Legend,
   ) {
     super(timeline);
-    this.axisWidth = timeline.sidebar!.width;
+    this.axisWidth = timeline.leftSidebar!.width;
     this.axisBackground = 'transparent';
     this.labelTextSize = 10;
     this.labelFontFamily = 'Roboto, sans-serif';

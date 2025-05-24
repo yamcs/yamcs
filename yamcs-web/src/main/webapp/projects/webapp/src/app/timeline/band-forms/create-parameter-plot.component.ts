@@ -1,0 +1,149 @@
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { outputFromObservable } from '@angular/core/rxjs-interop';
+import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  BaseComponent,
+  SaveTimelineBandRequest,
+  WebappSdkModule,
+} from '@yamcs/webapp-sdk';
+import { map, Observable } from 'rxjs';
+import {
+  DEFAULT_COLORS,
+  propertyInfo,
+} from '../bands/parameter-plot/ParameterPlot';
+import { ParameterPlotStylesComponent } from '../bands/parameter-plot/parameter-plot-styles/parameter-plot-styles.component';
+import { TraceStylesComponent } from '../bands/parameter-plot/trace-styles/trace-styles.component';
+import { removeUnsetProperties } from '../bands/properties';
+
+@Component({
+  selector: 'app-create-parameter-plot',
+  templateUrl: './create-parameter-plot.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    ParameterPlotStylesComponent,
+    TraceStylesComponent,
+    WebappSdkModule,
+  ],
+})
+export class CreateParameterPlotComponent extends BaseComponent {
+  /**
+   * Emits form valid changes
+   */
+  validChange = outputFromObservable(this.createStatusObservable());
+
+  form: FormGroup;
+
+  constructor(private formBuilder: FormBuilder) {
+    super();
+
+    this.form = formBuilder.group({
+      name: ['', [Validators.required]],
+      description: '',
+      traces: formBuilder.array([]),
+      properties: formBuilder.group({
+        frozen: [propertyInfo.frozen.defaultValue, [Validators.required]],
+        height: [propertyInfo.height.defaultValue, [Validators.required]],
+        minimum: [],
+        maximum: [],
+        zeroLineWidth: [
+          propertyInfo.zeroLineWidth.defaultValue,
+          [Validators.required],
+        ],
+        zeroLineColor: [
+          propertyInfo.zeroLineColor.defaultValue,
+          [Validators.required],
+        ],
+        minimumFractionDigits: [
+          propertyInfo.minimumFractionDigits.defaultValue,
+          [Validators.required],
+        ],
+        maximumFractionDigits: [
+          propertyInfo.maximumFractionDigits.defaultValue,
+          [Validators.required],
+        ],
+      }),
+    });
+    this.addTrace();
+  }
+
+  get traces() {
+    return this.form.controls['traces'] as FormArray;
+  }
+
+  addTrace(index?: number) {
+    const lookupIndex = index === undefined ? 0 : index + 1;
+    const hexColor = DEFAULT_COLORS[lookupIndex % DEFAULT_COLORS.length];
+    const traceForm = this.formBuilder.group({
+      parameter: ['', [Validators.required]],
+      lineColor: [hexColor, [Validators.required]],
+      visible: [true, [Validators.required]],
+      lineWidth: [1, [Validators.required]],
+      minMax: [true, [Validators.required]],
+      minMaxOpacity: [0.17, [Validators.required]],
+      fill: [false, [Validators.required]],
+      fillColor: ['#dddddd', [Validators.required]],
+    });
+
+    if (index !== undefined) {
+      this.traces.insert(index + 1, traceForm);
+    } else {
+      this.traces.push(traceForm);
+    }
+  }
+
+  removeTrace(index: number) {
+    this.traces.removeAt(index);
+  }
+
+  moveUp(index: number) {
+    const traceForm = this.traces.at(index);
+    this.traces.removeAt(index);
+    this.traces.insert(index - 1, traceForm);
+  }
+
+  moveDown(index: number) {
+    const traceForm = this.traces.at(index);
+    this.traces.removeAt(index);
+    this.traces.insert(index + 1, traceForm);
+  }
+
+  private createStatusObservable() {
+    return new Observable<boolean>((sub) => {
+      this.form.statusChanges
+        .pipe(map((status) => status === 'VALID'))
+        .subscribe(sub);
+    });
+  }
+
+  createRequest(): SaveTimelineBandRequest {
+    const formValue = this.form.value;
+
+    const options: SaveTimelineBandRequest = {
+      name: formValue.name,
+      description: formValue.description,
+      type: 'PARAMETER_PLOT',
+      shared: true,
+      properties: {},
+    };
+
+    for (const key in formValue.properties) {
+      const value = formValue.properties[key];
+      if (value !== null) {
+        options.properties![key] = value;
+      }
+    }
+
+    for (let i = 0; i < this.traces.length; i++) {
+      const traceForm = this.traces.at(i) as FormGroup;
+      for (const key in traceForm.controls) {
+        const propName = `trace_${i + 1}_${key}`;
+        const value = traceForm.controls[key].value;
+        options.properties![propName] = value;
+      }
+    }
+
+    removeUnsetProperties(options.properties || {});
+
+    return options;
+  }
+}

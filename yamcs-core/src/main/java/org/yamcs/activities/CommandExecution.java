@@ -44,6 +44,9 @@ public class CommandExecution extends ActivityExecution {
 
         var mdb = MdbFactory.getInstance(processor.getInstance());
         var cmd = mdb.getMetaCommand(commandName);
+        if (cmd == null) {
+            throw new IllegalArgumentException("Unknown command '" + commandName + "'");
+        }
 
         var origin = InetAddress.getLocalHost().getHostName();
         var preparedCommand = cmdManager.buildCommand(cmd, args, origin, 0, user);

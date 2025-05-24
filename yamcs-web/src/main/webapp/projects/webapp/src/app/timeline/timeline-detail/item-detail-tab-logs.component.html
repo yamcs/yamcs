@@ -1,0 +1,41 @@
+<ya-control-bar>
+  @if (mayReadActivities()) {
+    <ya-button (click)="top.scrollIntoView()" icon="vertical_align_top">Jump to top</ya-button>
+    <ya-button (click)="bottom.scrollIntoView()" icon="vertical_align_bottom">
+      Jump to bottom
+    </ya-button>
+    @if (mayControlActivities()) {
+      <ya-button (click)="openAddMessageDialog()" icon="add_comment">Add message</ya-button>
+    }
+  } @else {
+    <mat-icon class="icon16">info</mat-icon>
+    Missing ReadActivities system privilege
+  }
+</ya-control-bar>
+
+<div #logContainer class="log-container">
+  <div #top class="top"></div>
+  <table class="logs mono" style="width: 100%">
+    @for (log of logs$ | async; track log; let index = $index) {
+      <tr
+        [class.activity]="log.source === 'ACTIVITY'"
+        [class.service]="log.source === 'SERVICE'"
+        [class.warning]="log.level === 'WARNING'"
+        [class.error]="log.level === 'ERROR'">
+        <td style="text-align: right" width="1">{{ index + 1 }}</td>
+        <td class="time" style="white-space: nowrap" width="1">
+          [{{ log.time | datetime: false }}]
+        </td>
+        <td class="message">{{ log.message }}</td>
+      </tr>
+    }
+    @if (activity(); as activity) {
+      @if (!activity.stop) {
+        <tr>
+          <td colspan="3"><ya-dots /></td>
+        </tr>
+      }
+    }
+  </table>
+  <div #bottom class="bottom"></div>
+</div>

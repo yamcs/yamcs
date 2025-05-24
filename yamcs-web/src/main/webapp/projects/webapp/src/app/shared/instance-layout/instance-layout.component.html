@@ -5,7 +5,7 @@
   [class.fullscreen]="fullScreenMode$ | async"
   [class.focus]="focusMode$ | async"
   [class.message-bar-visible]="messageBar.show$ | async">
-  <ya-sidenav [collapsed]="collapsed()">
+  <ya-sidenav [collapsed]="isCollapsed()">
     <ya-sidenav-item
       activeWhen="/instance"
       routerLink="/instance"
@@ -123,22 +123,13 @@
     }
 
     @if ((connectionInfo$ | async)?.instance?.capabilities | arrayContains: "timeline") {
-      @if (timelineItems.length) {
-        <ya-sidenav-group
-          label="Timeline"
+      @if (showTimelineItem()) {
+        <ya-sidenav-item
+          activeWhen="/timeline"
+          routerLink="/timeline"
+          [queryParams]="{ c: yamcs.context }"
           icon="view_timeline"
-          [active]="timelineActive"
-          [expanded]="timelineExpanded"
-          (toggle)="toggleTimelineGroup()">
-          @for (item of timelineItems; track item) {
-            <ya-sidenav-item
-              [activeWhen]="'/timeline/' + (item.activeWhen ?? item.path)"
-              [routerLink]="'/timeline/' + item.path"
-              [queryParams]="{ c: yamcs.context }"
-              [exact]="item.path === ''"
-              [label]="item.label" />
-          }
-        </ya-sidenav-group>
+          label="Timeline" />
       }
     }
 

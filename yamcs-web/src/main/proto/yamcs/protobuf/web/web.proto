@@ -8,6 +8,7 @@ option java_multiple_files = true;
 
 import "google/protobuf/empty.proto";
 import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
 
 import "yamcs/api/annotations.proto";
  
@@ -61,6 +62,20 @@ service WebApi {
   rpc ParseFilter(stream ParseFilterRequest) returns (stream ParseFilterData) {
     option (yamcs.api.websocket) = {
       topic: "web.parse-filter"
+    };
+  }
+
+  // List notifications
+  rpc ListNotifications(ListNotificationsRequest) returns (ListNotificationsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/web/notifications"
+    };
+  }
+
+  // Subscribe to notifications
+  rpc SubscribeNotifications(SubscribeNotificationsRequest) returns (stream NotificationInfo) {
+    option (yamcs.api.websocket) = {
+      topic: "web.notifications"
     };
   }
 }
@@ -175,4 +190,37 @@ message ParseFilterData {
   optional int32 beginColumn = 3;
   optional int32 endLine = 4;
   optional int32 endColumn = 5;
+}
+
+message SubscribeNotificationsRequest {
+}
+
+enum NotificationType {
+  IN_PROGRESS = 1;
+  INFO = 2;
+  WARNING = 3;
+  ERROR = 4;
+  SUCCESS = 5;
+}
+
+message NotificationInfo {
+  optional string tag = 1;
+  optional string instance = 2;
+  optional int32 seq = 3;
+  optional NotificationType type = 4;
+  optional string title = 5;
+  optional string description = 6;
+  optional google.protobuf.Timestamp timestamp = 7;
+  optional string url = 8;
+}
+
+message ListNotificationsRequest {
+}
+
+message ListNotificationsResponse {
+  // Current runtime identifier
+  optional string runtimeId = 1;
+
+  // Latest notifications for the current runtime
+  repeated NotificationInfo notifications = 2;
 }

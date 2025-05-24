@@ -1,0 +1,87 @@
+@if (item(); as item) {
+  <ya-panel padding="small">
+    <dl class="dl-horizontal no-lead no-trail">
+      <dt>{{ item.type | titlecase }}</dt>
+      <dd>{{ item.name }}</dd>
+      <dt>Status</dt>
+      <dd>{{ item.status() }}</dd>
+      @if (item.status() === "FAILED" && item.item.failureReason) {
+        <dt>Error message</dt>
+        <dd>{{ item.item.failureReason }}</dd>
+      }
+    </dl>
+
+    <div class="section-divider">
+      <mat-divider />
+    </div>
+
+    @if (item.type === "EVENT") {
+      <dl class="dl-horizontal no-lead no-trail">
+        <dt>Start</dt>
+        <dd>{{ item.plannedStart | datetime }}</dd>
+        <dt>Stop</dt>
+        <dd>
+          {{ item.plannedStop | datetime }}
+          ({{ item.plannedStop | deltaWith: item.plannedStart }})
+        </dd>
+      </dl>
+    } @else {
+      <dl class="dl-horizontal no-lead no-trail">
+        <dt>Planned start</dt>
+        <dd>{{ item.plannedStart | datetime }}</dd>
+        <dt>Planned stop</dt>
+        <dd>
+          {{ item.plannedStop | datetime }}
+          ({{ item.plannedStop | deltaWith: item.plannedStart }})
+        </dd>
+        <dt>Auto start</dt>
+        <dd>{{ item.item.autoStart }}</dd>
+        <dt>Predecessors</dt>
+        <dd>
+          @if (!item.item.predecessors) {
+            -
+          }
+        </dd>
+        @for (predecessor of item.item.predecessors || []; track predecessor.itemId) {
+          <dt>&nbsp;&nbsp;{{ describeStartCondition(predecessor.startCondition) }}</dt>
+          <dd>{{ predecessor.name || predecessor.itemId }}</dd>
+        }
+      </dl>
+
+      <div class="section-divider">
+        <mat-divider />
+      </div>
+
+      <dl class="dl-horizontal no-lead no-trail">
+        <dt>Actual start</dt>
+        <dd>{{ (item.execStart | datetime) || "-" }}</dd>
+        <dt>Actual stop</dt>
+        <dd>
+          {{ (item.execStop | datetime) || "-" }}
+          @if (item.execStart && item.execStop) {
+            ({{ item.plannedStop | deltaWith: item.plannedStart }})
+          }
+        </dd>
+      </dl>
+
+      @if (activity(); as activity) {
+        @if (activity.type !== "MANUAL") {
+          <div class="section-divider">
+            <mat-divider />
+          </div>
+
+          <dl class="dl-horizontal no-lead no-trail">
+            <dt>Activity type</dt>
+            <dd>{{ activity.type }}</dd>
+            <dt>Arguments</dt>
+            <dd></dd>
+            @for (kv of activity.args | keyvalue; track kv.key) {
+              <dt>&nbsp;&nbsp;{{ kv.key }}</dt>
+              <dd>{{ (kv.value | printObj) || "-" }}</dd>
+            }
+          </dl>
+        }
+      }
+    }
+  </ya-panel>
+}

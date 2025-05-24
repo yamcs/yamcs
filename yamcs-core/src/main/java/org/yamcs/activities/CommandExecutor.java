@@ -71,7 +71,7 @@ public class CommandExecutor implements ActivityExecutor {
     @Override
     public CommandExecution createExecution(Activity activity, User caller) throws ValidationException {
         var args = getActivitySpec().validate(activity.getArgs());
-        var processorName = YConfiguration.getString(args, "processor");
+        var processorName = YConfiguration.getString(args, "processor", null);
         var commandName = YConfiguration.getString(args, "command");
 
         // Default to the first processor with commanding enabled

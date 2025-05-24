@@ -3,7 +3,7 @@
 }
 
 .status .success {
-  color: #00c752;
+  color: var(--y-success-color);
 }
 
 .status .warning {

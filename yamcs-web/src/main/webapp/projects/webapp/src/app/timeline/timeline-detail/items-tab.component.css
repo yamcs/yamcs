@@ -1,0 +1,142 @@
+:host {
+  --y-timeline-items-detail-width: 0;
+}
+
+.master-detail {
+  position: absolute;
+  inset: 0 0 0 0;
+}
+
+.master {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: var(--y-timeline-items-detail-width);
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.detail {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: var(--y-timeline-items-detail-width);
+  overflow: auto;
+  border-left: 1px solid var(--y-border-color);
+}
+
+.ya-data-table {
+  border-left: 0 !important;
+  border-right: 0 !important;
+}
+
+table.no-control-bar {
+  margin-top: 12px;
+}
+
+.alert {
+  color: var(--y-error-color) !important;
+}
+
+th.status,
+td.status {
+  padding-left: 8px;
+  text-align: center;
+}
+
+tr.succeeded td.status {
+  background-color: #e6ffed !important;
+  color: #00c752 !important;
+}
+
+tr.failed td.status {
+  background-color: #ffeef0 !important;
+  color: #ff0000 !important;
+}
+
+tr.in-progress td.status {
+  background-color: #ffffff;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    #eeeeee,
+    /* Stripe thickness */ #e6ffed 4px,
+    transparent 2px,
+    /* Space between stripes */ transparent 8px
+  );
+  background-size: 12px 12px;
+  background-attachment: fixed;
+  color: #00c752;
+
+  animation: moveStripes 1s linear infinite;
+}
+
+tr.ready td.status {
+  background-color: #000000;
+  color: #ffffff;
+  animation: dim-ready 2s linear infinite;
+}
+
+tr.skipped td.status,
+tr.canceled td.status,
+tr.aborted td.status {
+  background-color: #ffffff;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    #ffeef0,
+    /* Stripe thickness */ #ffeef0 4px,
+    transparent 2px,
+    /* Space between stripes */ transparent 8px
+  );
+  background-size: 12px 12px;
+  background-attachment: fixed;
+  color: #ff0000;
+}
+
+tr.planned td.status {
+  background-color: #ffffff;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    #eeeeee,
+    /* Stripe thickness */ #eeeeee 4px,
+    transparent 2px,
+    /* Space between stripes */ transparent 8px
+  );
+  background-size: 12px 12px;
+  background-attachment: fixed;
+  color: #000000;
+}
+
+@keyframes moveStripes {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    /* Move by the exact width of one tile (12px) for a seamless loop */
+    background-position: 12px 0;
+  }
+}
+
+@keyframes dim-ready {
+  50% {
+    color: #ffffff66; /* 40% */
+  }
+}
+
+@keyframes dim-in-progress {
+  50% {
+    color: #d9770666; /* 40% */
+  }
+}
+
+.resizer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: calc(var(--y-timeline-items-detail-width) - 5px);
+  width: 10px;
+  line-height: 0;
+  z-index: 30;
+  cursor: ew-resize;
+}

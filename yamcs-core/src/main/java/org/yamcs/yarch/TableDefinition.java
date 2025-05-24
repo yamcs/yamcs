@@ -312,7 +312,7 @@ public class TableDefinition {
     /**
      * adds all missing columns to the value part and serialises the table definition to disk
      */
-    private synchronized void addMissingValueColumns(TupleDefinition tdef) {
+    public synchronized void addMissingValueColumns(TupleDefinition tdef) {
         IndexedList<String, TableColumnDefinition> valueDef1 = new IndexedList<>(valueDef);
         if (valueDef.size() >= MAX_NUM_COLS) {
             throw new LimitExceededException(

@@ -1,0 +1,30 @@
+<div class="tab-wrapper">
+  <mat-tab-group
+    id="detail-tabs"
+    animationDuration="0ms"
+    class="bottom-tabs fullsize-tabs"
+    [mat-stretch-tabs]="false"
+    (selectedIndexChange)="onIndexChange($event)">
+    <mat-tab label="Items">
+      <app-items-tab [view]="view()" />
+    </mat-tab>
+
+    <mat-tab label="View configuration">
+      <app-view-configuration-tab [view]="view()" />
+    </mat-tab>
+
+    <mat-tab label="All bands">
+      <app-all-bands-tab />
+    </mat-tab>
+
+    <mat-tab [disabled]="true">
+      <ng-template mat-tab-label>&nbsp;</ng-template>
+    </mat-tab>
+  </mat-tab-group>
+
+  <div class="viewport-range">
+    @if (viewportRange(); as viewportRange) {
+      {{ viewportRange.start | datetime: false }} &ndash; {{ viewportRange.stop | datetime }}
+    }
+  </div>
+</div>

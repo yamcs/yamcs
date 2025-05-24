@@ -6,12 +6,14 @@ option java_package = "org.yamcs.protobuf.activities";
 option java_outer_classname = "ActivitiesServiceProto";
 option java_multiple_files = true;
 
+import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
 import "yamcs/api/annotations.proto";
 import "yamcs/protobuf/activities/activities.proto";
 
 service ActivitiesApi {
+  option (yamcs.api.markdown) = true;
 
   // List activities
   rpc ListActivities(ListActivitiesRequest) returns (ListActivitiesResponse) {
@@ -37,114 +39,79 @@ service ActivitiesApi {
   // Start an activity
   //
   // The request body allows for the execution of arbitrary activities.
+  //
+  // | Key             | Value                               |
+  // | --------------- | ----------------------------------- |
+  // | `type` (string) | Activity type                       |
+  // | `args` (map)    | Map accepting type-specific options |
+  //
   // The following activity types are included in the core Yamcs module:
   //
-  // .. rubric:: Command
+  // * `COMMAND`: Execute a single command
   //
-  // Execute a single command
+  //   Args:
+  //   * `command` (string): **Required.** Qualified name of a command
+  //   * `args` (map):  Named arguments, if the command requires any
+  //   * `extra` (map): Extra command options
+  //   * `processor` (string): Processor name. If not provided, Yamcs
+  //     defaults to any processor it can find with commanding enabled.
   //
-  // `type` (string)
-  //     Set to `COMMAND`.
-  //
-  // `args` (map)
-  //     Map accepting the following options:
-  //
-  //     `command`
-  //         **Required.** Qualified name of a command
-  //
-  //     `args` (map)
-  //         Named arguments, if the command requires any
-  //
-  //     `extra` (map)
-  //         Extra command options
-  //
-  //     `processor` (string)
-  //         Optional processor name. If not provided, Yamcs defaults
-  //         to any processor it can find with commanding enabled.
-  //
-  // Example:
-  //
-  // .. code-block:: json
-  //
-  //     {
-  //         "type": "COMMAND",
-  //         "args": {
-  //             "command": "/YSS/SIMULATOR/SWITCH_VOLTAGE_ON",
-  //             "args": {
-  //                 "voltage_num": 3
-  //             },
-  //             "processor": "realtime"
-  //         }
+  //   Example:
+  //   ```json
+  //   {
+  //     "type": "COMMAND",
+  //     "args": {
+  //       "command": "/YSS/SIMULATOR/SWITCH_VOLTAGE_ON",
+  //       "args": {
+  //         "voltage_num": 3
+  //       },
+  //       "processor": "realtime"
   //     }
+  //   }
+  //   ```
   //
-  // .. rubric:: Command Stack
+  // * `COMMAND_STACK`: Execute a command stack
   //
-  // Execute a command stack
+  //   Args:
+  //   * `bucket` (string): **Required.** The name of the bucket containg the stack
+  //   * `stack` (string): **Required.** The name of the stack object inside the bucket
+  //   * `processor` (string): Processor name. If not provided, Yamcs defaults
+  //     to any processor it can find with commanding enabled.
   //
-  // `type` (string)
-  //     Set to `COMMAND_STACK`.
-  //
-  // `args` (map)
-  //     Map accepting the following options:
-  //
-  //     `bucket`
-  //         **Required.** The name of the bucket containg the stack
-  //
-  //     `stack`
-  //         **Required.** The name of the stack object inside the bucket
-  //
-  //     `processor` (string)
-  //         Optional processor name. If not provided, Yamcs defaults
-  //         to any processor it can find with commanding enabled.
-  //
-  // Example:
-  //
-  // .. code-block:: json
-  //
-  //     {
-  //         "type": "COMMAND_STACK",
-  //         "args": {
-  //             "bucket": "mybucket",
-  //             "stack": "mystack.ycs",
-  //             "processor": "realtime"
-  //         }
+  //   Example:
+  //   ```json
+  //   {
+  //     "type": "COMMAND_STACK",
+  //     "args": {
+  //       "bucket": "mybucket",
+  //       "stack": "mystack.ycs",
+  //       "processor": "realtime"
   //     }
+  //   }
+  //   ```
   //
-  // .. rubric:: Script
+  // * `SCRIPT`: Run a script
   //
-  // Run a script
+  //   Args:
+  //   * `script` (string): **Required.** Script identifier.
+  //     This should be the relative path to an executable file in one of the
+  //     search locations. When unconfigured, the default search location is
+  //     `etc/scripts/` relative to the Yamcs working directory.
+  //   * `args` (string or string[]): Script arguments
+  //   * `processor` (string): If provided, this information is passed to the
+  //     script in an environment variable `YAMCS_PROCESSOR`.
   //
-  // `type` (string)
-  //     Set to `SCRIPT`.
-  // `args` (map)
-  //     Map accepting the following options:
-  //
-  //     `script`
-  //         **Required.** Script identifier.
-  //
-  //         This should be the relative path to an executable file in one of the
-  //         search locations. When unconfigured, the default search location is
-  //         :file:`etc/scripts/` relative to the Yamcs working directory.
-  //
-  //     `args` (string or string[])
-  //         Script arguments
-  //
-  //     `processor` (string)
-  //         If provided, this information is passed to the script in an environment
-  //         variable `YAMCS_PROCESSOR`.
-  //
-  // Example:
-  //
-  // .. code-block:: json
-  //
-  //     {
-  //         "type": "SCRIPT",
-  //         "args": {
-  //             "script": "simulate_los.py",
-  //             "args": "--duration 60",
-  //             "processor": "realtime"
-  //         }
+  //   Example:
+  //   ```json
+  //   {
+  //     "type": "SCRIPT",
+  //     "args": {
+  //       "script": "simulate_los.py",
+  //       "args": "--duration 60",
+  //       "processor": "realtime"
   //     }
+  //   }
+  //   ```
   rpc StartActivity(StartActivityRequest) returns (ActivityInfo) {
     option (yamcs.api.route) = {
       post: "/api/activities/{instance}/activities",
@@ -165,6 +132,14 @@ service ActivitiesApi {
   rpc CompleteManualActivity(CompleteManualActivityRequest) returns (ActivityInfo) {
     option (yamcs.api.route) = {
       post: "/api/activities/{instance}/activities/{activity}:complete",
+      body: "*"
+    };
+  }
+
+  // Add a message to the activity log
+  rpc AddLogMessage(AddLogMessageRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/activities/{instance}/activities/{activity}/log"
       body: "*"
     };
   }
@@ -315,6 +290,17 @@ message CompleteManualActivityRequest {
   // Failure message, if not provided the
   // activity is considered successful.
   optional string failureReason = 3;
+}
+
+message AddLogMessageRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Activity identifier
+  optional string activity = 2;
+
+  // Log message
+  optional string message = 3;
 }
 
 message SubscribeActivitiesRequest {

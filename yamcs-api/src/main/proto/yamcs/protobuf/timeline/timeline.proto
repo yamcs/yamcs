@@ -5,19 +5,25 @@ option java_package = "org.yamcs.protobuf";
 option java_outer_classname = "TimelineProto";
 option java_multiple_files = true;
 
+import "google/protobuf/duration.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
 import "yamcs/api/annotations.proto";
 import "yamcs/protobuf/activities/activities.proto";
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/duration.proto";
 
 //Methods related to the Timeline Service.
 service TimelineApi {
+  option (yamcs.api.markdown) = true;
 
-  // Create an item
-  rpc CreateItem(CreateItemRequest) returns (TimelineItem) {
+  // Create or update an item
+  rpc SaveItem(SaveItemRequest) returns (TimelineItem) {
     option (yamcs.api.route) = {
       post: "/api/timeline/{instance}/items"
       body: "*"
+      additional_bindings {
+        put: "/api/timeline/{instance}/items/{id}"
+        body: "*"
+      }
     };
   }
 
@@ -27,19 +33,18 @@ service TimelineApi {
       get: "/api/timeline/{instance}/items/{id}"
     };
   }
-  
-  // Update an item
-  rpc UpdateItem(UpdateItemRequest) returns (TimelineItem) {
-    option (yamcs.api.route) = {
-      put: "/api/timeline/{instance}/items/{id}"
-      body: "*"
-    };
-  }
 
   // List items
+  //
+  // Two alternative URI forms can be used. The `GET` method is convenient, while
+  // the `POST` method allows passing long filter expressions.  
   rpc ListItems(ListItemsRequest) returns (ListItemsResponse) {
     option (yamcs.api.route) = {
       get: "/api/timeline/{instance}/items"
+      additional_bindings {
+        post: "/api/timeline/{instance}/items:list"
+        body: "*"
+      }
     };
   }
 
@@ -47,6 +52,13 @@ service TimelineApi {
   rpc DeleteItem(DeleteItemRequest) returns (TimelineItem) {
     option (yamcs.api.route) = {
       delete: "/api/timeline/{instance}/items/{id}"
+    };
+  }
+
+  rpc BatchDeleteItems(BatchDeleteItemsRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/timeline/{instance}/items:batchDelete"
+      body: "*"
     };
   }
 
@@ -81,7 +93,7 @@ service TimelineApi {
       get: "/api/timeline/{instance}/sources"
     };
   }
-  
+
   // List all tags available for the 'rdb' source.
   //
   // Note that currently the 'rdb' source does not discard unused tags
@@ -91,12 +103,16 @@ service TimelineApi {
       get: "/api/timeline/{instance}/tags"
     };
   }
-  
-  // Add a band
-  rpc AddBand(AddBandRequest) returns (TimelineBand) {
+
+  // Create or update a band
+  rpc SaveBand(SaveBandRequest) returns (TimelineBand) {
     option (yamcs.api.route) = {
       post: "/api/timeline/{instance}/bands"
       body: "*"
+      additional_bindings {
+        put: "/api/timeline/{instance}/bands/{id}"
+        body: "*"
+      }
     };
   }
 
@@ -114,14 +130,6 @@ service TimelineApi {
     };
   }
 
-  // Update a band
-  rpc UpdateBand(UpdateBandRequest) returns (TimelineBand) {
-    option (yamcs.api.route) = {
-      put: "/api/timeline/{instance}/bands/{id}"
-      body: "*"
-    };
-  }
-
   // Delete a band
   rpc DeleteBand(DeleteBandRequest) returns (TimelineBand) {
     option (yamcs.api.route) = {
@@ -129,11 +137,15 @@ service TimelineApi {
     };
   }
 
-  // Add a view
-  rpc AddView(AddViewRequest) returns (TimelineView) {
+  // Create or update a view
+  rpc SaveView(SaveViewRequest) returns (TimelineView) {
     option (yamcs.api.route) = {
       post: "/api/timeline/{instance}/views"
       body: "*"
+      additional_bindings {
+        put: "/api/timeline/{instance}/views/{id}"
+        body: "*"
+      }
     };
   }
 
@@ -151,14 +163,6 @@ service TimelineApi {
     };
   }
 
-  // Update a view
-  rpc UpdateView(UpdateViewRequest) returns (TimelineView) {
-    option (yamcs.api.route) = {
-      put: "/api/timeline/{instance}/views/{id}"
-      body: "*"
-    };
-  }
-
   // Delete a view
   rpc DeleteView(DeleteViewRequest) returns (TimelineView) {
     option (yamcs.api.route) = {
@@ -166,13 +170,34 @@ service TimelineApi {
     };
   }
   
-  // Starts an activity that is in the state READY
+  // Manually start an activity
   rpc StartActivity(StartActivityRequest) returns (yamcs.protobuf.activities.ActivityInfo) {
     option (yamcs.api.route) = {
-      put: "/api/timeline/{instance}/items/{id}:startActivity"
-      body: "*"
+      post: "/api/timeline/{instance}/items/{id}:startActivity"
     };
-  } 
+  }
+
+  // Cancel a planned activity
+  rpc CancelActivity(CancelActivityRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      post: "/api/timeline/{instance}/items/{item}:cancelActivity"
+    };
+  }
+
+  // Receive item change notifications
+  //
+  // When any item has changed (create-update-delete), an empty notification message
+  // is sent. Messages are bundled over a 5 second interval. 
+  rpc SubscribeItemChanges(SubscribeItemChangesRequest) returns (stream google.protobuf.Empty) {
+    option (yamcs.api.websocket) = {
+      topic: "timeline-item-changes"
+    };
+  }
+}
+
+message SubscribeItemChangesRequest {
+  // Yamcs instance name
+  optional string instance = 1;
 }
 
 message RelativeTime {
@@ -183,7 +208,7 @@ message RelativeTime {
 }
 
 enum TimelineItemType {
-  // Events are the most generic timeline item.
+  // Events are things that will happen at a specific time.
   EVENT = 1;
 
   // Unlike events, activities have an execution status
@@ -212,8 +237,8 @@ enum ExecutionStatus {
   // The activity is currently running 
   IN_PROGRESS = 2;
   
-  // The activity has been completed successfully
-  COMPLETED = 3;
+  // The activity has completed successfully
+  SUCCEEDED = 3;
   
   // The activity started but was manually aborted by the operator.
   ABORTED = 4;
@@ -239,37 +264,46 @@ enum ExecutionStatus {
 message TimelineItem {
   // Item identifier.
   //
-  // The identifier is set and recognized by the source.
-  // It is possible but unlikely that two items coming from two different sources will have the same id.
+  // The identifier is assigned by the source that created the item.
   //
-  // The rdb source sets the id to a UUID. 
-  // The commands source sets the id to the command id
+  // It is possible but unlikely for two items coming from two different
+  // sources to have the same identifier.
+  //
+  // - The "rdb" source sets the id to a UUID. 
+  // ` The "commands" source sets the id to the command id
   optional string id = 1;
   
-  // Item name
+  // Human-readable name of this item
   optional string name = 2;
   
   optional TimelineItemType type = 3;
+
+  // Absolute start time of the item (computed by the server when
+  // `relativeTime` is used).
   optional google.protobuf.Timestamp start = 4;
   optional google.protobuf.Duration duration = 5;
   repeated string tags = 6;
 
-  // If this item is part of a group, this is the group identifier
+  // If this item belongs to a group, this is the group identifier
   optional string groupId = 7;
     
-  // If this item time specification is relative to another item, ``relativeTime``
+  // If this item time specification is relative to another item, `relativeTime`
   // contains a reference to that item as well as the relative start (the duration
-  // is the same as the ``duration`` field).
+  // is the same as the `duration` field).
   //
   // Note that start of the item is computed by the server based on the
-  // ``relativeTime`` before sending the item to the client.
+  // `relativeTime` before sending the item to the client.
   optional RelativeTime relativeTime = 8;
 
-  // Item description
+  // Detailed description of the item
   optional string description = 9;
 
-  // Additional properties used by yamcs-web to render this item
+  // Additional properties used by the Yamcs Web UI for rendering purposes.
   map<string, string> properties = 14;
+
+  // Mission-specific custom data. Unlike `properties`, this field is ignored
+  // by the Yamcs Web UI.
+  map<string, string> extra = 18;
 
   // For activities: execution status
   optional ExecutionStatus status = 10;
@@ -279,20 +313,29 @@ message TimelineItem {
   optional string failureReason = 11;
 
   // Activity definition associated to this item.
-  // Set if ``type`` is ACTIVITY.
+  // Only set when `type` equals ACTIVITY.
   optional yamcs.protobuf.activities.ActivityDefinitionInfo activityDefinition = 13;
 
   // Identifiers of activity runs matching this item.
-  // Set if ``type`` is ACTIVITY.
+  // Only set when `type` equals ACTIVITY.
   repeated string runs = 15;
+
+  // Activity runs for this item
+  // Only set when `type` equals ACTIVITY.
+  repeated yamcs.protobuf.activities.ActivityInfo activityRuns = 19;
   
-  // Can be used only if ``type`` is ACTIVITY
-  // It specifies which other activities/items this activity depends on
-  // The dependency conditions implicitly specify the start time as the end of the latest dependency
-  repeated ActivityDependency dependsOn = 16;
-  
-  // Can be used only if ``type`` is ACTIVITY
-  // Indicates if the activity should start automatically. If it is false, the activity will be moved to READY state waiting to be started manually.  
+  // Dependencies on other activities/events.
+  //
+  // Only applicable when `type` equals ACTIVITY.
+  //
+  // Start time of this activity is derived by looking at each predecessor's
+  // start condition and among them establishing the latest start time.
+  repeated PredecessorInfo predecessors = 16;
+
+  // Indicates if the activity should start automatically. If false,
+  // the activity goes into READY state and must be started manually.
+  //
+  // Only applicable when `type` equals ACTIVITY.  
   optional bool autoStart = 17;  
 }
 
@@ -318,6 +361,42 @@ enum TimelineBandType {
   PARAMETER_STATES = 6;
 }
 
+message BatchDeleteItemsRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Item source
+  optional string source = 2;
+
+  // Item identifiers
+  repeated string id = 3;
+
+  // Filter on item start
+  optional google.protobuf.Timestamp start = 4;
+
+  // Filter on item stop
+  optional google.protobuf.Timestamp stop = 5;
+
+  // Filter query. See {doc}`../filtering` for how to write a filter query.
+  //
+  // Literal text search matches against the `label` field. Field comparisons
+  // can use any of the following fields:
+  //
+  // | Field    | Type   | Description      |
+  // | -------- | ------ | ---------------- |
+  // | `label`  | string | Filter by label  |
+  // | `tag`    | string | Filter by tag    |
+  // | `type`   | enum   | Filter by type   |
+  // | `status` | enum   | Filter by status |
+  //
+  // `type` is one of `activity` or `event`.
+  //
+  // `status` is one of `planned`, `ready`, `waiting_on_dependency`,
+  // `in_progress`, `succeeded`, `aborted`, `failed`, `skipped`, `canceled`,
+  // `paused` or `waiting_for_input`.
+  optional string filter = 6;
+}
+
 message TimelineBand {
   // Yamcs instance name
   optional string instance = 1;
@@ -337,23 +416,25 @@ message TimelineBand {
   // The band contains only items from this source
   optional string source = 6;
 
-  //the band contains only items with these tags; if the list is empty, then all items from the given source are part of the band
-  //this is deprecated, the filters below should be used to select the items
-  repeated string tags = 7 [deprecated=true];
+  // The band contains only items with these tags. If the list is empty,
+  // all items from the given source are part of the band.
+  repeated string tags = 7;
 
-  // The filters are to be considered in an AND manner.
-  // An item is part of the band if it matches all filters.
-  // If the list is empty, then all items from the given source are part of the band
-  repeated ItemFilter filters = 8;
+  // If specified, the band shows only items matching this filter
+  optional string filter = 13;
 
   // Type of band
   optional TimelineBandType type = 9;
 
-  // Band description
+  // Detailed description of this band
   optional string description = 10;
 
-  // Additional properties used by yamcs-web to render this band
+  // Additional properties used by the Yamcs Web UI for rendering purposes.
   map<string, string> properties = 11;
+
+  // Mission-specific custom data. Unlike `properties`, this field is ignored
+  // by the Yamcs Web UI.
+  map<string, string> extra = 12;
 }
 
 message TimelineView {
@@ -373,7 +454,7 @@ message TimelineView {
   repeated TimelineBand bands = 5;
 }
 
-message CreateItemRequest {
+message SaveItemRequest {
   // Yamcs instance name
   optional string instance = 1;
   
@@ -393,11 +474,11 @@ message CreateItemRequest {
   // Item type
   optional TimelineItemType type = 4;
 
-  // Item start. The fields ``start``, ``relativeTime`` and dependsOn
+  // Item start. The fields `start`, `relativeTime` and `dependsOn`
   // are mutually exclusive
   optional google.protobuf.Timestamp start = 5;
   
-  // Item duration. Applies also if ``relativeTime`` is specified
+  // Item duration. Applies also if `relativeTime` is specified
   optional google.protobuf.Duration duration = 6;
   
   // Tags
@@ -407,59 +488,80 @@ message CreateItemRequest {
   optional string groupId = 8;
 
   // If the item time specification is relative to another item,
-  // ``relativeTime`` contains a reference to that item, as well
+  // `relativeTime` contains a reference to that item, as well
   // as the relative start (the duration is the same as given by the
-  // ``duration`` field).
+  // `duration` field).
   optional RelativeTime relativeTime = 9;
 
   // Item description
   optional string description = 10;
 
-  // Additional properties used by yamcs-web to render this item
+  // Additional properties used by the Yamcs Web UI for rendering purposes.
   map<string, string> properties = 11;
 
+  // Mission-specific custom data. Unlike `properties`, this field is ignored
+  // by the Yamcs Web UI.
+  map<string, string> extra = 18;
+
   // Activity definition associated to this item.
-  // Required if ``type`` is ACTIVITY.
+  //
+  // Required if `type` is ACTIVITY.
   optional yamcs.protobuf.activities.ActivityDefinitionInfo activityDefinition = 12;
 
-  // Can be used only if ``type`` is ACTIVITY
-  // It specifies which other activities/items this activity depends on
-  // The dependency conditions implicitly specify the start time as the end of the latest dependency
-  repeated ActivityDependency dependsOn = 14;
-  
-  // Can be used only if ``type`` is ACTIVITY
+  // Can be used only if `type` is ACTIVITY.
+  //
+  // Specifies which other activities/items this activity depends on.
+  //
+  // Start time of this activity is derived by looking at each predecessor's
+  // start condition and among them establishing the latest start time.
+  repeated PredecessorInfo predecessors = 14;
+
+  // Can be used only if `type` is ACTIVITY
+  //
   // Indicates if the activity should start automatically.
-  // If it is false, the activity will be moved to READY state waiting to be started manually.
-  // It defaults to false for manual activities and true for automated ones   
-  optional bool autoStart = 17;  
+  //
+  // When `false`, the activity will be moved to `READY` state waiting to be
+  // started manually.
+  //
+  // Defaults to `false` for manual activities, and `true` otherwise.   
+  optional bool autoStart = 17;
 
   // TODO possible future additions to activities:
   // startNotEarlierThan
   // startNotLaterThan
 }
 
-//
-// Defines the conditions under which an activity that depends on another activity should be started.
-//
-enum ActivityDependencyCondition {
-  // Start this activity regardless of the outcome of the dependent activity.
+// Defines the conditions under which an activity that depends on another
+// activity should be started.
+enum StartCondition {
+  // Start this activity regardless of the outcome of the predecessor.
   // This can be used to make activities depend on other non-activity items
-  START_ALWAYS = 1;
+  ON_COMPLETION = 1;
 
-  // Start this activity only if the dependent activity completes successfully.
-  START_ON_SUCCESS = 2;
+  // Start this activity only if the predecessor completes successfully.
+  ON_SUCCESS = 2;
 
-  // Start this activity only if the dependent activity fails.
-  START_ON_FAILURE = 3;
+  // Start this activity only if the predecessor fails.
+  ON_FAILURE = 3;
+
+  // Start this activity as soon as its predecessor has started
+  ON_START = 4;
 }
 
-message ActivityDependency {
-	// the id of the activity or item it depends on
-	optional string id = 1;
+message PredecessorInfo {
+  // Item identifier of the predecessor
+  optional string itemId = 1;
 
-	//if not specified, START_ALWAYS will be used
-	// if the dependent id refers to a non-activity item, the condition can be left out, or set to START_ALWAYS
-	optional ActivityDependencyCondition condition = 2;
+  // What is the predecessor's state before the successor
+  // can be started. 
+  //
+  // If not specified, ON_COMPLETION will be used
+  optional StartCondition startCondition = 2;
+
+  // Name of the predecessor item
+  //
+  // This is an output field only
+  optional string name = 3;
 }
 
 message GetItemRequest {
@@ -473,56 +575,8 @@ message GetItemRequest {
   optional string id = 3;
 }
 
-message UpdateItemRequest {
-  // Yamcs instance name
-  optional string instance = 1;
-
-  // Item source
-  optional string source = 2;
-
-  // Item identifier
-  optional string id = 3;
-  
-  // Item name
-  optional string name = 4;
-
-  // New start time
-   optional google.protobuf.Timestamp start = 5;
-
-  // New duration
-  optional google.protobuf.Duration duration = 6;
-
-  // New tags
-  repeated string tags = 7;
-
-  // Set this to true to remove completely all the tags
-  optional bool clearTags = 8;
-
-  // New group identifier.
-  //
-  // To keep the old value, leave out. To clear the group, set to an empty string
-  optional string groupId = 9;
-
-  // New relative time.
-  //
-  // To keep the old value, leave out the property. To clear, set ``start``.
-  optional RelativeTime relativeTime = 10;
-
-  //new status (valid for activities)
-  optional ExecutionStatus status = 11;
-
-  //failure reason (valid for activities)
-  optional string failureReason = 12;
-
-  // Additional properties used by yamcs-web to render this item
-  map<string, string> properties = 13;
-
-  // Set this to true to remove completely all properties
-  optional bool clearProperties = 14;
-}
-
 message ListItemsRequest {
-  //Yamcs instance name
+  // Yamcs instance name
   optional string instance = 1;
 
   // Item source
@@ -532,21 +586,39 @@ message ListItemsRequest {
 
   // Continuation token returned by a previous page response.
   optional string next = 4;
-  
+
+  // Filter on item start
   optional google.protobuf.Timestamp start = 5;
+
+  // Filter on item stop
   optional google.protobuf.Timestamp stop = 6;
-  
+
   // Use the band defined source and filter
   optional string band = 7;
 
-  // If the band is not specified, these filters and the source above will be used
-  repeated ItemFilter filters = 8;
-  
   // If true, send the items with full details
   // If false, some details like the description will be omited from the listed items
   optional bool details = 9;
-}
 
+  // Filter query. See {doc}`../filtering` for how to write a filter query.
+  //
+  // Literal text search matches against the `label` field. Field comparisons
+  // can use any of the following fields:
+  //
+  // | Field    | Type   | Description      |
+  // | -------- | ------ | ---------------- |
+  // | `label`  | string | Filter by label  |
+  // | `tag`    | string | Filter by tag    |
+  // | `type`   | enum   | Filter by type   |
+  // | `status` | enum   | Filter by status |
+  //
+  // `type` is one of `activity` or `event`.
+  //
+  // `status` is one of `planned`, `ready`, `waiting_on_dependency`,
+  // `in_progress`, `succeeded`, `aborted`, `failed`, `skipped`, `canceled`,
+  // `paused` or `waiting_for_input`.
+  optional string filter = 10;
+}
 
 message DeleteItemRequest {
   // Yamcs instance name
@@ -559,9 +631,6 @@ message DeleteItemRequest {
   optional string id = 3;
 }
 
-
-
-
 message GetItemLogRequest {
   // Yamcs instance name
   optional string instance = 1;
@@ -572,7 +641,6 @@ message GetItemLogRequest {
   // Item identifier
   optional string id = 3;
 }
-
 
 message AddItemLogRequest {
   // Yamcs instance name
@@ -599,15 +667,15 @@ message DeleteTimelineGroupRequest {
 }
 
 message ListItemsResponse {
-  //item source
+  // Item source
   optional string source = 1;
 
-  //items
+  // Items
   repeated TimelineItem items = 2;
 
   // Token indicating the response is only partial. More results can then
   // be obtained by performing the same request (including all original
-  // query parameters) and setting the ``next`` parameter to this token.
+  // query parameters) and setting the `next` parameter to this token.
   optional string continuationToken = 3;
 }
 
@@ -639,7 +707,7 @@ message ListTimelineTagsResponse {
   repeated string tags = 1;
 }
 
-message AddBandRequest {
+message SaveBandRequest {
   // Yamcs instance name
   optional string instance = 1;
 
@@ -653,27 +721,30 @@ message AddBandRequest {
   // Band name
   optional string name = 2;
 
-  //if true, all users have access to this band, otherwise only the user who has created it 
+  // If true, all users have access to this band, otherwise only the user who has created it 
   optional bool shared = 3;
   
-  //the band contains only items from this source
+  // Where the items shown on this band come from
   optional string source = 4;
 
   // Items containing these tags will be part of the timeline
-  // this is deprecated, the filters below should be used instead
-  repeated string tags = 5 [deprecated = true];
-  
-  // A query filter which can be used to limit additionally the items which are part of the band
-  repeated ItemFilter filters = 6;
-  
+  repeated string tags = 5;
+
+  // If specified, the band shows only items matching this filter
+  optional string filter = 12;
+
   // Type of band
   optional TimelineBandType type = 7;
 
   // Band description
   optional string description = 8;
 
-  // Additional properties used by yamcs-web to render this band
+  // Additional properties used by the Yamcs Web UI for rendering purposes.
   map<string, string> properties = 9;
+
+  // Mission-specific custom data. Unlike `properties`, this field is ignored
+  // by the Yamcs Web UI.
+  map<string, string> extra = 11;
 }
 
 message GetBandRequest {
@@ -682,35 +753,6 @@ message GetBandRequest {
 
   // Item identifier
   optional string id = 3;
-}
-
-message UpdateBandRequest {
-  // Yamcs instance name
-  optional string instance = 1;
-
-  // Band identifier
-  optional string id = 2;
-  
-  // Band name
-  optional string name = 3;
-  
-  // Band description
-  optional string description = 4;
-  
-  // If true, all users have access to this band, otherwise only the user who has created it
-  optional bool shared = 5;
-  
-  // Items containing these tags will be part of the timeline
-  repeated string tags = 6;
-
-  // Additional properties used by yamcs-web to render this band
-  map<string, string> properties = 7;
-
-  // Where the items shown on this band come from
-  optional string source = 8;
-
-  // Filters to apply when retrieving items
-  repeated ItemFilter filters = 9;
 }
 
 message ListBandsRequest {
@@ -730,7 +772,7 @@ message ListBandsResponse {
   repeated TimelineBand bands = 1;
 }
 
-message AddViewRequest {
+message SaveViewRequest {
   // Yamcs instance name
   optional string instance = 1;
 
@@ -738,7 +780,8 @@ message AddViewRequest {
   //
   // If not set, an ID will be assigned by the server.
   //
-  // If set, it should be a valid UUID.
+  // If set, it should be a valid UUID. If a view with
+  // this identifier already exists, it is replaced. 
   optional string id = 5;
 
   // View name
@@ -764,23 +807,6 @@ message ListViewsRequest {
   optional string instance = 1;
 }
 
-message UpdateViewRequest {
-  // Yamcs instance name
-  optional string instance = 1;
-  
-  // View identifier
-  optional string id = 2;
-
-  // View name
-  optional string name = 3;
-
-  // View description
-  optional string description = 4;
-
-  // The bands belonging to this view
-  repeated string bands = 5;
-}
-
 message DeleteViewRequest {
   // Yamcs instance name
   optional string instance = 1;
@@ -793,30 +819,6 @@ message ListViewsResponse {
   repeated TimelineView views = 1;
 }
 
-// An item matches the filter if it matches any of the criteria from the list.
-// If the list is empty, the filter will not match.
-message ItemFilter {
-  // Available filter criteria depend on the item's source.
-  //
-  // When the source is rdb:
-  //
-  // tag
-  //   An item matches if the value property is among its tags.
-  //
-  // When the source is commands:
-  //
-  // cmdNamePattern:
-  //   value is considered as a regexp and matched against the ``cmdName``
-  //   column from the ``cmdhist`` table.
-  message FilterCriterion {
-    optional string key = 1;
-    optional string value = 2;
-  }
-
- repeated FilterCriterion criteria = 1;
-}
-
-
 message StartActivityRequest {
   // Yamcs instance name
   optional string instance = 1;
@@ -826,7 +828,34 @@ message StartActivityRequest {
    	optional string source = 2;
    */
 
-  // Item identifier. Has to refer to an activity
+  // Identifier of an activity item
   optional string id = 3;
 }
 
+message CompleteActivityRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Identifier of an activity item
+  optional string item = 3;
+
+  // If set, the activity shall be marked as failed
+  // instead of succeeded.
+  optional string failureReason = 4;
+}
+
+message CancelActivityRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Identifier of an activity item
+  optional string item = 3;
+}
+
+message AbortActivityRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Identifier of an activity item
+  optional string item = 2;
+}

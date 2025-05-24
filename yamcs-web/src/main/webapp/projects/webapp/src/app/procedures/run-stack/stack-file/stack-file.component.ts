@@ -22,11 +22,11 @@ import {
   CommandStep,
   CommandSubscription,
   ConfigService,
-  CreateTimelineItemRequest,
   MessageService,
   NamedObjectId,
   ParameterSubscription,
   ParameterValue,
+  SaveTimelineItemRequest,
   StackFormatter,
   Step,
   utils,
@@ -908,7 +908,7 @@ export class StackFileComponent implements OnInit, OnDestroy {
       .afterClosed()
       .subscribe((scheduleOptions) => {
         if (scheduleOptions) {
-          const options: CreateTimelineItemRequest = {
+          const options: SaveTimelineItemRequest = {
             type: 'ACTIVITY',
             duration: '0s',
             name: this.filename,

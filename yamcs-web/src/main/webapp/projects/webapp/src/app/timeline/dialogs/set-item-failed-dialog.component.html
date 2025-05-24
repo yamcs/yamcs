@@ -1,0 +1,14 @@
+<h2 mat-dialog-title>Set failed</h2>
+
+<mat-dialog-content>
+  <ya-form [formGroup]="form">
+    <ya-field label="Failure reason">
+      <input #filename type="text" formControlName="failureReason" />
+    </ya-field>
+  </ya-form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <ya-button mat-dialog-close>CANCEL</ya-button>
+  <ya-button appearance="primary" (click)="submit()" [disabled]="!form.valid">SUBMIT</ya-button>
+</mat-dialog-actions>

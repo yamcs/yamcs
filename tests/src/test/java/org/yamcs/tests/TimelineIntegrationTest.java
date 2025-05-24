@@ -2,6 +2,7 @@ package org.yamcs.tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.yamcs.client.utils.WellKnownTypes.TIMESTAMP_MAX;
@@ -22,12 +23,9 @@ import org.yamcs.client.ClientException;
 import org.yamcs.client.Page;
 import org.yamcs.client.timeline.TimelineClient;
 import org.yamcs.protobuf.ExecutionStatus;
-import org.yamcs.protobuf.ItemFilter;
-import org.yamcs.protobuf.ItemFilter.FilterCriterion;
 import org.yamcs.protobuf.TimelineBand;
 import org.yamcs.protobuf.TimelineBandType;
 import org.yamcs.protobuf.TimelineItem;
-import org.yamcs.protobuf.TimelineItemLog;
 import org.yamcs.protobuf.TimelineItemType;
 import org.yamcs.protobuf.TimelineSourceCapabilities;
 import org.yamcs.yarch.YarchDatabase;
@@ -71,6 +69,7 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
         verifyEmpty();
         TimelineItem item1a = TimelineItem.newBuilder()
                 .setType(TimelineItemType.EVENT)
+                .setName("item")
                 .setStart(toTimestamp(Instant.parse("2020-01-21T00:00:00Z")))
                 .setDuration(Durations.fromMillis(1001))
                 .addTags("tag1")
@@ -78,7 +77,7 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
                 .setDescription("description 1")
                 .build();
 
-        TimelineItem item1b = timelineClient.addItem(item1a).get();
+        TimelineItem item1b = timelineClient.saveItem(item1a).get();
         assertEquals(item1a.getStart(), item1b.getStart());
         assertEquals(item1a.getDuration(), item1b.getDuration());
         assertEquals(item1a.getTagsList(), item1b.getTagsList());
@@ -94,7 +93,7 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
         TimelineItem item1d = item1b.toBuilder().addTags("tag3")
                 .setStart(toTimestamp(Instant.parse("2020-01-25T00:00:00Z"))).build();
 
-        TimelineItem item1e = timelineClient.updateItem(item1d).get();
+        TimelineItem item1e = timelineClient.saveItem(item1d).get();
         assertEquals(item1d, item1e);
 
         TimelineItem item1f = timelineClient.getItem(item1b.getId()).get();
@@ -122,6 +121,7 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
         verifyEmpty();
         TimelineItem item1a = TimelineItem.newBuilder()
                 .setType(TimelineItemType.EVENT)
+                .setName("an item")
                 .setStart(toTimestamp(Instant.parse("2020-01-11T00:00:00Z")))
                 .setDuration(Durations.fromMillis(1001))
                 .addTags("tag1")
@@ -129,6 +129,7 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
                 .build();
         TimelineItem item1b = TimelineItem.newBuilder()
                 .setType(TimelineItemType.EVENT)
+                .setName("an item")
                 .setStart(toTimestamp(Instant.parse("2020-01-21T00:00:00Z")))
                 .setDuration(Durations.fromMillis(1001))
                 .addTags("tag2")
@@ -140,8 +141,8 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
                 .setShared(true)
                 .addTags("tag2")
                 .build();
-        item1a = timelineClient.addItem(item1a).get();
-        item1b = timelineClient.addItem(item1b).get();
+        item1a = timelineClient.saveItem(item1a).get();
+        item1b = timelineClient.saveItem(item1b).get();
         band1a = timelineClient.addBand(band1a).get();
 
         Page<TimelineItem> page = timelineClient.getItems(
@@ -161,23 +162,20 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
         verifyEmpty();
         TimelineItem item1a = TimelineItem.newBuilder()
                 .setType(TimelineItemType.ACTIVITY)
+                .setName("activity1")
                 .setStart(toTimestamp(Instant.parse("2022-07-29T00:00:00Z")))
                 .setDuration(Durations.fromMillis(1001))
                 .addTags("tag1")
                 .addTags("tag2")
                 .build();
 
-        item1a = timelineClient.addItem(item1a).get();
+        item1a = timelineClient.saveItem(item1a).get();
         assertEquals(ExecutionStatus.PLANNED, item1a.getStatus());
 
-        TimelineItem item1b = item1a.toBuilder().setStatus(ExecutionStatus.IN_PROGRESS).build();
-        item1b = timelineClient.updateItem(item1b).get();
+        timelineClient.startActivity(item1a.getId()).get();
 
-        assertEquals(ExecutionStatus.IN_PROGRESS, item1b.getStatus());
-
-        TimelineItemLog log = timelineClient.getItemLog(item1b.getId()).get();
-        assertEquals(1, log.getEntriesCount());
-        assertEquals("[status]", log.getEntries(0).getMsg());
+        TimelineItem item1b = timelineClient.getItem(item1a.getId()).get();
+        assertNotEquals(ExecutionStatus.PLANNED, item1b.getStatus());
     }
 
     @Test
@@ -186,26 +184,29 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
         // create group
         TimelineItem group = TimelineItem.newBuilder()
                 .setType(TimelineItemType.ITEM_GROUP)
+                .setName("a group")
                 .setStart(toTimestamp(Instant.parse("2020-01-21T00:00:00Z")))
                 .setDuration(Durations.fromMillis(1001))
                 .build();
-        group = timelineClient.addItem(group).get();
+        group = timelineClient.saveItem(group).get();
         // create event1 in group
         TimelineItem event1 = TimelineItem.newBuilder()
                 .setType(TimelineItemType.EVENT)
+                .setName("an event")
                 .setStart(toTimestamp(Instant.parse("2020-01-21T00:00:00Z")))
                 .setDuration(Durations.fromMillis(1001))
                 .setGroupId(group.getId())
                 .build();
-        event1 = timelineClient.addItem(event1).get();
+        event1 = timelineClient.saveItem(event1).get();
         // create event2 in group
         TimelineItem event2 = TimelineItem.newBuilder()
                 .setType(TimelineItemType.EVENT)
+                .setName("an event")
                 .setStart(toTimestamp(Instant.parse("2020-01-21T00:00:00Z")))
                 .setDuration(Durations.fromMillis(1001))
                 .setGroupId(group.getId())
                 .build();
-        event2 = timelineClient.addItem(event2).get();
+        event2 = timelineClient.saveItem(event2).get();
         // try to remove group => error
         timelineClient.deleteItem(group.getId()).handle((item, t) -> {
             assertNotNull(t);
@@ -213,7 +214,7 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
         }).get();
         // remove event1 from group
         event1 = event1.toBuilder().clearGroupId().build();
-        event1 = timelineClient.updateItem(event1).get();
+        event1 = timelineClient.saveItem(event1).get();
         // try to remove group => error
         timelineClient.deleteItem(group.getId()).handle((item, t) -> {
             assertNotNull(t);
@@ -235,43 +236,47 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
         // create group
         TimelineItem group = TimelineItem.newBuilder()
                 .setType(TimelineItemType.ITEM_GROUP)
+                .setName("a group")
                 .setStart(toTimestamp(Instant.parse("2020-01-21T00:00:00Z")))
                 .setDuration(Durations.fromMillis(1001))
                 .build();
-        group = timelineClient.addItem(group).get();
+        group = timelineClient.saveItem(group).get();
         // create activity group
         TimelineItem activityGroup = TimelineItem.newBuilder()
                 .setType(TimelineItemType.ACTIVITY_GROUP)
+                .setName("a group")
                 .setStart(toTimestamp(Instant.parse("2020-01-21T00:00:00Z")))
                 .setDuration(Durations.fromMillis(1001))
                 .build();
-        activityGroup = timelineClient.addItem(activityGroup).get();
+        activityGroup = timelineClient.saveItem(activityGroup).get();
         // create event
         TimelineItem event = TimelineItem.newBuilder()
                 .setType(TimelineItemType.EVENT)
+                .setName("an event")
                 .setStart(toTimestamp(Instant.parse("2020-01-21T00:00:00Z")))
                 .setDuration(Durations.fromMillis(1001))
                 .build();
-        event = timelineClient.addItem(event).get();
+        event = timelineClient.saveItem(event).get();
         // create activity
         TimelineItem activity = TimelineItem.newBuilder()
                 .setType(TimelineItemType.ACTIVITY)
+                .setName("an activity")
                 .setStart(toTimestamp(Instant.parse("2020-01-21T00:00:00Z")))
                 .setDuration(Durations.fromMillis(1001))
                 .build();
-        activity = timelineClient.addItem(activity).get();
+        activity = timelineClient.saveItem(activity).get();
         // try to add event to "group" activity => error
         event = event.toBuilder().setGroupId(activity.getId()).build();
-        timelineClient.updateItem(event).handle((item, t) -> verifyException(t, "BadRequestException")).get();
+        timelineClient.saveItem(event).handle((item, t) -> verifyException(t, "BadRequestException")).get();
         // try to add event to group => ok
         event = event.toBuilder().setGroupId(group.getId()).build();
-        timelineClient.updateItem(event).get();
+        timelineClient.saveItem(event).get();
         // try to add event to activityGroup => error
         event = event.toBuilder().setGroupId(activityGroup.getId()).build();
-        timelineClient.updateItem(event).handle((item, t) -> verifyException(t, "BadRequestException")).get();
+        timelineClient.saveItem(event).handle((item, t) -> verifyException(t, "BadRequestException")).get();
         // try to add activity to activityGroup => ok
         activity = activity.toBuilder().setGroupId(activityGroup.getId()).build();
-        timelineClient.updateItem(activity).get();
+        timelineClient.saveItem(activity).get();
     }
 
     @Test
@@ -282,7 +287,7 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
                 .setName("name")
                 .setDescription("description")
                 .setShared(true)
-                .addFilters(getTagFilter("tag1", "tag2"))
+                .setFilter("tag=tag1 OR tag=tag2")
                 .putAllProperties(Collections.singletonMap("key1", "value1"))
                 .build();
 
@@ -290,16 +295,8 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
                 .get();
         assertEquals(band1a.getName(), band1b.getName());
         assertEquals(band1a.getDescription(), band1b.getDescription());
-        assertEquals(band1a.getFiltersList(), band1b.getFiltersList());
+        assertEquals(band1a.getFilter(), band1b.getFilter());
         assertEquals(band1a.getPropertiesMap(), band1b.getPropertiesMap());
-    }
-
-    private ItemFilter getTagFilter(String... tags) {
-        ItemFilter.Builder ifb = ItemFilter.newBuilder();
-        for (String tag : tags) {
-            ifb.addCriteria(FilterCriterion.newBuilder().setKey("tag").setValue(tag).build());
-        }
-        return ifb.build();
     }
 
     @Test
@@ -339,7 +336,7 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
         TimelineItem item = TimelineItem.newBuilder().setType(TimelineItemType.EVENT).build();
         Throwable t = null;
         try {
-            timelineClient.addItem("invalid-source", item).get();
+            timelineClient.saveItem("invalid-source", item).get();
         } catch (ExecutionException e) {
             t = e.getCause();
         }
@@ -358,11 +355,7 @@ public class TimelineIntegrationTest extends AbstractIntegrationTest {
 
         var band = timelineClient.addBand(TimelineBand.newBuilder()
                 .setSource("commands").setName("cmd_test")
-                .addFilters(ItemFilter.newBuilder()
-                        .addCriteria(FilterCriterion.newBuilder()
-                                .setKey("cmdNamePattern").setValue("time.*_testA.*")
-                                .build())
-                        .build())
+                .setFilter("timeline_testA")
                 .build())
                 .get();
         Page<TimelineItem> page = timelineClient.getItems(TIMESTAMP_MIN, TIMESTAMP_MAX, band.getId()).get();
