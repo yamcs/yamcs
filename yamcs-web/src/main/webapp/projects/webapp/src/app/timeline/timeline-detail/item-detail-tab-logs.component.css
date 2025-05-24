@@ -1,0 +1,45 @@
+.log-container {
+  position: absolute;
+  top: 36px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: auto;
+  padding-left: 6px;
+}
+
+table.logs {
+  line-height: 12px;
+}
+
+table.logs td {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.654);
+  vertical-align: top;
+}
+
+table.logs td.time {
+  opacity: 0.8;
+}
+
+table.logs tr.service td {
+  font-weight: bold;
+}
+
+table.logs td.message {
+  white-space: pre-wrap;
+}
+
+.top,
+.bottom {
+  visibility: hidden;
+  line-height: 0;
+}
+
+.warning {
+  color: var(--y-warning-color) !important;
+}
+
+.error {
+  color: var(--y-error-color) !important;
+}

@@ -3,6 +3,10 @@
   padding: 24px;
 }
 
+:host.small-padding {
+  padding: 6px;
+}
+
 @media print {
   :host {
     padding: 0;

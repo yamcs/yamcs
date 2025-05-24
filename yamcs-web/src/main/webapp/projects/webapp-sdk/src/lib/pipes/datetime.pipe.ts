@@ -8,7 +8,7 @@ export class DateTimePipe implements PipeTransform {
   constructor(private formatter: Formatter) {}
 
   transform(
-    date: Date | string | null | undefined,
+    date: Date | number | string | null | undefined,
     addTimezone = true,
   ): string | null {
     if (!date) {

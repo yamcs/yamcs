@@ -90,6 +90,13 @@
         </td>
       </ng-container>
 
+      <ng-container cdkColumnDef="label">
+        <th mat-header-cell *cdkHeaderCellDef>Label</th>
+        <td mat-cell *cdkCellDef="let item">
+          {{ item.label || "-" }}
+        </td>
+      </ng-container>
+
       <ng-container cdkColumnDef="detail">
         <th mat-header-cell *cdkHeaderCellDef>Detail</th>
         <td mat-cell *cdkCellDef="let item">

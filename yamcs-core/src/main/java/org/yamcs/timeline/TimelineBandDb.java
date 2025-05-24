@@ -9,7 +9,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.yamcs.InitException;
 import org.yamcs.logging.Log;
-import org.yamcs.timeline.protobuf.BandFilter;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
@@ -38,9 +37,15 @@ public class TimelineBandDb {
     public static final String CNAME_USERNAME = "username";
     public static final String CNAME_TAGS = "tags";
     public static final String CNAME_SOURCE = "source";
+    /**
+     * Unused, but cannot be removed unless we write a migration (column requires presence of BandFilter proto class)
+     */
+    @Deprecated
     public static final String CNAME_FILTER = "filter";
+    public static final String CNAME_FILTER_QUERY = "filter_query";
 
     protected static final String PROP_PREFIX = "prop_";
+    protected static final String EXTRA_PREFIX = "extra_";
 
     static {
         TIMELINE_DEF.addColumn(CNAME_ID, DataType.UUID);
@@ -51,7 +56,7 @@ public class TimelineBandDb {
         TIMELINE_DEF.addColumn(CNAME_TYPE, DataType.ENUM);
         TIMELINE_DEF.addColumn(CNAME_TAGS, DataType.array(DataType.ENUM));
         TIMELINE_DEF.addColumn(CNAME_SOURCE, DataType.ENUM);
-        TIMELINE_DEF.addColumn(CNAME_FILTER, DataType.protobuf(BandFilter.class));
+        TIMELINE_DEF.addColumn(CNAME_FILTER_QUERY, DataType.STRING);
     }
 
     final Log log;

@@ -1,7 +1,7 @@
 <ya-message-bar #messageBar />
 
 <div class="sidenav-container" [class.message-bar-visible]="messageBar.show$ | async">
-  <ya-sidenav [collapsed]="collapsed()">
+  <ya-sidenav [collapsed]="isCollapsed()">
     <ya-sidenav-item
       activeWhen="/admin"
       routerLink="/admin"

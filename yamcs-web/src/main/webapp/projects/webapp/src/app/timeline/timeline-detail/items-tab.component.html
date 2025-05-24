@@ -1,0 +1,214 @@
+<div class="master-detail">
+  <div class="master">
+    <ya-scroll-panel>
+      @if (false) {
+        <ya-control-bar>
+          <ya-select>
+            <ya-option id="" label="Any type" />
+            <ya-option id="ACTIVITY" label="Activity" />
+            <ya-option id="EVENT" label="Event" />
+            <ya-option id="TASK" label="Task" />
+          </ya-select>
+        </ya-control-bar>
+      }
+
+      <table
+        mat-table
+        class="ya-data-table expand"
+        [class.no-control-bar]="true"
+        [dataSource]="dataSource"
+        [trackBy]="tableTrackerFn">
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef class="wrap200">Label</th>
+          <td mat-cell *matCellDef="let row" class="wrap200">
+            @if (row.name) {
+              {{ row.name }}
+            }
+            @if (!row.name) {
+              <i>(none)</i>
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="start">
+          <th mat-header-cell *matHeaderCellDef style="min-width: 150px">Start</th>
+          <td mat-cell *matCellDef="let row">
+            @if (row.status() === "READY" && row.delay()) {
+              @if (row.delay() > 0) {
+                Delayed by {{ row.delay() | duration }}
+              } @else {
+                Ahead by {{ -row.delay() | duration }}
+              }
+            } @else {
+              <app-ago [time]="row.start()" />
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="duration">
+          <th mat-header-cell *matHeaderCellDef style="min-width: 100px">Duration</th>
+          <td mat-cell *matCellDef="let row">
+            @if (row.duration() > 0) {
+              {{ row.duration() | duration }}
+            } @else {
+              -
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef class="status">Status</th>
+          <td mat-cell *matCellDef="let row" class="status nohover">
+            {{ row.status() || "-" }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="progress">
+          <th mat-header-cell *matHeaderCellDef>Progress</th>
+          <td mat-cell *matCellDef="let row">
+            @if (row.type === "ACTIVITY" || row.type === "TASK") {
+              @if (row.status() === "IN_PROGRESS") {
+                @if (row.plannedDuration === 0) {
+                  <ya-progress mode="indeterminate" />
+                } @else {
+                  <ya-progress [value]="row.progress()" [alarmSensitive]="true" />
+                }
+              } @else if (row.status() === "READY") {
+                <ya-progress [value]="0" />
+              } @else {
+                -
+              }
+            } @else if (row.type === "EVENT") {
+              @if (row.progress() === undefined || row.progress() === 1) {
+                -
+              } @else {
+                <ya-progress [value]="row.progress()" />
+              }
+            } @else {
+              -
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="type">
+          <th mat-header-cell *matHeaderCellDef>Type</th>
+          <td mat-cell *matCellDef="let row">
+            {{ row.type | lowercase }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let row">
+            @if (mayStartTimelineActivities()) {
+              @if (row.type !== "EVENT" && row.status() === "READY") {
+                <ya-text-action icon="play_arrow" (click)="startItem(row)">
+                  Start now
+                </ya-text-action>
+              }
+              @if (row.type !== "EVENT" && row.status() === "PLANNED") {
+                <ya-text-action icon="play_arrow" (click)="startItem(row)">
+                  Start now
+                </ya-text-action>
+              }
+            }
+            @if (mayControlActivities() && row.type === "TASK" && row.status() === "IN_PROGRESS") {
+              <ya-text-action (click)="setItemSuccessful(row)" icon="thumb_up">
+                Set successful
+              </ya-text-action>
+              &nbsp;
+              <ya-text-action (click)="setItemFailed(row)" icon="thumb_down">
+                Set failed
+              </ya-text-action>
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="more">
+          <th mat-header-cell *matHeaderCellDef class="expand"></th>
+          <td mat-cell *matCellDef="let row">
+            <ya-more>
+              @if (mayControlTimeline()) {
+                <button
+                  mat-menu-item
+                  (click)="openEditItemDialog(row)"
+                  [disabled]="
+                    (row.type === 'TASK' || row.type === 'ACTIVITY') && row.status() !== 'PLANNED'
+                  ">
+                  Edit
+                </button>
+              }
+
+              @if (mayControlActivities()) {
+                @if (
+                  (row.type === "TASK" || row.type === "ACTIVITY") && row.status() === "IN_PROGRESS"
+                ) {
+                  <mat-divider />
+                  <button mat-menu-item (click)="openAbortItemDialog(row)">Abort</button>
+                }
+              }
+
+              @if (mayStartTimelineActivities()) {
+                @if (row.type === "TASK" || row.type === "ACTIVITY") {
+                  <button mat-menu-item (click)="startItem(row)">Start now</button>
+                }
+              }
+
+              @if (mayControlTimeline()) {
+                @if (
+                  (row.type === "TASK" || row.type === "ACTIVITY") &&
+                  (row.status() === "PLANNED" || row.status() === "READY")
+                ) {
+                  <mat-divider />
+                  <button mat-menu-item (click)="openCancelItemDialog(row)">Cancel</button>
+                }
+              }
+
+              @if (mayControlTimeline()) {
+                <mat-divider />
+                <button mat-menu-item (click)="openDeleteItemDialog(row)">Delete</button>
+              }
+            </ya-more>
+
+            @if (row.status() === "FAILED") {
+              @if (row.failureReason; as failureReason) {
+                <span class="alert">
+                  {{ failureReason }}
+                </span>
+              }
+            }
+          </td>
+        </ng-container>
+
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+            @if (!view()) {
+              No current view.
+            } @else {
+              No items in this date range.
+            }
+          </td>
+        </tr>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: displayedColumns"
+          [class.selected]="(selectedItem$ | async) === row"
+          [class.aborted]="row.status() === 'ABORTED'"
+          [class.canceled]="row.status() === 'CANCELED'"
+          [class.succeeded]="row.status() === 'SUCCEEDED'"
+          [class.failed]="row.status() === 'FAILED'"
+          [class.in-progress]="row.status() === 'IN_PROGRESS'"
+          [class.ready]="row.status() === 'READY'"
+          [class.skipped]="row.status() === 'SKIPPED'"
+          [class.planned]="row.status() === 'PLANNED'"
+          (click)="toggleRow(row)"></tr>
+      </table>
+    </ya-scroll-panel>
+  </div>
+  <div class="detail">
+    <app-item-detail [item]="selectedItem$ | async" />
+  </div>
+  <div class="resizer" (mousedown)="onResizerMouseDown($event)"></div>
+</div>

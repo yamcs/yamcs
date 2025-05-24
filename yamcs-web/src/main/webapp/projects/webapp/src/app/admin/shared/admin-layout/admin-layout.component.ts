@@ -1,15 +1,15 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  inject,
   OnDestroy,
-  Signal,
   ViewChild,
 } from '@angular/core';
 import { MatSidenav } from '@angular/material/sidenav';
 import { NavigationEnd, Router } from '@angular/router';
 import {
+  AppearanceService,
   AuthService,
-  Preferences,
   User,
   WebappSdkModule,
 } from '@yamcs/webapp-sdk';
@@ -23,10 +23,15 @@ import { AppAppBaseToolbar } from '../../../appbase/appbase-toolbar/appbase-tool
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AppAppBaseToolbar, AppAppBaseToolbarLabel, WebappSdkModule],
   host: {
-    '[class.collapsed]': 'collapsed()',
+    '[class.collapsed]': 'isCollapsed()',
   },
 })
 export class AdminLayoutComponent implements OnDestroy {
+  private appearanceService = inject(AppearanceService);
+
+  // Whether to collapse the sidenav
+  isCollapsed = this.appearanceService.isCollapsed;
+
   @ViewChild(MatSidenav)
   sidenav: MatSidenav;
 
@@ -37,17 +42,10 @@ export class AdminLayoutComponent implements OnDestroy {
   rocksDbActive = false;
   rocksDbExpanded = false;
 
-  collapsed: Signal<boolean>;
-
   private routerSubscription: Subscription;
 
-  constructor(
-    authService: AuthService,
-    private prefs: Preferences,
-    router: Router,
-  ) {
+  constructor(authService: AuthService, router: Router) {
     this.user = authService.getUser()!;
-    this.collapsed = this.prefs.watchBoolean('sidenav.collapsed', false);
 
     this.routerSubscription = router.events
       .pipe(filter((evt) => evt instanceof NavigationEnd))

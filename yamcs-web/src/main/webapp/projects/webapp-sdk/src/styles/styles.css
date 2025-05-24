@@ -156,6 +156,28 @@ input[type="radio"] {
   font-weight: normal;
 }
 
+.mat-mdc-tab-group.fullsize-tabs,
+.fullsize-tabs .mat-mdc-tab-body-wrapper {
+  height: 100%;
+}
+
+.mat-mdc-tab-nav-bar.bottom-tabs .mat-mdc-tab-link,
+.mat-mdc-tab-group.bottom-tabs .mat-mdc-tab {
+  height: 28px;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: normal;
+}
+
+.bottom-tabs .mat-mdc-tab-header {
+  background-color: var(--y-sidenav-background);
+}
+
+.mat-mdc-tab-group.bottom-tabs,
+.bottom-tabs .mat-mdb-tab-body-wrapper {
+  height: 100%;
+}
+
 .mat-mdc-snack-bar-container .mat-mdc-button.mat-mdc-snack-bar-action {
   color: whitesmoke !important;
 }

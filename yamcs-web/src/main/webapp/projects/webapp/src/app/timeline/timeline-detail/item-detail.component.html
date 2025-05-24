@@ -1,0 +1,22 @@
+@if (item(); as item) {
+  <mat-tab-group
+    class="small-tabs fullsize-tabs"
+    animationDuration="0ms"
+    [mat-stretch-tabs]="false">
+    <mat-tab>
+      <ng-template mat-tab-label>Summary</ng-template>
+      <app-item-detail-tab-summary [item]="item" />
+    </mat-tab>
+
+    <mat-tab>
+      <ng-template mat-tab-label>Logs</ng-template>
+      @if (item.lastRun) {
+        <app-item-detail-tab-logs [activity]="item.lastRun" />
+      }
+    </mat-tab>
+
+    <mat-tab [disabled]="true">
+      <ng-template mat-tab-label>&nbsp;</ng-template>
+    </mat-tab>
+  </mat-tab-group>
+}

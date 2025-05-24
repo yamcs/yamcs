@@ -1,3 +1,16 @@
-<div class="fill" [style.width.%]="percentage()"></div>
-<div class="progress-label">{{ percentage() | number: format() }} {{ unit() }}</div>
+@switch (mode()) {
+  @case ("indeterminate") {
+    <div class="fill indeterminate"></div>
+  }
+  @default {
+    <div class="fill" [style.width.%]="clampedPercentage()">
+      <div class="fill-label" [style.width.px]="width()">
+        {{ displayLabel() }}
+      </div>
+    </div>
+    <div class="progress-label">
+      {{ displayLabel() }}
+    </div>
+  }
+}
 <span>&nbsp;</span>

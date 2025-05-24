@@ -40,3 +40,33 @@ export type ParseFilterSubscription = WebSocketCall<
   ParseFilterRequest,
   ParseFilterData
 >;
+
+export interface ListNotificationsResponse {
+  runtimeId: string;
+  notifications?: Notification[];
+}
+
+export type NotificationType =
+  | 'IN_PROGRESS'
+  | 'INFO'
+  | 'WARNING'
+  | 'ERROR'
+  | 'SUCCESS';
+
+export interface Notification {
+  tag: string;
+  seq: number;
+  instance: string;
+  type: NotificationType;
+  title: string;
+  description?: string;
+  timestamp: string;
+  url?: string;
+}
+
+export interface SubscribeNotificationsRequest {}
+
+export type NotificationSubscription = WebSocketCall<
+  SubscribeNotificationsRequest,
+  Notification
+>;

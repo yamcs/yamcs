@@ -1,0 +1,42 @@
+<h2 mat-dialog-title>Create event</h2>
+
+<mat-dialog-content>
+  <ya-form [formGroup]="form">
+    <mat-tab-group animationDuration="0ms" class="small-tabs" [mat-stretch-tabs]="false">
+      <mat-tab label="General">
+        <div style="margin-top: 1em">
+          <ya-field label="Name">
+            <input cdkFocusRegionstart type="text" formControlName="name" />
+          </ya-field>
+
+          <ya-field label="Start">
+            <ya-date-time-input formControlName="start" />
+          </ya-field>
+
+          <ya-field label="Duration">
+            <ya-duration-input formControlName="duration" />
+          </ya-field>
+
+          <ya-field label="Tags">
+            <ya-help dialogTitle="Tags">
+              Tags allow to categorise items per band. Bands only show items for which one of the
+              tags is matching.
+            </ya-help>
+            <ya-tag-select formControlName="tags" />
+          </ya-field>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Styles">
+        <div style="margin-top: 1em">
+          <app-item-styles [form]="form" />
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </ya-form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <ya-button mat-dialog-close>Cancel</ya-button>
+  <ya-button appearance="primary" (click)="save()" [disabled]="!form.valid">Save</ya-button>
+</mat-dialog-actions>

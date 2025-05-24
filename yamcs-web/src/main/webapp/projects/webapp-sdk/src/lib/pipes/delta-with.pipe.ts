@@ -6,8 +6,8 @@ import * as utils from '../utils';
 })
 export class DeltaWithPipe implements PipeTransform {
   transform(
-    second: Date | string | undefined,
-    first: Date | string,
+    second: Date | number | string | undefined,
+    first: Date | number | string,
     showSign = true,
   ): string | null {
     if (!first || !second) {

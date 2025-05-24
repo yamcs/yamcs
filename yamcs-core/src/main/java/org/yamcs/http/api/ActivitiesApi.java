@@ -20,11 +20,10 @@ import org.yamcs.api.Observer;
 import org.yamcs.client.utils.WellKnownTypes;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
-import org.yamcs.http.NotFoundException;
-import org.yamcs.logging.Log;
 import org.yamcs.protobuf.activities.AbstractActivitiesApi;
 import org.yamcs.protobuf.activities.ActivityInfo;
 import org.yamcs.protobuf.activities.ActivityLogInfo;
+import org.yamcs.protobuf.activities.AddLogMessageRequest;
 import org.yamcs.protobuf.activities.CancelActivityRequest;
 import org.yamcs.protobuf.activities.CompleteManualActivityRequest;
 import org.yamcs.protobuf.activities.ExecutorInfo;
@@ -43,7 +42,6 @@ import org.yamcs.protobuf.activities.SubscribeActivitiesRequest;
 import org.yamcs.protobuf.activities.SubscribeActivityLogRequest;
 import org.yamcs.protobuf.activities.SubscribeGlobalStatusRequest;
 import org.yamcs.security.SystemPrivilege;
-import org.yamcs.timeline.TimelineService;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Stream;
@@ -51,11 +49,10 @@ import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 
 import com.google.gson.Gson;
+import com.google.protobuf.Empty;
 import com.google.protobuf.Struct;
 
 public class ActivitiesApi extends AbstractActivitiesApi<Context> {
-
-    private Log log = new Log(ActivitiesApi.class);
 
     @Override
     public void listExecutors(Context ctx, ListExecutorsRequest request, Observer<ListExecutorsResponse> observer) {
@@ -179,6 +176,20 @@ public class ActivitiesApi extends AbstractActivitiesApi<Context> {
     }
 
     @Override
+    public void addLogMessage(Context ctx, AddLogMessageRequest request, Observer<Empty> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlActivities);
+        var activityService = verifyService(request.getInstance());
+        var activityId = verifyActivityId(request.getActivity());
+        var activity = activityService.getActivity(activityId);
+        if (activity == null) {
+            throw new BadRequestException("Unknown activity");
+        }
+
+        activityService.logUserInfo(activity, request.getMessage());
+        observer.next(Empty.getDefaultInstance());
+    }
+
+    @Override
     public void startActivity(Context ctx, StartActivityRequest request, Observer<ActivityInfo> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlActivities);
         var activityService = verifyService(request.getInstance());
@@ -186,9 +197,9 @@ public class ActivitiesApi extends AbstractActivitiesApi<Context> {
         var def = request.getActivityDefinition();
         var type = def.getType();
         var args = GpbWellKnownHelper.toJava(def.getArgs());
-        var comment = def.hasComment() ? def.getComment() : null;
+        var label = def.hasLabel() ? def.getLabel() : null;
 
-        var activity = activityService.prepareActivity(type, args, ctx.user, comment);
+        var activity = activityService.prepareActivity(type, args, ctx.user, label);
         activityService.startActivity(activity, ctx.user);
         observer.next(toActivityInfo(activity));
     }
@@ -308,6 +319,9 @@ public class ActivitiesApi extends AbstractActivitiesApi<Context> {
         activityb.setStatus(org.yamcs.protobuf.activities.ActivityStatus.valueOf(
                 activity.getStatus().name()));
 
+        if (activity.getLabel() != null) {
+            activityb.setLabel(activity.getLabel());
+        }
         if (activity.getDetail() != null) {
             activityb.setDetail(activity.getDetail());
         }
@@ -334,19 +348,9 @@ public class ActivitiesApi extends AbstractActivitiesApi<Context> {
         return logb.build();
     }
 
-    private ActivityService verifyService(String yamcsInstance) {
+    public static ActivityService verifyService(String yamcsInstance) {
         String instance = InstancesApi.verifyInstance(yamcsInstance);
-
-        var services = YamcsServer.getServer().getInstance(instance)
-                .getServices(TimelineService.class);
-        if (services.isEmpty()) {
-            throw new NotFoundException("No activity service found");
-        } else {
-            if (services.size() > 1) {
-                log.warn("Multiple activity services found but only one supported");
-            }
-            return services.get(0).getActivityService();
-        }
+        return YamcsServer.getServer().getInstance(instance).getActivityService();
     }
 
     private static UUID verifyActivityId(String id) {

@@ -6,6 +6,7 @@ import org.yamcs.http.BadRequestException;
 import org.yamcs.http.api.ArchivedParameterFilterFactory;
 import org.yamcs.http.api.EventFilterFactory;
 import org.yamcs.http.api.PacketFilterFactory;
+import org.yamcs.timeline.TimelineItemFilterFactory;
 
 public class ParseFilterObserver implements Observer<ParseFilterRequest> {
 
@@ -21,6 +22,9 @@ public class ParseFilterObserver implements Observer<ParseFilterRequest> {
             switch (request.getResource()) {
             case "events":
                 EventFilterFactory.create(request.getFilter());
+                break;
+            case "items":
+                TimelineItemFilterFactory.create(request.getFilter());
                 break;
             case "packets":
                 PacketFilterFactory.create(request.getFilter());

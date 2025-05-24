@@ -7,38 +7,66 @@ Scripts are predefined and stored under :file:`etc/scripts`.
 
 Script files may be directly executable, or be associated to another program based on its file extension.
 
-The default file associations are:
 
-.. list-table::
-   :widths: 50 50
-   :header-rows: 1
+Configuration
+-------------
 
-   * - Extension
-     - Program
-   * - java
-     - java
-   * - js
-     - node
-   * - mjs
-     - node
-   * - pl
-     - perl
-   * - py
-     - python -u
-   * - rb
-     - ruby
+Script activity options are configured in the instance configuration file :file:`etc/yamcs.{instance}.yaml`.
 
-.. note::
-   Some Linux distributions no longer have a ``python`` command. In this case you can adapt the file association to ``python3 -u``. Alternatively, on Debian-based distributions you may want to install the ``python-is-python3`` package:
+.. code-block:: yaml
+    :caption: :file:`etc/yamcs.{instance}.yaml`
 
-   .. code-block:: shell
+    activities:
+      scriptExecution:
+        searchPath: etc/scripts
+        impersonateCaller: false
+        fileAssociations:
+          py: python3 -u
 
-      sudo apt install python-is-python3
+
+Configuration Options
+---------------------
+
+searchPath (string or string[])
+  Directory where to locate scripts or executables.
+
+  Default: :file:`etc/scripts`
+
+fileAssociations (map)
+  Extend or override the default file associations. Each entry maps a file extension (case-insensitive) to a program that should be used to execute this file.
+
+  The default file associations are:
+
+  .. code-block:: yaml
+
+      fileAssociations:
+        java: java
+        js: node
+        mjs: node
+        pl: perl
+        py: python -u
+        rb: ruby
+
+  Any file that does not have an association, is executed directly.
+
+  .. note::
+     Some Linux distributions no longer have a ``python`` command. In this case you can adapt the file association to ``python3 -u``. Alternatively, on Debian-based distributions you may want to install the ``python-is-python3`` package:
+
+     .. code-block:: shell
+
+        sudo apt install python-is-python3
    
-   This package creates a symlink so that ``python`` invokes ``python3``.
+     This package creates a symlink so that ``python`` invokes ``python3``.
 
-.. note::
-    The ``-u`` flag added to the ``python`` command forces Python to run in **unbuffered mode**. This affects how Python handles output streams, allowing Yamcs to capture output in realtime instead of needing to wait until the buffer is full.
+  .. note::
+      The ``-u`` flag added to the ``python`` command forces Python to run in **unbuffered mode**. This affects how Python handles output streams, allowing Yamcs to capture output in realtime instead of needing to wait until the buffer is full.
+
+impersonateCaller (boolean)
+  Scripts receive a transient API key via an environment variable. By default this API key uses the built-in ``System`` user, which provides unrestricted access.
+
+  When this property is enabled, the script receives instead an API key of the user that started the activity.
+
+  Default: ``false``
 
 
 Activity Options

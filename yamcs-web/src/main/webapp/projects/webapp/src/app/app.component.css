@@ -85,6 +85,7 @@ mat-toolbar-row {
 .user-button {
   background-color: var(--y-accent);
   border-radius: 25px;
+  margin-left: 8px;
 }
 
 .mat-mdc-button:hover:not(.user-button) {

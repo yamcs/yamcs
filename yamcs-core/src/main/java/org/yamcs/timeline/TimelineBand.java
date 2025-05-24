@@ -1,7 +1,7 @@
 package org.yamcs.timeline;
 
 import static org.yamcs.timeline.TimelineBandDb.CNAME_DESCRIPTION;
-import static org.yamcs.timeline.TimelineBandDb.CNAME_FILTER;
+import static org.yamcs.timeline.TimelineBandDb.CNAME_FILTER_QUERY;
 import static org.yamcs.timeline.TimelineBandDb.CNAME_ID;
 import static org.yamcs.timeline.TimelineBandDb.CNAME_NAME;
 import static org.yamcs.timeline.TimelineBandDb.CNAME_SHARED;
@@ -9,20 +9,16 @@ import static org.yamcs.timeline.TimelineBandDb.CNAME_SOURCE;
 import static org.yamcs.timeline.TimelineBandDb.CNAME_TAGS;
 import static org.yamcs.timeline.TimelineBandDb.CNAME_TYPE;
 import static org.yamcs.timeline.TimelineBandDb.CNAME_USERNAME;
+import static org.yamcs.timeline.TimelineBandDb.EXTRA_PREFIX;
 import static org.yamcs.timeline.TimelineBandDb.PROP_PREFIX;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
-import org.yamcs.protobuf.ItemFilter;
-import org.yamcs.protobuf.ItemFilter.FilterCriterion;
 import org.yamcs.protobuf.TimelineBandType;
-import org.yamcs.timeline.protobuf.BandFilter;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Tuple;
@@ -38,8 +34,9 @@ public class TimelineBand {
     private String username;
     @Deprecated
     private List<String> tags = new ArrayList<>();
-    private BandFilter filter;
+    private String filterQuery;
     private Map<String, String> properties = new HashMap<>();
+    private Map<String, String> extra = new HashMap<>();
     private String source;
 
     public TimelineBand(UUID id) {
@@ -54,13 +51,17 @@ public class TimelineBand {
         shared = tuple.getColumn(CNAME_SHARED);
         username = tuple.getColumn(CNAME_USERNAME);
         source = tuple.getColumn(CNAME_SOURCE);
-        filter = tuple.getColumn(CNAME_FILTER);
+        filterQuery = tuple.getColumn(CNAME_FILTER_QUERY);
 
         for (int i = 0; i < tuple.size(); i++) {
             ColumnDefinition column = tuple.getColumnDefinition(i);
             if (column.getName().startsWith(PROP_PREFIX)) {
                 String columnName = column.getName().substring(PROP_PREFIX.length());
                 properties.put(columnName, tuple.getColumn(column.getName()));
+            }
+            if (column.getName().startsWith(EXTRA_PREFIX)) {
+                String columnName = column.getName().substring(EXTRA_PREFIX.length());
+                extra.put(columnName, tuple.getColumn(column.getName()));
             }
         }
 
@@ -107,6 +108,11 @@ public class TimelineBand {
         this.properties.putAll(properties);
     }
 
+    public void setExtra(Map<String, String> extra) {
+        this.extra.clear();
+        this.extra.putAll(extra);
+    }
+
     public String getName() {
         return name;
     }
@@ -118,13 +124,16 @@ public class TimelineBand {
                 .setShared(shared)
                 .setUsername(username)
                 .putAllProperties(properties)
-                .addAllFilters(getItemFilters())
+                .putAllExtra(extra)
                 .addAllTags(tags);
         if (name != null) {
             b.setName(name);
         }
         if (description != null) {
             b.setDescription(description);
+        }
+        if (filterQuery != null) {
+            b.setFilter(filterQuery);
         }
         return b.build();
     }
@@ -138,9 +147,12 @@ public class TimelineBand {
         tuple.addColumn(CNAME_SHARED, shared);
         tuple.addColumn(CNAME_USERNAME, username);
         tuple.addColumn(CNAME_SOURCE, source);
-        tuple.addColumn(CNAME_FILTER, DataType.protobuf(BandFilter.class), filter);
+        tuple.addColumn(CNAME_FILTER_QUERY, filterQuery);
         for (var entry : properties.entrySet()) {
             tuple.addColumn(PROP_PREFIX + entry.getKey(), entry.getValue());
+        }
+        for (var entry : extra.entrySet()) {
+            tuple.addColumn(EXTRA_PREFIX + entry.getKey(), entry.getValue());
         }
         if (!tags.isEmpty()) {
             tuple.addColumn(CNAME_TAGS, DataType.array(DataType.ENUM), tags);
@@ -157,38 +169,11 @@ public class TimelineBand {
         this.source = source;
     }
 
-    public void setItemFilters(List<ItemFilter> filters) {
-        BandFilter.Builder b = BandFilter.newBuilder();
-        filters.stream().map(TimelineBand::fromApi).forEach(f -> b.addFilters(f));
-
-        filter = b.build();
+    public void setFilterQuery(String filterQuery) {
+        this.filterQuery = filterQuery;
     }
 
-    public List<ItemFilter> getItemFilters() {
-        if (filter == null) {
-            return Collections.emptyList();
-        } else {
-            return filter.getFiltersList().stream().map(TimelineBand::toApi).collect(Collectors.toList());
-        }
-    }
-
-    static private ItemFilter toApi(BandFilter.ItemFilter f) {
-        ItemFilter.Builder ifb = ItemFilter.newBuilder();
-        f.getCriteriaList().stream().map(TimelineBand::toApi).forEach(fc -> ifb.addCriteria(fc));
-        return ifb.build();
-    }
-
-    static private FilterCriterion toApi(BandFilter.FilterCriterion fc) {
-        return FilterCriterion.newBuilder().setKey(fc.getKey()).setValue(fc.getValue()).build();
-    }
-
-    static private BandFilter.ItemFilter fromApi(ItemFilter f) {
-        var ifb = BandFilter.ItemFilter.newBuilder();
-        f.getCriteriaList().stream().map(TimelineBand::fromApi).forEach(fc -> ifb.addCriteria(fc));
-        return ifb.build();
-    }
-
-    static private BandFilter.FilterCriterion fromApi(FilterCriterion fc) {
-        return BandFilter.FilterCriterion.newBuilder().setKey(fc.getKey()).setValue(fc.getValue()).build();
+    public String getFilterQuery() {
+        return filterQuery;
     }
 }

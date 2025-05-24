@@ -21,7 +21,7 @@
   --top-height: 0;
 }
 
-.sidenav-container.focus .sidenav {
+.sidenav-container.focus ya-sidenav {
   display: none;
 }
 

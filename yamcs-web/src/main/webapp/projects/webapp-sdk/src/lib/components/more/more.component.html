@@ -4,5 +4,6 @@
 <ya-icon-action
   [matMenuTriggerFor]="moreMenu"
   (click)="$event.stopPropagation()"
-  [icon]="icon"
-  [padding]="padding" />
+  [disabled]="disabled()"
+  [icon]="icon()"
+  [padding]="padding()" />

@@ -1,0 +1,124 @@
+<ya-instance-page [noscroll]="true">
+  <ya-instance-toolbar label="Timeline">
+    @if (views$ | async; as views) {
+      @if ((view$ | async) && mayControlTimeline()) {
+        <ya-page-button
+          [matMenuTriggerFor]="viewMenu"
+          (menuOpened)="updateViews()"
+          primary="true"
+          dropdown="true"
+          icon="view_timeline">
+          {{ (view$ | async)?.name || "select view" }}
+        </ya-page-button>
+      }
+      <mat-menu #viewMenu="matMenu" class="ya-menu">
+        @for (view of views; track view.id) {
+          <button mat-menu-item (click)="switchView(view)">
+            <mat-icon>{{ (view$ | async)?.id === view.id ? "check" : "" }}</mat-icon>
+            {{ view.name }}
+          </button>
+        }
+        @if (views.length) {
+          <mat-divider />
+        }
+        <button mat-menu-item (click)="openCreateViewDialog()">
+          <mat-icon>add_circle</mat-icon>
+          Create view
+        </button>
+      </mat-menu>
+    }
+
+    @if (mayControlTimeline()) {
+      @if (!(view$ | async)) {
+        <ya-page-button icon="add_circle" (click)="openCreateViewDialog()">
+          Create view
+        </ya-page-button>
+      } @else {
+        <ya-page-button
+          (click)="openCreateEventDialog()"
+          icon="event"
+          matTooltip="Events are for things that will happen at a specific time.">
+          Create event
+        </ya-page-button>
+        <ya-page-button
+          (click)="openCreateTaskDialog()"
+          icon="add_task"
+          matTooltip="Tasks are for keeping track of things that you need to do.">
+          Create task
+        </ya-page-button>
+      }
+    }
+  </ya-instance-toolbar>
+
+  @if ((view$ | async)?.bands?.length) {
+    <ya-control-bar>
+      <ya-button-group>
+        <ya-icon-button (click)="pageLeft()" icon="west" />
+        <ya-icon-button
+          (mousedown)="toggleMove(-50)"
+          (mouseup)="untoggleMove()"
+          (mouseleave)="untoggleMove()"
+          icon="chevron_left" />
+        <ya-icon-button
+          (mousedown)="toggleMove(50)"
+          (mouseup)="untoggleMove()"
+          (mouseleave)="untoggleMove()"
+          icon="chevron_right" />
+        <ya-icon-button (click)="pageRight()" icon="east" />
+      </ya-button-group>
+
+      <ya-button-group>
+        <ya-button (click)="jumpToToday()" icon="today">Today</ya-button>
+        <ya-button (click)="jumpToNow()" icon="my_location">Now</ya-button>
+        <ya-button (click)="openJumpToDialog()" icon="directions">Jump to...</ya-button>
+      </ya-button-group>
+
+      <ya-button-group>
+        <ya-button (click)="show3Hours()">3 hours</ya-button>
+        <ya-button (click)="show1Hour()">1 hour</ya-button>
+        <ya-button (click)="show10Minutes()">10 min</ya-button>
+      </ya-button-group>
+
+      <ya-button-group>
+        <ya-icon-button (click)="zoomIn()" icon="add" />
+        <ya-icon-button (click)="zoomOut()" icon="remove" />
+      </ya-button-group>
+
+      <ya-vertical-divider />
+
+      <ya-icon-button (click)="saveSnapshot()" icon="photo_camera" matTooltip="Save snapshot" />
+    </ya-control-bar>
+  }
+
+  <div
+    #container
+    class="timeline-container"
+    [class.hide]="((view$ | async)?.bands?.length ?? 0) === 0"></div>
+
+  @if (!(view$ | async)) {
+    <ya-empty-message>
+      <p>This place is empty. Get things started by creating a view.</p>
+      <p>
+        <ya-button (click)="openCreateViewDialog()">Create view</ya-button>
+      </p>
+    </ya-empty-message>
+  } @else if (!(view$ | async)?.bands?.length) {
+    <ya-empty-message [headerTitle]="(view$ | async)!.name">
+      <p>
+        There are no bands in the current view. You can manage bands for this view in the bottom
+        panel, tab
+        <strong>"View configuration"</strong>
+      </p>
+      <p>
+        <ya-button (click)="openCreateBandDialog()">Create new band</ya-button>
+        &nbsp;
+        <ya-button (click)="openAddBandDialog()">Add existing band</ya-button>
+      </p>
+    </ya-empty-message>
+  }
+
+  <div class="resizer" (mousedown)="onResizerMouseDown($event)"></div>
+  <div class="timeline-detail">
+    <app-timeline-detail [view]="view$ | async" [viewportRange]="viewportRange$ | async" />
+  </div>
+</ya-instance-page>

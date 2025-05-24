@@ -16,15 +16,21 @@ import com.google.common.primitives.Bytes;
 
 public abstract class Filter<T> {
 
+    private String queryString;
     private FilterParser<T> parser;
     private AndExpression expression;
 
-    public Filter(String query) {
-        parser = new FilterParser<>(new StringReader(query));
+    public Filter(String queryString) {
+        this.queryString = queryString;
+        parser = new FilterParser<>(new StringReader(queryString));
     }
 
     public void parse() throws ParseException {
         expression = parser.parse();
+    }
+
+    public String getQueryString() {
+        return queryString;
     }
 
     /**

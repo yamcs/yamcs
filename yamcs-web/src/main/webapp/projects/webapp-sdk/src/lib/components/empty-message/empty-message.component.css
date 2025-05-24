@@ -2,7 +2,7 @@
   display: inline-block;
   width: 412px;
   border-radius: 10px;
-  box-shadow: 0px 10px 16px -8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.12);
   background-color: #fff;
   font:
     400 12px / 24px Roboto,
@@ -10,7 +10,7 @@
 }
 
 .frame .header {
-  border-bottom: 1px solid #d3d3d3;
+  border-bottom: 1px solid var(--y-border-color);
   height: 64px;
   line-height: 64px;
   padding-left: 24px;

@@ -18,8 +18,16 @@ message ActivityDefinitionInfo {
   // are different for each activity type
   optional google.protobuf.Struct args = 2;
 
-  // Optional comment
-  optional string comment = 3;
+  // Optional label.
+  //
+  // Keep short. Used in Yamcs Timeline charts.
+  optional string label = 3;
+
+  // Human-readable description of the essence of this activity.
+  // For example, for a script this would be the name of the script.
+  //
+  // This is an output field only.
+  optional string description = 4;
 }
 
 message ActivityInfo {
@@ -45,6 +53,9 @@ message ActivityInfo {
 
   // Activity arguments
   optional google.protobuf.Struct args = 7;
+
+  // Label for display in Yamcs Timeline charts
+  optional string label = 12;
 
   // Activity detail (short descriptive)
   optional string detail = 8;

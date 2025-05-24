@@ -1,0 +1,15 @@
+<form [formGroup]="form" class="ya-form" novalidate autocomplete="off">
+  <ya-field label="Label" hint="(required)">
+    <input type="text" formControlName="name" />
+  </ya-field>
+
+  <ya-field label="Description" hint="(optional)">
+    <textarea formControlName="description" rows="3"></textarea>
+  </ya-field>
+
+  <ng-container formGroupName="properties">
+    <ya-field label="Timezone">
+      <ya-timezone-select formControlName="timezone" />
+    </ya-field>
+  </ng-container>
+</form>

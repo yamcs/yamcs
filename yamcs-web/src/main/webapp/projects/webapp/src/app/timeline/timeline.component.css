@@ -1,0 +1,37 @@
+:host {
+  --y-timeline-detail-height: 0;
+}
+
+.timeline-container {
+  line-height: 0;
+  position: absolute;
+  top: calc(36px + 1px);
+  bottom: var(--y-timeline-detail-height);
+  left: 0;
+  right: 0;
+}
+
+.timeline-detail {
+  position: absolute;
+  height: var(--y-timeline-detail-height);
+  right: 0;
+  left: 0;
+  bottom: 0;
+  border-top: 1px solid var(--y-border-color);
+  overflow: hidden;
+}
+
+.resizer {
+  position: absolute;
+  bottom: calc(var(--y-timeline-detail-height) - 5px);
+  left: 0;
+  right: 0;
+  height: 10px;
+  line-height: 0;
+  z-index: 30;
+  cursor: ns-resize;
+}
+
+.hide {
+  display: none;
+}

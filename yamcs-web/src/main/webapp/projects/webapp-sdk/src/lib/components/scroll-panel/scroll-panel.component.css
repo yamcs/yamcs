@@ -1,0 +1,15 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.ya-scroll-panel-top {
+  flex: 0 0 auto;
+}
+
+.ya-scroll-panel-viewport {
+  flex: 1 1 auto;
+  overflow: auto;
+}

@@ -14,6 +14,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -26,8 +27,8 @@ import org.yamcs.activities.ActivityListener;
 import org.yamcs.activities.ActivityService;
 import org.yamcs.http.api.GpbWellKnownHelper;
 import org.yamcs.logging.Log;
-import org.yamcs.protobuf.ActivityDependencyCondition;
 import org.yamcs.protobuf.ExecutionStatus;
+import org.yamcs.protobuf.StartCondition;
 import org.yamcs.protobuf.TimelineItemType;
 import org.yamcs.time.TimeService;
 import org.yamcs.yarch.SqlBuilder;
@@ -60,7 +61,11 @@ public class ActivityScheduler extends AbstractYamcsService implements ItemListe
     Map<String, TimelineActivity> readyToStart = new HashMap<>();
 
     // when retrieving activities to run, load the ones that are missionTime-schedulingMargin
-    long schedulingMargin = 10 * 1000;
+    private long schedulingMargin = 10 * 1000;
+
+    // Lock to handle debounce of many replan requests
+    private final Object replanLock = new Object();
+    private ScheduledFuture<?> pendingReplan;
 
     @Override
     public Spec getSpec() {
@@ -69,7 +74,7 @@ public class ActivityScheduler extends AbstractYamcsService implements ItemListe
 
     public void init(TimelineService timelineService, YConfiguration config) {
         this.yamcsInstance = timelineService.getYamcsInstance();
-        this.activityService = timelineService.getActivityService();
+        this.activityService = YamcsServer.getServer().getInstance(yamcsInstance).getActivityService();
         this.timelineItemDb = timelineService.getTimelineItemDb();
         this.timeService = YamcsServer.getTimeService(yamcsInstance);
         log = new Log(getClass(), yamcsInstance);
@@ -77,10 +82,34 @@ public class ActivityScheduler extends AbstractYamcsService implements ItemListe
 
     @Override
     protected void doStart() {
+        cleanupInitialState();
         timelineItemDb.addItemListener(this);
         activityService.addActivityListener(this);
-        executor.submit(this::replan);
+        executor.submit(() -> {
+            try {
+                replan();
+            } catch (Throwable t) {
+                log.error("Uncaught exception", t);
+            }
+        });
         notifyStarted();
+    }
+
+    /**
+     * Finds and aborts "ongoing" activities. These were started in a previous server run, and so we don't know what to
+     * do with them, other than aborting.
+     * <p>
+     * Note: we leave READY, PLANNED and WAITING_ON_DEPENDENCY as-is. Some of these (depending on the scheduling margin)
+     * may be picked up again by the replan method.
+     */
+    private void cleanupInitialState() {
+        var toBeAborted = timelineItemDb.getOngoingItems();
+        if (!toBeAborted.isEmpty()) {
+            for (var item : toBeAborted) {
+                item.setStatus(ExecutionStatus.ABORTED);
+            }
+            timelineItemDb.updateAll(toBeAborted);
+        }
     }
 
     @Override
@@ -91,18 +120,23 @@ public class ActivityScheduler extends AbstractYamcsService implements ItemListe
         notifyStopped();
     }
 
-    /**
-     * starts an activity that is in the READY state
-     * 
-     * @param id
-     * @return
-     */
     public CompletableFuture<Activity> startActivity(String id) {
         return CompletableFuture.supplyAsync(() -> {
             TimelineActivity activity = readyToStart.remove(id);
 
+            // If it's not READY, it may be PLANNED
             if (activity == null) {
-                throw new IllegalArgumentException("No READY activity found with ID " + id);
+                var item = timelineItemDb.getItem(id);
+                if (item instanceof TimelineActivity ta) {
+                    // It may be PLANNED in the future, so remove to be sure
+                    planned.remove(ta);
+
+                    activity = ta;
+                }
+            }
+
+            if (activity == null) {
+                throw new IllegalArgumentException("No activity found with ID " + id);
             }
 
             return doStartActivity(activity);
@@ -113,21 +147,42 @@ public class ActivityScheduler extends AbstractYamcsService implements ItemListe
     @Override
     public void onItemCreated(TimelineItem item) {
         if (item instanceof TimelineActivity) {
-            executor.submit(this::replan);
+            debounceReplan();
         }
     }
 
     @Override
     public void onItemUpdated(TimelineItem item) {
-        if (item instanceof TimelineActivity) {
-            executor.submit(this::replan);
+        if (item instanceof TimelineActivity activity) {
+            // Remove from READY list if the activity was canceled
+            // prior to execution
+            if (activity.status == ExecutionStatus.CANCELED) {
+                readyToStart.remove(activity.id);
+            }
+            debounceReplan();
         }
     }
 
     @Override
     public void onItemDeleted(TimelineItem item) {
         if (item instanceof TimelineActivity) {
-            executor.submit(this::replan);
+            debounceReplan();
+        }
+    }
+
+    private void debounceReplan() {
+        synchronized (replanLock) {
+            if (pendingReplan != null && !pendingReplan.isDone()) {
+                pendingReplan.cancel(false);
+            }
+            // Wait 100ms before running to let batch operations finish
+            pendingReplan = executor.schedule(() -> {
+                try {
+                    replan();
+                } catch (Throwable t) {
+                    log.error("Uncaught exception", t);
+                }
+            }, 100, TimeUnit.MILLISECONDS);
         }
     }
 
@@ -139,7 +194,7 @@ public class ActivityScheduler extends AbstractYamcsService implements ItemListe
 
             switch (activity.getStatus()) {
             case SUCCESSFUL:
-                item.setStatus(ExecutionStatus.COMPLETED);
+                item.setStatus(ExecutionStatus.SUCCEEDED);
                 break;
             case CANCELLED:
                 item.setStatus(ExecutionStatus.ABORTED);
@@ -169,11 +224,10 @@ public class ActivityScheduler extends AbstractYamcsService implements ItemListe
             var sqlb = new SqlBuilder(TABLE_NAME);
             sqlb.whereColAfterOrEqual(CNAME_START, timeService.getMissionTime() - schedulingMargin);
             sqlb.where(CNAME_TYPE + " = '" + TimelineItemType.ACTIVITY.name() + "'");
-
-            sqlb.where(String.format("%s IN ('%s', '%s', '%s')", CNAME_STATUS, ExecutionStatus.PLANNED.name(),
-                    ExecutionStatus.READY.name(), ExecutionStatus.WAITING_ON_DEPENDENCY.name()));
-
-            var result = ydb.execute(sqlb.toString(), sqlb.getQueryArguments());
+            sqlb.whereColIn(CNAME_STATUS, TimelineActivity.FUTURE_STATES.stream()
+                    .map(ExecutionStatus::name)
+                    .toList());
+            var result = ydb.execute(sqlb.toString(), sqlb.getQueryArguments().toArray());
             while (result.hasNext()) {
                 var tuple = result.next();
 
@@ -181,7 +235,7 @@ public class ActivityScheduler extends AbstractYamcsService implements ItemListe
                     var activity = new TimelineActivity(TimelineItemType.ACTIVITY, tuple);
                     if (activity.status == ExecutionStatus.READY) {
                         readyToStart.put(activity.getId(), activity);
-                    } else if (activity.dependsOn != null && !activity.dependsOn.isEmpty()) {
+                    } else if (activity.predecessors != null && !activity.predecessors.isEmpty()) {
                         dependentActivities.add(activity);
                     } else {
                         planned.add(activity);
@@ -199,8 +253,7 @@ public class ActivityScheduler extends AbstractYamcsService implements ItemListe
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
-            log.warn("Error retrieving activities: ", e);
+            log.error("Error while planning: ", e);
         }
         startActivitiesDependentOnOthers();
     }
@@ -210,6 +263,7 @@ public class ActivityScheduler extends AbstractYamcsService implements ItemListe
         var now = timeService.getMissionTime();
         while ((nextActivity = planned.poll()) != null) {
             if (now < nextActivity.start) {
+                planned.offer(nextActivity);
                 executor.schedule(this::startActivities, nextActivity.start - now, TimeUnit.MILLISECONDS);
                 break;
             } else {
@@ -233,7 +287,7 @@ public class ActivityScheduler extends AbstractYamcsService implements ItemListe
             try {
                 startActivityDependentOnOthers(now, activity);
             } catch (Exception e) {
-                log.warn("Cannot start activity {}", e);
+                log.warn("Cannot start activity {}", e, e);
                 continue;
             }
             if (activity.getStatus() == ExecutionStatus.PLANNED) {
@@ -256,52 +310,64 @@ public class ActivityScheduler extends AbstractYamcsService implements ItemListe
         boolean skip = false;
         String skipReason = null;
 
-        for (var dependency : activity.dependsOn) {
-            var item = timelineItemDb.getItem(dependency.id());
-            if (item == null) {
-                log.warn("Activity {} on which {} depends, not found", dependency.id(), activity.displayName());
+        for (var predecessor : activity.predecessors) {
+            var predecessorItem = timelineItemDb.getItem(predecessor.itemId());
+            if (predecessorItem == null) {
+                log.warn("Item {} on which {} depends, not found", predecessor.itemId(), activity.displayName());
                 continue;
             }
-            if (item instanceof TimelineActivity ta) {
-                ExecutionStatus status = ta.getStatus();
-                switch (status) {
+            if (predecessorItem instanceof TimelineActivity ta) {
+                var predecessorStatus = ta.getStatus();
+                switch (predecessorStatus) {
                 case PLANNED:
                 case READY:
                 case WAITING_ON_DEPENDENCY:
                 case WAITING_FOR_INPUT:
-                case PAUSED:
-                case IN_PROGRESS: // intentional fall through
+                case PAUSED:// intentional fall through
                     start = false;
+                    skip = false;
+                    break;
+                case IN_PROGRESS:
+                    start = (predecessor.startCondition() == StartCondition.ON_START);
                     skip = false;
                     break;
                 case ABORTED:
                 case FAILED:
                 case CANCELED:
                 case SKIPPED:// intentional fall through
-                    if (dependency.condition() == ActivityDependencyCondition.START_ON_SUCCESS) {
+                    if (predecessor.startCondition() == StartCondition.ON_SUCCESS) {
                         start = false;
                         skip = true;
-                        skipReason = "Activity " + ta.displayName() + " is " + status
-                                + " (while the dependency condition is START_ON_SUCCESS)";
+                        skipReason = "Predecessor '" + ta.displayName() + "' is " + predecessorStatus
+                                + " (while the start condition is ON_SUCCESS)";
                         break;
                     }
                     break;
-                case COMPLETED:
-                    if (dependency.condition() == ActivityDependencyCondition.START_ON_FAILURE) {
+                case SUCCEEDED:
+                    if (predecessor.startCondition() == StartCondition.ON_FAILURE) {
                         start = false;
                         skip = true;
-                        skipReason = "Activity " + ta.displayName() + " is " + status
-                                + " (while the dependency condition is START_ON_FAILURE)";
+                        skipReason = "Predecessor " + ta.displayName() + " is " + predecessorStatus
+                                + " (while the start condition is ON_FAILURE)";
                         break;
                     }
                     break;
                 }
-            } else {
-                // for dependencies which are not activities, check their end
-                if (item.getStart() + item.getDuration() > now) {
-                    start = false;
-                    skip = false;
-                    break;
+            } else { // Predecessor is an event
+                if (predecessor.startCondition() == StartCondition.ON_START) {
+                    // Check if started
+                    if (predecessorItem.getStart() > now) {
+                        start = false;
+                        skip = false;
+                        break;
+                    }
+                } else {
+                    // Check if finished
+                    if (predecessorItem.getStart() + predecessorItem.getDuration() > now) {
+                        start = false;
+                        skip = false;
+                        break;
+                    }
                 }
             }
         }
@@ -335,16 +401,17 @@ public class ActivityScheduler extends AbstractYamcsService implements ItemListe
         var systemUser = YamcsServer.getServer().getSecurityStore().getSystemUser();
         log.debug("Starting activity {}", item.displayName());
         Activity activity;
+        var label = item.getName();
         var def = item.getActivityDefinition();
         if (def == null) {
             activity = activityService.prepareActivity(
                     ActivityService.ACTIVITY_TYPE_MANUAL,
                     Map.of("name", item.getName()),
-                    systemUser, null);
+                    systemUser, label);
         } else {
             var executorType = def.getType();
             var executorArgs = GpbWellKnownHelper.toJava(def.getArgs());
-            activity = activityService.prepareActivity(executorType, executorArgs, systemUser, null);
+            activity = activityService.prepareActivity(executorType, executorArgs, systemUser, label);
         }
         ongoingActivitiesByRunId.put(activity.getId(), item);
 
@@ -356,5 +423,4 @@ public class ActivityScheduler extends AbstractYamcsService implements ItemListe
 
         return activity;
     }
-
 }

@@ -26,6 +26,7 @@ import {
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { filter, map, shareReplay, tap } from 'rxjs/operators';
+import { NotificationWidgetComponent } from './appbase/notification-widget/notification-widget.component';
 import { SearchInputComponent } from './appbase/search-input/search-input.component';
 import { SelectInstanceDialogComponent } from './shared/select-instance-dialog/select-instance-dialog.component';
 
@@ -37,7 +38,7 @@ import { SelectInstanceDialogComponent } from './shared/select-instance-dialog/s
   host: {
     '[class]': 'componentCssClass',
   },
-  imports: [SearchInputComponent, WebappSdkModule],
+  imports: [NotificationWidgetComponent, SearchInputComponent, WebappSdkModule],
 })
 export class AppComponent implements AfterViewInit, OnDestroy {
   componentCssClass: string;
@@ -60,6 +61,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   focusMode$: Observable<boolean>;
   utc: Signal<boolean>;
   themePreference = this.appearanceService.themePreference;
+  smallWindow = this.appearanceService.smallWindow;
 
   userSubscription: Subscription;
 

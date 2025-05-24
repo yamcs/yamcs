@@ -15,7 +15,9 @@
   background: var(--y-table-background);
 }
 
-.ya-data-table:not(.nohover) tr.mat-mdc-row:hover td {
+.ya-data-table:not(.nohover)
+  tr.mat-mdc-row:hover:not(.selected)
+  td:not(.nohover) {
   background: var(--y-table-hover-background);
 }
 
@@ -55,6 +57,9 @@
 .ya-data-table th.mat-mdc-header-cell {
   background-color: var(--y-table-header-background);
   color: var(--y-table-header-foreground);
+}
+
+.ya-data-table:not(.no-top-border) th.mat-mdc-header-cell {
   border-top: 1px solid var(--y-table-border-color);
 }
 
@@ -98,7 +103,7 @@
 }
 
 .ya-data-table .selected td {
-  background-color: rgba(0, 158, 135, 0.15) !important;
+  background-color: rgba(0, 158, 135, 0.15);
 }
 
 .ya-data-table .mat-mdc-button {

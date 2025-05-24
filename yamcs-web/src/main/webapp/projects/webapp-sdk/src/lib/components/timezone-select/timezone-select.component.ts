@@ -160,4 +160,16 @@ export class YaTimezoneSelect implements ControlValueAccessor {
   }
 
   registerOnTouched(fn: any) {}
+
+  setDisabledState(isDisabled: boolean): void {
+    if (isDisabled) {
+      this.areaControl.disable();
+      this.locationControl.disable();
+      this.sublocationControl.disable();
+    } else {
+      this.areaControl.enable();
+      this.locationControl.enable();
+      this.sublocationControl.enable();
+    }
+  }
 }

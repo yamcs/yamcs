@@ -23,6 +23,8 @@ import org.yamcs.parameterarchive.ParameterArchive;
 import org.yamcs.web.WebPlugin;
 import org.yamcs.web.db.Query;
 import org.yamcs.web.db.QueryDb;
+import org.yamcs.web.notification.NotificationListener;
+import org.yamcs.web.notification.NotificationManager;
 import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
@@ -34,6 +36,12 @@ import com.google.protobuf.Empty;
  * Extension routes to Yamcs HTTP API for use by the Web UI only.
  */
 public class WebApi extends AbstractWebApi<Context> {
+
+    private WebPlugin plugin;
+
+    public WebApi(WebPlugin plugin) {
+        this.plugin = plugin;
+    }
 
     /**
      * Get instance-level Web UI configuration options.
@@ -188,6 +196,27 @@ public class WebApi extends AbstractWebApi<Context> {
         var clientObserver = new ParseFilterObserver(observer);
         observer.setCancelHandler(() -> clientObserver.complete());
         return clientObserver;
+    }
+
+    @Override
+    public void listNotifications(Context ctx, ListNotificationsRequest request,
+            Observer<ListNotificationsResponse> observer) {
+        var notificationManager = plugin.getNotificationManager();
+        var responseb = ListNotificationsResponse.newBuilder()
+                .setRuntimeId(NotificationManager.RUNTIME_ID);
+        var notifications = new ArrayList<>(notificationManager.getNotifications());
+        Collections.reverse(notifications);
+        responseb.addAllNotifications(notifications);
+        observer.complete(responseb.build());
+    }
+
+    @Override
+    public void subscribeNotifications(Context ctx, SubscribeNotificationsRequest request,
+            Observer<NotificationInfo> observer) {
+        var notificationManager = plugin.getNotificationManager();
+        NotificationListener listener = observer::next;
+        observer.setCancelHandler(() -> notificationManager.removeListener(listener));
+        notificationManager.addListener(listener);
     }
 
     private static QueryInfo toQueryInfo(Context ctx, Query query) {

@@ -1,0 +1,69 @@
+<div class="wrapper">
+  @if (bandType()) {
+    <ya-icon-action icon="arrow_back" [padding]="false" (click)="resetBandType()" />
+  }
+  @if (!bandType()) {
+    <h2>{{ config.title }} band</h2>
+  } @else {
+    @switch (bandType()) {
+      @case ("COMMAND_BAND") {
+        <h2>{{ config.title }} command band</h2>
+      }
+      @case ("ITEM_BAND") {
+        <h2>{{ config.title }} item band</h2>
+      }
+      @case ("PARAMETER_PLOT") {
+        <h2>{{ config.title }} parameter plot</h2>
+      }
+      @case ("PARAMETER_STATES") {
+        <h2>{{ config.title }} parameter states</h2>
+      }
+      @case ("SPACER") {
+        <h2>{{ config.title }} spacer</h2>
+      }
+      @case ("TIME_RULER") {
+        <h2>{{ config.title }} time ruler</h2>
+      }
+    }
+  }
+
+  @if (!bandType()) {
+    <app-band-type-selection (onSelect)="bandType.set($event)" />
+  } @else {
+    <div style="max-width: 600px">
+      @switch (bandType()) {
+        @case ("COMMAND_BAND") {
+          <app-create-command-band (validChange)="onValidChange($event)" />
+        }
+        @case ("ITEM_BAND") {
+          <app-create-item-band (validChange)="onValidChange($event)" />
+        }
+        @case ("PARAMETER_PLOT") {
+          <app-create-parameter-plot (validChange)="onValidChange($event)" />
+        }
+        @case ("PARAMETER_STATES") {
+          <app-create-parameter-states (validChange)="onValidChange($event)" />
+        }
+        @case ("SPACER") {
+          <app-create-spacer (validChange)="onValidChange($event)" />
+        }
+        @case ("TIME_RULER") {
+          <app-create-time-ruler (validChange)="onValidChange($event)" />
+        }
+      }
+    </div>
+  }
+</div>
+<div class="footer">
+  <mat-toolbar>
+    <mat-toolbar-row>
+      <ya-button mat-dialog-close>Cancel</ya-button>
+      @if (bandType(); as bandType) {
+        &nbsp;&nbsp;
+        <ya-button appearance="primary" (click)="createBand(bandType)" [disabled]="!isValid()">
+          {{ config.submitLabel }}
+        </ya-button>
+      }
+    </mat-toolbar-row>
+  </mat-toolbar>
+</div>

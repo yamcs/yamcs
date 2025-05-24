@@ -1,0 +1,91 @@
+<ya-scroll-panel>
+  @if (mayControlTimeline()) {
+    <ya-control-bar>
+      <ya-button (click)="openCreateBandDialog()" icon="add_box">Create band</ya-button>
+      <ya-button [disabled]="!isGroupDeleteEnabled()" (click)="deleteSelectedBands()" icon="close">
+        Delete
+      </ya-button>
+    </ya-control-bar>
+  }
+
+  <table
+    mat-table
+    class="ya-data-table expand"
+    [class.no-top-border]="mayControlTimeline()"
+    [class.no-control-bar]="!mayControlTimeline()"
+    [dataSource]="dataSource"
+    [trackBy]="tableTrackerFn">
+    <ng-container cdkColumnDef="select">
+      <th
+        mat-header-cell
+        *cdkHeaderCellDef
+        class="checkbox"
+        (click)="cb.toggle(); $event.stopPropagation()">
+        <ya-table-checkbox #cb [dataSource]="dataSource" [selection]="selection" />
+      </th>
+      <td
+        mat-cell
+        *cdkCellDef="let item"
+        class="checkbox"
+        (click)="cb.toggle(); $event.stopPropagation()">
+        <ya-table-checkbox #cb [dataSource]="dataSource" [selection]="selection" [item]="item" />
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>Label</th>
+      <td mat-cell *matCellDef="let band" class="wrap200">
+        @if (band.name) {
+          {{ band.name }}
+        } @else {
+          <i>(none)</i>
+        }
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="description">
+      <th mat-header-cell *matHeaderCellDef>Description</th>
+      <td mat-cell *matCellDef="let band" class="wrap200">
+        {{ band.description || "-" }}
+      </td>
+    </ng-container>
+
+    <ng-container cdkColumnDef="tags">
+      <th mat-header-cell *cdkHeaderCellDef>Tags</th>
+      <td mat-cell *cdkCellDef="let row">
+        @for (tag of row.tags || []; track tag) {
+          <ya-label>{{ tag }}</ya-label>
+        }
+        @if (!row.tags) {
+          -
+        }
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="type">
+      <th mat-header-cell *matHeaderCellDef>Type</th>
+      <td mat-cell *matCellDef="let band">
+        {{ band.type }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef class="expand"></th>
+      <td mat-cell *matCellDef="let band">
+        @if (mayControlTimeline()) {
+          <ya-more>
+            <button mat-menu-item (click)="openEditBandDialog(band)">Edit</button>
+            <button mat-menu-item (click)="deleteBand(band.id)">Delete</button>
+          </ya-more>
+        }
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+    <tr
+      mat-row
+      *matRowDef="let row; columns: displayedColumns"
+      [class.selected]="selection.isSelected(row)"
+      (click)="toggleOne(row)"></tr>
+  </table>
+</ya-scroll-panel>

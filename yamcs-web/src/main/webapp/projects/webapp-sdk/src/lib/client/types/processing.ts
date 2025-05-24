@@ -90,6 +90,10 @@ export interface SubscribeProcessorsRequest {
   processor?: string;
 }
 
+export interface SubscribeItemChangesRequest {
+  instance: string;
+}
+
 export interface SubscribeBackfillingRequest {
   instance: string;
 }

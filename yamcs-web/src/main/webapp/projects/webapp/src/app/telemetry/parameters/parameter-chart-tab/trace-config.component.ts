@@ -6,7 +6,6 @@ import { AppParameterInput } from '../../../shared/parameter-input/parameter-inp
 @Component({
   selector: 'app-trace-config',
   templateUrl: './trace-config.component.html',
-  styleUrls: ['../../../timeline/shared/StyleTable.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AppParameterInput, WebappSdkModule],
 })

@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+
+export type YaPanelPadding = 'small' | 'default';
 
 @Component({
   selector: 'ya-panel',
@@ -7,6 +9,9 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'ya-panel',
+    '[class.small-padding]': 'padding() === "small"',
   },
 })
-export class YaPanel {}
+export class YaPanel {
+  padding = input<YaPanelPadding>('default');
+}

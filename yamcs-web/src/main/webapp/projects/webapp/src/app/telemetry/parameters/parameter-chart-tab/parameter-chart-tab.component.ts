@@ -65,10 +65,7 @@ export const DEFAULT_COLORS = [
 @Component({
   selector: 'app-parameter-chart-tab',
   templateUrl: './parameter-chart-tab.component.html',
-  styleUrls: [
-    './parameter-chart-tab.component.css',
-    '../../../timeline/shared/StyleTable.css',
-  ],
+  styleUrls: ['./parameter-chart-tab.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LegendComponent, TraceConfigComponent, WebappSdkModule],
 })
@@ -322,7 +319,7 @@ export class ParameterChartTabComponent
     this.timeline.fontFamily = 'Roboto, sans-serif';
     this.timeline.yOverflow = 'hidden';
 
-    const sidebar = this.timeline.sidebar as DefaultSidebar;
+    const sidebar = new DefaultSidebar(this.timeline);
     sidebar.width = 75;
     sidebar.foregroundColor = 'grey';
     sidebar.fontFamily = 'Roboto, sans-serif';
@@ -332,11 +329,9 @@ export class ParameterChartTabComponent
     sidebar.addResizeListener((ev) => {
       this.sidebarWidth.set(ev.width);
     });
+    this.timeline.leftSidebar = sidebar;
 
-    const computedStyle = getComputedStyle(document.documentElement);
-    const headerBackground = computedStyle.getPropertyValue(
-      '--y-background-color',
-    );
+    const headerBackground = utils.getCssVariable('--y-background-color');
 
     this.band = new PlotBand(
       this.timeline,

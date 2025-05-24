@@ -24,6 +24,7 @@ import org.yamcs.protobuf.YamcsInstance.InstanceState;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.templating.ParseException;
 import org.yamcs.web.api.WebApi;
+import org.yamcs.web.notification.NotificationManager;
 
 public class WebPlugin extends AbstractPlugin implements CommandOptionListener {
 
@@ -40,6 +41,7 @@ public class WebPlugin extends AbstractPlugin implements CommandOptionListener {
 
     private WebFileDeployer deployer;
     private AngularHandler angularHandler;
+    private NotificationManager notificationManager;
 
     // We need these outside of deployer because we cannot predict the order in which
     // plugins are loaded.
@@ -58,6 +60,7 @@ public class WebPlugin extends AbstractPlugin implements CommandOptionListener {
         var contextPath = httpServer.getContextPath();
 
         createBuckets(config);
+        notificationManager = new NotificationManager();
 
         try {
             deployer = new WebFileDeployer(pluginName, config, contextPath, extraStaticRoots, extraConfigs);
@@ -95,6 +98,10 @@ public class WebPlugin extends AbstractPlugin implements CommandOptionListener {
                     deployer.getExtraStaticRoots().stream())
                     .collect(Collectors.toList()));
         }
+    }
+
+    public NotificationManager getNotificationManager() {
+        return notificationManager;
     }
 
     private void createBuckets(YConfiguration config) throws PluginException {
@@ -158,6 +165,6 @@ public class WebPlugin extends AbstractPlugin implements CommandOptionListener {
                 deployer.getExtraStaticRoots());
         httpServer.addRoute("*", () -> angularHandler);
 
-        httpServer.addApi(new WebApi());
+        httpServer.addApi(new WebApi(this));
     }
 }

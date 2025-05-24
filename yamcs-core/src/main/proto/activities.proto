@@ -13,4 +13,7 @@ message ActivityDefinition {
   // Activity arguments. The expected arguments
   // are different for each activity type
   optional google.protobuf.Struct args = 2;
+
+  // Human-readable description
+  optional string description = 3;
 }

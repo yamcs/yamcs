@@ -6,8 +6,8 @@ import { Router } from '@angular/router';
 import {
   ActivityDefinition,
   AuthService,
-  CreateTimelineItemRequest,
   MessageService,
+  SaveTimelineItemRequest,
   WebappSdkModule,
   YaHelpDialog,
   YaSelectOption,
@@ -106,7 +106,7 @@ export class RunScriptComponent {
         const formValue = this.form.value;
 
         if (scheduleOptions) {
-          const options: CreateTimelineItemRequest = {
+          const options: SaveTimelineItemRequest = {
             type: 'ACTIVITY',
             duration: '0s',
             name: formValue['script'],

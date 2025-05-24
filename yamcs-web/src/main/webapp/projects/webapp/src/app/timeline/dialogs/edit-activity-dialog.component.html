@@ -1,0 +1,36 @@
+<h2 mat-dialog-title>Update activity</h2>
+
+<mat-dialog-content>
+  <ya-form [formGroup]="form">
+    <ya-field label="Label">
+      <input cdkFocusRegionstart type="text" formControlName="name" style="width: 100%" />
+    </ya-field>
+
+    <ya-field label="Planned start">
+      <ya-date-time-input formControlName="start" />
+    </ya-field>
+
+    <ya-slide-toggle formControlName="autoStart">Start automatically</ya-slide-toggle>
+
+    <ya-field-divider />
+
+    <ya-field label="Expected duration" hint="(optional)">
+      <ya-duration-input formControlName="duration" />
+    </ya-field>
+
+    <ya-field label="Tags" hint="(optional)">
+      <ya-help dialogTitle="Tags">
+        Tags allow to categorise items per band. Bands only show items for which one of the tags is
+        matching.
+      </ya-help>
+      <ya-tag-select formControlName="tags" />
+    </ya-field>
+  </ya-form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <ya-button (click)="delete()">DELETE THIS ACTIVITY</ya-button>
+  <div style="flex: 1 1 auto"></div>
+  <ya-button mat-dialog-close>CANCEL</ya-button>
+  <ya-button appearance="primary" (click)="save()" [disabled]="!form.valid">SAVE</ya-button>
+</mat-dialog-actions>

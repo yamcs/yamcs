@@ -26,7 +26,7 @@ table.logs td.time {
 }
 
 .status .ok {
-  color: #00c752;
+  color: var(--y-success-color);
 }
 
 .status .error {

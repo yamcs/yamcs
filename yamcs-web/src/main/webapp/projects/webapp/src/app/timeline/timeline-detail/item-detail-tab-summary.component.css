@@ -1,0 +1,10 @@
+:host {
+  --y-dl-horizontal-dt-foreground-color: #888888;
+}
+
+.section-divider {
+  padding-top: 3px;
+  padding-bottom: 3px;
+  margin-left: -6px;
+  margin-right: -6px;
+}

@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 
 import org.yamcs.Spec.OptionType;
+import org.yamcs.activities.ActivityService;
 import org.yamcs.logging.Log;
 import org.yamcs.management.LinkManager;
 import org.yamcs.mdb.DatabaseLoadException;
@@ -51,9 +52,11 @@ public class YamcsServerInstance extends YamcsInstanceService {
     private Mdb mdb;
 
     InstanceMetadata metadata;
+    YConfiguration rawConfig;
     YConfiguration config;
     final Map<String, Processor> processors = new LinkedHashMap<>();
     LinkManager linkManager;
+    ActivityService activityService;
     final int instanceId;
 
     YamcsServerInstance(String name) {
@@ -85,9 +88,10 @@ public class YamcsServerInstance extends YamcsInstanceService {
         spec.addOption("services", OptionType.LIST).withElementType(OptionType.MAP).withSpec(serviceSpec);
 
         // Detailed validation on these is done
-        // in LinkManager, MdbFactory, and StreamInitializer
+        // in LinkManager, MdbFactory, StreamInitializer, ActivityService
         spec.addOption("dataLinks", OptionType.LIST).withElementType(OptionType.MAP).withSpec(Spec.ANY);
         spec.addOption("streamConfig", OptionType.MAP).withSpec(Spec.ANY);
+        spec.addOption("activities", OptionType.MAP).withSpec(Spec.ANY);
 
         spec.addOption("mdb", OptionType.LIST).withElementType(OptionType.MAP).withSpec(mdbSpec);
         spec.addOption("mdbSpec", OptionType.STRING);
@@ -119,6 +123,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
     }
 
     void init(YConfiguration config) {
+        this.rawConfig = config;
         try {
             this.config = getSpec().validate(config);
         } catch (ValidationException e) {
@@ -155,6 +160,10 @@ public class YamcsServerInstance extends YamcsInstanceService {
                         YConfiguration.emptyConfig()));
             }
 
+            // After services because we are currently reading the deprecated
+            // TimelineService config. Could be moved up at a later stage.
+            activityService = new ActivityService(name);
+
             linkManager = new LinkManager(name);
 
             YamcsServer.initServices(name, services);
@@ -167,6 +176,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
 
     @Override
     protected void doStart() {
+        activityService.start();
         linkManager.startLinks();
         for (ServiceWithConfig swc : services) {
             if (swc.enableAtStartup) {
@@ -187,6 +197,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
 
     @Override
     protected void doStop() {
+        activityService.stop();
         linkManager.stopLinks();
         ListeningExecutorService serviceStoppers = listeningDecorator(Executors.newCachedThreadPool());
         List<ListenableFuture<?>> stopFutures = new ArrayList<>();
@@ -197,6 +208,7 @@ public class YamcsServerInstance extends YamcsInstanceService {
                 ServiceUtil.awaitServiceTerminated(swc.service, YamcsServer.SERVICE_STOP_GRACE_TIME, log);
             }));
         }
+        activityService = null;
         linkManager = null;
 
         serviceStoppers.shutdown();
@@ -264,6 +276,13 @@ public class YamcsServerInstance extends YamcsInstanceService {
      */
     public YConfiguration getConfig() {
         return config;
+    }
+
+    /**
+     * Returns the raw configuration for this Yamcs instance (before applying default values)
+     */
+    public YConfiguration getRawConfig() {
+        return rawConfig;
     }
 
     public ServiceWithConfig getServiceWithConfig(String serviceName) {
@@ -455,6 +474,10 @@ public class YamcsServerInstance extends YamcsInstanceService {
 
     public LinkManager getLinkManager() {
         return linkManager;
+    }
+
+    public ActivityService getActivityService() {
+        return activityService;
     }
 
     public int getInstanceId() {

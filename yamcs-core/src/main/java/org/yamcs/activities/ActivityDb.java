@@ -43,7 +43,7 @@ public class ActivityDb {
     public static final String CNAME_STARTED_BY = "started_by";
     public static final String CNAME_STOPPED_BY = "stopped_by";
     public static final String CNAME_FAILURE_REASON = "failure_reason";
-    public static final String CNAME_COMMENT = "comment";
+    public static final String CNAME_LABEL = "label";
     static {
         TDEF.addColumn(CNAME_START, DataType.TIMESTAMP);
         TDEF.addColumn(CNAME_SEQ, DataType.INT);
@@ -56,7 +56,7 @@ public class ActivityDb {
         TDEF.addColumn(CNAME_STOP, DataType.TIMESTAMP);
         TDEF.addColumn(CNAME_FAILURE_REASON, DataType.STRING);
         TDEF.addColumn(CNAME_STOPPED_BY, DataType.STRING);
-        TDEF.addColumn(CNAME_COMMENT, DataType.STRING);
+        TDEF.addColumn(CNAME_LABEL, DataType.STRING);
     }
 
     private Log log;
@@ -70,11 +70,15 @@ public class ActivityDb {
 
         try {
             var streamName = TABLE_NAME + "_in";
-            if (ydb.getTable(TABLE_NAME) == null) {
+            var table = ydb.getTable(TABLE_NAME);
+            if (table == null) {
                 var q = createTable(TABLE_NAME, TDEF)
                         .primaryKey(CNAME_START, CNAME_SEQ)
                         .index(CNAME_ID);
                 ydb.execute(q.toStatement());
+            } else {
+                // Ensure presence of newly added columns
+                table.addMissingValueColumns(TDEF);
             }
             if (ydb.getStream(streamName) == null) {
                 var q = createStream(streamName, TDEF);

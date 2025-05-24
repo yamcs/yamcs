@@ -17,6 +17,7 @@ public class ActivityLog {
 
     public static final String SOURCE_SERVICE = "SERVICE";
     public static final String SOURCE_ACTIVITY = "ACTIVITY";
+    public static final String SOURCE_USER = "USER";
 
     private final long time;
     private final UUID activityId;

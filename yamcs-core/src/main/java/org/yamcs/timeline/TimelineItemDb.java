@@ -14,16 +14,14 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.yamcs.InitException;
-import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.activities.protobuf.ActivityDefinition;
-import org.yamcs.http.BadRequestException;
 import org.yamcs.logging.Log;
-import org.yamcs.protobuf.ItemFilter;
-import org.yamcs.protobuf.ItemFilter.FilterCriterion;
+import org.yamcs.protobuf.ExecutionStatus;
 import org.yamcs.protobuf.LogEntry;
+import org.yamcs.protobuf.StartCondition;
 import org.yamcs.protobuf.TimelineItemLog;
+import org.yamcs.protobuf.TimelineItemType;
 import org.yamcs.protobuf.TimelineSourceCapabilities;
-import org.yamcs.timeline.TimelineActivity.Dependency;
 import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.InvalidRequestException;
 import org.yamcs.utils.TimeInterval;
@@ -39,7 +37,6 @@ import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.streamsql.ResultListener;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlResult;
-import org.yamcs.yarch.streamsql.StreamSqlStatement;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -62,11 +59,11 @@ public class TimelineItemDb implements ItemProvider {
     public static final String CNAME_DESCRIPTION = "description";
     public static final String CNAME_FAILURE_REASON = "failure_reason";
     public static final String CNAME_ACTIVITY_DEFINITION = "activity_definition";
-    public static final String CNAME_DEPENDENCIES = "dependencies";
     public static final String CNAME_AUTO_START = "auto_start";
-    public static final String CNAME_DEPENDENCIES_CONDITIONS = "dependencies_conditions";
+    public static final String CNAME_PREDECESSORS = "predecessors";
+    public static final String CNAME_PREDECESSORS_START_CONDITIONS = "predecessors_start_conditions";
     public static final String CNAME_RUNS = "runs";
-    public static final String CRIT_KEY_TAG = "tag";
+    public static final String CRIT_KEY_QUERY = "query";
 
     static {
         TIMELINE_DEF.addColumn(CNAME_START, DataType.TIMESTAMP);
@@ -82,8 +79,8 @@ public class TimelineItemDb implements ItemProvider {
         TIMELINE_DEF.addColumn(CNAME_ACTIVITY_DEFINITION, DataType.protobuf(ActivityDefinition.class));
         TIMELINE_DEF.addColumn(CNAME_RUNS, DataType.array(DataType.UUID));
         TIMELINE_DEF.addColumn(CNAME_AUTO_START, DataType.BOOLEAN);
-        TIMELINE_DEF.addColumn(CNAME_DEPENDENCIES, DataType.array(DataType.UUID));
-        TIMELINE_DEF.addColumn(CNAME_DEPENDENCIES_CONDITIONS, DataType.array(DataType.ENUM));
+        TIMELINE_DEF.addColumn(CNAME_PREDECESSORS, DataType.array(DataType.UUID));
+        TIMELINE_DEF.addColumn(CNAME_PREDECESSORS_START_CONDITIONS, DataType.array(DataType.ENUM));
     }
     final Log log;
     final private ReadWriteLock rwlock = new ReentrantReadWriteLock();
@@ -91,20 +88,18 @@ public class TimelineItemDb implements ItemProvider {
 
     final YarchDatabaseInstance ydb;
     final Stream timelineStream;
-    final TupleMatcher matcher;
     final TimelineItemLogDb logDb;
     private Set<ItemListener> itemListeners = new CopyOnWriteArraySet<>();
 
     LoadingCache<UUID, TimelineItem> itemCache = CacheBuilder.newBuilder()
             .maximumSize(1000)
             .expireAfterWrite(10, TimeUnit.MINUTES)
-            .build(
-                    new CacheLoader<UUID, TimelineItem>() {
-                        @Override
-                        public TimelineItem load(UUID uuid) {
-                            return doGetItem(uuid);
-                        }
-                    });
+            .build(new CacheLoader<UUID, TimelineItem>() {
+                @Override
+                public TimelineItem load(UUID uuid) {
+                    return doGetItem(uuid);
+                }
+            });
 
     public TimelineItemDb(String yamcsInstance) throws InitException {
         log = new Log(getClass(), yamcsInstance);
@@ -112,12 +107,12 @@ public class TimelineItemDb implements ItemProvider {
         ydb = YarchDatabase.getInstance(yamcsInstance);
         try {
             timelineStream = setupTimelineRecording();
+            migrateDatabase();
         } catch (ParseException | StreamSqlException e) {
             throw new InitException(e);
         }
 
         logDb = new TimelineItemLogDb(yamcsInstance);
-        matcher = new TupleMatcher();
     }
 
     private Stream setupTimelineRecording() throws StreamSqlException, ParseException {
@@ -134,6 +129,17 @@ public class TimelineItemDb implements ItemProvider {
         return ydb.getStream(streamName);
     }
 
+    private void migrateDatabase() throws StreamSqlException, ParseException {
+        rwlock.writeLock().lock();
+        try {
+            // The COMPLETED status was renamed to SUCCEEDED
+            ydb.execute("update " + TABLE_NAME + " set " + CNAME_STATUS
+                    + " = 'SUCCEEDED' where " + CNAME_STATUS + " = 'COMPLETED'");
+        } finally {
+            rwlock.writeLock().unlock();
+        }
+    }
+
     @Override
     public TimelineItem addItem(TimelineItem item) {
         rwlock.writeLock().lock();
@@ -142,22 +148,30 @@ public class TimelineItemDb implements ItemProvider {
                 TimelineItem relItem = fromCache(item.getRelativeItemUuid());
                 if (relItem == null) {
                     throw new InvalidRequestException(
-                            "The specified relative item with UUID " + item.getRelativeItemUuid() + " was not found.");
+                            "Relative item with ID " + item.getRelativeItemUuid() + " was not found");
                 }
                 item.setStart(relItem.getStart() + item.getRelativeStart());
             }
 
-            if (item instanceof TimelineActivity activity && (!activity.dependsOn.isEmpty())) {
-                // set the start based on the end of the dependency which ends last
+            if (item instanceof TimelineActivity activity && (!activity.predecessors.isEmpty())) {
+                // Establish the latest start among all predecessors
                 long t = 0;
-                for (Dependency dep : activity.dependsOn) {
-                    var depItem = fromCache(dep.id());
-                    if (depItem == null) {
+                for (var predecessor : activity.predecessors) {
+                    var predecessorItem = fromCache(predecessor.itemId());
+                    if (predecessorItem == null) {
                         throw new InvalidRequestException(
-                                "The item with ID " + dep.id() + " referenced as a dependency was not found.");
+                                "Predecessor item with ID " + predecessor.itemId() + " was not found");
                     }
-                    if (depItem.getStart() + depItem.getDuration() > t) {
-                        t = depItem.getStart() + depItem.getDuration();
+                    if (predecessor.startCondition() == StartCondition.ON_COMPLETION
+                            || predecessor.startCondition() == StartCondition.ON_SUCCESS
+                            || predecessor.startCondition() == StartCondition.ON_FAILURE) {
+                        if (predecessorItem.getStart() + predecessorItem.getDuration() > t) {
+                            t = predecessorItem.getStart() + predecessorItem.getDuration();
+                        }
+                    } else if (predecessor.startCondition() == StartCondition.ON_START) {
+                        if (predecessorItem.getStart() > t) {
+                            t = predecessorItem.getStart();
+                        }
                     }
                 }
                 activity.setStart(t);
@@ -316,6 +330,83 @@ public class TimelineItemDb implements ItemProvider {
     }
 
     @Override
+    public void deleteItems(List<UUID> ids, Criteria criteria, BatchObserver<DeleteItemsSummary> observer) {
+        rwlock.writeLock().lock();
+        try {
+            SqlBuilder sqlb = new SqlBuilder(TABLE_NAME);
+            sqlb.select("*");
+
+            TimeInterval interval = criteria.getTimeInterval();
+            if (interval.hasEnd()) {
+                sqlb.where("start < ?", interval.getEnd());
+            }
+            if (interval.hasStart()) {
+                sqlb.where("start+duration > ?", interval.getStart());
+            }
+            List<String> tags = criteria.getTags();
+            if (!tags.isEmpty()) {
+                sqlb.where(" tags && ?", tags);
+            }
+
+            var stmt = ydb.createStatement(sqlb.toString(), sqlb.getQueryArguments().toArray());
+            ydb.execute(stmt, new ResultListener() {
+
+                int count = 0;
+
+                @Override
+                public void next(Tuple tuple) {
+                    var item = TimelineItem.fromTuple(tuple);
+                    if (criteria.matches(item)) {
+                        var uuid = UUID.fromString(item.id);
+
+                        StreamSqlResult r = ydb.executeUnchecked(
+                                "select uuid from " + TABLE_NAME + " where " + CNAME_GROUP_ID + " = ?", uuid);
+                        try {
+                            if (r.hasNext()) {
+                                UUID id = r.next().getColumn(CNAME_ID);
+                                throw new InvalidRequestException(
+                                        "Cannot delete " + uuid + " because it is considered as a group by item " + id);
+                            }
+                        } finally {
+                            r.close();
+                        }
+
+                        r = ydb.executeUnchecked(
+                                "select uuid from " + TABLE_NAME + " where " + CNAME_RELTIME_ID + " = ?", uuid);
+                        try {
+                            if (r.hasNext()) {
+                                UUID id = r.next().getColumn(CNAME_ID);
+                                throw new InvalidRequestException(
+                                        "Cannot delete " + uuid + " because item " + id + " time is relative to it");
+                            }
+                        } finally {
+                            r.close();
+                        }
+                        doDeleteItem(uuid);
+                        count++;
+                        itemListeners.forEach(l -> l.onItemDeleted(item));
+                    }
+                }
+
+                @Override
+                public void completeExceptionally(Throwable t) {
+                    observer.completeExceptionally(t);
+                }
+
+                @Override
+                public void complete() {
+                    observer.complete(new DeleteItemsSummary(count));
+                }
+            });
+
+        } catch (StreamSqlException | ParseException e) {
+            log.error("Exception when executing query", e);
+        } finally {
+            rwlock.writeLock().unlock();
+        }
+    }
+
+    @Override
     public TimelineItem deleteItem(UUID uuid) {
         TimelineItem item = null;
         rwlock.writeLock().lock();
@@ -342,7 +433,6 @@ public class TimelineItemDb implements ItemProvider {
             try {
                 if (r.hasNext()) {
                     UUID id = r.next().getColumn(CNAME_ID);
-                    r.close();
                     throw new InvalidRequestException(
                             "Cannot delete " + uuid + " because item " + id + " time is relative to it");
                 }
@@ -392,39 +482,38 @@ public class TimelineItemDb implements ItemProvider {
     }
 
     @Override
-    public void getItems(int limit, String token, RetrievalFilter filter, ItemReceiver consumer) {
+    public void getItems(int limit, String token, Criteria criteria, ItemReceiver consumer) {
         rwlock.readLock().lock();
         try {
-            SqlBuilder sqlBuilder = new SqlBuilder(TABLE_NAME);
-            sqlBuilder.select("*");
+            SqlBuilder sqlb = new SqlBuilder(TABLE_NAME);
+            sqlb.select("*");
 
-            TimeInterval interval = filter.getTimeInterval();
+            TimeInterval interval = criteria.getTimeInterval();
             if (interval.hasEnd()) {
-                sqlBuilder.where("start < ?", interval.getEnd());
+                sqlb.where("start < ?", interval.getEnd());
             }
             if (interval.hasStart()) {
-                sqlBuilder.where("start+duration > ?", interval.getStart());
+                sqlb.where("start+duration > ?", interval.getStart());
             }
-            List<String> tags = getTags(filter);
-
+            List<String> tags = criteria.getTags();
             if (!tags.isEmpty()) {
-                sqlBuilder.where(" tags && ?", tags);
+                sqlb.where(" tags && ?", tags);
             }
-            sqlBuilder.limit(limit + 1);
+            sqlb.limit(limit + 1);
 
-            StreamSqlStatement stmt = ydb.createStatement(sqlBuilder.toString(),
-                    sqlBuilder.getQueryArguments().toArray());
+            var stmt = ydb.createStatement(sqlb.toString(), sqlb.getQueryArguments().toArray());
             ydb.execute(stmt, new ResultListener() {
                 int count = 0;
 
                 @Override
                 public void next(Tuple tuple) {
-                    if (matcher.matches(filter, tuple)) {
-                        if (count < limit) {
-                            consumer.next(TimelineItem.fromTuple(tuple));
+                    if (count < limit) {
+                        var item = TimelineItem.fromTuple(tuple);
+                        if (criteria.matches(item)) {
+                            consumer.next(item);
                         }
-                        count++;
                     }
+                    count++;
                 }
 
                 @Override
@@ -447,24 +536,6 @@ public class TimelineItemDb implements ItemProvider {
         } finally {
             rwlock.readLock().unlock();
         }
-
-    }
-
-    private List<String> getTags(RetrievalFilter filter) {
-        List<String> r = new ArrayList<>();
-        if (filter.getTags() != null) {
-            r.addAll(filter.getTags());
-        }
-        if (filter.getItemFilters() != null) {
-            for (ItemFilter f : filter.getItemFilters()) {
-                for (var c : f.getCriteriaList()) {
-                    if (CRIT_KEY_TAG.equals(c.getKey())) {
-                        r.add(c.getValue());
-                    }
-                }
-            }
-        }
-        return r;
     }
 
     public void addItemListener(ItemListener itemListener) {
@@ -516,33 +587,6 @@ public class TimelineItemDb implements ItemProvider {
     }
 
     @Override
-    public void validateFilters(List<ItemFilter> filters) throws BadRequestException {
-        for (var filter : filters) {
-            for (var c : filter.getCriteriaList()) {
-                if (!CRIT_KEY_TAG.equals(c.getKey())) {
-                    throw new BadRequestException(
-                            "Unknonw criteria key " + c.getKey() + ". Supported key: " + CRIT_KEY_TAG);
-                }
-            }
-        }
-    }
-
-    private static class TupleMatcher extends FilterMatcher<Tuple> {
-        @Override
-        protected boolean criterionMatch(FilterCriterion c, Tuple tuple) {
-            String cmdName = tuple.getColumn(StandardTupleDefinitions.CMDHIST_TUPLE_COL_CMDNAME);
-            if (cmdName == null) {
-                return false;
-            }
-            if (CRIT_KEY_TAG.equals(c.getKey())) {
-                return cmdName.matches(c.getValue());
-            } else {
-                return false;
-            }
-        }
-    }
-
-    @Override
     public TimelineItemLog getItemLog(String id) {
         UUID uuid = UUID.fromString(id);
         return logDb.getLog(uuid);
@@ -554,9 +598,50 @@ public class TimelineItemDb implements ItemProvider {
         return logDb.addLogEntry(uuid, entry);
     }
 
+    /**
+     * Returns activity items which are ongoing.
+     */
+    public List<TimelineActivity> getOngoingItems() {
+        var items = new ArrayList<TimelineActivity>();
+        rwlock.readLock().lock();
+        try {
+            // Find ongoing states
+            var sqlBuilder = new SqlBuilder(TABLE_NAME);
+            sqlBuilder.where("type = ?", TimelineItemType.ACTIVITY.name());
+            sqlBuilder.whereColIn("status", TimelineActivity.ONGOING_STATES.stream()
+                    .map(ExecutionStatus::name)
+                    .toList());
+
+            var stmt = ydb.createStatement(sqlBuilder.toString(),
+                    sqlBuilder.getQueryArguments().toArray());
+            var result = ydb.execute(stmt);
+            result.forEachRemaining(tuple -> {
+                items.add(new TimelineActivity(TimelineItemType.ACTIVITY, tuple));
+            });
+            result.close();
+        } catch (StreamSqlException | ParseException e) {
+            log.error("Exception when executing query", e);
+        } finally {
+            rwlock.readLock().unlock();
+        }
+        return items;
+    }
+
+    public void updateAll(List<? extends TimelineItem> items) {
+        rwlock.writeLock().lock();
+        try {
+            for (var item : items) {
+                var tuple = item.toTuple();
+                log.trace("Updating item: {}", tuple);
+                timelineStream.emitTuple(tuple);
+            }
+        } finally {
+            rwlock.writeLock().unlock();
+        }
+    }
+
     @SuppressWarnings("serial")
     static class NoSuchItemException extends RuntimeException {
 
     }
-
 }

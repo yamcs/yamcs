@@ -3,8 +3,8 @@ import {
   Component,
   effect,
   ElementRef,
+  inject,
   OnDestroy,
-  Signal,
   ViewChild,
 } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
@@ -16,7 +16,6 @@ import {
   ExtensionService,
   MessageService,
   NavItem,
-  Preferences,
   User,
   WebappSdkModule,
   WebsiteConfig,
@@ -33,10 +32,15 @@ import { AlarmLabelComponent } from '../alarm-label/alarm-label.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ActivitiesLabelComponent, AlarmLabelComponent, WebappSdkModule],
   host: {
-    '[class.collapsed]': 'collapsed()',
+    '[class.collapsed]': 'isCollapsed()',
   },
 })
 export class InstanceLayoutComponent implements OnDestroy {
+  private appearanceService = inject(AppearanceService);
+
+  // Whether to collapse the sidenav
+  isCollapsed = this.appearanceService.isCollapsed;
+
   @ViewChild('pageContent')
   pageContent: ElementRef<HTMLElement>;
 
@@ -64,7 +68,6 @@ export class InstanceLayoutComponent implements OnDestroy {
   mdbItems: NavItem[] = [];
   extraItems: NavItem[] = [];
 
-  collapsed: Signal<boolean>;
   fullScreenMode$: Observable<boolean>;
   focusMode$: Observable<boolean>;
 
@@ -75,13 +78,11 @@ export class InstanceLayoutComponent implements OnDestroy {
     configService: ConfigService,
     authService: AuthService,
     appearanceService: AppearanceService,
-    prefs: Preferences,
     extensionService: ExtensionService,
     messageService: MessageService,
     router: Router,
   ) {
     this.connectionInfo$ = this.yamcs.connectionInfo$;
-    this.collapsed = prefs.watchBoolean('sidenav.collapsed', false);
 
     this.fullScreenMode$ = appearanceService.fullScreenMode$;
     this.focusMode$ = appearanceService.focusMode$;
@@ -171,13 +172,8 @@ export class InstanceLayoutComponent implements OnDestroy {
       }
     }
 
-    if (this.user.hasSystemPrivilege('ReadTimeline')) {
-      this.timelineItems.push({ path: 'chart', label: 'Chart' });
-    }
     if (this.user.hasSystemPrivilege('ControlTimeline')) {
-      this.timelineItems.push({ path: 'views', label: 'Views' });
       this.timelineItems.push({ path: 'bands', label: 'Bands' });
-      this.timelineItems.push({ path: 'items', label: 'Items' });
     }
 
     if (this.user.hasSystemPrivilege('GetMissionDatabase')) {
@@ -222,9 +218,6 @@ export class InstanceLayoutComponent implements OnDestroy {
         } else if (url.match(/\/telemetry.*/)) {
           this.telemetryActive = true;
           this.telemetryExpanded = true;
-        } else if (url.match(/\/timeline.*/)) {
-          this.timelineActive = true;
-          this.timelineExpanded = true;
         }
       });
   }
@@ -269,6 +262,10 @@ export class InstanceLayoutComponent implements OnDestroy {
 
   showLinksItem() {
     return this.user.hasSystemPrivilege('ReadLinks');
+  }
+
+  showTimelineItem() {
+    return this.user.hasSystemPrivilege('ReadTimeline');
   }
 
   showAlgorithmsItem() {

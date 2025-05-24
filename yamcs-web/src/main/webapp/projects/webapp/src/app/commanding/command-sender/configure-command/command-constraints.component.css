@@ -1,14 +1,14 @@
 .evaluation {
   font-family: "Roboto Mono", monospace;
   background-color: #ffeef0;
-  color: red;
+  color: var(--y-error-color);
   padding-left: 2px;
   padding-right: 2px;
 }
 
 .evaluation.valid {
   background-color: #e6ffed;
-  color: #00c752;
+  color: var(--y-success-color);
 }
 
 .evaluation.disabled {

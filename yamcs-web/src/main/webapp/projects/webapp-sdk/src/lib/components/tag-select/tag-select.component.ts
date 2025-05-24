@@ -70,4 +70,12 @@ export class YaTagSelect implements ControlValueAccessor {
   }
 
   registerOnTouched(fn: any) {}
+
+  setDisabledState(isDisabled: boolean): void {
+    if (isDisabled) {
+      this.control.disable();
+    } else {
+      this.control.enable();
+    }
+  }
 }

@@ -5,6 +5,7 @@ export type ActivityStatus = 'RUNNING' | 'SUCCESSFUL' | 'CANCELLED' | 'FAILED';
 export interface Activity {
   type: string;
   args: { [key: string]: any };
+  label?: string;
   detail: string;
   id: string;
   start: string;

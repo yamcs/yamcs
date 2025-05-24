@@ -1,0 +1,14 @@
+<h2 mat-dialog-title>Rename view</h2>
+
+<mat-dialog-content>
+  <ya-form [formGroup]="form">
+    <ya-field label="Name" [class.invalid]="form.controls.name.invalid">
+      <input type="text" formControlName="name" />
+    </ya-field>
+  </ya-form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <ya-button mat-dialog-close>Cancel</ya-button>
+  <ya-button appearance="primary" (click)="rename()" [disabled]="isInvalid()">Rename</ya-button>
+</mat-dialog-actions>

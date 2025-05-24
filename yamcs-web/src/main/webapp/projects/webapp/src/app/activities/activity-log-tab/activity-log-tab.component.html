@@ -3,6 +3,9 @@
   <ya-button (click)="bottom.scrollIntoView()" icon="vertical_align_bottom">
     Jump to bottom
   </ya-button>
+  @if (mayControlActivities()) {
+    <ya-button (click)="openAddMessageDialog()" icon="add_comment">Add message</ya-button>
+  }
 </div>
 
 <div #logContainer class="log-container">
