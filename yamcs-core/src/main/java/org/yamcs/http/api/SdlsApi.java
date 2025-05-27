@@ -12,8 +12,8 @@ import org.yamcs.management.LinkManager;
 import org.yamcs.protobuf.AbstractSdlsApi;
 import org.yamcs.protobuf.GetSeqCtrRequest;
 import org.yamcs.protobuf.GetSeqCtrResponse;
-import org.yamcs.protobuf.ResetSeqCtrRequest;
 import org.yamcs.protobuf.SetKeyRequest;
+import org.yamcs.protobuf.SetSeqCtrRequest;
 import org.yamcs.security.SdlsSecurityAssociation;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.tctm.Link;
@@ -81,14 +81,15 @@ public class SdlsApi extends AbstractSdlsApi<Context> {
     }
 
     @Override
-    public void resetSeqCtr(Context ctx, ResetSeqCtrRequest request, Observer<Empty> observer) {
+    public void setSeqCtr(Context ctx, SetSeqCtrRequest request, Observer<Empty> observer) {
         String instance = request.getInstance();
         String linkName = request.getLinkName();
         short spi = (short) request.getSpi();
         Link link = verifyLink(ctx, instance, linkName);
         SdlsSecurityAssociation sdls = getSa(link, spi);
 
-        sdls.resetSeqNum();
+        byte[] seqNumBigEndian = request.getData().getData().toByteArray();
+        sdls.setSeqNum(seqNumBigEndian);
         observer.complete(Empty.getDefaultInstance());
     }
 

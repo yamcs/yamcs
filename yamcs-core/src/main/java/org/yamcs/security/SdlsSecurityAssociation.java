@@ -403,8 +403,14 @@ public class SdlsSecurityAssociation {
     /**
      * Reset the anti-replay sequence number
      */
-    public void resetSeqNum() {
-        this.seqNum = BigInteger.ZERO;
+    public void setSeqNum(byte[] newSeqNum) {
+        // Make sure it's padded to the right length
+        byte[] arr = new byte[GCM_IV_LEN_BYTES];
+        int srcPos = Math.max(newSeqNum.length - GCM_IV_LEN_BYTES, 0);
+        int dstPos = Math.max(GCM_IV_LEN_BYTES - newSeqNum.length, 0);
+        int length = newSeqNum.length - srcPos;
+        System.arraycopy(newSeqNum, srcPos, arr, dstPos, length);
+        this.seqNum = new BigInteger(1, arr);
     }
 
     /**
