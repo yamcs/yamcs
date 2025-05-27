@@ -1,5 +1,7 @@
 package org.yamcs.http.api;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.api.Observer;
@@ -18,9 +20,11 @@ import org.yamcs.tctm.Link;
 import org.yamcs.tctm.ccsds.UdpTcFrameLink;
 import org.yamcs.tctm.ccsds.UdpTmFrameLink;
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 
 public class SdlsApi extends AbstractSdlsApi<Context> {
+    private static final Logger log = LoggerFactory.getLogger(SdlsApi.class);
     private static YamcsServerInstance verifyInstanceObj(String instance) {
         YamcsServerInstance ysi = YamcsServer.getServer().getInstance(instance);
         if (ysi == null) {
@@ -70,8 +74,9 @@ public class SdlsApi extends AbstractSdlsApi<Context> {
         Link link = verifyLink(ctx, instance, linkName);
         SdlsSecurityAssociation sdls = getSa(link, spi);
 
-        int seqnum = sdls.getSeqNum();
-        GetSeqCtrResponse.Builder gscrb = GetSeqCtrResponse.newBuilder().setSeq(seqnum);
+        byte[] seqNumBigEndian = sdls.getSeqNum();
+        ByteString bs = ByteString.copyFrom(seqNumBigEndian);
+        GetSeqCtrResponse.Builder gscrb = GetSeqCtrResponse.newBuilder().setSeq(bs);
         observer.complete(gscrb.build());
     }
 

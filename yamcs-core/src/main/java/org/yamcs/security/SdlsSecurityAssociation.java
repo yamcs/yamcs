@@ -1,10 +1,10 @@
 package org.yamcs.security;
 
+import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Arrays;
 
@@ -22,8 +22,11 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.utils.ByteArrayUtils;
 
 /**
- * A Security Association for SDLS encryption/decryption (CCSDS 355.0-B-2). This class is hard-coded to use AES-256-GCM
- * as its underlying cipher suite.
+ * A Security Association for SDLS encryption/decryption (CCSDS 355.0-B-2).
+ * <p>
+ * Deviates from the baseline in the following ways:
+ * - This class is hard-coded to use AES-256-GCM as its underlying cipher suite.
+ * - It uses authenticated encryption for all frame types.
  */
 public class SdlsSecurityAssociation {
     /**
@@ -39,7 +42,6 @@ public class SdlsSecurityAssociation {
      * Length of initialization vector for GCM
      */
     public static final int GCM_IV_LEN_BYTES = 12; // OWASP recommendation & baseline SDLS
-    private final SecureRandom secureRandom = new SecureRandom();
 
     /**
      * Security parameter index: identifier shared between sender and receiver, specifies which security association is
@@ -50,7 +52,7 @@ public class SdlsSecurityAssociation {
     /**
      * Anti-replay sequence number
      */
-    private long seqNum;
+    private BigInteger seqNum;
 
     /**
      * Whether to verify the received anti-replay sequence number
@@ -79,10 +81,25 @@ public class SdlsSecurityAssociation {
      */
     public SdlsSecurityAssociation(byte[] key, short spi, int seqNumWindow, boolean verifySeqNum) {
         this.secretKey = new SecretKeySpec(key, secretKeyAlgorithm);
-        this.seqNum = 0;
+        this.seqNum = BigInteger.valueOf(0);
         this.seqNumWindow = Math.abs(seqNumWindow); // just to ensure it's not negative
         this.spi = spi;
         this.verifySeqNum = verifySeqNum;
+    }
+
+    byte[] getSeqNumIvBytes() {
+        byte[] arr = new byte[GCM_IV_LEN_BYTES];
+        byte[] bigintBytes = seqNum.toByteArray();
+        int srcPos = Math.max(bigintBytes.length - GCM_IV_LEN_BYTES, 0);
+        int dstPos = Math.max(GCM_IV_LEN_BYTES - bigintBytes.length, 0);
+        int length = bigintBytes.length - srcPos;
+        System.arraycopy(bigintBytes, srcPos, arr, dstPos, length);
+        return arr;
+    }
+
+    BigInteger seqNumMax() {
+        int maxBits = GCM_IV_LEN_BYTES * 8;
+        return BigInteger.valueOf(2).pow(maxBits).subtract(BigInteger.ONE);
     }
 
     /**
@@ -96,9 +113,9 @@ public class SdlsSecurityAssociation {
      * @return Size of security header in bytes
      */
     public static int getHeaderSize() {
-        // 16-bit SPI + size of IV + 32-bit sequence number.
+        // 16-bit SPI + size of IV
         // no padding for AES-GCM - it works almost like a stream cipher
-        return 2 + GCM_IV_LEN_BYTES + 4;
+        return 2 + GCM_IV_LEN_BYTES;
     }
 
     /**
@@ -125,14 +142,19 @@ public class SdlsSecurityAssociation {
         // We want to authenticate the SPI field (first 16 bits)
         authMaskFull[secAuthMaskStart] = (byte) 0xff;
         authMaskFull[secAuthMaskStart + 1] = (byte) 0xff;
-        // And the sequence number (last 32 bits)
-        authMaskFull[authMaskFull.length - 4] = (byte) 0xff;
-        authMaskFull[authMaskFull.length - 3] = (byte) 0xff;
-        authMaskFull[authMaskFull.length - 2] = (byte) 0xff;
-        authMaskFull[authMaskFull.length - 1] = (byte) 0xff;
 
         // Set final authMask for primary + sec header
         return authMaskFull;
+    }
+
+    void incSeqNum() {
+        // Increment
+        seqNum = seqNum.add(BigInteger.ONE);
+
+        // Restrict to maximum value, wrap around
+        if (seqNum.compareTo(seqNumMax()) > 0) {
+            seqNum = BigInteger.ZERO;
+        }
     }
 
     /**
@@ -150,8 +172,8 @@ public class SdlsSecurityAssociation {
                               byte[] partialAuthMask) throws GeneralSecurityException {
         // IV must never be re-used with same key for AES-GCM, so we generate a random
         // one for every encryption.
-        byte[] iv = new byte[GCM_IV_LEN_BYTES];
-        secureRandom.nextBytes(iv);
+        byte[] iv = getSeqNumIvBytes();
+        assert iv.length == GCM_IV_LEN_BYTES: "IV legth should be " + GCM_IV_LEN_BYTES + " but is " + iv.length;
 
         // Fill security header
         // first two bytes are SPI
@@ -159,16 +181,8 @@ public class SdlsSecurityAssociation {
         ByteArrayUtils.encodeUnsignedShort(spi, transferFrame, secHeaderStart);
         // the next are IV
         System.arraycopy(iv, 0, transferFrame, secHeaderStart + 2, iv.length);
-        // and the last four bytes are sequence number
-
-        // Increment the sequence number, handling overflow
-        try {
-            seqNum = Math.incrementExact(seqNum);
-        } catch (ArithmeticException e) {
-            seqNum = 0;
-        }
-        // Place it in the security header
-        ByteArrayUtils.encodeInt((int) seqNum, transferFrame, secHeaderStart + 2 + iv.length);
+        // and increment the sequence number
+        incSeqNum();
 
         // create data to authenticate by masking frame headers with authMask
         byte[] authMask = completeAuthMask(partialAuthMask);
@@ -252,34 +266,39 @@ public class SdlsSecurityAssociation {
      * @param receivedSeqNum the sequence number to validate
      * @return whether or not the sequence number is valid, accounting for rollover
      */
-    public boolean seqNumValid(int receivedSeqNum) {
+    public boolean seqNumValid(BigInteger receivedSeqNum) {
         if (!verifySeqNum) {
             return true;
         }
-
-        int truncatedSeqNum = (int) seqNum;
-        try {
-            // Try to verify normally
-            int maxAllowedSeqNum = Math.addExact(truncatedSeqNum, seqNumWindow);
-            if (receivedSeqNum < truncatedSeqNum || receivedSeqNum > maxAllowedSeqNum) {
-                log.warn("Received sequence number {} outside of range [{}..{}]", receivedSeqNum, truncatedSeqNum,
-                        maxAllowedSeqNum);
+        BigInteger maxSeqNumInWindow = seqNum.add(BigInteger.valueOf(seqNumWindow));
+        if (maxSeqNumInWindow.compareTo(seqNumMax()) <= 0) {
+            // Wrap-around not possible yet
+            // Verify normally: fail if receive lower than current, or greater than max
+            if (receivedSeqNum.compareTo(seqNum) < 0 || receivedSeqNum.compareTo(maxSeqNumInWindow) > 0) {
+                log.warn("Received sequence number {} outside of range [{}..{}]", receivedSeqNum, seqNum,
+                        maxSeqNumInWindow);
                 return false;
             }
-        } catch (ArithmeticException e) {
-            // In case there's a possible sequence number rollover:
-            // Sequence number can be in range [seq, MAX_INT]
-            boolean seqNumInHighRange = receivedSeqNum >= truncatedSeqNum; // always <= MAX_INT
-            // Or in range [0, seqNumWindow-(MAX_INT-seqNum)]
-            int usedWindow = Integer.MAX_VALUE - truncatedSeqNum;
-            int remainingWindow = seqNumWindow - usedWindow;
-            boolean seqNumInLowRange = receivedSeqNum >= 0 && receivedSeqNum <= remainingWindow;
+        } else {
+            // Wrap-around possible
+            // Either sequence number can be between the current number and the maximum representable number, inclusive
+            boolean seqNumInHighRange =
+                    receivedSeqNum.compareTo(seqNum) >= 0 && receivedSeqNum.compareTo(seqNumMax()) <= 0;
+
+            // Or from zero to whatever is left over in the window
+            // e.g. max is 255, current is 253. we receive 254, window is 10. 253+10=263, 263-255=8.
+            //      then we can accept [253..255] and [0..6].
+            BigInteger remainingWindow =
+                    seqNum.add(BigInteger.valueOf(seqNumWindow)).subtract(seqNumMax()).subtract(BigInteger.ONE);
+            boolean seqNumInLowRange =
+                    receivedSeqNum.compareTo(BigInteger.ZERO) >= 0 && receivedSeqNum.compareTo(remainingWindow) < 0;
             if (!seqNumInHighRange && !seqNumInLowRange) {
                 log.warn("Received sequence number {} outside of range [{}..{}, 0..{}]", receivedSeqNum,
-                        truncatedSeqNum,
+                        seqNum,
                         Integer.MAX_VALUE, remainingWindow);
                 return false;
             }
+
         }
         return true;
     }
@@ -355,7 +374,7 @@ public class SdlsSecurityAssociation {
         System.arraycopy(plaintext, 0, transferFrame, dataStart, plaintext.length);
 
         // Check the sequence number
-        int receivedSeqNum = ByteArrayUtils.decodeInt(transferFrame, secHeaderStart + 2 + GCM_IV_LEN_BYTES);
+        BigInteger receivedSeqNum = new BigInteger(1, receivedIv);
 
         if (!seqNumValid(receivedSeqNum)) {
             return VerificationStatusCode.AntiReplaySequenceNumberFailure;
@@ -385,7 +404,7 @@ public class SdlsSecurityAssociation {
      * Reset the anti-replay sequence number
      */
     public void resetSeqNum() {
-        this.seqNum = 0;
+        this.seqNum = BigInteger.ZERO;
     }
 
     /**
@@ -393,8 +412,8 @@ public class SdlsSecurityAssociation {
      *
      * @return the current sequence number
      */
-    public int getSeqNum() {
-        return (int) seqNum;
+    public byte[] getSeqNum() {
+        return getSeqNumIvBytes();
     }
 
 }

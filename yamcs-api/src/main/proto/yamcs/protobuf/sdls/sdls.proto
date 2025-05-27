@@ -45,8 +45,8 @@ message GetSeqCtrRequest {
 }
 
 message GetSeqCtrResponse {
-  // The current sequence number
-  required uint64 seq = 1;
+  // The current sequence number in big-endian order
+  required bytes seq = 1;
 }
 
 message ResetSeqCtrRequest {
