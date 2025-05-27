@@ -152,7 +152,7 @@ dataLinks:
             stream: "tm_realtime" #which yamcs stream to put the data on
             # This channel is encrypted with SDLS, using SPI 1 (defined above).
             # The encryption SPI must match an SPI defined on the link.
-            encryptionSpi: 1
+            encryptionSpis: [1]
           - vcId: 1
             ocfPresent: true
             service: "PACKET"
@@ -169,7 +169,7 @@ dataLinks:
             invalidPacketsStream: invalid_tm_stream
             # This channel is encrypted with SDLS, using SPI 1 (defined above).
             # The encryption SPI must match an SPI defined on the link.
-            encryptionSpi: 1
+            encryptionSpis: [1]
           - vcId: 2
             ocfPresent: true
             service: "PACKET"
@@ -178,7 +178,7 @@ dataLinks:
             stream: "tm_dump"
             # This channel is encrypted with SDLS, using SPI 1 (defined above).
             # The encryption SPI must match an SPI defined on the link.
-            encryptionSpi: 1
+            encryptionSpis: [1]
           #vcId 63 is reserved for idle data and it does not have to be defined
   - name: UDP_CUSTOM_CLTU_OUT
     class: org.yamcs.tctm.ccsds.UdpTcFrameLink

@@ -180,26 +180,43 @@ public class UslpFrameDecoder implements TransferFrameDecoder {
             }
         }
 
-        SdlsSecurityAssociation sdlsSecurityAssociation = uslpParams.sdlsSecurityAssociations.get(vmp.encryptionSpi);
+        SdlsSecurityAssociation sdlsSa;
         // If we're decrypting, do so
-        if (sdlsSecurityAssociation != null) {
-            int decryptionDataStart = dataOffset;
-            int decryptionTrailerEnd = dataEnd;
+        for (int i = 0; i < vmp.encryptionSpis.length; ++i) {
+            short spi = vmp.encryptionSpis[i];
+            sdlsSa = uslpParams.sdlsSecurityAssociations.get(spi);
+            if (sdlsSa != null) {
+                int decryptionDataStart = dataOffset;
+                int decryptionTrailerEnd = dataEnd;
 
-            decryptionDataStart += SdlsSecurityAssociation.getHeaderSize();
+                decryptionDataStart += SdlsSecurityAssociation.getHeaderSize();
 
-            SdlsSecurityAssociation.VerificationStatusCode decryptionResult = sdlsSecurityAssociation.processSecurity(data,
-                    offset, decryptionDataStart, decryptionTrailerEnd, vmp.authMask);
-            if (decryptionResult != SdlsSecurityAssociation.VerificationStatusCode.NoFailure) {
-                log.warn("Couldn't decrypt frame: {}", decryptionResult);
+                SdlsSecurityAssociation.VerificationStatusCode decryptionStatus = sdlsSa.processSecurity(data,
+                        offset, decryptionDataStart, decryptionTrailerEnd, vmp.authMask);
+
+                // Invalid SPI is not necessarily an error:
+                if (decryptionStatus == SdlsSecurityAssociation.VerificationStatusCode.InvalidSPI) {
+                    // If there are more SAs left, try the next one
+                    if (i+1 < vmp.encryptionSpis.length)
+                        continue;
+                    // Otherwise, it's an error
+                }
+
+                // Update offsets
+                dataOffset += SdlsSecurityAssociation.getHeaderSize();
+                dataEnd -= SdlsSecurityAssociation.getTrailerSize();
+
+                if (vmp.service == ServiceType.PACKET)
+                    utf.setFirstHeaderPointer(dataOffset);
+
+                if (decryptionStatus == SdlsSecurityAssociation.VerificationStatusCode.NoFailure) {
+                    // If we decrypt correctly, stop looping
+                    break;
+                } else {
+                    // Otherwise, log an error (we'll have reached the end anyway)
+                    log.warn("Couldn't decrypt frame: {}", decryptionStatus);
+                }
             }
-
-            // Update offsets
-            dataOffset += SdlsSecurityAssociation.getHeaderSize();
-            dataEnd -= SdlsSecurityAssociation.getTrailerSize();
-
-            if (vmp.service == ServiceType.PACKET)
-                utf.setFirstHeaderPointer(dataOffset);
         }
 
         utf.setDataStart(dataOffset);

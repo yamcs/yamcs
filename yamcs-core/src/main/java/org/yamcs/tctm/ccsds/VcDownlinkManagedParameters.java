@@ -1,5 +1,7 @@
 package org.yamcs.tctm.ccsds;
 
+import java.util.List;
+
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 
@@ -24,7 +26,7 @@ public class VcDownlinkManagedParameters {
     /**
      * The Security Parameter Index used on this channel
      */
-    short encryptionSpi;
+    short[] encryptionSpis;
     byte[] authMask;
 
     public VcDownlinkManagedParameters(int vcId) {
@@ -35,13 +37,23 @@ public class VcDownlinkManagedParameters {
     public VcDownlinkManagedParameters(YConfiguration config, DownlinkManagedParameters params) {
         this.config = config;
         this.vcId = config.getInt("vcId");
-        if (config.containsKey("encryptionSpi")) {
-            encryptionSpi = (short) config.getInt("encryptionSpi");
-            // If there is no security association for this SPI, it's a configuration error.
-            if (!params.sdlsSecurityAssociations.containsKey(encryptionSpi)) {
-                throw new ConfigurationException("Encryption SPI " + encryptionSpi
-                        + " configured for vcId "
-                        + vcId + " is not configured for link " + config.getString("linkName"));
+        if (config.containsKey("encryptionSpis")) {
+            List<Integer> spis = config.getList("encryptionSpis");
+            if (spis.isEmpty()) {
+                throw new ConfigurationException("List of encryption SPIs should have at least one element, but is " +
+                        "empty for vcId " + vcId + " link " + config.getString("linkName"));
+            }
+            encryptionSpis = new short[spis.size()];
+            for (int i = 0; i < spis.size(); ++i) {
+                short currentSpi = spis.get(i).shortValue();
+                // If there is no security association for this SPI, it's a configuration error.
+                if (!params.sdlsSecurityAssociations.containsKey(currentSpi)) {
+                    throw new ConfigurationException("Encryption SPI " + currentSpi
+                            + " configured for vcId "
+                            + vcId + " is not configured for link " + config.getString("linkName"));
+                }
+
+                encryptionSpis[i] = currentSpi;
             }
         }
     }

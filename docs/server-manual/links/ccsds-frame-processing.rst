@@ -67,7 +67,7 @@ An example of a UDP TM frame link specification is below:
             verifySeqNum: false
         virtualChannels:
           - vcId: 0
-            encryptionSpi: 1
+            encryptionSpis: [1]
             ocfPresent: true
             service: "PACKET"
             maxPacketLength: 2048
@@ -76,7 +76,7 @@ An example of a UDP TM frame link specification is below:
               [...]
             stream: "tm_realtime"
           - vcId: 1
-            encryptionSpi: 1
+            encryptionSpis: [1, 2]
             ocfPresent: true
             service: "PACKET"
             maxPacketLength: 2048
@@ -86,7 +86,7 @@ An example of a UDP TM frame link specification is below:
               [...]
             stream: "tm2_realtime"
           - vcId: 2
-            encryptionSpi: 2
+            encryptionSpis: [2]
             ocfPresent: true
             service: "PACKET"
             maxPacketLength: 2048
@@ -163,8 +163,8 @@ For each Virtual Channel in the ``virtualChannels`` map, the following parameter
 vcId (integer)
     **Required.** The configured Virtual Channel identifier.
 
-encryptionSpi (integer)
-    If specified, instructs the virtual channel to use SDLS for frame encryption and authentication, using the specified Security Parameter Index. The ``encryptionSpi`` must be one of the ``spi`` values in the ``encryption`` list for the link.
+encryptionSpis (list of integer)
+    If specified, instructs the virtual channel to use SDLS for frame encryption and authentication, using the specified Security Parameter Indices. The ``encryptionSpis`` must be a subset of the ``spi`` values in the ``encryption`` list for the link.
 
 ocfPresent: (boolean)
     Used for AOS frames to indicate that the Virtual Channel uses the  Operational Control Field (OCF) Service to transport the CLCW containing acknowledgments for the uplinked TC frames. For TM and USLP frames, there is a flag in each frame that indicates the presence or absence of OCF.
