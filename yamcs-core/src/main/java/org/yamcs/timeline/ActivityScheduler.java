@@ -30,10 +30,8 @@ import org.yamcs.protobuf.ActivityDependencyCondition;
 import org.yamcs.protobuf.ExecutionStatus;
 import org.yamcs.protobuf.TimelineItemType;
 import org.yamcs.time.TimeService;
-import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.YarchDatabase;
-import org.yamcs.yarch.streamsql.StreamSqlException;
 
 /**
  * Schedules activities in the timeline
@@ -134,7 +132,6 @@ public class ActivityScheduler extends AbstractYamcsService implements ItemListe
 
     @Override
     public void onActivityUpdated(Activity activity) {
-
         var item = ongoingActivitiesByRunId.get(activity.getId());
         if (item != null && activity.isStopped()) {
             ongoingActivitiesByRunId.remove(activity.getId());
@@ -171,11 +168,9 @@ public class ActivityScheduler extends AbstractYamcsService implements ItemListe
             var sqlb = new SqlBuilder(TABLE_NAME);
             sqlb.whereColAfterOrEqual(CNAME_START, timeService.getMissionTime() - schedulingMargin);
             sqlb.where(CNAME_TYPE + " = '" + TimelineItemType.ACTIVITY.name() + "'");
-            
+
             sqlb.where(String.format("%s IN ('%s', '%s', '%s')", CNAME_STATUS, ExecutionStatus.PLANNED.name(),
                     ExecutionStatus.READY.name(), ExecutionStatus.WAITING_ON_DEPENDENCY.name()));
-
-
 
             var result = ydb.execute(sqlb.toString(), sqlb.getQueryArguments());
             while (result.hasNext()) {
@@ -234,89 +229,104 @@ public class ActivityScheduler extends AbstractYamcsService implements ItemListe
         long nextSchedule = -1;
 
         for (var activity : dependentActivities) {
-            boolean start = true;
-            boolean skip = false;
-            String skipReason = null;
-
-            outerloop: for (var dependency : activity.dependsOn) {
-                var item = timelineItemDb.getItem(dependency.id());
-                if (item == null) {
-                    log.warn("Activity {} on which {} depends, not found", dependency.id(), activity.displayName());
-                    continue;
-                }
-                if (item instanceof TimelineActivity ta) {
-                    ExecutionStatus status = ta.getStatus();
-                    switch (status) {
-                    case PLANNED:
-                    case READY:
-                    case WAITING_ON_DEPENDENCY:
-                    case WAITING_FOR_INPUT:
-                    case PAUSED:
-                    case IN_PROGRESS: // intentional fall through
-                        start = false;
-                        skip = false;
-                        break outerloop;
-                    case ABORTED:
-                    case FAILED:
-                    case CANCELED:
-                    case SKIPPED:// intentional fall through
-                        if (dependency.condition() == ActivityDependencyCondition.START_ON_SUCCESS) {
-                            start = false;
-                            skip = true;
-                            skipReason = "Activity " + ta.displayName() + " is " + status
-                                    + " (while the dependency condition is START_ON_SUCCESS)";
-                            break outerloop;
-                        }
-                        break;
-                    case COMPLETED:
-                        if (dependency.condition() == ActivityDependencyCondition.START_ON_FAILURE) {
-                            start = false;
-                            skip = true;
-                            skipReason = "Activity " + ta.displayName() + " is " + status
-                                    + " (while the dependency condition is START_ON_FAILURE)";
-                            break outerloop;
-                        }
-                        break;
-                    }
-                } else {
-                    // for dependencies which are not activities, check their end
-                    if (item.getStart() + item.getDuration() > now) {
-                        start = false;
-                        skip = false;
-                        break outerloop;
-                    }
-                }
+            try {
+                startActivityDependentOnOthers(now, activity);
+            } catch (Exception e) {
+                log.warn("Cannot start activity {}", e);
+                continue;
             }
-            if (start) {
-                if (activity.autoStart) {
-                    log.debug("Starting activity {}", activity.displayName());
-                    doStartActivity(activity);
-                } else {
-                    if (activity.getStatus() != ExecutionStatus.READY) {
-                        log.debug("Marking activity {} as ready", activity.displayName());
-                        activity.setStatus(ExecutionStatus.READY);
-                        timelineItemDb.updateItem(activity);
-                    }
+            if (activity.getStatus() == ExecutionStatus.PLANNED) {
+                // we need to schedule another check at least at the start time to mark that it is waiting for a
+                // dependency
+                if (nextSchedule < 0 || nextSchedule > activity.getStart() - now) {
+                    nextSchedule = activity.getStart() - now;
                 }
-            } else if (skip) {
-                log.debug("Marking activity {} as skipped", activity.displayName());
-                activity.setStatus(ExecutionStatus.SKIPPED);
-                activity.setFailureReason(skipReason);
-                timelineItemDb.updateItem(activity);
-            } else if (activity.getStart() <= now) {
-                if (activity.getStatus() != ExecutionStatus.WAITING_ON_DEPENDENCY) {
-                    log.debug("Marking activity {} as waiting on dependency", activity.displayName());
-                    activity.setStatus(ExecutionStatus.WAITING_ON_DEPENDENCY);
-                    timelineItemDb.updateItem(activity);
-                }
-            } else if (nextSchedule < 0 || nextSchedule > activity.getStart() - now) {
-                nextSchedule = activity.getStart() - now;
             }
         }
 
         if (nextSchedule > 0) {
             log.debug("Scheduling startActivitiesDependentOnOthers in {} millis", nextSchedule);
             executor.schedule(this::startActivitiesDependentOnOthers, nextSchedule, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    private void startActivityDependentOnOthers(long now, TimelineActivity activity) {
+        boolean start = true;
+        boolean skip = false;
+        String skipReason = null;
+
+        for (var dependency : activity.dependsOn) {
+            var item = timelineItemDb.getItem(dependency.id());
+            if (item == null) {
+                log.warn("Activity {} on which {} depends, not found", dependency.id(), activity.displayName());
+                continue;
+            }
+            if (item instanceof TimelineActivity ta) {
+                ExecutionStatus status = ta.getStatus();
+                switch (status) {
+                case PLANNED:
+                case READY:
+                case WAITING_ON_DEPENDENCY:
+                case WAITING_FOR_INPUT:
+                case PAUSED:
+                case IN_PROGRESS: // intentional fall through
+                    start = false;
+                    skip = false;
+                    break;
+                case ABORTED:
+                case FAILED:
+                case CANCELED:
+                case SKIPPED:// intentional fall through
+                    if (dependency.condition() == ActivityDependencyCondition.START_ON_SUCCESS) {
+                        start = false;
+                        skip = true;
+                        skipReason = "Activity " + ta.displayName() + " is " + status
+                                + " (while the dependency condition is START_ON_SUCCESS)";
+                        break;
+                    }
+                    break;
+                case COMPLETED:
+                    if (dependency.condition() == ActivityDependencyCondition.START_ON_FAILURE) {
+                        start = false;
+                        skip = true;
+                        skipReason = "Activity " + ta.displayName() + " is " + status
+                                + " (while the dependency condition is START_ON_FAILURE)";
+                        break;
+                    }
+                    break;
+                }
+            } else {
+                // for dependencies which are not activities, check their end
+                if (item.getStart() + item.getDuration() > now) {
+                    start = false;
+                    skip = false;
+                    break;
+                }
+            }
+        }
+
+        if (start) {
+            if (activity.autoStart) {
+                log.debug("Starting activity {}", activity.displayName());
+                doStartActivity(activity);
+            } else {
+                if (activity.getStatus() != ExecutionStatus.READY) {
+                    log.debug("Marking activity {} as ready", activity.displayName());
+                    activity.setStatus(ExecutionStatus.READY);
+                    timelineItemDb.updateItem(activity);
+                }
+            }
+        } else if (skip) {
+            log.debug("Marking activity {} as skipped", activity.displayName());
+            activity.setStatus(ExecutionStatus.SKIPPED);
+            activity.setFailureReason(skipReason);
+            timelineItemDb.updateItem(activity);
+        } else if (activity.getStart() <= now) {
+            if (activity.getStatus() != ExecutionStatus.WAITING_ON_DEPENDENCY) {
+                log.debug("Marking activity {} as waiting on dependency", activity.displayName());
+                activity.setStatus(ExecutionStatus.WAITING_ON_DEPENDENCY);
+                timelineItemDb.updateItem(activity);
+            }
         }
     }
 
