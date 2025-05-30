@@ -54,7 +54,8 @@ public class TcVcFrameLink {
 
             this.maybeSdls = new SdlsSecurityAssociation(maybeSdlsKey, encryptionSpi,
                     encryptionSeqNumWindow, verifySeqNum);
-            // Don't verify the first TC sequence number
+            // Don't verify the first TC sequence number, because Yamcs has sequence number persistence and the
+            // simulator does not.
             maybeSdls.skipVerifyingNextSeqNum();
         }
     }

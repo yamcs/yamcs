@@ -25,9 +25,8 @@ import org.yamcs.utils.ByteArrayUtils;
 /**
  * A Security Association for SDLS encryption/decryption (CCSDS 355.0-B-2).
  * <p>
- * Deviates from the baseline in the following ways:
- * - This class is hard-coded to use AES-256-GCM as its underlying cipher suite.
- * - It uses authenticated encryption for all frame types.
+ * Deviates from the baseline in the following ways: - This class is hard-coded to use AES-256-GCM as its underlying
+ * cipher suite. - It uses authenticated encryption for all frame types.
  */
 public class SdlsSecurityAssociation {
     /**
@@ -73,9 +72,19 @@ public class SdlsSecurityAssociation {
 
     private static final Logger log = LoggerFactory.getLogger(SdlsSecurityAssociation.class);
 
+    /**
+     * Name of the Yamcs instance, used when persisting the sequence number
+     */
     private final String instanceName;
+
+    /**
+     * Name of the link, used when persisting the sequence number
+     */
     private final String linkName;
 
+    /**
+     * If true, skips verifying the sequence number for the next frame in `processSecurity`
+     */
     private boolean skipVerifyingNextSeqNum = false;
 
     /**
@@ -91,6 +100,8 @@ public class SdlsSecurityAssociation {
         this.linkName = linkName;
         this.spi = spi;
         this.secretKey = new SecretKeySpec(key, secretKeyAlgorithm);
+
+        // If we have information to retrieve a persisted sequence number, do so
         if (instanceName != null && linkName != null) {
             this.seqNum = loadSeqNum();
         } else {
@@ -99,10 +110,15 @@ public class SdlsSecurityAssociation {
         this.seqNumWindow = Math.abs(seqNumWindow); // just to ensure it's not negative
         this.verifySeqNum = verifySeqNum;
     }
+
+    // Constructor that skips persistence (e.g. for tests)
     public SdlsSecurityAssociation(byte[] key, short spi, int seqNumWindow, boolean verifySeqNum) {
         this(null, null, key, spi, seqNumWindow, verifySeqNum);
     }
 
+    /**
+     * @return Get the sequence number (IV) as bytes
+     */
     byte[] getSeqNumIvBytes() {
         byte[] arr = new byte[GCM_IV_LEN_BYTES];
         byte[] bigintBytes = seqNum.toByteArray();
@@ -113,6 +129,11 @@ public class SdlsSecurityAssociation {
         return arr;
     }
 
+    /**
+     * Get the maximum possible sequence number for the configured IV size
+     *
+     * @return the maximum possible sequence number
+     */
     BigInteger seqNumMax() {
         int maxBits = GCM_IV_LEN_BYTES * 8;
         return BigInteger.valueOf(2).pow(maxBits).subtract(BigInteger.ONE);
@@ -163,6 +184,9 @@ public class SdlsSecurityAssociation {
         return authMaskFull;
     }
 
+    /**
+     * Increment the sequence number
+     */
     void incSeqNum() {
         // Increment
         seqNum = seqNum.add(BigInteger.ONE);
@@ -173,12 +197,21 @@ public class SdlsSecurityAssociation {
         }
     }
 
+    /**
+     * Load a persisted sequence number, defaulting to zero.
+     *
+     * @return the sequence number for the next frame to send, or the next expected sequence number when receiving.
+     */
     BigInteger loadSeqNum() {
         var mementoDb = MementoDb.getInstance(instanceName);
         return mementoDb.getObject(SdlsMemento.MEMENTO_KEY, SdlsMemento.class)
                 .map(memento -> memento.getSeqNum(linkName, spi))
                 .orElse(BigInteger.ZERO);
     }
+
+    /**
+     * Save the current sequence number to the database
+     */
     void persistSeqNum() {
         var mementoDb = MementoDb.getInstance(instanceName);
         var memento = mementoDb.getObject(SdlsMemento.MEMENTO_KEY, SdlsMemento.class)
@@ -186,6 +219,7 @@ public class SdlsSecurityAssociation {
         memento.saveSeqNum(linkName, spi, seqNum);
         mementoDb.putObject(SdlsMemento.MEMENTO_KEY, memento);
     }
+
 
     /**
      * Encrypt the provided trasferFrame and authenticate data.
@@ -204,7 +238,7 @@ public class SdlsSecurityAssociation {
         // one for every encryption.
         byte[] iv = getSeqNumIvBytes();
 
-        assert iv.length == GCM_IV_LEN_BYTES: "IV legth should be " + GCM_IV_LEN_BYTES + " but is " + iv.length;
+        assert iv.length == GCM_IV_LEN_BYTES : "IV legth should be " + GCM_IV_LEN_BYTES + " but is " + iv.length;
 
         // Fill security header
         // first two bytes are SPI
@@ -333,7 +367,6 @@ public class SdlsSecurityAssociation {
                         Integer.MAX_VALUE, remainingWindow);
                 return false;
             }
-
         }
         return true;
     }
@@ -430,6 +463,9 @@ public class SdlsSecurityAssociation {
         return VerificationStatusCode.NoFailure;
     }
 
+    /**
+     * Do not verify the sequence number for the next received frame
+     */
     public void skipVerifyingNextSeqNum() {
         skipVerifyingNextSeqNum = true;
     }
@@ -447,6 +483,8 @@ public class SdlsSecurityAssociation {
 
     /**
      * Reset the anti-replay sequence number
+     *
+     * @param newSeqNum the bytes of the new sequence number, in big-endian order
      */
     public void setSeqNum(byte[] newSeqNum) {
         // Make sure it's padded to the right length
@@ -461,7 +499,7 @@ public class SdlsSecurityAssociation {
     /**
      * Get the current sequence number
      *
-     * @return the current sequence number
+     * @return the bytes of the current sequence number in big-endian order
      */
     public byte[] getSeqNum() {
         return getSeqNumIvBytes();

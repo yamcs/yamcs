@@ -23,7 +23,7 @@ service SdlsApi {
   rpc SetSeqCtr(SetSeqCtrRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       put: "/api/sdls/{instance}/{linkName}/{spi}/seq"
-      body: "data",
+      body: "body",
     };
   }
 
@@ -81,6 +81,7 @@ message SetSpisRequest {
 }
 
 message SetSpisRequestBody {
+  // The desired SPIs
   repeated uint32 spis = 1;
 }
 
@@ -105,8 +106,13 @@ message SetSeqCtrRequest {
   required string linkName = 2;
   // The Security Parameter Index
   required uint32 spi = 3;
+  // The body of the request, containing the sequence number
+  required SetSeqCtrRequestBody body = 4;
+}
+
+message SetSeqCtrRequestBody {
   // The desired sequence number in big-endian order
-  required yamcs.api.HttpBody data = 4;
+  required bytes seq = 1;
 }
 
 message SetKeyRequest {

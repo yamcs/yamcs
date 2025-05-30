@@ -164,7 +164,7 @@ vcId (integer)
     **Required.** The configured Virtual Channel identifier.
 
 encryptionSpis (list of integer)
-    If specified, instructs the virtual channel to use SDLS for frame encryption and authentication, using the specified Security Parameter Indices. The ``encryptionSpis`` must be a subset of the ``spi`` values in the ``encryption`` list for the link.
+    If specified, instructs the virtual channel to use SDLS for frame encryption and authentication, using the specified Security Parameter Indices. The ``encryptionSpis`` must be a subset of the ``spi`` values in the ``encryption`` list for the link. Integers must fit in a two-byte unsigned short (i.e., maximum value 65535).
 
 ocfPresent: (boolean)
     Used for AOS frames to indicate that the Virtual Channel uses the  Operational Control Field (OCF) Service to transport the CLCW containing acknowledgments for the uplinked TC frames. For TM and USLP frames, there is a flag in each frame that indicates the presence or absence of OCF.
@@ -316,7 +316,7 @@ vcId (integer)
     **Required.** The Virtual Channel identifier to be used in the frames. You can define multiple entries in the map with the same vcId, if the data is coming from different streams.
 
 encryptionSpi (integer)
-    If specified, instructs the virtual channel to encrypt and authenticate frames, using the specified Security Parameter Index. The ``encryptionSpi`` must be one of the ``spi`` values in the ``encryption`` list for the link.
+    If specified, instructs the virtual channel to encrypt and authenticate frames, using the specified Security Parameter Index. The ``encryptionSpi`` must be one of the ``spi`` values in the ``encryption`` list for the link. Integer must fit in a two-byte unsigned short (i.e., maximum value 65535).
 
 seqNumWindow (integer)
     If SDLS encryption is used, this defines the maximum value by which the sequence number of incoming frames can differ from the current sequence number. The sequence number is 32 bits in size; as a potential future improvement, this could be made user-configurable.

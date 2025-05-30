@@ -92,7 +92,7 @@ public class SdlsApi extends AbstractSdlsApi<Context> {
         Link link = verifyLink(ctx, instance, linkName);
         SdlsSecurityAssociation sdls = getSa(link, spi);
 
-        byte[] seqNumBigEndian = request.getData().getData().toByteArray();
+        byte[] seqNumBigEndian = request.getBody().getSeq().toByteArray();
         sdls.setSeqNum(seqNumBigEndian);
         observer.complete(Empty.getDefaultInstance());
     }
