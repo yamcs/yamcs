@@ -93,4 +93,8 @@ public class TmManagedParameters extends DownlinkManagedParameters {
         }
     }
 
+    public VcDownlinkManagedParameters getVcParams(int vcId) {
+        return vcParams.get(vcId);
+    }
+
 }

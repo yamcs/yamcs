@@ -86,6 +86,8 @@ public abstract class DownlinkManagedParameters {
 
     abstract public Map<Integer, VcDownlinkHandler> createVcHandlers(String yamcsInstance, String linkName);
 
+    abstract public VcDownlinkManagedParameters getVcParams(int vcId);
+
     protected VcDownlinkHandler createVcaHandler(String yamcsInstance, String linkName,
                                                  VcDownlinkManagedParameters vmp) {
         VcDownlinkHandler handler = YObjectLoader.loadObject(vmp.vcaHandlerClassName);

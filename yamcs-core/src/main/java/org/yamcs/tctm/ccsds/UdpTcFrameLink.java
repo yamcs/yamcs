@@ -158,4 +158,9 @@ public class UdpTcFrameLink extends AbstractTcFrameLink implements Runnable {
     public SdlsSecurityAssociation getSdls(short spi) {
         return this.multiplexer.tcManagedParameters.sdlsSecurityAssociations.get(spi);
     }
+
+    public void setSpi(int vcId, short spi) {
+        this.multiplexer.tcManagedParameters.getVcParams(vcId)
+                .encryptionSpi = spi;
+    }
 }

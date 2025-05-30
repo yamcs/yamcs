@@ -125,4 +125,8 @@ public class UslpManagedParameters extends DownlinkManagedParameters {
         }
         return m;
     }
+
+    public VcDownlinkManagedParameters getVcParams(int vcId) {
+        return vcParams.get(vcId);
+    }
 }

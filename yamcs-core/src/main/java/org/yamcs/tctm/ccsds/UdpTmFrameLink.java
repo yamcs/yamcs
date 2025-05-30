@@ -144,4 +144,9 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
     public SdlsSecurityAssociation getSdls(short spi) {
         return this.frameHandler.params.sdlsSecurityAssociations.get(spi);
     }
+
+    public void setSpis(int vcId, short[] spis) {
+        this.frameHandler.params.getVcParams(vcId)
+                .encryptionSpis = spis;
+    }
 }
