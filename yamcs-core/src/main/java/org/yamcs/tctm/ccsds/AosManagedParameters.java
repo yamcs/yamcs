@@ -28,8 +28,8 @@ public class AosManagedParameters extends DownlinkManagedParameters {
 
     public boolean frameHeaderErrorControlPresent;
 
-    public AosManagedParameters(YConfiguration config) {
-        super(config);
+    public AosManagedParameters(YConfiguration config, String yamcsInstance, String linkName) {
+        super(config, yamcsInstance, linkName);
         frameLength = config.getInt("frameLength");
         if (frameLength < 8 || frameLength > 0xFFFF) {
             throw new ConfigurationException("Invalid frame length " + frameLength);
@@ -120,8 +120,9 @@ public class AosManagedParameters extends DownlinkManagedParameters {
             authMask[1] = 0b0011_1111;
         }
 
-        AosVcManagedParameters() {
-            super(YConfiguration.emptyConfig(), new AosManagedParameters(YConfiguration.emptyConfig()));
+        AosVcManagedParameters(String yamcsInstance, String linkName) {
+            super(YConfiguration.emptyConfig(), new AosManagedParameters(YConfiguration.emptyConfig(), yamcsInstance,
+             linkName));
         }
     }
 

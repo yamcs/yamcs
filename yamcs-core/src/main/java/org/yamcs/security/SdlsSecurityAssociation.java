@@ -19,6 +19,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.memento.MementoDb;
 import org.yamcs.utils.ByteArrayUtils;
 
 /**
@@ -72,6 +73,11 @@ public class SdlsSecurityAssociation {
 
     private static final Logger log = LoggerFactory.getLogger(SdlsSecurityAssociation.class);
 
+    private final String instanceName;
+    private final String linkName;
+
+    private boolean skipVerifyingNextSeqNum = false;
+
     /**
      * @param key          the 256-bit key used for encryption/decryption
      * @param spi          the security parameter index, shared between sender and receiver.
@@ -79,12 +85,22 @@ public class SdlsSecurityAssociation {
      *                     be accepted.
      * @param verifySeqNum whether to verify the received anti-replay sequence number based on the seqNumWindow.
      */
-    public SdlsSecurityAssociation(byte[] key, short spi, int seqNumWindow, boolean verifySeqNum) {
-        this.secretKey = new SecretKeySpec(key, secretKeyAlgorithm);
-        this.seqNum = BigInteger.valueOf(0);
-        this.seqNumWindow = Math.abs(seqNumWindow); // just to ensure it's not negative
+    public SdlsSecurityAssociation(String instanceName, String linkName, byte[] key, short spi, int seqNumWindow,
+                                   boolean verifySeqNum) {
+        this.instanceName = instanceName;
+        this.linkName = linkName;
         this.spi = spi;
+        this.secretKey = new SecretKeySpec(key, secretKeyAlgorithm);
+        if (instanceName != null && linkName != null) {
+            this.seqNum = loadSeqNum();
+        } else {
+            this.seqNum = BigInteger.ZERO;
+        }
+        this.seqNumWindow = Math.abs(seqNumWindow); // just to ensure it's not negative
         this.verifySeqNum = verifySeqNum;
+    }
+    public SdlsSecurityAssociation(byte[] key, short spi, int seqNumWindow, boolean verifySeqNum) {
+        this(null, null, key, spi, seqNumWindow, verifySeqNum);
     }
 
     byte[] getSeqNumIvBytes() {
@@ -157,6 +173,20 @@ public class SdlsSecurityAssociation {
         }
     }
 
+    BigInteger loadSeqNum() {
+        var mementoDb = MementoDb.getInstance(instanceName);
+        return mementoDb.getObject(SdlsMemento.MEMENTO_KEY, SdlsMemento.class)
+                .map(memento -> memento.getSeqNum(linkName, spi))
+                .orElse(BigInteger.ZERO);
+    }
+    void persistSeqNum() {
+        var mementoDb = MementoDb.getInstance(instanceName);
+        var memento = mementoDb.getObject(SdlsMemento.MEMENTO_KEY, SdlsMemento.class)
+                .orElse(new SdlsMemento());
+        memento.saveSeqNum(linkName, spi, seqNum);
+        mementoDb.putObject(SdlsMemento.MEMENTO_KEY, memento);
+    }
+
     /**
      * Encrypt the provided trasferFrame and authenticate data.
      *
@@ -173,6 +203,7 @@ public class SdlsSecurityAssociation {
         // IV must never be re-used with same key for AES-GCM, so we generate a random
         // one for every encryption.
         byte[] iv = getSeqNumIvBytes();
+
         assert iv.length == GCM_IV_LEN_BYTES: "IV legth should be " + GCM_IV_LEN_BYTES + " but is " + iv.length;
 
         // Fill security header
@@ -183,6 +214,10 @@ public class SdlsSecurityAssociation {
         System.arraycopy(iv, 0, transferFrame, secHeaderStart + 2, iv.length);
         // and increment the sequence number
         incSeqNum();
+
+        // Save the next seq num to be sent
+        if (instanceName != null && linkName != null)
+            persistSeqNum();
 
         // create data to authenticate by masking frame headers with authMask
         byte[] authMask = completeAuthMask(partialAuthMask);
@@ -376,10 +411,16 @@ public class SdlsSecurityAssociation {
         // Check the sequence number
         BigInteger receivedSeqNum = new BigInteger(1, receivedIv);
 
-        if (!seqNumValid(receivedSeqNum)) {
+        if (skipVerifyingNextSeqNum) {
+            skipVerifyingNextSeqNum = false;
+        } else if (!seqNumValid(receivedSeqNum)) {
             return VerificationStatusCode.AntiReplaySequenceNumberFailure;
         }
         seqNum = receivedSeqNum;
+        // Save the last received seq num
+        if (instanceName != null && linkName != null) {
+            persistSeqNum();
+        }
 
         // Zero the sec header and sec trailer
         Arrays.fill(transferFrame, dataStart - getHeaderSize(), dataStart, (byte) 0);
@@ -387,6 +428,10 @@ public class SdlsSecurityAssociation {
 
         log.debug("Processed security SPI {}, seq num {}", receivedSpi, seqNum);
         return VerificationStatusCode.NoFailure;
+    }
+
+    public void skipVerifyingNextSeqNum() {
+        skipVerifyingNextSeqNum = true;
     }
 
     /* Methods used by HTTP API */

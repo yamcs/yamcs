@@ -26,7 +26,7 @@ public class VcDownlinkManagedParameters {
     /**
      * The Security Parameter Index used on this channel
      */
-    short[] encryptionSpis;
+    short[] encryptionSpis = new short[0];
     byte[] authMask;
 
     public VcDownlinkManagedParameters(int vcId) {
@@ -41,7 +41,7 @@ public class VcDownlinkManagedParameters {
             List<Integer> spis = config.getList("encryptionSpis");
             if (spis.isEmpty()) {
                 throw new ConfigurationException("List of encryption SPIs should have at least one element, but is " +
-                        "empty for vcId " + vcId + " link " + config.getString("linkName"));
+                        "empty for vcId " + vcId + " link " + params.linkName);
             }
             encryptionSpis = new short[spis.size()];
             for (int i = 0; i < spis.size(); ++i) {
@@ -50,7 +50,7 @@ public class VcDownlinkManagedParameters {
                 if (!params.sdlsSecurityAssociations.containsKey(currentSpi)) {
                     throw new ConfigurationException("Encryption SPI " + currentSpi
                             + " configured for vcId "
-                            + vcId + " is not configured for link " + config.getString("linkName"));
+                            + vcId + " is not configured for link " + params.linkName);
                 }
 
                 encryptionSpis[i] = currentSpi;

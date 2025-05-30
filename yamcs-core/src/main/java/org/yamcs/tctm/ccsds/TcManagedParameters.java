@@ -22,8 +22,8 @@ public class TcManagedParameters extends UplinkManagedParameters {
 
     List<TcVcManagedParameters> vcParams = new ArrayList<>();
 
-    public TcManagedParameters(YConfiguration config) {
-        super(config);
+    public TcManagedParameters(YConfiguration config, String yamcsInstance, String linkName) {
+        super(config, yamcsInstance, linkName);
         maxFrameLength = config.getInt("maxFrameLength");
 
         if (maxFrameLength < 8 || maxFrameLength > 0xFFFF) {

@@ -19,8 +19,8 @@ public class TmManagedParameters extends DownlinkManagedParameters {
 
     Map<Integer, TmVcManagedParameters> vcParams = new HashMap<>();
 
-    public TmManagedParameters(YConfiguration config) {
-        super(config);
+    public TmManagedParameters(YConfiguration config, String yamcsInstance, String linkName) {
+        super(config, yamcsInstance, linkName);
 
         frameLength = config.getInt("frameLength");
         if (frameLength < 8 || frameLength > 0xFFFF) {

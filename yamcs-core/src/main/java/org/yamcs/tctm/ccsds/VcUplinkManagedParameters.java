@@ -42,7 +42,7 @@ public class VcUplinkManagedParameters {
             if (!params.sdlsSecurityAssociations.containsKey(encryptionSpi)) {
                 throw new ConfigurationException("Encryption SPI " + encryptionSpi
                         + " configured for vcId "
-                        + vcId + " is not configured for link " + config.getString("linkName"));
+                        + vcId + " is not configured for link " + params.linkName);
             }
         }
     }

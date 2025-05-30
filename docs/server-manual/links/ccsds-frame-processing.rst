@@ -156,7 +156,7 @@ seqNumWindow (integer)
     **Required.** If SDLS encryption is used, this defines the maximum value by which the sequence number of incoming frames can differ from the current sequence number.
 
 verifySeqNum (boolean)
-    If SDLS encryption is used, this defines whether received sequence numbers are verified according to the ``seqNumWindow``. Defaults to true.
+    If SDLS encryption is used, this defines whether received sequence numbers are verified according to the ``seqNumWindow``. Defaults to false on incoming links. If you set this to true, be aware that Yamcs persists sequence numbers across sessions, while the simulator does not. This means that you will see many warnings in the console, and frames will be rejected by Yamcs, until the simulator 'catches up' to the sequence number expected by Yamcs. The alternative is to manually change the sequence number Yamcs expects through the API.
 
 For each Virtual Channel in the ``virtualChannels`` map, the following parameters can be used:
 
@@ -322,7 +322,7 @@ seqNumWindow (integer)
     If SDLS encryption is used, this defines the maximum value by which the sequence number of incoming frames can differ from the current sequence number. The sequence number is 32 bits in size; as a potential future improvement, this could be made user-configurable.
 
 verifySeqNum (boolean)
-    If SDLS encryption is used, this defines whether received sequence numbers are verified according to the ``seqNumWindow``. Defaults to true.
+    If SDLS encryption is used, this defines whether received sequence numbers are verified according to the ``seqNumWindow``. Defaults to true on outgoing links, though it has no effect, as sequence numbers are validated only on received frames.
 
 service (string)
     Currently the only supported option is ``PACKET`` which is also the default.

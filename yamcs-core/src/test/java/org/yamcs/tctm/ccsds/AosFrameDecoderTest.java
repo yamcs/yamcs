@@ -81,7 +81,7 @@ public class AosFrameDecoderTest {
         vclist.add(vc1);
 
         YConfiguration config = YConfiguration.wrap(m);
-        return new AosManagedParameters(config);
+        return new AosManagedParameters(config, null, null);
 
     }
 

@@ -126,15 +126,15 @@ dataLinks:
       - spi: 1
         keyFile: etc/sdls-presharedkey-256bit
         seqNumWindow: 10
-        # verifySeqNum: true  # default
+        # verifySeqNum: false  # default for incoming links
       - spi: 2
         keyFile: etc/sdls-presharedkey-256bit
         seqNumWindow: 10
-        # verifySeqNum: true  # default
+        # verifySeqNum: false  # default for incoming links
       - spi: 3
         keyFile: etc/sdls-presharedkey-256bit
         seqNumWindow: 10
-        # verifySeqNum: true  # default
+        # verifySeqNum: false  # default for incoming links
     spacecraftId: 0xAB
     frameLength: 1115 #decoded frame length
     frameHeaderErrorControlPresent: true #2 bytes of reed-solomon (10,6) in the header of all frames

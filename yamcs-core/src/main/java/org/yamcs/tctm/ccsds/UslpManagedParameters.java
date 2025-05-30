@@ -32,8 +32,8 @@ public class UslpManagedParameters extends DownlinkManagedParameters {
     int fshLength; // 0 means not present
     Map<Integer, UslpVcManagedParameters> vcParams = new HashMap<>();
 
-    public UslpManagedParameters(YConfiguration config) {
-        super(config);
+    public UslpManagedParameters(YConfiguration config, String yamcsInstance, String linkName) {
+        super(config, yamcsInstance, linkName);
 
         frameLength = config.getInt("frameLength", -1);
         if (frameLength < 0) {

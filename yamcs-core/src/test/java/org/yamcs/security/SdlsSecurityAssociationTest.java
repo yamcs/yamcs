@@ -66,7 +66,8 @@ public class SdlsSecurityAssociationTest {
         // Try to decrypt with a wrong key, and fail
         Path wrongKeypath = RESOURCE_DIR.resolve("wrong-presharedkey");
         byte[] wrongKey = Files.readAllBytes(wrongKeypath);
-        SdlsSecurityAssociation wrongSa = new SdlsSecurityAssociation(wrongKey, (short) 42, seqNumWindow, true);
+        SdlsSecurityAssociation wrongSa = new SdlsSecurityAssociation(wrongKey, (short) 42,
+                seqNumWindow, true);
         assertEquals(VerificationStatusCode.MacVerificationFailure, wrongSa.processSecurity(frame, 0, dataStart,
                 frame.length, authMask));
     }
@@ -79,7 +80,8 @@ public class SdlsSecurityAssociationTest {
         // Try to decrypt with a wrong SPI
         Path wrongKeypath = RESOURCE_DIR.resolve("presharedkey");
         byte[] wrongKey = Files.readAllBytes(wrongKeypath);
-        SdlsSecurityAssociation wrongSa = new SdlsSecurityAssociation(wrongKey, (short) 1, seqNumWindow, true);
+        SdlsSecurityAssociation wrongSa = new SdlsSecurityAssociation(wrongKey, (short) 1,
+                seqNumWindow, true);
         assertEquals(VerificationStatusCode.InvalidSPI, wrongSa.processSecurity(frame, 0, dataStart, frame.length,
                 authMask));
     }
