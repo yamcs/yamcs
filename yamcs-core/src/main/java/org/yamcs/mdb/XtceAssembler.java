@@ -488,6 +488,31 @@ public class XtceAssembler {
         if (ptype.getEncoding() != null) {
             writeDataEncoding(doc, ptype.getEncoding());
         }
+
+        NumericAlarm alarm = ptype.getDefaultAlarm();
+        if (alarm != null) {
+            doc.writeStartElement("DefaultAlarm");
+            if (alarm.getMinViolations() != 1) {
+                doc.writeAttribute("minViolations", Integer.toString(alarm.getMinViolations()));
+            }
+            writeNumericAlarm(doc, alarm);
+            doc.writeEndElement();
+        }
+
+        if (ptype.getContextAlarmList() != null) {
+            doc.writeStartElement("ContextAlarmList");
+            for (NumericContextAlarm nca : ptype.getContextAlarmList()) {
+                doc.writeStartElement("ContextAlarm");
+                writeNumericAlarm(doc, nca);
+                doc.writeStartElement("ContextMatch");
+                writeMatchCriteria(doc, nca.getContextMatch());
+                doc.writeEndElement();// ContextMatch
+                doc.writeEndElement();// ContextAlarm
+
+            }
+            doc.writeEndElement();// ContextAlarmList
+        }
+
         doc.writeEndElement();
     }
 
@@ -546,15 +571,19 @@ public class XtceAssembler {
             return;
         }
         doc.writeStartElement(elementName);
-        if (range.isMinInclusive()) {
-            doc.writeAttribute("minInclusive", String.valueOf(range.getMin()));
-        } else {
-            doc.writeAttribute("minExclusive", String.valueOf(range.getMin()));
+        if (Double.isFinite(range.getMin())) {
+            if (range.isMinInclusive()) {
+                doc.writeAttribute("minInclusive", String.valueOf(range.getMin()));
+            } else {
+                doc.writeAttribute("minExclusive", String.valueOf(range.getMin()));
+            }
         }
-        if (range.isMaxInclusive()) {
-            doc.writeAttribute("maxInclusive", String.valueOf(range.getMax()));
-        } else {
-            doc.writeAttribute("maxExclusive", String.valueOf(range.getMax()));
+        if (Double.isFinite(range.getMax())) {
+            if (range.isMaxInclusive()) {
+                doc.writeAttribute("maxInclusive", String.valueOf(range.getMax()));
+            } else {
+                doc.writeAttribute("maxExclusive", String.valueOf(range.getMax()));
+            }
         }
         if (appliesToCalibrated != null) {
             doc.writeAttribute("validRangeAppliesToCalibrated", appliesToCalibrated.toString());
@@ -796,9 +825,20 @@ public class XtceAssembler {
             doc.writeAttribute(ATTR_INITIAL_VALUE, atype.getInitialValue().toString());
         }
         writeNameDescription(doc, atype);
+        writeUnitSet(doc, atype.getUnitSet());
+
+        if (atype.getEncoding() != null) {
+            writeDataEncoding(doc, atype.getEncoding());
+        }
+
         if (atype.getValidRange() != null) {
+            doc.writeStartElement("ValidRangeSet");
             FloatValidRange range = atype.getValidRange();
+
+            doc.writeAttribute("validRangeAppliesToCalibrated", "true");
+
             doc.writeStartElement("ValidRange");
+
             if (range.isMinInclusive()) {
                 doc.writeAttribute("minInclusive", String.valueOf(range.getMin()));
             } else {
@@ -810,13 +850,9 @@ public class XtceAssembler {
                 doc.writeAttribute("maxExclusive", String.valueOf(range.getMax()));
             }
 
-            doc.writeAttribute("validRangeAppliesToCalibrated", "true");
-            doc.writeEndElement();
-        }
-        writeUnitSet(doc, atype.getUnitSet());
+            doc.writeEndElement(); // ValidRange
 
-        if (atype.getEncoding() != null) {
-            writeDataEncoding(doc, atype.getEncoding());
+            doc.writeEndElement(); // ValidRangeSet
         }
 
         doc.writeEndElement();
@@ -1108,7 +1144,7 @@ public class XtceAssembler {
                 doc.writeEndElement();
             } else if (encoding.getSizeType() == SizeType.TERMINATION_CHAR) {
                 doc.writeStartElement("TerminationChar");
-                doc.writeCharacters(Integer.toHexString(encoding.getTerminationChar()));
+                writeHexBinary(doc, encoding.getTerminationChar());
                 doc.writeEndElement();
             }
             doc.writeEndElement();// SizeInBits
@@ -1142,15 +1178,7 @@ public class XtceAssembler {
                 doc.writeEndElement();
             } else if (encoding.getSizeType() == SizeType.TERMINATION_CHAR) {
                 doc.writeStartElement("TerminationChar");
-
-                // hexBinary requires multiples of 2 hex digits
-                var hex = Integer.toHexString(encoding.getTerminationChar());
-                if (hex.length() % 2 == 0) {
-                    doc.writeCharacters(hex);
-                } else {
-                    doc.writeCharacters("0" + hex);
-                }
-
+                writeHexBinary(doc, encoding.getTerminationChar());
                 doc.writeEndElement();
             }
 
@@ -1768,4 +1796,13 @@ public class XtceAssembler {
         }
     }
 
+    private static void writeHexBinary(XMLStreamWriter doc, int character) throws XMLStreamException {
+        // hexBinary requires multiples of 2 hex digits
+        var hex = Integer.toHexString(character);
+        if (hex.length() % 2 == 0) {
+            doc.writeCharacters(hex);
+        } else {
+            doc.writeCharacters("0" + hex);
+        }
+    }
 }
