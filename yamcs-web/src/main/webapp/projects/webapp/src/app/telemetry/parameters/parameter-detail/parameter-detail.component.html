@@ -227,6 +227,8 @@
       <dl class="dl-horizontal">
         <dt>Generation time</dt>
         <dd>{{ pval?.generationTime | datetime }}</dd>
+        <dt>Status</dt>
+        <dd>{{ pval?.acquisitionStatus || "-" }}</dd>
         <dt>Raw value</dt>
         <dd>{{ (pval?.rawValue | value) ?? "-" }}</dd>
       </dl>
