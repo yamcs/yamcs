@@ -35,12 +35,11 @@ public class MasterChannelHandler extends ChannelInboundHandlerAdapter {
     Request req;
     private ChannelHandlerContext channelHandlerContext;
     ChannelFuture dataHandlingFuture;
-    ReplicationFile currentFile;
+    ManagedReplicationFile currentFile;
     long nextTxToSend;
     ReplicationTail fileTail;
     SlaveServer slaveServer;
     private ScheduledFuture<?> timeMsgFuture;
-
 
     // called when we are TCP client
     public MasterChannelHandler(TimeService timeService, ReplicationMaster master, SlaveServer slaveServer) {
@@ -77,6 +76,7 @@ public class MasterChannelHandler extends ChannelInboundHandlerAdapter {
         } catch (DecodingException e) {
             log.warn("Failed to decode message", e);
             ctx.close();
+            cleanup();
             return;
         }
 
@@ -120,6 +120,7 @@ public class MasterChannelHandler extends ChannelInboundHandlerAdapter {
         if (dataHandlingFuture != null) {
             dataHandlingFuture.cancel(true);
         }
+        cleanup();
         if (req.hasStartTxId()) {
             nextTxToSend = req.getStartTxId();
         } else {
@@ -138,6 +139,7 @@ public class MasterChannelHandler extends ChannelInboundHandlerAdapter {
 
     void goToNextFile() {
         if (!channelHandlerContext.channel().isActive()) {
+            cleanup();
             return;
         }
         log.trace("Looking for a new file for transaction {}", nextTxToSend);
@@ -147,12 +149,12 @@ public class MasterChannelHandler extends ChannelInboundHandlerAdapter {
             workerGroup.schedule(() -> goToNextFile(), 60, TimeUnit.SECONDS);
             return;
         }
-        log.trace("Found file with firstTxId={} nextTxId={}", currentFile.getFirstId(), currentFile.getNextTxId());
-        if (nextTxToSend < currentFile.getFirstId()) {
+        log.trace("Found file with firstTxId={} nextTxId={}", currentFile.getFirstTxId(), currentFile.getNextTxId());
+        if (nextTxToSend < currentFile.getFirstTxId()) {
             log.warn("Requested start from {} but the first available transaction is {}. Replaying from there",
-                    nextTxToSend, currentFile.getFirstId());
-            nextTxToSend = currentFile.getFirstId();
-        } else if (nextTxToSend > currentFile.getFirstId()) {
+                    nextTxToSend, currentFile.getFirstTxId());
+            nextTxToSend = currentFile.getFirstTxId();
+        } else if (nextTxToSend > currentFile.getFirstTxId()) {
             // start from the middle of the file, write first the metadata
             Iterator<ByteBuffer> it = currentFile.metadataIterator();
             while (it.hasNext()) {
@@ -172,6 +174,7 @@ public class MasterChannelHandler extends ChannelInboundHandlerAdapter {
 
     void sendMoreData() {
         if (!channelHandlerContext.channel().isActive()) {
+            cleanup();
             return;
         }
         if (fileTail == null) {
@@ -183,6 +186,8 @@ public class MasterChannelHandler extends ChannelInboundHandlerAdapter {
         log.trace("nextTxToSend: {}, FileTail: {} ", nextTxToSend, fileTail);
         if (fileTail.nextTxId == nextTxToSend) {// no more data available
             if (fileTail.eof) { // file, full, go to next file
+                currentFile.release();
+                currentFile = null;
                 goToNextFile();
             } else { // check back in 200 millisec
                 workerGroup.schedule(() -> sendMoreData(), 200, TimeUnit.MILLISECONDS);
@@ -215,6 +220,13 @@ public class MasterChannelHandler extends ChannelInboundHandlerAdapter {
         Message msg = Message.get(tm);
         ByteBuf bb = Unpooled.wrappedBuffer(msg.encode());
         channelHandlerContext.writeAndFlush(bb);
+    }
+
+    private void cleanup() {
+        if (currentFile != null) {
+            currentFile.release();
+            currentFile = null;
+        }
     }
 
     /**

@@ -15,8 +15,6 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.zip.CRC32;
 
 import org.yamcs.logging.Log;
@@ -90,8 +88,6 @@ public class ReplicationFile implements Closeable {
     final static int MIN_RECORD_SIZE = 20; // size, instanceId, txId, crc
 
     final Log log;
-
-    ReadWriteLock rwlock = new ReentrantReadWriteLock();
 
     private MappedByteBuffer buf;
     private int lastMetadataTxStart;
@@ -375,7 +371,6 @@ public class ReplicationFile implements Closeable {
             return -1;
         }
 
-        rwlock.writeLock().lock();
         final int txStartPos = buf.position();
 
         try {
@@ -439,8 +434,6 @@ public class ReplicationFile implements Closeable {
             buf.position(txStartPos);
             log.error("Caught exception when writing the replication file ", e);
             throw e;
-        } finally {
-            rwlock.writeLock().unlock();
         }
     }
 
@@ -537,27 +530,22 @@ public class ReplicationFile implements Closeable {
         if (txNum < 0) {
             throw new IllegalArgumentException(txId + " is smaller than " + hdr1.firstId);
         }
-        rwlock.readLock().lock();
-        try {
 
-            int pos = getPosition(txNum);
-            if (pos < 0) {
-                return null;
-            }
-
-            ByteBuffer buf1 = buf.duplicate().asReadOnlyBuffer();
-            buf1.position(pos);
-            buf1.limit(buf.position());
-            ReplicationTail rfe = new ReplicationTail();
-            rfe.buf = buf1;
-            rfe.nextTxId = getNextTxId();
-            if (fileFull) {
-                rfe.eof = true;
-            }
-            return rfe;
-        } finally {
-            rwlock.readLock().unlock();
+        int pos = getPosition(txNum);
+        if (pos < 0) {
+            return null;
         }
+
+        ByteBuffer buf1 = buf.duplicate().asReadOnlyBuffer();
+        buf1.position(pos);
+        buf1.limit(buf.position());
+        ReplicationTail rfe = new ReplicationTail();
+        rfe.buf = buf1;
+        rfe.nextTxId = getNextTxId();
+        if (fileFull) {
+            rfe.eof = true;
+        }
+        return rfe;
     }
 
     /**
@@ -568,16 +556,11 @@ public class ReplicationFile implements Closeable {
      * @param rfe
      */
     public void getNewData(ReplicationTail rfe) {
-        rwlock.readLock().lock();
-        try {
-            rfe.buf.limit(buf.position());
-            if (fileFull) {
-                rfe.eof = true;
-            }
-            rfe.nextTxId = getNextTxId();
-        } finally {
-            rwlock.readLock().unlock();
+        rfe.buf.limit(buf.position());
+        if (fileFull) {
+            rfe.eof = true;
         }
+        rfe.nextTxId = getNextTxId();
     }
 
     /**
@@ -662,14 +645,9 @@ public class ReplicationFile implements Closeable {
      */
     public void sync() throws IOException {
         if (!readOnly) {
-            rwlock.readLock().lock();
-            try {
-                fc.force(true);
-                hdr2.write();
-                fc.force(true);
-            } finally {
-                rwlock.readLock().unlock();
-            }
+            fc.force(true);
+            hdr2.write();
+            fc.force(true);
         }
     }
 

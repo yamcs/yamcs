@@ -10,7 +10,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -62,10 +61,10 @@ import io.netty.handler.ssl.SslContextBuilder;
  */
 public class ReplicationMaster extends AbstractYamcsService {
 
-    ConcurrentSkipListMap<Long, ReplFileAccess> replFiles = new ConcurrentSkipListMap<>();
-    volatile ReplicationFile currentFile = null;
+    ConcurrentSkipListMap<Long, ManagedReplicationFile> replFiles = new ConcurrentSkipListMap<>();
+    volatile ManagedReplicationFile currentFile = null;
 
-    List<ReplFileAccess> toDeleteList = new ArrayList<>();
+    List<ManagedReplicationFile> toDeleteList = new ArrayList<>();
     int port;
     List<String> streamNames;
     List<StreamToFile> translators = new ArrayList<>();
@@ -202,18 +201,21 @@ public class ReplicationMaster extends AbstractYamcsService {
         return spec;
     }
 
+    // called at startup, after having scanned all the replication files on disk,
+    // the last one will be opened in case it is not full
     private void initCurrentFile() throws IOException, InitException {
         if (replFiles.isEmpty()) {
             openNewFile(null);
         } else { // open last file
-            Map.Entry<Long, ReplFileAccess> e = replFiles.lastEntry();
+            Map.Entry<Long, ManagedReplicationFile> e = replFiles.lastEntry();
             long firstTxId = e.getKey();
-            ReplFileAccess rfa = e.getValue();
+            currentFile = e.getValue();
             Path path = getPath(firstTxId);
-            if (Files.size(path) > maxFileSize) {
+            if (currentFile.isFull()) {
                 // the last file is greater that maxFileSize (probably maxFileSize has been changed)
                 // we have to open it read only to find out last transaction, then open a new file
-                rfa.rf = currentFile = ReplicationFile.openReadOnly(yamcsInstance, path, firstTxId);
+                currentFile.openReadOnly();
+
                 if (currentFile.numTx() == 0) {
                     throw new InitException("file " + path
                             + " has zero transactions inside but is bigger that currently defined maxiFileSize. Maybe maxFileSize is too small? Please consider the header size: "
@@ -221,8 +223,8 @@ public class ReplicationMaster extends AbstractYamcsService {
                 }
                 openNewFile(currentFile);
             } else {
-                rfa.rf = currentFile = ReplicationFile.openReadWrite(yamcsInstance, path,
-                        firstTxId, maxFileSize);
+                currentFile.openReadWrite();
+                currentFile.acquire();
                 if (currentFile.isFull()) {
                     openNewFile(currentFile);
                 }
@@ -267,10 +269,8 @@ public class ReplicationMaster extends AbstractYamcsService {
         }
         translators.clear();
 
-        for (ReplFileAccess rf : replFiles.values()) {
-            if (rf.rf != null) {
-                rf.rf.close();
-            }
+        for (ManagedReplicationFile mrf : replFiles.values()) {
+            mrf.close();
         }
         replFiles.clear();
 
@@ -286,23 +286,25 @@ public class ReplicationMaster extends AbstractYamcsService {
         notifyStopped();
     }
 
-    private synchronized void openNewFile(ReplicationFile rf) {
-        if (rf != currentFile) {// some other thread has already open a new file
+    private synchronized void openNewFile(ManagedReplicationFile mrf) {
+        if (mrf != currentFile) {// some other thread has already open a new file
             return;
         }
         long firstTxId = 0;
 
-        if (currentFile != null) {
+        if (mrf != null) {
             firstTxId = currentFile.getNextTxId();
             currentFile.setSyncRequired(true);
+            mrf.release();
         }
 
         try {
-            currentFile = ReplicationFile.newFile(yamcsInstance, getPath(firstTxId), firstTxId, pageSize,
-                    maxPages,
-                    maxFileSize);
-            replFiles.put(firstTxId, new ReplFileAccess(currentFile));
-            // send a StreamInfo for all streams
+            currentFile = new ManagedReplicationFile(yamcsInstance, firstTxId, getPath(firstTxId), maxFileSize);
+            currentFile.createNew(pageSize, maxPages);
+            currentFile.acquire();
+
+            replFiles.put(firstTxId, currentFile);
+            // write a StreamInfo for all streams
             for (StreamToFile stf : translators) {
                 if (currentFile.writeData(getProtoTransaction(stf.getStreamInfo())) == -1) {
                     throw new IOException(
@@ -325,8 +327,10 @@ public class ReplicationMaster extends AbstractYamcsService {
                 Matcher m = filePattern.matcher(name);
                 if (m.matches()) {
                     long txId = Long.parseLong(m.group(1), 16);
-                    replFiles.put(txId, new ReplFileAccess(file));
                     log.debug("Found file starting with txId {}", txId);
+                    replFiles.put(txId,
+                            new ManagedReplicationFile(yamcsInstance, txId, file, maxFileSize));
+
                 }
             }
         } catch (IOException e) {
@@ -345,7 +349,7 @@ public class ReplicationMaster extends AbstractYamcsService {
     }
 
     private void writeToFile(Transaction tx) {
-        ReplicationFile cf = currentFile;
+        ManagedReplicationFile cf = currentFile;
         try {
             long txId = cf.writeData(tx);
             if (txId == -1) {// file full
@@ -361,7 +365,7 @@ public class ReplicationMaster extends AbstractYamcsService {
             }
         } catch (UncheckedIOException e) {
             log.error("Got exception when writing transaction to file, forcefully opening a new replication file", e);
-            replFiles.remove(cf.getFirstId());
+            replFiles.remove(cf.getFirstTxId());
             openNewFile(cf);
         }
     }
@@ -496,7 +500,7 @@ public class ReplicationMaster extends AbstractYamcsService {
                 StreamInfo strinfo = getStreamInfo();
                 log.debug("Writing stream info transaction {}", TextFormat.shortDebugString(strinfo));
                 Transaction tx = getProtoTransaction(strinfo);
-                ReplicationFile cf = currentFile;
+                ManagedReplicationFile cf = currentFile;
                 long txId = cf.writeData(tx);
                 if (txId == -1) {
                     // file full - open a new one and don't write the metadata transaction anymore, it will be written
@@ -528,27 +532,27 @@ public class ReplicationMaster extends AbstractYamcsService {
      * Return null if the transaction is in the future. If there is a file which does not contain the startTxId but it's
      * just the next one to come, then return that file.
      * 
+     * <p>
+     * The file has the refCount increased so the caller must call the release method once it finished with it
+     * 
      * 
      * @param startTxId
      * @return
      */
-    public ReplicationFile getFile(long startTxId) {
-        Map.Entry<Long, ReplFileAccess> e = replFiles.floorEntry(startTxId);
+    public ManagedReplicationFile getFile(long startTxId) {
+        Map.Entry<Long, ManagedReplicationFile> e = replFiles.floorEntry(startTxId);
         if (e == null) { // transaction is in the past not available
             e = replFiles.firstEntry();
         }
-        ReplFileAccess rfa = e.getValue();
-        synchronized (rfa) {
-            if (rfa.rf == null) {
-                long firstTxId = e.getKey();
-                rfa.rf = ReplicationFile.openReadOnly(yamcsInstance, getPath(firstTxId),
-                        firstTxId);
-            }
-            rfa.lastAccess = System.currentTimeMillis();
+        ManagedReplicationFile mrf = e.getValue();
+        if (!mrf.acquire()) {
+            // the file has just been removed
+            return getFile(startTxId);
         }
-        ReplicationFile rf = rfa.rf;
-        long nextTxId = rf.getNextTxId();
+
+        long nextTxId = mrf.getNextTxId();
         if (nextTxId < startTxId) {
+            mrf.release();
             Long k = replFiles.ceilingKey(nextTxId);
             if (k != null && k != nextTxId) {
                 log.error("There is a gap in the replication files, transactions {} to {} are missing", nextTxId,
@@ -558,7 +562,7 @@ public class ReplicationMaster extends AbstractYamcsService {
             return null;
         }
 
-        return rf;
+        return mrf;
     }
 
     Path getPath(long firstTxId) {
@@ -571,35 +575,20 @@ public class ReplicationMaster extends AbstractYamcsService {
     private void closeUnusedFiles() {
         long t = System.currentTimeMillis() - fileCloseTime;
         try {
-            for (ReplFileAccess rfa : replFiles.values()) {
-                synchronized (rfa) {
-                    if (rfa.rf != currentFile && rfa.rf != null && rfa.lastAccess < t) {
-                        log.debug("Closing {} because it has not been accessed since {}", rfa.path,
-                                Instant.ofEpochMilli(rfa.lastAccess));
-                        rfa.rf.close();
-                        rfa.rf = null;
-                    } else if (rfa.rf != null && rfa.rf.isSyncRequired()) {
-                        // the file has just been rotated by the data thread
-                        rfa.rf.sync();
-                        currentFile.setSyncRequired(false);
-                    }
-                }
+            for (ManagedReplicationFile mrf : replFiles.values()) {
+                mrf.syncOrClose(t);
             }
         } catch (IOException e) {
             log.warn("Caught exception when closing or syncing files", e);
         }
 
         try {
-            for (ReplFileAccess rfa : toDeleteList) {
-                synchronized (rfa) {
-                    if (rfa.rf != null && rfa.lastAccess < t) {
-                        log.debug("Closing and removing {} because it has not been accessed since {} "
-                                + "and it is on the list for deletion.",
-                                rfa.path, Instant.ofEpochMilli(rfa.lastAccess));
-                        rfa.rf.close();
-                        Files.delete(rfa.path);
-                        rfa.rf = null;
-                    }
+            var it = toDeleteList.iterator();
+            while (it.hasNext()) {
+                var rfa = it.next();
+                if (rfa.delete()) {
+                    log.debug("Deleted file {} ", rfa.path);
+                    it.remove();
                 }
             }
         } catch (IOException e) {
@@ -615,7 +604,7 @@ public class ReplicationMaster extends AbstractYamcsService {
                 Matcher m = filePattern.matcher(name);
                 if (m.matches()) {
                     long txId = Long.parseLong(m.group(1), 16);
-                    if (txId != currentFile.getFirstId()) {// never remove the current file
+                    if (txId != currentFile.getFirstTxId()) {// never remove the current file
                         checkForRemoval(file, txId);
                     }
                 }
@@ -640,18 +629,12 @@ public class ReplicationMaster extends AbstractYamcsService {
         if (bfa.creationTime().toMillis() > t) {
             return;
         }
-        ReplFileAccess rfa = replFiles.remove(firstTxId);
-        if (rfa == null) {// probably one that is on the toDeleteList
-            return;
-        }
-        synchronized (rfa) {
-            if (rfa.rf == null) {
-                log.debug("Deleting file {} created {}", file, bfa.creationTime());
-                Files.delete(file);
-            } else {
-                // file is open for replay, put it on the list to be removed when it is closed
-                toDeleteList.add(rfa);
-            }
+
+        ManagedReplicationFile rfa = replFiles.remove(firstTxId);
+        if (rfa.delete()) {
+            log.debug("Deleted file {} created {}", file, bfa.creationTime());
+        } else {
+            toDeleteList.add(rfa);
         }
     }
 
@@ -673,23 +656,6 @@ public class ReplicationMaster extends AbstractYamcsService {
             }
         } catch (IOException e) {
             throw new InitException(e);
-        }
-    }
-
-    static class ReplFileAccess {
-        long lastAccess;
-        ReplicationFile rf;
-        Path path;
-
-        public ReplFileAccess(ReplicationFile file) {
-            this.lastAccess = System.currentTimeMillis();
-            this.rf = file;
-        }
-
-        public ReplFileAccess(Path path) {
-            this.lastAccess = -1;
-            this.rf = null;
-            this.path = path;
         }
     }
 
