@@ -192,14 +192,15 @@ public class TimelineItemDb implements ItemProvider {
     @Override
     public TimelineItem updateItem(TimelineItem item) {
         rwlock.writeLock().lock();
-        var item1 = fromCache(UUID.fromString(item.getId()));
-        if (item1 == null) {
-            throw new InvalidRequestException(
-                    "Item " + item.displayName() + " does not exist in the database");
-        }
 
-        UUID itemId = UUID.fromString(item.getId());
         try {
+            var item1 = fromCache(UUID.fromString(item.getId()));
+            if (item1 == null) {
+                throw new InvalidRequestException(
+                        "Item " + item.displayName() + " does not exist in the database");
+            }
+
+            UUID itemId = UUID.fromString(item.getId());
             if (item.getRelativeItemUuid() != null) {
                 TimelineItem relItem = fromCache(item.getRelativeItemUuid());
                 if (relItem == null) {
