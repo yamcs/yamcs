@@ -3,7 +3,6 @@ import {
   booleanAttribute,
   Directive,
   ElementRef,
-  HostBinding,
   HostListener,
   Input,
   OnChanges,
@@ -30,9 +29,12 @@ import { SdkBridge } from '../../services/sdk-bridge.service';
  */
 @Directive({
   selector: '[yaHref]',
+  host: {
+    '[attr.target]': 'target',
+  },
 })
 export class YaHref implements OnChanges, OnDestroy {
-  @HostBinding('attr.target') @Input() target?: string;
+  @Input() target?: string;
   @Input() queryParams?: Params | null;
   @Input() queryParamsHandling?: QueryParamsHandling | null;
   @Input() fragment?: string;

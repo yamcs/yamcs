@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  HostBinding,
-  Input,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommandHistoryRecord, WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
@@ -11,6 +6,9 @@ import { CommandHistoryRecord, WebappSdkModule } from '@yamcs/webapp-sdk';
   templateUrl: './command-arguments.component.html',
   styleUrl: './command-arguments.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[class.nomargin]': 'nomargin',
+  },
   imports: [WebappSdkModule],
 })
 export class CommandArgumentsComponent {
@@ -18,6 +16,5 @@ export class CommandArgumentsComponent {
   command: CommandHistoryRecord;
 
   @Input()
-  @HostBinding('class.nomargin')
   nomargin = false;
 }

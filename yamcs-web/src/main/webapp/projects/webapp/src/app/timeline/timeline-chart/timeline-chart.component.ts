@@ -243,7 +243,7 @@ export class TimelineChartComponent implements AfterViewInit, OnDestroy {
    * When the tab becomes active again, make sure to undo
    * any weird visual artifacts coming from this.
    */
-  @HostListener('document:visibilitychange', ['$event'])
+  @HostListener('document:visibilitychange')
   onVisibilityChange() {
     if (!document.hidden) {
       this.refreshView();

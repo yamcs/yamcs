@@ -1,5 +1,11 @@
-import { DOCUMENT } from '@angular/common';
-import { Inject, Injectable, OnDestroy, effect, signal } from '@angular/core';
+import {
+  DOCUMENT,
+  Inject,
+  Injectable,
+  OnDestroy,
+  effect,
+  signal,
+} from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })

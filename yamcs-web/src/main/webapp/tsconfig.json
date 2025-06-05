@@ -33,6 +33,7 @@
     "strictInputAccessModifiers": true,
     "strictTemplates": true,
     "strictInputTypes": false,
+    "typeCheckHostBindings": true,
     "extendedDiagnostics": {
       "checks": {
         "unusedStandaloneImports": "suppress"

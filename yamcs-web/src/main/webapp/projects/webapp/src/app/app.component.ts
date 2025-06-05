@@ -3,7 +3,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
-  HostBinding,
   OnDestroy,
   ViewChild,
 } from '@angular/core';
@@ -31,10 +30,12 @@ import { SelectInstanceDialogComponent } from './shared/select-instance-dialog/s
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[class]': 'componentCssClass',
+  },
   imports: [WebappSdkModule],
 })
 export class AppComponent implements AfterViewInit, OnDestroy {
-  @HostBinding('class')
   componentCssClass: string;
 
   @ViewChild('extensionInitializers')
