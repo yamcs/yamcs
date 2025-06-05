@@ -2226,7 +2226,8 @@ export default class YamcsClient implements HttpHandler {
           .filter((key) => key !== 'options')
           .reduce(
             (res: { [key: string]: any }, key) => (
-              (res[key] = indexedRequest[key]), res
+              (res[key] = indexedRequest[key]),
+              res
             ),
             {},
           ),

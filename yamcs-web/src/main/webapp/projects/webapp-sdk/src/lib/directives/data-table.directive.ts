@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  HostBinding,
   ViewEncapsulation,
 } from '@angular/core';
 
@@ -11,6 +10,9 @@ import {
 @Component({
   selector: 'table[yaDataTable]',
   template: '<ng-content />',
+  host: {
+    '[class.ya-data-table]': 'applyClass',
+  },
   styles: `
     table.ya-data-table {
       border-spacing: 0;
@@ -56,6 +58,5 @@ import {
   encapsulation: ViewEncapsulation.None,
 })
 export class DataTableDirective {
-  @HostBinding('class.ya-data-table')
   applyClass = true;
 }

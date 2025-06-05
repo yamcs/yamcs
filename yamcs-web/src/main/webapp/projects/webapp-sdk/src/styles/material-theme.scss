@@ -28,39 +28,39 @@ $ya-theme: mat.define-theme(
 
     --mat-divider-color: rgba(0, 0, 0, 0.12);
 
-    --mdc-text-button-label-text-size: 14px;
-    --mdc-text-button-label-text-weight: 400;
-    --mdc-text-button-label-text-tracking: 0.0892857143em;
-    --mat-text-button-state-layer-color: #009e87;
-    --mdc-text-button-label-text-color: #009e87;
-    --mat-text-button-with-icon-horizontal-padding: 12px;
-    --mdc-text-button-container-shape: 4px;
-    --mdc-text-button-container-height: 30px;
-    --mdc-icon-button-icon-color: #009e87;
-    --mdc-outlined-button-label-text-color: #009e87;
-    --mdc-outlined-button-label-text-color: #009e87;
+    --mat-button-text-label-text-size: 14px;
+    --mat-button-text-label-text-weight: 400;
+    --mat-button-text-label-text-tracking: 0.0892857143em;
+    --mat-button-text-state-layer-color: #009e87;
+    --mat-button-text-label-text-color: #009e87;
+    --mat-button-text-with-icon-horizontal-padding: 12px;
+    --mat-button-text-container-shape: 4px;
+    --mat-button-text-container-height: 30px;
+    --mat-icon-button-icon-color: #009e87;
+    --mat-button-outlined-label-text-color: #009e87;
+    --mat-button-outlined-label-text-color: #009e87;
 
     --mat-menu-container-color: #fff;
     --mat-menu-divider-top-spacing: 0px;
     --mat-menu-divider-bottom-spacing: 0px;
     --mat-menu-item-label-text-weight: 400;
 
-    --mdc-tab-indicator-active-indicator-color: #009e87;
-    --mat-tab-header-active-focus-indicator-color: #009e87;
-    --mat-tab-header-active-focus-label-text-color: #009e87;
-    --mat-tab-header-active-hover-indicator-color: #009e87;
-    --mat-tab-header-active-hover-label-text-color: #009e87;
-    --mat-tab-header-active-ripple-color: #009e87;
-    --mat-tab-header-active-label-text-color: #009e87;
-    --mat-tab-header-divider-color: rgba(0, 0, 0, 0.12);
-    --mat-tab-header-inactive-ripple-color: #009e87;
-    --mat-tab-header-inactive-label-text-color: rgba(0, 0, 0, 0.6);
-    --mat-tab-header-inactive-focus-label-text-color: rgba(0, 0, 0, 0.6);
-    --mat-tab-header-inactive-hover-label-text-color: rgba(0, 0, 0, 0.6);
-    --mat-tab-header-label-text-tracking: 0.0892857143em;
+    --mat-tab-active-indicator-color: #009e87;
+    --mat-tab-active-focus-indicator-color: #009e87;
+    --mat-tab-active-focus-label-text-color: #009e87;
+    --mat-tab-active-hover-indicator-color: #009e87;
+    --mat-tab-active-hover-label-text-color: #009e87;
+    --mat-tab-active-ripple-color: #009e87;
+    --mat-tab-active-label-text-color: #009e87;
+    --mat-tab-divider-color: rgba(0, 0, 0, 0.12);
+    --mat-tab-inactive-ripple-color: #009e87;
+    --mat-tab-inactive-label-text-color: rgba(0, 0, 0, 0.6);
+    --mat-tab-inactive-focus-label-text-color: rgba(0, 0, 0, 0.6);
+    --mat-tab-inactive-hover-label-text-color: rgba(0, 0, 0, 0.6);
+    --mat-tab-label-text-tracking: 0.0892857143em;
 
-    --mdc-dialog-container-color: #fff;
-    --mdc-dialog-container-shape: 10px;
+    --mat-dialog-container-color: #fff;
+    --mat-dialog-container-shape: 10px;
     --mat-dialog-container-elevation-shadow:
       0px 11px 15px -7px rgba(0, 0, 0, 0.2),
       0px 24px 38px 3px rgba(0, 0, 0, 0.14),
@@ -70,38 +70,38 @@ $ya-theme: mat.define-theme(
     --mat-dialog-content-padding: 20px 24px;
     --mat-dialog-with-actions-content-padding: 20px 24px 0;
     --mat-dialog-headline-padding: 6px 24px 13px;
-    --mdc-dialog-subhead-line-height: 1rem;
-    --mdc-dialog-subhead-size: 14px;
+    --mat-dialog-subhead-line-height: 1rem;
+    --mat-dialog-subhead-size: 14px;
 
-    --mdc-switch-track-height: 14px;
-    --mdc-switch-track-width: 30px;
-    --mdc-switch-selected-icon-size: 16px;
-    --mdc-switch-unselected-icon-size: 16px;
-    --mat-switch-track-outline-width: 0;
-    --mat-switch-selected-track-outline-width: 0px;
-    --mat-switch-unselected-with-icon-handle-horizontal-margin: 0;
-    --mat-switch-unselected-pressed-handle-horizontal-margin: 0;
-    --mdc-switch-selected-focus-state-layer-color: #009e97;
-    --mdc-switch-selected-handle-color: #009e97;
-    --mdc-switch-selected-hover-state-layer-color: #009e97;
-    --mdc-switch-selected-pressed-state-layer-color: #009e97;
-    --mdc-switch-selected-focus-track-color: #009e975f;
-    --mdc-switch-selected-hover-track-color: #009e975f;
-    --mdc-switch-selected-pressed-track-color: #009e975f;
-    --mdc-switch-selected-track-color: #009e975f;
-    --mat-switch-with-icon-handle-size: 16px;
-    --mat-switch-pressed-handle-size: 16px;
-    --mdc-switch-state-layer-size: 16px;
-    --mdc-switch-selected-focus-handle-color: #009e97;
-    --mdc-switch-selected-hover-handle-color: #009e97;
-    --mdc-switch-selected-pressed-handle-color: #009e97;
-    --mat-switch-selected-with-icon-handle-horizontal-margin: 0 16px;
-    --mat-switch-selected-pressed-handle-horizontal-margin: 0 16px;
-    --mdc-switch-selected-icon-color: #e0e2ec;
+    --mat-slide-toggle-track-height: 14px;
+    --mat-slide-toggle-track-width: 30px;
+    --mat-slide-toggle-selected-icon-size: 16px;
+    --mat-slide-toggle-unselected-icon-size: 16px;
+    --mat-slide-toggle-track-outline-width: 0;
+    --mat-slide-toggle-selected-track-outline-width: 0px;
+    --mat-slide-toggle-unselected-with-icon-handle-horizontal-margin: 0;
+    --mat-slide-toggle-unselected-pressed-handle-horizontal-margin: 0;
+    --mat-slide-toggle-selected-focus-state-layer-color: #009e97;
+    --mat-slide-toggle-selected-handle-color: #009e97;
+    --mat-slide-toggle-selected-hover-state-layer-color: #009e97;
+    --mat-slide-toggle-selected-pressed-state-layer-color: #009e97;
+    --mat-slide-toggle-selected-focus-track-color: #009e975f;
+    --mat-slide-toggle-selected-hover-track-color: #009e975f;
+    --mat-slide-toggle-selected-pressed-track-color: #009e975f;
+    --mat-slide-toggle-selected-track-color: #009e975f;
+    --mat-slide-toggle-with-icon-handle-size: 16px;
+    --mat-slide-toggle-pressed-handle-size: 16px;
+    --mat-slide-toggle-state-layer-size: 16px;
+    --mat-slide-toggle-selected-focus-handle-color: #009e97;
+    --mat-slide-toggle-selected-hover-handle-color: #009e97;
+    --mat-slide-toggle-selected-pressed-handle-color: #009e97;
+    --mat-slide-toggle-selected-with-icon-handle-horizontal-margin: 0 16px;
+    --mat-slide-toggle-selected-pressed-handle-horizontal-margin: 0 16px;
+    --mat-slide-toggle-selected-icon-color: #e0e2ec;
 
-    --mdc-dialog-subhead-color: #fff;
+    --mat-dialog-subhead-color: #fff;
     --mat-dialog-headline-padding: 0 12px 0;
-    --mdc-dialog-subhead-line-height: 48px;
+    --mat-dialog-subhead-line-height: 48px;
     --mat-dialog-with-actions-content-padding: 20px 12px 0;
     --mat-dialog-actions-padding: 12px;
 

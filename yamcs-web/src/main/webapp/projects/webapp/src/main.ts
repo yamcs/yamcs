@@ -1,7 +1,4 @@
-import {
-  isDevMode,
-  provideExperimentalZonelessChangeDetection,
-} from '@angular/core';
+import { isDevMode, provideZonelessChangeDetection } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 import {
   provideRouter,
@@ -28,7 +25,7 @@ bootstrapApplication(AppComponent, {
     provideYamcsMaterialConfiguration(),
     provideConfigInitializer(),
     provideSdkBridge(),
-    provideExperimentalZonelessChangeDetection(),
+    provideZonelessChangeDetection(),
     provideMaterialSymbols(),
     provideRouter(
       APP_ROUTES,

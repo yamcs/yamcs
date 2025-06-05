@@ -7,14 +7,13 @@ import {
   EnvironmentProviders,
   inject,
   provideAppInitializer,
-  provideExperimentalZonelessChangeDetection,
   Provider,
+  provideZonelessChangeDetection,
 } from '@angular/core';
 import { DateAdapter } from '@angular/material/core';
 import { MatIconRegistry } from '@angular/material/icon';
 import {
   MAT_TOOLTIP_DEFAULT_OPTIONS,
-  MAT_TOOLTIP_DEFAULT_OPTIONS_FACTORY,
   MatTooltipDefaultOptions,
 } from '@angular/material/tooltip';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
@@ -27,7 +26,9 @@ import { SdkBridge } from './services/sdk-bridge.service';
 import { YamcsService } from './services/yamcs.service';
 
 const matTooltipOptions: MatTooltipDefaultOptions = {
-  ...MAT_TOOLTIP_DEFAULT_OPTIONS_FACTORY(),
+  showDelay: 0,
+  hideDelay: 0,
+  touchendHideDelay: 1500,
   disableTooltipInteractivity: true,
 };
 
@@ -104,7 +105,7 @@ export function provideYamcsWebExtension(): (
     provideBaseHrefFromIndexHtml(),
     provideYamcsMaterialConfiguration(),
     provideConfigInitializer(),
-    provideExperimentalZonelessChangeDetection(),
+    provideZonelessChangeDetection(),
     provideMaterialSymbols(),
   ];
 }
