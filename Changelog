@@ -1,5 +1,10 @@
+Version 5.11.11 released 09-May-2025
+- Fixed a race condition in the replication server
+- Fixed a couple of XTCE export issues
+
+
 Version 5.11.10 released 09-May-2025
-- Fix a bug related to OPS names permission checks introduced in the 5.11.9 release
+- Fixed a bug related to OPS names permission checks introduced in the 5.11.9 release
 
 Version 5.11.9 released 07-May-2025
 - Allow command arguments containing arrays inside aggregates
