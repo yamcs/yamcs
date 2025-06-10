@@ -96,7 +96,7 @@ if [ $snapshot -eq 0 ]; then
     read -p "Do you want to stage $pomversion maven artifacts to Maven Central? [y/N] " yesNo
     if [[ $yesNo == 'y' ]]; then
         mvn -f $clonedir -Drelease -DskipTests deploy
-        echo 'Release the staging repository at https://oss.sonatype.org'
+        echo 'Release the staging repository at https://central.sonatype.com'
     fi
 else
     read -p "Do you want to publish $pomversion maven artifacts to Sonatype Snapshots? [y/N] " yesNo
