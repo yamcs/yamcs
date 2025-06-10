@@ -23,7 +23,6 @@
     <maven.javadoc.skip>true</maven.javadoc.skip>
     <maven.source.skip>true</maven.source.skip>
     <gpg.skip>true</gpg.skip>
-    <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
     <javaModuleName>org.yamcs.examples</javaModuleName>
   </properties>
 
@@ -50,7 +49,10 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
           <configuration>
-            <skipIfEmpty>true</skipIfEmpty>
+            <!-- central-publishing-maven-plugin, and
+                 yamcs-maven-plugin bundle goal
+                 require an artifact -->
+            <skipIfEmpty>false</skipIfEmpty>
           </configuration>
         </plugin>
         <plugin>
@@ -62,6 +64,14 @@
             <jvmArgs>
               <jvmArg>-Dyamcs.web.staticRoot=../../../../yamcs-web/src/main/webapp/dist/webapp</jvmArg>
             </jvmArgs>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.sonatype.central</groupId>
+          <artifactId>central-publishing-maven-plugin</artifactId>
+          <configuration>
+            <!-- Seems to get ignored? -->
+            <skipPublishing>true</skipPublishing>
           </configuration>
         </plugin>
       </plugins>
@@ -78,14 +88,6 @@
       </activation>
       <build>
         <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-jar-plugin</artifactId>
-            <configuration>
-              <!-- yamcs-maven-plugin bundle goal requires an artifact -->
-              <skipIfEmpty>false</skipIfEmpty>
-            </configuration>
-          </plugin>
           <plugin>
             <groupId>org.yamcs</groupId>
             <artifactId>yamcs-maven-plugin</artifactId>
