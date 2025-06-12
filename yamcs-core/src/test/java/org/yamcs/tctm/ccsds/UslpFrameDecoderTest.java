@@ -2,8 +2,6 @@ package org.yamcs.tctm.ccsds;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.yamcs.tctm.ccsds.AosFrameDecoderTest.intToByteArray;
 
 import java.util.ArrayList;
@@ -78,7 +76,7 @@ public class UslpFrameDecoderTest {
         vclist.add(vc0);
 
         YConfiguration config = YConfiguration.wrap(m);
-        return new UslpManagedParameters(config);
+        return new UslpManagedParameters(config, null, null);
 
     }
 

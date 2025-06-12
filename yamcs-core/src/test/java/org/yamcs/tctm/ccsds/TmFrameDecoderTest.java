@@ -65,7 +65,7 @@ public class TmFrameDecoderTest {
         vclist.add(vc0);
 
         YConfiguration config = YConfiguration.wrap(m);
-        return new TmManagedParameters(config);
+        return new TmManagedParameters(config, null, null);
 
     }
 
