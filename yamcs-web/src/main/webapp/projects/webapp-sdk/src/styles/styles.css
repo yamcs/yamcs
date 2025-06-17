@@ -114,8 +114,7 @@ a.ya-link.ya-header-link {
 
 .ng-invalid:not(.ng-pristine) > .date-time-input > input,
 .ng-invalid:not(.ng-pristine) > .binary-input > input,
-input.ng-invalid:not(.ng-pristine),
-.ng-invalid:not(.ng-pristine) > .duration-input > input {
+input.ng-invalid:not(.ng-pristine) {
   border-color: var(--y-error-color) !important;
 }
 
