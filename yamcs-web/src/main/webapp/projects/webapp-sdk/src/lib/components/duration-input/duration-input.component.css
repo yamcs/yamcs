@@ -1,14 +1,35 @@
-.duration-input {
-  display: flex;
+:host {
+  display: inline-flex;
   align-items: center;
-  margin: 5px 0 0;
 }
 
 input {
-  margin: 0 !important;
+  display: inline-block !important;
+  width: 100px !important;
 }
 
-.duration-input input {
-  width: 100px !important;
-  margin-right: 5px !important;
+:host-context(.ng-invalid:not(.ng-pristine) > .ya-duration-input) input {
+  border-color: var(--y-error-color) !important;
+}
+
+.controls {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 5px;
+}
+
+.hh,
+.mm,
+.ss {
+  display: inline-flex;
+  align-items: center;
+}
+
+.hh span,
+.mm span,
+.ss span {
+  font-size: 11px;
+  color: grey;
+  user-select: none;
+  -webkit-user-select: none;
 }

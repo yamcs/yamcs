@@ -1,11 +1,60 @@
-<div class="duration-input">
-  <input
-    #input
-    id="duration-input"
-    class="ya-input"
-    type="text"
-    autocomplete="off"
-    (keyup)="fireChange()"
-    (change)="fireChange()" />
-  <ya-select [formControl]="resolutionControl" [options]="resolutionOptions" />
+<input
+  #input
+  class="ya-input"
+  type="text"
+  autocomplete="off"
+  [value]="formattedValue"
+  (focus)="onFocus()"
+  (input)="onInput($event)"
+  (mousedown)="onMouseDown()"
+  (mouseup)="onMouseUp()"
+  (click)="onClick($event)"
+  (keydown)="onKeyDown($event)"
+  (blur)="onBlur()"
+  pattern="^[0-9][0-9]:[0-5][0-9]:[0-5][0-9]$"
+  placeholder="HH:mm:ss"
+  [disabled]="disabled" />
+
+<div class="controls">
+  <div class="hh">
+    <ya-icon-action
+      icon="chevron_left"
+      [padding]="false"
+      [disabled]="disabled"
+      (click)="addHours(-1)" />
+    <span>HH</span>
+    <ya-icon-action
+      icon="chevron_right"
+      [padding]="false"
+      [disabled]="disabled"
+      (click)="addHours(1)" />
+  </div>
+
+  <div class="mm">
+    <ya-icon-action
+      icon="chevron_left"
+      [padding]="false"
+      [disabled]="disabled"
+      (click)="addMinutes(-1)" />
+    <span>MM</span>
+    <ya-icon-action
+      icon="chevron_right"
+      [padding]="false"
+      [disabled]="disabled"
+      (click)="addMinutes(1)" />
+  </div>
+
+  <div class="ss">
+    <ya-icon-action
+      icon="chevron_left"
+      [padding]="false"
+      [disabled]="disabled"
+      (click)="addSeconds(-1)" />
+    <span>SS</span>
+    <ya-icon-action
+      icon="chevron_right"
+      [padding]="false"
+      [disabled]="disabled"
+      (click)="addSeconds(1)" />
+  </div>
 </div>
