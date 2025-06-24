@@ -96,4 +96,4 @@ role (string)
     Name of a Yamcs role to assign to this user.
 
 superuser (boolean)
-    If true, grant this user the superuser attribute, implying all privileges.
+    If true, grant this user the superuser attribute, implying all privileges. Default: ``false``.

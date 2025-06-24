@@ -28,7 +28,7 @@ email (string)
     Email address of the user account.
 
 superuser (boolean)
-    If ``true`` the account has superuser privileges. Superusers are not subject to permission checks.
+    If ``true`` the account has superuser privileges. Superusers are not subject to permission checks. Default: ``false``.
 
 privileges (map)
     Map of assigned privileges, where each entry is either:

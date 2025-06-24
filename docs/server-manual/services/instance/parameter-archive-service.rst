@@ -10,13 +10,14 @@ A parameter that comes at high frequency will be split into multiple segments wh
 
 The parameters are grouped such that the samples of all parameters from one group have the same timestamp. For example all parameters extracted from one TM packet have usually the same timestamp and are part of the same group. A special case is the aggregate parameters: these are decomposed into the individual members if scalar types but all values are belonging to the same group and thus the aggregate can be rebuilt even though the members are stored separately.
 
-Filling the parameter archive.
+Filling the parameter archive
 -----------------------------
 
 Generating the parameter archive has to be done in batches since it is not possible to write individual data points (i.e. a parameter value at one specific time).
 Generally, the data has to come from a processor (either realtime or replay).
 
 There are three mechanisms implemented:
+
 - the realtime filler monitors the realtime processor and builds in memory parts of the archive which are then written to the archive when the segments are full.
 - the backfiller builds parts of the archive from the past. It can monitor incoming (dump) tm or parameter streams and start filling processes based on the data that is coming on those streams. It can also run periodically independent of any incoming data.
 - finally, the API can be used to rebuild parts of the archive. 

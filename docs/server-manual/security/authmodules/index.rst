@@ -8,6 +8,7 @@ AuthModules
     yaml
     kerberos
     remote-user
+    single-user
     ip-address
     spnego
     openid
@@ -20,11 +21,13 @@ The default set of AuthModules include:
 :doc:`ldap`
     Authenticates against an LDAP directory. Also capable of mapping LDAP groups to Yamcs roles.
 :doc:`yaml`
-    Reads Yaml files to verify the credentials of the user, or assign privileges.
+    Reads YAML files to verify the credentials of the user, or assign privileges.
 :doc:`kerberos`
     Supports authenticating against a Kerberos server.
 :doc:`remote-user`
     Supports authentication based on a custom HTTP header.
+:doc:`single-user`
+    Read AuthModule configuration to verify the credentials of a single user.
 :doc:`ip-address`
     Supports authentication based on the remote IP address.
 :doc:`spnego`
