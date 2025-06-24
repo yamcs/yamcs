@@ -49,7 +49,7 @@ public class ContainerWithIdRequestHelper implements ContainerConsumer {
     }
         
     @Override
-    public void processContainer(ContainerExtractionResult cer) {
+    public void processContainer(String link, ContainerExtractionResult cer) {
         SequenceContainer container = cer.getContainer();
         boolean found = false;
         for(ContainerWithId cwi: subscription) {

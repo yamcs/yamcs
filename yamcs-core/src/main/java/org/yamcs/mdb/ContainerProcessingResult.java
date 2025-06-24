@@ -20,6 +20,9 @@ public class ContainerProcessingResult extends ProcessingContext {
     final int seqCount;
     long expireMillis = -1; // -1 means not defined
     XtceProcessingException exception;
+    // link on which the container has been received
+    String link;
+
 
     public ContainerProcessingResult(long acquisitionTime, long generationTime, int seqCount,
             LastValueCache procLastValueCache) {
@@ -34,6 +37,14 @@ public class ContainerProcessingResult extends ProcessingContext {
 
     public List<ContainerExtractionResult> getContainerResult() {
         return containers;
+    }
+
+    public String getLink() {
+        return link;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
     }
 
 }

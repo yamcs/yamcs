@@ -102,7 +102,7 @@ public class ContainerRequestManagerTest {
         List<SequenceContainer> received = new ArrayList<>();
 
         @Override
-        public void processContainer(ContainerExtractionResult cer) {
+        public void processContainer(String link, ContainerExtractionResult cer) {
             received.add(cer.getContainer());
         }
 

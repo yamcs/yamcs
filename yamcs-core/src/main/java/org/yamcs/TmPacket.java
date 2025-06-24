@@ -28,8 +28,6 @@ import org.yamcs.xtce.SequenceContainer;
  * For the invalid packets there is an option at the link level to redirect them on a different stream. Using StreamSQL
  * any other packet can be redirected as well.
  * 
- * 
- * @author nm
  *
  */
 public class TmPacket {
@@ -52,6 +50,10 @@ public class TmPacket {
     private int seqCount;
     private byte[] pkt;
     private int status;
+
+    // link on which the TM packet has been received
+    private String link;
+
 
     // Preferred root container
     private SequenceContainer rootContainer;
@@ -213,4 +215,13 @@ public class TmPacket {
     public void setFrameSeqCount(long frameSeqCount) {
         this.frameSeqCount = frameSeqCount;
     }
+
+    public String getLink() {
+        return link;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
+    }
+
 }

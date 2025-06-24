@@ -492,15 +492,18 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
             Mdb mdb = MdbFactory.getInstance(instance);
             Processor processor = ProcessingApi.verifyProcessor(instance, request.getProcessor());
             ContainerRequestManager containerRequestManager = processor.getContainerRequestManager();
-            ContainerConsumer containerConsumer = result -> {
-                TmPacketData packet = TmPacketData.newBuilder()
+            ContainerConsumer containerConsumer = (link, result) -> {
+                var tmb = TmPacketData.newBuilder()
                         .setId(NamedObjectId.newBuilder().setName(result.getContainer().getQualifiedName()))
                         .setPacket(ByteString.copyFrom(result.getContainerContent()))
                         .setSize(result.getContainerContent().length)
                         .setGenerationTime(TimeEncoding.toProtobufTimestamp(result.getGenerationTime()))
-                        .setReceptionTime(TimeEncoding.toProtobufTimestamp(result.getAcquisitionTime()))
-                        .build();
-                observer.next(packet);
+                        .setReceptionTime(TimeEncoding.toProtobufTimestamp(result.getAcquisitionTime()));
+                if (link != null) {
+                    tmb.setLink(link);
+                }
+
+                observer.next(tmb.build());
             };
             observer.setCancelHandler(
                     () -> containerRequestManager.unsubscribe(containerConsumer, mdb.getRootSequenceContainer()));
@@ -512,17 +515,23 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
             StreamSubscriber streamSubscriber = new StreamSubscriber() {
                 @Override
                 public void onTuple(Stream stream, Tuple tuple) {
+
                     byte[] pktData = (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
                     long genTime = (Long) tuple.getColumn(GENTIME_COLUMN);
                     long receptionTime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_RECTIME_COLUMN);
                     int seqNumber = (Integer) tuple.getColumn(StandardTupleDefinitions.SEQNUM_COLUMN);
-                    TmPacketData tm = TmPacketData.newBuilder().setPacket(ByteString.copyFrom(pktData))
+                    String link = tuple.getColumn(StandardTupleDefinitions.TM_LINK_COLUMN);
+
+                    var tmb = TmPacketData.newBuilder().setPacket(ByteString.copyFrom(pktData))
                             .setSize(pktData.length)
                             .setGenerationTime(TimeEncoding.toProtobufTimestamp(genTime))
                             .setReceptionTime(TimeEncoding.toProtobufTimestamp(receptionTime))
-                            .setSequenceNumber(seqNumber)
-                            .build();
-                    observer.next(tm);
+                            .setSequenceNumber(seqNumber);
+                    if (link != null) {
+                        tmb.setLink(link);
+                    }
+
+                    observer.next(tmb.build());
                 }
 
                 @Override
@@ -557,15 +566,14 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
 
         Processor processor = ProcessingApi.verifyProcessor(instance, request.getProcessor());
         ContainerRequestManager containerRequestManager = processor.getContainerRequestManager();
-        ContainerConsumer containerConsumer = result -> {
-            ContainerData packet = ContainerData.newBuilder()
+        ContainerConsumer containerConsumer = (link, result) -> {
+            var packetb = ContainerData.newBuilder()
                     .setName(result.getContainer().getQualifiedName())
                     .setBinary(ByteString.copyFrom(result.getContainerContent()))
                     .setGenerationTime(TimeEncoding.toProtobufTimestamp(result.getGenerationTime()))
                     .setReceptionTime(TimeEncoding.toProtobufTimestamp(result.getAcquisitionTime()))
-                    .setSeqCount(result.getSeqCount())
-                    .build();
-            observer.next(packet);
+                    .setSeqCount(result.getSeqCount());
+            observer.next(packetb.build());
         };
         observer.setCancelHandler(() -> {
             for (SequenceContainer container : containers) {

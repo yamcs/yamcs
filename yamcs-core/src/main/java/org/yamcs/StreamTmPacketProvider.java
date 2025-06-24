@@ -132,16 +132,19 @@ public class StreamTmPacketProvider extends AbstractProcessorService implements 
             long gentime = (Long) tuple.getColumn(StandardTupleDefinitions.GENTIME_COLUMN);
             int seqCount = (Integer) tuple.getColumn(StandardTupleDefinitions.SEQNUM_COLUMN);
             byte[] packet = (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
-            TmPacket pwrt = new TmPacket(rectime, gentime, seqCount, packet);
+            TmPacket tmPacket = new TmPacket(rectime, gentime, seqCount, packet);
+            String link = tuple.getColumn(StandardTupleDefinitions.TM_LINK_COLUMN);
+            tmPacket.setLink(link);
+
             lastPacketTime = gentime;
 
             String preferredRootContainerName = tuple.getColumn(StandardTupleDefinitions.TM_ROOT_CONTAINER_COLUMN);
             if (preferredRootContainerName != null) {
                 var preferredRootContainer = mdb.getSequenceContainer(preferredRootContainerName);
-                pwrt.setRootContainer(preferredRootContainer);
+                tmPacket.setRootContainer(preferredRootContainer);
             }
 
-            tmProcessor.processPacket(pwrt, rootContainer);
+            tmProcessor.processPacket(tmPacket, rootContainer);
         }
 
         @Override

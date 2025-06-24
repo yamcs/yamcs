@@ -1,7 +1,6 @@
 package org.yamcs.container;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -11,6 +10,7 @@ import org.yamcs.ContainerExtractionResult;
 import org.yamcs.Processor;
 import org.yamcs.logging.Log;
 import org.yamcs.mdb.ContainerListener;
+import org.yamcs.mdb.ContainerProcessingResult;
 import org.yamcs.mdb.XtceTmProcessor;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.mdb.Mdb;
@@ -90,7 +90,9 @@ public class ContainerRequestManager implements ContainerListener {
     }
 
     @Override
-    public synchronized void update(List<ContainerExtractionResult> results) {
+    public synchronized void update(ContainerProcessingResult cpr) {
+        var results = cpr.getContainerResult();
+
         log.trace("Getting update of {} container(s)", results.size());
         for (ContainerExtractionResult result : results) {
             SequenceContainer def = result.getContainer();
@@ -98,7 +100,7 @@ public class ContainerRequestManager implements ContainerListener {
                 continue;
             }
             for (ContainerConsumer subscriber : subscriptions.get(def)) {
-                subscriber.processContainer(result);
+                subscriber.processContainer(cpr.getLink(), result);
             }
         }
     }

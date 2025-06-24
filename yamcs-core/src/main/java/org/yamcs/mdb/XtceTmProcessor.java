@@ -146,12 +146,12 @@ public class XtceTmProcessor extends AbstractProcessorService
             }
             ContainerProcessingResult result = tmExtractor.processPacket(pkt.getPacket(), pkt.getGenerationTime(),
                     rectime, pkt.getSeqCount(), rootContainer);
+            result.setLink(pkt.getLink());
 
             ParameterValueList paramResult = result.getTmParams();
-            List<ContainerExtractionResult> containerResult = result.containers;
 
-            if ((containerRequestManager != null) && (containerResult.size() > 0)) {
-                containerRequestManager.update(containerResult);
+            if ((containerRequestManager != null) && (result.containers.size() > 0)) {
+                containerRequestManager.update(result);
             }
 
             if ((parameterProcessorManager != null) && (paramResult.size() > 0)) {

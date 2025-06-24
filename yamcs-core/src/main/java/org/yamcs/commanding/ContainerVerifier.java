@@ -20,7 +20,7 @@ class ContainerVerifier extends Verifier implements ContainerConsumer {
     }
 
     @Override
-    public void processContainer(ContainerExtractionResult cer) {
+    public void processContainer(String link, ContainerExtractionResult cer) {
         ContainerRequestManager crm = yproc.getContainerRequestManager();
         crm.unsubscribe(this, container);
 
