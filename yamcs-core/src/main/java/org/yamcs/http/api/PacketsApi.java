@@ -498,7 +498,8 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
                         .setPacket(ByteString.copyFrom(result.getContainerContent()))
                         .setSize(result.getContainerContent().length)
                         .setGenerationTime(TimeEncoding.toProtobufTimestamp(result.getGenerationTime()))
-                        .setReceptionTime(TimeEncoding.toProtobufTimestamp(result.getAcquisitionTime()));
+                        .setReceptionTime(TimeEncoding.toProtobufTimestamp(result.getAcquisitionTime()))
+                        .setSequenceNumber(result.getSeqCount());
                 if (link != null) {
                     tmb.setLink(link);
                 }
