@@ -28,4 +28,15 @@ public interface TmPacketDataLink extends Link {
     default boolean isTmPacketDataLinkImplemented() {
         return true;
     }
+
+    /**
+     * Added in Yamcs 5.11.12 to allow a link to specify a tm stream it wants to push data to.
+     * <p>
+     * It is used by the {@link LinkManager#configureDataLink(Link, org.yamcs.YConfiguration)}.
+     * <p>
+     * If the method returns null, the link manager will use the value of the configuration "tmStream"
+     */
+    default String getTmStreamName() {
+        return null;
+    }
 }

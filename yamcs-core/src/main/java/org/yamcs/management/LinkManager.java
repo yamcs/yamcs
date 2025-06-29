@@ -178,14 +178,22 @@ public class LinkManager {
         if (link instanceof TmPacketDataLink) {
             TmPacketDataLink tmLink = (TmPacketDataLink) link;
             if (tmLink.isTmPacketDataLinkImplemented()) {
-                Stream streamf = tmStream == null ? singleStream : tmStream;
-                if (streamf != null) {
-                    InvalidPacketAction ipa = getInvalidPacketAction(link.getName(), linkArgs);
-                    tmLink.setTmSink(tmPacket -> processTmPacket(tmLink, tmPacket, streamf, ipa));
+                String streamName = tmLink.getTmStreamName();
+                Stream streamf;
+                if (streamName != null) {
+                    streamf = ydb.getStream(streamName);
+                    if (streamf == null) {
+                        throw new ConfigurationException("Cannot find stream '" + streamName + "'");
+                    }
                 } else {
-                    throw new ConfigurationException("No stream configured for parameter link " + link.getName()
-                            + ". Please set a stream using the 'ppStream; option");
+                    streamf = tmStream == null ? singleStream : tmStream;
+                    if (streamf == null) {
+                        throw new ConfigurationException("No stream configured for parameter link " + link.getName()
+                                + ". Please set a stream using the 'tmStream; option");
+                    }
                 }
+                InvalidPacketAction ipa = getInvalidPacketAction(link.getName(), linkArgs);
+                tmLink.setTmSink(tmPacket -> processTmPacket(tmLink, tmPacket, streamf, ipa));
             }
         }
 
@@ -212,8 +220,18 @@ public class LinkManager {
 
         if (link instanceof ParameterDataLink) {
             ParameterDataLink ppLink = (ParameterDataLink) link;
+
             if (ppLink.isParameterDataLinkImplemented()) {
-                Stream stream = ppStream == null ? singleStream : ppStream;
+                String streamName = ppLink.getPpStreamName();
+                Stream stream;
+                if (streamName != null) {
+                    stream = ydb.getStream(streamName);
+                    if (stream == null) {
+                        throw new ConfigurationException("Cannot find stream '" + streamName + "'");
+                    }
+                } else {
+                    stream = ppStream == null ? singleStream : ppStream;
+                }
                 if (stream != null) {
                     ppLink.setParameterSink(new StreamPbParameterSender(yamcsInstance, stream));
                 }
@@ -227,10 +245,7 @@ public class LinkManager {
         }
 
         linksByName.put(link.getName(), link);
-        String json = null;
-        if (!linkArgs.toMap().isEmpty()) {
-            json = new Gson().toJson(linkArgs.toMap());
-        }
+        String json = new Gson().toJson(linkArgs.toMap());
         registerLink(link.getName(), json, link);
     }
 
