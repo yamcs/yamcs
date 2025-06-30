@@ -1,3 +1,6 @@
+Version 5.11.12 released 30-Jun-2025
+- Small modification to allow links to configure programatically which stream they are pushing data to. It is Used by the Yamcs Gateway replay links.
+
 Version 5.11.11 released 09-May-2025
 - Fixed a race condition in the replication server
 - Fixed a couple of XTCE export issues

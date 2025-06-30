@@ -92,16 +92,20 @@ echo 'All done. Generated assets:'
 ls -lh `find distribution/target -maxdepth 1 -type f`
 echo
 
+excluded_modules=$(cd $clonedir/examples && for d in */; do echo -n "!examples/${d%/},"; done)
+excluded_modules="!examples,${excluded_modules%,}"
+
+
 if [ $snapshot -eq 0 ]; then
     read -p "Do you want to stage $pomversion maven artifacts to Maven Central? [y/N] " yesNo
     if [[ $yesNo == 'y' ]]; then
-        mvn -f $clonedir -Drelease -DskipTests deploy
+        mvn -f $clonedir -Drelease -DskipTests -pl "$excluded_modules" -am deploy
         echo 'Release the staging repository at https://central.sonatype.com'
     fi
 else
     read -p "Do you want to publish $pomversion maven artifacts to Sonatype Snapshots? [y/N] " yesNo
     if [[ $yesNo == 'y' ]]; then
-        mvn -f $clonedir -Drelease -DskipTests -DskipStaging deploy
+        mvn -f $clonedir -Drelease -DskipTests -DskipStaging -pl "$excluded_modules" -am deploy
     fi
 fi
 
