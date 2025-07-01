@@ -23,3 +23,7 @@ fi
 
 mvn -f "examples/$1/pom.xml" yamcs:run \
     -Dyamcs.args="$YAMCS_OPTS"
+
+# Alternatively for debugging:
+# mvn -f "examples/$1/pom.xml" yamcs:debug \
+#     -Dyamcs.jvm.debug.suspend -Dyamcs.args="$YAMCS_OPTS"
