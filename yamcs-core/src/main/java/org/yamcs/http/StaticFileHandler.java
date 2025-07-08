@@ -103,11 +103,15 @@ public class StaticFileHandler extends HttpHandler {
         return uri.substring(route.length() + 1);
     }
 
-    protected File locateFile(String path) {
+    protected File locateFile(String pathString) {
         for (var staticRoot : staticRoots) { // Stop on first match
-            var file = staticRoot.resolve(path).toFile();
-            if (!file.isHidden() && file.exists()) {
-                return file;
+            var path = staticRoot.resolve(pathString);
+
+            if (path.normalize().toAbsolutePath().startsWith(staticRoot.normalize().toAbsolutePath())) {
+                var file = path.toFile();
+                if (!file.isHidden() && file.exists()) {
+                    return file;
+                }
             }
         }
         return null;
