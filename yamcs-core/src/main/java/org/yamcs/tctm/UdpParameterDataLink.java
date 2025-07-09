@@ -143,9 +143,9 @@ public class UdpParameterDataLink extends AbstractParameterDataLink implements R
         while (isRunning()) {
             try {
                 udpSocket.receive(datagram);
-                validDatagramCount++;
                 ParameterData pd = decodeDatagram(datagram.getData(), datagram.getOffset(), datagram.getLength());
                 dataIn(pd.getParameterCount(), datagram.getLength());
+                validDatagramCount++;
 
                 return pd;
             } catch (IOException e) {
