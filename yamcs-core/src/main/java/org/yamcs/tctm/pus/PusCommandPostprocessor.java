@@ -66,14 +66,9 @@ public class PusCommandPostprocessor implements CommandPostprocessor {
         }
     }
 
-    private boolean hasCrc(PreparedCommand pc) {
-        byte[] binary = pc.getBinary();
-        boolean secHeaderFlag = CcsdsPacket.getSecondaryHeaderFlag(binary);
-        if (secHeaderFlag) {
-            return (errorDetectionCalculator != null);
-        } else {
-            return false;
-        }
+    protected boolean hasCrc(PreparedCommand pc) {
+        return (errorDetectionCalculator != null);
+
     }
 
     @Override
