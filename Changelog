@@ -1,5 +1,28 @@
-Version 5.12.0 released 
+Version 5.12.0 released 16-Jul-2025
 - Rework calibrators to allow calibrating from any raw value type to any engineering value type. XTCE only allows calibrating numerical values (using polynomials or math expressions), so the new calibrators can only be used from the custom MDB loaders for the moment.
+- Fixes a directory traversal security vulnerability.
+- Add query filter capability to packets page.
+- Add low-level page to view Parameter Archive PIDs.
+- Where there is sufficient context, absolute names are now instead displayed as relative to that context. For example in the parameter extraction view, parameter names are relative to their container's system.
+- Many UI tweaks focusing on consistency between pages by improved componentization.
+- Other minor tweaks and fixes.
+
+Version 5.11.12 released 30-Jun-2025
+- Fixed a couple of XTCE export issues
+
+
+Version 5.11.10 released 09-May-2025
+- Fixed a bug related to OPS names permission checks introduced in the 5.11.9 release
+
+Version 5.11.9 released 07-May-2025
+- Allow command arguments containing arrays inside aggregates
+- Add support for using OPS names in ReadParameter and WriteParameter object permissions
+- Aallow IDLE service for TM frames
+
+Version 5.11.8 released 25-Mar-2025
+- Fixed a bug with the parameter archive realtime filler appearing when inserted data was unsorted
+- Unset dirty flag when leaving stack #1014
+- Minor changes in the TM and TC frame options to allow adding frame support to the Yamcs gateway plugin
 
 
 Version 5.11.7 released 19-Mar-2025
