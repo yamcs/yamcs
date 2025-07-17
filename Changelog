@@ -1,3 +1,7 @@
+Version 5.11.13 released 18-Jul-2025
+- Fixes a directory traversal security vulnerability.
+- PUS command post-processor: add CRC (if configured) also to commands without a secondary header
+
 Version 5.11.12 released 30-Jun-2025
 - Small modification to allow links to configure programatically which stream they are pushing data to. It is Used by the Yamcs Gateway replay links.
 
