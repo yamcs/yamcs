@@ -20,9 +20,9 @@ import com.google.common.util.concurrent.AbstractExecutionThreadService;
  * and partly
  * CCSDS 231.0-B-3 (TC SYNCHRONIZATION AND CHANNEL CODING)
  * <p>
- * 
+ *
  * It receives TCs as CLTUs via UDP (one UDP frame = one CLTU)
- * 
+ *
  */
 public class UdpTcFrameLink extends AbstractExecutionThreadService {
     final ColSimulator simulator;
@@ -36,12 +36,14 @@ public class UdpTcFrameLink extends AbstractExecutionThreadService {
     TcVcFrameLink[] vcHandlers;
     int[] clcw;
 
-    public UdpTcFrameLink(ColSimulator simulator, int port) {
+    public UdpTcFrameLink(ColSimulator simulator, int port, byte[] maybeSdlsKey, short encryptionSpi,
+                          int encryptionSeqNumWindow, boolean verifySeqNum) {
         this.simulator = simulator;
         this.port = port;
         datagram = new DatagramPacket(new byte[2048], 2048);
-        vcHandlers = new TcVcFrameLink[] { new TcVcFrameLink(simulator, 0) };
-        clcw = new int[] { vcHandlers[0].getCLCW() };
+        vcHandlers = new TcVcFrameLink[]{new TcVcFrameLink(simulator, 0, maybeSdlsKey, encryptionSpi,
+                encryptionSeqNumWindow, verifySeqNum)};
+        clcw = new int[]{vcHandlers[0].getCLCW()};
     }
 
     @Override
@@ -69,7 +71,7 @@ public class UdpTcFrameLink extends AbstractExecutionThreadService {
         }
         int ss = ByteArrayUtils.decodeUnsignedShort(data, offset);
         if (ss != 0xEB90) {
-            log.warn("Invalid BCH start sequence 0x" + Integer.toHexString(ss)+" expected 0xEB90");
+            log.warn("Invalid BCH start sequence 0x" + Integer.toHexString(ss) + " expected 0xEB90");
             return;
         }
         offset += 2;

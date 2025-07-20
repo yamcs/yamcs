@@ -2,6 +2,8 @@ package org.yamcs.tctm.ccsds;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.security.SdlsSecurityAssociation;
+import org.yamcs.security.SdlsSecurityAssociation.VerificationStatusCode;
 import org.yamcs.tctm.TcTmException;
 import org.yamcs.tctm.ccsds.DownlinkManagedParameters.FrameErrorDetection;
 import org.yamcs.tctm.ccsds.TmManagedParameters.ServiceType;
@@ -83,6 +85,44 @@ public class TmFrameDecoder implements TransferFrameDecoder {
             ttf.setShLength(secHeaderLength);
             dataOffset += secHeaderLength;
         }
+
+        SdlsSecurityAssociation sdlsSa;
+
+        for (int i = 0; i < vmp.encryptionSpis.length; ++i) {
+            short spi = vmp.encryptionSpis[i];
+            sdlsSa = tmParams.sdlsSecurityAssociations.get(spi);
+            if (sdlsSa != null) {
+                int sdlsHeaderSize = SdlsSecurityAssociation.getHeaderSize();
+
+                int decryptionDataStart = dataOffset + sdlsHeaderSize;
+
+                int decryptionDataEnd = dataEnd;
+
+                VerificationStatusCode decryptionStatus = sdlsSa.processSecurity(data, offset, decryptionDataStart,
+                        decryptionDataEnd, vmp.authMask);
+
+                // Invalid SPI is not necessarily an error:
+                if (decryptionStatus == SdlsSecurityAssociation.VerificationStatusCode.InvalidSPI) {
+                    // If there are more SAs left, try the next one
+                    if (i+1 < vmp.encryptionSpis.length)
+                        continue;
+                    // Otherwise, it's an error
+                }
+
+                // Update the offsets
+                dataEnd -= SdlsSecurityAssociation.getTrailerSize();
+                dataOffset += SdlsSecurityAssociation.getHeaderSize();
+
+                if (decryptionStatus == SdlsSecurityAssociation.VerificationStatusCode.NoFailure) {
+                    // If we decrypt correctly, stop looping
+                    break;
+                } else {
+                    // Otherwise, log an error (we'll have reached the end anyway)
+                    log.warn("Couldn't decrypt frame: {}", decryptionStatus);
+                }
+            }
+        }
+
         if (vmp.service == ServiceType.PACKET) {
             if (syncFlag) {
                 throw new TcTmException("VC " + virtualChannelId + " "
