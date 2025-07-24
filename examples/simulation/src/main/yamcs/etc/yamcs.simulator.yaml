@@ -13,7 +13,7 @@ services:
         - tm_dump
   - class: org.yamcs.parameter.SystemParametersService
     args:
-      producers: ['jvm', 'fs', 'diskstats', 'rocksdb']
+      producers: ['jvm', 'fs', 'diskstats', 'loadavg', 'rocksdb']
 
   - class: org.yamcs.ProcessorCreatorService
     args: 

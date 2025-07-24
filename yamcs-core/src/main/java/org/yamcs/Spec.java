@@ -859,9 +859,22 @@ public class Spec {
 
             arg = type.convertArgument(ctx, path, arg, elementType);
 
-            if (choices != null && !choices.contains(arg)) {
-                throw new ValidationException(ctx, String.format(
-                        "%s should be one of %s", name, choices));
+            if (choices != null) {
+                if (type == OptionType.LIST || type == OptionType.LIST_OR_ELEMENT) {
+                    var it = ((List<Object>) arg).listIterator();
+                    while (it.hasNext()) {
+                        var elPath = path + "[" + it.nextIndex() + "]";
+                        var argElement = it.next();
+                        argElement = elementType.convertArgument(ctx, elPath, argElement, null);
+                        if (!choices.contains(argElement)) {
+                            throw new ValidationException(ctx, String.format(
+                                    "each item in '%s' should be one of %s", name, choices));
+                        }
+                    }
+                } else if (!choices.contains(arg)) {
+                    throw new ValidationException(ctx, String.format(
+                            "%s should be one of %s", name, choices));
+                }
             }
 
             if (type == OptionType.MAP || ((type == OptionType.LIST || type == OptionType.LIST_OR_ELEMENT)
