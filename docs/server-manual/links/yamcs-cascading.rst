@@ -93,7 +93,7 @@ tc (boolean)
 keepUpstreamAcks (list of strings)
   List of command acknowledgments names received from the upstream server to keep unmodified. 
 
-  Default is "ccsds-seqcount" - this key is used by one of the CCSDS links to set the sequence count associated to the command and required in the simulation configuration to be able to verify the command execution (because the sequence count is reported in returning telemetry containing the command execution status).
+  Default is ``ccsds-seqcount`` - this key is used by one of the CCSDS links to set the sequence count associated to the command and required in the simulation configuration to be able to verify the command execution (because the sequence count is reported in returning telemetry containing the command execution status).
 
 event (boolean)
    Subscribe to realtime events. The events on the upstream server will be mirrored to the local server.
