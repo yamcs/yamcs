@@ -1,5 +1,7 @@
 package org.yamcs.http.api;
 
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -531,7 +533,28 @@ public class ServerApi extends AbstractServerApi<Context> {
         b.setAvailableProcessors(os.getAvailableProcessors());
         var systemLoadAverage = os.getSystemLoadAverage();
         if (systemLoadAverage >= 0) {
-            b.setLoadAverage(os.getSystemLoadAverage());
+            b.setLoadAverage(systemLoadAverage);
+        }
+
+        if (os instanceof com.sun.management.OperatingSystemMXBean sunOS) {
+            var cpuTime = sunOS.getProcessCpuTime();
+            if (cpuTime != -1) {
+                var cpuTimeMillis = NANOSECONDS.toMillis(sunOS.getProcessCpuTime());
+                b.setCpuTime(cpuTimeMillis);
+            }
+            var cpuLoad = sunOS.getCpuLoad();
+            if (cpuLoad >= 0) {
+                b.setCpuLoad(cpuLoad);
+            }
+            var processCpuLoad = sunOS.getProcessCpuLoad();
+            if (processCpuLoad >= 0) {
+                b.setProcessCpuLoad(processCpuLoad);
+            }
+
+            b.setFreeMemory(sunOS.getFreeMemorySize());
+            b.setTotalMemory(sunOS.getTotalMemorySize());
+            b.setFreeSwapSpace(sunOS.getFreeSwapSpaceSize());
+            b.setTotalSwapSpace(sunOS.getTotalSwapSpaceSize());
         }
 
         try {

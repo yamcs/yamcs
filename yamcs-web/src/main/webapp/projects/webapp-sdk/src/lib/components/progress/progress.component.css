@@ -1,14 +1,13 @@
 /*
  * Careful: the label should appear on top of the fill.
  */
-.progress {
+:host {
   display: inline-block;
-  min-width: 100px;
-  min-height: 16px;
   position: relative;
   text-align: center;
   margin-right: 5px;
   background-color: #eee;
+  box-sizing: border-box;
   border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
