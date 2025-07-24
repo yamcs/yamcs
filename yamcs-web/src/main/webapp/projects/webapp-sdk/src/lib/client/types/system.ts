@@ -424,6 +424,7 @@ export interface SystemInfo {
   revision: string;
   serverId: string;
   uptime: number;
+  cpuTime: number;
   jvm: string;
   workingDirectory: string;
   configDirectory: string;
@@ -441,6 +442,12 @@ export interface SystemInfo {
   usedMaxHeapMemory: number;
   maxNonHeapMemory: number;
   jvmThreadCount: number;
+  cpuLoad: number;
+  processCpuLoad: number;
+  freeMemory: number;
+  totalMemory: number;
+  freeSwapSpace: number;
+  totalSwapSpace: number;
   rootDirectories: RootDirectory[];
   process: ProcessInfo;
 }
