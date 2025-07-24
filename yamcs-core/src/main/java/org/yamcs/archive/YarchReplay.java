@@ -31,8 +31,11 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
  * Performs a replay from Yarch So far supported are: TM packets, PP groups, Events, Parameters and Command History.
  * <p>
  * It relies on handlers for each data type. Each handler creates a stream, the streams are merged and the output is
- * sent to the listener This class can also handle pause/resume: simply stop sending data seek: closes the streams and
- * creates new ones with a different starting time.
+ * sent to the listener
+ * <p>
+ * This class can also handle pause/resume: simply stop sending data
+ * <p>
+ * seek: closes the streams and creates new ones with a different starting time.
  * 
  */
 public class YarchReplay implements StreamSubscriber {
@@ -345,10 +348,8 @@ public class YarchReplay implements StreamSubscriber {
                 signalStateChange();
             }
         } catch (InterruptedException e) {
-            if (!quitting) {
-                log.warn("Interrupted: ", e);
-                quit();
-            }
+            // this is caught when the stream is closed (either due to quit or seek)
+            Thread.currentThread().interrupt();
         }
     }
 
