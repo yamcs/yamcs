@@ -5,7 +5,7 @@ import com.beust.jcommander.Parameter;
 public class SimulatorArgs {
 
     @Parameter(names = "--telnet-port")
-    public int telnetPort = 10023;
+    public Integer telnetPort = 10023;
 
     @Parameter(names = "--tc-port")
     public Integer tcPort = 10025;
@@ -16,11 +16,11 @@ public class SimulatorArgs {
     @Parameter(names = "--tm2-port")
     public Integer tm2Port = 10016;
 
-    @Parameter(names = "--cfdp-port")
-    public Integer cfdpPort = 10014;
-
     @Parameter(names = "--los-port")
-    public int losPort = 10115;
+    public Integer losPort = 10115;
+
+    @Parameter(names = "--scid", description = "spacecraft identifier (between 0 and 255)")
+    public Integer scid = 0xAB;
 
     @Parameter(names = "--tm-frame-type", description = "which frame type to send: TM, AOS or USLP")
     public String tmFrameType = "AOS";
@@ -52,7 +52,6 @@ public class SimulatorArgs {
     @Parameter(names = "--perf-cp", description = "performance test: percentange (0-100) of data changed between two subsequent versions of the same packet")
     public float perfChangePercent = 10;
 
-    @Parameter(names = "--type", description = "one of pus or columbus")
+    @Parameter(names = "--type", description = "one of: pus or col")
     public String type;
-
 }
