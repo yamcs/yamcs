@@ -1,6 +1,7 @@
 :host {
-  --logo-width: 83px;
-  --logo-height: 35px;
+  /* Increased logo size */
+  --logo-width: 150px;
+  --logo-height: 70px;
 }
 
 mat-toolbar-row {
@@ -11,7 +12,7 @@ mat-toolbar-row {
   padding-right: calc(24px - 16px);
 }
 
-.mat-toolbar.focus {
+.mat-toolbar.zen {
   display: none;
 }
 
@@ -19,8 +20,9 @@ mat-toolbar-row {
   min-height: 48px;
 }
 
+/* Set app bar background to white */
 .app-bar {
-  background-color: var(--y-app-bar-background-color);
+  background-color: #fff;
 }
 
 .app-bar.replay {
@@ -28,9 +30,11 @@ mat-toolbar-row {
 }
 
 .app-bar .mat-mdc-button:not(:disabled) {
-  color: #fff !important;
+  /* Change text color for contrast on white */
+  color: #000000 !important;
 }
 
+/* Ensure the logo wrapper has a white background */
 .logo-wrapper {
   padding-left: 16px;
   padding-right: 16px;
@@ -38,12 +42,14 @@ mat-toolbar-row {
   height: 100%;
   align-items: center;
   justify-content: center;
+  background-color: #fff;
 }
 
 .logo-wrapper.nosidebar {
   padding-left: 24px;
 }
 
+/* Update the image size based on our custom variables */
 .logo-wrapper img {
   max-height: var(--logo-height);
   max-width: var(--logo-width);
@@ -55,6 +61,7 @@ mat-toolbar-row {
   opacity: 0.8;
 }
 
+/* Change tag text color to black */
 .tag {
   position: absolute;
   left: 0;
@@ -66,7 +73,7 @@ mat-toolbar-row {
   font-size: 14px;
   white-space: nowrap;
   overflow: hidden;
-  color: #fff;
+  color: #000000;
 }
 
 .selected-instance.mat-mdc-button {
@@ -87,7 +94,7 @@ mat-toolbar-row {
 .mat-mdc-button:hover,
 ::ng-deep .top-tabs.mat-mdc-tab-nav-bar .mat-mdc-tab-link:hover,
 ::ng-deep .top-tabs.mat-mdc-tab-nav-bar .mat-mdc-tab-link.active {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(0, 0, 0, 0.1);
 }
 
 ::ng-deep .top-tabs.mat-mdc-tab-nav-bar .mat-mdc-tab-link {
@@ -96,7 +103,8 @@ mat-toolbar-row {
   padding: 0 16px;
 }
 
+/* Force tab labels to be black */
 ::ng-deep .top-tabs.mat-mdc-tab-nav-bar .mat-mdc-tab-link .mdc-tab__text-label {
-  color: #fff;
+  color: #000 !important;
   letter-spacing: 1.25px;
 }
