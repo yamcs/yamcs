@@ -1,0 +1,163 @@
+<ya-message-bar #messageBar />
+
+<div class="support-page">
+  <!-- Header Section -->
+  <div class="support-header">
+    <div class="header-content">
+      <mat-icon class="support-icon">help_center</mat-icon>
+      <h1>Support & Contact</h1>
+      <p>Get help with your mission control operations and connect with our support team</p>
+    </div>
+  </div>
+
+  <!-- Contact Cards -->
+  <div class="contact-cards">
+    <!-- Technical Support Card -->
+    <ya-panel class="contact-card technical-support">
+      <div class="card-header">
+        <mat-icon class="card-icon">engineering</mat-icon>
+        <div class="card-title-group">
+          <h3>Technical Support</h3>
+          <p class="subtitle">24/7 Mission Critical Support</p>
+        </div>
+      </div>
+      <div class="card-content">
+        <div class="contact-item">
+          <mat-icon>email</mat-icon>
+          <div>
+            <strong>Email:</strong>
+            <a href="mailto:ronak@tm2.space">ronak&#64;tm2.space</a>
+          </div>
+        </div>
+        <div class="contact-item">
+          <mat-icon>phone</mat-icon>
+          <div>
+            <strong>Emergency Hotline:</strong>
+            <a href="tel:+917702302286">+91 770 230 2286</a>
+          </div>
+        </div>
+        <div class="contact-item">
+          <mat-icon>schedule</mat-icon>
+          <div>
+            <strong>Hours:</strong>
+            <span>24/7 for critical missions</span>
+          </div>
+        </div>
+      </div>
+    </ya-panel>
+
+    <!-- General Inquiries Card -->
+    <ya-panel class="contact-card general">
+      <div class="card-header">
+        <mat-icon class="card-icon">contact_support</mat-icon>
+        <div class="card-title-group">
+          <h3>General Inquiries</h3>
+          <p class="subtitle">Sales, Partnerships & Information</p>
+        </div>
+      </div>
+      <div class="card-content">
+        <div class="contact-item">
+          <mat-icon>email</mat-icon>
+          <div>
+            <strong>Email:</strong>
+            <a href="mailto:anand@tm2.space">anand&#64;tm2.space</a>
+          </div>
+        </div>
+        <div class="contact-item">
+          <mat-icon>phone</mat-icon>
+          <div>
+            <strong>Phone:</strong>
+            <a href="tel:+919849365735">+91 984 936 5735</a>
+          </div>
+        </div>
+        <div class="contact-item">
+          <mat-icon>schedule</mat-icon>
+          <div>
+            <strong>Hours:</strong>
+            <span>Mon-Fri, 9:00 AM - 6:00 PM IST</span>
+          </div>
+        </div>
+      </div>
+    </ya-panel>
+
+    <!-- Company Information Card -->
+    <ya-panel class="contact-card company">
+      <div class="card-header">
+        <mat-icon class="card-icon">business</mat-icon>
+        <div class="card-title-group">
+          <h3>TM2Space Technologies</h3>
+          <p class="subtitle">An Indian Enterprise</p>
+        </div>
+      </div>
+      <div class="card-content">
+        <div class="contact-item">
+          <mat-icon>location_on</mat-icon>
+          <div>
+            <strong>Headquarters:</strong>
+            <span>Hyderabad, Telangana, India</span>
+          </div>
+        </div>
+        <div class="contact-item">
+          <mat-icon>language</mat-icon>
+          <div>
+            <strong>Website:</strong>
+            <a href="https://tm2.space" target="_blank">tm2.space</a>
+          </div>
+        </div>
+        <div class="contact-item">
+          <mat-icon>business_center</mat-icon>
+          <div>
+            <strong>Services:</strong>
+            <span>Mission Control Systems, Satellite Bus & Subsystems, OrbitLab</span>
+          </div>
+        </div>
+      </div>
+    </ya-panel>
+  </div>
+
+  <!-- Quick Actions -->
+  <ya-panel class="quick-actions-panel">
+    <h2>Quick Actions</h2>
+    <div class="action-buttons">
+      <ya-button onclick="window.open('mailto:anand&#64;tm2.space?subject=Mission Control Support Request', '_blank')">
+        <mat-icon>email</mat-icon>
+        Email Support
+      </ya-button>
+      <ya-button onclick="window.open('https://tm2.space', '_blank')">
+        <mat-icon>language</mat-icon>
+        Visit Website
+      </ya-button>
+      <ya-button onclick="window.open('tel:+917702302286', '_blank')">
+        <mat-icon>phone</mat-icon>
+        Call Emergency
+      </ya-button>
+    </div>
+  </ya-panel>
+
+  <!-- Additional Resources -->
+  <ya-panel class="resources-panel">
+    <h2>Additional Resources</h2>
+    <div class="resource-links">
+      <div class="resource-card">
+        <mat-icon>description</mat-icon>
+        <h3>Documentation</h3>
+        <p>Access comprehensive guides and API documentation</p>
+        <ya-button>View Docs</ya-button>
+      </div>
+      
+      <div class="resource-card">
+        <mat-icon>forum</mat-icon>
+        <h3>Community Forum</h3>
+        <p>Connect with other users and get community support</p>
+        <ya-button>Join Forum</ya-button>
+      </div>
+      
+      <div class="resource-card">
+        <mat-icon>bug_report</mat-icon>
+        <h3>Report Issues</h3>
+        <p>Submit bug reports and feature requests</p>
+        <ya-button>Report Issue</ya-button>
+      </div>
+    </div>
+  </ya-panel>
+</div>

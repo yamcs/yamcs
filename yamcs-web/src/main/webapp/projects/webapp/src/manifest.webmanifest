@@ -1,6 +1,6 @@
 {
-  "name": "Yamcs",
-  "short_name": "Yamcs",
+  "name": "TM2S MCC",
+  "short_name": "MCC",
   "description": "Command and control of spacecrafts, satellites, payloads, ground stations and ground equipment.",
   "theme_color": "#212121",
   "background_color": "#fafafa",

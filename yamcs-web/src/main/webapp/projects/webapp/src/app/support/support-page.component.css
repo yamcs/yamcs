@@ -1,0 +1,238 @@
+.support-page {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  font: 400 12px / 20px Roboto, sans-serif;
+}
+
+/* Header Section */
+.support-header {
+  text-align: center;
+  margin-bottom: 48px;
+  padding: 32px 0;
+  background: linear-gradient(135deg, rgba(0, 123, 255, 0.05) 0%, rgba(138, 43, 226, 0.03) 100%);
+  border-radius: 12px;
+}
+
+.header-content {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.support-icon {
+  font-size: 64px !important;
+  width: 64px !important;
+  height: 64px !important;
+  color: #333;
+  margin-bottom: 16px;
+}
+
+.support-header h1 {
+  font: 500 32px / 48px Roboto, sans-serif;
+  letter-spacing: 0.0125em;
+  margin: 16px 0;
+  color: #1a1a1a;
+}
+
+.support-header p {
+  font: 400 16px / 24px Roboto, sans-serif;
+  letter-spacing: 0.0178571429em;
+  color: #666;
+  margin: 0;
+}
+
+/* Contact Cards */
+.contact-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 24px;
+  margin-bottom: 48px;
+}
+
+.contact-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  padding: 24px !important;
+}
+
+.contact-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+
+.card-icon {
+  font-size: 32px !important;
+  width: 32px !important;
+  height: 32px !important;
+  color: #333;
+}
+
+.card-title-group h3 {
+  font: 400 18px / 28px Roboto, sans-serif;
+  letter-spacing: 0.009375em;
+  margin: 0 0 4px 0;
+}
+
+.card-title-group .subtitle {
+  font: 400 14px / 20px Roboto, sans-serif;
+  margin: 0;
+  color: #666;
+}
+
+.card-content {
+  margin-top: 16px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  margin: 16px 0;
+  gap: 12px;
+}
+
+.contact-item .mat-icon {
+  font-size: 20px !important;
+  width: 20px !important;
+  height: 20px !important;
+  color: #333;
+}
+
+.contact-item div {
+  flex: 1;
+}
+
+.contact-item strong {
+  font: 500 12px / 16px Roboto, sans-serif;
+  display: block;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.contact-item a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.contact-item a:hover {
+  text-decoration: underline;
+}
+
+/* Quick Actions */
+.quick-actions-panel {
+  text-align: center;
+  margin-bottom: 48px;
+  padding: 32px !important;
+}
+
+.quick-actions-panel h2 {
+  font: 500 20px / 32px Roboto, sans-serif;
+  letter-spacing: 0.0125em;
+  margin-bottom: 24px;
+  color: #1a1a1a;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.action-buttons ya-button {
+  min-width: 160px;
+}
+
+.action-buttons ya-button .mat-icon {
+  margin-right: 8px;
+}
+
+/* Additional Resources */
+.resources-panel {
+  padding: 32px !important;
+}
+
+.resources-panel h2 {
+  font: 500 20px / 32px Roboto, sans-serif;
+  letter-spacing: 0.0125em;
+  text-align: center;
+  margin-bottom: 24px;
+  color: #1a1a1a;
+}
+
+.resource-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.resource-card {
+  text-align: center;
+  transition: transform 0.2s ease;
+  padding: 24px;
+  background: rgba(248, 250, 252, 0.5);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.resource-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.resource-card .mat-icon {
+  font-size: 48px !important;
+  width: 48px !important;
+  height: 48px !important;
+  color: #333;
+  margin-bottom: 16px;
+}
+
+.resource-card h3 {
+  font: 400 16px / 28px Roboto, sans-serif;
+  letter-spacing: 0.009375em;
+  margin: 16px 0 8px 0;
+  color: #333;
+}
+
+.resource-card p {
+  font: 400 14px / 20px Roboto, sans-serif;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .support-page {
+    padding: 16px;
+  }
+  
+  .contact-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .action-buttons button {
+    width: 100%;
+    max-width: 250px;
+  }
+  
+  .support-header h1 {
+    font-size: 24px;
+  }
+  
+  .support-icon {
+    font-size: 48px !important;
+    width: 48px !important;
+    height: 48px !important;
+  }
+}

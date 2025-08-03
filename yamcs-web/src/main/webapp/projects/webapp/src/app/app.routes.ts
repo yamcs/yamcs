@@ -62,6 +62,15 @@ export const APP_ROUTES: Routes = [
         data: { hasSidebar: false },
       },
       {
+        path: 'support',
+        loadChildren: () =>
+          import('projects/webapp/src/app/support/support.routes').then(
+            (m) => m.SUPPORT_ROUTES,
+          ),
+        canActivate: [authGuardFn],
+        data: { hasSidebar: false },
+      },
+      {
         path: 'activities',
         loadChildren: () =>
           import('projects/webapp/src/app/activities/activities.routes').then(

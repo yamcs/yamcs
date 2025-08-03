@@ -20,7 +20,7 @@ mat-sidenav-container.message-bar-visible {
 
 mat-sidenav {
   width: 250px;
-  background-color: #181818;
+  background: linear-gradient(135deg, #0f0f0f 0%, #3a3a3a 50%, #0f0f0f 100%) !important;
   border-right: 0 !important;
 }
 
@@ -31,7 +31,7 @@ mat-sidenav {
 }
 
 mat-toolbar {
-  background-color: #181818;
+  background: linear-gradient(135deg, #0f0f0f 0%, #3a3a3a 50%, #0f0f0f 100%) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   box-sizing: content-box;
   color: #d3d3d3;
