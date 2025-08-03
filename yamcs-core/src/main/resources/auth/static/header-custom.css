@@ -1,0 +1,63 @@
+/* Custom header styling for YAMCS post-login interface */
+
+/* Override YAMCS header/toolbar background to white */
+:root {
+  --y-app-bar-background-color: #ffffff !important;
+  --mat-toolbar-container-background-color: #ffffff !important;
+}
+
+/* Material Design toolbar overrides */
+.mat-toolbar {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+/* Header text and icons to black */
+.mat-toolbar .mat-toolbar-row,
+.mat-toolbar .mat-toolbar-single-row {
+  color: #000000 !important;
+}
+
+.mat-toolbar button,
+.mat-toolbar .mat-icon-button {
+  color: #000000 !important;
+}
+
+.mat-toolbar .mat-icon-button:hover {
+  background-color: rgba(0,0,0,0.04) !important;
+}
+
+/* Navigation menu items */
+.mat-toolbar .mat-button {
+  color: #000000 !important;
+}
+
+.mat-toolbar .mat-button:hover {
+  background-color: rgba(0,0,0,0.04) !important;
+}
+
+/* Title text */
+.mat-toolbar .mat-toolbar-title {
+  color: #000000 !important;
+}
+
+/* Any other toolbar content */
+.mat-toolbar * {
+  color: #000000 !important;
+}
+
+/* Ensure dropdown menus remain readable */
+.mat-menu-panel {
+  background-color: #ffffff !important;
+}
+
+.mat-menu-item {
+  color: #000000 !important;
+}
+
+/* Fix any icon colors that might still be using theme colors */
+.mat-toolbar .material-icons,
+.mat-toolbar .mat-icon {
+  color: #000000 !important;
+}
