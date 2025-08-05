@@ -1,6 +1,9 @@
 package org.yamcs.simulator;
 
+import java.nio.file.Path;
+
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.converters.PathConverter;
 
 public class SimulatorArgs {
 
@@ -53,5 +56,11 @@ public class SimulatorArgs {
     public float perfChangePercent = 10;
 
     @Parameter(names = "--type", description = "one of: pus or col")
-    public String type;
+    public String type = "col";
+
+    @Parameter(names = "--los-dir", converter = PathConverter.class)
+    public Path losDir = Path.of("losData");
+
+    @Parameter(names = "--data-dir", converter = PathConverter.class)
+    public Path dataDir = Path.of("data");
 }
