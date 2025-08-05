@@ -114,5 +114,7 @@ expirationTolerance (double)
     
     Yamcs will compute the expiration time as the rate in stream defined in the Mission Database multiplied by this configuration option. The tolerance is needed in order to avoid generating false expiration warnings.
 
+    Default: ``1.9``
+
 maxArraySize (integer)
     The maximum size of arrays extracted from TM packets. The arrays can be dynamically sized (meaning the size is given by a parameter in the packet) and this option configures the maximum size allowed. Default: ``10000``.

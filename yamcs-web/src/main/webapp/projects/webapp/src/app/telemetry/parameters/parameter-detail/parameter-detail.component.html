@@ -46,18 +46,19 @@
     <dd>{{ (parameter.dataSource | titlecase) || "-" }}</dd>
 
     @if (entry$ | async; as entry) {
-      @if (entry.longDescription) {
-        <dt>Description</dt>
-        <dd>
+      <dt>Short description</dt>
+      <dd>
+        {{ entry.shortDescription || "-" }}
+      </dd>
+
+      <dt>Long description</dt>
+      <dd>
+        @if (entry.longDescription) {
           <app-markdown [text]="entry.longDescription" />
-        </dd>
-      }
-      @if (!entry.longDescription) {
-        <dt>Description</dt>
-        <dd>
-          {{ entry.shortDescription || "-" }}
-        </dd>
-      }
+        } @else {
+          -
+        }
+      </dd>
     } @else {
       -
     }
@@ -122,18 +123,19 @@
     <dd>{{ (parameter.dataSource | titlecase) || "-" }}</dd>
   }
 
-  @if (parameter.longDescription) {
-    <dt>Description</dt>
-    <dd>
+  <dt>Short description</dt>
+  <dd>
+    {{ parameter.shortDescription || "-" }}
+  </dd>
+
+  <dt>Long description</dt>
+  <dd>
+    @if (parameter.longDescription) {
       <app-markdown [text]="parameter.longDescription" />
-    </dd>
-  }
-  @if (!parameter.longDescription) {
-    <dt>Description</dt>
-    <dd>
-      {{ parameter.shortDescription || "-" }}
-    </dd>
-  }
+    } @else {
+      -
+    }
+  </dd>
 </dl>
 
 <div class="section-divider">
