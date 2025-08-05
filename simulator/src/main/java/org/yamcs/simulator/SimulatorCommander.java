@@ -202,14 +202,13 @@ public class SimulatorCommander extends ProcessRunner {
     public static List<Service> createServices(SimulatorArgs runtimeOptions) {
         TcPacketFactory pktFactory;
         AbstractSimulator simulator;
-        File losDir = new File("losData");
+        File losDir = runtimeOptions.losDir.toFile();
         losDir.mkdirs();
-        File dataDir = new File("data");
+        File dataDir = runtimeOptions.dataDir.toFile();
         dataDir.mkdirs();
 
-        if (runtimeOptions.type == null || runtimeOptions.type.equalsIgnoreCase("col")) {
+        if (runtimeOptions.type.equalsIgnoreCase("col")) {
             pktFactory = TcPacketFactory.COL_PACKET_FACTORY;
-
             simulator = new ColSimulator(losDir, dataDir);
         } else if (runtimeOptions.type.equalsIgnoreCase("pus")) {
             pktFactory = TcPacketFactory.PUS_PACKET_FACTORY;
