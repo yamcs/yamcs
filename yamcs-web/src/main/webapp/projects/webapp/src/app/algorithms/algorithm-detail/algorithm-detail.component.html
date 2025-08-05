@@ -19,17 +19,19 @@
     <dd>{{ alias.name }}</dd>
   }
 
-  @if (algorithm.longDescription) {
-    <dt>Description</dt>
-    <dd>
+  <dt>Short description</dt>
+  <dd>
+    {{ algorithm.shortDescription || "-" }}
+  </dd>
+
+  <dt>Long description</dt>
+  <dd>
+    @if (algorithm.longDescription) {
       <app-markdown [text]="algorithm.longDescription" />
-    </dd>
-  } @else {
-    <dt>Description</dt>
-    <dd>
-      {{ algorithm.shortDescription || "-" }}
-    </dd>
-  }
+    } @else {
+      -
+    }
+  </dd>
 </dl>
 
 <mat-divider />
