@@ -1,31 +1,18 @@
 Packet Pre-processor
 ====================
 
-Yamcs generally uses the Mission Database to process telemetry packets. When data is received from external systems, there are two processing steps done as part of the Data Link which are outside the Mission Database definition:
-
-1. Splitting a data stream into packets. This is done only for the links that receive data as a stream (e.g. TCP). For Data Links where input is naturally split into frames (e.g. UDP) this step is not necessary and not performed.
-2. Pre-processing of packets in order to detect/correct errors and to retrieve basic information about the packets.
-
-
-Stream Splitting
-----------------
-
-The data stream splitter is a java class that implements the :javadoc:`~org.yamcs.tctm.PacketInputStream` interface.
-
-A generic splitter for binary streams is defined in :javadoc:`~org.yamcs.tctm.GenericPacketInputStream`. This class can split a stream based on a packet length that is encoded in a header. It requires all packets to have the length on the same number of bytes.
-
-
-Packet pre-processing
----------------------
-
 The packet pre-processor is a java class that implements the :javadoc:`~org.yamcs.tctm.PacketPreprocessor` interface.
  
 It is responsible for error detection (and possibly correction) and extracting basic information required for further packet processing:
 
 * packet generation time: it represents the time when the packet has been generated on-board.
 * sequence count: a number used to distinguish two packets having the same timestamp.
+
+.. note::
+
+   This type of information is not part of the Mission Database. It is handled exclusively through Yamcs configuration.
  
-The generation time and sequence count are used as primary key in the tm table in the archive. That means they have to uniquely identify a packet; if the archive receives a new packet with the same (generation time, sequence count) as an existing packet in the archive, it will be considered a duplicate and discarded.
+The generation time and sequence count are used as primary key in the ``tm`` table containing archived packets. That means they have to uniquely identify a packet; if the archive receives a new packet with the same (generation time, sequence count) as an existing packet in the archive, it will be considered a duplicate and discarded.
  
 The sequence count is used to distinguish two packets that have the same timestamp; it does not need to be incremental. For example the :javadoc:`~org.yamcs.tctm.IssPacketPreprocessor` uses the first 4 bytes of the CCSDS primary header (containing APID and CCSDS sequence count among others) as sequence count for the telemetry stream.
  

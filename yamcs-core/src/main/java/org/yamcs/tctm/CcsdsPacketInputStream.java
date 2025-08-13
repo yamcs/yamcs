@@ -10,7 +10,7 @@ import org.yamcs.YConfiguration;
  * Reads CCSDS packets from an input stream: first it reads 6 bytes primary header, it derives the length from the last
  * two bytes and reads the remaining of the data.
  * 
- * It also support a maxLength property to limit the size of the packet that is being read.
+ * It also support a <code>maxPacketLength</code> property to limit the size of the packet that is being read.
  * 
  * @author nm
  *
