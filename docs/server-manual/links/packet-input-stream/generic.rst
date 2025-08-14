@@ -16,7 +16,7 @@ Configuration
 This can be used in the configuration of a stream-based packet data link in :file:`etc/yamcs.{instance}.yaml`. Example:
 
 .. code-block:: yaml
-   :emphasize-lines: 6-13
+   :emphasize-lines: 6-12
 
    dataLinks:
      - name: file-in

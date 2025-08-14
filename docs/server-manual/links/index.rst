@@ -68,7 +68,7 @@ Other options are link-specific and documented in their respective sections.
 
     packet-input-stream/index
     packet-preprocessor/index
-    command-postprocessor
+    command-postprocessor/index
 
 .. toctree::
     :maxdepth: 1

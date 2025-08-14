@@ -26,7 +26,7 @@ Do not attempt to synchronize the time
 
 Synchronize the on-board system to the ground each time it resets
 
-   This is the method used by :abbr:`cFS (Core Flight System)`. It allows setting a :abbr:`SCTF (Spacecraft Time Correction Factor)` on-board and that will correlate the on-board time with ground time.
+   This is the method used by :abbr:`cFS (Core Flight System)`. It allows setting a :abbr:`SCTF (Spacecraft Time Correction Factor)` on-board and will correlate the on-board time with ground time.
 
 Maintain a correlation factor on ground
 

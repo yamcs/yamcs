@@ -267,7 +267,7 @@ service (string)
     Currently the only supported option is ``PACKET`` which is also the default.
 
 commandPostprocessorClassName (string) and commandPostprocessorArgs (string)
-   **Required if service=PACKET.** Specifies the command postprocessor and its configuration. See :doc:`command-postprocessor` for details.
+   **Required if service=PACKET.** Specifies the command postprocessor and its configuration. See :doc:`command-postprocessor/index` for details.
    
 stream (string)
      **Required.** The stream on which the commands are received.
