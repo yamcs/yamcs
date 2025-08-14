@@ -17,7 +17,7 @@ Upcoming leap seconds are announced biannually in Bulletin C publications:
 
 * https://www.iers.org/IERS/EN/Publications/Bulletins/bulletins.html
 
-The user is responsible for updating manually this file if it changes (when new leap seconds are added). Fortunately this is not very often and new leap seconds are announced well in advance. For example there has been no new leap second between 2017 and 2023.
+The user is responsible for updating manually this file if it changes (when new leap seconds are added). Fortunately this is not very often and new leap seconds are announced well in advance. The last leap second was added in 2017.
 
 .. note::
 
@@ -41,7 +41,7 @@ The class that allows working with times, offering conversion functionality betw
 Wall clock time
 ---------------
 
-The wall clock time is the computer time converted to Yamcs format. The ``getWallclockTime()`` function in ``TimeEncoding`` can be used to get the current wallclock time. In practice, in 2024, the following is true:
+The wall clock time is the computer time converted to Yamcs format. The ``getWallclockTime()`` function in ``TimeEncoding`` can be used to get the current wallclock time. On this day, the following is true:
 
 .. code-block:: java
 

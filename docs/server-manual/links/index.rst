@@ -77,9 +77,11 @@ Other options are link-specific and documented in their respective sections.
     file-polling-tm-data-link
     tcp-tc-data-link
     tcp-tm-data-link
+    tcp-tctm-data-link
     tse-data-link
     udp-parameter-data-link
     udp-tc-data-link
     udp-tm-data-link
+    udp-tctm-data-link
     ccsds-frame-processing
     yamcs-cascading
