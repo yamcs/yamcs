@@ -27,6 +27,41 @@
   font-weight: 500;
 }
 
+.map-error-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.95);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  gap: 16px;
+}
+
+.map-error-overlay mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  color: #ff6b6b;
+}
+
+.error-text {
+  color: #333;
+  font-size: 16px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.error-subtext {
+  color: rgba(51, 51, 51, 0.7);
+  font-size: 14px;
+  text-align: center;
+}
+
 .satellite-info {
   position: absolute;
   top: 16px;

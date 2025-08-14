@@ -7,6 +7,15 @@
     </div>
   }
 
+  <!-- Map error state -->
+  @if (showMapError) {
+    <div class="map-error-overlay">
+      <mat-icon>error_outline</mat-icon>
+      <div class="error-text">Could not load map because of incorrect configuration. Please connect with your MCC Admin.</div>
+      <div class="error-subtext">Your satellite downlinked data is still secure and accessible for you.</div>
+    </div>
+  }
+
   <!-- Google Map - Static, no reactive conditions -->
   @if (showMap) {
     <google-map

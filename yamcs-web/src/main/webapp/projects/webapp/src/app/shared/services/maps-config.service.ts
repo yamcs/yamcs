@@ -12,8 +12,7 @@ export class MapsConfigService {
    */
   getGoogleMapsApiKey(): string {
     const windowKey = (window as any).GOOGLE_MAPS_API_KEY;
-    const fallbackKey = 'AIzaSyCr_T89W84m0D5azu0Xjk4fQmc2-wJGFQk';
-    return windowKey || fallbackKey;
+    return windowKey;
   }
 
   /**

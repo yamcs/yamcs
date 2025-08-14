@@ -32,6 +32,7 @@ export class SatelliteMapComponent implements OnInit, OnDestroy {
   // Template properties - simple properties, no reactive streams
   showLoading = true;
   showMap = false;
+  showMapError = false;
   currentPosition: SatellitePosition | null = null;
   markerPosition: google.maps.LatLngLiteral | null = null;
   pathPositions: google.maps.LatLngLiteral[] = [];
@@ -76,7 +77,17 @@ export class SatelliteMapComponent implements OnInit, OnDestroy {
       console.error('Failed to initialize Google Maps:', error);
       this.showLoading = false;
       this.showMap = false;
-      // Show error state to user
+      this.showMapError = true;
+      
+      // Still load satellite data for overlays even without map
+      this.loadSatelliteData();
+      
+      // Update satellite position every 1 second even without map
+      interval(1000)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => {
+          this.loadSatelliteData();
+        });
     }
   }
 
