@@ -299,6 +299,12 @@ public class WebFileDeployer {
         // May be used by web extensions to pass arbitrary information
         webConfig.put("extra", extraConfigs);
 
+        // Add Google Maps API key from environment variable
+        String googleMapsApiKey = System.getenv("GOOGLE_MAPS_API_KEY");
+        if (googleMapsApiKey != null && !googleMapsApiKey.isEmpty()) {
+            webConfig.put("googleMapsApiKey", googleMapsApiKey);
+        }
+
         var args = new HashMap<String, Object>();
         args.put("contextPath", contextPath);
         args.put("config", webConfig);

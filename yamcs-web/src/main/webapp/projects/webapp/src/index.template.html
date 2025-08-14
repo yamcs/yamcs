@@ -21,6 +21,12 @@
   <script id="appConfig" type="application/json">
     {{ configJson }}
   </script>
+  <script>
+    // Make Google Maps API key available to the Angular app
+    {% if config.googleMapsApiKey %}
+    window.GOOGLE_MAPS_API_KEY = '{{ config.googleMapsApiKey }}';
+    {% endif %}
+  </script>
   <app-root></app-root>
 </body>
 
