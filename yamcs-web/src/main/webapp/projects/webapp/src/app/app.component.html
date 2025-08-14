@@ -25,28 +25,28 @@
         <!--a mat-tab-link matTooltip="Search (/)">
         <mat-icon>search</mat-icon>
       </a-->
-        <a mat-tab-link routerLink="storage" routerLinkActive="active">
-          <mat-icon>perm_media</mat-icon>
-          &nbsp;&nbsp;STORAGE
+        <a mat-tab-link routerLink="storage" routerLinkActive="active" class="nav-link">
+          <mat-icon class="nav-icon">storage</mat-icon>
+          <span class="nav-label">Storage</span>
         </a>
-        <a mat-tab-link routerLink="support" routerLinkActive="active">
-          <mat-icon>help_center</mat-icon>
-          &nbsp;&nbsp;SUPPORT
+        <a mat-tab-link routerLink="support" routerLinkActive="active" class="nav-link">
+          <mat-icon class="nav-icon">help_outline</mat-icon>
+          <span class="nav-label">Support</span>
         </a>
         @if (user | mayAccessAdminArea) {
-          <a mat-tab-link routerLink="admin" routerLinkActive="active">
-            <mat-icon>security</mat-icon>
-            &nbsp;&nbsp;ADMIN AREA
+          <a mat-tab-link routerLink="admin" routerLinkActive="active" class="nav-link">
+            <mat-icon class="nav-icon">admin_panel_settings</mat-icon>
+            <span class="nav-label">Admin Area</span>
           </a>
         }
         @if (siteLinks.length) {
-          <a mat-tab-link [matMenuTriggerFor]="siteLinkMenu" style="padding: 0 8px">
-            <mat-icon>link</mat-icon>
+          <a mat-tab-link [matMenuTriggerFor]="siteLinkMenu" class="nav-link icon-only">
+            <mat-icon class="nav-icon">link</mat-icon>
           </a>
         }
-        <a mat-tab-link [matMenuTriggerFor]="userMenu">
-          <mat-icon>support_agent</mat-icon>
-          &nbsp;&nbsp;{{ user.getDisplayName() || user.getName() | uppercase }}
+        <a mat-tab-link [matMenuTriggerFor]="userMenu" class="nav-link">
+          <mat-icon class="nav-icon">person_outline</mat-icon>
+          <span class="nav-label">{{ user.getDisplayName() || user.getName() }}</span>
         </a>
       </nav>
     }

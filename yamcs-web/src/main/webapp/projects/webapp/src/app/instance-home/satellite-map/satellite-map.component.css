@@ -62,6 +62,47 @@
   text-align: center;
 }
 
+.orbit-loading-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 150;
+  pointer-events: none;
+}
+
+.orbit-loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  padding: 20px 24px;
+  min-width: 260px;
+}
+
+.orbit-loading-content mat-spinner {
+  --mdc-circular-progress-active-indicator-color: #0a800e;
+}
+
+.orbit-loading-text {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.orbit-loading-subtext {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  text-align: center;
+  margin-top: -4px;
+}
+
 .satellite-info {
   position: absolute;
   top: 16px;

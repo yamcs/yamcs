@@ -26,6 +26,10 @@
     {% if config.googleMapsApiKey %}
     window.GOOGLE_MAPS_API_KEY = '{{ config.googleMapsApiKey }}';
     {% endif %}
+    
+    // Make OrbitLab API credentials available to the Angular app - hardcoded for now
+    window.ORBITLAB_API_KEY = 'bf23dbed-171e-4d64-9abe-3e3b6799544d';
+    window.ORBITLAB_API_SATELLITE_KEY = 'ayulsat';
   </script>
   <app-root></app-root>
 </body>

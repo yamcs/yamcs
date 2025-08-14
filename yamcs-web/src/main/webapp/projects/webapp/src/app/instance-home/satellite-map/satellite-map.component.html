@@ -40,6 +40,17 @@
     </google-map>
   }
 
+  <!-- Orbital data loading indicator -->
+  @if (showOrbitLoading) {
+    <div class="orbit-loading-overlay">
+      <div class="orbit-loading-content">
+        <mat-spinner diameter="24"></mat-spinner>
+        <div class="orbit-loading-text">Loading orbital path data...</div>
+        <div class="orbit-loading-subtext">Fetching satellite positions from OrbitLab</div>
+      </div>
+    </div>
+  }
+
   <!-- Satellite info overlay -->
   @if (currentPosition) {
     <div class="satellite-info">

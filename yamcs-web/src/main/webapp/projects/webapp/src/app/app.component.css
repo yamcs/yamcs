@@ -142,11 +142,60 @@ mat-toolbar-row {
 ::ng-deep .top-tabs.mat-mdc-tab-nav-bar .mat-mdc-tab-link {
   opacity: 1;
   min-width: 0;
-  padding: 0 16px;
+  padding: 0 12px;
+  transition: all 0.2s ease;
 }
 
-/* Force tab labels to be black */
-::ng-deep .top-tabs.mat-mdc-tab-nav-bar .mat-mdc-tab-link .mdc-tab__text-label {
+/* Clean navigation link styling */
+.nav-link {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 0 12px !important;
+  height: 48px !important;
+  border-radius: 0 !important;
+  border: none !important;
+}
+
+.nav-link.icon-only {
+  gap: 0 !important;
+  padding: 0 8px !important;
+}
+
+/* Clean, minimal icons */
+.nav-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
   color: #000 !important;
-  letter-spacing: 1.25px;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.nav-link:hover .nav-icon,
+.nav-link.active .nav-icon {
+  opacity: 1;
+}
+
+/* Thin, clean typography */
+.nav-label {
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  color: #000 !important;
+  letter-spacing: 0.25px !important;
+  text-transform: none !important;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.nav-link:hover .nav-label,
+.nav-link.active .nav-label {
+  opacity: 1;
+  font-weight: 500 !important;
+}
+
+/* Override existing tab label styles */
+::ng-deep .top-tabs.mat-mdc-tab-nav-bar .mat-mdc-tab-link .mdc-tab__text-label {
+  color: transparent !important;
+  letter-spacing: 0 !important;
 }

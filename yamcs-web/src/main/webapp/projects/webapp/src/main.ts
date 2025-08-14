@@ -1,4 +1,5 @@
 import { isDevMode, provideZonelessChangeDetection } from '@angular/core';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { bootstrapApplication } from '@angular/platform-browser';
 import {
   provideRouter,
@@ -21,6 +22,7 @@ import { AgoPipe } from './app/shared/pipes/ago.pipe';
 
 bootstrapApplication(AppComponent, {
   providers: [
+    provideHttpClient(withInterceptorsFromDi()),
     provideBaseHrefFromIndexHtml(),
     provideYamcsMaterialConfiguration(),
     provideConfigInitializer(),
