@@ -153,7 +153,7 @@ maxPacketLength:
     **Required if service=PACKET.**  Specifies the maximum size of a packet (header included). Valid for both CCSDS Space Packets and CCSDS encapsulation packets. If the header of a packet indicates a packet size larger than this value, a warning event is raised and the packet is dropped including all the data until a new frame containing a packet start. 
 
 packetPreprocessorClassName and packetPreprocessorArgs
-    **Required if service=PACKET.** Specifies the packet pre-processor and its configuration that will be used for the packets extracted from this Virtual Channel. See :doc:`packet-preprocessor` for details.
+    **Required if service=PACKET.** Specifies the packet preprocessor and its configuration that will be used for the packets extracted from this Virtual Channel. See :doc:`packet-preprocessor/index` for details.
 
 vcaHandlerClassName:
     **Required if the service = VCA** Specifies the name of the class which handles data for this virtual channel. The class has to implement :javadoc:`~org.yamcs.tctm.ccsds.VcDownlinkHandler` interface. Optionally it can implement :javadoc:`~org.yamcs.tctm.Link` interface to appear as a data link (e.g. in yamcs-web). An example implementation of such class can be found in the ccsds-frames example project.
@@ -267,7 +267,7 @@ service (string)
     Currently the only supported option is ``PACKET`` which is also the default.
 
 commandPostprocessorClassName (string) and commandPostprocessorArgs (string)
-   **Required if service=PACKET.** Specifies the command post-processor and its configuration. See :doc:`command-post-processor` for details.
+   **Required if service=PACKET.** Specifies the command postprocessor and its configuration. See :doc:`command-postprocessor` for details.
    
 stream (string)
      **Required.** The stream on which the commands are received.

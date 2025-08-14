@@ -46,7 +46,7 @@ ppStream (string)
      This is an alternative to *stream*; can be used for links serving more than one of TM, TC or PP.
 
 invalidPackets (string)
-    One of ``DROP``, ``PROCESS`` or ``DIVERT``. Used for TM links to specify what happens with the packets that the pre-processor decides are invalid:
+    One of ``DROP``, ``PROCESS`` or ``DIVERT``. Used for TM links to specify what happens with the packets that the preprocessor decides are invalid:
 
     ``DROP`` means they are discarded.
     
@@ -67,8 +67,8 @@ Other options are link-specific and documented in their respective sections.
     :caption: Shared Functionality
 
     packet-input-stream/index
-    packet-preprocessor
-    command-post-processor
+    packet-preprocessor/index
+    command-postprocessor
 
 .. toctree::
     :maxdepth: 1

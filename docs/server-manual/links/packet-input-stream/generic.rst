@@ -16,20 +16,21 @@ Configuration
 This can be used in the configuration of a stream-based packet data link in :file:`etc/yamcs.{instance}.yaml`. Example:
 
 .. code-block:: yaml
-   :emphasize-lines: 5-12
+   :emphasize-lines: 6-13
 
-   name: file-in
-   class: org.yamcs.tctm.FilePollingTmDataLink
-   stream: tm_dump
-   incomingDir: incoming/
-   packetInputStreamClassName: org.yamcs.tctm.GenericPacketInputStream
-   packetInputStreamArgs:
-     lengthFieldOffset: 4
-     lengthFieldLength: 2
-     lengthAdjustment: 7
-     initialBytesToStrip: 0
-     maxPacketLength: 1500
-   # ...
+   dataLinks:
+     - name: file-in
+       class: org.yamcs.tctm.FilePollingTmDataLink
+       stream: tm_dump
+       incomingDir: incoming/
+       packetInputStreamClassName: org.yamcs.tctm.GenericPacketInputStream
+       packetInputStreamArgs:
+         lengthFieldOffset: 4
+         lengthFieldLength: 2
+         lengthAdjustment: 7
+         initialBytesToStrip: 0
+         maxPacketLength: 1500
+     # ...
 
 .. note::
 
