@@ -22,6 +22,7 @@
     "@angular/compiler": "^20.0.1",
     "@angular/core": "^20.0.1",
     "@angular/forms": "^20.0.1",
+    "@angular/google-maps": "^20.1.5",
     "@angular/language-service": "^20.0.1",
     "@angular/material": "^20.0.2",
     "@angular/platform-browser": "^20.0.1",

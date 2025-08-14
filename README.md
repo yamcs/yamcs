@@ -29,6 +29,12 @@ Build Java jars:
 
     mvn clean install -DskipTests
 
+Build and run:
+    
+    ./build_and_run.sh
+
+(if the above command successfully runs and you can open localhost:8090, then you can skip the steps below.)
+
 Build web interface:
 
     cd yamcs-web/src/main/webapp

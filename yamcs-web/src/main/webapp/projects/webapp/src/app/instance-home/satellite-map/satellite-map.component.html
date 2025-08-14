@@ -1,0 +1,51 @@
+<div class="satellite-map-container">
+  <!-- Loading indicator -->
+  @if (showLoading) {
+    <div class="loading-overlay">
+      <mat-spinner diameter="40"></mat-spinner>
+      <div class="loading-text">Loading satellite data...</div>
+    </div>
+  }
+
+  <!-- Google Map - Static, no reactive conditions -->
+  @if (showMap) {
+    <google-map
+      [options]="mapOptions"
+      width="100%"
+      height="100%"
+      (mapInitialized)="onMapInitialized($event)">
+      <!-- Static marker and polyline -->
+      @if (markerPosition) {
+        <map-marker
+          [position]="markerPosition"
+          [options]="markerOptions"
+          title="Current Satellite Position">
+        </map-marker>
+      }
+      @if (pathPositions.length > 0) {
+        <map-polyline
+          [path]="pathPositions"
+          [options]="polylineOptions">
+        </map-polyline>
+      }
+    </google-map>
+  }
+
+  <!-- Satellite info overlay -->
+  @if (currentPosition) {
+    <div class="satellite-info">
+      <div class="satellite-info-item">
+        <span class="info-label">Latitude</span>
+        <span class="info-value">{{ currentPosition.latitude | number:'1.4-4' }}°</span>
+      </div>
+      <div class="satellite-info-item">
+        <span class="info-label">Longitude</span>
+        <span class="info-value">{{ currentPosition.longitude | number:'1.4-4' }}°</span>
+      </div>
+      <div class="satellite-info-item">
+        <span class="info-label">Altitude</span>
+        <span class="info-value">{{ currentPosition.altitude | number:'1.1-1' }} km</span>
+      </div>
+    </div>
+  }
+</div>

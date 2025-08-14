@@ -1,0 +1,56 @@
+<div class="packet-overlay">
+  <!-- Collapsed Summary View -->
+  @if (isCollapsed$ | async) {
+    <div class="collapsed-summary" (click)="toggleCollapse()">
+      <div class="summary-content">
+        <div class="summary-icon">
+          <mat-icon>satellite</mat-icon>
+        </div>
+        <div class="summary-stats">
+          <div class="stat-item">
+            <span class="stat-label">Packets</span>
+            <span class="stat-value">{{ getTotalPacketCount() | number:'1.0-0' }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Rate</span>
+            <span class="stat-value">{{ getTotalPacketRate() | number:'1.0-0' }} p/s</span>
+          </div>
+        </div>
+        <div class="expand-icon">
+          <mat-icon>arrow_forward</mat-icon>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Collapsible Panel -->
+  <div 
+    class="overlay-panel" 
+    [class.collapsed]="isCollapsed$ | async"
+    [class.expanded]="!(isCollapsed$ | async)">
+    
+    <div class="panel-header">
+      <div class="panel-title">
+        <mat-icon>satellite</mat-icon>
+        <span>Packet Statistics</span>
+      </div>
+      <button 
+        class="close-button"
+        (click)="toggleCollapse()"
+        mat-icon-button>
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="panel-content">
+      @if (showPackets && tmstats$) {
+        <app-tmstats-table [tmstats$]="tmstats$" />
+      } @else {
+        <div class="no-data-message">
+          <mat-icon>info</mat-icon>
+          <span>No packet data available</span>
+        </div>
+      }
+    </div>
+  </div>
+</div>

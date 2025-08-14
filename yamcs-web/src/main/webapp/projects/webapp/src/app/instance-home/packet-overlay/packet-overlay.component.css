@@ -1,0 +1,219 @@
+.packet-overlay {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 200;
+  pointer-events: none;
+}
+
+.packet-overlay > * {
+  pointer-events: auto;
+}
+
+.collapsed-summary {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: fit-content;
+  min-width: 180px;
+  max-width: 280px;
+}
+
+.collapsed-summary:hover {
+  background-color: rgba(66, 66, 66, 0.95);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.summary-content {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  gap: 12px;
+}
+
+.summary-icon {
+  color: #fff;
+  opacity: 0.9;
+}
+
+.summary-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-grow: 1;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 13px;
+  color: #fff;
+  font-weight: 600;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.expand-icon {
+  color: rgba(255, 255, 255, 0.7);
+  transition: transform 0.2s ease;
+}
+
+.collapsed-summary:hover .expand-icon {
+  transform: translateY(-2px);
+  color: #fff;
+}
+
+.overlay-panel {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  transform-origin: top left;
+  max-height: 500px;
+  max-width: 90vw;
+  min-width: 400px;
+}
+
+.overlay-panel.collapsed {
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.8) translateY(-20px);
+  pointer-events: none;
+}
+
+.overlay-panel.expanded {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1) translateY(0);
+  pointer-events: all;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #2d2d2d 0%, #3a3a3a 50%, #2d2d2d 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.panel-title ya-icon {
+  font-size: 18px;
+  opacity: 0.9;
+}
+
+.close-button {
+  color: rgba(255, 255, 255, 0.7);
+  min-width: 32px;
+  min-height: 32px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  padding: 0;
+}
+
+.close-button:hover {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.close-button mat-icon {
+  margin: 0;
+  line-height: 1;
+}
+
+.panel-content {
+  padding: 16px;
+  max-height: 400px;
+  overflow-y: auto;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+}
+
+.panel-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.panel-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.panel-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.panel-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.no-data-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  gap: 12px;
+}
+
+.no-data-message ya-icon {
+  font-size: 48px;
+  opacity: 0.4;
+}
+
+.no-data-message span {
+  font-size: 14px;
+  font-weight: 400;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .packet-overlay {
+    left: 10px;
+    right: 10px;
+    min-width: auto;
+    max-width: none;
+  }
+
+  .overlay-panel {
+    max-height: 300px;
+  }
+
+  .panel-content {
+    max-height: 200px;
+  }
+}

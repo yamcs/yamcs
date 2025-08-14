@@ -1,9 +1,14 @@
 <ya-instance-page>
   <ya-instance-toolbar label="Home" />
 
-  <ya-panel>
-    @if (showPackets()) {
-      <app-tmstats-table [tmstats$]="tmstats$" />
-    }
-  </ya-panel>
+  <div class="satellite-dashboard">
+    <!-- Satellite Map with Orbital Path -->
+    <app-satellite-map></app-satellite-map>
+    
+    <!-- Collapsible Packet Statistics Overlay -->
+    <app-packet-overlay 
+      [tmstats$]="tmstats$"
+      [showPackets]="showPackets()">
+    </app-packet-overlay>
+  </div>
 </ya-instance-page>

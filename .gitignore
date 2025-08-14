@@ -13,3 +13,6 @@ server.lock
 
 #Vscode
 .vscode
+
+# Environment variables
+.env

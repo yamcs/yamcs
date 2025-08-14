@@ -11,12 +11,14 @@ import {
   YamcsService,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { TmStatsTableComponent } from '../tm-stats-table/tm-stats-table.component';
+import { SatelliteMapComponent } from '../satellite-map/satellite-map.component';
+import { PacketOverlayComponent } from '../packet-overlay/packet-overlay.component';
 
 @Component({
   templateUrl: './instance-home.component.html',
+  styleUrl: './instance-home.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [WebappSdkModule, TmStatsTableComponent],
+  imports: [WebappSdkModule, SatelliteMapComponent, PacketOverlayComponent],
 })
 export class InstanceHomeComponent implements OnDestroy {
   private user: User;
