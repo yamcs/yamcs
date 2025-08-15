@@ -21,8 +21,8 @@ import org.yamcs.utils.ByteArrayUtils;
  * <ul>
  * <li>maxPacketLength - the maximum packet length; if a packet with the length greater than this would be received, the
  * input stream is closed and an exception is raised. The length of the packet considered here is the number of data
- * bytes read from the
- * stream - that is including the length field itself and the bytes to strip at the beginning if set (see below)</li>
+ * bytes read from the stream - that is including the length field itself and the bytes to strip at the beginning if set
+ * (see below)</li>
  * <li>lengthFieldOffset - the offset in the packet where the length is read from</li>
  * <li>lengthFieldLength - the size in bytes of the length field</li>
  * <li>lengthAdjustment - after reading the length from the configured offset, this variable is added to it to determine
@@ -61,7 +61,7 @@ public class GenericPacketInputStream implements PacketInputStream {
         lengthFieldEndOffset = lengthFieldOffset + lengthFieldLength;
 
         if (lengthFieldLength != 1 && lengthFieldLength != 2 && lengthFieldLength != 3 && lengthFieldLength != 4) {
-            throw new ConfigurationException("Unsupported legnthFieldLength, supported values are 1,2,3 or 4");
+            throw new ConfigurationException("Unsupported lengthFieldLength, supported values are 1,2,3 or 4");
         }
     }
 
@@ -124,8 +124,9 @@ public class GenericPacketInputStream implements PacketInputStream {
     static void skipFully(InputStream in, int n) throws IOException {
         while (n > 0) {
             long skipped = in.skip(n);
-            if (skipped == 0)
+            if (skipped == 0) {
                 throw new EOFException("Tried to skip " + n + " but reached EOF");
+            }
             n -= skipped;
 
         }

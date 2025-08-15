@@ -14,12 +14,7 @@ import org.yamcs.YConfiguration;
  * <p>
  * An object of this class will be instantiated each time a stream (e.g. socket or file) will be open.
  * 
- * <p>
- * Each implementing class has to have a constructor taking a {@link InputStream} and {@link YConfiguration} as
- * arguments.
- * 
  * @author nm
- *
  */
 public interface PacketInputStream extends Closeable {
     /**

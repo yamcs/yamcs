@@ -259,7 +259,7 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
      * 
      * Add a time synchronisation sample.
      * <p>
-     * If the coefficients are already computed, the sample will be used to asses the accuracy of the computation. If
+     * If the coefficients are already computed, the sample will be used to assess the accuracy of the computation. If
      * the accuracy is lower than {@link #accuracy}, the coefficients will be recomputed based on the latest samples.
      * <p>
      * If the coefficients are not yet computed, the sample will be simply added to the sample buffer. If there are

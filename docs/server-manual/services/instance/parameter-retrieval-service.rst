@@ -1,3 +1,6 @@
+Parameter Retrieval Service
+===========================
+
 This service implements parameter retrieval. It stands behind the "/parameters" API endpoints.
 
 It has been introduced in Yamcs 5.11.0. In order to not require modification of all existing configurations, the service is enabled automatically at startup. It can still be declared in order to change the default configuration.
@@ -19,19 +22,26 @@ The service combines retrieval from several sources:
   so the Parameter Cache is not required in this scenario.
 
 
+Class Name
+----------
+
+:javadoc:`org.yamcs.parameter.ParamterRetrievalService`
+
+
 Configuration Options
 ---------------------
+
 parallelRetrievals (integer)
     Number of retrievals allowed to run concurrently. Default: 4.
 
-procName (String)
-    Name of te processor used for the realtime subscription of the parameter cache (if enabled);
+procName (string)
+    Name of the processor used for the realtime subscription of the parameter cache (if enabled)
 
 
 Parameter Cache options
 -----------------------
 
-These options are under the `parameterCache` configuration.
+These options are under the ``parameterCache`` configuration.
 
 enabled (boolean)
     If true, the parameter cache will be enabled. Default: enabled with the realtime parameter archive filler is not enabled.
@@ -39,7 +49,7 @@ enabled (boolean)
 cacheAll (boolean)
     If true, the cache will store all parameter value regardless if there is any user requesting them or not. If false, the values are added to the cache only for the parameters requested by a user. Once a parameter is added to the cache, its values are always cached. This option can be used to reduce the amount of memory used by the cache with the inconvenience that first time retrieving the values of one parameter will not have them in the cache. 
 
-    Note that the option `subscribeAll` above is somehow similar - if that is set to false, then only some parameters will be available for cache even if this option is set to true. Default: false
+    Note that the option ``subscribeAll`` above is somehow similar - if that is set to false, then only some parameters will be available for cache even if this option is set to true. Default: false
 
 duration (integer)
     How long in seconds the parameters should be kept in the cache. This value should be tuned according to the parameter archive consolidation interval. Default: 6000

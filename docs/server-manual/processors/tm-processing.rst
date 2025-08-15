@@ -2,7 +2,7 @@ TM Packet Processing
 ====================
 
 This section describes how Yamcs processes the TM packets according to the MDB definitions.
-Note that when Yamcs receives a packet, it sends it first to a :doc:`../links/packet-preprocessor` which assigns it a generation time. The generation time is saved in the archive and also used as generation time for all parameters extracted from that packet.
+Note that when Yamcs receives a packet, it sends it first to a :doc:`../links/packet-preprocessor/index` which assigns it a generation time. The generation time is saved in the archive and also used as generation time for all parameters extracted from that packet.
 
 The figure below provides an overview of the steps involved, followed by a more detailed description of each step.
 

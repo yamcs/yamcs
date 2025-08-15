@@ -120,7 +120,7 @@ packet-viewer.yaml
 ~~~~~~~~~~~~~~~~~~
 
 ``packetPreprocessorClassName`` / ``packetPreprocessorArgs``
-    Configure a packet pre-processor. Configuration options are identical to preprocessor configuration of a data link on Yamcs Server.
+    Configure a packet preprocessor. Configuration options are identical to preprocessor configuration of a data link on Yamcs Server.
 
 ``fileFormats``
    List of supported file formats when opening a local packet dump file. The file format determines how to split the file in packets. Sub-keys:

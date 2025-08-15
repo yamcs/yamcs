@@ -82,9 +82,9 @@ Generation Time
 
 The generation time is the time when the data has been generated.
 
-For telemetry packets, it is set by the pre-processor, normally with a time extracted from the packet. However it can be set to the mission time if the ``useLocalGenerationTime`` option is set to true.
+For telemetry packets, it is set by the preprocessor, normally with a time extracted from the packet. However it can be set to the mission time if the ``useLocalGenerationTime`` option is set to true.
 
-The timeEncoding option is used on the TM links to configure how to extract the time from the packet - which means how to convert a number (or more numbers) extracted from the packet to a Yamcs time. The various options for time decoding are documented in the :doc:`../links/packet-preprocessor`
+The timeEncoding option is used on the TM links to configure how to extract the time from the packet - which means how to convert a number (or more numbers) extracted from the packet to a Yamcs time. The various options for time decoding are documented in the :doc:`../links/packet-preprocessor/time-encoding`.
 
 Spacecrafts that have no means to synchronize time (e.g. no access to GPS) will usually use a free running on-board clock (initialized to 0 at startup) to timestamp the packets. In these cases, the on-board time needs to be correlated with the mission time. The :doc:`../services/instance/time-correlation` can be used for this purpose.
 
