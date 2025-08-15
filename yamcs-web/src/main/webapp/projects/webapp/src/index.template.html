@@ -23,13 +23,17 @@
   </script>
   <script>
     // Make Google Maps API key available to the Angular app
-    {% if config.googleMapsApiKey %}
-    window.GOOGLE_MAPS_API_KEY = '{{ config.googleMapsApiKey }}';
+    {% if config.env.GOOGLE_MAPS_API_KEY %}
+    window.GOOGLE_MAPS_API_KEY = '{{ config.env.GOOGLE_MAPS_API_KEY }}';
     {% endif %}
     
-    // Make OrbitLab API credentials available to the Angular app - hardcoded for now
-    window.ORBITLAB_API_KEY = 'bf23dbed-171e-4d64-9abe-3e3b6799544d';
-    window.ORBITLAB_API_SATELLITE_KEY = 'ayulsat';
+    // Make OrbitLab API credentials available to the Angular app
+    {% if config.env.ORBITLAB_API_KEY %}
+    window.ORBITLAB_API_KEY = '{{ config.env.ORBITLAB_API_KEY }}';
+    {% endif %}
+    {% if config.env.ORBITLAB_API_SATELLITE_KEY %}
+    window.ORBITLAB_API_SATELLITE_KEY = '{{ config.env.ORBITLAB_API_SATELLITE_KEY }}';
+    {% endif %}
   </script>
   <app-root></app-root>
 </body>
