@@ -47,6 +47,7 @@ dataLinks:
       port: 10015
       # Give the embedded simulator some time to boot up
       initialDelay: 2000
+      packetPreprocessorClassName: org.yamcs.tctm.IssPacketPreprocessor
     - name: tc_sim
       class: org.yamcs.tctm.TcpTcDataLink
       stream: tc_realtime

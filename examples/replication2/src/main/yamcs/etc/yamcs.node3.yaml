@@ -36,8 +36,6 @@ services:
         masterInstance: node2
         streams: ["tm_realtime"]
 
-
-
 mdb:
   # Configuration of the active loaders
   # Valid loaders are: sheet, xtce or fully qualified name of the class
