@@ -7,8 +7,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.Spec;
-import org.yamcs.TmPacket;
 import org.yamcs.Spec.OptionType;
+import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
@@ -47,7 +47,7 @@ public abstract class AbstractTcTmParamLink extends AbstractLink
 
     @Override
     public Spec getDefaultSpec() {
-        var spec = super.getDefaultSpec();        
+        var spec = super.getDefaultSpec();
         spec.addOption("commandPostprocessorClassName", OptionType.STRING);
         spec.addOption("commandPostprocessorArgs", OptionType.MAP).withSpec(Spec.ANY);
 
@@ -113,6 +113,14 @@ public abstract class AbstractTcTmParamLink extends AbstractLink
         if (config.containsKey(CFG_PREPRO_CLASS)) {
             this.packetPreprocessorClassName = config.getString(CFG_PREPRO_CLASS);
         } else {
+            log.warn("DEPRECATED: Link '{}' should explicitly configure the 'packetPreprocessorClassName' property. "
+                    + "In a future version of Yamcs this property will become required. "
+                    + "Your current configuration is equivalent to:\n\n"
+                    + "    - name: {}\n"
+                    + "      class: {}\n"
+                    + "      # ...\n"
+                    + "      packetPreprocessorClassName: org.yamcs.tctm.IssPacketPreprocessor",
+                    linkName, linkName, getClass().getName());
             this.packetPreprocessorClassName = IssPacketPreprocessor.class.getName();
         }
         if (config.containsKey("packetPreprocessorArgs")) {
@@ -144,6 +152,7 @@ public abstract class AbstractTcTmParamLink extends AbstractLink
         }
 
     }
+
     /**
      * Postprocesses the command, unless postprocessing is disabled.
      * 
@@ -159,7 +168,7 @@ public abstract class AbstractTcTmParamLink extends AbstractLink
         }
         return binary;
     }
-    
+
     /**
      * Sends the packet downstream for processing.
      * <p>

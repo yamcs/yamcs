@@ -175,14 +175,14 @@ public class YamcsParameterLink extends AbstractLink implements ParameterDataLin
 
         cf.whenComplete((page, t) -> {
             if (t != null) {
-                log.warn("Failed to retrieve yamcs parameter names");
+                log.warn("Failed to retrieve Yamcs parameter names");
             } else {
                 for (String p : requestedYamcsParamsFilter) {
                     PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + p);
                     boolean match = false;
                     for (ParameterInfo pi : page) {
                         if (!pi.getQualifiedName().startsWith("/yamcs/")) {
-                            log.warn("Remote yamcs parameter that does not start with /yamcs/?? '{}'", pi.getQualifiedName());
+                            log.warn("Remote Yamcs parameter does not start with /yamcs/?? '{}'", pi.getQualifiedName());
                             continue;
                         }
                         if (matcher.matches(Path.of(pi.getQualifiedName()))) {
@@ -206,7 +206,7 @@ public class YamcsParameterLink extends AbstractLink implements ParameterDataLin
     }
 
     void subscribeYamcsParameters() {
-        log.debug("Subscribing to the following yamcs parameters from upstream: {}", remoteYamcsParams.keySet());
+        log.debug("Subscribing to upstream parameters: {}", remoteYamcsParams.keySet());
 
         SubscribeParametersRequest.Builder request = SubscribeParametersRequest.newBuilder()
                 .setInstance(parentLink.getUpstreamInstance())
