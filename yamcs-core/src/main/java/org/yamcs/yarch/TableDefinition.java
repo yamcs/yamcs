@@ -76,6 +76,13 @@ public class TableDefinition {
     private List<String> histoColumns;
     private List<String> secondaryIndex;
 
+    /**
+     * Histogram encoding version:
+     * 1 = legacy 16-bit encoding (for existing tables)
+     * 2 = new 32-bit encoding with proper timestamp sorting (default for new tables)
+     */
+    private int histogramVersion = 2;
+
     // these are the value columns which are autoincrement.
     private List<TableColumnDefinition> autoIncrementValues;
 
@@ -680,6 +687,17 @@ public class TableDefinition {
 
     public List<String> getHistogramColumns() {
         return histoColumns;
+    }
+
+    public int getHistogramVersion() {
+        return histogramVersion;
+    }
+
+    public void setHistogramVersion(int histogramVersion) {
+        if (histogramVersion < 1 || histogramVersion > 2) {
+            throw new IllegalArgumentException("Histogram version must be 1 or 2, got: " + histogramVersion);
+        }
+        this.histogramVersion = histogramVersion;
     }
 
     public List<String> getSecondaryIndex() {

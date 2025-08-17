@@ -187,6 +187,8 @@ message ProtoTableDefinition {
   	optional bool compressed = 9;
   	optional PartitioningInfo partitioningInfo = 10;
   	repeated SecondaryIndex secondaryIndex = 11;
-  	optional string cfName = 12;
+	optional string cfName = 12;
+	//histogram encoding version: 1=legacy 16-bit, 2=new 32-bit (defaults to 1 for compatibility if not set)
+	optional int32 histogramVersion = 13;
 }
 

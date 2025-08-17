@@ -28,7 +28,6 @@ import org.yamcs.tctm.CcsdsPacket;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.utils.parser.ParseException;
-import org.yamcs.yarch.HistogramSegment;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
@@ -60,6 +59,7 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
 @ThreadSafe
 public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService {
     static final String TM_INDEX_NAME = "CCSDS";
+    public static final long GROUPING_FACTOR = 3600 * 1000;
 
     // if time between two packets with the same apid is more than one hour,
     // make two records even if they packets are in sequence (because maybe there is a wrap around involved)
@@ -560,14 +560,14 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
         StringBuilder whereCnd = new StringBuilder();
         whereCnd.append(" where ");
         if (interval.hasStart()) {
-            long start = HistogramSegment.GROUPING_FACTOR * (interval.getStart() / HistogramSegment.GROUPING_FACTOR);
+            long start = GROUPING_FACTOR * (interval.getStart() / GROUPING_FACTOR);
             whereCnd.append(timeColumnName + " >= " + start);
             if (interval.hasEnd()) {
                 whereCnd.append(" and ");
             }
         }
         if (interval.hasEnd()) {
-            long stop = HistogramSegment.GROUPING_FACTOR * (1 + interval.getEnd() / HistogramSegment.GROUPING_FACTOR);
+            long stop = GROUPING_FACTOR * (1 + interval.getEnd() / GROUPING_FACTOR);
             whereCnd.append(timeColumnName + " < " + stop);
         }
 

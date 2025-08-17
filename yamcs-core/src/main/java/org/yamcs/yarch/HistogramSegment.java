@@ -1,21 +1,21 @@
 package org.yamcs.yarch;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.List;
 
-import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.StringConverter;
 
-/* 
- * keeps all the records in a {@value #GROUPING_FACTOR} millisec interval
+/**
+ * Note that in the yamcs 5.12.0 and older, the encoding was broken for negative timestamps and record count was also
+ * stored on 16 bits.
+ * <p>
+ * Yamcs 5.12.1 introduced a new encoding scheme, see {@link HistogramEncoder}
  * 
- * */
+ */
 public class HistogramSegment {
     byte[] columnv;
-    long sstart; // segment start
-    ArrayList<HistogramSegment.SegRecord> pps;
-    public static final long GROUPING_FACTOR = 3600 * 1000;
-    static final int REC_SIZE = 10; // 4 bytes for start and stop, 2 bytes for num
+    long segIndex; // segment index
+    final List<HistogramSegment.SegRecord> records;
     static final int MAX_INTERVAL = 120000; // make two records if the time between packets is more than 2 minutes
                                             // (because the packets are not very related)
     private static long LOSS_TIME = 1000; // time in milliseconds above which we consider a packet loss
@@ -24,59 +24,41 @@ public class HistogramSegment {
      * Constructs an empty segment
      * 
      * @param columnv
-     *            - column value in binary
-     * @param sstart
+     *            column value in binary
+     * @param segIndex
+     *            segment index
      */
-    public HistogramSegment(byte[] columnv, long sstart) {
+    public HistogramSegment(byte[] columnv, long segIndex) {
         this.columnv = columnv;
-        this.sstart = sstart;
-        pps = new ArrayList<>();
+        this.segIndex = segIndex;
+        records = new ArrayList<>();
     }
 
-    public HistogramSegment(byte[] columnv, long sstart, byte[] val) {
-        ByteBuffer v = ByteBuffer.wrap(val);
+    /**
+     * Constructs a segment with pre-decoded records
+     * 
+     * @param columnv
+     *            column value in binary
+     * @param segIndex
+     *            segment index
+     * @param records
+     *            list of segment records
+     */
+    public HistogramSegment(byte[] columnv, long segIndex, List<SegRecord> records) {
         this.columnv = columnv;
-        this.sstart = sstart;
-        pps = new ArrayList<>();
-        while (v.hasRemaining()) {
-            pps.add(new SegRecord(v.getInt(), v.getInt(), v.getShort()));
-        }
+        this.segIndex = segIndex;
+        this.records = records;
     }
 
-    public HistogramSegment(byte[] key, byte[] val) {
-        ByteBuffer k = ByteBuffer.wrap(key);
-        ByteBuffer v = ByteBuffer.wrap(val);
-        this.sstart = k.getLong(0);
-        columnv = new byte[k.remaining()];
-        k.get(columnv);
-        pps = new ArrayList<>();
-        while (v.hasRemaining()) {
-            pps.add(new SegRecord(v.getInt(), v.getInt(), v.getShort()));
-        }
+    /**
+     * Inverts the sign of a long value to handle negative timestamp sorting.
+     */
+    public static long invertSignI64(long value) {
+        return value ^ Long.MIN_VALUE;
     }
 
-    public static long getSstart(byte[] key) {
-        return ByteBuffer.wrap(key).getLong(0);
-    }
-
-    public static byte[] key(long sstart, byte[] columnv) {
-        byte[] b = ByteArrayUtils.encodeLong(sstart, new byte[8 + columnv.length], 0);
-        System.arraycopy(columnv, 0, b, 8, columnv.length);
-        return b;
-    }
-
-    public byte[] val() {
-        ByteBuffer bbv = ByteBuffer.allocate(REC_SIZE * pps.size());
-        for (HistogramSegment.SegRecord p : pps) {
-            bbv.putInt(p.dstart);
-            bbv.putInt(p.dstop);
-            bbv.putShort((short)p.num); //TODO fix overflow int->short (should convert all histograms to int)
-        }
-        return bbv.array();
-    }
-
-    public static long segmentStart(long instant) {
-        return instant / HistogramSegment.GROUPING_FACTOR;
+    public byte[] columnv() {
+        return columnv;
     }
 
     // used for merging
@@ -95,8 +77,8 @@ public class HistogramSegment {
         int rightIndex = -1;
 
         this.dtime = dtime1;
-        for (int i = 0; i < pps.size(); i++) {
-            HistogramSegment.SegRecord r = pps.get(i);
+        for (int i = 0; i < records.size(); i++) {
+            HistogramSegment.SegRecord r = records.get(i);
             if (dtime >= r.dstart) {
                 if (dtime <= r.dstop) { // inside left
                     r.num++;
@@ -126,8 +108,8 @@ public class HistogramSegment {
         }
         // based on the information collected above, compute the new records
         if (mergeLeft && mergeRight) {
-            pps.set(leftIndex, new SegRecord(left.dstart, right.dstop, left.num + right.num + 1));
-            pps.remove(rightIndex);
+            records.set(leftIndex, new SegRecord(left.dstart, right.dstop, left.num + right.num + 1));
+            records.remove(rightIndex);
         } else if (mergeLeft) {
             left.dstop = dtime;
             left.num++;
@@ -137,11 +119,11 @@ public class HistogramSegment {
         } else { // add a new record
             HistogramSegment.SegRecord center = new SegRecord(dtime, dtime, 1);
             if (leftIndex != -1) {
-                pps.add(leftIndex + 1, center);
+                records.add(leftIndex + 1, center);
             } else if (rightIndex != -1) {
-                pps.add(rightIndex, center);
+                records.add(rightIndex, center);
             } else {
-                pps.add(center);
+                records.add(center);
             }
         }
     }
@@ -189,25 +171,34 @@ public class HistogramSegment {
 
     // add a new record to the segment (to be used for testing only
     void add(int dstart, int dstop, int num) {
-        pps.add(new SegRecord(dstart, dstop, num));
+        records.add(new SegRecord(dstart, dstop, num));
 
     }
 
     public int size() {
-        return pps.size();
-    }
-    
-    public long getSegmentStart() {
-        return sstart;
-    }
-    
-    @Override
-    public String toString() {
-        return "start: " + sstart + ", columnv: " + StringConverter.arrayToHexString(columnv) + " recs:" + pps;
+        return records.size();
     }
 
-    static class SegRecord {
-        int dstart, dstop; // deltas from the segment start in milliseconds
+    public long segIndex() {
+        return segIndex;
+    }
+
+    public void addRecord(int dstart, int dstop, int num) {
+        records.add(new SegRecord(dstart, dstop, num));
+    }
+
+    public List<SegRecord> getRecords() {
+        return records;
+    }
+
+    @Override
+    public String toString() {
+        return "segIndex: " + segIndex + ", columnv: " + StringConverter.arrayToHexString(columnv) + " recs:" + records;
+    }
+
+    public static class SegRecord {
+        int dstart; // deltas from the segment start in milliseconds
+        int dstop;
         int num;
 
         public SegRecord(int dstart, int dstop, int num) {
@@ -216,11 +207,22 @@ public class HistogramSegment {
             this.num = num;
         }
 
+        public int dstart() {
+            return dstart;
+        }
+
+        public int dstop() {
+            return dstop;
+        }
+
+        public int num() {
+            return num;
+        }
+
         @Override
         public String toString() {
             return String.format("time:(%d,%d), nump: %d", dstart, dstop, num);
         }
     }
 
-    
 }

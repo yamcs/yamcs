@@ -20,6 +20,7 @@ import org.yamcs.yarch.DbRange;
 import org.yamcs.yarch.ExecutionContext;
 import org.yamcs.yarch.HistogramInfo;
 import org.yamcs.yarch.HistogramSegment;
+import org.yamcs.yarch.HistogramEncoder;
 import org.yamcs.yarch.PartitionManager;
 import org.yamcs.yarch.PartitionManager.Interval;
 import org.yamcs.yarch.TableDefinition;
@@ -30,15 +31,10 @@ import org.yamcs.yarch.YarchException;
 import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
-import static org.yamcs.yarch.HistogramSegment.segmentStart;
-import static org.yamcs.yarch.rocksdb.RdbHistogramInfo.histoDbKey;
 import static org.yamcs.yarch.rocksdb.RdbStorageEngine.dbKey;
 
 /**
  * rebuilds the histogram for a table
- * 
- * @author nm
- *
  */
 public class HistogramRebuilder {
     final YarchDatabaseInstance ydb;
@@ -61,6 +57,10 @@ public class HistogramRebuilder {
     }
 
     public CompletableFuture<Void> rebuild() throws YarchException {
+        if (tableDefinition.getHistogramVersion() == 1) {
+            log.info("Changing table histogram version to 2");
+            tableDefinition.setHistogramVersion(2);
+        }
         return rebuild(new TimeInterval());
     }
     public CompletableFuture<Void> rebuild(TimeInterval timeIterval) throws YarchException {
@@ -178,6 +178,7 @@ public class HistogramRebuilder {
             String columnName;
             int MAX_ENTRIES = 100;
             RdbHistogramInfo histoInfo;
+            final HistogramEncoder encoder;
 
             ColumnHistoRebuilder(RdbHistogramInfo histoInfo, String columnName) {
                 this.columnName = columnName;
@@ -185,6 +186,7 @@ public class HistogramRebuilder {
                 if (histoInfo == null) {
                     throw new NullPointerException();
                 }
+                this.encoder = HistogramEncoder.createEncoder(tableDefinition);
             }
 
             // we know the data will be sorted so we need to maintain for each column value just the last segment.
@@ -198,25 +200,25 @@ public class HistogramRebuilder {
                 ColumnSerializer cs = tableDefinition.getColumnSerializer(columnName);
                 byte[] columnv = cs.toByteArray(tuple.getColumn(columnName));
 
-                long sstart = segmentStart(time);
-                int dtime = (int) (time % HistogramSegment.GROUPING_FACTOR);
+                var splitResult = encoder.splitTime(time);
 
                 ByteArrayWrapper valuew = new ByteArrayWrapper(columnv);
 
                 HistogramSegment segment = values.get(valuew);
                 if (segment == null) {
-                    segment = new HistogramSegment(columnv, sstart);
+                    segment = new HistogramSegment(columnv, splitResult.segIndex());
                     values.put(valuew, segment);
-                } else if (segment.getSegmentStart() != sstart) {
+                } else if (segment.segIndex() != splitResult.segIndex()) {
                     // write to db
                     YRDB rdb = tablespace.getRdb(partitionDir, false);
-                    byte[] dbKey = histoDbKey(histoInfo.tbsIndex, segment.getSegmentStart(), columnv);
-                    rdb.put(dbKey, segment.val());
+                    byte[] dbKey = encoder.encodeKey(histoInfo.tbsIndex, segment.segIndex(), columnv);
+                    byte[] encodedValue = encoder.encodeValue(segment);
+                    rdb.put(dbKey, encodedValue);
 
-                    segment = new HistogramSegment(columnv, sstart);
+                    segment = new HistogramSegment(columnv, splitResult.segIndex());
                     values.put(valuew, segment);
                 }
-                segment.merge(dtime);
+                segment.merge(splitResult.deltaTime());
             }
 
             void flush() throws IOException, RocksDBException {
@@ -225,8 +227,9 @@ public class HistogramRebuilder {
                     HistogramSegment segment = me.getValue();
                     byte[] columnv = me.getKey().getData();
 
-                    byte[] dbKey = histoDbKey(histoInfo.tbsIndex, segment.getSegmentStart(), columnv);
-                    rdb.put(dbKey, segment.val());
+                    byte[] dbKey = encoder.encodeKey(histoInfo.tbsIndex, segment.segIndex(), columnv);
+                    byte[] encodedValue = encoder.encodeValue(segment);
+                    rdb.put(dbKey, encodedValue);
                 }
             }
         }
