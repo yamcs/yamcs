@@ -1,15 +1,13 @@
-TCP TM Data Link
-================
+TCP TC/TM Data Link
+===================
 
-Provides packets received via plain TCP sockets.
-
-In case the TCP connection with the telemetry server cannot be opened or is broken, it retries to connect each 10 seconds.
+Connects to a TCP socket, sending telecommands and receiving a stream of telemetry.
 
 
 Class Name
 ----------
 
-:javadoc:`org.yamcs.tctm.TcpTmDataLink`
+:javadoc:`org.yamcs.tctm.TcpTcTmDataLink`
 
 
 Configuration
@@ -21,10 +19,12 @@ Data links are configured in :file:`etc/yamcs.{instance}.yaml`. Example:
 
    dataLinks:
     - name: tctm
-      class: org.yamcs.tctm.TcpTmDataLink
-      stream: tm_realtime
+      class: org.yamcs.tctm.TcpTcTmDataLink
+      tmStream: tm_realtime
+      tcStream: tc_realtime
       host: 127.0.0.1
-      port: 10011
+      port: 10010
+      commandPostprocessorClassName: org.yamcs.tctm.GenericCommandPostprocessor
       packetInputStreamClassName: org.yamcs.tctm.CcsdsPacketInputStream
       packetPreprocessorClassName: org.yamcs.tctm.GenericPacketPreprocessor
       packetPreprocessorArgs:
@@ -37,17 +37,26 @@ Data links are configured in :file:`etc/yamcs.{instance}.yaml`. Example:
 Configuration Options
 ---------------------
 
+tcStream (string)
+    **Required.** The stream where outgoing data (telecommands) is emitted
+
+tmStream (string)
+    **Required.** The stream where incoming data (telemetry) is emitted
+
 host (string)
-    **Required.** The host of the TM provider
+    **Required.** The host of the remote system
 
 port (integer)
     **Required.** The TCP port to connect to
 
-stream (string)
-    **Required.** The stream where incoming data (telemetry) is emitted
+commandPostprocessorClassName (string)
+    Class name of a :doc:`command-postprocessor/index` implementation. Default is :doc:`org.yamcs.tctm.GenericCommandPostprocessor <command-postprocessor/generic>`.
+
+commandPostprocessorArgs (map)
+    Optional args of arbitrary complexity to pass to the command postprocessor. Each postprocessor may support different options.
 
 packetInputStreamClassName (string)
-    Class name of a :doc:`packet-input-stream/index`. Default is :doc:`org.yamcs.tctm.CcsdsPacketInputStream <packet-input-stream/ccsds>` which reads CCSDS Packets.
+    Class name of a :doc:`packet-input-stream/index`. Default is :doc:`org.yamcs.tctm.GenericPacketInputStream <packet-input-stream/generic>` configured to read CCSDS Packets.
 
 packetInputStreamArgs (map)
     Optional args of arbitrary complexity to pass to the PacketInputStream. Each PacketInputStream may support different options.

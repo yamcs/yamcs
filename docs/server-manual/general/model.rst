@@ -5,7 +5,7 @@ Yamcs implements a fairly traditional Monitoring and Control Model. The remote s
 
 Yamcs assumes that parameters are not sent individually but in groups which usually (but not necessarily) are some sort of binary packets. Yamcs supports basic parameter types (int, long, float, double, boolean, timestamp, string, binary) and also aggregate types (aka structs in C language) and arrays.
 
-Parameters can either be received directly from the remote device or can be computed locally by **algorithms**. Algorithms in Yamcs can be implemented in Javascript or Python. Other languages that have :abbr:`JVM (Java Virtual Machine)` based implementations could also be supported without too much trouble.
+Parameters can either be received directly from the remote device or can be computed locally by **algorithms**. Algorithms in Yamcs can be implemented in Javascript or Python.
 
 Following XTCE conventions, Yamcs distinguishes between:
 

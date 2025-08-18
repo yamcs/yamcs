@@ -26,7 +26,7 @@ This can be used in the configuration of a stream-based packet data link in :fil
        packetInputStreamClassName: org.yamcs.tctm.CcsdsPacketInputStream
        packetInputStreamArgs:
          maxPacketLength: 1500
-   # ...
+       # ...
 
 
 Configuration Options

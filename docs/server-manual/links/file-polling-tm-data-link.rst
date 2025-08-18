@@ -25,12 +25,12 @@ delayBetweenPackets (integer)
     When importing a file, wait this many milliseconds after each packet. This option together with the previous one can be used to simulate incoming realtime data.
 
 packetPreprocessorClassName (string)
-    Class name of a :javadoc:`~org.yamcs.tctm.PacketPreprocessor` implementation. Default is :javadoc:`org.yamcs.tctm.IssPacketPreprocessor` which applies :abbr:`ISS (International Space Station)` conventions.
+    Class name of a :doc:`packet-preprocessor/index` implementation. Default is :javadoc:`org.yamcs.tctm.IssPacketPreprocessor` which applies :abbr:`ISS (International Space Station)` conventions.
 
 packetPreprocessorArgs (map)
-    Optional args of arbitrary complexity to pass to the PacketPreprocessor. Each PacketPreprocessor may support different options.
+    Optional args of arbitrary complexity to pass to the packet preprocessor. Each preprocessor may support different options.
 
 lastPacketStream (string)
     Optional stream name. If specified, the last packet in an imported file, is emitted to this stream, in addition to the regular stream defined with the ``stream`` option.
 
-    The intended use case, is to have ``stream: tm_dump`` and ``lastPacketStream: tm_realtime``. Then most data goes directly into the Archive, while only the last packet's data goes to realtime clients.
+    The intended use case, is to have ``stream: tm_dump`` and ``lastPacketStream: tm_realtime``. Then most data goes directly into the Archive, while only the last packet's data is sent to realtime clients.

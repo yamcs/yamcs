@@ -49,18 +49,18 @@ invalidTm (list)
 cmdHist (list)
     streams used for the command history. No additional option in addition to the stream name is supported.
 
-event
+event (list)
     streams used for events. No additional option in addition to the stream name is supported.
     Note that many components use the "events_realtime" stream to publish realtime events so this stream should always be present in the list and its name should not be changed.
     Some components (e.g. PusEventDecoder) use the events_dump stream but usually that stream name is configurable.
     
-param
+param (list)
     streams used for parameters. No additional option in addition to the stream name is supported.
 
-parameterAlarm
+parameterAlarm (list)
     streams used for parameter alarms. No additional option in addition to the stream name is supported.
 
-eventAlarm
+eventAlarm (list)
     streams used for event alarms. No additional option in addition to the stream name is supported.
 
 sqlFile (string)

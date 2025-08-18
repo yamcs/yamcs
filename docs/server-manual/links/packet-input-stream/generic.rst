@@ -30,7 +30,7 @@ This can be used in the configuration of a stream-based packet data link in :fil
          lengthAdjustment: 7
          initialBytesToStrip: 0
          maxPacketLength: 1500
-     # ...
+       # ...
 
 .. note::
 

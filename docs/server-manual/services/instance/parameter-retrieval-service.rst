@@ -25,7 +25,7 @@ The service combines retrieval from several sources:
 Class Name
 ----------
 
-:javadoc:`org.yamcs.parameter.ParamterRetrievalService`
+:javadoc:`org.yamcs.parameter.ParameterRetrievalService`
 
 
 Configuration Options
