@@ -202,6 +202,8 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
                     AlarmData alarm = tupleToAlarmData(tuple);
                     responseb.addAlarms(alarm);
                     last = tuple;
+                } else {
+                    stream.close();
                 }
             }
 
