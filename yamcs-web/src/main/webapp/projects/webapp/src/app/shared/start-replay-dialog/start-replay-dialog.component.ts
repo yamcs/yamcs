@@ -1,11 +1,12 @@
 import { Component, Inject } from '@angular/core';
-import {
-  UntypedFormBuilder,
-  UntypedFormGroup,
-  Validators,
-} from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  WebappSdkModule,
+  YamcsService,
+  utils,
+  validators,
+} from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-start-replay-dialog',
@@ -13,11 +14,19 @@ import { WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
   imports: [WebappSdkModule],
 })
 export class StartReplayDialogComponent {
-  form: UntypedFormGroup;
+  form = new FormGroup(
+    {
+      name: new FormControl<string | null>(null, Validators.required),
+      start: new FormControl<string | null>(null, Validators.required),
+      stop: new FormControl<string | null>(null),
+    },
+    {
+      validators: [validators.dateRangeValidator('start', 'stop')],
+    },
+  );
 
   constructor(
     private dialogRef: MatDialogRef<StartReplayDialogComponent>,
-    formBuilder: UntypedFormBuilder,
     private yamcs: YamcsService,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
@@ -33,16 +42,16 @@ export class StartReplayDialogComponent {
       }
     }
 
-    this.form = formBuilder.group({
-      name: [utils.generateRandomName(), Validators.required],
-      start: [utils.toISOString(initialStart), [Validators.required]],
-      stop: [initialStop ? utils.toISOString(initialStop) : ''],
+    this.form.setValue({
+      name: utils.generateRandomName(),
+      start: utils.toISOString(initialStart),
+      stop: initialStop ? utils.toISOString(initialStop) : null,
     });
   }
 
   start() {
     const replayConfig: { [key: string]: any } = {
-      start: utils.toISOString(this.form.value.start),
+      start: utils.toISOString(this.form.value.start!),
       endAction: 'STOP',
     };
     if (this.form.value.stop) {

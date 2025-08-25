@@ -1,15 +1,12 @@
 import { Component, Inject, OnDestroy } from '@angular/core';
-import {
-  UntypedFormControl,
-  UntypedFormGroup,
-  Validators,
-} from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {
   DownloadEventsOptions,
   WebappSdkModule,
   YamcsService,
   utils,
+  validators,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
@@ -22,14 +19,19 @@ export class ExportEventsDialogComponent implements OnDestroy {
 
   downloadURL$ = new BehaviorSubject<string | null>(null);
 
-  form = new UntypedFormGroup({
-    start: new UntypedFormControl(null),
-    stop: new UntypedFormControl(null),
-    severity: new UntypedFormControl(null, Validators.required),
-    filter: new UntypedFormControl(null),
-    source: new UntypedFormControl([]),
-    delimiter: new UntypedFormControl(null, Validators.required),
-  });
+  form = new FormGroup(
+    {
+      start: new FormControl<string | null>(null),
+      stop: new FormControl<string | null>(null),
+      severity: new FormControl<string | null>(null, Validators.required),
+      filter: new FormControl<string | null>(null),
+      source: new FormControl<string[]>([]),
+      delimiter: new FormControl<string | null>(null, Validators.required),
+    },
+    {
+      validators: [validators.dateRangeValidator('start', 'stop')],
+    },
+  );
 
   constructor(
     private dialogRef: MatDialogRef<ExportEventsDialogComponent>,
@@ -59,20 +61,20 @@ export class ExportEventsDialogComponent implements OnDestroy {
   private updateURL() {
     if (this.form.valid) {
       const dlOptions: DownloadEventsOptions = {
-        delimiter: this.form.value['delimiter'],
-        severity: this.form.value['severity'],
+        delimiter: this.form.value.delimiter as any,
+        severity: this.form.value.severity as any,
       };
-      if (this.form.value['start']) {
-        dlOptions.start = utils.toISOString(this.form.value['start']);
+      if (this.form.value.start) {
+        dlOptions.start = utils.toISOString(this.form.value.start);
       }
-      if (this.form.value['stop']) {
-        dlOptions.stop = utils.toISOString(this.form.value['stop']);
+      if (this.form.value.stop) {
+        dlOptions.stop = utils.toISOString(this.form.value.stop);
       }
-      if (this.form.value['filter']) {
-        dlOptions.filter = this.form.value['filter'];
+      if (this.form.value.filter) {
+        dlOptions.filter = this.form.value.filter;
       }
-      if (this.form.value['source'].length) {
-        const source = this.form.value['source'];
+      if (this.form.value.source?.length) {
+        const source = this.form.value.source;
         dlOptions.source = source;
       }
       const url = this.yamcs.yamcsClient.getEventsDownloadURL(

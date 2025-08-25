@@ -6,7 +6,7 @@ import {
   OnInit,
   input,
 } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { FormControl, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
@@ -57,10 +57,10 @@ export class ParameterDataTabComponent implements OnInit, OnDestroy {
   // range is actually applied.
   appliedInterval: string;
 
-  filterForm = new UntypedFormGroup({
-    interval: new UntypedFormControl(defaultInterval),
-    customStart: new UntypedFormControl(null),
-    customStop: new UntypedFormControl(null),
+  filterForm = new FormGroup({
+    interval: new FormControl<string>(defaultInterval, { nonNullable: true }),
+    customStart: new FormControl<string | null>(null),
+    customStop: new FormControl<string | null>(null),
   });
 
   dataSource: ParameterDataDataSource;
@@ -148,7 +148,7 @@ export class ParameterDataTabComponent implements OnInit, OnDestroy {
       this.filterForm.get('interval')!.setValue(defaultInterval);
     } else {
       this.validStop = this.yamcs.getMissionTime();
-      this.validStart = utils.subtractDuration(this.validStop, interval);
+      this.validStart = utils.subtractDuration(this.validStop, interval!);
       this.loadData();
     }
   }

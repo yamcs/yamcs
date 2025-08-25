@@ -15,6 +15,10 @@
       <span class="hint">Must be unique. Other users can join your replay via this name</span>
     </ya-field>
   </form>
+
+  @if (form.errors?.dateRange) {
+    <ya-warning-message>Start date must be before stop date</ya-warning-message>
+  }
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">

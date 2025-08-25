@@ -16,6 +16,10 @@
           <ya-field label="Interval (ms)" hint="(optional)">
             <input formControlName="interval" class="ya-input" type="text" />
           </ya-field>
+
+          @if (form.errors?.dateRange) {
+            <ya-warning-message>Start date must be before stop date</ya-warning-message>
+          }
         </div>
       </mat-tab>
       <mat-tab label="Format">
