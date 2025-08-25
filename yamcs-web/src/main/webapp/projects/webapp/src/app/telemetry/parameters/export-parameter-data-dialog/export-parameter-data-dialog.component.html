@@ -18,6 +18,10 @@
       <input formControlName="interval" class="ya-input" type="text" />
     </ya-field>
   </form>
+
+  @if (form.errors?.dateRange) {
+    <ya-warning-message>Start date must be before stop date</ya-warning-message>
+  }
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">

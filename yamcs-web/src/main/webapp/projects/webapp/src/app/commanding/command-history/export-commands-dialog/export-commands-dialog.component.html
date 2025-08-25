@@ -14,6 +14,10 @@
       <ya-select formControlName="delimiter" [options]="delimiterOptions" />
     </ya-field>
   </form>
+
+  @if (form.errors?.dateRange) {
+    <ya-warning-message>Start date must be before stop date</ya-warning-message>
+  }
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">

@@ -1,8 +1,8 @@
 import { Component, Inject } from '@angular/core';
 import {
+  FormControl,
+  FormGroup,
   ReactiveFormsModule,
-  UntypedFormBuilder,
-  UntypedFormGroup,
   Validators,
 } from '@angular/forms';
 import {
@@ -15,9 +15,11 @@ import {
 } from '@angular/material/dialog';
 import { BaseComponent } from '../../abc/BaseComponent';
 import * as utils from '../../utils';
+import { dateRangeValidator } from '../../validators';
 import { YaButton } from '../button/button.component';
 import { YaDateTimeInput } from '../date-time-input/date-time-input.component';
 import { YaField } from '../field/field.component';
+import { YaWarningMessage } from '../warning-message/warning-message.component';
 
 @Component({
   selector: 'ya-start-replay-dialog',
@@ -31,14 +33,23 @@ import { YaField } from '../field/field.component';
     YaDateTimeInput,
     YaButton,
     YaField,
+    YaWarningMessage,
   ],
 })
 export class StartReplayDialogComponent extends BaseComponent {
-  form: UntypedFormGroup;
+  form = new FormGroup(
+    {
+      name: new FormControl<string | null>(null, Validators.required),
+      start: new FormControl<string | null>(null, Validators.required),
+      stop: new FormControl<string | null>(null),
+    },
+    {
+      validators: [dateRangeValidator('start', 'stop')],
+    },
+  );
 
   constructor(
     private dialogRef: MatDialogRef<StartReplayDialogComponent>,
-    formBuilder: UntypedFormBuilder,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     super();
@@ -54,16 +65,16 @@ export class StartReplayDialogComponent extends BaseComponent {
       }
     }
 
-    this.form = formBuilder.group({
-      name: [utils.generateRandomName(), Validators.required],
-      start: [utils.toISOString(initialStart), [Validators.required]],
-      stop: [initialStop ? utils.toISOString(initialStop) : ''],
+    this.form.setValue({
+      name: utils.generateRandomName(),
+      start: utils.toISOString(initialStart),
+      stop: initialStop ? utils.toISOString(initialStop) : null,
     });
   }
 
   start() {
     const replayConfig: { [key: string]: any } = {
-      start: utils.toISOString(this.form.value.start),
+      start: utils.toISOString(this.form.value.start!),
       endAction: 'STOP',
     };
     if (this.form.value.stop) {

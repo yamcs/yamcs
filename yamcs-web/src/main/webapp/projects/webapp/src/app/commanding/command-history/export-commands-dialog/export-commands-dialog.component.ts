@@ -1,9 +1,5 @@
 import { Component, Inject, OnDestroy } from '@angular/core';
-import {
-  UntypedFormControl,
-  UntypedFormGroup,
-  Validators,
-} from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {
   DownloadCommandsOptions,
@@ -11,6 +7,7 @@ import {
   YaSelectOption,
   YamcsService,
   utils,
+  validators,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
@@ -29,11 +26,16 @@ export class ExportCommandsDialogComponent implements OnDestroy {
 
   downloadURL$ = new BehaviorSubject<string | null>(null);
 
-  form = new UntypedFormGroup({
-    start: new UntypedFormControl(null),
-    stop: new UntypedFormControl(null),
-    delimiter: new UntypedFormControl(null, Validators.required),
-  });
+  form = new FormGroup(
+    {
+      start: new FormControl<string | null>(null),
+      stop: new FormControl<string | null>(null),
+      delimiter: new FormControl<string | null>(null, Validators.required),
+    },
+    {
+      validators: [validators.dateRangeValidator('start', 'stop')],
+    },
+  );
 
   constructor(
     private dialogRef: MatDialogRef<ExportCommandsDialogComponent>,
@@ -41,8 +43,8 @@ export class ExportCommandsDialogComponent implements OnDestroy {
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     this.form.setValue({
-      start: data.start ? utils.toISOString(data.start) : '',
-      stop: data.stop ? utils.toISOString(data.stop) : '',
+      start: data.start ? utils.toISOString(data.start) : null,
+      stop: data.stop ? utils.toISOString(data.stop) : null,
       delimiter: 'TAB',
     });
 
@@ -60,13 +62,13 @@ export class ExportCommandsDialogComponent implements OnDestroy {
   private updateURL() {
     if (this.form.valid) {
       const dlOptions: DownloadCommandsOptions = {
-        delimiter: this.form.value['delimiter'],
+        delimiter: this.form.value.delimiter as any,
       };
-      if (this.form.value['start']) {
-        dlOptions.start = utils.toISOString(this.form.value['start']);
+      if (this.form.value.start) {
+        dlOptions.start = utils.toISOString(this.form.value.start);
       }
-      if (this.form.value['stop']) {
-        dlOptions.stop = utils.toISOString(this.form.value['stop']);
+      if (this.form.value.stop) {
+        dlOptions.stop = utils.toISOString(this.form.value.stop);
       }
       const url = this.yamcs.yamcsClient.getCommandsDownloadURL(
         this.yamcs.instance!,

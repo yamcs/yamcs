@@ -1,11 +1,12 @@
 import { Component, Inject } from '@angular/core';
-import {
-  UntypedFormBuilder,
-  UntypedFormGroup,
-  Validators,
-} from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
+import {
+  WebappSdkModule,
+  YamcsService,
+  utils,
+  validators,
+} from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 
 @Component({
@@ -16,24 +17,26 @@ import { BehaviorSubject } from 'rxjs';
 export class DownloadDumpDialogComponent {
   downloadURL$ = new BehaviorSubject<string | null>(null);
 
-  form: UntypedFormGroup;
+  form = new FormGroup(
+    {
+      start: new FormControl<string | null>(null, Validators.required),
+      stop: new FormControl<string | null>(null, Validators.required),
+    },
+    {
+      validators: [validators.dateRangeValidator('start', 'stop')],
+    },
+  );
 
   constructor(
     private dialogRef: MatDialogRef<DownloadDumpDialogComponent>,
     private yamcs: YamcsService,
-    formBuilder: UntypedFormBuilder,
     @Inject(MAT_DIALOG_DATA) data: any,
   ) {
-    this.form = formBuilder.group({
-      start: [null, Validators.required],
-      stop: [null, Validators.required],
-    });
-
     this.form.valueChanges.subscribe((value) => {
       if (this.form.valid) {
         const url = yamcs.yamcsClient.getPacketsDownloadURL(yamcs.instance!, {
-          start: utils.toISOString(value.start),
-          stop: utils.toISOString(value.stop),
+          start: utils.toISOString(value.start!),
+          stop: utils.toISOString(value.stop!),
           format: 'raw',
         });
         this.downloadURL$.next(url);
