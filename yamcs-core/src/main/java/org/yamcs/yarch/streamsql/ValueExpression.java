@@ -15,8 +15,6 @@ import org.yamcs.utils.parser.ParseException;
  * This represents a constant value coming from some sql expression
  * for example: select 3 from x
  * 
- * @author nm
- *
  */
 public class ValueExpression extends Expression {
     ValueExpression(Object value) {
@@ -63,13 +61,13 @@ public class ValueExpression extends Expression {
         if (constantValue instanceof UUID) {
             UUID uuid = (UUID) constantValue;
             code.append("\tprivate final ")
-                    .append(UUID.class.getName()).append(" const_uuid = ")
+                    .append(UUID.class.getName()).append(" ").append(colName).append(" = ")
                     .append(UUID.class.getName()).append(".fromString(\"")
                     .append(uuid.toString()).append("\");\n");
         } else if (constantValue instanceof Instant) {
             Instant t = (Instant) constantValue;
             code.append("\tprivate final ")
-                    .append(Instant.class.getName()).append(" const_instant = ")
+                    .append(Instant.class.getName()).append(" ").append(colName).append(" = ")
                     .append(Instant.class.getName()).append(".get(").append(t.getMillis())
                     .append("l, ").append(t.getPicos()).append(");\n");
         }
@@ -86,9 +84,9 @@ public class ValueExpression extends Expression {
             escapeJavaString((String) constantValue, code);
             code.append('"');
         } else if (constantValue instanceof UUID) {
-            code.append("const_uuid");
+            code.append(colName);
         } else if (constantValue instanceof Instant) {
-            code.append("const_instant");
+            code.append(colName);
         } else if (constantValue instanceof List<?>) {
             code.append("const_list");
         } else {
