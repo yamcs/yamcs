@@ -47,7 +47,7 @@ secretKey (string)
 serverId (string)
     Customize the server's identifier. This uniquely identifies your Yamcs system. For each Yamcs system you run, it should use a different server identifier.
 
-    This concept is used in replication between Yamcs systems, and in the namespace of system parameters.
+    This property is used in replication between Yamcs systems, and in the namespace of system parameters.
 
 yamcs-web (map)
     Configuration of the Yamcs web application. The different options are documented in :doc:`../web-interface/index`
