@@ -734,13 +734,14 @@ Expression RelationalExpression() throws StreamSqlException: {
     LikeClause likeClause;
     InClause inClause;
     IsNullClause isNullClause;
+    BetweenClause betweenClause;
 } {
     expr = SimpleExpression() {retExpr=expr;}
     ( relOp=RelOp() expr = SimpleExpression() {retExpr=new RelationalExpression(retExpr,expr,relOp);}
       |
       LOOKAHEAD(2) inClause=InClause() {retExpr=new InExpression(expr, inClause);}
       |
-      LOOKAHEAD(2) BetweenClause()
+      LOOKAHEAD(2) betweenClause=BetweenClause() {retExpr = new BetweenExpression(expr, betweenClause);}
       |
       LOOKAHEAD(2) likeClause = LikeClause() { retExpr = new LikeExpression(expr, likeClause);}
       |
@@ -772,9 +773,14 @@ InClause InClause() throws StreamSqlException: {
     }
 }
 
-void BetweenClause() throws StreamSqlException: {
+BetweenClause BetweenClause() throws StreamSqlException: {
+  Expression expr1, expr2;
+  boolean not = false;
 } {
-    ["NOT"] "BETWEEN" SimpleExpression() "AND" SimpleExpression()
+    ["NOT" { not = true;}] "BETWEEN" expr1=SimpleExpression() "AND" expr2=SimpleExpression()
+    {
+    return new BetweenClause(expr1, expr2, not);
+    }
 }
 
 
