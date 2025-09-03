@@ -1,3 +1,10 @@
+Version 5.12.1 released 03-Sep-2025
+- Improve response time of list-packets/list-events/list-alarms when pagination is used
+- Add 1m loadavg system parameter
+- Fixed some sql queries involving High resolution timestamps and the BETWEEN clause
+- Prior to this release, some data links were defaulting to `packetPreprocessorClassName: org.yamcs.tctm.IssPacketPreprocessor`. As of this release this will generate a warning, and this default will be removed in a future release. `IssPacketPreprocessor` is a legacy preprocessor that originated from the ISS Columbus module. To avoid the deprecation warnings: always be explicit about the preprocessor.
+
+
 Version 5.12.0 released 16-Jul-2025
 - Rework calibrators to allow calibrating from any raw value type to any engineering value type. XTCE only allows calibrating numerical values (using polynomials or math expressions), so the new calibrators can only be used from the custom MDB loaders for the moment.
 - Fixes a directory traversal security vulnerability.
