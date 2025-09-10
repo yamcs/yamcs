@@ -1,7 +1,7 @@
 Web Interface
 =============
 
-Yamcs includes a web interface which provides quick access and control over many of its features. The web interface runs on port 8090 and integrates with the security system of Yamcs.
+Yamcs includes a UI which provides quick access and control over many of its features. The Yamcs UI runs on port 8090 and integrates with the security system of Yamcs.
 
 All pages are aware of the privileges of the logged in user and will hide user interface elements that the user has no permission for.
 
@@ -18,9 +18,6 @@ Most pages (the homepage excluding) show data specific to a particular Yamcs ins
     events
     alarms
     commanding
-    procedures
-    activities
-    timeline
     mdb
     archive
     admin/index

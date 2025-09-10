@@ -69,7 +69,7 @@ Note to third-party developers
 
 This AuthModule implements the conventions for server-side web applications. In other words: the ``id_token`` is retrieved and decoded on Yamcs server only. Before Yamcs can obtain the ``id_token`` it expects to be given some information by the integrating application.
 
-The source code of the Yamcs web interface serves as the best reference. But generally it works like this:
+The source code of the Yamcs UI serves as the best reference. But generally it works like this:
 
 #. The browser application retrieves OpenID Connect options on the ``/auth`` endpoint. This includes the ``client_id``, the ``authorizationEndpoint`` and the ``scope``. Other configuration options are reserved for server use.
 

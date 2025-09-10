@@ -1,7 +1,7 @@
 Mission database
 ================
 
-The MDB module within the Yamcs web interface provides a set of views on the Mission Database.
+The MDB module within the Yamcs UI provides a set of views on the Mission Database.
 
 The MDB Module is always visited for a specific Yamcs instance. The MDB for an instance aggregates the content of the entire MDB loader tree for that instance.
 

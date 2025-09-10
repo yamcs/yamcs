@@ -13,6 +13,8 @@ Yamcs Server Manual
     links/index
     processors/index
     tc/index
+    activities/index
+    timeline/index
     services/index
     security/index
     web-interface/index

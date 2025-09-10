@@ -1,7 +1,7 @@
 Telemetry
 =========
 
-The Telemetry group within the Yamcs web interface provides access to monitoring-related pages.
+The Telemetry group within the Yamcs UI provides access to monitoring-related pages.
 
 Packets
 -------
@@ -34,12 +34,12 @@ Displays
 
 This page shows the list of displays or display resources that are known by Yamcs Server for the selected instance. 
 Displays are stored within the "displays" storage bucket. 
-Yamcs Studio displays (`.opi`) can be visualized in the Yamcs web interface. They can be uploaded with the `Upload Files` button. 
+Yamcs Studio displays (`.opi`) can be visualized in the Yamcs UI. They can be uploaded with the `Upload Files` button. 
 Additionally, Parameter Tables (`.par`) can be created, by clicking the `Create Display` button, entering a name and adding parameters.
 Items in the Displays page list can be renamed, downloaded or deleted. Clicking on a display file opens the display. 
 If there is incoming telemetry, it will be received by the opened display file and the display will update accordingly.
 
-Note that only some display types are supported by the Yamcs web interface. The following provides an overview of the current state:
+Note that only some display types are supported by the Yamcs UI. The following provides an overview of the current state:
 
 .. list-table::
     :header-rows: 1
