@@ -1,7 +1,7 @@
 Admin Home
 ==========
 
-The Admin Area within the Yamcs web interface provides a set of administrative views on Yamcs.
+The Admin Area within the Yamcs UI provides a set of administrative views on Yamcs.
 
 It is accessible to superusers by selecting **Admin Area** from the app menu of the toolbar.
 

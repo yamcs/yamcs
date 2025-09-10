@@ -1,7 +1,7 @@
 Timeline Service
 ================
 
-This services enables Timeline and Activity-related functionalities.
+This services enables :doc:`Timeline <../../timeline/index>` and Activity-related functionalities.
 
 The Yamcs Timeline provides a visual, chronological overview of mission events. It can also be used to schedule activities for future execution.
 

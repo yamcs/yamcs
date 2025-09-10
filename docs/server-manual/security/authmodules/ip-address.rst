@@ -1,7 +1,7 @@
 IP Address AuthModule
 =====================
 
-This AuthModule supports the login of a single preconfigured user based on an authorized remote IP address. Currently, it can only be used for API requests, and not for accessing the Yamcs web interface.
+This AuthModule supports the login of a single preconfigured user based on an authorized remote IP address. Currently, it can only be used for API requests, and not for accessing the Yamcs UI.
 
 
 Class Name

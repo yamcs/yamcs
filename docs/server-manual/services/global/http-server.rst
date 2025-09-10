@@ -111,7 +111,7 @@ CORS sub-configuration
 
 CORS (cross-origin resource sharing) facilitates use of the API in client-side applications that run in the browser. CORS is a W3C specification enforced by all major browsers. Details are described at `<https://www.w3.org/TR/cors/>`_. Yamcs simply adds configurable support for some of the CORS preflight response headers.
 
-Note that the embedded web interface of Yamcs does not need CORS enabled, because it shares the same origin as the HTTP API.
+Note that the Yamcs UI does not need CORS enabled, because it shares the same origin as the HTTP API.
 
 allowOrigin (string)
     Exact string that will be set in the ``Access-Control-Allow-Origin`` header of the preflight response.
