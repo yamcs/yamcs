@@ -1,7 +1,7 @@
 Commanding
 ==========
 
-The Commanding group within the Yamcs web interface provides access to commanding pages.
+The Commanding group within the Yamcs UI provides access to commanding pages.
 
 
 Send a command

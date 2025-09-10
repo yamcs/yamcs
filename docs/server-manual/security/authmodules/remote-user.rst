@@ -1,7 +1,7 @@
 Remote User AuthModule
 ======================
 
-This AuthModule supports the login of users based on a provided HTTP header containing the username. Currently, it can only be used for API requests, and not for accessing the Yamcs web interface.
+This AuthModule supports the login of users based on a provided HTTP header containing the username. Currently, it can only be used for API requests, and not for accessing the Yamcs UI.
 
 .. warning::
     When using this module you must protect Yamcs against spoofing attacks.
