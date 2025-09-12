@@ -143,6 +143,27 @@ public class UslpFrameDecoder implements TransferFrameDecoder {
         utf.setVcFrameSeq(vcfFrameSeq);
         utf.setMapId(mapId);
 
+        SdlsSecurityAssociation sdlsSecurityAssociation = uslpParams.sdlsSecurityAssociations.get(vmp.encryptionSpi);
+        // If we're decrypting, do so
+        if (sdlsSecurityAssociation != null) {
+
+            int decryptionDataStart = dataOffset;
+            int decryptionTrailerEnd = dataEnd;
+
+            decryptionDataStart += SdlsSecurityAssociation.getHeaderSize();
+
+            SdlsSecurityAssociation.VerificationStatusCode decryptionResult = sdlsSecurityAssociation.processSecurity(data,
+                    offset, decryptionDataStart, decryptionTrailerEnd, vmp.authMask);
+            if (decryptionResult != SdlsSecurityAssociation.VerificationStatusCode.NoFailure) {
+                log.warn("Couldn't decrypt frame: {}", decryptionResult);
+            }
+
+            // Update offsets
+            dataOffset += SdlsSecurityAssociation.getHeaderSize();
+            dataEnd -= SdlsSecurityAssociation.getTrailerSize();
+
+        }
+
         byte dataHeader = data[dataOffset];
         int constrRules = (dataHeader & 0xFF) >> 5;
         int protId = dataHeader & 0x1F;
@@ -178,28 +199,6 @@ public class UslpFrameDecoder implements TransferFrameDecoder {
                 throw new TcTmException(
                         "Invalid TFDZ Construction Rule Value " + constrRules + " Expected 0 for packet data.");
             }
-        }
-
-        SdlsSecurityAssociation sdlsSecurityAssociation = uslpParams.sdlsSecurityAssociations.get(vmp.encryptionSpi);
-        // If we're decrypting, do so
-        if (sdlsSecurityAssociation != null) {
-            int decryptionDataStart = dataOffset;
-            int decryptionTrailerEnd = dataEnd;
-
-            decryptionDataStart += SdlsSecurityAssociation.getHeaderSize();
-
-            SdlsSecurityAssociation.VerificationStatusCode decryptionResult = sdlsSecurityAssociation.processSecurity(data,
-                    offset, decryptionDataStart, decryptionTrailerEnd, vmp.authMask);
-            if (decryptionResult != SdlsSecurityAssociation.VerificationStatusCode.NoFailure) {
-                log.warn("Couldn't decrypt frame: {}", decryptionResult);
-            }
-
-            // Update offsets
-            dataOffset += SdlsSecurityAssociation.getHeaderSize();
-            dataEnd -= SdlsSecurityAssociation.getTrailerSize();
-
-            if (vmp.service == ServiceType.PACKET)
-                utf.setFirstHeaderPointer(dataOffset);
         }
 
         utf.setDataStart(dataOffset);

@@ -77,7 +77,7 @@ public class UslpManagedParameters extends DownlinkManagedParameters {
                 parseVcaConfig();
             }
             // Auth mask with the size of the USLP primary header
-            authMask = new byte[14];
+            authMask = new byte[8];
             // Authenticate virtual channel ID and MAP ID
             authMask[2] = 0b111; // top 3 bits of vcid
             authMask[3] = (byte) 0b1111_1110; // bottom 3 bits of vcid, 4 bits of map id
