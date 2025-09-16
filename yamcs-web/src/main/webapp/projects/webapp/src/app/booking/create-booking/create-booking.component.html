@@ -10,39 +10,25 @@
   </ya-instance-toolbar>
 
   <ya-panel>
-    <form [formGroup]="bookingForm" (ngSubmit)="onSubmit()" class="ya-form">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="ya-form">
 
       <ya-field label="Provider">
-        <ya-select
-          formControlName="providerId"
-          [options]="providerOptions"
-          required />
+        <ya-select formControlName="providerId" [options]="providerOptions" />
       </ya-field>
 
       <ya-field label="Start Date & Time">
-        <ya-date-time-input
-          formControlName="startDateTime"
-          step="60"
-          [showNow]="true"
-          required />
-      </ya-field>
-
-      <ya-field label="Duration (hours)">
-        <input type="number" formControlName="durationHours" min="0.5" step="0.5" required />
+        <ya-date-time-input formControlName="startDateTime" step="60" [showNow]="true" />
       </ya-field>
 
       <ya-field label="Booking Rule">
-        <ya-select
-          formControlName="ruleType"
-          [options]="ruleTypeOptions"
-          required />
+        <ya-select formControlName="ruleType" [options]="ruleTypeOptions" />
       </ya-field>
 
       <ya-field
-        label="Frequency (days)"
-        *ngIf="showFrequencyField()"
-        note="Number of days between recurring bookings">
+        [label]="getFrequencyLabel()"
+        *ngIf="showFrequencyField()">
         <input type="number" formControlName="frequencyDays" min="1" />
+        <small>{{ getFrequencyNote() }}</small>
       </ya-field>
 
       <ya-field label="Purpose">
@@ -55,12 +41,18 @@
 
     </form>
 
+    <div *ngIf="submissionStatus !== 'idle'" class="submission-status">
+      <div [class]="'status-' + submissionStatus">
+        {{ submissionMessage }}
+      </div>
+    </div>
+
     <div class="ya-button-bar">
       <ya-button (click)="onCancel()">CANCEL</ya-button>
       <ya-button
         appearance="primary"
         (click)="onSubmit()"
-        [disabled]="bookingForm.invalid || isSubmitting">
+        [disabled]="form.invalid || isSubmitting">
         {{ isSubmitting ? 'CREATING...' : 'CREATE BOOKING' }}
       </ya-button>
     </div>

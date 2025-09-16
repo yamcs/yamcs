@@ -1,11 +1,8 @@
 import { Component, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
-import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatIconModule } from '@angular/material/icon';
+import { WebappSdkModule } from '@yamcs/webapp-sdk';
 import { GSBooking } from '../booking.service';
 
 interface DialogData {
@@ -19,92 +16,82 @@ interface DialogData {
     CommonModule,
     ReactiveFormsModule,
     MatDialogModule,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatIconModule,
+    WebappSdkModule,
   ],
   template: `
-    <h2 mat-dialog-title style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px;">
-      <mat-icon [color]="data.action === 'approve' ? 'primary' : 'warn'">
-        {{ data.action === 'approve' ? 'check_circle' : 'cancel' }}
-      </mat-icon>
-      {{ data.action === 'approve' ? 'Approve' : 'Reject' }} Booking
-    </h2>
+    <h2 mat-dialog-title>{{ data.action === 'approve' ? 'Approve' : 'Reject' }} Booking</h2>
 
-    <div mat-dialog-content>
-      <div style="margin-bottom: 20px; padding: 16px; background-color: #f5f5f5; border-radius: 4px;">
-        <h4 style="margin: 0 0 12px 0; color: #333;">Booking Details</h4>
-        <div style="display: flex; margin-bottom: 8px; align-items: flex-start;">
-          <span style="font-weight: 500; min-width: 120px; color: #666;">Ground Station:</span>
-          <span>{{ data.booking.yamcsGsName }}</span>
-        </div>
-        <div style="display: flex; margin-bottom: 8px; align-items: flex-start;">
-          <span style="font-weight: 500; min-width: 120px; color: #666;">Provider:</span>
-          <span>{{ data.booking.providerName }}</span>
-        </div>
-        <div style="display: flex; margin-bottom: 8px; align-items: flex-start;">
-          <span style="font-weight: 500; min-width: 120px; color: #666;">Start Time:</span>
-          <span>{{ formatDateTime(data.booking.startTime) }}</span>
-        </div>
-        <div style="display: flex; margin-bottom: 8px; align-items: flex-start;">
-          <span style="font-weight: 500; min-width: 120px; color: #666;">End Time:</span>
-          <span>{{ formatDateTime(data.booking.endTime) }}</span>
-        </div>
-        <div style="display: flex; margin-bottom: 8px; align-items: flex-start;">
-          <span style="font-weight: 500; min-width: 120px; color: #666;">Purpose:</span>
-          <span>{{ data.booking.purpose }}</span>
-        </div>
-        <div style="display: flex; margin-bottom: 8px; align-items: flex-start;" *ngIf="data.booking.missionName">
-          <span style="font-weight: 500; min-width: 120px; color: #666;">Mission:</span>
-          <span>{{ data.booking.missionName }}</span>
-        </div>
-        <div style="display: flex; margin-bottom: 8px; align-items: flex-start;">
-          <span style="font-weight: 500; min-width: 120px; color: #666;">Requested By:</span>
-          <span>{{ data.booking.requestedBy }}</span>
-        </div>
-      </div>
+    <mat-dialog-content>
+      <form [formGroup]="approvalForm" class="ya-form">
+        <ya-field label="Booking Details">
+          <div class="booking-details">
+            <div class="detail-row">
+              <span class="label">Ground Station:</span>
+              <span>{{ data.booking.yamcsGsName }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Provider:</span>
+              <span>{{ data.booking.providerName }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Start Time:</span>
+              <span>{{ formatDateTime(data.booking.startTime) }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Purpose:</span>
+              <span>{{ data.booking.purpose }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Requested By:</span>
+              <span>{{ data.booking.requestedBy }}</span>
+            </div>
+          </div>
+        </ya-field>
 
-      <form [formGroup]="approvalForm" style="margin-top: 16px;">
-        <mat-form-field style="width: 100%;">
-          <mat-label>
-            {{ data.action === 'approve' ? 'Comments (optional)' : 'Rejection Reason (required)' }}
-          </mat-label>
+        <ya-field [label]="data.action === 'approve' ? 'Comments (optional)' : 'Rejection Reason (required)'">
           <textarea
-            matInput
             formControlName="comments"
             rows="3"
             [placeholder]="data.action === 'approve' ? 'Add any comments about this approval...' : 'Please provide a reason for rejection...'"
           ></textarea>
-          <mat-error *ngIf="approvalForm.get('comments')?.hasError('required')">
-            Rejection reason is required
-          </mat-error>
-        </mat-form-field>
+        </ya-field>
       </form>
-    </div>
+    </mat-dialog-content>
 
-    <div mat-dialog-actions style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px;">
-      <button mat-button (click)="onCancel()" style="min-width: 100px;">Cancel</button>
-      <button
-        mat-raised-button
-        [color]="data.action === 'approve' ? 'primary' : 'warn'"
+    <mat-dialog-actions align="end">
+      <ya-button mat-dialog-close>CANCEL</ya-button>
+      <ya-button
+        [appearance]="data.action === 'approve' ? 'primary' : 'danger'"
         (click)="onConfirm()"
-        [disabled]="approvalForm.invalid"
-        style="min-width: 100px;"
-      >
-        <mat-icon>{{ data.action === 'approve' ? 'check' : 'close' }}</mat-icon>
-        {{ data.action === 'approve' ? 'Approve' : 'Reject' }}
-      </button>
-    </div>
+        [disabled]="approvalForm.invalid">
+        {{ data.action === 'approve' ? 'APPROVE' : 'REJECT' }}
+      </ya-button>
+    </mat-dialog-actions>
   `,
-  styles: []
+  styles: [`
+    .booking-details {
+      background-color: #f8f9fa;
+      padding: 12px;
+      border-radius: 4px;
+      border: 1px solid #e9ecef;
+    }
+    .detail-row {
+      display: flex;
+      margin-bottom: 8px;
+    }
+    .detail-row .label {
+      font-weight: 500;
+      min-width: 120px;
+      color: #6c757d;
+    }
+  `]
 })
 export class ApprovalDialogComponent {
-  approvalForm: FormGroup;
+  approvalForm: UntypedFormGroup;
 
   constructor(
-    private fb: FormBuilder,
-    public dialogRef: MatDialogRef<ApprovalDialogComponent>,
+    private dialogRef: MatDialogRef<ApprovalDialogComponent>,
+    private fb: UntypedFormBuilder,
     @Inject(MAT_DIALOG_DATA) public data: DialogData
   ) {
     this.approvalForm = this.fb.group({

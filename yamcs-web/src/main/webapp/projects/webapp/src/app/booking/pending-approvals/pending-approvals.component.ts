@@ -1,29 +1,12 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { MatTableModule } from '@angular/material/table';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatCardModule } from '@angular/material/card';
-import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { BookingService, GSBooking } from '../booking.service';
-import { WebappSdkModule } from '@yamcs/webapp-sdk';
+import { WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import { ApprovalDialogComponent } from './approval-dialog.component';
 
 @Component({
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterModule,
-    MatTableModule,
-    MatButtonModule,
-    MatIconModule,
-    MatChipsModule,
-    MatCardModule,
-    MatDialogModule,
-    WebappSdkModule,
-  ],
+  imports: [WebappSdkModule, MatDialogModule, ApprovalDialogComponent],
   templateUrl: './pending-approvals.component.html',
   styleUrl: './pending-approvals.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -41,8 +24,9 @@ export class PendingApprovalsComponent implements OnInit {
 
   constructor(
     private bookingService: BookingService,
-    private dialog: MatDialog,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    readonly yamcs: YamcsService,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit() {
@@ -87,20 +71,23 @@ export class PendingApprovalsComponent implements OnInit {
   }
 
   approveBooking(booking: GSBooking) {
+    console.log('Approve booking clicked:', booking);
     const dialogRef = this.dialog.open(ApprovalDialogComponent, {
-      width: '400px',
+      width: '500px',
       data: {
         booking: booking,
         action: 'approve'
       }
     });
+    console.log('Dialog opened:', dialogRef);
 
     dialogRef.afterClosed().subscribe(result => {
+      console.log('Dialog closed with result:', result);
       if (result) {
-        this.bookingService.approveBooking(booking.id, result.comments).subscribe({
+        this.bookingService.approveBooking(booking.id, result.comments || 'Approved').subscribe({
           next: () => {
             console.log('Booking approved successfully');
-            this.loadPendingBookings(); // Refresh the list
+            this.loadPendingBookings();
           },
           error: (error) => console.error('Error approving booking:', error)
         });
@@ -109,20 +96,23 @@ export class PendingApprovalsComponent implements OnInit {
   }
 
   rejectBooking(booking: GSBooking) {
+    console.log('Reject booking clicked:', booking);
     const dialogRef = this.dialog.open(ApprovalDialogComponent, {
-      width: '400px',
+      width: '500px',
       data: {
         booking: booking,
         action: 'reject'
       }
     });
+    console.log('Dialog opened:', dialogRef);
 
     dialogRef.afterClosed().subscribe(result => {
+      console.log('Dialog closed with result:', result);
       if (result && result.comments) {
         this.bookingService.rejectBooking(booking.id, result.comments).subscribe({
           next: () => {
             console.log('Booking rejected successfully');
-            this.loadPendingBookings(); // Refresh the list
+            this.loadPendingBookings();
           },
           error: (error) => console.error('Error rejecting booking:', error)
         });

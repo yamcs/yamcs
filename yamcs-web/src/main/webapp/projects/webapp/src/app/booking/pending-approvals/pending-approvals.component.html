@@ -1,11 +1,18 @@
 <ya-instance-page>
-  <ya-instance-toolbar label="Pending Approvals">
+  <ya-instance-toolbar>
+    <ng-template ya-instance-toolbar-label>
+      <ya-page-icon-button
+        [routerLink]="['/booking']"
+        [queryParams]="{ c: yamcs.context }"
+        icon="arrow_back" />
+      Pending Approvals
+    </ng-template>
+
     <ya-page-button (clicked)="refresh()" icon="refresh">Refresh</ya-page-button>
   </ya-instance-toolbar>
 
   <ya-panel>
     <table mat-table [dataSource]="pendingBookings" class="ya-data-table expand">
-      <!-- Start Time Column -->
       <ng-container cdkColumnDef="startTime">
         <th mat-header-cell *cdkHeaderCellDef>Start Time</th>
         <td mat-cell *cdkCellDef="let booking">
@@ -13,57 +20,53 @@
         </td>
       </ng-container>
 
-      <!-- Ground Station Column -->
       <ng-container cdkColumnDef="yamcsGsName">
         <th mat-header-cell *cdkHeaderCellDef>Ground Station</th>
-        <td mat-cell *cdkCellDef="let booking">{{ booking.yamcsGsName }}</td>
+        <td mat-cell *cdkCellDef="let booking">
+          {{ booking.yamcsGsName }}
+        </td>
       </ng-container>
 
-      <!-- Provider Column -->
       <ng-container cdkColumnDef="providerName">
         <th mat-header-cell *cdkHeaderCellDef>Provider</th>
-        <td mat-cell *cdkCellDef="let booking">{{ booking.providerName }}</td>
+        <td mat-cell *cdkCellDef="let booking">
+          {{ booking.providerName }}
+        </td>
       </ng-container>
 
-      <!-- Purpose Column -->
       <ng-container cdkColumnDef="purpose">
-        <th mat-header-cell *cdkHeaderCellDef>Purpose</th>
-        <td mat-cell *cdkCellDef="let booking">{{ booking.purpose }}</td>
+        <th mat-header-cell *cdkHeaderCellDef class="expand">Purpose</th>
+        <td mat-cell *cdkCellDef="let booking" class="expand">
+          {{ booking.purpose }}
+        </td>
       </ng-container>
 
-      <!-- Requested By Column -->
       <ng-container cdkColumnDef="requestedBy">
         <th mat-header-cell *cdkHeaderCellDef>Requested By</th>
-        <td mat-cell *cdkCellDef="let booking">{{ booking.requestedBy }}</td>
+        <td mat-cell *cdkCellDef="let booking">
+          {{ booking.requestedBy }}
+        </td>
       </ng-container>
 
-      <!-- Actions Column -->
       <ng-container cdkColumnDef="actions">
         <th mat-header-cell *cdkHeaderCellDef>Actions</th>
         <td mat-cell *cdkCellDef="let booking">
-          <div class="ya-button-bar">
-            <ya-button
-              appearance="primary"
-              (click)="approveBooking(booking)">
-              APPROVE
-            </ya-button>
-            <ya-button
-              appearance="secondary"
-              (click)="rejectBooking(booking)">
-              REJECT
-            </ya-button>
-          </div>
+          <ya-button
+            appearance="primary"
+            (click)="approveBooking(booking)"
+            style="margin-right: 8px;">
+            APPROVE
+          </ya-button>
+          <ya-button
+            appearance="secondary"
+            (click)="rejectBooking(booking)">
+            REJECT
+          </ya-button>
         </td>
       </ng-container>
 
       <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
       <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"></tr>
     </table>
-
-    <div *ngIf="pendingBookings.length === 0" class="empty-state">
-      <mat-icon class="empty-icon">check_circle</mat-icon>
-      <h3>No pending approvals</h3>
-      <p>All booking requests have been processed</p>
-    </div>
   </ya-panel>
 </ya-instance-page>
