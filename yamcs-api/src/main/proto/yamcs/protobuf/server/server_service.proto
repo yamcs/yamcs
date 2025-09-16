@@ -289,6 +289,27 @@ message SystemInfo {
   
   // Information about the Yamcs process and any descendants.
   optional ProcessInfo process = 23;
+
+  // CPU time of Yamcs in milliseconds.
+  optional int64 cpuTime = 24;
+
+  // Recent CPU usage for the operating environment.
+  optional double cpuLoad = 25;
+
+  // Recent CPU usage for the Yamcs process.
+  optional double processCpuLoad = 26;
+
+  // Amount of free system memory in bytes.
+  optional int64 freeMemory = 27;
+
+  // Total amount of system memory in bytes.
+  optional int64 totalMemory = 28;
+
+  // Amount of free swap space in bytes.
+  optional int64 freeSwapSpace = 29;
+
+  // Total amount of swap space.
+  optional int64 totalSwapSpace = 30;
 }
 
 message RootDirectory {

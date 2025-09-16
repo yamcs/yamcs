@@ -104,6 +104,11 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         if (request.hasStop()) {
             stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
         }
+
+        if (start != TimeEncoding.INVALID_INSTANT && stop != TimeEncoding.INVALID_INSTANT && start > stop) {
+            throw new BadRequestException("Start date must be before stop date");
+        }
+
         boolean replayRequested = request.hasSource() && isReplayAsked(request.getSource());
         ParameterRetrievalOptions opts = ParameterRetrievalOptions.newBuilder()
                 .withStartStop(start, stop)
@@ -185,6 +190,10 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
         }
 
+        if (start > stop) {
+            throw new BadRequestException("Start date must be before stop date");
+        }
+
         int sampleCount = request.hasCount() ? request.getCount() : 500;
         Downsampler sampler = new Downsampler(start, stop, sampleCount);
         sampler.setUseRawValue(request.hasUseRawValue() && request.getUseRawValue());
@@ -235,11 +244,18 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
                 .withoutRealtime(true)
                 .withoutReplay(false);
 
+        var start = TimeEncoding.INVALID_INSTANT;
+        var stop = TimeEncoding.INVALID_INSTANT;
         if (request.hasStart()) {
-            optsb.withStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
+            start = TimeEncoding.fromProtobufTimestamp(request.getStart());
+            optsb.withStart(start);
         }
         if (request.hasStop()) {
-            optsb.withStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
+            stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
+            optsb.withStop(stop);
+        }
+        if (start != TimeEncoding.INVALID_INSTANT && stop != TimeEncoding.INVALID_INSTANT && start > stop) {
+            throw new BadRequestException("Start date must be before stop date");
         }
 
         List<ParameterWithId> pids = new ArrayList<>();
@@ -282,7 +298,6 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             observer.completeExceptionally(e);
             return null;
         });
-
     }
 
     @Override
@@ -305,6 +320,10 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         if (request.hasStop()) {
             stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
         }
+        if (start != TimeEncoding.INVALID_INSTANT && stop != TimeEncoding.INVALID_INSTANT && start > stop) {
+            throw new BadRequestException("Start date must be before stop date");
+        }
+
         List<ParameterWithId> pids = new ArrayList<>();
 
         for (String id : request.getParametersList()) {

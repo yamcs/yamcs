@@ -49,6 +49,7 @@ public class SimulatorCommander extends ProcessRunner {
         tmtcSpec.addOption("tm2Port", OptionType.INTEGER);
 
         Spec frameSpec = new Spec();
+        frameSpec.addOption("scid", OptionType.INTEGER);
         frameSpec.addOption("type", OptionType.STRING);
         frameSpec.addOption("tmPort", OptionType.INTEGER);
         frameSpec.addOption("tmHost", OptionType.STRING);
@@ -85,6 +86,11 @@ public class SimulatorCommander extends ProcessRunner {
             int telnetPort = telnetArgs.getInt("port", defaultOptions.telnetPort);
             cmdl.add("--telnet-port");
             cmdl.add(Integer.toString(telnetPort));
+        }
+
+        if (config.containsKey("scid")) {
+            cmdl.add("--scid");
+            cmdl.add(Integer.toString(config.getInt("scid")));
         }
 
         if (config.containsKey("type")) {
@@ -193,65 +199,81 @@ public class SimulatorCommander extends ProcessRunner {
         }
     }
 
-    private static List<Service> createServices(SimulatorArgs runtimeOptions) {
+    public static List<Service> createServices(SimulatorArgs runtimeOptions) {
         TcPacketFactory pktFactory;
         AbstractSimulator simulator;
-        File losDir = new File("losData");
+        File losDir = runtimeOptions.losDir.toFile();
         losDir.mkdirs();
-        File dataDir = new File("data");
+        File dataDir = runtimeOptions.dataDir.toFile();
         dataDir.mkdirs();
 
-        if (runtimeOptions.type == null || runtimeOptions.type.equalsIgnoreCase("col")) {
+        if (runtimeOptions.type.equalsIgnoreCase("col")) {
             pktFactory = TcPacketFactory.COL_PACKET_FACTORY;
-
             simulator = new ColSimulator(losDir, dataDir);
         } else if (runtimeOptions.type.equalsIgnoreCase("pus")) {
             pktFactory = TcPacketFactory.PUS_PACKET_FACTORY;
             simulator = new PusSimulator(dataDir);
         } else {
-            throw new ConfigurationException("Unknonw simulatior type '" + runtimeOptions.type + "'. Use COL or PUS");
+            throw new ConfigurationException("Unknown simulator type '" + runtimeOptions.type + "'. Use COL or PUS");
         }
 
         List<Service> services = new ArrayList<>();
         services.add(simulator);
-        TcpTmTcLink tmLink = new TcpTmTcLink("TM", simulator, runtimeOptions.tmPort, pktFactory);
-        services.add(tmLink);
-        simulator.setTmLink(tmLink);
-
-        TcpTmTcLink tm2Link = new TcpTmTcLink("TM2", simulator, runtimeOptions.tm2Port, pktFactory);
-        services.add(tm2Link);
-        simulator.setTm2Link(tm2Link);
-
-        TcpTmTcLink losLink = new TcpTmTcLink("LOS", simulator, runtimeOptions.losPort, pktFactory);
-        services.add(losLink);
-        simulator.setLosLink(losLink);
-
-        services.add(new TcpTmTcLink("TC", simulator, runtimeOptions.tcPort, pktFactory));
-
-        if (simulator instanceof ColSimulator) {
-            TelnetServer telnetServer = new TelnetServer((ColSimulator) simulator);
-            telnetServer.setPort(runtimeOptions.telnetPort);
-            services.add(telnetServer);
+        if (runtimeOptions.tmPort != null) {
+            TcpTmTcLink tmLink = new TcpTmTcLink("TM", simulator, runtimeOptions.tmPort, pktFactory);
+            services.add(tmLink);
+            simulator.setTmLink(tmLink);
         }
 
-        if (simulator instanceof ColSimulator) {
-            ColSimulator sim = (ColSimulator) simulator;
+        if (runtimeOptions.tm2Port != null) {
+            TcpTmTcLink tm2Link = new TcpTmTcLink("TM2", simulator, runtimeOptions.tm2Port, pktFactory);
+            services.add(tm2Link);
+            simulator.setTm2Link(tm2Link);
+        }
+
+        if (runtimeOptions.losPort != null) {
+            TcpTmTcLink losLink = new TcpTmTcLink("LOS", simulator, runtimeOptions.losPort, pktFactory);
+            services.add(losLink);
+            simulator.setLosLink(losLink);
+        }
+
+        if (runtimeOptions.tcPort != null) {
+            services.add(new TcpTmTcLink("TC", simulator, runtimeOptions.tcPort, pktFactory));
+        }
+
+        if (simulator instanceof ColSimulator colSimulator) {
+            if (runtimeOptions.telnetPort != null) {
+                TelnetServer telnetServer = new TelnetServer(colSimulator);
+                telnetServer.setPort(runtimeOptions.telnetPort);
+                services.add(telnetServer);
+            }
+        }
+
+        if (simulator instanceof ColSimulator colSimulator) {
             if (runtimeOptions.tmFrameLength > 0) {
-                UdpTcFrameLink tcFrameLink = new UdpTcFrameLink(sim, runtimeOptions.tcFramePort);
-                UdpTmFrameLink frameLink = new UdpTmFrameLink(runtimeOptions.tmFrameType, runtimeOptions.tmFrameHost,
+                UdpTcFrameLink tcFrameLink = new UdpTcFrameLink(colSimulator, runtimeOptions.tcFramePort);
+                UdpTmFrameLink frameLink = new UdpTmFrameLink(
+                        runtimeOptions.scid,
+                        runtimeOptions.tmFrameType,
+                        runtimeOptions.tmFrameHost,
                         runtimeOptions.tmFramePort,
-                        runtimeOptions.tmFrameLength, runtimeOptions.tmFrameFreq, () -> {
+                        runtimeOptions.tmFrameLength,
+                        runtimeOptions.tmFrameFreq, () -> {
                             return tcFrameLink.getClcw();
                         });
                 services.add(tcFrameLink);
                 services.add(frameLink);
-                sim.setTmFrameLink(frameLink);
+                colSimulator.setTmFrameLink(frameLink);
             }
 
             if (runtimeOptions.perfNp > 0) {
-                PerfPacketGenerator ppg = new PerfPacketGenerator(sim, runtimeOptions.perfNp, runtimeOptions.perfPs,
-                        runtimeOptions.perfMs, runtimeOptions.perfChangePercent);
-                sim.setPerfPacketGenerator(ppg);
+                PerfPacketGenerator ppg = new PerfPacketGenerator(
+                        colSimulator,
+                        runtimeOptions.perfNp,
+                        runtimeOptions.perfPs,
+                        runtimeOptions.perfMs,
+                        runtimeOptions.perfChangePercent);
+                colSimulator.setPerfPacketGenerator(ppg);
                 services.add(ppg);
             }
         }

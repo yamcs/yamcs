@@ -29,7 +29,7 @@ tcMaxRate (integer)
     Ensure that on overage no more than ``tcMaxRate`` commands are issued during any given second. Default: unspecified
 
 commandPostprocessorClassName (string)
-    Class name of a :doc:`command-postprocessor/index` implementation. Default is :javadoc:`org.yamcs.tctm.GenericCommandPostprocessor <command-postprocessor/generic>`.
+    Class name of a :doc:`command-postprocessor/index` implementation. Default is :doc:`org.yamcs.tctm.GenericCommandPostprocessor <command-postprocessor/generic>`.
 
 commandPostprocessorArgs (map)
     Optional args of arbitrary complexity to pass to the command postprocessor. Each postprocessor may support different options.

@@ -9,7 +9,7 @@ The root configuration file is :file:`etc/yamcs.yaml`. It contains a list of Yam
 Server Configuration
 --------------------
 
-The number of configuration options in :file:`etc/yamcs.yaml` are relatively limited. A sample configuration file is below.
+An example :file:`etc/yamcs.yaml` configuration file:
 
 .. code-block:: yaml
 
@@ -26,7 +26,7 @@ The number of configuration options in :file:`etc/yamcs.yaml` are relatively lim
     yamcs-web:
         tag: DEMO
 
-The following options are supported
+The following options are supported:
 
 services (list)
     A list of global services. Users can create their own global services that are unique for the whole Yamcs instance. The global services description can be found in :doc:`../services/global/index`
@@ -42,7 +42,12 @@ cacheDir (string)
     A directory that Yamcs can use to cache files. Defaults to a directory called :file:`cache` relative to the directory where Yamcs is running from.
 
 secretKey (string)
-    A key that is used to sign the authentication tokens given to the users. It should be changed immediately after installation. As of version 5.0.0, Yamcs does not support persisted authentication tokens but this feature will be available in a future version. 
+    A key that is used to sign the authentication tokens given to the users. It should be changed immediately after installation. Currently Yamcs does not yet support persisted authentication tokens, but it is intended to have this become available in a future version.
+
+serverId (string)
+    Customize the server's identifier. This uniquely identifies your Yamcs system. For each Yamcs system you run, it should use a different server identifier.
+
+    This property is used in replication between Yamcs systems, and in the namespace of system parameters.
 
 yamcs-web (map)
     Configuration of the Yamcs web application. The different options are documented in :doc:`../web-interface/index`

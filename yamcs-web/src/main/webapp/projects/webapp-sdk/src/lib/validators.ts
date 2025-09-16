@@ -1,4 +1,10 @@
-import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
+import {
+  AbstractControl,
+  FormGroup,
+  ValidationErrors,
+  ValidatorFn,
+} from '@angular/forms';
+import { toDate } from './utils';
 
 export const requireInteger: ValidatorFn = (
   control: AbstractControl,
@@ -68,6 +74,33 @@ export function maxHexLengthValidator(maxBytes: number): ValidatorFn {
           },
         }
       : null;
+  };
+}
+
+export function dateRangeValidator(
+  startField: string,
+  stopField: string,
+): ValidatorFn {
+  return (formGroup: FormGroup): ValidationErrors | null => {
+    const startValue = formGroup.get(startField)?.value;
+    const stopValue = formGroup.get(stopField)?.value;
+
+    if (!startValue || !stopValue) {
+      return null; // Valid
+    }
+
+    const startDate = toDate(startValue);
+    const stopDate = toDate(stopValue);
+
+    if (isNaN(startDate.getTime()) || isNaN(stopDate.getTime())) {
+      return null; // Ignore (issue of field-specific validator)
+    }
+
+    if (startDate > stopDate) {
+      return { dateRange: true };
+    }
+
+    return null; // Valid
   };
 }
 

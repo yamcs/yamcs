@@ -19,16 +19,15 @@ import com.google.common.util.concurrent.AbstractScheduledService;
 /**
  * Simulator link implementing the TM frames using one of the three CCSDS specs:
  * 
- * AOS CCSDS 732.0-B-3
- * TM CCSDS 132.0-B-2
- * USLP CCSDS 732.1-B-1
- * 
+ * <ul>
+ * <li>AOS CCSDS 732.0-B-3
+ * <li>TM CCSDS 132.0-B-2
+ * <li>USLP CCSDS 732.1-B-1
+ * </ul>
  * 
  * Sends frames of predefined size at a configured frequency. If there is no data to send, it sends idle frames.
  * 
- * 
  * @author nm
- *
  */
 public class UdpTmFrameLink extends AbstractScheduledService {
     final String frameType;
@@ -38,7 +37,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
     DatagramSocket socket;
     static final int NUM_VC = 3;
-    static final int SPACECRAFT_ID = 0xAB;
+    final int scid;
     final double framesPerSec;
     final static CrcCciitCalculator crc = new CrcCciitCalculator();
     VcBuilder[] builders = new VcBuilder[NUM_VC];
@@ -51,8 +50,9 @@ public class UdpTmFrameLink extends AbstractScheduledService {
     InetAddress addr;
     IntSupplier clcwSupplier;
 
-    public UdpTmFrameLink(String frameType, String host, int port, int frameLength, double framesPerSec,
+    public UdpTmFrameLink(int scid, String frameType, String host, int port, int frameLength, double framesPerSec,
             IntSupplier clcwSupplier) {
+        this.scid = scid;
         this.frameType = frameType;
         this.host = host;
         this.port = port;
@@ -62,21 +62,20 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
         if ("AOS".equalsIgnoreCase(frameType)) {
             for (int i = 0; i < NUM_VC; i++) {
-                builders[i] = new AosVcSender(i, frameLength);
+                builders[i] = new AosVcSender(scid, i, frameLength);
             }
-            idleFrameBuilder = new AosVcSender(63, frameLength);
+            idleFrameBuilder = new AosVcSender(scid, 63, frameLength);
         } else if ("TM".equalsIgnoreCase(frameType)) {
             for (int i = 0; i < NUM_VC; i++) {
-                builders[i] = new TmVcSender(i, frameLength);
+                builders[i] = new TmVcSender(scid, i, frameLength);
             }
             idleFrameBuilder = builders[0];
         } else if ("USLP".equalsIgnoreCase(frameType)) {
             for (int i = 0; i < NUM_VC; i++) {
-                builders[i] = new UslpVcSender(i, frameLength);
+                builders[i] = new UslpVcSender(scid, i, frameLength);
             }
-            idleFrameBuilder = new UslpVcSender(63, frameLength);
+            idleFrameBuilder = new UslpVcSender(scid, 63, frameLength);
         }
-
     }
 
     @Override
@@ -154,6 +153,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
     }
 
     static abstract class VcBuilder {
+        protected final int scid;
         final int vcId;
 
         protected long vcSeqCount = 0;
@@ -170,10 +170,13 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
         protected int clcw;
 
-        public VcBuilder(int vcId) {
+        public VcBuilder(int scid, int vcId) {
+            this.scid = scid;
             this.vcId = vcId;
             this.dataOffset = hdrSize();
-
+            if ((scid < 0) || (scid > 255)) {
+                throw new IllegalArgumentException("Invalid spacecraft identifier " + scid);
+            }
         }
 
         public void setCLCW(int clcw) {
@@ -205,10 +208,6 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
         /**
          * Copy data from the queue into the frame
-         * 
-         * @param q
-         * @return
-         * @throws IOException
          */
         void dequeue() throws IOException {
             if (pendingPacket != null) {
@@ -274,8 +273,8 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
     static class AosVcSender extends VcBuilder {
 
-        public AosVcSender(int vcId, int frameSize) {
-            super(vcId);
+        public AosVcSender(int scid, int vcId, int frameSize) {
+            super(scid, vcId);
             if ((vcId < 0) || (vcId > 63)) {
                 throw new IllegalArgumentException("Invalid virtual channel id " + vcId);
             }
@@ -287,7 +286,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         }
 
         void writeGvcId(byte[] frameData, int vcId) {
-            ByteArrayUtils.encodeUnsignedShort((1 << 14) + (SPACECRAFT_ID << 6) + vcId, frameData, 0);
+            ByteArrayUtils.encodeUnsignedShort((1 << 14) + (scid << 6) + vcId, frameData, 0);
         }
 
         @Override
@@ -340,8 +339,8 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         byte[] idleFrameData;
         int ocfFlag = 1;
 
-        public TmVcSender(int vcId, int frameSize) {
-            super(vcId);
+        public TmVcSender(int scid, int vcId, int frameSize) {
+            super(scid, vcId);
             this.data = new byte[frameSize];
             dataEnd = frameSize - 4 - 2 * ocfFlag; // last 6 bytes are the OCF and CRC
             writeGvcId(data, vcId);
@@ -353,7 +352,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         }
 
         void writeGvcId(byte[] frameData, int vcId) {
-            ByteArrayUtils.encodeUnsignedShort((SPACECRAFT_ID << 4) + (vcId << 1) + ocfFlag, frameData, 0);
+            ByteArrayUtils.encodeUnsignedShort((scid << 4) + (vcId << 1) + ocfFlag, frameData, 0);
         }
 
         @Override
@@ -392,12 +391,12 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         byte[] idleFrameData;
         int ocfFlag = 1;
 
-        public UslpVcSender(int vcId, int frameLength) {
-            super(vcId);
+        public UslpVcSender(int scid, int vcId, int frameLength) {
+            super(scid, vcId);
             this.data = new byte[frameLength];
             dataEnd = frameLength - 4 - 2 * ocfFlag; // last 6 bytes are the OCF and CRC
 
-            ByteArrayUtils.encodeInt((12 << 28) + (SPACECRAFT_ID << 12) + (vcId << 5), data, 0);
+            ByteArrayUtils.encodeInt((12 << 28) + (scid << 12) + (vcId << 5), data, 0);
 
             // frame length
             ByteArrayUtils.encodeUnsignedShort(frameLength - 1, data, 4);

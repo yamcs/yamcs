@@ -24,7 +24,6 @@ services:
         enableTls: false
         streams: ["tm_realtime", "sys_param", "tm2_realtime"]
 
-
 dataLinks:
   - name: tm_dump
     class: org.yamcs.tctm.TcpTmDataLink
@@ -34,6 +33,7 @@ dataLinks:
     port: 10115
     # Give the embedded simulator some time to boot up
     initialDelay: 2000
+    packetPreprocessorClassName: org.yamcs.tctm.IssPacketPreprocessor
   - name: tc_sim
     class: org.yamcs.tctm.TcpTcDataLink
     stream: tc_realtime

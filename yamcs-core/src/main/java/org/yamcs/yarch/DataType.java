@@ -307,6 +307,8 @@ public class DataType {
             return ((Long) v1).compareTo((Long) v2);
         } else if (v1 instanceof String) {
             return ((String) v1).compareTo((String) v2);
+        } else if (v1 instanceof Instant) {
+            return ((Instant) v1).compareTo((Instant) v2);
         } else {
             throw new IllegalArgumentException("cannot compare objects of type " + v1.getClass());
         }

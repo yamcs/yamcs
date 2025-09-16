@@ -148,6 +148,8 @@ public class EventsApi extends AbstractEventsApi<Context> {
                     responseb.addEvents(event);
                     responseb.addEvent(event);
                     last = incoming;
+                } else {
+                    stream.close();
                 }
             }
 

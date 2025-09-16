@@ -170,6 +170,10 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
             stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
         }
 
+        if (start > stop) {
+            throw new BadRequestException("Start date must be before stop date");
+        }
+
         int sampleCount = request.hasCount() ? request.getCount() : 500;
         boolean useRawValue = request.hasUseRawValue() && request.getUseRawValue();
 
@@ -217,6 +221,10 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         long stop = TimeEncoding.getWallclockTime();
         if (request.hasStop()) {
             stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
+        }
+
+        if (start > stop) {
+            throw new BadRequestException("Start date must be before stop date");
         }
 
         long minGap = request.hasMinGap() ? request.getMinGap() : 0;
@@ -269,6 +277,11 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         if (request.hasStop()) {
             stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
         }
+
+        if (start > stop) {
+            throw new BadRequestException("Start date must be before stop date");
+        }
+
         boolean ascending = request.getOrder().equals("asc");
         if (request.hasNext()) {
             TimeSortedPageToken token = TimeSortedPageToken.decode(request.getNext());

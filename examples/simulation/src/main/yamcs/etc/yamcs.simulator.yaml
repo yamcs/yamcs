@@ -13,7 +13,7 @@ services:
         - tm_dump
   - class: org.yamcs.parameter.SystemParametersService
     args:
-      producers: ['jvm', 'fs', 'diskstats', 'rocksdb']
+      producers: ['jvm', 'fs', 'diskstats', 'loadavg', 'rocksdb']
 
   - class: org.yamcs.ProcessorCreatorService
     args: 
@@ -47,7 +47,8 @@ dataLinks:
     host: localhost
     port: 10015
     # Give the embedded simulator some time to boot up
-    initialDelay: 2000      
+    initialDelay: 2000
+    packetPreprocessorClassName: org.yamcs.tctm.IssPacketPreprocessor
   - name: tm2_realtime
     class: org.yamcs.tctm.TcpTmDataLink
     stream: tm2_realtime
@@ -70,7 +71,7 @@ dataLinks:
         initialBytesToStrip: 0 # number of bytes to remove from the beginning
 
       # the packet preprocessor gets the packets read by the packet input stream defined above and extracts a timestamp and a sequence count from it
-      # for historical reasons the default packet preprocessor (used for the tm_realtime link above) is the IssPacketPreprocessor that reads packets 
+      # for historical reasons the packet preprocessor used for the tm_realtime link above is the IssPacketPreprocessor that reads packets 
       # according to the ISS (International Space Station) definition
       # The generic packet preprocessor reads a timestamp in number of milliseconds since 1970 as well as a 4 bytes sequence count 
     packetPreprocessorClassName: org.yamcs.tctm.GenericPacketPreprocessor
@@ -86,6 +87,7 @@ dataLinks:
     port: 10115
     # Give the embedded simulator some time to boot up
     initialDelay: 2000
+    packetPreprocessorClassName: org.yamcs.tctm.IssPacketPreprocessor
   - name: tc_sim
     class: org.yamcs.tctm.TcpTcDataLink
     stream: tc_sim
@@ -98,7 +100,6 @@ dataLinks:
         errorDetection:
           type: 16-SUM
         enforceEvenNumberOfBytes: true
-        
   - name: TSE
     class: org.yamcs.tse.TseDataLink
     host: localhost

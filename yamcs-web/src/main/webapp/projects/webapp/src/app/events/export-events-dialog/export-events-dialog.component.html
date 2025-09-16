@@ -5,12 +5,15 @@
     <ya-field label="Start">
       <ya-date-time-input formControlName="start" />
     </ya-field>
+
     <ya-field label="Stop">
       <ya-date-time-input formControlName="stop" />
     </ya-field>
+
     <ya-field label="Query">
       <ya-filter-textarea formControlName="filter" />
     </ya-field>
+
     <ya-field label="Severity">
       <ya-select formControlName="severity">
         <ya-option id="INFO" label="Info level" />
@@ -21,12 +24,14 @@
         <ya-option id="SEVERE" label="Severe level" />
       </ya-select>
     </ya-field>
+
     <ya-field label="Source">
       <ya-multi-select
         formControlName="source"
         [options]="data.sourceOptions"
         emptyOption="Any source" />
     </ya-field>
+
     <ya-field label="CSV column delimiter">
       <ya-select formControlName="delimiter">
         <ya-option id="COMMA" label="Comma" />
@@ -35,6 +40,10 @@
       </ya-select>
     </ya-field>
   </form>
+
+  @if (form.errors?.dateRange) {
+    <ya-warning-message>Start date must be before stop date</ya-warning-message>
+  }
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">

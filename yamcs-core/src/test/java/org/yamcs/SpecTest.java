@@ -90,6 +90,19 @@ public class SpecTest {
     }
 
     @Test
+    public void testListChoices() throws ValidationException {
+        Spec spec = new Spec();
+        spec.addOption("bla", OptionType.LIST)
+                .withElementType(OptionType.STRING)
+                .withChoices("a", "b", "c", "d");
+        spec.validate(of("bla", asList("a", "b")));
+
+        assertThrows(ValidationException.class, () -> {
+            spec.validate(of("bla", asList("a", "b", "x")));
+        });
+    }
+
+    @Test
     public void testElementType() throws ValidationException {
         Spec spec = new Spec();
         spec.addOption("bla", OptionType.LIST).withElementType(OptionType.INTEGER);

@@ -194,6 +194,8 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
                     responseb.addPackets(pdata);
                     responseb.addPacket(pdata);
                     last = pdata;
+                } else {
+                    stream.close();
                 }
             }
 

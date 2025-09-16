@@ -8,6 +8,8 @@ import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
+import org.yamcs.cascading.YamcsTmArchiveLink;
+import org.yamcs.cascading.YamcsTmLink;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.parameter.SystemParametersService;
@@ -44,25 +46,39 @@ public abstract class AbstractTmDataLink extends AbstractLink implements TmPacke
     @Override
     public void init(String instance, String name, YConfiguration config) {
         super.init(instance, name, config);
-        if (config.containsKey(CFG_PREPRO_CLASS)) {
-            this.packetPreprocessorClassName = config.getString(CFG_PREPRO_CLASS);
-        } else {
-            this.packetPreprocessorClassName = IssPacketPreprocessor.class.getName();
-        }
-        if (config.containsKey("packetPreprocessorArgs")) {
-            this.packetPreprocessorArgs = config.getConfig("packetPreprocessorArgs");
-        }
 
-        try {
-            if (packetPreprocessorArgs != null) {
-                packetPreprocessor = YObjectLoader.loadObject(packetPreprocessorClassName, instance,
-                        packetPreprocessorArgs);
+        if (this instanceof YamcsTmLink || this instanceof YamcsTmArchiveLink) {
+            // Ignore, these received cascaded data and do not use a packet preprocessor
+        } else {
+            if (config.containsKey(CFG_PREPRO_CLASS)) {
+                this.packetPreprocessorClassName = config.getString(CFG_PREPRO_CLASS);
             } else {
-                packetPreprocessor = YObjectLoader.loadObject(packetPreprocessorClassName, instance);
+                log.warn(
+                        "DEPRECATED: Link '{}' should explicitly configure the 'packetPreprocessorClassName' property. "
+                                + "In a future version of Yamcs this property will become required. "
+                                + "Your current configuration is equivalent to:\n\n"
+                                + "    - name: {}\n"
+                                + "      class: {}\n"
+                                + "      # ...\n"
+                                + "      packetPreprocessorClassName: org.yamcs.tctm.IssPacketPreprocessor",
+                        name, name, getClass().getName());
+                this.packetPreprocessorClassName = IssPacketPreprocessor.class.getName();
             }
-        } catch (ConfigurationException e) {
-            log.error("Cannot instantiate the packet preprocessor", e);
-            throw e;
+            if (config.containsKey("packetPreprocessorArgs")) {
+                this.packetPreprocessorArgs = config.getConfig("packetPreprocessorArgs");
+            }
+
+            try {
+                if (packetPreprocessorArgs != null) {
+                    packetPreprocessor = YObjectLoader.loadObject(packetPreprocessorClassName, instance,
+                            packetPreprocessorArgs);
+                } else {
+                    packetPreprocessor = YObjectLoader.loadObject(packetPreprocessorClassName, instance);
+                }
+            } catch (ConfigurationException e) {
+                log.error("Cannot instantiate the packet preprocessor", e);
+                throw e;
+            }
         }
 
         updateSimulationTime = config.getBoolean("updateSimulationTime", false);

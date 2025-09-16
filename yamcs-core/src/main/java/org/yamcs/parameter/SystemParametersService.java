@@ -1,7 +1,7 @@
 package org.yamcs.parameter;
 
 import static org.yamcs.xtce.NameDescription.qualifiedName;
-import static org.yamcs.mdb.Mdb.YAMCS_SPACESYSTEM_NAME;
+import static org.yamcs.xtce.XtceDb.YAMCS_SPACESYSTEM_NAME;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -88,7 +88,7 @@ public class SystemParametersService extends AbstractYamcsService implements Run
         spec.addOption("producers", OptionType.LIST)
                 .withRequired(false)
                 .withElementType(OptionType.STRING)
-                .withDescription("Current providers are: jvm, fs and diskstats. Diskstats only works on Linux");
+                .withChoices("diskstats", "fs", "jvm", "loadavg", "rocksdb");
         return spec;
     }
 
@@ -137,6 +137,10 @@ public class SystemParametersService extends AbstractYamcsService implements Run
         if (producers.contains("rocksdb")) {
             var producer = RdbStorageEngine.getInstance().newRdbParameterProducer(yamcsInstance, this);
             providers.add(new SysVarProducer(producer));
+        }
+
+        if (producers.contains("loadavg")) {
+            providers.add(new SysVarProducer(new LoadavgParameterProducer(this)));
         }
 
         synchronized (instances) {
