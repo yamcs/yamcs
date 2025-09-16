@@ -1,0 +1,44 @@
+<ya-message-bar #messageBar />
+
+<mat-sidenav-container [class.message-bar-visible]="messageBar.show$ | async">
+  <mat-sidenav mode="side" [opened]="true" [disableClose]="true">
+    <div class="sidenav-content">
+      <mat-toolbar class="module-title">
+        <mat-toolbar-row>
+          <mat-icon>schedule</mat-icon>
+          Ground Station Booking
+        </mat-toolbar-row>
+      </mat-toolbar>
+
+      <mat-nav-list dense>
+        <ya-sidebar-nav-item activeWhen="/booking" routerLink="/booking" [exact]="true">
+          <mat-icon class="item-icon">dashboard</mat-icon>
+          Dashboard
+        </ya-sidebar-nav-item>
+        <ya-sidebar-nav-item activeWhen="/booking/bookings" routerLink="/booking/bookings">
+          <mat-icon class="item-icon">list</mat-icon>
+          All Bookings
+        </ya-sidebar-nav-item>
+        <ya-sidebar-nav-item activeWhen="/booking/create" routerLink="/booking/create">
+          <mat-icon class="item-icon">add</mat-icon>
+          New Booking
+        </ya-sidebar-nav-item>
+        <ya-sidebar-nav-item activeWhen="/booking/approvals" routerLink="/booking/approvals">
+          <mat-icon class="item-icon">approval</mat-icon>
+          Pending Approvals
+        </ya-sidebar-nav-item>
+      </mat-nav-list>
+
+      <div style="flex: 1 1 auto"></div>
+      @if (config.logo) {
+        <div class="navbar-logo">
+          <img [src]="config.logo" />
+        </div>
+      }
+    </div>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <router-outlet />
+  </mat-sidenav-content>
+</mat-sidenav-container>

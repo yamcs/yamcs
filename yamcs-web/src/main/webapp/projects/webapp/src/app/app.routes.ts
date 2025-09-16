@@ -103,6 +103,14 @@ export const APP_ROUTES: Routes = [
         canActivate: [authGuardFn],
       },
       {
+        path: 'booking',
+        loadChildren: () =>
+          import('projects/webapp/src/app/booking/booking.routes').then(
+            (m) => m.ROUTES,
+          ),
+        canActivate: [authGuardFn],
+      },
+      {
         path: 'admin',
         loadChildren: () =>
           import('projects/webapp/src/app/admin/admin.routes').then(

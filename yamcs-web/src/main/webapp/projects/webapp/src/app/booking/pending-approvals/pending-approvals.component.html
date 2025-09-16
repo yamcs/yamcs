@@ -1,0 +1,81 @@
+<ya-instance-page>
+  <ya-instance-toolbar label="Pending Approvals">
+    <ya-page-button (clicked)="refresh()" icon="refresh">Refresh</ya-page-button>
+  </ya-instance-toolbar>
+
+  <ya-panel>
+    <table mat-table [dataSource]="pendingBookings" class="ya-data-table">
+
+          <!-- Start Time Column -->
+          <ng-container matColumnDef="startTime">
+            <th mat-header-cell *matHeaderCellDef>Start Time</th>
+            <td mat-cell *matCellDef="let booking">
+              {{ formatDateTime(booking.startTime) }}
+            </td>
+          </ng-container>
+
+          <!-- Ground Station Column -->
+          <ng-container matColumnDef="yamcsGsName">
+            <th mat-header-cell *matHeaderCellDef>Ground Station</th>
+            <td mat-cell *matCellDef="let booking">{{ booking.yamcsGsName }}</td>
+          </ng-container>
+
+          <!-- Provider Column -->
+          <ng-container matColumnDef="providerName">
+            <th mat-header-cell *matHeaderCellDef>Provider</th>
+            <td mat-cell *matCellDef="let booking">{{ booking.providerName }}</td>
+          </ng-container>
+
+          <!-- Mission Column -->
+          <ng-container matColumnDef="missionName">
+            <th mat-header-cell *matHeaderCellDef>Mission</th>
+            <td mat-cell *matCellDef="let booking">{{ booking.missionName || '-' }}</td>
+          </ng-container>
+
+          <!-- Purpose Column -->
+          <ng-container matColumnDef="purpose">
+            <th mat-header-cell *matHeaderCellDef>Purpose</th>
+            <td mat-cell *matCellDef="let booking">{{ booking.purpose }}</td>
+          </ng-container>
+
+          <!-- Requested By Column -->
+          <ng-container matColumnDef="requestedBy">
+            <th mat-header-cell *matHeaderCellDef>Requested By</th>
+            <td mat-cell *matCellDef="let booking">{{ booking.requestedBy }}</td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let booking">
+              <button
+                mat-raised-button
+                color="primary"
+                (click)="approveBooking(booking)"
+                style="margin-right: 8px;"
+              >
+                <mat-icon>check</mat-icon>
+                Approve
+              </button>
+              <button
+                mat-raised-button
+                color="warn"
+                (click)="rejectBooking(booking)"
+              >
+                <mat-icon>close</mat-icon>
+                Reject
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+
+    <div *ngIf="pendingBookings.length === 0" style="text-align: center; padding: 32px;">
+      <mat-icon style="font-size: 48px; height: 48px; width: 48px;">check_circle</mat-icon>
+      <p>No pending approvals</p>
+      <small>All booking requests have been processed</small>
+    </div>
+  </ya-panel>
+</ya-instance-page>

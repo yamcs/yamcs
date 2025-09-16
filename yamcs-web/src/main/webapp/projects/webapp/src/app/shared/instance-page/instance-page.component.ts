@@ -315,6 +315,10 @@ export class InstancePageComponent implements OnInit, OnDestroy {
     return this.user.hasSystemPrivilege('ReadFileTransfers');
   }
 
+  showBookingItem() {
+    return true; // Always show booking for authenticated users
+  }
+
   showActivitiesItem() {
     return this.user.hasSystemPrivilege('ReadActivities');
   }

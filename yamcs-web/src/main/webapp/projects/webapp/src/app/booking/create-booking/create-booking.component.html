@@ -1,0 +1,162 @@
+<ya-instance-page>
+  <ya-instance-toolbar label="Create New Booking">
+    <ya-page-button (clicked)="onCancel()" icon="cancel">Cancel</ya-page-button>
+  </ya-instance-toolbar>
+
+  <ya-panel>
+    <form [formGroup]="bookingForm" (ngSubmit)="onSubmit()">
+
+          <!-- Provider and Ground Station -->
+          <div style="margin-bottom: 24px;">
+            <h3>Ground Station Details</h3>
+
+            <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+              <mat-form-field style="flex: 1;">
+                <mat-label>Provider</mat-label>
+                <mat-select formControlName="providerId" required>
+                  <mat-option *ngFor="let provider of providers" [value]="provider.id">
+                    {{ provider.name }} ({{ provider.type | titlecase }})
+                  </mat-option>
+                </mat-select>
+                <mat-error *ngIf="bookingForm.get('providerId')?.hasError('required')">
+                  Provider is required
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field style="flex: 1;">
+                <mat-label>YAMCS Ground Station Name</mat-label>
+                <input matInput formControlName="yamcsGsName" required>
+                <mat-error *ngIf="bookingForm.get('yamcsGsName')?.hasError('required')">
+                  Ground station name is required
+                </mat-error>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <!-- Timing Details -->
+          <div style="margin-bottom: 24px;">
+            <h3>Timing Details</h3>
+
+            <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+              <mat-form-field style="flex: 1;">
+                <mat-label>Start Date</mat-label>
+                <input matInput [matDatepicker]="startPicker" formControlName="startDate" required>
+                <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+                <mat-datepicker #startPicker></mat-datepicker>
+                <mat-error *ngIf="bookingForm.get('startDate')?.hasError('required')">
+                  Start date is required
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field style="flex: 1;">
+                <mat-label>Start Time</mat-label>
+                <input matInput type="time" formControlName="startTime" required>
+                <mat-error *ngIf="bookingForm.get('startTime')?.hasError('required')">
+                  Start time is required
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+              <mat-form-field style="flex: 1;">
+                <mat-label>End Date</mat-label>
+                <input matInput [matDatepicker]="endPicker" formControlName="endDate" required>
+                <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+                <mat-datepicker #endPicker></mat-datepicker>
+                <mat-error *ngIf="bookingForm.get('endDate')?.hasError('required')">
+                  End date is required
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field style="flex: 1;">
+                <mat-label>End Time</mat-label>
+                <input matInput type="time" formControlName="endTime" required>
+                <mat-error *ngIf="bookingForm.get('endTime')?.hasError('required')">
+                  End time is required
+                </mat-error>
+                <mat-error *ngIf="bookingForm.get('endTime')?.hasError('invalidEndTime')">
+                  End time must be after start time
+                </mat-error>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <!-- Booking Rule -->
+          <div style="margin-bottom: 24px;">
+            <h3>Booking Rule</h3>
+
+            <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+              <mat-form-field style="flex: 1;">
+                <mat-label>Rule Type</mat-label>
+                <mat-select formControlName="ruleType" required>
+                  <mat-option *ngFor="let ruleType of ruleTypes" [value]="ruleType.value">
+                    {{ ruleType.label }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field style="flex: 1;" *ngIf="showFrequencyField()">
+                <mat-label>Frequency (days)</mat-label>
+                <input matInput type="number" formControlName="frequencyDays" min="1">
+                <mat-hint>Number of days between recurring bookings</mat-hint>
+                <mat-error *ngIf="bookingForm.get('frequencyDays')?.hasError('required')">
+                  Frequency is required for recurring bookings
+                </mat-error>
+                <mat-error *ngIf="bookingForm.get('frequencyDays')?.hasError('min')">
+                  Frequency must be at least 1 day
+                </mat-error>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <!-- Mission Details -->
+          <div style="margin-bottom: 24px;">
+            <h3>Mission Details</h3>
+
+            <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+              <mat-form-field style="flex: 1;">
+                <mat-label>Purpose</mat-label>
+                <textarea matInput formControlName="purpose" rows="3" required></textarea>
+                <mat-error *ngIf="bookingForm.get('purpose')?.hasError('required')">
+                  Purpose is required
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+              <mat-form-field style="flex: 1;">
+                <mat-label>Mission Name</mat-label>
+                <input matInput formControlName="missionName">
+              </mat-form-field>
+
+              <mat-form-field style="flex: 1;">
+                <mat-label>Satellite Name</mat-label>
+                <input matInput formControlName="satelliteName">
+              </mat-form-field>
+            </div>
+
+            <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+              <mat-form-field style="flex: 1;">
+                <mat-label>Additional Notes</mat-label>
+                <textarea matInput formControlName="notes" rows="3"></textarea>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <!-- Form Actions -->
+          <div style="display: flex; gap: 16px; justify-content: flex-end; margin-top: 32px;">
+            <button type="button" mat-button (click)="onCancel()">Cancel</button>
+            <button
+              type="submit"
+              mat-raised-button
+              color="primary"
+              [disabled]="bookingForm.invalid || isSubmitting"
+            >
+              <mat-icon *ngIf="isSubmitting">hourglass_empty</mat-icon>
+              <span>{{ isSubmitting ? 'Creating...' : 'Create Booking' }}</span>
+            </button>
+          </div>
+
+        </form>
+  </ya-panel>
+</ya-instance-page>

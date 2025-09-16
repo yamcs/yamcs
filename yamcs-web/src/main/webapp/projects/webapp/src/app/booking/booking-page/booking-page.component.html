@@ -1,0 +1,68 @@
+<ya-instance-page>
+  <ya-instance-toolbar label="Ground Station Booking">
+    <ya-page-button routerLink="create" icon="add">New Booking</ya-page-button>
+    <ya-page-button routerLink="bookings" icon="list">View All</ya-page-button>
+    <ya-page-button routerLink="approvals" icon="pending_actions">Pending Approvals</ya-page-button>
+  </ya-instance-toolbar>
+
+  <ya-panel>
+    <div class="dashboard-stats">
+      <div class="stat-card">
+        <div class="stat-value">{{ pendingCount }}</div>
+        <div class="stat-label">Pending Approvals</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ activeCount }}</div>
+        <div class="stat-label">Active Bookings</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ providerCount }}</div>
+        <div class="stat-label">GS Providers</div>
+        <div class="provider-chips">
+          @for (provider of providers; track provider.id) {
+            <span class="provider-chip">{{ provider.name }}</span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <h3>Recent Bookings</h3>
+      <table mat-table [dataSource]="recentBookings" class="ya-data-table expand">
+        <ng-container cdkColumnDef="startTime">
+          <th mat-header-cell *cdkHeaderCellDef>Time</th>
+          <td mat-cell *cdkCellDef="let booking" style="white-space: nowrap">
+            {{ booking.startTime | date:'MMM dd, HH:mm' }}
+          </td>
+        </ng-container>
+
+        <ng-container cdkColumnDef="yamcsGsName">
+          <th mat-header-cell *cdkHeaderCellDef>Ground Station</th>
+          <td mat-cell *cdkCellDef="let booking">{{ booking.yamcsGsName }}</td>
+        </ng-container>
+
+        <ng-container cdkColumnDef="providerName">
+          <th mat-header-cell *cdkHeaderCellDef>Provider</th>
+          <td mat-cell *cdkCellDef="let booking">{{ booking.providerName }}</td>
+        </ng-container>
+
+        <ng-container cdkColumnDef="missionName">
+          <th mat-header-cell *cdkHeaderCellDef>Mission</th>
+          <td mat-cell *cdkCellDef="let booking">{{ booking.missionName || '-' }}</td>
+        </ng-container>
+
+        <ng-container cdkColumnDef="status">
+          <th mat-header-cell *cdkHeaderCellDef>Status</th>
+          <td mat-cell *cdkCellDef="let booking">
+            <span class="status-badge" [class]="'status-' + booking.status">
+              {{ booking.status | titlecase }}
+            </span>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </div>
+  </ya-panel>
+</ya-instance-page>

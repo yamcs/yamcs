@@ -58,6 +58,7 @@
 		<module>simulator</module>
 		<module>tests</module>
 		<module>yamcs-api</module>
+		<module>yamcs-booking</module>
 		<module>yamcs-client</module>
 		<module>yamcs-core</module>
 		<module>yamcs-tse</module>

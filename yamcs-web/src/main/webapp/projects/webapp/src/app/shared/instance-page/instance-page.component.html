@@ -141,6 +141,16 @@
           </ya-sidebar-nav-item>
         }
 
+        @if (showBookingItem()) {
+          <ya-sidebar-nav-item
+            activeWhen="/booking"
+            routerLink="/booking"
+            [queryParams]="{ c: yamcs.context }">
+            <mat-icon class="item-icon">schedule_send</mat-icon>
+            GS Booking
+          </ya-sidebar-nav-item>
+        }
+
         @if (proceduresItems.length) {
           <ya-sidebar-nav-group
             label="Procedures"

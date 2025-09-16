@@ -1,0 +1,122 @@
+syntax = "proto2";
+
+package yamcs.protobuf.booking;
+
+option java_package = "org.yamcs.protobuf";
+option java_outer_classname = "BookingServiceProto";
+option java_multiple_files = true;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+import "yamcs/api/annotations.proto";
+
+service BookingApi {
+
+  // Get all ground station providers
+  rpc GetProviders(google.protobuf.Empty) returns (GetProvidersResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/booking/providers"
+    };
+  }
+
+  // Get all bookings
+  rpc GetBookings(google.protobuf.Empty) returns (GetBookingsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/booking/bookings"
+    };
+  }
+
+  // Create a new booking
+  rpc CreateBooking(CreateBookingRequest) returns (BookingInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/booking/bookings"
+      body: "*"
+    };
+  }
+
+  // Get pending bookings for approval
+  rpc GetPendingBookings(google.protobuf.Empty) returns (GetBookingsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/booking/bookings/pending"
+    };
+  }
+
+  // Approve a booking
+  rpc ApproveBooking(ApprovalRequest) returns (BookingInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/booking/bookings/{id}/approve"
+      body: "*"
+    };
+  }
+
+  // Reject a booking
+  rpc RejectBooking(ApprovalRequest) returns (BookingInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/booking/bookings/{id}/reject"
+      body: "*"
+    };
+  }
+}
+
+// Messages
+message GetProvidersResponse {
+  repeated ProviderInfo providers = 1;
+}
+
+message GetBookingsResponse {
+  repeated BookingInfo bookings = 1;
+}
+
+message ProviderInfo {
+  optional int32 id = 1;
+  optional string name = 2;
+  optional string type = 3;
+  optional string contactEmail = 4;
+  optional string contactPhone = 5;
+  optional string apiEndpoint = 6;
+  optional bool isActive = 7;
+  optional google.protobuf.Timestamp createdAt = 8;
+  optional google.protobuf.Timestamp updatedAt = 9;
+}
+
+message BookingInfo {
+  optional int32 id = 1;
+  optional int32 providerId = 2;
+  optional string providerName = 3;
+  optional string providerType = 4;
+  optional string yamcsGsName = 5;
+  optional google.protobuf.Timestamp startTime = 6;
+  optional google.protobuf.Timestamp endTime = 7;
+  optional string purpose = 8;
+  optional string missionName = 9;
+  optional string satelliteName = 10;
+  optional string ruleType = 11;
+  optional int32 frequencyDays = 12;
+  optional string status = 13;
+  optional string requestedBy = 14;
+  optional string approvedBy = 15;
+  optional google.protobuf.Timestamp approvedAt = 16;
+  optional string rejectionReason = 17;
+  optional string notes = 18;
+  optional google.protobuf.Timestamp createdAt = 19;
+  optional google.protobuf.Timestamp updatedAt = 20;
+}
+
+message CreateBookingRequest {
+  optional int32 providerId = 1;
+  optional string yamcsGsName = 2;
+  optional google.protobuf.Timestamp startTime = 3;
+  optional google.protobuf.Timestamp endTime = 4;
+  optional string purpose = 5;
+  optional string missionName = 6;
+  optional string satelliteName = 7;
+  optional string ruleType = 8;
+  optional int32 frequencyDays = 9;
+  optional string notes = 10;
+}
+
+message ApprovalRequest {
+  optional int32 id = 1;
+  optional string comments = 2;
+}

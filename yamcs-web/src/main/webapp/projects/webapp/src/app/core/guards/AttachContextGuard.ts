@@ -26,7 +26,7 @@ class AttachContextGuard {
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
     let instanceId: string = route.queryParams['c'];
     let processorId: string | undefined;
-    if (instanceId.indexOf('__') !== -1) {
+    if (instanceId && instanceId.indexOf('__') !== -1) {
       const parts = instanceId.split('__');
       instanceId = parts[0];
       processorId = parts[1];

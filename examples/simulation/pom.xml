@@ -39,5 +39,10 @@
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.yamcs</groupId>
+      <artifactId>yamcs-booking</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
 </project>

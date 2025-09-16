@@ -1,0 +1,30 @@
+# Ground Station Booking Plugin Configuration
+# Database connection is configured via environment variables:
+# - POSTGRES_HOST
+# - POSTGRES_PORT
+# - POSTGRES_DB
+# - POSTGRES_USER
+# - POSTGRES_PASSWORD
+
+# Plugin name and description
+name: "yamcs-booking"
+description: "Ground Station Booking System with approval workflow"
+version: "1.0.0"
+vendor: "TM2Space Technologies"
+
+# Required services
+requiredServices:
+  - HttpServer
+
+# Plugin configuration (optional)
+config:
+  # Enable/disable the plugin
+  enabled: true
+
+  # Database connection pool settings
+  database:
+    maxPoolSize: 10
+    minIdle: 2
+    connectionTimeout: 30000
+    idleTimeout: 600000
+    maxLifetime: 1800000
