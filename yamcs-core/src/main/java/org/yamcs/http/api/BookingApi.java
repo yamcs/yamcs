@@ -69,14 +69,23 @@ public class BookingApi extends AbstractBookingApi<Context> {
             booking.setStartTime(toLocalDateTime(request.getStartTime()));
             booking.setEndTime(toLocalDateTime(request.getEndTime()));
             booking.setPurpose(request.getPurpose());
-            booking.setMissionName(request.getMissionName());
-            booking.setSatelliteName(request.getSatelliteName());
+
+            // Set optional fields only if they exist
+            if (request.hasMissionName() && !request.getMissionName().isEmpty()) {
+                booking.setMissionName(request.getMissionName());
+            }
+            if (request.hasSatelliteName() && !request.getSatelliteName().isEmpty()) {
+                booking.setSatelliteName(request.getSatelliteName());
+            }
+            if (request.hasNotes() && !request.getNotes().isEmpty()) {
+                booking.setNotes(request.getNotes());
+            }
+
             booking.setRuleType(BookingRuleType.valueOf(request.getRuleType()));
             if (request.hasFrequencyDays()) {
                 booking.setFrequencyDays(request.getFrequencyDays());
             }
             booking.setRequestedBy(user.getName());
-            booking.setNotes(request.getNotes());
 
             GSBooking createdBooking = database.createBooking(booking);
             observer.complete(toBookingInfo(createdBooking));

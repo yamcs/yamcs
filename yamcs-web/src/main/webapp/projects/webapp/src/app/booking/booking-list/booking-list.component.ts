@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatCardModule } from '@angular/material/card';
 import { BookingService, GSBooking } from '../booking.service';
-import { WebappSdkModule } from '@yamcs/webapp-sdk';
+import { WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
   standalone: true,
@@ -31,7 +31,6 @@ export class BookingListComponent implements OnInit {
     'startTime',
     'yamcsGsName',
     'providerName',
-    'missionName',
     'purpose',
     'requestedBy',
     'status',
@@ -40,7 +39,8 @@ export class BookingListComponent implements OnInit {
 
   constructor(
     private bookingService: BookingService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    readonly yamcs: YamcsService
   ) {}
 
   ngOnInit() {

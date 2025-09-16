@@ -11,7 +11,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { BookingService, GSProvider, BookingRequest } from '../booking.service';
-import { WebappSdkModule } from '@yamcs/webapp-sdk';
+import { WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
   standalone: true,
@@ -36,7 +36,10 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
 export class CreateBookingComponent implements OnInit {
   bookingForm: FormGroup;
   providers: GSProvider[] = [];
-  ruleTypes = [
+
+  providerOptions: { value: number; label: string }[] = [];
+
+  ruleTypeOptions = [
     { value: 'one_time', label: 'One-time booking' },
     { value: 'daily', label: 'Daily recurring' },
     { value: 'weekly', label: 'Weekly recurring' },
@@ -49,18 +52,14 @@ export class CreateBookingComponent implements OnInit {
     private fb: FormBuilder,
     private bookingService: BookingService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    readonly yamcs: YamcsService
   ) {
     this.bookingForm = this.fb.group({
       providerId: ['', Validators.required],
-      yamcsGsName: ['', Validators.required],
-      startDate: ['', Validators.required],
-      startTime: ['', Validators.required],
-      endDate: ['', Validators.required],
-      endTime: ['', Validators.required],
+      startDateTime: ['', Validators.required],
+      durationHours: [1, [Validators.required, Validators.min(0.5)]],
       purpose: ['', Validators.required],
-      missionName: [''],
-      satelliteName: [''],
       ruleType: ['one_time', Validators.required],
       frequencyDays: [''],
       notes: ['']
@@ -76,39 +75,22 @@ export class CreateBookingComponent implements OnInit {
     this.bookingService.getProviders().subscribe({
       next: (providers) => {
         this.providers = providers || [];
+        this.providerOptions = this.providers.map(p => ({
+          value: p.id,
+          label: `${p.name} (${p.type})`
+        }));
         this.cdr.markForCheck();
       },
       error: (error) => {
         console.error('Error loading providers:', error);
         this.providers = [];
+        this.providerOptions = [];
         this.cdr.markForCheck();
       }
     });
   }
 
   private setupFormValidation() {
-    // Add custom validation for end time being after start time
-    this.bookingForm.valueChanges.subscribe(() => {
-      const startDate = this.bookingForm.get('startDate')?.value;
-      const startTime = this.bookingForm.get('startTime')?.value;
-      const endDate = this.bookingForm.get('endDate')?.value;
-      const endTime = this.bookingForm.get('endTime')?.value;
-
-      if (startDate && startTime && endDate && endTime) {
-        const start = this.combineDateTime(startDate, startTime);
-        const end = this.combineDateTime(endDate, endTime);
-
-        if (start >= end) {
-          this.bookingForm.get('endTime')?.setErrors({ invalidEndTime: true });
-        } else {
-          const endTimeControl = this.bookingForm.get('endTime');
-          if (endTimeControl?.hasError('invalidEndTime')) {
-            endTimeControl.setErrors(null);
-          }
-        }
-      }
-    });
-
     // Show/hide frequency field based on rule type
     this.bookingForm.get('ruleType')?.valueChanges.subscribe((ruleType) => {
       const frequencyControl = this.bookingForm.get('frequencyDays');
@@ -140,14 +122,15 @@ export class CreateBookingComponent implements OnInit {
 
       const formValue = this.bookingForm.value;
 
+      const startDate = new Date(formValue.startDateTime);
+      const endDate = new Date(startDate.getTime() + (formValue.durationHours * 60 * 60 * 1000));
+
       const bookingRequest: BookingRequest = {
         providerId: formValue.providerId,
-        yamcsGsName: formValue.yamcsGsName,
-        startTime: this.formatDateTime(formValue.startDate, formValue.startTime),
-        endTime: this.formatDateTime(formValue.endDate, formValue.endTime),
+        yamcsGsName: 'GS1', // Default ground station
+        startTime: startDate.toISOString(),
+        endTime: endDate.toISOString(),
         purpose: formValue.purpose,
-        missionName: formValue.missionName || undefined,
-        satelliteName: formValue.satelliteName || undefined,
         ruleType: formValue.ruleType,
         frequencyDays: formValue.frequencyDays || undefined,
         notes: formValue.notes || undefined
@@ -156,7 +139,9 @@ export class CreateBookingComponent implements OnInit {
       this.bookingService.createBooking(bookingRequest).subscribe({
         next: (booking) => {
           console.log('Booking created successfully:', booking);
-          this.router.navigate(['/booking']);
+          this.router.navigate(['/booking'], {
+            queryParams: { c: this.yamcs.context }
+          });
         },
         error: (error) => {
           console.error('Error creating booking:', error);
@@ -167,11 +152,9 @@ export class CreateBookingComponent implements OnInit {
   }
 
   onCancel() {
-    this.router.navigate(['/booking']);
-  }
-
-  getRuleTypeLabel(value: string): string {
-    return this.ruleTypes.find(type => type.value === value)?.label || value;
+    this.router.navigate(['/booking'], {
+      queryParams: { c: this.yamcs.context }
+    });
   }
 
   showFrequencyField(): boolean {

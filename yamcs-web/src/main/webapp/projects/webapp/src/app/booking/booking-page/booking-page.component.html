@@ -1,8 +1,8 @@
 <ya-instance-page>
   <ya-instance-toolbar label="Ground Station Booking">
-    <ya-page-button routerLink="create" icon="add">New Booking</ya-page-button>
-    <ya-page-button routerLink="bookings" icon="list">View All</ya-page-button>
-    <ya-page-button routerLink="approvals" icon="pending_actions">Pending Approvals</ya-page-button>
+    <ya-page-button routerLink="create" [queryParamsHandling]="'preserve'" icon="add">New Booking</ya-page-button>
+    <ya-page-button routerLink="bookings" [queryParamsHandling]="'preserve'" icon="list">View All</ya-page-button>
+    <ya-page-button routerLink="approvals" [queryParamsHandling]="'preserve'" icon="pending_actions">Pending Approvals</ya-page-button>
   </ya-instance-toolbar>
 
   <ya-panel>

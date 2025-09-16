@@ -34,7 +34,6 @@ export class PendingApprovalsComponent implements OnInit {
     'startTime',
     'yamcsGsName',
     'providerName',
-    'missionName',
     'purpose',
     'requestedBy',
     'actions'

@@ -1,84 +1,89 @@
 <ya-instance-page>
-  <ya-instance-toolbar label="All Bookings">
+  <ya-instance-toolbar>
+    <ng-template ya-instance-toolbar-label>
+      <ya-page-icon-button
+        [routerLink]="['/booking']"
+        [queryParams]="{ c: yamcs.context }"
+        icon="arrow_back" />
+      All Bookings
+    </ng-template>
+
     <ya-page-button (clicked)="refresh()" icon="refresh">Refresh</ya-page-button>
-    <ya-page-button routerLink="../create" icon="add">New Booking</ya-page-button>
+    <ya-page-button
+      [routerLink]="['/booking/create']"
+      [queryParams]="{ c: yamcs.context }"
+      icon="add">New Booking</ya-page-button>
   </ya-instance-toolbar>
 
   <ya-panel>
-    <table mat-table [dataSource]="bookings" class="ya-data-table">
+    <table mat-table [dataSource]="bookings" class="ya-data-table expand">
+      <!-- Start Time Column -->
+      <ng-container cdkColumnDef="startTime">
+        <th mat-header-cell *cdkHeaderCellDef>Start Time</th>
+        <td mat-cell *cdkCellDef="let booking">
+          {{ formatDateTime(booking.startTime) }}
+        </td>
+      </ng-container>
 
-          <!-- Start Time Column -->
-          <ng-container matColumnDef="startTime">
-            <th mat-header-cell *matHeaderCellDef>Start Time</th>
-            <td mat-cell *matCellDef="let booking">
-              {{ formatDateTime(booking.startTime) }}
-            </td>
-          </ng-container>
+      <!-- Ground Station Column -->
+      <ng-container cdkColumnDef="yamcsGsName">
+        <th mat-header-cell *cdkHeaderCellDef>Ground Station</th>
+        <td mat-cell *cdkCellDef="let booking">{{ booking.yamcsGsName }}</td>
+      </ng-container>
 
-          <!-- Ground Station Column -->
-          <ng-container matColumnDef="yamcsGsName">
-            <th mat-header-cell *matHeaderCellDef>Ground Station</th>
-            <td mat-cell *matCellDef="let booking">{{ booking.yamcsGsName }}</td>
-          </ng-container>
+      <!-- Provider Column -->
+      <ng-container cdkColumnDef="providerName">
+        <th mat-header-cell *cdkHeaderCellDef>Provider</th>
+        <td mat-cell *cdkCellDef="let booking">{{ booking.providerName }}</td>
+      </ng-container>
 
-          <!-- Provider Column -->
-          <ng-container matColumnDef="providerName">
-            <th mat-header-cell *matHeaderCellDef>Provider</th>
-            <td mat-cell *matCellDef="let booking">{{ booking.providerName }}</td>
-          </ng-container>
+      <!-- Purpose Column -->
+      <ng-container cdkColumnDef="purpose">
+        <th mat-header-cell *cdkHeaderCellDef>Purpose</th>
+        <td mat-cell *cdkCellDef="let booking">{{ booking.purpose }}</td>
+      </ng-container>
 
-          <!-- Mission Column -->
-          <ng-container matColumnDef="missionName">
-            <th mat-header-cell *matHeaderCellDef>Mission</th>
-            <td mat-cell *matCellDef="let booking">{{ booking.missionName || '-' }}</td>
-          </ng-container>
+      <!-- Requested By Column -->
+      <ng-container cdkColumnDef="requestedBy">
+        <th mat-header-cell *cdkHeaderCellDef>Requested By</th>
+        <td mat-cell *cdkCellDef="let booking">{{ booking.requestedBy }}</td>
+      </ng-container>
 
-          <!-- Purpose Column -->
-          <ng-container matColumnDef="purpose">
-            <th mat-header-cell *matHeaderCellDef>Purpose</th>
-            <td mat-cell *matCellDef="let booking">{{ booking.purpose }}</td>
-          </ng-container>
+      <!-- Status Column -->
+      <ng-container cdkColumnDef="status">
+        <th mat-header-cell *cdkHeaderCellDef>Status</th>
+        <td mat-cell *cdkCellDef="let booking">
+          <span class="status-badge" [class]="getStatusClass(booking.status)">
+            {{ booking.status | titlecase }}
+          </span>
+        </td>
+      </ng-container>
 
-          <!-- Requested By Column -->
-          <ng-container matColumnDef="requestedBy">
-            <th mat-header-cell *matHeaderCellDef>Requested By</th>
-            <td mat-cell *matCellDef="let booking">{{ booking.requestedBy }}</td>
-          </ng-container>
+      <!-- Actions Column -->
+      <ng-container cdkColumnDef="actions">
+        <th mat-header-cell *cdkHeaderCellDef>Actions</th>
+        <td mat-cell *cdkCellDef="let booking">
+          <button
+            mat-icon-button
+            [disabled]="booking.status !== 'pending'"
+            [title]="booking.status === 'pending' ? 'View details' : 'Cannot modify ' + booking.status + ' booking'"
+          >
+            <mat-icon>info</mat-icon>
+          </button>
+        </td>
+      </ng-container>
 
-          <!-- Status Column -->
-          <ng-container matColumnDef="status">
-            <th mat-header-cell *matHeaderCellDef>Status</th>
-            <td mat-cell *matCellDef="let booking">
-              <mat-chip [class.mat-warn]="booking.status === 'pending'"
-                        [class.mat-primary]="booking.status === 'approved'"
-                        [class.mat-error]="booking.status === 'rejected'">
-                {{ booking.status | titlecase }}
-              </mat-chip>
-            </td>
-          </ng-container>
+      <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *cdkRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
 
-          <!-- Actions Column -->
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef>Actions</th>
-            <td mat-cell *matCellDef="let booking">
-              <button
-                mat-icon-button
-                [disabled]="booking.status !== 'pending'"
-                [title]="booking.status === 'pending' ? 'View details' : 'Cannot modify ' + booking.status + ' booking'"
-              >
-                <mat-icon>info</mat-icon>
-              </button>
-            </td>
-          </ng-container>
-
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-        </table>
-
-    <div *ngIf="bookings.length === 0" style="text-align: center; padding: 32px;">
-      <mat-icon style="font-size: 48px; height: 48px; width: 48px;">event_busy</mat-icon>
-      <p>No bookings found</p>
-      <ya-page-button routerLink="../create" icon="add">Create First Booking</ya-page-button>
+    <div *ngIf="bookings.length === 0" class="empty-state">
+      <mat-icon class="empty-icon">event_busy</mat-icon>
+      <h3>No bookings found</h3>
+      <ya-page-button
+        [routerLink]="['/booking/create']"
+        [queryParams]="{ c: yamcs.context }"
+        icon="add">Create First Booking</ya-page-button>
     </div>
   </ya-panel>
 </ya-instance-page>
