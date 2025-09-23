@@ -1,9 +1,0 @@
-@if (legendData?.x) {
-  @if (timestampData) {
-    <div class="timestamp" style="pointer-events: none" [style.left]="timestampData.canvasx + 'px'">
-      <div class="box" [style.backgroundColor]="'black'">
-        <span class="xvalue">{{ timestampData.timestamp | datetime: false }}</span>
-      </div>
-    </div>
-  }
-}

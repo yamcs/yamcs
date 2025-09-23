@@ -755,3 +755,45 @@ export function getCssVariable(name: string) {
     .getPropertyValue(name)
     .trim();
 }
+
+export function deepEquals(a: any, b: any): boolean {
+  // Handle identical references and null/undefined cases
+  if (a === b) {
+    return true;
+  }
+  if (a == null || b == null) {
+    return false;
+  }
+  // Handle different types
+  if (typeof a !== typeof b) {
+    return false;
+  }
+  // Handle arrays
+  if (Array.isArray(a) && Array.isArray(b)) {
+    if (a.length !== b.length) {
+      return false;
+    }
+    for (let i = 0; i < a.length; i++) {
+      if (!deepEquals(a[i], b[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+  // Handle objects
+  if (typeof a === 'object' && typeof b === 'object') {
+    const keysA = Object.keys(a);
+    const keysB = Object.keys(b);
+    if (keysA.length !== keysB.length) {
+      return false;
+    }
+    for (const key of keysA) {
+      if (!b.hasOwnProperty(key) || !deepEquals(a[key], b[key])) {
+        return false;
+      }
+    }
+    return true;
+  }
+  // Handle primitive values
+  return a === b;
+}

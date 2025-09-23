@@ -3,6 +3,7 @@ import {
   ChangeDetectorRef,
   Component,
   Input,
+  numberAttribute,
 } from '@angular/core';
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
 
@@ -16,7 +17,7 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
 export class ThicknessComponent {
   options = [1, 2, 3, 4];
 
-  @Input()
+  @Input({ transform: numberAttribute })
   selectedThickness = 2;
 
   @Input()

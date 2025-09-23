@@ -66,19 +66,22 @@
   </ya-instance-toolbar>
 
   <ya-detail-pane>
+    <ya-detail-toolbar>
+      @if (detailAlarm$ | async; as detailAlarm) {
+        Alarm detail
+      } @else {
+        Select an alarm
+      }
+    </ya-detail-toolbar>
+
     @if (detailAlarm$ | async; as detailAlarm) {
-      <ya-detail-toolbar>Alarm detail</ya-detail-toolbar>
-      <div style="padding: 0 16px">
-        <app-alarm-detail
-          [alarm]="detailAlarm"
-          [mayControl]="mayControlAlarms()"
-          (acknowledgeAlarm)="acknowledgeAlarms([$event])"
-          (shelveAlarm)="shelveAlarms([$event])"
-          (unshelveAlarm)="unshelveAlarms([$event])"
-          (clearAlarm)="clearAlarms([$event])" />
-      </div>
-    } @else {
-      <ya-detail-toolbar>Select an alarm</ya-detail-toolbar>
+      <app-alarm-detail
+        [alarm]="detailAlarm"
+        [mayControl]="mayControlAlarms()"
+        (acknowledgeAlarm)="acknowledgeAlarms([$event])"
+        (shelveAlarm)="shelveAlarms([$event])"
+        (unshelveAlarm)="unshelveAlarms([$event])"
+        (clearAlarm)="clearAlarms([$event])" />
     }
   </ya-detail-pane>
 

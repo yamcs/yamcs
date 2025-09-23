@@ -1,7 +1,7 @@
-import { Overlay } from '@angular/cdk/overlay';
+import { Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { ElementRef } from '@angular/core';
-import { Line, LinePlot } from '@fqqb/timeline';
+import { Line, LinePlot, LinePoint } from '@fqqb/timeline';
 import {
   BackfillingSubscription,
   ConfigService,
@@ -9,7 +9,6 @@ import {
   TimelineBand,
   YamcsService,
 } from '@yamcs/webapp-sdk';
-import { NamedParameterType } from '../../shared/parameter-plot/NamedParameterType';
 import {
   BooleanProperty,
   ColorProperty,
@@ -20,6 +19,7 @@ import {
   TextProperty,
 } from '../shared/properties';
 import { TimelineChartComponent } from '../timeline-chart/timeline-chart.component';
+import { NamedParameterType } from './NamedParameterType';
 import { ParameterPlotTooltipComponent } from './parameter-plot-tooltip/parameter-plot-tooltip.component';
 import { PlotDataSource } from './PlotDataSource';
 
@@ -77,6 +77,7 @@ export class ParameterPlot extends LinePlot {
   private dataSource: PlotDataSource;
 
   private tooltipInstance: ParameterPlotTooltipComponent;
+  private tooltipOverlayRef?: OverlayRef;
   private backfillSubscription?: BackfillingSubscription;
 
   constructor(
@@ -97,13 +98,21 @@ export class ParameterPlot extends LinePlot {
     );
     this.frozen = properties.frozen ?? propertyInfo.frozen.defaultValue;
     this.contentHeight = properties.height ?? propertyInfo.height.defaultValue;
-    this.labelBackground = 'rgba(255, 255, 255, 0.75)';
     this.minimum = properties.minimum ?? propertyInfo.minimum.defaultValue;
     this.maximum = properties.maximum ?? propertyInfo.maximum.defaultValue;
-    this.zeroLineWidth =
+
+    const zeroLineWidth =
       properties.zeroLineWidth ?? propertyInfo.zeroLineWidth.defaultValue;
-    this.zeroLineColor =
-      properties.zeroLineColor ?? propertyInfo.zeroLineColor.defaultValue;
+    if (zeroLineWidth) {
+      this.hlines = [
+        {
+          value: 0,
+          lineColor:
+            properties.zeroLineColor ?? propertyInfo.zeroLineColor.defaultValue,
+          lineDash: [4, 3],
+        },
+      ];
+    }
 
     const numberFormat = Intl.NumberFormat('en-US', {
       minimumFractionDigits:
@@ -114,7 +123,8 @@ export class ParameterPlot extends LinePlot {
         propertyInfo.maximumFractionDigits.defaultValue,
       useGrouping: false,
     });
-    this.labelFormatter = (value) => numberFormat.format(value);
+    this.axisLabelFormatter = (value) => numberFormat.format(value);
+    this.hoveredValueLabelFormatter = (value) => numberFormat.format(value);
 
     const bodyRef = new ElementRef(document.body);
     const positionStrategy = overlay
@@ -130,9 +140,10 @@ export class ParameterPlot extends LinePlot {
       ])
       .withPush(false);
 
-    const overlayRef = overlay.create({ positionStrategy });
+    this.tooltipOverlayRef = overlay.create({ positionStrategy });
     const tooltipPortal = new ComponentPortal(ParameterPlotTooltipComponent);
-    this.tooltipInstance = overlayRef.attach(tooltipPortal).instance;
+    this.tooltipInstance =
+      this.tooltipOverlayRef.attach(tooltipPortal).instance;
 
     const traces: Array<{ [key: string]: any }> = [];
 
@@ -157,13 +168,14 @@ export class ParameterPlot extends LinePlot {
       for (let i = 0; i < traces.length; i++) {
         const trace = traces[i];
         const series = data.length ? data[i] : [];
-        const pointsByTime = new Map<number, number | null>();
-        const minMax = new Map<number, [number, number] | null>();
+        const points: LinePoint[] = [];
         for (let j = 0; j < series.length; j++) {
           const point = series[j];
           if (point.n === 0) {
-            pointsByTime.set(point.time, null);
-            minMax.set(point.time, null);
+            points.push({
+              x: point.time,
+              y: null,
+            });
           } else {
             const prevIsGap = j === 0 || series[j - 1].n === 0;
             const nextIsGap = j === series.length - 1 || series[j + 1].n === 0;
@@ -177,16 +189,19 @@ export class ParameterPlot extends LinePlot {
               time = point.time;
             }
 
-            pointsByTime.set(time, point.avg);
-            minMax.set(time, [point.min!, point.max!]);
+            points.push({
+              x: time,
+              y: point.avg,
+              low: trace.minMax ? (point.min ?? undefined) : undefined,
+              high: trace.minMax ? (point.max ?? undefined) : undefined,
+            });
           }
         }
         const hexOpacity = Math.floor(trace.minMaxOpacity * 255).toString(16);
         lines.push({
           visible: trace.visible,
-          points: pointsByTime,
+          points,
           pointRadius: 0,
-          lohi: trace.minMax ? minMax : undefined,
           lineColor: trace.lineColor,
           lohiColor: convertColor(trace.lineColor) + hexOpacity,
           lineWidth: trace.lineWidth,
@@ -222,7 +237,7 @@ export class ParameterPlot extends LinePlot {
         new Date(evt.time),
         traces,
         evt.points,
-        this.labelFormatter,
+        this.hoveredValueLabelFormatter,
       );
     });
     this.addMouseLeaveListener((evt) => {
@@ -237,6 +252,8 @@ export class ParameterPlot extends LinePlot {
   }
 
   override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.tooltipOverlayRef?.dispose();
     this.backfillSubscription?.cancel();
     this.dataSource.disconnect();
   }

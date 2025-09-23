@@ -4,13 +4,16 @@
   </app-admin-toolbar>
 
   <ya-detail-pane>
+    <ya-detail-toolbar>
+      @if (selectedRoute$ | async; as selectedItem) {
+        Route detail
+      } @else {
+        Select a route
+      }
+    </ya-detail-toolbar>
+
     @if (selectedRoute$ | async; as selectedItem) {
-      <ya-detail-toolbar>Route detail</ya-detail-toolbar>
-      <div style="padding: 0 16px">
-        <app-route-detail [route]="selectedItem" />
-      </div>
-    } @else {
-      <ya-detail-toolbar>Select a route</ya-detail-toolbar>
+      <app-route-detail [route]="selectedItem" />
     }
   </ya-detail-pane>
 

@@ -7,8 +7,8 @@ import {
   utils,
 } from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
-import { DyDataSource } from '../../../../shared/parameter-plot/DyDataSource';
-import { DyPlotData } from '../../../../shared/parameter-plot/DyPlotBuffer';
+import { DyDataSource } from './DyDataSource';
+import { DyPlotData } from './DyPlotBuffer';
 
 export class OpiDisplayHistoricDataProvider implements HistoricalDataProvider {
   private processedSamples: NullablePoint[] = [];

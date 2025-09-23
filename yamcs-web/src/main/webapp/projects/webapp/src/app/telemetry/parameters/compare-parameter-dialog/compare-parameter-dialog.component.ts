@@ -42,7 +42,7 @@ export class CompareParameterDialogComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    const excludedParameters = this.data.exclude as Parameter[];
+    const excludedParameters = (this.data?.exclude || []) as Parameter[];
     this.filteredOptions = this.parameter.valueChanges.pipe(
       debounceTime(300),
       switchMap((val) =>

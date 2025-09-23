@@ -11,6 +11,7 @@ import {
   Banner,
   ItemBand,
   LinePlot,
+  LinePoint,
   StateBand,
   Timeline,
   TimeRuler,
@@ -134,10 +135,9 @@ export class CreateBandComponent implements AfterViewInit, OnDestroy {
     band.paddingTop = 0;
     band.paddingBottom = 0;
     band.fill = 'lime';
-    band.labelBackground = 'rgba(255, 255, 255, 0.75)';
-    const points = new Map();
-    for (let i = 0; i < 50; i += 0.01) {
-      points.set(i, Math.sin(i));
+    const points: LinePoint[] = [];
+    for (let x = 0; x < 50; x += 0.01) {
+      points.push({ x, y: Math.sin(x) });
     }
     band.lines = [
       {

@@ -9,9 +9,9 @@ import {
   utils,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { NamedParameterType } from './NamedParameterType';
-import { NamedSeries, PlotBuffer, PlotSeries } from './PlotBuffer';
+import { NamedSeries, PlotBuffer, PlotData } from './PlotBuffer';
 import { PlotPoint } from './PlotPoint';
+import { TraceConfig } from './TraceConfig';
 
 /**
  * Stores sample data for use in a ParameterPlot.
@@ -22,12 +22,14 @@ export class PlotDataSource {
 
   public loading$ = new BehaviorSubject<boolean>(false);
 
-  data$ = new BehaviorSubject<PlotSeries[]>([]);
+  data$ = new BehaviorSubject<PlotData[]>([]);
 
   visibleStart: Date;
   visibleStop: Date;
 
-  parameters$ = new BehaviorSubject<NamedParameterType[]>([]);
+  // Keep track of current config. Note that multiple traces may be
+  // using the same underlying parameter.
+  private traceById = new Map<string, TraceConfig>();
   private plotBuffer: PlotBuffer;
 
   private lastLoadPromise: Promise<any> | null;
@@ -36,13 +38,15 @@ export class PlotDataSource {
   private syncSubscription: Subscription;
   private idMapping: { [key: number]: NamedObjectId };
 
+  latestRealtimeRawValues = new Map<string, number>();
+  latestRealtimeEngValues = new Map<string, number>();
+
   constructor(
     private yamcs: YamcsService,
     synchronizer: Synchronizer,
     private configService: ConfigService,
   ) {
     this.syncSubscription = synchronizer.sync(() => {
-      this.plotBuffer.forceNextPoint();
       this.emitDataUpdate();
     });
     this.plotBuffer = new PlotBuffer(() => {
@@ -59,29 +63,45 @@ export class PlotDataSource {
     }
   }
 
-  public addParameter(...parameter: NamedParameterType[]) {
-    this.parameters$.next([...this.parameters$.value, ...parameter]);
+  public addOrUpdateTrace(traceId: string, config: TraceConfig) {
+    const oldConfig = this.traceById.get(traceId);
+
+    const parameterChanged =
+      !!oldConfig?.parameter && oldConfig?.parameter !== config.parameter;
+    if (parameterChanged) {
+      this.plotBuffer.clearArchiveData(traceId);
+    }
+
+    this.traceById.set(traceId, config);
 
     if (this.realtimeSubscription) {
-      const ids = parameter.map((p) => ({ name: p.qualifiedName }));
-      this.addToRealtimeSubscription(ids);
+      this.updateRealtimeSubscription();
     } else {
       this.connectRealtime();
     }
+
+    this.reloadVisibleRange();
   }
 
-  public removeParameter(qualifiedName: string) {
-    const parameters = this.parameters$.value.filter(
-      (p) => p.qualifiedName !== qualifiedName,
-    );
-    this.parameters$.next(parameters);
+  public removeTrace(traceId: string) {
+    const trace = this.traceById.get(traceId);
+    if (trace) {
+      this.plotBuffer.clearArchiveData(traceId);
+      this.traceById.delete(traceId);
+      const qualifiedName = utils.getMemberPath(trace.parameter)!;
+      this.latestRealtimeRawValues.delete(qualifiedName);
+      this.latestRealtimeEngValues.delete(qualifiedName);
+      this.emitDataUpdate();
+    }
   }
 
   /**
    * Triggers a new server request for samples.
    */
   reloadVisibleRange() {
-    return this.updateWindow(this.visibleStart, this.visibleStop);
+    if (this.visibleStart !== undefined && this.visibleStop !== undefined) {
+      return this.updateWindow(this.visibleStart, this.visibleStop, true);
+    }
   }
 
   updateWindowOnly(start: Date, stop: Date) {
@@ -89,8 +109,8 @@ export class PlotDataSource {
     this.visibleStop = stop;
   }
 
-  updateWindow(start: Date, stop: Date) {
-    if (this.configService.getConfig().tmArchive) {
+  updateWindow(start: Date, stop: Date, fetch: boolean) {
+    if (this.configService.getConfig().tmArchive && fetch) {
       this.loading$.next(true);
       // Load some offscreen data to reduce chances of being able to connect
       // an offscreen point with the start of the visible plot line.
@@ -98,13 +118,15 @@ export class PlotDataSource {
       const loadStart = new Date(start.getTime() - offscreenEdge);
       const loadStop = new Date(stop.getTime());
 
-      const parameters = this.parameters$.value;
+      const traceIds = [...this.traceById.keys()];
+      const traceConfigs = [...this.traceById.values()];
       const promises: Promise<any>[] = [];
-      for (const parameter of parameters) {
+      for (const traceConfig of traceConfigs) {
+        const qualifiedName = utils.getMemberPath(traceConfig.parameter)!;
         promises.push(
           this.yamcs.yamcsClient.downsampleMean(
             this.yamcs.instance!,
-            parameter.qualifiedName,
+            qualifiedName,
             {
               start: loadStart.toISOString(),
               stop: loadStop.toISOString(),
@@ -119,6 +141,7 @@ export class PlotDataSource {
                 'lastTime',
               ],
               gapTime: 300000,
+              useRawValue: traceConfig.valueType === 'raw',
               source: this.configService.isParameterArchiveEnabled()
                 ? 'ParameterArchive'
                 : 'replay',
@@ -138,19 +161,25 @@ export class PlotDataSource {
           this.visibleStop = stop;
           const namedSeries: NamedSeries[] = [];
           for (let i = 0; i < results.length; i++) {
+            const traceConfig = traceConfigs[i];
             const result = results[i];
+            const qualifiedName = utils.getMemberPath(traceConfig.parameter)!;
             if (result.status === 'fulfilled') {
               namedSeries.push({
-                name: parameters[i].qualifiedName,
+                traceId: traceIds[i],
+                name: qualifiedName,
+                valueType: traceConfig.valueType,
                 series: this.processSamples(result.value),
               });
             } else {
               console.warn(
-                `Failed to retrieve samples for ${parameters[i].qualifiedName}`,
+                `Failed to retrieve samples for ${qualifiedName}`,
                 result.reason,
               );
               namedSeries.push({
-                name: parameters[i].qualifiedName,
+                traceId: traceIds[i],
+                name: qualifiedName,
+                valueType: traceConfig.valueType,
                 series: [],
               });
             }
@@ -161,37 +190,49 @@ export class PlotDataSource {
           this.lastLoadPromise = null;
         }
       });
-    } else {
-      this.plotBuffer.reset();
+    } else if (fetch) {
+      if (fetch) {
+        this.plotBuffer.reset();
+      }
       this.visibleStart = start;
       this.visibleStop = stop;
       // Even though there's no archive, pass series
       // information to PlotBuffer. It uses it to order
       // data when snapshotting.
       const namedSeries: NamedSeries[] = [];
-      const parameters = this.parameters$.value;
-      for (let i = 0; i < parameters.length; i++) {
+      const traceIds = [...this.traceById.keys()];
+      const traceConfigs = [...this.traceById.values()];
+      for (let i = 0; i < traceConfigs.length; i++) {
+        const traceConfig = traceConfigs[i];
+        const qualifiedName = utils.getMemberPath(traceConfig.parameter)!;
         namedSeries.push({
-          name: parameters[i].qualifiedName,
+          traceId: traceIds[i],
+          name: qualifiedName,
+          valueType: traceConfig.valueType,
           series: [],
         });
       }
       this.plotBuffer.setArchiveData(namedSeries);
       // Quick emit, don't wait on sync tick
       this.emitDataUpdate();
+    } else {
+      this.visibleStart = start;
+      this.visibleStop = stop;
     }
   }
 
   private connectRealtime() {
-    const ids = this.parameters$.value.map((parameter) => ({
-      name: parameter.qualifiedName,
-    }));
+    const qualifiedNames = new Set<string>();
+    this.traceById.forEach((trace) => {
+      const qualifiedName = utils.getMemberPath(trace.parameter)!;
+      qualifiedNames.add(qualifiedName);
+    });
     this.realtimeSubscription =
       this.yamcs.yamcsClient.createParameterSubscription(
         {
           instance: this.yamcs.instance!,
           processor: this.yamcs.processor!,
-          id: ids,
+          id: [...qualifiedNames].map((x) => ({ name: x })),
           sendFromCache: false,
           updateOnExpiration: true,
           abortOnInvalid: true,
@@ -204,54 +245,60 @@ export class PlotDataSource {
               ...data.mapping,
             };
           }
-          if (data.values && data.values.length) {
+          if (data.values?.length) {
             this.processRealtimeDelivery(data.values);
           }
         },
       );
   }
 
-  addToRealtimeSubscription(ids: NamedObjectId[]) {
+  private updateRealtimeSubscription() {
     // Ensure the initial reply is already received
     this.realtimeSubscription.addReplyListener(() => {
+      const qualifiedNames = new Set<string>();
+      this.traceById.forEach((trace) => {
+        const qualifiedName = utils.getMemberPath(trace.parameter)!;
+        qualifiedNames.add(qualifiedName);
+      });
+
       this.realtimeSubscription.sendMessage({
         instance: this.yamcs.instance!,
         processor: this.yamcs.processor!,
-        id: ids,
+        id: [...qualifiedNames].map((x) => ({ name: x })),
         sendFromCache: false,
         updateOnExpiration: true,
         abortOnInvalid: true,
-        action: 'ADD',
+        action: 'REPLACE',
       });
     });
   }
 
   private processRealtimeDelivery(pvals: ParameterValue[]) {
     for (const pval of pvals) {
-      const id = this.idMapping[pval.numericId];
+      const qualifiedName = this.idMapping[pval.numericId].name;
       const time = Date.parse(pval.generationTime);
-      const value = utils.convertValueToNumber(pval.engValue);
-      if (value === null || pval.acquisitionStatus !== 'ACQUIRED') {
-        this.plotBuffer.addRealtimeValue(id.name, {
-          time,
-          firstTime: time,
-          lastTime: time,
-          n: 1,
-          avg: null,
-          min: null,
-          max: null,
-        });
+
+      const rawValue =
+        pval.rawValue && pval.acquisitionStatus === 'ACQUIRED'
+          ? utils.convertValueToNumber(pval.rawValue)
+          : null;
+      if (rawValue === null) {
+        this.latestRealtimeRawValues.delete(qualifiedName);
       } else {
-        this.plotBuffer.addRealtimeValue(id.name, {
-          time,
-          firstTime: time,
-          lastTime: time,
-          n: 1,
-          avg: value,
-          min: value,
-          max: value,
-        });
+        this.latestRealtimeRawValues.set(qualifiedName, rawValue);
       }
+
+      const engValue =
+        pval.engValue && pval.acquisitionStatus === 'ACQUIRED'
+          ? utils.convertValueToNumber(pval.engValue)
+          : null;
+      if (engValue === null) {
+        this.latestRealtimeEngValues.delete(qualifiedName);
+      } else {
+        this.latestRealtimeEngValues.set(qualifiedName, engValue);
+      }
+
+      this.plotBuffer.addRealtimeValue(qualifiedName, time, rawValue, engValue);
     }
   }
 
@@ -270,7 +317,7 @@ export class PlotDataSource {
         firstTime: Date.parse(sample.firstTime ?? sample.time),
         lastTime: Date.parse(sample.lastTime ?? sample.time),
         n: sample.n,
-        avg: sample.avg,
+        avg: sample.avg ?? null,
         min: sample.min,
         max: sample.max,
       });

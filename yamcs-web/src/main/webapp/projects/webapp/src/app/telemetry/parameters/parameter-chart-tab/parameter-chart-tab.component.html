@@ -1,137 +1,138 @@
-@if (parameter$ | async; as parameter) {
-  <div style="padding-left: 12px; padding-right: 12px; padding-top: 12px">
-    @if (range$ | async; as range) {
-      <div class="plot-top-actions">
-        <ya-text-action icon="add_circle" (click)="compareParameter()">Comparison</ya-text-action>
-        <span class="separator"></span>
-        <ya-text-action (click)="chooseRange()" icon="date_range" [active]="range === 'CUSTOM'">
-          @if (range !== "CUSTOM") {
-            <span>Date Range</span>
-          }
-          @if (customStart$ | async; as customStart) {
-            @if (customStop$ | async; as customStop) {
-              @if (range === "CUSTOM") {
-                <span>{{ customStart | datetime }} - {{ customStop | datetime }}</span>
-              }
-            }
-          }
-        </ya-text-action>
-        <ya-text-action (click)="loadLatest('PT1M')" [active]="range === 'PT1M'">
-          1 minute
-        </ya-text-action>
-        <ya-text-action (click)="loadLatest('PT5M')" [active]="range === 'PT5M'">
-          5 minutes
-        </ya-text-action>
-        <ya-text-action (click)="loadLatest('PT15M')" [active]="range === 'PT15M'">
-          15 minutes
-        </ya-text-action>
-        <ya-text-action (click)="loadLatest('PT30M')" [active]="range === 'PT30M'">
-          30 minutes
-        </ya-text-action>
-        <ya-text-action (click)="loadLatest('PT1H')" [active]="range === 'PT1H'">
-          1 hour
-        </ya-text-action>
-        <ya-text-action (click)="loadLatest('PT6H')" [active]="range === 'PT6H'">
-          6 hours
-        </ya-text-action>
-        <ya-text-action (click)="loadLatest('PT12H')" [active]="range === 'PT12H'">
-          12 hours
-        </ya-text-action>
-        <ya-text-action (click)="loadLatest('P1D')" [active]="range === 'P1D'">
-          1 day
-        </ya-text-action>
-        <ya-text-action (click)="loadLatest('P2D')" [active]="range === 'P2D'">
-          2 days
-        </ya-text-action>
-        <ya-text-action (click)="loadLatest('P1W')" [active]="range === 'P1W'">
-          7 days
-        </ya-text-action>
-        <ya-text-action (click)="loadLatest('P2W')" [active]="range === 'P2W'">
-          14 days
-        </ya-text-action>
-        <ya-text-action (click)="loadLatest('P1M')" [active]="range === 'P1M'">
-          30 days
-        </ya-text-action>
-      </div>
-    }
-  </div>
-  <div class="plot-container">
-    <app-parameter-plot
-      #plot
-      [xGrid]="true"
-      [xAxisHeight]="24"
-      duration=""
-      [dataSource]="dataSource"
-      [stop]="missionTime"
-      [removableSeries]="true"
-      (onVisibleRange)="onVisibleRange($event)"
-      (onManualRangeChange)="onManualRangeChange()">
-      <app-parameter-series [parameter]="parameter.qualifiedName" [grid]="true" />
-    </app-parameter-plot>
-    <div class="zoom-actions">
-      <div class="zoom-actions-inner elevation-z1">
-        <button mat-button (click)="plot.zoomIn()">
-          <mat-icon>add</mat-icon>
-        </button>
-        <span class="separator"></span>
-        <button mat-button (click)="plot.zoomOut()">
-          <mat-icon>remove</mat-icon>
-        </button>
-      </div>
-    </div>
-    @if (dataSource.data$ | async; as data) {
-      @if (!(dataSource.loading$ | async)) {
-        @if (data.samples.length === 0) {
-          <div class="no-data-message">
-            @if (range$ | async; as range) {
-              <span class="mat-caption" style="color: #777">
-                There is no data for this chart in
-                @switch (range) {
-                  @case ("PT1M") {
-                    <span>the last minute</span>
-                  }
-                  @case ("PT5M") {
-                    <span>the last 5 minutes</span>
-                  }
-                  @case ("PT15M") {
-                    <span>the last 15 minutes</span>
-                  }
-                  @case ("PT30M") {
-                    <span>the last 30 minutes</span>
-                  }
-                  @case ("PT1H") {
-                    <span>the last hour</span>
-                  }
-                  @case ("PT6H") {
-                    <span>the last 6 hours</span>
-                  }
-                  @case ("PT12H") {
-                    <span>the last 12 hours</span>
-                  }
-                  @case ("P1D") {
-                    <span>the last 24 hours</span>
-                  }
-                  @case ("P2D") {
-                    <span>the last 2 days</span>
-                  }
-                  @case ("P1W") {
-                    <span>the last week</span>
-                  }
-                  @case ("P2W") {
-                    <span>the last 2 weeks</span>
-                  }
-                  @case ("P1M") {
-                    <span>the last month</span>
-                  }
-                  @default {
-                    <span>the selected range</span>
-                  }
-                }
-              </span>
-            }
-          </div>
-        }
+<ya-detail-pane>
+  <ya-detail-toolbar closeIcon="right_panel_close" closeLabel="Toggle panel">
+    Chart settings
+    <ya-detail-toolbar-actions>
+      @if (stepper.anyCollapsed()) {
+        <ya-icon-action
+          icon="expand_all"
+          matTooltip="Expand all menus"
+          (click)="stepper.expandAll()" />
+      } @else {
+        <ya-icon-action
+          icon="collapse_all"
+          matTooltip="Collapse all menus"
+          (click)="stepper.collapseAll()" />
       }
+    </ya-detail-toolbar-actions>
+  </ya-detail-toolbar>
+
+  <ya-form [formGroup]="form">
+    <ya-stepper #stepper>
+      <ya-stepper-step label="General" [expanded]="true">
+        <table class="style-table">
+          <tr>
+            <td class="property">Show zero line</td>
+            <td class="widget">
+              <ya-slide-toggle formControlName="showZeroLine" />
+            </td>
+          </tr>
+          <tr>
+            <td class="property">
+              Show alarm thresholds
+              <ya-help>
+                If the current parameter has any alarm limits, display horizontal lines for each.
+              </ya-help>
+            </td>
+            <td class="widget">
+              <ya-slide-toggle formControlName="showAlarmThresholds" />
+            </td>
+          </tr>
+          <tr>
+            <td class="property">Center zero</td>
+            <td class="widget">
+              <ya-slide-toggle formControlName="centerZero" />
+            </td>
+          </tr>
+          <tr>
+            <td class="property">
+              Y-axis zoom
+              <ya-help>Reset vertical zoom to activate automatic zoom</ya-help>
+            </td>
+            <td class="widget">
+              <ya-button (click)="autoScale()" [disabled]="!resetZoomEnabled()">
+                Reset zoom
+              </ya-button>
+            </td>
+          </tr>
+        </table>
+      </ya-stepper-step>
+
+      @for (traceForm of traces.controls; track traceForm; let i = $index) {
+        <ya-stepper-step label="Trace {{ i + 1 }}" [expanded]="true">
+          <ya-stepper-step-actions>
+            <ya-icon-action
+              icon="arrow_drop_up"
+              matTooltip="Move up"
+              [disabled]="i === 0"
+              (click)="moveUp(i)" />
+            <ya-icon-action
+              icon="arrow_drop_down"
+              matTooltip="Move down"
+              [disabled]="i >= traces.controls.length - 1"
+              (click)="moveDown(i)" />
+            <ya-icon-action
+              icon="delete_outline"
+              matTooltip="Remove trace"
+              [disabled]="traces.controls.length <= 1"
+              (click)="removeTrace(i)" />
+            <ya-icon-action icon="add_circle" matTooltip="Add trace below" (click)="addTrace(i)" />
+          </ya-stepper-step-actions>
+
+          <app-trace-config [form]="traceForm" />
+        </ya-stepper-step>
+      }
+    </ya-stepper>
+  </ya-form>
+</ya-detail-pane>
+
+<div class="main-pane">
+  <div class="top-controls">
+    Latest:
+    <ya-button-group>
+      <ya-button (click)="loadLatest('PT1M')" [toggled]="range() === 'PT1M'">1 m</ya-button>
+      <ya-button (click)="loadLatest('PT5M')" [toggled]="range() === 'PT5M'">5 m</ya-button>
+      <ya-button (click)="loadLatest('PT15M')" [toggled]="range() === 'PT15M'">15 m</ya-button>
+      <ya-button (click)="loadLatest('PT30M')" [toggled]="range() === 'PT30M'">30 m</ya-button>
+    </ya-button-group>
+    <ya-button-group>
+      <ya-button (click)="loadLatest('PT1H')" [toggled]="range() === 'PT1H'">1 h</ya-button>
+      <ya-button (click)="loadLatest('PT6H')" [toggled]="range() === 'PT6H'">6 h</ya-button>
+      <ya-button (click)="loadLatest('PT12H')" [toggled]="range() === 'PT12H'">12 h</ya-button>
+    </ya-button-group>
+    <ya-button-group>
+      <ya-button (click)="loadLatest('P1D')" [toggled]="range() === 'P1D'">1 d</ya-button>
+      <ya-button (click)="loadLatest('P2D')" [toggled]="range() === 'P2D'">2 d</ya-button>
+      <ya-button (click)="loadLatest('P1W')" [toggled]="range() === 'P1W'">7 d</ya-button>
+      <ya-button (click)="loadLatest('P2W')" [toggled]="range() === 'P2W'">14 d</ya-button>
+    </ya-button-group>
+
+    <ya-button (click)="openDateRangeDialog()" icon="date_range">Date range</ya-button>
+
+    <ya-button-group>
+      <ya-icon-button (click)="zoomIn()" icon="add" />
+      <ya-icon-button (click)="zoomOut()" icon="remove" />
+    </ya-button-group>
+
+    @if (!range()) {
+      <ya-button (click)="jumpToNow()" icon="double_arrow">Now</ya-button>
+    }
+
+    <div style="flex: 1 1 auto"></div>
+
+    <ya-icon-action icon="photo_camera" matTooltip="Save image" (click)="saveImage()" />
+
+    @if (!(detailPane$ | async)) {
+      <ya-button icon="right_panel_open" (click)="openDetailPane()">Chart settings</ya-button>
     }
   </div>
-}
+
+  <div class="legend-wrapper">
+    <app-legend
+      [leftMargin]="5 + sidebarWidth()"
+      [data]="legend"
+      backgroundColor="#fff"
+      [borderColor]="gridColor" />
+  </div>
+
+  <div #container class="timeline-container"></div>
+</div>

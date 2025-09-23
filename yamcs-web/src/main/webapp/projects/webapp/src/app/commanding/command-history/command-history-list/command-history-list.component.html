@@ -21,24 +21,26 @@
   </ya-instance-toolbar>
 
   <ya-detail-pane>
+    <ya-detail-toolbar>
+      @if (selectedRecord$ | async; as selectedRecord) {
+        Command detail
+      } @else {
+        Select a command
+      }
+    </ya-detail-toolbar>
+
     @if (selectedRecord$ | async; as selectedRecord) {
-      <ya-detail-toolbar>Command detail</ya-detail-toolbar>
-      <div style="padding: 0 16px">
-        <app-command-detail2 [command]="selectedRecord" />
-        @if (showResend()) {
-          <br />
-          <mat-divider />
-          <br />
-          <ya-button
-            [routerLink]="'/commanding/send' + selectedRecord?.commandName"
-            [queryParams]="{ c: yamcs.context, template: selectedRecord?.id }">
-            Resend
-          </ya-button>
-        }
-        <p>&nbsp;</p>
-      </div>
-    } @else {
-      <ya-detail-toolbar>Select a command</ya-detail-toolbar>
+      <app-command-detail2 [command]="selectedRecord" />
+      @if (showResend()) {
+        <br />
+        <mat-divider />
+        <br />
+        <ya-button
+          [routerLink]="'/commanding/send' + selectedRecord?.commandName"
+          [queryParams]="{ c: yamcs.context, template: selectedRecord?.id }">
+          Resend
+        </ya-button>
+      }
     }
   </ya-detail-pane>
 

@@ -1,4 +1,4 @@
-import { Overlay } from '@angular/cdk/overlay';
+import { Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { ElementRef } from '@angular/core';
 import { Item, ItemBand } from '@fqqb/timeline';
@@ -70,6 +70,7 @@ export function resolveValueMappingProperties(
 
 export class ParameterStateBand extends ItemBand {
   private tooltipInstance: ParameterStatesTooltipComponent;
+  private tooltipOverlayRef?: OverlayRef;
   private backfillSubscription?: BackfillingSubscription;
 
   private parameter: string;
@@ -136,9 +137,10 @@ export class ParameterStateBand extends ItemBand {
       ])
       .withPush(false);
 
-    const overlayRef = overlay.create({ positionStrategy });
+    this.tooltipOverlayRef = overlay.create({ positionStrategy });
     const tooltipPortal = new ComponentPortal(ParameterStatesTooltipComponent);
-    this.tooltipInstance = overlayRef.attach(tooltipPortal).instance;
+    this.tooltipInstance =
+      this.tooltipOverlayRef.attach(tooltipPortal).instance;
 
     this.stateBuffer = new StateBuffer(
       MAX_GAP,
@@ -357,6 +359,7 @@ export class ParameterStateBand extends ItemBand {
   }
 
   override disconnectedCallback(): void {
+    this.tooltipOverlayRef?.dispose();
     this.backfillSubscription?.cancel();
     this.realtimeSubscription?.cancel();
     this.syncSubscription?.unsubscribe();

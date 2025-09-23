@@ -2,52 +2,55 @@ import { CommonModule } from '@angular/common';
 import { Component, ElementRef, signal, ViewChild } from '@angular/core';
 import { LinePoint } from '@fqqb/timeline';
 import { DateTimePipe } from '@yamcs/webapp-sdk';
+import { Legend } from './Legend';
 
-interface Legend {
+interface TooltipLegend {
+  traceId: string;
   color: string;
   label: string;
   value: any;
 }
 
 @Component({
-  selector: 'app-parameter-plot-tooltip',
-  templateUrl: './parameter-plot-tooltip.component.html',
-  styleUrl: './parameter-plot-tooltip.component.css',
+  selector: 'app-parameter-chart-tooltip',
+  templateUrl: './tooltip.component.html',
+  styleUrl: './tooltip.component.css',
   imports: [CommonModule, DateTimePipe],
 })
-export class ParameterPlotTooltipComponent {
+export class ParameterChartTooltipComponent {
   @ViewChild('tt', { static: true })
   tt: ElementRef<HTMLDivElement>;
 
   date = signal<Date | null>(null);
-  legend = signal<Legend[]>([]);
+  tooltipLegend = signal<TooltipLegend[]>([]);
 
   show(
     left: number,
     top: number,
     date: Date,
-    traces: { [key: string]: any }[],
-    points: Array<LinePoint | null>,
+    legend: Legend,
+    trace2point: Map<string, LinePoint>,
     labelFormatter: (value: number) => string,
   ) {
     this.date.set(date);
 
-    const visibleTraces = traces.filter((trace) => trace.visible);
+    const tooltipLegend: TooltipLegend[] = [];
 
-    const legend: Legend[] = [];
-    for (let i = 0; i < visibleTraces.length; i++) {
+    const legendItems = legend.getItems();
+    for (const legendItem of legendItems) {
       let value: string | null = null;
-      const point = points[i];
+      const point = trace2point.get(legendItem.traceId);
       if (point && point.y !== null) {
         value = labelFormatter(point.y);
       }
-      legend.push({
-        color: visibleTraces[i].lineColor,
-        label: visibleTraces[i].parameter,
-        value: value,
+      tooltipLegend.push({
+        traceId: legendItem.traceId,
+        color: legendItem.color,
+        label: legendItem.label,
+        value,
       });
     }
-    this.legend.set(legend);
+    this.tooltipLegend.set(tooltipLegend);
 
     const el = this.tt.nativeElement;
     el.style.left = left + 'px';

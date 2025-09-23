@@ -13,7 +13,7 @@ import { BaseComponent } from '../../abc/BaseComponent';
 
 @Component({
   selector: 'ya-detail-pane',
-  template: '<ng-content />',
+  templateUrl: './detail-pane.component.html',
   styleUrl: './detail-pane.component.css',
   host: {
     class: 'ya-detail-pane',
@@ -22,6 +22,7 @@ import { BaseComponent } from '../../abc/BaseComponent';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class YaDetailPane extends BaseComponent implements OnInit, OnDestroy {
+  padding = input(true, { transform: booleanAttribute });
   alwaysOpen = input(false, { transform: booleanAttribute });
   closed = signal(true);
 
