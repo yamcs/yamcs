@@ -38,6 +38,7 @@ import { YaColorInput } from './components/color-input/color-input.component';
 import { YaColumnChooser } from './components/column-chooser/column-chooser.component';
 import { YaDateTimeInput } from './components/date-time-input/date-time-input.component';
 import { YaDetailPane } from './components/detail-pane/detail-pane.component';
+import { YaDetailToolbarActions } from './components/detail-toolbar/detail-toolbar-actions.component';
 import { YaDetailToolbar } from './components/detail-toolbar/detail-toolbar.component';
 import { YaDots } from './components/dots/dots.component';
 import { YaDownloadButton } from './components/download-button/download-button.component';
@@ -198,6 +199,7 @@ const sharedComponents = [
   YaDateTimeInput,
   YaDetailPane,
   YaDetailToolbar,
+  YaDetailToolbarActions,
   YaDots,
   YaDownloadButton,
   YaDownloadMenuItem,

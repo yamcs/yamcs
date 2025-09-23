@@ -1,0 +1,50 @@
+<form [formGroup]="form">
+  <table class="style-table">
+    <tr>
+      <td class="property">Parameter</td>
+      <td class="widget">
+        <app-parameter-input formControlName="parameter" [fill]="true" />
+      </td>
+    </tr>
+    <tr>
+      <td class="property">Line color</td>
+      <td class="widget">
+        <input type="color" formControlName="lineColor" />
+      </td>
+    </tr>
+    <tr>
+      <td class="property">Fill</td>
+      <td class="widget">
+        <ya-slide-toggle formControlName="fill" />
+      </td>
+    </tr>
+    <tr>
+      <td class="property">Line width</td>
+      <td class="widget">
+        <ya-slider-input
+          formControlName="lineWidth"
+          min="0"
+          max="10"
+          [label]="form.value.lineWidth" />
+      </td>
+    </tr>
+    <tr>
+      <td class="property">Line style</td>
+      <td class="widget">
+        <ya-inline-select formControlName="lineStyle">
+          <ya-option id="straight" label="straight" />
+          <ya-option id="step" label="step" />
+        </ya-inline-select>
+      </td>
+    </tr>
+    <tr>
+      <td class="property">Value type</td>
+      <td class="widget">
+        <ya-inline-select formControlName="valueType">
+          <ya-option id="raw" label="raw" />
+          <ya-option id="engineering" label="engineering" />
+        </ya-inline-select>
+      </td>
+    </tr>
+  </table>
+</form>

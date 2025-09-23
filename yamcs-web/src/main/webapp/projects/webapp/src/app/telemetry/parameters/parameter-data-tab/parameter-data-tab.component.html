@@ -1,8 +1,14 @@
 <ya-detail-pane>
-  @if (table.selectedValue | async; as pval) {
-    <ya-detail-toolbar>Value detail</ya-detail-toolbar>
+  <ya-detail-toolbar>
+    @if (table.selectedValue | async; as pval) {
+      Value detail
+    } @else {
+      Select a value
+    }
+  </ya-detail-toolbar>
 
-    <ya-attr-list style="padding: 0 16px">
+  @if (table.selectedValue | async; as pval) {
+    <ya-attr-list>
       <ya-attr label="Severity">
         @if (pval.monitoringResult) {
           <ya-alarm-level [level]="pval.monitoringResult" />
@@ -55,8 +61,6 @@
         {{ pval.acquisitionStatus || "-" }}
       </ya-attr>
     </ya-attr-list>
-  } @else {
-    <ya-detail-toolbar>Select a value</ya-detail-toolbar>
   }
 </ya-detail-pane>
 

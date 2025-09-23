@@ -5,7 +5,7 @@
   [formControl]="formControl"
   [matAutocomplete]="auto"
   [class.fill]="fill()" />
-<mat-autocomplete class="ya-autocomplete" #auto>
+<mat-autocomplete class="ya-autocomplete" #auto panelWidth="auto">
   @for (option of filteredOptions | async; track option) {
     <mat-option [value]="option | memberPath">
       {{ option | memberPath }}

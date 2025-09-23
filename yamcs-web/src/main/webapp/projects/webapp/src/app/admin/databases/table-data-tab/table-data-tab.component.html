@@ -1,12 +1,15 @@
 @if (table$ | async; as table) {
   <ya-detail-pane>
+    <ya-detail-toolbar>
+      @if (selectedRecord$ | async; as selectedRecord) {
+        Record
+      } @else {
+        Select a record
+      }
+    </ya-detail-toolbar>
+
     @if (selectedRecord$ | async; as selectedRecord) {
-      <ya-detail-toolbar>Record</ya-detail-toolbar>
-      <div style="padding: 0 16px 16px 16px">
-        <app-record [table]="table" [record]="selectedRecord" />
-      </div>
-    } @else {
-      <ya-detail-toolbar>Select a record</ya-detail-toolbar>
+      <app-record [table]="table" [record]="selectedRecord" />
     }
   </ya-detail-pane>
 

@@ -1,4 +1,4 @@
-import { Overlay } from '@angular/cdk/overlay';
+import { Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import {
   AfterViewInit,
@@ -127,6 +127,7 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
   tool$ = new BehaviorSubject<Tool>('hand');
 
   private tooltipInstance: TimelineTooltipComponent;
+  private tooltipOverlayRef?: OverlayRef;
   private packetNames: string[] = [];
   private subscriptions: Subscription[] = [];
 
@@ -197,9 +198,10 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
       ])
       .withPush(false);
 
-    const overlayRef = this.overlay.create({ positionStrategy });
+    this.tooltipOverlayRef = this.overlay.create({ positionStrategy });
     const tooltipPortal = new ComponentPortal(TimelineTooltipComponent);
-    this.tooltipInstance = overlayRef.attach(tooltipPortal).instance;
+    this.tooltipInstance =
+      this.tooltipOverlayRef.attach(tooltipPortal).instance;
   }
 
   @HostListener('mouseleave')
@@ -290,7 +292,7 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
     axis.label = 'UTC';
     axis.timezone = 'UTC';
     axis.frozen = true;
-    axis.fullHeight = 'underlay';
+    axis.grid = 'underlay';
 
     this.timeline.addViewportSelectionListener((evt) => {
       if (evt.selection) {
@@ -690,6 +692,7 @@ export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.tooltipOverlayRef?.dispose();
     this.processorSubscription?.cancel();
     this.subscriptions.forEach((subscription) => subscription.unsubscribe());
     this.timeline.disconnect();

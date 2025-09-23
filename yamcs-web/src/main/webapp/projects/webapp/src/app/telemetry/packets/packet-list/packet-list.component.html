@@ -4,9 +4,16 @@
   </ya-instance-toolbar>
 
   <ya-detail-pane>
+    <ya-detail-toolbar>
+      @if (detailPacket$ | async; as detailPacket) {
+        Packet detail
+      } @else {
+        Select a packet
+      }
+    </ya-detail-toolbar>
+
     @if (detailPacket$ | async; as detailPacket) {
-      <ya-detail-toolbar>Packet detail</ya-detail-toolbar>
-      <ya-attr-list style="padding: 0 16px 16px 16px">
+      <ya-attr-list>
         <ya-attr label="Packet name">
           {{ detailPacket.id.name }}
         </ya-attr>
@@ -50,8 +57,6 @@
           <app-hex #hexdump [base64String]="detailPacket.packet" />
         </ya-attr>
       </ya-attr-list>
-    } @else {
-      <ya-detail-toolbar>Select a packet</ya-detail-toolbar>
     }
   </ya-detail-pane>
 

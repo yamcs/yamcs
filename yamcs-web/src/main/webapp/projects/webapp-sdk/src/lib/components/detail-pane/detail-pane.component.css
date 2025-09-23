@@ -4,15 +4,26 @@
   height: 100%;
   width: 450px;
   overflow: auto;
-  border-left: 1px solid rgba(0, 0, 0, 0.1);
+  border-left: 1px solid var(--y-border-color);
   box-sizing: border-box;
   font:
     400 12px / 20px Roboto,
     sans-serif;
+  display: flex;
+  flex-direction: column;
 }
 
 :host.hidden {
   display: none;
+}
+
+.ya-detail-content {
+  overflow: auto;
+  flex: 1 1 auto;
+}
+
+.ya-detail-content.padded {
+  padding: 16px;
 }
 
 @media print {

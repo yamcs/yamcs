@@ -8,8 +8,13 @@ import { YaIconAction } from '../icon-action/icon-action.component';
   selector: 'ya-detail-toolbar',
   templateUrl: './detail-toolbar.component.html',
   styleUrl: './detail-toolbar.component.css',
+  host: {
+    class: 'ya-detail-toolbar',
+  },
   imports: [MatToolbar, MatTooltip, YaIconAction],
 })
 export class YaDetailToolbar extends BaseComponent {
   alwaysOpen = input(false, { transform: booleanAttribute });
+  closeIcon = input('close');
+  closeLabel = input('Close pane');
 }
