@@ -1,24 +1,20 @@
 import {
   ConfigService,
+  MeanSample,
   NamedObjectId,
   ParameterSubscription,
   ParameterValue,
-  Sample,
   Synchronizer,
   YamcsService,
   utils,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { DyPlotBuffer, DyPlotData, DyValueRange } from './DyPlotBuffer';
+import { CustomBarsValue, DySample } from './DySample';
 import { NamedParameterType } from './NamedParameterType';
-import { CustomBarsValue, DySample, DySeries } from './dygraphs';
 
-/**
- * Stores sample data for use in a ParameterPlot directly
- * in DyGraphs native format.
- *
- * See http://dygraphs.com/data.html#array
- */
+type DySeries = DySample[];
+
 export class DyDataSource {
   // If true, load more samples than needed
   // (useful when horizontal scroll is allowed)
@@ -121,7 +117,7 @@ export class DyDataSource {
     const promises: Promise<any>[] = [];
     for (const parameter of parameters) {
       promises.push(
-        this.yamcs.yamcsClient.getParameterSamples(
+        this.yamcs.yamcsClient.downsampleMean(
           this.yamcs.instance!,
           parameter.qualifiedName,
           {
@@ -258,7 +254,7 @@ export class DyDataSource {
     this.syncSubscription?.unsubscribe();
   }
 
-  private processSamples(samples: Sample[]) {
+  private processSamples(samples: MeanSample[]) {
     const dySamples: DySample[] = [];
     for (const sample of samples) {
       const t = new Date();

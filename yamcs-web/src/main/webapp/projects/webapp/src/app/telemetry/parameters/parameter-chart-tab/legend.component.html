@@ -1,0 +1,25 @@
+@if (data.itemsSignal(); as items) {
+  <div class="legend" [style.left.px]="leftMargin">
+    @for (item of items; track item.traceId; let i = $index) {
+      <div
+        #legendBox
+        class="legend-box"
+        [style.backgroundColor]="backgroundColor"
+        [style.border]="'1px solid ' + borderColor"
+        [style.borderLeft]="'3px solid ' + item.color"
+        [style.paddingRight.px]="5">
+        <span class="item-label">{{ item.label }}</span>
+        @let value = item.value();
+        @if (value !== undefined && value !== null) {
+          <span class="yvalue">{{ value }}</span>
+          @if (item.showUnits && item.units) {
+            <span class="units">{{ item.units }}</span>
+          }
+        }
+        @if (item.error; as error) {
+          <mat-icon class="error icon12" [matTooltip]="error">error</mat-icon>
+        }
+      </div>
+    }
+  </div>
+}

@@ -24,6 +24,7 @@ export * from './lib/components/column-chooser/column-chooser.component';
 export * from './lib/components/date-time-input/date-time-input.component';
 export * from './lib/components/date-time-input/UtcDateAdapter';
 export * from './lib/components/detail-pane/detail-pane.component';
+export * from './lib/components/detail-toolbar/detail-toolbar-actions.component';
 export * from './lib/components/detail-toolbar/detail-toolbar.component';
 export * from './lib/components/dots/dots.component';
 export * from './lib/components/download-button/download-button.component';

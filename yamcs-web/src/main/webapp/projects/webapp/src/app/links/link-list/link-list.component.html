@@ -54,16 +54,18 @@
   </ya-instance-toolbar>
 
   <ya-detail-pane>
-    @if (detailLink$ | async; as selectedItem) {
-      <ya-detail-toolbar>Link detail</ya-detail-toolbar>
-      <div style="padding: 0 16px">
-        <app-link-detail [link]="selectedItem.link" />
-      </div>
-    } @else {
-      <ya-detail-toolbar>Select a link</ya-detail-toolbar>
-      @if (selection.hasValue()) {
-        <div style="padding: 0 16px">{{ selection.selected.length }} links selected</div>
+    <ya-detail-toolbar>
+      @if (detailLink$ | async; as selectedItem) {
+        Link detail
+      } @else {
+        Select a link
       }
+    </ya-detail-toolbar>
+
+    @if (detailLink$ | async; as selectedItem) {
+      <app-link-detail [link]="selectedItem.link" />
+    } @else if (selection.hasValue()) {
+      {{ selection.selected.length }} links selected
     }
   </ya-detail-pane>
 

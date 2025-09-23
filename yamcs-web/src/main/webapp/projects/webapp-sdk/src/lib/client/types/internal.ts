@@ -1,7 +1,7 @@
 import { Alarm } from './alarms';
 import { Event } from './events';
 import { Link } from './management';
-import { IndexGroup, Range, Sample } from './monitoring';
+import { IndexGroup, MeanSample, Range } from './monitoring';
 import { Processor } from './processing';
 import { CommandQueue } from './queue';
 import {
@@ -77,8 +77,8 @@ export interface RecordsWrapper {
   record: Record[];
 }
 
-export interface SamplesWrapper {
-  sample: Sample[];
+export interface MeanSamplesWrapper {
+  sample: MeanSample[];
 }
 
 export interface RangesWrapper {

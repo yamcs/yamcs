@@ -1,11 +1,14 @@
 <ya-detail-pane>
+  <ya-detail-toolbar>
+    @if (selectedStreamData$ | async; as selectedStreamData) {
+      Tuple
+    } @else {
+      Select a tuple
+    }
+  </ya-detail-toolbar>
+
   @if (selectedStreamData$ | async; as selectedStreamData) {
-    <ya-detail-toolbar>Tuple</ya-detail-toolbar>
-    <div style="padding: 0 16px">
-      <app-stream-data [streamData]="selectedStreamData" />
-    </div>
-  } @else {
-    <ya-detail-toolbar>Select a tuple</ya-detail-toolbar>
+    <app-stream-data [streamData]="selectedStreamData" />
   }
 </ya-detail-pane>
 

@@ -11,3 +11,8 @@
 .tab-content-wrapper.noscroll {
   overflow: hidden;
 }
+
+.preview {
+  color: crimson;
+  margin-left: 1em;
+}

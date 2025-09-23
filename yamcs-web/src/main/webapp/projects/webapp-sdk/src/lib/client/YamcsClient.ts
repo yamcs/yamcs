@@ -47,7 +47,6 @@ import {
   InitiateCop1Request,
   SubscribeCop1Request,
 } from './types/cop1';
-import { SdlsLinkConfig, SdlsSeqCtr, SdlsSa } from './types/sdls';
 import {
   CreateEventRequest,
   DownloadEventsOptions,
@@ -79,12 +78,12 @@ import {
   InstanceTemplatesWrapper,
   InstancesWrapper,
   LinksWrapper,
+  MeanSamplesWrapper,
   ProcessorsWrapper,
   RangesWrapper,
   RecordsWrapper,
   RocksDbDatabasesWrapper,
   RolesWrapper,
-  SamplesWrapper,
   ServicesWrapper,
   SessionsWrapper,
   SourcesWrapper,
@@ -132,6 +131,7 @@ import {
   CreateProcessorRequest,
   DownloadPacketsOptions,
   DownloadParameterValuesOptions,
+  DownsampleMeanOptions,
   EditReplayProcessorRequest,
   ExecutorInfo,
   ExportParameterValuesOptions,
@@ -139,17 +139,16 @@ import {
   GetCompletenessIndexOptions,
   GetPacketsOptions,
   GetParameterRangesOptions,
-  GetParameterSamplesOptions,
   GetParameterValuesOptions,
   IndexGroup,
   IssueCommandOptions,
   IssueCommandResponse,
   ListPacketsResponse,
+  MeanSample,
   Packet,
   ParameterData,
   ParameterValue,
   Range,
-  Sample,
   StartProcedureOptions,
   StreamCommandIndexOptions,
   StreamCompletenessIndexOptions,
@@ -191,6 +190,7 @@ import {
   SubscribeQueueEventsRequest,
   SubscribeQueueStatisticsRequest,
 } from './types/queue';
+import { SdlsLinkConfig, SdlsSa, SdlsSeqCtr } from './types/sdls';
 import { SessionEvent, SessionSubscription } from './types/session';
 import {
   AuditRecordsPage,
@@ -2026,14 +2026,14 @@ export default class YamcsClient implements HttpHandler {
     });
   }
 
-  async getParameterSamples(
+  async downsampleMean(
     instance: string,
     qualifiedName: string,
-    options: GetParameterSamplesOptions = {},
-  ): Promise<Sample[]> {
+    options: DownsampleMeanOptions = {},
+  ): Promise<MeanSample[]> {
     const url = `${this.apiUrl}/archive/${instance}/parameters${qualifiedName}/samples`;
     const response = await this.doFetch(url + this.queryString(options));
-    const wrapper = (await response.json()) as SamplesWrapper;
+    const wrapper = (await response.json()) as MeanSamplesWrapper;
     return wrapper.sample || [];
   }
 
