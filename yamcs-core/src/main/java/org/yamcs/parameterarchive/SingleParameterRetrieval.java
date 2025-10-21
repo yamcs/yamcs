@@ -19,7 +19,8 @@ import org.yamcs.yarch.protobuf.Db.ParameterStatus;
  * <p>
  * Because all values are of the same type, the memory consumed by those arrays is much smaller than what is provided by
  * an equivalent single parameter retrieval using {@link MultiParameterRetrieval}
- * 
+ * <p>
+ * This is only for retrieving simple/scalar (non-complex) pvals.
  */
 public class SingleParameterRetrieval {
     final private ParameterRetrievalOptions opts;
@@ -34,6 +35,10 @@ public class SingleParameterRetrieval {
         this.parchive = parchive;
 
         pids = parchive.getParameterIdDb().get(parameterFqn);
+        System.out.println("-----------");
+        for (var pid : pids) {
+            System.out.println("pid ... " + pid + " // " + pid.isSimple());
+        }
         if (pids == null) {
             log.warn("No parameter id found in the parameter archive for {}", parameterFqn);
         }
@@ -60,6 +65,9 @@ public class SingleParameterRetrieval {
         }
 
         for (ParameterId pid : pids) {
+            if (!pid.isSimple()) {
+                continue;
+            }
             int[] pgids = parameterGroupIds;
             if (pgids == null) {
                 pgids = parchive.getParameterGroupIdDb().getAllGroups(pid.getPid());
@@ -168,7 +176,8 @@ public class SingleParameterRetrieval {
         ParameterValueArray mergedPva;
         ParameterId pid;
 
-        public SegmentMerger(ParameterId pid, ParameterRetrievalOptions opts, Consumer<ParameterValueArray> finalConsumer) {
+        public SegmentMerger(ParameterId pid, ParameterRetrievalOptions opts,
+                Consumer<ParameterValueArray> finalConsumer) {
             this.finalConsumer = finalConsumer;
             this.opts = opts;
             this.pid = pid;
