@@ -22,14 +22,14 @@ import org.yamcs.utils.StringConverter;
  *
  */
 public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
-    private DatagramSocket tmSocket;
+    protected DatagramSocket tmSocket;
     private int port;
 
     /**
      * Bytes to ignore at the start of the frame
      */
     protected int initialBytesToStrip;
-    DatagramPacket datagram;
+    protected DatagramPacket datagram;
 
     @Override
     public Spec getSpec() {
