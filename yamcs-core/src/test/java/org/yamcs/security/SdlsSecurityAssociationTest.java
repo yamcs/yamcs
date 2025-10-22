@@ -127,12 +127,12 @@ public class SdlsSecurityAssociationTest {
         // Need to make a copy here because decryption will succeed
         byte oldValue = frame[mc_frcnt_octet_fph];
         frame[mc_frcnt_octet_fph] = (byte) (oldValue ^ 1);
-
-        assertEquals(VerificationStatusCode.NoFailure, saRecv.processSecurity(frame, 0, secHeaderStart, frame.length,
-                authMask));
+        VerificationStatusCode result = saRecv.processSecurity(frame, 0, secHeaderStart, frame.length,
+                authMask);
+        assertEquals(VerificationStatusCode.NoFailure, result);
 
         // Check the decrypted data matches the original input
-        byte[] plaintext2 = Arrays.copyOfRange(frame, secHeaderStart, dataEnd);
+        byte[] plaintext2 = Arrays.copyOfRange(frame, dataStart, dataEnd);
         assertArrayEquals(inputPlaintext, plaintext2);
     }
 
