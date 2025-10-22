@@ -29,11 +29,11 @@ import com.google.common.util.concurrent.RateLimiter;
  */
 public class UdpTcFrameLink extends AbstractTcFrameLink implements Runnable {
     String host;
-    int port;
-    DatagramSocket socket;
-    InetAddress address;
+    protected int port;
+    protected DatagramSocket socket;
+    protected InetAddress address;
     Thread thread;
-    RateLimiter rateLimiter;
+    protected RateLimiter rateLimiter;
 
     @Override
     public Spec getSpec() {
