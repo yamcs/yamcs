@@ -1,17 +1,13 @@
-<div class="stepper-step" [class.hidden]="!visible()">
-  <div class="header" [class.expanded]="expanded()" (click)="toggle($event)">
-    <div class="bullet"></div>
-    <div class="title">{{ label() }}</div>
-    <span style="flex: 1 1 auto"></span>
-    @if (expanded()) {
-      <ng-content select="ya-stepper-step-actions" />
-    }
-  </div>
-  @if (expanded()) {
-    <div class="content-box">
-      <div class="content">
-        <ng-content />
-      </div>
-    </div>
-  }
+<div class="header" [class.expanded]="expanded()" (click)="toggle($event)">
+  <div class="bullet"></div>
+  <div class="title">{{ label() }}</div>
+  <span style="flex: 1 1 auto"></span>
+  <ng-content select="ya-stepper-step-actions" />
 </div>
+@if (expanded()) {
+  <div class="content-box">
+    <div class="content">
+      <ng-content />
+    </div>
+  </div>
+}

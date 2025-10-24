@@ -1,0 +1,7 @@
+:host {
+  /**
+   * Should be set to match with the padding of the content
+   * that YaStepper is used in.
+   */
+  --ya-stepper-outer-padding: 24px;
+}

@@ -1,4 +1,8 @@
-.stepper-step.hidden {
+:host {
+  display: block;
+}
+
+:host.hidden {
   display: none;
 }
 
@@ -6,7 +10,9 @@
   cursor: pointer;
   display: flex;
   align-items: center;
-  padding-left: 24px;
+  padding: 0 var(--ya-stepper-outer-padding);
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .header:hover {
@@ -39,9 +45,10 @@
 .content-box {
   border-left: 1px solid #d3d3d3;
   padding-bottom: 12px;
-  margin-left: calc(24px + 3px);
+  margin-left: calc(var(--ya-stepper-outer-padding) + 3px);
+  margin-right: var(--ya-stepper-outer-padding);
 }
 
 .content {
-  padding-left: 24px;
+  padding-left: var(--ya-stepper-outer-padding);
 }
