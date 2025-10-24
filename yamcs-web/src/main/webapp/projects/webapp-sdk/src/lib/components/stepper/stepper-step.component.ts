@@ -8,8 +8,12 @@ import {
 @Component({
   selector: 'ya-stepper-step',
   templateUrl: './stepper-step.component.html',
-  styleUrl: './stepper-step.component.css',
+  styleUrls: ['./vars.css', './stepper-step.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    class: 'ya-stepper-step',
+    '[class.hidden]': '!visible()',
+  },
 })
 export class YaStepperStep {
   label = input.required<string>();
