@@ -1415,7 +1415,7 @@ public class V6Loader extends V6LoaderBase {
                     }
 
                     TransmissionConstraint constraint = new TransmissionConstraint(criteria, timeout);
-                    cmd.addTransmissionConstrain(constraint);
+                    cmd.addTransmissionConstraint(constraint);
                 }
                 if (hasColumn(cells, IDX_CMDOPT_SIGNIFICANCE)) {
                     if (cmd.getDefaultSignificance() != null) {

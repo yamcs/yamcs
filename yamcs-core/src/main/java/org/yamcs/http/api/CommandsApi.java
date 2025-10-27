@@ -241,17 +241,7 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
     }
 
     private boolean hasVerifier(MetaCommand cmd, String stage) {
-        boolean hasVerifier = cmd.getCommandVerifiers().stream().anyMatch(cv -> cv.getStage().equals(stage));
-        if (hasVerifier) {
-            return true;
-        } else {
-            MetaCommand parent = cmd.getBaseMetaCommand();
-            if (parent == null) {
-                return false;
-            } else {
-                return hasVerifier(parent, stage);
-            }
-        }
+        return cmd.getCommandVerifiers(true).stream().anyMatch(cv -> cv.getStage().equals(stage));
     }
 
     @Override

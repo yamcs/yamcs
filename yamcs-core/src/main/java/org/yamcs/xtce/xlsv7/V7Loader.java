@@ -1782,7 +1782,7 @@ public class V7Loader extends V7LoaderBase {
                     }
 
                     TransmissionConstraint constraint = new TransmissionConstraint(criteria, timeout);
-                    cmd.addTransmissionConstrain(constraint);
+                    cmd.addTransmissionConstraint(constraint);
                 }
                 if (hasColumn(cells, IDX_CMDOPT_SIGNIFICANCE)) {
                     if (cmd.getDefaultSignificance() != null) {

@@ -4213,7 +4213,7 @@ public class XtceStaxReader extends AbstractStaxReader {
 
             if (isStartElementWithName(ELEM_TRANSMISSION_CONSTRAINT)) {
                 TransmissionConstraint trc = readTransmissionConstraint(spaceSystem, metaCmd);
-                metaCmd.addTransmissionConstrain(trc);
+                metaCmd.addTransmissionConstraint(trc);
             } else if (isEndElementWithName(ELEM_TRANSMISSION_CONSTRAINT_LIST)) {
                 return;
             }

@@ -9,6 +9,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.xtce.AbsoluteTimeParameterType;
 import org.yamcs.xtce.Algorithm;
@@ -21,7 +22,6 @@ import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.TimeEpoch;
-import org.yamcs.mdb.Mdb;
 
 public class XlsV6LoaderTest {
     Mdb mdb;
@@ -61,8 +61,8 @@ public class XlsV6LoaderTest {
     public void testCommandVerifiers() throws Exception {
         MetaCommand cmd1 = mdb.getMetaCommand("/REFMDB/SUBSYS1/CONT_VERIF_TC");
         assertNotNull(cmd1);
-        assertTrue(cmd1.hasCommandVerifiers());
-        List<CommandVerifier> verifiers = cmd1.getCommandVerifiers();
+        assertTrue(cmd1.hasCommandVerifiers(true));
+        List<CommandVerifier> verifiers = cmd1.getCommandVerifiers(false);
         assertEquals(2, verifiers.size());
     }
 

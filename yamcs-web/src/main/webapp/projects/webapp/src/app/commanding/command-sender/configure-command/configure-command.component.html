@@ -49,7 +49,10 @@
       [command]="command()"
       [templateProvider]="templateProvider$ | async">
       <ng-container head>
-        <ya-stepper-step label="Constraints" [expanded]="true" [visible]="!!command()?.constraint">
+        <ya-stepper-step
+          label="Constraints"
+          [expanded]="true"
+          [visible]="(command() | allConstraints).length">
           <app-command-constraints
             [command]="command()"
             [relto]="command()?.qualifiedName | spaceSystemName" />

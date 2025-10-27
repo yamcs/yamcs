@@ -1,5 +1,7 @@
 package org.yamcs.mdb;
 
+import static org.yamcs.xtce.NameDescription.PATH_SEPARATOR;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -49,8 +51,6 @@ import org.yamcs.xtce.util.NameReference;
 import org.yamcs.xtce.util.NameReference.Type;
 import org.yamcs.xtce.util.ReferenceFinder;
 import org.yamcs.xtce.util.ReferenceFinder.FoundReference;
-
-import static org.yamcs.xtce.NameDescription.PATH_SEPARATOR;
 
 public class MdbFactory {
 
@@ -440,7 +440,7 @@ public class MdbFactory {
 
         for (MetaCommand c : ss.getMetaCommands()) {
             c.setQualifiedName(ss.getQualifiedName() + NameDescription.PATH_SEPARATOR + c.getName());
-            for (CommandVerifier cv : c.getCommandVerifiers()) {
+            for (CommandVerifier cv : c.getCommandVerifiers(false)) {
                 Algorithm a = cv.getAlgorithm();
                 if (a != null) {
                     a.setQualifiedName(ss.getQualifiedName() + NameDescription.PATH_SEPARATOR + a.getName());

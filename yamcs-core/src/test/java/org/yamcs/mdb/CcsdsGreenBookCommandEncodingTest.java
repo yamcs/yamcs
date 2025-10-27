@@ -44,7 +44,7 @@ public class CcsdsGreenBookCommandEncodingTest {
 
         assertEquals("FF0000001E000001", StringConverter.arrayToHexString(b));
 
-        List<CommandVerifier> vl = mc.getCommandVerifiers();
+        List<CommandVerifier> vl = mc.getCommandVerifiers(false);
 
         assertEquals(2, vl.size());
         CommandVerifier cv = vl.get(0);

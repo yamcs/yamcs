@@ -68,8 +68,8 @@ public class SpreadsheetLoaderTest {
     public void testCommandVerifiers() throws Exception {
         MetaCommand cmd1 = mdb.getMetaCommand("/REFMDB/SUBSYS1/CONT_VERIF_TC");
         assertNotNull(cmd1);
-        assertTrue(cmd1.hasCommandVerifiers());
-        List<CommandVerifier> verifiers = cmd1.getCommandVerifiers();
+        assertTrue(cmd1.hasCommandVerifiers(true));
+        List<CommandVerifier> verifiers = cmd1.getCommandVerifiers(false);
         assertEquals(2, verifiers.size());
     }
 

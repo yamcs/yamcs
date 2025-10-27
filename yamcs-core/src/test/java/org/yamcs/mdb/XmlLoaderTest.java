@@ -263,7 +263,7 @@ public class XmlLoaderTest {
     public void testTransmissionConstraint() throws XMLStreamException, IOException {
         Mdb mdb = MdbFactory.createInstanceByConfig("refxtce");
         MetaCommand mc = mdb.getMetaCommand("/RefXtce/cmd_with_constraint1");
-        List<TransmissionConstraint> tcList = mc.getTransmissionConstraintList();
+        List<TransmissionConstraint> tcList = mc.getTransmissionConstraints(false);
         assertEquals(1, tcList.size());
         TransmissionConstraint tc0 = tcList.get(0);
         assertEquals(1234, tc0.getTimeout());
@@ -277,7 +277,7 @@ public class XmlLoaderTest {
     public void testCommandVerification() throws XMLStreamException, IOException {
         Mdb mdb = MdbFactory.createInstanceByConfig("refxtce");
         MetaCommand mc = mdb.getMetaCommand("/RefXtce/cmd_with_verifier1");
-        List<CommandVerifier> cvList = mc.getCommandVerifiers();
+        List<CommandVerifier> cvList = mc.getCommandVerifiers(false);
         assertEquals(1, cvList.size());
         CommandVerifier cv0 = cvList.get(0);
         assertEquals(100, cv0.getCheckWindow().getTimeToStartChecking());

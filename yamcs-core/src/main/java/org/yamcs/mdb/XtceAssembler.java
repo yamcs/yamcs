@@ -1296,9 +1296,9 @@ public class XtceAssembler {
         if (command.getCommandContainer() != null) {
             writeCommandContainer(doc, command.getCommandContainer());
         }
-        if (command.hasTransmissionConstraints()) {
+        if (command.hasTransmissionConstraints(false)) {
             doc.writeStartElement("TransmissionConstraintList");
-            for (TransmissionConstraint constraint : command.getTransmissionConstraintList()) {
+            for (TransmissionConstraint constraint : command.getTransmissionConstraints(false)) {
                 writeTransmissionConstraint(doc, constraint);
             }
             doc.writeEndElement();
@@ -1307,9 +1307,9 @@ public class XtceAssembler {
             writeSignificance(doc, command.getDefaultSignificance(), "DefaultSignificance");
         }
 
-        if (command.hasCommandVerifiers()) {
+        if (command.hasCommandVerifiers(false)) {
             doc.writeStartElement("VerifierSet");
-            for (CommandVerifier verifier : command.getCommandVerifiers()) {
+            for (CommandVerifier verifier : command.getCommandVerifiers(false)) {
                 writeCommandVerifier(doc, verifier);
             }
             doc.writeEndElement();
