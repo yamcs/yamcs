@@ -1,0 +1,8 @@
+<input
+  id="input"
+  [formControl]="rangeControl"
+  type="range"
+  [min]="min()"
+  [max]="max()"
+  [style.width.px]="width()" />
+<label for="input">{{ label() }}</label>
