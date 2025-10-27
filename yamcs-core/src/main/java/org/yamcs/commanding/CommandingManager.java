@@ -133,15 +133,15 @@ public class CommandingManager extends AbstractService {
 
         Set<Parameter> paramsToSubscribe = new HashSet<>();
         for (MetaCommand mc : mdb.getMetaCommands()) {
-            if (mc.hasTransmissionConstraints()) {
-                List<TransmissionConstraint> tcList = mc.getTransmissionConstraintList();
+            if (mc.hasTransmissionConstraints(true)) {
+                List<TransmissionConstraint> tcList = mc.getTransmissionConstraints(true);
                 for (TransmissionConstraint tc : tcList) {
                     paramsToSubscribe.addAll(tc.getMatchCriteria().getDependentParameters());
                 }
             }
 
-            if (mc.hasCommandVerifiers()) {
-                List<CommandVerifier> cvList = mc.getCommandVerifiers();
+            if (mc.hasCommandVerifiers(true)) {
+                List<CommandVerifier> cvList = mc.getCommandVerifiers(true);
                 for (CommandVerifier cv : cvList) {
                     paramsToSubscribe.addAll(cv.getDependentParameters());
                 }
@@ -171,7 +171,7 @@ public class CommandingManager extends AbstractService {
     public void releaseCommand(ActiveCommand activeCommand) {
         // start the verifiers
         MetaCommand mc = activeCommand.getMetaCommand();
-        if (mc.hasCommandVerifiers()) {
+        if (mc.hasCommandVerifiers(true)) {
             log.debug("Starting command verification for {}", activeCommand);
             CommandVerificationHandler cvh = new CommandVerificationHandler(this, activeCommand);
             cvh.start();

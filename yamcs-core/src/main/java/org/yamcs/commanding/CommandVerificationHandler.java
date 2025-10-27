@@ -133,7 +133,7 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
             collectCmdVerifiers(basecmd, cmdVerifiers, verifierOverride);
         }
 
-        for (CommandVerifier cv : cmd.getCommandVerifiers()) {
+        for (CommandVerifier cv : cmd.getCommandVerifiers(false)) {
             boolean found = false;
             for (CommandVerifier existingv : cmdVerifiers) {
                 if (existingv.getStage().equals(cv.getStage())) {

@@ -9,7 +9,7 @@
       <th>Timeout</th>
       <th>Live evaluation</th>
     </tr>
-    @for (constraint of command.constraint; track constraint) {
+    @for (constraint of constraints(); track constraint) {
       <tr>
         <td><app-expression [expression]="constraint.expression" [relto]="relto()" /></td>
         <td style="white-space: nowrap">{{ (constraint.timeout | millisDuration) || "-" }}</td>

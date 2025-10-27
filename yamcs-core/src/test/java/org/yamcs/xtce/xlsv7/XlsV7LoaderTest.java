@@ -11,6 +11,7 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.xtce.AbsoluteTimeParameterType;
 import org.yamcs.xtce.AggregateParameterType;
@@ -24,7 +25,6 @@ import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.TimeEpoch;
-import org.yamcs.mdb.Mdb;
 
 public class XlsV7LoaderTest {
     Mdb mdb;
@@ -64,8 +64,8 @@ public class XlsV7LoaderTest {
     public void testCommandVerifiers() throws Exception {
         MetaCommand cmd1 = mdb.getMetaCommand("/REFMDB/SUBSYS1/CONT_VERIF_TC");
         assertNotNull(cmd1);
-        assertTrue(cmd1.hasCommandVerifiers());
-        List<CommandVerifier> verifiers = cmd1.getCommandVerifiers();
+        assertTrue(cmd1.hasCommandVerifiers(true));
+        List<CommandVerifier> verifiers = cmd1.getCommandVerifiers(false);
         assertEquals(2, verifiers.size());
     }
 
@@ -143,11 +143,11 @@ public class XlsV7LoaderTest {
 
         assertEquals(2.2, ((Double) a[1]).floatValue(), 1e-5);
     }
-    
+
     @Test
     public void testAggregateMemberDescription() throws Exception {
         AggregateParameterType p = (AggregateParameterType) mdb.getParameterType("/REFMDB/SUBSYS1/aggregate2");
         assertNotNull(p);
-        assertEquals("a description for member 2", p.getMember("member2").getShortDescription());         
+        assertEquals("a description for member 2", p.getMember("member2").getShortDescription());
     }
 }

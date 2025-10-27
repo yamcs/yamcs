@@ -284,7 +284,7 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
     // if not just release the command
     private void preReleaseCommand(CommandQueue q, ActiveCommand pc) {
         long missionTime = timeService.getMissionTime();
-        if (pc.getMetaCommand().hasTransmissionConstraints() && !pc.disableTransmissionConstraints()) {
+        if (pc.getMetaCommand().hasTransmissionConstraints(true) && !pc.disableTransmissionConstraints()) {
             startTransmissionConstraintChecker(q, pc);
         } else {
             commandHistoryPublisher.publishAck(pc.getCommandId(),
@@ -653,14 +653,14 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
         public TransmissionConstraintChecker(CommandQueue queue, ActiveCommand activeCommand) {
             this.activeCommand = activeCommand;
             this.queue = queue;
-            List<TransmissionConstraint> constraints = activeCommand.getMetaCommand().getTransmissionConstraintList();
+            List<TransmissionConstraint> constraints = activeCommand.getMetaCommand().getTransmissionConstraints(true);
             log.debug("Starting transmission constrant checker with {} checks for command {}, ", constraints.size(),
                     activeCommand.getLoggingId());
             for (TransmissionConstraint tc : constraints) {
                 TransmissionConstraintStatus tcs = new TransmissionConstraintStatus(tc);
                 tcsList.add(tcs);
             }
-            Set<Parameter> pset = activeCommand.getMetaCommand().getTransmissionConstraintList()
+            Set<Parameter> pset = constraints
                     .stream()
                     .flatMap(tcs -> tcs.getMatchCriteria().getDependentParameters().stream())
                     .filter(p -> !p.isCommandParameter())
@@ -676,8 +676,8 @@ public class CommandQueueManager extends AbstractService implements ParameterPro
         /**
          * This may be called on multiple threads in parallel.
          * <p>
-         * We cannot move the processing context on a different thread, so we do the check here and use the result in the
-         * timer thread.
+         * We cannot move the processing context on a different thread, so we do the check here and use the result in
+         * the timer thread.
          */
         public void checkWithTm(ProcessingContext tmCtx) {
             if (aggregateStatus != TCStatus.PENDING) {

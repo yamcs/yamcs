@@ -396,10 +396,8 @@ public class XtceToGpbAssembler {
                 }
             }
             cb.setAbstract(cmd.isAbstract());
-            if (cmd.getTransmissionConstraintList() != null) {
-                for (TransmissionConstraint xtceConstraint : cmd.getTransmissionConstraintList()) {
-                    cb.addConstraint(toTransmissionConstraintInfo(xtceConstraint));
-                }
+            for (TransmissionConstraint xtceConstraint : cmd.getTransmissionConstraints(false)) {
+                cb.addConstraint(toTransmissionConstraintInfo(xtceConstraint));
             }
 
             if (cmd.getCommandContainer() != null) {
@@ -417,7 +415,7 @@ public class XtceToGpbAssembler {
                 }
             }
 
-            for (CommandVerifier verifier : cmd.getCommandVerifiers()) {
+            for (CommandVerifier verifier : cmd.getCommandVerifiers(false)) {
                 cb.addVerifier(toVerifierInfo(verifier));
             }
         }

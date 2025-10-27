@@ -98,6 +98,7 @@ import { YaVerticalDivider } from './components/vertical-divider/vertical-divide
 import { YaWarningMessage } from './components/warning-message/warning-message.component';
 import { DataTableDirective } from './directives/data-table.directive';
 import { AliasPipe } from './pipes/alias.pipe';
+import { AllConstraintsPipe } from './pipes/all-constraints.pipe';
 import { ArrayContainsPipe } from './pipes/array-contains.pipe';
 import { BasenamePipe } from './pipes/basename.pipe';
 import { DataRatePipe } from './pipes/data-rate.pipe';
@@ -133,6 +134,7 @@ import { PrintableDirective } from './print/printable.directive';
 
 const pipes = [
   AliasPipe,
+  AllConstraintsPipe,
   ArrayContainsPipe,
   BasenamePipe,
   DataRatePipe,

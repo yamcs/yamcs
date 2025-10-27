@@ -1,6 +1,12 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+} from '@angular/core';
 import {
   Command,
+  mdb,
   MillisDurationPipe,
   WebappSdkModule,
 } from '@yamcs/webapp-sdk';
@@ -22,4 +28,9 @@ import { LiveExpressionComponent } from '../../../shared/live-expression/live-ex
 export class CommandConstraintsComponent {
   command = input<Command | null>(null);
   relto = input<string | null>(null);
+
+  constraints = computed(() => {
+    const command = this.command();
+    return command ? mdb.getAllConstraints(command) : [];
+  });
 }

@@ -38,23 +38,21 @@ import java.util.List;
  * @author nm
  */
 public class MetaCommand extends NameDescription {
-    private static final long serialVersionUID = 5L;
+    private static final long serialVersionUID = 6L;
 
     /**
-     * From XTCE:
-     * Many commands have one or more options. These are called command arguments. Command arguments may be of any of
-     * the standard data types.
+     * From XTCE: Many commands have one or more options. These are called command arguments. Command arguments may be
+     * of any of the standard data types.
      * <p>
      * MetaCommand arguments are local to the MetaCommand. Arguments are the visible to the user or processing software.
      * <p>
      * This can be somewhat subjective -- for example a checksum that is always part of the command format is probably
      * not an argument.
      */
-    List<Argument> argumentList = new ArrayList<Argument>();
+    List<Argument> argumentList = new ArrayList<>();
 
     /**
-     * From XTCE:
-     * Tells how to package this command.
+     * From XTCE: Tells how to package this command.
      * <p>
      * May not be referred to in the EntryList of a SequenceContainer, CommandContainerSet/CommandContainer or another
      * MetaCommandContainer.
@@ -68,11 +66,9 @@ public class MetaCommand extends NameDescription {
     List<ArgumentAssignment> argumentAssignmentList;
 
     /**
-     * From XTCE:
-     * Some Command and Control Systems may require special user access or confirmations before transmitting commands
-     * with certain levels.
-     * The level is inherited from the Base MetaCommand, or it overrides any in the parent-chain if given here, however
-     * it should not go down in consequenceLevel.
+     * From XTCE: Some Command and Control Systems may require special user access or confirmations before transmitting
+     * commands with certain levels. The level is inherited from the Base MetaCommand, or it overrides any in the
+     * parent-chain if given here, however it should not go down in consequenceLevel.
      */
     private Significance defaultSignificance = null;
 
@@ -81,30 +77,27 @@ public class MetaCommand extends NameDescription {
      */
     boolean abstractCmd = false;
 
-    List<TransmissionConstraint> transmissionContstraintList = new ArrayList<TransmissionConstraint>();
+    List<TransmissionConstraint> transmissionConstraints = new ArrayList<>();
 
     /**
-     * From XTCE
-     * A Command Verifier is a conditional check on the telemetry from a SpaceSystem that that provides positive
-     * indication on the processing state of a command.
-     * There are eight different verifiers each associated with difference states in command processing:
-     * TransferredToRange, TransferredFromRange, Received, Accepted, Queued, Execution, Complete, and Failed.
-     * There may be multiple ‘complete’ verifiers. ‘Complete’ verifiers are added to the Base MetaCommand ‘Complete’
-     * verifier list.
-     * All others will override a verifier defined in a Base MetaCommand
+     * From XTCE A Command Verifier is a conditional check on the telemetry from a SpaceSystem that that provides
+     * positive indication on the processing state of a command. There are eight different verifiers each associated
+     * with difference states in command processing: TransferredToRange, TransferredFromRange, Received, Accepted,
+     * Queued, Execution, Complete, and Failed. There may be multiple ‘complete’ verifiers. ‘Complete’ verifiers are
+     * added to the Base MetaCommand ‘Complete’ verifier list. All others will override a verifier defined in a Base
+     * MetaCommand
      * 
      * 
      * In Yamcs the verifier type is specified in the stage field.
      */
-    private List<CommandVerifier> verifierList = new ArrayList<CommandVerifier>();
+    private List<CommandVerifier> verifiers = new ArrayList<>();
 
     public MetaCommand(String name) {
         super(name);
     }
 
     /**
-     * Set the command as abstract or non abstract.
-     * Abstract commands cannot be instantiated
+     * Set the command as abstract or non abstract. Abstract commands cannot be instantiated
      * 
      * @param a
      */
@@ -133,28 +126,29 @@ public class MetaCommand extends NameDescription {
     }
 
     /**
-     * returns the argument assignment list in relation to the inheritance
-     * - this is the list of arguments of the parent(s) which are assigned when the inheritance takes place
+     * returns the argument assignment list in relation to the inheritance - this is the list of arguments of the
+     * parent(s) which are assigned when the inheritance takes place
      * 
      * returns null if there is no such argument
      * 
      * @return
      */
     public List<ArgumentAssignment> getArgumentAssignmentList() {
-        if (argumentAssignmentList == null)
+        if (argumentAssignmentList == null) {
             return null;
+        }
         return Collections.unmodifiableList(argumentAssignmentList);
     }
 
     /**
-     * returns the list of arguments of this command
-     * can be empty if the command doesn't have arguments
+     * returns the list of arguments of this command can be empty if the command doesn't have arguments
      * 
      * @return
      */
     public List<Argument> getArgumentList() {
-        if (argumentList == null)
+        if (argumentList == null) {
             return null;
+        }
         return Collections.unmodifiableList(argumentList);
     }
 
@@ -240,27 +234,81 @@ public class MetaCommand extends NameDescription {
         argumentList.add(arg);
     }
 
+    /**
+     * Use {@link #addTransmissionConstraint(TransmissionConstraint)} instead.
+     */
+    @Deprecated
     public void addTransmissionConstrain(TransmissionConstraint constraint) {
-        transmissionContstraintList.add(constraint);
+        addTransmissionConstraint(constraint);
+    }
+
+    public void addTransmissionConstraint(TransmissionConstraint constraint) {
+        transmissionConstraints.add(constraint);
     }
 
     /**
-     * 
-     * @return the list of transmission constraints (can be empty but not null)
+     * Use {@link #getTransmissionConstraints(boolean)} instead.
      */
+    @Deprecated
     public List<TransmissionConstraint> getTransmissionConstraintList() {
-        return transmissionContstraintList;
+        return getTransmissionConstraints(false);
+    }
+
+    /**
+     * Returns the list of transmission constraints (can be empty but not null).
+     * 
+     * @param includeBase
+     *            if this MetaCommand has a base command, consider also transmission constraints up the hierarchy.
+     *            Constraints are ordered from root to leaf, and in insertion order on each node.
+     */
+    public List<TransmissionConstraint> getTransmissionConstraints(boolean includeBase) {
+        if (includeBase) {
+            var result = new ArrayList<>(transmissionConstraints);
+            var base = baseMetaCommand;
+            while (base != null) {
+                result.addAll(0, base.transmissionConstraints);
+                base = base.baseMetaCommand;
+            }
+            return result;
+        } else {
+            return Collections.unmodifiableList(transmissionConstraints);
+        }
     }
 
     public void addArgumentAssignment(ArgumentAssignment aa) {
         if (argumentAssignmentList == null) {
-            argumentAssignmentList = new ArrayList<ArgumentAssignment>();
+            argumentAssignmentList = new ArrayList<>();
         }
         argumentAssignmentList.add(aa);
     }
 
+    /**
+     * Use {@link MetaCommand#hasTransmissionConstraints(boolean)} instead.
+     */
+    @Deprecated
     public boolean hasTransmissionConstraints() {
-        return !transmissionContstraintList.isEmpty();
+        return hasTransmissionConstraints(false);
+    }
+
+    /**
+     * Returns whether this MetaCommand has transmission constraints
+     * 
+     * @param includeBase
+     *            if this MetaCommand has a base command, consider also transmission constraints up the hierarchy.
+     */
+    public boolean hasTransmissionConstraints(boolean includeBase) {
+        var found = !transmissionConstraints.isEmpty();
+        if (!found && includeBase) {
+            var base = baseMetaCommand;
+            while (base != null) {
+                if (!base.transmissionConstraints.isEmpty()) {
+                    found = true;
+                    break;
+                }
+                base = base.baseMetaCommand;
+            }
+        }
+        return found;
     }
 
     /**
@@ -283,34 +331,85 @@ public class MetaCommand extends NameDescription {
     }
 
     public void addVerifier(CommandVerifier cmdVerifier) {
-        verifierList.add(cmdVerifier);
+        verifiers.add(cmdVerifier);
     }
 
+    /**
+     * Use {@link #hasCommandVerifiers(boolean)} instead.
+     */
+    @Deprecated
     public boolean hasCommandVerifiers() {
-        return (!verifierList.isEmpty()) || ((baseMetaCommand != null) && baseMetaCommand.hasCommandVerifiers());
+        return hasCommandVerifiers(true);
     }
 
+    /**
+     * Returns whether this MetaCommand has verifiers
+     * 
+     * @param includeBase
+     *            if this MetaCommand has a base command, consider also verifiers up the hierarchy.
+     */
+    public boolean hasCommandVerifiers(boolean includeBase) {
+        var found = !verifiers.isEmpty();
+        if (!found && includeBase) {
+            var base = baseMetaCommand;
+            while (base != null) {
+                if (!base.verifiers.isEmpty()) {
+                    found = true;
+                    break;
+                }
+                base = base.baseMetaCommand;
+            }
+        }
+        return found;
+    }
+
+    /**
+     * Use {@link #getCommandVerifiers(boolean)} instead.
+     */
+    @Deprecated
     public List<CommandVerifier> getCommandVerifiers() {
-        return Collections.unmodifiableList(verifierList);
+        return Collections.unmodifiableList(verifiers);
+    }
+
+    /**
+     * Returns the list of verifiers (can be empty but not null).
+     * 
+     * @param includeBase
+     *            if this MetaCommand has a base command, consider also verifiers up the hierarchy. Verifiers are
+     *            ordered from root to leaf, and in insertion order on each node.
+     */
+    public List<CommandVerifier> getCommandVerifiers(boolean includeBase) {
+        if (includeBase) {
+            var result = new ArrayList<>(verifiers);
+            var base = baseMetaCommand;
+            while (base != null) {
+                result.addAll(0, base.verifiers);
+                base = base.baseMetaCommand;
+            }
+            return result;
+        } else {
+            return Collections.unmodifiableList(verifiers);
+        }
     }
 
     public void print(PrintStream out) {
         out.print("MetaCommand name: " + name + " abstract:" + abstractCmd);
-        if (getAliasSet() != null)
+        if (getAliasSet() != null) {
             out.print(", aliases: " + getAliasSet());
+        }
 
-        if (!transmissionContstraintList.isEmpty()) {
+        if (!transmissionConstraints.isEmpty()) {
             out.print(", TransmissionConstraints: ");
-            out.print(transmissionContstraintList.toString());
+            out.print(transmissionConstraints.toString());
         }
         if (defaultSignificance != null) {
             out.print(", defaultSignificance: ");
             out.print(defaultSignificance.toString());
         }
 
-        if (!verifierList.isEmpty()) {
+        if (!verifiers.isEmpty()) {
             out.print(", Verifiers: ");
-            out.print(verifierList.toString());
+            out.print(verifiers.toString());
         }
         out.println();
         if (baseMetaCommand != null) {
