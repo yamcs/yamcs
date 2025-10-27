@@ -59,6 +59,7 @@ import { YaHighlight } from './components/highlight/highlight.component';
 import { YaHref } from './components/href/href.directive';
 import { YaIconAction } from './components/icon-action/icon-action.component';
 import { YaIconButton } from './components/icon-button/icon-button.component';
+import { YaInlineSelect } from './components/inline-select/inline-select.component';
 import { YaInstancePage } from './components/instance-page/instance-page.component';
 import { YaInstanceToolbarLabel } from './components/instance-toolbar/instance-toolbar-label.directive';
 import { YaInstanceToolbar } from './components/instance-toolbar/instance-toolbar.component';
@@ -211,6 +212,7 @@ const sharedComponents = [
   YaHighlight,
   YaIconAction,
   YaIconButton,
+  YaInlineSelect,
   YaInterval,
   YaInstancePage,
   YaInstanceToolbar,

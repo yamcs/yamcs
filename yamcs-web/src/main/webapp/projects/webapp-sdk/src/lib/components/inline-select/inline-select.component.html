@@ -1,0 +1,12 @@
+<ya-button-group>
+  @for (option of options(); track option) {
+    <ya-button (click)="writeValue(option.id)" [toggled]="isSelected(option.id)">
+      {{ option.label }}
+    </ya-button>
+  }
+  @for (option of optionChildren(); track option) {
+    <ya-button (click)="writeValue(option.id())" [toggled]="isSelected(option.id())">
+      {{ option.label() }}
+    </ya-button>
+  }
+</ya-button-group>

@@ -44,6 +44,7 @@ export * from './lib/components/highlight/highlight.component';
 export * from './lib/components/href/href.directive';
 export * from './lib/components/icon-action/icon-action.component';
 export * from './lib/components/icon-button/icon-button.component';
+export * from './lib/components/inline-select/inline-select.component';
 export * from './lib/components/instance-page/instance-page.component';
 export * from './lib/components/instance-toolbar/instance-toolbar-label.directive';
 export * from './lib/components/instance-toolbar/instance-toolbar.component';
