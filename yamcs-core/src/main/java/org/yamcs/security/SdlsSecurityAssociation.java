@@ -54,8 +54,8 @@ import org.yamcs.utils.ByteArrayUtils;
  * insert zone shall be masked out.
  * <p>
  * This class uses a {@link Cipher} instance which requires two calls: first to add the so called "Additional
- * Authenticated Data (AAD)" {@link Cipher#updateAAD(byte[]) and then to add the data to be encrypted
- * {@link Cipher#doFinal(byte[]))}
+ * Authenticated Data (AAD)" {@link Cipher#updateAAD(byte[])} and then to add the data to be encrypted
+ * {@link Cipher#doFinal(byte[])}
  * <p>
  * For authenticated encryption, the AAD data is composed of the frame data from the beginning of the frame until the
  * start of the frame data, masked as per the standard.
@@ -137,13 +137,7 @@ public class SdlsSecurityAssociation {
      *            the 256-bit key used for encryption/decryption
      * @param spi
      *            the security parameter index, shared between sender and receiver.
-     * @param seqNumWindow
-     *            a positive integer; only frames whose sequence number differs by this integer at maximum will be
-     *            accepted.
-     * @param verifySeqNum
-     *            whether to verify the received anti-replay sequence number based on the seqNumWindow.
-     * 
-     * @param initialSeqNum
+     * @param initialSeqNumBytes
      *            if no value is found in the Mememto DB for the initial sequence number, then use this one. Can be
      *            null.
      */
@@ -163,7 +157,7 @@ public class SdlsSecurityAssociation {
      * @param verifySeqNum
      *            whether to verify the received anti-replay sequence number based on the seqNumWindow.
      * 
-     * @param initialSeqNum
+     * @param initialSeqNumBytes
      *            if no value is found in the Mememto DB for the initial sequence number, then use this one. Can be
      *            null.
      */
@@ -268,7 +262,7 @@ public class SdlsSecurityAssociation {
      * @throws GeneralSecurityException
      *             if encryption fails
      * @throws IllegalArgumentException
-     *             if frameStart+partialAuthMask.length < secHeaderStart
+     *             if frameStart+partialAuthMask.length &lt; secHeaderStart
      */
     public void applySecurity(byte[] buffer, int frameStart, int secHeaderStart, int secTrailerEnd,
             byte[] partialAuthMask) throws GeneralSecurityException {
@@ -292,8 +286,9 @@ public class SdlsSecurityAssociation {
         seqNum.increment();
 
         // Save the next seq num to be sent
-        if (instanceName != null && linkName != null)
+        if (instanceName != null && linkName != null) {
             persistSeqNum();
+        }
 
         // create data to authenticate by masking frame headers with authMask
         byte[] aad = computeAad(buffer, frameStart, secHeaderStart, partialAuthMask);
@@ -382,7 +377,7 @@ public class SdlsSecurityAssociation {
      * 
      * 
      * @throws IllegalArgumentException
-     *             if frameStart+partialAuthMask.length < secHeaderStart
+     *             if frameStart+partialAuthMask.length &lt; secHeaderStart
      */
     public VerificationStatusCode processSecurity(byte[] buffer, int frameStart, int secHeaderStart,
             int secTrailerEnd, byte[] partialAuthMask) {

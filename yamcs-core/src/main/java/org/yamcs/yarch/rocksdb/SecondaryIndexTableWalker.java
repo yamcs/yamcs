@@ -1,5 +1,8 @@
 package org.yamcs.yarch.rocksdb;
 
+import static org.yamcs.yarch.rocksdb.RdbStorageEngine.TBS_INDEX_SIZE;
+import static org.yamcs.yarch.rocksdb.RdbStorageEngine.tbsIndex;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
@@ -14,6 +17,7 @@ import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.IntArray;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.DataType._type;
 import org.yamcs.yarch.DbRange;
 import org.yamcs.yarch.TableColumnDefinition;
 import org.yamcs.yarch.TableDefinition;
@@ -21,8 +25,6 @@ import org.yamcs.yarch.TableVisitor;
 import org.yamcs.yarch.TableWalker;
 import org.yamcs.yarch.YarchException;
 import org.yamcs.yarch.streamsql.StreamSqlException;
-import org.yamcs.yarch.DataType._type;
-import static org.yamcs.yarch.rocksdb.RdbStorageEngine.*;
 
 /**
  * iterates through a table based on the secondary index range.
@@ -101,11 +103,12 @@ public class SecondaryIndexTableWalker implements TableWalker {
      * Iterate data through the given interval taking into account also the tableRange.
      * <p>
      * tableRange has to be non-null but can be unbounded at one or both ends.
-     * <p
+     * <p>
      * Return true if the tableRange is bounded and the end has been reached.
      * 
      * @throws StreamSqlException
      */
+    @Override
     public void walk(TableVisitor visitor) throws YarchException, StreamSqlException {
         this.visitor = visitor;
         int tbsIndex = table.getSecondaryIndexWriter().getTbsIndex();
@@ -198,7 +201,6 @@ public class SecondaryIndexTableWalker implements TableWalker {
         }
     }
 
-
     @Override
     public void setPrimaryIndexRange(DbRange pkRange) {
         this.pkRange = pkRange;
@@ -214,10 +216,12 @@ public class SecondaryIndexTableWalker implements TableWalker {
         running = false;
     }
 
+    @Override
     public boolean isBatchUpdates() {
         return batchUpdates;
     }
 
+    @Override
     public void setBatchUpdates(boolean batchUpdates) {
         this.batchUpdates = batchUpdates;
     }

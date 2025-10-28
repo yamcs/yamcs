@@ -5,7 +5,7 @@ import org.yamcs.YamcsServerInstance;
 public class ManagementApi {
 
     /**
-     * Deprecated, use {@link InstancesApi#verifyInstance(String, boolean) instead
+     * Deprecated, use {@link InstancesApi#verifyInstance(String, boolean)} instead
      */
     @Deprecated
     public static String verifyInstance(String yamcsInstance, boolean allowGlobal) {
@@ -13,7 +13,7 @@ public class ManagementApi {
     }
 
     /**
-     * Deprecated, use {@link InstancesApi#verifyInstance(String) instead
+     * Deprecated, use {@link InstancesApi#verifyInstance(String)} instead
      */
     @Deprecated
     public static String verifyInstance(String yamcsInstance) {
@@ -21,7 +21,7 @@ public class ManagementApi {
     }
 
     /**
-     * Deprecated, use {@link InstancesApi#verifyInstanceObj(String) instead
+     * Deprecated, use {@link InstancesApi#verifyInstanceObj(String)} instead
      */
     @Deprecated
     public static YamcsServerInstance verifyInstanceObj(String yamcsInstance) {

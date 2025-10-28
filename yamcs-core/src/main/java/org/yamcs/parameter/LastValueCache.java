@@ -62,11 +62,11 @@ public class LastValueCache {
      * <p>
      * If n=0 it is equivalent with {@link LastValueCache#getValue(Parameter)}
      * <p>
-     * If n<0 but buffering is not enabled for the parameter or the buffer capacity is smaller than -n+1, an
+     * If n&lt;0 but buffering is not enabled for the parameter or the buffer capacity is smaller than -n+1, an
      * IllegalStateException will be thrown
      * 
      * @throws IllegalArgumentException
-     *             if n>0 or if n<0 and the parameter is constant
+     *             if n&gt;0 or if n&lt;0 and the parameter is constant
      * @throws IllegalStateException
      *             if buffering is not enabled or the buffer capacity is smaller than -n+1
      */

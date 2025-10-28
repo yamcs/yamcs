@@ -10,7 +10,6 @@ import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.parameter.SystemParametersService;
-import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.Member;
@@ -18,7 +17,7 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.UnitType;
 
 /**
- * Makes system parameters under /yamcs/<instance-id>/rocksdb/
+ * Makes system parameters under /yamcs/{instance-id}/rocksdb/
  * <p>
  * One parameter for each open RocksDB database, containing statistics about the database
  * 
@@ -34,7 +33,6 @@ public class RocksdbSysParamProducer implements SystemParametersProducer {
         this.tablespace = tablespace;
 
         UnitType kbunit = new UnitType("KB");
-
 
         Member blockCacheMemoryUsageMember = new Member("blockCache",
                 sysParamsService.getBasicType(Type.UINT64, kbunit));

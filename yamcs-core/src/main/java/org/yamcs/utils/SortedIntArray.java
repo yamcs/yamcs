@@ -121,7 +121,7 @@ public class SortedIntArray implements Serializable {
      * returns idx such that
      * 
      * <pre>
-     * a[i] <= x iif i <= idx
+     * a[i] &lt;= x iif i &lt;= idx
      * </pre>
      */
     public int higherBound(int x) {
