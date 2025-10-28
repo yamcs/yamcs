@@ -53,17 +53,23 @@ public class ConditionParser {
     /**
      * Boolean expression has the following pattern: op(epx1;exp2;...;expn)
      *
-     * op is & (AND) or | (OR) expi are boolean expression or condition
+     * op is &amp; (AND) or | (OR) expi are boolean expression or condition
      *
      * A condition is defined as: parametername op value
      *
-     * value can be - plain value - quoted with " or ”. The two quote characters can be used interchangeably . Backslash
-     * can be use to escape those double quote. - $other_parametername
+     * value can be
+     * 
+     * <ul>
+     * <li>plain value
+     * <li>quoted with " or ”. The two quote characters can be used interchangeably . Backslash can be use to escape
+     * those double quote.
+     * <li>$other_parametername
+     * </ul>
      *
      * parametername can be suffixed with .raw
      *
-     * Top level expression can be in the form epx1;exp2;...;expn which will be transformed into &(epx1;exp2;...;expn)
-     * for compatibility with the previously implemented Comparison
+     * Top level expression can be in the form epx1;exp2;...;expn which will be transformed into
+     * &amp;(epx1;exp2;...;expn) for compatibility with the previously implemented Comparison
      * 
      * @param rawExpression
      * 

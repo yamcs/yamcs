@@ -162,7 +162,7 @@ import jxl.read.biff.BiffException;
  * defines alarms or validity ranges.
  * <p>
  * The name of the duplicated types is &lt;type_name_from_DataTypes_sheet&gt;_&lt;parameter_name&gt; for parameters and
- * &lt;type_name_from_DataTypes_sheet&gt;_&lt;command_name&gt_&lt;argument_name&gt for command arguments.
+ * &lt;type_name_from_DataTypes_sheet&gt;_&lt;command_name&gt;_&lt;argument_name&gt; for command arguments.
  *
  */
 public class V7Loader extends V7LoaderBase {

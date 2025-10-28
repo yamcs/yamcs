@@ -2,6 +2,7 @@ package org.yamcs.mdb;
 
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
+import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.xtce.DynamicIntegerValue;
 import org.yamcs.xtce.FixedIntegerValue;
@@ -52,7 +53,7 @@ public class ContainerProcessingContext {
     /**
      * Finds a parameter instance (i.e. a value) for a parameter in the current context
      * 
-     * It only returns a parameter if the instance status was {@link AcquisitionStatus#ACQUIRED)
+     * It only returns a parameter if the instance status was {@link AcquisitionStatus#ACQUIRED}
      * 
      * @param pir
      * @return the value found or null if not value has been found

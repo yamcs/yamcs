@@ -29,7 +29,7 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.YAMLException;
 
 /**
- * A configuration object is a wrapper around a Map&ltString, Object&gt which keeps track to a parent and its original
+ * A configuration object is a wrapper around a Map&lt;String, Object&gt; which keeps track of a parent and its original
  * file (if any).
  * 
  * This class loads yamcs configurations. There are a number of "subsystems", each using a corresponding subsystem.yaml

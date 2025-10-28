@@ -205,7 +205,6 @@ public class ArrayParameterCache implements ParameterCache {
 
     /**
      * This is the same as above but returns null if the cache does not cover the interval starting with start.
-     * <p>
      */
     public List<ParameterValue> getAllValuesIfCovered(Parameter pdef, long start, long stop) {
 
@@ -417,7 +416,7 @@ public class ArrayParameterCache implements ParameterCache {
      * It's like a big table:
      * 
      * <pre>
-     * t0, ev01, rv01, ps01, ev02, rv02, ps02 ... 
+     * t0, ev01, rv01, ps01, ev02, rv02, ps02 ...
      * t1, ev11, rv11, ps11, ev12, rv12, ps12 ... ....
      * </pre>
      * 

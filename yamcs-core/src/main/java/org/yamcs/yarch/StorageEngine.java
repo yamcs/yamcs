@@ -84,7 +84,7 @@ public interface StorageEngine {
 
     /**
      * In Yamcs version 4 the table definitions were stored in yaml serialized format (in the
-     * /storage/yamcs-data/<instance-name>/<table-name>.def)
+     * /storage/yamcs-data/{instance-name}/{table-name}.def)
      * 
      * <p>
      * This function is called to migrate them inside the storage engine where they are stored starting with Yamcs 5

@@ -36,7 +36,7 @@ public interface FileTransferService extends YamcsService, FileListingService {
      * #startUpload(String, Bucket, String, String, String, TransferOptions)} call.
      * 
      * <p>
-     * Can return an empty list if there is only one unnamed entity. @return
+     * Can return an empty list if there is only one unnamed entity.
      */
     public List<EntityInfo> getLocalEntities();
 
@@ -45,8 +45,6 @@ public interface FileTransferService extends YamcsService, FileListingService {
      * {@link #startUpload(String, Bucket, String, String, String, TransferOptions)} call.
      * <p>
      * Can return an empty list if there is only one unnamed remote entity.
-     * 
-     * @return
      */
     public List<EntityInfo> getRemoteEntities();
 
@@ -54,15 +52,11 @@ public interface FileTransferService extends YamcsService, FileListingService {
      * Get the capabilities supported by this service.
      * <p>
      * The capabilities are used by the yamcs-web to enable/disable some options.
-     * 
-     * @return
      */
     public FileTransferCapabilities getCapabilities();
 
     /**
      * Get configured options for the file transfers
-     *
-     * @return
      */
     default List<FileTransferOption> getFileTransferOptions() {
         return Collections.emptyList();
@@ -87,7 +81,6 @@ public interface FileTransferService extends YamcsService, FileListingService {
      *            destinationPath is null, then the objectName will be used as the name at the destination.
      * @param options
      *            transfer options.
-     * @return
      * @throws IOException
      *             if there was a problem retrieving the object from the bucket.
      * @throws InvalidRequestException
@@ -119,7 +112,6 @@ public interface FileTransferService extends YamcsService, FileListingService {
      *            the object name where the file will be stored.
      * @param options
      *            transfer options.
-     * @return
      * @throws IOException
      *             if there was a problem retrieving the object from the bucket.
      * @throws InvalidRequestException
@@ -146,7 +138,6 @@ public interface FileTransferService extends YamcsService, FileListingService {
      * Get the file transfer with the given identifier.
      * 
      * @param id
-     * @return
      */
     FileTransfer getFileTransfer(long id);
 
