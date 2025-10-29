@@ -1,3 +1,14 @@
+Version 5.12.2 released 29-Oct-2025
+- Added support for SDLS (Space Data Link Security). Authenticated encryption using AES-256-GCM is now supported.
+- Fixed inheritance of constraints and verifiers:
+  - Constraints from base commands were not considered
+  - Verifiers from base commands were considered, but parameters from base commands were not being subscribed to.
+- Replication server: fixed a potential stack overflow issue.
+- Other minor tweaks and fixes.
+
+The SDLS implementation has been sponsored by the CISPA Helmholtz Center for Information Security (https://cispa.de/) and the RACCOON project (https://www.tu.berlin/en/raumfahrttechnik/research/current-projects/raccoon)
+
+
 Version 5.12.1 released 03-Sep-2025
 - Improve response time of list-packets/list-events/list-alarms when pagination is used
 - Add 1m loadavg system parameter
