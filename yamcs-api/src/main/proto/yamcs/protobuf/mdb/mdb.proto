@@ -9,6 +9,7 @@ import "yamcs/protobuf/yamcs.proto";
 
 service MdbApi {
   option (yamcs.api.label) = "MDB";
+  option (yamcs.api.markdown) = true;
 
   // Get a mission database
   rpc GetMissionDatabase(GetMissionDatabaseRequest) returns (MissionDatabase) {
@@ -174,7 +175,7 @@ message MissionDatabase {
   // Root space-system header version
   optional string version = 3;
 
-  // Deprecated, use ``spaceSystems`` instead
+  // Deprecated, use `spaceSystems` instead
   repeated SpaceSystemInfo spaceSystem = 4 [deprecated=true];
   repeated SpaceSystemInfo spaceSystems = 11;
   optional int32 parameterCount = 6;
@@ -234,23 +235,21 @@ message EnumerationAlarm {
 message AlarmInfo {
   optional int32 minViolations = 1;
 
-  // Deprecated, use ``staticAlarmRanges`` instead
+  // Deprecated, use `staticAlarmRanges` instead
   repeated AlarmRange staticAlarmRange = 2 [deprecated=true];
   repeated AlarmRange staticAlarmRanges = 4;
 
-  // Deprecated, use ``enumerationAlarms`` instead
+  // Deprecated, use `enumerationAlarms` instead
   repeated EnumerationAlarm enumerationAlarm = 3 [deprecated=true];
   repeated EnumerationAlarm enumerationAlarms = 5;
 
-  // only used for enumeration alarms - defines the alarm state if none of the condition above applies
-  // as per XTCE description:
-  //   defaults to "normal", which is almost always the case.
-  //   Setting it to another alarm state permits a form of "inverted logic" where the alarm list can specify the normal states instead of the alarm states.
+  // Only used for enumeration alarms. Defines the alarm state if none of
+  // the conditions apply.
   optional AlarmLevelType defaultLevel = 6;
 }
 
 message ContextAlarmInfo {
-  // Use ``context`` instead
+  // Use `context` instead
   repeated ComparisonInfo comparison = 1 [deprecated=true];
 
   optional AlarmInfo alarm = 2;
@@ -278,13 +277,13 @@ message DataEncodingInfo {
   optional string encoding = 4;
   optional CalibratorInfo defaultCalibrator = 6;
 
-  // Deprecated, use ``contextCalibrators`` instead
+  // Deprecated, use `contextCalibrators` instead
   repeated ContextCalibratorInfo contextCalibrator = 7 [deprecated=true];
   repeated ContextCalibratorInfo contextCalibrators = 8;
 }
 
 message ContextCalibratorInfo {
-  // Use ``context`` instead
+  // Use `context` instead
   repeated ComparisonInfo comparison = 1 [deprecated=true];
 
   optional CalibratorInfo calibrator = 2;
@@ -313,7 +312,7 @@ message CalibratorInfo {
 }
 
 message PolynomialCalibratorInfo {
-  // Deprecated, use ``coefficients`` instead
+  // Deprecated, use `coefficients` instead
   repeated double coefficient = 1 [deprecated=true];
   repeated double coefficients = 2;
 }
@@ -323,7 +322,7 @@ message SplineCalibratorInfo {
     optional double raw = 1;
     optional double calibrated = 2;
   }
-  // Deprecated, use ``points`` instead
+  // Deprecated, use `points` instead
   repeated SplinePointInfo point = 1 [deprecated=true];
   repeated SplinePointInfo points = 2;
 }
@@ -352,10 +351,10 @@ message EnumRange {
   // Range end
   optional double max = 2;
 
-  // Whether ``min`` is included in this range
+  // Whether `min` is included in this range
   optional bool minInclusive = 3;
 
-  // Whether ``max`` is included in this range
+  // Whether `max` is included in this range
   optional bool maxInclusive = 4;
 
   // Enum label
@@ -380,7 +379,7 @@ message ParameterTypeInfo {
   // Default Alarm, effective when no contextual alarm takes precedence.
   optional AlarmInfo defaultAlarm = 4;
 
-  // Deprecated, use ``enumValues`` instead
+  // Deprecated, use `enumValues` instead
   repeated EnumValue enumValue = 5 [deprecated = true];
 
   // Value-to-label mappings if this is an enumeration type
@@ -573,15 +572,15 @@ message ArgumentDimensionInfo {
   // Use the value of the referenced parameter.
   // The value describes the zero-based ending index (length - 1)
   //
-  // For a value ``v``, the dimension's length is determined
-  // as: ``(v * slope) + intercept``. 
+  // For a value `v`, the dimension's length is determined
+  // as: `(v * slope) + intercept`. 
   optional ParameterInfo parameter = 2;
 
   // Use the value of the referenced argument.
   // The value describes the zero-based ending index (length - 1)
   //
-  // For a value ``v``, the dimension's length is determined
-  // as: ``(v * slope) + intercept``.
+  // For a value `v`, the dimension's length is determined
+  // as: `(v * slope) + intercept`.
   optional string argument = 3;
 
   // Scale the value obtained from a parameter or argument reference.
@@ -793,13 +792,13 @@ message MathElement {
   // Type of element, either an operand kind or an operator.
   optional Type type = 1;
 
-  // Operator symbol if type ``OPERATOR``.
+  // Operator symbol if type `OPERATOR`.
   optional string operator = 2;
 
-  // Constant if type ``VALUE_OPERAND``.
+  // Constant if type `VALUE_OPERAND`.
   optional double value = 3;
 
-  // Parameter whose value is used if type ``PARAMETER``.
+  // Parameter whose value is used if type `PARAMETER`.
   optional ParameterInfo parameter = 4;
 
   // Parameter instance specifier
@@ -838,12 +837,12 @@ message AlgorithmInfo {
   repeated ParameterInfo onParameterUpdate = 11;
   repeated int64 onPeriodicRate = 12;
 
-  // Operands and operators in Reverse Polish Notation if type ``MATH``.
+  // Operands and operators in Reverse Polish Notation if type `MATH`.
   repeated MathElement mathElements = 14;
 }
 
 message ListSpaceSystemsRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
   // The search keywords. This supports searching on qualified name or alias.
@@ -852,96 +851,96 @@ message ListSpaceSystemsRequest {
   // Continuation token returned by a previous page response.
   optional string next = 7;
   
-  // The zero-based row number at which to start outputting results. Default: ``0``
+  // The zero-based row number at which to start outputting results. Default: `0`
   optional int32 pos = 8;
   
   // The maximum number of returned systems per page. Choose this value too high
   // and you risk hitting the maximum response size limit enforced by the server.
-  // Default: ``100``
+  // Default: `100`
   optional int32 limit = 9;
 }
 
 message ListContainersRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
   // The search keywords. This supports searching on qualified name or alias.
   optional string q = 2;
   
   // List only direct child sub-systems or containers of the specified system.
-  // For example when querying the system "/a" against an MDB with containers
-  // "/a/b/c" and "/a/c", the result returns the sub system "/a/b" and the
-  // container "/a/c".
+  // For example when querying the system `/a` against an MDB with containers
+  // `/a/b/c` and `/a/c`, the result returns the sub system `/a/b` and the
+  // container `/a/c`.
   //
-  // When ``system`` and ``q`` are used together, matching containers at any
+  // When `system` and `q` are used together, matching containers at any
   // depth are returned, starting from the specified space system.
   optional string system = 10;
   
   // Continuation token returned by a previous page response.
   optional string next = 7;
   
-  // The zero-based row number at which to start outputting results. Default: ``0``
+  // The zero-based row number at which to start outputting results. Default: `0`
   optional int32 pos = 8;
   
   // The maximum number of returned containers per page. Choose this value too high
   // and you risk hitting the maximum response size limit enforced by the server.
-  // Default: ``100``
+  // Default: `100`
   optional int32 limit = 9;
 }
 
 message ListParameterTypesRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
   // The search keywords. This supports searching on qualified name or alias.
   optional string q = 2;
 
   // List only direct child sub-systems or parameter types of the specified system.
-  // For example when querying the system "/a" against an MDB with parameter types
-  // "/a/b/c" and "/a/c", the result returns the sub system "/a/b" and the
-  // parameter type "/a/c".
+  // For example when querying the system `/a` against an MDB with parameter types
+  // `/a/b/c` and `/a/c`, the result returns the sub system `/a/b` and the
+  // parameter type `/a/c`.
   //
-  // When ``system`` and ``q`` are used together, matching containers at any
+  // When `system` and `q` are used together, matching containers at any
   // depth are returned, starting from the specified space system.
   optional string system = 10;
 
   // Continuation token returned by a previous page response.
   optional string next = 7;
 
-  // The zero-based row number at which to start outputting results. Default: ``0``
+  // The zero-based row number at which to start outputting results. Default: `0`
   optional int32 pos = 8;
 
   // The maximum number of returned items per page. Choose this value too high
   // and you risk hitting the maximum response size limit enforced by the server.
-  // Default: ``100``
+  // Default: `100`
   optional int32 limit = 9;
 }
 
 message ListAlgorithmsRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
   // The search keywords. This supports searching on qualified name or alias.
   optional string q = 2;
   
   // List only direct child sub-systems or algorithms of the specified system.
-  // For example when querying the system "/a" against an MDB with algorithms
-  // "/a/b/c" and "/a/c", the result returns the sub system "/a/b" and the
-  // algorithm "/a/c".
+  // For example when querying the system `/a` against an MDB with algorithms
+  // `/a/b/c` and `/a/c`, the result returns the sub system `/a/b` and the
+  // algorithm `/a/c`.
   //
-  // When ``system`` and ``q`` are used together, matching algorithms at any
+  // When `system` and `q` are used together, matching algorithms at any
   // depth are returned, starting from the specified space system.
   optional string system = 10;
 
   // Continuation token returned by a previous page response.
   optional string next = 7;
   
-  // The zero-based row number at which to start outputting results. Default: ``0``
+  // The zero-based row number at which to start outputting results. Default: `0`
   optional int32 pos = 8;
   
   // The maximum number of returned algorithms per page. Choose this value too
   // high and you risk hitting the maximum response size limit enforced by
-  // the server. Default: ``100``
+  // the server. Default: `100`
   optional int32 limit = 9;
   
   // Include only algorithms of the specified scope
@@ -949,18 +948,18 @@ message ListAlgorithmsRequest {
 }
 
 message ListCommandsRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
   // The search keywords. This supports searching on qualified name or alias.
   optional string q = 2;
   
   // List only direct child sub-systems or commands of the specified system.
-  // For example when querying the system "/a" against an MDB with commands
-  // "/a/b/c" and "/a/c", the result returns the sub system "/a/b" and the
-  // command "/a/c".
+  // For example when querying the system `/a` against an MDB with commands
+  // `/a/b/c` and `/a/c`, the result returns the sub system `/a/b` and the
+  // command `/a/c`.
   //
-  // When ``system`` and ``q`` are used together, matching commands at any
+  // When `system` and `q` are used together, matching commands at any
   // depth are returned, starting from the specified space system.
   optional string system = 11;
 
@@ -969,12 +968,12 @@ message ListCommandsRequest {
   // Continuation token returned by a previous page response.
   optional string next = 7;
   
-  // The zero-based row number at which to start outputting results. Default: ``0``
+  // The zero-based row number at which to start outputting results. Default: `0`
   optional int32 pos = 8;
   
   // The maximum number of returned commands per page. Choose this value too
   // high and you risk hitting the maximum response size limit enforced by
-  // the server. Default: ``100``
+  // the server. Default: `100`
   optional int32 limit = 9;
   
   // Exclude abstract commands
@@ -982,21 +981,21 @@ message ListCommandsRequest {
 }
 
 message GetParameterRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Parameter name.
+  // Parameter name
   optional string name = 2;
 }
 
 message ListParametersRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
   // The search keywords. This supports searching on qualified name or alias.
   optional string q = 2;
   
-  // When used together with ``q``, include also aggregate members (at any depth)
+  // When used together with `q`, include also aggregate members (at any depth)
   // in the search.
   //
   // Note that this method returns only parameters. Members are part of the type definition.
@@ -1007,8 +1006,8 @@ message ListParametersRequest {
   // If unset, only summary information is returned.
   optional bool details = 4;
 
-  // The parameter types to be included in the result. Valid types are ``boolean``,
-  // ``binary``, ``enumeration``, ``float``, ``integer`` or ``string``.
+  // The parameter types to be included in the result. Valid types are `boolean`,
+  // `binary`, `enumeration`, `float`, `integer` or `string`.
   // If unspecified, parameters of all types will be included.
   repeated string type = 5;
   
@@ -1016,31 +1015,31 @@ message ListParametersRequest {
   optional DataSourceType source = 10;
   
   // List only direct child sub-systems or parameters of the specified system.
-  // For example when querying the system "/a" against an MDB with parameters
-  // "/a/b/c" and "/a/c", the result returns the sub system "/a/b" and the
-  // parameter "/a/c".
+  // For example when querying the system `/a` against an MDB with parameters
+  // `/a/b/c` and `/a/c`, the result returns the sub system `/a/b` and the
+  // parameter `/a/c`.
   //
-  // When ``system`` and ``q`` are used together, matching parameters at any
+  // When `system` and `q` are used together, matching parameters at any
   // depth are returned, starting from the specified space system.
   optional string system = 11;
   
   // Continuation token returned by a previous page response.
   optional string next = 7;
   
-  // The zero-based row number at which to start outputting results. Default: ``0``
+  // The zero-based row number at which to start outputting results. Default: `0`
   optional int32 pos = 8;
   
   // The maximum number of returned parameters per page. Choose this value too
   // high and you risk hitting the maximum response size limit enforced by the
-  // server. Default: ``100``
+  // server. Default: `100`
   optional int32 limit = 9;
 }
 
 message ListParametersResponse {
-  // Matching subsystems when the ``system`` option was specified
+  // Matching subsystems when the `system` option was specified
   repeated SpaceSystemInfo systems = 5;
 
-  // Deprecated. Use ``systems`` instead
+  // Deprecated. Use `systems` instead
   repeated string spaceSystems = 4 [deprecated=true];
 
   // Matching parameters
@@ -1048,7 +1047,7 @@ message ListParametersResponse {
   
   // Token indicating the response is only partial. More results can then
   // be obtained by performing the same request (including all original
-  // query parameters) and setting the ``next`` parameter to this token.
+  // query parameters) and setting the `next` parameter to this token.
   optional string continuationToken = 2;
   
   // The total number of results (across all pages)
@@ -1069,10 +1068,10 @@ message BatchGetParametersResponse {
 }
 
 message ListContainersResponse {
-  // Matching subsystems when the ``system`` option was specified
+  // Matching subsystems when the `system` option was specified
   repeated SpaceSystemInfo systems = 5;
 
-  // Deprecated. Use ``systems`` instead
+  // Deprecated. Use `systems` instead
   repeated string spaceSystems = 4 [deprecated=true];
 
   // Matching containers
@@ -1080,7 +1079,7 @@ message ListContainersResponse {
   
   // Token indicating the response is only partial. More results can then
   // be obtained by performing the same request (including all original
-  // query parameters) and setting the ``next`` parameter to this token.
+  // query parameters) and setting the `next` parameter to this token.
   optional string continuationToken = 2;
   
   // The total number of results (across all pages)
@@ -1088,10 +1087,10 @@ message ListContainersResponse {
 }
 
 message ListParameterTypesResponse {
-  // Matching subsystems when the ``system`` option was specified
+  // Matching subsystems when the `system` option was specified
   repeated SpaceSystemInfo systems = 5;
 
-  // Deprecated. Use ``systems`` instead
+  // Deprecated. Use `systems` instead
   repeated string spaceSystems = 4 [deprecated=true];
 
   // Matching parameter types
@@ -1099,7 +1098,7 @@ message ListParameterTypesResponse {
 
   // Token indicating the response is only partial. More results can then
   // be obtained by performing the same request (including all original
-  // query parameters) and setting the ``next`` parameter to this token.
+  // query parameters) and setting the `next` parameter to this token.
   optional string continuationToken = 2;
 
   // The total number of results (across all pages)
@@ -1107,10 +1106,10 @@ message ListParameterTypesResponse {
 }
 
 message ListCommandsResponse {
-  // Matching subsystems when the ``system`` option was specified
+  // Matching subsystems when the `system` option was specified
   repeated SpaceSystemInfo systems = 5;
 
-  // Deprecated. Use ``systems`` instead
+  // Deprecated. Use `systems` instead
   repeated string spaceSystems = 4 [deprecated=true];
 
   // Matching commands
@@ -1118,7 +1117,7 @@ message ListCommandsResponse {
   
   // Token indicating the response is only partial. More results can then
   // be obtained by performing the same request (including all original
-  // query parameters) and setting the ``next`` parameter to this token.
+  // query parameters) and setting the `next` parameter to this token.
   optional string continuationToken = 2;
   
   // The total number of results (across all pages)
@@ -1126,10 +1125,10 @@ message ListCommandsResponse {
 }
 
 message ListAlgorithmsResponse {
-  // Matching subsystems when the ``system`` option was specified
+  // Matching subsystems when the `system` option was specified
   repeated SpaceSystemInfo systems = 5;
 
-  // Deprecated. Use ``systems`` instead
+  // Deprecated. Use `systems` instead
   repeated string spaceSystems = 4 [deprecated=true];
 
   // Matching algorithms
@@ -1137,7 +1136,7 @@ message ListAlgorithmsResponse {
   
   // Token indicating the response is only partial. More results can then
   // be obtained by performing the same request (including all original
-  // query parameters) and setting the ``next`` parameter to this token.
+  // query parameters) and setting the `next` parameter to this token.
   optional string continuationToken = 2;
   
   // The total number of results (across all pages)
@@ -1145,10 +1144,10 @@ message ListAlgorithmsResponse {
 }
 
 message GetAlgorithmRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Algorithm name.
+  // Algorithm name
   optional string name = 2;
 }
 
@@ -1194,15 +1193,15 @@ message CreateParameterTypeRequest {
   // Aliases, keyed by namespace
   map<string, string> aliases = 5;
 
-  // Engineering type. One of ``float``, ``integer``, ``enumeration``,
-  // ``binary``, ``boolean`` or ``string``.
+  // Engineering type. One of `float`, `integer`, `enumeration`,
+  // `binary`, `boolean` or `string`.
   optional string engType = 6;
 
   // Engineering unit
   optional string unit = 7;
 
   // Set to true if the engineering type supports signed representation.
-  // (only used with ``integer`` parameter types)
+  // (only used with `integer` parameter types)
   optional bool signed = 8;
 
   // Default Alarm, effective when no contextual alarm takes precedence.
@@ -1212,48 +1211,48 @@ message CreateParameterTypeRequest {
   repeated ContextAlarmInfo contextAlarms = 10;
 
   // Enumeration values.
-  // (only used with ``enumeration`` parameter types)
+  // (only used with `enumeration` parameter types)
   repeated EnumValue enumerationValues = 11;
 
   // String representation of a boolean zero.
-  // (only used with ``boolean`` parameter types)
+  // (only used with `boolean` parameter types)
   optional string zeroStringValue = 12;
 
   // String representation of a boolean one.
-  // (only used with ``boolean`` parameter types)
+  // (only used with `boolean` parameter types)
   optional string oneStringValue = 13;
 }
 
 message GetMissionDatabaseRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 }
 
 message ExportJavaMissionDatabaseRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 }
 
 message StreamMissionDatabaseRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
-  // Stream space systems. Default: ``true``
+  // Stream space systems. Default: `true`
   optional bool includeSpaceSystems = 2;
 
-  // Stream containers. Default: ``true``
+  // Stream containers. Default: `true`
   optional bool includeContainers = 3;
 
-  // Stream parameters. Default: ``true``
+  // Stream parameters. Default: `true`
   optional bool includeParameters = 4;
 
-  // Stream parameter types. Default: ``true``
+  // Stream parameter types. Default: `true`
   optional bool includeParameterTypes = 5;
 
-  // Stream commands. Default: ``true``
+  // Stream commands. Default: `true`
   optional bool includeCommands = 6;
 
-  // Stream algorithms. Default: ``true``
+  // Stream algorithms. Default: `true`
   optional bool includeAlgorithms = 7;
 }
 
@@ -1285,7 +1284,7 @@ message ListSpaceSystemsResponse {
   
   // Token indicating the response is only partial. More results can then
   // be obtained by performing the same request (including all original
-  // query parameters) and setting the ``next`` parameter to this token.
+  // query parameters) and setting the `next` parameter to this token.
   optional string continuationToken = 2;
   
   // The total number of results (across all pages)
@@ -1293,26 +1292,26 @@ message ListSpaceSystemsResponse {
 }
 
 message GetSpaceSystemRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Space-system name.
+  // Space-system name
   optional string name = 2;
 }
 
 message ExportXtceRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
-  // Space-system name.
+  // Space-system name
   optional string name = 2;
 }
 
 message GetCommandRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Command name.
+  // Command name
   optional string name = 2;
 }
 
@@ -1326,6 +1325,7 @@ message SpaceSystemInfo {
 
   // Long description (Markdown)
   optional string longDescription = 4;
+
   repeated NamedObjectId alias = 16;
   optional string version = 5;
   repeated HistoryInfo history = 14;

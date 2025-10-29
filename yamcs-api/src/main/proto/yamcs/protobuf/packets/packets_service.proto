@@ -15,6 +15,7 @@ import "yamcs/protobuf/mdb/mdb.proto";
 import "yamcs/protobuf/packets/packets.proto";
 
 service PacketsApi {
+  option (yamcs.api.markdown) = true;
 
   // List packet names
   rpc ListPacketNames(ListPacketNamesRequest) returns (ListPacketNamesResponse) {
@@ -106,7 +107,7 @@ service PacketsApi {
 }
 
 message ListPacketNamesRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 }
 
@@ -126,7 +127,7 @@ message ListPacketsRequest {
   optional string instance = 1;
   
   // The zero-based row number at which to start outputting results.
-  // Default: ``0``
+  // Default: `0`
   //
   // This option is deprecated and will be removed in a later version.
   // Use the returned continuationToken instead.
@@ -134,10 +135,10 @@ message ListPacketsRequest {
   
   // The maximum number of returned records per page. Choose this value too high
   // and you risk hitting the maximum response size limit enforced by the server.
-  // Default: ``100``
+  // Default: `100`
   optional int32 limit = 3;
   
-  // The order of the returned results. Can be either ``asc`` or ``desc``. Default: ``desc``
+  // The order of the returned results. Can be either `asc` or `desc`. Default: `desc`
   optional string order = 4;
   
   // The archived name of the packets. Names must match exactly.
@@ -157,32 +158,22 @@ message ListPacketsRequest {
   // string in ISO 8601 format. This bound is exclusive.
   optional google.protobuf.Timestamp stop = 8;
 
-  // Filter query. See :doc:`../filtering` for how to write a filter query.
+  // Filter query. See {doc}`../filtering` for how to write a filter query.
   //
-  // Literal text search matches against the fields ``name`` and ``link``.
-  //
+  // Literal text search matches against the `name` and `link` fields.
   // Field comparisons can use any of the following fields:
   //
-  // .. list-table::
-  //     :widths: 25 25 50
-  //
-  //     * - ``name``
-  //       - string
-  //       -
-  //     * - ``link``
-  //       - string
-  //       -
-  //     * - ``seqNumber``
-  //       - number
-  //       -
-  //     * - ``size``
-  //       - number
-  //       -
+  // | Field       | Type        | Description                        |
+  // | ----------- | ----------- | ---------------------------------- |
+  // | `name`      | string      | Filter by archived name            |
+  // | `link`      | string      | Filter by receiving link           |
+  // | `seqNumber` | number      | Filter by archived sequence number |
+  // | `size`      | number      | Filter by packet size in bytes     |
   optional string filter = 10;
 }
 
 message ListPacketsResponse {
-  // Deprecated, use ``packets`` instead
+  // Deprecated, use `packets` instead
   repeated TmPacketData packet = 1 [deprecated=true];
 
   // Page with matching packets
@@ -190,12 +181,12 @@ message ListPacketsResponse {
 
   // Token indicating the response is only partial. More results can then
   // be obtained by performing the same request (including all original
-  // query parameters) and setting the ``next`` parameter to this token.
+  // query parameters) and setting the `next` parameter to this token.
   optional string continuationToken = 2;
 }
 
 message GetPacketRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
   // Stored packet name
@@ -210,7 +201,7 @@ message GetPacketRequest {
 }
 
 message StreamPacketsRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   optional google.protobuf.Timestamp start = 2;
   optional google.protobuf.Timestamp stop = 3;
@@ -218,7 +209,7 @@ message StreamPacketsRequest {
 }
 
 message ExtractPacketRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
   // Stored packet name
@@ -268,7 +259,7 @@ message ExtractedParameterValue {
 }
 
 message ExportPacketRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
   // Stored packet name
@@ -283,7 +274,7 @@ message ExportPacketRequest {
 }
 
 message ExportPacketsRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
   // Filter the lower bound of the packet's generation time. Specify a date
@@ -299,21 +290,21 @@ message ExportPacketsRequest {
 }
 
 message SubscribePacketsRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
-  // Stream name. This is mutually exclusive with the field ``processor``.
+  // Stream name. This is mutually exclusive with the field `processor`.
   optional string stream = 2;
   
-  // Processor name. This is mutually exclusive with the field ``stream``.
+  // Processor name. This is mutually exclusive with the field `stream`.
   optional string processor = 3;
 }
 
 message SubscribeContainersRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Processor name.
+  // Processor name
   optional string processor = 2;
   
   // Container names to subscribe to.
@@ -321,7 +312,7 @@ message SubscribeContainersRequest {
 }
 
 message ContainerData {
-  // Container name.
+  // Container name
   optional string name = 1;
 
   // When the container's packet was generated (packet time)

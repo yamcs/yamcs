@@ -14,6 +14,7 @@ import "google/protobuf/empty.proto";
 // Handles incoming requests related to Identity and Access Management (IAM)
 service IamApi {
   option (yamcs.api.label) = "IAM";
+  option (yamcs.api.markdown) = true;
 
   // List privileges
   rpc ListPrivileges(google.protobuf.Empty) returns (ListPrivilegesResponse) {

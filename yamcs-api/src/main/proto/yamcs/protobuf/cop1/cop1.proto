@@ -10,12 +10,14 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
 
-// Methods for virtual channel TC links that have ``useCop1: true``.
+// Methods for virtual channel TC links that have `useCop1: true`.
+//
 // This service contains methods for setting/getting the configuration and
-// performing various operations.
-// In addition, a websocket subscription is available that will allow receiving periodically the status.
+// performing various operations. In addition, a websocket subscription is
+// available for periodically receiving status updates.
 service Cop1Api {
   option (yamcs.api.label) = "COP-1";
+  option (yamcs.api.markdown) = true;
 
   // Initialize COP-1 in case state is UNITIALIZED
   rpc Initialize(InitializeRequest) returns (google.protobuf.Empty) {
@@ -35,6 +37,7 @@ service Cop1Api {
   // Disable COP-1 operation
   //
   // This causes the sent queue to be purged.
+  //
   // All TCs from the wait queue, as well as newly received TCs
   // are sent immediately
   rpc Disable(DisableRequest) returns (google.protobuf.Empty) {
@@ -90,10 +93,10 @@ enum InitializationType {
 }
 
 message InitializeRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Link name.
+  // Link name
   optional string link = 2;
     
   optional InitializationType type = 3;
@@ -106,45 +109,45 @@ message InitializeRequest {
 }
 
 message UpdateConfigRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Link name.
+  // Link name
   optional string link = 2;
 
   optional Cop1Config cop1Config = 3;
 }
 
 message GetConfigRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Link name.
+  // Link name
   optional string link = 2;
 }
 
 
 message GetStatusRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
-  // Link name.
+  // Link name
   optional string link = 2;
 }
 
 message ResumeRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Link name.
+  // Link name
   optional string link = 2;
 }
 
 message DisableRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Link name.
+  // Link name
   optional string link = 2;
   	
   // If true, all transmitted frames while COP1 is disabled, have the bypass flag set

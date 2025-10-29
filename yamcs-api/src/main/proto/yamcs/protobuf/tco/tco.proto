@@ -9,8 +9,9 @@ import "yamcs/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
-//Methods related to the Time Correlation Service.
+// Methods related to the Time Correlation Service.
 service TimeCorrelationApi {
+  option (yamcs.api.markdown) = true;
 
 
   // Get the TCO config
@@ -46,8 +47,8 @@ service TimeCorrelationApi {
 
   // Set the TCO coefficients
   //
-  //Manually set the coefficients to be used for time correlation. These will overwrite 
-  // the automatic computed coefficients.
+  // Manually set the coefficients to be used for time correlation.
+  // These will overwrite the automatically computed coefficients.
   rpc SetCoefficients(SetCoefficientsRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       post: "/api/tco/{instance}/{serviceName}/coefficients"
@@ -55,9 +56,9 @@ service TimeCorrelationApi {
     };
   }
 
-  //Reset the time correlation.
+  // Reset the time correlation.
   //
-  //The current used TCO coefficients are removed together with all collected samples.
+  // The current used TCO coefficients are removed together with all collected samples.
   rpc Reset(TcoResetRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       post: "/api/tco/{instance}/{serviceName}:reset"
@@ -66,19 +67,18 @@ service TimeCorrelationApi {
   
   // Add intervals for the time of flight calculation.
   //
-  // Each ``[ertStart, ertStop)`` interval contains a polynomial function used to compute the time of flight for the given ``ert``.
+  // Each `[ertStart, ertStop)` interval contains a polynomial function used to compute the time of flight for the given `ert`.
   // The intervals can overlap and are sorted in descending order of the start time.
   // The first (highest start time) interval where the requested ert fits, will be used for the calculation. 
   // 
   // The formula used for calculating the time of flight for a frame/packet received
-  // at ``ert`` in the ``[ertStart, ertStop)`` interval is:
+  // at `ert` in the `[ertStart, ertStop)` interval is:
   // 
-  //     ``delta = ert - ertStart``
+  // `delta = ert - ertStart`
   //
-  //     ``tof = polCoef[0] + polCoef[1] * delta + polCoef[2] * delta^2 + ...``
+  // `tof = polCoef[0] + polCoef[1] * delta + polCoef[2] * delta^2 + ...`
   // 
-  // The result of the polynomial is the ``tof`` expressed in seconds.
-  //
+  // The result of the polynomial is the `tof` expressed in seconds.
   rpc AddTimeOfFlightIntervals(AddTimeOfFlightIntervalsRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       post: "/api/tco/{instance}/{serviceName}/tof:addIntervals"
@@ -100,30 +100,30 @@ service TimeCorrelationApi {
 }
 
 message GetTcoConfigRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
-  // service name.
+  // Service name
   optional string serviceName = 2;
 }
 
 
 message SetTcoConfigRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
-  // Service name.
+  // Service name
   optional string serviceName = 2;
  
-  //configuration to set
+  // Configuration to set
   optional TcoConfig config = 3;
 }
 
 message TcoResetRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
-  // Service name.
+  // Service name
   optional string serviceName = 2;
 }
 
@@ -137,42 +137,42 @@ message TcoConfig {
 }
   
 message GetTcoStatusRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
-  // Service name.
+  // Service name
   optional string serviceName = 2;
 }
   
 message SetCoefficientsRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
-  // Service name.
+  // Service name
   optional string serviceName = 2;
   
-  //Time correlation coefficients	
+  // Time correlation coefficients	
   optional TcoCoefficients coefficients = 3;
 }
  
 message AddTimeOfFlightIntervalsRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
-  // Service name.
+  // Service name
   optional string serviceName = 2;
   	
-  //intervals for time of flight calculation
+  // Ontervals for time of flight calculation
   repeated TofInterval intervals = 3;
 }
 
-//Delete all the TofIntervals having
+// Delete all the TofIntervals having
 // start <= tofInterval.ertStart <= stop
 message DeleteTimeOfFlightIntervalsRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
-  // Service name.
+  // Service name
   optional string serviceName = 2;
   	
   optional google.protobuf.Timestamp start = 3;
@@ -187,37 +187,36 @@ message TcoCoefficients {
 }
 
 //Current status of the Time Correlation
-
-//If the TCO is used only for verifying the synchronization, the message will 
+//
+// If the TCO is used only for verifying the synchronization, the message will 
 // contain only the validity, accuracy and deviation.
 message TcoStatus {
 
-  //Currently used coefficients.
+  // Currently used coefficients.
   // If not present, the synchronization is not established
   optional TcoCoefficients coefficients = 1;
   
-  //The time when the coefficients have been computed
+  // The time when the coefficients have been computed
   optional google.protobuf.Timestamp coefficientsTime = 2;
   
-  //The last computed deviation
+  // The last computed deviation
   optional double deviation = 3;
   
-  //The last accumulated samples
-  //These are not necessary those from which the coefficients 
-  //have been calculated because the coefficients will only 
-  //be recalculated when the deviation is higher than the accuracy settings
+  // The last accumulated samples.
+  // These are not necessary those from which the coefficients 
+  // have been calculated because the coefficients will only 
+  // be recalculated when the deviation is higher than the accuracy settings.
   repeated TcoSample samples = 4;
   
 }
 
-//Sample association between UTC and Onboard time.
-//This is computed by the TCO service after adjusting for internal
-//delays and time of flight. 
+// Sample association between UTC and Onboard time.
+// This is computed by the TCO service after adjusting for internal
+// delays and time of flight. 
 message TcoSample {
   optional google.protobuf.Timestamp utc = 1;
   optional uint64 obt = 2;
 }
-
 
 message TofInterval {
   optional google.protobuf.Timestamp ertStart = 1;

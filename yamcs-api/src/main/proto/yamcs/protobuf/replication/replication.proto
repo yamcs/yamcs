@@ -11,6 +11,7 @@ import "google/protobuf/empty.proto";
 import "yamcs/api/annotations.proto";
 
 service ReplicationApi {
+  option (yamcs.api.markdown) = true;
 
   // Get replication info
   rpc GetReplicationInfo(google.protobuf.Empty) returns (ReplicationInfo) {

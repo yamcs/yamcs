@@ -12,6 +12,7 @@ import "yamcs/api/annotations.proto";
 import "yamcs/protobuf/yamcs.proto";
 
 service ParameterValuesApi {
+  option (yamcs.api.markdown) = true;
 
   // Load a stream of parameter values
   rpc LoadParameterValues(stream LoadParameterValuesRequest) returns (LoadParameterValuesResponse) {
@@ -45,7 +46,7 @@ message LoadParameterValuesResponse {
 }
 
 message ParameterValueUpdate {
-  // Fully qualified parameter name
+  // Fully-qualified parameter name
   optional string parameter = 1;
 
   // The new value

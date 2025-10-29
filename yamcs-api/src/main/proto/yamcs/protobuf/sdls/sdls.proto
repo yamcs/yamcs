@@ -12,9 +12,13 @@ import "yamcs/api/annotations.proto";
 import "yamcs/api/httpbody.proto";
 
 service SdlsApi {
+  option (yamcs.api.label) = "SDLS";
+  option (yamcs.api.markdown) = true;
+
   // Get the list of SPIs defined on a link
   rpc GetLinkSpis(GetLinkSpisRequest) returns (GetLinkSpisResponse) {
     option (yamcs.api.route) = {
+      label: "Get link SPIs"
       get: "/api/sdls/{instance}/{linkName}"
     };
   }
@@ -22,6 +26,7 @@ service SdlsApi {
   // Get Security Association info for a given SPI on a link
   rpc GetSa(GetSaRequest) returns (GetSaResponse) {
     option (yamcs.api.route) = {
+      label: "Get SA"
       get: "/api/sdls/{instance}/{linkName}/{spi}"
     };
   }
@@ -52,6 +57,7 @@ service SdlsApi {
   // Set the SPI used by a VC to a single SPI
   rpc SetSpi(SetSpiRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
+      label: "Set SPI"
       put: "/api/sdls/{instance}/{linkName}/{vcId}/spi",
       body: "body",
     };
@@ -61,6 +67,7 @@ service SdlsApi {
   // Only valid for incoming links.
   rpc SetSpis(SetSpisRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
+      label: "Set SPIs"
       put: "/api/sdls/{instance}/{linkName}/{vcId}/spis",
       body: "body",
     };

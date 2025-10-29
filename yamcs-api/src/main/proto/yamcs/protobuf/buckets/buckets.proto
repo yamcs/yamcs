@@ -21,11 +21,6 @@ import "yamcs/api/httpbody.proto";
 // The metadata is represented by simple (key,value) pairs where both key and
 // value are strings.
 //
-// By default each user has a bucket named ``user.username`` which can be used
-// without extra privileges. Additional buckets may be created and used if the
-// user has the required privileges. The user bucket will be created
-// automatically when the user tries to access it.
-//
 // The following limitations are implemented in order to prevent disk over
 // consumption and keep the service responsive:
 //
@@ -36,6 +31,7 @@ import "yamcs/api/httpbody.proto";
 // *   The maximum size of the metadata is 16KB (counted as the sum of the
 //     length of the keys and values).
 service BucketsApi {
+  option (yamcs.api.markdown) = true;
 
   // List buckets
   rpc ListBuckets(ListBucketsRequest) returns (ListBucketsResponse) {
@@ -87,11 +83,11 @@ service BucketsApi {
   
   // Get an object
   //
-  // The body of the response represents the object data. The ``Content-Type``
+  // The body of the response represents the object data. The `Content-Type`
   // header is set to the content type of the object specified when uploading
-  // the object. If no ``Content-Type`` was specified when creating the object,
-  // the ``Content-Type`` of the response is set to
-  // ``application/octet-stream``.
+  // the object. If no `Content-Type` was specified when creating the object,
+  // the `Content-Type` of the response is set to
+  // `application/octet-stream`.
   rpc GetObject(GetObjectRequest) returns (yamcs.api.HttpBody) {
     option (yamcs.api.route) = {
       get: "/api/storage/buckets/{bucketName}/objects/{objectName*}"
@@ -111,61 +107,60 @@ service BucketsApi {
 
   // Upload an object
   //
-  // .. rubric:: Simple upload
+  // **Simple upload**:
   // 
-  // In case of simple upload, the objectName has to be specified as part of the URL
-  // and the ``Content-Type header`` has to be set to the type of the object. The body
+  // In case of simple upload, the object name has to be specified as part of the URL
+  // and the `Content-Type` header has to be set to the type of the object. The body
   // of the request is the object data.
   // 
   // 
-  // .. rubric:: Form upload
+  // **Form upload**:
   // 
-  // The form based upload can be used to upload an object from an HTML form. In this
-  // case the Content-Type of the request is set to ``multipart/form-data``, and the
+  // The form-based upload can be used to upload an object from an HTML form. In this
+  // case the `Content-Type` of the request is set to `multipart/form-data`, and the
   // body will contain at least one part which is the object data. This part includes
-  // a filename which is used as the object name as well as a ``Content-Type`` header.
+  // a filename which is used as the object name as well as a `Content-Type` header.
+  //
   // The name attribute for the file part is ignored.
+  //
   // Additional parts (which do not specify a filename) will be used as metadata: the
-  // name is specified as part of the ``Content-Disposition`` and the value is the body
+  // name is specified as part of the `Content-Disposition` and the value is the body
   // of the part.
   // 
-  // This can be tested with curl using the ``-F`` option.
+  // This can be tested with curl using the `-F` option.
   // 
+  // ```http
+  // POST /api/storage/buckets/my_bucket/objects HTTP/1.1
+  // Host: localhost:8090
+  // User-Agent: curl/7.58.0
+  // Accept: */*
+  // Content-Length: 1090
+  // Content-Type: multipart/form-data; boundary=------------------------7109c709802f7ae4
   // 
-  // .. rubric:: Example
-  // .. code-block:: http
+  // --------------------------7109c709802f7ae4
+  // Content-Disposition: form-data; name="file"; filename="object/name"
+  // Content-Type: text/plain
   // 
-  //     POST /api/storage/buckets/my_bucket/objects HTTP/1.1
-  //     Host: localhost:8090
-  //     User-Agent: curl/7.58.0
-  //     Accept: */*
-  //     Content-Length: 1090
-  //     Content-Type: multipart/form-data; boundary=------------------------7109c709802f7ae4
+  // [object data]
+  // --------------------------7109c709802f7ae4
+  // Content-Disposition: form-data; name="name1"
   // 
-  //     --------------------------7109c709802f7ae4
-  //     Content-Disposition: form-data; name="file"; filename="object/name"
-  //     Content-Type: text/plain
+  // value1
+  // --------------------------7109c709802f7ae4
+  // Content-Disposition: form-data; name="name2"
   // 
-  //     [object data]
-  //     --------------------------7109c709802f7ae4
-  //     Content-Disposition: form-data; name="name1"
+  // value2
+  // --------------------------7109c709802f7ae4--
+  // ```
   // 
-  //     value1
-  //     --------------------------7109c709802f7ae4
-  //     Content-Disposition: form-data; name="name2"
+  // This will create an object named `object/name` with two metadata properties:
   // 
-  //     value2
-  //     --------------------------7109c709802f7ae4--
-  // 
-  // 
-  // This will create an object named ``object/name`` with two metadata properties:
-  // 
-  // .. code-block:: json
-  // 
-  //     {
-  //         "name1": "value1",
-  //         "name2": "value2"
-  //     }
+  // ```json
+  // {
+  //   "name1": "value1",
+  //   "name2": "value2"
+  // }
+  // ```
   rpc UploadObject(UploadObjectRequest) returns (google.protobuf.Empty) {
     option (yamcs.api.route) = {
       post: "/api/storage/buckets/{bucketName}/objects/{objectName**}"
@@ -256,12 +251,11 @@ message UploadObjectRequest {
   optional string instance = 1 [deprecated = true];
   
   // Bucket name.
-  //
-  // If the bucketName is ``user.username`` the bucket will be created automatically
-  // if it does not exist. Otherwise the bucket must exist before being used.
   optional string bucketName = 2;
   
-  // Object name
+  // Object name.
+  //
+  // This parameter may be omitted when using form-based uploads. 
   optional string objectName = 3;
   
   optional yamcs.api.HttpBody data = 4;
@@ -349,10 +343,10 @@ message ListObjectsRequest {
   // response parameter) the name truncated after the delimiter. Duplicates
   // are omitted.
   //
-  // Together with ``prefix`` this parameter provides filtering capabilities.
+  // Together with `prefix` this parameter provides filtering capabilities.
   // These work similar to Google Cloud Storage and Amazon S3.
   //
-  // The ``delimiter`` allows the list to work in a directory mode despite
+  // The `delimiter` allows the list to work in a directory mode despite
   // the object namespace being flat. For example if the delimiter is set to
   // "/", then listing the bucket containing objects "a/b", "a/c", "d", "e"
   // and "e/f" returns objects "d" and "e" and prefixes "a/" and "e/".
@@ -364,7 +358,7 @@ message ListObjectsRequest {
 
 message ListObjectsResponse {
   // Object name prefixes for objects that matched the request but were
-  // excluded from ``objects`` because of a delimiter.
+  // excluded from `objects` because of a delimiter.
   repeated string prefixes = 1;
   
   // The list of objects

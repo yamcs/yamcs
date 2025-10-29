@@ -13,6 +13,7 @@ import "yamcs/api/annotations.proto";
 import "yamcs/protobuf/mdb/mdb.proto";
 
 service ClearanceApi {
+  option (yamcs.api.markdown) = true;
 
   // List clearances
   rpc ListClearances(google.protobuf.Empty) returns (ListClearancesResponse) {

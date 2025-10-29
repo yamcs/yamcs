@@ -12,6 +12,7 @@ import "yamcs/api/annotations.proto";
 import "yamcs/protobuf/commanding/commanding.proto";
 
 service QueuesApi {
+  option (yamcs.api.markdown) = true;
 
   // List command queues
   rpc ListQueues(ListQueuesRequest) returns (ListQueuesResponse) {
@@ -92,10 +93,10 @@ service QueuesApi {
 }
 
 message ListQueuesRequest {
-  // Yamcs instance namee.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Processor name.
+  // Processor name
   optional string processor = 2;
 }
 
@@ -104,73 +105,73 @@ message ListQueuesResponse {
 }
 
 message SubscribeQueueStatisticsRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Processor name.
+  // Processor name
   optional string processor = 2;
 }
 
 message SubscribeQueueEventsRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Processor name.
+  // Processor name
   optional string processor = 2;
 }
 
 message GetQueueRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Processor name.
+  // Processor name
   optional string processor = 2;
   
-  // Queue name.
+  // Queue name
   optional string queue = 3;
 }
 
 message EnableQueueRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Processor name.
+  // Processor name
   optional string processor = 2;
   
-  // Queue name.
+  // Queue name
   optional string queue = 3;
 }
 
 message DisableQueueRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Processor name.
+  // Processor name
   optional string processor = 2;
   
-  // Queue name.
+  // Queue name
   optional string queue = 3;
 }
 
 message BlockQueueRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Processor name.
+  // Processor name
   optional string processor = 2;
   
-  // Queue name.
+  // Queue name
   optional string queue = 3;
 }
 
 message ListQueuedCommandsRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Processor name.
+  // Processor name
   optional string processor = 2;
   
-  // Queue name.
+  // Queue name
   optional string queue = 3;
 }
 
@@ -179,29 +180,29 @@ message ListQueuedCommandsResponse {
 }
 
 message AcceptCommandRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Processor name.
+  // Processor name
   optional string processor = 2;
   
-  // Queue name.
+  // Queue name
   optional string queue = 3;
   
-  // Command identifier.
+  // Command identifier
   optional string command = 4;
 }
 
 message RejectCommandRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Processor name.
+  // Processor name
   optional string processor = 2;
   
-  // Queue name.
+  // Queue name
   optional string queue = 3;
   
-  // Command identifier.
+  // Command identifier
   optional string command = 4;
 }

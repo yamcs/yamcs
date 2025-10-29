@@ -89,18 +89,18 @@ message OptionInfo {
   // Description, each list entry represents a paragraph
   repeated string description = 10;
 
-  // When the type is ``LIST`` or ``LIST_OR_ELEMENT``, this indicates the type
+  // When the type is `LIST` or `LIST_OR_ELEMENT`, this indicates the type
   // of each element of that list
   optional OptionType elementType = 11;
 
-  // When the type or elementType is ``MAP``, this specifies
+  // When the type or elementType is `MAP`, this specifies
   // the options with that map
   optional SpecInfo spec = 12;
 
   // Allowed values for this option
   repeated google.protobuf.Value choices = 13;
 
-  // When the type is ``MAP``, this property determines whether default values
+  // When the type is `MAP`, this property determines whether default values
   // are generated even when a value for that option was not provided.
   optional bool applySpecDefaults = 14;
 

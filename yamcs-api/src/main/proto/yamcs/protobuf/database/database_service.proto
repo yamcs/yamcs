@@ -11,6 +11,7 @@ import "google/protobuf/empty.proto";
 import "yamcs/api/annotations.proto";
 
 service DatabaseApi {
+  option (yamcs.api.markdown) = true;
 
   // List databases
   rpc ListDatabases(google.protobuf.Empty) returns (ListDatabasesResponse) {
