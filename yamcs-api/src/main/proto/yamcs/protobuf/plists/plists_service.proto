@@ -12,6 +12,7 @@ import "yamcs/api/annotations.proto";
 import "yamcs/protobuf/plists/plists.proto";
 
 service ParameterListsApi {
+  option (yamcs.api.markdown) = true;
 
   // List parameter lists
   rpc ListParameterLists(ListParameterListsRequest) returns (ListParameterListsResponse) {

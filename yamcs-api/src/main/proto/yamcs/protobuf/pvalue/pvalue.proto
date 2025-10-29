@@ -110,10 +110,10 @@ message TimeSeries {
         // If this value is zero, it indicates a gap.
         optional int32 n = 5;
 
-        // Generation time of the ``min`` value.
+        // Generation time of the `min` value.
         optional google.protobuf.Timestamp minTime = 7;
 
-        // Generation time of the ``max`` value.
+        // Generation time of the `max` value.
         optional google.protobuf.Timestamp maxTime = 8;
 
         // Generation time of the first value in this sample
@@ -134,38 +134,38 @@ message Ranges {
         // Generation time of a parameter value.
         optional google.protobuf.Timestamp start = 7;
 
-        // If the value changes, ``stop`` is the generation time of the new value.
-        // If the parameter expires or the ``maxGap`` has been set, ``stop`` is
+        // If the value changes, `stop` is the generation time of the new value.
+        // If the parameter expires or the `maxGap` has been set, `stop` is
         // the generation time of the last value.
         optional google.protobuf.Timestamp stop = 8;
 
         // Total number of parameter values in this range.
         //
-        // This is the sum of the ``counts`` array, and ``otherCount``.
+        // This is the sum of the `counts` array, and `otherCount`.
         optional int32 count = 4;
         
-        // The ``minRange`` option on the request allows to specify 
+        // The `minRange` option on the request allows to specify
         // the minimum length of returned ranges.
         //
         // Practically we guarantee that stop-start >= minRange (mind the leap
         // seconds!).
         //
-        // If ``minRange`` was set, the returned ranges may include multiple
-        // values. These are given by ``engValues`` and ``counts``. 
+        // If `minRange` was set, the returned ranges may include multiple
+        // values. These are given by `engValues` and `counts`.
         //
-        // The ``maxValues`` option on the request allows to limit the number 
+        // The `maxValues` option on the request allows to limit the number
         // of distinct values returned across all the ranges.
         //
         // The counts correspond one to one to the engValues, the two arrays have
         // the same length.
         repeated Value engValues = 5;
 
-        // Array of same length as ``engValues``, with respective value counts
+        // Array of same length as `engValues`, with respective value counts
         // within this range.
         repeated int32 counts = 6;
 
         // Values in this range that do not match one of the returned
-        // ``engValues``.
+        // `engValues`.
         optional int32 otherCount = 9;
     }
     repeated Range range = 1;

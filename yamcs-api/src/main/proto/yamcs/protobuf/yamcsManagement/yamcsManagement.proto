@@ -110,10 +110,10 @@ message ProcessorRequest {
   // Processor name
   optional string name = 3;
 
-  // Time to seek to, when ``operation`` is set to ``SEEK``
+  // Time to seek to, when `operation` is set to `SEEK`
   optional int64 seekTime = 4;
 
-  // Speec, shen ``operation`` is set to ``CHANGE_SPEED``
+  // Speec, shen `operation` is set to `CHANGE_SPEED`
   optional ReplaySpeed replaySpeed = 5;
 }
 

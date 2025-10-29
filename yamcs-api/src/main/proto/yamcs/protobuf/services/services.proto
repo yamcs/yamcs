@@ -36,13 +36,13 @@ enum ServiceState {
   // consumes minimal resources.
   NEW = 0;
 
-  // A service in this state is transitioning to ``RUNNING``.
+  // A service in this state is transitioning to `RUNNING`.
   STARTING = 1;
 
   // A service in this state is operational.
   RUNNING = 2;
 
-  // A service in this state is transitioning to ``TERMINATED``.
+  // A service in this state is transitioning to `TERMINATED`.
   STOPPING = 3;
 
   // A service in this state has completed execution normally.

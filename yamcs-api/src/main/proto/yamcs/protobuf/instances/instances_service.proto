@@ -13,6 +13,7 @@ import "yamcs/protobuf/instances/instances.proto";
 
 
 service InstancesApi {
+  option (yamcs.api.markdown) = true;
 
   // List instance templates
   rpc ListInstanceTemplates(google.protobuf.Empty) returns (ListInstanceTemplatesResponse) {
@@ -128,7 +129,7 @@ message CreateInstanceRequest {
 }
 
 message ReconfigureInstanceRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
   // Arguments for substitution in the template definition. Each entry is

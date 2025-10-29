@@ -14,8 +14,12 @@ import "yamcs/protobuf/events/events.proto";
 
 
 service EventsApi {
+  option (yamcs.api.markdown) = true;
 
   // List events
+  //
+  // Two alternative URI forms can be used. The `GET` method is convenient, while
+  // the `POST` method allows passing long filter expressions.  
   rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {
     option (yamcs.api.route) = {
       get: "/api/archive/{instance}/events"
@@ -69,7 +73,7 @@ message ListEventsRequest {
   optional string instance = 1;
       
   // The zero-based row number at which to start outputting results.
-  // Default: ``0``
+  // Default: `0`
   //
   // This option is deprecated and will be removed in a later version.
   // Use the returned continuationToken instead.
@@ -77,15 +81,15 @@ message ListEventsRequest {
   
   // The maximum number of returned records per page. Choose this value too high
   // and you risk hitting the maximum response size limit enforced by the server.
-  // Default: ``100``
+  // Default: `100`
   optional int32 limit = 3;
   
-  // The order of the returned results. Can be either ``asc`` or ``desc``.
-  // Default: ``desc``
+  // The order of the returned results. Can be either `asc` or `desc`.
+  // Default: `desc`
   optional string order = 4;
   
-  // The minimum severity level of the events. One of ``info``, ``watch``, ``warning``,
-  // ``distress``, ``critical`` or ``severe``. Default: ``info``
+  // The minimum severity level of the events. One of `info`, `watch`, `warning`,
+  // `distress`, `critical` or `severe`. Default: `info`
   optional string severity = 5;
   
   // The source of the events. Names must match exactly.
@@ -105,36 +109,26 @@ message ListEventsRequest {
   // Text to search for in the message.
   optional string q = 10;
 
-  // Filter query. See :doc:`../filtering` for how to write a filter query.
+  // Filter query. See {doc}`../filtering` for how to write a filter query.
   //
-  // Literal text search matches against the fields ``message``, ``source`` and
-  // ``type``.
+  // Literal text search matches against the `message`, `source` and `type`
+  // fields. Field comparisons can use any of the following fields:
   //
-  // Field comparisons can use any of the following fields:
+  // | Field       | Type   | Description                        |
+  // | ----------- | ------ | ---------------------------------- |
+  // | `message`   | string | Filter by message text             |
+  // | `seqNumber` | number | Filter by archived sequence number |
+  // | `severity`  | enum   | Filter by event severity           |
+  // | `source`    | string | Filter by event source             |
+  // | `type`      | string | Filter by event type               |
   //
-  // .. list-table::
-  //     :widths: 25 25 50
-  //
-  //     * - ``message``
-  //       - string
-  //       -
-  //     * - ``seqNumber``
-  //       - number
-  //       -
-  //     * - ``severity``
-  //       - enum
-  //       - One of ``info``, ``watch``, ``warning``, ``distress``, ``critical`` or ``severe``.
-  //     * - ``source``
-  //       - string
-  //       -
-  //     * - ``type``
-  //       - string
-  //       -
+  // Possible severities: `info`, `watch`, `warning`, `distress`, `critical`
+  // or `severe`.
   optional string filter = 11;
 }
 
 message ListEventsResponse {
-  // Deprecated, use ``events`` instead
+  // Deprecated, use `events` instead
   repeated Event event = 1 [deprecated=true];
 
   // Page with matching events
@@ -142,7 +136,7 @@ message ListEventsResponse {
 
   // Token indicating the response is only partial. More results can then
   // be obtained by performing the same request (including all original
-  // query parameters) and setting the ``next`` parameter to this token.
+  // query parameters) and setting the `next` parameter to this token.
   optional string continuationToken = 2;
 }
 
@@ -150,31 +144,21 @@ message SubscribeEventsRequest {
   // Yamcs instance name
   optional string instance = 1;
 
-  // Filter query. See :doc:`../filtering` for how to write a filter query.
+  // Filter query. See {doc}`../filtering` for how to write a filter query.
   //
-  // Literal text search matches against the fields ``message``, ``source`` and
-  // ``type``.
+  // Literal text search matches against the `message`, `source` and `type`
+  // fields. Field comparisons can use any of the following fields:
   //
-  // Field comparisons can use any of the following fields:
+  // | Field       | Type   | Description                        |
+  // | ----------- | ------ | ---------------------------------- |
+  // | `message`   | string | Filter by message text             |
+  // | `seqNumber` | number | Filter by archived sequence number |
+  // | `severity`  | enum   | Filter by event severity           |
+  // | `source`    | string | Filter by event source             |
+  // | `type`      | string | Filter by event type               |
   //
-  // .. list-table::
-  //     :widths: 25 25 50
-  //
-  //     * - ``message``
-  //       - string
-  //       -
-  //     * - ``seqNumber``
-  //       - number
-  //       -
-  //     * - ``severity``
-  //       - enum
-  //       - One of ``info``, ``watch``, ``warning``, ``distress``, ``critical`` or ``severe``.
-  //     * - ``source``
-  //       - string
-  //       -
-  //     * - ``type``
-  //       - string
-  //       -
+  // Possible severities: `info`, `watch`, `warning`, `distress`, `critical`
+  // or `severe`.
   optional string filter = 2;
 }
 
@@ -188,8 +172,8 @@ message CreateEventRequest {
   // **Required.** Event message.
   optional string message = 3;
 
-  // The severity level of the event. One of ``info``, ``watch``, ``warning``,
-  // ``distress``, ``critical`` or ``severe``. Default is ``info``
+  // The severity level of the event. One of `info`, `watch`, `warning`,
+  // `distress`, `critical` or `severe`. Default is `info`
   optional string severity = 4;
 
   // Time associated with the event.
@@ -197,7 +181,7 @@ message CreateEventRequest {
   optional google.protobuf.Timestamp time = 5;
 
   // Source of the event. Useful for grouping events in the archive. Default is
-  // ``User``.
+  // `User`.
   optional string source = 6;
 
   // Sequence number of this event. This is primarily used to determine unicity of
@@ -230,31 +214,21 @@ message StreamEventsRequest {
   // Search by text
   optional string q = 6;
 
-  // Filter query. See :doc:`../filtering` for how to write a filter query.
+  // Filter query. See {doc}`../filtering` for how to write a filter query.
   //
-  // Literal text search matches against the fields ``message``, ``source`` and
-  // ``type``.
+  // Literal text search matches against the `message`, `source` and `type`
+  // fields. Field comparisons can use any of the following fields:
   //
-  // Field comparisons can use any of the following fields:
+  // | Field       | Type   | Description                        |
+  // | ----------- | ------ | ---------------------------------- |
+  // | `message`   | string | Filter by message text             |
+  // | `seqNumber` | number | Filter by archived sequence number |
+  // | `severity`  | enum   | Filter by event severity           |
+  // | `source`    | string | Filter by event source             |
+  // | `type`      | string | Filter by event type               |
   //
-  // .. list-table::
-  //     :widths: 25 25 50
-  //
-  //     * - ``message``
-  //       - string
-  //       -
-  //     * - ``seqNumber``
-  //       - number
-  //       -
-  //     * - ``severity``
-  //       - enum
-  //       - One of ``info``, ``watch``, ``warning``, ``distress``, ``critical`` or ``severe``.
-  //     * - ``source``
-  //       - string
-  //       -
-  //     * - ``type``
-  //       - string
-  //       -
+  // Possible severities: `info`, `watch`, `warning`, `distress`, `critical`
+  // or `severe`.
   optional string filter = 7;
 }
 
@@ -264,7 +238,7 @@ message ListEventSourcesRequest {
 }
 
 message ListEventSourcesResponse {
-  // Deprecated, use ``sources`` instead
+  // Deprecated, use `sources` instead
   repeated string source = 1 [deprecated=true];
 
   // Known event sources
@@ -286,41 +260,31 @@ message ExportEventsRequest {
   // The source of the events. Names must match exactly.
   repeated string source = 4;
   
-  // The minimum severity level of the events. One of ``info``, ``watch``, 
-  // ``warning``, ``distress`` or ``severe``. Default: ``info``
+  // The minimum severity level of the events. One of `info`, `watch`, 
+  // `warning`, `distress` or `severe`. Default: `info`
   optional string severity = 5;
   
   // Text to search for in the message.
   optional string q = 6;
 
-  // Filter query. See :doc:`../filtering` for how to write a filter query.
+  // Filter query. See {doc}`../filtering` for how to write a filter query.
   //
-  // Literal text search matches against the fields ``message``, ``source`` and
-  // ``type``.
+  // Literal text search matches against the `message`, `source` and `type`
+  // fields. Field comparisons can use any of the following fields:
   //
-  // Field comparisons can use any of the following fields:
+  // | Field       | Type   | Description                        |
+  // | ----------- | ------ | ---------------------------------- |
+  // | `message`   | string | Filter by message text             |
+  // | `seqNumber` | number | Filter by archived sequence number |
+  // | `severity`  | enum   | Filter by event severity           |
+  // | `source`    | string | Filter by event source             |
+  // | `type`      | string | Filter by event type               |
   //
-  // .. list-table::
-  //     :widths: 25 25 50
-  //
-  //     * - ``message``
-  //       - string
-  //       -
-  //     * - ``seqNumber``
-  //       - number
-  //       -
-  //     * - ``severity``
-  //       - enum
-  //       - One of ``info``, ``watch``, ``warning``, ``distress``, ``critical`` or ``severe``.
-  //     * - ``source``
-  //       - string
-  //       -
-  //     * - ``type``
-  //       - string
-  //       -
+  // Possible severities: `info`, `watch`, `warning`, `distress`, `critical`
+  // or `severe`.
   optional string filter = 8;
 
-  // Column delimiter. One of ``TAB``, ``COMMA`` or ``SEMICOLON``.
-  // Default: ``TAB``.
+  // Column delimiter. One of `TAB`, `COMMA` or `SEMICOLON`.
+  // Default: `TAB`.
   optional string delimiter = 7;
 }

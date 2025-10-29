@@ -13,6 +13,7 @@ import "yamcs/protobuf/services/services.proto";
 
 
 service ServicesApi {
+  option (yamcs.api.markdown) = true;
 
   // List services
   rpc ListServices(ListServicesRequest) returns (ListServicesResponse) {

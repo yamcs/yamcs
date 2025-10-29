@@ -17,6 +17,7 @@ import "yamcs/protobuf/mdb/mdb.proto";
 // server restarts.
 service MdbOverrideApi {
   option (yamcs.api.label) = "MDB Override";
+  option (yamcs.api.markdown) = true;
 
   // List MDB overrides
   rpc ListMdbOverrides(ListMdbOverridesRequest) returns (ListMdbOverridesResponse) {
@@ -83,18 +84,18 @@ service MdbOverrideApi {
 }
 
 message SubscribeMdbChangesRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
-  // Processor name.
+  // Processor name
   optional string processor = 2;
 }
 
 message ListMdbOverridesRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
-  // Processor name.
+  // Processor name
   optional string processor = 2;
 }
 
@@ -103,13 +104,13 @@ message ListMdbOverridesResponse {
 }
 
 message GetAlgorithmOverridesRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
-  // Processor name.
+  // Processor name
   optional string processor = 2;
 
-  // Algorithm name.
+  // Algorithm name
   optional string name = 3;
 }
 
@@ -119,13 +120,13 @@ message GetAlgorithmOverridesResponse {
 }
 
 message GetParameterOverrideRequest {
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
 
-  // Processor name.
+  // Processor name
   optional string processor = 2;
 
-  // Parameter name.
+  // Parameter name
   optional string name = 3;
 }
 
@@ -200,28 +201,28 @@ message UpdateParameterRequest {
     SET_ALARMS = 6;
   }
   
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Processor name.
+  // Processor name
   optional string processor = 2;
   
-  // Parameter name.
+  // Parameter name
   optional string name = 3;
 
   // The action by which to modify this parameter.
   optional ActionType action = 4;
   
-  // Used when action = SET_DEFAULT_CALIBRATOR or SET_CALIBRATORS
+  // Used when action is SET_DEFAULT_CALIBRATOR or SET_CALIBRATORS
   optional mdb.CalibratorInfo defaultCalibrator = 5;
   
-  // Used when action = SET_CALIBRATORS
+  // Used when action is SET_CALIBRATORS
   repeated mdb.ContextCalibratorInfo contextCalibrator = 6;
   
-  // Used when action = SET_DEFAULT_ALARMS or SET_ALARMS
+  // Used when action is SET_DEFAULT_ALARMS or SET_ALARMS
   optional mdb.AlarmInfo defaultAlarm = 7;
   
-  // Used when action = SET_ALARMS
+  // Used when action is SET_ALARMS
   repeated mdb.ContextAlarmInfo contextAlarm = 8;
 }
 
@@ -234,13 +235,13 @@ message UpdateAlgorithmRequest {
     SET = 1;
   }
   
-  // Yamcs instance name.
+  // Yamcs instance name
   optional string instance = 1;
   
-  // Processor name.
+  // Processor name
   optional string processor = 2;
   
-  // Algorithm name.
+  // Algorithm name
   optional string name = 3;
   
   // The action by which to modify this algorithm

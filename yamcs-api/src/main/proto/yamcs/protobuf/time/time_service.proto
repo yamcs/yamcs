@@ -13,6 +13,7 @@ import "yamcs/api/annotations.proto";
 
 
 service TimeApi {
+  option (yamcs.api.markdown) = true;
 
   // Get UTC leap seconds
   rpc GetLeapSeconds(google.protobuf.Empty) returns (LeapSecondsTable) {

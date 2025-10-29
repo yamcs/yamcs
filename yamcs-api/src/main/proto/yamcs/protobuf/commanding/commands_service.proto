@@ -16,6 +16,7 @@ import "yamcs/protobuf/commanding/commanding.proto";
 import "yamcs/protobuf/yamcs.proto";
 
 service CommandsApi {
+  option (yamcs.api.markdown) = true;
 
   // Issue a command
   //
@@ -85,7 +86,7 @@ message ListCommandsRequest {
   optional string instance = 1;
   
   // The zero-based row number at which to start outputting results.
-  // Default: ``0``
+  // Default: `0`
   // 
   // This option is deprecated and will be removed in a later version.
   // Use the returned continuationToken instead.
@@ -93,11 +94,11 @@ message ListCommandsRequest {
   
   // The maximum number of returned records per page. Choose this value too
   // high and you risk hitting the maximum response size limit enforced by
-  // the server. Default: ``100``
+  // the server. Default: `100`
   optional int32 limit = 3;
   
-  // The order of the returned results. Can be either ``asc`` or ``desc``.
-  // Default: ``desc``
+  // The order of the returned results. Can be either `asc` or `desc`.
+  // Default: `desc`
   optional string order = 4;
   
   // Text to search in the name of the command. This searches both the
@@ -148,7 +149,7 @@ message IssueCommandRequest {
   
   // Whether a response will be returned without actually issuing
   // the command. This is useful when debugging commands.
-  // Default ``no``
+  // Default: `false`
   optional bool dryRun = 4;
   
   // Comment attached to this command.
@@ -208,7 +209,7 @@ message IssueCommandResponse {
 
   // Generated binary, after link post-processing.
   //
-  // The differences compared to ``unprocessedBinary``,
+  // The differences compared to `unprocessedBinary`,
   // can be anything. Typical manipulations include
   // sequence numbers or checksum calculations.
   optional bytes binary = 4;
@@ -237,7 +238,7 @@ message UpdateCommandHistoryRequest {
 }
 
 message ListCommandsResponse {
-  // Deprecated, use ``commands`` instead
+  // Deprecated, use `commands` instead
   repeated CommandHistoryEntry entry = 1 [deprecated=true];
 
   // Page  of matching commands
@@ -245,7 +246,7 @@ message ListCommandsResponse {
 
   // Token indicating the response is only partial. More results can then
   // be obtained by performing the same request (including all original
-  // query parameters) and setting the ``next`` parameter to this token.
+  // query parameters) and setting the `next` parameter to this token.
   optional string continuationToken = 2;
 }
 
@@ -311,7 +312,7 @@ message ExportCommandsRequest {
   // Command names to include. Leave unset, to include all.
   repeated string name = 4;
 
-  // Column delimiter. One of ``TAB``, ``COMMA`` or ``SEMICOLON``.
-  // Default: ``TAB``.
+  // Column delimiter. One of `TAB`, `COMMA` or `SEMICOLON`.
+  // Default: `TAB`.
   optional string delimiter = 5;
 }

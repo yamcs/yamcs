@@ -19,6 +19,23 @@ extend google.protobuf.ServiceOptions {
   //     option (yamcs.api.label) = "MDB";
   //   }
   optional string label = 2048;
+
+  // If true, all comments related to this service are to
+  // be interpreted in Markdown syntax, as opposed to
+  // reStructuredText format.
+  //
+  // Markdown will become the only option at some point in
+  // the future - when all reStructuredText services have been
+  // migrated. Until then we have this option to distinguish.
+  //
+  // When unset, reStructuredText is assumed.
+  //
+  // Example:
+  //
+  //   service MdbApi {
+  //     option (yamcs.api.markdown) = true;
+  //   }
+  optional bool markdown = 2058;
 }
 
 extend google.protobuf.MethodOptions {

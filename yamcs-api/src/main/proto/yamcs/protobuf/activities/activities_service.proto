@@ -43,22 +43,22 @@ service ActivitiesApi {
   //
   // Execute a single command
   //
-  // ``type`` (string)
-  //     Set to ``COMMAND``.
+  // `type` (string)
+  //     Set to `COMMAND`.
   //
-  // ``args`` (map)
+  // `args` (map)
   //     Map accepting the following options:
   //
-  //     ``command``
+  //     `command`
   //         **Required.** Qualified name of a command
   //
-  //     ``args`` (map)
+  //     `args` (map)
   //         Named arguments, if the command requires any
   //
-  //     ``extra`` (map)
+  //     `extra` (map)
   //         Extra command options
   //
-  //     ``processor`` (string)
+  //     `processor` (string)
   //         Optional processor name. If not provided, Yamcs defaults
   //         to any processor it can find with commanding enabled.
   //
@@ -81,19 +81,19 @@ service ActivitiesApi {
   //
   // Execute a command stack
   //
-  // ``type`` (string)
-  //     Set to ``COMMAND_STACK``.
+  // `type` (string)
+  //     Set to `COMMAND_STACK`.
   //
-  // ``args`` (map)
+  // `args` (map)
   //     Map accepting the following options:
   //
-  //     ``bucket``
+  //     `bucket`
   //         **Required.** The name of the bucket containg the stack
   //
-  //     ``stack``
+  //     `stack`
   //         **Required.** The name of the stack object inside the bucket
   //
-  //     ``processor`` (string)
+  //     `processor` (string)
   //         Optional processor name. If not provided, Yamcs defaults
   //         to any processor it can find with commanding enabled.
   //
@@ -114,24 +114,24 @@ service ActivitiesApi {
   //
   // Run a script
   //
-  // ``type`` (string)
-  //     Set to ``SCRIPT``.
-  // ``args`` (map)
+  // `type` (string)
+  //     Set to `SCRIPT`.
+  // `args` (map)
   //     Map accepting the following options:
   //
-  //     ``script``
+  //     `script`
   //         **Required.** Script identifier.
   //
   //         This should be the relative path to an executable file in one of the
   //         search locations. When unconfigured, the default search location is
   //         :file:`etc/scripts/` relative to the Yamcs working directory.
   //
-  //     ``args`` (string or string[])
+  //     `args` (string or string[])
   //         Script arguments
   //
-  //     ``processor`` (string)
+  //     `processor` (string)
   //         If provided, this information is passed to the script in an environment
-  //         variable ``YAMCS_PROCESSOR``.
+  //         variable `YAMCS_PROCESSOR`.
   //
   // Example:
   //
@@ -211,11 +211,11 @@ message ListActivitiesRequest {
 
   // The maximum number of returned records per page. Choose this value too high
   // and you risk hitting the maximum response size limit enforced by the server.
-  // Default: ``100``
+  // Default: `100`
   optional int32 limit = 2;
   
-  // The order of the returned results. Can be either ``asc`` or ``desc``.
-  // Default: ``desc``
+  // The order of the returned results. Can be either `asc` or `desc`.
+  // Default: `desc`
   optional string order = 3;
 
   // Filter on activity status
@@ -266,7 +266,7 @@ message ListActivitiesResponse {
 
   // Token indicating the response is only partial. More results can then
   // be obtained by performing the same request (including all original
-  // query parameters) and setting the ``next`` parameter to this token.
+  // query parameters) and setting the `next` parameter to this token.
   optional string continuationToken = 2;
 }
 

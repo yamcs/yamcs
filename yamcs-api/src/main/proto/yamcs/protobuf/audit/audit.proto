@@ -12,6 +12,7 @@ import "google/protobuf/timestamp.proto";
 import "yamcs/api/annotations.proto";
 
 service AuditApi {
+  option (yamcs.api.markdown) = true;
 
   // List audit records
   rpc ListAuditRecords(ListAuditRecordsRequest) returns (ListAuditRecordsResponse) {
@@ -27,7 +28,7 @@ message ListAuditRecordsRequest {
 
   // The maximum number of returned records per page. Choose this value too high
   // and you risk hitting the maximum response size limit enforced by the server.
-  // Default: ``100``
+  // Default: `100`
   optional int32 limit = 2;
 
   // Continuation token returned by a previous page response.
@@ -54,7 +55,7 @@ message ListAuditRecordsResponse {
   
   // Token indicating the response is only partial. More results can then
   // be obtained by performing the same request (including all original
-  // query parameters) and setting the ``next`` parameter to this token.
+  // query parameters) and setting the `next` parameter to this token.
   optional string continuationToken = 2;
 }
 

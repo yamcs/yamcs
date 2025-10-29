@@ -15,7 +15,7 @@ message ActionInfo {
   // Label describing an action
   optional string label = 2;
 
-  // Action style, one of ``PUSH_BUTTON`` or ``CHECK_BOX``
+  // Action style, one of `PUSH_BUTTON` or `CHECK_BOX`
   optional string style = 3;
 
   // Whether this action is currently enabled

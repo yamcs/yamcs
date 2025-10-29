@@ -14,10 +14,11 @@ import "yamcs/api/annotations.proto";
 import "yamcs/protobuf/actions/actions.proto";
 
 // This API deals with transmission (upload and download) of file to and from spacecraft.
+//
 // The API can be used to interface any implementation of the FileTransferService.
-// One such implementation is for the CFDP - CCSDS File Delivery Protocol.
- 
+// One such implementation is for the CFDP (CCSDS File Delivery Protocol).
 service FileTransferApi {
+  option (yamcs.api.markdown) = true;
 
   // List file transfer services
   rpc ListFileTransferServices(ListFileTransferServicesRequest) returns (ListFileTransferServicesResponse) {
@@ -176,7 +177,7 @@ message FileTransferCapabilities {
   optional bool pauseResume = 9;
 
   // Additional columns to show in a file listing, where id
-  // is a key of ``RemoteFile.extra``
+  // is a key of `RemoteFile.extra`
   repeated ExtraColumnInfo fileListExtraColumns = 7;
 
   // Additional actions that may be executed on remote files
@@ -254,7 +255,7 @@ message CreateTransferRequest {
   // File transfer service name
   optional string serviceName = 8;
 
-  // **Required** One of ``UPLOAD`` or ``DOWNLOAD``.
+  // **Required** One of `UPLOAD` or `DOWNLOAD`.
   optional TransferDirection direction = 2;
 
   // **Required** The bucket containing the local Yamcs object.
@@ -266,7 +267,7 @@ message CreateTransferRequest {
   // Yamcs will write to when downloading from a remote entity.
   optional string objectName = 4;
   
-  // **Required** The path at the remote entity. Example: ``a/local/path/some_filename``.
+  // **Required** The path at the remote entity. Example: `a/local/path/some_filename`.
   optional string remotePath = 5;
   
   //used to derive the source entity id
@@ -343,11 +344,11 @@ message ListTransfersRequest {
 
   // The maximum number of returned records per page. Choose this value too high
   // and you risk hitting the maximum response size limit enforced by the server.
-  // Default: ``100``
+  // Default: `100`
   optional int32 limit = 9;
 
-  // The order of the returned results. Can be either ``asc`` or ``desc``.
-  // Default: ``desc``
+  // The order of the returned results. Can be either `asc` or `desc`.
+  // Default: `desc`
   optional string order = 10;
 }
 
@@ -376,7 +377,7 @@ message SubscribeTransfersRequest {
   // If true, send info on all currently ongoing transfers,
   // as well as any future updates (recommended).
   //
-  // For legacy reasons, the default is ``false``, which will
+  // For legacy reasons, the default is `false`, which will
   // send also finished transfers upon subscription. This behaviour
   // is due for removal in a future release (if you want to receive
   // past transfers, do a GET request).
@@ -411,7 +412,7 @@ message RemoteFile {
   // in case of a flat file table.
   optional string name = 1;
 
-  // Optional display name. Can be used when the ``name``
+  // Optional display name. Can be used when the `name`
   // field contains information that should be hidden from the user.
   optional string displayName = 5;
 

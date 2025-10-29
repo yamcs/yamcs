@@ -13,8 +13,8 @@ import "google/protobuf/timestamp.proto";
 import "yamcs/api/annotations.proto";
 import "yamcs/api/httpbody.proto";
 
-// Handles incoming requests related to api routes
 service ServerApi {
+  option (yamcs.api.markdown) = true;
 
   // Get general server info
   rpc GetServerInfo(google.protobuf.Empty) returns (GetServerInfoResponse) {

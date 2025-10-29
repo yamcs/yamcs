@@ -13,6 +13,7 @@ import "yamcs/api/annotations.proto";
 
 
 service SessionsApi {
+  option (yamcs.api.markdown) = true;
 
   // List sessions
   rpc ListSessions(google.protobuf.Empty) returns (ListSessionsResponse) {

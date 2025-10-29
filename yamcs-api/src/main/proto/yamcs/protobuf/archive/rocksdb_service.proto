@@ -13,6 +13,7 @@ import "yamcs/api/httpbody.proto";
 
 service RocksDbApi {
   option (yamcs.api.label) = "RocksDB";
+  option (yamcs.api.markdown) = true;
 
   // List tablespaces
   rpc ListTablespaces(google.protobuf.Empty) returns (ListRocksDbTablespacesResponse) {
@@ -57,11 +58,11 @@ service RocksDbApi {
   // Get a text-dump describing a database
   //
   // This operation can be used to debug the inner workings of RocksDB database.
-  // For example the property rocksdb.estimate-table-readers-mem will provide an
+  // For example the property `rocksdb.estimate-table-readers-mem` provides an
   // estimation of how much memory is used by the index and filter cache of
   // RocksDB (note that the memory used by RocksDB is outside the java heap space).
   //
-  // See also: https://github.com/facebook/rocksdb/blob/master/include/rocksdb/db.h
+  // See: <https://github.com/facebook/rocksdb/blob/master/include/rocksdb/db.h>
   //
   // The response contains a dump of various rocksdb properties for each column
   // family. The single value properties are presented in a "name: value" list.
@@ -108,15 +109,12 @@ message CompactDatabaseRequest {
   //
   // Starting with Yamcs 5.9.0 the following column families are used:
   //
-  // _metadata_
-  //     Stores information about tables, partitions
-  // rt_data
-  //     Stores the tm, pp and events tables
-  // parameter_archive
-  //     Stores the parameter archive
-  // default
-  //     Stores everything else: cmdhistory, alarms, completeness indices,
-  //     timeline, activities, users, buckets, ...
+  // | Column Family     | Content                                   |
+  // | ----------------- | ----------------------------------------- |
+  // | _metadata_        | Table info, partition info                |
+  // | rt_data           | tm, pp and events tables                  |
+  // | parameter_archive | Parameter Archive                         |
+  // | default           | Everything else (cmdhistory, alarms, ...) |
   optional string cfname = 3;
 }
 

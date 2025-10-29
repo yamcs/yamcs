@@ -13,6 +13,8 @@ import "google/protobuf/struct.proto";
 
 
 service LinksApi {
+  option (yamcs.api.markdown) = true;
+
   // List links
   rpc ListLinks(ListLinksRequest) returns (ListLinksResponse) {
     option (yamcs.api.route) = {
@@ -165,7 +167,7 @@ message LinkInfo {
   // Short status information
   optional string detailedStatus = 9;
 
-  //if this is a sublink of an aggregated data link, this is the name of the parent
+  // Name of the parent, in case this is a sublink of an aggregated data link.
   optional string parentName = 12;
 
   // Custom actions
