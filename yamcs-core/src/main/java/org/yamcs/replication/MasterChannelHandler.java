@@ -41,7 +41,6 @@ public class MasterChannelHandler extends ChannelInboundHandlerAdapter {
     SlaveServer slaveServer;
     private ScheduledFuture<?> timeMsgFuture;
 
-
     // called when we are TCP client
     public MasterChannelHandler(TimeService timeService, ReplicationMaster master, SlaveServer slaveServer) {
         this.replMaster = master;
@@ -192,7 +191,7 @@ public class MasterChannelHandler extends ChannelInboundHandlerAdapter {
             dataHandlingFuture = channelHandlerContext.writeAndFlush(buf).addListener(a -> {
                 fileTail.buf.position(fileTail.buf.limit());
                 nextTxToSend = fileTail.nextTxId;
-                sendMoreData();
+                channelHandlerContext.executor().execute(() -> sendMoreData());
             });
         }
     }
