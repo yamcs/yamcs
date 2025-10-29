@@ -17,12 +17,17 @@
     </table>
     <p>&nbsp;</p>
     <h3>Subscribers</h3>
-    <table yaDataTable class="expand">
-      @for (subscriber of stream.subscribers; track subscriber) {
+      <table yaDataTable class="expand">
         <tr>
-          <td class="expand">{{ subscriber }}</td>
-        </tr>
-      }
-    </table>
+	      <th>className&#64;hashCode</th>
+	      <th class="expand">Description</th>
+	    </tr>
+	    @for (subscriber of stream.subscribers; track subscriber) {
+	      <tr>
+	        <td>{{ subscriber.className }}&#64;{{ subscriber.hashCode }}</td>
+	        <td>{{ subscriber.description || "-" }}</td>
+	      </tr>
+	    }
+	  </table>
   </ya-panel>
 }

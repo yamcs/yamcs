@@ -21,7 +21,13 @@ export interface Stream {
   columns: Column[];
   script: string;
   dataCount: number;
-  subscribers: string[];
+  subscribers: SubscriberInfo[];
+}
+
+export interface SubscriberInfo {
+  className: string;
+  hashCode: number;
+  description?: string;
 }
 
 export interface StreamData {

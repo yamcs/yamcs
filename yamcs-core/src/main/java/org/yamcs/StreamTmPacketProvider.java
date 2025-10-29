@@ -22,8 +22,6 @@ import org.yamcs.yarch.YarchDatabaseInstance;
  * 
  * Can read from multiple streams, each with its own root container used as start of XTCE packet processing
  * 
- * @author nm
- *
  */
 public class StreamTmPacketProvider extends AbstractProcessorService implements TmPacketProvider {
     Stream stream;
@@ -150,6 +148,12 @@ public class StreamTmPacketProvider extends AbstractProcessorService implements 
         @Override
         public void streamClosed(Stream s) {
             notifyStopped();
+        }
+
+        @Override
+        public String getDescription() {
+            return "{processor: " + processor.getName() + ", rootContainer: "
+                    + rootContainer.getQualifiedName() + "}";
         }
     }
 }

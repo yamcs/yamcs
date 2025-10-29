@@ -366,8 +366,13 @@ message StreamInfo {
   optional string script = 3;
   optional int64 dataCount = 4;
 
-  // Subscribers represented in the format ``className@hashCode``.
-  repeated string subscribers = 6;
+  repeated SubscriberInfo subscribers = 7;
+}
+
+message SubscriberInfo {
+  optional string className = 1;
+  optional uint32 hashCode = 2;
+  optional string description = 3;
 }
 
 message RebuildHistogramRequest {

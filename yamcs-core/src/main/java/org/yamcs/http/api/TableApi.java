@@ -46,6 +46,7 @@ import org.yamcs.protobuf.Table.StreamData;
 import org.yamcs.protobuf.Table.StreamInfo;
 import org.yamcs.protobuf.Table.SubscribeStreamRequest;
 import org.yamcs.protobuf.Table.SubscribeStreamStatisticsRequest;
+import org.yamcs.protobuf.Table.SubscriberInfo;
 import org.yamcs.protobuf.Table.TableData;
 import org.yamcs.protobuf.Table.TableData.TableRecord;
 import org.yamcs.protobuf.Table.TableInfo;
@@ -690,7 +691,12 @@ public class TableApi extends AbstractTableApi<Context> {
             }
         }
         for (var subscriber : stream.getSubscribers()) {
-            infob.addSubscribers(subscriber.getClass().getName() + "@" + Integer.toHexString(subscriber.hashCode()));
+            var subscriberInfo = SubscriberInfo.newBuilder().setClassName(subscriber.getClass().getName())
+                    .setHashCode(subscriber.hashCode());
+            if (subscriber.getDescription() != null) {
+                subscriberInfo.setDescription(subscriber.getDescription());
+            }
+            infob.addSubscribers(subscriberInfo.build());
         }
         return infob.build();
     }

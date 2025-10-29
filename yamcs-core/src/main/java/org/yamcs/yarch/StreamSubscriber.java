@@ -7,4 +7,11 @@ public interface StreamSubscriber {
 
     default void streamClosed(Stream stream) {
     }
+
+    /**
+     * This description (if not null) is returned in the API get/list stream(s) and shown also in the Yamcs Web
+     */
+    default String getDescription() {
+        return null;
+    }
 }
