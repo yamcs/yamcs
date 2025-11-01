@@ -66,13 +66,20 @@ export class CommandHistoryTemplateProvider implements TemplateProvider {
 
   getComment() {
     // Don't copy
+    return undefined;
   }
 
   getStream() {
     // Don't copy (not currently stored)
+    return undefined;
   }
 
   getAdvancementParams(): AdvancementParams | undefined {
     return undefined;
+  }
+
+  isDisableTransmissionConstraints(): boolean {
+    const value = this.getOption('noTransmissionConstraints', 'BOOLEAN');
+    return value?.booleanValue ?? false;
   }
 }

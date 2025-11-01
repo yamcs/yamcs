@@ -11,6 +11,11 @@
   color: #00c752;
 }
 
+.evaluation.disabled {
+  background-color: #eee;
+  color: #333;
+}
+
 th {
   white-space: nowrap;
 }

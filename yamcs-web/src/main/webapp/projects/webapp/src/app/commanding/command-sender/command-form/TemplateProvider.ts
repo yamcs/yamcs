@@ -1,9 +1,10 @@
 import { AdvancementParams, CommandOptionType, Value } from '@yamcs/webapp-sdk';
 
 export interface TemplateProvider {
-  getAssignment(name: string): Value | void;
-  getOption(id: string, expectedType: CommandOptionType): Value | void;
-  getComment(): string | void;
-  getStream(): string | void;
+  getAssignment(name: string): Value | undefined;
+  getOption(id: string, expectedType: CommandOptionType): Value | undefined;
+  getComment(): string | undefined;
+  getStream(): string | undefined;
+  isDisableTransmissionConstraints(): boolean;
   getAdvancementParams(): AdvancementParams | undefined;
 }

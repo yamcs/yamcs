@@ -62,6 +62,9 @@ export class ConfigureCommandComponent
   @ViewChild('commandForm')
   commandForm: CommandFormComponent;
 
+  @ViewChild(CommandConstraintsComponent)
+  commandConstraints: CommandConstraintsComponent;
+
   config: WebsiteConfig;
 
   command = signal<Command | null>(null);
@@ -161,6 +164,8 @@ export class ConfigureCommandComponent
     this.yamcs.yamcsClient
       .issueCommand(this.yamcs.instance!, this.yamcs.processor!, qname, {
         args: commandConfig.args,
+        disableTransmissionConstraints:
+          this.commandConstraints.isDisableConstraintChecking() || undefined,
         stream: commandConfig.stream,
         comment: commandConfig.comment,
         extra: commandConfig.extra,

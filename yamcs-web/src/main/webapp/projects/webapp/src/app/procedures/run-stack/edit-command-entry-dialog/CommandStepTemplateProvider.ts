@@ -69,4 +69,8 @@ export class CommandStepTemplateProvider implements TemplateProvider {
   getAdvancementParams() {
     return this.step.advancement;
   }
+
+  isDisableTransmissionConstraints() {
+    return false;
+  }
 }

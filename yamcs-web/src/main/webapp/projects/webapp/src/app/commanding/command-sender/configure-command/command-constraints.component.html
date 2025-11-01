@@ -14,10 +14,11 @@
         <td><app-expression [expression]="constraint.expression" [relto]="relto()" /></td>
         <td style="white-space: nowrap">{{ (constraint.timeout | millisDuration) || "-" }}</td>
         <td style="white-space: nowrap">
-          @if (expr.result() === true) {
+          @if (isDisableConstraintChecking()) {
+            <span class="evaluation disabled">disabled</span>
+          } @else if (expr.result() === true) {
             <span class="evaluation valid">satisfied</span>
-          }
-          @if (expr.result() === false) {
+          } @else if (expr.result() === false) {
             <span class="evaluation invalid">not satisfied</span>
           }
           <app-live-expression
@@ -28,4 +29,11 @@
       </tr>
     }
   </table>
+
+  @if (showCommandOptions()) {
+    <br />
+    <ya-slide-toggle [formControl]="disableConstraintCheckingControl">
+      Disable constraint checking
+    </ya-slide-toggle>
+  }
 }
