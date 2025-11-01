@@ -1,17 +1,17 @@
 <h2 mat-dialog-title>Create stack</h2>
 
 <mat-dialog-content>
-  <form [formGroup]="filenameForm" class="ya-form">
+  <ya-form [formGroup]="filenameForm">
     <ya-field label="Name" [class.invalid]="filenameForm.get('name')?.invalid">
       <input #filename type="text" formControlName="name" />
     </ya-field>
     <ya-field label="Format">
-      <select formControlName="format">
-        <option value="ycs">YCS</option>
-        <option value="xml">XML (deprecated)</option>
-      </select>
+      <ya-select formControlName="format">
+        <ya-option id="ycs" label="YCS" />
+        <ya-option id="xml" label="XML (deprecated)" />
+      </ya-select>
     </ya-field>
-  </form>
+  </ya-form>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">

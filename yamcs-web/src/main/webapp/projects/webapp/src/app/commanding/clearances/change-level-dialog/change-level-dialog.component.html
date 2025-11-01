@@ -1,7 +1,7 @@
 <h2 mat-dialog-title>Command clearance</h2>
 
 <mat-dialog-content>
-  <form [formGroup]="form" class="ya-form">
+  <ya-form [formGroup]="form">
     <ya-field>
       <div class="radio-group">
         <label class="radio" [class.checked]="form.value.level === 'DISABLED'">
@@ -34,7 +34,7 @@
         </label>
       </div>
     </ya-field>
-  </form>
+  </ya-form>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">

@@ -2,7 +2,7 @@
   <ya-instance-page>
     <ya-instance-toolbar [label]="'Edit list: ' + plist.name" />
 
-    <div class="form-content ya-form">
+    <ya-form-content>
       <form [formGroup]="form" novalidate>
         <ya-field label="Name">
           <input formControlName="name" type="text" />
@@ -57,6 +57,6 @@
           SAVE CHANGES
         </ya-button>
       </ya-toolbar>
-    </div>
+    </ya-form-content>
   </ya-instance-page>
 }

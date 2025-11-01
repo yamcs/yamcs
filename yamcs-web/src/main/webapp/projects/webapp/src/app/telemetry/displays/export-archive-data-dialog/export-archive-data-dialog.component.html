@@ -1,7 +1,7 @@
 <h2 mat-dialog-title>Export archive data</h2>
 
-<mat-dialog-content class="ya-form">
-  <form [formGroup]="form">
+<mat-dialog-content>
+  <ya-form [formGroup]="form">
     <mat-tab-group class="small-tabs" [mat-stretch-tabs]="false">
       <mat-tab label="Content">
         <div style="margin-top: 1em">
@@ -34,7 +34,7 @@
         </div>
       </mat-tab>
     </mat-tab-group>
-  </form>
+  </ya-form>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">

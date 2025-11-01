@@ -1,11 +1,11 @@
 @if (!(selectedCommand$ | async)) {
   <div class="wrapper">
-    <form [formGroup]="selectCommandForm" class="ya-form">
+    <ya-form [formGroup]="selectCommandForm">
       <h2>Select command</h2>
       <div class="command-table-wrapper">
         <app-command-selector #commandSelector formControlName="command" />
       </div>
-    </form>
+    </ya-form>
   </div>
   <div class="footer">
     <mat-toolbar>

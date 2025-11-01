@@ -1,5 +1,5 @@
 @if (formConfigured$ | async) {
-  <form [formGroup]="form" class="ya-form">
+  <ya-form [formGroup]="form">
     <ya-stepper>
       <ya-stepper-step label="General" [expanded]="true">
         <ya-field label="Label" hint="(required)">
@@ -38,5 +38,5 @@
         </ya-stepper-step>
       }
     </ya-stepper>
-  </form>
+  </ya-form>
 }

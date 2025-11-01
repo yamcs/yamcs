@@ -1,5 +1,5 @@
-<div class="ya-form" style="max-width: 600px">
-  <form [formGroup]="form" novalidate autocomplete="off">
+<div style="max-width: 600px">
+  <ya-form [formGroup]="form">
     <h2>Edit view</h2>
     <ya-field label="Name" hint="(required)">
       <input type="text" formControlName="name" />
@@ -9,7 +9,7 @@
 
     <h4>Bands</h4>
     <app-band-multi-select formControlName="bands" />
-  </form>
+  </ya-form>
 </div>
 
 <div class="footer">

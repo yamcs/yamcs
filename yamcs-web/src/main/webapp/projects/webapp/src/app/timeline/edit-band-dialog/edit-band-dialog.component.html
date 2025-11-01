@@ -1,8 +1,8 @@
 <div class="central-pane">
   @if (data.band; as band) {
-    <div class="ya-form" style="max-width: 600px">
+    <div style="max-width: 600px">
       <h2>Edit band</h2>
-      <form [formGroup]="form" novalidate autocomplete="off">
+      <ya-form [formGroup]="form">
         @if (band.type === "ITEM_BAND") {
           <app-edit-item-band [form]="form" [band]="band" />
         } @else if (band.type === "SPACER") {
@@ -16,7 +16,7 @@
         } @else if (band.type === "PARAMETER_STATES") {
           <app-edit-parameter-states [form]="form" [band]="band" />
         }
-      </form>
+      </ya-form>
     </div>
   }
 </div>

@@ -6,8 +6,8 @@
     </ng-template>
   </app-admin-toolbar>
 
-  <div class="form-content ya-form">
-    <form [formGroup]="form" novalidate>
+  <ya-form-content>
+    <ya-form [formGroup]="form">
       <ya-field label="Group name">
         <input formControlName="name" type="text" />
       </ya-field>
@@ -45,7 +45,7 @@
           }
         </table>
       }
-    </form>
+    </ya-form>
 
     <p>&nbsp;</p>
     <ya-toolbar appearance="bottom">
@@ -54,5 +54,5 @@
         CREATE
       </ya-button>
     </ya-toolbar>
-  </div>
+  </ya-form-content>
 </app-admin-page>

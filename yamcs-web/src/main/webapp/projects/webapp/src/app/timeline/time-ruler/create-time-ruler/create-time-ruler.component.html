@@ -3,7 +3,7 @@
 
   <app-create-band-wizard-step step="2" />
 
-  <div class="form-content ya-form">
+  <ya-form-content>
     <form [formGroup]="form" novalidate autocomplete="off">
       <ya-field label="Label" hint="(required)">
         <input type="text" formControlName="name" />
@@ -27,5 +27,5 @@
         CREATE
       </ya-button>
     </ya-toolbar>
-  </div>
+  </ya-form-content>
 </ya-instance-page>

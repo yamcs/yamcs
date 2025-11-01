@@ -1,7 +1,7 @@
 <h2 mat-dialog-title>Create event</h2>
 
 <mat-dialog-content>
-  <form [formGroup]="form" class="ya-form">
+  <ya-form [formGroup]="form">
     <ya-field label="Message">
       <textarea formControlName="message" rows="3"></textarea>
     </ya-field>
@@ -13,7 +13,7 @@
     <ya-field label="Event time">
       <ya-date-time-input formControlName="time" step="1" [showNow]="true" />
     </ya-field>
-  </form>
+  </ya-form>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">

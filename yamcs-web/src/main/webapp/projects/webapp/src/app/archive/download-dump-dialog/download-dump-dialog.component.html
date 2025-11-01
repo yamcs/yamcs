@@ -1,7 +1,7 @@
 <h2 mat-dialog-title>Download packet dump</h2>
 
 <mat-dialog-content>
-  <form [formGroup]="form" class="ya-form">
+  <ya-form [formGroup]="form">
     <ya-field label="Start">
       <ya-date-time-input formControlName="start" />
     </ya-field>
@@ -9,7 +9,7 @@
     <ya-field label="Stop">
       <ya-date-time-input formControlName="stop" />
     </ya-field>
-  </form>
+  </ya-form>
 
   @if (form.errors?.dateRange) {
     <ya-warning-message>Start date must be before stop date</ya-warning-message>

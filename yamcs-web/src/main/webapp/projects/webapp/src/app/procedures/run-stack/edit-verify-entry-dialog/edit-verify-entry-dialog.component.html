@@ -1,7 +1,7 @@
 <h2 mat-dialog-title>Step: Verify parameters</h2>
 
 <mat-dialog-content>
-  <form [formGroup]="form" class="ya-form">
+  <ya-form [formGroup]="form">
     <ya-stepper>
       <ya-stepper-step label="Parameters" [expanded]="true">
         <table class="condition-table" formArrayName="condition">
@@ -68,7 +68,7 @@
         <app-markdown-input formControlName="comment" />
       </ya-stepper-step>
     </ya-stepper>
-  </form>
+  </ya-form>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">

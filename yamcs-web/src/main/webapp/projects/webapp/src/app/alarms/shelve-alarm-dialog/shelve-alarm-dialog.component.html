@@ -12,7 +12,7 @@
       {{ data.alarms.length }} selected alarms.
     }
   </p>
-  <form [formGroup]="formGroup" class="ya-form">
+  <ya-form [formGroup]="formGroup">
     <ya-field label="Duration">
       <ya-select formControlName="duration" [options]="durationOptions" />
     </ya-field>
@@ -20,7 +20,7 @@
     <ya-field label="Comment">
       <textarea formControlName="comment" rows="5" style="resize: none"></textarea>
     </ya-field>
-  </form>
+  </ya-form>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">

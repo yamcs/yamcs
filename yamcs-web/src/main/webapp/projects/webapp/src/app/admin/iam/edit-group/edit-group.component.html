@@ -2,7 +2,7 @@
   <app-admin-page>
     <app-admin-toolbar [label]="'Edit Group: ' + group.name" />
 
-    <div class="form-content ya-form">
+    <ya-form-content>
       <form [formGroup]="form" novalidate autocomplete="off">
         <ya-field label="Name">
           <input formControlName="name" type="text" />
@@ -53,6 +53,6 @@
           SAVE CHANGES
         </ya-button>
       </ya-toolbar>
-    </div>
+    </ya-form-content>
   </app-admin-page>
 }
