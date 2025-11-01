@@ -1,0 +1,28 @@
+:host {
+  --mat-slide-toggle-track-height: 14px;
+  --mat-slide-toggle-track-width: 30px;
+  --mat-slide-toggle-selected-icon-size: 16px;
+  --mat-slide-toggle-unselected-icon-size: 16px;
+  --mat-slide-toggle-track-outline-width: 0;
+  --mat-slide-toggle-selected-track-outline-width: 0px;
+  --mat-slide-toggle-unselected-with-icon-handle-horizontal-margin: 0;
+  --mat-slide-toggle-unselected-pressed-handle-horizontal-margin: 0;
+  --mat-slide-toggle-selected-focus-state-layer-color: #009e97;
+  --mat-slide-toggle-selected-handle-color: #009e97;
+  --mat-slide-toggle-selected-hover-state-layer-color: #009e97;
+  --mat-slide-toggle-selected-pressed-state-layer-color: #009e97;
+  --mat-slide-toggle-selected-focus-track-color: #009e975f;
+  --mat-slide-toggle-selected-hover-track-color: #009e975f;
+  --mat-slide-toggle-selected-pressed-track-color: #009e975f;
+  --mat-slide-toggle-selected-track-color: #009e975f;
+  --mat-slide-toggle-with-icon-handle-size: 16px;
+  --mat-slide-toggle-pressed-handle-size: 16px;
+  --mat-slide-toggle-state-layer-size: 16px;
+  --mat-slide-toggle-selected-focus-handle-color: #009e97;
+  --mat-slide-toggle-selected-hover-handle-color: #009e97;
+  --mat-slide-toggle-selected-pressed-handle-color: #009e97;
+  --mat-slide-toggle-selected-with-icon-handle-horizontal-margin: 0 16px;
+  --mat-slide-toggle-selected-pressed-handle-horizontal-margin: 0 16px;
+  --mat-slide-toggle-selected-icon-color: #e0e2ec;
+  --mat-slide-toggle-label-text-size: 12px;
+}

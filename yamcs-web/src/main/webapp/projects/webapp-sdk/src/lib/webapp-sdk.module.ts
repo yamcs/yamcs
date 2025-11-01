@@ -14,7 +14,6 @@ import { MatListModule } from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
@@ -82,6 +81,7 @@ import { YaSearchFilter2 } from './components/search-filter2/search-filter2.comp
 import { YaSelect } from './components/select/select.component';
 import { YaSidebarNavGroup } from './components/sidebar/sidebar-nav-group.component';
 import { YaSidebarNavItem } from './components/sidebar/sidebar-nav-item.component';
+import { YaSlideToggle } from './components/slide-toggle/slide-toggle.component';
 import { YaSliderInput } from './components/slider-input/slider-input.component';
 import { YaStepperStepActions } from './components/stepper/stepper-step-actions.component';
 import { YaStepperStep } from './components/stepper/stepper-step.component';
@@ -237,6 +237,7 @@ const sharedComponents = [
   YaSidebarNavGroup,
   YaSidebarNavItem,
   YaSliderInput,
+  YaSlideToggle,
   YaStepper,
   YaStepperStep,
   YaStepperStepActions,
@@ -268,7 +269,6 @@ const materialModules = [
   MatNativeDateModule,
   MatPaginatorModule,
   MatSidenavModule,
-  MatSlideToggleModule,
   MatSortModule,
   MatSnackBarModule,
   MatTableModule,
