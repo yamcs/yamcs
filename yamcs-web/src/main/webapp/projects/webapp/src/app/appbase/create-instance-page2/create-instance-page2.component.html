@@ -10,7 +10,7 @@
 <app-create-instance-wizard-step step="2" />
 
 @if (template$ | async; as template) {
-  <div class="form-content ya-form">
+  <ya-form-content>
     <form [formGroup]="form" novalidate>
       <ya-field label="Instance name">
         <input formControlName="name" type="text" />
@@ -50,5 +50,5 @@
         CREATE
       </ya-button>
     </ya-toolbar>
-  </div>
+  </ya-form-content>
 }

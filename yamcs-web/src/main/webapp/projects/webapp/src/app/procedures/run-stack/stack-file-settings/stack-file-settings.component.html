@@ -21,7 +21,7 @@
     <app-stack-file-page-tabs [objectName]="objectName()" />
 
     <div class="tab-content">
-      <form [formGroup]="stackOptionsForm" class="ya-form">
+      <ya-form [formGroup]="stackOptionsForm">
         <h3>Commanding</h3>
         <ya-field>
           <ng-template ya-field-label>
@@ -57,7 +57,7 @@
             min="0"
             style="width: 120px" />
         </ya-field>
-      </form>
+      </ya-form>
     </div>
   </div>
 </ya-instance-page>

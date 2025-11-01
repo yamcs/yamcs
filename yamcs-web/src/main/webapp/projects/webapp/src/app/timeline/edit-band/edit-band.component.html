@@ -2,7 +2,7 @@
   <ya-instance-page>
     <ya-instance-toolbar label="Edit band" />
 
-    <div class="form-content ya-form">
+    <ya-form-content>
       <form [formGroup]="form" novalidate autocomplete="off">
         @if (band.type === "ITEM_BAND") {
           <app-edit-item-band [form]="form" [band]="band" />
@@ -29,6 +29,6 @@
           SAVE CHANGES
         </ya-button>
       </ya-toolbar>
-    </div>
+    </ya-form-content>
   </ya-instance-page>
 }

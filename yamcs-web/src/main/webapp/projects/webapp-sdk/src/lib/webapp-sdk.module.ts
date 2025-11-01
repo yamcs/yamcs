@@ -51,6 +51,8 @@ import { YaField } from './components/field/field.component';
 import { YaFilterBar } from './components/filter-bar/filter-bar.component';
 import { YaFilterInput } from './components/filter/filter-input.component';
 import { YaFilterTextarea } from './components/filter/filter-textarea.component';
+import { YaFormContent } from './components/form-content/form-content.component';
+import { YaForm } from './components/form/form.component';
 import { YaHelp } from './components/help/help.component';
 import { YaHelpDialog } from './components/help/help.dialog';
 import { YaHexIntegerInput } from './components/hex-integer-input/hex-integer-input.component';
@@ -206,6 +208,8 @@ const sharedComponents = [
   YaFilterBar,
   YaFilterInput,
   YaFilterTextarea,
+  YaForm,
+  YaFormContent,
   YaHelp,
   YaHelpDialog,
   YaHexIntegerInput,

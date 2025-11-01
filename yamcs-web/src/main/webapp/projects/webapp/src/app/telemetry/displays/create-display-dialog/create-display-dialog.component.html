@@ -2,17 +2,17 @@
 
 <mat-dialog-content>
   @if (page === 1) {
-    <form [formGroup]="typeForm" class="ya-form">
+    <ya-form [formGroup]="typeForm">
       <ya-field label="Type">
         <ya-select formControlName="type">
           <ya-option id="par" label="Parameter Table" />
         </ya-select>
       </ya-field>
-    </form>
+    </ya-form>
   }
 
   @if (page === 2) {
-    <form [formGroup]="filenameForm" class="ya-form">
+    <ya-form [formGroup]="filenameForm">
       <ya-field label="Name" [class.invalid]="filenameForm.get('name')?.invalid">
         <input #filename type="text" formControlName="name" />
         @if (filenameForm.get("name")?.invalid) {
@@ -26,7 +26,7 @@
       <ya-field label="Path">
         <input type="text" formControlName="path" />
       </ya-field>
-    </form>
+    </ya-form>
   }
 </mat-dialog-content>
 

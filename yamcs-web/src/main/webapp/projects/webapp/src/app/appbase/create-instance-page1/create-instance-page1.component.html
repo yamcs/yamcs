@@ -7,7 +7,7 @@
 
 <app-create-instance-wizard-step step="1" />
 
-<div class="form-content">
+<ya-form-content>
   <table mat-table [dataSource]="dataSource" class="ya-data-table" style="width: 100%">
     <ng-container cdkColumnDef="name">
       <th mat-header-cell *matHeaderCellDef>Template</th>
@@ -28,4 +28,4 @@
     <tr mat-header-row *cdkHeaderRowDef="displayedColumns"></tr>
     <tr mat-row *cdkRowDef="let row; columns: displayedColumns"></tr>
   </table>
-</div>
+</ya-form-content>

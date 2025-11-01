@@ -37,6 +37,8 @@ export * from './lib/components/field/field.component';
 export * from './lib/components/filter-bar/filter-bar.component';
 export * from './lib/components/filter/filter-input.component';
 export * from './lib/components/filter/filter-textarea.component';
+export * from './lib/components/form-content/form-content.component';
+export * from './lib/components/form/form.component';
 export * from './lib/components/help/help.component';
 export * from './lib/components/help/help.dialog';
 export * from './lib/components/hex-integer-input/hex-integer-input.component';

@@ -1,11 +1,11 @@
 <h2 mat-dialog-title>Create bucket</h2>
 
 <mat-dialog-content>
-  <form [formGroup]="form" class="ya-form">
+  <ya-form [formGroup]="form">
     <ya-field label="Bucket name">
       <input type="text" formControlName="name" />
     </ya-field>
-  </form>
+  </ya-form>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">

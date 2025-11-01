@@ -1,7 +1,7 @@
 <h2 mat-dialog-title>{{ data.action.label }}</h2>
 
 <mat-dialog-content>
-  <form [formGroup]="form" class="ya-form">
+  <ya-form [formGroup]="form">
     @for (option of options; track option; let first = $first) {
       @if (!first) {
         <hr class="half-break" />
@@ -21,7 +21,7 @@
         }
       }
     }
-  </form>
+  </ya-form>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">

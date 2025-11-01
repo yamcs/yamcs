@@ -5,16 +5,12 @@
 
 .transfer-files {
   height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .close-button {
   float: right;
-}
-
-.ya-form {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
 }
 
 .grid-container {
@@ -60,7 +56,7 @@
   flex-wrap: wrap;
   align-items: flex-start;
   justify-content: stretch;
-  gap: 8px;
+  gap: 16px;
   height: fit-content;
   font-family: Roboto, sans-serif;
 }
@@ -151,12 +147,6 @@ label.table-caption {
   bottom: 0;
 }
 
-label.table-caption select {
-  display: inline-block;
-  width: auto;
-  margin: 0 4px;
-}
-
 ya-breadcrumb-trail {
   display: inline-block;
 }
@@ -186,22 +176,4 @@ table.ya-data-table {
 
 .ya-data-table td {
   border: none;
-}
-
-.checkbox-label {
-  font-weight: unset;
-  font-size: unset;
-  letter-spacing: unset;
-  line-height: unset;
-  color: unset;
-  text-transform: unset;
-  cursor: unset;
-  position: unset;
-  display: inline-block;
-  margin: 3px 0 0;
-  user-select: none;
-}
-
-.checkbox-label input {
-  margin: 0 3px 0 4px;
 }

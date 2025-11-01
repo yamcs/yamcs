@@ -1,7 +1,7 @@
 <app-appbase-toolbar label="Profile" />
 
 @if (user$ | async; as user) {
-  <div class="form-content">
+  <ya-form-content>
     <dl class="dl-horizontal no-lead">
       <dt>Username</dt>
       <dd>{{ user.getName() }}</dd>
@@ -97,5 +97,5 @@
         </dd>
       </dl>
     }
-  </div>
+  </ya-form-content>
 }

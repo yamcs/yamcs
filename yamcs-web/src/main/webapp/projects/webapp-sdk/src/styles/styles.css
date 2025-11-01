@@ -52,17 +52,6 @@ body {
   overflow-y: hidden !important;
 }
 
-.form-content {
-  padding: 24px;
-  max-width: 600px;
-}
-
-.form-content mat-toolbar {
-  background-color: var(--y-background-color);
-  font-size: 12px;
-  padding: 0;
-}
-
 dd,
 dt,
 .small {

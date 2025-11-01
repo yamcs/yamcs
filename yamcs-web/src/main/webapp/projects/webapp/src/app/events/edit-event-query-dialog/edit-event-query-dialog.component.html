@@ -1,7 +1,7 @@
 <h2 mat-dialog-title>Edit query</h2>
 
 <mat-dialog-content>
-  <form [formGroup]="form" class="ya-form">
+  <ya-form [formGroup]="form">
     <ya-field label="Name">
       <input formControlName="name" type="text" />
     </ya-field>
@@ -27,7 +27,7 @@
     <ya-field label="Share with other users">
       <ya-slide-toggle formControlName="shared" />
     </ya-field>
-  </form>
+  </ya-form>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">

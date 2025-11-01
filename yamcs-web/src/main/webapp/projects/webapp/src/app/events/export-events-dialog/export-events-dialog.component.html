@@ -1,7 +1,7 @@
 <h2 mat-dialog-title>Export events</h2>
 
-<mat-dialog-content class="ya-form">
-  <form [formGroup]="form">
+<mat-dialog-content>
+  <ya-form [formGroup]="form">
     <ya-field label="Start">
       <ya-date-time-input formControlName="start" />
     </ya-field>
@@ -39,7 +39,7 @@
         <ya-option id="TAB" label="Tab" />
       </ya-select>
     </ya-field>
-  </form>
+  </ya-form>
 
   @if (form.errors?.dateRange) {
     <ya-warning-message>Start date must be before stop date</ya-warning-message>

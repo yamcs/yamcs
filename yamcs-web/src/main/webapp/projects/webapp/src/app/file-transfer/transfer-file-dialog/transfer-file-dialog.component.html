@@ -1,252 +1,253 @@
 <div class="transfer-files">
-  <form [formGroup]="form" class="ya-form">
-    <h2>
-      <button mat-icon-button class="close-button" mat-dialog-close>
-        <mat-icon>close</mat-icon>
-      </button>
-      New
-      {{
-        service.capabilities.download && service.capabilities.upload
-          ? "transfer"
-          : service.capabilities.upload
-            ? "upload"
-            : "download"
-      }}
-    </h2>
+  <h2>
+    <button mat-icon-button class="close-button" mat-dialog-close>
+      <mat-icon>close</mat-icon>
+    </button>
+    New
+    {{
+      service.capabilities.download && service.capabilities.upload
+        ? "transfer"
+        : service.capabilities.upload
+          ? "upload"
+          : "download"
+    }}
+  </h2>
 
-    <div class="grid-container">
-      <div class="buckets-column header">
-        <label class="table-caption">
-          Buckets
-          <a class="column-action" (click)="toggleBucketSize()">
-            {{ !showBucketSize$.value ? "show" : "hide" }} size
-          </a>
-        </label>
-      </div>
+  <div class="grid-container" [formGroup]="form">
+    <div class="buckets-column header">
+      <label class="table-caption">
+        Buckets
+        <a class="column-action" (click)="toggleBucketSize()">
+          {{ !showBucketSize$.value ? "show" : "hide" }} size
+        </a>
+      </label>
+    </div>
 
-      <div class="buckets-column table-wrapper">
-        <table mat-table [dataSource]="dataSource" class="ya-data-table no-frame">
-          <ng-container cdkColumnDef="name">
-            <td
-              mat-cell
-              *cdkCellDef="let bucket"
-              [title]="(bucket.maxSize - bucket.size | formatBytes) + ' available'">
-              <span>
-                <mat-icon style="vertical-align: middle">shopping_basket</mat-icon>
-                &nbsp; {{ bucket.name }}
-              </span>
-              @if (showBucketSize$.value) {
-                <span>{{ bucket.size | formatBytes }}/{{ bucket.maxSize | formatBytes }}</span>
-              }
-              @if (showBucketSize$.value) {
-                <ya-progress [value]="bucket.size" [total]="bucket.maxSize" />
-              }
-            </td>
-          </ng-container>
-
-          <tr
-            mat-row
-            *cdkRowDef="let row; columns: displayedColumns"
-            [ngClass]="{ selected: row === (selectedBucket$ | async) }"
-            (click)="selectBucket(row)"></tr>
-        </table>
-      </div>
-
-      <div class="local-column header">
-        <label class="table-caption">
-          Local {{ service.localEntities && service.localEntities.length ? "entity" : "" }}
-          <select
-            formControlName="localEntity"
-            [ngStyle]="
-              !(service.localEntities && service.localEntities.length) && { visibility: 'hidden' }
-            ">
-            @for (entity of service.localEntities; track entity) {
-              <option [value]="entity.name">{{ entity.name }} [id={{ entity.id }}]</option>
+    <div class="buckets-column table-wrapper">
+      <table mat-table [dataSource]="dataSource" class="ya-data-table no-frame">
+        <ng-container cdkColumnDef="name">
+          <td
+            mat-cell
+            *cdkCellDef="let bucket"
+            [title]="(bucket.maxSize - bucket.size | formatBytes) + ' available'">
+            <span>
+              <mat-icon style="vertical-align: middle">shopping_basket</mat-icon>
+              &nbsp; {{ bucket.name }}
+            </span>
+            @if (showBucketSize$.value) {
+              <span>{{ bucket.size | formatBytes }}/{{ bucket.maxSize | formatBytes }}</span>
             }
-          </select>
-        </label>
+            @if (showBucketSize$.value) {
+              <ya-progress [value]="bucket.size" [total]="bucket.maxSize" />
+            }
+          </td>
+        </ng-container>
 
-        @if (breadcrumb$ | async; as breadcrumb) {
+        <tr
+          mat-row
+          *cdkRowDef="let row; columns: displayedColumns"
+          [ngClass]="{ selected: row === (selectedBucket$ | async) }"
+          (click)="selectBucket(row)"></tr>
+      </table>
+    </div>
+
+    <div class="local-column header">
+      <label class="table-caption">
+        Local {{ service.localEntities && service.localEntities.length ? "entity" : "" }}
+        <ya-select
+          formControlName="localEntity"
+          [style.marginLeft.px]="4"
+          [ngStyle]="
+            !(service.localEntities && service.localEntities.length) && { visibility: 'hidden' }
+          ">
+          @for (entity of service.localEntities; track entity) {
+            <ya-option [id]="entity.name" [label]="entity.name + ' [id=' + entity.id + ']'" />
+          }
+        </ya-select>
+      </label>
+
+      @if (breadcrumb$ | async; as breadcrumb) {
+        <ya-breadcrumb-trail [showMargin]="false">
+          <ya-breadcrumb icon="account_tree" [action]="true" (click)="changeLocalPrefix('')" />
+          @for (item of breadcrumb; track item) {
+            <ya-breadcrumb
+              [label]="item.name"
+              [action]="true"
+              (click)="changeLocalPrefix(item.prefix)" />
+          }
+        </ya-breadcrumb-trail>
+      }
+    </div>
+
+    <div
+      class="local-column table-wrapper"
+      [ngClass]="{ 'no-filelist': !service.capabilities.fileList }"
+      (click)="clearSelection($event, objectSelector)">
+      @if (selectedBucket$ | async; as bucket) {
+        <app-object-selector
+          #objectSelector
+          formControlName="localFilenames"
+          [bucket]="bucket"
+          [isMultiSelect]="true"
+          [foldersOnly]="false"
+          [noSelect]="true"
+          [noFrame]="true"
+          [allowFolderSelection]="true"
+          (prefixChange)="updateLocalBreadcrumb($event)" />
+      }
+    </div>
+
+    <div class="local-column footer ya-form">
+      <input
+        type="text"
+        formControlName="localFilenames"
+        placeholder="Local filename"
+        [value]="form.get('localFilenames')?.value"
+        [style.flexGrow]="5"
+        [style.flexShrink]="1" />
+
+      @if (service.capabilities.upload) {
+        <ya-button
+          appearance="primary"
+          [disabled]="!isUploadEnabled"
+          (click)="startUpload()"
+          icon="chevron_right">
+          UPLOAD
+        </ya-button>
+      }
+    </div>
+
+    @if (
+      (service.remoteEntities && service.remoteEntities.length) || service.capabilities.fileList
+    ) {
+      <div
+        class="remote-column header"
+        [ngClass]="{ 'no-filelist': !service.capabilities.fileList }">
+        <label class="table-caption">
+          Remote {{ service.remoteEntities && service.remoteEntities.length ? "entity" : "" }}
+          <ya-select
+            formControlName="remoteEntity"
+            [style.marginLeft.px]="4"
+            [ngStyle]="
+              !(service.remoteEntities && service.remoteEntities.length) && {
+                visibility: 'hidden',
+              }
+            ">
+            @for (entity of service.remoteEntities; track entity) {
+              <ya-option [id]="entity.name" [label]="entity.name + ' [id=' + entity.id + ']'" />
+            }
+          </ya-select>
+        </label>
+        @if (remoteBreadcrumb$ | async; as breadcrumb) {
           <ya-breadcrumb-trail [showMargin]="false">
-            <ya-breadcrumb icon="account_tree" [action]="true" (click)="changeLocalPrefix('')" />
+            <ya-breadcrumb icon="account_tree" [action]="true" (click)="changeRemotePrefix('')" />
             @for (item of breadcrumb; track item) {
               <ya-breadcrumb
                 [label]="item.name"
                 [action]="true"
-                (click)="changeLocalPrefix(item.prefix)" />
+                (click)="changeRemotePrefix(item.prefix)" />
             }
           </ya-breadcrumb-trail>
         }
-      </div>
-
-      <div
-        class="local-column table-wrapper"
-        [ngClass]="{ 'no-filelist': !service.capabilities.fileList }"
-        (click)="clearSelection($event, objectSelector)">
-        @if (selectedBucket$ | async; as bucket) {
-          <app-object-selector
-            #objectSelector
-            formControlName="localFilenames"
-            [bucket]="bucket"
-            [isMultiSelect]="true"
-            [foldersOnly]="false"
-            [noSelect]="true"
-            [noFrame]="true"
-            [allowFolderSelection]="true"
-            (prefixChange)="updateLocalBreadcrumb($event)" />
+        @if (service.capabilities.fileList) {
+          <a
+            class="lastFileListTime column-action"
+            [matMenuTriggerFor]="remoteMenu"
+            matTooltip="Last refresh. Click for actions">
+            {{ (lastFileListTime$ | async | datetime) || "No file list received" }}
+            @if (lastFileListState$ | async; as state) {
+              ({{ state }})
+            }
+            ▾
+          </a>
+          <mat-menu
+            #remoteMenu="matMenu"
+            overlapTrigger="false"
+            class="ya-menu"
+            xPosition="before"
+            yPosition="below">
+            <button mat-menu-item (click)="requestFileList()">Refresh file list</button>
+          </mat-menu>
         }
       </div>
+    }
 
-      <div class="local-column footer">
+    @if (service.capabilities.fileList) {
+      <div class="remote-column table-wrapper" (click)="clearSelection($event, remoteSelector)">
+        <app-remote-file-selector
+          #remoteSelector
+          formControlName="remoteFilenames"
+          [isMultiSelect]="true"
+          [foldersOnly]="false"
+          [noSelect]="true"
+          [allowFolderSelection]="true"
+          [fileListExtraColumns]="service.capabilities.fileListExtraColumns || []"
+          [fileActions]="service.capabilities.fileActions || []"
+          (prefixChange)="updateRemoteBreadcrumb($event)"
+          (onAction)="onActionRequest($event)" />
+      </div>
+    }
+
+    <div class="remote-column footer ya-form">
+      @if (service.capabilities.download) {
+        <ya-button
+          appearance="primary"
+          [disabled]="!isDownloadEnabled"
+          (click)="startDownload()"
+          icon="chevron_left">
+          DOWNLOAD
+        </ya-button>
+      }
+
+      @if (service.capabilities.download || service.capabilities.remotePath) {
         <input
           type="text"
-          formControlName="localFilenames"
-          placeholder="Local filename"
-          [value]="form.get('localFilenames')?.value" />
-
-        @if (service.capabilities.upload) {
-          <ya-button
-            appearance="primary"
-            [disabled]="!isUploadEnabled"
-            (click)="startUpload()"
-            icon="chevron_right">
-            UPLOAD
-          </ya-button>
-        }
-      </div>
-
-      @if (
-        (service.remoteEntities && service.remoteEntities.length) || service.capabilities.fileList
-      ) {
-        <div
-          class="remote-column header"
-          [ngClass]="{ 'no-filelist': !service.capabilities.fileList }">
-          <label class="table-caption">
-            Remote {{ service.remoteEntities && service.remoteEntities.length ? "entity" : "" }}
-            <select
-              formControlName="remoteEntity"
-              [ngStyle]="
-                !(service.remoteEntities && service.remoteEntities.length) && {
-                  visibility: 'hidden',
-                }
-              ">
-              @for (entity of service.remoteEntities; track entity) {
-                <option [value]="entity.name">{{ entity.name }} [id={{ entity.id }}]</option>
-              }
-            </select>
-          </label>
-          @if (remoteBreadcrumb$ | async; as breadcrumb) {
-            <ya-breadcrumb-trail [showMargin]="false">
-              <ya-breadcrumb icon="account_tree" [action]="true" (click)="changeRemotePrefix('')" />
-              @for (item of breadcrumb; track item) {
-                <ya-breadcrumb
-                  [label]="item.name"
-                  [action]="true"
-                  (click)="changeRemotePrefix(item.prefix)" />
-              }
-            </ya-breadcrumb-trail>
-          }
-          @if (service.capabilities.fileList) {
-            <a
-              class="lastFileListTime column-action"
-              [matMenuTriggerFor]="remoteMenu"
-              matTooltip="Last refresh. Click for actions">
-              {{ (lastFileListTime$ | async | datetime) || "No file list received" }}
-              @if (lastFileListState$ | async; as state) {
-                ({{ state }})
-              }
-              ▾
-            </a>
-            <mat-menu
-              #remoteMenu="matMenu"
-              overlapTrigger="false"
-              class="ya-menu"
-              xPosition="before"
-              yPosition="below">
-              <button mat-menu-item (click)="requestFileList()">Refresh file list</button>
-            </mat-menu>
-          }
-        </div>
+          formControlName="remoteFilenames"
+          placeholder="Remote filename"
+          [value]="form.get('remoteFilenames')?.value" />
       }
-
-      @if (service.capabilities.fileList) {
-        <div class="remote-column table-wrapper" (click)="clearSelection($event, remoteSelector)">
-          <app-remote-file-selector
-            #remoteSelector
-            formControlName="remoteFilenames"
-            [isMultiSelect]="true"
-            [foldersOnly]="false"
-            [noSelect]="true"
-            [allowFolderSelection]="true"
-            [fileListExtraColumns]="service.capabilities.fileListExtraColumns || []"
-            [fileActions]="service.capabilities.fileActions || []"
-            (prefixChange)="updateRemoteBreadcrumb($event)"
-            (onAction)="onActionRequest($event)" />
-        </div>
-      }
-
-      <div class="remote-column footer">
-        @if (service.capabilities.download) {
-          <ya-button
-            appearance="primary"
-            [disabled]="!isDownloadEnabled"
-            (click)="startDownload()"
-            icon="chevron_left">
-            DOWNLOAD
-          </ya-button>
-        }
-
-        @if (service.capabilities.download || service.capabilities.remotePath) {
-          <input
-            type="text"
-            formControlName="remoteFilenames"
-            placeholder="Remote filename"
-            [value]="form.get('remoteFilenames')?.value" />
-        }
-      </div>
-
-      <div class="options-footer">
-        @for (option of service.transferOptions; track option; let i = $index) {
-          <div [title]="option.description || ''">
-            <label>{{ option.title || option.name }}</label>
-            <!-- Boolean option type -->
-            @if (option.type === "BOOLEAN") {
-              <label class="checkbox-label">
-                <input type="checkbox" [formControlName]="getControlName(option, i)" />
-                {{ option.associatedText }}
-              </label>
-            }
-            <!-- Double and string option type-->
-            <div style="display: flex; column-gap: 8px; flex-wrap: wrap">
-              @if ((option.type === "DOUBLE" || option.type === "STRING") && option.values) {
-                <select [formControlName]="getControlName(option, i) + DROPDOWN_SUFFIX">
-                  @if (option.allowCustomOption) {
-                    <option [value]="CUSTOM_OPTION_VALUE">Custom</option>
-                  }
-                  @for (value of option.values; track value) {
-                    <option [value]="value.value">
-                      {{ value.verboseName != null ? value.verboseName : value.value }}
-                    </option>
-                  }
-                </select>
-              }
-              @if (
-                (option.type === "DOUBLE" || option.type === "STRING") &&
-                ((option.allowCustomOption &&
-                  form.get(getControlName(option, i) + DROPDOWN_SUFFIX)?.value ===
-                    CUSTOM_OPTION_VALUE) ||
-                  !option.values)
-              ) {
-                <input
-                  [formControlName]="getControlName(option, i)"
-                  [type]="option.type === 'DOUBLE' ? 'number' : 'text'"
-                  [placeholder]="option.associatedText || ''"
-                  style="width: 120px" />
-              }
-            </div>
-          </div>
-        }
-      </div>
     </div>
-  </form>
+
+    <div class="options-footer">
+      @for (option of service.transferOptions; track option; let i = $index) {
+        <div [title]="option.description || ''">
+          <label>{{ option.title || option.name }}</label>
+          <!-- Boolean option type -->
+          @if (option.type === "BOOLEAN") {
+            <ya-slide-toggle [formControlName]="getControlName(option, i)">
+              {{ option.associatedText }}
+            </ya-slide-toggle>
+          }
+          <!-- Double and string option type-->
+          <div class="ya-form" style="display: flex; column-gap: 8px; flex-wrap: wrap">
+            @if ((option.type === "DOUBLE" || option.type === "STRING") && option.values) {
+              <ya-select [formControlName]="getControlName(option, i) + DROPDOWN_SUFFIX">
+                @if (option.allowCustomOption) {
+                  <ya-option [id]="CUSTOM_OPTION_VALUE" label="Custom" />
+                }
+                @for (value of option.values; track value) {
+                  <ya-option
+                    [id]="value.value"
+                    [label]="value.verboseName != null ? value.verboseName : value.value" />
+                }
+              </ya-select>
+            }
+            @if (
+              (option.type === "DOUBLE" || option.type === "STRING") &&
+              ((option.allowCustomOption &&
+                form.get(getControlName(option, i) + DROPDOWN_SUFFIX)?.value ===
+                  CUSTOM_OPTION_VALUE) ||
+                !option.values)
+            ) {
+              <input
+                [formControlName]="getControlName(option, i)"
+                [type]="option.type === 'DOUBLE' ? 'number' : 'text'"
+                [placeholder]="option.associatedText || ''"
+                style="width: 120px" />
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
 </div>

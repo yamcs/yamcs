@@ -1,0 +1,14 @@
+:host {
+  display: block;
+  padding: 24px;
+  max-width: 600px;
+  font:
+    400 12px / 20px Roboto,
+    sans-serif;
+}
+
+:host ::ng-deep mat-toolbar {
+  background-color: var(--y-background-color);
+  font-size: 12px;
+  padding: 0;
+}

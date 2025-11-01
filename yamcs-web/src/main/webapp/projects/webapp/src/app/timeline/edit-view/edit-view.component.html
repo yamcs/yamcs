@@ -6,7 +6,7 @@
     </ng-template>
   </ya-instance-toolbar>
 
-  <div class="form-content ya-form">
+  <ya-form-content>
     <form [formGroup]="form" novalidate autocomplete="off">
       <ya-field label="Name" hint="(required)">
         <input type="text" formControlName="name" />
@@ -28,5 +28,5 @@
         SAVE CHANGES
       </ya-button>
     </ya-toolbar>
-  </div>
+  </ya-form-content>
 </ya-instance-page>

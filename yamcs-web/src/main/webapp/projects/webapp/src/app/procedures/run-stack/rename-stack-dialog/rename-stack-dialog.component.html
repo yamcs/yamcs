@@ -1,11 +1,11 @@
 <h2 mat-dialog-title>Rename stack</h2>
 
 <mat-dialog-content>
-  <form [formGroup]="filenameForm" class="ya-form">
+  <ya-form [formGroup]="filenameForm">
     <ya-field label="Name" [class.invalid]="filenameForm.get('name')?.invalid">
       <input #filename type="text" formControlName="name" />
     </ya-field>
-  </form>
+  </ya-form>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">

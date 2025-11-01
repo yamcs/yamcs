@@ -4,7 +4,7 @@
   <div class="hint">
     <p>This script will be submitted to the Yamcs Timeline, for execution at a later time.</p>
   </div>
-  <form [formGroup]="form" class="ya-form">
+  <ya-form [formGroup]="form">
     <ya-field label="Execution time">
       <ya-date-time-input formControlName="executionTime" [showMillis]="true" [showNow]="true" />
     </ya-field>
@@ -15,7 +15,7 @@
       </ya-help>
       <ya-tag-select formControlName="tags" />
     </ya-field>
-  </form>
+  </ya-form>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
