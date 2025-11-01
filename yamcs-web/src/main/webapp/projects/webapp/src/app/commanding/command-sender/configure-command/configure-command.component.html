@@ -54,6 +54,7 @@
           [expanded]="true"
           [visible]="(command() | allConstraints).length">
           <app-command-constraints
+            [templateProvider]="templateProvider$ | async"
             [command]="command()"
             [relto]="command()?.qualifiedName | spaceSystemName" />
         </ya-stepper-step>

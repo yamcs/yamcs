@@ -90,6 +90,8 @@ export interface IssueCommandOptions {
   sequenceNumber?: number;
   dryRun?: boolean;
   comment?: string;
+  disableTransmissionConstraints?: boolean;
+  disableVerifiers?: boolean;
   stream?: string;
   extra?: { [key: string]: Value };
 }
