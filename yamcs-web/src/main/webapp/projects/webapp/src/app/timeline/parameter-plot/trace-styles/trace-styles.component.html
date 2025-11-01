@@ -15,7 +15,7 @@
     <tr>
       <td class="property">Visible</td>
       <td class="widget">
-        <mat-slide-toggle formControlName="visible" />
+        <ya-slide-toggle formControlName="visible" />
       </td>
     </tr>
     <tr>
@@ -27,10 +27,10 @@
     <tr>
       <td class="property">Show min/max</td>
       <td class="widget">
-        <mat-slide-toggle #minMax formControlName="minMax" />
+        <ya-slide-toggle #minMax formControlName="minMax" />
       </td>
     </tr>
-    @if (minMax.checked) {
+    @if (minMax.checked()) {
       <tr>
         <td class="property">Min/max opacity</td>
         <td class="widget">
@@ -48,10 +48,10 @@
     <tr>
       <td class="property">Fill</td>
       <td class="widget">
-        <mat-slide-toggle #fill formControlName="fill" />
+        <ya-slide-toggle #fill formControlName="fill" />
       </td>
     </tr>
-    @if (fill.checked) {
+    @if (fill.checked()) {
       <tr>
         <td class="property">Fill color</td>
         <td class="widget">

@@ -67,6 +67,7 @@ export * from './lib/components/search-filter2/search-filter2.component';
 export * from './lib/components/select/select.component';
 export * from './lib/components/sidebar/sidebar-nav-group.component';
 export * from './lib/components/sidebar/sidebar-nav-item.component';
+export * from './lib/components/slide-toggle/slide-toggle.component';
 export * from './lib/components/slider-input/slider-input.component';
 export * from './lib/components/stepper/stepper-step-actions.component';
 export * from './lib/components/stepper/stepper-step.component';

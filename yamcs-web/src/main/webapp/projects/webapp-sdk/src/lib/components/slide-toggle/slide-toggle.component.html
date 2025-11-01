@@ -1,0 +1,7 @@
+<mat-slide-toggle
+  [checked]="checked()"
+  [disabled]="disabled()"
+  (change)="handleChange($event)"
+  [disableRipple]="true">
+  <ng-content />
+</mat-slide-toggle>

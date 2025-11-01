@@ -65,7 +65,7 @@
       <ya-button (click)="goBack()">Cancel</ya-button>
       <span style="flex: 1 1 auto"></span>
       @if (config.twoStageCommanding) {
-        <mat-slide-toggle [formControl]="armControl" color="primary">Arm</mat-slide-toggle>
+        <ya-slide-toggle [formControl]="armControl">Arm</ya-slide-toggle>
         <div style="width: 20px"></div>
       }
       <ya-button

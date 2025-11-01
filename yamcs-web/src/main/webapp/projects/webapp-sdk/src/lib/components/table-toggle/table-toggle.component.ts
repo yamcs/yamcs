@@ -6,15 +6,14 @@ import {
   inject,
 } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { PreferenceStore } from '../../services/preference-store.service';
+import { YaSlideToggle } from '../slide-toggle/slide-toggle.component';
 
 @Component({
   selector: 'ya-table-toggle',
   templateUrl: './table-toggle.component.html',
-  styleUrl: './table-toggle.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatSlideToggle, ReactiveFormsModule],
+  imports: [ReactiveFormsModule, YaSlideToggle],
 })
 export class YaTableToggle implements OnInit {
   @Input()
