@@ -45,23 +45,12 @@ public class LinksApi extends AbstractLinksApi<Context> {
     @Override
     public void listLinks(Context ctx, ListLinksRequest request, Observer<ListLinksResponse> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ReadLinks);
+        var linkManager = InstancesApi.verifyInstanceObj(request.getInstance()).getLinkManager();
 
         var responseb = ListLinksResponse.newBuilder();
-
-        if (request.hasInstance()) {
-            var linkManager = InstancesApi.verifyInstanceObj(request.getInstance()).getLinkManager();
-            for (var link : linkManager.getLinks()) {
-                responseb.addLinks(toLink(request.getInstance(), link));
-            }
-        } else {
-            for (YamcsServerInstance ysi : YamcsServer.getInstances()) {
-                var linkManager = ysi.getLinkManager();
-                for (var link : linkManager.getLinks()) {
-                    responseb.addLinks(toLink(request.getInstance(), link));
-                }
-            }
+        for (var link : linkManager.getLinks()) {
+            responseb.addLinks(toLink(request.getInstance(), link));
         }
-
         observer.complete(responseb.build());
     }
 
