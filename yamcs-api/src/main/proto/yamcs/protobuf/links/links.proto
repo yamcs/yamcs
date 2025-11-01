@@ -18,7 +18,7 @@ service LinksApi {
   // List links
   rpc ListLinks(ListLinksRequest) returns (ListLinksResponse) {
     option (yamcs.api.route) = {
-      get: "/api/links/{instance?}"
+      get: "/api/links/{instance}"
     };
   }
   
