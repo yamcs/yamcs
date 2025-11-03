@@ -11,7 +11,7 @@ public class UslpManagedParameters extends DownlinkManagedParameters {
 
     enum COPType {
         COP_1, COP_P, NONE
-    };
+    }
 
     enum ServiceType {
         /** Multiplexing Protocol Data Unit */
@@ -20,7 +20,7 @@ public class UslpManagedParameters extends DownlinkManagedParameters {
         IDLE,
         /** Virtual Channel Access */
         VCA
-    };
+    }
 
     int frameLength; // frame length if fixed or -1 if not fixed
     int maxFrameLength;
@@ -76,12 +76,6 @@ public class UslpManagedParameters extends DownlinkManagedParameters {
             } else if (service == ServiceType.VCA) {
                 parseVcaConfig();
             }
-            // Auth mask with the size of the USLP primary header - since it is variable, we take the max size
-            authMask = new byte[14];
-            // Authenticate virtual channel ID and MAP ID
-            authMask[2] = 0b111; // top 3 bits of vcid
-            authMask[3] = (byte) 0b1111_1110; // bottom 3 bits of vcid, 4 bits of map id
-            // We never authenticate the optional insert zone.
         }
 
     }

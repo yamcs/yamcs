@@ -10,7 +10,9 @@ import java.util.Arrays;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.yamcs.security.SdlsSecurityAssociation.VerificationStatusCode;
+import org.yamcs.security.sdls.SdlsSecurityAssociation;
+import org.yamcs.security.sdls.SdlsSecurityAssociation.VerificationStatusCode;
+import org.yamcs.security.sdls.StandardAuthMask;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.StringConverter;
 
@@ -18,7 +20,7 @@ public class SdlsSecurityAssociationTest {
     final Path RESOURCE_DIR = Paths.get("src", "test", "resources", "sdls");
     byte[] key, authMask, frame, inputPlaintext, inputPrimaryHeader;
     int dataStart, dataEnd, seqNumWindow;
-    int secHeaderStart = 6;
+    final int secHeaderStart = 6;
     SdlsSecurityAssociation saSend, saRecv;
 
     @BeforeEach
@@ -36,8 +38,7 @@ public class SdlsSecurityAssociationTest {
         // And data end is before security trailer
         dataEnd = frameLength - SdlsSecurityAssociation.getTrailerSize();
 
-        authMask = new byte[6];
-        authMask[1] = 0b0000_1110; // authenticate virtual channel ID
+        authMask = StandardAuthMask.TM(0);
 
         // Create the primary header: all 1s except the field to be authenticated
         inputPrimaryHeader = new byte[6];
@@ -55,8 +56,8 @@ public class SdlsSecurityAssociationTest {
         seqNumWindow = 5;
 
         // Create SA
-        saSend = new SdlsSecurityAssociation(key, (short) 42, seqNumWindow, true);
-        saRecv = new SdlsSecurityAssociation(key, (short) 42, seqNumWindow, true);
+        saSend = new SdlsSecurityAssociation(key, (short) 42, null, seqNumWindow, true);
+        saRecv = new SdlsSecurityAssociation(key, (short) 42, null, seqNumWindow, true);
         // saSend starts from 0, saRecv is supposed to have the last number
         saRecv.setSeqNum(StringConverter.hexStringToArray("FFFFFFFFFFFFFFFFFFFFFFFF"));
     }
@@ -70,7 +71,7 @@ public class SdlsSecurityAssociationTest {
         Path wrongKeypath = RESOURCE_DIR.resolve("wrong-presharedkey");
         byte[] wrongKey = Files.readAllBytes(wrongKeypath);
         SdlsSecurityAssociation wrongSa = new SdlsSecurityAssociation(wrongKey, (short) 42,
-                seqNumWindow, true);
+                null, seqNumWindow, true);
         assertEquals(VerificationStatusCode.MacVerificationFailure, wrongSa.processSecurity(frame, 0, secHeaderStart,
                 frame.length, authMask));
     }
@@ -84,7 +85,7 @@ public class SdlsSecurityAssociationTest {
         Path wrongKeypath = RESOURCE_DIR.resolve("presharedkey");
         byte[] wrongKey = Files.readAllBytes(wrongKeypath);
         SdlsSecurityAssociation wrongSa = new SdlsSecurityAssociation(wrongKey, (short) 1,
-                seqNumWindow, true);
+                null, seqNumWindow, true);
         assertEquals(VerificationStatusCode.InvalidSPI, wrongSa.processSecurity(frame, 0, secHeaderStart, frame.length,
                 authMask));
     }

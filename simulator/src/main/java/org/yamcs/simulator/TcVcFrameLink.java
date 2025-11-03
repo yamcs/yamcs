@@ -4,7 +4,8 @@ import java.nio.ByteBuffer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.security.SdlsSecurityAssociation;
+import org.yamcs.security.sdls.SdlsSecurityAssociation;
+import org.yamcs.security.sdls.StandardAuthMask;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.StringConverter;
@@ -46,11 +47,9 @@ public class TcVcFrameLink {
             // the frame data is already part of authentication.
             // No need to authenticate data, already part of GCM
             // Authenticate virtual channel ID; no segment header is present
-            authMask = new byte[5];
-            authMask[2] = (byte) 0b1111_1100; // authenticate virtual channel ID
-
+            authMask = StandardAuthMask.TC(false);
             this.maybeSdls = new SdlsSecurityAssociation(maybeSdlsKey, encryptionSpi,
-                    encryptionSeqNumWindow, verifySeqNum);
+                    null, encryptionSeqNumWindow, verifySeqNum);
             // Don't verify the first TC sequence number, because Yamcs has sequence number persistence and the
             // simulator does not.
             maybeSdls.skipVerifyingNextSeqNum();

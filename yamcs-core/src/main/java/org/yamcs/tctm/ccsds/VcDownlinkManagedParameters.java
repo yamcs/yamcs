@@ -28,7 +28,6 @@ public class VcDownlinkManagedParameters {
      * If length higher than 0, it means this channel is encrypted
      */
     short[] encryptionSpis = new short[0];
-    byte[] authMask;
 
     public VcDownlinkManagedParameters(int vcId) {
         this.vcId = vcId;

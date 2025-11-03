@@ -18,8 +18,8 @@ import org.yamcs.protobuf.SetKeyRequest;
 import org.yamcs.protobuf.SetSeqCtrRequest;
 import org.yamcs.protobuf.SetSpiRequest;
 import org.yamcs.protobuf.SetSpisRequest;
-import org.yamcs.security.SdlsSecurityAssociation;
 import org.yamcs.security.SystemPrivilege;
+import org.yamcs.security.sdls.SdlsSecurityAssociation;
 import org.yamcs.tctm.Link;
 import org.yamcs.tctm.ccsds.UdpTcFrameLink;
 import org.yamcs.tctm.ccsds.UdpTmFrameLink;
@@ -125,6 +125,7 @@ public class SdlsApi extends AbstractSdlsApi<Context> {
         int intSpi = request.getBody().getSpi();
         if (intSpi > Short.MAX_VALUE || intSpi < Short.MIN_VALUE) {
             throw new BadRequestException(String.format("Received SPI %d does not fit into a short, max value is %d",
+                    intSpi,
                     Short.MAX_VALUE));
         }
         short spi = (short) intSpi;
@@ -154,6 +155,7 @@ public class SdlsApi extends AbstractSdlsApi<Context> {
                 if (intSpi > Short.MAX_VALUE || intSpi < Short.MIN_VALUE) {
                     throw new BadRequestException(
                             String.format("Received SPI %d does not fit into a short, max value is %d",
+                                    intSpi,
                                     Short.MAX_VALUE));
                 }
                 spis[i] = (short) intSpi;

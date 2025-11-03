@@ -2,7 +2,8 @@ package org.yamcs.tctm.ccsds;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.security.SdlsSecurityAssociation;
+import org.yamcs.security.sdls.SdlsSecurityAssociation;
+import org.yamcs.security.sdls.StandardAuthMask;
 import org.yamcs.tctm.ErrorDetectionWordCalculator;
 import org.yamcs.tctm.TcTmException;
 import org.yamcs.tctm.ccsds.DownlinkManagedParameters.FrameErrorDetection;
@@ -95,6 +96,7 @@ public class UslpFrameDecoder implements TransferFrameDecoder {
         }
 
         long vcfFrameSeq;
+        int vcfCountLength = 0;
         if (truncatedFrame) {
             if (length != vmp.truncatedTransferFrameLength) {
                 throw new TcTmException("Received truncated frame on VC " + virtualChannelId + " whose length ("
@@ -122,7 +124,7 @@ public class UslpFrameDecoder implements TransferFrameDecoder {
                 utf.setOcf(ByteArrayUtils.decodeInt(data, dataEnd));
             }
             // bit2 53-55 - the length of the VCF count field
-            int vcfCountLength = b6 & 0x7;
+            vcfCountLength = b6 & 0x7;
 
             dataOffset += 1;
 
@@ -142,21 +144,29 @@ public class UslpFrameDecoder implements TransferFrameDecoder {
         utf.setMapId(mapId);
 
         if (vmp.encryptionSpis.length > 0) {
-            // encrypted channel,
-            // the security header follows after the frame header and insert zone
-            // first two bytes are the spi
-
             short receivedSpi = ByteArrayUtils.decodeShort(data, dataOffset);
-            var sdlsSa = uslpParams.sdlsSecurityAssociations.get(receivedSpi);
+            SdlsSecurityAssociation sdlsSa = uslpParams.sdlsSecurityAssociations.get(receivedSpi);
             if (sdlsSa == null) {
                 throw new TcTmException("Received USLP frame with unknown SPI " + receivedSpi);
             }
+
+            byte[] authMask = sdlsSa.customAuthMask;
+            if (authMask == null) {
+                int phLength;
+                if (truncatedFrame) {
+                    phLength = 4;
+                } else {
+                    phLength = vcfCountLength + 7;
+                }
+               authMask = StandardAuthMask.USLP(phLength, uslpParams.insertZoneLength);
+            }
+
             int secHeaderStart = dataOffset;
 
             int secTrailerEnd = dataEnd;
             // try to decrypt the frame
             SdlsSecurityAssociation.VerificationStatusCode decryptionStatus = sdlsSa.processSecurity(data, offset,
-                    secHeaderStart, secTrailerEnd, vmp.authMask);
+                    secHeaderStart, secTrailerEnd, authMask);
 
             if (decryptionStatus != SdlsSecurityAssociation.VerificationStatusCode.NoFailure) {
                 throw new TcTmException(

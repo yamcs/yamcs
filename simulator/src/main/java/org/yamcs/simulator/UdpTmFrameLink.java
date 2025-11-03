@@ -12,7 +12,8 @@ import java.util.function.IntSupplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.security.SdlsSecurityAssociation;
+import org.yamcs.security.sdls.SdlsSecurityAssociation;
+import org.yamcs.security.sdls.StandardAuthMask;
 import org.yamcs.tctm.ccsds.error.AosFrameHeaderErrorCorr;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.utils.ByteArrayUtils;
@@ -66,8 +67,6 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         // If the link should be encrypted, the maximum amount of data is reduced because of encryption overhead.
         if (maybeSdlsKey != null) {
             this.frameSize = frameLength - SdlsSecurityAssociation.getOverheadBytes();
-            maybeSdls = new SdlsSecurityAssociation(maybeSdlsKey, sdlsSpi,
-                    encryptionSeqNumWindow, verifySeqNum);
         } else {
             this.frameSize = frameLength;
         }
@@ -76,16 +75,31 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         this.clcwSupplier = clcwSupplier;
 
         if ("AOS".equalsIgnoreCase(frameType)) {
+            if (maybeSdlsKey != null) {
+                byte[] authMask = StandardAuthMask.AOS(true, 0);
+                maybeSdls = new SdlsSecurityAssociation(maybeSdlsKey, sdlsSpi, authMask,
+                        encryptionSeqNumWindow, verifySeqNum);
+            }
             for (int i = 0; i < NUM_VC; i++) {
                 builders[i] = new AosVcSender(scid, i, frameLength, maybeSdls);
             }
             idleFrameBuilder = new AosVcSender(scid, 63, frameLength, maybeSdls);
         } else if ("TM".equalsIgnoreCase(frameType)) {
+            if (maybeSdlsKey != null) {
+                byte[] authMask = StandardAuthMask.TM(0);
+                maybeSdls = new SdlsSecurityAssociation(maybeSdlsKey, sdlsSpi, authMask,
+                        encryptionSeqNumWindow, verifySeqNum);
+            }
             for (int i = 0; i < NUM_VC; i++) {
                 builders[i] = new TmVcSender(scid, i, frameLength, true, maybeSdls);
             }
             idleFrameBuilder = builders[0];
         } else if ("USLP".equalsIgnoreCase(frameType)) {
+            if (maybeSdlsKey != null) {
+                byte[] authMask = StandardAuthMask.USLP(11, 0);
+                maybeSdls = new SdlsSecurityAssociation(maybeSdlsKey, sdlsSpi, authMask,
+                        encryptionSeqNumWindow, verifySeqNum);
+            }
             for (int i = 0; i < NUM_VC; i++) {
                 builders[i] = new UslpVcSender(scid, i, frameLength, true, maybeSdls);
             }
@@ -184,7 +198,6 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
         // Optionally, a security association to use for an encrypted link
         SdlsSecurityAssociation maybeSdls = null;
-        byte[] authMask;
 
         boolean firstPacketInFrame = true;
         int firstHeaderPointer = -1;
@@ -331,11 +344,6 @@ public class UdpTmFrameLink extends AbstractScheduledService {
             // Optionally encrypt the data
             if (maybeLinkSdls != null) {
                 maybeSdls = maybeLinkSdls;
-                // Create an auth mask for the primary header,
-                // the frame data is already part of authentication.
-                // No need to authenticate data, already part of GCM
-                authMask = new byte[offsets.secHeaderStart];
-                authMask[1] = 0b0011_1111; // authenticate only virtual channel ID
             }
 
             writeGvcId(data, vcId);
@@ -384,9 +392,9 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         void encryptFrame() {
             try {
                 this.maybeSdls.applySecurity(data, 0, offsets.secHeaderStart,
-                        offsets.secTrailerStart + SdlsSecurityAssociation.getTrailerSize(), authMask);
+                        offsets.secTrailerStart + SdlsSecurityAssociation.getTrailerSize(), maybeSdls.customAuthMask);
             } catch (GeneralSecurityException e) {
-                log.warn("could not encrypt frame: {}", e);
+                log.warn("could not encrypt frame", e);
             }
         }
     }
@@ -402,12 +410,6 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
             // Optionally encrypt the frame
             if (maybeLinkSdls != null) {
-                // Create an auth mask for the primary header,
-                // the frame data is already part of authentication.
-                // No need to authenticate data, already part of GCM
-                authMask = new byte[offsets.secHeaderStart];
-                authMask[1] = 0b0000_1110; // authenticate virtual channel ID
-
                 this.maybeSdls = maybeLinkSdls;
             }
             writeGvcId(data, vcId);
@@ -433,9 +435,9 @@ public class UdpTmFrameLink extends AbstractScheduledService {
             if (this.maybeSdls != null) {
                 try {
                     this.maybeSdls.applySecurity(data, 0, offsets.secHeaderStart,
-                            offsets.pduDataEnd + SdlsSecurityAssociation.getTrailerSize(), authMask);
+                            offsets.pduDataEnd + SdlsSecurityAssociation.getTrailerSize(), maybeSdls.customAuthMask);
                 } catch (GeneralSecurityException e) {
-                    log.warn("could not encrypt idle frame: {}", e);
+                    log.warn("could not encrypt idle frame", e);
                 }
             }
 
@@ -452,9 +454,9 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         void encryptFrame() {
             try {
                 this.maybeSdls.applySecurity(data, 0, offsets.secHeaderStart,
-                        offsets.secTrailerStart + SdlsSecurityAssociation.getTrailerSize(), authMask);
+                        offsets.secTrailerStart + SdlsSecurityAssociation.getTrailerSize(), maybeSdls.customAuthMask);
             } catch (GeneralSecurityException e) {
-                log.warn("could not encrypt frame: {}", e);
+                log.warn("could not encrypt frame", e);
             }
         }
 
@@ -488,9 +490,6 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
             // Optionally encrypt the data
             if (maybeLinkSdls != null) {
-                authMask = new byte[offsets.secHeaderStart];
-                authMask[2] = 0b111; // top 3 bits of vcid
-                authMask[3] = (byte) 0b1111_1110; // bottom 3 bits of vcid, 4 bits of map id
                 this.maybeSdls = maybeLinkSdls;
             }
         }
@@ -526,9 +525,9 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         void encryptFrame() {
             try {
                 int secTrailerEnd = offsets.secTrailerStart + SdlsSecurityAssociation.getTrailerSize();
-                this.maybeSdls.applySecurity(data, 0, offsets.secHeaderStart, secTrailerEnd, authMask);
+                this.maybeSdls.applySecurity(data, 0, offsets.secHeaderStart, secTrailerEnd, maybeSdls.customAuthMask);
             } catch (GeneralSecurityException e) {
-                log.warn("could not encrypt frame: {}", e);
+                log.warn("could not encrypt frame", e);
             }
         }
 
@@ -571,7 +570,6 @@ public class UdpTmFrameLink extends AbstractScheduledService {
                 secHeaderStart = secTrailerStart = -1;
                 frameDataStart = 8;
                 pduDataEnd = frameSize - 2 - (ocf ? 4 : 0);
-                ;
             } else {
                 secHeaderStart = 8;
                 frameDataStart = secHeaderStart + SdlsSecurityAssociation.getHeaderSize();

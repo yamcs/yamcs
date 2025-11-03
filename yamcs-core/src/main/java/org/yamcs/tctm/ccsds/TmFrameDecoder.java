@@ -2,7 +2,8 @@ package org.yamcs.tctm.ccsds;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yamcs.security.SdlsSecurityAssociation;
+import org.yamcs.security.sdls.SdlsSecurityAssociation;
+import org.yamcs.security.sdls.StandardAuthMask;
 import org.yamcs.tctm.TcTmException;
 import org.yamcs.tctm.ccsds.DownlinkManagedParameters.FrameErrorDetection;
 import org.yamcs.tctm.ccsds.TmManagedParameters.ServiceType;
@@ -91,16 +92,21 @@ public class TmFrameDecoder implements TransferFrameDecoder {
             // the security header follows after the frame header and insert zone
             // first two bytes are the spi
             short receivedSpi = ByteArrayUtils.decodeShort(data, dataOffset);
-            var sdlsSa = tmParams.sdlsSecurityAssociations.get(receivedSpi);
+            SdlsSecurityAssociation sdlsSa = tmParams.sdlsSecurityAssociations.get(receivedSpi);
             if (sdlsSa == null) {
                 throw new TcTmException("Received TM frame with unknown SPI " + receivedSpi);
+            }
+
+            byte[] authMask = sdlsSa.customAuthMask;
+            if (authMask == null) {
+                authMask = StandardAuthMask.TM(tmParams.fshLength);
             }
             int secHeaderStart = dataOffset;
 
             int decryptionTrailerEnd = dataEnd;
             // try to decrypt the frame
             SdlsSecurityAssociation.VerificationStatusCode decryptionStatus = sdlsSa.processSecurity(data, offset,
-                    secHeaderStart, decryptionTrailerEnd, vmp.authMask);
+                    secHeaderStart, decryptionTrailerEnd, authMask);
 
             if (decryptionStatus != SdlsSecurityAssociation.VerificationStatusCode.NoFailure) {
                 throw new TcTmException("Failed to decrypt TM frame for SPI " + receivedSpi + ": " + decryptionStatus);
