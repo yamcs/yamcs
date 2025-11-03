@@ -1,4 +1,4 @@
-package org.yamcs.security;
+package org.yamcs.security.sdls;
 
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
@@ -20,6 +20,8 @@ import javax.crypto.spec.SecretKeySpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.memento.MementoDb;
+import org.yamcs.security.IvSeqNum;
+import org.yamcs.security.SdlsMemento;
 import org.yamcs.utils.ByteArrayUtils;
 
 /**
@@ -30,7 +32,7 @@ import org.yamcs.utils.ByteArrayUtils;
  * <p>
  * The 12 bytes IV is consisting of a wrapping around sequence number.
  * <p>
- * 
+ * <p>
  * According to the CCSDS 355.0-B-2 (SDLS) standard, the transfer frame structure is:
  * <ul>
  * <li>Frame primary header</li>
@@ -40,7 +42,7 @@ import org.yamcs.utils.ByteArrayUtils;
  * <li>Security Trailer - this class uses 128 bits security trailer representing the authentication tag</li>
  * <li>Frame Trailer composed of OCF and checksum (both optional)</li>
  * </ul>
- *
+ * <p>
  * According to the standard, the encryption shall be performed over the Frame Data only
  * <p>
  * Authentication (MAC) shall be computed over:
@@ -53,9 +55,9 @@ import org.yamcs.utils.ByteArrayUtils;
  * The MAC shall not be computed over the frame trailer (OCF and checksum) and the insert zone (AOS and USLP). The
  * insert zone shall be masked out.
  * <p>
- * This class uses a {@link Cipher} instance which requires two calls: first to add the so called "Additional
- * Authenticated Data (AAD)" {@link Cipher#updateAAD(byte[])} and then to add the data to be encrypted
- * {@link Cipher#doFinal(byte[])}
+ * This class uses a {@link Cipher} instance which requires two calls: first to add the so-called "Additional
+ * Authenticated Data (AAD)" {@link Cipher#updateAAD(byte[]) and then to add the data to be encrypted
+ * {@link Cipher#doFinal(byte[]))}
  * <p>
  * For authenticated encryption, the AAD data is composed of the frame data from the beginning of the frame until the
  * start of the frame data, masked as per the standard.
@@ -65,7 +67,7 @@ import org.yamcs.utils.ByteArrayUtils;
  * <p>
  * The frame data will be encrypted and the authentication tag will be written into the security trailer, following the
  * frame data.
- * 
+ *
  */
 public class SdlsSecurityAssociation {
     /**
@@ -87,86 +89,68 @@ public class SdlsSecurityAssociation {
      */
     public static final BigInteger MAX_SEQ_NUM = BigInteger.valueOf(2).pow(GCM_IV_LEN_BYTES * 8)
             .subtract(BigInteger.ONE);
-
+    private static final Logger log = LoggerFactory.getLogger(SdlsSecurityAssociation.class);
     /**
      * Security parameter index: identifier shared between sender and receiver, specifies which security association is
      * used
      */
     public final short spi;
-
-    /**
-     * Anti-replay sequence number
-     */
-    private IvSeqNum seqNum;
-
-    /**
-     * Whether to verify the received anti-replay sequence number
-     */
-    private final boolean verifySeqNum;
-
+    public final byte[] customAuthMask;
     /**
      * Anti-replay sequence number window. Specifies the range of sequence number around the current number that will be
      * accepted.
      */
     final int seqNumWindow;
-
     /**
-     * Secret key used for encryption and decryption
+     * Whether to verify the received anti-replay sequence number
      */
-    private SecretKey secretKey;
-
-    private static final Logger log = LoggerFactory.getLogger(SdlsSecurityAssociation.class);
-
+    private final boolean verifySeqNum;
     /**
      * Name of the Yamcs instance, used when persisting the sequence number
      */
     private final String instanceName;
-
     /**
      * Name of the link, used when persisting the sequence number
      */
     private final String linkName;
-
+    /**
+     * Anti-replay sequence number
+     */
+    private IvSeqNum seqNum;
+    /**
+     * Secret key used for encryption and decryption
+     */
+    private SecretKey secretKey;
     /**
      * If true, skips verifying the sequence number for the next frame in `processSecurity`
      */
     private boolean skipVerifyingNextSeqNum = false;
 
     /**
-     * @param key
-     *            the 256-bit key used for encryption/decryption
-     * @param spi
-     *            the security parameter index, shared between sender and receiver.
-     * @param initialSeqNumBytes
-     *            if no value is found in the Mememto DB for the initial sequence number, then use this one. Can be
-     *            null.
+     * @param key the 256-bit key used for encryption/decryption
+     * @param spi the security parameter index, shared between sender and receiver.
      */
-    public SdlsSecurityAssociation(String instanceName, String linkName, byte[] key, short spi,
-            byte[] initialSeqNumBytes) {
-        this(instanceName, linkName, key, spi, initialSeqNumBytes, -1, false);
+    public SdlsSecurityAssociation(String instanceName, String linkName, byte[] key, short spi, byte[] customAuthMask,
+                                   byte[] initialSeqNumBytes) {
+        this(instanceName, linkName, key, spi, customAuthMask, initialSeqNumBytes, -1, false);
     }
 
     /**
-     * @param key
-     *            the 256-bit key used for encryption/decryption
-     * @param spi
-     *            the security parameter index, shared between sender and receiver.
-     * @param seqNumWindow
-     *            a positive integer; only frames whose sequence number differs by this integer at maximum will be
-     *            accepted.
-     * @param verifySeqNum
-     *            whether to verify the received anti-replay sequence number based on the seqNumWindow.
-     * 
-     * @param initialSeqNumBytes
-     *            if no value is found in the Mememto DB for the initial sequence number, then use this one. Can be
-     *            null.
+     * @param key                the 256-bit key used for encryption/decryption
+     * @param spi                the security parameter index, shared between sender and receiver.
+     * @param seqNumWindow       a positive integer; only frames whose sequence number differs by this integer at
+     *                           maximum will be accepted.
+     * @param verifySeqNum       whether to verify the received anti-replay sequence number based on the seqNumWindow.
+     * @param initialSeqNumBytes if no value is found in the Mememto DB for the initial sequence number, then use this
+     *                           one. Can be null.
      */
-    public SdlsSecurityAssociation(String instanceName, String linkName, byte[] key, short spi,
-            byte[] initialSeqNumBytes, int seqNumWindow, boolean verifySeqNum) {
+    public SdlsSecurityAssociation(String instanceName, String linkName, byte[] key, short spi, byte[] customAuthMask,
+                                   byte[] initialSeqNumBytes, int seqNumWindow, boolean verifySeqNum) {
         this.instanceName = instanceName;
         this.linkName = linkName;
         this.spi = spi;
         this.secretKey = new SecretKeySpec(key, secretKeyAlgorithm);
+        this.customAuthMask = customAuthMask;
 
         // If we have information to retrieve a persisted sequence number, do so
         if (instanceName != null && linkName != null) {
@@ -186,15 +170,9 @@ public class SdlsSecurityAssociation {
     }
 
     // Constructor that skips persistence (e.g. for tests)
-    public SdlsSecurityAssociation(byte[] key, short spi, int seqNumWindow, boolean verifySeqNum) {
-        this(null, null, key, spi, null, seqNumWindow, verifySeqNum);
-    }
-
-    /**
-     * @return Get the sequence number (IV) as bytes
-     */
-    byte[] getSeqNumIvBytes() {
-        return seqNum.toBytes(GCM_IV_LEN_BYTES);
+    public SdlsSecurityAssociation(byte[] key, short spi, byte[] customAuthMask, int seqNumWindow,
+                                   boolean verifySeqNum) {
+        this(null, null, key, spi, customAuthMask, null, seqNumWindow, verifySeqNum);
     }
 
     /**
@@ -222,12 +200,44 @@ public class SdlsSecurityAssociation {
     }
 
     /**
+     * Compute Additional Authenticated Data (AAD) for GCM encryption/decryption.
+     * <p>
+     * Applies the mask from the beginning of the frame, for the full length of `authMask`. The `authMask` should not
+     * include the data, because it is automatically included in GCM (source: McGrew and Viega, "The Galois/Counter Mode
+     * of Operation (GCM)").
+     *
+     * @param buffer     the frame buffer
+     * @param frameStart the start of the frame in the buffer
+     * @param authMask   bitmask to apply from `frameStart`. This will be applied in full, so it should be at maximum
+     *                   the size of the headers, because data is authenticated automatically.
+     * @return the AAD bytes
+     */
+    private static byte[] computeAad(byte[] buffer, int frameStart, byte[] authMask) {
+        // Create AAD buffer for user mask + SPI (2 bytes) + IV
+        byte[] aad = new byte[authMask.length];
+
+        // Apply user mask to frame
+        for (int i = 0; i < authMask.length; ++i) {
+            aad[i] = (byte) (buffer[frameStart + i] & authMask[i]);
+        }
+
+        return aad;
+    }
+
+    /**
+     * @return Get the sequence number (IV) as bytes
+     */
+    byte[] getSeqNumIvBytes() {
+        return seqNum.toBytes(GCM_IV_LEN_BYTES);
+    }
+
+    /**
      * Load a persisted sequence number, defaulting to zero.
      *
      * @return the sequence number for the next frame to send, or null if not found
      */
     IvSeqNum loadSeqNum() {
-        var mementoDb = MementoDb.getInstance(instanceName);
+        MementoDb mementoDb = MementoDb.getInstance(instanceName);
         return mementoDb.getObject(SdlsMemento.MEMENTO_KEY, SdlsMemento.class)
                 .map(memento -> memento.getSeqNum(linkName, spi)).orElse(null);
     }
@@ -236,8 +246,8 @@ public class SdlsSecurityAssociation {
      * Save the current sequence number to the database
      */
     void persistSeqNum() {
-        var mementoDb = MementoDb.getInstance(instanceName);
-        var memento = mementoDb.getObject(SdlsMemento.MEMENTO_KEY, SdlsMemento.class)
+        MementoDb mementoDb = MementoDb.getInstance(instanceName);
+        SdlsMemento memento = mementoDb.getObject(SdlsMemento.MEMENTO_KEY, SdlsMemento.class)
                 .orElse(new SdlsMemento());
         memento.saveSeqNum(linkName, spi, seqNum);
         mementoDb.putObject(SdlsMemento.MEMENTO_KEY, memento);
@@ -249,28 +259,14 @@ public class SdlsSecurityAssociation {
      * The partialAuthMask has to cover from the beginning of the frame until the start of the security header. If it is
      * larger, the last bytes will not be used.
      *
-     * @param buffer
-     *            The full transfer frame, including empty security header and trailer
-     * @param frameStart
-     *            The first byte of the frame in the buffer
-     * @param secHeaderStart
-     *            The offset of the security header
-     * @param secTrailerEnd
-     *            First byte following the security trailer
-     * @param partialAuthMask
-     *            Mask to authenticate frame header up to and not including the security header.
-     * @throws GeneralSecurityException
-     *             if encryption fails
-     * @throws IllegalArgumentException
-     *             if frameStart+partialAuthMask.length &lt; secHeaderStart
+     * @param buffer         The full transfer frame, including empty security header and trailer
+     * @param frameStart     The first byte of the frame in the buffer
+     * @param secHeaderStart The offset of the security header
+     * @param secTrailerEnd  First byte following the security trailer
+     * @throws GeneralSecurityException if encryption fails
      */
     public void applySecurity(byte[] buffer, int frameStart, int secHeaderStart, int secTrailerEnd,
-            byte[] partialAuthMask) throws GeneralSecurityException {
-        if (frameStart + partialAuthMask.length < secHeaderStart) {
-            throw new IllegalArgumentException("frameStart(" + frameStart
-                    + ")+partialAuthMask.length(" + partialAuthMask.length
-                    + ") has to be >= than secHeaderStart(" + secHeaderStart + ")");
-        }
+                              byte[] authMask) throws GeneralSecurityException {
         // IV must never be re-used with same key for AES-GCM, so we generate a random
         // one for every encryption.
         byte[] iv = getSeqNumIvBytes();
@@ -286,12 +282,11 @@ public class SdlsSecurityAssociation {
         seqNum.increment();
 
         // Save the next seq num to be sent
-        if (instanceName != null && linkName != null) {
+        if (instanceName != null && linkName != null)
             persistSeqNum();
-        }
 
         // create data to authenticate by masking frame headers with authMask
-        byte[] aad = computeAad(buffer, frameStart, secHeaderStart, partialAuthMask);
+        byte[] aad = computeAad(buffer, frameStart, authMask);
         int dataStart = secHeaderStart + getHeaderSize();
 
         // Create the encryption cipher
@@ -311,48 +306,6 @@ public class SdlsSecurityAssociation {
     }
 
     /**
-     * The various results of a decryption operation.
-     */
-    public enum VerificationStatusCode {
-        /**
-         * Verification and decryption was successful.
-         */
-        NoFailure,
-        /**
-         * The received SPI is not known for the channel.
-         */
-        InvalidSPI,
-        /**
-         * The authentication tag could not be verified.
-         */
-        MacVerificationFailure,
-        /**
-         * The requested cipher is not available.
-         */
-        NoSuchCipher,
-        /**
-         * The provided key cannot be used with the configured cipher.
-         */
-        InvalidCipherKey,
-        /**
-         * The provided parameters cannot be used with the configured cipher.
-         */
-        InvalidCipherParam,
-        /**
-         * Data could not be decrypted.
-         */
-        DecryptionFailed,
-
-        /**
-         * The sequence number was outside the acceptable window.
-         */
-        AntiReplaySequenceNumberFailure,
-        // This code is not used; AES-GCM does not require padding (see CCSDS
-        // 355.0-B-2).
-        // PaddingError,
-    }
-
-    /**
      * Verify and decrypt a transferFrame.
      *
      * <p>
@@ -361,31 +314,18 @@ public class SdlsSecurityAssociation {
      * <p>
      * For MAC, this function authenticates all data from frameStart to the data end, after applying the
      * partialAuthMask.
-     * 
-     * @param buffer
-     *            the buffer containing the transfer frame
-     * @param frameStart
-     *            the index of the first byte of the transfer frame in the buffer
-     * @param secHeaderStart
-     *            index of the first byte of security header
-     * @param secTrailerEnd
-     *            index of the first byte after the security trailer
-     * @param partialAuthMask
-     *            Mask to authenticate header data (does not include the security header, this is automatically
-     *            authenticated by the SDLS implementation)
+     *
+     * @param buffer         the buffer containing the transfer frame
+     * @param frameStart     the index of the first byte of the transfer frame in the buffer
+     * @param secHeaderStart index of the first byte of security header
+     * @param secTrailerEnd  index of the first byte after the security trailer
+     * @param authMask       Mask to authenticate header data (does not include the security header, this is
+     *                       automatically authenticated by the SDLS implementation)
      * @return a code indicating the verification/decryption status
-     * 
-     * 
-     * @throws IllegalArgumentException
-     *             if frameStart+partialAuthMask.length &lt; secHeaderStart
+     *
      */
     public VerificationStatusCode processSecurity(byte[] buffer, int frameStart, int secHeaderStart,
-            int secTrailerEnd, byte[] partialAuthMask) {
-        if (frameStart + partialAuthMask.length < secHeaderStart) {
-            throw new IllegalArgumentException("frameStart(" + frameStart
-                    + ")+partialAuthMask.length(" + partialAuthMask.length
-                    + ") should be >= than secHeaderStart(" + secHeaderStart + ")");
-        }
+                                                  int secTrailerEnd, byte[] authMask) {
         // Read security header
         // first two bytes are SPI
         short receivedSpi = (short) ByteArrayUtils.decodeUnsignedShort(buffer, secHeaderStart);
@@ -400,7 +340,7 @@ public class SdlsSecurityAssociation {
         byte[] receivedIv = new byte[GCM_IV_LEN_BYTES];
         System.arraycopy(buffer, secHeaderStart + 2, receivedIv, 0, GCM_IV_LEN_BYTES);
 
-        byte[] aad = computeAad(buffer, frameStart, secHeaderStart, partialAuthMask);
+        byte[] aad = computeAad(buffer, frameStart, authMask);
 
         // Initialize the cipher
         final Cipher cipher;
@@ -471,21 +411,10 @@ public class SdlsSecurityAssociation {
     /**
      * Update the secret key
      *
-     * @param secretKey
-     *            a 256-bit key to be used by AES-GCM
+     * @param secretKey a 256-bit key to be used by AES-GCM
      */
     public void setSecretKey(byte[] secretKey) {
         this.secretKey = new SecretKeySpec(secretKey, secretKeyAlgorithm);
-    }
-
-    /**
-     * Reset the anti-replay sequence number
-     * 
-     * @param newSeqNum
-     *            the bytes of the new sequence number, in big-endian order
-     */
-    public void setSeqNum(byte[] newSeqNum) {
-        this.seqNum = IvSeqNum.fromBytes(newSeqNum, GCM_IV_LEN_BYTES);
     }
 
     /**
@@ -498,34 +427,54 @@ public class SdlsSecurityAssociation {
     }
 
     /**
-     * Compute Additional Authenticated Data (AAD) for GCM encryption/decryption.
-     * <p>
-     * Applies the mask over the beginning of the frame, then adds the first 2 bytes of the security header (the spi)
-     * 
-     * @param buffer
-     *            the frame buffer
-     * @param frameStart
-     *            the start of the frame in the buffer
-     * @param partialAuthMask
-     *            mask for frame headers (excludes security header)
-     * 
-     * @return the AAD bytes
+     * Reset the anti-replay sequence number
+     *
+     * @param newSeqNum the bytes of the new sequence number, in big-endian order
      */
-    private static byte[] computeAad(byte[] buffer, int frameStart, int secHeaderStart, byte[] partialAuthMask) {
-        int n = secHeaderStart - frameStart;
-        // Create AAD buffer for user mask + SPI (2 bytes) + IV
-        byte[] aad = new byte[n + 2 + GCM_IV_LEN_BYTES];
+    public void setSeqNum(byte[] newSeqNum) {
+        this.seqNum = IvSeqNum.fromBytes(newSeqNum, GCM_IV_LEN_BYTES);
+    }
 
-        // Apply user mask to frame headers
-        for (int i = 0; i < n; ++i) {
-            aad[i] = (byte) (buffer[frameStart + i] & partialAuthMask[i]);
-        }
+    /**
+     * The various results of a decryption operation.
+     */
+    public enum VerificationStatusCode {
+        /**
+         * Verification and decryption was successful.
+         */
+        NoFailure,
+        /**
+         * The received SPI is not known for the channel.
+         */
+        InvalidSPI,
+        /**
+         * The authentication tag could not be verified.
+         */
+        MacVerificationFailure,
+        /**
+         * The requested cipher is not available.
+         */
+        NoSuchCipher,
+        /**
+         * The provided key cannot be used with the configured cipher.
+         */
+        InvalidCipherKey,
+        /**
+         * The provided parameters cannot be used with the configured cipher.
+         */
+        InvalidCipherParam,
+        /**
+         * Data could not be decrypted.
+         */
+        DecryptionFailed,
 
-        // Add SPI bytes (fully authenticated)
-        aad[n] = buffer[frameStart + n];
-        aad[n + 1] = buffer[frameStart + n + 1];
-
-        return aad;
+        /**
+         * The sequence number was outside the acceptable window.
+         */
+        AntiReplaySequenceNumberFailure,
+        // This code is not used; AES-GCM does not require padding (see CCSDS
+        // 355.0-B-2).
+        // PaddingError,
     }
 
 }

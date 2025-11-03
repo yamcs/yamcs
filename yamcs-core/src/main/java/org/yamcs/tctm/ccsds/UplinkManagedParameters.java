@@ -1,5 +1,6 @@
 package org.yamcs.tctm.ccsds;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -7,13 +8,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.yamcs.YConfiguration;
 import org.yamcs.memento.MementoDb;
 import org.yamcs.security.SdlsMemento;
-import org.yamcs.security.SdlsSecurityAssociation;
+import org.yamcs.security.sdls.SdlsSecurityAssociation;
 
 /**
  * Stores configuration related to Master channels for uplink.
@@ -21,11 +23,11 @@ import org.yamcs.security.SdlsSecurityAssociation;
 public abstract class UplinkManagedParameters {
     public enum FrameErrorDetection {
         NONE, CRC16, CRC32
-    };
+    }
 
     public enum ServiceType {
         PACKET
-    };
+    }
 
     protected String physicalChannelName;
     protected int spacecraftId;
@@ -58,18 +60,33 @@ public abstract class UplinkManagedParameters {
 
                 // Save the SPI and its security association
                 newSpis.add(spi);
+
+                // Grab the auth mask from the config and convert it to byte[]
+                byte[] customAuthMask = null;
+                if (saDef.containsKey("authMask")) {
+                    List<Integer> configAuthMask = saDef.getList("authMask");
+                    customAuthMask = configAuthMask.stream()
+                            .collect(
+                                    java.io.ByteArrayOutputStream::new,
+                                    ByteArrayOutputStream::write,
+                                    (a, b) -> { try { b.writeTo(a); } catch (Exception e) { throw new RuntimeException(e);} }
+                            )
+                            .toByteArray();
+                }
                 sdlsSecurityAssociations.put(spi,
-                        new SdlsSecurityAssociation(yamcsInstance, linkName, sdlsKey, spi, initialSeqNum));
+                        new SdlsSecurityAssociation(yamcsInstance, linkName, sdlsKey, spi,
+                                customAuthMask,
+                                initialSeqNum));
             }
 
             // Clear out seq numbers for any removed SPIs
-            var mementoDb = MementoDb.getInstance(yamcsInstance);
-            var maybeMemento = mementoDb.getObject(SdlsMemento.MEMENTO_KEY, SdlsMemento.class);
+            MementoDb mementoDb = MementoDb.getInstance(yamcsInstance);
+            Optional<SdlsMemento> maybeMemento = mementoDb.getObject(SdlsMemento.MEMENTO_KEY, SdlsMemento.class);
             if (maybeMemento.isPresent()) {
-                var memento = maybeMemento.get();
-                var oldSpis = memento.getSpis(linkName);
+                SdlsMemento memento = maybeMemento.get();
+                Set<Short> oldSpis = memento.getSpis(linkName);
                 oldSpis.removeAll(newSpis);
-                for (var spi : oldSpis) {
+                for (Short spi : oldSpis) {
                     memento.delSeqNum(linkName, spi);
                 }
                 mementoDb.putObject(SdlsMemento.MEMENTO_KEY, memento);

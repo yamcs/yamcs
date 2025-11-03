@@ -20,11 +20,6 @@ public class VcUplinkManagedParameters {
      */
     short encryptionSpi;
 
-    /**
-     * Mask to authenticate additional header data
-     */
-    byte[] authMask;
-
     public VcUplinkManagedParameters(int vcId) {
         this.vcId = vcId;
         this.config = null;

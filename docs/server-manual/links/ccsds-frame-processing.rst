@@ -152,6 +152,11 @@ spi (integer)
 keyFile (string)
     **Required.** Specifies the path to the 256-bit encryption key for symmetric encryption.
 
+authMask (list of integer)
+    Specify a custom authentication bit mask to apply from the beginning of the frame. The mask is applied as a bitwise AND of the frame and the mask.
+    Exactly the number of bytes equal to the length of ``authMask`` are masked from the frame, and the result is used as additional authenticated data (AAD) in an authenticated encryption operation.
+    If ``authMask`` is not specified, a default is used according to the SDLS standard (CCSDS 355.0-B-2).
+
 verifySeqNum (boolean)
     Only useful for incoming links, defines whether received sequence numbers are verified according to the ``seqNumWindow``.
     Yamcs persists sequence numbers across restarts. If the sequence number for an SPI is not known (never received data for it), the ``initialSeqNum`` will be used if specified.

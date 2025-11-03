@@ -17,7 +17,7 @@ public class AosManagedParameters extends DownlinkManagedParameters {
         VCA,
         /** IDLE frames are those with vcId = 63 */
         IDLE
-    };
+    }
 
     final static int VCID_IDLE = 63;
 
@@ -112,13 +112,6 @@ public class AosManagedParameters extends DownlinkManagedParameters {
             } else if (service == ServiceType.VCA) {
                 parseVcaConfig();
             }
-
-            // Auth mask with the size of the AOS primary header + insert zone
-            int length = 6 + (aosParams.frameHeaderErrorControlPresent ? 2 : 0) + aosParams.insertZoneLength;
-            authMask = new byte[length];
-            // Authenticate only virtual channel ID.
-            // We never authenticate the optional insert zone or Frame Header Error Control field.
-            authMask[1] = 0b0011_1111;
         }
 
         AosVcManagedParameters(String yamcsInstance, String linkName) {

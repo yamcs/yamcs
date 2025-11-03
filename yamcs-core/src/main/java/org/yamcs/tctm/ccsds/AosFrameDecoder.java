@@ -3,7 +3,8 @@ package org.yamcs.tctm.ccsds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.rs.ReedSolomonException;
-import org.yamcs.security.SdlsSecurityAssociation;
+import org.yamcs.security.sdls.SdlsSecurityAssociation;
+import org.yamcs.security.sdls.StandardAuthMask;
 import org.yamcs.tctm.TcTmException;
 import org.yamcs.tctm.ccsds.AosManagedParameters.AosVcManagedParameters;
 import org.yamcs.tctm.ccsds.AosManagedParameters.ServiceType;
@@ -99,7 +100,7 @@ public class AosFrameDecoder implements TransferFrameDecoder {
             // the security header follows after the frame header and insert zone
             // first two bytes are the spi
             short receivedSpi = ByteArrayUtils.decodeShort(data, dataOffset);
-            var sdlsSa = aosParams.sdlsSecurityAssociations.get(receivedSpi);
+            SdlsSecurityAssociation sdlsSa = aosParams.sdlsSecurityAssociations.get(receivedSpi);
             if (sdlsSa == null) {
                 throw new TcTmException("Received AOS frame with unknown SPI " + receivedSpi);
             }
@@ -107,8 +108,11 @@ public class AosFrameDecoder implements TransferFrameDecoder {
 
             int decryptionTrailerEnd = dataEnd;
             // try to decrypt the frame
-            SdlsSecurityAssociation.VerificationStatusCode decryptionStatus = sdlsSa.processSecurity(data, offset,
-                    secHeaderStart, decryptionTrailerEnd, vmp.authMask);
+            byte[] authMask = sdlsSa.customAuthMask;
+            if (authMask == null) {
+                authMask = StandardAuthMask.AOS(aosParams.frameHeaderErrorControlPresent, aosParams.insertZoneLength);
+            }
+            SdlsSecurityAssociation.VerificationStatusCode decryptionStatus = sdlsSa.processSecurity(data, offset, secHeaderStart, decryptionTrailerEnd, authMask);
 
             if (decryptionStatus != SdlsSecurityAssociation.VerificationStatusCode.NoFailure) {
                 throw new TcTmException("Failed to decrypt AOS frame for SPI " + receivedSpi + ": " + decryptionStatus);

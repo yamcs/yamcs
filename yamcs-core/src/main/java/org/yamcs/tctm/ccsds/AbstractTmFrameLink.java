@@ -45,6 +45,7 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
         frameEncryptionSpec.addOption("seqNumWindow", OptionType.INTEGER).withRequired(false);
         frameEncryptionSpec.addOption("verifySeqNum", OptionType.BOOLEAN).withDefault(false);
         frameEncryptionSpec.addOption("initialSeqNum", OptionType.STRING);
+        frameEncryptionSpec.addOption("authMask", OptionType.LIST).withElementType(OptionType.INTEGER);
 
         spec.addOption("encryption", OptionType.LIST).withElementType(OptionType.MAP).withSpec(frameEncryptionSpec);
 
@@ -139,7 +140,7 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
 
             validFrameCount.getAndIncrement();
         } catch (TcTmException e) {
-            eventProducer.sendWarning("Error processing frame: " + e.toString());
+            eventProducer.sendWarning("Error processing frame: " + e);
             invalidFrameCount.getAndIncrement();
         }
     }
