@@ -2,7 +2,8 @@ package org.yamcs.tctm.ccsds;
 
 import java.security.GeneralSecurityException;
 
-import org.yamcs.security.SdlsSecurityAssociation;
+import org.yamcs.security.sdls.SdlsSecurityAssociation;
+import org.yamcs.security.sdls.StandardAuthMask;
 import org.yamcs.tctm.ccsds.TcManagedParameters.TcVcManagedParameters;
 import org.yamcs.tctm.ccsds.TcTransferFrame.SegmentHeader;
 import org.yamcs.tctm.ccsds.UplinkManagedParameters.FrameErrorDetection;
@@ -66,7 +67,7 @@ public class TcFrameFactory {
         }
 
         short spi = vcParams.encryptionSpi;
-        boolean isEncrypted = tcParams.sdlsSecurityAssociations.containsKey(spi);
+        boolean isEncrypted = !cmdControl && tcParams.sdlsSecurityAssociations.containsKey(spi);
 
         // Increase the used length to accunt for SDLS overhead
         if (isEncrypted)
@@ -135,10 +136,14 @@ public class TcFrameFactory {
         // Get the SA associated with the SPI
         SdlsSecurityAssociation sa = tcParams.sdlsSecurityAssociations.get(spi);
         // And potentially encrypt the data
-        if (sa != null) {
+        if (sa != null && !ttf.isCmdControl()) {
             try {
+                byte[] authMask = sa.customAuthMask;
+                if (authMask == null) {
+                    authMask = StandardAuthMask.TC(ttf.segmentHeader != null);
+                }
                 sa.applySecurity(data, 0, ttf.getDataStart() - SdlsSecurityAssociation.getHeaderSize(),
-                        ttf.getDataEnd() + SdlsSecurityAssociation.getTrailerSize(), vcParams.authMask);
+                        ttf.getDataEnd() + SdlsSecurityAssociation.getTrailerSize(), authMask);
             } catch (GeneralSecurityException e) {
                 throw new RuntimeException(e);
             }
