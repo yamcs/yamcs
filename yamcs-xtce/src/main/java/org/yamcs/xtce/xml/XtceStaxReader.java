@@ -1213,6 +1213,11 @@ public class XtceStaxReader extends AbstractStaxReader {
 
         readParameterBaseTypeAttributes(spaceSystem, element, incompleteType);
 
+        String value = readAttribute(ATTR_INITIAL_VALUE, element, null);
+        if (value != null) {
+            typeBuilder.setInitialValue(value);
+        }
+
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
 

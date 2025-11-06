@@ -417,6 +417,9 @@ message ParameterTypeInfo {
   // Which parameters this type is used by. This field is only
   // populated when requesting directly a single parameter type.
   repeated ParameterInfo usedBy = 15;
+
+  // Initial value
+  optional string initialValue = 24;
 }
 
 message NumberFormatTypeInfo {
