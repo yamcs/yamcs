@@ -149,6 +149,7 @@ import org.yamcs.xtce.SplineCalibrator;
 import org.yamcs.xtce.SplinePoint;
 import org.yamcs.xtce.StringArgumentType;
 import org.yamcs.xtce.StringDataEncoding;
+import org.yamcs.xtce.StringParameterType;
 import org.yamcs.xtce.TimeEpoch;
 import org.yamcs.xtce.TransmissionConstraint;
 import org.yamcs.xtce.TriggerSetType;
@@ -778,14 +779,12 @@ public class XtceToGpbAssembler {
         }
 
         if (detail == DetailLevel.FULL) {
-            if (parameterType instanceof BaseDataType) {
-                BaseDataType bdt = (BaseDataType) parameterType;
+            if (parameterType instanceof BaseDataType bdt) {
                 if (bdt.getEncoding() != null) {
                     infob.setDataEncoding(toDataEncodingInfo(bdt.getEncoding()));
                 }
             }
-            if (parameterType instanceof NameDescription) {
-                NameDescription namedItem = (NameDescription) parameterType;
+            if (parameterType instanceof NameDescription namedItem) {
                 if (namedItem.getAncillaryData() != null) {
                     for (AncillaryData data : namedItem.getAncillaryData()) {
                         infob.putAncillaryData(data.getName(), toAncillaryDataInfo(data));
@@ -793,8 +792,7 @@ public class XtceToGpbAssembler {
                 }
             }
 
-            if (parameterType instanceof IntegerParameterType) {
-                IntegerParameterType ipt = (IntegerParameterType) parameterType;
+            if (parameterType instanceof IntegerParameterType ipt) {
                 infob.setSigned(ipt.isSigned());
                 infob.setSizeInBits(ipt.getSizeInBits());
                 if (ipt.getDefaultAlarm() != null) {
@@ -808,8 +806,10 @@ public class XtceToGpbAssembler {
                 if (ipt.getNumberFormat() != null) {
                     infob.setNumberFormat(toNumberFormatTypeInfo(ipt.getNumberFormat()));
                 }
-            } else if (parameterType instanceof FloatParameterType) {
-                FloatParameterType fpt = (FloatParameterType) parameterType;
+                if (ipt.getInitialValue() != null) {
+                    infob.setInitialValue("" + ipt.getInitialValue());
+                }
+            } else if (parameterType instanceof FloatParameterType fpt) {
                 infob.setSizeInBits(fpt.getSizeInBits());
                 if (fpt.getDefaultAlarm() != null) {
                     infob.setDefaultAlarm(toAlarmInfo(fpt.getDefaultAlarm()));
@@ -822,8 +822,10 @@ public class XtceToGpbAssembler {
                 if (fpt.getNumberFormat() != null) {
                     infob.setNumberFormat(toNumberFormatTypeInfo(fpt.getNumberFormat()));
                 }
-            } else if (parameterType instanceof EnumeratedParameterType) {
-                EnumeratedParameterType ept = (EnumeratedParameterType) parameterType;
+                if (fpt.getInitialValue() != null) {
+                    infob.setInitialValue("" + fpt.getInitialValue());
+                }
+            } else if (parameterType instanceof EnumeratedParameterType ept) {
                 if (ept.getDefaultAlarm() != null) {
                     infob.setDefaultAlarm(toAlarmInfo(ept.getDefaultAlarm()));
                 }
@@ -832,13 +834,15 @@ public class XtceToGpbAssembler {
                         infob.addContextAlarm(toContextAlarmInfo(contextAlarm));
                     }
                 }
+                if (ept.getInitialValue() != null) {
+                    infob.setInitialValue("" + ept.getInitialValue());
+                }
                 var enumValues = toEnumValues(ept);
                 infob.addAllEnumValue(enumValues);
                 infob.addAllEnumValues(enumValues);
                 var enumRanges = toEnumRanges(ept);
                 infob.addAllEnumRanges(enumRanges);
-            } else if (parameterType instanceof AbsoluteTimeParameterType) {
-                AbsoluteTimeParameterType apt = (AbsoluteTimeParameterType) parameterType;
+            } else if (parameterType instanceof AbsoluteTimeParameterType apt) {
                 AbsoluteTimeInfo.Builder timeb = AbsoluteTimeInfo.newBuilder();
                 if (apt.getInitialValue() != null) {
                     timeb.setInitialValue(apt.getInitialValue().toString());
@@ -863,10 +867,18 @@ public class XtceToGpbAssembler {
                     }
                 }
                 infob.setAbsoluteTimeInfo(timeb);
-            } else if (parameterType instanceof BooleanParameterType) {
-                BooleanParameterType bpt = (BooleanParameterType) parameterType;
+            } else if (parameterType instanceof BooleanParameterType bpt) {
                 infob.setOneStringValue(bpt.getOneStringValue());
                 infob.setZeroStringValue(bpt.getZeroStringValue());
+                if (bpt.getInitialValue() != null) {
+                    infob.setInitialValue(bpt.getInitialValue()
+                            ? bpt.getOneStringValue()
+                            : bpt.getZeroStringValue());
+                }
+            } else if (parameterType instanceof StringParameterType spt) {
+                if (spt.getInitialValue() != null) {
+                    infob.setInitialValue(spt.getInitialValue());
+                }
             }
         }
         return infob.build();

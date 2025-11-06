@@ -94,6 +94,7 @@ export interface ParameterType {
   oneStringValue?: string;
   zeroStringValue?: string;
   usedBy?: Parameter[];
+  initialValue?: string;
 }
 
 export interface ArrayInfo {

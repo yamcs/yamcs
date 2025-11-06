@@ -51,6 +51,12 @@
       {{ parameterType.sizeInBits }}
     </dd>
   }
+  @if (parameterType.initialValue !== undefined) {
+    <dt>Initial value</dt>
+    <dd>
+      {{ parameterType.initialValue }}
+    </dd>
+  }
 
   <dt>Short description</dt>
   <dd>{{ parameterType.shortDescription || "-" }}</dd>
