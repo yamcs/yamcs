@@ -45,11 +45,9 @@ public class TcVcFrameLink {
         if (maybeSdlsKey != null) {
             // Create an auth mask for the TC primary header,
             // the frame data is already part of authentication.
-            // No need to authenticate data, already part of GCM
-            // Authenticate virtual channel ID; no segment header is present
             authMask = StandardAuthMask.TC(false);
             this.maybeSdls = new SdlsSecurityAssociation(maybeSdlsKey, encryptionSpi,
-                    null, encryptionSeqNumWindow, verifySeqNum);
+                     encryptionSeqNumWindow, verifySeqNum);
             // Don't verify the first TC sequence number, because Yamcs has sequence number persistence and the
             // simulator does not.
             maybeSdls.skipVerifyingNextSeqNum();

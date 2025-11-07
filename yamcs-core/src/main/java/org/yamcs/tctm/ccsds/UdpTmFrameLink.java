@@ -12,6 +12,7 @@ import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.security.sdls.SdlsSecurityAssociation;
+import org.yamcs.tctm.ccsds.DownlinkManagedParameters.SdlsInfo;
 import org.yamcs.utils.StringConverter;
 
 /**
@@ -142,7 +143,10 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
     }
 
     public SdlsSecurityAssociation getSdls(short spi) {
-        return this.frameHandler.params.sdlsSecurityAssociations.get(spi);
+        SdlsInfo sdlsInfo = this.frameHandler.params.sdlsSecurityAssociations.get(spi);
+        if (sdlsInfo != null)
+            return sdlsInfo.sa();
+        return null;
     }
 
     public void setSpis(int vcId, short[] spis) {

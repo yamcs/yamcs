@@ -6,6 +6,7 @@ import org.yamcs.security.sdls.SdlsSecurityAssociation;
 import org.yamcs.security.sdls.StandardAuthMask;
 import org.yamcs.tctm.TcTmException;
 import org.yamcs.tctm.ccsds.DownlinkManagedParameters.FrameErrorDetection;
+import org.yamcs.tctm.ccsds.DownlinkManagedParameters.SdlsInfo;
 import org.yamcs.tctm.ccsds.TmManagedParameters.ServiceType;
 import org.yamcs.tctm.ccsds.TmManagedParameters.TmVcManagedParameters;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
@@ -19,12 +20,14 @@ public class TmFrameDecoder implements TransferFrameDecoder {
     TmManagedParameters tmParams;
     CrcCciitCalculator crc;
     static Logger log = LoggerFactory.getLogger(TmFrameDecoder.class.getName());
+    final byte[] sdlsAuthMask;
 
     public TmFrameDecoder(TmManagedParameters tmParams) {
         this.tmParams = tmParams;
         if (tmParams.errorDetection == FrameErrorDetection.CRC16) {
             crc = new CrcCciitCalculator();
         }
+        sdlsAuthMask = StandardAuthMask.TM(tmParams.fshLength);
     }
 
     @Override
@@ -92,20 +95,22 @@ public class TmFrameDecoder implements TransferFrameDecoder {
             // the security header follows after the frame header and insert zone
             // first two bytes are the spi
             short receivedSpi = ByteArrayUtils.decodeShort(data, dataOffset);
-            SdlsSecurityAssociation sdlsSa = tmParams.sdlsSecurityAssociations.get(receivedSpi);
-            if (sdlsSa == null) {
+            SdlsInfo sdlsInfo = tmParams.sdlsSecurityAssociations.get(receivedSpi);
+            if (sdlsInfo == null) {
                 throw new TcTmException("Received TM frame with unknown SPI " + receivedSpi);
             }
 
-            byte[] authMask = sdlsSa.customAuthMask;
-            if (authMask == null) {
-                authMask = StandardAuthMask.TM(tmParams.fshLength);
-            }
             int secHeaderStart = dataOffset;
 
             int decryptionTrailerEnd = dataEnd;
+
+            // Use the custom auth mask if we have one, otherwise use the default
+            byte[] authMask = sdlsInfo.customAuthMask();
+            if (authMask == null)
+                authMask = this.sdlsAuthMask;
+
             // try to decrypt the frame
-            SdlsSecurityAssociation.VerificationStatusCode decryptionStatus = sdlsSa.processSecurity(data, offset,
+            SdlsSecurityAssociation.VerificationStatusCode decryptionStatus = sdlsInfo.sa().processSecurity(data, offset,
                     secHeaderStart, decryptionTrailerEnd, authMask);
 
             if (decryptionStatus != SdlsSecurityAssociation.VerificationStatusCode.NoFailure) {

@@ -1,6 +1,5 @@
 package org.yamcs.tctm.ccsds;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -8,6 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -35,9 +35,20 @@ public abstract class UplinkManagedParameters {
     protected String linkName;
 
     /**
+     * An object to hold the Security Association and auth mask associated with a Security Paramter Index
+     * @param sa the security association
+     * @param customAuthMask the auth mask to use. If null, a default is used based on the CCSDS standards.
+     */
+    record SdlsInfo(SdlsSecurityAssociation sa, byte[] customAuthMask) {
+        public SdlsInfo {
+            Objects.requireNonNull(sa);
+        }
+    }
+
+    /**
      * A map of Security Parameter Indices to Security Associations
      */
-    final Map<Short, SdlsSecurityAssociation> sdlsSecurityAssociations = new HashMap<>();
+    final Map<Short, SdlsInfo> sdlsSecurityAssociations = new HashMap<>();
 
     public UplinkManagedParameters(YConfiguration config, String yamcsInstance, String linkName) {
         this.spacecraftId = config.getInt("spacecraftId");
@@ -65,10 +76,9 @@ public abstract class UplinkManagedParameters {
                 if (saDef.containsKey("authMask")) {
                     customAuthMask = saDef.getBinary("authMask");
                 }
-                sdlsSecurityAssociations.put(spi,
-                        new SdlsSecurityAssociation(yamcsInstance, linkName, sdlsKey, spi,
-                                customAuthMask,
-                                initialSeqNum));
+                SdlsSecurityAssociation sa = new SdlsSecurityAssociation(yamcsInstance, linkName, sdlsKey, spi,
+                        initialSeqNum);
+                sdlsSecurityAssociations.put(spi, new SdlsInfo(sa, customAuthMask));
             }
 
             // Clear out seq numbers for any removed SPIs

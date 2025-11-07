@@ -12,6 +12,7 @@ import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.security.sdls.SdlsSecurityAssociation;
+import org.yamcs.tctm.ccsds.UplinkManagedParameters.SdlsInfo;
 import org.yamcs.utils.StringConverter;
 
 import com.google.common.util.concurrent.RateLimiter;
@@ -155,8 +156,15 @@ public class UdpTcFrameLink extends AbstractTcFrameLink implements Runnable {
         return Status.OK;
     }
 
+    /**
+     * @param spi the Security Parameter Index (SPI) for which to get a Security Assocation (SA)
+     * @return the SA, or null if none is associated with the SPI
+     */
     public SdlsSecurityAssociation getSdls(short spi) {
-        return this.multiplexer.tcManagedParameters.sdlsSecurityAssociations.get(spi);
+        SdlsInfo sdlsInfo = this.multiplexer.tcManagedParameters.sdlsSecurityAssociations.get(spi);
+        if (sdlsInfo != null)
+            return sdlsInfo.sa();
+        return null;
     }
 
     public void setSpi(int vcId, short spi) {

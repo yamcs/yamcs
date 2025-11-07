@@ -7,6 +7,7 @@ import org.yamcs.security.sdls.StandardAuthMask;
 import org.yamcs.tctm.ccsds.TcManagedParameters.TcVcManagedParameters;
 import org.yamcs.tctm.ccsds.TcTransferFrame.SegmentHeader;
 import org.yamcs.tctm.ccsds.UplinkManagedParameters.FrameErrorDetection;
+import org.yamcs.tctm.ccsds.UplinkManagedParameters.SdlsInfo;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
@@ -15,6 +16,7 @@ public class TcFrameFactory {
     final private TcManagedParameters tcParams;
     final private TcVcManagedParameters vcParams;
     final CrcCciitCalculator crc;
+    final private byte[] sdlsAuthMask;
 
     public TcFrameFactory(TcVcManagedParameters vcParams) {
         this.tcParams = vcParams.tcParams;
@@ -25,6 +27,11 @@ public class TcFrameFactory {
         } else {
             crc = null;
         }
+
+        // We can do this because TcFrameFactory is per VC, and the mapIdOverride in e.g. TcPacketHandler is only
+        // checked if the VC already has a MAP ID, in which case it already has a segment header
+        boolean hasSegmentHdr = vcParams.mapId >= 0;
+        this.sdlsAuthMask = StandardAuthMask.TC(hasSegmentHdr);
     }
 
     /**
@@ -133,15 +140,16 @@ public class TcFrameFactory {
         // Get the SPI associated with this channel
         short spi = vcParams.encryptionSpi;
         // Get the SA associated with the SPI
-        SdlsSecurityAssociation sa = tcParams.sdlsSecurityAssociations.get(spi);
+        SdlsInfo sdlsInfo = tcParams.sdlsSecurityAssociations.get(spi);
         // And potentially encrypt the data
-        if (sa != null && !ttf.isCmdControl()) {
+        if (sdlsInfo != null && !ttf.isCmdControl()) {
             try {
-                byte[] authMask = sa.customAuthMask;
-                if (authMask == null) {
-                    authMask = StandardAuthMask.TC(ttf.segmentHeader != null);
-                }
-                sa.applySecurity(data, 0, ttf.getDataStart() - SdlsSecurityAssociation.getHeaderSize(),
+                // Use the custom auth mask if we have one, otherwise use a default
+                byte[] authMask = sdlsInfo.customAuthMask();
+                if (authMask == null)
+                    authMask = this.sdlsAuthMask;
+
+                sdlsInfo.sa().applySecurity(data, 0, ttf.getDataStart() - SdlsSecurityAssociation.getHeaderSize(),
                         ttf.getDataEnd() + SdlsSecurityAssociation.getTrailerSize(), authMask);
             } catch (GeneralSecurityException e) {
                 throw new RuntimeException(e);
