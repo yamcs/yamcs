@@ -114,7 +114,6 @@ public class TcFrameFactory {
     }
 
     public byte[] encodeFrame(TcTransferFrame ttf) {
-
         byte[] data = ttf.getData();
         int w0 = tcParams.spacecraftId;
         if (ttf.isBypass()) {

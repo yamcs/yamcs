@@ -65,14 +65,7 @@ public abstract class DownlinkManagedParameters {
                 // Grab the auth mask from the config and convert it to byte[]
                 byte[] customAuthMask = null;
                 if (saDef.containsKey("authMask")) {
-                    List<Integer> configAuthMask = saDef.getList("authMask");
-                    customAuthMask = configAuthMask.stream()
-                            .collect(
-                                    java.io.ByteArrayOutputStream::new,
-                                    ByteArrayOutputStream::write,
-                                    (a, b) -> { try { b.writeTo(a); } catch (Exception e) { throw new RuntimeException(e);} }
-                            )
-                            .toByteArray();
+                    customAuthMask = saDef.getBinary("authMask");
                 }
 
                 SdlsSecurityAssociation sa = new SdlsSecurityAssociation(yamcsInstance, linkName, sdlsKey, spi,
