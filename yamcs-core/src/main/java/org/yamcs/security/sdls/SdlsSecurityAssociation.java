@@ -95,7 +95,6 @@ public class SdlsSecurityAssociation {
      * used
      */
     public final short spi;
-    public final byte[] customAuthMask;
     /**
      * Anti-replay sequence number window. Specifies the range of sequence number around the current number that will be
      * accepted.
@@ -130,9 +129,9 @@ public class SdlsSecurityAssociation {
      * @param key the 256-bit key used for encryption/decryption
      * @param spi the security parameter index, shared between sender and receiver.
      */
-    public SdlsSecurityAssociation(String instanceName, String linkName, byte[] key, short spi, byte[] customAuthMask,
+    public SdlsSecurityAssociation(String instanceName, String linkName, byte[] key, short spi,
                                    byte[] initialSeqNumBytes) {
-        this(instanceName, linkName, key, spi, customAuthMask, initialSeqNumBytes, -1, false);
+        this(instanceName, linkName, key, spi, initialSeqNumBytes, -1, false);
     }
 
     /**
@@ -144,13 +143,12 @@ public class SdlsSecurityAssociation {
      * @param initialSeqNumBytes if no value is found in the Mememto DB for the initial sequence number, then use this
      *                           one. Can be null.
      */
-    public SdlsSecurityAssociation(String instanceName, String linkName, byte[] key, short spi, byte[] customAuthMask,
+    public SdlsSecurityAssociation(String instanceName, String linkName, byte[] key, short spi,
                                    byte[] initialSeqNumBytes, int seqNumWindow, boolean verifySeqNum) {
         this.instanceName = instanceName;
         this.linkName = linkName;
         this.spi = spi;
         this.secretKey = new SecretKeySpec(key, secretKeyAlgorithm);
-        this.customAuthMask = customAuthMask;
 
         // If we have information to retrieve a persisted sequence number, do so
         if (instanceName != null && linkName != null) {
@@ -170,9 +168,9 @@ public class SdlsSecurityAssociation {
     }
 
     // Constructor that skips persistence (e.g. for tests)
-    public SdlsSecurityAssociation(byte[] key, short spi, byte[] customAuthMask, int seqNumWindow,
+    public SdlsSecurityAssociation(byte[] key, short spi, int seqNumWindow,
                                    boolean verifySeqNum) {
-        this(null, null, key, spi, customAuthMask, null, seqNumWindow, verifySeqNum);
+        this(null, null, key, spi, null, seqNumWindow, verifySeqNum);
     }
 
     /**

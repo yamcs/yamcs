@@ -7,6 +7,7 @@ import org.yamcs.security.sdls.StandardAuthMask;
 import org.yamcs.tctm.ErrorDetectionWordCalculator;
 import org.yamcs.tctm.TcTmException;
 import org.yamcs.tctm.ccsds.DownlinkManagedParameters.FrameErrorDetection;
+import org.yamcs.tctm.ccsds.DownlinkManagedParameters.SdlsInfo;
 import org.yamcs.tctm.ccsds.UslpManagedParameters.ServiceType;
 import org.yamcs.tctm.ccsds.UslpManagedParameters.UslpVcManagedParameters;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
@@ -21,6 +22,11 @@ public class UslpFrameDecoder implements TransferFrameDecoder {
     final UslpManagedParameters uslpParams;
     ErrorDetectionWordCalculator crc;
     static final Logger log = LoggerFactory.getLogger(TransferFrameDecoder.class.getName());
+
+    // Auth mask is not final - can change if the header size changes
+    byte[] sdlsAuthMask;
+    // This tracks the previously recorded header length. If it changes, the sdlsAuthMask has to change too
+    int previousPhLength;
 
     public UslpFrameDecoder(UslpManagedParameters uslpParams) {
         this.uslpParams = uslpParams;
@@ -145,27 +151,35 @@ public class UslpFrameDecoder implements TransferFrameDecoder {
 
         if (vmp.encryptionSpis.length > 0) {
             short receivedSpi = ByteArrayUtils.decodeShort(data, dataOffset);
-            SdlsSecurityAssociation sdlsSa = uslpParams.sdlsSecurityAssociations.get(receivedSpi);
-            if (sdlsSa == null) {
+            SdlsInfo sdlsInfo = uslpParams.sdlsSecurityAssociations.get(receivedSpi);
+            if (sdlsInfo == null) {
                 throw new TcTmException("Received USLP frame with unknown SPI " + receivedSpi);
             }
 
-            byte[] authMask = sdlsSa.customAuthMask;
-            if (authMask == null) {
-                int phLength;
-                if (truncatedFrame) {
-                    phLength = 4;
-                } else {
-                    phLength = vcfCountLength + 7;
-                }
-               authMask = StandardAuthMask.USLP(phLength, uslpParams.insertZoneLength);
+            // Calculate the current primary header length
+            int phLength;
+            if (truncatedFrame) {
+                phLength = 4;
+            } else {
+                phLength = vcfCountLength + 7;
+            }
+
+            // If necessary, update the SDLS auth mask.
+            // This will initialize the variables on first run.
+            if (phLength != previousPhLength) {
+                sdlsAuthMask = StandardAuthMask.USLP(phLength, uslpParams.insertZoneLength);
+                previousPhLength = phLength;
             }
 
             int secHeaderStart = dataOffset;
 
             int secTrailerEnd = dataEnd;
+            // Use a custom auth mask if present, or the default mask
+            byte[] authMask = sdlsInfo.customAuthMask();
+            if (authMask == null)
+                authMask = this.sdlsAuthMask;
             // try to decrypt the frame
-            SdlsSecurityAssociation.VerificationStatusCode decryptionStatus = sdlsSa.processSecurity(data, offset,
+            SdlsSecurityAssociation.VerificationStatusCode decryptionStatus = sdlsInfo.sa().processSecurity(data, offset,
                     secHeaderStart, secTrailerEnd, authMask);
 
             if (decryptionStatus != SdlsSecurityAssociation.VerificationStatusCode.NoFailure) {

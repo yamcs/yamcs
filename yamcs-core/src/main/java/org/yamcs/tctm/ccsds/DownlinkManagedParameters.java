@@ -1,6 +1,5 @@
 package org.yamcs.tctm.ccsds;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -8,6 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -34,9 +34,20 @@ public abstract class DownlinkManagedParameters {
     protected String linkName;
 
     /**
+     * An object to hold the Security Association and auth mask associated with a Security Paramter Index
+     * @param sa the security association
+     * @param customAuthMask the auth mask to use. If null, a default is used based on the CCSDS standards.
+     */
+    protected record SdlsInfo(SdlsSecurityAssociation sa, byte[] customAuthMask) {
+        public SdlsInfo {
+            Objects.requireNonNull(sa);
+        }
+    }
+
+    /**
      * A map of Security Parameter Indices to Security Associations
      */
-    final Map<Short, SdlsSecurityAssociation> sdlsSecurityAssociations = new HashMap<>();
+    final Map<Short, SdlsInfo> sdlsSecurityAssociations = new HashMap<>();
 
     public DownlinkManagedParameters(YConfiguration config, String yamcsInstance, String linkName) {
         this.spacecraftId = config.getInt("spacecraftId");
@@ -62,17 +73,16 @@ public abstract class DownlinkManagedParameters {
                 int encryptionSeqNumWindow = verifySeqNum ? Math.abs(saDef.getInt("seqNumWindow")) : 1;
                 byte[] initialSeqNum = saDef.getBinary("initialSeqNum", null);
 
-                // Grab the auth mask from the config and convert it to byte[]
+                // Grab the auth mask from the config, if we have one
                 byte[] customAuthMask = null;
                 if (saDef.containsKey("authMask")) {
                     customAuthMask = saDef.getBinary("authMask");
                 }
 
                 SdlsSecurityAssociation sa = new SdlsSecurityAssociation(yamcsInstance, linkName, sdlsKey, spi,
-                        customAuthMask,
                         initialSeqNum, encryptionSeqNumWindow, verifySeqNum);
-                // Save the SPI and its security association
-                sdlsSecurityAssociations.put(spi, sa);
+                // Save the SPI and its security association + optional auth mask
+                sdlsSecurityAssociations.put(spi, new SdlsInfo(sa, customAuthMask));
             }
 
             // Clear out seq numbers for any removed SPIs

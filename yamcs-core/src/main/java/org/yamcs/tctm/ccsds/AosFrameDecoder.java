@@ -9,6 +9,7 @@ import org.yamcs.tctm.TcTmException;
 import org.yamcs.tctm.ccsds.AosManagedParameters.AosVcManagedParameters;
 import org.yamcs.tctm.ccsds.AosManagedParameters.ServiceType;
 import org.yamcs.tctm.ccsds.DownlinkManagedParameters.FrameErrorDetection;
+import org.yamcs.tctm.ccsds.DownlinkManagedParameters.SdlsInfo;
 import org.yamcs.tctm.ccsds.error.AosFrameHeaderErrorCorr;
 import org.yamcs.tctm.ccsds.error.AosFrameHeaderErrorCorr.DecoderResult;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
@@ -22,12 +23,14 @@ public class AosFrameDecoder implements TransferFrameDecoder {
     AosManagedParameters aosParams;
     CrcCciitCalculator crc;
     static Logger log = LoggerFactory.getLogger(AosFrameDecoder.class.getName());
+    final byte[] sdlsAuthMask;
 
     public AosFrameDecoder(AosManagedParameters aosParams) {
         this.aosParams = aosParams;
         if (aosParams.errorDetection == FrameErrorDetection.CRC16) {
             crc = new CrcCciitCalculator();
         }
+        sdlsAuthMask = StandardAuthMask.AOS(aosParams.frameHeaderErrorControlPresent, aosParams.insertZoneLength);
     }
 
     @Override
@@ -100,19 +103,19 @@ public class AosFrameDecoder implements TransferFrameDecoder {
             // the security header follows after the frame header and insert zone
             // first two bytes are the spi
             short receivedSpi = ByteArrayUtils.decodeShort(data, dataOffset);
-            SdlsSecurityAssociation sdlsSa = aosParams.sdlsSecurityAssociations.get(receivedSpi);
-            if (sdlsSa == null) {
+            SdlsInfo sdlsInfo = aosParams.sdlsSecurityAssociations.get(receivedSpi);
+            if (sdlsInfo == null) {
                 throw new TcTmException("Received AOS frame with unknown SPI " + receivedSpi);
             }
             int secHeaderStart = dataOffset;
 
             int decryptionTrailerEnd = dataEnd;
+            // Check if we have a custom auth mask
+            byte[] authMask = sdlsInfo.customAuthMask();
+            if (authMask == null)
+                authMask = this.sdlsAuthMask;
             // try to decrypt the frame
-            byte[] authMask = sdlsSa.customAuthMask;
-            if (authMask == null) {
-                authMask = StandardAuthMask.AOS(aosParams.frameHeaderErrorControlPresent, aosParams.insertZoneLength);
-            }
-            SdlsSecurityAssociation.VerificationStatusCode decryptionStatus = sdlsSa.processSecurity(data, offset, secHeaderStart, decryptionTrailerEnd, authMask);
+            SdlsSecurityAssociation.VerificationStatusCode decryptionStatus = sdlsInfo.sa().processSecurity(data, offset, secHeaderStart, decryptionTrailerEnd, authMask);
 
             if (decryptionStatus != SdlsSecurityAssociation.VerificationStatusCode.NoFailure) {
                 throw new TcTmException("Failed to decrypt AOS frame for SPI " + receivedSpi + ": " + decryptionStatus);

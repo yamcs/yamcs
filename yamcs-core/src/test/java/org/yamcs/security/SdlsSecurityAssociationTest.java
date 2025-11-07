@@ -56,8 +56,8 @@ public class SdlsSecurityAssociationTest {
         seqNumWindow = 5;
 
         // Create SA
-        saSend = new SdlsSecurityAssociation(key, (short) 42, null, seqNumWindow, true);
-        saRecv = new SdlsSecurityAssociation(key, (short) 42, null, seqNumWindow, true);
+        saSend = new SdlsSecurityAssociation(key, (short) 42, seqNumWindow, true);
+        saRecv = new SdlsSecurityAssociation(key, (short) 42, seqNumWindow, true);
         // saSend starts from 0, saRecv is supposed to have the last number
         saRecv.setSeqNum(StringConverter.hexStringToArray("FFFFFFFFFFFFFFFFFFFFFFFF"));
     }
@@ -71,7 +71,7 @@ public class SdlsSecurityAssociationTest {
         Path wrongKeypath = RESOURCE_DIR.resolve("wrong-presharedkey");
         byte[] wrongKey = Files.readAllBytes(wrongKeypath);
         SdlsSecurityAssociation wrongSa = new SdlsSecurityAssociation(wrongKey, (short) 42,
-                null, seqNumWindow, true);
+                seqNumWindow, true);
         assertEquals(VerificationStatusCode.MacVerificationFailure, wrongSa.processSecurity(frame, 0, secHeaderStart,
                 frame.length, authMask));
     }
@@ -85,7 +85,7 @@ public class SdlsSecurityAssociationTest {
         Path wrongKeypath = RESOURCE_DIR.resolve("presharedkey");
         byte[] wrongKey = Files.readAllBytes(wrongKeypath);
         SdlsSecurityAssociation wrongSa = new SdlsSecurityAssociation(wrongKey, (short) 1,
-                null, seqNumWindow, true);
+                seqNumWindow, true);
         assertEquals(VerificationStatusCode.InvalidSPI, wrongSa.processSecurity(frame, 0, secHeaderStart, frame.length,
                 authMask));
     }
