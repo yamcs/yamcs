@@ -152,10 +152,11 @@ spi (integer)
 keyFile (string)
     **Required.** Specifies the path to the 256-bit encryption key for symmetric encryption.
 
-authMask (list of integer)
-    Specify a custom authentication bit mask to apply from the beginning of the frame. The mask is applied as a bitwise AND of the frame and the mask.
+authMask (string)
+    Specify a custom authentication bit mask to apply from the beginning of the frame, as a hex string. The mask is applied as a bitwise AND of the frame and the mask.
     Exactly the number of bytes equal to the length of ``authMask`` are masked from the frame, and the result is used as additional authenticated data (AAD) in an authenticated encryption operation.
     If ``authMask`` is not specified, a default is used according to the SDLS standard (CCSDS 355.0-B-2).
+    This option is only useful if you have a static header size.
 
 verifySeqNum (boolean)
     Only useful for incoming links, defines whether received sequence numbers are verified according to the ``seqNumWindow``.

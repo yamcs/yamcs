@@ -67,7 +67,7 @@ public abstract class AbstractTcFrameLink extends AbstractLink implements Aggreg
         frameEncryptionSpec.addOption("keyFile", OptionType.STRING).withRequired(true);
         frameEncryptionSpec.addOption("spi", OptionType.INTEGER).withRequired(true);
         frameEncryptionSpec.addOption("initialSeqNum", OptionType.STRING);
-        frameEncryptionSpec.addOption("authMask", OptionType.LIST).withElementType(OptionType.INTEGER);
+        frameEncryptionSpec.addOption("authMask", OptionType.STRING);
         spec.addOption("encryption", OptionType.LIST).withElementType(OptionType.MAP).withSpec(frameEncryptionSpec);
 
         spec.addOption("frameLength", OptionType.INTEGER);
