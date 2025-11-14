@@ -1,4 +1,4 @@
-package org.yamcs.security;
+package org.yamcs.security.sdls;
 
 /**
  * Sequence number used for initialisation vector.

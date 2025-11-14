@@ -1,4 +1,4 @@
-package org.yamcs.security;
+package org.yamcs.security.sdls;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -10,9 +10,7 @@ import java.util.Arrays;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.yamcs.security.sdls.SdlsSecurityAssociation;
 import org.yamcs.security.sdls.SdlsSecurityAssociation.VerificationStatusCode;
-import org.yamcs.security.sdls.StandardAuthMask;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.StringConverter;
 
