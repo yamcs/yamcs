@@ -14,7 +14,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.yamcs.YConfiguration;
 import org.yamcs.memento.MementoDb;
-import org.yamcs.security.SdlsMemento;
+import org.yamcs.security.sdls.SdlsMemento;
 import org.yamcs.security.sdls.SdlsSecurityAssociation;
 
 /**

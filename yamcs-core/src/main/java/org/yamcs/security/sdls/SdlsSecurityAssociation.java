@@ -20,8 +20,6 @@ import javax.crypto.spec.SecretKeySpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.memento.MementoDb;
-import org.yamcs.security.IvSeqNum;
-import org.yamcs.security.SdlsMemento;
 import org.yamcs.utils.ByteArrayUtils;
 
 /**

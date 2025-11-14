@@ -14,7 +14,7 @@ import java.util.Set;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.memento.MementoDb;
-import org.yamcs.security.SdlsMemento;
+import org.yamcs.security.sdls.SdlsMemento;
 import org.yamcs.security.sdls.SdlsSecurityAssociation;
 import org.yamcs.tctm.Link;
 import org.yamcs.utils.YObjectLoader;

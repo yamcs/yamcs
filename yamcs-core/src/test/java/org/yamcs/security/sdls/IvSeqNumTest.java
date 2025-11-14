@@ -1,4 +1,4 @@
-package org.yamcs.security;
+package org.yamcs.security.sdls;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;

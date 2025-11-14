@@ -1,4 +1,4 @@
-package org.yamcs.security;
+package org.yamcs.security.sdls;
 
 import java.util.HashMap;
 import java.util.HashSet;
