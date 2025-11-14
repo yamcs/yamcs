@@ -1,3 +1,6 @@
+Version 5.12.3 released 14-Nov-2025
+- SDLS bug fixes and improvements
+
 Version 5.12.2 released 29-Oct-2025
 - Added support for SDLS (Space Data Link Security). Authenticated encryption using AES-256-GCM is now supported.
 - Fixed inheritance of constraints and verifiers:
