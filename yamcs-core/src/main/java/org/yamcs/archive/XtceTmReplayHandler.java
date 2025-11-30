@@ -8,8 +8,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.YamcsException;
+import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
+import org.yamcs.xtce.XtceDb;
 import org.yamcs.mdb.Mdb;
 import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Tuple;
@@ -18,8 +22,6 @@ import org.yamcs.yarch.protobuf.Db.ProtoDataType;
 /**
  * Provides replay of the telemetry recorded by XtceTmRecorder
  * 
- * @author nm
- *
  */
 public class XtceTmReplayHandler implements ReplayHandler {
     Set<String> partitions;
@@ -85,7 +87,31 @@ public class XtceTmReplayHandler implements ReplayHandler {
         long genTime = (Long) tuple.getColumn(StandardTupleDefinitions.GENTIME_COLUMN);
         int seqNum = (Integer) tuple.getColumn(StandardTupleDefinitions.SEQNUM_COLUMN);
         String pname = (String) tuple.getColumn(XtceTmRecorder.PNAME_COLUMN);
-        return new ReplayPacket(pname, recTime, genTime, seqNum, pbody);
+
+        // Extract metadata parameters from the tuple
+        List<ParameterValue> metadata = null;
+        for (int i = 4; i < tuple.getDefinition().size(); i++) {
+            String colName = tuple.getDefinition().getColumn(i).getName();
+            if (colName.startsWith(XtceDb.YAMCS_TM_PACKET_METADATA_SPACESYSTEM_NAME)) {
+                if (metadata == null) {
+                    metadata = new java.util.ArrayList<>();
+                }
+                ParameterValue pv = (ParameterValue) tuple.getColumn(i);
+                Parameter p = mdb.getParameter(pv.getParameterQualifiedName());
+                if (p == null) {
+                    if (Mdb.isSystemParameter(pv.getParameterQualifiedName())) {
+                        p = SystemParametersService.createSystemParameter(mdb, pv.getParameterQualifiedName(),
+                                pv.getEngValue());
+                    } else {
+                        log.info("Cannot find a parameter with fqn {}", pv.getParameterQualifiedName());
+                        continue;
+                    }
+                }
+                pv.setParameter(p);
+                metadata.add(pv);
+            }
+        }
+        return new ReplayPacket(pname, recTime, genTime, seqNum, pbody, metadata);
     }
 
     public static class ReplayPacket {
@@ -94,13 +120,20 @@ public class XtceTmReplayHandler implements ReplayHandler {
         final long genTime;
         final int seqNum;
         final byte[] packet;
+        final List<ParameterValue> metadata;
 
         public ReplayPacket(String pname, long recTime, long genTime, int seqNum, byte[] packet) {
+            this(pname, recTime, genTime, seqNum, packet, null);
+        }
+
+        public ReplayPacket(String pname, long recTime, long genTime, int seqNum, byte[] packet,
+                List<ParameterValue> metadata) {
             this.pname = pname;
             this.recTime = recTime;
             this.genTime = genTime;
             this.seqNum = seqNum;
             this.packet = packet;
+            this.metadata = metadata;
         }
 
         public long getGenerationTime() {
@@ -120,11 +153,15 @@ public class XtceTmReplayHandler implements ReplayHandler {
         }
 
         /**
-         * 
+         *
          * @return the name used when recording the packet
          */
         public String getQualifiedName() {
             return pname;
+        }
+
+        public List<ParameterValue> getMetadata() {
+            return metadata;
         }
     }
 }

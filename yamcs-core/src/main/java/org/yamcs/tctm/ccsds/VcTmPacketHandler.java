@@ -7,6 +7,7 @@ import org.yamcs.YamcsServer;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.logging.Log;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.tctm.AggregatedDataLink;
 import org.yamcs.tctm.PacketPreprocessor;
 import org.yamcs.tctm.TcTmException;
@@ -14,7 +15,9 @@ import org.yamcs.tctm.TmPacketDataLink;
 import org.yamcs.tctm.TmSink;
 import org.yamcs.time.Instant;
 import org.yamcs.time.TimeService;
+import org.yamcs.utils.ValueUtility;
 import org.yamcs.utils.YObjectLoader;
+import org.yamcs.xtce.XtceDb;
 
 /**
  * Handles packets from one Virtual Channel (VC)
@@ -130,6 +133,11 @@ public class VcTmPacketHandler implements TmPacketDataLink, VcDownlinkHandler {
         TmPacket pwt = new TmPacket(timeService.getMissionTime(), p);
         pwt.setEarthReceptionTime(ertime);
         pwt.setFrameSeqCount(lastFrameSeq);
+
+        // Add vcId as metadata
+        ParameterValue vcIdPv = new ParameterValue(XtceDb.YAMCS_TM_PACKET_METADATA_SPACESYSTEM_NAME + "/vcId");
+        vcIdPv.setEngValue(ValueUtility.getUint32Value(vmp.vcId));
+        pwt.addMetadataParameter(vcIdPv);
 
         pwt = packetPreprocessor.process(pwt);
         if (pwt != null) {

@@ -1,11 +1,13 @@
 package org.yamcs.mdb;
 
+import java.util.List;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ProcessorConfig;
 import org.yamcs.archive.XtceTmRecorder;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.xtce.IndirectParameterRefEntry;
 import org.yamcs.xtce.Parameter;
@@ -97,7 +99,7 @@ public class XtceTmExtractor {
      * Extract one packet, starting at the root sequence container
      */
     public ContainerProcessingResult processPacket(byte[] b, long generationTime, long acquisitionTime, int seqCount) {
-        return processPacket(new BitBuffer(b), generationTime, acquisitionTime, seqCount, rootContainer);
+        return processPacket(new BitBuffer(b), generationTime, acquisitionTime, seqCount, rootContainer, null);
     }
 
     /**
@@ -105,25 +107,38 @@ public class XtceTmExtractor {
      */
     public ContainerProcessingResult processPacket(BitBuffer buf, long generationTime, long acquisitionTime,
             int seqCount) {
-        return processPacket(buf, generationTime, acquisitionTime, seqCount, rootContainer);
+        return processPacket(buf, generationTime, acquisitionTime, seqCount, rootContainer, null);
     }
 
     /**
      * Extract one packet, starting at the specified container.
+     * 
+     * @param tmPacketMetadata
      */
     public ContainerProcessingResult processPacket(byte[] b, long generationTime, long acquisitionTime,
             int seqCount, SequenceContainer startContainer) {
-        return processPacket(new BitBuffer(b), generationTime, acquisitionTime, seqCount, startContainer);
+        return processPacket(new BitBuffer(b), generationTime, acquisitionTime, seqCount, startContainer, null);
+    }
+
+    /**
+     * Same as above but pass also the packet metadata parameters
+     * 
+     * @param tmPacketMetadata
+     */
+    public ContainerProcessingResult processPacket(byte[] b, long generationTime, long acquisitionTime,
+            int seqCount, SequenceContainer startContainer, List<ParameterValue> tmPacketMetadata) {
+        return processPacket(new BitBuffer(b), generationTime, acquisitionTime, seqCount, startContainer,
+                tmPacketMetadata);
     }
 
     /**
      * Extract one packet, starting at the specified container.
      */
     public ContainerProcessingResult processPacket(BitBuffer buf, long generationTime, long acquisitionTime,
-            int seqCount, SequenceContainer startContainer) {
+            int seqCount, SequenceContainer startContainer, List<ParameterValue> tmPacketMetadata) {
 
         ContainerProcessingResult result = new ContainerProcessingResult(acquisitionTime, generationTime, seqCount,
-                pdata.getLastValueCache());
+                pdata.getLastValueCache(), tmPacketMetadata);
         try {
             synchronized (subscription) {
                 SubscribedContainer subscribedContainer = subscription.addSequenceContainer(startContainer);

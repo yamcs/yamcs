@@ -259,26 +259,7 @@ public class LinkManager {
             } // if action is PROCESS, continue below
         }
 
-        Instant ertime = tmPacket.getEarthReceptionTime();
-        Tuple t = null;
-        if (ertime == Instant.INVALID_INSTANT) {
-            ertime = null;
-        }
-        Long obt = tmPacket.getObt() == Long.MIN_VALUE ? null : tmPacket.getObt();
-        String rootContainer = tmPacket.getRootContainer() != null
-                ? tmPacket.getRootContainer().getQualifiedName()
-                : null;
-        t = new Tuple(StandardTupleDefinitions.TM, new Object[] {
-                tmPacket.getGenerationTime(),
-                tmPacket.getSeqCount(),
-                tmPacket.getReceptionTime(),
-                tmPacket.getStatus(),
-                tmPacket.getPacket(),
-                ertime,
-                obt,
-                tmLink.getName(),
-                rootContainer,
-        });
+        Tuple t = tmPacket.toTuple(tmLink.getName());
         stream.emitTuple(t);
 
     }

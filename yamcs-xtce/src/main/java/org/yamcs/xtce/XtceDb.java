@@ -43,6 +43,7 @@ public class XtceDb implements Serializable {
     public static final String YAMCS_CMD_SPACESYSTEM_NAME = "/yamcs/cmd";
     public static final String YAMCS_CMDARG_SPACESYSTEM_NAME = "/yamcs/cmd/arg";
     public static final String YAMCS_CMDHIST_SPACESYSTEM_NAME = "/yamcs/cmdHist";
+    public static final String YAMCS_TM_PACKET_METADATA_SPACESYSTEM_NAME = "/yamcs/tmPacketMetadata";
 
     transient static Logger log = LoggerFactory.getLogger(XtceDb.class);
 

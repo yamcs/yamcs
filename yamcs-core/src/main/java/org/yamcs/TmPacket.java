@@ -1,9 +1,16 @@
 package org.yamcs;
 
+import java.util.List;
+
 import org.yamcs.archive.XtceTmRecorder;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.SequenceContainer;
+import org.yamcs.xtce.XtceDb;
+import org.yamcs.yarch.DataType;
+import org.yamcs.yarch.Tuple;
+import org.yamcs.yarch.TupleDefinition;
 
 /**
  * Packet with acquisition time, generation time and sequence count.
@@ -57,6 +64,10 @@ public class TmPacket {
 
     // Preferred root container
     private SequenceContainer rootContainer;
+
+    // metadata associated to the packet.
+    // will be used by the frame decoder to store the vcId of frames where the packets have been extracted from
+    private List<ParameterValue> metadata;
 
     public TmPacket(long rectime, byte[] pkt) {
         this.rectime = rectime;
@@ -222,6 +233,151 @@ public class TmPacket {
 
     public void setLink(String link) {
         this.link = link;
+    }
+
+    /**
+     * Returns the metadata associated with this packet.
+     *
+     * @return the list of parameter values associated with this packet metadata, or null if not set
+     */
+    public List<ParameterValue> getMetadata() {
+        return metadata;
+    }
+
+    /**
+     * Sets the metadata associated with this packet.
+     *
+     * @param metadata the list of parameter values to associate with this packet
+     */
+    public void setMetadata(List<ParameterValue> metadata) {
+        this.metadata = metadata;
+    }
+
+    /**
+     * Adds a parameter to the metadata of this packet.
+     * <p>
+     * If metadata has not been initialized yet, it will be initialized as an ArrayList.
+     *
+     * @param param the parameter value to add to the metadata
+     */
+    public void addMetadataParameter(ParameterValue param) {
+        if (metadata == null) {
+            metadata = new java.util.ArrayList<>();
+        }
+        metadata.add(param);
+    }
+
+    /**
+     * Creates a tuple representation of this packet for TM stream emission.
+     *
+     * @param linkName the name of the link on which this packet was received
+     * @return a Tuple with StandardTupleDefinitions.TM schema, or extended schema if metadata is present
+     */
+    public Tuple toTuple(String linkName) {
+        Instant ertime = getEarthReceptionTime();
+        if (ertime == Instant.INVALID_INSTANT) {
+            ertime = null;
+        }
+        Long obt = getObt() == Long.MIN_VALUE ? null : getObt();
+        String rootContainer = getRootContainer() != null
+                ? getRootContainer().getQualifiedName()
+                : null;
+
+        if (metadata == null || metadata.isEmpty()) {
+            return new Tuple(StandardTupleDefinitions.TM, new Object[] {
+                    gentime,
+                    seqCount,
+                    rectime,
+                    status,
+                    pkt,
+                    ertime,
+                    obt,
+                    linkName,
+                    rootContainer,
+            });
+        }
+
+        // Create extended tuple definition with metadata columns
+        TupleDefinition td = StandardTupleDefinitions.TM.copy();
+        Object[] values = new Object[9 + metadata.size()];
+        values[0] = gentime;
+        values[1] = seqCount;
+        values[2] = rectime;
+        values[3] = status;
+        values[4] = pkt;
+        values[5] = ertime;
+        values[6] = obt;
+        values[7] = linkName;
+        values[8] = rootContainer;
+
+        for (int i = 0; i < metadata.size(); i++) {
+            ParameterValue pv = metadata.get(i);
+            if (pv.getGenerationTime() == TimeEncoding.INVALID_INSTANT) {
+                pv.setGenerationTime(gentime);
+            }
+            if (pv.getAcquisitionTime() == TimeEncoding.INVALID_INSTANT) {
+                pv.setAcquisitionTime(rectime);
+            }
+            String colName = pv.getParameterQualifiedName();
+            td.addColumn(colName, DataType.PARAMETER_VALUE);
+            values[9 + i] = pv;
+        }
+
+        return new Tuple(td, values);
+    }
+
+    /**
+     * Creates a TmPacket from a tuple (typically from a TM stream).
+     * <p>
+     * Extracts the standard TM fields and any metadata parameters from the tuple.
+     *
+     * @param tuple the tuple to convert
+     * @return a TmPacket with data populated from the tuple
+     */
+    public static TmPacket fromTuple(Tuple tuple) {
+        long rectime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_RECTIME_COLUMN);
+        long gentime = (Long) tuple.getColumn(StandardTupleDefinitions.GENTIME_COLUMN);
+        int seqCount = (Integer) tuple.getColumn(StandardTupleDefinitions.SEQNUM_COLUMN);
+        byte[] packet = (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
+
+        TmPacket tmPacket = new TmPacket(rectime, gentime, seqCount, packet);
+
+        String link = tuple.getColumn(StandardTupleDefinitions.TM_LINK_COLUMN);
+        tmPacket.setLink(link);
+
+        Instant ertime = tuple.getColumn(StandardTupleDefinitions.TM_ERTIME_COLUMN);
+        if (ertime != null) {
+            tmPacket.setEarthReceptionTime(ertime);
+        }
+
+        Long obt = tuple.getColumn(StandardTupleDefinitions.TM_OBT_COLUMN);
+        if (obt != null) {
+            tmPacket.setObt(obt);
+        }
+
+        int status = tuple.getColumn(StandardTupleDefinitions.TM_STATUS_COLUMN);
+        tmPacket.setStatus(status);
+
+        String preferredRootContainerName = tuple.getColumn(StandardTupleDefinitions.TM_ROOT_CONTAINER_COLUMN);
+        if (preferredRootContainerName != null) {
+            // Note: Root container cannot be resolved here without access to MDB
+            // Set the name as a workaround (would need to be resolved externally)
+            // tmPacket.setRootContainer(mdb.getSequenceContainer(preferredRootContainerName));
+        }
+
+        // Extract metadata parameters (if any)
+        TupleDefinition td = tuple.getDefinition();
+        for (int i = 0; i < td.size(); i++) {
+            String colName = td.getColumn(i).getName();
+            if (colName.startsWith(XtceDb.YAMCS_TM_PACKET_METADATA_SPACESYSTEM_NAME)) {
+                ParameterValue pv = (ParameterValue) tuple.getColumn(i);
+                if (pv != null) {
+                    tmPacket.addMetadataParameter(pv);
+                }
+            }
+        }
+
+        return tmPacket;
     }
 
 }

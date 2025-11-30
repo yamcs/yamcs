@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.parameter.LastValueCache;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 
 /**
@@ -26,9 +27,21 @@ public class ContainerProcessingResult extends ProcessingContext {
 
     public ContainerProcessingResult(long acquisitionTime, long generationTime, int seqCount,
             LastValueCache procLastValueCache) {
-        super(procLastValueCache, new ParameterValueList(), null, null, null, generationTime);
+        this(acquisitionTime, generationTime, seqCount, procLastValueCache, null);
+    }
+
+    public ContainerProcessingResult(long acquisitionTime, long generationTime, int seqCount,
+            LastValueCache procLastValueCache, List<ParameterValue> tmPacketMetadata) {
+        super(procLastValueCache, createParameterValueList(tmPacketMetadata), null, null, null, generationTime);
         this.seqCount = seqCount;
         this.acquisitionTime = acquisitionTime;
+    }
+
+    private static ParameterValueList createParameterValueList(List<ParameterValue> metadata) {
+        if (metadata == null) {
+            return new ParameterValueList();
+        }
+        return new ParameterValueList(metadata);
     }
 
     public ParameterValueList getParameterResult() {

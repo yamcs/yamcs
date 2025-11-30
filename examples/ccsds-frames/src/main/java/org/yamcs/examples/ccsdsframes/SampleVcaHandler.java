@@ -2,6 +2,7 @@ package org.yamcs.examples.ccsdsframes;
 
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.tctm.AbstractTmDataLink;
 import org.yamcs.tctm.TcTmException;
 import org.yamcs.tctm.ccsds.DownlinkTransferFrame;
@@ -9,6 +10,8 @@ import org.yamcs.tctm.ccsds.PacketDecoder;
 import org.yamcs.tctm.ccsds.VcDownlinkHandler;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.StringConverter;
+import org.yamcs.utils.ValueUtility;
+import org.yamcs.xtce.XtceDb;
 
 /**
  * Example of a VCA (Virtual Channel Access) handler.
@@ -21,6 +24,7 @@ import org.yamcs.utils.StringConverter;
 public class SampleVcaHandler extends AbstractTmDataLink implements VcDownlinkHandler {
     private Instant ertime;
     private long frameSeqCount;
+    private int virtualChannelId;
 
     @Override
     public void init(String instance, String name, YConfiguration config) {
@@ -41,6 +45,7 @@ public class SampleVcaHandler extends AbstractTmDataLink implements VcDownlinkHa
         }
         ertime = frame.getEarthRceptionTime();
         frameSeqCount = frame.getVcFrameSeq();
+        virtualChannelId = frame.getVirtualChannelId();
 
         PacketDecoder packetDecoder = new PacketDecoder(frame.getDataEnd() - frame.getDataStart(),
                 p -> handlePacket(p));
@@ -56,6 +61,11 @@ public class SampleVcaHandler extends AbstractTmDataLink implements VcDownlinkHa
         TmPacket pwt = new TmPacket(timeService.getMissionTime(), p);
         pwt.setEarthReceptionTime(ertime);
         pwt.setFrameSeqCount(frameSeqCount);
+
+        // Add vcId as metadata
+        ParameterValue vcIdPv = new ParameterValue(XtceDb.YAMCS_TM_PACKET_METADATA_SPACESYSTEM_NAME + "/vcId");
+        vcIdPv.setEngValue(ValueUtility.getUint32Value(virtualChannelId));
+        pwt.addMetadataParameter(vcIdPv);
 
         pwt = packetPreprocessor.process(pwt);
         processPacket(pwt);
