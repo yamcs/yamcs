@@ -1,11 +1,9 @@
 package org.yamcs.mdb;
 
 import java.util.Collections;
-import java.util.List;
 
 import org.yamcs.AbstractProcessorService;
 import org.yamcs.ConfigurationException;
-import org.yamcs.ContainerExtractionResult;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorConfig;
@@ -145,7 +143,7 @@ public class XtceTmProcessor extends AbstractProcessorService
                 rootContainer = sc;
             }
             ContainerProcessingResult result = tmExtractor.processPacket(pkt.getPacket(), pkt.getGenerationTime(),
-                    rectime, pkt.getSeqCount(), rootContainer);
+                    rectime, pkt.getSeqCount(), rootContainer, pkt.getMetadata());
             result.setLink(pkt.getLink());
 
             ParameterValueList paramResult = result.getTmParams();
