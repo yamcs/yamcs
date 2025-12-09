@@ -6,6 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.security.sdls.SdlsSecurityAssociation;
 import org.yamcs.security.sdls.StandardAuthMask;
+import org.yamcs.simulator.cfdp.CfdpCcsdsPacket;
+import org.yamcs.tctm.CcsdsPacket;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.StringConverter;
@@ -47,7 +49,7 @@ public class TcVcFrameLink {
             // the frame data is already part of authentication.
             authMask = StandardAuthMask.TC(false);
             this.maybeSdls = new SdlsSecurityAssociation(maybeSdlsKey, encryptionSpi,
-                     encryptionSeqNumWindow, verifySeqNum);
+                    encryptionSeqNumWindow, verifySeqNum);
             // Don't verify the first TC sequence number, because Yamcs has sequence number persistence and the
             // simulator does not.
             maybeSdls.skipVerifyingNextSeqNum();
@@ -161,7 +163,10 @@ public class TcVcFrameLink {
 
     private void processCommand(byte[] data, int offset, int length) {
         ByteBuffer bb = ByteBuffer.wrap(data, offset, length).slice();
-        simulator.processTc(new ColumbusCcsdsPacket(bb));
+        SimulatorCcsdsPacket packet = (CcsdsPacket.getAPID(bb) == CfdpCcsdsPacket.APID) ? new CfdpCcsdsPacket(bb)
+                : new ColumbusCcsdsPacket(bb);
+
+        simulator.processTc(packet);
     }
 
     private void processControlCommand(byte[] data, int offset, int length) {

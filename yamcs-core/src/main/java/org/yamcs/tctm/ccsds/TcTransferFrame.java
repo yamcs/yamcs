@@ -158,7 +158,7 @@ public class TcTransferFrame {
     public String toString() {
         return "TcTransferFrame [masterChannelId=" + spacecraftId + ", virtualChannelId=" + virtualChannelId
                 + ", vcFrameSeq=" + vcFrameSeq + ", bypass=" + bypass + ", cmdControl=" + cmdControl
-                + ", numCommands: " + ((commands != null) ? commands.size() : 0) + "segmentHeader=" + segmentHeader
+                + ", numCommands: " + ((commands != null) ? commands.size() : 0) + ", segmentHeader=" + segmentHeader
                 + "]";
     }
 

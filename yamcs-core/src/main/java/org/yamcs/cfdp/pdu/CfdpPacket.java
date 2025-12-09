@@ -77,7 +77,7 @@ public abstract class CfdpPacket {
         int pduSize = header.getLength() + dataLength + fcsLength;
         if (pduSize > bb.limit()) {
             throw new PduDecodingException(
-                    "buffer too short, from header expected PDU of size" + pduSize + " bytes, but only "
+                    "buffer too short, from header expected PDU of size " + pduSize + " bytes, but only "
                             + bb.limit() + " bytes available",
                     getData(bb, position, bb.limit()));
         }

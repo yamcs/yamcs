@@ -16,6 +16,10 @@ public class CfdpCcsdsPacket extends SimulatorCcsdsPacket {
         super(packet);
     }
 
+    public CfdpCcsdsPacket(ByteBuffer bb) {
+        super(bb);
+    }
+
     @Override
     public ByteBuffer getUserDataBuffer() {
         bb.position(6);
