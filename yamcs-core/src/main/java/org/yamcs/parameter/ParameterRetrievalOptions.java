@@ -28,7 +28,16 @@ public record ParameterRetrievalOptions(
         /**
          * If not null and a replay is performed, this can be used to limit the packets that go in replay
          */
-        PacketReplayRequest packetReplayRequest) {
+        PacketReplayRequest packetReplayRequest,
+        /**
+         * If not null, filter the retrieved parameter by this filter parameter (fully qualified name, e.g.,
+         * "/yamcs/tmPacketMetadata/vcId")
+         */
+        String filterParameterFqn,
+        /**
+         * The value that the filter parameter must equal (as a string, e.g., "1")
+         */
+        String filterValue) {
 
     public static class Builder {
         // invalid start and/or stop means open ended interval
@@ -42,6 +51,8 @@ public record ParameterRetrievalOptions(
         private boolean noparchive = false;
         private boolean noreplay = false;
         private PacketReplayRequest packetReplayRequest = null;
+        private String filterParameterFqn = null;
+        private String filterValue = null;
 
         public Builder withStartStop(long start, long stop) {
             this.start = start;
@@ -99,23 +110,33 @@ public record ParameterRetrievalOptions(
             return this;
         }
 
+        public Builder withFilter(String filterParameterFqn, String filterValue) {
+            this.filterParameterFqn = filterParameterFqn;
+            this.filterValue = filterValue;
+            return this;
+        }
 
         public ParameterRetrievalOptions build() {
             return new ParameterRetrievalOptions(
                     start, stop, ascending,
                     retrieveEngineeringValues, retrieveRawValues, retrieveParameterStatus,
-                    norealtime, noparchive, noreplay, packetReplayRequest);
+                    norealtime, noparchive, noreplay, packetReplayRequest,
+                    filterParameterFqn, filterValue);
         }
 
     }
 
     public Builder toBuilder() {
-        return new Builder()
+        Builder builder = new Builder()
                 .withStartStop(this.start, this.stop)
                 .withAscending(this.ascending)
                 .withRetrieveEngineeringValues(this.retrieveEngValues)
                 .withRetrieveRawValues(this.retrieveRawValues)
                 .withRetrieveParameterStatus(this.retrieveParameterStatus);
+        if (this.filterParameterFqn != null && this.filterValue != null) {
+            builder.withFilter(this.filterParameterFqn, this.filterValue);
+        }
+        return builder;
     }
 
     public ParameterRetrievalOptions withUpdatedStart(long newStart) {

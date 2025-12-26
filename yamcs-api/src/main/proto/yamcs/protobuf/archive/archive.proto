@@ -159,26 +159,26 @@ message ListParameterHistoryResponse {
 message GetParameterSamplesRequest {
   // Yamcs instance name
   optional string instance = 1;
-  
+
   // Parameter name
   optional string name = 2;
-  
+
   // Filter the lower bound of the parameter's generation time. Specify a date
   // string in ISO 8601 format.
   optional google.protobuf.Timestamp start = 3;
-  
+
   // Filter the upper bound of the parameter's generation time. Specify a date
   // string in ISO 8601 format.
   optional google.protobuf.Timestamp stop = 4;
-  
+
   // Number of intervals to use. Default: ``500``.
   optional int32 count = 5;
-  
+
   // Disable loading of parameters from the parameter cache. Default: ``false``.
   optional bool norealtime = 6;
-  
+
   // Consider the raw value instead of the engineering value.
-  // Default is to use the engineering value 
+  // Default is to use the engineering value
   optional bool useRawValue = 9;
 
   // Milliseconds before a sample is considered expired. This property is
@@ -191,7 +191,7 @@ message GetParameterSamplesRequest {
   // The name of the processor from which to use the parameter cache.
   // Default: ``realtime``.
   optional string processor = 7;
-  
+
   // Specifies how to retrieve the parameters. Either ``ParameterArchive`` or
   // ``replay``. If ``replay`` is specified, a replay processor will be created
   // and data will be processed with the active Mission Database. Note that
@@ -199,6 +199,41 @@ message GetParameterSamplesRequest {
   //
   // Default: ``ParameterArchive``.
   optional string source = 8;
+
+  // Parameter value filter configuration. When specified, only returns samples
+  // where the filter parameter equals the specified value.
+  // Currently the only supported filter operator is EQUALS 
+  // The retrieval will only return the parameters which are in the same parameter group with the filter parameter and where the filter has the specified value
+  // If the filtered parameter is not in the same parameter group with the requested parameter, then nothing will be returned
+  optional ParameterFilter filter = 11;
+}
+
+// Parameter value filter configuration
+message ParameterFilter {
+  // Name of the parameter to filter by (e.g., "vcid")
+  optional string parameter = 1;
+
+  // Comparison operator
+  enum Operator {
+    // Filter where parameter value equals the specified value
+    EQUALS = 0;
+    // Filter where parameter value does not equal the specified value
+    // NOT_EQUALS = 1;
+    // Filter where parameter value is greater than the specified value
+    // GREATER_THAN = 2;
+    // Filter where parameter value is less than the specified value
+    // LESS_THAN = 3;
+    // Filter where parameter value is greater than or equal to the specified value
+    // GREATER_OR_EQUAL = 4;
+    // Filter where parameter value is less than or equal to the specified value
+    // LESS_OR_EQUAL = 5;
+    // Filter where parameter value is in the specified list
+    // IN = 6;
+  }
+  optional Operator operator = 2;
+
+  // Expected value(s) for comparison.
+  repeated string values = 3;
 }
 
 message ExportParameterValuesRequest {

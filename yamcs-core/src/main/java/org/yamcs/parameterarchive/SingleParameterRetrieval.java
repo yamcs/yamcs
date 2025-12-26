@@ -82,7 +82,54 @@ public class SingleParameterRetrieval {
     private void retrieveValueSingleGroup(ParameterId pid, int parameterGroupId,
             Consumer<ParameterValueArray> consumer) throws RocksDBException, IOException {
 
-        try (SegmentIterator it = new SegmentIterator(parchive, pid, parameterGroupId, opts)) {
+        // Check if filtering is requested
+        if (opts.filterParameterFqn() != null && opts.filterValue() != null) {
+            retrieveValueSingleGroupFiltered(pid, parameterGroupId, consumer);
+        } else {
+            try (SegmentIterator it = new SegmentIterator(parchive, pid, parameterGroupId, opts)) {
+                while (it.isValid()) {
+                    ParameterValueSegment pvs = it.value();
+                    sendValuesFromSegment(pid, pvs, opts, consumer);
+                    it.next();
+                }
+            }
+        }
+    }
+
+    // Retrieve values with filtering by another parameter
+    private void retrieveValueSingleGroupFiltered(ParameterId pid, int parameterGroupId,
+            Consumer<ParameterValueArray> consumer) throws RocksDBException, IOException {
+
+        // Get the filter parameter ID
+        ParameterId[] filterPids = parchive.getParameterIdDb().get(opts.filterParameterFqn());
+        if (filterPids == null || filterPids.length == 0) {
+            throw new IllegalArgumentException("Filter parameter not found: " + opts.filterParameterFqn());
+        }
+
+        // Find the filter parameter ID that belongs to the same group as the main parameter
+        ParameterId filterPid = null;
+        for (ParameterId fpid : filterPids) {
+            int[] fpgids = parchive.getParameterGroupIdDb().getAllGroups(fpid.getPid());
+            for (int fpgid : fpgids) {
+                if (fpgid == parameterGroupId) {
+                    filterPid = fpid;
+                    break;
+                }
+            }
+            if (filterPid != null) {
+                break;
+            }
+        }
+
+        if (filterPid == null) {
+            log.debug("Filter parameter '{}' is not in the same parameter group as the main parameter",
+                    opts.filterParameterFqn());
+            // TODO: we should have an option here to actually return the values
+            return;
+        }
+
+        try (FilteredSegmentIterator it = new FilteredSegmentIterator(
+                parchive, pid, filterPid, parameterGroupId, opts.filterValue(), opts)) {
             while (it.isValid()) {
                 ParameterValueSegment pvs = it.value();
                 sendValuesFromSegment(pid, pvs, opts, consumer);
@@ -168,7 +215,8 @@ public class SingleParameterRetrieval {
         ParameterValueArray mergedPva;
         ParameterId pid;
 
-        public SegmentMerger(ParameterId pid, ParameterRetrievalOptions opts, Consumer<ParameterValueArray> finalConsumer) {
+        public SegmentMerger(ParameterId pid, ParameterRetrievalOptions opts,
+                Consumer<ParameterValueArray> finalConsumer) {
             this.finalConsumer = finalConsumer;
             this.opts = opts;
             this.pid = pid;

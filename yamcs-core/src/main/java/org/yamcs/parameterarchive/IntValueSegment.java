@@ -199,6 +199,9 @@ public class IntValueSegment extends BaseSegment implements ValueSegment {
         }
     }
 
+    public boolean isSigned() {
+        return signed;
+    }
     @Override
     public int size() {
         return values.size();

@@ -56,9 +56,6 @@ import org.yamcs.xtce.xml.XtceStaxReader;
  * configuration for TM partitions can be achieved using an AncillaryData property with the name Yamcs and the value
  * UseAsArchivingPartition. See {@link SequenceContainer#useAsArchivePartition(boolean)}</li>
  * </ul>
- * 
- * @author mu
- * 
  */
 public class XtceLoader implements SpaceSystemLoader {
     private transient XtceStaxReader xtceReader = null;

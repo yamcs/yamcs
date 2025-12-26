@@ -33,8 +33,8 @@ public class ParameterValueSegment {
     // engValueSegment should not be null during buildup but maybe null during retrieval (if the retrieving of
     // engineering values is skipped)
     ValueSegment engValueSegment;
-    private ValueSegment rawValueSegment;
-    private ParameterStatusSegment parameterStatusSegment;
+    ValueSegment rawValueSegment;
+    ParameterStatusSegment parameterStatusSegment;
 
     // stores the indices (positions) of the gaps
     SortedIntArray gaps;
@@ -339,6 +339,10 @@ public class ParameterValueSegment {
         }
     }
 
+    public int size() {
+        return timeSegment.size();
+    }
+
     @Override
     public String toString() {
         return "ParameterValueSegment[pid:" + pid + ", timeSegmentSize: " + timeSegment.size() +
@@ -456,4 +460,5 @@ public class ParameterValueSegment {
             }
         }
     }
+
 }

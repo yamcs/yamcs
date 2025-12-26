@@ -138,6 +138,11 @@ public class LongValueSegment extends BaseSegment implements ValueSegment {
         }
     }
 
+    public Type getType() {
+        return types[numericType];
+    }
+
+
     @Override
     public int size() {
         return values.size();
@@ -147,5 +152,6 @@ public class LongValueSegment extends BaseSegment implements ValueSegment {
     public String toString() {
         return "LongValueSegment [values=" + values + ", numericType=" + numericType + "]";
     }
+
 
 }

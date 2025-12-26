@@ -10,6 +10,7 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
 import "yamcs/api/annotations.proto";
+import "yamcs/protobuf/archive/archive.proto";
 import "yamcs/protobuf/mdb/mdb.proto";
 import "yamcs/protobuf/pvalue/pvalue.proto";
 import "yamcs/protobuf/yamcsManagement/yamcsManagement.proto";
@@ -248,6 +249,10 @@ message SubscribeParametersRequest {
   //
   // A negative value implies no truncating, which is the default.
   optional int32 maxBytes = 8;
+
+  // Parameter value filter configuration. When specified, only sends parameter
+  // updates where the filter parameter equals the specified value.
+  optional archive.ParameterFilter filter = 9;
 }
 
 message SubscribeParametersData {

@@ -182,14 +182,24 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         sampler.setGapTime(request.hasGapTime() ? request.getGapTime() : 120000);
 
         ParameterRetrievalService prs = getParameterRetrievalService(ysi);
-        ParameterRetrievalOptions opts = ParameterRetrievalOptions.newBuilder()
+        ParameterRetrievalOptions.Builder optsBuilder = ParameterRetrievalOptions.newBuilder()
                 .withStartStop(start, stop)
                 .withAscending(true)
                 .withRetrieveRawValues(useRawValue)
                 .withRetrieveEngineeringValues(!useRawValue)
                 .withoutRealtime(request.getNorealtime())
-                .withoutParchive(request.hasSource() && isReplayAsked(request.getSource()))
-                .build();
+                .withoutParchive(request.hasSource() && isReplayAsked(request.getSource()));
+
+        // Add filter if specified
+        if (request.hasFilter() && request.getFilter().hasParameter()) {
+            String filterParamFqn = request.getFilter().getParameter();
+            if (request.getFilter().getValuesCount() > 0) {
+                String filterValue = request.getFilter().getValues(0);
+                optsBuilder.withFilter(filterParamFqn, filterValue);
+            }
+        }
+
+        ParameterRetrievalOptions opts = optsBuilder.build();
         prs.retrieveScalar(pid, opts, sampler)
                 .thenRun(() -> {
                     TimeSeries.Builder series = TimeSeries.newBuilder();
