@@ -12,6 +12,7 @@ This section describes Yamcs support for parts of the following CCSDS specificat
 * Communications Operation Procedure (COP-1) `CCSDS 232.1-B-2 <https://public.ccsds.org/Pubs/232x1b2e2c1.pdf>`_
 * Space Packet Protocol `CCSDS 133.0-B-2 <https://public.ccsds.org/Pubs/133x0b2e2.pdf>`_
 * Encapsulation Service `CCSDS 133.1-B-3 <https://public.ccsds.org/Pubs/133x1b3e1.pdf>`_
+* Space Data Link Security Protocol `CCSDS 355.0-B-2 <https://ccsds.org/Pubs/355x1b1.pdf>`__
 
 These specifications are dealing with multiplexing and to a certain extent encoding data for transmission on a space link.
 
@@ -59,12 +60,16 @@ An example of a UDP TM frame link specification is below:
         badFrameStream: bad_frames
         encryption:
           - spi: 1
-            keyFile: etc/sdls-presharedkey-256bit
-            seqNumWindow: 1
+            class: org.yamcs.security.sdls.SecurityAssociationAes256Gcm128Factory
+            args:
+              keyFile: etc/sdls-presharedkey-256bit
+              seqNumWindow: 1
           - spi: 2
-            keyFile: etc/sdls-presharedkey-256bit
-            seqNumWindow: 1
-            verifySeqNum: false
+            class: org.yamcs.security.sdls.SecurityAssociationAes256Gcm128Factory
+            args:
+              keyFile: etc/sdls-presharedkey-256bit
+              seqNumWindow: 1
+              verifySeqNum: false
         virtualChannels:
           - vcId: 0
             encryptionSpis: [1]
@@ -149,34 +154,17 @@ For each item in the ``encryption`` list, the following parameters can be used:
 spi (integer)
     **Required.** Specifies the Security Parameter Index (SPI) that uniquely identifies this encryption key for the link.
 
-keyFile (string)
-    **Required.** Specifies the path to the 256-bit encryption key for symmetric encryption.
+class (string)
+    **Required.** Specifies the SDLS Security Association implementation to use. Yamcs has AES-256-GCM-128 authenticated encryption built in, which can be selected with ``org.yamcs.security.sdls.SecurityAssociationAes256Gcm128Factory``. Custom implementations can be loaded as plugins.
+
+args (map)
+    Contains configuration options that will be passed to the ``create`` method of the class specified in ``class``. These are different for each implementation.
 
 authMask (string)
     Specify a custom authentication bit mask to apply from the beginning of the frame, as a hex string. The mask is applied as a bitwise AND of the frame and the mask.
     Exactly the number of bytes equal to the length of ``authMask`` are masked from the frame, and the result is used as additional authenticated data (AAD) in an authenticated encryption operation.
     If ``authMask`` is not specified, a default is used according to the SDLS standard (CCSDS 355.0-B-2).
     This option is only useful if you have a static header size.
-
-verifySeqNum (boolean)
-    Only useful for incoming links, defines whether received sequence numbers are verified according to the ``seqNumWindow``.
-    Yamcs persists sequence numbers across restarts. If the sequence number for an SPI is not known (never received data for it), the ``initialSeqNum`` will be used if specified.
-    If ``initialSeqNum`` (see below) is not specified, then the first sequence number received will be accepted without verification.
-    Be aware that the simulator does not persist the sequence numbers across restarts. This means that if you enable this option, you will see many warnings in the console, and frames will be rejected by Yamcs, until the simulator 'catches up' to the sequence number expected by Yamcs.
-    Defaults to false.
-
-seqNumWindow (integer)
-    **Required, if verifySeqNum is true** Defines the maximum value by which the sequence number of incoming frames can differ from the current sequence number. The minimum value is 1.
-    Note that if 1 is specified, it means any lost frame will cause the verification to fail.
-
-initialSeqNum: (hexadecimal)
-    This is used as the initial sequence number for this SPI. For the outgoing links, it represents the sequence number that will be written in the first frame to be transmitted.
-    For the incoming links, it represents the last sequence number "received", that means that the next frame is expected to have this sequence number plus one.
-    Note that Yamcs preserves the sequence numbers across restarts. This configuration is only used if there has never been a frame sent/received for this SPI (or if the Yamcs database has been removed).
-    If not specified, the first sequence for outgoing frames is 0 while the first sequence on an incoming frame will be accepted as valid (the verification will commence with the second frame).
-    The value specified is a hexadecimal encoded number. Yamcs currently uses a 12 bytes sequence numbers (used as IV).
-    If less than 12 bytes are specified, they are considered as the least significant bytes of the sequence number.
-    If more than 12 bytes are specified, the first bytes will be discarded.
 
 For each Virtual Channel in the ``virtualChannels`` map, the following parameters can be used:
 
@@ -249,14 +237,20 @@ An example of a UDP TC frame link specification is below:
       randomizeCltu: false
       encryption:
         - spi: 1
-          keyFile: etc/sdls-presharedkey-256bit
-          seqNumWindow: 1
+          class: org.yamcs.security.sdls.SecurityAssociationAes256Gcm128Factory
+          args:
+            keyFile: etc/sdls-presharedkey-256bit
+            seqNumWindow: 1
         - spi: 2
-          keyFile: etc/sdls-presharedkey-256bit
-          seqNumWindow: 1
+          class: org.yamcs.security.sdls.SecurityAssociationAes256Gcm128Factory
+          args:
+            keyFile: etc/sdls-presharedkey-256bit
+            seqNumWindow: 1
         - spi: 3
-          keyFile: etc/sdls-presharedkey-256bit
-          seqNumWindow: 1
+          class: org.yamcs.security.sdls.SecurityAssociationAes256Gcm128Factory
+          args:
+            keyFile: etc/sdls-presharedkey-256bit
+            seqNumWindow: 1
       virtualChannels:
           - vcId: 0
             encryptionSpi: 1
@@ -327,8 +321,17 @@ For each item in the ``encryption`` list, the following parameters can be used:
 spi (integer)
     **Required.** Specifies the Security Parameter Index (SPI) that uniquely identifies this encryption key for the link.
 
-keyFile (string)
-    **Required.** Specifies the path to the 256-bit encryption key for symmetric encryption.
+class (string)
+    **Required.** Specifies the SDLS Security Association implementation to use. Yamcs has AES-256-GCM-128 authenticated encryption built in, which can be selected with ``org.yamcs.security.sdls.SecurityAssociationAes256Gcm128Factory``. Custom implementations can be loaded as plugins.
+
+args (map)
+    Contains configuration options that will be passed to the ``create`` method of the class specified in ``class``. These are different for each implementation.
+
+authMask (string)
+    Specify a custom authentication bit mask to apply from the beginning of the frame, as a hex string. The mask is applied as a bitwise AND of the frame and the mask.
+    Exactly the number of bytes equal to the length of ``authMask`` are masked from the frame, and the result is used as additional authenticated data (AAD) in an authenticated encryption operation.
+    If ``authMask`` is not specified, a default is used according to the SDLS standard (CCSDS 355.0-B-2).
+    This option is only useful if you have a static header size.
 
 For each Virtual Channel in the ``virtualChannels`` map, the following parameters can be used:
 
@@ -439,9 +442,13 @@ SDLS Support
 ************
 
 
-SDLS is the protocol specified in `CCSDS 355.0-B-2 <https://ccsds.org/wp-content/uploads/gravity_forms/5-448e85c647331d9cbaf66c096458bdd5/2025/01//355x0b2.pdf>`_ for encrypting CCSDS frames.
+SDLS is the protocol specified in `CCSDS 355.0-B-2 <https://ccsds.org/Pubs/355x1b1.pdf>`__ for securing CCSDS frames.
 
-Managed Parameters:
+Yamcs supports loading custom SDLS Security Association implementations as `plugins <https://docs.yamcs.org/yamcs-maven-plugin/examples/plugin/>`__. You need one class to implement the ``SdlsSecurityAssociation`` interface (which does the actual security functions), and then another class to implement the ``SdlsSecurityAssociationFactory`` interface (which instructs how to create an instance of your Security Association implementation).
+
+There is a built-in authenticated encryption implementation, AES-256-GCM-128, with ``class`` name ``org.yamcs.security.sdls.SecurityAssociationAes256Gcm128Factory``.
+
+The managed parameters for this built-in implementation are:
 
 * Security Parameter Index (SPI): configurable by user in the Yamcs instance config file
 * Security Association Service Type: Authenticated Encryption is supported; not user-configurable.
