@@ -1,20 +1,19 @@
 package org.yamcs.tctm.ccsds;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.Set;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.memento.MementoDb;
 import org.yamcs.security.sdls.SdlsMemento;
+import org.yamcs.security.sdls.SdlsSecurityAssociationFactory;
 import org.yamcs.security.sdls.SdlsSecurityAssociation;
 import org.yamcs.tctm.Link;
 import org.yamcs.utils.YObjectLoader;
@@ -62,25 +61,26 @@ public abstract class DownlinkManagedParameters {
             for (YConfiguration saDef : encryptionConfigs) {
                 short spi = (short) saDef.getInt("spi");
                 newSpis.add(spi);
-                byte[] sdlsKey;
-                try {
-                    sdlsKey = Files.readAllBytes(Path.of(saDef.getString("keyFile")));
-                } catch (IOException e) {
-                    throw new ConfigurationException(e);
-                }
-
-                boolean verifySeqNum = saDef.getBoolean("verifySeqNum");
-                int encryptionSeqNumWindow = verifySeqNum ? Math.abs(saDef.getInt("seqNumWindow")) : 1;
-                byte[] initialSeqNum = saDef.getBinary("initialSeqNum", null);
 
                 // Grab the auth mask from the config, if we have one
                 byte[] customAuthMask = null;
                 if (saDef.containsKey("authMask")) {
                     customAuthMask = saDef.getBinary("authMask");
                 }
+                // Get custom Security Association args
+                YConfiguration args = saDef.getConfig("args");
+                // Find the desired SdlsSecurityAssociationProvider implementation
+                ServiceLoader<SdlsSecurityAssociationFactory> loader = ServiceLoader.load(SdlsSecurityAssociationFactory.class);
+                Optional<ServiceLoader.Provider<SdlsSecurityAssociationFactory>> maybeSaImpl = loader.stream()
+                        .filter(l -> l.get().getClass().getName().equals(saDef.get("class")))
+                        .findFirst();
+                if (maybeSaImpl.isEmpty()) {
+                    throw new ConfigurationException("No implementation of SdlsSecurityAssociationFactory found for " + saDef.get("class"));
+                }
+                SdlsSecurityAssociationFactory saImpl = maybeSaImpl.get().get();
+                // Create the Security Association
+                SdlsSecurityAssociation sa = saImpl.create(yamcsInstance, linkName, spi, args);
 
-                SdlsSecurityAssociation sa = new SdlsSecurityAssociation(yamcsInstance, linkName, sdlsKey, spi,
-                        initialSeqNum, encryptionSeqNumWindow, verifySeqNum);
                 // Save the SPI and its security association + optional auth mask
                 sdlsSecurityAssociations.put(spi, new SdlsInfo(sa, customAuthMask));
             }

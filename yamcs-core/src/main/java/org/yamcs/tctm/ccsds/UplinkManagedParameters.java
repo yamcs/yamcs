@@ -1,21 +1,21 @@
 package org.yamcs.tctm.ccsds;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
+import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.memento.MementoDb;
 import org.yamcs.security.sdls.SdlsMemento;
 import org.yamcs.security.sdls.SdlsSecurityAssociation;
+import org.yamcs.security.sdls.SdlsSecurityAssociationFactory;
 
 /**
  * Stores configuration related to Master channels for uplink.
@@ -60,15 +60,6 @@ public abstract class UplinkManagedParameters {
             Set<Short> newSpis = new HashSet<>(encryptionConfigs.size());
             for (YConfiguration saDef : encryptionConfigs) {
                 short spi = (short) saDef.getInt("spi");
-                byte[] sdlsKey;
-                try {
-                    sdlsKey = Files.readAllBytes(Path.of(saDef.getString("keyFile")));
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-
-                byte[] initialSeqNum = saDef.getBinary("initialSeqNum", null);
-
                 // Save the SPI and its security association
                 newSpis.add(spi);
 
@@ -76,8 +67,21 @@ public abstract class UplinkManagedParameters {
                 if (saDef.containsKey("authMask")) {
                     customAuthMask = saDef.getBinary("authMask");
                 }
-                SdlsSecurityAssociation sa = new SdlsSecurityAssociation(yamcsInstance, linkName, sdlsKey, spi,
-                        initialSeqNum);
+
+                // Get custom Security Association args
+                YConfiguration args = saDef.getConfig("args");
+                // Find the desired SdlsSecurityAssociationProvider implementation
+                ServiceLoader<SdlsSecurityAssociationFactory> loader =
+                        ServiceLoader.load(SdlsSecurityAssociationFactory.class);
+                Optional<ServiceLoader.Provider<SdlsSecurityAssociationFactory>> maybeSaImpl = loader.stream()
+                        .filter(l -> l.get().getClass().getName().equals(saDef.get("class")))
+                        .findFirst();
+                if (maybeSaImpl.isEmpty()) {
+                    throw new ConfigurationException("No implementation of SdlsSecurityAssociationFactory found for " + saDef.get("class"));
+                }
+                SdlsSecurityAssociationFactory saImpl = maybeSaImpl.get().get();
+                // Create the Security Association
+                SdlsSecurityAssociation sa = saImpl.create(yamcsInstance, linkName, spi, args);
                 sdlsSecurityAssociations.put(spi, new SdlsInfo(sa, customAuthMask));
             }
 

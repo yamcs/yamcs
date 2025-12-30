@@ -54,19 +54,16 @@ public class UdpTmFrameLink extends AbstractScheduledService {
     IntSupplier clcwSupplier;
 
     public UdpTmFrameLink(int scid, String frameType, String host, int port, int frameLength, double framesPerSec,
-            IntSupplier clcwSupplier, byte[] maybeSdlsKey, short sdlsSpi,
-            int encryptionSeqNumWindow, boolean verifySeqNum) {
+            IntSupplier clcwSupplier, SdlsSecurityAssociation maybeSdls) {
         this.scid = scid;
-
-        SdlsSecurityAssociation maybeSdls = null;
 
         this.frameType = frameType;
         this.host = host;
         this.port = port;
 
         // If the link should be encrypted, the maximum amount of data is reduced because of encryption overhead.
-        if (maybeSdlsKey != null) {
-            this.frameSize = frameLength - SdlsSecurityAssociation.getOverheadBytes();
+        if (maybeSdls != null) {
+            this.frameSize = frameLength - maybeSdls.getOverheadBytes();
         } else {
             this.frameSize = frameLength;
         }
@@ -75,28 +72,16 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         this.clcwSupplier = clcwSupplier;
 
         if ("AOS".equalsIgnoreCase(frameType)) {
-            if (maybeSdlsKey != null) {
-                maybeSdls = new SdlsSecurityAssociation(maybeSdlsKey, sdlsSpi,
-                        encryptionSeqNumWindow, verifySeqNum);
-            }
             for (int i = 0; i < NUM_VC; i++) {
                 builders[i] = new AosVcSender(scid, i, frameLength, maybeSdls);
             }
             idleFrameBuilder = new AosVcSender(scid, 63, frameLength, maybeSdls);
         } else if ("TM".equalsIgnoreCase(frameType)) {
-            if (maybeSdlsKey != null) {
-                maybeSdls = new SdlsSecurityAssociation(maybeSdlsKey, sdlsSpi,
-                        encryptionSeqNumWindow, verifySeqNum);
-            }
             for (int i = 0; i < NUM_VC; i++) {
                 builders[i] = new TmVcSender(scid, i, frameLength, true, maybeSdls);
             }
             idleFrameBuilder = builders[0];
         } else if ("USLP".equalsIgnoreCase(frameType)) {
-            if (maybeSdlsKey != null) {
-                maybeSdls = new SdlsSecurityAssociation(maybeSdlsKey, sdlsSpi,
-                        encryptionSeqNumWindow, verifySeqNum);
-            }
             for (int i = 0; i < NUM_VC; i++) {
                 builders[i] = new UslpVcSender(scid, i, frameLength, true, maybeSdls);
             }
@@ -249,10 +234,10 @@ public class UdpTmFrameLink extends AbstractScheduledService {
 
             // If we're running with SDLS, zero the security header and trailer
             if (this.maybeSdls != null) {
-                int secHeaderSize = SdlsSecurityAssociation.getHeaderSize();
+                int secHeaderSize = maybeSdls.getHeaderSize();
                 Arrays.fill(data, offsets.secHeaderStart, offsets.secHeaderStart + secHeaderSize, (byte) 0);
 
-                int secTrailerSize = SdlsSecurityAssociation.getTrailerSize();
+                int secTrailerSize = maybeSdls.getTrailerSize();
                 Arrays.fill(data, offsets.secTrailerStart, offsets.secTrailerStart + secTrailerSize, (byte) 0);
             }
         }
@@ -340,12 +325,14 @@ public class UdpTmFrameLink extends AbstractScheduledService {
             this.data = new byte[frameSize];
 
             // Optionally encrypt the data
+            byte[] securityHdrAuthMask = new byte[]{};
             if (maybeLinkSdls != null) {
                 maybeSdls = maybeLinkSdls;
+                securityHdrAuthMask = maybeLinkSdls.securityHdrAuthMask();
             }
 
             writeGvcId(data, vcId);
-            sdlsAuthMask = StandardAuthMask.AOS(true, 0);
+            sdlsAuthMask = StandardAuthMask.AOS(true, 0, securityHdrAuthMask);
         }
 
         void writeGvcId(byte[] frameData, int vcId) {
@@ -390,8 +377,8 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         @Override
         void encryptFrame() {
             try {
-                this.maybeSdls.applySecurity(data, 0, offsets.secHeaderStart,
-                        offsets.secTrailerStart + SdlsSecurityAssociation.getTrailerSize(), this.sdlsAuthMask);
+                maybeSdls.applySecurity(data, 0, offsets.secHeaderStart,
+                        offsets.secTrailerStart + maybeSdls.getTrailerSize(), this.sdlsAuthMask);
             } catch (GeneralSecurityException e) {
                 log.warn("could not encrypt frame", e);
             }
@@ -409,11 +396,13 @@ public class UdpTmFrameLink extends AbstractScheduledService {
             this.data = new byte[frameSize];
 
             // Optionally encrypt the frame
+            byte[] securityHdrAuthMask = new byte[]{};
             if (maybeLinkSdls != null) {
                 this.maybeSdls = maybeLinkSdls;
+                securityHdrAuthMask = maybeLinkSdls.securityHdrAuthMask();
             }
             writeGvcId(data, vcId);
-            sdlsAuthMask = StandardAuthMask.TM(0);
+            sdlsAuthMask = StandardAuthMask.TM(0, securityHdrAuthMask);
         }
 
         void writeGvcId(byte[] frameData, int vcId) {
@@ -436,7 +425,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
             if (this.maybeSdls != null) {
                 try {
                     this.maybeSdls.applySecurity(data, 0, offsets.secHeaderStart,
-                            offsets.pduDataEnd + SdlsSecurityAssociation.getTrailerSize(), this.sdlsAuthMask);
+                            offsets.pduDataEnd + maybeSdls.getTrailerSize(), this.sdlsAuthMask);
                 } catch (GeneralSecurityException e) {
                     log.warn("could not encrypt idle frame", e);
                 }
@@ -455,7 +444,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         void encryptFrame() {
             try {
                 this.maybeSdls.applySecurity(data, 0, offsets.secHeaderStart,
-                        offsets.secTrailerStart + SdlsSecurityAssociation.getTrailerSize(), this.sdlsAuthMask);
+                        offsets.secTrailerStart + maybeSdls.getTrailerSize(), this.sdlsAuthMask);
             } catch (GeneralSecurityException e) {
                 log.warn("could not encrypt frame", e);
             }
@@ -491,10 +480,12 @@ public class UdpTmFrameLink extends AbstractScheduledService {
             data[6] = 0x0C; // ocfFlag = 1, vc frame count = 100(in binary)
 
             // Optionally encrypt the data
+            byte[] securityHdrAuthMask = new byte[]{};
             if (maybeLinkSdls != null) {
                 this.maybeSdls = maybeLinkSdls;
+                securityHdrAuthMask = maybeLinkSdls.securityHdrAuthMask();
             }
-            authMask = StandardAuthMask.USLP(11, 0);
+            authMask = StandardAuthMask.USLP(11, 0, securityHdrAuthMask);
         }
 
         @Override
@@ -527,7 +518,7 @@ public class UdpTmFrameLink extends AbstractScheduledService {
         @Override
         void encryptFrame() {
             try {
-                int secTrailerEnd = offsets.secTrailerStart + SdlsSecurityAssociation.getTrailerSize();
+                int secTrailerEnd = offsets.secTrailerStart + maybeSdls.getTrailerSize();
                 this.maybeSdls.applySecurity(data, 0, offsets.secHeaderStart, secTrailerEnd, this.authMask);
             } catch (GeneralSecurityException e) {
                 log.warn("could not encrypt frame", e);
@@ -575,8 +566,8 @@ public class UdpTmFrameLink extends AbstractScheduledService {
                 pduDataEnd = frameSize - 2 - (ocf ? 4 : 0);
             } else {
                 secHeaderStart = 8;
-                frameDataStart = secHeaderStart + SdlsSecurityAssociation.getHeaderSize();
-                secTrailerStart = frameSize - 2 - (ocf ? 4 : 0) - SdlsSecurityAssociation.getTrailerSize();
+                frameDataStart = secHeaderStart + maybeSdls.getHeaderSize();
+                secTrailerStart = frameSize - 2 - (ocf ? 4 : 0) - maybeSdls.getTrailerSize();
                 pduDataEnd = secTrailerStart;
             }
             pduDataStart = frameDataStart + 2;
@@ -604,8 +595,8 @@ public class UdpTmFrameLink extends AbstractScheduledService {
                 pduDataEnd = frameSize - 2 - (ocf ? 4 : 0);
             } else {
                 secHeaderStart = 6;
-                frameDataStart = secHeaderStart + SdlsSecurityAssociation.getHeaderSize();
-                secTrailerStart = frameSize - 2 - (ocf ? 4 : 0) - SdlsSecurityAssociation.getTrailerSize();
+                frameDataStart = secHeaderStart + maybeSdls.getHeaderSize();
+                secTrailerStart = frameSize - 2 - (ocf ? 4 : 0) - maybeSdls.getTrailerSize();
                 pduDataEnd = secTrailerStart;
             }
             pduDataStart = frameDataStart;
@@ -628,8 +619,8 @@ public class UdpTmFrameLink extends AbstractScheduledService {
                 pduDataEnd = frameSize - 2 - (ocf ? 4 : 0);
             } else {
                 secHeaderStart = 11;
-                frameDataStart = secHeaderStart + SdlsSecurityAssociation.getHeaderSize();
-                secTrailerStart = frameSize - 2 - (ocf ? 4 : 0) - SdlsSecurityAssociation.getTrailerSize();
+                frameDataStart = secHeaderStart + maybeSdls.getHeaderSize();
+                secTrailerStart = frameSize - 2 - (ocf ? 4 : 0) - maybeSdls.getTrailerSize();
                 pduDataEnd = secTrailerStart;
             }
             pduDataStart = frameDataStart + 3;

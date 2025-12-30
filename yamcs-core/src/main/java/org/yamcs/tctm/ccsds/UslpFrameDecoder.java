@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.security.sdls.SdlsSecurityAssociation;
 import org.yamcs.security.sdls.StandardAuthMask;
+import org.yamcs.security.sdls.SdlsSecurityAssociation.VerificationStatusCode;
 import org.yamcs.tctm.ErrorDetectionWordCalculator;
 import org.yamcs.tctm.TcTmException;
 import org.yamcs.tctm.ccsds.DownlinkManagedParameters.FrameErrorDetection;
@@ -164,10 +165,11 @@ public class UslpFrameDecoder implements TransferFrameDecoder {
                 phLength = vcfCountLength + 7;
             }
 
+            SdlsSecurityAssociation sa = sdlsInfo.sa();
             // If necessary, update the SDLS auth mask.
             // This will initialize the variables on first run.
             if (phLength != previousPhLength) {
-                sdlsAuthMask = StandardAuthMask.USLP(phLength, uslpParams.insertZoneLength);
+                sdlsAuthMask = StandardAuthMask.USLP(phLength, uslpParams.insertZoneLength, sa.securityHdrAuthMask());
                 previousPhLength = phLength;
             }
 
@@ -179,17 +181,17 @@ public class UslpFrameDecoder implements TransferFrameDecoder {
             if (authMask == null)
                 authMask = this.sdlsAuthMask;
             // try to decrypt the frame
-            SdlsSecurityAssociation.VerificationStatusCode decryptionStatus = sdlsInfo.sa().processSecurity(data, offset,
+            VerificationStatusCode decryptionStatus = sa.processSecurity(data, offset,
                     secHeaderStart, secTrailerEnd, authMask);
 
-            if (decryptionStatus != SdlsSecurityAssociation.VerificationStatusCode.NoFailure) {
+            if (decryptionStatus != VerificationStatusCode.NoFailure) {
                 throw new TcTmException(
                         "Failed to decrypt USLP frame for SPI " + receivedSpi + ": " + decryptionStatus);
             }
 
             // Update the offsets
-            dataOffset += SdlsSecurityAssociation.getHeaderSize();
-            dataEnd -= SdlsSecurityAssociation.getTrailerSize();
+            dataOffset += sa.getHeaderSize();
+            dataEnd -= sa.getTrailerSize();
         }
 
         byte dataHeader = data[dataOffset];

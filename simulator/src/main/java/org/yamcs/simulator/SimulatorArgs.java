@@ -68,17 +68,12 @@ public class SimulatorArgs {
     @Parameter(names = "--data-dir", converter = PathConverter.class)
     public Path dataDir = Path.of("data");
 
+    @Parameter(names = "--encryption-class", description = "The SDLS implementation to use")
+    public String encryptionClass = "org.yamcs.security.sdls.SecurityAssocationAes256Gcm128Provider";
+
     @Parameter(names = "--encryption-spi", description = "SPI to use for SDLS encryption of frames")
     public int encryptionSpi;
 
-    @Parameter(names = "--encryption-key-file", description = "path to key file for SDLS encryption of frames")
-    public String encryptionKeyFile;
-
-    @Parameter(names = "--encryption-seq-num-window", description = "a positive integer that defines the range of " +
-            "sequence numbers that can be accepted")
-    public int encryptionSeqNumWindow = 5;
-
-    @Parameter(names = "--encryption-verify-seq-num", description = "whether to verify the received sequence number")
-    public boolean verifySeqNum = true;
+    @Parameter(names = "--encryption-args", description = "Arguments to pass to the SDLS implementation")
+    public String encryptionArgs;
 }
-

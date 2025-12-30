@@ -3,16 +3,17 @@ package org.yamcs.simulator;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.LogManager;
+import java.util.stream.Collectors;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.InitException;
@@ -21,8 +22,11 @@ import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.ValidationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.security.sdls.SdlsSecurityAssociation;
+import org.yamcs.security.sdls.SdlsSecurityAssociationFactory;
 import org.yamcs.simulator.pus.PusSimulator;
 import org.yamcs.utils.TimeEncoding;
+import org.yaml.snakeyaml.Yaml;
 
 import com.beust.jcommander.JCommander;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -51,10 +55,9 @@ public class SimulatorCommander extends ProcessRunner {
         tmtcSpec.addOption("tm2Port", OptionType.INTEGER);
 
         Spec frameEncryptionSpec = new Spec();
-        frameEncryptionSpec.addOption("keyFile", OptionType.STRING).withRequired(true);
+        frameEncryptionSpec.addOption("class", OptionType.STRING).withRequired(true);
+        frameEncryptionSpec.addOption("args", OptionType.ANY);
         frameEncryptionSpec.addOption("spi", OptionType.INTEGER).withRequired(true);
-        frameEncryptionSpec.addOption("seqNumWindow", OptionType.INTEGER);
-        frameEncryptionSpec.addOption("verifySeqNum", OptionType.BOOLEAN).withDefault(true);
 
         Spec frameSpec = new Spec();
         frameSpec.addOption("scid", OptionType.INTEGER);
@@ -132,18 +135,20 @@ public class SimulatorCommander extends ProcessRunner {
 
             if (frameArgs.containsKey("encryption")) {
                 YConfiguration frameEncryption = frameArgs.getConfig("encryption");
-                String encryptionKeyFile = frameEncryption.getString("keyFile", defaultOptions.encryptionKeyFile);
                 short encryptionSpi = (short) frameEncryption.getInt("spi", defaultOptions.encryptionSpi);
-                int encryptionSeqNumWindow = frameEncryption.getInt("seqNumWindow",
-                        defaultOptions.encryptionSeqNumWindow);
-                cmdl.addAll(Arrays.asList("--encryption-key-file", "" + encryptionKeyFile,
-                        "--encryption-spi", "" + encryptionSpi,
-                        "--encryption-seq-num-window", "" + encryptionSeqNumWindow));
 
-                boolean verifySeqNum = frameEncryption.getBoolean("verifySeqNum", defaultOptions.verifySeqNum);
-                if (verifySeqNum) {
-                    cmdl.add("--encryption-verify-seq-num");
-                }
+                String encryptionClass = frameEncryption.getString("class", defaultOptions.encryptionClass);
+                Map<String, String> encryptionArgs = frameEncryption.getMap("args");
+
+                cmdl.addAll(Arrays.asList(
+                        "--encryption-class", encryptionClass,
+                        "--encryption-spi", "" + encryptionSpi));
+                // Pass all custom encryption arguments in the format:
+                // --encryption-args arg1=val1:arg2=val2
+                List<String> sArgs = encryptionArgs.entrySet().stream()
+                                        .map(e -> e.getKey() + "=" + e.getValue())
+                                        .toList();
+                cmdl.addAll(Arrays.asList("--encryption-args", String.join(":", sArgs)));
             }
 
             cmdl.addAll(Arrays.asList("--tm-frame-type", "" + tmFrameType,
@@ -278,30 +283,47 @@ public class SimulatorCommander extends ProcessRunner {
 
         if (simulator instanceof ColSimulator colSimulator) {
             if (runtimeOptions.tmFrameLength > 0) {
-
                 // Load a key for encryption/decryption if one was provided
-                final byte[] maybeSdlsKey;
-                String keyFile = runtimeOptions.encryptionKeyFile;
-                if (keyFile != null) {
-                    try {
-                        maybeSdlsKey = Files.readAllBytes(Path.of(keyFile));
-                    } catch (IOException e) {
-                        throw new RuntimeException("Cannot read file " + keyFile + ": " + e);
+                final SdlsSecurityAssociation maybeSdlsTm, maybeSdlsTc;
+
+                // TODO(AB): make sure there's nothing by default if encryption is not specified
+                short spi = (short) runtimeOptions.encryptionSpi;
+                String encryptionClass = runtimeOptions.encryptionClass;
+                if (encryptionClass != null) {
+                    String argStr = runtimeOptions.encryptionArgs;
+                    Yaml yaml = new Yaml();
+                    Map<String, Object> args =
+                            Arrays.stream(argStr.split(":"))
+                                    .map(s -> s.split("="))
+                                    .collect(Collectors.toMap(a -> a[0], a -> yaml.load(a[1])));
+                    YConfiguration argsConfig = new YConfiguration(null, null, args);
+
+
+                    ServiceLoader<SdlsSecurityAssociationFactory> loader = ServiceLoader.load(SdlsSecurityAssociationFactory.class);
+                    Optional<ServiceLoader.Provider<SdlsSecurityAssociationFactory>> maybeSaImpl = loader.stream()
+                            .filter(l -> l.get().getClass().getName().equals(encryptionClass))
+                            .findFirst();
+                    if (maybeSaImpl.isEmpty()) {
+                        throw new ConfigurationException("No implementation of SdlsSecurityAssociationFactory found " +
+                                "for " + encryptionClass);
                     }
+                    SdlsSecurityAssociationFactory saImpl = maybeSaImpl.get().get();
+
+                    maybeSdlsTc = saImpl.create("simulator", "tc", spi, argsConfig);
+                    maybeSdlsTm = saImpl.create("simulator", "tm", spi, argsConfig);
+
                 } else {
-                    maybeSdlsKey = null;
+                    maybeSdlsTm = null;
+                    maybeSdlsTc = null;
                 }
 
-                UdpTcFrameLink tcFrameLink = new UdpTcFrameLink(colSimulator, runtimeOptions.tcFramePort, maybeSdlsKey,
-                        (short) runtimeOptions.encryptionSpi, runtimeOptions.encryptionSeqNumWindow,
-                        runtimeOptions.verifySeqNum);
+                UdpTcFrameLink tcFrameLink = new UdpTcFrameLink(colSimulator, runtimeOptions.tcFramePort, maybeSdlsTc);
                 UdpTmFrameLink frameLink = new UdpTmFrameLink(runtimeOptions.scid, runtimeOptions.tmFrameType,
                         runtimeOptions.tmFrameHost,
                         runtimeOptions.tmFramePort,
                         runtimeOptions.tmFrameLength, runtimeOptions.tmFrameFreq, () -> {
                             return tcFrameLink.getClcw();
-                        }, maybeSdlsKey, (short) runtimeOptions.encryptionSpi, runtimeOptions.encryptionSeqNumWindow,
-                        runtimeOptions.verifySeqNum);
+                        }, maybeSdlsTm);
 
                 services.add(tcFrameLink);
                 services.add(frameLink);

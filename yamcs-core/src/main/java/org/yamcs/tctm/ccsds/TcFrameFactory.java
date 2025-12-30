@@ -16,7 +16,6 @@ public class TcFrameFactory {
     final private TcManagedParameters tcParams;
     final private TcVcManagedParameters vcParams;
     final CrcCciitCalculator crc;
-    final private byte[] sdlsAuthMask;
 
     public TcFrameFactory(TcVcManagedParameters vcParams) {
         this.tcParams = vcParams.tcParams;
@@ -28,10 +27,6 @@ public class TcFrameFactory {
             crc = null;
         }
 
-        // We can do this because TcFrameFactory is per VC, and the mapIdOverride in e.g. TcPacketHandler is only
-        // checked if the VC already has a MAP ID, in which case it already has a segment header
-        boolean hasSegmentHdr = vcParams.mapId >= 0;
-        this.sdlsAuthMask = StandardAuthMask.TC(hasSegmentHdr);
     }
 
     /**
@@ -73,12 +68,15 @@ public class TcFrameFactory {
             dataStart += 1;
         }
 
+        // Check if there is an SPI and a corresponding security association for this VC
         short spi = vcParams.encryptionSpi;
-        boolean isEncrypted = !cmdControl && tcParams.sdlsSecurityAssociations.containsKey(spi);
+        SdlsInfo maybeSdlsInfo = tcParams.sdlsSecurityAssociations.get(spi);
+        // We don't want to encrypt COP-1 control frames
+        boolean isEncrypted = !cmdControl && maybeSdlsInfo != null;
 
         // Increase the used length to accunt for SDLS overhead
         if (isEncrypted)
-            length += SdlsSecurityAssociation.getOverheadBytes();
+            length += maybeSdlsInfo.sa().getOverheadBytes();
 
         if (length > tcParams.getMaxFrameLength()) {
             throw new IllegalArgumentException("Resulting frame length " + length + " is more than the maximum allowed "
@@ -96,9 +94,9 @@ public class TcFrameFactory {
 
         if (isEncrypted) {
             // Move data start forward to leave space for header
-            ttf.setDataStart(ttf.getDataStart() + SdlsSecurityAssociation.getHeaderSize());
+            ttf.setDataStart(ttf.getDataStart() + maybeSdlsInfo.sa().getHeaderSize());
             // Move data end forward to account for header
-            ttf.setDataEnd(ttf.getDataEnd() + SdlsSecurityAssociation.getHeaderSize());
+            ttf.setDataEnd(ttf.getDataEnd() + maybeSdlsInfo.sa().getHeaderSize());
         }
 
         return ttf;
@@ -114,8 +112,9 @@ public class TcFrameFactory {
         }
 
         short spi = vcParams.encryptionSpi;
-        if (tcParams.sdlsSecurityAssociations.containsKey(spi)) {
-            length += SdlsSecurityAssociation.getOverheadBytes();
+        SdlsInfo maybeSdlsInfo = tcParams.sdlsSecurityAssociations.get(spi);
+        if (maybeSdlsInfo != null) {
+            length += maybeSdlsInfo.sa().getOverheadBytes();
         }
         return length;
     }
@@ -144,13 +143,18 @@ public class TcFrameFactory {
         // And potentially encrypt the data
         if (sdlsInfo != null && !ttf.isCmdControl()) {
             try {
+                SdlsSecurityAssociation sa = sdlsInfo.sa();
                 // Use the custom auth mask if we have one, otherwise use a default
                 byte[] authMask = sdlsInfo.customAuthMask();
-                if (authMask == null)
-                    authMask = this.sdlsAuthMask;
+                if (authMask == null) {
+                    // We can do this because TcFrameFactory is per VC, and the mapIdOverride in e.g. TcPacketHandler is only
+                    // checked if the VC already has a MAP ID, in which case it already has a segment header
+                    boolean hasSegmentHdr = vcParams.mapId >= 0;
+                    authMask = StandardAuthMask.TC(hasSegmentHdr, sa.securityHdrAuthMask());
+                }
 
-                sdlsInfo.sa().applySecurity(data, 0, ttf.getDataStart() - SdlsSecurityAssociation.getHeaderSize(),
-                        ttf.getDataEnd() + SdlsSecurityAssociation.getTrailerSize(), authMask);
+                sa.applySecurity(data, 0, ttf.getDataStart() - sa.getHeaderSize(),
+                        ttf.getDataEnd() + sa.getTrailerSize(), authMask);
             } catch (GeneralSecurityException e) {
                 throw new RuntimeException(e);
             }
