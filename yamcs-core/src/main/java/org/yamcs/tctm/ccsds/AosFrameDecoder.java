@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.rs.ReedSolomonException;
 import org.yamcs.security.sdls.SdlsSecurityAssociation;
 import org.yamcs.security.sdls.StandardAuthMask;
+import org.yamcs.security.sdls.SdlsSecurityAssociation.VerificationStatusCode;
 import org.yamcs.tctm.TcTmException;
 import org.yamcs.tctm.ccsds.AosManagedParameters.AosVcManagedParameters;
 import org.yamcs.tctm.ccsds.AosManagedParameters.ServiceType;
@@ -23,14 +24,12 @@ public class AosFrameDecoder implements TransferFrameDecoder {
     AosManagedParameters aosParams;
     CrcCciitCalculator crc;
     static Logger log = LoggerFactory.getLogger(AosFrameDecoder.class.getName());
-    final byte[] sdlsAuthMask;
 
     public AosFrameDecoder(AosManagedParameters aosParams) {
         this.aosParams = aosParams;
         if (aosParams.errorDetection == FrameErrorDetection.CRC16) {
             crc = new CrcCciitCalculator();
         }
-        sdlsAuthMask = StandardAuthMask.AOS(aosParams.frameHeaderErrorControlPresent, aosParams.insertZoneLength);
     }
 
     @Override
@@ -110,20 +109,24 @@ public class AosFrameDecoder implements TransferFrameDecoder {
             int secHeaderStart = dataOffset;
 
             int decryptionTrailerEnd = dataEnd;
+
+            SdlsSecurityAssociation sa = sdlsInfo.sa();
             // Check if we have a custom auth mask
             byte[] authMask = sdlsInfo.customAuthMask();
             if (authMask == null)
-                authMask = this.sdlsAuthMask;
+                authMask = StandardAuthMask.AOS(aosParams.frameHeaderErrorControlPresent, aosParams.insertZoneLength,
+                        sa.securityHdrAuthMask());
             // try to decrypt the frame
-            SdlsSecurityAssociation.VerificationStatusCode decryptionStatus = sdlsInfo.sa().processSecurity(data, offset, secHeaderStart, decryptionTrailerEnd, authMask);
+            VerificationStatusCode decryptionStatus = sa.processSecurity(data, offset, secHeaderStart,
+                    decryptionTrailerEnd, authMask);
 
-            if (decryptionStatus != SdlsSecurityAssociation.VerificationStatusCode.NoFailure) {
+            if (decryptionStatus != VerificationStatusCode.NoFailure) {
                 throw new TcTmException("Failed to decrypt AOS frame for SPI " + receivedSpi + ": " + decryptionStatus);
             }
 
             // Update the offsets
-            dataOffset += SdlsSecurityAssociation.getHeaderSize();
-            dataEnd -= SdlsSecurityAssociation.getTrailerSize();
+            dataOffset += sa.getHeaderSize();
+            dataEnd -= sa.getTrailerSize();
         }
 
         if (vmp.service == ServiceType.PACKET) {

@@ -14,7 +14,7 @@ import org.yamcs.security.sdls.SdlsSecurityAssociation.VerificationStatusCode;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.StringConverter;
 
-public class SdlsSecurityAssociationTest {
+public class SecurityAssociationAes256Gcm128Test {
     final Path RESOURCE_DIR = Paths.get("src", "test", "resources", "sdls");
     byte[] key, authMask, frame, inputPlaintext, inputPrimaryHeader;
     int dataStart, dataEnd, seqNumWindow;
@@ -27,16 +27,20 @@ public class SdlsSecurityAssociationTest {
         Path keypath = RESOURCE_DIR.resolve("presharedkey");
         this.key = Files.readAllBytes(keypath);
 
+        // Create SA
+        saSend = new SecurityAssociationAes256Gcm128(key, (short) 42, seqNumWindow, true);
+        saRecv = new SecurityAssociationAes256Gcm128(key, (short) 42, seqNumWindow, true);
+
         // We have an example frame of length:
         int frameLength = 42;
         frame = new byte[frameLength];
         // Header size is 6 for primary header + security header size
         // So data start is after the headers
-        dataStart = 6 + SdlsSecurityAssociation.getHeaderSize();
+        dataStart = 6 + saSend.getHeaderSize();
         // And data end is before security trailer
-        dataEnd = frameLength - SdlsSecurityAssociation.getTrailerSize();
+        dataEnd = frameLength - saSend.getTrailerSize();
 
-        authMask = StandardAuthMask.TM(0);
+        authMask = StandardAuthMask.TM(0, saSend.securityHdrAuthMask());
 
         // Create the primary header: all 1s except the field to be authenticated
         inputPrimaryHeader = new byte[6];
@@ -46,16 +50,13 @@ public class SdlsSecurityAssociationTest {
 
         // Create some plaintext
         inputPlaintext = new byte[dataEnd - dataStart];
-        assertEquals(frameLength - 6 - SdlsSecurityAssociation.getOverheadBytes(), inputPlaintext.length);
+        assertEquals(frameLength - 6 - saSend.getOverheadBytes(), inputPlaintext.length);
         Arrays.fill(inputPlaintext, (byte) 69);
         // new Random().nextBytes(inputPlaintext);
         System.arraycopy(inputPlaintext, 0, frame, dataStart, inputPlaintext.length);
 
         seqNumWindow = 5;
 
-        // Create SA
-        saSend = new SdlsSecurityAssociation(key, (short) 42, seqNumWindow, true);
-        saRecv = new SdlsSecurityAssociation(key, (short) 42, seqNumWindow, true);
         // saSend starts from 0, saRecv is supposed to have the last number
         saRecv.setSeqNum(StringConverter.hexStringToArray("FFFFFFFFFFFFFFFFFFFFFFFF"));
     }
@@ -68,7 +69,7 @@ public class SdlsSecurityAssociationTest {
         // Try to decrypt with a wrong key, and fail
         Path wrongKeypath = RESOURCE_DIR.resolve("wrong-presharedkey");
         byte[] wrongKey = Files.readAllBytes(wrongKeypath);
-        SdlsSecurityAssociation wrongSa = new SdlsSecurityAssociation(wrongKey, (short) 42,
+        SdlsSecurityAssociation wrongSa = new SecurityAssociationAes256Gcm128(wrongKey, (short) 42,
                 seqNumWindow, true);
         assertEquals(VerificationStatusCode.MacVerificationFailure, wrongSa.processSecurity(frame, 0, secHeaderStart,
                 frame.length, authMask));
@@ -82,7 +83,7 @@ public class SdlsSecurityAssociationTest {
         // Try to decrypt with a wrong SPI
         Path wrongKeypath = RESOURCE_DIR.resolve("presharedkey");
         byte[] wrongKey = Files.readAllBytes(wrongKeypath);
-        SdlsSecurityAssociation wrongSa = new SdlsSecurityAssociation(wrongKey, (short) 1,
+        SdlsSecurityAssociation wrongSa = new SecurityAssociationAes256Gcm128(wrongKey, (short) 1,
                 seqNumWindow, true);
         assertEquals(VerificationStatusCode.InvalidSPI, wrongSa.processSecurity(frame, 0, secHeaderStart, frame.length,
                 authMask));
@@ -188,13 +189,13 @@ public class SdlsSecurityAssociationTest {
 
         int firstSpi = ByteArrayUtils.decodeUnsignedShort(frame, secHeaderStart);
         byte[] firstIv = Arrays.copyOfRange(frame, secHeaderStart + 2,
-                secHeaderStart + 2 + SdlsSecurityAssociation.GCM_IV_LEN_BYTES);
+                secHeaderStart + saRecv.getHeaderSize());
 
         // Encrypt again, get IV (we can use the already encrypted data, the actual content doesn't matter in this test)
         assertDoesNotThrow(() -> saSend.applySecurity(frame, 0, secHeaderStart, frame.length, authMask));
         int secondSpi = ByteArrayUtils.decodeUnsignedShort(frame, secHeaderStart);
         byte[] secondIv = Arrays.copyOfRange(frame, secHeaderStart + 2,
-                secHeaderStart + 2 + SdlsSecurityAssociation.GCM_IV_LEN_BYTES);
+                secHeaderStart + saRecv.getHeaderSize());
 
         // Check that the SPI is the same, but the IV changes
         assertEquals(firstSpi, secondSpi);

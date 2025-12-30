@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.security.sdls.SdlsSecurityAssociation;
 import org.yamcs.security.sdls.StandardAuthMask;
+import org.yamcs.security.sdls.SdlsSecurityAssociation.VerificationStatusCode;
 import org.yamcs.tctm.TcTmException;
 import org.yamcs.tctm.ccsds.DownlinkManagedParameters.FrameErrorDetection;
 import org.yamcs.tctm.ccsds.DownlinkManagedParameters.SdlsInfo;
@@ -20,14 +21,12 @@ public class TmFrameDecoder implements TransferFrameDecoder {
     TmManagedParameters tmParams;
     CrcCciitCalculator crc;
     static Logger log = LoggerFactory.getLogger(TmFrameDecoder.class.getName());
-    final byte[] sdlsAuthMask;
 
     public TmFrameDecoder(TmManagedParameters tmParams) {
         this.tmParams = tmParams;
         if (tmParams.errorDetection == FrameErrorDetection.CRC16) {
             crc = new CrcCciitCalculator();
         }
-        sdlsAuthMask = StandardAuthMask.TM(tmParams.fshLength);
     }
 
     @Override
@@ -104,22 +103,23 @@ public class TmFrameDecoder implements TransferFrameDecoder {
 
             int decryptionTrailerEnd = dataEnd;
 
+            SdlsSecurityAssociation sa = sdlsInfo.sa();
             // Use the custom auth mask if we have one, otherwise use the default
             byte[] authMask = sdlsInfo.customAuthMask();
             if (authMask == null)
-                authMask = this.sdlsAuthMask;
+                authMask = StandardAuthMask.TM(tmParams.fshLength, sa.securityHdrAuthMask());
 
             // try to decrypt the frame
-            SdlsSecurityAssociation.VerificationStatusCode decryptionStatus = sdlsInfo.sa().processSecurity(data, offset,
+            VerificationStatusCode decryptionStatus = sa.processSecurity(data, offset,
                     secHeaderStart, decryptionTrailerEnd, authMask);
 
-            if (decryptionStatus != SdlsSecurityAssociation.VerificationStatusCode.NoFailure) {
+            if (decryptionStatus != VerificationStatusCode.NoFailure) {
                 throw new TcTmException("Failed to decrypt TM frame for SPI " + receivedSpi + ": " + decryptionStatus);
             }
 
             // Update the offsets
-            dataOffset += SdlsSecurityAssociation.getHeaderSize();
-            dataEnd -= SdlsSecurityAssociation.getTrailerSize();
+            dataOffset += sa.getHeaderSize();
+            dataEnd -= sa.getTrailerSize();
         }
 
         if (vmp.service == ServiceType.PACKET) {

@@ -1,13 +1,13 @@
 package org.yamcs.simulator;
 
 import java.nio.ByteBuffer;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.security.sdls.SdlsSecurityAssociation;
 import org.yamcs.security.sdls.StandardAuthMask;
 import org.yamcs.simulator.cfdp.CfdpCcsdsPacket;
 import org.yamcs.tctm.CcsdsPacket;
+import org.yamcs.security.sdls.SdlsSecurityAssociation.VerificationStatusCode;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.StringConverter;
@@ -38,18 +38,16 @@ public class TcVcFrameLink {
     // Optionally, a security association to encrypt/decrypt data on the link
     SdlsSecurityAssociation maybeSdls = null;
 
-    public TcVcFrameLink(ColSimulator simulator, int vcId, byte[] maybeSdlsKey, short encryptionSpi,
-            int encryptionSeqNumWindow, boolean verifySeqNum) {
+    public TcVcFrameLink(ColSimulator simulator, int vcId, SdlsSecurityAssociation maybeSdls) {
         this.simulator = simulator;
         this.vcId = vcId;
 
         // If we have an encryption key, configure encryption
-        if (maybeSdlsKey != null) {
+        if (maybeSdls != null) {
             // Create an auth mask for the TC primary header,
             // the frame data is already part of authentication.
-            authMask = StandardAuthMask.TC(false);
-            this.maybeSdls = new SdlsSecurityAssociation(maybeSdlsKey, encryptionSpi,
-                    encryptionSeqNumWindow, verifySeqNum);
+            this.maybeSdls = maybeSdls;
+            authMask = StandardAuthMask.TC(false, maybeSdls.securityHdrAuthMask());
             // Don't verify the first TC sequence number, because Yamcs has sequence number persistence and the
             // simulator does not.
             maybeSdls.skipVerifyingNextSeqNum();
@@ -99,16 +97,16 @@ public class TcVcFrameLink {
             // And followed by a security trailer
             int secTrailerEnd = frameLength - 2; // last 2 bytes of frame are CRC
             // Try to verify and decrypt it, handle any errors
-            SdlsSecurityAssociation.VerificationStatusCode decryptionStatus = maybeSdls.processSecurity(data,
+            VerificationStatusCode decryptionStatus = maybeSdls.processSecurity(data,
                     offset - 5, offset, secTrailerEnd, authMask);
-            if (decryptionStatus != SdlsSecurityAssociation.VerificationStatusCode.NoFailure) {
+            if (decryptionStatus != VerificationStatusCode.NoFailure) {
                 log.warn("Could not decrypt frame: {}", decryptionStatus);
                 return;
             }
 
             // Adjustments to account for security header/trailer
-            cmdLength -= SdlsSecurityAssociation.getOverheadBytes();
-            offset += SdlsSecurityAssociation.getHeaderSize();
+            cmdLength -= maybeSdls.getOverheadBytes();
+            offset += maybeSdls.getHeaderSize();
         }
 
         if (controlCommand) {// BC frame

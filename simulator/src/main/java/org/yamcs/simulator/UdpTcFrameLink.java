@@ -6,6 +6,7 @@ import java.net.DatagramSocket;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.security.sdls.SdlsSecurityAssociation;
 import org.yamcs.tctm.ccsds.error.BchCltuGenerator.BchEncoder;
 import org.yamcs.tctm.ccsds.error.CltuGenerator.Encoding;
 import org.yamcs.tctm.ccsds.error.Ldpc64CltuGenerator.Ldpc64Encoder;
@@ -34,13 +35,11 @@ public class UdpTcFrameLink extends AbstractExecutionThreadService {
     TcVcFrameLink[] vcHandlers;
     int[] clcw;
 
-    public UdpTcFrameLink(ColSimulator simulator, int port, byte[] maybeSdlsKey, short encryptionSpi,
-            int encryptionSeqNumWindow, boolean verifySeqNum) {
+    public UdpTcFrameLink(ColSimulator simulator, int port, SdlsSecurityAssociation maybeSdls) {
         this.simulator = simulator;
         this.port = port;
         datagram = new DatagramPacket(new byte[2048], 2048);
-        vcHandlers = new TcVcFrameLink[] { new TcVcFrameLink(simulator, 0, maybeSdlsKey, encryptionSpi,
-                encryptionSeqNumWindow, verifySeqNum) };
+        vcHandlers = new TcVcFrameLink[] { new TcVcFrameLink(simulator, 0, maybeSdls) };
         clcw = new int[] { vcHandlers[0].getCLCW() };
     }
 

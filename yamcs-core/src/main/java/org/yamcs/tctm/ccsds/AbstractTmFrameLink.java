@@ -31,7 +31,7 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
 
     @Override
     public Spec getDefaultSpec() {
-        var spec = super.getDefaultSpec();
+        Spec spec = super.getDefaultSpec();
         addDefaultOptions(spec);
         return spec;
     }
@@ -40,11 +40,9 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
         spec.addOption("frameType", OptionType.STRING).withChoices(CcsdsFrameType.class);
 
         Spec frameEncryptionSpec = new Spec();
-        frameEncryptionSpec.addOption("keyFile", OptionType.STRING).withRequired(true);
+        frameEncryptionSpec.addOption("class", OptionType.STRING).withRequired(true);
+        frameEncryptionSpec.addOption("args", OptionType.ANY);
         frameEncryptionSpec.addOption("spi", OptionType.INTEGER).withRequired(true);
-        frameEncryptionSpec.addOption("seqNumWindow", OptionType.INTEGER).withRequired(false);
-        frameEncryptionSpec.addOption("verifySeqNum", OptionType.BOOLEAN).withDefault(false);
-        frameEncryptionSpec.addOption("initialSeqNum", OptionType.STRING);
         frameEncryptionSpec.addOption("authMask", OptionType.STRING);
 
         spec.addOption("encryption", OptionType.LIST).withElementType(OptionType.MAP).withSpec(frameEncryptionSpec);

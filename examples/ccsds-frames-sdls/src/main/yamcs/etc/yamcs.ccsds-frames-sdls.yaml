@@ -52,10 +52,9 @@ services:
           # SPI - Security Parameter Index - 'identifier' for security
           # configuration, shared between sender and receiver.
           spi: 1
-          # 256-bit key to encrypt/decrypt data
-          keyFile: etc/sdls-presharedkey-256bit
-          seqNumWindow: 10
-          # verifySeqNum: true  # default
+          class: org.yamcs.security.sdls.SecurityAssociationAes256Gcm128Factory
+          args:
+            keyFile: etc/sdls-presharedkey-256bit
 
 dataLinks:
   - name: UDP_FRAME_OUT
@@ -77,12 +76,18 @@ dataLinks:
     # This basically defines the security associations on the link.
     encryption:
       - spi: 1
-        keyFile: etc/sdls-presharedkey-256bit
+        class: org.yamcs.security.sdls.SecurityAssociationAes256Gcm128Factory
+        args:
+          keyFile: etc/sdls-presharedkey-256bit
       - spi: 2
-        keyFile: etc/sdls-presharedkey-256bit
+        class: org.yamcs.security.sdls.SecurityAssociationAes256Gcm128Factory
+        args:
+          keyFile: etc/sdls-presharedkey-256bit
       - spi: 3
-        keyFile: etc/sdls-presharedkey-256bit
-        # verifySeqNum: true
+        class: org.yamcs.security.sdls.SecurityAssociationAes256Gcm128Factory
+        args:
+          keyFile: etc/sdls-presharedkey-256bit
+          verifySeqNum: true
     virtualChannels:
       - vcId: 0
         # This channel is encrypted with SDLS, using SPI 1 (defined above).
@@ -118,18 +123,17 @@ dataLinks:
     # A virtual channel is then configured to use a particular SPI.
     encryption:
       - spi: 1
-        keyFile: etc/sdls-presharedkey-256bit
-        # the window of acceptable sequence numbers (i.e. current minus this value, current plus this value)
-        seqNumWindow: 10
-        # verifySeqNum: false  # default
+        class: org.yamcs.security.sdls.SecurityAssociationAes256Gcm128Factory
+        args:
+          keyFile: etc/sdls-presharedkey-256bit
       - spi: 2
-        keyFile: etc/sdls-presharedkey-256bit
-        seqNumWindow: 10
-        # verifySeqNum: false  # default
+        class: org.yamcs.security.sdls.SecurityAssociationAes256Gcm128Factory
+        args:
+          keyFile: etc/sdls-presharedkey-256bit
       - spi: 3
-        keyFile: etc/sdls-presharedkey-256bit
-        seqNumWindow: 10
-        # verifySeqNum: false  # default
+        class: org.yamcs.security.sdls.SecurityAssociationAes256Gcm128Factory
+        args:
+          keyFile: etc/sdls-presharedkey-256bit
     spacecraftId: 0xAB
     frameLength: 1115 #decoded frame length
     frameHeaderErrorControlPresent: true #2 bytes of reed-solomon (10,6) in the header of all frames
