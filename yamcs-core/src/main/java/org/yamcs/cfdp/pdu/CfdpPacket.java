@@ -18,8 +18,8 @@ import org.yamcs.yarch.TupleDefinition;
 public abstract class CfdpPacket {
     protected final CfdpHeader header;
 
-    private static Logger log = LoggerFactory.getLogger("Packet");
-    private static CrcCciitCalculator crcCalculator = new CrcCciitCalculator();
+    private static final Logger log = LoggerFactory.getLogger("Packet");
+    private static final CrcCciitCalculator crcCalculator = new CrcCciitCalculator();
     public static final TupleDefinition CFDP = new TupleDefinition();
     // outgoing CFDP packets
     static {
@@ -27,10 +27,6 @@ public abstract class CfdpPacket {
         CFDP.addColumn("entityId", DataType.LONG);
         CFDP.addColumn(StandardTupleDefinitions.SEQNUM_COLUMN, DataType.INT);
         CFDP.addColumn("pdu", DataType.BINARY);
-    }
-
-    protected CfdpPacket() {
-        this.header = null;
     }
 
     protected CfdpPacket(CfdpHeader header) {
@@ -119,7 +115,7 @@ public abstract class CfdpPacket {
                     toReturn = new KeepAlivePacket(bb, header);
                     break;
                 default:
-                    log.warn("Ignoring unknown/not supported " + fdc + " file directive PDU ");
+                    log.warn("Ignoring unknown/not supported {} file directive PDU ", fdc);
                 }
             } catch (BufferUnderflowException e) {
                 throw new PduDecodingException("Short " + fdc + " PDU; size: " + pduSize,
@@ -146,24 +142,31 @@ public abstract class CfdpPacket {
     }
 
     public byte[] toByteArray() {
+        int headerLength = header.getLength();
         int dataLength = getDataFieldLength();
         int fcsLength = header.withCrc() ? 2 : 0;
-        ByteBuffer buffer = ByteBuffer.allocate(header.getLength() + dataLength + fcsLength);
-        header.writeToBuffer(buffer, dataLength + fcsLength);
-        writeCFDPPacket(buffer);
-        if (fcsLength > 0)
-            buffer.putShort((short)crcCalculator.compute(buffer, 0, dataLength));
+
+        ByteBuffer buffer = ByteBuffer.allocate(headerLength + dataLength + fcsLength);
+        writeToBuffer(buffer, headerLength, dataLength, fcsLength);
+
         return buffer.array();
     }
 
     public void writeToBuffer(ByteBuffer buffer) {
-        int offset = buffer.position();
+        int headerLength = header.getLength();
         int dataLength = getDataFieldLength();
         int fcsLength = header.withCrc() ? 2 : 0;
+
+        writeToBuffer(buffer, headerLength, dataLength, fcsLength);
+    }
+
+    private void writeToBuffer(ByteBuffer buffer, int headerLength, int dataLength, int fcsLength) {
+        int offset = buffer.position();
+
         header.writeToBuffer(buffer, dataLength + fcsLength);
         writeCFDPPacket(buffer);
         if (fcsLength > 0)
-            buffer.putShort((short)crcCalculator.compute(buffer, offset, dataLength));
+            buffer.putShort((short) crcCalculator.compute(buffer, offset, headerLength + dataLength));
     }
 
     public Tuple toTuple(OngoingCfdpTransfer trans) {
@@ -215,11 +218,11 @@ public abstract class CfdpPacket {
         }
 
         public static TransmissionMode fromValue(int value) {
-            switch (value) {
-                case 0: return ACKNOWLEDGED;
-                case 1: return UNACKNOWLEDGED;
-                default: throw new IllegalArgumentException("Value can only be 0 or 1");
-            }
+            return switch (value) {
+                case 0 -> ACKNOWLEDGED;
+                case 1 -> UNACKNOWLEDGED;
+                default -> throw new IllegalArgumentException("Value can only be 0 or 1");
+            };
         }
     }
 }
