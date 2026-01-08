@@ -1,5 +1,6 @@
 package org.yamcs.http.api;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -12,6 +13,10 @@ import org.yamcs.http.Context;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.management.LinkManager;
 import org.yamcs.protobuf.AbstractSdlsApi;
+import org.yamcs.protobuf.GetLinkSpisRequest;
+import org.yamcs.protobuf.GetLinkSpisResponse;
+import org.yamcs.protobuf.GetSaRequest;
+import org.yamcs.protobuf.GetSaResponse;
 import org.yamcs.protobuf.GetSeqCtrRequest;
 import org.yamcs.protobuf.GetSeqCtrResponse;
 import org.yamcs.protobuf.SetKeyRequest;
@@ -72,6 +77,49 @@ public class SdlsApi extends AbstractSdlsApi<Context> {
     }
 
     @Override
+    public void getLinkSpis(Context ctx, GetLinkSpisRequest request, Observer<GetLinkSpisResponse> observer) {
+        String instance = request.getInstance();
+        String linkName = request.getLinkName();
+        Link link = verifyLink(ctx, instance, linkName);
+        GetLinkSpisResponse.Builder gsrb = GetLinkSpisResponse.newBuilder();
+        if (link instanceof UdpTmFrameLink l) {
+            Collection<Short> spis = l.getSpis();
+            for (Short spi : spis) {
+                gsrb.addSpis(spi.intValue());
+            }
+        } else if (link instanceof UdpTcFrameLink l) {
+            Collection<Short> spis = l.getSpis();
+            for (Short spi : spis) {
+                gsrb.addSpis(spi.intValue());
+            }
+        } else {
+            throw new BadRequestException(String.format("Link %s is not a UDP TM or TC frame link",
+                    link.getName()));
+        }
+        observer.complete(gsrb.build());
+    }
+
+    @Override
+    public void getSa(Context ctx, GetSaRequest request, Observer<GetSaResponse> observer) {
+        String instance = request.getInstance();
+        String linkName = request.getLinkName();
+        short spi = (short) request.getSpi();
+        Link link = verifyLink(ctx, instance, linkName);
+        SdlsSecurityAssociation sdls = getSa(link, spi);
+
+        byte[] seqNumBigEndian = sdls.getSeqNum();
+        ByteString bs = ByteString.copyFrom(seqNumBigEndian);
+        GetSaResponse.Builder gsrb = GetSaResponse.newBuilder();
+        gsrb.setSeq(bs);
+        gsrb.setAlgorithm(sdls.getAlgorithm());
+        gsrb.setSdlsHeaderSize(sdls.getHeaderSize());
+        gsrb.setSdlsTrailerSize(sdls.getTrailerSize());
+        gsrb.setSdlsOverhead(sdls.getOverheadBytes());
+        gsrb.setKeyLen(sdls.getKeyLenBits());
+        observer.complete(gsrb.build());
+    }
+
+    @Override
     public void getSeqCtr(Context ctx, GetSeqCtrRequest request, Observer<GetSeqCtrResponse> observer) {
         String instance = request.getInstance();
         String linkName = request.getLinkName();
@@ -108,9 +156,12 @@ public class SdlsApi extends AbstractSdlsApi<Context> {
         SdlsSecurityAssociation sdls = getSa(link, spi);
 
         byte[] newKey = request.getData().getData().toByteArray();
-        if (newKey.length != 32) {
-            throw new BadRequestException(String.format("AES-256-GCM expects a 256-bit key, %s bits provided",
-                    newKey.length * 8));
+        int keyLenBits = newKey.length * 8;
+        int expectedKeyLenBits = sdls.getKeyLenBits();
+        if (keyLenBits != expectedKeyLenBits) {
+            throw new BadRequestException(String.format("AES-256-GCM expects a %s-bit key, %s bits provided",
+                    expectedKeyLenBits,
+                    keyLenBits));
         }
         sdls.setSecretKey(newKey);
         observer.complete(Empty.getDefaultInstance());

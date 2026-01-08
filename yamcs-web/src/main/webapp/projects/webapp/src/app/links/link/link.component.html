@@ -105,6 +105,25 @@
           <br />
         }
       }
+      @if (sdlsLinkConfig$ | async; as config) {
+        <div class="section-divider">
+          <mat-divider />
+        </div>
+        <h4>SDLS Security Associations</h4>
+        <ul>
+          @for (spi of config.spis; track $index) {
+            <li>
+              <a
+                [routerLink]="'/links/' + link.name + '/sdls/' + spi"
+                [queryParams]="{ c: yamcs.context }"
+                class="ya-link"
+                style="margin-left: 0.5em">
+                SPI: {{ spi }}
+              </a>
+            </li>
+          }
+        </ul>
+      }
       @if (cop1Config$ | async; as config) {
         @if (cop1Status$ | async; as status) {
           <div class="section-divider">

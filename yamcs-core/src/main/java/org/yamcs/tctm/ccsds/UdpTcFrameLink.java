@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 import org.yamcs.ConfigurationException;
@@ -170,5 +171,9 @@ public class UdpTcFrameLink extends AbstractTcFrameLink implements Runnable {
     public void setSpi(int vcId, short spi) {
         this.multiplexer.tcManagedParameters.getVcParams(vcId)
                 .encryptionSpi = spi;
+    }
+
+    public Collection<Short> getSpis() {
+        return this.multiplexer.tcManagedParameters.sdlsSecurityAssociations.keySet();
     }
 }

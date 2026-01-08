@@ -178,6 +178,16 @@ public class SecurityAssociationAes256Gcm128 implements SdlsSecurityAssociation 
     }
 
     @Override
+    public int getKeyLenBits() {
+        return 256;
+    }
+
+    @Override
+    public String getAlgorithm() {
+        return "AES-256-GCM-128";
+    }
+
+    @Override
     public byte[] securityHdrAuthMask() {
         byte[] authMask = new byte[2 + GCM_IV_LEN_BYTES];
         // Only authenticate SPI

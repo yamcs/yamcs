@@ -5,6 +5,7 @@ import { InstancePageComponent } from '../shared/instance-page/instance-page.com
 import { ActionLogTabComponent } from './action-log-tab/action-log-tab.component';
 import { LinkListComponent } from './link-list/link-list.component';
 import { LinkComponent } from './link/link.component';
+import { SdlsSaComponent } from './sdls-sa/sdls-sa.component';
 
 export const ROUTES: Routes = [
   {
@@ -26,6 +27,10 @@ export const ROUTES: Routes = [
       {
         path: ':link',
         component: LinkComponent,
+      },
+      {
+        path: ':link/sdls/:spi',
+        component: SdlsSaComponent,
       },
     ],
   },

@@ -9,6 +9,7 @@ import {
   Cop1Status,
   Cop1Subscription,
   InitiateCop1Request,
+  SdlsLinkConfig,
   Link,
   LinkSubscription,
   MessageService,
@@ -29,6 +30,7 @@ export class LinkComponent implements OnDestroy {
   link$ = new BehaviorSubject<Link | null>(null);
   cop1Config$ = new BehaviorSubject<Cop1Config | null>(null);
   cop1Status$ = new BehaviorSubject<Cop1Status | null>(null);
+  sdlsLinkConfig$ = new BehaviorSubject<SdlsLinkConfig | null>(null);
 
   private linkSubscription: LinkSubscription;
   private cop1Subscription: Cop1Subscription;
@@ -67,10 +69,18 @@ export class LinkComponent implements OnDestroy {
 
     this.cop1Status$.next(null);
     this.cop1Config$.next(null);
+    this.sdlsLinkConfig$.next(null);
 
     this.yamcs.yamcsClient.getLink(this.yamcs.instance!, name).then((link) => {
       this.link$.next(link);
       this.title.setTitle(name);
+      this.yamcs.yamcsClient
+        .getSdlsSpis(this.yamcs.instance!, name)
+        .then((sdlsLinkConfig) => {
+          sdlsLinkConfig.spis.sort();
+          this.sdlsLinkConfig$.next(sdlsLinkConfig);
+        });
+
       if (link.type.indexOf('Cop1Tc') !== -1) {
         this.yamcs.yamcsClient
           .getCop1Config(this.yamcs.instance!, name)

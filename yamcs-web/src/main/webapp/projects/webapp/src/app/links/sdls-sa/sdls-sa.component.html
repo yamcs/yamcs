@@ -1,0 +1,62 @@
+@if (data$ | async; as data) {
+  <ya-instance-page>
+    <ya-instance-toolbar>
+      <ng-template ya-instance-toolbar-label>
+        <ya-page-icon-button
+          [routerLink]="'/links/' + data.link.name"
+          [queryParams]="{ c: yamcs.context }"
+          icon="arrow_back" />
+        {{ data.link.name }} / SDLS Security Association {{ data.spi }}
+      </ng-template>
+    </ya-instance-toolbar>
+
+    <div class="form-content">
+      <dl class="dl-horizontal" style="margin-top: 0">
+        <dt>SPI</dt>
+        <dd>{{ data.spi }}</dd>
+        <dt>Sequence number</dt>
+        <dd>{{ data.sdlsInfo.seq }}</dd>
+        <dt>Algorithm</dt>
+        <dd>{{ data.sdlsInfo.algorithm }}</dd>
+        <dt>Key length (bits)</dt>
+        <dd>{{ data.sdlsInfo.keyLengthBits }}</dd>
+        <dt>SDLS header length</dt>
+        <dd>{{ data.sdlsInfo.sdlsHeaderSize }}</dd>
+        <dt>SDLS trailer length</dt>
+        <dd>{{ data.sdlsInfo.sdlsTrailerSize }}</dd>
+        <dt>SDLS Overhead</dt>
+        <dd>{{ data.sdlsInfo.sdlsOverhead }}</dd>
+      </dl>
+    </div>
+
+    <div class="form-content">
+      <form
+        [formGroup]="seqNumForm"
+        class="ya-form"
+        (ngSubmit)="resetSeqNum(data.link.name, data.spi)">
+        <ya-field label="New sequence number">
+          <ya-help dialogTitle="Sequence number">
+            <p>The new sequence number to use.</p>
+          </ya-help>
+          <input type="number" formControlName="seqNum" />
+        </ya-field>
+        <ya-button type="submit" icon="edit">Set Sequence Number</ya-button>
+      </form>
+    </div>
+
+    <div class="form-content">
+      <form
+        [formGroup]="secretKeyForm"
+        class="ya-form"
+        (ngSubmit)="updateSecretKey(data.link.name, data.spi)">
+        <ya-field label="New secret key">
+          <ya-help dialogTitle="Update secret key">
+            <p>The new secret key to use in this Security Association.</p>
+          </ya-help>
+          <input type="file" #uploader formControlName="secretKey" />
+        </ya-field>
+        <ya-button type="submit" icon="encrypted_add_circle">Update Secret Key</ya-button>
+      </form>
+    </div>
+  </ya-instance-page>
+}

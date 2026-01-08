@@ -12,6 +12,20 @@ import "yamcs/api/annotations.proto";
 import "yamcs/api/httpbody.proto";
 
 service SdlsApi {
+  // Get the list of SPIs defined on a link
+  rpc GetLinkSpis(GetLinkSpisRequest) returns (GetLinkSpisResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/sdls/{instance}/{linkName}"
+    };
+  }
+
+  // Get Security Association info for a given SPI on a link
+  rpc GetSa(GetSaRequest) returns (GetSaResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/sdls/{instance}/{linkName}/{spi}"
+    };
+  }
+
   // Get the sequence number
   rpc GetSeqCtr(GetSeqCtrRequest) returns (GetSeqCtrResponse) {
     option (yamcs.api.route) = {
@@ -99,6 +113,18 @@ message GetSeqCtrResponse {
   required bytes seq = 1;
 }
 
+message GetLinkSpisRequest {
+  // The Yamcs instance
+  required string instance = 1;
+  // The name of the encrypted link
+  required string linkName = 2;
+}
+
+message GetLinkSpisResponse {
+  // The list of SPIs
+  repeated uint32 spis = 1;
+}
+
 message SetSeqCtrRequest {
   // The Yamcs instance
   required string instance = 1;
@@ -124,4 +150,27 @@ message SetKeyRequest {
   required uint32 spi = 3;
   // The 256-bit key
   required yamcs.api.HttpBody data = 4;
+}
+
+message GetSaRequest {
+  // The Yamcs instance
+  required string instance = 1;
+  // The name of the encrypted link
+  required string linkName = 2;
+  // The Security Parameter Index
+  required uint32 spi = 3;
+}
+message GetSaResponse {
+  // The current sequence number in big-endian order
+  required bytes seq = 1;
+  // The name of the algorithm used in the Security Association
+  required string algorithm = 2;
+  // The length of the secret key in bits
+  required uint32 keyLen = 3;
+  // The size of the security header
+  required uint32 sdlsHeaderSize = 4;
+  // The size of the security trailer
+  required uint32 sdlsTrailerSize = 5;
+  // The total SDLS overhead for the SA
+  required uint32 sdlsOverhead = 6;
 }
