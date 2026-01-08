@@ -69,7 +69,7 @@ public class SimulatorArgs {
     public Path dataDir = Path.of("data");
 
     @Parameter(names = "--encryption-class", description = "The SDLS implementation to use")
-    public String encryptionClass = "org.yamcs.security.sdls.SecurityAssocationAes256Gcm128Provider";
+    public String encryptionClass;
 
     @Parameter(names = "--encryption-spi", description = "SPI to use for SDLS encryption of frames")
     public int encryptionSpi;
