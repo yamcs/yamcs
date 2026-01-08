@@ -419,6 +419,26 @@ message ParameterTypeInfo {
 
   // Initial value
   optional string initialValue = 24;
+
+  // Valid range for the raw value (used by integer and float types)
+  optional ValidRangeInfo rawValidRange = 25;
+
+  // Valid range for the engineering value (used by integer and float types)
+  optional ValidRangeInfo engValidRange = 26;
+}
+
+message ValidRangeInfo {
+  // Minimum value
+  optional double minimum = 1;
+
+  // Maximum value
+  optional double maximum = 2;
+
+  // Whether the minimum value itself is valid
+  optional bool minimumInclusive = 3;
+
+  // Whether the maximum value itself is valid
+  optional bool maximumInclusive = 4;
 }
 
 message NumberFormatTypeInfo {

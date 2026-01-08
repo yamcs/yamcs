@@ -422,11 +422,40 @@
     <p>&nbsp;</p>
   }
 
+  @if (entry.type?.rawValidRange || entry.type?.engValidRange) {
+    <div class="section-divider">
+      <mat-divider />
+    </div>
+    <h4>Valid ranges</h4>
+    <dl class="dl-horizontal">
+      @if (entry.type?.rawValidRange; as validRange) {
+        <dt>Raw value</dt>
+        <dd>
+          <ya-interval
+            [left]="validRange.minimum"
+            [right]="validRange.maximum"
+            [leftInclusive]="validRange.minimumInclusive"
+            [rightInclusive]="validRange.maximumInclusive" />
+        </dd>
+      }
+      @if (entry.type?.engValidRange; as validRange) {
+        <dt>Engineering value</dt>
+        <dd>
+          <ya-interval
+            [left]="validRange.minimum"
+            [right]="validRange.maximum"
+            [leftInclusive]="validRange.minimumInclusive"
+            [rightInclusive]="validRange.maximumInclusive" />
+        </dd>
+      }
+    </dl>
+  }
+
   @if (entry.type?.engType === "time") {
     <div class="section-divider">
       <mat-divider />
     </div>
-    <h4>Time Info</h4>
+    <h4>Time info</h4>
     <dl class="dl-horizontal">
       @if ((entry.type?.absoluteTimeInfo)!.epoch) {
         <dt>Epoch</dt>
