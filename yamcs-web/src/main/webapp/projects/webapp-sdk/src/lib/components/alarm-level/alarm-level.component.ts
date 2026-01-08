@@ -8,13 +8,13 @@ import {
 import { MatTooltip } from '@angular/material/tooltip';
 
 @Component({
-  selector: 'app-alarm-level',
+  selector: 'ya-alarm-level',
   templateUrl: './alarm-level.component.html',
   styleUrl: './alarm-level.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [MatTooltip, NgClass, NgTemplateOutlet],
 })
-export class AlarmLevelComponent {
+export class YaAlarmLevel {
   @Input()
   level: string;
 

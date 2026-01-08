@@ -5,7 +5,6 @@ import {
   WebappSdkModule,
   YamcsService,
 } from '@yamcs/webapp-sdk';
-import { AlarmLevelComponent } from '../../../shared/alarm-level/alarm-level.component';
 import { ExpressionComponent } from '../../../shared/expression/expression.component';
 import { MarkdownComponent } from '../../../shared/markdown/markdown.component';
 import { ParameterCalibrationComponent } from '../../parameters/parameter-calibration/parameter-calibration.component';
@@ -16,7 +15,6 @@ import { ParameterCalibrationComponent } from '../../parameters/parameter-calibr
   styleUrl: './parameter-type-detail.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    AlarmLevelComponent,
     ExpressionComponent,
     MarkdownComponent,
     ParameterCalibrationComponent,

@@ -14,7 +14,6 @@ import {
   utils,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { AlarmLevelComponent } from '../../../shared/alarm-level/alarm-level.component';
 import { ExpressionComponent } from '../../../shared/expression/expression.component';
 import { MarkdownComponent } from '../../../shared/markdown/markdown.component';
 import { ParameterCalibrationComponent } from '../parameter-calibration/parameter-calibration.component';
@@ -25,7 +24,6 @@ import { ParameterCalibrationComponent } from '../parameter-calibration/paramete
   styleUrl: './parameter-detail.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    AlarmLevelComponent,
     ExpressionComponent,
     MarkdownComponent,
     ParameterCalibrationComponent,

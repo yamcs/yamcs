@@ -6,13 +6,12 @@ import {
   Output,
 } from '@angular/core';
 import { Alarm, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
-import { AlarmLevelComponent } from '../../shared/alarm-level/alarm-level.component';
 
 @Component({
   selector: 'app-alarm-detail',
   templateUrl: './alarm-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AlarmLevelComponent, WebappSdkModule],
+  imports: [WebappSdkModule],
 })
 export class AlarmDetailComponent {
   @Input()

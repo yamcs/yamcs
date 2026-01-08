@@ -4,7 +4,7 @@
       <th mat-header-cell *matHeaderCellDef>Severity</th>
       <td mat-cell *matCellDef="let pval">
         @if (pval.monitoringResult) {
-          <app-alarm-level [level]="pval.monitoringResult" />
+          <ya-alarm-level [level]="pval.monitoringResult" />
         }
         @if (!pval.monitoringResult) {
           <span>-</span>

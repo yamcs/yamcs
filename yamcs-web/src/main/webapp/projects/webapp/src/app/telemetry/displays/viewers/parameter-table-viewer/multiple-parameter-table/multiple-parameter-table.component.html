@@ -39,7 +39,7 @@
       <th mat-header-cell *cdkHeaderCellDef>Severity</th>
       <td mat-cell *cdkCellDef="let row">
         @if (row.pval?.monitoringResult) {
-          <app-alarm-level [level]="row.pval?.monitoringResult" />
+          <ya-alarm-level [level]="row.pval?.monitoringResult" />
         } @else {
           <span>-</span>
         }
@@ -57,15 +57,9 @@
       <th mat-header-cell *cdkHeaderCellDef>Eng</th>
       <td mat-cell *cdkCellDef="let row" class="wrap200">
         @if (row.pval) {
-          <ya-expirable [pval]="row.pval">
+          <ya-parameter-status [pval]="row.pval">
             {{ (row.pval?.engValue | value) || "-" }}
-            @if (row.pval?.rangeCondition === "LOW") {
-              <span>&#8595;</span>
-            }
-            @if (row.pval?.rangeCondition === "HIGH") {
-              <span>&#8593;</span>
-            }
-          </ya-expirable>
+          </ya-parameter-status>
         } @else {
           <span>-</span>
         }

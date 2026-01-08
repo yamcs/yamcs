@@ -24,6 +24,7 @@ import { RouterModule } from '@angular/router';
 import { YaPrintZoneHide } from '../lib/print/print-zone-hide.directive';
 import { YaPrintZoneShow } from '../lib/print/print-zone-show.directive';
 import { YaActionLogSummary } from './components/action-log-summary/action-log-summary.component';
+import { YaAlarmLevel } from './components/alarm-level/alarm-level.component';
 import { YaAttrDivider } from './components/attr-list/attr-divider.component';
 import { YaAttrLabel } from './components/attr-list/attr-label.directive';
 import { YaAttrList } from './components/attr-list/attr-list.component';
@@ -44,7 +45,6 @@ import { YaDownloadMenuItem } from './components/download-menu-item/download-men
 import { YaDurationInput } from './components/duration-input/duration-input.component';
 import { YaEmptyMessage } from './components/empty-message/empty-message.component';
 import { YaErrors } from './components/errors/errors.component';
-import { YaExpirable } from './components/expirable/expirable.component';
 import { YaFieldDivider } from './components/field-divider/field-divider.component';
 import { YaFieldLabel } from './components/field/field-label.directive';
 import { YaField } from './components/field/field.component';
@@ -77,6 +77,7 @@ import { YaPageButton } from './components/page-button/page-button.component';
 import { YaPageIconButton } from './components/page-icon-button/page-icon-button.component';
 import { YaPageTabs } from './components/page-tabs/page-tabs.component';
 import { YaPanel } from './components/panel/panel.component';
+import { YaParameterStatus } from './components/parameter-status/parameter-status.component';
 import { YaProgress } from './components/progress/progress.component';
 import { YaSearchFilter } from './components/search-filter/search-filter.component';
 import { YaSearchFilter2 } from './components/search-filter2/search-filter2.component';
@@ -183,6 +184,7 @@ const directives = [
 
 const sharedComponents = [
   YaActionLogSummary,
+  YaAlarmLevel,
   YaAttr,
   YaAttrDivider,
   YaAttrList,
@@ -202,7 +204,6 @@ const sharedComponents = [
   YaDurationInput,
   YaEmptyMessage,
   YaErrors,
-  YaExpirable,
   YaField,
   YaFieldDivider,
   YaFilterBar,
@@ -233,6 +234,7 @@ const sharedComponents = [
   YaPageIconButton,
   YaPageTabs,
   YaPanel,
+  YaParameterStatus,
   YaProgress,
   YaPrintZone,
   YaSearchFilter,

@@ -19,7 +19,6 @@ import {
   utils,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { AlarmLevelComponent } from '../../../shared/alarm-level/alarm-level.component';
 import { HexComponent } from '../../../shared/hex/hex.component';
 import { ExportParameterDataDialogComponent } from '../export-parameter-data-dialog/export-parameter-data-dialog.component';
 import { ParameterValuesTableComponent } from '../parameter-values-table/parameter-values-table.component';
@@ -31,12 +30,7 @@ const defaultInterval = 'PT1H';
   templateUrl: './parameter-data-tab.component.html',
   styleUrl: './parameter-data-tab.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AlarmLevelComponent,
-    HexComponent,
-    ParameterValuesTableComponent,
-    WebappSdkModule,
-  ],
+  imports: [HexComponent, ParameterValuesTableComponent, WebappSdkModule],
 })
 export class ParameterDataTabComponent implements OnInit, OnDestroy {
   qualifiedName = input.required<string>({ alias: 'parameter' });

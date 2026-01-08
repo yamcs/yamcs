@@ -84,20 +84,14 @@
             item.pval?.monitoringResult && item.pval?.monitoringResult !== 'IN_LIMITS'
           ">
           @if (item.pval) {
-            <ya-expirable [pval]="item.pval">
+            <ya-parameter-status [pval]="item.pval">
               {{ (item.pval?.engValue | value: { maxBytes: dataSource.binaryPreview }) || "-" }}
               @if (item.parameter?.type?.unitSet) {
                 <span>
                   {{ (item.parameter | parameterTypeForPath)?.unitSet | units }}
                 </span>
               }
-              @if (item.pval?.rangeCondition === "LOW") {
-                <span>&#8595;</span>
-              }
-              @if (item.pval?.rangeCondition === "HIGH") {
-                <span>&#8593;</span>
-              }
-            </ya-expirable>
+            </ya-parameter-status>
           }
           @if (!item.pval) {
             <span>-</span>

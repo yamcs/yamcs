@@ -5,7 +5,7 @@
     <ya-attr-list style="padding: 0 16px">
       <ya-attr label="Severity">
         @if (pval.monitoringResult) {
-          <app-alarm-level [level]="pval.monitoringResult" />
+          <ya-alarm-level [level]="pval.monitoringResult" />
         } @else {
           <span>-</span>
         }

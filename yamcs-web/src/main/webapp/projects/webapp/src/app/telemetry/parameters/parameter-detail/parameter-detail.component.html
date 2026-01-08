@@ -173,12 +173,12 @@
               </td>
               <td>{{ (parameter | entryForOffset: memberOffset)?.shortDescription || "-" }}</td>
               <td>
-                <ya-expirable [pval]="pval">
+                <ya-parameter-status [pval]="pval">
                   {{ value.aggregateValue!.value[i] | value }}
                   @if ((parameter | entryForOffset: memberOffset)?.type?.unitSet; as unitSet) {
                     {{ unitSet | units }}
                   }
-                </ya-expirable>
+                </ya-parameter-status>
               </td>
             }
           </tr>
@@ -209,16 +209,19 @@
     }
     @default {
       <span class="pval">
-        <ya-expirable [pval]="pval" style="white-space: nowrap">
+        <ya-parameter-status
+          [pval]="pval"
+          [showLowHigh]="false"
+          gap="10px"
+          style="white-space: nowrap">
           @if (pval?.monitoringResult) {
-            <app-alarm-level [level]="pval?.monitoringResult" />
-            &nbsp;
+            <ya-alarm-level [level]="pval?.monitoringResult" />
           }
           {{ value | value }}
           @if ((parameter | parameterTypeForPath)?.unitSet; as unitSet) {
             {{ unitSet | units }}
           }
-        </ya-expirable>
+        </ya-parameter-status>
       </span>
       <br />
       <div class="meter-size-constrainer">
@@ -269,7 +272,7 @@
           <td>{{ enumValue.description || "-" }}</td>
           <td>
             @if (getDefaultAlarmLevel(entry.type!, enumValue.label); as level) {
-              <app-alarm-level [level]="level" [grayscale]="true" />
+              <ya-alarm-level [level]="level" [grayscale]="true" />
               {{ level }}
             } @else {
               <span>-</span>
@@ -278,7 +281,7 @@
           @for (contextAlarm of entry.type!.contextAlarm; track contextAlarm) {
             <td>
               @if (getEnumerationAlarmLevel(contextAlarm, enumValue.label); as level) {
-                <app-alarm-level [level]="level" [grayscale]="true" />
+                <ya-alarm-level [level]="level" [grayscale]="true" />
                 {{ level }}
               } @else {
                 <span>-</span>
@@ -300,7 +303,7 @@
           <td>{{ enumRange.description || "-" }}</td>
           <td>
             @if (getDefaultAlarmLevel(entry.type!, enumRange.label); as level) {
-              <app-alarm-level [level]="level" [grayscale]="true" />
+              <ya-alarm-level [level]="level" [grayscale]="true" />
               {{ level }}
             } @else {
               <span>-</span>
@@ -309,7 +312,7 @@
           @for (context of entry.type!.contextAlarm; track context) {
             <td>
               @if (getEnumerationAlarmLevel(context, enumRange.label); as level) {
-                <app-alarm-level [level]="level" [grayscale]="true" />
+                <ya-alarm-level [level]="level" [grayscale]="true" />
                 {{ level }}
               } @else {
                 <span>-</span>
@@ -324,14 +327,14 @@
         <td>-</td>
         <td>
           @if (entry.type!.defaultAlarm?.defaultLevel; as level) {
-            <app-alarm-level [level]="level" [grayscale]="true" />
+            <ya-alarm-level [level]="level" [grayscale]="true" />
             {{ level }}
           }
         </td>
         @for (context of entry.type!.contextAlarm; track context) {
           <td>
             @if (context.alarm.defaultLevel; as level) {
-              <app-alarm-level [level]="level" [grayscale]="true" />
+              <ya-alarm-level [level]="level" [grayscale]="true" />
               {{ level }}
             }
           </td>
