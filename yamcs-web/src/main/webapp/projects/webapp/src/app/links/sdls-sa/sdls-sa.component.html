@@ -30,34 +30,32 @@
     </div>
 
     <div class="form-content">
-      <form [formGroup]="seqNumForm" class="ya-form" (ngSubmit)="resetSeqNum(data.link.name, data.spi)">
+      <form
+        [formGroup]="seqNumForm"
+        class="ya-form"
+        (ngSubmit)="resetSeqNum(data.link.name, data.spi)">
         <ya-field label="New sequence number">
           <ya-help dialogTitle="Sequence number">
-            <p>
-              The new sequence number to use.
-            </p>
+            <p>The new sequence number to use.</p>
           </ya-help>
           <input type="number" formControlName="seqNum" />
         </ya-field>
-        <ya-button type="submit" icon="edit">
-          Set Sequence Number
-        </ya-button>
+        <ya-button type="submit" icon="edit">Set Sequence Number</ya-button>
       </form>
     </div>
 
     <div class="form-content">
-      <form [formGroup]="secretKeyForm" class="ya-form" (ngSubmit)="updateSecretKey(data.link.name, data.spi)">
+      <form
+        [formGroup]="secretKeyForm"
+        class="ya-form"
+        (ngSubmit)="updateSecretKey(data.link.name, data.spi)">
         <ya-field label="New secret key">
           <ya-help dialogTitle="Update secret key">
-            <p>
-              The new secret key to use in this Security Association.
-            </p>
+            <p>The new secret key to use in this Security Association.</p>
           </ya-help>
           <input type="file" #uploader formControlName="secretKey" />
         </ya-field>
-        <ya-button type="submit" icon="encrypted_add_circle">
-          Update Secret Key
-        </ya-button>
+        <ya-button type="submit" icon="encrypted_add_circle">Update Secret Key</ya-button>
       </form>
     </div>
   </ya-instance-page>

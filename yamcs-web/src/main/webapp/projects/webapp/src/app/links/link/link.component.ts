@@ -76,7 +76,7 @@ export class LinkComponent implements OnDestroy {
       this.title.setTitle(name);
       this.yamcs.yamcsClient
         .getSdlsSpis(this.yamcs.instance!, name)
-        .then(sdlsLinkConfig => {
+        .then((sdlsLinkConfig) => {
           sdlsLinkConfig.spis.sort();
           this.sdlsLinkConfig$.next(sdlsLinkConfig);
         });
