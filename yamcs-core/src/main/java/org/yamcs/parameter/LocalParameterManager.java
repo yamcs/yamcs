@@ -13,7 +13,7 @@ import org.yamcs.InvalidIdentification;
 import org.yamcs.Processor;
 import org.yamcs.YConfiguration;
 import org.yamcs.mdb.Mdb;
-
+import org.yamcs.mdb.ParameterTypeProcessor;
 import org.yamcs.mdb.ProcessingContext;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.tctm.StreamParameterSender;
@@ -111,9 +111,13 @@ public class LocalParameterManager extends AbstractProcessorService
      */
     @Override
     public void updateParameters(final List<ParameterValue> pvList) {
+        ParameterTypeProcessor ptypeProcessor = processor.getProcessorData().getParameterTypeProcessor();
+
         List<ParameterValue> pvl = new ArrayList<>(pvList.size());
         for (ParameterValue pv : pvList) {
-            pvl.add(SoftwareParameterManager.transformValue(lvc, pv));
+            ParameterValue transformedPv = SoftwareParameterManager.transformValue(lvc, pv);
+            ptypeProcessor.checkValidity(transformedPv);
+            pvl.add(transformedPv);
         }
         // then filter out the subscribed ones and send it to PRM
         executor.submit(() -> {

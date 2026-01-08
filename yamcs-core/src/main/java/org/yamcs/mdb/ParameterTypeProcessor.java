@@ -67,6 +67,16 @@ public class ParameterTypeProcessor {
         doCalibrate(null, pval);
     }
 
+    /**
+     * Checks validity if a ValidRange is defined for the parameter type
+     */
+    public void checkValidity(ParameterValue pval) {
+        if (checkValidityRanges) {
+            ParameterType ptype = pdata.getParameterType(pval.getParameter());
+            doCheckValidity(ptype, pval);
+        }
+    }
+
     private void doCalibrate(ProcessingContext processingCtx, ParameterValue pval) {
         ParameterType ptype = pdata.getParameterType(pval.getParameter());
         Value rawValue = pval.getRawValue();
@@ -79,7 +89,7 @@ public class ParameterTypeProcessor {
             }
             pval.setEngValue(engValue);
             if (checkValidityRanges) {
-                checkValidity(ptype, pval);
+                doCheckValidity(ptype, pval);
             }
         } catch (XtceProcessingException e) {
             log.info("Exception calibrating {}: {}", pval, e);
@@ -513,9 +523,9 @@ public class ParameterTypeProcessor {
         return engValue;
     }
 
-    private void checkValidity(ParameterType ptype, ParameterValue pval) {
-        if (ptype instanceof FloatParameterType) {
-            FloatValidRange fvr = ((FloatParameterType) ptype).getValidRange();
+    private void doCheckValidity(ParameterType ptype, ParameterValue pval) {
+        if (ptype instanceof FloatParameterType floatType) {
+            FloatValidRange fvr = floatType.getValidRange();
             if (fvr != null) {
                 Value v;
                 if (fvr.isValidRangeAppliesToCalibrated()) {
@@ -528,8 +538,8 @@ public class ParameterTypeProcessor {
                     pval.setInvalid();
                 }
             }
-        } else if (ptype instanceof IntegerParameterType) {
-            IntegerValidRange ivr = ((IntegerParameterType) ptype).getValidRange();
+        } else if (ptype instanceof IntegerParameterType intType) {
+            IntegerValidRange ivr = intType.getValidRange();
             if (ivr != null) {
                 Value v;
                 if (ivr.isValidRangeAppliesToCalibrated()) {
