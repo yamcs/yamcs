@@ -9,6 +9,7 @@ export * from './types/alarms';
 export * from './types/commandHistory';
 export * from './types/config';
 export * from './types/cop1';
+export * from './types/sdls';
 export * from './types/events';
 export * from './types/filetransfer';
 export * from './types/management';

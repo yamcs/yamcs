@@ -25,6 +25,16 @@ public interface SdlsSecurityAssociation {
     int getTrailerSize();
 
     /**
+     * @return the expected length of the key in bits
+     */
+    int getKeyLenBits();
+
+    /**
+     * @return the name of the algorithm used in the Security Association
+     */
+    String getAlgorithm();
+
+    /**
      * @param buffer the buffer containing the frame, with zero-initialized empty space prepared for the security
      *               header and trailer
      *               according to `getHeaderSize` and `getTrailerSize`

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -147,6 +148,10 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
         if (sdlsInfo != null)
             return sdlsInfo.sa();
         return null;
+    }
+
+    public Collection<Short> getSpis() {
+        return this.frameHandler.params.sdlsSecurityAssociations.keySet();
     }
 
     public void setSpis(int vcId, short[] spis) {
