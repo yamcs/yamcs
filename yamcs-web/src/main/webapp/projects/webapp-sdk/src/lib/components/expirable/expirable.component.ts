@@ -18,6 +18,10 @@ export class YaExpirable {
     return this.pval && this.pval.acquisitionStatus === 'EXPIRED';
   }
 
+  get invalid() {
+    return this.pval && this.pval.acquisitionStatus === 'INVALID';
+  }
+
   getExpiredTooltip() {
     if (this.pval) {
       let msg = 'EXPIRED VALUE.\n';
@@ -27,5 +31,10 @@ export class YaExpirable {
     } else {
       return 'EXPIRED VALUE';
     }
+  }
+
+  getInvalidTooltip() {
+    // TODO: provide valid range?
+    return 'INVALID VALUE';
   }
 }
