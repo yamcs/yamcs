@@ -58,6 +58,7 @@ import org.yamcs.protobuf.Mdb.SplineCalibratorInfo;
 import org.yamcs.protobuf.Mdb.SplineCalibratorInfo.SplinePointInfo;
 import org.yamcs.protobuf.Mdb.TransmissionConstraintInfo;
 import org.yamcs.protobuf.Mdb.UnitInfo;
+import org.yamcs.protobuf.Mdb.ValidRangeInfo;
 import org.yamcs.protobuf.Mdb.VerifierInfo;
 import org.yamcs.protobuf.Mdb.VerifierInfo.TerminationActionType;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -108,6 +109,7 @@ import org.yamcs.xtce.FixedValueEntry;
 import org.yamcs.xtce.FloatArgumentType;
 import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.FloatParameterType;
+import org.yamcs.xtce.FloatValidRange;
 import org.yamcs.xtce.Header;
 import org.yamcs.xtce.History;
 import org.yamcs.xtce.IndirectParameterRefEntry;
@@ -116,6 +118,7 @@ import org.yamcs.xtce.IntegerArgumentType;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.IntegerRange;
+import org.yamcs.xtce.IntegerValidRange;
 import org.yamcs.xtce.IntegerValue;
 import org.yamcs.xtce.JavaExpressionCalibrator;
 import org.yamcs.xtce.MatchCriteria;
@@ -809,6 +812,14 @@ public class XtceToGpbAssembler {
                 if (ipt.getInitialValue() != null) {
                     infob.setInitialValue("" + ipt.getInitialValue());
                 }
+                if (ipt.getValidRange() != null) {
+                    var validRange = ipt.getValidRange();
+                    if (validRange.isValidRangeAppliesToCalibrated()) {
+                        infob.setEngValidRange(toValidRangeInfo(ipt.getValidRange()));
+                    } else {
+                        infob.setRawValidRange(toValidRangeInfo(ipt.getValidRange()));
+                    }
+                }
             } else if (parameterType instanceof FloatParameterType fpt) {
                 infob.setSizeInBits(fpt.getSizeInBits());
                 if (fpt.getDefaultAlarm() != null) {
@@ -824,6 +835,14 @@ public class XtceToGpbAssembler {
                 }
                 if (fpt.getInitialValue() != null) {
                     infob.setInitialValue("" + fpt.getInitialValue());
+                }
+                if (fpt.getValidRange() != null) {
+                    var validRange = fpt.getValidRange();
+                    if (validRange.isValidRangeAppliesToCalibrated()) {
+                        infob.setEngValidRange(toValidRangeInfo(fpt.getValidRange()));
+                    } else {
+                        infob.setRawValidRange(toValidRangeInfo(fpt.getValidRange()));
+                    }
                 }
             } else if (parameterType instanceof EnumeratedParameterType ept) {
                 if (ept.getDefaultAlarm() != null) {
@@ -881,6 +900,38 @@ public class XtceToGpbAssembler {
                 }
             }
         }
+        return infob.build();
+    }
+
+    private static ValidRangeInfo toValidRangeInfo(IntegerValidRange validRange) {
+        var infob = ValidRangeInfo.newBuilder();
+
+        if (validRange.getMinInclusive() != Long.MIN_VALUE) {
+            infob.setMinimum(validRange.getMinInclusive());
+            infob.setMinimumInclusive(true);
+        }
+        if (validRange.getMaxInclusive() != Long.MAX_VALUE) {
+            infob.setMaximum(validRange.getMaxInclusive());
+            infob.setMaximumInclusive(true);
+        }
+
+        return infob.build();
+    }
+
+    private static ValidRangeInfo toValidRangeInfo(FloatValidRange validRange) {
+        var infob = ValidRangeInfo.newBuilder();
+
+        if (!Double.isNaN(validRange.getMin())
+                && validRange.getMin() != Double.MIN_VALUE
+                && validRange.getMin() != Double.NEGATIVE_INFINITY) {
+            infob.setMinimum(validRange.getMin());
+            infob.setMinimumInclusive(validRange.isMinInclusive());
+        }
+        if (validRange.getMax() != Long.MAX_VALUE) {
+            infob.setMaximum(validRange.getMax());
+            infob.setMaximumInclusive(validRange.isMaxInclusive());
+        }
+
         return infob.build();
     }
 
