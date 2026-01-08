@@ -252,7 +252,7 @@
             <td>{{ enumValue.description || "-" }}</td>
             <td>
               @if (getDefaultAlarmLevel(entry.type!, enumValue.label); as level) {
-                <app-alarm-level [level]="level" [grayscale]="true" />
+                <ya-alarm-level [level]="level" [grayscale]="true" />
                 {{ level }}
               } @else {
                 <span>-</span>
@@ -261,7 +261,7 @@
             @for (contextAlarm of entry.type!.contextAlarm; track contextAlarm) {
               <td>
                 @if (getEnumerationAlarmLevel(contextAlarm, enumValue.label); as level) {
-                  <app-alarm-level [level]="level" [grayscale]="true" />
+                  <ya-alarm-level [level]="level" [grayscale]="true" />
                   {{ level }}
                 } @else {
                   <span>-</span>
@@ -283,7 +283,7 @@
             <td>{{ enumRange.description || "-" }}</td>
             <td>
               @if (getDefaultAlarmLevel(entry.type!, enumRange.label); as level) {
-                <app-alarm-level [level]="level" [grayscale]="true" />
+                <ya-alarm-level [level]="level" [grayscale]="true" />
                 {{ level }}
               } @else {
                 <span>-</span>
@@ -292,7 +292,7 @@
             @for (context of entry.type!.contextAlarm; track context) {
               <td>
                 @if (getEnumerationAlarmLevel(context, enumRange.label); as level) {
-                  <app-alarm-level [level]="level" [grayscale]="true" />
+                  <ya-alarm-level [level]="level" [grayscale]="true" />
                   {{ level }}
                 } @else {
                   <span>-</span>
@@ -307,14 +307,14 @@
           <td>-</td>
           <td>
             @if (entry.type!.defaultAlarm?.defaultLevel; as level) {
-              <app-alarm-level [level]="level" [grayscale]="true" />
+              <ya-alarm-level [level]="level" [grayscale]="true" />
               {{ level }}
             }
           </td>
           @for (context of entry.type!.contextAlarm; track context) {
             <td>
               @if (context.alarm.defaultLevel; as level) {
-                <app-alarm-level [level]="level" [grayscale]="true" />
+                <ya-alarm-level [level]="level" [grayscale]="true" />
                 {{ level }}
               }
             </td>
@@ -345,7 +345,7 @@
           @for (range of alarm.staticAlarmRanges; track range) {
             <tr>
               <td>
-                <app-alarm-level [level]="range.level" [grayscale]="true" />
+                <ya-alarm-level [level]="range.level" [grayscale]="true" />
                 {{ range.level }}
               </td>
               <td>
@@ -391,7 +391,7 @@
           @for (range of contextAlarm.alarm.staticAlarmRanges; track range) {
             <tr>
               <td>
-                <app-alarm-level [level]="range.level" [grayscale]="true" />
+                <ya-alarm-level [level]="range.level" [grayscale]="true" />
                 {{ range.level }}
               </td>
               <td>

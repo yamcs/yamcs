@@ -1,0 +1,15 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+}
+
+:host.expired {
+  font-style: italic;
+}
+
+mat-icon {
+  color: var(--y-error-color);
+  font-size: 14px !important;
+  height: 14px !important;
+  width: 14px !important;
+}

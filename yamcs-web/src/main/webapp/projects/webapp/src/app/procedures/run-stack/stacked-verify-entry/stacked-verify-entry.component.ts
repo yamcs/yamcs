@@ -6,7 +6,6 @@ import {
 } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { ParameterValue, WebappSdkModule } from '@yamcs/webapp-sdk';
-import { AlarmLevelComponent } from '../../../shared/alarm-level/alarm-level.component';
 import { LiveExpressionComponent } from '../../../shared/live-expression/live-expression.component';
 import { EntryLabel } from '../entry-label/entry-label.component';
 import { StackedVerifyEntry } from '../stack-file/StackedEntry';
@@ -24,12 +23,7 @@ interface Record {
   templateUrl: './stacked-verify-entry.component.html',
   styleUrl: './stacked-verify-entry.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AlarmLevelComponent,
-    EntryLabel,
-    LiveExpressionComponent,
-    WebappSdkModule,
-  ],
+  imports: [EntryLabel, LiveExpressionComponent, WebappSdkModule],
 })
 export class StackedVerifyEntryComponent {
   entry = input.required<StackedVerifyEntry>();

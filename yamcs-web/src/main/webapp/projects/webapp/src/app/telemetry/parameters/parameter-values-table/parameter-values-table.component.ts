@@ -10,7 +10,6 @@ import {
   ParameterValue,
   WebappSdkModule,
 } from '@yamcs/webapp-sdk';
-import { AlarmLevelComponent } from '../../../shared/alarm-level/alarm-level.component';
 import { ParameterDataDataSource } from '../parameter-data-tab/parameter-data.datasource';
 
 @Component({
@@ -18,7 +17,7 @@ import { ParameterDataDataSource } from '../parameter-data-tab/parameter-data.da
   templateUrl: './parameter-values-table.component.html',
   styleUrl: './parameter-values-table.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AlarmLevelComponent, WebappSdkModule],
+  imports: [WebappSdkModule],
 })
 export class ParameterValuesTableComponent extends BaseComponent {
   @Input()

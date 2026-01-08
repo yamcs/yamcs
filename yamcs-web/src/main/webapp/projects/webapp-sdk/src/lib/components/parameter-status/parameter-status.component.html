@@ -1,0 +1,13 @@
+<ng-content />
+@if (showLowHigh() && low()) {
+  <span matTooltip="Low">&#8595;</span>
+}
+@if (showLowHigh() && high()) {
+  <span matTooltip="High">&#8593;</span>
+}
+@if (invalid()) {
+  <mat-icon matTooltip="Invalid">warning</mat-icon>
+}
+@if (expired()) {
+  <mat-icon [matTooltip]="expiredTooltip()">access_time</mat-icon>
+}

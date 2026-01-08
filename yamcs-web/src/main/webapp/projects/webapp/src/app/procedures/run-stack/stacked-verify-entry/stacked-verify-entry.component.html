@@ -46,15 +46,9 @@
     <ng-container matColumnDef="value">
       <td mat-cell *matCellDef="let item">
         @if (item.pval?.engValue; as value) {
-          <ya-expirable [pval]="item.pval">
+          <ya-parameter-status [pval]="item.pval">
             {{ item.pval.engValue | value }}
-            @if (item.pval.rangeCondition === "LOW") {
-              <span>&#8595;</span>
-            }
-            @if (item.pval.rangeCondition === "HIGH") {
-              <span>&#8593;</span>
-            }
-          </ya-expirable>
+          </ya-parameter-status>
         } @else {
           -
         }

@@ -104,9 +104,9 @@ export const APP_ROUTES: Routes = [
       {
         path: 'file-transfer',
         loadChildren: () =>
-          import(
-            'projects/webapp/src/app/file-transfer/file-transfer.routes'
-          ).then((m) => m.ROUTES),
+          import('projects/webapp/src/app/file-transfer/file-transfer.routes').then(
+            (m) => m.ROUTES,
+          ),
         canActivate: [authGuardFn],
       },
       {
@@ -128,9 +128,9 @@ export const APP_ROUTES: Routes = [
       {
         path: 'instance',
         loadChildren: () =>
-          import(
-            'projects/webapp/src/app/instance-home/instance-home.routes'
-          ).then((m) => m.ROUTES),
+          import('projects/webapp/src/app/instance-home/instance-home.routes').then(
+            (m) => m.ROUTES,
+          ),
         canActivate: [authGuardFn],
         data: { preload: true },
       },

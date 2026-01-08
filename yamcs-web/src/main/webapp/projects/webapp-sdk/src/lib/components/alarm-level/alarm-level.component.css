@@ -1,3 +1,7 @@
+:host {
+  line-height: 0;
+}
+
 svg {
   display: inline-block;
 }

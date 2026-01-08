@@ -10,7 +10,7 @@
     <ng-container matColumnDef="level">
       <td mat-cell *matCellDef="let item" style="width: 80px">
         @if (item.pval?.engValue; as value) {
-          <app-alarm-level [level]="item.pval.monitoringResult" />
+          <ya-alarm-level [level]="item.pval.monitoringResult" />
         }
       </td>
     </ng-container>
@@ -18,15 +18,9 @@
     <ng-container matColumnDef="value">
       <td mat-cell *matCellDef="let item">
         @if (item.pval?.engValue; as value) {
-          <ya-expirable [pval]="item.pval">
+          <ya-parameter-status [pval]="item.pval">
             <ya-value [value]="item.pval.engValue" [alwaysExpand]="true" />
-            @if (item.pval.rangeCondition === "LOW") {
-              <span>&#8595;</span>
-            }
-            @if (item.pval.rangeCondition === "HIGH") {
-              <span>&#8593;</span>
-            }
-          </ya-expirable>
+          </ya-parameter-status>
         } @else {
           -
         }

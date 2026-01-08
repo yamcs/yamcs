@@ -21,7 +21,7 @@
   }
 
   <ya-attr label="Severity">
-    <app-alarm-level [level]="alarm.severity" />
+    <ya-alarm-level [level]="alarm.severity" />
     {{ alarm.severity }}
   </ya-attr>
 
@@ -32,7 +32,7 @@
   @if (alarm.parameterDetail; as parameterDetail) {
     <ya-attr-divider />
     <ya-attr label="Trigger value">
-      <app-alarm-level [level]="alarm.severity" [grayscale]="true" />
+      <ya-alarm-level [level]="alarm.severity" [grayscale]="true" />
       &nbsp;{{ parameterDetail.triggerValue.engValue | value }}
       @if (parameterDetail.triggerValue.rangeCondition === "LOW") {
         <span>&#8595;</span>
@@ -43,18 +43,12 @@
 
     <ya-attr-divider />
     <ya-attr label="Live value">
-      <ya-expirable [pval]="parameterDetail.currentValue">
-        <app-alarm-level
+      <ya-parameter-status [pval]="parameterDetail.currentValue">
+        <ya-alarm-level
           [level]="parameterDetail.currentValue.monitoringResult"
           [grayscale]="true" />
         &nbsp;{{ parameterDetail.currentValue.engValue | value }}
-        @if (parameterDetail.currentValue.rangeCondition === "LOW") {
-          <span>&#8595;</span>
-        }
-        @if (parameterDetail.currentValue.rangeCondition === "HIGH") {
-          <span>&#8593;</span>
-        }
-      </ya-expirable>
+      </ya-parameter-status>
     </ya-attr>
   }
 

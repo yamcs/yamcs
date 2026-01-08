@@ -24,15 +24,9 @@
         <td mat-cell *cdkCellDef="let row">
           @if (row.pvals[parameter]; as pval) {
             @if (pval) {
-              <ya-expirable [pval]="pval">
+              <ya-parameter-status [pval]="pval">
                 {{ (pval.engValue | value) || "-" }}
-                @if (pval.rangeCondition === "LOW") {
-                  <span>&#8595;</span>
-                }
-                @if (pval.rangeCondition === "HIGH") {
-                  <span>&#8593;</span>
-                }
-              </ya-expirable>
+              </ya-parameter-status>
             }
           } @else {
             <span>-</span>
