@@ -286,7 +286,6 @@ public class SimulatorCommander extends ProcessRunner {
                 // Load a key for encryption/decryption if one was provided
                 final SdlsSecurityAssociation maybeSdlsTm, maybeSdlsTc;
 
-                // TODO(AB): make sure there's nothing by default if encryption is not specified
                 short spi = (short) runtimeOptions.encryptionSpi;
                 String encryptionClass = runtimeOptions.encryptionClass;
                 if (encryptionClass != null) {
@@ -309,8 +308,8 @@ public class SimulatorCommander extends ProcessRunner {
                     }
                     SdlsSecurityAssociationFactory saImpl = maybeSaImpl.get().get();
 
-                    maybeSdlsTc = saImpl.create("simulator", "tc", spi, argsConfig);
-                    maybeSdlsTm = saImpl.create("simulator", "tm", spi, argsConfig);
+                    maybeSdlsTc = saImpl.create(null, "TC", spi, argsConfig);
+                    maybeSdlsTm = saImpl.create(null, "TM", spi, argsConfig);
 
                 } else {
                     maybeSdlsTm = null;

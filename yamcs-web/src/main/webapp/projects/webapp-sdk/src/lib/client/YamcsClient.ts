@@ -47,6 +47,7 @@ import {
   InitiateCop1Request,
   SubscribeCop1Request,
 } from './types/cop1';
+import { SdlsLinkConfig, SdlsSeqCtr, SdlsSa } from './types/sdls';
 import {
   CreateEventRequest,
   DownloadEventsOptions,
@@ -2249,6 +2250,48 @@ export default class YamcsClient implements HttpHandler {
         body: JSON.stringify(request),
       },
     );
+  }
+
+  async getSdlsSpis(instance: string, link: string) {
+    const url = `${this.apiUrl}/sdls/${instance}/${link}`;
+    const response = await this.doFetch(url);
+    return (await response.json()) as SdlsLinkConfig;
+  }
+
+  async getSdlsSa(instance: string, link: string, spi: number) {
+    const url = `${this.apiUrl}/sdls/${instance}/${link}/${spi}`;
+    const response = await this.doFetch(url);
+    return (await response.json()) as SdlsSa;
+  }
+
+  async getSdlsSeqCtr(instance: string, link: string, spi: number) {
+    const url = `${this.apiUrl}/sdls/${instance}/${link}/${spi}/seq`;
+    const response = await this.doFetch(url);
+    return (await response.json()) as SdlsSeqCtr;
+  }
+
+  async setSdlsSeqCtr(
+    instance: string,
+    link: string,
+    spi: number,
+    seqCtr: string,
+  ) {
+    const body = JSON.stringify({ seq: seqCtr });
+    const url = `${this.apiUrl}/sdls/${instance}/${link}/${spi}/seq`;
+    const response = await this.doFetch(url, {
+      body,
+      method: 'PUT',
+    });
+  }
+
+  async setSdlsKey(instance: string, link: string, spi: number, key: File) {
+    const url = `${this.apiUrl}/sdls/${instance}/${link}/${spi}/key`;
+    const formData = new FormData();
+    formData.append('content', key);
+    const response = await this.doFetch(url, {
+      body: formData,
+      method: 'PUT',
+    });
   }
 
   async getCop1Config(instance: string, link: string) {
