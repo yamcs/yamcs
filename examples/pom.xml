@@ -39,7 +39,6 @@
     <module>replication2</module>
     <module>replication3</module>
     <module>simulation</module>
-    <module>snippets</module>
     <module>templates</module>
   </modules>
 
