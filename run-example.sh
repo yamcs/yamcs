@@ -3,7 +3,7 @@
 YAMCS_OPTS="$YAMCS_OPTS ${@:2}"
 
 print_example_list () {
-    for dir in `find examples -maxdepth 1 -mindepth 1 -type d ! -name '.*' ! -name snippets -exec basename {} \; | sort`; do
+    for dir in `find examples -maxdepth 1 -mindepth 1 -type d ! -name '.*' -exec basename {} \; | sort`; do
         echo "    $dir"
     done
 }
