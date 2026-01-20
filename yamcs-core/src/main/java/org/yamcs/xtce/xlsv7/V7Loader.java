@@ -201,6 +201,7 @@ public class V7Loader extends V7LoaderBase {
 
     public V7Loader(YConfiguration config) {
         this(config.getString("file"));
+        nameOverride = config.getString("name", null);
     }
 
     public V7Loader(String filename) {
@@ -325,10 +326,17 @@ public class V7Loader extends V7LoaderBase {
                     String.format("Format version (%s) not supported by loader version (%s)", version, FORMAT_VERSION));
         }
         fileFormatVersion = version;
-        if (!hasColumn(cells, 1)) {
-            throw new SpreadsheetLoadException(ctx, "No value provided for the system name");
+
+        String name;
+        if (nameOverride == null) {
+            if (!hasColumn(cells, 1)) {
+                throw new SpreadsheetLoadException(ctx, "No value provided for the system name");
+            }
+            name = cells[1].getContents();
+        } else {
+            name = nameOverride;
         }
-        String name = cells[1].getContents();
+
         rootSpaceSystem = new SpaceSystem(name);
 
         // Add a header
