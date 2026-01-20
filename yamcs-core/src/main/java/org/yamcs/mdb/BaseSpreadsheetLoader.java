@@ -85,6 +85,7 @@ public abstract class BaseSpreadsheetLoader extends AbstractFileLoader {
     protected static final String PARAM_RAWTYPE_STRING = "string";
     final protected SpreadsheetLoadContext ctx = new SpreadsheetLoadContext();
     protected Workbook workbook;
+    protected String nameOverride;
 
     // sheet name -> column name -> column number
     protected Map<String, Map<String, Integer>> headers;

@@ -26,8 +26,27 @@ The following notation is also accepted for historical reasons:
 file (string)
    **Required.** The filename to be loaded.
 
-enableXtceNameRestrictions (boolean)
-   If true, names must only use characters, digits, underscores or dashes. Default: ``true``
+name (string)
+   .. versionadded:: 5.12.4
+
+   Override the name of the top-level space system defined in this file.
+
+   The top-level system name is defined in the ``name`` column of the :doc:`General <general>` sheet. This option allows to change that name without changing the spreadsheet file. This can be useful to avoid duplicating a spreadsheet for a system name change only.
+
+   .. code-block:: yaml
+
+      - type: "sheet"
+        args:
+          file: "mdb/top.xls"
+        subLoaders:
+          - type: "sheet"
+            args:
+              file: "mdb/sub.xls"
+              name: "SUB1"
+          - type: "sheet"
+            args:
+              file: "mdb/sub.xls"
+              name: "SUB2"
 
 
 .. rubric:: Sheets
