@@ -22,10 +22,12 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.yamcs.Processor;
+import org.yamcs.ProcessorConfig;
 import org.yamcs.YConfiguration;
 import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.mdb.ProcessingContext;
+import org.yamcs.mdb.ProcessorData;
 import org.yamcs.protobuf.Yamcs;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.TimeEncoding;
@@ -59,9 +61,12 @@ public class LocalParameterManagerTest {
 
         localParamMgr = new LocalParameterManager();
         mdb = MdbFactory.createInstanceByConfig("refmdb");
+        ProcessorData pdata = new ProcessorData("test", "test", mdb, new ProcessorConfig());
+
         when(mockProcessor.getMdb()).thenReturn(mdb);
         when(mockProcessor.getParameterProcessorManager()).thenReturn(ppm);
         when(mockProcessor.getTimer()).thenReturn(timer);
+        when(mockProcessor.getProcessorData()).thenReturn(pdata);
 
         localParamMgr.init(mockProcessor, YConfiguration.emptyConfig(), null);
         paraProc = new MyParamProcessor();
