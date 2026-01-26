@@ -1,3 +1,11 @@
+Version 5.12.4 released 26-Jan-2025
+- Improve display of invalid status of parameter values
+- Add toggle to disable constraint checking (requires elevated privileges)
+- Allow to change the system name of an XLS through YAML configuration
+- Reduces requests when an OPI loads the same external script multiple times
+- Allow alternative SDLS implementations to override the default Yamcs implementation
+
+
 Version 5.12.3 released 14-Nov-2025
 - SDLS bug fixes and improvements
 
