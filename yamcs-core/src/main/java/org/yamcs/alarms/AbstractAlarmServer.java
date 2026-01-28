@@ -140,4 +140,5 @@ public abstract class AbstractAlarmServer<S, T> extends AbstractService {
 
     protected abstract String getColNameLastEvent();
 
+    protected abstract String getColNameSeverityIncreased();
 }

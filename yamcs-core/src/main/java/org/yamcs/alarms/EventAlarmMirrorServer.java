@@ -15,6 +15,7 @@ class EventAlarmMirrorServer extends AbstractAlarmMirrorServer<EventId, Event> {
         super(yamcsInstance, alarmLoadDays);
     }
 
+    @Override
     EventId getSubject(Tuple tuple) {
         String source = tuple.getColumn(StandardTupleDefinitions.EVENT_SOURCE_COLUMN);
         String type = tuple.getColumn(StandardTupleDefinitions.EVENT_TYPE_COLUMN);
@@ -36,6 +37,12 @@ class EventAlarmMirrorServer extends AbstractAlarmMirrorServer<EventId, Event> {
         return EventAlarmStreamer.CNAME_LAST_EVENT;
     }
 
+    @Override
+    protected String getColNameSeverityIncreased() {
+        return EventAlarmStreamer.CNAME_SEVERITY_INCREASED;
+    }
+
+    @Override
     protected String alarmTableName() {
         return AlarmRecorder.EVENT_ALARM_TABLE_NAME;
     }

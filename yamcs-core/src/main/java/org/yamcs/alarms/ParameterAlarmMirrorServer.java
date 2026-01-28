@@ -22,6 +22,7 @@ class ParameterAlarmMirrorServer extends AbstractAlarmMirrorServer<Parameter, Pa
         mdb = MdbFactory.getInstance(yamcsInstance);
     }
 
+    @Override
     Parameter getSubject(Tuple tuple) {
         String pname = tuple.getColumn(StandardTupleDefinitions.PARAMETER_COLUMN);
         var parameter = mdb.getParameter(pname);
@@ -49,6 +50,7 @@ class ParameterAlarmMirrorServer extends AbstractAlarmMirrorServer<Parameter, Pa
         }
     }
 
+    @Override
     protected void addActiveAlarmFromTuple(Mdb mdb, Tuple tuple, Map<Parameter, ActiveAlarm<ParameterValue>> alarms) {
         String pname = tuple.getColumn(StandardTupleDefinitions.PARAMETER_COLUMN);
         var parameter = mdb.getParameter(pname);
@@ -80,6 +82,11 @@ class ParameterAlarmMirrorServer extends AbstractAlarmMirrorServer<Parameter, Pa
     @Override
     protected String getColNameLastEvent() {
         return ParameterAlarmStreamer.CNAME_LAST_EVENT;
+    }
+
+    @Override
+    protected String getColNameSeverityIncreased() {
+        return ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED;
     }
 
     @Override
