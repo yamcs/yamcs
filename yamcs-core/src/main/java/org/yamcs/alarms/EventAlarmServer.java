@@ -1,5 +1,18 @@
 package org.yamcs.alarms;
 
+import static org.yamcs.alarms.AlarmStreamer.CNAME_ACK_BY;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_ACK_MSG;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_ACK_TIME;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_PENDING;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_SEQ_NUM;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_BY;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_MSG;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_TIME;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_VIOLATION_COUNT;
+import static org.yamcs.alarms.EventAlarmStreamer.CNAME_LAST_EVENT;
+import static org.yamcs.alarms.EventAlarmStreamer.CNAME_SEVERITY_INCREASED;
+import static org.yamcs.alarms.EventAlarmStreamer.CNAME_TRIGGER;
+
 import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
@@ -10,23 +23,12 @@ import org.yamcs.ProcessorConfig;
 import org.yamcs.archive.AlarmRecorder;
 import org.yamcs.archive.EventRecorder;
 import org.yamcs.mdb.Mdb;
-import org.yamcs.yarch.protobuf.Db.Event;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
-
-import static org.yamcs.alarms.AlarmStreamer.CNAME_ACK_BY;
-import static org.yamcs.alarms.AlarmStreamer.CNAME_ACK_MSG;
-import static org.yamcs.alarms.AlarmStreamer.CNAME_ACK_TIME;
-import static org.yamcs.alarms.AlarmStreamer.CNAME_PENDING;
-import static org.yamcs.alarms.AlarmStreamer.CNAME_SEQ_NUM;
-import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_BY;
-import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_MSG;
-import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_TIME;
-import static org.yamcs.alarms.AlarmStreamer.CNAME_VIOLATION_COUNT;
-import static org.yamcs.alarms.EventAlarmStreamer.*;
+import org.yamcs.yarch.protobuf.Db.Event;
 
 /**
  * Handles alarms for events. These are generated whenever an event with a severity level different than INFO is
@@ -85,6 +87,7 @@ public class EventAlarmServer extends AlarmServer<EventId, Event> {
         notifyStopped();
     }
 
+    @Override
     protected String alarmTableName() {
         return AlarmRecorder.EVENT_ALARM_TABLE_NAME;
     }
@@ -94,6 +97,7 @@ public class EventAlarmServer extends AlarmServer<EventId, Event> {
         return new EventId(ev.getSource(), ev.hasType() ? ev.getType() : null);
     }
 
+    @Override
     protected void addActiveAlarmFromTuple(Mdb mdb, Tuple tuple, Map<EventId, ActiveAlarm<Event>> alarms) {
         var o = tuple.getColumn(CNAME_TRIGGER);
         if (o == null || !(o instanceof Event)) {
@@ -110,7 +114,7 @@ public class EventAlarmServer extends AlarmServer<EventId, Event> {
 
         int seqNum = tuple.getIntColumn(CNAME_SEQ_NUM);
 
-        var activeAlarm = new ActiveAlarm<Event>(triggerValue, false, false, seqNum);
+        var activeAlarm = new ActiveAlarm<>(triggerValue, false, false, seqNum);
         if (tuple.hasColumn(CNAME_PENDING) && tuple.getBooleanColumn(CNAME_PENDING)) {
             activeAlarm.setPending(true);
         } else {
@@ -129,7 +133,7 @@ public class EventAlarmServer extends AlarmServer<EventId, Event> {
         }
 
         o = tuple.getColumn(CNAME_SEVERITY_INCREASED);
-        if (o != null && !(o instanceof Event)) {
+        if (o != null && (o instanceof Event)) {
             activeAlarm.setMostSevereValue((Event) o);
         }
 
@@ -143,5 +147,10 @@ public class EventAlarmServer extends AlarmServer<EventId, Event> {
     @Override
     protected String getColNameLastEvent() {
         return CNAME_LAST_EVENT;
+    }
+
+    @Override
+    protected String getColNameSeverityIncreased() {
+        return CNAME_SEVERITY_INCREASED;
     }
 }

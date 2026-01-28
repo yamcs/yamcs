@@ -1,5 +1,21 @@
 package org.yamcs.alarms;
 
+import static org.yamcs.alarms.AlarmStreamer.CNAME_ACK_BY;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_ACK_MSG;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_ACK_TIME;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_LAST_VALUE;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_PENDING;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_SEQ_NUM;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_BY;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_MSG;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVED_TIME;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_SHELVE_DURATION;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_VALUE_COUNT;
+import static org.yamcs.alarms.AlarmStreamer.CNAME_VIOLATION_COUNT;
+import static org.yamcs.alarms.ParameterAlarmStreamer.CNAME_LAST_EVENT;
+import static org.yamcs.alarms.ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED;
+import static org.yamcs.alarms.ParameterAlarmStreamer.CNAME_TRIGGER;
+
 import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
@@ -12,7 +28,6 @@ import org.yamcs.mdb.Mdb;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.yarch.Tuple;
-import static org.yamcs.alarms.ParameterAlarmStreamer.*;
 
 public class ParameterAlarmServer extends AlarmServer<Parameter, ParameterValue> {
     static private final Logger log = LoggerFactory.getLogger(ParameterAlarmServer.class);
@@ -21,6 +36,7 @@ public class ParameterAlarmServer extends AlarmServer<Parameter, ParameterValue>
         super(yamcsInstance, procConfig, timer);
     }
 
+    @Override
     protected void addActiveAlarmFromTuple(Mdb mdb, Tuple tuple, Map<Parameter, ActiveAlarm<ParameterValue>> alarms) {
         String pname = tuple.getColumn(StandardTupleDefinitions.PARAMETER_COLUMN);
         var parameter = mdb.getParameter(pname);
@@ -42,7 +58,7 @@ public class ParameterAlarmServer extends AlarmServer<Parameter, ParameterValue>
         triggeredValue.setParameter(parameter);
         int seqNum = tuple.getIntColumn(CNAME_SEQ_NUM);
 
-        var activeAlarm = new ActiveAlarm<ParameterValue>(triggeredValue, false, false, seqNum);
+        var activeAlarm = new ActiveAlarm<>(triggeredValue, false, false, seqNum);
 
         if (tuple.hasColumn(CNAME_PENDING) && tuple.getBooleanColumn(CNAME_PENDING)) {
             activeAlarm.setPending(true);
@@ -81,6 +97,7 @@ public class ParameterAlarmServer extends AlarmServer<Parameter, ParameterValue>
         return activeAlarm;
     }
 
+    @Override
     protected String alarmTableName() {
         return AlarmRecorder.PARAMETER_ALARM_TABLE_NAME;
     }
@@ -93,5 +110,10 @@ public class ParameterAlarmServer extends AlarmServer<Parameter, ParameterValue>
     @Override
     protected String getColNameLastEvent() {
         return CNAME_LAST_EVENT;
+    }
+
+    @Override
+    protected String getColNameSeverityIncreased() {
+        return CNAME_SEVERITY_INCREASED;
     }
 }
