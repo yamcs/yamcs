@@ -112,7 +112,7 @@
         }
       }
       @if (alarm.eventDetail; as eventDetail) {
-        {{ eventDetail.triggerEvent.message || "-" }}
+        {{ eventDetail.currentEvent.message || "-" }}
       }
     </td>
   </ng-container>
