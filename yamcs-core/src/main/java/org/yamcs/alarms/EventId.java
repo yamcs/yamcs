@@ -25,7 +25,7 @@ public class EventId {
         }
 
         this.source = source;
-        this.type = type;
+        this.type = (type == null || type.isEmpty()) ? null : type;
     }
 
     public EventId(String qualifiedName) {
