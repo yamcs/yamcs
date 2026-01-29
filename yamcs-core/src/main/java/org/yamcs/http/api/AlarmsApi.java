@@ -11,6 +11,7 @@ import static org.yamcs.alarms.AlarmStreamer.CNAME_TRIGGER_TIME;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
@@ -21,6 +22,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.yamcs.Processor;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.YamcsServerInstance;
+import org.yamcs.alarms.AbstractAlarmMirrorServer;
 import org.yamcs.alarms.AbstractAlarmServer;
 import org.yamcs.alarms.ActiveAlarm;
 import org.yamcs.alarms.AlarmListener;
@@ -499,47 +501,55 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
             alarmServers.add(alarmMirrorService.getParameterServer());
             alarmServers.add(alarmMirrorService.getEventServer());
         }
-        boolean sendDetail = true;
 
-        AlarmListener listener = new AlarmListener() {
-
-            @Override
-            public void notifyUpdate(org.yamcs.alarms.AlarmNotificationType notificationType, ActiveAlarm activeAlarm) {
-                if (includePending || !activeAlarm.isPending()) {
-                    AlarmNotificationType type = protoNotificationType.get(notificationType);
-                    AlarmData alarmData = toAlarmData(type, activeAlarm, false, sendDetail);
-                    observer.next(alarmData);
-                }
-            }
-
-            @Override
-            public void notifySeverityIncrease(ActiveAlarm activeAlarm) {
-                if (includePending || !activeAlarm.isPending()) {
-                    AlarmData alarmData = toAlarmData(AlarmNotificationType.SEVERITY_INCREASED, activeAlarm, false,
-                            sendDetail);
-                    observer.next(alarmData);
-                }
-            }
-
-            @Override
-            public void notifyValueUpdate(ActiveAlarm activeAlarm) {
-                if (includePending || !activeAlarm.isPending()) {
-                    AlarmData alarmData = toAlarmData(AlarmNotificationType.VALUE_UPDATED, activeAlarm, false,
-                            sendDetail);
-                    observer.next(alarmData);
-                }
-            }
-        };
+        var alarmListeners = new HashMap<AbstractAlarmServer, AlarmListener>();
 
         observer.setCancelHandler(() -> {
-            alarmServers.forEach(alarmServer -> alarmServer.removeAlarmListener(listener));
+            alarmListeners.forEach((server, listener) -> {
+                server.removeAlarmListener(listener);
+            });
         });
         for (AbstractAlarmServer<?, ?> alarmServer : alarmServers) {
+            var readonly = alarmServer instanceof AbstractAlarmMirrorServer;
+
+            var alarmListener = new AlarmListener() {
+
+                @Override
+                public void notifyUpdate(org.yamcs.alarms.AlarmNotificationType notificationType,
+                        ActiveAlarm activeAlarm) {
+                    if (includePending || !activeAlarm.isPending()) {
+                        AlarmNotificationType type = protoNotificationType.get(notificationType);
+                        AlarmData alarmData = toAlarmData(type, activeAlarm, readonly, true);
+                        observer.next(alarmData);
+                    }
+                }
+
+                @Override
+                public void notifySeverityIncrease(ActiveAlarm activeAlarm) {
+                    if (includePending || !activeAlarm.isPending()) {
+                        AlarmData alarmData = toAlarmData(AlarmNotificationType.SEVERITY_INCREASED, activeAlarm,
+                                readonly, true);
+                        observer.next(alarmData);
+                    }
+                }
+
+                @Override
+                public void notifyValueUpdate(ActiveAlarm activeAlarm) {
+                    if (includePending || !activeAlarm.isPending()) {
+                        AlarmData alarmData = toAlarmData(AlarmNotificationType.VALUE_UPDATED, activeAlarm, readonly,
+                                true);
+                        observer.next(alarmData);
+                    }
+                }
+            };
+
             for (ActiveAlarm<?> activeAlarm : alarmServer.getActiveAlarms().values()) {
-                AlarmData alarmData = toAlarmData(AlarmNotificationType.ACTIVE, activeAlarm, false, sendDetail);
+                AlarmData alarmData = toAlarmData(AlarmNotificationType.ACTIVE, activeAlarm, readonly, true);
                 observer.next(alarmData);
             }
-            alarmServer.addAlarmListener(listener);
+
+            alarmListeners.put(alarmServer, alarmListener);
+            alarmServer.addAlarmListener(alarmListener);
         }
     }
 
@@ -726,9 +736,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         alarmb.setViolations(activeAlarm.getViolations());
         alarmb.setCount(activeAlarm.getValueCount());
         alarmb.setSeverity(getAlarmSeverity(activeAlarm));
-        if (activeAlarm.isPending()) {
-            alarmb.setPending(true);
-        }
+        alarmb.setPending(activeAlarm.isPending());
 
         if (activeAlarm.getMostSevereValue() instanceof ParameterValue) {
             alarmb.setType(AlarmType.PARAMETER);
