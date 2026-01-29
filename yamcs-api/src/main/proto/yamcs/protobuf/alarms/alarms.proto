@@ -122,9 +122,9 @@ message AlarmData {
   // Set to false when the alarms are mirrored from another Yamcs instance.
   optional bool readonly = 19;
   
-  // An alarm is in pending state if the minViolations has not been reached
-  // The alarm is not actually triggered in this case
-  // This is only sent when true
+  // An alarm is in pending state if the minViolations has
+  // not been reached. The alarm is not actually triggered
+  // in this case.
   optional bool pending = 20;
 }
 

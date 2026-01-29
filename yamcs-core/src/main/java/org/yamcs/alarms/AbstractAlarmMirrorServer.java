@@ -7,7 +7,7 @@ import static org.yamcs.alarms.AlarmStreamer.CNAME_VIOLATION_COUNT;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
 
-abstract class AbstractAlarmMirrorServer<S, T> extends AbstractAlarmServer<S, T> {
+public abstract class AbstractAlarmMirrorServer<S, T> extends AbstractAlarmServer<S, T> {
 
     AbstractAlarmMirrorServer(String yamcsInstance, double alarmLoadDays) {
         super(yamcsInstance);

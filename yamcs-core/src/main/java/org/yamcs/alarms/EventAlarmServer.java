@@ -137,10 +137,6 @@ public class EventAlarmServer extends AlarmServer<EventId, Event> {
             activeAlarm.setMostSevereValue((Event) o);
         }
 
-        if (tuple.hasColumn(CNAME_PENDING)) {
-            activeAlarm.setPending(tuple.getColumn(CNAME_PENDING));
-        }
-
         return activeAlarm;
     }
 
