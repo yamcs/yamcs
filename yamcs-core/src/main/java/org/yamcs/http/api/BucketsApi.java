@@ -36,6 +36,7 @@ import org.yamcs.protobuf.ListObjectsRequest;
 import org.yamcs.protobuf.ListObjectsResponse;
 import org.yamcs.protobuf.ObjectInfo;
 import org.yamcs.protobuf.UploadObjectRequest;
+import org.yamcs.security.ObjectPrivilege;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
@@ -48,6 +49,7 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
 
     static final Pattern BUCKET_NAME_REGEXP = Pattern.compile("\\w[\\w\\-]+");
     static final Pattern OBJ_NAME_REGEXP = Pattern.compile("[ \\w\\s\\-\\./]+");
+    private static final String BUCK_PATH_SEP = "/";
 
     @Override
     public void listBuckets(Context ctx, ListBucketsRequest request, Observer<ListBucketsResponse> observer) {
@@ -137,9 +139,9 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
     @Override
     public void getObjectInfo(Context ctx, GetObjectInfoRequest request, Observer<ObjectInfo> observer) {
         String bucketName = request.getBucketName();
-        checkReadBucketPrivilege(bucketName, ctx.user);
-
         String objName = request.getObjectName();
+        checkReadObjectPrivilege(bucketName, objName, ctx.user);
+
         Bucket bucket = verifyAndGetBucket(bucketName, ctx.user);
         bucket.findObjectAsync(objName).whenComplete((props, err) -> {
             if (err == null) {
@@ -158,11 +160,10 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
     @Override
     public void getObject(Context ctx, GetObjectRequest request, Observer<HttpBody> observer) {
         String bucketName = request.getBucketName();
-        checkReadBucketPrivilege(bucketName, ctx.user);
-
         String objName = request.getObjectName();
-        Bucket bucket = verifyAndGetBucket(bucketName, ctx.user);
+        checkReadObjectPrivilege(bucketName, objName, ctx.user);
 
+        Bucket bucket = verifyAndGetBucket(bucketName, ctx.user);
         bucket.findObjectAsync(objName).whenComplete((props, err) -> {
             if (err == null) {
                 if (props == null) {
@@ -209,6 +210,7 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
             throw new BadRequestException("Unknown target object name");
         }
         verifyObjectName(objectName);
+        checkManageObjectPrivilege(bucketName, objectName, ctx.user);
 
         String contentType = body.hasContentType() ? body.getContentType() : null;
         byte[] objectData = body.getData().toByteArray();
@@ -236,11 +238,14 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
         CompletableFuture<List<ObjectProperties>> objectsFuture;
         List<String> prefixes = new ArrayList<>();
         if (delimiter == null) {
-            objectsFuture = b.listObjectsAsync(prefix);
+            objectsFuture = b.listObjectsAsync(prefix, props -> mayReadObject(bucketName, props.name(), ctx.user));
         } else {
             int prefixLength = prefix != null ? prefix.length() : 0;
             objectsFuture = b.listObjectsAsync(prefix, props -> {
                 String name = props.name();
+                if (!mayReadObject(bucketName, name, ctx.user)) {
+                    return false;
+                }
                 int idx = name.indexOf(delimiter, prefixLength);
                 if (idx != -1) {
                     String pref = name.substring(0, idx + 1);
@@ -272,9 +277,9 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
     @Override
     public void deleteObject(Context ctx, DeleteObjectRequest request, Observer<Empty> observer) {
         String bucketName = request.getBucketName();
-        checkManageBucketPrivilege(bucketName, ctx.user);
-
         String objName = request.getObjectName();
+        checkManageObjectPrivilege(bucketName, objName, ctx.user);
+
         Bucket bucket = verifyAndGetBucket(bucketName, ctx.user);
 
         bucket.findObjectAsync(objName).whenComplete((props, err) -> {
@@ -336,15 +341,33 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
         }
     }
 
+    public static void checkReadObjectPrivilege(String bucketName, String objName, User user) throws HttpException {
+        if (!mayReadObject(bucketName, objName, user)) {
+            throw new ForbiddenException("Insufficient privileges to read object '" + objName + "' in'" + bucketName + "' bucket");
+        }
+    }
+
     private static boolean mayReadBucket(String bucketName, User user) {
         if (bucketName.equals(getUserBucketName(user))) {
             return true; // user can do whatever to its own bucket (but not to increase quota!! currently not possible
             // anyway)
         }
 
-        return user.hasObjectPrivilege(ObjectPrivilegeType.ReadBucket, bucketName)
-                || user.hasObjectPrivilege(ObjectPrivilegeType.ManageBucket, bucketName)
-                || user.hasSystemPrivilege(SystemPrivilege.ManageAnyBucket);
+        return user.hasSystemPrivilege(SystemPrivilege.ManageAnyBucket)
+                || user.hasObjectPrivilege(ObjectPrivilegeType.ReadBucket, bucketName)
+                || user.hasObjectPrivilege(ObjectPrivilegeType.ManageBucket, bucketName);
+    }
+
+    private static boolean mayReadObject(String bucketName, String objName, User user) {
+        if (bucketName.equals(getUserBucketName(user))) {
+            return true; // user can do whatever to its own bucket (but not to increase quota!! currently not possible
+            // anyway)
+        }
+
+        return mayReadBucket(bucketName, user) &&
+                (user.hasSystemPrivilege(SystemPrivilege.ManageAnyBucket)
+                || user.hasObjectPrivilege(ObjectPrivilegeType.ReadBucketObject, bucketName + BUCK_PATH_SEP + objName)
+                || user.hasObjectPrivilege(ObjectPrivilegeType.ManageBucketObject, bucketName + BUCK_PATH_SEP + objName));
     }
 
     public static void checkManageBucketPrivilege(String bucketName, User user) throws HttpException {
@@ -353,9 +376,23 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
                     // anyway)
         }
 
-        if (!user.hasObjectPrivilege(ObjectPrivilegeType.ManageBucket, bucketName)
-                && !user.hasSystemPrivilege(SystemPrivilege.ManageAnyBucket)) {
+        if (!user.hasSystemPrivilege(SystemPrivilege.ManageAnyBucket)
+                && !user.hasObjectPrivilege(ObjectPrivilegeType.ManageBucket, bucketName)) {
             throw new ForbiddenException("Insufficient privileges to manage bucket '" + bucketName + "'");
+        }
+    }
+
+    public static void checkManageObjectPrivilege(String bucketName, String objName, User user) throws HttpException {
+        checkManageBucketPrivilege(bucketName, user);
+
+        if (bucketName.equals(getUserBucketName(user))) {
+            return; // user can do whatever to its own bucket (but not to increase quota!! currently not possible
+            // anyway)
+        }
+
+        if (!user.hasSystemPrivilege(SystemPrivilege.ManageAnyBucket)
+                && !user.hasObjectPrivilege(ObjectPrivilegeType.ManageBucketObject, bucketName + BUCK_PATH_SEP + objName)) {
+            throw new ForbiddenException("Insufficient privileges to manage object '" + objName + "' in '" + bucketName + "' bucket");
         }
     }
 
