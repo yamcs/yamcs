@@ -150,9 +150,8 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
         }
 
         String bucketName = request.getBucket();
-        BucketsApi.checkReadBucketPrivilege(bucketName, ctx.user);
-
         String objectName = request.getObjectName();
+        BucketsApi.checkReadObjectPrivilege(bucketName, objectName, ctx.user);
 
         var bucketManager = YamcsServer.getServer().getBucketManager();
 
