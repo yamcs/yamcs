@@ -36,7 +36,6 @@ import org.yamcs.protobuf.ListObjectsRequest;
 import org.yamcs.protobuf.ListObjectsResponse;
 import org.yamcs.protobuf.ObjectInfo;
 import org.yamcs.protobuf.UploadObjectRequest;
-import org.yamcs.security.ObjectPrivilege;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
