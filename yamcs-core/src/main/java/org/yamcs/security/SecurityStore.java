@@ -214,8 +214,10 @@ public class SecurityStore {
         objectPrivilegeTypes.add(ObjectPrivilegeType.Command);
         objectPrivilegeTypes.add(ObjectPrivilegeType.CommandHistory);
         objectPrivilegeTypes.add(ObjectPrivilegeType.ManageBucket);
+        objectPrivilegeTypes.add(ObjectPrivilegeType.ManageBucketObject);
         objectPrivilegeTypes.add(ObjectPrivilegeType.ReadAlgorithm);
         objectPrivilegeTypes.add(ObjectPrivilegeType.ReadBucket);
+        objectPrivilegeTypes.add(ObjectPrivilegeType.ReadBucketObject);
         objectPrivilegeTypes.add(ObjectPrivilegeType.ReadPacket);
         objectPrivilegeTypes.add(ObjectPrivilegeType.ReadParameter);
         objectPrivilegeTypes.add(ObjectPrivilegeType.Stream);
