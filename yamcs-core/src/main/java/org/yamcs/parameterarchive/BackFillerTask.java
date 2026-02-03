@@ -44,7 +44,7 @@ class BackFillerTask extends AbstractArchiveFiller {
             long t0 = System.nanoTime();
             parameterArchive.writeToArchive(pgSegment);
             long d = System.nanoTime() - t0;
-            log.debug("Wrote segment {} to archive in {} millisec", pgSegment, d / 1000_000);
+            log.trace("Wrote segment {} to archive in {} millisec", pgSegment, d / 1000_000);
         } catch (RocksDBException | IOException e) {
             log.error("Error writing segment to archive", e);
             throw new ParameterArchiveException("Error writing segment to archive", e);
