@@ -30,6 +30,7 @@ public class ParameterReplayHandler implements ReplayHandler {
     ReplayOptions request;
     static final Logger log = LoggerFactory.getLogger(ParameterReplayHandler.class);
     boolean emptyReplay;
+    Set<String> unknownParameters = new HashSet<>();
 
     public ParameterReplayHandler(Mdb mdb) {
         this.mdb = mdb;
@@ -105,7 +106,11 @@ public class ParameterReplayHandler implements ReplayHandler {
                     p = SystemParametersService.createSystemParameter(mdb, pv.getParameterQualifiedName(),
                             pv.getEngValue());
                 } else {
-                    log.info("Cannot find a parameter with fqn {}", pv.getParameterQualifiedName());
+                    // Long only once per FQN
+                    if (!unknownParameters.contains(pv.getParameterQualifiedName())) {
+                        log.info("Cannot find a parameter with fqn {}", pv.getParameterQualifiedName());
+                        unknownParameters.add(pv.getParameterQualifiedName());
+                    }
                     continue;
                 }
             }
