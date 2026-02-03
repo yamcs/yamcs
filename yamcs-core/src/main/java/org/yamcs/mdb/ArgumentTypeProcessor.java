@@ -1,7 +1,6 @@
 package org.yamcs.mdb;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -245,7 +244,7 @@ public class ArgumentTypeProcessor {
                 throw new IllegalStateException("Unknonw epoch " + ce);
             }
         } else {
-            return TimeEncoding.parse(epoch.getDateTime());
+            return time - TimeEncoding.parse(epoch.getDateTime());
         }
     }
 
