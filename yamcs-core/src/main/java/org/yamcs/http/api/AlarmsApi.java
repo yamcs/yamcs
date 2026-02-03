@@ -43,6 +43,7 @@ import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.http.audit.AuditLog;
+import org.yamcs.logging.Log;
 import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.ParameterValue;
@@ -88,6 +89,7 @@ import com.google.protobuf.Timestamp;
 
 public class AlarmsApi extends AbstractAlarmsApi<Context> {
 
+    private static final Log log = new Log(AlarmsApi.class);
     private static ScheduledThreadPoolExecutor timer = new ScheduledThreadPoolExecutor(1);
 
     private static final AlarmSeverity[] PARAM_ALARM_SEVERITY = new AlarmSeverity[20];
@@ -869,7 +871,9 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         String paraFqn = (String) tuple.getColumn(StandardTupleDefinitions.PARAMETER_COLUMN);
 
         NamedObjectId id = NamedObjectId.newBuilder().setName(paraFqn).build();
-        alarmb.setTriggerValue(pval.toGpb(id));
+        if (pval != null) { // Should not happen, but has been seen in older versions of Yamcs
+            alarmb.setTriggerValue(pval.toGpb(id));
+        }
 
         if (tuple.hasColumn(ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED)) {
             pval = (ParameterValue) tuple.getColumn(ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED);
@@ -913,25 +917,28 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
             alarmb.setViolations(violationCount);
         }
 
+        var triggerTime = tuple.getTimestampColumn(ParameterAlarmStreamer.CNAME_TRIGGER_TIME);
+        alarmb.setTriggerTime(TimeEncoding.toProtobufTimestamp(triggerTime));
+
         if (tuple.hasColumn(StandardTupleDefinitions.PARAMETER_COLUMN)) {
             String paraFqn = (String) tuple.getColumn(StandardTupleDefinitions.PARAMETER_COLUMN);
 
             alarmb.setType(AlarmType.PARAMETER);
-            ParameterValue pval = (ParameterValue) tuple.getColumn(ParameterAlarmStreamer.CNAME_TRIGGER);
             alarmb.setId(NamedObjectId.newBuilder().setName(paraFqn).build());
-            alarmb.setTriggerTime(TimeEncoding.toProtobufTimestamp(pval.getGenerationTime()));
 
+            ParameterValue pval = (ParameterValue) tuple.getColumn(ParameterAlarmStreamer.CNAME_TRIGGER);
             if (tuple.hasColumn(ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED)) {
                 pval = (ParameterValue) tuple.getColumn(ParameterAlarmStreamer.CNAME_SEVERITY_INCREASED);
             }
-            alarmb.setSeverity(AlarmsApi.getParameterAlarmSeverity(pval.getMonitoringResult()));
+            if (pval != null) { // Should not happen, but has been seen in older versions of Yamcs
+                alarmb.setSeverity(AlarmsApi.getParameterAlarmSeverity(pval.getMonitoringResult()));
+            }
 
             ParameterAlarmData parameterAlarmData = tupleToParameterAlarmData(tuple);
             alarmb.setParameterDetail(parameterAlarmData);
         } else {
             alarmb.setType(AlarmType.EVENT);
             Db.Event ev = (Db.Event) tuple.getColumn(EventAlarmStreamer.CNAME_TRIGGER);
-            alarmb.setTriggerTime(TimeEncoding.toProtobufTimestamp(ev.getGenerationTime()));
             alarmb.setId(AlarmsApi.getAlarmId(ev));
 
             if (tuple.hasColumn(EventAlarmStreamer.CNAME_SEVERITY_INCREASED)) {
