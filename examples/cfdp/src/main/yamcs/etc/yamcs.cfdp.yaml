@@ -43,6 +43,7 @@ services:
      #How many milliseconds to keep the incoming transfer in the pending queue after completion
      #During this time an incoming PDU with that transaction id will not be recognized as a new transaction
      pendingAfterCompletion: 10000
+     #checksumType: 'MODULAR'
      localEntities:
        - name: id11
          id: 11

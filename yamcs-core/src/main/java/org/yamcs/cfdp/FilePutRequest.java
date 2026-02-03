@@ -26,7 +26,7 @@ public class FilePutRequest extends PutRequest {
         this.createpath = createpath;
         this.bucket = b;
         this.fileData = data;
-        this.checksum = ChecksumCalculator.calculateChecksum(data);
+        this.checksum = ModularChecksumCalculator.calculateChecksum(data);
     }
 
     public long getSourceId() {

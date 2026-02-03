@@ -186,10 +186,11 @@ public class DataFile {
         return seg0.start == 0 && seg0.end == size;
     }
 
-    public synchronized long getChecksum() {
+
+    public synchronized long getModularChecksum() {
         long checksum = 0;
         for (Segment segment : this.dataFileSegments) {
-            checksum += ChecksumCalculator.calculateChecksum(data, segment.start, segment.length());
+            checksum += ModularChecksumCalculator.calculateChecksum(data, segment.start, segment.length());
         }
         return checksum & 0xFFFFFFFFl;
     }

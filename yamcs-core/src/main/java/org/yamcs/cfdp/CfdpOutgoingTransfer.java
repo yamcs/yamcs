@@ -17,6 +17,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.buckets.Bucket;
 import org.yamcs.cfdp.pdu.AckPacket;
@@ -81,7 +82,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
     private long end = 0;
 
     private boolean suspended = false;
-    private final ChecksumType checksumType = ChecksumType.MODULAR;
+    private final ChecksumType checksumType;
 
     private PutRequest request;
     private ScheduledFuture<?> pduSendingSchedule;
@@ -159,6 +160,11 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
         this.sleepBetweenPdus = customPduDelay != null && customPduDelay > 0 ? customPduDelay
                 : config.getInt("sleepBetweenPdus", 500);
         this.closureRequested = request.isClosureRequested();
+        this.checksumType = config.getEnum("checksumType", ChecksumType.class, ChecksumType.MODULAR);
+        if (this.checksumType != ChecksumType.MODULAR && this.checksumType != ChecksumType.NULL) {
+            throw new ConfigurationException(
+                    "Checksump type " + this.checksumType + " not supported. Supported are: NULL and MODULAR");
+        }
 
         if (request.getHeader() != null) {
             directiveHeader = request.getHeader().copy(true);
@@ -523,14 +529,15 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
         TLV tlv;
 
         if (code == ConditionCode.NO_ERROR) {
-            checksum = request.getChecksum();
             filesize = request.getFileLength();
             tlv = null;
         } else {
             filesize = getTransferredSize();
-            checksum = ChecksumCalculator.calculateChecksum(request.getFileData(), 0l, filesize);
             tlv = TLV.getEntityIdTLV(cfdpTransactionId.getInitiatorEntity(), entityIdLength);
         }
+
+        checksum = checksumType == ChecksumType.NULL ? 0
+                : ModularChecksumCalculator.calculateChecksum(request.getFileData(), 0l, filesize);
 
         return new EofPacket(code, checksum, filesize, tlv, directiveHeader);
     }

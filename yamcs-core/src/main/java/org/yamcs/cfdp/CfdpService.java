@@ -261,6 +261,7 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
         spec.addOption("fileListingParserArgs", OptionType.MAP).withSpec(Spec.ANY)
                 .withDefault(new HashMap<>());
         spec.addOption("automaticDirectoryListingReloads", OptionType.BOOLEAN).withDefault(false);
+        spec.addOption("checksumType", OptionType.STRING).withDefault("MODULAR");
 
         return spec;
     }

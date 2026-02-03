@@ -4,6 +4,7 @@ Version 5.12.4 released 26-Jan-2025
 - Allow to change the system name of an XLS through YAML configuration
 - Reduces requests when an OPI loads the same external script multiple times
 - Allow alternative SDLS implementations to override the default Yamcs implementation
+- Add SDLS status and configuration to yamcs-web
 
 
 Version 5.12.3 released 14-Nov-2025

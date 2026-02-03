@@ -241,3 +241,12 @@ allowConcurrentFileOverwrites (boolean)
 pendingAfterCompletion (integer)
     Number of milliseconds to keep the incoming transaction in memory after completion. During this time, the newly received EOF PDUs belonging to the transaction are still answered. All the other PDUs belonging to the transaction are ignored. Default: ``600000`` (10 minutes).
     Consequentially if a new transfer would start with the same id (for example following an on-board computer reboot), the transfer will not be recognized as new before this timer has expired.
+
+
+checksumType (string)
+    The checksum type to use for outgoing transfers. Supported values are ``NULL`` and ``MODULAR``.
+    The checksum type for incoming transfers is read from the Metadata PDU, but only these two values are supported, anything else will cause the transfer to fail with the ``UNSUPPORTED_CHECKSUM_TYPE`` condition code.
+
+    Note: ``NULL`` is a special value in YAML, so you must enclose it in quotes when using it.
+
+    Default: ``MODULAR``

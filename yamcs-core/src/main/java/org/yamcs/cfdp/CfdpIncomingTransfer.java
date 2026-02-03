@@ -263,7 +263,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
             log.debug("TXID{} Ignoring metadata packet {}", cfdpTransactionId, packet);
             return;
         }
-        if (packet.getChecksumType() != ChecksumType.MODULAR) {
+        if (packet.getChecksumType() != ChecksumType.MODULAR && packet.getChecksumType() != ChecksumType.NULL) {
             log.warn("TXID{} received metadata indicating unsupported checksum type {}", cfdpTransactionId,
                     packet.getChecksumType());
             handleFault(ConditionCode.UNSUPPORTED_CHECKSUM_TYPE);
@@ -430,7 +430,8 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
     private void onFileCompleted() {
         // verify checksum
         long expectedChecksum = eofPacket.getFileChecksum();
-        if (expectedChecksum == incomingDataFile.getChecksum()) {
+        if (metadataPacket.getChecksumType() == ChecksumType.NULL
+                || expectedChecksum == incomingDataFile.getModularChecksum()) {
             log.info("TXID{} file completed, checksum OK", cfdpTransactionId);
             if (needsFinish) {
                 finish(ConditionCode.NO_ERROR);
@@ -442,7 +443,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
                     " downlink finished and saved in " + getBucketName() + "/" + getObjectName());
         } else {
             log.warn("TXID{} file checksum failure; EOF packet indicates {} while data received has {}",
-                    cfdpTransactionId, expectedChecksum, incomingDataFile.getChecksum());
+                    cfdpTransactionId, expectedChecksum, incomingDataFile.getModularChecksum());
             saveFile(true, Collections.emptyList());
             sendWarnEvent(ETYPE_TRANSFER_FINISHED,
                     " checksum failure; corrupted file saved in " + getBucketName() + "/" + getObjectName());
