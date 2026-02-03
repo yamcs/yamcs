@@ -528,7 +528,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
             tlv = null;
         } else {
             filesize = getTransferredSize();
-            checksum = ChecksumCalculator.calculateChecksum(request.getFileData(), 0l, filesize);
+            checksum = ModularChecksumCalculator.calculateChecksum(request.getFileData(), 0l, filesize);
             tlv = TLV.getEntityIdTLV(cfdpTransactionId.getInitiatorEntity(), entityIdLength);
         }
 

@@ -1,6 +1,6 @@
 package org.yamcs.cfdp;
 
-public class ChecksumCalculator {
+public class ModularChecksumCalculator {
     public static long calculateChecksum(byte[] data) {
         return calculateChecksum(data, 0, data.length);
     }

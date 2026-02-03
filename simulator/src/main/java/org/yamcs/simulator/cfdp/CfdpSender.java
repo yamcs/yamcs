@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.cfdp.CfdpTransactionId;
-import org.yamcs.cfdp.ChecksumCalculator;
+import org.yamcs.cfdp.ModularChecksumCalculator;
 import org.yamcs.cfdp.ChecksumType;
 import org.yamcs.cfdp.pdu.*;
 import org.yamcs.cfdp.pdu.AckPacket.FileDirectiveSubtypeCode;
@@ -199,7 +199,7 @@ public class CfdpSender {
             abort();
         }
         if (addToChecksum) {
-            checksum += ChecksumCalculator.calculateChecksum(data);
+            checksum += ModularChecksumCalculator.calculateChecksum(data);
             checksum &= 0xFFFFFFFF;
         }
 

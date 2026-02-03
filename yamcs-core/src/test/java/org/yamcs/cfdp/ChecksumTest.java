@@ -13,13 +13,13 @@ public class ChecksumTest {
     @Test
     public void test1() {
         byte[] data = StringConverter.hexStringToArray("000102030405060708090a0b0c0d0e");
-        assertEquals(0x181C2015, ChecksumCalculator.calculateChecksum(data));
+        assertEquals(0x181C2015, ModularChecksumCalculator.calculateChecksum(data));
     }
 
     @Test
     public void test2() {
         byte[] data = StringConverter.hexStringToArray("0102030405060708090a0b0c0d0e");
-        assertEquals(0x181C2015, ChecksumCalculator.calculateChecksum(data, 1, data.length));
+        assertEquals(0x181C2015, ModularChecksumCalculator.calculateChecksum(data, 1, data.length));
     }
 
     @Test
@@ -28,13 +28,13 @@ public class ChecksumTest {
         byte[] data = new byte[r.nextInt(1000)];
         r.nextBytes(data);
 
-        long checksum1 = ChecksumCalculator.calculateChecksum(data);
+        long checksum1 = ModularChecksumCalculator.calculateChecksum(data);
 
         long checksum2 = 0;
         int k = 0;
         while (k < data.length) {
             int l = 1 + r.nextInt(data.length - k);
-            checksum2 += ChecksumCalculator.calculateChecksum(Arrays.copyOfRange(data, k, k + l), k, l);
+            checksum2 += ModularChecksumCalculator.calculateChecksum(Arrays.copyOfRange(data, k, k + l), k, l);
             k += l;
         }
 
