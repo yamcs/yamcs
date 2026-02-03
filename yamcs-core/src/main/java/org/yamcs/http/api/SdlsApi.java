@@ -53,9 +53,6 @@ public class SdlsApi extends AbstractSdlsApi<Context> {
             throw new NotFoundException("No such link");
         }
 
-        if (link.isDisabled()) {
-            throw new BadRequestException("Link unavailable");
-        }
         return link;
     }
 
