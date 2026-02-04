@@ -5,10 +5,10 @@ This section describes Yamcs support for parts of the following CCSDS specificat
 
 * TM Space Data Link Protocol `CCSDS 132.0-B-3 <https://public.ccsds.org/Pubs/132x0b3.pdf>`_
 * AOS Space Data Link Protocol `CCSDS 732.0-B-4 <https://public.ccsds.org/Pubs/732x0b4.pdf>`_
-* TC Space Data Link Protocol `CCSDS 232.0-B-4 <https://public.ccsds.org/Pubs/232x0b4.pdf>`_
-* Unified Space Data Link Protocol `CCSDS 732.1-B-2  <https://public.ccsds.org/Pubs/732x1b2.pdf>`_
+* TC Space Data Link Protocol `CCSDS 232.0-B-4 <https://public.ccsds.org/Pubs/232x0b4e1c1.pdf>`_
+* Unified Space Data Link Protocol `CCSDS 732.1-B-2  <https://public.ccsds.org/Pubs/732x1b3e1.pdf>`_
 * TC Synchronization and Channel Coding `CCSDS 231.0-B-4 <https://public.ccsds.org/Pubs/232x0b4e1c1.pdf>`_
-* TM Synchronization and Channel Coding `CCSDS 131.0-B-4 <https://public.ccsds.org/Pubs/131x0b4.pdf>`_
+* TM Synchronization and Channel Coding `CCSDS 131.0-B-4 <https://public.ccsds.org/Pubs/131x0b5.pdf>`_
 * Communications Operation Procedure (COP-1) `CCSDS 232.1-B-2 <https://public.ccsds.org/Pubs/232x1b2e2c1.pdf>`_
 * Space Packet Protocol `CCSDS 133.0-B-2 <https://public.ccsds.org/Pubs/133x0b2e2.pdf>`_
 * Encapsulation Service `CCSDS 133.1-B-3 <https://public.ccsds.org/Pubs/133x1b3e1.pdf>`_
