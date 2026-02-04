@@ -10,13 +10,11 @@ import java.util.Objects;
 public class ObjectPrivilegeType {
 
     public static final ObjectPrivilegeType ManageBucket = new ObjectPrivilegeType("ManageBucket");
-    public static final ObjectPrivilegeType ManageBucketObject = new ObjectPrivilegeType("ManageBucketObject");
     public static final ObjectPrivilegeType CommandHistory = new ObjectPrivilegeType("CommandHistory");
     public static final ObjectPrivilegeType Stream = new ObjectPrivilegeType("Stream");
     public static final ObjectPrivilegeType Command = new ObjectPrivilegeType("Command");
     public static final ObjectPrivilegeType ReadAlgorithm = new ObjectPrivilegeType("ReadAlgorithm");
     public static final ObjectPrivilegeType ReadBucket = new ObjectPrivilegeType("ReadBucket");
-    public static final ObjectPrivilegeType ReadBucketObject = new ObjectPrivilegeType("ReadBucketObject");
     public static final ObjectPrivilegeType ReadPacket = new ObjectPrivilegeType("ReadPacket");
     public static final ObjectPrivilegeType ReadParameter = new ObjectPrivilegeType("ReadParameter");
     public static final ObjectPrivilegeType WriteParameter = new ObjectPrivilegeType("WriteParameter");

@@ -23,7 +23,7 @@ import java.util.function.Predicate;
 import org.yamcs.utils.Mimetypes;
 import org.yamcs.utils.TimeEncoding;
 
-public class FileSystemBucket implements Bucket {
+public class FileSystemBucket extends Bucket {
 
     private static final BucketLocation LOCATION = new BucketLocation("fs", "File system");
     private static final long DEFAULT_MAX_SIZE = 100L * 1024 * 1024; // 100MB

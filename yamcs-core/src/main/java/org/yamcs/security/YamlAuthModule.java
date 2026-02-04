@@ -125,6 +125,7 @@ public class YamlAuthModule implements AuthModule {
 
                     // Add privileges for this role
                     if (roleDefs.containsKey(role)) {
+                        authz.addRole(role);
                         Map<String, Object> types = roleDefs.get(role);
                         types.forEach((typeString, objects) -> {
                             if (typeString.equals("System")) {

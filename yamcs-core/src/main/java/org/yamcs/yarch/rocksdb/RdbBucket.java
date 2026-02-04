@@ -31,7 +31,7 @@ import org.yamcs.yarch.rocksdb.protobuf.Tablespace.TablespaceRecord.Type;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
-public class RdbBucket implements Bucket {
+public class RdbBucket extends Bucket {
 
     private static final Logger log = LoggerFactory.getLogger(RdbBucket.class);
     private static final BucketLocation LOCATION = new BucketLocation("db", "Yamcs DB");
