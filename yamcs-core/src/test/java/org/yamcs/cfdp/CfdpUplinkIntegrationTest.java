@@ -249,7 +249,7 @@ public class CfdpUplinkIntegrationTest {
 
         // create object
         String objName = "randomfile23-01-2022";
-        byte[] data = createObject(objName, 1000);
+        byte[] data = createObject(objName, 50000);
         ObjectId object = ObjectId.of(outgoingBucket.getName(), objName);
 
         // initiate transfer
