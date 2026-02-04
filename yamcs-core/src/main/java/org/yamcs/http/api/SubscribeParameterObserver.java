@@ -12,11 +12,11 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.InvalidIdentification;
-import org.yamcs.NoPermissionException;
 import org.yamcs.Processor;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.logging.Log;
+import org.yamcs.parameter.InvalidParametersException;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
@@ -91,28 +91,33 @@ public class SubscribeParameterObserver implements Observer<SubscribeParametersR
             List<NamedObjectId> invalid = new ArrayList<>();
             try {
                 updateSubscription(action, idList, request.getUpdateOnExpiration());
-            } catch (InvalidIdentification e) {
-                invalid.addAll(e.getInvalidParameters());
+            } catch (InvalidParametersException e) {
+                invalid.addAll(e.getUnknownParameters());
+                invalid.addAll(e.getForbiddenParameters());
 
                 if (!request.hasAbortOnInvalid() || request.getAbortOnInvalid()) {
                     BadRequestException ex = new BadRequestException(e);
                     ex.setDetail(NamedObjectList.newBuilder().addAllList(invalid).build());
                     responseObserver.completeExceptionally(ex);
                 } else {
-                    if (idList.size() == e.getInvalidParameters().size()) {
-                        log.warn("Received subscribe attempt with only invalid parameters");
+                    Set<NamedObjectId> valid = new HashSet<>(idList);
+                    valid.removeAll(invalid);
+                    if (valid.isEmpty()) {
+                        log.warn("Subscribe attempt with only invalid parameters");
                         idList = Collections.emptyList();
                     } else {
-                        Set<NamedObjectId> valid = new HashSet<>(idList);
-                        valid.removeAll(e.getInvalidParameters());
                         idList = new ArrayList<>(valid);
 
-                        log.warn("Received subscribe attempt with {} invalid parameters. "
-                                + "Subscription will continue with {} remaining valids.",
-                                e.getInvalidParameters().size(), idList.size());
-                        if (log.isDebugEnabled()) {
-                            log.debug("The invalid IDs are: {}",
-                                    StringConverter.idListToString(e.getInvalidParameters()));
+                        log.warn("Subscribe attempt with {} unknown or forbidden parameters. "
+                                + "Subscription will continue with {} parameters",
+                                invalid.size(), idList.size());
+                        if (log.isDebugEnabled() && !e.getUnknownParameters().isEmpty()) {
+                            log.debug("The unknown IDs are: {}",
+                                    StringConverter.idListToString(e.getUnknownParameters()));
+                        }
+                        if (log.isDebugEnabled() && !e.getForbiddenParameters().isEmpty()) {
+                            log.debug("The forbidden IDs are: {}",
+                                    StringConverter.idListToString(e.getForbiddenParameters()));
                         }
                         updateSubscription(action, idList, request.getUpdateOnExpiration());
                     }
@@ -147,11 +152,8 @@ public class SubscribeParameterObserver implements Observer<SubscribeParametersR
             // (updates come from another thread, and we want to client to
             // know a mapping before receiving a value for it)
             numericIdMap.putAll(mappingUpdate);
-        } catch (InvalidIdentification e) {
-            log.warn("Invalid identification: {}", e.getMessage());
-            responseObserver.completeExceptionally(e);
-        } catch (NoPermissionException e) {
-            log.warn("No permission for parameters: {}", e.getMessage());
+        } catch (InvalidParametersException e) {
+            log.warn("Invalid parameters: {}", e.getMessage());
             responseObserver.completeExceptionally(e);
         }
     }
@@ -194,7 +196,7 @@ public class SubscribeParameterObserver implements Observer<SubscribeParametersR
     }
 
     private void updateSubscription(Action action, List<NamedObjectId> idList, boolean updateOnExpiration)
-            throws NoPermissionException, InvalidIdentification {
+            throws InvalidParametersException {
         if (action == Action.REPLACE) {
             if (subscriptionId != -1) {
                 pidrm.removeRequest(subscriptionId);
@@ -209,7 +211,7 @@ public class SubscribeParameterObserver implements Observer<SubscribeParametersR
             }
         } else if (action == Action.REMOVE) {
             if (subscriptionId != -1) {
-                pidrm.removeItemsFromRequest(subscriptionId, idList, user);
+                pidrm.removeItemsFromRequest(subscriptionId, idList);
             }
         }
     }

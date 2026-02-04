@@ -9,7 +9,6 @@ import java.util.Set;
 import org.yamcs.AbstractProcessorService;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InvalidIdentification;
-import org.yamcs.NoPermissionException;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorException;
 import org.yamcs.TmPacket;
@@ -26,11 +25,13 @@ import org.yamcs.archive.YarchReplay;
 import org.yamcs.cmdhistory.CommandHistoryProvider;
 import org.yamcs.cmdhistory.CommandHistoryRequestManager;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.mdb.Mdb;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.mdb.ParameterTypeProcessor;
 import org.yamcs.mdb.ProcessingContext;
 import org.yamcs.mdb.Subscription;
-import org.yamcs.mdb.MdbFactory;
 import org.yamcs.mdb.XtceTmProcessor;
+import org.yamcs.parameter.InvalidParametersException;
 import org.yamcs.parameter.ParameterProcessor;
 import org.yamcs.parameter.ParameterProcessorManager;
 import org.yamcs.parameter.ParameterProvider;
@@ -53,7 +54,6 @@ import org.yamcs.security.SecurityStore;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
-import org.yamcs.mdb.Mdb;
 import org.yamcs.yarch.protobuf.Db.Event;
 import org.yamcs.yarch.protobuf.Db.ProtoDataType;
 
@@ -267,11 +267,9 @@ public class ReplayService extends AbstractProcessorService
         int subscriptionId;
         try {
             subscriptionId = pidrm.addRequest(plist, securityStore.getSystemUser());
-        } catch (InvalidIdentification e) {
-            NamedObjectList nol = NamedObjectList.newBuilder().addAllList(e.getInvalidParameters()).build();
+        } catch (InvalidParametersException e) {
+            NamedObjectList nol = NamedObjectList.newBuilder().addAllList(e.getParameters()).build();
             throw new YamcsException("InvalidIdentification", "Invalid identification", nol);
-        } catch (NoPermissionException e) {
-            throw new IllegalStateException("Unexpected No permission");
         }
 
         XtceTmProcessor tmproc = processor.getTmProcessor();
