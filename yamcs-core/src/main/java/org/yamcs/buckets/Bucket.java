@@ -1,48 +1,72 @@
 package org.yamcs.buckets;
 
+import com.google.common.base.CaseFormat;
+
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
-public interface Bucket {
+public abstract class Bucket {
+
+    /**
+     * Bucket specific access rules: each AccessRuleType, maps user roles to a list of path patterns
+     * If a certain AccessRuleType is absent, it means no rule was set, and the old bucket-wide permissions get used
+     */
+    private final Map<AccessRuleType, Map<String, List<String>>> accessRules = new HashMap<>();
+
+    public enum AccessRuleType {
+        READ,
+        WRITE;
+
+        private final String configName;
+
+        AccessRuleType() {
+            configName = CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, name());
+        }
+
+        public String getConfigName() {
+            return configName;
+        }
+    }
 
     /**
      * Bucket location
      */
-    BucketLocation getLocation();
+    public abstract BucketLocation getLocation();
 
     /**
      * This bucket's name
      */
-    String getName();
+    public abstract String getName();
 
-    CompletableFuture<BucketProperties> getPropertiesAsync();
+    public abstract CompletableFuture<BucketProperties> getPropertiesAsync();
 
     /**
      * Update the size limit for this bucket.
      * <p>
      * If the specified size is smaller than the current size, the bucket will no longer accept new files.
      */
-    void setMaxSize(long maxSize) throws IOException;
+    public abstract void setMaxSize(long maxSize) throws IOException;
 
     /**
      * Update the object count limit for this bucket.
      * <p>
      * If the specified count is smaller than the current count, the bucket will no longer accept new files.
      */
-    void setMaxObjects(int maxObjects) throws IOException;
+    public abstract void setMaxObjects(int maxObjects) throws IOException;
 
-    default CompletableFuture<List<ObjectProperties>> listObjectsAsync() {
+    public CompletableFuture<List<ObjectProperties>> listObjectsAsync() {
         return listObjectsAsync(null, x -> true);
     }
 
-    default CompletableFuture<List<ObjectProperties>> listObjectsAsync(String prefix) {
+    public CompletableFuture<List<ObjectProperties>> listObjectsAsync(String prefix) {
         return listObjectsAsync(prefix, x -> true);
     }
 
-    default CompletableFuture<List<ObjectProperties>> listObjectsAsync(Predicate<ObjectProperties> p) {
+    public CompletableFuture<List<ObjectProperties>> listObjectsAsync(Predicate<ObjectProperties> p) {
         return listObjectsAsync(null, p);
     }
 
@@ -55,21 +79,38 @@ public interface Bucket {
      *            predicate to be matched by the returned objects
      * @return list of objects
      */
-    CompletableFuture<List<ObjectProperties>> listObjectsAsync(String prefix, Predicate<ObjectProperties> p);
+    public abstract CompletableFuture<List<ObjectProperties>> listObjectsAsync(String prefix,
+            Predicate<ObjectProperties> p);
 
-    CompletableFuture<Void> putObjectAsync(String objectName, String contentType, Map<String, String> metadata,
+    public abstract CompletableFuture<Void> putObjectAsync(String objectName, String contentType,
+            Map<String, String> metadata,
             byte[] objectData);
 
     /**
      * Retrieve object from the bucket. Returns null if object does not exist.
      */
-    CompletableFuture<byte[]> getObjectAsync(String objectName);
+    public abstract CompletableFuture<byte[]> getObjectAsync(String objectName);
 
-    CompletableFuture<Void> deleteObjectAsync(String objectName);
+    public abstract CompletableFuture<Void> deleteObjectAsync(String objectName);
 
     /**
      * Retrieve the object properties or null if not such an object exist
      */
-    CompletableFuture<ObjectProperties> findObjectAsync(String objectName);
+    public abstract CompletableFuture<ObjectProperties> findObjectAsync(String objectName);
 
+    /**
+     * Sets bucket object access rules
+     * @param accessRules map of roles to a list of allowed path regexes
+     */
+    public void setAccessRules(Map<AccessRuleType, Map<String, List<String>>> accessRules) {
+        this.accessRules.putAll(accessRules);
+    }
+
+    public Map<String, List<String>> getAccessRules(AccessRuleType type) {
+        return accessRules.get(type);
+    }
+
+    public boolean hasAccessRules(AccessRuleType type) {
+        return accessRules.containsKey(type);
+    }
 }

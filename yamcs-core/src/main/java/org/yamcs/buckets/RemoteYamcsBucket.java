@@ -8,7 +8,7 @@ import java.util.function.Predicate;
 
 import org.yamcs.client.storage.Bucket.ListObjectsOptions;
 
-public class RemoteYamcsBucket implements Bucket {
+public class RemoteYamcsBucket extends Bucket {
 
     public static final BucketLocation LOCATION = new BucketLocation("remote-yamcs", "Remote Yamcs");
 
