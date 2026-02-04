@@ -123,7 +123,11 @@ export class InstancePageComponent implements OnInit, OnDestroy {
       }
     }
     const displayBucket = configService.getDisplayBucket();
-    if (this.user.hasObjectPrivilege('ReadBucket', displayBucket)) {
+    const mayReadDisplayBucket =
+      this.user.hasObjectPrivilege('ReadBucket', displayBucket) ||
+      this.user.hasObjectPrivilege('ManageBucket', displayBucket) ||
+      this.user.hasSystemPrivilege('ManageAnyBucket');
+    if (mayReadDisplayBucket) {
       this.telemetryItems.push({ path: 'displays', label: 'Displays' });
     }
     for (const item of extensionService.getNavItems('telemetry')) {
@@ -154,10 +158,11 @@ export class InstancePageComponent implements OnInit, OnDestroy {
       }
     }
 
-    if (
-      this.config.tc &&
-      this.user.hasObjectPrivilege('ReadBucket', stackBucket)
-    ) {
+    const mayReadStackBucket =
+      this.user.hasObjectPrivilege('ReadBucket', stackBucket) ||
+      this.user.hasObjectPrivilege('ManageBucket', stackBucket) ||
+      this.user.hasSystemPrivilege('ManageAnyBucket');
+    if (this.config.tc && mayReadStackBucket) {
       this.proceduresItems.push({ path: 'stacks', label: 'Stacks' });
     }
     if (
