@@ -13,8 +13,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import org.yamcs.InvalidIdentification;
-import org.yamcs.NoPermissionException;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.ProcessorServiceWithConfig;
@@ -31,7 +29,9 @@ import org.yamcs.http.NotFoundException;
 import org.yamcs.management.ManagementGpbHelper;
 import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
+import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
+import org.yamcs.parameter.InvalidParametersException;
 import org.yamcs.parameter.ParameterRequestManager;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithId;
@@ -79,7 +79,6 @@ import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.Parameter;
-import org.yamcs.mdb.Mdb;
 
 import com.google.protobuf.Empty;
 
@@ -397,8 +396,8 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         List<NamedObjectId> idList = request.getRequestList().stream().map(r -> r.getId()).collect(Collectors.toList());
         List<ParameterWithId> pidList;
         try {
-            pidList = ParameterWithIdRequestHelper.checkNames(prm, idList);
-        } catch (InvalidIdentification e) {
+            pidList = ParameterWithIdRequestHelper.checkNames(prm, idList, ctx.user);
+        } catch (InvalidParametersException e) {
             throw new BadRequestException("InvalidIdentification: " + e.getMessage());
         }
 
@@ -537,18 +536,16 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
             } else {
                 return doGetParameterValuesFromRealtime(processor, user, ids, timeout);
             }
-        } catch (InvalidIdentification e) {
+        } catch (InvalidParametersException e) {
             // TODO - send the invalid parameters in a parsable form
             throw new BadRequestException(
-                    "Invalid parameters: " + e.getInvalidParameters().toString());
-        } catch (NoPermissionException e) {
-            throw new ForbiddenException(e.getMessage(), e);
+                    "Invalid parameters: " + e.getParameters().toString());
         }
     }
 
     // get the parameters waiting for new values
     private CompletableFuture<List<ParameterValue>> doGetParameterValuesFromRealtime(Processor processor, User user,
-            List<NamedObjectId> ids, long timeout) throws HttpException, NoPermissionException, InvalidIdentification {
+            List<NamedObjectId> ids, long timeout) throws HttpException, InvalidParametersException {
 
         if (timeout > 60000) {
             throw new BadRequestException("Invalid timeout specified. Maximum is 60.000 milliseconds");
@@ -588,7 +585,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
     }
 
     private CompletableFuture<List<ParameterValue>> doGetParameterValuesFromCache(Processor processor, User user,
-            List<NamedObjectId> ids) throws NoPermissionException, InvalidIdentification {
+            List<NamedObjectId> ids) throws InvalidParametersException {
 
         CompletableFuture<List<ParameterValue>> cf = new CompletableFuture<>();
 

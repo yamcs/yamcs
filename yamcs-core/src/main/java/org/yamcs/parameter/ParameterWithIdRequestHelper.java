@@ -3,7 +3,6 @@ package org.yamcs.parameter;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -60,17 +59,16 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     }
 
     public int addRequest(List<NamedObjectId> idList, User user)
-            throws InvalidIdentification, NoPermissionException {
+            throws InvalidParametersException {
         return addRequest(idList, false, user);
     }
 
     public int addRequest(List<NamedObjectId> idList, boolean checkExpiration, User user)
-            throws InvalidIdentification, NoPermissionException {
-        List<ParameterWithId> plist = checkNames(idList);
+            throws InvalidParametersException {
+        List<ParameterWithId> plist = checkNames(idList, user);
         Subscription subscr = new Subscription(checkExpiration);
         for (int i = 0; i < idList.size(); i++) {
             ParameterWithId pwid = plist.get(i);
-            checkParameterPrivilege(user, pwid.p);
             subscr.add(pwid);
         }
         int subscriptionId = prm.addRequest(plist.stream().map(pwid -> pwid.p).collect(Collectors.toList()), this);
@@ -80,17 +78,16 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     }
 
     public void addItemsToRequest(int subscriptionId, List<NamedObjectId> idList, User user)
-            throws InvalidIdentification, NoPermissionException {
+            throws InvalidParametersException {
         Subscription subscr = subscriptions.get(subscriptionId);
         if (subscr == null) {
             log.warn("add item requested for an invalid subscription id {}", subscriptionId);
             throw new InvalidRequestIdentification("Invalid subcription id", subscriptionId);
         }
-        List<ParameterWithId> plist = checkNames(idList);
+        List<ParameterWithId> plist = checkNames(idList, user);
         synchronized (subscr) {
             for (int i = 0; i < idList.size(); i++) {
                 Parameter p = plist.get(i).p;
-                checkParameterPrivilege(user, p);
                 NamedObjectId id = idList.get(i);
                 if (!subscr.add(plist.get(i))) {
                     log.info("Ignoring duplicate subscription for '{}', id: {}", p.getName(),
@@ -117,8 +114,8 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         futureRef.set(future);
     }
 
-    List<ParameterWithId> checkNames(List<NamedObjectId> idList) throws InvalidIdentification {
-        return checkNames(prm, idList);
+    private List<ParameterWithId> checkNames(List<NamedObjectId> idList, User user) throws InvalidParametersException {
+        return checkNames(prm, idList, user);
     }
 
     // turn NamedObjectId to Parameter references
@@ -150,22 +147,29 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     }
 
     // turn NamedObjectId to Parameter references
-    public static List<ParameterWithId> checkNames(ParameterRequestManager prm, List<NamedObjectId> idList)
-            throws InvalidIdentification {
+    public static List<ParameterWithId> checkNames(ParameterRequestManager prm, List<NamedObjectId> idList, User user)
+            throws InvalidParametersException {
         List<ParameterWithId> result = new ArrayList<>();
-        List<NamedObjectId> invalid = new ArrayList<>(0);
+        List<NamedObjectId> unknown = new ArrayList<>(0);
+        List<NamedObjectId> forbidden = new ArrayList<>(0);
         for (NamedObjectId id : idList) {
             try {
-                result.add(checkName(prm, id));
+                ParameterWithId pwid = checkName(prm, id);
+                if (user.hasParameterPrivilege(ObjectPrivilegeType.ReadParameter, pwid.p)) {
+                    result.add(pwid);
+                } else {
+                    forbidden.add(id);
+                }
             } catch (InvalidIdentification e) {
-                invalid.add(id);
+                unknown.add(id);
                 continue;
             }
-
         }
-        if (!invalid.isEmpty()) {
-            log.info("Throwing invalid identification for the following items: {}", invalid);
-            throw new InvalidIdentification(invalid);
+        if (!unknown.isEmpty() || !forbidden.isEmpty()) {
+            log.info("Unknown parameters: {}. Forbidden parameters: {}",
+                    StringConverter.idListToString(unknown),
+                    StringConverter.idListToString(forbidden));
+            throw new InvalidParametersException(unknown, forbidden);
         }
         return result;
     }
@@ -178,8 +182,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         prm.removeRequest(subscriptionId);
     }
 
-    public void removeItemsFromRequest(int subscriptionId, List<NamedObjectId> parameterIds, User user)
-            throws NoPermissionException {
+    public void removeItemsFromRequest(int subscriptionId, List<NamedObjectId> parameterIds) {
         Subscription subscr = subscriptions.get(subscriptionId);
 
         if (subscr == null) {
@@ -205,7 +208,7 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
     }
 
     public int subscribeAll(User user) throws NoPermissionException {
-        if(!user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, ".*")) {
+        if (!user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, ".*")) {
             throw new NoPermissionException("User " + user + " has no permission for parameter .*");
         }
         subscribeAllId = prm.subscribeAll(this);
@@ -249,21 +252,14 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
 
     /**
      * Retrieve a list of parameter values from cache. This call does not block.
-     * 
-     * @param idList
-     * @param user
-     * @return
-     * @throws InvalidIdentification
-     * @throws NoPermissionException
      */
     public List<ParameterValueWithId> getValuesFromCache(List<NamedObjectId> idList, User user)
-            throws InvalidIdentification, NoPermissionException {
-        List<ParameterWithId> plist = checkNames(idList);
+            throws InvalidParametersException {
+        List<ParameterWithId> plist = checkNames(idList, user);
 
         ListMultimap<Parameter, ParameterWithId> lm = ArrayListMultimap.create();
         for (int i = 0; i < idList.size(); i++) {
             ParameterWithId pwid = plist.get(i);
-            checkParameterPrivilege(user, pwid.p);
             lm.put(pwid.p, pwid);
         }
 
@@ -356,59 +352,6 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         prm = null;
     }
 
-    public List<NamedObjectId> selectPrm(ParameterRequestManager prm, User user) throws NoPermissionException {
-        List<NamedObjectId> invalid = new ArrayList<>();
-        // Parameter references may be invalid for the new processor
-        // we have to re-create the subscriptions starting from the original subscribed names
-        // and take care that some names may have become invalid
-        this.prm = prm;
-        for (int subscriptionId : subscriptions.keySet()) {
-            Subscription subscr = subscriptions.get(subscriptionId);
-            synchronized (subscr) {
-                List<NamedObjectId> idList = subscr.getallIds();
-                List<ParameterWithId> plist;
-                try {
-                    plist = checkNames(idList);
-                } catch (InvalidIdentification e) {
-                    log.warn("Got invalid identification when selecting parameters for processor {}: {}",
-                            prm.processor.getName(), e.getInvalidParameters());
-                    idList.removeAll(e.getInvalidParameters());
-                    invalid.addAll(e.getInvalidParameters());
-                    try {
-                        plist = checkNames(idList);
-                    } catch (InvalidIdentification e1) { // shouldn't happen again
-                        throw new IllegalStateException(e1);
-                    }
-                }
-                assert (idList.size() == plist.size());
-                Subscription subscr1 = new Subscription(subscr.checkExpiration);
-
-                for (int i = 0; i < plist.size(); i++) {
-                    ParameterWithId pwid = plist.get(i);
-                    checkParameterPrivilege(user, pwid.p);
-                    subscr1.add(pwid);
-                }
-                prm.addRequest(subscriptionId, plist.stream().map(pwid -> pwid.p).collect(Collectors.toList()), this);
-                subscriptions.put(subscriptionId, subscr1);
-            }
-        }
-        return invalid;
-    }
-
-    /**
-     * Change processor and return the list of parameters that were valid in the old processor and are not anymore
-     */
-    public List<NamedObjectId> switchPrm(ParameterRequestManager newPrm, User user) throws NoPermissionException {
-        if (prm != null) {
-            unselectPrm();
-        }
-        if (newPrm != null) {
-            return selectPrm(newPrm, user);
-        } else {
-            return Collections.emptyList();
-        }
-    }
-
     private long getAquisitionTime(List<ParameterValue> items) {
         for (ParameterValue pv : items) {
             if (pv.hasAcquisitionTime()) {
@@ -491,20 +434,6 @@ public class ParameterWithIdRequestHelper implements ParameterConsumer {
         }
         subscription.lastExpirationCheck = now;
         return expired;
-    }
-
-    /**
-     * Check if the user has a privilege for the specified parameter name
-     *
-     * @param user user to check permissions for
-     * @param parameter parameter to check
-     * @throws NoPermissionException
-     */
-    private void checkParameterPrivilege(User user, Parameter parameter)
-            throws NoPermissionException {
-        if (!user.hasParameterPrivilege(ObjectPrivilegeType.ReadParameter, parameter)) {
-            throw new NoPermissionException("User " + user + " has no permission for parameter " + parameter.getQualifiedName());
-        }
     }
 
     public void quit() {

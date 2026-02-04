@@ -223,7 +223,12 @@ message SubscribeParametersRequest {
   // required when the name represents an alias of that parameter.
   repeated NamedObjectId id = 3;
 
-  // Send an error message if any parameter is invalid.
+  // Send an error message if any of the requested parameters
+  // is either unknown or access to this parameter is forbidden.
+  //
+  // These invalid identifiers are returned in the field `invalid`
+  // of the output message.
+  //
   // Default: true
   optional bool abortOnInvalid = 4;
 
@@ -260,8 +265,9 @@ message SubscribeParametersData {
   // This information is provided only once, following a subscription.
   map<uint32, SubscribedParameterInfo> info = 4;
 
-  // Parameter identifiers that were subscribed to, but that
-  // cannot be matched against the Mission Database.
+  // Parameter identifiers that were subscribed to, but that can
+  // either not be matched against the Mission Database, or that
+  // are may not be accessed by the requesting user.
   repeated NamedObjectId invalid = 2;
 
   // Values of updated parameters.

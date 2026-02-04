@@ -108,7 +108,7 @@ public class PermissionsTest extends AbstractIntegrationTest {
             fail("should have thrown an exception");
         } catch (ExecutionException e) {
             ExceptionData excData = ((ClientException) e.getCause()).getDetail();
-            assertEquals("ForbiddenException", excData.getType());
+            assertEquals("BadRequestException", excData.getType());
         }
     }
 
