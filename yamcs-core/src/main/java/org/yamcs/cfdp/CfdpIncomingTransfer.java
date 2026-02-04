@@ -263,7 +263,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
             log.debug("TXID{} Ignoring metadata packet {}", cfdpTransactionId, packet);
             return;
         }
-        if (packet.getChecksumType() != ChecksumType.MODULAR || packet.getChecksumType() != ChecksumType.NULL) {
+        if (packet.getChecksumType() != ChecksumType.MODULAR && packet.getChecksumType() != ChecksumType.NULL) {
             log.warn("TXID{} received metadata indicating unsupported checksum type {}", cfdpTransactionId,
                     packet.getChecksumType());
             handleFault(ConditionCode.UNSUPPORTED_CHECKSUM_TYPE);
