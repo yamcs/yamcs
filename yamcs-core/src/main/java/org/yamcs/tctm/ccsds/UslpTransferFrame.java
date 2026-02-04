@@ -5,7 +5,7 @@ import org.yamcs.tctm.ccsds.UslpManagedParameters.ServiceType;
 /**
  * Transfer Frames as per:
  * 
- * CCSDS RECOMMENDED STANDARD FOR UNIFIED SPACE DATA LINK PROTOCOL CCSDS 732.1-B-1 October 2018
+ * CCSDS RECOMMENDED STANDARD FOR UNIFIED SPACE DATA LINK PROTOCOL CCSDS 732.1-B-3 June 2024
  * 
  */
 public class UslpTransferFrame extends DownlinkTransferFrame {
