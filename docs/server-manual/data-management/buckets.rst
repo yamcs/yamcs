@@ -47,6 +47,28 @@ maxObjects (number)
 
     The ``maxSize`` and ``maxObjects`` are enforced when *new* objects are added to the bucket. It is possible for limits to be lower than the actual usage. For example, when they have been reconfigured. Or, in the case of filesystem buckets, because content has changed outside of Yamcs.
 
+accessRules (list of maps)
+    Optional list of object specific access rules for the bucket. If not provided, permissions are handled at the Object Privilege level (``ReadBucket`` and ``ManageBucket``) which apply to the entire bucket.
+
+    role (string)
+        **Required.** User role to which the object access rules will apply to.
+
+    read (list of patterns)
+        List of paths (or regex patterns of paths) the role is allowed to read. The user should still have at least the bucket's ``ReadBucket`` privilege for these to apply.
+
+    write (list of patterns)
+        List of paths (or regex patterns of paths) the role is allowed to write (create, edit, rename, delete, etc.). The user should still have at least the bucket's ``ManageBucket`` privilege for these to apply.
+
+.. code-block:: yaml
+
+buckets:
+  - name: displays
+    accessRules:
+      - role: Operator
+        read:
+          - .*\.opi
+          - .*\.js
+
 
 Bucket Providers
 ----------------
