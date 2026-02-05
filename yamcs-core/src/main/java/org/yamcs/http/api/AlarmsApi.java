@@ -190,8 +190,12 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
 
         var responseb = ListAlarmsResponse.newBuilder();
         // Add 1 to the limit, to detect need for continuation token
-        String q = "MERGE (" + sqlbParam.toString() + "), (" + sqlbEvent.toString() + ") USING " + CNAME_TRIGGER_TIME
-                + " ORDER DESC LIMIT " + pos + "," + (limit + 1L);
+        String q = "MERGE (" + sqlbParam.toString() + "), (" + sqlbEvent.toString() + ") USING " + CNAME_TRIGGER_TIME;
+        if (desc) {
+            q += " ORDER DESC LIMIT " + pos + "," + (limit + 1L);
+        } else {
+            q += " ORDER ASC LIMIT " + pos + "," + (limit + 1L);
+        }
 
         List<Object> sqlArgs = new ArrayList<>(sqlbParam.getQueryArguments());
         sqlArgs.addAll(sqlbEvent.getQueryArguments());
