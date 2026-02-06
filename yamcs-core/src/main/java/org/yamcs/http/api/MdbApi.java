@@ -32,6 +32,7 @@ import org.yamcs.logging.Log;
 import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.mdb.XtceAssembler;
+import org.yamcs.mdb.XtceVersion;
 import org.yamcs.parameter.ParameterWithId;
 import org.yamcs.protobuf.AbstractMdbApi;
 import org.yamcs.protobuf.Mdb.AlgorithmInfo;
@@ -269,7 +270,17 @@ public class MdbApi extends AbstractMdbApi<Context> {
         var instance = InstancesApi.verifyInstance(request.getInstance());
         var mdb = MdbFactory.getInstance(instance);
         var spaceSystem = verifySpaceSystem(mdb, request.getName());
-        var xtce = new XtceAssembler().toXtce(mdb, spaceSystem.getQualifiedName(), fqn -> true);
+        var xtceAssembler = new XtceAssembler();
+        if (request.hasVersion()) {
+            switch (request.getVersion()) {
+            case "1.2" -> xtceAssembler.setVersion(XtceVersion.V1_2);
+            case "1.3" -> xtceAssembler.setVersion(XtceVersion.V1_3);
+            default -> throw new BadRequestException("Unexpected version " + request.getVersion());
+            }
+        } else {
+            xtceAssembler.setVersion(XtceVersion.V1_2);
+        }
+        var xtce = xtceAssembler.toXtce(mdb, spaceSystem.getQualifiedName(), fqn -> true);
         var httpBody = HttpBody.newBuilder()
                 .setContentType(TEXT_XML)
                 .setFilename(spaceSystem.getName() + ".xtce.xml")

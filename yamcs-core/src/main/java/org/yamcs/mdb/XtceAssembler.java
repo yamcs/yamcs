@@ -154,12 +154,12 @@ import org.yamcs.xtce.xml.XtceStaxReader;
  */
 public class XtceAssembler {
 
-    private static final String NS_XTCE_V1_2 = "http://www.omg.org/spec/XTCE/20180204";
     private static final Log log = new Log(XtceAssembler.class);
     private static final List<String> XTCE_VERIFIER_STAGES = Arrays.asList(
             "TransferredToRange", "SentFromRange", "Received", "Accepted", "Queued", "Execution", "Complete", "Failed");
 
     boolean emitYamcsNamespace = false;
+    XtceVersion version = XtceVersion.V1_2;
     private SpaceSystem currentSpaceSystem;
     final DatatypeFactory dataTypeFactory;
 
@@ -171,6 +171,10 @@ public class XtceAssembler {
         } catch (DatatypeConfigurationException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void setVersion(XtceVersion version) {
+        this.version = version;
     }
 
     public final String toXtce(Mdb mdb) {
@@ -251,7 +255,7 @@ public class XtceAssembler {
 
         doc.writeStartElement("SpaceSystem");
         if (emitNamespace) {
-            doc.writeDefaultNamespace(NS_XTCE_V1_2);
+            doc.writeDefaultNamespace(version.getNamespace());
         }
         writeNameDescription(doc, spaceSystem);
 
