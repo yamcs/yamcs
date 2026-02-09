@@ -1,3 +1,9 @@
+Version 5.12.5 released 9-Feb-2025
+- Parameter subscription: Handle forbidden parameters the same way as unknown parameters
+- Fix mirror issues with event alarms
+- Fix ascending order issue when querying for past alarms
+- CDDP: added support for the NULL checksum
+
 Version 5.12.4 released 26-Jan-2025
 - Improve display of invalid status of parameter values
 - Add toggle to disable constraint checking (requires elevated privileges)
