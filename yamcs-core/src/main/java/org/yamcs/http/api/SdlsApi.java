@@ -53,9 +53,6 @@ public class SdlsApi extends AbstractSdlsApi<Context> {
             throw new NotFoundException("No such link");
         }
 
-        if (link.isDisabled()) {
-            throw new BadRequestException("Link unavailable");
-        }
         return link;
     }
 
@@ -93,8 +90,8 @@ public class SdlsApi extends AbstractSdlsApi<Context> {
                 gsrb.addSpis(spi.intValue());
             }
         } else {
-            throw new BadRequestException(String.format("Link %s is not a UDP TM or TC frame link",
-                    link.getName()));
+            // If the link doesn't support SDLS, just return an empty list. Otherwise we get client request errors.
+            gsrb.addAllSpis(List.of());
         }
         observer.complete(gsrb.build());
     }

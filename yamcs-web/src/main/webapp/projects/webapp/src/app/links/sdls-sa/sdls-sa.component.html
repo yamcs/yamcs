@@ -10,7 +10,7 @@
       </ng-template>
     </ya-instance-toolbar>
 
-    <div class="form-content">
+    <ya-form-content>
       <dl class="dl-horizontal" style="margin-top: 0">
         <dt>SPI</dt>
         <dd>{{ data.spi }}</dd>
@@ -27,9 +27,11 @@
         <dt>SDLS Overhead</dt>
         <dd>{{ data.sdlsInfo.sdlsOverhead }}</dd>
       </dl>
-    </div>
 
-    <div class="form-content">
+      <div class="section-divider">
+        <mat-divider />
+      </div>
+
       <form
         [formGroup]="seqNumForm"
         class="ya-form"
@@ -42,9 +44,11 @@
         </ya-field>
         <ya-button type="submit" icon="edit">Set Sequence Number</ya-button>
       </form>
-    </div>
 
-    <div class="form-content">
+      <div class="section-divider">
+        <mat-divider />
+      </div>
+
       <form
         [formGroup]="secretKeyForm"
         class="ya-form"
@@ -57,6 +61,6 @@
         </ya-field>
         <ya-button type="submit" icon="encrypted_add_circle">Update Secret Key</ya-button>
       </form>
-    </div>
+    </ya-form-content>
   </ya-instance-page>
 }
