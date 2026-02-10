@@ -200,13 +200,22 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
         sampler.setGapTime(request.hasGapTime() ? request.getGapTime() : 120000);
 
         boolean replayRequested = request.hasSource() && isReplayAsked(request.getSource());
-        ParameterRetrievalOptions opts = ParameterRetrievalOptions.newBuilder()
+        ParameterRetrievalOptions.Builder optsBuilder = ParameterRetrievalOptions.newBuilder()
                 .withStartStop(start, stop)
                 .withRetrieveParameterStatus(false)
                 .withoutRealtime(request.getNorealtime())
                 .withoutParchive(replayRequested)
-                .withoutReplay(!replayRequested)
-                .build();
+                .withoutReplay(!replayRequested);
+
+        if (request.hasFilter() && request.getFilter().hasParameter()) {
+            String filterParamFqn = request.getFilter().getParameter();
+            if (request.getFilter().getValuesCount() > 0) {
+                String filterValue = request.getFilter().getValues(0);
+                optsBuilder.withFilter(filterParamFqn, filterValue);
+            }
+        }
+
+        ParameterRetrievalOptions opts = optsBuilder.build();
 
         PaginatedSingleParameterRetrievalConsumer replayListener = new PaginatedSingleParameterRetrievalConsumer() {
             @Override

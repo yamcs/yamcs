@@ -79,11 +79,39 @@ public class HttpTranscoder {
                 if (queryParameter != null) {
                     Object value = toFieldValue(field, queryParameter);
                     requestb.setField(field, value);
+                } else if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
+                    Message nestedMessage = toNestedMessage(field, requestb, qsDecoder);
+                    if (nestedMessage != null) {
+                        requestb.setField(field, nestedMessage);
+                    }
                 }
             }
         }
 
         return requestb.build();
+    }
+
+    /**
+     * Populates a nested message from dot-notation query parameters (e.g. {@code filter.parameter=foo}).
+     *
+     * @return the built message, or null if no matching query parameters were found
+     */
+    private static Message toNestedMessage(FieldDescriptor field, Message.Builder parentBuilder,
+            QueryStringDecoder qsDecoder) throws HttpTranscodeException {
+        String prefix = field.getJsonName() + ".";
+        Message.Builder nestedBuilder = parentBuilder.newBuilderForField(field);
+        boolean hasAnyField = false;
+
+        for (FieldDescriptor subField : field.getMessageType().getFields()) {
+            List<String> values = qsDecoder.parameters().get(prefix + subField.getJsonName());
+            if (values != null) {
+                Object value = toFieldValue(subField, values);
+                nestedBuilder.setField(subField, value);
+                hasAnyField = true;
+            }
+        }
+
+        return hasAnyField ? nestedBuilder.build() : null;
     }
 
     private static HttpBody toHttpBody(RouteContext ctx) throws HttpTranscodeException {
