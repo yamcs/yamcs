@@ -38,6 +38,7 @@ export class ExportParameterDataDialogComponent implements OnDestroy {
       stop: new FormControl<string | null>(null),
       delimiter: new FormControl<string | null>(null, Validators.required),
       interval: new FormControl<number | null>(null),
+      includeRaw: new FormControl<boolean | null>(false),
     },
     {
       validators: [validators.dateRangeValidator('start', 'stop')],
@@ -61,6 +62,7 @@ export class ExportParameterDataDialogComponent implements OnDestroy {
       stop: data.stop ? utils.toISOString(data.stop) : '',
       delimiter: 'TAB',
       interval: null,
+      includeRaw: false,
     });
 
     this.formChangeSubscription = this.form.valueChanges.subscribe(() => {
@@ -88,6 +90,9 @@ export class ExportParameterDataDialogComponent implements OnDestroy {
       }
       if (this.form.value.interval) {
         dlOptions.interval = this.form.value.interval;
+      }
+      if (this.form.value.includeRaw) {
+        dlOptions.extra = ['raw'];
       }
       const url = this.yamcs.yamcsClient.getParameterValuesDownloadURL(
         this.yamcs.instance!,

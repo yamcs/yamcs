@@ -40,6 +40,7 @@ export class ExportArchiveDataDialogComponent implements OnDestroy {
       delimiter: new FormControl<string | null>(null, Validators.required),
       interval: new FormControl<number | null>(null),
       header: new FormControl<string | null>(null, Validators.required),
+      includeRaw: new FormControl<boolean | null>(false),
     },
     {
       validators: [validators.dateRangeValidator('start', 'stop')],
@@ -64,6 +65,7 @@ export class ExportArchiveDataDialogComponent implements OnDestroy {
       delimiter: 'TAB',
       header: 'QUALIFIED_NAME',
       interval: null,
+      includeRaw: false,
     });
 
     this.formChangeSubscription = this.form.valueChanges.subscribe(() => {
@@ -97,6 +99,9 @@ export class ExportArchiveDataDialogComponent implements OnDestroy {
       }
       if (this.form.value.interval) {
         dlOptions.interval = this.form.value.interval;
+      }
+      if (this.form.value.includeRaw) {
+        dlOptions.extra = ['raw'];
       }
       if (this.data.filename) {
         dlOptions.filename = this.data.filename;
