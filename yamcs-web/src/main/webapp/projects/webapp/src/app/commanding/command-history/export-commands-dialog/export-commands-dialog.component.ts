@@ -63,6 +63,7 @@ export class ExportCommandsDialogComponent implements OnDestroy {
     if (this.form.valid) {
       const dlOptions: DownloadCommandsOptions = {
         delimiter: this.form.value.delimiter as any,
+        includeAliases: true,
       };
       if (this.form.value.start) {
         dlOptions.start = utils.toISOString(this.form.value.start);

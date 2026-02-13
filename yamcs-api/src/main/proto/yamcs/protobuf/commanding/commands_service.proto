@@ -315,4 +315,8 @@ message ExportCommandsRequest {
   // Column delimiter. One of `TAB`, `COMMA` or `SEMICOLON`.
   // Default: `TAB`.
   optional string delimiter = 5;
+
+  // Whether to include columns for MDB aliases for all of the exported commands.
+  // Default: `false`.
+  optional bool includeAliases = 6;
 }
