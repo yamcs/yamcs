@@ -151,6 +151,8 @@ export interface DownloadCommandsOptions {
   stop?: string;
 
   delimiter?: 'COMMA' | 'SEMICOLON' | 'TAB';
+
+  includeAliases?: boolean;
 }
 
 export type TMStatisticsSubscription = WebSocketCall<

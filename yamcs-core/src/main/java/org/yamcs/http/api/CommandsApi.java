@@ -12,7 +12,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -619,7 +621,17 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
             }
         }
 
-        CsvCommandStreamer streamer = new CsvCommandStreamer(ctx, observer, delimiter, mdb);
+        var sortedNamespaces = Collections.<String> emptyList();
+        if (request.getIncludeAliases()) {
+            var namespaces = new HashSet<String>();
+            for (var command : mdb.getMetaCommands()) {
+                var aliasSet = command.getAliasSet();
+                namespaces.addAll(aliasSet.getNamespaces());
+            }
+            sortedNamespaces = namespaces.stream().sorted().toList();
+        }
+
+        CsvCommandStreamer streamer = new CsvCommandStreamer(ctx, observer, sortedNamespaces, delimiter, mdb);
         StreamFactory.stream(instance, sql, sqlb.getQueryArguments(), streamer);
     }
 
@@ -680,19 +692,25 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
 
         Context ctx;
         Observer<HttpBody> observer;
+        List<String> namespaces;
         char columnDelimiter;
         Mdb mdb;
 
-        CsvCommandStreamer(Context ctx, Observer<HttpBody> observer, char columnDelimiter, Mdb mdb) {
+        CsvCommandStreamer(Context ctx, Observer<HttpBody> observer, List<String> namespaces, char columnDelimiter,
+                Mdb mdb) {
             this.ctx = ctx;
             this.observer = observer;
+            this.namespaces = namespaces;
             this.columnDelimiter = columnDelimiter;
             this.mdb = mdb;
 
-            String[] rec = new String[13];
+            String[] rec = new String[13 + namespaces.size()];
             int i = 0;
             rec[i++] = "Generation Time";
             rec[i++] = "Command Name";
+            for (var namespace : namespaces) {
+                rec[i++] = namespace;
+            }
             rec[i++] = "Arguments";
             rec[i++] = "Origin";
             rec[i++] = "Sequence Number";
@@ -729,10 +747,22 @@ public class CommandsApi extends AbstractCommandsApi<Context> {
                 return;
             }
 
-            String[] rec = new String[13];
+            String[] rec = new String[13 + namespaces.size()];
             int i = 0;
             rec[i++] = Timestamps.toString(command.getGenerationTime());
-            rec[i++] = printAttribute(tuple, PreparedCommand.CNAME_CMDNAME);
+
+            var commandName = printAttribute(tuple, PreparedCommand.CNAME_CMDNAME);
+            rec[i++] = commandName;
+
+            var metaCommand = mdb.getMetaCommand(commandName);
+            for (var namespace : namespaces) {
+                String alias = null;
+                if (metaCommand != null) {
+                    alias = metaCommand.getAlias(namespace);
+                }
+                rec[i++] = alias != null ? alias : "";
+            }
+
             rec[i++] = printArguments(tuple);
             rec[i++] = printAttribute(tuple, PreparedCommand.CNAME_ORIGIN);
             rec[i++] = printAttribute(tuple, PreparedCommand.CNAME_SEQNUM);
