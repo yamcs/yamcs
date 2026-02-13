@@ -8,6 +8,12 @@
     <app-command-arguments [command]="command" />
   </ya-attr>
 
+  @for (item of command.aliases | keyvalue; track item.key) {
+    <ya-attr [label]="item.key">
+      {{ item.value }}
+    </ya-attr>
+  }
+
   @if (command.unprocessedBinary && command.unprocessedBinary !== command.binary) {
     <ya-attr>
       <ng-template ya-attr-label>
