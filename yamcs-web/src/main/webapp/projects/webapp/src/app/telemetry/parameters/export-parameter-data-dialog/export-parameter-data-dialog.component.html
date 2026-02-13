@@ -17,6 +17,12 @@
     <ya-field label="Interval (ms)" hint="(optional)">
       <input formControlName="interval" class="ya-input" type="text" />
     </ya-field>
+
+    <ya-field label="Options">
+      <ya-slide-toggle formControlName="includeRaw">
+        Include raw values in the export
+      </ya-slide-toggle>
+    </ya-field>
   </ya-form>
 
   @if (form.errors?.dateRange) {

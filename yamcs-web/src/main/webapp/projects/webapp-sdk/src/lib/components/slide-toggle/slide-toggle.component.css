@@ -25,4 +25,5 @@
   --mat-slide-toggle-selected-pressed-handle-horizontal-margin: 0 16px;
   --mat-slide-toggle-selected-icon-color: #e0e2ec;
   --mat-slide-toggle-label-text-size: 12px;
+  --mat-slide-toggle-touch-target-size: 16px;
 }

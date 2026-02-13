@@ -222,6 +222,7 @@ export interface DownloadParameterValuesOptions {
   stop?: string;
   norepeat?: boolean;
   delimiter?: 'TAB' | 'COMMA' | 'SEMICOLON';
+  extra?: Array<'raw' | 'monitoring'>;
   header?: 'QUALIFIED_NAME' | 'SHORT_NAME' | 'NONE';
   interval?: number;
   filename?: string;
@@ -234,6 +235,7 @@ export interface ExportParameterValuesOptions {
   list?: string;
   namespace?: string;
   delimiter?: 'TAB' | 'COMMA' | 'SEMICOLON';
+  extra?: 'raw' | 'monitoring';
   preserveLastValue?: boolean;
   interval?: number;
   limit?: number;
