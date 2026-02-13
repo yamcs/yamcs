@@ -43,6 +43,7 @@ export interface OpiConfig {
   invalidColor: string;
   majorColor: string;
   minorColor: string;
+  legacyFontSizing: boolean;
 }
 
 export interface SiteLink {
