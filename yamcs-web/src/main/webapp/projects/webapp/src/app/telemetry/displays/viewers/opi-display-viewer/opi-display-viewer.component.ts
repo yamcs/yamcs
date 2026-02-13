@@ -12,6 +12,7 @@ import {
   AlarmSeverity,
   colorFromCssColor,
   Display,
+  Font,
   PV,
   PVProvider,
   Sample,
@@ -247,9 +248,13 @@ export class OpiDisplayViewerComponent
    */
   public init(objectName: string) {
     const container: HTMLDivElement = this.displayContainer.nativeElement;
-    this.display = new Display(container);
 
     const opiConfig = this.configService.getConfig().opi;
+    if (opiConfig.legacyFontSizing) {
+      Font.LEGACY_FONT_SIZING = true;
+    }
+
+    this.display = new Display(container);
     this.display.disconnectedColor = colorFromCssColor(
       opiConfig.disconnectedColor,
     );
