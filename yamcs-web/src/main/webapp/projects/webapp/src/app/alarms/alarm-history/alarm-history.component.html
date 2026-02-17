@@ -52,7 +52,7 @@
           </ng-container>
 
           <ng-container matColumnDef="triggerValue">
-            <th mat-header-cell *matHeaderCellDef>Trip value</th>
+            <th mat-header-cell *matHeaderCellDef>Trigger value</th>
             <td mat-cell *matCellDef="let alarm" class="wrap200">
               @if (alarm.parameterDetail; as parameterDetail) {
                 {{ parameterDetail.triggerValue.engValue | value }}
