@@ -33,6 +33,7 @@ public class UsersCliTest extends AbstractCliTest {
     @Test
     public void test1() throws Exception {
         YamcsAdminCli yamcsCli = new YamcsAdminCli();
+        yamcsCli.setConsole(mockConsole);
 
         Directory directory = new Directory();
         User user = new User("test1", null);
@@ -43,21 +44,21 @@ public class UsersCliTest extends AbstractCliTest {
         yamcsCli.validate();
         yamcsCli.execute();
 
-        String out = mconsole.output();
+        String out = mockConsole.output();
         assertTrue(out.contains("test1     Mr Test1"));
 
-        mconsole.reset();
+        mockConsole.reset();
         yamcsCli.parse(new String[] { "users", "describe", "test1" });
         yamcsCli.validate();
         yamcsCli.execute();
-        out = mconsole.output();
+        out = mockConsole.output();
 
         assertTrue(out.contains("username:      test1"));
         assertTrue(out.contains("display name:  Mr Test1"));
 
         char[] password = "test1-pass".toCharArray();
-        mconsole.reset();
-        mconsole.setPassword(password, password);
+        mockConsole.reset();
+        mockConsole.setPassword(password, password);
         yamcsCli.parse(new String[] { "users", "reset-password", "test1" });
         yamcsCli.validate();
         yamcsCli.execute();
@@ -70,6 +71,6 @@ public class UsersCliTest extends AbstractCliTest {
     @Test
     public void testInvalidUser() {
         assertEquals(-1, runMain("--etc-dir", etcdata.toString(), "users", "describe", "test2"));
-        assertTrue(mconsole.output().contains("invalid user '[test2]'"));
+        assertTrue(mockConsole.output().contains("invalid user '[test2]'"));
     }
 }

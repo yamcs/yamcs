@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.yamcs.YConfiguration;
-import org.yamcs.mdb.MdbFactory;
 import org.yamcs.mdb.Mdb;
+import org.yamcs.mdb.MdbFactory;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
@@ -60,17 +60,17 @@ public class MdbCli extends Command {
 
                 @Override
                 public void print(String x) {
-                    console.print(x);
+                    jc.getConsole().print(x);
                 }
 
                 @Override
                 public void println() {
-                    console.println("");
+                    jc.getConsole().println("");
                 }
 
                 @Override
                 public void println(String x) {
-                    console.println(x);
+                    jc.getConsole().println(x);
                 }
             });
         }
@@ -97,11 +97,11 @@ public class MdbCli extends Command {
         void execute() throws Exception {
             YConfiguration.setupTool();
             Mdb mdb = getMdb(args.get(0));
-            console.println("MDB loaded successfully. Contents:");
-            console.println(String.format("%10d subsystems", mdb.getSpaceSystems().size()));
-            console.println(String.format("%10d parameters", mdb.getParameters().size()));
-            console.println(String.format("%10d sequence containers", mdb.getSequenceContainers().size()));
-            console.println(String.format("%10d commands", mdb.getMetaCommands().size()));
+            jc.getConsole().println("MDB loaded successfully. Contents:");
+            jc.getConsole().println(String.format("%10d subsystems", mdb.getSpaceSystems().size()));
+            jc.getConsole().println(String.format("%10d parameters", mdb.getParameters().size()));
+            jc.getConsole().println(String.format("%10d sequence containers", mdb.getSequenceContainers().size()));
+            jc.getConsole().println(String.format("%10d commands", mdb.getMetaCommands().size()));
         }
     }
 }

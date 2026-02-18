@@ -22,6 +22,7 @@ public class RocksDbTest extends AbstractCliTest {
         try {
             int n = 10_000;
             YamcsAdminCli yamcsCli = new YamcsAdminCli();
+            yamcsCli.setConsole(mockConsole);
             String rdbDir = etcdata + "/yamcs-data";
             try (RocksDB db = RocksDB.open(rdbDir)) {
                 byte[] key = new byte[10];
@@ -57,6 +58,6 @@ public class RocksDbTest extends AbstractCliTest {
     @Test
     public void testRocksdbHelp() throws Exception {
         assertEquals(0, runMain("rocksdb", "--help"));
-        assertTrue(mconsole.output().contains("bench      Benchmark rocksdb storage engine"));
+        assertTrue(mockConsole.output().contains("bench      Benchmark rocksdb storage engine"));
     }
 }

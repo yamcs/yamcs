@@ -34,7 +34,6 @@ import com.google.protobuf.util.JsonFormat.Printer;
  * </pre>
  */
 public abstract class Command {
-    protected static Console console = JCommander.getConsole();
 
     // called to exit the VM, overwritten in unit tests
     protected static IntFunction<Void> exitFunction = status -> {
@@ -55,6 +54,13 @@ public abstract class Command {
         this.name = name;
         this.parent = parent;
         jc.setProgramName(getFullCommandName());
+    }
+
+    public void setConsole(Console console) {
+        jc.setConsole(console);
+        for (var command : subCommands.values()) {
+            command.setConsole(console);
+        }
     }
 
     protected void addSubCommand(Command cmd) {
@@ -79,12 +85,12 @@ public abstract class Command {
                 jc.parse(Arrays.copyOf(args, k));
             }
             if (help) {
-                console.println(getUsage());
+                jc.getConsole().println(getUsage());
                 exit(0);
             }
         } catch (ParameterException e) {
-            console.println(e.getMessage());
-            console.println(getUsage());
+            jc.getConsole().println(e.getMessage());
+            jc.getConsole().println(getUsage());
             exit(1);
         }
         if (subCommands.isEmpty()) {
@@ -93,13 +99,13 @@ public abstract class Command {
 
         // Special case. Global --version flag prints version info and quits
         if (getRootCommand().version) {
-            console.println("yamcs " + YamcsVersion.VERSION + ", build " + YamcsVersion.REVISION);
+            jc.getConsole().println("yamcs " + YamcsVersion.VERSION + ", build " + YamcsVersion.REVISION);
             PluginManager pluginManager;
             try {
                 pluginManager = new PluginManager();
                 for (Plugin plugin : ServiceLoader.load(Plugin.class)) {
                     PluginMetadata meta = pluginManager.getMetadata(plugin.getClass());
-                    console.println(meta.getName() + " " + meta.getVersion());
+                    jc.getConsole().println(meta.getName() + " " + meta.getVersion());
                 }
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
@@ -108,7 +114,7 @@ public abstract class Command {
         }
 
         if (k == args.length) {
-            console.println(getUsage());
+            jc.getConsole().println(getUsage());
             exit(1);
         }
 
@@ -123,7 +129,7 @@ public abstract class Command {
                     .append("'").append(" is not a valid command name. See '")
                     .append(fullcmd)
                     .append(" -h'");
-            console.println(sb.toString());
+            jc.getConsole().println(sb.toString());
             exit(1);
         }
         selectedCommand.parse(Arrays.copyOfRange(args, k + 1, args.length));
@@ -212,6 +218,8 @@ public abstract class Command {
     }
 
     public String getUsage() {
+        var defaultFormatter = jc.getUsageFormatter();
+
         StringBuilder out = new StringBuilder();
         out.append("usage: " + getFullCommandName()).append(" ");
         List<ParameterDescription> sorted = jc.getParameters();
@@ -225,7 +233,7 @@ public abstract class Command {
         }
         if (jc.getMainParameter() != null) {
             out.append(" ");
-            if (jc.getMainParameter().getParameter().required()) {
+            if (jc.getMainParameterValue().getParameter().required()) {
                 out.append(jc.getMainParameterDescription());
             } else {
                 out.append("[").append(jc.getMainParameterDescription()).append("]");
@@ -251,7 +259,7 @@ public abstract class Command {
             out.append("Commands:\n");
             int maxLength = subCommands.values().stream().mapToInt(c -> c.getName().length()).max().getAsInt();
             for (Command c : subCommands.values()) {
-                String descr = jc.getCommandDescription(c.getName());
+                String descr = defaultFormatter.getCommandDescription(c.getName());
                 String[] descrArray = descr.split("\\n");
                 out.append(String.format("    %-" + maxLength + "s    %s\n", c.getName(), descrArray[0]));
                 for (int i = 1; i < descrArray.length; i++) {

@@ -16,11 +16,10 @@ import com.beust.jcommander.internal.Console;
 
 public abstract class AbstractCliTest {
     PrintStream psout;
-    static MockConsole mconsole = new MockConsole();
+    static MockConsole mockConsole = new MockConsole();
 
     @BeforeAll
     public static void beforeClass() {
-        Command.console = mconsole;
         Command.exitFunction = status -> {
             throw new ExitException(status);
         };
@@ -28,7 +27,7 @@ public abstract class AbstractCliTest {
 
     @BeforeEach
     public void resetOutput() {
-        mconsole.reset();
+        mockConsole.reset();
     }
 
     /**
@@ -36,7 +35,7 @@ public abstract class AbstractCliTest {
      */
     int runMain(String... args) {
         try {
-            YamcsAdminCli.main(args);
+            YamcsAdminCli.mainWithCustomConsole(mockConsole, args);
         } catch (ExitException e) {
             return e.exitStatus;
         }
@@ -78,12 +77,12 @@ public abstract class AbstractCliTest {
         }
 
         @Override
-        public void print(String msg) {
+        public void print(CharSequence msg) {
             sb.append(msg);
         }
 
         @Override
-        public void println(String msg) {
+        public void println(CharSequence msg) {
             // System.out.println("b");
             sb.append(msg).append("\n");
         }
@@ -109,5 +108,4 @@ public abstract class AbstractCliTest {
             this.exitStatus = status;
         }
     }
-
 }

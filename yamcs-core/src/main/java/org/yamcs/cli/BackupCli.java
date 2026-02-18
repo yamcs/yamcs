@@ -124,7 +124,7 @@ public class BackupCli extends Command {
 
                     try (RocksDB db = RocksDB.open(dbOptions, tablespaceDir.toString(), cfdList, cfhList)) {
                         backupEngine.createNewBackup(db);
-                        console.println("Backup performed successfully");
+                        jc.getConsole().println("Backup performed successfully");
                     } finally {
                         for (final ColumnFamilyHandle cfh : cfhList) {
                             cfh.close();
@@ -210,7 +210,7 @@ public class BackupCli extends Command {
                     backupEngine.restoreDbFromLatestBackup(restoreDir, restoreDir, restoreOpt);
                 }
             }
-            console.println("Backup restored successfully to " + restoreDir);
+            jc.getConsole().println("Backup restored successfully to " + restoreDir);
         }
     }
 
@@ -232,7 +232,7 @@ public class BackupCli extends Command {
                     b.addLine(bi.backupId(), bi.size(), bi.numberFiles(),
                             formatter.format(Instant.ofEpochMilli(1000 * bi.timestamp())));
                 }
-                console.println(b.toString());
+                jc.getConsole().println(b.toString());
             }
         }
     }
@@ -256,7 +256,7 @@ public class BackupCli extends Command {
                 for (String mainParameter : mainParameters) {
                     int backupId = Integer.parseInt(mainParameter);
                     backupEngine.deleteBackup(backupId);
-                    console.println("Deleted backup " + backupId);
+                    jc.getConsole().println("Deleted backup " + backupId);
                 }
             }
         }
@@ -279,7 +279,7 @@ public class BackupCli extends Command {
                     BackupEngine backupEngine = BackupEngine.open(Env.getDefault(), opt);) {
                 backupEngine.purgeOldBackups(backupsToKeep);
                 int n = backupEngine.getBackupInfo().size();
-                console.println("Purged operation successful; " + n + " backups remaining.");
+                jc.getConsole().println("Purged operation successful; " + n + " backups remaining.");
             }
         }
     }

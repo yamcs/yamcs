@@ -96,11 +96,11 @@ class RocksDbBenchmark extends Command {
 
             ydb.createTable(tblDef);
         } else {
-            console.println("Table " + tableName + " already exists!. Old data will not be overwritten.");
+            jc.getConsole().println("Table " + tableName + " already exists!. Old data will not be overwritten.");
         }
         populate(tblDef, durationHours * 36000l);
 
-        console.println("*********************** reading data ********************");
+        jc.getConsole().println("*********************** reading data ********************");
 
         read(tableName, null, -1);
 
@@ -119,7 +119,8 @@ class RocksDbBenchmark extends Command {
         TableWriter tw = rse.newTableWriter(ydb, tblDef, InsertMode.INSERT);
 
         long baseTime = TimeEncoding.parse("2017-01-01T00:00:00");
-        console.println("writing " + durationHours + " hours of data starting with " + TimeEncoding.toString(baseTime));
+        jc.getConsole().println(
+                "writing " + durationHours + " hours of data starting with " + TimeEncoding.toString(baseTime));
         ThreadLocalRandom r = ThreadLocalRandom.current();
         byte[] b = new byte[256];
         int numPackets = 0;
@@ -142,18 +143,20 @@ class RocksDbBenchmark extends Command {
                                 new Object[] { genTime, seqNum, recTime, b, "/rocksbench/packet_" + j + "_" + k });
                         tw.onTuple(null, t);
                         if (numPackets % 1000000 == 0) {
-                            console.println(String.format("%3dM packets written; %d%% completed", numPackets / 1000000,
-                                    i * 100 / duration100ms));
+                            jc.getConsole()
+                                    .println(String.format("%3dM packets written; %d%% completed", numPackets / 1000000,
+                                            i * 100 / duration100ms));
                         }
                     }
                 }
             }
         }
-        console.println("write finished; last packet time: " + TimeEncoding.toString(genTime) + "; total numPackets: "
-                + numPackets);
+        jc.getConsole()
+                .println("write finished; last packet time: " + TimeEncoding.toString(genTime) + "; total numPackets: "
+                        + numPackets);
         long t1 = System.currentTimeMillis();
         long d = t1 - t0;
-        console.println(
+        jc.getConsole().println(
                 "time to populate " + (d / 1000.0) + " seconds; speed: " + (numPackets * 1000l / d) + " packets/sec");
     }
 
@@ -194,10 +197,10 @@ class RocksDbBenchmark extends Command {
         long d = t1 - t0;
         long speed = 1000 * count.get() / d;
         if (packetName == null) {
-            console.println(String.format("time to read all %d packets: %.3f seconds, speed: %d packets/second",
+            jc.getConsole().println(String.format("time to read all %d packets: %.3f seconds, speed: %d packets/second",
                     count.get(), d / 1000.0, speed));
         } else {
-            console.println(String.format(
+            jc.getConsole().println(String.format(
                     "time to read %8d %s (pkt rate: %.2f sec) packets: %.3f seconds, speed: %d packets/second",
                     count.get(), packetName, rate100ms / 10.0, d / 1000.0, speed));
         }

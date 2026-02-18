@@ -65,7 +65,7 @@ public class BackupCliTest extends AbstractCliTest {
 
         // create backup 1 containing obj1
         runMain("--debug", "backup", "create", "--backup-dir", backupDir, "--data-dir", dataDir, "test");
-        assertTrue(mconsole.output().contains("Backup performed successfully"));
+        assertTrue(mockConsole.output().contains("Backup performed successfully"));
         verifyBackupList(backupDir, 1);
 
         tbl.loadDb(false);
@@ -75,9 +75,9 @@ public class BackupCliTest extends AbstractCliTest {
         tbl.close();
 
         // create backup 2 containing obj1 and obj2
-        mconsole.reset();
+        mockConsole.reset();
         runMain("--debug", "backup", "create", "--backup-dir", backupDir, "--data-dir", dataDir, "test");
-        assertTrue(mconsole.output().contains("Backup performed successfully"));
+        assertTrue(mockConsole.output().contains("Backup performed successfully"));
 
         verifyBackupList(backupDir, 1, 2);
 
@@ -98,32 +98,32 @@ public class BackupCliTest extends AbstractCliTest {
         rbucket2.getTablespace().close();
 
         // create backup 3
-        mconsole.reset();
+        mockConsole.reset();
         runMain("--debug", "backup", "create", "--backup-dir", backupDir, "--data-dir", dataDir, "test");
-        assertTrue(mconsole.output().contains("Backup performed successfully"));
+        assertTrue(mockConsole.output().contains("Backup performed successfully"));
 
         verifyBackupList(backupDir, 1, 2, 3);
 
         // delete backup 2
-        mconsole.reset();
+        mockConsole.reset();
         runMain("--debug", "backup", "delete", "--backup-dir", backupDir, "2");
 
-        assertTrue(mconsole.output().contains("Deleted backup 2"));
+        assertTrue(mockConsole.output().contains("Deleted backup 2"));
 
         verifyBackupList(backupDir, 1, 3);
 
         // purge backup
-        mconsole.reset();
+        mockConsole.reset();
         runMain("--debug", "backup", "purge", "--backup-dir", backupDir, "--keep", "1");
 
-        assertTrue(mconsole.output().contains("Purged operation successful"));
+        assertTrue(mockConsole.output().contains("Purged operation successful"));
         verifyBackupList(backupDir, 3);
     }
 
     void verifyBackupList(String backupDir, int... id) {
-        mconsole.reset();
+        mockConsole.reset();
         runMain("--debug", "backup", "list", "--backup-dir", backupDir);
-        String[] lines = mconsole.output().split("\n");
+        String[] lines = mockConsole.output().split("\n");
         assertEquals(id.length + 1, lines.length);
         for (int i = 0; i < id.length; i++) {
             assertTrue(lines[i + 1].startsWith(Integer.toString(id[i])));
@@ -131,7 +131,7 @@ public class BackupCliTest extends AbstractCliTest {
     }
 
     RdbBucket restoreBackup(String backupDir, String restoreDir, int id) throws RocksDBException, IOException {
-        mconsole.reset();
+        mockConsole.reset();
         runMain("backup", "restore", "--backup-dir", backupDir, "--restore-dir", restoreDir,
                 Integer.toString(id));
         Tablespace rtbl = new Tablespace("restore" + id);
