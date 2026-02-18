@@ -69,7 +69,7 @@ public class RocksDbCli extends Command {
                     RocksDB db = RocksDB.open(dbOptions, dbDir, cfdList, cfhList)) {
                 for (int i = 0; i < cfhList.size(); i++) {
                     ColumnFamilyHandle cfh = cfhList.get(i);
-                    console.println("Compacting Column Family " + YRDB.cfNameToString(cfl.get(i)));
+                    jc.getConsole().println("Compacting Column Family " + YRDB.cfNameToString(cfl.get(i)));
                     db.compactRange(cfh);
                 }
             }

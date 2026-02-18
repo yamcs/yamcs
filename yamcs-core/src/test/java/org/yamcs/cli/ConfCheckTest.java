@@ -23,7 +23,7 @@ public class ConfCheckTest extends AbstractCliTest {
     public void testConfCheckOK() throws Exception {
         int exitStatus = runMain("--etc-dir", "src/test/resources/YamcsServer", "confcheck");
         assertEquals(0, exitStatus);
-        String out = mconsole.output();
+        String out = mockConsole.output();
         assertTrue(out.contains("Configuration OK"));
     }
 
@@ -37,6 +37,7 @@ public class ConfCheckTest extends AbstractCliTest {
         }
         try {
             YamcsAdminCli yamcsCli = new YamcsAdminCli();
+            yamcsCli.setConsole(mockConsole);
 
             yamcsCli.parse(new String[] { "confcheck" });
 
@@ -45,7 +46,7 @@ public class ConfCheckTest extends AbstractCliTest {
         } finally {
             FileUtils.deleteRecursively(etcdir);
         }
-        String out = mconsole.output();
+        String out = mockConsole.output();
 
         assertTrue(out.contains("Cannot instantiate object from class bogus"));
         assertTrue(out.contains("Configuration Invalid"));
@@ -62,6 +63,7 @@ public class ConfCheckTest extends AbstractCliTest {
         }
         try {
             YamcsAdminCli yamcsCli = new YamcsAdminCli();
+            yamcsCli.setConsole(mockConsole);
 
             yamcsCli.parse(new String[] { "confcheck" });
 
@@ -70,7 +72,7 @@ public class ConfCheckTest extends AbstractCliTest {
         } finally {
             FileUtils.deleteRecursively(etcdir);
         }
-        String out = mconsole.output();
+        String out = mockConsole.output();
         assertTrue(out.contains("Unknown argument bogus"));
         assertTrue(out.contains("Configuration Invalid"));
     }
