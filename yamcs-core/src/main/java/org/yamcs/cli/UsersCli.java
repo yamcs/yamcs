@@ -59,13 +59,13 @@ public class UsersCli extends Command {
             Directory directory = new Directory();
 
             if (username == null) {
-                console.println("username not specified");
+                jc.getConsole().println("username not specified");
                 exit(-1);
             }
 
             User user = directory.getUser(username.get(0));
             if (user == null) {
-                console.println("invalid user '" + username.get(0) + "'");
+                jc.getConsole().println("invalid user '" + username.get(0) + "'");
                 exit(-1);
             }
 
@@ -93,13 +93,13 @@ public class UsersCli extends Command {
             Directory directory = new Directory();
 
             if (username == null) {
-                console.println("username not specified");
+                jc.getConsole().println("username not specified");
                 exit(-1);
             }
 
             User user = directory.getUser(username.get(0));
             if (user == null) {
-                console.println("invalid user '" + username.get(0) + "'");
+                jc.getConsole().println("invalid user '" + username.get(0) + "'");
                 exit(-1);
             }
 
@@ -127,13 +127,13 @@ public class UsersCli extends Command {
             Directory directory = new Directory();
 
             if (username == null) {
-                console.println("username not specified");
+                jc.getConsole().println("username not specified");
                 exit(-1);
             }
 
             User user = directory.getUser(username.get(0));
             if (user == null) {
-                console.println("invalid user '" + username.get(0) + "'");
+                jc.getConsole().println("invalid user '" + username.get(0) + "'");
                 exit(-1);
             }
 
@@ -173,13 +173,13 @@ public class UsersCli extends Command {
             Directory directory = new Directory();
 
             if (username == null) {
-                console.println("username not specified");
+                jc.getConsole().println("username not specified");
                 exit(-1);
             }
 
             User user = directory.getUser(username.get(0));
             if (user == null) {
-                console.println("invalid user '" + username.get(0) + "'");
+                jc.getConsole().println("invalid user '" + username.get(0) + "'");
                 exit(-1);
             }
 
@@ -240,13 +240,13 @@ public class UsersCli extends Command {
             Directory directory = new Directory();
 
             if (username == null) {
-                console.println("username not specified");
+                jc.getConsole().println("username not specified");
                 exit(-1);
             }
 
             User user = directory.getUser(username.get(0));
             if (user != null) {
-                console.println("user already exists: '" + username.get(0) + "'");
+                jc.getConsole().println("user already exists: '" + username.get(0) + "'");
                 exit(-1);
             }
 
@@ -266,13 +266,13 @@ public class UsersCli extends Command {
             if (!noPassword) {
                 String passwordString = System.getenv("YAMCSADMIN_PASSWORD");
                 if (passwordString == null) {
-                    console.println("Enter password: ");
-                    password = console.readPassword(false);
-                    console.println("Confirm password: ");
-                    char[] confirmedPassword = console.readPassword(false);
+                    jc.getConsole().println("Enter password: ");
+                    password = jc.getConsole().readPassword(false);
+                    jc.getConsole().println("Confirm password: ");
+                    char[] confirmedPassword = jc.getConsole().readPassword(false);
 
                     if (!Arrays.equals(password, confirmedPassword)) {
-                        console.println("Password confirmation does not match\n");
+                        jc.getConsole().println("Password confirmation does not match\n");
                         exit(-1);
                     }
                 } else {
@@ -308,7 +308,7 @@ public class UsersCli extends Command {
                 List<UserInfo> users = directory.getUsers().stream()
                         .map(user -> IamApi.toUserInfo(user, true, directory))
                         .collect(Collectors.toList());
-                console.println(printJsonArray(users));
+                jc.getConsole().println(printJsonArray(users));
                 break;
             default:
                 TableStringBuilder b = new TableStringBuilder("username", "display name", "email", "active",
@@ -317,7 +317,7 @@ public class UsersCli extends Command {
                     b.addLine(user.getName(), user.getDisplayName(), user.getEmail(), user.isActive(),
                             user.isSuperuser());
                 });
-                console.println(b.toString());
+                jc.getConsole().println(b.toString());
             }
         }
     }
@@ -338,20 +338,20 @@ public class UsersCli extends Command {
             Directory directory = new Directory();
 
             if (username == null) {
-                console.println("username not specified");
+                jc.getConsole().println("username not specified");
                 exit(-1);
             }
 
             User user = directory.getUser(username.get(0));
             if (user == null) {
-                console.println("invalid user '" + username + "'");
+                jc.getConsole().println("invalid user '" + username + "'");
                 exit(-1);
             }
 
             switch (getFormat()) {
             case JSON:
                 UserInfo userinfo = IamApi.toUserInfo(user, true, directory);
-                console.println(JsonFormat.printer().print(userinfo));
+                jc.getConsole().println(JsonFormat.printer().print(userinfo));
                 break;
             default:
                 TableStringBuilder b = new TableStringBuilder(2);
@@ -369,7 +369,7 @@ public class UsersCli extends Command {
                 b.addLine("created:", printInstant(user.getCreationTime()));
                 b.addLine("confirmed:", printInstant(user.getConfirmationTime()));
                 b.addLine("last login:", printInstant(user.getLastLoginTime()));
-                console.println(b.toString());
+                jc.getConsole().println(b.toString());
             }
         }
 
@@ -399,13 +399,13 @@ public class UsersCli extends Command {
             Directory directory = new Directory();
 
             if (username == null) {
-                console.println("username not specified");
+                jc.getConsole().println("username not specified");
                 exit(-1);
             }
 
             User user = directory.getUser(username.get(0));
             if (user == null) {
-                console.println("invalid user '" + username + "'");
+                jc.getConsole().println("invalid user '" + username + "'");
                 exit(-1);
             }
 
@@ -429,30 +429,30 @@ public class UsersCli extends Command {
             Directory directory = new Directory();
 
             if (username == null) {
-                console.println("username not specified");
+                jc.getConsole().println("username not specified");
                 exit(-1);
             }
 
             User user = directory.getUser(username.get(0));
             if (user == null) {
-                console.println("invalid user '" + username.get(0) + "'");
+                jc.getConsole().println("invalid user '" + username.get(0) + "'");
                 exit(-1);
             }
             if (user.isExternallyManaged()) {
-                console.println("credentials of user '" + username.get(0) + "' are not managed by Yamcs");
+                jc.getConsole().println("credentials of user '" + username.get(0) + "' are not managed by Yamcs");
                 exit(-1);
             }
 
             char[] newPassword;
             String newPasswordString = System.getenv("YAMCSADMIN_PASSWORD");
             if (newPasswordString == null) {
-                console.print("Enter new password: ");
-                newPassword = console.readPassword(false);
-                console.print("Confirm new password: ");
-                char[] confirmedPassword = console.readPassword(false);
+                jc.getConsole().print("Enter new password: ");
+                newPassword = jc.getConsole().readPassword(false);
+                jc.getConsole().print("Confirm new password: ");
+                char[] confirmedPassword = jc.getConsole().readPassword(false);
 
                 if (!Arrays.equals(newPassword, confirmedPassword)) {
-                    console.println("Password confirmation does not match\n");
+                    jc.getConsole().println("Password confirmation does not match\n");
                     exit(-1);
                 }
             } else {
@@ -460,7 +460,7 @@ public class UsersCli extends Command {
             }
 
             directory.changePassword(user, newPassword);
-            console.println("Password updated successfully");
+            jc.getConsole().println("Password updated successfully");
         }
     }
 
@@ -480,33 +480,33 @@ public class UsersCli extends Command {
             Directory directory = new Directory();
 
             if (username == null) {
-                console.println("username not specified");
+                jc.getConsole().println("username not specified");
                 exit(-1);
             }
 
             User user = directory.getUser(username.get(0));
             if (user == null) {
-                console.println("invalid user '" + username.get(0) + "'");
+                jc.getConsole().println("invalid user '" + username.get(0) + "'");
                 exit(-1);
             }
             if (user.isExternallyManaged()) {
-                console.println("credentials of user '" + username.get(0) + "' are not managed by Yamcs");
+                jc.getConsole().println("credentials of user '" + username.get(0) + "' are not managed by Yamcs");
                 exit(-1);
             }
 
             char[] password;
             String passwordString = System.getenv("YAMCSADMIN_PASSWORD");
             if (passwordString == null) {
-                console.print("Enter password: ");
-                password = console.readPassword(false);
+                jc.getConsole().print("Enter password: ");
+                password = jc.getConsole().readPassword(false);
             } else {
                 password = passwordString.trim().toCharArray();
             }
 
             if (directory.validateUserPassword(user.getName(), password)) {
-                console.println("Password correct");
+                jc.getConsole().println("Password correct");
             } else {
-                console.println("Password incorrect");
+                jc.getConsole().println("Password incorrect");
                 exit(-1);
             }
         }

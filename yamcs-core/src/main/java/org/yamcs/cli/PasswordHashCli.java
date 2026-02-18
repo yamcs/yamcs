@@ -22,13 +22,13 @@ public class PasswordHashCli extends Command {
         char[] password;
         String passwordString = System.getenv("YAMCSADMIN_PASSWORD");
         if (passwordString == null) {
-            console.println("Enter password: ");
-            password = console.readPassword(false);
-            console.println("Confirm password: ");
-            char[] confirmedPassword = console.readPassword(false);
+            jc.getConsole().println("Enter password: ");
+            password = jc.getConsole().readPassword(false);
+            jc.getConsole().println("Confirm password: ");
+            char[] confirmedPassword = jc.getConsole().readPassword(false);
 
             if (!Arrays.equals(password, confirmedPassword)) {
-                console.println("Password confirmation does not match\n");
+                jc.getConsole().println("Password confirmation does not match\n");
                 exit(-1);
             }
         } else {
@@ -36,7 +36,7 @@ public class PasswordHashCli extends Command {
         }
 
         PasswordHasher hasher = new PBKDF2PasswordHasher();
-        console.println(hasher.createHash(password));
-        console.println("\n");
+        jc.getConsole().println(hasher.createHash(password));
+        jc.getConsole().println("\n");
     }
 }

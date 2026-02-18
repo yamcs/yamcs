@@ -14,6 +14,7 @@ import com.beust.jcommander.IStringConverter;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.converters.PathConverter;
+import com.beust.jcommander.internal.Console;
 
 /**
  * Command line utility for doing yamcs stuff.
@@ -80,8 +81,18 @@ public class YamcsAdminCli extends Command {
         }
     }
 
+    public static void mainWithCustomConsole(Console console, String[] args) {
+        YamcsAdminCli cli = new YamcsAdminCli();
+        cli.setConsole(console);
+        runCli(cli, args);
+    }
+
     public static void main(String[] args) {
         YamcsAdminCli cli = new YamcsAdminCli();
+        runCli(cli, args);
+    }
+
+    private static void runCli(YamcsAdminCli cli, String[] args) {
         cli.parse(args);
 
         Level[] levels = { Level.OFF, Level.WARNING, Level.INFO, Level.FINE };

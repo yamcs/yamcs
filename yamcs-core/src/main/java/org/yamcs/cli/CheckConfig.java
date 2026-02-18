@@ -55,10 +55,10 @@ public class CheckConfig extends Command {
                 }
             }
 
-            console.println("Configuration OK");
+            jc.getConsole().println("Configuration OK");
         } catch (ValidationException e) {
-            console.println(e.getContext().getPath() + ": " + e.getMessage());
-            console.println("Configuration Invalid");
+            jc.getConsole().println(e.getContext().getPath() + ": " + e.getMessage());
+            jc.getConsole().println("Configuration Invalid");
         }
     }
 

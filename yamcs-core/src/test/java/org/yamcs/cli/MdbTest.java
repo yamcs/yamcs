@@ -15,11 +15,12 @@ public class MdbTest extends AbstractCliTest {
     @Test
     public void testMdbPrintCli() throws Exception {
         YamcsAdminCli yamcsCli = new YamcsAdminCli();
+        yamcsCli.setConsole(mockConsole);
         yamcsCli.parse(new String[] { "mdb", "print", "refmdb" });
         yamcsCli.validate();
         yamcsCli.execute();
 
-        String out = mconsole.output();
+        String out = mockConsole.output();
         assertTrue(out.contains("SpaceSystem /REFMDB"));
         assertTrue(out.contains("SequenceContainer name: PKT3"));
         assertTrue(out.contains("Algorithm name: ctx_param_test"));
@@ -31,10 +32,11 @@ public class MdbTest extends AbstractCliTest {
         YConfiguration.setupTest("src/test/resources/");
 
         YamcsAdminCli yamcsCli = new YamcsAdminCli();
+        yamcsCli.setConsole(mockConsole);
         yamcsCli.parse(new String[] { "mdb", "verify", "refmdb" });
         yamcsCli.validate();
         yamcsCli.execute();
-        String out = mconsole.output();
+        String out = mockConsole.output();
         assertTrue(out.contains("MDB loaded successfully"));
     }
 }
