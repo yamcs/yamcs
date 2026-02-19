@@ -3,6 +3,7 @@ package org.yamcs.buckets;
 import com.google.common.base.CaseFormat;
 
 import java.io.IOException;
+import java.nio.file.PathMatcher;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +16,7 @@ public abstract class Bucket {
      * Bucket specific access rules: each AccessRuleType, maps user roles to a list of path patterns
      * If a certain AccessRuleType is absent, it means no rule was set, and the old bucket-wide permissions get used
      */
-    private final Map<AccessRuleType, Map<String, List<String>>> accessRules = new HashMap<>();
+    private final Map<AccessRuleType, Map<String, List<PathMatcher>>> accessRules = new HashMap<>();
 
     public enum AccessRuleType {
         READ,
@@ -100,13 +101,14 @@ public abstract class Bucket {
 
     /**
      * Sets bucket object access rules
-     * @param accessRules map of roles to a list of allowed path regexes
+     * @param accessRules map of roles to a list of allowed path globs
      */
-    public void setAccessRules(Map<AccessRuleType, Map<String, List<String>>> accessRules) {
+    public void setAccessRules(Map<AccessRuleType, Map<String, List<PathMatcher>>> accessRules) {
+
         this.accessRules.putAll(accessRules);
     }
 
-    public Map<String, List<String>> getAccessRules(AccessRuleType type) {
+    public Map<String, List<PathMatcher>> getAccessRules(AccessRuleType type) {
         return accessRules.get(type);
     }
 

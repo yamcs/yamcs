@@ -126,19 +126,6 @@ public class YamlAuthModule implements AuthModule {
                     // Add privileges for this role
                     if (roleDefs.containsKey(role)) {
                         authz.addRole(role);
-                        Map<String, Object> types = roleDefs.get(role);
-                        types.forEach((typeString, objects) -> {
-                            if (typeString.equals("System")) {
-                                for (String name : (List<String>) objects) {
-                                    authz.addSystemPrivilege(new SystemPrivilege(name));
-                                }
-                            } else if (!typeString.equals("default")) {
-                                ObjectPrivilegeType type = new ObjectPrivilegeType(typeString);
-                                for (String object : (List<String>) objects) {
-                                    authz.addObjectPrivilege(new ObjectPrivilege(type, object));
-                                }
-                            }
-                        });
                     }
                 }
             }

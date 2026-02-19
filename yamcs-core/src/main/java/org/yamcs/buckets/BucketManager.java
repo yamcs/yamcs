@@ -2,8 +2,11 @@ package org.yamcs.buckets;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,7 +56,7 @@ public class BucketManager {
         bucketSpec.addOption("path", OptionType.STRING);
         bucketSpec.addOption("maxSize", OptionType.INTEGER);
         bucketSpec.addOption("maxObjects", OptionType.INTEGER);
-        bucketSpec.addOption("accessRules", OptionType.LIST_OR_ELEMENT)
+        bucketSpec.addOption("accessRules", OptionType.LIST)
                 .withElementType(OptionType.MAP).withSpec(accessRuleSpec);
 
         yamcs.addConfigurationList(ConfigScope.YAMCS, "buckets", bucketSpec);
@@ -137,13 +140,21 @@ public class BucketManager {
         }
 
         if (config.containsKey("accessRules")) {
-            Map<AccessRuleType, Map<String, List<String>>> accessRules = Arrays.stream(AccessRuleType.values())
+            // Creates empty access rules HashMaps for all permissions types
+            Map<AccessRuleType, Map<String, List<PathMatcher>>> accessRules = Arrays.stream(AccessRuleType.values())
                     .collect(Collectors.toMap(type -> type, type -> new HashMap<>()));
 
+            // Adds rules to each rule type hashmap, with role as key and their list of glob patterns as values
+            FileSystem fileSystem = FileSystems.getDefault();
             config.getConfigList("accessRules").forEach(rule -> {
                 String role = rule.getString("role");
                 Arrays.stream(AccessRuleType.values()).forEach(type ->
-                        accessRules.get(type).put(role, rule.getList(type.getConfigName())));
+                        accessRules.get(type).put(
+                                role,
+                                rule.getList(type.getConfigName()).stream()
+                                        .map(glob -> fileSystem.getPathMatcher("glob:" + glob))
+                                        .toList()
+                        ));
             });
 
             bucket.setAccessRules(accessRules);

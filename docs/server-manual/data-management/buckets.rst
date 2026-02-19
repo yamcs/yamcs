@@ -54,20 +54,20 @@ accessRules (list of maps)
         **Required.** User role to which the object access rules will apply to.
 
     read (list of patterns)
-        List of paths (or regex patterns of paths) the role is allowed to read. The user should still have at least the bucket's ``ReadBucket`` privilege for these to apply.
+        List of paths (globbing allowed) the role is allowed to read. The user should still have at least the bucket's ``ReadBucket`` privilege for these to apply.
 
     write (list of patterns)
-        List of paths (or regex patterns of paths) the role is allowed to write (create, edit, rename, delete, etc.). The user should still have at least the bucket's ``ManageBucket`` privilege for these to apply.
+        List of paths (globbing allowed) the role is allowed to write (create, edit, rename, delete, etc.). The user should still have at least the bucket's ``ManageBucket`` privilege for these to apply.
 
-.. code-block:: yaml
+    .. code-block:: yaml
 
-buckets:
-  - name: displays
-    accessRules:
-      - role: Operator
-        read:
-          - .*\.opi
-          - .*\.js
+      buckets:
+        - name: displays
+          accessRules:
+            - role: Operator
+              read:
+                - *.opi
+                - *.js
 
 
 Bucket Providers
