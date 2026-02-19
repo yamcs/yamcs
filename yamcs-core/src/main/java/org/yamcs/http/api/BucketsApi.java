@@ -1,6 +1,8 @@
 package org.yamcs.http.api;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -396,9 +398,10 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
             return true;
         }
 
+        Path path = Path.of(objName);
         for (String role : user.getRoles()) {
-            for (String pattern : bucket.getAccessRules(type).getOrDefault(role, Collections.emptyList())) {
-                if (objName.matches(pattern)) {
+            for (PathMatcher pattern : bucket.getAccessRules(type).getOrDefault(role, Collections.emptyList())) {
+                if (pattern.matches(path)) {
                     return true;
                 }
             }
