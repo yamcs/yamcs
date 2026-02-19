@@ -2,9 +2,11 @@
   <ya-sidebar-nav-item
     activeWhen="/alarms"
     routerLink="/alarms"
-    [queryParams]="{ c: yamcs.context }">
-    <mat-icon class="item-icon">notifications_none</mat-icon>
-    Alarms
+    [queryParams]="{ c: yamcs.context }"
+    icon="notifications_none"
+    [mini]="mini()"
+    label="Alarms"
+    [backgroundColor]="mini() ? (miniBackgroundColor$ | async) : undefined">
     @if (status$ | async; as status) {
       @if (status.unacknowledgedCount) {
         <div class="count unacked" [ngClass]="status.unacknowledgedSeverity | lowercase">

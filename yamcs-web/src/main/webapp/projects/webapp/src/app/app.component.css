@@ -85,7 +85,9 @@ mat-toolbar-row {
 }
 
 .mat-mdc-button:hover,
-::ng-deep .top-tabs.mat-mdc-tab-nav-bar .mat-mdc-tab-link:hover,
+::ng-deep
+  .top-tabs.mat-mdc-tab-nav-bar
+  .mat-mdc-tab-link:hover:not(.no-hover-effect),
 ::ng-deep .top-tabs.mat-mdc-tab-nav-bar .mat-mdc-tab-link.active {
   background-color: rgba(255, 255, 255, 0.1);
 }

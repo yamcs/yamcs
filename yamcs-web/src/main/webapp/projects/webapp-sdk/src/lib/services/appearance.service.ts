@@ -12,6 +12,7 @@ import { BehaviorSubject } from 'rxjs';
 export class AppearanceService implements OnDestroy {
   public fullScreenRequested = signal(false);
 
+  public collapsed$ = new BehaviorSubject<boolean>(false);
   public fullScreenMode$ = new BehaviorSubject<boolean>(false);
   public focusMode$ = new BehaviorSubject<boolean>(false);
   public detailPane$ = new BehaviorSubject<boolean>(false);

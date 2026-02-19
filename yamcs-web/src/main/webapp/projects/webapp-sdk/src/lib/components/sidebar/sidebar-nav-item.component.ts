@@ -1,31 +1,39 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  inject,
   input,
   Input,
   OnDestroy,
   OnInit,
   signal,
 } from '@angular/core';
-import { MatListItem } from '@angular/material/list';
-import { NavigationEnd, Router, RouterLink } from '@angular/router';
+import { MatIcon } from '@angular/material/icon';
+import { NavigationEnd, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
+import { BaseComponent } from '../../abc/BaseComponent';
 
 @Component({
   selector: 'ya-sidebar-nav-item',
   templateUrl: './sidebar-nav-item.component.html',
   styleUrl: './sidebar-nav-item.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatListItem, RouterLink],
+  imports: [MatIcon, RouterLink],
 })
-export class YaSidebarNavItem implements OnInit, OnDestroy {
-  router = inject(Router);
-
+export class YaSidebarNavItem
+  extends BaseComponent
+  implements OnInit, OnDestroy
+{
+  mini = input(false);
   routerLink = input.required<string>();
   activeWhen = input.required<string>();
   exact = input(false);
+
+  @Input()
+  icon: string;
+
+  @Input()
+  label: string;
 
   @Input()
   queryParams: {};
@@ -35,6 +43,9 @@ export class YaSidebarNavItem implements OnInit, OnDestroy {
 
   @Input()
   color: string;
+
+  @Input()
+  backgroundColor: string;
 
   linkActive = signal(false);
 

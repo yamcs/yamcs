@@ -1,249 +1,246 @@
 <ya-message-bar #messageBar />
 
-<mat-sidenav-container
-  #pageContainer
+<div
+  class="sidenav-container"
   [class.fullscreen]="fullScreenMode$ | async"
   [class.focus]="focusMode$ | async"
   [class.message-bar-visible]="messageBar.show$ | async">
-  <mat-sidenav mode="side" [opened]="!(focusMode$ | async)" [disableClose]="true">
+  <div class="sidenav" (mouseenter)="sidenavHover.set(true)" (mouseleave)="sidenavHover.set(false)">
     <div class="sidenav-content">
-      <mat-toolbar class="module-title" (click)="searchInput.focus()" style="cursor: text">
-        <mat-toolbar-row style="cursor: text">
-          <mat-icon style="cursor: text">search</mat-icon>
-          <input
-            #searchInput
-            type="text"
-            class="search-input"
-            placeholder="Search parameter"
-            autocomplete="off"
-            spellcheck="false"
-            [formControl]="searchControl"
-            [matAutocomplete]="auto"
-            (document:keydown)="handleKeydown($event)" />
-          <mat-autocomplete
-            #auto
-            class="ya-autocomplete"
-            panelWidth="400px"
-            (optionSelected)="onSearchSelect($event)">
-            @for (option of filteredOptions | async; track option) {
-              <mat-option [value]="option | memberPath">
-                {{ option | memberPath }}
-              </mat-option>
-            }
-          </mat-autocomplete>
-        </mat-toolbar-row>
-      </mat-toolbar>
+      <ya-sidebar-nav-item
+        activeWhen="/instance"
+        routerLink="/instance"
+        [queryParams]="{ c: yamcs.context }"
+        icon="home"
+        [mini]="collapseItem()"
+        (click)="collapseSidebarIfMini()"
+        label="Home" />
 
-      <mat-nav-list dense>
+      @if (showLinksItem()) {
         <ya-sidebar-nav-item
-          activeWhen="/instance"
-          routerLink="/instance"
-          [queryParams]="{ c: yamcs.context }">
-          <mat-icon class="item-icon">home</mat-icon>
-          Home
-        </ya-sidebar-nav-item>
-        @if (showLinksItem()) {
-          <ya-sidebar-nav-item
-            activeWhen="/links"
-            routerLink="/links"
-            [queryParams]="{ c: yamcs.context }">
-            <mat-icon class="item-icon">swap_horiz</mat-icon>
-            Links
-          </ya-sidebar-nav-item>
-        }
-        @if (telemetryItems.length) {
-          <ya-sidebar-nav-group
-            label="Telemetry"
-            icon="speed"
-            [active]="telemetryActive"
-            [expanded]="telemetryExpanded"
-            (toggle)="toggleTelemetryGroup()">
-            @for (item of telemetryItems; track item) {
-              <ya-sidebar-nav-item
-                [activeWhen]="'/telemetry/' + (item.activeWhen ?? item.path)"
-                [routerLink]="'/telemetry/' + item.path"
-                [queryParams]="{ c: yamcs.context }"
-                [exact]="item.path === ''"
-                [subitem]="true">
-                {{ item.label }}
-              </ya-sidebar-nav-item>
-            }
-          </ya-sidebar-nav-group>
-        }
+          activeWhen="/links"
+          routerLink="/links"
+          [queryParams]="{ c: yamcs.context }"
+          icon="swap_horiz"
+          [mini]="collapseItem()"
+          (click)="collapseSidebarIfMini()"
+          label="Links" />
+      }
 
-        @if (showAlgorithmsItem()) {
-          <ya-sidebar-nav-item
-            activeWhen="/algorithms"
-            routerLink="/algorithms"
-            [queryParams]="{ c: yamcs.context }">
-            <mat-icon class="item-icon">transform</mat-icon>
-            Algorithms
-          </ya-sidebar-nav-item>
-        }
-
-        @if (showEventsItem()) {
-          <ya-sidebar-nav-item
-            activeWhen="/events"
-            routerLink="/events"
-            [queryParams]="{ c: yamcs.context }">
-            <mat-icon class="item-icon">event_note</mat-icon>
-            Events
-          </ya-sidebar-nav-item>
-        }
-
-        @if (showAlarmsItem()) {
-          @if (
-            (connectionInfo$ | async)?.processor?.hasAlarms ||
-            ((connectionInfo$ | async)?.instance?.capabilities | arrayContains: "alarm-mirror")
-          ) {
-            <app-alarm-label />
-          } @else {
+      @if (telemetryItems.length) {
+        <ya-sidebar-nav-group
+          label="Telemetry"
+          icon="speed"
+          [active]="telemetryActive"
+          [expanded]="telemetryExpanded"
+          [mini]="collapseItem()"
+          (toggle)="toggleTelemetryGroup()">
+          @for (item of telemetryItems; track item) {
             <ya-sidebar-nav-item
-              activeWhen="/alarms"
-              routerLink="/alarms"
-              [queryParams]="{ c: yamcs.context }">
-              <mat-icon class="item-icon">notifications_none</mat-icon>
-              Alarms
-            </ya-sidebar-nav-item>
+              [activeWhen]="'/telemetry/' + (item.activeWhen ?? item.path)"
+              [routerLink]="'/telemetry/' + item.path"
+              [queryParams]="{ c: yamcs.context }"
+              [exact]="item.path === ''"
+              [subitem]="true"
+              [mini]="collapseItem()"
+              (click)="collapseSidebarIfMini()"
+              [label]="item.label" />
           }
-        }
+        </ya-sidebar-nav-group>
+      }
 
-        @if (commandingItems.length) {
-          <ya-sidebar-nav-group
-            label="Commanding"
-            icon="rss_feed"
-            [active]="commandingActive"
-            [expanded]="commandingExpanded"
-            (toggle)="toggleCommandingGroup()">
-            @for (item of commandingItems; track item) {
-              <ya-sidebar-nav-item
-                [activeWhen]="'/commanding/' + (item.activeWhen ?? item.path)"
-                [routerLink]="'/commanding/' + item.path"
-                [queryParams]="{ c: yamcs.context }"
-                [exact]="item.path === ''"
-                [subitem]="true">
-                {{ item.label }}
-              </ya-sidebar-nav-item>
-            }
-          </ya-sidebar-nav-group>
-        }
+      @if (showAlgorithmsItem()) {
+        <ya-sidebar-nav-item
+          activeWhen="/algorithms"
+          routerLink="/algorithms"
+          [queryParams]="{ c: yamcs.context }"
+          icon="transform"
+          [mini]="collapseItem()"
+          (click)="collapseSidebarIfMini()"
+          label="Algorithms" />
+      }
 
+      @if (showEventsItem()) {
+        <ya-sidebar-nav-item
+          activeWhen="/events"
+          routerLink="/events"
+          [queryParams]="{ c: yamcs.context }"
+          icon="event_note"
+          [mini]="collapseItem()"
+          (click)="collapseSidebarIfMini()"
+          label="Events" />
+      }
+
+      @if (showAlarmsItem()) {
         @if (
-          ((connectionInfo$ | async)?.instance?.capabilities | arrayContains: "file-transfer") &&
-          showFileTransferItem()
+          (connectionInfo$ | async)?.processor?.hasAlarms ||
+          ((connectionInfo$ | async)?.instance?.capabilities | arrayContains: "alarm-mirror")
         ) {
+          <app-alarm-label [mini]="collapseItem()" />
+        } @else {
           <ya-sidebar-nav-item
-            activeWhen="/file-transfer"
-            routerLink="/file-transfer"
-            [queryParams]="{ c: yamcs.context }">
-            <mat-icon class="item-icon">file_copy</mat-icon>
-            File transfer
-          </ya-sidebar-nav-item>
+            activeWhen="/alarms"
+            routerLink="/alarms"
+            [queryParams]="{ c: yamcs.context }"
+            icon="notifications_none"
+            [mini]="collapseItem()"
+            (click)="collapseSidebarIfMini()"
+            label="Alarms" />
         }
+      }
 
-        @if (proceduresItems.length) {
-          <ya-sidebar-nav-group
-            label="Procedures"
-            icon="playlist_play"
-            [active]="proceduresActive"
-            [expanded]="proceduresExpanded"
-            (toggle)="toggleProceduresGroup()">
-            @for (item of proceduresItems; track item) {
-              <ya-sidebar-nav-item
-                [activeWhen]="'/procedures/' + (item.activeWhen ?? item.path)"
-                [routerLink]="'/procedures/' + item.path"
-                [queryParams]="{ c: yamcs.context }"
-                [exact]="item.path === ''"
-                [subitem]="true">
-                {{ item.label }}
-              </ya-sidebar-nav-item>
-            }
-          </ya-sidebar-nav-group>
-        }
-
-        @if ((connectionInfo$ | async)?.instance?.capabilities | arrayContains: "timeline") {
-          @if (timelineItems.length) {
-            <ya-sidebar-nav-group
-              label="Timeline"
-              icon="view_timeline"
-              [active]="timelineActive"
-              [expanded]="timelineExpanded"
-              (toggle)="toggleTimelineGroup()">
-              @for (item of timelineItems; track item) {
-                <ya-sidebar-nav-item
-                  [activeWhen]="'/timeline/' + (item.activeWhen ?? item.path)"
-                  [routerLink]="'/timeline/' + item.path"
-                  [queryParams]="{ c: yamcs.context }"
-                  [exact]="item.path === ''"
-                  [subitem]="true">
-                  {{ item.label }}
-                </ya-sidebar-nav-item>
-              }
-            </ya-sidebar-nav-group>
-          }
-        }
-
-        @if (
-          showActivitiesItem() &&
-          ((connectionInfo$ | async)?.instance?.capabilities | arrayContains: "activities")
-        ) {
-          <app-activities-label />
-        }
-
-        @if (mdbItems.length) {
-          <ya-sidebar-nav-group
-            label="Mission database"
-            icon="auto_stories"
-            [active]="mdbActive"
-            [expanded]="mdbExpanded"
-            (toggle)="toggleMdbGroup()">
-            @for (item of mdbItems; track item) {
-              <ya-sidebar-nav-item
-                [activeWhen]="'/mdb/' + (item.activeWhen ?? item.path)"
-                [routerLink]="'/mdb/' + item.path"
-                [queryParams]="{ c: yamcs.context }"
-                [exact]="item.path === ''"
-                [subitem]="true">
-                {{ item.label }}
-              </ya-sidebar-nav-item>
-            }
-          </ya-sidebar-nav-group>
-        }
-
-        @if (showArchiveBrowserItem()) {
-          <ya-sidebar-nav-item
-            activeWhen="/archive"
-            routerLink="/archive"
-            [queryParams]="{ c: yamcs.context }">
-            <mat-icon class="item-icon">inventory_2</mat-icon>
-            Archive browser
-          </ya-sidebar-nav-item>
-        }
-
-        @if (extraItems.length) {
-          <mat-divider class="extra" />
-          @for (item of extraItems; track item) {
+      @if (commandingItems.length) {
+        <ya-sidebar-nav-group
+          label="Commanding"
+          icon="rss_feed"
+          [active]="commandingActive"
+          [expanded]="commandingExpanded"
+          [mini]="collapseItem()"
+          (toggle)="toggleCommandingGroup()">
+          @for (item of commandingItems; track item) {
             <ya-sidebar-nav-item
-              [activeWhen]="'/' + (item.activeWhen ?? item.path)"
-              [routerLink]="'/' + item.path"
-              [queryParams]="{ c: yamcs.context }">
-              <mat-icon class="item-icon">{{ item.icon || "loupe" }}</mat-icon>
-              {{ item.label }}
-            </ya-sidebar-nav-item>
+              [activeWhen]="'/commanding/' + (item.activeWhen ?? item.path)"
+              [routerLink]="'/commanding/' + item.path"
+              [queryParams]="{ c: yamcs.context }"
+              [exact]="item.path === ''"
+              [subitem]="true"
+              [mini]="collapseItem()"
+              (click)="collapseSidebarIfMini()"
+              [label]="item.label" />
           }
+        </ya-sidebar-nav-group>
+      }
+
+      @if (
+        ((connectionInfo$ | async)?.instance?.capabilities | arrayContains: "file-transfer") &&
+        showFileTransferItem()
+      ) {
+        <ya-sidebar-nav-item
+          activeWhen="/file-transfer"
+          routerLink="/file-transfer"
+          [queryParams]="{ c: yamcs.context }"
+          icon="file_copy"
+          [mini]="collapseItem()"
+          (click)="collapseSidebarIfMini()"
+          label="File transfer" />
+      }
+
+      @if (proceduresItems.length) {
+        <ya-sidebar-nav-group
+          label="Procedures"
+          icon="playlist_play"
+          [active]="proceduresActive"
+          [expanded]="proceduresExpanded"
+          [mini]="collapseItem()"
+          (toggle)="toggleProceduresGroup()">
+          @for (item of proceduresItems; track item) {
+            <ya-sidebar-nav-item
+              [activeWhen]="'/procedures/' + (item.activeWhen ?? item.path)"
+              [routerLink]="'/procedures/' + item.path"
+              [queryParams]="{ c: yamcs.context }"
+              [exact]="item.path === ''"
+              [subitem]="true"
+              [mini]="collapseItem()"
+              (click)="collapseSidebarIfMini()"
+              [label]="item.label" />
+          }
+        </ya-sidebar-nav-group>
+      }
+
+      @if ((connectionInfo$ | async)?.instance?.capabilities | arrayContains: "timeline") {
+        @if (timelineItems.length) {
+          <ya-sidebar-nav-group
+            label="Timeline"
+            icon="view_timeline"
+            [active]="timelineActive"
+            [expanded]="timelineExpanded"
+            [mini]="collapseItem()"
+            (toggle)="toggleTimelineGroup()">
+            @for (item of timelineItems; track item) {
+              <ya-sidebar-nav-item
+                [activeWhen]="'/timeline/' + (item.activeWhen ?? item.path)"
+                [routerLink]="'/timeline/' + item.path"
+                [queryParams]="{ c: yamcs.context }"
+                [exact]="item.path === ''"
+                [subitem]="true"
+                [mini]="collapseItem()"
+                (click)="collapseSidebarIfMini()"
+                [label]="item.label" />
+            }
+          </ya-sidebar-nav-group>
         }
-      </mat-nav-list>
+      }
+
+      @if (
+        showActivitiesItem() &&
+        ((connectionInfo$ | async)?.instance?.capabilities | arrayContains: "activities")
+      ) {
+        <app-activities-label [mini]="collapseItem()" />
+      }
+
+      @if (mdbItems.length) {
+        <ya-sidebar-nav-group
+          label="Mission database"
+          icon="auto_stories"
+          [active]="mdbActive"
+          [expanded]="mdbExpanded"
+          [mini]="collapseItem()"
+          (toggle)="toggleMdbGroup()">
+          @for (item of mdbItems; track item) {
+            <ya-sidebar-nav-item
+              [activeWhen]="'/mdb/' + (item.activeWhen ?? item.path)"
+              [routerLink]="'/mdb/' + item.path"
+              [queryParams]="{ c: yamcs.context }"
+              [exact]="item.path === ''"
+              [subitem]="true"
+              [mini]="collapseItem()"
+              (click)="collapseSidebarIfMini()"
+              [label]="item.label" />
+          }
+        </ya-sidebar-nav-group>
+      }
+
+      @if (showArchiveBrowserItem()) {
+        <ya-sidebar-nav-item
+          activeWhen="/archive"
+          routerLink="/archive"
+          [queryParams]="{ c: yamcs.context }"
+          icon="inventory_2"
+          [mini]="collapseItem()"
+          (click)="collapseSidebarIfMini()"
+          label="Archive browser" />
+      }
+
+      @if (extraItems.length) {
+        <div class="item-divider"></div>
+
+        @for (item of extraItems; track item) {
+          <ya-sidebar-nav-item
+            [activeWhen]="'/' + (item.activeWhen ?? item.path)"
+            [routerLink]="'/' + item.path"
+            [queryParams]="{ c: yamcs.context }"
+            [icon]="item.icon || 'loupe'"
+            [mini]="collapseItem()"
+            (click)="collapseSidebarIfMini()"
+            [label]="item.label" />
+        }
+      }
 
       <div style="flex: 1 1 auto"></div>
-      @if (config.logo) {
-        <div class="navbar-logo">
-          <img [src]="config.logo" />
-        </div>
+      @if (!collapseItem()) {
+        <app-collapse-sidebar
+          (click)="toggleCollapse()"
+          [collapsed]="collapsed()"
+          style="margin-top: 32px" />
+        @if (config.logo) {
+          <div class="navbar-logo">
+            <img [src]="config.logo" />
+          </div>
+        }
       }
     </div>
-  </mat-sidenav>
-
-  <mat-sidenav-content #pageContent>
+  </div>
+  <main #pageContent class="main">
     <router-outlet />
-  </mat-sidenav-content>
-</mat-sidenav-container>
+  </main>
+</div>

@@ -23,6 +23,7 @@ import {
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
+import { SearchInputComponent } from './appbase/search-input/search-input.component';
 import { SelectInstanceDialogComponent } from './shared/select-instance-dialog/select-instance-dialog.component';
 
 @Component({
@@ -33,7 +34,7 @@ import { SelectInstanceDialogComponent } from './shared/select-instance-dialog/s
   host: {
     '[class]': 'componentCssClass',
   },
-  imports: [WebappSdkModule],
+  imports: [SearchInputComponent, WebappSdkModule],
 })
 export class AppComponent implements AfterViewInit, OnDestroy {
   componentCssClass: string;

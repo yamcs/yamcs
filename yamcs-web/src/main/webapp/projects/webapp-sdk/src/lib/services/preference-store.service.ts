@@ -17,6 +17,7 @@ export class PreferenceStore {
 
   constructor() {
     this.addPreference$('sidebar', true);
+    this.addPreference$('miniSidebar', false);
   }
 
   addPreference$<Type>(key: string, defaultValue: Type): BehaviorSubject<Type> {

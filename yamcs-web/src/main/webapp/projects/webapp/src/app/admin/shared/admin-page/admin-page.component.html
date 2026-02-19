@@ -1,140 +1,187 @@
 <ya-message-bar #messageBar />
 
-<mat-sidenav-container [class.message-bar-visible]="messageBar.show$ | async">
-  <mat-sidenav mode="side" [opened]="true" [disableClose]="true">
+<div class="sidenav-container" [class.message-bar-visible]="messageBar.show$ | async">
+  <div class="sidenav" (mouseenter)="sidenavHover.set(true)" (mouseleave)="sidenavHover.set(false)">
     <div class="sidenav-content">
-      <mat-toolbar class="module-title">
-        <mat-toolbar-row>
-          <mat-icon>security</mat-icon>
-          Admin area
-        </mat-toolbar-row>
-      </mat-toolbar>
+      <ya-sidebar-nav-item
+        activeWhen="/admin"
+        routerLink="/admin"
+        [exact]="true"
+        icon="recent_actors"
+        [mini]="collapseItem()"
+        (click)="collapseSidebarIfMini()"
+        label="Action log" />
 
-      <mat-nav-list dense>
-        <ya-sidebar-nav-item activeWhen="/admin" routerLink="/admin" [exact]="true">
-          <mat-icon class="item-icon">recent_actors</mat-icon>
-          Action log
-        </ya-sidebar-nav-item>
-        @if (showAccessControlItem()) {
-          <ya-sidebar-nav-group
-            label="Access control"
-            icon="supervised_user_circle"
-            [active]="userManagementActive"
-            [expanded]="userManagementExpanded"
-            (toggle)="toggleUserManagementGroup()">
-            <ya-sidebar-nav-item
-              activeWhen="/admin/iam/users"
-              routerLink="/admin/iam/users"
-              [subitem]="true">
-              Users
-            </ya-sidebar-nav-item>
-            <ya-sidebar-nav-item
-              activeWhen="/admin/iam/service-accounts"
-              routerLink="/admin/iam/service-accounts"
-              [subitem]="true">
-              Service accounts
-            </ya-sidebar-nav-item>
-            <ya-sidebar-nav-item
-              activeWhen="/admin/iam/groups"
-              routerLink="/admin/iam/groups"
-              [subitem]="true">
-              Groups
-            </ya-sidebar-nav-item>
-            <ya-sidebar-nav-item
-              activeWhen="/admin/iam/roles"
-              routerLink="/admin/iam/roles"
-              [subitem]="true">
-              Roles
-            </ya-sidebar-nav-item>
-          </ya-sidebar-nav-group>
-        }
-        @if (showAccessControlItem()) {
-          <ya-sidebar-nav-item activeWhen="/admin/sessions" routerLink="/admin/sessions">
-            <mat-icon class="item-icon">devices</mat-icon>
-            Sessions
-          </ya-sidebar-nav-item>
-        }
-        @if (showServicesItem()) {
-          <ya-sidebar-nav-item activeWhen="/admin/services" routerLink="/admin/services">
-            <mat-icon class="item-icon">attractions</mat-icon>
-            Services
-          </ya-sidebar-nav-item>
-        }
-        @if (showSystemInfo()) {
+      @if (showAccessControlItem()) {
+        <ya-sidebar-nav-group
+          label="Access control"
+          icon="supervised_user_circle"
+          [active]="userManagementActive"
+          [expanded]="userManagementExpanded"
+          [mini]="collapseItem()"
+          (toggle)="toggleUserManagementGroup()">
           <ya-sidebar-nav-item
-            activeWhen="/admin/processor-types"
-            routerLink="/admin/processor-types">
-            <mat-icon class="item-icon">flip_camera_android</mat-icon>
-            Processor types
-          </ya-sidebar-nav-item>
-        }
-        <ya-sidebar-nav-item activeWhen="/admin/databases" routerLink="/admin/databases">
-          <mat-icon class="item-icon">database</mat-icon>
-          Databases
-        </ya-sidebar-nav-item>
-        @if (showSystemInfo()) {
-          <ya-sidebar-nav-item activeWhen="/admin/replication" routerLink="/admin/replication">
-            <mat-icon class="item-icon">share</mat-icon>
-            Replication
-          </ya-sidebar-nav-item>
-        }
-        @if (showRocksDbItem()) {
-          <ya-sidebar-nav-group
-            label="RocksDB"
-            icon="dataset"
-            [active]="rocksDbActive"
-            [expanded]="rocksDbExpanded"
-            (toggle)="toggleRocksDbGroup()">
-            <ya-sidebar-nav-item
-              activeWhen="/admin/rocksdb/databases"
-              routerLink="/admin/rocksdb/databases"
-              [subitem]="true">
-              Open databases
-            </ya-sidebar-nav-item>
-          </ya-sidebar-nav-group>
-        }
-        @if (showSystemInfo()) {
-          <ya-sidebar-nav-item activeWhen="/admin/http-traffic" routerLink="/admin/http-traffic">
-            <mat-icon class="item-icon">traffic</mat-icon>
-            HTTP traffic
-          </ya-sidebar-nav-item>
-        }
-        @if (showSystemInfo()) {
-          <ya-sidebar-nav-item activeWhen="/admin/routes" routerLink="/admin/routes">
-            <mat-icon class="item-icon">api</mat-icon>
-            API routes
-          </ya-sidebar-nav-item>
-        }
-        @if (showSystemInfo()) {
-          <ya-sidebar-nav-item activeWhen="/admin/leap-seconds" routerLink="/admin/leap-seconds">
-            <mat-icon class="item-icon">access_time</mat-icon>
-            Leap seconds
-          </ya-sidebar-nav-item>
-        }
-        @if (showSystemInfo()) {
-          <ya-sidebar-nav-item activeWhen="/admin/threads" routerLink="/admin/threads">
-            <mat-icon class="item-icon">receipt</mat-icon>
-            Threads
-          </ya-sidebar-nav-item>
-        }
-        @if (showSystemInfo()) {
-          <ya-sidebar-nav-item activeWhen="/admin/system" routerLink="/admin/system">
-            <mat-icon class="item-icon">memory</mat-icon>
-            System
-          </ya-sidebar-nav-item>
-        }
-      </mat-nav-list>
+            activeWhen="/admin/iam/users"
+            routerLink="/admin/iam/users"
+            [subitem]="true"
+            [mini]="collapseItem()"
+            (click)="collapseSidebarIfMini()"
+            label="Users" />
+          <ya-sidebar-nav-item
+            activeWhen="/admin/iam/service-accounts"
+            routerLink="/admin/iam/service-accounts"
+            [subitem]="true"
+            [mini]="collapseItem()"
+            (click)="collapseSidebarIfMini()"
+            label="Service accounts" />
+          <ya-sidebar-nav-item
+            activeWhen="/admin/iam/groups"
+            routerLink="/admin/iam/groups"
+            [subitem]="true"
+            [mini]="collapseItem()"
+            (click)="collapseSidebarIfMini()"
+            label="Groups" />
+          <ya-sidebar-nav-item
+            activeWhen="/admin/iam/roles"
+            routerLink="/admin/iam/roles"
+            [subitem]="true"
+            [mini]="collapseItem()"
+            (click)="collapseSidebarIfMini()"
+            label="Roles" />
+        </ya-sidebar-nav-group>
+      }
+
+      @if (showAccessControlItem()) {
+        <ya-sidebar-nav-item
+          activeWhen="/admin/sessions"
+          routerLink="/admin/sessions"
+          icon="devices"
+          [mini]="collapseItem()"
+          (click)="collapseSidebarIfMini()"
+          label="Sessions" />
+      }
+
+      @if (showServicesItem()) {
+        <ya-sidebar-nav-item
+          activeWhen="/admin/services"
+          routerLink="/admin/services"
+          icon="attractions"
+          [mini]="collapseItem()"
+          (click)="collapseSidebarIfMini()"
+          label="Services" />
+      }
+
+      @if (showSystemInfo()) {
+        <ya-sidebar-nav-item
+          activeWhen="/admin/processor-types"
+          routerLink="/admin/processor-types"
+          icon="flip_camera_android"
+          [mini]="collapseItem()"
+          (click)="collapseSidebarIfMini()"
+          label="Processor types" />
+      }
+
+      <ya-sidebar-nav-item
+        activeWhen="/admin/databases"
+        routerLink="/admin/databases"
+        icon="database"
+        [mini]="collapseItem()"
+        (click)="collapseSidebarIfMini()"
+        label="Databases" />
+
+      @if (showSystemInfo()) {
+        <ya-sidebar-nav-item
+          activeWhen="/admin/replication"
+          routerLink="/admin/replication"
+          icon="share"
+          [mini]="collapseItem()"
+          (click)="collapseSidebarIfMini()"
+          label="Replication" />
+      }
+
+      @if (showRocksDbItem()) {
+        <ya-sidebar-nav-group
+          label="RocksDB"
+          icon="dataset"
+          [active]="rocksDbActive"
+          [expanded]="rocksDbExpanded"
+          [mini]="collapseItem()"
+          (toggle)="toggleRocksDbGroup()">
+          <ya-sidebar-nav-item
+            activeWhen="/admin/rocksdb/databases"
+            routerLink="/admin/rocksdb/databases"
+            [subitem]="true"
+            [mini]="collapseItem()"
+            (click)="collapseSidebarIfMini()"
+            label="Open databases" />
+        </ya-sidebar-nav-group>
+      }
+
+      @if (showSystemInfo()) {
+        <ya-sidebar-nav-item
+          activeWhen="/admin/http-traffic"
+          routerLink="/admin/http-traffic"
+          icon="traffic"
+          [mini]="collapseItem()"
+          (click)="collapseSidebarIfMini()"
+          label="HTTP traffic" />
+      }
+
+      @if (showSystemInfo()) {
+        <ya-sidebar-nav-item
+          activeWhen="/admin/routes"
+          routerLink="/admin/routes"
+          icon="api"
+          [mini]="collapseItem()"
+          (click)="collapseSidebarIfMini()"
+          label="API routes" />
+      }
+
+      @if (showSystemInfo()) {
+        <ya-sidebar-nav-item
+          activeWhen="/admin/leap-seconds"
+          routerLink="/admin/leap-seconds"
+          icon="access_time"
+          [mini]="collapseItem()"
+          (click)="collapseSidebarIfMini()"
+          label="Leap seconds" />
+      }
+
+      @if (showSystemInfo()) {
+        <ya-sidebar-nav-item
+          activeWhen="/admin/threads"
+          routerLink="/admin/threads"
+          icon="receipt"
+          [mini]="collapseItem()"
+          (click)="collapseSidebarIfMini()"
+          label="Threads" />
+      }
+
+      @if (showSystemInfo()) {
+        <ya-sidebar-nav-item
+          activeWhen="/admin/system"
+          routerLink="/admin/system"
+          icon="memory"
+          [mini]="collapseItem()"
+          (click)="collapseSidebarIfMini()"
+          label="System" />
+      }
 
       <div style="flex: 1 1 auto"></div>
-      @if (config.logo) {
-        <div class="navbar-logo">
-          <img [src]="config.logo" />
-        </div>
+      @if (!collapseItem()) {
+        <app-collapse-sidebar
+          (click)="toggleCollapse()"
+          [collapsed]="collapsed()"
+          style="margin-top: 32px" />
+        @if (config.logo) {
+          <div class="navbar-logo">
+            <img [src]="config.logo" />
+          </div>
+        }
       }
     </div>
-  </mat-sidenav>
-
-  <mat-sidenav-content>
+  </div>
+  <main #pageContent class="main">
     <router-outlet />
-  </mat-sidenav-content>
-</mat-sidenav-container>
+  </main>
+</div>

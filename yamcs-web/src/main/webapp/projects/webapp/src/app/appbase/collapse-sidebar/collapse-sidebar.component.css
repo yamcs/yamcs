@@ -1,0 +1,25 @@
+:host {
+  display: flex;
+  height: 32px;
+  align-items: center;
+  color: #fff;
+  font-family: Roboto, sans-serif;
+  font-size: 12px;
+  line-height: 32px;
+  letter-spacing: 0.031rem;
+  padding: 0 16px;
+  cursor: pointer;
+}
+
+mat-icon {
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  text-align: center;
+  font-size: 18px;
+  color: #fff;
+}
+
+.label {
+  margin-left: 16px;
+}
