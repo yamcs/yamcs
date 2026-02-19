@@ -22,9 +22,9 @@
 
     @if (user$ | async; as user) {
       <nav mat-tab-nav-bar class="top-tabs" [tabPanel]="tabPanel">
-        <!--a mat-tab-link matTooltip="Search (/)">
-        <mat-icon>search</mat-icon>
-      </a-->
+        @if ((connectionInfo$ | async)?.instance) {
+          <app-search-input matTooltip="Search (/)" />
+        }
         <a mat-tab-link routerLink="storage" routerLinkActive="active">
           <mat-icon>perm_media</mat-icon>
           &nbsp;&nbsp;STORAGE

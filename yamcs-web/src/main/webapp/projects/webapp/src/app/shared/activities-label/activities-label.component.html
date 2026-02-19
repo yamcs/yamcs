@@ -2,9 +2,10 @@
   <ya-sidebar-nav-item
     activeWhen="/activities"
     routerLink="/activities"
-    [queryParams]="{ c: yamcs.context }">
-    <mat-icon class="item-icon">pending_actions</mat-icon>
-    Activities
+    [queryParams]="{ c: yamcs.context }"
+    icon="pending_actions"
+    [mini]="mini()"
+    label="Activities">
     @if (status$ | async; as status) {
       @if (status.ongoingCount) {
         <div class="count ongoing">{{ status.ongoingCount }} ongoing</div>
