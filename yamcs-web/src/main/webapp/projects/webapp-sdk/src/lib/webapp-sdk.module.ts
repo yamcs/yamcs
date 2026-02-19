@@ -9,8 +9,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
-import { MatListModule } from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -269,8 +269,8 @@ const materialModules = [
   MatButtonModule,
   MatDatepickerModule,
   MatDialogModule,
+  MatDividerModule,
   MatIconModule,
-  MatListModule,
   MatMenuModule,
   MatNativeDateModule,
   MatPaginatorModule,

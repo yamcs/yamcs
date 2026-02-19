@@ -1,18 +1,16 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   ElementRef,
   OnDestroy,
-  OnInit,
+  Signal,
   ViewChild,
+  computed,
   effect,
+  signal,
 } from '@angular/core';
-import { UntypedFormControl } from '@angular/forms';
-import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
-import {
-  MatSidenavContainer,
-  MatSidenavContent,
-} from '@angular/material/sidenav';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
 import {
   AppearanceService,
@@ -22,14 +20,15 @@ import {
   ExtensionService,
   MessageService,
   NavItem,
-  Parameter,
+  PreferenceStore,
   User,
   WebappSdkModule,
   WebsiteConfig,
   YamcsService,
 } from '@yamcs/webapp-sdk';
-import { Observable, Subscription, of } from 'rxjs';
-import { debounceTime, filter, map, switchMap } from 'rxjs/operators';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
+import { AppCollapseSidebar } from '../../appbase/collapse-sidebar/collapse-sidebar.component';
 import { ActivitiesLabelComponent } from '../activities-label/activities-label.component';
 import { AlarmLabelComponent } from '../alarm-label/alarm-label.component';
 
@@ -37,22 +36,23 @@ import { AlarmLabelComponent } from '../alarm-label/alarm-label.component';
   templateUrl: './instance-page.component.html',
   styleUrl: './instance-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ActivitiesLabelComponent, AlarmLabelComponent, WebappSdkModule],
+  imports: [
+    ActivitiesLabelComponent,
+    AlarmLabelComponent,
+    AppCollapseSidebar,
+    WebappSdkModule,
+  ],
+  host: {
+    '[class.sidenav-hover]': 'sidenavHover()',
+    '[class.mini]': 'collapsed()',
+    '[class.no-transition]': '!pageLoaded()',
+  },
 })
-export class InstancePageComponent implements OnInit, OnDestroy {
-  @ViewChild(MatSidenavContainer)
-  pageContainer: MatSidenavContainer;
-
-  @ViewChild(MatSidenavContent)
-  pageContent: MatSidenavContent;
-
-  @ViewChild('searchInput')
-  searchInput: ElementRef<HTMLInputElement>;
+export class InstancePageComponent implements AfterViewInit, OnDestroy {
+  @ViewChild('pageContent')
+  pageContent: ElementRef<HTMLElement>;
 
   connectionInfo$: Observable<ConnectionInfo | null>;
-
-  searchControl = new UntypedFormControl(null);
-  filteredOptions: Observable<Parameter[]>;
 
   user: User;
 
@@ -76,8 +76,13 @@ export class InstancePageComponent implements OnInit, OnDestroy {
   mdbItems: NavItem[] = [];
   extraItems: NavItem[] = [];
 
+  pageLoaded = signal(false);
+  collapsed: Signal<boolean>;
+  sidenavHover = signal(false);
   fullScreenMode$: Observable<boolean>;
   focusMode$: Observable<boolean>;
+  miniSidebar$: BehaviorSubject<boolean>;
+  collapseItem = computed(() => this.collapsed() && !this.sidenavHover());
 
   private routerSubscription: Subscription;
 
@@ -86,11 +91,17 @@ export class InstancePageComponent implements OnInit, OnDestroy {
     configService: ConfigService,
     authService: AuthService,
     appearanceService: AppearanceService,
+    private preferenceStore: PreferenceStore,
     extensionService: ExtensionService,
     messageService: MessageService,
-    private router: Router,
+    router: Router,
   ) {
     this.connectionInfo$ = this.yamcs.connectionInfo$;
+    this.miniSidebar$ = this.preferenceStore.getPreference$('miniSidebar');
+
+    this.collapsed = toSignal(this.miniSidebar$, {
+      requireSync: true,
+    });
     this.fullScreenMode$ = appearanceService.fullScreenMode$;
     this.focusMode$ = appearanceService.focusMode$;
     this.config = configService.getConfig();
@@ -98,7 +109,7 @@ export class InstancePageComponent implements OnInit, OnDestroy {
 
     effect(() => {
       if (appearanceService.fullScreenRequested()) {
-        const el = this.pageContent.getElementRef().nativeElement;
+        const el = this.pageContent.nativeElement;
         el.requestFullscreen().catch((err) => messageService.showError(err));
       }
     });
@@ -237,29 +248,9 @@ export class InstancePageComponent implements OnInit, OnDestroy {
       });
   }
 
-  ngOnInit() {
-    this.filteredOptions = this.searchControl.valueChanges.pipe(
-      debounceTime(300),
-      switchMap((val) => {
-        if (val) {
-          return this.yamcs.yamcsClient.getParameters(this.yamcs.instance!, {
-            q: val,
-            limit: 25,
-            searchMembers: true,
-          });
-        } else {
-          return of({ parameters: [] });
-        }
-      }),
-      map((page) => page.parameters || []),
-    );
-  }
-
-  onSearchSelect(event: MatAutocompleteSelectedEvent) {
-    this.searchControl.setValue('');
-    this.router.navigate(['/telemetry/parameters' + event.option.value], {
-      queryParams: { c: this.yamcs.context },
-    });
+  ngAfterViewInit(): void {
+    // Avoid sidebar FOUC when actually collapsed
+    requestAnimationFrame(() => this.pageLoaded.set(true));
   }
 
   private collapseAllGroups() {
@@ -300,6 +291,21 @@ export class InstancePageComponent implements OnInit, OnDestroy {
     this.timelineExpanded = !expanded;
   }
 
+  toggleCollapse() {
+    const mini = !this.miniSidebar$.value;
+    this.preferenceStore.setValue('miniSidebar', mini);
+    if (mini) {
+      this.sidenavHover.set(false); // Close sidebar even if hovered
+    }
+  }
+
+  collapseSidebarIfMini() {
+    const mini = this.miniSidebar$.value;
+    if (mini) {
+      this.sidenavHover.set(false); // Close sidebar even if hovered
+    }
+  }
+
   showLinksItem() {
     return this.user.hasSystemPrivilege('ReadLinks');
   }
@@ -326,35 +332,6 @@ export class InstancePageComponent implements OnInit, OnDestroy {
 
   showArchiveBrowserItem() {
     return this.user.hasAnyObjectPrivilegeOfType('ReadPacket');
-  }
-
-  handleKeydown(event: KeyboardEvent) {
-    const el: HTMLInputElement = this.searchInput.nativeElement;
-    if (event.key === '/' && this.isValidKeySource()) {
-      el.focus();
-      event.preventDefault();
-    } else if (event.key === 'Enter') {
-      const value = this.searchControl.value;
-      if (value) {
-        this.searchControl.setValue('');
-        this.router.navigate(['/search'], {
-          queryParams: { c: this.yamcs.context, q: value },
-        });
-      }
-    }
-  }
-
-  private isValidKeySource() {
-    const { activeElement } = document;
-    if (!activeElement) {
-      return true;
-    }
-    return (
-      activeElement.tagName !== 'INPUT' &&
-      activeElement.tagName !== 'SELECT' &&
-      activeElement.tagName !== 'TEXTAREA' &&
-      !activeElement.classList.contains('cm-content')
-    ); // Exclude CodeMirror editor
   }
 
   ngOnDestroy() {
