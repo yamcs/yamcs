@@ -1,6 +1,7 @@
 package org.yamcs.tctm.ccsds;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.yamcs.ConfigurationException;
@@ -10,6 +11,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.security.sdls.SdlsSecurityAssociation;
 import org.yamcs.tctm.AbstractLink;
 import org.yamcs.tctm.AggregatedDataLink;
 import org.yamcs.tctm.Link;
@@ -215,4 +217,23 @@ public abstract class AbstractTcFrameLink extends AbstractLink implements Aggreg
         }
     }
 
+    /**
+     * @param spi the Security Parameter Index (SPI) for which to get a Security Assocation (SA)
+     * @return the SA, or null if none is associated with the SPI
+     */
+    public SdlsSecurityAssociation getSdls(short spi) {
+        UplinkManagedParameters.SdlsInfo sdlsInfo = this.multiplexer.tcManagedParameters.sdlsSecurityAssociations.get(spi);
+        if (sdlsInfo != null)
+            return sdlsInfo.sa();
+        return null;
+    }
+
+    public void setSpi(int vcId, short spi) {
+        this.multiplexer.tcManagedParameters.getVcParams(vcId)
+                .encryptionSpi = spi;
+    }
+
+    public Collection<Short> getSpis() {
+        return this.multiplexer.tcManagedParameters.sdlsSecurityAssociations.keySet();
+    }
 }
