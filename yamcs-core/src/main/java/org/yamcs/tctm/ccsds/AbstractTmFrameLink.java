@@ -1,6 +1,7 @@
 package org.yamcs.tctm.ccsds;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -8,6 +9,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
+import org.yamcs.security.sdls.SdlsSecurityAssociation;
 import org.yamcs.tctm.AbstractLink;
 import org.yamcs.tctm.AggregatedDataLink;
 import org.yamcs.tctm.Link;
@@ -155,4 +157,19 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
         invalidFrameCount.set(0);
     }
 
+    public SdlsSecurityAssociation getSdls(short spi) {
+        DownlinkManagedParameters.SdlsInfo sdlsInfo = this.frameHandler.params.sdlsSecurityAssociations.get(spi);
+        if (sdlsInfo != null)
+            return sdlsInfo.sa();
+        return null;
+    }
+
+    public void setSpis(int vcId, short[] spis) {
+        this.frameHandler.params.getVcParams(vcId)
+                .encryptionSpis = spis;
+    }
+
+    public Collection<Short> getSpis() {
+        return this.frameHandler.params.sdlsSecurityAssociations.keySet();
+    }
 }

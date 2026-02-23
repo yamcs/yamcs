@@ -26,8 +26,8 @@ import org.yamcs.protobuf.SetSpisRequest;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.sdls.SdlsSecurityAssociation;
 import org.yamcs.tctm.Link;
-import org.yamcs.tctm.ccsds.UdpTcFrameLink;
-import org.yamcs.tctm.ccsds.UdpTmFrameLink;
+import org.yamcs.tctm.ccsds.AbstractTcFrameLink;
+import org.yamcs.tctm.ccsds.AbstractTmFrameLink;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
@@ -58,12 +58,12 @@ public class SdlsApi extends AbstractSdlsApi<Context> {
 
     private SdlsSecurityAssociation getSa(Link link, short spi) {
         SdlsSecurityAssociation maybeSdls;
-        if (link instanceof UdpTmFrameLink l) {
+        if (link instanceof AbstractTmFrameLink l) {
             maybeSdls = l.getSdls(spi);
-        } else if (link instanceof UdpTcFrameLink l) {
+        } else if (link instanceof AbstractTcFrameLink l) {
             maybeSdls = l.getSdls(spi);
         } else {
-            throw new BadRequestException(String.format("Link %s is not a UDP TM or TC frame link",
+            throw new BadRequestException(String.format("Link %s is not a TM or TC frame link",
                     link.getName()));
         }
         if (maybeSdls == null) {
@@ -79,12 +79,12 @@ public class SdlsApi extends AbstractSdlsApi<Context> {
         String linkName = request.getLinkName();
         Link link = verifyLink(ctx, instance, linkName);
         GetLinkSpisResponse.Builder gsrb = GetLinkSpisResponse.newBuilder();
-        if (link instanceof UdpTmFrameLink l) {
+        if (link instanceof AbstractTmFrameLink l) {
             Collection<Short> spis = l.getSpis();
             for (Short spi : spis) {
                 gsrb.addSpis(spi.intValue());
             }
-        } else if (link instanceof UdpTcFrameLink l) {
+        } else if (link instanceof AbstractTcFrameLink l) {
             Collection<Short> spis = l.getSpis();
             for (Short spi : spis) {
                 gsrb.addSpis(spi.intValue());
@@ -178,12 +178,12 @@ public class SdlsApi extends AbstractSdlsApi<Context> {
         }
         short spi = (short) intSpi;
 
-        if (link instanceof UdpTmFrameLink l) {
+        if (link instanceof AbstractTmFrameLink l) {
             l.setSpis(vcId, new short[] { spi });
-        } else if (link instanceof UdpTcFrameLink l) {
+        } else if (link instanceof AbstractTcFrameLink l) {
             l.setSpi(vcId, spi);
         } else {
-            throw new BadRequestException(String.format("Link %s is not a UDP TM or TC frame link",
+            throw new BadRequestException(String.format("Link %s is not a TM or TC frame link",
                     link.getName()));
         }
         observer.complete(Empty.getDefaultInstance());
@@ -195,7 +195,7 @@ public class SdlsApi extends AbstractSdlsApi<Context> {
         String linkName = request.getLinkName();
         int vcId = request.getVcId();
         Link link = verifyLink(ctx, instance, linkName);
-        if (link instanceof UdpTmFrameLink l) {
+        if (link instanceof AbstractTmFrameLink l) {
             List<Integer> intSpis = request.getBody().getSpisList();
             short[] spis = new short[intSpis.size()];
             for (int i = 0; i < intSpis.size(); ++i) {
