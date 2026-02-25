@@ -150,10 +150,6 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
         }
 
         String bucketName = request.getBucket();
-        BucketsApi.checkReadBucketPrivilege(bucketName, ctx.user);
-
-        String objectName = request.getObjectName();
-
         var bucketManager = YamcsServer.getServer().getBucketManager();
 
         Bucket bucket;
@@ -165,6 +161,9 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
         if (bucket == null) {
             throw new BadRequestException("No bucket by name '" + bucketName + "'");
         }
+
+        String objectName = request.getObjectName();
+        BucketsApi.checkReadObjectPrivilege(bucket, objectName, ctx.user);
 
         if (request.getDirection() == TransferDirection.UPLOAD) {
             TransferOptions transferOptions = new TransferOptions();

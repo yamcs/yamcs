@@ -2,25 +2,31 @@ package org.yamcs.buckets;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.stream.Collectors;
 
 import org.yamcs.ConfigScope;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.buckets.Bucket.AccessRuleType;
 import org.yamcs.logging.Log;
 import org.yamcs.yarch.BucketDatabase;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.rocksdb.RdbBucket;
-import org.yamcs.yarch.rocksdb.RdbBucketDatabase;
 
 /**
  * Provides access to buckets of various types.
@@ -29,19 +35,30 @@ public class BucketManager {
 
     private static final Log log = new Log(BucketManager.class);
 
-    private Map<String, Bucket> buckets = new HashMap<>();
+    private final Map<String, Bucket> buckets = new HashMap<>();
 
     private BucketDatabase bucketDatabase; // Local DB buckets
-    private Map<String, BucketProvider> providers = new HashMap<>(); // External buckets
+    private final Map<String, BucketProvider> providers = new HashMap<>(); // External buckets
 
     public BucketManager() {
         var yamcs = YamcsServer.getServer();
+
+        var accessRuleSpec = new Spec();
+        accessRuleSpec.addOption("role", OptionType.STRING).withRequired(true);
+        Arrays.stream(AccessRuleType.values()).forEach(type ->
+                accessRuleSpec.addOption(type.getConfigName(), OptionType.LIST_OR_ELEMENT)
+                        .withElementType(OptionType.STRING)
+                        .withDefault(Collections.emptyList())
+        );
 
         var bucketSpec = new Spec();
         bucketSpec.addOption("name", OptionType.STRING).withRequired(true);
         bucketSpec.addOption("path", OptionType.STRING);
         bucketSpec.addOption("maxSize", OptionType.INTEGER);
         bucketSpec.addOption("maxObjects", OptionType.INTEGER);
+        bucketSpec.addOption("accessRules", OptionType.LIST)
+                .withElementType(OptionType.MAP).withSpec(accessRuleSpec);
+
         yamcs.addConfigurationList(ConfigScope.YAMCS, "buckets", bucketSpec);
 
         // Discover known providers
@@ -121,6 +138,27 @@ public class BucketManager {
             int maxObjects = config.getInt("maxObjects");
             bucket.setMaxObjects(maxObjects);
         }
+
+        if (config.containsKey("accessRules")) {
+            // Creates empty access rules HashMaps for all permissions types
+            Map<AccessRuleType, Map<String, List<PathMatcher>>> accessRules = Arrays.stream(AccessRuleType.values())
+                    .collect(Collectors.toMap(type -> type, type -> new HashMap<>()));
+
+            // Adds rules to each rule type hashmap, with role as key and their list of glob patterns as values
+            FileSystem fileSystem = FileSystems.getDefault();
+            config.getConfigList("accessRules").forEach(rule -> {
+                String role = rule.getString("role");
+                Arrays.stream(AccessRuleType.values()).forEach(type ->
+                        accessRules.get(type).put(
+                                role,
+                                rule.getList(type.getConfigName()).stream()
+                                        .map(glob -> fileSystem.getPathMatcher("glob:" + glob))
+                                        .toList()
+                        ));
+            });
+
+            bucket.setAccessRules(accessRules);
+        }
     }
 
     public Bucket getBucket(String bucketName) throws IOException {
@@ -178,7 +216,7 @@ public class BucketManager {
 
     public void deleteBucket(String bucketName) throws IOException {
         var bucket = getBucket(bucketName);
-        if (bucket instanceof RdbBucketDatabase) {
+        if (bucket instanceof RdbBucket) {
             bucketDatabase.deleteBucket(bucketName);
         } else {
             throw new UnsupportedOperationException("Only local RocksDB buckets can be deleted");
