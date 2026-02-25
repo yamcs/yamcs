@@ -366,11 +366,30 @@ public class XtceStaxReader extends AbstractStaxReader {
             } else if (isStartElementWithName(ELEM_NOTE_SET)) {
                 skipXtceSection(ELEM_NOTE_SET);
             } else if (isStartElementWithName(ELEM_HISTORY_SET)) {
-                skipXtceSection(ELEM_HISTORY_SET);
+                readHistorySet(spaceSystem);
             } else if (isEndElementWithName(ELEM_HEADER)) {
                 return;
             } else {
                 logUnknown();
+            }
+        }
+    }
+
+    private void readHistorySet(SpaceSystem spaceSystem) throws XMLStreamException {
+        log.trace(ELEM_HISTORY_SET);
+        checkStartElementPreconditions();
+
+        // TODO: How to fetch what is the delimiter is from the XTCE file?
+        String delimiter = ";";
+
+        Header h = spaceSystem.getHeader();
+        while (true) {
+            xmlEvent = xmlEventReader.nextEvent();
+            if (isStartElementWithName(ELEM_HISTORY)) {
+                String his = readStringBetweenTags(ELEM_HISTORY);
+                h.addHistory(History.parse(his, delimiter));
+            } else if (isEndElementWithName(ELEM_HISTORY_SET)) {
+                return;
             }
         }
     }
