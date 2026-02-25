@@ -1,0 +1,57 @@
+name: Maven Publish
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - ready_for_review
+    branches:
+      - master
+      - pixxel/master
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    if: |
+        github.event_name == 'workflow_dispatch' ||
+        github.event.pull_request.draft == false
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+            node-version: 'lts/*'
+
+      # Do npm install and build steps for YAMCS webapp.
+      - name: Install dependencies and build frontend
+        run: |
+          echo ${{ github.workspace }}
+          cd ${{ github.workspace }}/yamcs-web/src/main/webapp
+          npm install
+          npm run build
+        
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+          server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+          settings-path: ${{ github.workspace }} # location for the settings.xml file
+          
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v4.5
+        with:
+          maven-version: 3.8.2
+
+      - name: Build with Maven
+        run: mvn clean install -DskipTests
+
+      - name: Publish to GitHub Packages Apache Maven
+        run: mvn deploy -DskipTests -s $GITHUB_WORKSPACE/settings.xml 
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
