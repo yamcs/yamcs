@@ -2,39 +2,158 @@
   <ya-instance-toolbar label="Mission database" />
 
   <ya-panel>
-    @if (mdb$ | async; as mdb) {
-      <dl class="dl-horizontal no-lead">
-        <dt>Parameters:</dt>
+    <ng-container *ngIf="mdb$ | async as mdb">
+
+      <!-- ======================
+           Summary Section
+      ======================= -->
+
+      <dl class="summary-list">
+        <dt>Parameters</dt>
         <dd>
-          <a class="ya-link" routerLink="/mdb/parameters" [queryParams]="{ c: yamcs.context }">
+          <a
+            class="ya-link"
+            routerLink="/mdb/parameters"
+            [queryParams]="{ c: yamcs.context }"
+          >
             {{ mdb.parameterCount }}
           </a>
         </dd>
-        <dt>Parameter types:</dt>
+
+        <dt>Parameter Types</dt>
         <dd>
-          <a class="ya-link" routerLink="/mdb/parameter-types" [queryParams]="{ c: yamcs.context }">
+          <a
+            class="ya-link"
+            routerLink="/mdb/parameter-types"
+            [queryParams]="{ c: yamcs.context }"
+          >
             {{ mdb.parameterTypeCount }}
           </a>
         </dd>
-        <dt>Containers:</dt>
+
+        <dt>Containers</dt>
         <dd>
-          <a class="ya-link" routerLink="/mdb/containers" [queryParams]="{ c: yamcs.context }">
+          <a
+            class="ya-link"
+            routerLink="/mdb/containers"
+            [queryParams]="{ c: yamcs.context }"
+          >
             {{ mdb.containerCount }}
           </a>
         </dd>
-        <dt>Commands:</dt>
+
+        <dt>Commands</dt>
         <dd>
-          <a class="ya-link" routerLink="/mdb/commands" [queryParams]="{ c: yamcs.context }">
+          <a
+            class="ya-link"
+            routerLink="/mdb/commands"
+            [queryParams]="{ c: yamcs.context }"
+          >
             {{ mdb.commandCount }}
           </a>
         </dd>
-        <dt>Algorithms:</dt>
+
+        <dt>Algorithms</dt>
         <dd>
-          <a class="ya-link" routerLink="/mdb/algorithms" [queryParams]="{ c: yamcs.context }">
+          <a
+            class="ya-link"
+            routerLink="/mdb/algorithms"
+            [queryParams]="{ c: yamcs.context }"
+          >
             {{ mdb.algorithmCount }}
           </a>
         </dd>
       </dl>
-    }
+
+      <!-- ======================
+           Versions Section
+      ======================= -->
+
+      <dl class="summary-list">
+        <dt>SpaceSystem Versions</dt>
+        <dd>
+          <div
+            *ngFor="let system of mdb.spaceSystems; trackBy: trackByName"
+            class="system-version"
+          >
+            <ng-container *ngIf="system.name !== 'yamcs'">
+              <strong>{{ system.name }}</strong>: v{{ system.version }}
+            </ng-container>
+          </div>
+        </dd>
+      </dl>
+
+      <!-- ======================
+           Changelog Section
+      ======================= -->
+
+      <dt>SpaceSystems Changelog History</dt>
+
+      <section
+        *ngFor="let system of mdb.spaceSystems; trackBy: trackByName"
+        class="system-section"
+      >
+        <ng-container class="system-name" *ngIf="system.name !== 'yamcs'">
+          <dt>{{ system.name }}</dt>
+
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>Version</th>
+                <th>Date</th>
+                <th>Message</th>
+                <th>Author</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr
+                *ngFor="let history of system.history; trackBy: trackByVersion"
+              >
+                <td>{{ history.version }}</td>
+                <td>{{ history.date }}</td>
+
+                <td class="message-cell">
+
+                  <!-- With URL -->
+                  <ng-container
+                    *ngIf="hasUrl(history.message); else plainMessage"
+                  >
+                    <a
+                      [href]="extractUrl(history.message)"
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      <span
+                        [innerHTML]="
+                          formatMessage(
+                            extractText(history.message)
+                          )
+                        "
+                      ></span>
+                      View Diff
+                    </a>
+                  </ng-container>
+
+                  <!-- Without URL -->
+                  <ng-template #plainMessage>
+                    <span
+                      [innerHTML]="
+                        formatMessage(history.message)
+                      "
+                    ></span>
+                  </ng-template>
+
+                </td>
+
+                <td>{{ history.author }}</td>
+              </tr>
+            </tbody>
+          </table>
+
+        </ng-container>
+      </section>
+
+    </ng-container>
   </ya-panel>
 </ya-instance-page>
