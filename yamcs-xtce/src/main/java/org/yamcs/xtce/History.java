@@ -48,6 +48,38 @@ public class History implements Serializable, Comparable<History> {
         return version + "; " + date + (message != null ? "; " + message : "");
     }
 
+    public static History parse(String input, String delimiter) {
+        // Split on ; and keep empty fields
+        String[] parts = input.split(delimiter, -1);
+
+        if (parts.length < 1) {
+            throw new IllegalArgumentException("Invalid format");
+        }
+
+        String version = parts[0].trim();
+
+        // Mandatory field check
+        if (version.isEmpty()) {
+            throw new IllegalArgumentException("Version cannot be empty");
+        }
+
+        String date    = getOptional(parts, 1);
+        String message = getOptional(parts, 2);
+        String author  = getOptional(parts, 3);
+
+        return new History(version, date, message, author);
+    }
+
+    private static String getOptional(String[] parts, int index) {
+        if (index >= parts.length) {
+            return null;
+        }
+
+        String value = parts[index].trim();
+
+        return value.isEmpty() ? null : value;
+    }
+
     @Override
     public int compareTo(History o) {
         if (o == null) return 1;
