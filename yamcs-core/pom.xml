@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.yamcs</groupId>
     <artifactId>yamcs</artifactId>
-    <version>5.12.7-SNAPSHOT</version>
+    <version>5.12.6-0.1.0.Pixxel-SNAPSHOT</version>
   </parent>
 
   <artifactId>yamcs-core</artifactId>
@@ -32,6 +32,10 @@
     </dependency>
 
     <dependency>
+      <groupId>com.beust</groupId>
+      <artifactId>jcommander</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
     </dependency>
@@ -46,10 +50,6 @@
     <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-codec-http</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty-handler</artifactId>
     </dependency>
     <dependency>
       <groupId>io.netty</groupId>
@@ -72,10 +72,6 @@
     <dependency>
       <groupId>org.codehaus.janino</groupId>
       <artifactId>janino</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jcommander</groupId>
-      <artifactId>jcommander</artifactId>
     </dependency>
     <dependency>
       <groupId>org.openjdk.nashorn</groupId>
