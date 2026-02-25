@@ -181,7 +181,7 @@
                 $any(transfer).state === "PAUSED" ||
                 $any(transfer).state === "CANCELLING"
               ) {
-                <ya-progress width="200px" [value]="transferPercent($any(transfer))" [total]="1" />
+                <ya-progress width="200" [value]="transferPercent($any(transfer))" [total]="1" />
               }
               <span>{{ $any(transfer).sizeTransferred | formatBytes }}</span>
               @if ($any(transfer).failureReason) {
