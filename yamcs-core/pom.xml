@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.yamcs</groupId>
     <artifactId>yamcs</artifactId>
-    <version>${revision}</version>
+    <version>5.12.6-0.1.0.Pixxel-SNAPSHOT</version>
   </parent>
 
   <artifactId>yamcs-core</artifactId>
@@ -12,7 +12,6 @@
 
   <properties>
     <javaModuleName>org.yamcs.core</javaModuleName>
-    <!--suppress UnresolvedMavenProperty -->
     <sonar.coverage.jacoco.xmlReportPaths>${basedir}/../${aggregate.report.dir}</sonar.coverage.jacoco.xmlReportPaths>
 
     <!-- If empty, revision is derived using git command,
