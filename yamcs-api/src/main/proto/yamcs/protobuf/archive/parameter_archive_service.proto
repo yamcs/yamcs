@@ -71,13 +71,6 @@ service ParameterArchiveApi {
       field_mask_root: "range"
     };
   }
-  
-  // List parameter history
-  rpc ListParameterHistory(ListParameterHistoryRequest) returns (ListParameterHistoryResponse) {
-    option (yamcs.api.route) = {
-      get: "/api/archive/{instance}/parameters/{name*}"
-    };
-  }
 
   // Get information about the archived parameters.
   //
