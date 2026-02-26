@@ -10,7 +10,6 @@ Operator:
   WriteParameter: []
   ReadPacket: ["PP_.*", ".*"]
   Command: [".*"]
-  InsertCommandQueue: ["ops"]
   System: ["ControlProcessor", "ModifyCommandHistory", "ControlCommandQueue", "Command", "GetMissionDatabase", 
 "ControlArchiving", "WriteEvents"]
 
