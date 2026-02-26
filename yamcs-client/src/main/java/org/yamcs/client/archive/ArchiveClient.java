@@ -33,8 +33,6 @@ import org.yamcs.client.base.AbstractPage;
 import org.yamcs.client.base.ResponseObserver;
 import org.yamcs.protobuf.AlarmData;
 import org.yamcs.protobuf.Archive.GetParameterSamplesRequest;
-import org.yamcs.protobuf.Archive.ListParameterHistoryRequest;
-import org.yamcs.protobuf.Archive.ListParameterHistoryResponse;
 import org.yamcs.protobuf.Archive.StreamParameterValuesRequest;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.CommandsApiClient;
@@ -55,9 +53,12 @@ import org.yamcs.protobuf.ListEventSourcesResponse;
 import org.yamcs.protobuf.ListEventsRequest;
 import org.yamcs.protobuf.ListEventsResponse;
 import org.yamcs.protobuf.ListPacketIndexRequest;
+import org.yamcs.protobuf.ListParameterHistoryRequest;
+import org.yamcs.protobuf.ListParameterHistoryResponse;
 import org.yamcs.protobuf.ListParameterIndexRequest;
 import org.yamcs.protobuf.PacketsApiClient;
 import org.yamcs.protobuf.ParameterArchiveApiClient;
+import org.yamcs.protobuf.ParameterValuesApiClient;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
 import org.yamcs.protobuf.Pvalue.Ranges;
@@ -94,6 +95,7 @@ public class ArchiveClient {
     private String instance;
     private IndexesApiClient indexService;
     private CommandsApiClient commandService;
+    private ParameterValuesApiClient parameterValuesService;
     private ParameterArchiveApiClient parameterArchiveService;
     private StreamArchiveApiClient streamArchiveService;
     private AlarmsApiClient alarmService;
@@ -105,6 +107,7 @@ public class ArchiveClient {
         this.instance = instance;
         indexService = new IndexesApiClient(handler);
         commandService = new CommandsApiClient(handler);
+        parameterValuesService = new ParameterValuesApiClient(handler);
         parameterArchiveService = new ParameterArchiveApiClient(handler);
         streamArchiveService = new StreamArchiveApiClient(handler);
         alarmService = new AlarmsApiClient(handler);
@@ -891,7 +894,7 @@ public class ArchiveClient {
 
         @Override
         protected void fetch(ListParameterHistoryRequest request, Observer<ListParameterHistoryResponse> observer) {
-            parameterArchiveService.listParameterHistory(null, request, observer);
+            parameterValuesService.listParameterHistory(null, request, observer);
         }
     }
 
