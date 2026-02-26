@@ -30,8 +30,6 @@ import org.yamcs.protobuf.AbstractStreamArchiveApi;
 import org.yamcs.protobuf.Archive.ExportParameterValuesRequest;
 import org.yamcs.protobuf.Archive.GetParameterSamplesRequest;
 import org.yamcs.protobuf.Archive.ListParameterGroupsRequest;
-import org.yamcs.protobuf.Archive.ListParameterHistoryRequest;
-import org.yamcs.protobuf.Archive.ListParameterHistoryResponse;
 import org.yamcs.protobuf.Archive.ParameterGroupInfo;
 import org.yamcs.protobuf.Archive.StreamParameterValuesRequest;
 import org.yamcs.protobuf.Pvalue.ParameterData;
@@ -74,94 +72,6 @@ public class StreamArchiveApi extends AbstractStreamArchiveApi<Context> {
             responseb.addAllGroups(unsortedGroups);
         }
         observer.complete(responseb.build());
-    }
-
-    @Override
-    public void listParameterHistory(Context ctx, ListParameterHistoryRequest request,
-            Observer<ListParameterHistoryResponse> observer) {
-        String instance = InstancesApi.verifyInstance(request.getInstance());
-
-        var ysi = InstancesApi.verifyInstanceObj(request.getInstance());
-        var prs = ParameterArchiveApi.getParameterRetrievalService(ysi);
-
-        Mdb mdb = MdbFactory.getInstance(instance);
-        String pathName = request.getName();
-
-        ParameterWithId p = MdbApi.verifyParameterWithId(ctx, mdb, pathName);
-
-        long pos = request.hasPos() ? request.getPos() : 0;
-        int limit = request.hasLimit() ? request.getLimit() : 100;
-        boolean noRepeat = request.getNorepeat();
-        boolean ascending = request.getOrder().equals("asc");
-        int maxBytes = request.hasMaxBytes() ? request.getMaxBytes() : -1;
-
-        long start = TimeEncoding.INVALID_INSTANT;
-        if (request.hasStart()) {
-            start = TimeEncoding.fromProtobufTimestamp(request.getStart());
-        }
-
-        long stop = TimeEncoding.INVALID_INSTANT;
-        if (request.hasStop()) {
-            stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
-        }
-
-        if (start != TimeEncoding.INVALID_INSTANT && stop != TimeEncoding.INVALID_INSTANT && start > stop) {
-            throw new BadRequestException("Start date must be before stop date");
-        }
-
-        boolean replayRequested = request.hasSource() && isReplayAsked(request.getSource());
-        ParameterRetrievalOptions opts = ParameterRetrievalOptions.newBuilder()
-                .withStartStop(start, stop)
-                .withAscending(ascending)
-                .withRetrieveParameterStatus(false)
-                .withoutRealtime(request.getNorealtime())
-                .withoutParchive(replayRequested)
-                .withoutReplay(!replayRequested)
-                .build();
-
-        ListParameterHistoryResponse.Builder resultb = ListParameterHistoryResponse.newBuilder();
-        PaginatedSingleParameterRetrievalConsumer replayListener = new PaginatedSingleParameterRetrievalConsumer(pos,
-                limit) {
-            @Override
-            public void onParameterData(ParameterValueWithId pvalid) {
-                resultb.addParameter(toGpb(pvalid, maxBytes));
-            }
-        };
-        replayListener.setNoRepeat(noRepeat);
-
-        prs.retrieveSingle(p, opts, replayListener).thenRun(() -> {
-            observer.complete(resultb.build());
-        }).exceptionally(e -> {
-            observer.completeExceptionally(e);
-            return null;
-        });
-    }
-
-    public static ParameterValue toGpb(ParameterValueWithId pvalWithId, int maxBytes) {
-        var gpb = pvalWithId.toGbpParameterValue();
-        if (maxBytes >= 0) {
-            var hasRawBinaryValue = gpb.hasRawValue() && gpb.getRawValue().hasBinaryValue();
-            var hasEngBinaryValue = gpb.hasEngValue() && gpb.getEngValue().hasBinaryValue();
-            if (hasRawBinaryValue || hasEngBinaryValue) {
-                var truncated = org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder(gpb);
-                if (hasRawBinaryValue) {
-                    var binaryValue = gpb.getRawValue().getBinaryValue();
-                    if (binaryValue.size() > maxBytes) {
-                        truncated.getRawValueBuilder().setBinaryValue(
-                                binaryValue.substring(0, maxBytes));
-                    }
-                }
-                if (hasEngBinaryValue) {
-                    var binaryValue = gpb.getEngValue().getBinaryValue();
-                    if (binaryValue.size() > maxBytes) {
-                        truncated.getEngValueBuilder().setBinaryValue(
-                                binaryValue.substring(0, maxBytes));
-                    }
-                }
-                return truncated.build();
-            }
-        }
-        return gpb;
     }
 
     @Override
