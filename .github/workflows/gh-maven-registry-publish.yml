@@ -1,6 +1,9 @@
 name: Maven Publish
 
 on:
+  push:
+    branches:
+      - pixxel/master
   pull_request:
     types:
       - opened
