@@ -82,6 +82,13 @@ service ParameterValuesApi {
       }
     };
   }
+
+  // List parameter groups
+  rpc ListParameterGroups(ListParameterGroupsRequest) returns (ListParameterGroupsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/{instance}/parameter-groups"
+    };
+  }
 }
 
 message ListParameterHistoryRequest {
@@ -317,4 +324,14 @@ message GetParameterSamplesRequest {
   //
   // Default: `ParameterArchive`.
   optional string source = 8;
+}
+
+message ListParameterGroupsRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+}
+
+message ListParameterGroupsResponse {
+  // Parameter group names
+  repeated string groups = 2;
 }

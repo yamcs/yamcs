@@ -7,13 +7,16 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.api.HttpBody;
 import org.yamcs.api.Observer;
+import org.yamcs.archive.ParameterRecorder;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.InternalServerErrorException;
@@ -32,6 +35,8 @@ import org.yamcs.parameter.ParameterWithId;
 import org.yamcs.protobuf.AbstractParameterValuesApi;
 import org.yamcs.protobuf.ExportParameterValuesRequest;
 import org.yamcs.protobuf.GetParameterSamplesRequest;
+import org.yamcs.protobuf.ListParameterGroupsRequest;
+import org.yamcs.protobuf.ListParameterGroupsResponse;
 import org.yamcs.protobuf.ListParameterHistoryRequest;
 import org.yamcs.protobuf.ListParameterHistoryResponse;
 import org.yamcs.protobuf.LoadParameterValuesRequest;
@@ -49,8 +54,11 @@ import org.yamcs.utils.ParameterFormatter.Header;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.YarchDatabase;
+import org.yamcs.yarch.YarchDatabaseInstance;
 
+import com.google.common.collect.BiMap;
 import com.google.protobuf.ByteString;
 
 public class ParameterValuesApi extends AbstractParameterValuesApi<Context> {
@@ -546,6 +554,26 @@ public class ParameterValuesApi extends AbstractParameterValuesApi<Context> {
                     observer.completeExceptionally(new InternalServerErrorException(e.toString()));
                     return null;
                 });
+    }
+
+    @Override
+    public void listParameterGroups(Context ctx, ListParameterGroupsRequest request,
+            Observer<ListParameterGroupsResponse> observer) {
+        String instance = InstancesApi.verifyInstance(request.getInstance());
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
+
+        var responseb = ListParameterGroupsResponse.newBuilder();
+        TableDefinition tableDefinition = ydb.getTable(ParameterRecorder.TABLE_NAME);
+        BiMap<String, Short> enumValues = tableDefinition.getEnumValues("group");
+        if (enumValues != null) {
+            List<String> unsortedGroups = new ArrayList<>();
+            for (Entry<String, Short> entry : enumValues.entrySet()) {
+                unsortedGroups.add(entry.getKey());
+            }
+            Collections.sort(unsortedGroups);
+            responseb.addAllGroups(unsortedGroups);
+        }
+        observer.complete(responseb.build());
     }
 
     private static ParameterRetrievalService getParameterRetrievalService(YamcsServerInstance ysi)
