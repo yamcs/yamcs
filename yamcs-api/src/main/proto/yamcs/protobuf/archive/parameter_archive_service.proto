@@ -10,7 +10,6 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
 import "yamcs/api/annotations.proto";
-import "yamcs/protobuf/pvalue/pvalue.proto";
 import "yamcs/protobuf/yamcs.proto";
 
 service ParameterArchiveApi {
@@ -32,23 +31,6 @@ service ParameterArchiveApi {
       post: "/api/archive/{instance}/parameterArchive:rebuild"
       body: "*"
       offloaded: true
-    };
-  }
-  
-  // Get parameter ranges
-  //
-  // A range is a tuple `(start, stop, value, count)` that represents the time
-  // interval for which the parameter has been steadily coming in with the same
-  // value. This request is useful for retrieving an overview for parameters that
-  // change unfrequently in a large time interval. For example an on/off status
-  // of a device, or some operational status. Two consecutive ranges containing
-  // the same value will be returned if there was a gap in the data. The gap is
-  // determined according to the parameter expiration time configured in the
-  // Mission Database.
-  rpc GetParameterRanges(GetParameterRangesRequest) returns (pvalue.Ranges) {
-    option (yamcs.api.route) = {
-      get: "/api/archive/{instance}/parameters/{name*}/ranges"
-      field_mask_root: "range"
     };
   }
 
@@ -200,58 +182,6 @@ message RebuildRangeRequest {
 message PurgeRequest {
   // Yamcs instance name
   optional string instance = 1;
-}
-
-message GetParameterRangesRequest {
-  // Yamcs instance name
-  optional string instance = 1;
-
-  // Parameter name
-  optional string name = 2;
-  
-  // Filter the lower bound of the parameter's generation time. Specify a date
-  // string in ISO 8601 format.
-  optional google.protobuf.Timestamp start = 3;
-  
-  // Filter the upper bound of the parameter's generation time. Specify a date
-  // string in ISO 8601 format.
-  optional google.protobuf.Timestamp stop = 4;
-  
-  // Time in milliseconds. Any gap (detected based on parameter expiration) smaller than
-  // this will be ignored. However if the parameter changes value, the ranges will still
-  // be split.
-  optional int64 minGap = 5;
-  
-  // Time in milliseconds. If the distance between two subsequent values of the parameter
-  // is bigger than this value (but smaller than the parameter expiration), then an
-  // artificial gap will be constructed. This also applies if there is no parameter
-  // expiration defined for the parameter.
-  optional int64 maxGap = 6;
-  
-  // Disable loading of parameters from the parameter cache. Default: `false`.
-  optional bool norealtime = 7;
-  
-  // The name of the processor from which to use the parameter cache. Default: `realtime`.
-  optional string processor = 8;
-
-  // Specifies how to retrieve the parameters. Either `ParameterArchive` or
-  // `replay`. If `replay` is specified, a replay processor will be created
-  // and data will be processed with the active Mission Database. Note that this
-  // is much slower than receiving data from the ParameterArchive.
-  //
-  // Default: `ParameterArchive`.
-  optional string source = 9;
-
-  // Time in milliseconds of the minimum range to be returned. If the data changes more often,
-  //a new range will not be created but the data will be added to the old range.
-  optional int64 minRange = 10;
-
-  // Maximum number of distinct values to be returned. The maximum number
-  // applies across all ranges and is meant to limit the amount of data that
-  // is being retrieved. The retrieved data has a count for each value as well
-  // as a total count. The difference between the total count and the sum of the
-  // individual counts can be used to compute the number of unsent values.
-  optional int32 maxValues = 11;
 }
 
 // Get information about the parameters stored in the Parameter Archive 
