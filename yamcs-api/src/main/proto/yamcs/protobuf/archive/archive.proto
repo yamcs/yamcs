@@ -7,7 +7,6 @@ option java_package = "org.yamcs.protobuf";
 import "google/protobuf/timestamp.proto";
 
 import "yamcs/api/annotations.proto";
-import "yamcs/protobuf/pvalue/pvalue.proto";
 import "yamcs/protobuf/yamcs.proto";
 
 service StreamArchiveApi {
@@ -17,14 +16,6 @@ service StreamArchiveApi {
   rpc ListParameterGroups(ListParameterGroupsRequest) returns (ParameterGroupInfo) {
     option (yamcs.api.route) = {
       get: "/api/archive/{instance}/parameter-groups"
-    };
-  }
-  
-  // Get parameter samples
-  rpc GetParameterSamples(GetParameterSamplesRequest) returns (pvalue.TimeSeries) {
-    option (yamcs.api.route) = {
-      get: "/api/stream-archive/{instance}/parameters/{name*}/samples"
-      field_mask_root: "sample"
     };
   }
 }
@@ -38,49 +29,4 @@ message ParameterGroupInfo {
 message ListParameterGroupsRequest {
   // Yamcs instance name
   optional string instance = 1;
-}
-
-message GetParameterSamplesRequest {
-  // Yamcs instance name
-  optional string instance = 1;
-  
-  // Parameter name
-  optional string name = 2;
-  
-  // Filter the lower bound of the parameter's generation time. Specify a date
-  // string in ISO 8601 format.
-  optional google.protobuf.Timestamp start = 3;
-  
-  // Filter the upper bound of the parameter's generation time. Specify a date
-  // string in ISO 8601 format.
-  optional google.protobuf.Timestamp stop = 4;
-  
-  // Number of intervals to use. Default: `500`.
-  optional int32 count = 5;
-  
-  // Disable loading of parameters from the parameter cache. Default: `false`.
-  optional bool norealtime = 6;
-  
-  // Consider the raw value instead of the engineering value.
-  // Default is to use the engineering value 
-  optional bool useRawValue = 9;
-
-  // Milliseconds before a sample is considered expired. This property is
-  // used as a fallback, when the underlying parameter values have no
-  // implicit expiration time.
-  //
-  // Default: `120000`.
-  optional uint64 gapTime = 10;
-
-  // The name of the processor from which to use the parameter cache.
-  // Default: `realtime`.
-  optional string processor = 7;
-  
-  // Specifies how to retrieve the parameters. Either `ParameterArchive` or
-  // `replay`. If `replay` is specified, a replay processor will be created
-  // and data will be processed with the active Mission Database. Note that
-  // this is much slower than receiving data from the ParameterArchive.
-  //
-  // Default: `ParameterArchive`.
-  optional string source = 8;
 }

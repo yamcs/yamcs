@@ -32,13 +32,13 @@ import org.yamcs.client.archive.ArchiveClient.StreamOptions.StreamOption;
 import org.yamcs.client.base.AbstractPage;
 import org.yamcs.client.base.ResponseObserver;
 import org.yamcs.protobuf.AlarmData;
-import org.yamcs.protobuf.Archive.GetParameterSamplesRequest;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.CommandsApiClient;
 import org.yamcs.protobuf.Event;
 import org.yamcs.protobuf.EventsApiClient;
 import org.yamcs.protobuf.GetCommandRequest;
 import org.yamcs.protobuf.GetParameterRangesRequest;
+import org.yamcs.protobuf.GetParameterSamplesRequest;
 import org.yamcs.protobuf.IndexGroup;
 import org.yamcs.protobuf.IndexResponse;
 import org.yamcs.protobuf.IndexesApiClient;
@@ -718,7 +718,7 @@ public class ArchiveClient {
                 .setStart(Timestamp.newBuilder().setSeconds(start.getEpochSecond()).setNanos(start.getNano()))
                 .setStop(Timestamp.newBuilder().setSeconds(stop.getEpochSecond()).setNanos(stop.getNano()));
         CompletableFuture<TimeSeries> f = new CompletableFuture<>();
-        parameterArchiveService.getParameterSamples(null, requestb.build(), new ResponseObserver<>(f));
+        parameterValuesService.getParameterSamples(null, requestb.build(), new ResponseObserver<>(f));
         return f.thenApply(TimeSeries::getSampleList);
     }
 
