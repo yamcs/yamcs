@@ -20,6 +20,7 @@ import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.MediaType;
 import org.yamcs.http.api.AbstractPaginatedParameterRetrievalConsumer.PaginatedMultiParameterRetrievalConsumer;
 import org.yamcs.http.api.AbstractPaginatedParameterRetrievalConsumer.PaginatedSingleParameterRetrievalConsumer;
+import org.yamcs.http.api.Downsampler.Sample;
 import org.yamcs.logging.Log;
 import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
@@ -30,11 +31,13 @@ import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithId;
 import org.yamcs.protobuf.AbstractParameterValuesApi;
 import org.yamcs.protobuf.ExportParameterValuesRequest;
+import org.yamcs.protobuf.GetParameterSamplesRequest;
 import org.yamcs.protobuf.ListParameterHistoryRequest;
 import org.yamcs.protobuf.ListParameterHistoryResponse;
 import org.yamcs.protobuf.LoadParameterValuesRequest;
 import org.yamcs.protobuf.LoadParameterValuesResponse;
 import org.yamcs.protobuf.Pvalue.ParameterData;
+import org.yamcs.protobuf.Pvalue.TimeSeries;
 import org.yamcs.protobuf.StreamParameterValuesRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
@@ -481,6 +484,70 @@ public class ParameterValuesApi extends AbstractParameterValuesApi<Context> {
         };
     }
 
+    @Override
+    public void getParameterSamples(Context ctx, GetParameterSamplesRequest request, Observer<TimeSeries> observer) {
+        YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(request.getInstance());
+
+        Mdb mdb = MdbFactory.getInstance(ysi.getName());
+
+        ParameterWithId pid = MdbApi.verifyParameterWithId(ctx, mdb, request.getName());
+
+        /*
+         * TODO check commented out, in order to support sampling system parameters which don't have a type
+         * 
+         * ParameterType ptype = p.getParameterType(); if (ptype == null) { throw new
+         * BadRequestException("Requested parameter has no type"); } else if (!(ptype instanceof FloatParameterType) &&
+         * !(ptype instanceof IntegerParameterType)) { throw new
+         * BadRequestException("Only integer or float parameters can be sampled. Got " + ptype.getTypeAsString()); }
+         */
+
+        long defaultStop = TimeEncoding.getWallclockTime();
+        long defaultStart = defaultStop - (1000 * 60 * 60); // 1 hour
+
+        long start = defaultStart;
+        if (request.hasStart()) {
+            start = TimeEncoding.fromProtobufTimestamp(request.getStart());
+        }
+        long stop = defaultStop;
+        if (request.hasStop()) {
+            stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
+        }
+
+        if (start > stop) {
+            throw new BadRequestException("Start date must be before stop date");
+        }
+
+        int sampleCount = request.hasCount() ? request.getCount() : 500;
+        boolean useRawValue = request.hasUseRawValue() && request.getUseRawValue();
+
+        Downsampler sampler = new Downsampler(start, stop, sampleCount);
+        sampler.setUseRawValue(useRawValue);
+        sampler.setGapTime(request.hasGapTime() ? request.getGapTime() : 120000);
+
+        ParameterRetrievalService prs = getParameterRetrievalService(ysi);
+        ParameterRetrievalOptions opts = ParameterRetrievalOptions.newBuilder()
+                .withStartStop(start, stop)
+                .withAscending(true)
+                .withRetrieveRawValues(useRawValue)
+                .withRetrieveEngineeringValues(!useRawValue)
+                .withoutRealtime(request.getNorealtime())
+                .withoutParchive(request.hasSource() && isReplayAsked(request.getSource()))
+                .build();
+        prs.retrieveScalar(pid, opts, sampler)
+                .thenRun(() -> {
+                    TimeSeries.Builder series = TimeSeries.newBuilder();
+                    for (Sample s : sampler.collect()) {
+                        series.addSample(toGPBSample(s));
+                    }
+                    observer.complete(series.build());
+                })
+                .exceptionally(e -> {
+                    log.warn("Received exception during parameter retrieval", e);
+                    observer.completeExceptionally(new InternalServerErrorException(e.toString()));
+                    return null;
+                });
+    }
+
     private static ParameterRetrievalService getParameterRetrievalService(YamcsServerInstance ysi)
             throws BadRequestException {
         var services = ysi.getServices(ParameterRetrievalService.class);
@@ -554,5 +621,23 @@ public class ParameterValuesApi extends AbstractParameterValuesApi<Context> {
                 observer.completeExceptionally(e);
             }
         }
+    }
+
+    private static TimeSeries.Sample toGPBSample(Sample sample) {
+        TimeSeries.Sample.Builder b = TimeSeries.Sample.newBuilder();
+        b.setTime(TimeEncoding.toProtobufTimestamp(sample.t));
+        b.setN(sample.n);
+
+        if (sample.n > 0) {
+            b.setAvg(sample.avg);
+            b.setMin(sample.min);
+            b.setMax(sample.max);
+            b.setMinTime(TimeEncoding.toProtobufTimestamp(sample.minTime));
+            b.setMaxTime(TimeEncoding.toProtobufTimestamp(sample.maxTime));
+            b.setFirstTime(TimeEncoding.toProtobufTimestamp(sample.firstTime));
+            b.setLastTime(TimeEncoding.toProtobufTimestamp(sample.lastTime));
+        }
+
+        return b.build();
     }
 }
