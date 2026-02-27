@@ -33,7 +33,6 @@ import org.yamcs.client.base.AbstractPage;
 import org.yamcs.client.base.ResponseObserver;
 import org.yamcs.protobuf.AlarmData;
 import org.yamcs.protobuf.Archive.GetParameterSamplesRequest;
-import org.yamcs.protobuf.Archive.StreamParameterValuesRequest;
 import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.CommandsApiClient;
 import org.yamcs.protobuf.Event;
@@ -65,7 +64,6 @@ import org.yamcs.protobuf.Pvalue.Ranges;
 import org.yamcs.protobuf.Pvalue.Ranges.Range;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
 import org.yamcs.protobuf.Pvalue.TimeSeries.Sample;
-import org.yamcs.protobuf.StreamArchiveApiClient;
 import org.yamcs.protobuf.StreamCommandIndexRequest;
 import org.yamcs.protobuf.StreamCommandsRequest;
 import org.yamcs.protobuf.StreamCompletenessIndexRequest;
@@ -74,6 +72,7 @@ import org.yamcs.protobuf.StreamEventsRequest;
 import org.yamcs.protobuf.StreamPacketIndexRequest;
 import org.yamcs.protobuf.StreamPacketsRequest;
 import org.yamcs.protobuf.StreamParameterIndexRequest;
+import org.yamcs.protobuf.StreamParameterValuesRequest;
 import org.yamcs.protobuf.Table.GetTableDataRequest;
 import org.yamcs.protobuf.Table.ReadRowsRequest;
 import org.yamcs.protobuf.Table.Row;
@@ -97,7 +96,6 @@ public class ArchiveClient {
     private CommandsApiClient commandService;
     private ParameterValuesApiClient parameterValuesService;
     private ParameterArchiveApiClient parameterArchiveService;
-    private StreamArchiveApiClient streamArchiveService;
     private AlarmsApiClient alarmService;
     private TableApiClient tableService;
     private EventsApiClient eventService;
@@ -109,7 +107,6 @@ public class ArchiveClient {
         commandService = new CommandsApiClient(handler);
         parameterValuesService = new ParameterValuesApiClient(handler);
         parameterArchiveService = new ParameterArchiveApiClient(handler);
-        streamArchiveService = new StreamArchiveApiClient(handler);
         alarmService = new AlarmsApiClient(handler);
         tableService = new TableApiClient(handler);
         eventService = new EventsApiClient(handler);
@@ -612,7 +609,7 @@ public class ArchiveClient {
         }
 
         CompletableFuture<Void> f = new CompletableFuture<>();
-        streamArchiveService.streamParameterValues(null, requestb.build(), new Observer<ParameterData>() {
+        parameterValuesService.streamParameterValues(null, requestb.build(), new Observer<ParameterData>() {
 
             @Override
             public void next(ParameterData message) {

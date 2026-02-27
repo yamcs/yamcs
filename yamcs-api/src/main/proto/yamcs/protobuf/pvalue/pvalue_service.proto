@@ -38,6 +38,19 @@ service ParameterValuesApi {
     };
   }
 
+  // Streams back parameter values
+  rpc StreamParameterValues(StreamParameterValuesRequest) returns (stream pvalue.ParameterData) {
+    option (yamcs.api.route) = {
+      post: "/api/archive/{instance}:streamParameterValues"
+      body: "*"
+      additional_bindings {
+        post: "/api/stream-archive/{instance}:streamParameterValues"
+        body: "*"
+        deprecated: true
+      }
+    };
+  }
+
   // Load (inject) a stream of parameter values
   rpc LoadParameterValues(stream LoadParameterValuesRequest) returns (LoadParameterValuesResponse) {
     option (yamcs.api.route) = {
@@ -176,6 +189,28 @@ message ExportParameterValuesRequest {
   // One of `QUALIFIED_NAME`, `SHORT_NAME` or `NONE`.
   // Default: `QUALIFIED_NAME`.
   optional string header = 15;
+}
+
+// Retrieves parameters by performing a replay
+message StreamParameterValuesRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+  optional google.protobuf.Timestamp start = 2;
+  optional google.protobuf.Timestamp stop = 3;
+
+  // Parameter identifiers. Each identifier takes the form of
+  // a namespace and a name.
+  //
+  // For Yamcs-native naming only the name field is required and
+  // should be the fully qualified name. The namespace is only
+  // required when the name represents an alias of that parameter.
+  repeated NamedObjectId ids = 4;
+
+  // Since version 5.4.0, Yamcs records the name of the TM link on which
+  // a TM packet is received together with the packet (in the tm table).
+  // This option, if specified, allows retrieving as part of replay only
+  // the packets originally received on one of the links specified.
+  repeated string tmLinks = 5;
 }
 
 message LoadParameterValuesRequest {
