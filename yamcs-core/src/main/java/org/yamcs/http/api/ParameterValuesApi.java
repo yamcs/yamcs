@@ -34,7 +34,10 @@ import org.yamcs.protobuf.ListParameterHistoryRequest;
 import org.yamcs.protobuf.ListParameterHistoryResponse;
 import org.yamcs.protobuf.LoadParameterValuesRequest;
 import org.yamcs.protobuf.LoadParameterValuesResponse;
+import org.yamcs.protobuf.Pvalue.ParameterData;
+import org.yamcs.protobuf.StreamParameterValuesRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.tctm.StreamParameterSender;
 import org.yamcs.time.TimeService;
@@ -327,6 +330,77 @@ public class ParameterValuesApi extends AbstractParameterValuesApi<Context> {
             return null;
         });
         // observer.setCancelHandler(listener::requestReplayAbortion);
+    }
+
+    @Override
+    public void streamParameterValues(Context ctx, StreamParameterValuesRequest request,
+            Observer<ParameterData> observer) {
+        String instance = InstancesApi.verifyInstance(request.getInstance());
+        var ysi = InstancesApi.verifyInstanceObj(request.getInstance());
+        var prs = ParameterArchiveApi.getParameterRetrievalService(ysi);
+
+        Mdb mdb = MdbFactory.getInstance(instance);
+
+        var optsb = ParameterRetrievalOptions.newBuilder()
+                .withRetrieveParameterStatus(false)
+                .withoutParchive(true)
+                .withoutRealtime(true)
+                .withoutReplay(false);
+
+        var start = TimeEncoding.INVALID_INSTANT;
+        var stop = TimeEncoding.INVALID_INSTANT;
+        if (request.hasStart()) {
+            start = TimeEncoding.fromProtobufTimestamp(request.getStart());
+            optsb.withStart(start);
+        }
+        if (request.hasStop()) {
+            stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
+            optsb.withStop(stop);
+        }
+        if (start != TimeEncoding.INVALID_INSTANT && stop != TimeEncoding.INVALID_INSTANT && start > stop) {
+            throw new BadRequestException("Start date must be before stop date");
+        }
+
+        List<ParameterWithId> pids = new ArrayList<>();
+
+        for (NamedObjectId id : request.getIdsList()) {
+            ParameterWithId paramWithId = MdbApi.verifyParameterWithId(ctx, mdb, id);
+            pids.add(paramWithId);
+        }
+
+        if (pids.isEmpty()) {
+            for (Parameter p : mdb.getParameters()) {
+                if (ctx.user.hasParameterPrivilege(ObjectPrivilegeType.ReadParameter, p)) {
+                    var id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build();
+                    pids.add(new ParameterWithId(p, id, null));
+                }
+            }
+        }
+
+        if (request.getTmLinksCount() > 0) {
+            optsb.withPacketReplayRequest(PacketReplayRequest.newBuilder()
+                    .addAllTmLinks(request.getTmLinksList())
+                    .build());
+        }
+
+        var replayListener = new PaginatedMultiParameterRetrievalConsumer() {
+            @Override
+            protected void onParameterData(List<ParameterValueWithId> params) {
+                ParameterData.Builder pd = ParameterData.newBuilder();
+                for (ParameterValueWithId pvalid : params) {
+                    var pval = pvalid.toGbpParameterValue();
+                    pd.addParameter(pval);
+                }
+                observer.next(pd.build());
+            }
+        };
+
+        prs.retrieveMulti(pids, optsb.build(), replayListener).thenRun(() -> {
+            observer.complete();
+        }).exceptionally(e -> {
+            observer.completeExceptionally(e);
+            return null;
+        });
     }
 
     @Override
