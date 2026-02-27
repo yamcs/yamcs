@@ -54,7 +54,6 @@ import org.yamcs.http.api.SdlsApi;
 import org.yamcs.http.api.ServerApi;
 import org.yamcs.http.api.ServicesApi;
 import org.yamcs.http.api.SessionsApi;
-import org.yamcs.http.api.StreamArchiveApi;
 import org.yamcs.http.api.TableApi;
 import org.yamcs.http.api.TimeApi;
 import org.yamcs.http.api.TimeCorrelationApi;
@@ -302,15 +301,14 @@ public class HttpServer extends AbstractYamcsService {
         addApi(new QueuesApi(auditLog));
         addApi(new ReplicationApi());
         addApi(new RocksDbApi(auditLog));
+        addApi(new SdlsApi());
         addApi(new ServerApi(this));
         addApi(new ServicesApi());
         addApi(new SessionsApi());
-        addApi(new StreamArchiveApi());
         addApi(new TableApi());
         addApi(new TimeApi());
         addApi(new TimeCorrelationApi());
         addApi(new TimelineApi());
-        addApi(new SdlsApi());
 
         var wellKnownHandler = new WellKnownHandler();
         addRoute(".well-known", () -> wellKnownHandler);
