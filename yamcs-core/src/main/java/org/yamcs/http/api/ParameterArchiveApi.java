@@ -15,7 +15,6 @@ import org.yamcs.http.Context;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
-import org.yamcs.http.api.Downsampler.Sample;
 import org.yamcs.http.api.ParameterRanger.Range;
 import org.yamcs.logging.Log;
 import org.yamcs.mdb.Mdb;
@@ -31,7 +30,6 @@ import org.yamcs.parameterarchive.ParameterId;
 import org.yamcs.parameterarchive.ParameterIdDb;
 import org.yamcs.parameterarchive.ParameterInfoRetrieval;
 import org.yamcs.protobuf.AbstractParameterArchiveApi;
-import org.yamcs.protobuf.Archive.GetParameterSamplesRequest;
 import org.yamcs.protobuf.ArchivedParameterGroupResponse;
 import org.yamcs.protobuf.ArchivedParameterInfo;
 import org.yamcs.protobuf.ArchivedParameterSegmentsResponse;
@@ -44,7 +42,6 @@ import org.yamcs.protobuf.GetArchivedParametersInfoRequest;
 import org.yamcs.protobuf.GetParameterRangesRequest;
 import org.yamcs.protobuf.PurgeRequest;
 import org.yamcs.protobuf.Pvalue.Ranges;
-import org.yamcs.protobuf.Pvalue.TimeSeries;
 import org.yamcs.protobuf.RebuildRangeRequest;
 import org.yamcs.protobuf.SubscribeBackfillingData;
 import org.yamcs.protobuf.SubscribeBackfillingData.BackfillFinishedInfo;
@@ -133,73 +130,6 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
             execFuture.cancel(false);
         });
         backFiller.addListener(listener);
-    }
-
-    @Override
-    public void getParameterSamples(Context ctx, GetParameterSamplesRequest request,
-            Observer<TimeSeries> observer) {
-
-        YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(request.getInstance());
-
-        Mdb mdb = MdbFactory.getInstance(ysi.getName());
-
-        ParameterWithId pid = MdbApi.verifyParameterWithId(ctx, mdb, request.getName());
-
-        /*
-         * TODO check commented out, in order to support sampling system parameters which don't have a type
-         * 
-         * ParameterType ptype = p.getParameterType(); if (ptype == null) { throw new
-         * BadRequestException("Requested parameter has no type"); } else if (!(ptype instanceof FloatParameterType) &&
-         * !(ptype instanceof IntegerParameterType)) { throw new
-         * BadRequestException("Only integer or float parameters can be sampled. Got " + ptype.getTypeAsString()); }
-         */
-
-        long defaultStop = TimeEncoding.getWallclockTime();
-        long defaultStart = defaultStop - (1000 * 60 * 60); // 1 hour
-
-        long start = defaultStart;
-        if (request.hasStart()) {
-            start = TimeEncoding.fromProtobufTimestamp(request.getStart());
-        }
-        long stop = defaultStop;
-        if (request.hasStop()) {
-            stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
-        }
-
-        if (start > stop) {
-            throw new BadRequestException("Start date must be before stop date");
-        }
-
-        int sampleCount = request.hasCount() ? request.getCount() : 500;
-        boolean useRawValue = request.hasUseRawValue() && request.getUseRawValue();
-
-        Downsampler sampler = new Downsampler(start, stop, sampleCount);
-        sampler.setUseRawValue(useRawValue);
-        sampler.setGapTime(request.hasGapTime() ? request.getGapTime() : 120000);
-
-        ParameterRetrievalService prs = getParameterRetrievalService(ysi);
-        ParameterRetrievalOptions opts = ParameterRetrievalOptions.newBuilder()
-                .withStartStop(start, stop)
-                .withAscending(true)
-                .withRetrieveRawValues(useRawValue)
-                .withRetrieveEngineeringValues(!useRawValue)
-                .withoutRealtime(request.getNorealtime())
-                .withoutParchive(request.hasSource() && isReplayAsked(request.getSource()))
-                .build();
-        prs.retrieveScalar(pid, opts, sampler)
-                .thenRun(() -> {
-                    TimeSeries.Builder series = TimeSeries.newBuilder();
-                    for (Sample s : sampler.collect()) {
-                        series.addSample(StreamArchiveApi.toGPBSample(s));
-                    }
-                    observer.complete(series.build());
-                })
-                .exceptionally(e -> {
-                    log.warn("Received exception during parameter retrieval", e);
-                    observer.completeExceptionally(new InternalServerErrorException(e.toString()));
-                    return null;
-                });
-
     }
 
     @Override
