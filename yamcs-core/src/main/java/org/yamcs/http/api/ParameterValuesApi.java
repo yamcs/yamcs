@@ -2,14 +2,23 @@ package org.yamcs.http.api;
 
 import static org.yamcs.http.api.ParameterArchiveApi.isReplayAsked;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
+import org.yamcs.api.HttpBody;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
 import org.yamcs.http.InternalServerErrorException;
+import org.yamcs.http.MediaType;
+import org.yamcs.http.api.AbstractPaginatedParameterRetrievalConsumer.PaginatedMultiParameterRetrievalConsumer;
 import org.yamcs.http.api.AbstractPaginatedParameterRetrievalConsumer.PaginatedSingleParameterRetrievalConsumer;
 import org.yamcs.logging.Log;
 import org.yamcs.mdb.Mdb;
@@ -20,16 +29,23 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithId;
 import org.yamcs.protobuf.AbstractParameterValuesApi;
+import org.yamcs.protobuf.ExportParameterValuesRequest;
 import org.yamcs.protobuf.ListParameterHistoryRequest;
 import org.yamcs.protobuf.ListParameterHistoryResponse;
 import org.yamcs.protobuf.LoadParameterValuesRequest;
 import org.yamcs.protobuf.LoadParameterValuesResponse;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.tctm.StreamParameterSender;
 import org.yamcs.time.TimeService;
+import org.yamcs.utils.ParameterFormatter;
+import org.yamcs.utils.ParameterFormatter.Header;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
+import org.yamcs.xtce.Parameter;
 import org.yamcs.yarch.YarchDatabase;
+
+import com.google.protobuf.ByteString;
 
 public class ParameterValuesApi extends AbstractParameterValuesApi<Context> {
 
@@ -143,6 +159,177 @@ public class ParameterValuesApi extends AbstractParameterValuesApi<Context> {
     }
 
     @Override
+    public void exportParameterValues(Context ctx, ExportParameterValuesRequest request, Observer<HttpBody> observer) {
+        String instance = InstancesApi.verifyInstance(request.getInstance());
+        var ysi = InstancesApi.verifyInstanceObj(request.getInstance());
+        var prs = ParameterArchiveApi.getParameterRetrievalService(ysi);
+
+        List<NamedObjectId> ids = new ArrayList<>();
+        Mdb mdb = MdbFactory.getInstance(instance);
+        String namespace = null;
+        int interval = -1;
+        boolean ascending = !request.getOrder().equals("desc");
+
+        long start = TimeEncoding.INVALID_INSTANT;
+        if (request.hasStart()) {
+            start = TimeEncoding.fromProtobufTimestamp(request.getStart());
+        }
+        long stop = TimeEncoding.INVALID_INSTANT;
+        if (request.hasStop()) {
+            stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
+        }
+        if (start != TimeEncoding.INVALID_INSTANT && stop != TimeEncoding.INVALID_INSTANT && start > stop) {
+            throw new BadRequestException("Start date must be before stop date");
+        }
+
+        List<ParameterWithId> pids = new ArrayList<>();
+
+        for (String id : request.getParametersList()) {
+            ParameterWithId paramWithId = MdbApi.verifyParameterWithId(ctx, mdb, id);
+            ids.add(paramWithId.getId());
+            pids.add(paramWithId);
+        }
+        if (request.hasNamespace()) {
+            namespace = request.getNamespace();
+        }
+        if (request.hasInterval() && request.getInterval() >= 0) {
+            interval = request.getInterval();
+        }
+
+        if (request.hasList()) {
+            var plistService = ParameterListsApi.verifyService(instance);
+            var plist = ParameterListsApi.verifyParameterList(plistService, request.getList());
+            for (Parameter p : ParameterListsApi.resolveParameters(ctx, mdb, plist)) {
+                if (!ctx.user.hasParameterPrivilege(ObjectPrivilegeType.ReadParameter, p)) {
+                    continue;
+                }
+                if (namespace != null) {
+                    String alias = p.getAlias(namespace);
+                    if (alias != null) {
+                        var id = NamedObjectId.newBuilder().setNamespace(namespace).setName(alias).build();
+                        ids.add(id);
+                        pids.add(new ParameterWithId(p, id, null));
+                    }
+                } else {
+                    var id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build();
+                    ids.add(id);
+                    pids.add(new ParameterWithId(p, id, null));
+                }
+            }
+        } else if (ids.isEmpty()) {
+            for (Parameter p : mdb.getParameters()) {
+                if (!ctx.user.hasParameterPrivilege(ObjectPrivilegeType.ReadParameter, p)) {
+                    continue;
+                }
+                if (namespace != null) {
+                    String alias = p.getAlias(namespace);
+                    if (alias != null) {
+                        var id = NamedObjectId.newBuilder().setNamespace(namespace).setName(alias).build();
+                        ids.add(id);
+                        pids.add(new ParameterWithId(p, id, null));
+                    }
+                } else {
+                    var id = NamedObjectId.newBuilder().setName(p.getQualifiedName()).build();
+                    ids.add(id);
+                    pids.add(new ParameterWithId(p, id, null));
+                }
+            }
+        }
+
+        String filename;
+        if (request.hasFilename()) {
+            filename = request.getFilename();
+        } else {
+            String dateString = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
+            if (ids.size() == 1) {
+                NamedObjectId id = ids.get(0);
+                String parameterName = id.hasNamespace() ? id.getName() : id.getName().substring(1);
+                filename = parameterName.replace('/', '_') + "_export_" + dateString + ".csv";
+            } else {
+                filename = "parameter_export_" + dateString + ".csv";
+            }
+        }
+
+        boolean addRaw = false;
+        boolean addMonitoring = false;
+        for (String extra : request.getExtraList()) {
+            if (extra.equals("raw")) {
+                addRaw = true;
+            } else if (extra.equals("monitoring")) {
+                addMonitoring = true;
+            } else {
+                throw new BadRequestException("Unexpected option for parameter 'extra': " + extra);
+            }
+        }
+
+        char columnDelimiter = '\t';
+        if (request.hasDelimiter()) {
+            switch (request.getDelimiter()) {
+            case "TAB":
+                columnDelimiter = '\t';
+                break;
+            case "SEMICOLON":
+                columnDelimiter = ';';
+                break;
+            case "COMMA":
+                columnDelimiter = ',';
+                break;
+            default:
+                throw new BadRequestException("Unexpected column delimiter");
+            }
+        }
+
+        var header = Header.QUALIFIED_NAME;
+        if (request.hasHeader()) {
+            switch (request.getHeader()) {
+            case "QUALIFIED_NAME":
+                header = Header.QUALIFIED_NAME;
+                break;
+            case "SHORT_NAME":
+                header = Header.SHORT_NAME;
+                break;
+            case "NONE":
+                header = Header.NONE;
+                break;
+            default:
+                throw new BadRequestException("Unexpected value for header option");
+            }
+        }
+
+        var preserveLastValue = request.hasPreserveLastValue() ? request.getPreserveLastValue() : false;
+
+        long pos = -1;
+        int limit = -1;
+        if (request.hasPos()) {
+            pos = request.getPos();
+        }
+        if (request.hasLimit()) {
+            pos = Math.max(0, pos);
+            limit = request.getLimit();
+        }
+
+        ParameterRetrievalOptions opts = ParameterRetrievalOptions.newBuilder()
+                .withStartStop(start, stop)
+                .withRetrieveParameterStatus(false)
+                .withAscending(ascending)
+                .withoutParchive(true)
+                .withoutRealtime(true)
+                .withoutReplay(false)
+                .build();
+
+        var listener = new CsvParameterStreamer(observer, pos, limit, filename, ids, addRaw, addMonitoring,
+                preserveLastValue, interval, columnDelimiter, header);
+
+        prs.retrieveMulti(pids, opts, listener).thenRun(() -> {
+            listener.finished();
+        }).exceptionally(e -> {
+            listener.failed(e);
+            return null;
+        });
+        // observer.setCancelHandler(listener::requestReplayAbortion);
+    }
+
+    @Override
     public Observer<LoadParameterValuesRequest> loadParameterValues(Context ctx,
             Observer<LoadParameterValuesResponse> observer) {
         return new Observer<>() {
@@ -228,5 +415,70 @@ public class ParameterValuesApi extends AbstractParameterValuesApi<Context> {
         }
 
         return services.get(0);
+    }
+
+    private static class CsvParameterStreamer extends PaginatedMultiParameterRetrievalConsumer {
+
+        Observer<HttpBody> observer;
+        ParameterFormatter formatter;
+
+        CsvParameterStreamer(Observer<HttpBody> observer, long pos, int limit, String filename, List<NamedObjectId> ids,
+                boolean addRaw, boolean addMonitoring, boolean preserveLastValue, int interval, char columnDelimiter,
+                Header header) {
+            super(pos, limit);
+            this.observer = observer;
+
+            formatter = new ParameterFormatter(null, ids, columnDelimiter);
+            formatter.setWriteHeader(header);
+            formatter.setPrintRaw(addRaw);
+            formatter.setPrintMonitoring(addMonitoring);
+            formatter.setKeepValues(preserveLastValue);
+            formatter.setTimeWindow(interval);
+
+            HttpBody metadata = HttpBody.newBuilder()
+                    .setContentType(MediaType.CSV.toString())
+                    .setFilename(filename)
+                    .build();
+            observer.next(metadata);
+        }
+
+        @Override
+        protected void onParameterData(List<ParameterValueWithId> params) {
+            ByteString.Output data = ByteString.newOutput();
+            formatter.updateWriter(data, StandardCharsets.UTF_8);
+
+            try {
+                formatter.writeParameters(params);
+                formatter.flush();
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+
+            HttpBody body = HttpBody.newBuilder()
+                    .setData(data.toByteString())
+                    .build();
+            observer.next(body);
+        }
+
+        public void failed(Throwable t) {
+            observer.completeExceptionally(t);
+        }
+
+        public void finished() {
+            ByteString.Output data = ByteString.newOutput();
+            formatter.updateWriter(data, StandardCharsets.UTF_8);
+            try {
+                formatter.close();
+                if (data.size() > 0) {
+                    HttpBody body = HttpBody.newBuilder()
+                            .setData(data.toByteString())
+                            .build();
+                    observer.next(body);
+                }
+                observer.complete();
+            } catch (IOException e) {
+                observer.completeExceptionally(e);
+            }
+        }
     }
 }
