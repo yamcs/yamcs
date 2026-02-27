@@ -15,13 +15,8 @@ import org.yamcs.http.Context;
 import org.yamcs.http.HttpException;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
-import org.yamcs.http.api.ParameterRanger.Range;
 import org.yamcs.logging.Log;
-import org.yamcs.mdb.Mdb;
-import org.yamcs.mdb.MdbFactory;
-import org.yamcs.parameter.ParameterRetrievalOptions;
 import org.yamcs.parameter.ParameterRetrievalService;
-import org.yamcs.parameter.ParameterWithId;
 import org.yamcs.parameterarchive.BackFiller;
 import org.yamcs.parameterarchive.BackFillerListener;
 import org.yamcs.parameterarchive.ParameterArchive;
@@ -39,9 +34,7 @@ import org.yamcs.protobuf.EnableBackfillingRequest;
 import org.yamcs.protobuf.GetArchivedParameterGroupRequest;
 import org.yamcs.protobuf.GetArchivedParameterSegmentsRequest;
 import org.yamcs.protobuf.GetArchivedParametersInfoRequest;
-import org.yamcs.protobuf.GetParameterRangesRequest;
 import org.yamcs.protobuf.PurgeRequest;
-import org.yamcs.protobuf.Pvalue.Ranges;
 import org.yamcs.protobuf.RebuildRangeRequest;
 import org.yamcs.protobuf.SubscribeBackfillingData;
 import org.yamcs.protobuf.SubscribeBackfillingData.BackfillFinishedInfo;
@@ -50,7 +43,6 @@ import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.IntArray;
 import org.yamcs.utils.SortedIntArray;
 import org.yamcs.utils.TimeEncoding;
-import org.yamcs.utils.ValueUtility;
 
 import com.google.gson.Gson;
 import com.google.protobuf.Empty;
@@ -132,57 +124,6 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         backFiller.addListener(listener);
     }
 
-    @Override
-    public void getParameterRanges(Context ctx, GetParameterRangesRequest request, Observer<Ranges> observer) {
-        YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(request.getInstance());
-
-        Mdb mdb = MdbFactory.getInstance(ysi.getName());
-
-        ParameterWithId pid = MdbApi.verifyParameterWithId(ctx, mdb, request.getName());
-
-        long start = 0;
-        if (request.hasStart()) {
-            start = TimeEncoding.fromProtobufTimestamp(request.getStart());
-        }
-        long stop = TimeEncoding.getWallclockTime();
-        if (request.hasStop()) {
-            stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
-        }
-
-        if (start > stop) {
-            throw new BadRequestException("Start date must be before stop date");
-        }
-
-        long minGap = request.hasMinGap() ? request.getMinGap() : 0;
-        long maxGap = request.hasMaxGap() ? request.getMaxGap() : Long.MAX_VALUE;
-        long minRange = request.hasMinRange() ? request.getMinRange() : -1;
-        int maxValues = request.hasMaxValues() ? request.getMaxValues() : -1;
-
-        ParameterRanger ranger = new ParameterRanger(minGap, maxGap, minRange, maxValues);
-
-        ParameterRetrievalService prs = getParameterRetrievalService(ysi);
-        ParameterRetrievalOptions opts = ParameterRetrievalOptions.newBuilder()
-                .withStartStop(start, stop)
-                .withRetrieveRawValues(false)
-                .withoutRealtime(request.getNorealtime())
-                .build();
-
-        prs.retrieveScalar(pid, opts, ranger)
-                .thenRun(() -> {
-                    Ranges.Builder ranges = Ranges.newBuilder();
-                    for (Range r : ranger.getRanges()) {
-                        ranges.addRange(toGPBRange(r));
-                    }
-                    observer.complete(ranges.build());
-                })
-                .exceptionally(e -> {
-                    log.warn("Received exception during parameter retrieval", e);
-                    observer.completeExceptionally(new InternalServerErrorException(e.toString()));
-                    return null;
-                });
-
-    }
-
     private ParameterArchive getParameterArchive(YamcsServerInstance ysi) throws BadRequestException {
         List<ParameterArchive> l = ysi.getServices(ParameterArchive.class);
 
@@ -212,22 +153,6 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
             throw new BadRequestException(
                     "Bad value for parameter 'source'; valid values are: 'ParameterArchive' or 'replay'");
         }
-    }
-
-    private static Ranges.Range toGPBRange(Range r) {
-        Ranges.Range.Builder b = Ranges.Range.newBuilder();
-        b.setCount(r.totalCount());
-        b.setStart(TimeEncoding.toProtobufTimestamp(r.start));
-        b.setStop(TimeEncoding.toProtobufTimestamp(r.stop));
-        var valueCount = 0;
-        for (int i = 0; i < r.valueCount(); i++) {
-            b.addEngValues(ValueUtility.toGbp(r.getValue(i)));
-            b.addCounts(r.getCount(i));
-            valueCount += r.getCount(i);
-        }
-        b.setOtherCount(r.totalCount() - valueCount);
-
-        return b.build();
     }
 
     @Override

@@ -56,7 +56,6 @@ import org.yamcs.protobuf.ListParameterHistoryRequest;
 import org.yamcs.protobuf.ListParameterHistoryResponse;
 import org.yamcs.protobuf.ListParameterIndexRequest;
 import org.yamcs.protobuf.PacketsApiClient;
-import org.yamcs.protobuf.ParameterArchiveApiClient;
 import org.yamcs.protobuf.ParameterValuesApiClient;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
@@ -95,7 +94,6 @@ public class ArchiveClient {
     private IndexesApiClient indexService;
     private CommandsApiClient commandService;
     private ParameterValuesApiClient parameterValuesService;
-    private ParameterArchiveApiClient parameterArchiveService;
     private AlarmsApiClient alarmService;
     private TableApiClient tableService;
     private EventsApiClient eventService;
@@ -106,7 +104,6 @@ public class ArchiveClient {
         indexService = new IndexesApiClient(handler);
         commandService = new CommandsApiClient(handler);
         parameterValuesService = new ParameterValuesApiClient(handler);
-        parameterArchiveService = new ParameterArchiveApiClient(handler);
         alarmService = new AlarmsApiClient(handler);
         tableService = new TableApiClient(handler);
         eventService = new EventsApiClient(handler);
@@ -739,7 +736,7 @@ public class ArchiveClient {
             }
         }
         CompletableFuture<Ranges> f = new CompletableFuture<>();
-        parameterArchiveService.getParameterRanges(null, requestb.build(), new ResponseObserver<>(f));
+        parameterValuesService.getParameterRanges(null, requestb.build(), new ResponseObserver<>(f));
         return f.thenApply(Ranges::getRangeList);
     }
 

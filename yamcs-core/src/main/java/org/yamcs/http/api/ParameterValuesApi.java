@@ -24,6 +24,7 @@ import org.yamcs.http.MediaType;
 import org.yamcs.http.api.AbstractPaginatedParameterRetrievalConsumer.PaginatedMultiParameterRetrievalConsumer;
 import org.yamcs.http.api.AbstractPaginatedParameterRetrievalConsumer.PaginatedSingleParameterRetrievalConsumer;
 import org.yamcs.http.api.Downsampler.Sample;
+import org.yamcs.http.api.ParameterRanger.Range;
 import org.yamcs.logging.Log;
 import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
@@ -34,6 +35,7 @@ import org.yamcs.parameter.ParameterValueWithId;
 import org.yamcs.parameter.ParameterWithId;
 import org.yamcs.protobuf.AbstractParameterValuesApi;
 import org.yamcs.protobuf.ExportParameterValuesRequest;
+import org.yamcs.protobuf.GetParameterRangesRequest;
 import org.yamcs.protobuf.GetParameterSamplesRequest;
 import org.yamcs.protobuf.ListParameterGroupsRequest;
 import org.yamcs.protobuf.ListParameterGroupsResponse;
@@ -42,6 +44,7 @@ import org.yamcs.protobuf.ListParameterHistoryResponse;
 import org.yamcs.protobuf.LoadParameterValuesRequest;
 import org.yamcs.protobuf.LoadParameterValuesResponse;
 import org.yamcs.protobuf.Pvalue.ParameterData;
+import org.yamcs.protobuf.Pvalue.Ranges;
 import org.yamcs.protobuf.Pvalue.TimeSeries;
 import org.yamcs.protobuf.StreamParameterValuesRequest;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -557,6 +560,56 @@ public class ParameterValuesApi extends AbstractParameterValuesApi<Context> {
     }
 
     @Override
+    public void getParameterRanges(Context ctx, GetParameterRangesRequest request, Observer<Ranges> observer) {
+        YamcsServerInstance ysi = InstancesApi.verifyInstanceObj(request.getInstance());
+
+        Mdb mdb = MdbFactory.getInstance(ysi.getName());
+
+        ParameterWithId pid = MdbApi.verifyParameterWithId(ctx, mdb, request.getName());
+
+        long start = 0;
+        if (request.hasStart()) {
+            start = TimeEncoding.fromProtobufTimestamp(request.getStart());
+        }
+        long stop = TimeEncoding.getWallclockTime();
+        if (request.hasStop()) {
+            stop = TimeEncoding.fromProtobufTimestamp(request.getStop());
+        }
+
+        if (start > stop) {
+            throw new BadRequestException("Start date must be before stop date");
+        }
+
+        long minGap = request.hasMinGap() ? request.getMinGap() : 0;
+        long maxGap = request.hasMaxGap() ? request.getMaxGap() : Long.MAX_VALUE;
+        long minRange = request.hasMinRange() ? request.getMinRange() : -1;
+        int maxValues = request.hasMaxValues() ? request.getMaxValues() : -1;
+
+        ParameterRanger ranger = new ParameterRanger(minGap, maxGap, minRange, maxValues);
+
+        ParameterRetrievalService prs = getParameterRetrievalService(ysi);
+        ParameterRetrievalOptions opts = ParameterRetrievalOptions.newBuilder()
+                .withStartStop(start, stop)
+                .withRetrieveRawValues(false)
+                .withoutRealtime(request.getNorealtime())
+                .build();
+
+        prs.retrieveScalar(pid, opts, ranger)
+                .thenRun(() -> {
+                    Ranges.Builder ranges = Ranges.newBuilder();
+                    for (Range r : ranger.getRanges()) {
+                        ranges.addRange(toGPBRange(r));
+                    }
+                    observer.complete(ranges.build());
+                })
+                .exceptionally(e -> {
+                    log.warn("Received exception during parameter retrieval", e);
+                    observer.completeExceptionally(new InternalServerErrorException(e.toString()));
+                    return null;
+                });
+    }
+
+    @Override
     public void listParameterGroups(Context ctx, ListParameterGroupsRequest request,
             Observer<ListParameterGroupsResponse> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
@@ -584,6 +637,22 @@ public class ParameterValuesApi extends AbstractParameterValuesApi<Context> {
         }
 
         return services.get(0);
+    }
+
+    private static Ranges.Range toGPBRange(Range r) {
+        Ranges.Range.Builder b = Ranges.Range.newBuilder();
+        b.setCount(r.totalCount());
+        b.setStart(TimeEncoding.toProtobufTimestamp(r.start));
+        b.setStop(TimeEncoding.toProtobufTimestamp(r.stop));
+        var valueCount = 0;
+        for (int i = 0; i < r.valueCount(); i++) {
+            b.addEngValues(ValueUtility.toGbp(r.getValue(i)));
+            b.addCounts(r.getCount(i));
+            valueCount += r.getCount(i);
+        }
+        b.setOtherCount(r.totalCount() - valueCount);
+
+        return b.build();
     }
 
     private static class CsvParameterStreamer extends PaginatedMultiParameterRetrievalConsumer {
