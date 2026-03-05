@@ -325,14 +325,20 @@ public class ParameterValuesApi extends AbstractParameterValuesApi<Context> {
             limit = request.getLimit();
         }
 
-        ParameterRetrievalOptions opts = ParameterRetrievalOptions.newBuilder()
+        var optsb = ParameterRetrievalOptions.newBuilder()
                 .withStartStop(start, stop)
                 .withRetrieveParameterStatus(false)
                 .withAscending(ascending)
-                .withoutParchive(true)
                 .withoutRealtime(true)
-                .withoutReplay(false)
-                .build();
+                .withoutReplay(false);
+
+        if (request.hasSource() && isReplayAsked(request.getSource())) {
+            optsb = optsb.withoutParchive(true);
+        } else {
+            optsb = optsb.withoutParchive(false);
+        }
+
+        var opts = optsb.build();
 
         var listener = new CsvParameterStreamer(observer, pos, limit, filename, ids, addRaw, addMonitoring,
                 preserveLastValue, interval, columnDelimiter, header);

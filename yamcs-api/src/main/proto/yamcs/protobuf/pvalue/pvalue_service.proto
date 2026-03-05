@@ -237,6 +237,14 @@ message ExportParameterValuesRequest {
   // One of `QUALIFIED_NAME`, `SHORT_NAME` or `NONE`.
   // Default: `QUALIFIED_NAME`.
   optional string header = 15;
+
+  // Specifies how to retrieve the parameters. Either `ParameterArchive` or
+  // `replay`. If `replay` is specified, a replay processor will be created
+  // and data will be processed with the active Mission Database. Note that
+  // this is much slower than receiving data from the ParameterArchive.
+  //
+  // Default: `ParameterArchive`.
+  optional string source = 16;
 }
 
 // Retrieves parameters by performing a replay
