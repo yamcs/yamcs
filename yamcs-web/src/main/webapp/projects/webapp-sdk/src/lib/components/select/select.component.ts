@@ -21,6 +21,7 @@ export interface YaSelectOption {
   label: string;
   group?: boolean;
   icon?: string;
+  description?: string;
 }
 
 @Component({
