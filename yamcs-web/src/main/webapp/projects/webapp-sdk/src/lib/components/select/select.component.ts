@@ -21,6 +21,7 @@ export interface YaSelectOption {
   label: string;
   group?: boolean;
   icon?: string;
+  description?: string;
 }
 
 @Component({
@@ -43,6 +44,15 @@ export interface YaSelectOption {
     MatTooltip,
     YaButton,
     YaIconAction,
+  ],
+  styles: [
+    `
+      .option-description {
+        font-size: 0.85rem;
+        color: #999;
+        font-style: italic;
+      }
+    `,
   ],
 })
 export class YaSelect implements ControlValueAccessor {

@@ -27,6 +27,13 @@
         </td>
       </ng-container>
 
+      <ng-container cdkColumnDef="description">
+        <th mat-header-cell *cdkHeaderCellDef>Description</th>
+        <td mat-cell *cdkCellDef="let row">
+          {{ row.description }}
+        </td>
+      </ng-container>
+
       <ng-container cdkColumnDef="hex">
         <th mat-header-cell *cdkHeaderCellDef>Hex value</th>
         <td mat-cell *cdkCellDef="let row">

@@ -98,7 +98,7 @@ a.ya-link.ya-header-link {
 
 .ya-menu.mat-mdc-menu-panel {
   min-height: 24px;
-  max-width: 350px;
+  max-width: 600px;
 }
 
 .ng-invalid:not(.ng-pristine) > .date-time-input > input,

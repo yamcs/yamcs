@@ -37,15 +37,19 @@ export class SelectEnumerationDialogComponent implements AfterViewInit {
     const argumentType = data.type as ArgumentType;
     const isHex = argumentType.dataEncoding?.encoding === 'UNSIGNED';
     this.dataSource.filterPredicate = (enumValue, filter) => {
-      const { label, value } = enumValue;
+      const { label, value, description } = enumValue;
       return (
         label.toLowerCase().indexOf(filter) >= 0 ||
         String(value).indexOf(filter) >= 0 ||
-        (isHex && Number(value).toString(16).indexOf(filter) >= 0)
+        (isHex && Number(value).toString(16).indexOf(filter) >= 0) ||
+        (description != null && description.toLowerCase().indexOf(filter) >= 0)
       );
     };
 
     this.dataSource.data = argumentType.enumValue || [];
+    if (this.dataSource.data.some((e) => e.description)) {
+      this.displayedColumns.splice(1, 0, 'description');
+    }
     if (isHex) {
       this.displayedColumns.push('hex');
     }

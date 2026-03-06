@@ -95,6 +95,7 @@ export class EnumerationArgumentComponent
       selectOptions.push({
         id: enumValue.label,
         label: enumValue.label,
+        description: enumValue.description,
       });
     }
     this.selectOptions$.next(selectOptions);

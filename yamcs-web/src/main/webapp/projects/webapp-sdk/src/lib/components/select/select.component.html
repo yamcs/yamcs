@@ -21,7 +21,12 @@
     }
     <button mat-menu-item (click)="writeValue(option.id)">
       <mat-icon [style.visibility]="isSelected(option.id) ? 'visible' : 'hidden'">check</mat-icon>
-      {{ option.label }}
+      <span>
+        {{ option.label }}
+        @if (option.description) {
+          <span class="option-description">- {{ option.description }}</span>
+        }
+      </span>
     </button>
   }
   @for (option of optionChildren(); track option) {
@@ -30,7 +35,12 @@
     }
     <button mat-menu-item (click)="writeValue(option.id())">
       <mat-icon [style.visibility]="isSelected(option.id()) ? 'visible' : 'hidden'">check</mat-icon>
-      {{ option.label() }}
+      <span>
+        {{ option.label() }}
+        @if (option.description()) {
+          <span class="option-description">- {{ option.description() }}</span>
+        }
+      </span>
     </button>
   }
 </mat-menu>

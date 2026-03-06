@@ -339,7 +339,7 @@ public class CfdpUplinkIntegrationTest {
     private byte[] createObject(String objName, int size) throws Exception {
         byte[] data = new byte[size];
         random.nextBytes(data);
-        outgoingBucket.putObjectAsync(objName, "bla", Collections.emptyMap(), data);
+        outgoingBucket.putObjectAsync(objName, "bla", Collections.emptyMap(), data).get();
 
         return data;
     }

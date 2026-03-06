@@ -304,7 +304,9 @@ public class Processor extends AbstractService {
             awaitIfNecessary(eventAlarmServer);
 
             for (ProcessorServiceWithConfig swc : serviceList) {
-                swc.service.awaitRunning();
+                if (swc.service.state() != Service.State.TERMINATED) {
+                    swc.service.awaitRunning();
+                }
             }
 
             notifyStarted();
@@ -331,7 +333,7 @@ public class Processor extends AbstractService {
     }
 
     private void awaitIfNecessary(Service service) {
-        if (service != null) {
+        if (service != null && service.state() != Service.State.TERMINATED) {
             service.awaitRunning();
         }
     }
