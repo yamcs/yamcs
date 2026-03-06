@@ -12,7 +12,7 @@
   </ya-filter-bar>
 
   <div class="scrollpane">
-    <table mat-table [dataSource]="dataSource" class="ya-data-table" style="width: 100%">
+    <table mat-table [dataSource]="dataSource" class="ya-data-table expand">
       <ng-container cdkColumnDef="value">
         <th mat-header-cell *cdkHeaderCellDef>Value</th>
         <td mat-cell *cdkCellDef="let row">
@@ -24,6 +24,13 @@
         <th mat-header-cell *cdkHeaderCellDef>Label</th>
         <td mat-cell *cdkCellDef="let row">
           <strong>{{ row.label }}</strong>
+        </td>
+      </ng-container>
+
+      <ng-container cdkColumnDef="description">
+        <th mat-header-cell *cdkHeaderCellDef class="expand">Description</th>
+        <td mat-cell *cdkCellDef="let row" class="wrap200">
+          {{ row.description || "-" }}
         </td>
       </ng-container>
 
