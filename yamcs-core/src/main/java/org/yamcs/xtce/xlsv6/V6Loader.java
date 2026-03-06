@@ -379,7 +379,12 @@ public class V6Loader extends V6LoaderBase {
                     if (CALIB_TYPE_ENUMERATION.equalsIgnoreCase(type)) {
                         try {
                             long raw = Integer.decode(getContent(cells, CN_CALIB_CALIB1));
-                            enumeration.add(raw, getContent(cells, CN_CALIB_CALIB2));
+                            ValueEnumeration ve = new ValueEnumeration(raw, getContent(cells, CN_CALIB_CALIB2));
+                            String description = getContent(cells, CN_CALIB_DESCRIPTION, null);
+                            if (description != null && !description.isEmpty()) {
+                                ve.setDescription(description);
+                            }
+                            enumeration.values.add(ve);
                         } catch (NumberFormatException e) {
                             throw new SpreadsheetLoadException(ctx, "Can't get integer from raw value out of '"
                                     + getContent(cells, CN_CALIB_CALIB1) + "'");

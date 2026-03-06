@@ -28,7 +28,7 @@ export class SelectEnumerationDialogComponent implements AfterViewInit {
   dataSource = new MatTableDataSource<EnumValue>([]);
   selection = new SelectionModel<EnumValue>();
 
-  displayedColumns = ['name', 'value'];
+  displayedColumns = ['name', 'description', 'value'];
 
   constructor(
     private dialogRef: MatDialogRef<SelectEnumerationDialogComponent>,
@@ -37,11 +37,12 @@ export class SelectEnumerationDialogComponent implements AfterViewInit {
     const argumentType = data.type as ArgumentType;
     const isHex = argumentType.dataEncoding?.encoding === 'UNSIGNED';
     this.dataSource.filterPredicate = (enumValue, filter) => {
-      const { label, value } = enumValue;
+      const { label, value, description } = enumValue;
       return (
         label.toLowerCase().indexOf(filter) >= 0 ||
         String(value).indexOf(filter) >= 0 ||
-        (isHex && Number(value).toString(16).indexOf(filter) >= 0)
+        (isHex && Number(value).toString(16).indexOf(filter) >= 0) ||
+        (!!description && description.toLowerCase().indexOf(filter) >= 0)
       );
     };
 

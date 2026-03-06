@@ -513,9 +513,9 @@
 		<ArgumentTypeSet>
 			<EnumeratedArgumentType name="voltage_num_enum" baseType="/dt/uint8">
 				<EnumerationList>
-					<Enumeration label="PRIMARY" value="1" />
-					<Enumeration label="SECONDARY" value="2" />
-					<Enumeration label="BACKUP" value="3" />
+					<Enumeration label="PRIMARY" value="1" shortDescription="Primary voltage bus - main power source" />
+					<Enumeration label="SECONDARY" value="2" shortDescription="Secondary voltage bus - backup power source" />
+					<Enumeration label="BACKUP" value="3" shortDescription="Backup voltage bus - emergency power source" />
 				</EnumerationList>
 			</EnumeratedArgumentType>
 			<IntegerArgumentType name="voltage_num_uint8" baseType="/dt/uint8">
