@@ -582,6 +582,9 @@ message ArgumentTypeInfo {
 
   // Name of the parameter type
   optional string name = 18;
+
+  // Hint about the range of allowed engineering values
+  optional int32 sizeInBits = 19;
 }
 
 message ArgumentDimensionInfo {

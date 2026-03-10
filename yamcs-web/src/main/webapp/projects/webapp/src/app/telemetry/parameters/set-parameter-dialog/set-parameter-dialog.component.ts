@@ -89,9 +89,11 @@ export class SetParameterDialogComponent {
       case 'boolean':
         return { type: 'BOOLEAN', booleanValue: userValue === 'true' };
       case 'float':
-        return { type: 'FLOAT', floatValue: userValue };
-      case 'double':
-        return { type: 'DOUBLE', doubleValue: userValue };
+        if (parameter.type?.sizeInBits === 64) {
+          return { type: 'DOUBLE', doubleValue: userValue };
+        } else {
+          return { type: 'FLOAT', floatValue: userValue };
+        }
       case 'enumeration':
         return { type: 'STRING', stringValue: userValue };
       case 'integer':

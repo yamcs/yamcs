@@ -1068,6 +1068,7 @@ public class XtceToGpbAssembler {
             }
         } else if (argumentType instanceof FloatArgumentType) {
             FloatArgumentType fat = (FloatArgumentType) argumentType;
+            infob.setSizeInBits(fat.getSizeInBits());
             if (fat.getValidRange() != null) {
                 if (!Double.isNaN(fat.getValidRange().getMin())) {
                     infob.setRangeMin(fat.getValidRange().getMin());
