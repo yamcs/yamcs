@@ -252,6 +252,7 @@ export interface ArgumentType {
   oneStringValue?: string;
   dimensions?: ArgumentDimension[];
   elementType?: ArgumentType;
+  sizeInBits?: number;
 }
 
 export interface ArgumentDimension {
