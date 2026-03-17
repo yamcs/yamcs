@@ -95,7 +95,7 @@ public class BackFiller implements StreamSubscriber {
         spec.addOption("automaticBackfilling", OptionType.BOOLEAN).withAliases("enabled").withRequired(false);
         spec.addOption("monitorStreams", OptionType.LIST).withElementType(OptionType.STRING);
         spec.addOption("streamUpdateFillFrequency", OptionType.INTEGER)
-                .withDeprecationMessage("Please use the streamUpdateFillPolicy").withDefault(3600);
+                .withDeprecationMessage("Please use the streamUpdateFillPolicy");
 
         Spec policyEntry = new Spec();
         policyEntry.addOption("dataAge", OptionType.FLOAT).withRequired(true);
