@@ -26,7 +26,7 @@ import org.yamcs.xtce.UnitType;
  * 
  */
 public class FileStoreParameterProducer implements SystemParametersProducer {
-    static final List<String> FILE_SYSTEM_TYPES = Arrays.asList("ext4", "ext3", "xfs");
+    static final List<String> FILE_SYSTEM_TYPES = Arrays.asList("ext4", "ext3", "ext2", "xfs", "btrfs", "zfs");
     final static Log log = new Log(FileStoreParameterProducer.class);
 
     List<FileStoreParam> fileStores;
