@@ -50,7 +50,7 @@ producers (list of strings)
     ``fs``
        Parameters describing the system disks: total space, available space and percentage used.
 
-       On Linux, only file system types ``ext3``, ``ext4`` and ``xfs`` are considered.
+       On Linux, only file system types ``ext4``, ``ext3``, ``ext2``, ``xfs``, ``btrfs`` and ``zfs`` are considered.
     ``jvm``
        Parameters describing JVM metrics: total memory, used memory, thread count.
     ``loadavg``
