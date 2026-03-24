@@ -31,7 +31,7 @@ import org.yamcs.utils.ValueHelper;
 
 public class Cop1TcPacketHandlerTest {
 
-    Cop1TcPacketHandler fop1ph;
+    Cop1TcPacketHandler<TcTransferFrame> fop1ph;
 
     ScheduledThreadPoolExecutor executor;
     static TcFrameFactory tcFrameFactory;

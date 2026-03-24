@@ -7,7 +7,7 @@ import org.yamcs.YConfiguration;
  * Stores configuration related to Virtual Channels for uplink
  * 
  */
-public class VcUplinkManagedParameters {
+public abstract class VcUplinkManagedParameters<T extends UplinkTransferFrame> {
     protected int vcId;
 
     String packetPostprocessorClassName;
@@ -20,12 +20,27 @@ public class VcUplinkManagedParameters {
      */
     short encryptionSpi;
 
+
+    public boolean multiplePacketsPerFrame;
+
+    public boolean bdAbsolutePriority;
+
+    public byte mapId;
+
+    public boolean isBdAbsolutePriority() {
+        return bdAbsolutePriority;
+    }
+
+    public void setBdAbsolutePriority(boolean bdAbsolutePriority) {
+        this.bdAbsolutePriority = bdAbsolutePriority;
+    }
+
     public VcUplinkManagedParameters(int vcId) {
         this.vcId = vcId;
         this.config = null;
     }
 
-    public VcUplinkManagedParameters(YConfiguration config, UplinkManagedParameters params) {
+    public VcUplinkManagedParameters(YConfiguration config, UplinkManagedParameters<T> params) {
         this.config = config;
         this.vcId = config.getInt("vcId");
         this.priority = config.getInt("priority", 1);
@@ -38,6 +53,7 @@ public class VcUplinkManagedParameters {
                         + vcId + " is not configured for link " + params.linkName);
             }
         }
+        this.bdAbsolutePriority = config.getBoolean("bdAbsolutePriority", false);
     }
 
     protected void parsePacketConfig() {
@@ -54,4 +70,9 @@ public class VcUplinkManagedParameters {
     public int getVirtualChannelId() {
         return vcId;
     }
+
+    public abstract int getMaxFrameLength();
+
+    public abstract UplinkFrameFactory<T> getFrameFactory();
+
 }

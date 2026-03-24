@@ -90,7 +90,7 @@ public class UslpFrameDecoder implements TransferFrameDecoder {
         int mapId = (f4b >> 1) & 0xF;
         boolean truncatedFrame = (f4b & 1) == 1;
 
-        UslpTransferFrame utf = new UslpTransferFrame(data, spacecraftId, virtualChannelId);
+        UslpDownlinkTransferFrame utf = new UslpDownlinkTransferFrame(data, spacecraftId, virtualChannelId);
 
         UslpVcManagedParameters vmp = uslpParams.vcParams.get(virtualChannelId);
         if (vmp == null) {

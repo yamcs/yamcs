@@ -32,7 +32,6 @@ import org.yamcs.protobuf.TimeoutType;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.tctm.AbstractTcDataLink;
 import org.yamcs.tctm.ccsds.Cop1Monitor.AlertType;
-import org.yamcs.tctm.ccsds.TcManagedParameters.TcVcManagedParameters;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.AggregateParameterType;
@@ -50,10 +49,9 @@ import org.yamcs.xtce.Parameter;
  * for the first CLCW and immediately set the vS to the nR in the CLCW. The standard specifies that the vS has somehow
  * to be set manually to an CLCW observed value before calling the "Initiate AD with CLCW check" directive.
  * 
- * @author nm
- *
  */
-public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandler {
+public class Cop1TcPacketHandler<T extends UplinkTransferFrame> extends AbstractTcDataLink
+        implements VcUplinkHandler<T> {
     static final String[] STATE_NAMES = new String[] { "Invalid", "Active", "Retransmit without wait",
             "Retransmit with wait", "Initialising without BC Frame", "Initialising with BC Frame", "Initial" };
 
@@ -67,7 +65,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     static final int OUT_QUEUE_SIZE = 20;
 
     // the frames to be sent out are placed here
-    BlockingQueue<QueuedFrame> outQueue;
+    BlockingQueue<QueuedFrame<T>> outQueue;
 
     /**
      * If this is true, we transform the BD packets to frames and put them directly on the outQueue
@@ -88,8 +86,8 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
      */
     boolean bypassAll = true;
 
-    TcVcManagedParameters vmp;
-    TcFrameFactory frameFactory;
+    VcUplinkManagedParameters<T> vmp;
+    UplinkFrameFactory<T> frameFactory;
 
     // used to signal to the master channel when data is available on this VC
     private Semaphore dataAvailableSemaphore;
@@ -111,7 +109,8 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     int vS;
 
     // Sent_Queue;
-    QueuedFrame[] sentQueue = new QueuedFrame[256];
+    @SuppressWarnings("unchecked")
+    QueuedFrame<T>[] sentQueue = new QueuedFrame[256];
 
     boolean adOutReady = true;
     boolean bcOutReady = true;
@@ -157,7 +156,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
 
     ScheduledFuture<?> timer;
 
-    private QueuedFrame pendingBCFrame;
+    private QueuedFrame<T> pendingBCFrame;
 
     CopyOnWriteArrayList<Cop1Monitor> monitors = new CopyOnWriteArrayList<>();
 
@@ -169,7 +168,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     private volatile ParameterValue cop1Status;
 
     public Cop1TcPacketHandler(String yamcsInstance, String linkName,
-            TcVcManagedParameters vmp, ScheduledThreadPoolExecutor executor) {
+            VcUplinkManagedParameters<T> vmp, ScheduledThreadPoolExecutor executor) {
         super.init(yamcsInstance, linkName, vmp.config);
 
         this.frameFactory = vmp.getFrameFactory();
@@ -183,7 +182,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         this.txLimit = vmp.config.getInt("cop1TxLimit", 3);
         this.slidingWindowWidth = vmp.config.getInt("slidingWindowWidth", 10);
         if (vmp.mapId >= 0) {
-            TcPacketHandler.addMapIdOption();
+            UplinkPacketHandler.addMapIdOption();
         }
     }
 
@@ -203,12 +202,12 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
                 bypassAll);
         int framingLength = frameFactory.getFramingLength(vmp.vcId);
         int pcLength = cmdPostProcessor.getBinaryLength(pc);
-        if (framingLength + pcLength > vmp.maxFrameLength) {
+        if (framingLength + pcLength > vmp.getMaxFrameLength()) {
             log.warn("Command {} does not fit into frame ({} + {} > {})", pc.getId(), framingLength, pcLength,
-                    vmp.maxFrameLength);
+                    vmp.getMaxFrameLength());
             failedCommand(pc.getCommandId(),
                     "Command too large to fit in a frame; cmd size: " + pcLength + "; max frame length: "
-                            + vmp.maxFrameLength + "; frame overhead: " + framingLength);
+                            + vmp.getMaxFrameLength() + "; frame overhead: " + framingLength);
             return true;
         }
 
@@ -229,8 +228,8 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     }
 
     @Override
-    public TcTransferFrame getFrame() {
-        QueuedFrame qf = outQueue.poll();
+    public T getFrame() {
+        QueuedFrame<T> qf = outQueue.poll();
         if (qf == null) {
             return null;
         }
@@ -247,14 +246,14 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
     private void sendSingleTc(PreparedCommand pc, boolean bypass) {
         byte mapId = vmp.mapId;
         if (mapId >= 0) {
-            var mapIdOverride = TcPacketHandler.getMapId(pc);
+            var mapIdOverride = UplinkPacketHandler.getMapId(pc);
             if (mapIdOverride != null) {
                 mapId = mapIdOverride;
             }
         }
-        TcTransferFrame tf = makeFrame(pc, bypass, mapId);
+        var tf = makeFrame(pc, bypass, mapId);
         if (tf != null) {
-            boolean added = outQueue.offer(new QueuedFrame(tf));
+            boolean added = outQueue.offer(new QueuedFrame<T>(tf));
             if (!added) {
                 failedCommand(pc.getCommandId(), "OutQueue on link " + linkName + " full");
             } else {
@@ -263,13 +262,13 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         }
     }
 
-    private TcTransferFrame makeFrame(PreparedCommand pc, boolean bypassFlag, byte mapId) {
+    private T makeFrame(PreparedCommand pc, boolean bypassFlag, byte mapId) {
         byte[] binary = postprocess(pc);
         if (binary == null) {
             return null;
         }
 
-        TcTransferFrame tf = frameFactory.makeDataFrame(binary.length, pc.getGenerationTime(), mapId);
+        var tf = frameFactory.makeDataFrame(binary.length, pc.getGenerationTime(), mapId);
         tf.setCommands(Arrays.asList(pc));
 
         byte[] data = tf.getData();
@@ -296,7 +295,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
      * 
      * @return
      */
-    private TcTransferFrame getNextQueuedDFrame() {
+    private T getNextQueuedDFrame() {
         if (waitQueue.isEmpty()) {
             return null;
         }
@@ -314,10 +313,10 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
             }
 
             int pcLength = cmdPostProcessor.getBinaryLength(pc);
-            if (framingLength + dataLength + pcLength <= vmp.maxFrameLength) {
+            if (framingLength + dataLength + pcLength <= vmp.getMaxFrameLength()) {
                 if (mapId >= 0) {
                     // MAP service for this VC. We need to check that all the commands are for the same MAP_ID
-                    var mapIdOverride = TcPacketHandler.getMapId(pc);
+                    var mapIdOverride = UplinkPacketHandler.getMapId(pc);
                     if (mapIdOverride != null) {
                         if (l.isEmpty()) {
                             mapId = mapIdOverride;
@@ -343,7 +342,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
             return null;
         }
 
-        TcTransferFrame tf = frameFactory.makeDataFrame(dataLength, l.get(0).getGenerationTime(), mapId);
+        var tf = frameFactory.makeDataFrame(dataLength, l.get(0).getGenerationTime(), mapId);
         tf.setCommands(l);
 
         byte[] data = tf.getData();
@@ -373,7 +372,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
 
     @Override
     public long getFirstFrameTimestamp() {
-        QueuedFrame qf = outQueue.peek();
+        QueuedFrame<T> qf = outQueue.peek();
         if (qf == null) {
             return TimeEncoding.INVALID_INSTANT;
         } else {
@@ -462,7 +461,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
                 initialize();
                 vS = vR;
                 nnR = vR;
-                TcTransferFrame ttf = frameFactory.makeCtrlFrame(3);
+                var ttf = frameFactory.makeCtrlFrame(3);
                 ttf.setBypass(true);
                 byte[] data = ttf.getData();
                 // CCSDS 232.0-B-3 September 2015, Page 4-9
@@ -494,7 +493,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
             if (bcOutReady) {// E25 Rev.B
                 traceEvent("E25 Rev.B");
                 initialize();
-                TcTransferFrame ttf = frameFactory.makeCtrlFrame(1);
+                var ttf = frameFactory.makeCtrlFrame(1);
                 ttf.setBypass(true);
                 byte[] data = ttf.getData();
                 // CCSDS 232.0-B-3 September 2015, Page 4-9
@@ -581,8 +580,8 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         });
     }
 
-    private void transmitBCFrame(TcTransferFrame ttf) {
-        pendingBCFrame = new QueuedFrame(ttf);
+    private void transmitBCFrame(T ttf) {
+        pendingBCFrame = new QueuedFrame<T>(ttf);
         txCount = 1;
         sendBCDownstream();
     }
@@ -664,7 +663,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         }, executor);
     }
 
-    private void sendADDownstream(QueuedFrame qf) {
+    private void sendADDownstream(QueuedFrame<T> qf) {
         adOutReady = false;
         startTimer();
         queueForDownstream(qf).handleAsync((v, t) -> {
@@ -888,7 +887,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         if (adOutReady) {
             int i = nnR;
             while (i != vS) {
-                QueuedFrame qf = sentQueue[i];
+                QueuedFrame<T> qf = sentQueue[i];
                 if (qf.toBeRetransmitted) {
                     qf.toBeRetransmitted = false;
                     sendADDownstream(qf);
@@ -897,10 +896,10 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
                 i = incr(i);
             }
             if (sentQueueSize() < slidingWindowWidth) {
-                TcTransferFrame tf = getNextQueuedDFrame();
+                var tf = getNextQueuedDFrame();
                 if (tf != null) {
                     tf.setVcFrameSeq(vS);
-                    QueuedFrame qf = new QueuedFrame(tf);
+                    QueuedFrame<T> qf = new QueuedFrame<T>(tf);
 
                     sentQueue[vS] = qf;
                     if (nnR == vS) { /// queue empty
@@ -980,7 +979,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         txCount++;
         int i = nnR;
         while (i != vS) {
-            QueuedFrame qf = sentQueue[i];
+            var qf = sentQueue[i];
             qf.toBeRetransmitted = true;
             log.debug("VC {} state: {}, retransmitting frame {}, txCount: {}, txLimit:{}", vcId, state, i, txCount,
                     txLimit);
@@ -1006,7 +1005,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
 
     private void removeAcknowlegedFramesFromSentQueue() {
         while (nnR != nR) {
-            QueuedFrame qf = sentQueue[nnR];
+            QueuedFrame<T> qf = sentQueue[nnR];
             qf.cf.complete(null);
             ackFrame(qf.tf);
 
@@ -1019,7 +1018,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         Fop1Exception e = new Fop1Exception(alert);
         int i = nnR;
         while (i != vS) {
-            QueuedFrame qf = sentQueue[i];
+            var qf = sentQueue[i];
             if (qf == null) {
                 log.error("VC {} Invalid state of the queue sentQueue[{}] is null", vcId, i);
             } else {
@@ -1065,7 +1064,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         return true;
     }
 
-    private CompletableFuture<Void> queueForDownstream(QueuedFrame qf) {
+    private CompletableFuture<Void> queueForDownstream(QueuedFrame<T> qf) {
         qf.cf = new CompletableFuture<>();
         outQueue.add(qf);
 
@@ -1135,12 +1134,12 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         this.dataAvailableSemaphore = dataAvailableSemaphore;
     }
 
-    static class QueuedFrame {
-        final TcTransferFrame tf;
+    static class QueuedFrame<T extends UplinkTransferFrame> {
+        final T tf;
         CompletableFuture<Void> cf;
         boolean toBeRetransmitted;
 
-        public QueuedFrame(TcTransferFrame tf) {
+        public QueuedFrame(T tf) {
             this.tf = tf;
         }
     }
@@ -1216,7 +1215,7 @@ public class Cop1TcPacketHandler extends AbstractTcDataLink implements VcUplinkH
         return cb.build();
     }
 
-    private void ackFrame(TcTransferFrame tcf) {
+    private void ackFrame(T tcf) {
         for (PreparedCommand pc : tcf.commands) {
             ackCommand(pc.getCommandId());
         }

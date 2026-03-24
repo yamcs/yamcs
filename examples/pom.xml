@@ -30,6 +30,7 @@
     <module>cascading</module>
     <module>ccsds-frames</module>
     <module>ccsds-frames-sdls</module>
+    <module>ccsds-frames-uslp</module>
     <module>cfdp</module>
     <module>cfdp-udp</module>
     <module>perftest1</module>

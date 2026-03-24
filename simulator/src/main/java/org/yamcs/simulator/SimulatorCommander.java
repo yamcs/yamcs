@@ -67,6 +67,7 @@ public class SimulatorCommander extends ProcessRunner {
         frameSpec.addOption("tmFrameLength", OptionType.INTEGER);
         frameSpec.addOption("tmFrameFreq", OptionType.FLOAT);
         frameSpec.addOption("tcPort", OptionType.INTEGER);
+        frameSpec.addOption("uslpTcPort", OptionType.INTEGER);
         frameSpec.addOption("encryption", OptionType.MAP).withSpec(frameEncryptionSpec);
 
         Spec perfTestSpec = new Spec();
@@ -151,10 +152,12 @@ public class SimulatorCommander extends ProcessRunner {
                 cmdl.addAll(Arrays.asList("--encryption-args", String.join(":", sArgs)));
             }
 
+            int uslpTcFramePort = frameArgs.getInt("uslpTcPort", defaultOptions.uslpTcFramePort);
             cmdl.addAll(Arrays.asList("--tm-frame-type", "" + tmFrameType,
                     "--tm-frame-host", "" + tmFrameHost,
                     "--tm-frame-port", "" + tmFramePort,
                     "--tc-frame-port", "" + tcFramePort,
+                    "--uslp-tc-frame-port", "" + uslpTcFramePort,
                     "--tm-frame-length", "" + tmFrameSize,
                     "--tm-frame-freq", "" + tmFrameFreq));
         }
@@ -327,6 +330,10 @@ public class SimulatorCommander extends ProcessRunner {
                 services.add(tcFrameLink);
                 services.add(frameLink);
                 colSimulator.setTmFrameLink(frameLink);
+
+                if (runtimeOptions.uslpTcFramePort > 0) {
+                    services.add(new UdpUslpFrameLink(colSimulator, runtimeOptions.uslpTcFramePort));
+                }
             }
 
             if (runtimeOptions.perfNp > 0) {

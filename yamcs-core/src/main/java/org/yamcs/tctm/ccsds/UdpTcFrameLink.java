@@ -65,7 +65,7 @@ public class UdpTcFrameLink extends AbstractTcFrameLink implements Runnable {
             if (rateLimiter != null) {
                 rateLimiter.acquire();
             }
-            TcTransferFrame tf = multiplexer.getFrame();
+            UplinkTransferFrame tf = multiplexer.getFrame();
             if (tf != null) {
                 byte[] data = tf.getData();
                 if (log.isTraceEnabled()) {
