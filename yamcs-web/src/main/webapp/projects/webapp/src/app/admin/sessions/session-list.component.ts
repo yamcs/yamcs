@@ -18,14 +18,14 @@ import {
 import { Subscription } from 'rxjs';
 import { AgoComponent } from '../../shared/ago/ago.component';
 import { UserAgentPipe } from '../http-traffic/user-agent.pipe';
-import { AdminPageTemplateComponent } from '../shared/admin-page-template/admin-page-template.component';
+import { AdminPageComponent } from '../shared/admin-page/admin-page.component';
 import { AppAdminToolbar } from '../shared/admin-toolbar/admin-toolbar.component';
 
 @Component({
   templateUrl: './session-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    AdminPageTemplateComponent,
+    AdminPageComponent,
     AppAdminToolbar,
     AgoComponent,
     WebappSdkModule,

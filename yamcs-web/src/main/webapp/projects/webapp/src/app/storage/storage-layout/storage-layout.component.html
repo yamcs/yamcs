@@ -1,0 +1,5 @@
+<ya-message-bar #messageBar />
+
+<div class="storage-page-content" [class.message-bar-visible]="messageBar.show$ | async">
+  <router-outlet />
+</div>

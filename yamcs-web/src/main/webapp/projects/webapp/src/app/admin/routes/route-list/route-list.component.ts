@@ -10,7 +10,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute } from '@angular/router';
 import { BaseComponent, Route, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { AdminPageTemplateComponent } from '../../shared/admin-page-template/admin-page-template.component';
+import { AdminPageComponent } from '../../shared/admin-page/admin-page.component';
 import { AppAdminToolbar } from '../../shared/admin-toolbar/admin-toolbar.component';
 import { RouteDetailComponent } from '../route-detail/route-detail.component';
 
@@ -19,7 +19,7 @@ import { RouteDetailComponent } from '../route-detail/route-detail.component';
   styleUrl: './route-list.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    AdminPageTemplateComponent,
+    AdminPageComponent,
     AppAdminToolbar,
     RouteDetailComponent,
     WebappSdkModule,

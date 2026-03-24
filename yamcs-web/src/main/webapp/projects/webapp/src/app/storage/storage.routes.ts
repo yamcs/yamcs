@@ -5,7 +5,7 @@ import { BucketListComponent } from './buckets/bucket-list/bucket-list.component
 import { BucketObjectListComponent } from './buckets/bucket-object-list/bucket-object-list.component';
 import { BucketPlaceholderComponent } from './buckets/bucket-placeholder/bucket-placeholder.component';
 import { BucketPropertiesComponent } from './buckets/bucket-properties/bucket-properties.component';
-import { StoragePageComponent } from './storage-page/storage-page.component';
+import { StorageLayoutComponent } from './storage-layout/storage-layout.component';
 
 export const ROUTES: Routes = [
   {
@@ -13,7 +13,7 @@ export const ROUTES: Routes = [
     canActivate: [authGuardFn, clearContextGuardFn],
     canActivateChild: [authGuardChildFn],
     runGuardsAndResolvers: 'always',
-    component: StoragePageComponent,
+    component: StorageLayoutComponent,
     children: [
       {
         path: '',

@@ -13,7 +13,7 @@ import {
   WebappSdkModule,
   YamcsService,
 } from '@yamcs/webapp-sdk';
-import { AdminPageTemplateComponent } from '../../shared/admin-page-template/admin-page-template.component';
+import { AdminPageComponent } from '../../shared/admin-page/admin-page.component';
 import { AppAdminToolbarLabel } from '../../shared/admin-toolbar/admin-toolbar-label.directive';
 import { AppAdminToolbar } from '../../shared/admin-toolbar/admin-toolbar.component';
 
@@ -21,7 +21,7 @@ import { AppAdminToolbar } from '../../shared/admin-toolbar/admin-toolbar.compon
   templateUrl: './create-user.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    AdminPageTemplateComponent,
+    AdminPageComponent,
     AppAdminToolbar,
     AppAdminToolbarLabel,
     WebappSdkModule,

@@ -18,7 +18,7 @@ import {
   utils,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, debounceTime } from 'rxjs';
-import { AdminPageTemplateComponent } from '../shared/admin-page-template/admin-page-template.component';
+import { AdminPageComponent } from '../shared/admin-page/admin-page.component';
 import { AppAdminToolbar } from '../shared/admin-toolbar/admin-toolbar.component';
 import { RequestOption, Row, RowGroup } from './model';
 
@@ -28,7 +28,7 @@ const defaultInterval = 'NO_LIMIT';
   templateUrl: './admin-action-log.component.html',
   styleUrl: './admin-action-log.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AdminPageTemplateComponent, AppAdminToolbar, WebappSdkModule],
+  imports: [AdminPageComponent, AppAdminToolbar, WebappSdkModule],
 })
 export class AdminActionLogComponent implements OnInit {
   filter = input<string>();

@@ -1,0 +1,84 @@
+:host {
+  --top-height: 48px;
+  --message-bar-height: 48px;
+  --sidenav-width: 250px;
+  --mini-sidenav-width: 32px;
+}
+
+.sidenav-container {
+  position: absolute;
+  top: var(--top-height);
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--y-background-color);
+  display: flex;
+}
+
+.sidenav-container.message-bar-visible {
+  top: calc(var(--top-height) + var(--message-bar-height));
+}
+
+.sidenav {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--sidenav-width);
+  z-index: 200;
+  transition: width 0.22s ease;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background-color: #181818;
+}
+
+:host.no-transition .sidenav {
+  transition: none;
+}
+
+:host.mini .sidenav {
+  width: var(--mini-sidenav-width);
+}
+
+:host.mini.sidenav-hover .sidenav {
+  width: var(--sidenav-width);
+}
+
+.sidenav-content {
+  width: var(--sidenav-width);
+  height: 100%;
+  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  position: absolute;
+  inset: 0 0 0 var(--sidenav-width);
+  flex: 1;
+}
+
+:host.mini .main {
+  left: var(--mini-sidenav-width);
+}
+
+.navbar-logo {
+  text-align: center;
+  line-height: 0;
+}
+
+.navbar-logo img {
+  max-width: 100%;
+}
+
+@media print {
+  :host {
+    --top-height: 0;
+  }
+
+  .sidenav {
+    display: none;
+  }
+
+  .main {
+    left: 0;
+  }
+}

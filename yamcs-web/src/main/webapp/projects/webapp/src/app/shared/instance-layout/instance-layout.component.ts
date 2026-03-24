@@ -33,8 +33,8 @@ import { ActivitiesLabelComponent } from '../activities-label/activities-label.c
 import { AlarmLabelComponent } from '../alarm-label/alarm-label.component';
 
 @Component({
-  templateUrl: './instance-page.component.html',
-  styleUrl: './instance-page.component.css',
+  templateUrl: './instance-layout.component.html',
+  styleUrl: './instance-layout.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ActivitiesLabelComponent,
@@ -48,7 +48,7 @@ import { AlarmLabelComponent } from '../alarm-label/alarm-label.component';
     '[class.no-transition]': '!pageLoaded()',
   },
 })
-export class InstancePageComponent implements AfterViewInit, OnDestroy {
+export class InstanceLayoutComponent implements AfterViewInit, OnDestroy {
   @ViewChild('pageContent')
   pageContent: ElementRef<HTMLElement>;
 
