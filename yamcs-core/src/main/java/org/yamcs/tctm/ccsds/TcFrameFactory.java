@@ -12,7 +12,7 @@ import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
 
-public class TcFrameFactory {
+public class TcFrameFactory implements UplinkFrameFactory<TcTransferFrame> {
     final private TcManagedParameters tcParams;
     final private TcVcManagedParameters vcParams;
     final CrcCciitCalculator crc;
@@ -147,7 +147,8 @@ public class TcFrameFactory {
                 // Use the custom auth mask if we have one, otherwise use a default
                 byte[] authMask = sdlsInfo.customAuthMask();
                 if (authMask == null) {
-                    // We can do this because TcFrameFactory is per VC, and the mapIdOverride in e.g. TcPacketHandler is only
+                    // We can do this because TcFrameFactory is per VC, and the mapIdOverride in e.g. TcPacketHandler is
+                    // only
                     // checked if the VC already has a MAP ID, in which case it already has a segment header
                     boolean hasSegmentHdr = vcParams.mapId >= 0;
                     authMask = StandardAuthMask.TC(hasSegmentHdr, sa.securityHdrAuthMask());

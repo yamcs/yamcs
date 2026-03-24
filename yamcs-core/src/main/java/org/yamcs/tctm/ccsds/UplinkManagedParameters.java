@@ -20,7 +20,13 @@ import org.yamcs.security.sdls.SdlsSecurityAssociationFactory;
 /**
  * Stores configuration related to Master channels for uplink.
  */
-public abstract class UplinkManagedParameters {
+public abstract class UplinkManagedParameters<T extends UplinkTransferFrame> {
+    public enum PriorityScheme {
+        FIFO, ABSOLUTE, POLLING_VECTOR
+    }
+
+    PriorityScheme priorityScheme;
+
     public enum FrameErrorDetection {
         NONE, CRC16, CRC32
     }
@@ -102,6 +108,8 @@ public abstract class UplinkManagedParameters {
 
     abstract int getMaxFrameLength();
 
-    abstract public List<VcUplinkHandler> createVcHandlers(String yamcsInstance, String linkName,
+    abstract public List<VcUplinkHandler<T>> createVcHandlers(String yamcsInstance, String linkName,
             ScheduledThreadPoolExecutor executor);
+
+    public abstract VcUplinkManagedParameters<T> getVcParams(int vcId);
 }

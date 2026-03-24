@@ -37,6 +37,9 @@ public class SimulatorArgs {
     @Parameter(names = "--tc-frame-port", description = "the UDP port where the simulator listens for TC frames")
     public int tcFramePort = 10018;
 
+    @Parameter(names = "--uslp-tc-frame-port", description = "the UDP port where the simulator listens for USLP frames (0 = disabled)")
+    public int uslpTcFramePort = 0;
+
     @Parameter(names = "--tm-frame-length", description = "the TM/AOS/USLP frame length (set to 0 to disable the " +
             "frame functionality)")
     public int tmFrameLength = 0;

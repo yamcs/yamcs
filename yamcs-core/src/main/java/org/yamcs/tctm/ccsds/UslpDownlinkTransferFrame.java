@@ -8,12 +8,12 @@ import org.yamcs.tctm.ccsds.UslpManagedParameters.ServiceType;
  * CCSDS RECOMMENDED STANDARD FOR UNIFIED SPACE DATA LINK PROTOCOL CCSDS 732.1-B-3 June 2024
  * 
  */
-public class UslpTransferFrame extends DownlinkTransferFrame {
+public class UslpDownlinkTransferFrame extends DownlinkTransferFrame {
     private int mapId;
     private long seqCountWrapArround;
     ServiceType serviceType;
 
-    public UslpTransferFrame(byte[] data, int masterChannelId, int virtualChannelId) {
+    public UslpDownlinkTransferFrame(byte[] data, int masterChannelId, int virtualChannelId) {
         super(data, masterChannelId, virtualChannelId);
     }
 

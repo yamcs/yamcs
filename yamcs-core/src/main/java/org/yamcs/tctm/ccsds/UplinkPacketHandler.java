@@ -13,27 +13,27 @@ import org.yamcs.CommandOption.CommandOptionType;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.tctm.AbstractTcDataLink;
-import org.yamcs.tctm.ccsds.TcManagedParameters.TcVcManagedParameters;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.AncillaryData;
 
 /**
- * Assembles command packets into TC frames as per CCSDS 232.0-B-4.
+ * Assembles command packets into TC frames as per CCSDS 232.0-B-4 or CCSDS 732.1-B-3.
  * <p>
  * All frames have the bypass flag set (i.e. they are BD frames).
  * 
  */
-public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandler {
+public class UplinkPacketHandler<T extends UplinkTransferFrame> extends AbstractTcDataLink
+        implements VcUplinkHandler<T> {
     protected BlockingQueue<PreparedCommand> commandQueue;
-    final TcVcManagedParameters vmp;
-    private TcFrameFactory frameFactory;
+    final VcUplinkManagedParameters<T> vmp;
+    private UplinkFrameFactory<T> frameFactory;
     boolean blockSenderOnQueueFull;
     private Semaphore dataAvailableSemaphore;
 
     public static final CommandOption OPTION_CCSDS_MAP_ID = new CommandOption("ccsdsMapId", "CCSDS MAP ID",
             CommandOptionType.NUMBER).withHelp("Override for the default MAP ID to be used in the CCSDS TC frames");
 
-    public TcPacketHandler(String yamcsInstance, String linkName, TcVcManagedParameters vmp)
+    public UplinkPacketHandler(String yamcsInstance, String linkName, VcUplinkManagedParameters<T> vmp)
             throws ConfigurationException {
         super.init(yamcsInstance, linkName, vmp.config);
         this.vmp = vmp;
@@ -51,12 +51,12 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
     public boolean sendCommand(PreparedCommand preparedCommand) {
         int framingLength = frameFactory.getFramingLength(vmp.vcId);
         int pcLength = cmdPostProcessor.getBinaryLength(preparedCommand);
-        if (framingLength + pcLength > vmp.maxFrameLength) {
+        if (framingLength + pcLength > vmp.getMaxFrameLength()) {
             log.warn("Command {} does not fit into frame ({} + {} > {})", preparedCommand.getLoggingId(), framingLength,
-                    pcLength, vmp.maxFrameLength);
+                    pcLength, vmp.getMaxFrameLength());
             failedCommand(preparedCommand.getCommandId(),
                     "Command too large to fit in a frame; cmd size: " + pcLength + "; max frame length: "
-                            + vmp.maxFrameLength + "; frame overhead: " + framingLength);
+                            + vmp.getMaxFrameLength() + "; frame overhead: " + framingLength);
             return true;
         }
 
@@ -79,7 +79,7 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
     }
 
     @Override
-    public TcTransferFrame getFrame() {
+    public T getFrame() {
 
         if (commandQueue.isEmpty()) {
             return null;
@@ -93,7 +93,7 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
 
         while ((pc = commandQueue.peek()) != null) {
             int pcLength = cmdPostProcessor.getBinaryLength(pc);
-            if (framingLength + dataLength + pcLength <= vmp.maxFrameLength) {
+            if (framingLength + dataLength + pcLength <= vmp.getMaxFrameLength()) {
                 if (mapId >= 0) {
                     // MAP service for this VC. We need to check that all the commands are for the same MAP_ID
                     var mapIdOverride = getMapId(pc);
@@ -124,7 +124,7 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
         if (l.isEmpty()) {
             return null;
         }
-        TcTransferFrame tf = frameFactory.makeDataFrame(dataLength, l.get(0).getGenerationTime(), mapId);
+        T tf = frameFactory.makeDataFrame(dataLength, l.get(0).getGenerationTime(), mapId);
 
         tf.setBypass(true);
         tf.setCommands(l);
@@ -157,7 +157,7 @@ public class TcPacketHandler extends AbstractTcDataLink implements VcUplinkHandl
     }
 
     @Override
-    public VcUplinkManagedParameters getParameters() {
+    public VcUplinkManagedParameters<T> getParameters() {
         return vmp;
     }
 

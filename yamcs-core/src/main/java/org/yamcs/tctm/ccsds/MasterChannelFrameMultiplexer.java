@@ -1,5 +1,6 @@
 package org.yamcs.tctm.ccsds;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -9,7 +10,8 @@ import java.util.concurrent.Semaphore;
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.logging.Log;
-import org.yamcs.tctm.ccsds.TcManagedParameters.PriorityScheme;
+import org.yamcs.tctm.ccsds.TransferFrameDecoder.CcsdsFrameType;
+import org.yamcs.tctm.ccsds.UplinkManagedParameters.PriorityScheme;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -25,31 +27,36 @@ import org.yamcs.utils.TimeEncoding;
 public class MasterChannelFrameMultiplexer {
     Semaphore dataAvailableSemaphore = new Semaphore(0);
     volatile boolean quitting = false;
-    TcManagedParameters tcManagedParameters;
+    UplinkManagedParameters<?> managedParameters;
     ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
-    List<VcUplinkHandler> handlers;
+    List<VcUplinkHandler<?>> handlers;
     int[] pollingVector;
     int pvIdx;
     int pvCnt;
     Log log;
 
     public MasterChannelFrameMultiplexer(String yamcsInstance, String linkName, YConfiguration config) {
-        tcManagedParameters = new TcManagedParameters(config, yamcsInstance, linkName);
-        handlers = tcManagedParameters.createVcHandlers(yamcsInstance, linkName, executor);
+        CcsdsFrameType frameType = config.getEnum("frameType", CcsdsFrameType.class, null);
+        if (frameType == CcsdsFrameType.USLP) {
+            managedParameters = new UslpUplinkManagedParameters(config, yamcsInstance, linkName);
+        } else {
+            managedParameters = new TcManagedParameters(config, yamcsInstance, linkName);
+        }
+        handlers = createHandlers(managedParameters, yamcsInstance, linkName, executor);
         log = new Log(getClass(), yamcsInstance);
         log.setContext(linkName);
 
-        for (VcUplinkHandler h : handlers) {
+        for (var h : handlers) {
             h.setDataAvailableSemaphore(dataAvailableSemaphore);
         }
-        if (tcManagedParameters.priorityScheme == PriorityScheme.ABSOLUTE) {
+        if (managedParameters.priorityScheme == PriorityScheme.ABSOLUTE) {
             Collections.sort(handlers, (h1, h2) -> {
                 return Integer.compare(h2.getParameters().getPriority(), h1.getParameters().getPriority());
             });
-        } else if (tcManagedParameters.priorityScheme == PriorityScheme.POLLING_VECTOR) {
+        } else if (managedParameters.priorityScheme == PriorityScheme.POLLING_VECTOR) {
             pollingVector = new int[handlers.size()];
             for (int i = 0; i < pollingVector.length; i++) {
-                VcUplinkManagedParameters hp = handlers.get(i).getParameters();
+                var hp = handlers.get(i).getParameters();
                 if (hp.getPriority() < 1) {
                     throw new ConfigurationException("Invalid priority " + hp.getPriority() + " for vc "
                             + hp.getVirtualChannelId() + " and multiplexing scheme POLLING_VECTOR");
@@ -64,12 +71,12 @@ public class MasterChannelFrameMultiplexer {
      * 
      * @return next frame or null if the multiplexer has been closed or the thread interrupted
      */
-    public TcTransferFrame getFrame() {
+    public UplinkTransferFrame getFrame() {
         while (!quitting) {
-            TcTransferFrame tf = null;
-            if (tcManagedParameters.priorityScheme == PriorityScheme.ABSOLUTE) {
+            UplinkTransferFrame tf = null;
+            if (managedParameters.priorityScheme == PriorityScheme.ABSOLUTE) {
                 tf = getFrameAbsolutePriority();
-            } else if (tcManagedParameters.priorityScheme == PriorityScheme.FIFO) {
+            } else if (managedParameters.priorityScheme == PriorityScheme.FIFO) {
                 tf = getFrameFifo();
             } else {
                 tf = getFramePollingVector();
@@ -87,10 +94,10 @@ public class MasterChannelFrameMultiplexer {
         return null;
     }
 
-    private TcTransferFrame getFramePollingVector() {
+    private UplinkTransferFrame getFramePollingVector() {
         int pvIdx0 = pvIdx;
         do {
-            VcUplinkHandler h = handlers.get(pvIdx);
+            VcUplinkHandler<?> h = handlers.get(pvIdx);
             pvCnt++;
             if (pvCnt == pollingVector[pvIdx]) {
                 pvCnt = 0;
@@ -99,7 +106,7 @@ public class MasterChannelFrameMultiplexer {
                     pvIdx = 0;
                 }
             }
-            TcTransferFrame tf = h.getFrame();
+            var tf = h.getFrame();
             if (tf != null) {
                 log.debug("PollingVectorPriority multiplexing: got frame {} from {}", tf, h);
                 return tf;
@@ -108,11 +115,11 @@ public class MasterChannelFrameMultiplexer {
         return null;
     }
 
-    private TcTransferFrame getFrameFifo() {
-        VcUplinkHandler hfirst = null;
+    private UplinkTransferFrame getFrameFifo() {
+        VcUplinkHandler<?> hfirst = null;
         long tfirst = Long.MAX_VALUE;
 
-        for (VcUplinkHandler h : handlers) {
+        for (var h : handlers) {
             long t = h.getFirstFrameTimestamp();
             if (t != TimeEncoding.INVALID_INSTANT && t < tfirst) {
                 tfirst = t;
@@ -120,7 +127,7 @@ public class MasterChannelFrameMultiplexer {
             }
         }
         if (hfirst != null) {
-            TcTransferFrame tf = hfirst.getFrame();
+            var tf = hfirst.getFrame();
             if (tf != null) {
                 log.debug("FifoPriority multiplexing: got frame {} from {}", tf, hfirst);
                 return tf;
@@ -129,9 +136,9 @@ public class MasterChannelFrameMultiplexer {
         return null;
     }
 
-    private TcTransferFrame getFrameAbsolutePriority() {
-        for (VcUplinkHandler h : handlers) {
-            TcTransferFrame tf = h.getFrame();
+    private UplinkTransferFrame getFrameAbsolutePriority() {
+        for (var h : handlers) {
+            var tf = h.getFrame();
             if (tf != null) {
                 log.debug("AbsolutePriority multiplexing: got frame {} from {}", tf, h);
                 return tf;
@@ -148,7 +155,13 @@ public class MasterChannelFrameMultiplexer {
         dataAvailableSemaphore.release();
     }
 
-    public Collection<VcUplinkHandler> getVcHandlers() {
+    private <T extends UplinkTransferFrame> List<VcUplinkHandler<?>> createHandlers(
+            UplinkManagedParameters<T> params, String yamcsInstance, String linkName,
+            ScheduledThreadPoolExecutor executor) {
+        return new ArrayList<>(params.createVcHandlers(yamcsInstance, linkName, executor));
+    }
+
+    public Collection<VcUplinkHandler<?>> getVcHandlers() {
         return handlers;
     }
 

@@ -15,7 +15,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.yamcs.Spec.OptionType;
-import org.yamcs.tctm.ccsds.TcManagedParameters.PriorityScheme;
+import org.yamcs.tctm.ccsds.UplinkManagedParameters.PriorityScheme;
 
 public class SpecTest {
 
