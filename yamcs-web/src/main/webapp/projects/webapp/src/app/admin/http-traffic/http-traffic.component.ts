@@ -17,7 +17,7 @@ import {
   YamcsService,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { AdminPageTemplateComponent } from '../shared/admin-page-template/admin-page-template.component';
+import { AdminPageComponent } from '../shared/admin-page/admin-page.component';
 import { AppAdminToolbar } from '../shared/admin-toolbar/admin-toolbar.component';
 import { UserAgentPipe } from './user-agent.pipe';
 
@@ -25,7 +25,7 @@ import { UserAgentPipe } from './user-agent.pipe';
   templateUrl: './http-traffic.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    AdminPageTemplateComponent,
+    AdminPageComponent,
     AppAdminToolbar,
     WebappSdkModule,
     UserAgentPipe,

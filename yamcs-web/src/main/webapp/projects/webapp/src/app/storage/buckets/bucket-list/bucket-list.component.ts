@@ -20,14 +20,14 @@ import {
   WebappSdkModule,
   YamcsService,
 } from '@yamcs/webapp-sdk';
-import { StoragePageTemplateComponent } from '../../storage-page-template/storage-page-template.component';
+import { StoragePageComponent } from '../../storage-page/storage-page.component';
 import { AppStorageToolbar } from '../../storage-toolbar/storage-toolbar.component';
 import { CreateBucketDialogComponent } from '../create-bucket-dialog/create-bucket-dialog.component';
 
 @Component({
   templateUrl: './bucket-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AppStorageToolbar, StoragePageTemplateComponent, WebappSdkModule],
+  imports: [AppStorageToolbar, StoragePageComponent, WebappSdkModule],
 })
 export class BucketListComponent implements AfterViewInit {
   filterControl = new UntypedFormControl();

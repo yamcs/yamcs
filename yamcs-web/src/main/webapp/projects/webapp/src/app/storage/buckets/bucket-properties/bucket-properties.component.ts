@@ -8,7 +8,7 @@ import {
   YamcsService,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
-import { StoragePageTemplateComponent } from '../../storage-page-template/storage-page-template.component';
+import { StoragePageComponent } from '../../storage-page/storage-page.component';
 import { AppStorageToolbarLabel } from '../../storage-toolbar/storage-toolbar-label.directive';
 import { AppStorageToolbar } from '../../storage-toolbar/storage-toolbar.component';
 import { BucketPageTabsComponent } from '../bucket-page-tabs/bucket-page-tabs.component';
@@ -21,7 +21,7 @@ import { BucketPageTabsComponent } from '../bucket-page-tabs/bucket-page-tabs.co
     AppStorageToolbar,
     AppStorageToolbarLabel,
     BucketPageTabsComponent,
-    StoragePageTemplateComponent,
+    StoragePageComponent,
     WebappSdkModule,
   ],
 })

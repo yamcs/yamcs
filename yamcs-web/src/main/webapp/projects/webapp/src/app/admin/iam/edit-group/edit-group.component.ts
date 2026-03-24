@@ -16,7 +16,7 @@ import {
   YamcsService,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { AdminPageTemplateComponent } from '../../shared/admin-page-template/admin-page-template.component';
+import { AdminPageComponent } from '../../shared/admin-page/admin-page.component';
 import { AppAdminToolbar } from '../../shared/admin-toolbar/admin-toolbar.component';
 import {
   AddMembersDialogComponent,
@@ -26,7 +26,7 @@ import {
 @Component({
   templateUrl: './edit-group.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AdminPageTemplateComponent, AppAdminToolbar, WebappSdkModule],
+  imports: [AdminPageComponent, AppAdminToolbar, WebappSdkModule],
 })
 export class EditGroupComponent implements OnDestroy {
   form: UntypedFormGroup;
