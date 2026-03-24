@@ -42,7 +42,7 @@ import { RocksDbDatabaseComponent } from './rocksdb/rocksdb-database/rocksdb-dat
 import { RouteListComponent } from './routes/route-list/route-list.component';
 import { ServiceListComponent } from './services/service-list/service-list.component';
 import { SessionListComponent } from './sessions/session-list.component';
-import { AdminPageComponent } from './shared/admin-page/admin-page.component';
+import { AdminLayoutComponent } from './shared/admin-layout/admin-layout.component';
 import { SystemComponent } from './system/system.component';
 import { ThreadListComponent } from './threads/thread-list/thread-list.component';
 import { ThreadComponent } from './threads/thread/thread.component';
@@ -53,7 +53,7 @@ export const ROUTES: Routes = [
     canActivate: [authGuardFn, clearContextGuardFn, mayAccessAdminAreaGuardFn],
     canActivateChild: [authGuardChildFn],
     runGuardsAndResolvers: 'always',
-    component: AdminPageComponent,
+    component: AdminLayoutComponent,
     children: [
       {
         path: '',

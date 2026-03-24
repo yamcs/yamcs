@@ -14,7 +14,7 @@ import { authGuardChildFn, authGuardFn } from './core/guards/AuthGuard';
 import { clearContextGuardFn } from './core/guards/ClearContextGuard';
 import { openIDCallbackGuardFn } from './core/guards/OpenIDCallbackGuard';
 import { serverSideOpenIDCallbackGuardFn } from './core/guards/ServerSideOpenIDCallbackGuard';
-import { InstancePageComponent } from './shared/instance-page/instance-page.component';
+import { InstanceLayoutComponent } from './shared/instance-layout/instance-layout.component';
 
 export const APP_ROUTES: Routes = [
   {
@@ -95,7 +95,7 @@ export const APP_ROUTES: Routes = [
       },
       {
         path: '',
-        component: InstancePageComponent,
+        component: InstanceLayoutComponent,
         children: [
           {
             path: 'activities',

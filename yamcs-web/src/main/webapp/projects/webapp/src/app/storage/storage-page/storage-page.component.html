@@ -1,5 +1,6 @@
-<ya-message-bar #messageBar />
+<ng-content select="app-storage-toolbar" />
 
-<div class="storage-page-content" [class.message-bar-visible]="messageBar.show$ | async">
-  <router-outlet />
+<div class="page-content" [style.overflow]="noscroll ? 'hidden' : 'auto'">
+  <ng-content select="ya-detail-pane" />
+  <ng-content />
 </div>
