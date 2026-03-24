@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: ["17", "21"]
+        java: ["17", "21", "25"]
         platform: [ubuntu-latest]
         mvn_opts: ["-Dsurefire.useFile=false"]
         experimental: [false]
@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java: ["17", "21"]
+        java: ["17", "21", "25"]
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-java@v5
