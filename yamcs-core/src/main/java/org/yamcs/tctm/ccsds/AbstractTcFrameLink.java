@@ -16,8 +16,8 @@ import org.yamcs.tctm.AbstractLink;
 import org.yamcs.tctm.AggregatedDataLink;
 import org.yamcs.tctm.Link;
 import org.yamcs.tctm.TcDataLink;
-import org.yamcs.tctm.ccsds.TcManagedParameters.PriorityScheme;
 import org.yamcs.tctm.ccsds.TransferFrameDecoder.CcsdsFrameType;
+import org.yamcs.tctm.ccsds.UplinkManagedParameters.PriorityScheme;
 import org.yamcs.tctm.ccsds.error.BchCltuGenerator;
 import org.yamcs.tctm.ccsds.error.CltuGenerator;
 import org.yamcs.tctm.ccsds.error.Ldpc256CltuGenerator;
@@ -197,7 +197,7 @@ public abstract class AbstractTcFrameLink extends AbstractLink implements Aggreg
      *
      * @param tf
      */
-    protected void ackBypassFrame(TcTransferFrame tf) {
+    protected void ackBypassFrame(UplinkTransferFrame tf) {
         if (tf.getCommands() != null) {
             for (PreparedCommand pc : tf.getCommands()) {
                 commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeSent_KEY,
@@ -206,7 +206,7 @@ public abstract class AbstractTcFrameLink extends AbstractLink implements Aggreg
         }
     }
 
-    protected void failBypassFrame(TcTransferFrame tf, String reason) {
+    protected void failBypassFrame(UplinkTransferFrame tf, String reason) {
         if (tf.getCommands() != null) {
             for (PreparedCommand pc : tf.getCommands()) {
                 commandHistoryPublisher.publishAck(pc.getCommandId(), CommandHistoryPublisher.AcknowledgeSent_KEY,
@@ -222,18 +222,18 @@ public abstract class AbstractTcFrameLink extends AbstractLink implements Aggreg
      * @return the SA, or null if none is associated with the SPI
      */
     public SdlsSecurityAssociation getSdls(short spi) {
-        UplinkManagedParameters.SdlsInfo sdlsInfo = this.multiplexer.tcManagedParameters.sdlsSecurityAssociations.get(spi);
+        UplinkManagedParameters.SdlsInfo sdlsInfo = this.multiplexer.managedParameters.sdlsSecurityAssociations.get(spi);
         if (sdlsInfo != null)
             return sdlsInfo.sa();
         return null;
     }
 
     public void setSpi(int vcId, short spi) {
-        this.multiplexer.tcManagedParameters.getVcParams(vcId)
+        this.multiplexer.managedParameters.getVcParams(vcId)
                 .encryptionSpi = spi;
     }
 
     public Collection<Short> getSpis() {
-        return this.multiplexer.tcManagedParameters.sdlsSecurityAssociations.keySet();
+        return this.multiplexer.managedParameters.sdlsSecurityAssociations.keySet();
     }
 }

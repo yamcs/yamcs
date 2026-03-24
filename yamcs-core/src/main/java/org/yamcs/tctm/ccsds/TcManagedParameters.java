@@ -11,14 +11,9 @@ import org.yamcs.YConfiguration;
  * Configuration (managed parameters) used for generation of TC frames as per CCSDS 232.0-B-3
  * 
  */
-public class TcManagedParameters extends UplinkManagedParameters {
+public class TcManagedParameters extends UplinkManagedParameters<TcTransferFrame> {
     int maxFrameLength;
 
-    public enum PriorityScheme {
-        FIFO, ABSOLUTE, POLLING_VECTOR
-    }
-
-    PriorityScheme priorityScheme;
 
     List<TcVcManagedParameters> vcParams = new ArrayList<>();
 
@@ -64,19 +59,20 @@ public class TcManagedParameters extends UplinkManagedParameters {
     }
 
     @Override
-    public List<VcUplinkHandler> createVcHandlers(String yamcsInstance, String parentLinkName,
+    public List<VcUplinkHandler<TcTransferFrame>> createVcHandlers(String yamcsInstance, String parentLinkName,
             ScheduledThreadPoolExecutor executor) {
-        List<VcUplinkHandler> l = new ArrayList<>();
+        List<VcUplinkHandler<TcTransferFrame>> l = new ArrayList<>();
         for (TcVcManagedParameters vmp : vcParams) {
             String linkName = parentLinkName + "." + vmp.linkName;
             switch (vmp.service) {
             case PACKET:
-                VcUplinkHandler vcph;
+                VcUplinkHandler<TcTransferFrame> vcph;
                 if (vmp.useCop1) {
-                    vcph = new Cop1TcPacketHandler(yamcsInstance, linkName, vmp, executor);
-                    ((Cop1TcPacketHandler) vcph).addMonitor(new Cop1MonitorImpl(yamcsInstance, linkName));
+                    var cop1Handler = new Cop1UplinkPacketHandler<TcTransferFrame>(yamcsInstance, linkName, vmp, executor);
+                    cop1Handler.addMonitor(new Cop1MonitorImpl(yamcsInstance, linkName));
+                    vcph = cop1Handler;
                 } else {
-                    vcph = new TcPacketHandler(yamcsInstance, linkName, vmp);
+                    vcph = new UplinkPacketHandler<TcTransferFrame>(yamcsInstance, linkName, vmp);
                 }
                 l.add(vcph);
                 break;
@@ -85,7 +81,7 @@ public class TcManagedParameters extends UplinkManagedParameters {
         return l;
     }
 
-    TcVcManagedParameters getVcParams(int vcId) {
+    public TcVcManagedParameters getVcParams(int vcId) {
         for (var vcp : vcParams) {
             if (vcp.vcId == vcId) {
                 return vcp;
@@ -101,11 +97,19 @@ public class TcManagedParameters extends UplinkManagedParameters {
         return errorDetection;
     }
 
+    @Override
+    public String toString() {
+        return "TcManagedParameters [maxFrameLength=" + maxFrameLength + ", vcParams=" + vcParams + ", priorityScheme="
+                + priorityScheme + ", physicalChannelName=" + physicalChannelName + ", spacecraftId=" + spacecraftId
+                + ", errorDetection=" + errorDetection + ", linkName=" + linkName + ", sdlsSecurityAssociations="
+                + sdlsSecurityAssociations + "]";
+    }
+
     /**
      * Configuration for one Virtual Channel
      *
      */
-    static public class TcVcManagedParameters extends VcUplinkManagedParameters {
+    static public class TcVcManagedParameters extends VcUplinkManagedParameters<TcTransferFrame> {
         final TcManagedParameters tcParams;
         /**
          * Allows to enable/disable frame error detection at Virtual Channel level.
@@ -118,15 +122,8 @@ public class TcManagedParameters extends UplinkManagedParameters {
          */
         FrameErrorDetection errorDetection;
 
-        ServiceType service;
-        boolean useCop1;
         int maxFrameLength;
-        public boolean multiplePacketsPerFrame;
-        public boolean bdAbsolutePriority;
 
-        // if not negative, it contains the default MAP_ID to be used for this virtual channel
-        // if negative, this virtual channel does not use the MAP service
-        final byte mapId;
 
         // this is used to compose the link name, if not set it will be vc<x>
         String linkName;
@@ -140,7 +137,7 @@ public class TcManagedParameters extends UplinkManagedParameters {
             if (vcId < 0 || vcId > 63) {
                 throw new ConfigurationException("Invalid vcId: " + vcId + ". Allowed values are from 0 to 63.");
             }
-            service = config.getEnum("service", ServiceType.class, ServiceType.PACKET);
+
 
             maxFrameLength = config.getInt("maxFrameLength", tcParams.maxFrameLength);
             if (maxFrameLength < 8) {
@@ -151,10 +148,6 @@ public class TcManagedParameters extends UplinkManagedParameters {
                         + " has to be at most equal to the master channel max length " + tcParams.maxFrameLength);
             }
 
-            this.bdAbsolutePriority = config.getBoolean("bdAbsolutePriority", false);
-            this.useCop1 = config.getBoolean("useCop1", false);
-            this.linkName = config.getString("linkName", null);
-            this.multiplePacketsPerFrame = config.getBoolean("multiplePacketsPerFrame", true);
             this.mapId = (byte) config.getInt("mapId", -1);
             if (mapId < -1 || mapId > 15) {
                 throw new ConfigurationException("Invalid mapId " + mapId
@@ -171,6 +164,11 @@ public class TcManagedParameters extends UplinkManagedParameters {
          */
         public FrameErrorDetection getErrorDetection() {
             return errorDetection == null ? tcParams.getErrorDetection() : errorDetection;
+        }
+
+        @Override
+        public int getMaxFrameLength() {
+            return maxFrameLength;
         }
     }
 }

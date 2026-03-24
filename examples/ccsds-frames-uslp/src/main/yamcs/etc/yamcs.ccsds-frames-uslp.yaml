@@ -1,0 +1,141 @@
+services:
+  - class: org.yamcs.archive.XtceTmRecorder
+  - class: org.yamcs.archive.ParameterRecorder
+  - class: org.yamcs.archive.AlarmRecorder
+  - class: org.yamcs.archive.EventRecorder
+  - class: org.yamcs.archive.ReplayServer
+  - class: org.yamcs.archive.CcsdsTmIndex
+    args:
+      streams:
+        - tm_realtime
+        - tm_dump
+  - class: org.yamcs.parameter.SystemParametersService
+    args:
+      producers: ["jvm", "fs"]
+  - class: org.yamcs.ProcessorCreatorService
+    args:
+      name: "realtime"
+      type: "realtime"
+  - class: org.yamcs.archive.CommandHistoryRecorder
+  - class: org.yamcs.parameterarchive.ParameterArchive
+  - class: org.yamcs.timeline.TimelineService
+  - class: org.yamcs.simulator.SimulatorCommander
+    args:
+      telnet:
+        port: 10023
+      tctm:
+        tmPort: 10015
+        tcPort: 10025
+        losPort: 10115
+        tm2Port: 10016
+      frame: #send USLP TM frames and receive USLP TC frames
+        tmPort: 10057
+        tmHost: "localhost"
+        type: USLP # AOS, TM or USLP
+        tmFrameLength: 1115
+        tmFrameFreq: 10 # how many frames to send per second. If the simulator does not produce so many frames, it will send idle frames
+        uslpTcPort: 10058 # UDP port where the simulator listens for USLP TC frames (0 = disabled)
+
+dataLinks:
+  # Sends commands as USLP transfer frames (CCSDS 732.1-B-3) over UDP.
+  # No CLTU encoding — raw USLP frames are sent directly.
+  - name: UDP_FRAME_OUT
+    class: org.yamcs.tctm.ccsds.UdpTcFrameLink
+    host: localhost
+    port: 10058
+    spacecraftId: 0xAB
+    frameType: USLP
+    maxFrameLength: 1024
+    errorDetection: CRC16
+    virtualChannels:
+      - vcId: 0
+        service: "PACKET"
+        vcfCountLength: 2 # number of bytes used for the VC frame count field (0-7)
+        commandPostprocessorClassName: org.yamcs.tctm.IssCommandPostprocessor
+        commandPostprocessorArgs:
+          errorDetection:
+            type: 16-SUM
+          enforceEvenNumberOfBytes: true
+        stream: "tc_realtime"
+        useCop1: true
+        clcwStream: "clcw"
+        initialClcwWait: 3600
+
+  # Receives USLP TM frames (CCSDS 732.1-B-3) on multiple virtual channels.
+  - name: UDP_FRAME_IN
+    class: org.yamcs.tctm.ccsds.UdpTmFrameLink
+    port: 10057
+    frameType: USLP
+    spacecraftId: 0xAB
+    frameLength: 1115
+    insertZoneLength: 0
+    errorDetection: CRC16 #NONE, CRC16 or CRC32 (only for USLP)
+    clcwStream: "clcw" #publish the received CLCW (OCF field) to this stream
+    goodFrameStream: "good_frame_stream"
+    badFrameStream: "bad_frame_stream"
+    virtualChannels:
+      - vcId: 0
+        ocfPresent: true
+        service: "PACKET"
+        maxPacketLength: 2048
+        packetPreprocessorClassName: org.yamcs.tctm.IssPacketPreprocessor
+        stream: "tm_realtime"
+      - vcId: 1
+        ocfPresent: true
+        service: "PACKET"
+        maxPacketLength: 2048
+        stripEncapsulationHeader: true
+        packetPreprocessorClassName: org.yamcs.tctm.GenericPacketPreprocessor
+        packetPreprocessorArgs:
+          timestampOffset: 2
+          seqCountOffset: 10
+          errorDetection:
+            type: "CRC-16-CCIIT"
+        stream: "tm2_realtime"
+        invalidPackets: DIVERT
+        invalidPacketsStream: invalid_tm_stream
+      - vcId: 2
+        ocfPresent: true
+        service: "PACKET"
+        maxPacketLength: 2048
+        packetPreprocessorClassName: org.yamcs.tctm.IssPacketPreprocessor
+        stream: "tm_dump"
+      #vcId 63 is reserved for idle data and it does not have to be defined
+
+mdb:
+  # Configuration of the active loaders
+  # Valid loaders are: sheet, xtce or fully qualified name of the class
+  - type: "sheet"
+    spec: "mdb/simulator-ccsds.xls"
+    subLoaders:
+      - type: "sheet"
+        spec: "mdb/landing.xls"
+  - type: "org.yamcs.tse.TseLoader"
+    subLoaders:
+      - type: "sheet"
+        spec: "mdb/tse/simulator.xls"
+  #Loads the performance testing mission database
+  - type: "org.yamcs.simulator.PerfMdbLoader"
+    args:
+      numPackets: 18
+      packetSize: 1476
+
+#Configuration for streams created at server startup
+streamConfig:
+  tm:
+    - name: "tm_realtime"
+      processor: "realtime"
+    - name: "tm2_realtime"
+      rootContainer: "/YSS/SIMULATOR/tm2_container"
+      processor: "realtime"
+    - name: "tm_dump"
+  invalidTm: "invalid_tm_stream"
+  cmdHist: ["cmdhist_realtime", "cmdhist_dump"]
+  event: ["events_realtime", "events_dump"]
+  param: ["pp_realtime", "pp_tse", "sys_param", "proc_param"]
+  parameterAlarm: ["alarms_realtime"]
+  eventAlarm: ["event_alarms_realtime"]
+  tc:
+    - name: "tc_realtime"
+      processor: "realtime"
+  sqlFile: "etc/extra_streams.sql"

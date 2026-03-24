@@ -8,13 +8,13 @@ import org.yamcs.utils.TimeEncoding;
  * Handlers uplink data in a virtual channel
  * 
  */
-public interface VcUplinkHandler {
+public interface VcUplinkHandler<T extends UplinkTransferFrame> {
     /**
      * Retrieves the next frame in the Virtual Channel, or returns null if there is no frame available at the moment.
      * 
      * @return
      */
-    TcTransferFrame getFrame();
+    T getFrame();
 
     /**
      * Returns the timestamp of the first frame ready to be dispatched or {@link TimeEncoding#INVALID_INSTANT} if there
@@ -32,7 +32,7 @@ public interface VcUplinkHandler {
      * 
      * @return
      */
-    VcUplinkManagedParameters getParameters();
+    VcUplinkManagedParameters<T> getParameters();
 
     /**
      * The semaphore will be used by the virtual channel to signal to {@link MasterChannelFrameMultiplexer} that data is
