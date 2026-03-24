@@ -3,7 +3,6 @@ import { ExtensionComponent } from '../appbase/extension/extension.component';
 import { extensionMatcher } from '../appbase/extension/extension.matcher';
 import { attachContextGuardFn } from '../core/guards/AttachContextGuard';
 import { authGuardChildFn, authGuardFn } from '../core/guards/AuthGuard';
-import { InstancePageComponent } from '../shared/instance-page/instance-page.component';
 import { RunScriptComponent } from './run-script/run-script.component';
 import {
   StackFilePageDirtyGuard,
@@ -41,7 +40,6 @@ export const ROUTES: Routes = [
     canActivate: [authGuardFn, attachContextGuardFn],
     canActivateChild: [authGuardChildFn],
     runGuardsAndResolvers: 'always',
-    component: InstancePageComponent,
     children: [
       {
         path: 'stacks',

@@ -86,14 +86,6 @@ export class SearchInputComponent implements OnInit {
     if (event.key === '/' && this.isValidKeySource()) {
       this.expand();
       event.preventDefault();
-    } else if (event.key === 'Enter') {
-      const value = this.searchControl.value;
-      if (value) {
-        this.searchControl.setValue('');
-        this.router.navigate(['/search'], {
-          queryParams: { c: this.yamcs.context, q: value },
-        });
-      }
     }
   }
 
@@ -112,6 +104,20 @@ export class SearchInputComponent implements OnInit {
   }
 
   handleComponentKeyDown(event: KeyboardEvent) {
+    if (event.key === 'Enter') {
+      const value = this.searchControl.value;
+      if (value) {
+        this.searchControl.setValue('');
+        this.router.navigate(['/search'], {
+          queryParams: { c: this.yamcs.context, q: value },
+        });
+        return;
+      }
+    } else if (event.key === 'Escape') {
+      this.searchControl.setValue('');
+      this.collapse();
+    }
+
     event.stopPropagation();
   }
 }
