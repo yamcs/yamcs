@@ -4,7 +4,6 @@ import { extensionMatcher } from '../appbase/extension/extension.matcher';
 import { attachContextGuardFn } from '../core/guards/AttachContextGuard';
 import { authGuardChildFn, authGuardFn } from '../core/guards/AuthGuard';
 import { mayControlCommandQueueGuardFn } from '../core/guards/MayControlCommandQueueGuard';
-import { InstancePageComponent } from '../shared/instance-page/instance-page.component';
 import { ClearancesActionLogTabComponent as ClearanceActionLogTab } from './clearances/clearances-action-log-tab/clearances-action-log-tab.component';
 import { clearancesEnabledGuardFn } from './clearances/clearances-enabled.guard';
 import { ClearancesListComponent } from './clearances/clearances-list/clearances-list.component';
@@ -42,7 +41,6 @@ export const ROUTES: Routes = [
     canActivate: [authGuardFn, attachContextGuardFn],
     canActivateChild: [authGuardChildFn],
     runGuardsAndResolvers: 'always',
-    component: InstancePageComponent,
     children: [
       {
         path: 'clearances',

@@ -4,7 +4,6 @@ import { extensionMatcher } from '../appbase/extension/extension.matcher';
 import { attachContextGuardFn } from '../core/guards/AttachContextGuard';
 import { authGuardChildFn, authGuardFn } from '../core/guards/AuthGuard';
 import { mayGetMissionDatabaseGuardFn } from '../core/guards/MayGetMissionDatabaseGuard';
-import { InstancePageComponent } from '../shared/instance-page/instance-page.component';
 import { AlgorithmListComponent } from './algorithms/algorithm-list/algorithm-list.component';
 import { AlgorithmComponent } from './algorithms/algorithm/algorithm.component';
 import { CommandListComponent } from './commands/command-list/command-list.component';
@@ -26,7 +25,6 @@ export const ROUTES: Routes = [
       mayGetMissionDatabaseGuardFn,
     ],
     canActivateChild: [authGuardChildFn, mayGetMissionDatabaseGuardFn],
-    component: InstancePageComponent,
     children: [
       {
         path: '',

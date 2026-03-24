@@ -76,7 +76,7 @@
           (connectionInfo$ | async)?.processor?.hasAlarms ||
           ((connectionInfo$ | async)?.instance?.capabilities | arrayContains: "alarm-mirror")
         ) {
-          <app-alarm-label [mini]="collapseItem()" />
+          <app-alarm-label [mini]="collapseItem()" (click)="collapseSidebarIfMini()" />
         } @else {
           <ya-sidebar-nav-item
             activeWhen="/alarms"
@@ -175,7 +175,7 @@
         showActivitiesItem() &&
         ((connectionInfo$ | async)?.instance?.capabilities | arrayContains: "activities")
       ) {
-        <app-activities-label [mini]="collapseItem()" />
+        <app-activities-label [mini]="collapseItem()" (click)="collapseSidebarIfMini()" />
       }
 
       @if (mdbItems.length) {
