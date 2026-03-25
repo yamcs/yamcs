@@ -97,6 +97,14 @@ public class TcManagedParameters extends UplinkManagedParameters<TcTransferFrame
         return errorDetection;
     }
 
+    @Override
+    public String toString() {
+        return "TcManagedParameters [maxFrameLength=" + maxFrameLength + ", vcParams=" + vcParams + ", priorityScheme="
+                + priorityScheme + ", physicalChannelName=" + physicalChannelName + ", spacecraftId=" + spacecraftId
+                + ", errorDetection=" + errorDetection + ", linkName=" + linkName + ", sdlsSecurityAssociations="
+                + sdlsSecurityAssociations + "]";
+    }
+
     /**
      * Configuration for one Virtual Channel
      *
@@ -115,13 +123,9 @@ public class TcManagedParameters extends UplinkManagedParameters<TcTransferFrame
         FrameErrorDetection errorDetection;
 
         ServiceType service;
-        boolean useCop1;
+
         int maxFrameLength;
 
-
-        // if not negative, it contains the default MAP_ID to be used for this virtual channel
-        // if negative, this virtual channel does not use the MAP service
-        final byte mapId;
 
         // this is used to compose the link name, if not set it will be vc<x>
         String linkName;
@@ -146,15 +150,6 @@ public class TcManagedParameters extends UplinkManagedParameters<TcTransferFrame
                         + " has to be at most equal to the master channel max length " + tcParams.maxFrameLength);
             }
 
-
-            this.useCop1 = config.getBoolean("useCop1", false);
-            this.linkName = config.getString("linkName", null);
-            this.multiplePacketsPerFrame = config.getBoolean("multiplePacketsPerFrame", true);
-            this.mapId = (byte) config.getInt("mapId", -1);
-            if (mapId < -1 || mapId > 15) {
-                throw new ConfigurationException("Invalid mapId " + mapId
-                        + ". It has to be either -1 (meaning that the MAP service is not used) or between 0 and 15");
-            }
         }
 
         public TcFrameFactory getFrameFactory() {

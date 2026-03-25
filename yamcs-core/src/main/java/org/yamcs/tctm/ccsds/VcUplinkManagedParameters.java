@@ -25,7 +25,13 @@ public abstract class VcUplinkManagedParameters<T extends UplinkTransferFrame> {
 
     public boolean bdAbsolutePriority;
 
-    public byte mapId;
+    // if not negative, it contains the default MAP_ID to be used for this virtual channel
+    // if negative, this virtual channel does not use the MAP service
+    protected final byte mapId;
+
+    boolean useCop1;
+
+    String vcLinkName;
 
     public boolean isBdAbsolutePriority() {
         return bdAbsolutePriority;
@@ -33,11 +39,6 @@ public abstract class VcUplinkManagedParameters<T extends UplinkTransferFrame> {
 
     public void setBdAbsolutePriority(boolean bdAbsolutePriority) {
         this.bdAbsolutePriority = bdAbsolutePriority;
-    }
-
-    public VcUplinkManagedParameters(int vcId) {
-        this.vcId = vcId;
-        this.config = null;
     }
 
     public VcUplinkManagedParameters(YConfiguration config, UplinkManagedParameters<T> params) {
@@ -54,6 +55,17 @@ public abstract class VcUplinkManagedParameters<T extends UplinkTransferFrame> {
             }
         }
         this.bdAbsolutePriority = config.getBoolean("bdAbsolutePriority", false);
+        this.multiplePacketsPerFrame = config.getBoolean("multiplePacketsPerFrame", true);
+
+        this.mapId = (byte) config.getInt("mapId", -1);
+        if (mapId < -1 || mapId > 15) {
+            throw new ConfigurationException("Invalid mapId " + mapId
+                    + ". It has to be either -1 (meaning that the MAP service is not used) or between 0 and 15");
+        }
+
+        this.useCop1 = config.getBoolean("useCop1", false);
+
+        vcLinkName = config.getString("linkName", "vc" + vcId);
     }
 
     protected void parsePacketConfig() {

@@ -67,6 +67,15 @@ public class UslpUplinkManagedParameters extends UplinkManagedParameters<UslpUpl
         return null;
     }
 
+    @Override
+    public String toString() {
+        return "UslpUplinkManagedParameters [maxFrameLength=" + maxFrameLength + ", insertZoneLength="
+                + insertZoneLength + ", vcParams=" + vcParams + ", priorityScheme=" + priorityScheme
+                + ", physicalChannelName=" + physicalChannelName + ", spacecraftId=" + spacecraftId
+                + ", errorDetection=" + errorDetection + ", linkName=" + linkName + ", sdlsSecurityAssociations="
+                + sdlsSecurityAssociations + "]";
+    }
+
     public static class UslpUplinkVcManagedParameters extends VcUplinkManagedParameters<UslpUplinkTransferFrame> {
         final UslpUplinkManagedParameters uslpParams;
         /**
@@ -75,7 +84,7 @@ public class UslpUplinkManagedParameters extends UplinkManagedParameters<UslpUpl
          */
         final int vcfCountLength;
         int maxFrameLength;
-        String vcLinkName;
+
 
         public UslpUplinkVcManagedParameters(YConfiguration config, UslpUplinkManagedParameters uslpParams) {
             super(config, uslpParams);
@@ -96,13 +105,7 @@ public class UslpUplinkManagedParameters extends UplinkManagedParameters<UslpUpl
                         + " exceeds master channel maxFrameLength " + uslpParams.maxFrameLength);
             }
 
-            this.multiplePacketsPerFrame = config.getBoolean("multiplePacketsPerFrame", true);
-            this.mapId = (byte) config.getInt("mapId", 0);
-            if (this.mapId < 0 || this.mapId > 15) {
-                throw new ConfigurationException("Invalid mapId " + this.mapId + "; must be 0–15");
-            }
 
-            vcLinkName = config.getString("linkName", "vc" + vcId);
         }
 
         String linkName() {

@@ -252,6 +252,7 @@ public class Cop1TcPacketHandler<T extends UplinkTransferFrame> extends Abstract
             }
         }
         var tf = makeFrame(pc, bypass, mapId);
+
         if (tf != null) {
             boolean added = outQueue.offer(new QueuedFrame<T>(tf));
             if (!added) {
@@ -1145,7 +1146,7 @@ public class Cop1TcPacketHandler<T extends UplinkTransferFrame> extends Abstract
     }
 
     @Override
-    public VcUplinkManagedParameters getParameters() {
+    public VcUplinkManagedParameters<T> getParameters() {
         return vmp;
     }
 
