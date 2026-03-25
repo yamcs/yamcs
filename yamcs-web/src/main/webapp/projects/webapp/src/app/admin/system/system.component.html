@@ -104,7 +104,7 @@
           <th>Usable space</th>
           <th class="expand"></th>
         </tr>
-        @for (root of info.rootDirectories; track root) {
+        @for (root of info.rootDirectories; track root.directory) {
           <tr>
             <td>{{ root.directory }}</td>
             <td>{{ root.type || "-" }}</td>
@@ -151,7 +151,7 @@
       {{ process.command }}
     </td>
   </tr>
-  @for (child of process.children || []; track child; let last = $last) {
+  @for (child of process.children || []; track child.pid; let last = $last) {
     <ng-container
       *ngTemplateOutlet="
         processTemplate;

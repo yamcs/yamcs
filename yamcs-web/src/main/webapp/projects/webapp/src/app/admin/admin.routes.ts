@@ -54,6 +54,9 @@ export const ROUTES: Routes = [
     canActivateChild: [authGuardChildFn],
     runGuardsAndResolvers: 'always',
     component: AdminLayoutComponent,
+    data: {
+      section: 'admin',
+    },
     children: [
       {
         path: '',

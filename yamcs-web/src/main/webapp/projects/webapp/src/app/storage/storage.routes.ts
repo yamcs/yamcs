@@ -14,6 +14,9 @@ export const ROUTES: Routes = [
     canActivateChild: [authGuardChildFn],
     runGuardsAndResolvers: 'always',
     component: StorageLayoutComponent,
+    data: {
+      section: 'storage',
+    },
     children: [
       {
         path: '',
