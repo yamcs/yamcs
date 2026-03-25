@@ -12,54 +12,69 @@
     <a class="logo-wrapper" routerLink="/">
       <img src="yamcs@2x.png" />
     </a>
-    @if (connectionInfo$ | async; as connectionInfo) {
-      <button mat-button (click)="openInstanceDialog()">
-        {{ connectionInfo.instance.name }} ▾
-      </button>
+
+    @if (section$ | async; as section) {
+      @if (section === "instance") {
+        @if (connectionInfo$ | async; as connectionInfo) {
+          <button mat-button (click)="openInstanceDialog()">
+            {{ connectionInfo.instance.name }} ▾
+          </button>
+        }
+      } @else if (section === "admin") {
+        <span style="color: white">Admin area</span>
+      }
     }
 
     <div style="flex: 1 1 auto"></div>
 
     @if (user$ | async; as user) {
-      <nav mat-tab-nav-bar class="top-tabs" [tabPanel]="tabPanel">
-        @if ((connectionInfo$ | async)?.instance) {
-          <app-search-input matTooltip="Search (/)" />
-        }
-        <a mat-tab-link routerLink="storage" routerLinkActive="active">
-          <mat-icon>perm_media</mat-icon>
-          &nbsp;&nbsp;STORAGE
-        </a>
-        @if (user | mayAccessAdminArea) {
-          <a mat-tab-link routerLink="admin" routerLinkActive="active">
-            <mat-icon>security</mat-icon>
-            &nbsp;&nbsp;ADMIN AREA
-          </a>
-        }
-        @if (siteLinks.length) {
-          <a mat-tab-link [matMenuTriggerFor]="siteLinkMenu" style="padding: 0 8px">
-            <mat-icon>link</mat-icon>
-          </a>
-        }
-        <a mat-tab-link [matMenuTriggerFor]="userMenu">
-          <mat-icon>support_agent</mat-icon>
-          &nbsp;&nbsp;{{ user.getDisplayName() || user.getName() | uppercase }}
-        </a>
-      </nav>
-    }
+      @if ((section$ | async) === "instance") {
+        <app-search-input matTooltip="Search (/)" />
+      }
 
-    <mat-menu #siteLinkMenu="matMenu" overlapTrigger="false" xPosition="before">
-      @for (link of siteLinks; track link) {
-        <a mat-menu-item [href]="link.url" [target]="link.external ? '_blank' : '_self'">
-          Go to {{ link.label }}
-          @if (link.external) {
-            &nbsp;
-            <mat-icon class="icon16">open_in_new</mat-icon>
-          }
+      <a mat-icon-button routerLink="storage" routerLinkActive="active" matTooltip="Storage">
+        <mat-icon class="icon24">perm_media</mat-icon>
+      </a>
+
+      @if (user | mayAccessAdminArea) {
+        <a mat-icon-button routerLink="admin" routerLinkActive="active" matTooltip="Admin area">
+          <mat-icon class="icon24">security</mat-icon>
         </a>
       }
+
+      <button mat-icon-button [matMenuTriggerFor]="moreMenu">
+        <mat-icon class="icon24">more_vert</mat-icon>
+      </button>
+
+      <button mat-button [matMenuTriggerFor]="userMenu">
+        <mat-icon class="icon24">support_agent</mat-icon>
+        &nbsp;&nbsp;{{ user.getDisplayName() || user.getName() | uppercase }}
+      </button>
+    }
+
+    <mat-menu #moreMenu="matMenu" overlapTrigger="false" xPosition="before" class="ya-menu">
+      @if (siteLinks.length) {
+        @for (link of siteLinks; track link) {
+          <a mat-menu-item [href]="link.url" [target]="link.external ? '_blank' : '_self'">
+            <div style="display: flex; align-items: center; width: 100%">
+              <span>Go to {{ link.label }}</span>
+              <span style="flex: 1 1 auto; min-width: 10px"></span>
+              <mat-icon class="icon16">open_in_new</mat-icon>
+            </div>
+          </a>
+        }
+        <mat-divider />
+      }
+      <a mat-menu-item href="https://docs.yamcs.org" target="_blank">
+        <div style="display: flex; align-items: center; width: 100%">
+          <span>Online documentation</span>
+          <span style="flex: 1 1 auto; min-width: 10px"></span>
+          <mat-icon class="icon16">open_in_new</mat-icon>
+        </div>
+      </a>
     </mat-menu>
 
-    <mat-menu #userMenu="matMenu" overlapTrigger="false" xPosition="before">
+    <mat-menu #userMenu="matMenu" overlapTrigger="false" xPosition="before" class="ya-menu">
       <a mat-menu-item routerLink="profile" routerLinkActive="active">
         <mat-icon>account_box</mat-icon>
         &nbsp;Profile
@@ -73,7 +88,5 @@
     </mat-menu>
   </mat-toolbar-row>
 </mat-toolbar>
-<mat-tab-nav-panel #tabPanel>
-  <router-outlet />
-</mat-tab-nav-panel>
+<router-outlet />
 <ya-print-zone />

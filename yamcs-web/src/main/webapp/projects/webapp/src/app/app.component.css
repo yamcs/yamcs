@@ -9,6 +9,8 @@ mat-toolbar-row {
   z-index: 2;
   padding-left: 6px;
   padding-right: calc(24px - 16px);
+  --mat-icon-button-icon-color: #fff;
+  --mat-icon-button-state-layer-color: #fff;
 }
 
 .mat-toolbar.focus {
@@ -80,25 +82,12 @@ mat-toolbar-row {
   overflow: hidden;
 }
 
-::ng-deep .top-tabs.mat-mdc-tab-nav-bar {
-  border-bottom: none;
-}
-
-.mat-mdc-button:hover,
-::ng-deep
-  .top-tabs.mat-mdc-tab-nav-bar
-  .mat-mdc-tab-link:hover:not(.no-hover-effect),
-::ng-deep .top-tabs.mat-mdc-tab-nav-bar .mat-mdc-tab-link.active {
+.mat-mdc-button:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-::ng-deep .top-tabs.mat-mdc-tab-nav-bar .mat-mdc-tab-link {
-  opacity: 1;
-  min-width: 0;
-  padding: 0 16px;
-}
-
-::ng-deep .top-tabs.mat-mdc-tab-nav-bar .mat-mdc-tab-link .mdc-tab__text-label {
-  color: #fff;
-  letter-spacing: 1.25px;
+.material-symbols.icon24 {
+  font-size: 24px !important;
+  height: 24px !important;
+  width: 24px !important;
 }
