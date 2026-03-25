@@ -76,8 +76,12 @@ a.ya-link.ya-header-link {
   line-height: 32px;
   height: 32px;
   font-size: 12px;
-  padding: 0 16px;
+  padding: 0 12px;
   min-height: 32px;
+}
+
+.ya-menu .mat-mdc-menu-link {
+  padding: 0 12px;
 }
 
 .ya-menu .mat-mdc-menu-content .mat-mdc-menu-item .mdc-list-item__primary-text,

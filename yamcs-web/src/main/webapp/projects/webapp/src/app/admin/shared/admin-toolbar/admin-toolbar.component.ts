@@ -23,7 +23,7 @@ import {
     },
   ],
   host: {
-    class: 'app-instance-toolbar',
+    class: 'app-admin-toolbar',
   },
   imports: [CdkPortalOutlet, WebappSdkModule],
 })

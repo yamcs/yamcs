@@ -96,6 +96,9 @@ export const APP_ROUTES: Routes = [
       {
         path: '',
         component: InstanceLayoutComponent,
+        data: {
+          section: 'instance',
+        },
         children: [
           {
             path: 'activities',
