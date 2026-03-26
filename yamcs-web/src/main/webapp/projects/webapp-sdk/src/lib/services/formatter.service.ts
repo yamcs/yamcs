@@ -1,8 +1,9 @@
-import { Injectable } from '@angular/core';
-import { FormatOptionsWithTZ, formatInTimeZone } from 'date-fns-tz';
+import { computed, Injectable } from '@angular/core';
+import { formatInTimeZone, FormatOptionsWithTZ } from 'date-fns-tz';
 import { Value } from '../client';
 import * as utils from '../utils';
 import { ConfigService } from './config.service';
+import { Preferences } from './preferences.service';
 
 const FNS_OPTS: FormatOptionsWithTZ = { weekStartsOn: 1 };
 const PREVIEW_LENGTH = 3;
@@ -13,22 +14,38 @@ export interface FormatValueOptions {
 
 @Injectable({ providedIn: 'root' })
 export class Formatter {
-  private timezone: string;
   private DT_FMT_LONG = 'yyyy-MM-dd HH:mm:ss.SSS';
   private DT_FMT_LONG_TZ = 'yyyy-MM-dd HH:mm:ss.SSS zzz';
 
-  constructor(configService: ConfigService) {
-    this.timezone = configService.getConfig().utc
+  // Checks if there's a user preference, falling back
+  // to the server-default.
+  private utcConfig = computed(() => {
+    const utcSignal = this.prefs.watchBoolean('utc');
+    return utcSignal() ?? this.configService.getConfig().utc;
+  });
+
+  public timezone = computed(() => {
+    return this.utcConfig()
       ? 'UTC'
       : Intl.DateTimeFormat().resolvedOptions().timeZone;
-  }
+  });
+  public utc = computed(() => {
+    return this.timezone() === 'UTC';
+  });
 
-  isUTC() {
-    return this.timezone === 'UTC';
-  }
+  constructor(
+    private configService: ConfigService,
+    private prefs: Preferences,
+  ) {}
 
+  /** @deprecated */
   getTimezone() {
-    return this.timezone;
+    return this.timezone();
+  }
+
+  /** @deprecated */
+  isUTC() {
+    return this.utc();
   }
 
   formatDateTime(date: Date | string | number, addTimezone = true): string {
@@ -43,12 +60,17 @@ export class Formatter {
       // For example: en-US would not display CEST but GMT+2.
       return formatInTimeZone(
         date,
-        this.timezone,
+        this.timezone(),
         this.DT_FMT_LONG_TZ,
         FNS_OPTS,
       );
     } else {
-      return formatInTimeZone(date, this.timezone, this.DT_FMT_LONG, FNS_OPTS);
+      return formatInTimeZone(
+        date,
+        this.timezone(),
+        this.DT_FMT_LONG,
+        FNS_OPTS,
+      );
     }
   }
 

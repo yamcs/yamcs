@@ -139,6 +139,7 @@ export * from './lib/services/favicon.service';
 export * from './lib/services/formatter.service';
 export * from './lib/services/message.service';
 export * from './lib/services/preference-store.service';
+export * from './lib/services/preferences.service';
 export * from './lib/services/synchronizer.service';
 export * from './lib/services/yamcs.service';
 export * from './lib/TrackBySelectionModel';
