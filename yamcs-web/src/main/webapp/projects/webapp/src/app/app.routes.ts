@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { ContextSwitchComponent } from './appbase/context-switch/context-switch.component';
 import { CreateInstancePage1Component } from './appbase/create-instance-page1/create-instance-page1.component';
 import { CreateInstancePage2Component } from './appbase/create-instance-page2/create-instance-page2.component';
 import { ExtensionComponent } from './appbase/extension/extension.component';
@@ -8,6 +7,7 @@ import { ForbiddenComponent } from './appbase/forbidden/forbidden.component';
 import { HomeComponent } from './appbase/home/home.component';
 import { NotFoundComponent } from './appbase/not-found/not-found.component';
 import { ProfileComponent } from './appbase/profile/profile.component';
+import { RouteRefreshComponent } from './appbase/route-refresh/route-refresh.component';
 import { ServerUnavailableComponent } from './appbase/server-unavailable/server-unavailable.component';
 import { attachContextGuardFn } from './core/guards/AttachContextGuard';
 import { authGuardChildFn, authGuardFn } from './core/guards/AuthGuard';
@@ -48,12 +48,6 @@ export const APP_ROUTES: Routes = [
         data: { hasSidebar: false },
       },
       {
-        path: 'context-switch/:context/:current',
-        component: ContextSwitchComponent,
-        canActivate: [authGuardFn, clearContextGuardFn],
-        data: { hasSidebar: false },
-      },
-      {
         path: 'create-instance',
         pathMatch: 'full',
         component: CreateInstancePage1Component,
@@ -81,6 +75,12 @@ export const APP_ROUTES: Routes = [
       {
         path: 'profile',
         component: ProfileComponent,
+        canActivate: [authGuardFn, clearContextGuardFn],
+        data: { hasSidebar: false },
+      },
+      {
+        path: 'route-refresh',
+        component: RouteRefreshComponent,
         canActivate: [authGuardFn, clearContextGuardFn],
         data: { hasSidebar: false },
       },

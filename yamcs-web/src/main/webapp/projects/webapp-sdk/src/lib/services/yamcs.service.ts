@@ -16,6 +16,7 @@ import { FrameLossListener } from '../client/FrameLossListener';
 import { getDefaultProcessor } from '../utils';
 import { ConfigService } from './config.service';
 import { MessageService } from './message.service';
+import { NavigationService } from './navigation.service';
 
 /**
  * Singleton service for facilitating working with a websocket connection
@@ -43,6 +44,7 @@ export class YamcsService implements FrameLossListener, SessionListener {
     private router: Router,
     private messageService: MessageService,
     private configService: ConfigService,
+    private navigationService: NavigationService,
   ) {
     this.yamcsClient = new YamcsClient(baseHref, this, this);
   }
@@ -65,11 +67,11 @@ export class YamcsService implements FrameLossListener, SessionListener {
     }
   }
 
-  async switchContext(instance: string, processor?: string) {
-    let newContext = instance;
+  async switchContext(instance?: string, processor?: string) {
+    let newContext: string | undefined = instance;
     if (processor) {
       newContext += '__' + processor;
-    } else {
+    } else if (instance) {
       const instanceDetail = await this.yamcsClient.getInstance(instance);
       const defaultProcessor = getDefaultProcessor(instanceDetail);
       if (defaultProcessor) {
@@ -77,9 +79,7 @@ export class YamcsService implements FrameLossListener, SessionListener {
       }
     }
 
-    this.router.navigate(['/context-switch', newContext, this.router.url], {
-      skipLocationChange: true,
-    });
+    this.navigationService.refreshCurrentRoute(newContext);
   }
 
   private setInstanceContext(instanceId: string) {
