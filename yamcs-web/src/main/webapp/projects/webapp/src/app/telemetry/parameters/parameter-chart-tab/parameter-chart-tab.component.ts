@@ -369,7 +369,7 @@ export class ParameterChartTabComponent
     }
 
     this.timeRuler = new TimeRuler(this.timeline);
-    if (this.formatter.isUTC()) {
+    if (this.formatter.utc()) {
       this.timeRuler.timezone = 'UTC';
     }
     this.timeRuler.grid = 'underlay';
