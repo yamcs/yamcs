@@ -1,12 +1,11 @@
-import { AsyncPipe, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  Input,
+  computed,
+  input,
   numberAttribute,
-  OnChanges,
 } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
 
 @Component({
   selector: 'ya-progress',
@@ -15,44 +14,22 @@ import { BehaviorSubject } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'ya-progress',
-    '[style.height.px]': 'height',
-    '[style.width.px]': 'width',
-    // Subtract 2 to account for borders
-    '[style.lineHeight.px]': 'height - 2',
+    '[style.height.px]': 'height()',
+    '[style.width.px]': 'width()',
   },
-  imports: [AsyncPipe, DecimalPipe],
+  imports: [DecimalPipe],
 })
-export class YaProgress implements OnChanges {
-  @Input({ transform: numberAttribute })
-  value: number;
+export class YaProgress {
+  value = input(0, { transform: numberAttribute });
+  total = input(1, { transform: numberAttribute });
+  height = input(16, { transform: numberAttribute });
+  width = input(100, { transform: numberAttribute });
+  format = input('1.2-2');
+  unit = input('%');
 
-  @Input({ transform: numberAttribute })
-  total: number;
-
-  @Input({ transform: numberAttribute })
-  height: number = 16;
-
-  @Input({ transform: numberAttribute })
-  width: number = 100;
-
-  @Input()
-  format = '1.1';
-
-  @Input()
-  unit = '%';
-
-  ratio$ = new BehaviorSubject<number | null>(null);
-  boundedRatio$ = new BehaviorSubject<number>(0);
-
-  ngOnChanges() {
-    const ratio = this.value / this.total;
-    if (ratio === null || ratio === undefined) {
-      this.ratio$.next(null);
-      this.boundedRatio$.next(0);
-      return;
-    }
-
-    this.ratio$.next(ratio);
-    this.boundedRatio$.next(Math.max(0, Math.min(1, ratio)));
-  }
+  ratio = computed(() => {
+    const ratio = this.value() / this.total();
+    return Math.max(0, Math.min(1, ratio));
+  });
+  percentage = computed(() => 100 * this.ratio());
 }
