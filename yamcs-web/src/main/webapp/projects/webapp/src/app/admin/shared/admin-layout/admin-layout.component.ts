@@ -8,18 +8,17 @@ import {
   Signal,
   ViewChild,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { MatSidenav } from '@angular/material/sidenav';
 import { NavigationEnd, Router } from '@angular/router';
 import {
   AuthService,
   ConfigService,
-  PreferenceStore,
+  Preferences,
   User,
   WebappSdkModule,
   WebsiteConfig,
 } from '@yamcs/webapp-sdk';
-import { BehaviorSubject, filter, Subscription } from 'rxjs';
+import { filter, Subscription } from 'rxjs';
 import { AppAppBaseToolbarLabel } from '../../../appbase/appbase-toolbar/appbase-toolbar-label.directive';
 import { AppAppBaseToolbar } from '../../../appbase/appbase-toolbar/appbase-toolbar.component';
 import { AppCollapseSidebar } from '../../../appbase/collapse-sidebar/collapse-sidebar.component';
@@ -55,7 +54,6 @@ export class AdminLayoutComponent implements AfterViewInit, OnDestroy {
   pageLoaded = signal(false);
   collapsed: Signal<boolean>;
   sidenavHover = signal(false);
-  miniSidebar$: BehaviorSubject<boolean>;
   collapseItem = computed(() => this.collapsed() && !this.sidenavHover());
 
   private routerSubscription: Subscription;
@@ -63,16 +61,12 @@ export class AdminLayoutComponent implements AfterViewInit, OnDestroy {
   constructor(
     configService: ConfigService,
     authService: AuthService,
-    private preferenceStore: PreferenceStore,
+    private prefs: Preferences,
     router: Router,
   ) {
     this.config = configService.getConfig();
     this.user = authService.getUser()!;
-    this.miniSidebar$ = this.preferenceStore.getPreference$('miniSidebar');
-
-    this.collapsed = toSignal(this.miniSidebar$, {
-      requireSync: true,
-    });
+    this.collapsed = this.prefs.watchBoolean('miniSidebar', false);
 
     this.routerSubscription = router.events
       .pipe(filter((evt) => evt instanceof NavigationEnd))
@@ -114,15 +108,15 @@ export class AdminLayoutComponent implements AfterViewInit, OnDestroy {
   }
 
   toggleCollapse() {
-    const mini = !this.miniSidebar$.value;
-    this.preferenceStore.setValue('miniSidebar', mini);
+    const mini = !this.collapsed();
+    this.prefs.setBoolean('miniSidebar', mini);
     if (mini) {
       this.sidenavHover.set(false); // Close sidebar even if hovered
     }
   }
 
   collapseSidebarIfMini() {
-    const mini = this.miniSidebar$.value;
+    const mini = this.collapsed();
     if (mini) {
       this.sidenavHover.set(false); // Close sidebar even if hovered
     }

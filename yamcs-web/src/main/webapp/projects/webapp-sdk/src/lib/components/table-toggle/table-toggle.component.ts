@@ -6,7 +6,7 @@ import {
   inject,
 } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { PreferenceStore } from '../../services/preference-store.service';
+import { Preferences } from '../../services/preferences.service';
 import { YaSlideToggle } from '../slide-toggle/slide-toggle.component';
 
 @Component({
@@ -21,15 +21,14 @@ export class YaTableToggle implements OnInit {
 
   formControl = new FormControl<boolean>(false);
 
-  private preferenceStore = inject(PreferenceStore);
+  private prefs = inject(Preferences);
 
   ngOnInit() {
     if (this.preferenceKey) {
-      this.preferenceStore.addPreference$(this.preferenceKey, false);
-      const checked = this.preferenceStore.getValue(this.preferenceKey);
+      const checked = this.prefs.getBoolean(this.preferenceKey, false);
       this.formControl.setValue(checked);
       this.formControl.valueChanges.subscribe((checked) => {
-        this.preferenceStore.setValue(this.preferenceKey, checked);
+        this.prefs.setBoolean(this.preferenceKey, checked);
       });
     }
   }

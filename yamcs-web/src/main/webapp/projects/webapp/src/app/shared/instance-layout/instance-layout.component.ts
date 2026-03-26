@@ -2,15 +2,14 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  computed,
+  effect,
   ElementRef,
   OnDestroy,
   Signal,
-  ViewChild,
-  computed,
-  effect,
   signal,
+  ViewChild,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
 import {
   AppearanceService,
@@ -20,13 +19,13 @@ import {
   ExtensionService,
   MessageService,
   NavItem,
-  PreferenceStore,
+  Preferences,
   User,
   WebappSdkModule,
   WebsiteConfig,
   YamcsService,
 } from '@yamcs/webapp-sdk';
-import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { AppCollapseSidebar } from '../../appbase/collapse-sidebar/collapse-sidebar.component';
 import { ActivitiesLabelComponent } from '../activities-label/activities-label.component';
@@ -81,7 +80,6 @@ export class InstanceLayoutComponent implements AfterViewInit, OnDestroy {
   sidenavHover = signal(false);
   fullScreenMode$: Observable<boolean>;
   focusMode$: Observable<boolean>;
-  miniSidebar$: BehaviorSubject<boolean>;
   collapseItem = computed(() => this.collapsed() && !this.sidenavHover());
 
   private routerSubscription: Subscription;
@@ -91,17 +89,14 @@ export class InstanceLayoutComponent implements AfterViewInit, OnDestroy {
     configService: ConfigService,
     authService: AuthService,
     appearanceService: AppearanceService,
-    private preferenceStore: PreferenceStore,
+    private prefs: Preferences,
     extensionService: ExtensionService,
     messageService: MessageService,
     router: Router,
   ) {
     this.connectionInfo$ = this.yamcs.connectionInfo$;
-    this.miniSidebar$ = this.preferenceStore.getPreference$('miniSidebar');
+    this.collapsed = prefs.watchBoolean('miniSidebar', false);
 
-    this.collapsed = toSignal(this.miniSidebar$, {
-      requireSync: true,
-    });
     this.fullScreenMode$ = appearanceService.fullScreenMode$;
     this.focusMode$ = appearanceService.focusMode$;
     this.config = configService.getConfig();
@@ -292,15 +287,15 @@ export class InstanceLayoutComponent implements AfterViewInit, OnDestroy {
   }
 
   toggleCollapse() {
-    const mini = !this.miniSidebar$.value;
-    this.preferenceStore.setValue('miniSidebar', mini);
+    const mini = !this.collapsed();
+    this.prefs.setBoolean('miniSidebar', mini);
     if (mini) {
       this.sidenavHover.set(false); // Close sidebar even if hovered
     }
   }
 
   collapseSidebarIfMini() {
-    const mini = this.miniSidebar$.value;
+    const mini = this.collapsed();
     if (mini) {
       this.sidenavHover.set(false); // Close sidebar even if hovered
     }

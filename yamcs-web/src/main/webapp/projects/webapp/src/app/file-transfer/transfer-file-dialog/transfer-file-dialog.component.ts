@@ -1,4 +1,4 @@
-import { Component, Inject, OnDestroy, ViewChild } from '@angular/core';
+import { Component, Inject, OnDestroy, Signal, ViewChild } from '@angular/core';
 import {
   UntypedFormBuilder,
   UntypedFormGroup,
@@ -12,7 +12,7 @@ import {
   FileTransferOption,
   FileTransferService,
   MessageService,
-  PreferenceStore,
+  Preferences,
   RemoteFileListSubscription,
   StorageClient,
   WebappSdkModule,
@@ -41,9 +41,15 @@ export class TransferFileDialogComponent implements OnDestroy {
 
   displayedColumns = ['name'];
 
-  private prefPrefix = 'filetransfer.';
+  readonly PREF_PREFIX: string;
+  readonly PREF_SHOW_BUCKET_SIZE: string;
+  readonly PREF_LOCAL_DIRECTORY: string;
+  readonly PREF_LOCAL_ENTITY: string;
+  readonly PREF_REMOTE_ENTITY: string;
+  readonly PREF_SELECTED_BUCKET: string;
+  readonly PREF_REMOTE_DIRECTORY: string;
 
-  showBucketSize$;
+  showBucketSize: Signal<boolean>;
 
   selectedBucket$ = new BehaviorSubject<Bucket | null>(null);
   breadcrumb$ = new BehaviorSubject<BreadcrumbItem[]>([]);
@@ -66,10 +72,10 @@ export class TransferFileDialogComponent implements OnDestroy {
       this.objectSelector = selector;
     }
 
-    this.changeLocalPrefix(this.localDirectory$.value);
+    this.changeLocalPrefix(this.localDirectory() ?? '');
   }
   objectSelector: ObjectSelector;
-  private localDirectory$;
+  private localDirectory: Signal<string | null>;
 
   @ViewChild('remoteSelector')
   remoteSelector: RemoteFileSelectorComponent;
@@ -79,39 +85,47 @@ export class TransferFileDialogComponent implements OnDestroy {
     readonly yamcs: YamcsService,
     formBuilder: UntypedFormBuilder,
     private messageService: MessageService,
-    private preferenceStore: PreferenceStore,
+    private prefs: Preferences,
     private snackBar: MatSnackBar,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
   ) {
     this.service = data.service;
-    this.prefPrefix += this.service.name + '.';
-    this.showBucketSize$ = this.addPreference$('showBucketSize', false);
-    this.localDirectory$ = this.addPreference$('localDirectory', '');
-    const firstLocalEntity =
-      this.service.localEntities && this.service.localEntities.length
-        ? this.service.localEntities[0].name
-        : '';
-    const firstRemoteEntity =
-      this.service.remoteEntities && this.service.remoteEntities.length
-        ? this.service.remoteEntities[0].name
-        : '';
-    const localEntity$ = this.addPreference$('localEntity', firstLocalEntity);
-    const remoteEntity$ = this.addPreference$(
-      'remoteEntity',
+
+    this.PREF_PREFIX = 'filetransfer.' + this.service.name + '.';
+    this.PREF_SHOW_BUCKET_SIZE = this.PREF_PREFIX + 'showBucketSize';
+    this.PREF_LOCAL_DIRECTORY = this.PREF_PREFIX + 'localDirectory';
+    this.PREF_LOCAL_ENTITY = this.PREF_PREFIX + 'localEntity';
+    this.PREF_REMOTE_ENTITY = this.PREF_PREFIX + 'remoteEntity';
+    this.PREF_SELECTED_BUCKET = this.PREF_PREFIX + 'selectedBucket';
+    this.PREF_REMOTE_DIRECTORY = this.PREF_PREFIX + 'remoteDirectory';
+
+    this.showBucketSize = prefs.watchBoolean(this.PREF_SHOW_BUCKET_SIZE, false);
+    this.localDirectory = prefs.watchString(this.PREF_LOCAL_DIRECTORY);
+
+    const firstLocalEntity = this.service.localEntities?.length
+      ? this.service.localEntities[0].name
+      : undefined;
+    const firstRemoteEntity = this.service.remoteEntities?.length
+      ? this.service.remoteEntities[0].name
+      : undefined;
+    const localEntity = prefs.getString(
+      this.PREF_LOCAL_ENTITY,
+      firstLocalEntity,
+    );
+    const remoteEntity = prefs.getString(
+      this.PREF_REMOTE_ENTITY,
       firstRemoteEntity,
     );
 
     this.storageClient = yamcs.createStorageClient();
     this.storageClient.getBuckets().then((buckets) => {
       this.dataSource.data = buckets || [];
-      if (buckets) {
-        const bucketPref$ = this.addPreference$(
-          'selectedBucket',
+      if (buckets.length) {
+        const bucketPref = this.prefs.getString(
+          this.PREF_SELECTED_BUCKET,
           buckets[0].name,
         );
-        const bucket = buckets.find(
-          (bucket) => bucket.name === bucketPref$.value,
-        );
+        const bucket = buckets.find((bucket) => bucket.name === bucketPref);
         this.selectBucket(bucket || buckets[0]);
       }
     });
@@ -143,24 +157,21 @@ export class TransferFileDialogComponent implements OnDestroy {
       let name = this.getControlName(option, index);
       this.optionsMapping.set(option, name);
 
+      const key = this.PREF_PREFIX + 'options.' + option.name;
       if (option.type === 'BOOLEAN') {
-        const optionPref$ = this.addPreference$(
-          'options.' + option.name,
-          option.default?.toLowerCase() === 'true',
-        );
-        controlNames[name] = [optionPref$.value, []];
+        const defaultValue = option.default?.toLowerCase() === 'true';
+        const optionPref = this.prefs.getBoolean(key, defaultValue);
+        controlNames[name] = [optionPref, []];
       } else {
-        const optionPref$ = this.addPreference$(
-          'options.' + option.name,
-          option.default || '',
-        );
+        const defaultValue = option.default || '';
+        const optionPref = this.prefs.getString(key, defaultValue);
         let inValues =
           option.values &&
-          option.values.find((item) => item.value === optionPref$.value);
+          option.values.find((item) => item.value === optionPref);
 
-        controlNames[name] = [inValues == null ? optionPref$.value : '', []];
+        controlNames[name] = [inValues == null ? optionPref : '', []];
         controlNames[name + this.DROPDOWN_SUFFIX] = [
-          inValues != null ? optionPref$.value : this.CUSTOM_OPTION_VALUE,
+          inValues != null ? optionPref : this.CUSTOM_OPTION_VALUE,
           [],
         ];
       }
@@ -171,13 +182,13 @@ export class TransferFileDialogComponent implements OnDestroy {
       localFilenames: ['', []],
       remoteFilenames: ['', []],
       localEntity: [
-        localEntity$.value,
+        localEntity,
         this.service.localEntities &&
           this.service.localEntities.length &&
           Validators.required,
       ],
       remoteEntity: [
-        remoteEntity$.value,
+        remoteEntity,
         this.service.remoteEntities &&
           this.service.remoteEntities.length &&
           Validators.required,
@@ -203,18 +214,18 @@ export class TransferFileDialogComponent implements OnDestroy {
 
     // Update entity user preference
     this.form.get('localEntity')?.valueChanges.subscribe((entity: any) => {
-      this.setPreferenceValue('localEntity', entity);
+      this.prefs.setString(this.PREF_LOCAL_ENTITY, entity);
     });
 
     // If a new destination is selected -> display cached file list if any
     this.form.get('remoteEntity')?.valueChanges.subscribe((entity: any) => {
-      this.setPreferenceValue('remoteEntity', entity);
+      this.prefs.setString(this.PREF_REMOTE_ENTITY, entity);
       // New destination selected -> Go to root folder
       this.getFileList(entity, '');
     });
 
     // Save option preferences
-    this.form.valueChanges.subscribe(async (_) => {
+    this.form.valueChanges.subscribe(async () => {
       this.optionsMapping.forEach((controlName, option) => {
         const dropDownValue = this.form.get(
           controlName + this.DROPDOWN_SUFFIX,
@@ -226,24 +237,32 @@ export class TransferFileDialogComponent implements OnDestroy {
 
         switch (option.type) {
           case 'BOOLEAN':
-            this.setPreferenceValue(
-              'options.' + option.name,
+            this.prefs.setBoolean(
+              this.PREF_PREFIX + 'options.' + option.name,
               String(value) === 'true',
             );
             break;
           case 'DOUBLE':
-          case 'STRING':
-            this.setPreferenceValue(
-              'options.' + option.name,
-              value != null ? value : '',
+            this.prefs.setNumber(
+              this.PREF_PREFIX + 'options.' + option.name,
+              value,
             );
+            break;
+          case 'STRING':
+            this.prefs.setString(
+              this.PREF_PREFIX + 'options.' + option.name,
+              value,
+            );
+            break;
+          default:
+            console.error('Unexpected option type', option.type);
         }
       });
     });
 
     // Show most recent file list
-    const remoteDirectory$ = this.addPreference$('remoteDirectory', '');
-    this.getFileList(remoteEntity$.value, remoteDirectory$.value || '');
+    const remoteDirectory = this.prefs.getString(this.PREF_REMOTE_DIRECTORY);
+    this.getFileList(remoteEntity!, remoteDirectory || '');
   }
 
   getControlName(option: FileTransferOption, index: number) {
@@ -253,7 +272,7 @@ export class TransferFileDialogComponent implements OnDestroy {
   // Called when user selects a bucket
   selectBucket(bucket: Bucket) {
     this.selectedBucket$.next(bucket);
-    this.setPreferenceValue('selectedBucket', bucket.name);
+    this.prefs.setString(this.PREF_SELECTED_BUCKET, bucket.name);
   }
 
   private updateButtonStates(
@@ -451,7 +470,7 @@ export class TransferFileDialogComponent implements OnDestroy {
         })
         .then((fileList) => {
           this.remoteSelector.setFolderContent(prefix, fileList);
-          this.setPreferenceValue('remoteDirectory', prefix);
+          this.prefs.setString(this.PREF_REMOTE_DIRECTORY, prefix);
           this.lastFileListTime$.next(fileList.listTime);
           this.lastFileListState$.next(fileList.state);
         });
@@ -491,7 +510,7 @@ export class TransferFileDialogComponent implements OnDestroy {
   updateLocalBreadcrumb(prefix: string | null) {
     if (!prefix) {
       this.breadcrumb$.next([]);
-      this.setPreferenceValue('localDirectory', '');
+      this.prefs.setString(this.PREF_LOCAL_DIRECTORY, null);
       return;
     }
 
@@ -508,7 +527,7 @@ export class TransferFileDialogComponent implements OnDestroy {
       });
     }
     this.breadcrumb$.next(items);
-    this.setPreferenceValue('localDirectory', prefix);
+    this.prefs.setString(this.PREF_LOCAL_DIRECTORY, prefix);
   }
 
   // Called when breadcrumb is selected
@@ -588,18 +607,7 @@ export class TransferFileDialogComponent implements OnDestroy {
   }
 
   toggleBucketSize() {
-    this.setPreferenceValue('showBucketSize', !this.showBucketSize$.value);
-  }
-
-  private addPreference$<Type>(key: string, defaultValue: Type) {
-    return this.preferenceStore.addPreference$(
-      this.prefPrefix + key,
-      defaultValue,
-    );
-  }
-
-  private setPreferenceValue<Type>(key: string, value: Type) {
-    this.preferenceStore.setValue(this.prefPrefix + key, value);
+    this.prefs.setBoolean(this.PREF_SHOW_BUCKET_SIZE, !this.showBucketSize());
   }
 
   ngOnDestroy() {
