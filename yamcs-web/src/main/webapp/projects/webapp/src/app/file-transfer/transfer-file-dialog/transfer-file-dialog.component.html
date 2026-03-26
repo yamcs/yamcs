@@ -18,7 +18,7 @@
       <label class="table-caption">
         Buckets
         <a class="column-action" (click)="toggleBucketSize()">
-          {{ !showBucketSize$.value ? "show" : "hide" }} size
+          {{ !showBucketSize() ? "show" : "hide" }} size
         </a>
       </label>
     </div>
@@ -34,10 +34,8 @@
               <mat-icon style="vertical-align: middle">shopping_basket</mat-icon>
               &nbsp; {{ bucket.name }}
             </span>
-            @if (showBucketSize$.value) {
+            @if (showBucketSize()) {
               <span>{{ bucket.size | formatBytes }}/{{ bucket.maxSize | formatBytes }}</span>
-            }
-            @if (showBucketSize$.value) {
               <ya-progress [value]="bucket.size" [total]="bucket.maxSize" />
             }
           </td>
