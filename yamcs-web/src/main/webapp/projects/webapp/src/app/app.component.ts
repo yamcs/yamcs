@@ -18,7 +18,6 @@ import {
   ExtensionService,
   Formatter,
   Preferences,
-  PreferenceStore,
   SiteLink,
   User,
   WebappSdkModule,
@@ -67,7 +66,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     router: Router,
     private route: ActivatedRoute,
     private authService: AuthService,
-    private preferenceStore: PreferenceStore,
     private prefs: Preferences,
     private dialog: MatDialog,
     private extensionService: ExtensionService,
@@ -142,13 +140,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       width: '650px',
       panelClass: ['no-padding-dialog'],
     });
-  }
-
-  toggleSidebar() {
-    this.preferenceStore.setValue(
-      'sidebar',
-      !this.preferenceStore.getValue('sidebar'),
-    );
   }
 
   setUTC(utc: boolean) {
