@@ -1,10 +1,9 @@
-/*
- * Careful: the label should appear on top of the fill.
- */
 :host {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   position: relative;
-  text-align: center;
+  overflow: hidden;
   margin-right: 5px;
   background-color: #eee;
   box-sizing: border-box;
@@ -26,11 +25,6 @@
 }
 
 .progress-label {
-  all: unset !important;
-  position: absolute !important;
-  top: 0 !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  margin: 0 auto !important;
+  position: relative;
+  pointer-events: none;
 }
