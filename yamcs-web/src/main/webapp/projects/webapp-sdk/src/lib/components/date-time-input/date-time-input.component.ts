@@ -113,7 +113,7 @@ export class YaDateTimeInput
       let iso = value as string;
       iso = formatInTimeZone(
         iso,
-        this.formatter.getTimezone(),
+        this.formatter.timezone(),
         "yyyy-MM-dd'T'HH:mm:ss.SSS",
       );
 

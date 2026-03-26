@@ -53,6 +53,8 @@
     }
 
     <mat-menu #moreMenu="matMenu" overlapTrigger="false" xPosition="before" class="ya-menu">
+      <button mat-menu-item [matMenuTriggerFor]="timezoneMenu">Timezone</button>
+      <mat-divider />
       @if (siteLinks.length) {
         @for (link of siteLinks; track link) {
           <a mat-menu-item [href]="link.url" [target]="link.external ? '_blank' : '_self'">
@@ -72,6 +74,16 @@
           <mat-icon class="icon16">open_in_new</mat-icon>
         </div>
       </a>
+    </mat-menu>
+    <mat-menu #timezoneMenu="matMenu" class="ya-menu">
+      <button mat-menu-item (click)="setUTC(true)">
+        <mat-icon>{{ utc() ? "check" : "" }}</mat-icon>
+        UTC
+      </button>
+      <button mat-menu-item (click)="setUTC(false)">
+        <mat-icon>{{ utc() ? "" : "check" }}</mat-icon>
+        Local
+      </button>
     </mat-menu>
 
     <mat-menu #userMenu="matMenu" overlapTrigger="false" xPosition="before" class="ya-menu">

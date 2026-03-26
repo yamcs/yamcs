@@ -4,6 +4,7 @@ import {
   Component,
   ElementRef,
   OnDestroy,
+  Signal,
   ViewChild,
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
@@ -15,6 +16,8 @@ import {
   ConfigService,
   ConnectionInfo,
   ExtensionService,
+  Formatter,
+  Preferences,
   PreferenceStore,
   SiteLink,
   User,
@@ -55,6 +58,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   sidebar$: Observable<boolean>;
   section$: Observable<string | null>;
   focusMode$: Observable<boolean>;
+  utc: Signal<boolean>;
 
   userSubscription: Subscription;
 
@@ -64,10 +68,12 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private route: ActivatedRoute,
     private authService: AuthService,
     private preferenceStore: PreferenceStore,
+    private prefs: Preferences,
     private dialog: MatDialog,
     private extensionService: ExtensionService,
     appearanceService: AppearanceService,
     private configService: ConfigService,
+    private formatter: Formatter,
   ) {
     this.focusMode$ = appearanceService.focusMode$;
     this.tag = configService.getTag();
@@ -76,6 +82,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     this.connected$ = yamcs.yamcsClient.connected$;
     this.connectionInfo$ = yamcs.connectionInfo$;
     this.user$ = authService.user$;
+    this.utc = formatter.utc;
 
     this.userSubscription = this.user$.subscribe((user) => {
       if (user) {
@@ -142,6 +149,13 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       'sidebar',
       !this.preferenceStore.getValue('sidebar'),
     );
+  }
+
+  setUTC(utc: boolean) {
+    if (this.formatter.utc() !== utc) {
+      this.prefs.setBoolean('utc', utc);
+      this.yamcs.switchContext(this.yamcs.instance, this.yamcs.processor);
+    }
   }
 
   logout() {

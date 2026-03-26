@@ -261,7 +261,7 @@ export class OpiDisplayViewerComponent
     this.display.invalidColor = colorFromCssColor(opiConfig.invalidColor);
     this.display.majorColor = colorFromCssColor(opiConfig.majorColor);
     this.display.minorColor = colorFromCssColor(opiConfig.minorColor);
-    this.display.utc = this.formatter.isUTC();
+    this.display.utc = this.formatter.utc();
     this.display.imagesPrefix = this.baseHref + 'media/';
     this.display.setPathResolver(
       new OpiDisplayPathResolver(this.storageClient, this.display),
