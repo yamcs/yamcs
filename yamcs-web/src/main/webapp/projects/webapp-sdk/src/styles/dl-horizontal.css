@@ -21,12 +21,13 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: rgba(0, 0, 0, 0.654);
+  color: var(--y-dl-horizontal-dt-foreground-color);
 }
 
 .dl-horizontal dd {
   margin-left: 180px;
   min-height: 20px;
+  color: var(--y-dl-horizontal-dd-foreground-color);
 }
 
 .dl-horizontal dd:after {

@@ -5,7 +5,7 @@ import { User } from '../User';
   name: 'mayAccessAdminArea',
 })
 export class MayAccessAdminAreaPipe implements PipeTransform {
-  transform(user: User): boolean {
+  transform(user: User | null | undefined): boolean {
     if (!user) {
       return false;
     }

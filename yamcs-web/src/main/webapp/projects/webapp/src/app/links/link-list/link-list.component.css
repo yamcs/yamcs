@@ -11,7 +11,7 @@
 tr.disabled td,
 tr.disabled td a {
   font-style: italic;
-  color: #aaa;
+  color: var(--y-disabled-color);
 }
 
 .legend {
@@ -27,6 +27,7 @@ tr.disabled td a {
   display: flex;
   align-items: center;
   margin-right: 10px;
+  color: var(--y-hint-foreground);
 }
 
 .legend-item ya-led {

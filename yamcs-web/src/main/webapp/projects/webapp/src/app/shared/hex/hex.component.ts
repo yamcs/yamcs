@@ -15,6 +15,7 @@ import { EventHandler, Graphics } from '@fqqb/timeline';
 import {
   BitRange,
   HexDumpPipe,
+  utils,
   YaPrintZoneHide,
   YaPrintZoneShow,
 } from '@yamcs/webapp-sdk';
@@ -227,6 +228,10 @@ export class HexComponent implements AfterViewInit, OnChanges, OnDestroy {
   private drawHex(line: Line, y: number) {
     let x = this.charWidth * (line.charCountHex + ': ').length;
 
+    const foregroundColor = utils.getCssVariable('--y-foreground-color');
+    const accent = utils.getCssVariable('--y-accent');
+    const accentForeground = utils.getCssVariable('--y-accent-foreground');
+
     for (let i = 0; i < line.hexComponents.length; i++) {
       const component = line.hexComponents[i];
       if (component.type === 'word') {
@@ -264,7 +269,7 @@ export class HexComponent implements AfterViewInit, OnChanges, OnDestroy {
 
         for (const nibble of component.nibbles) {
           let bgColor;
-          let fgColor = '#000000';
+          let fgColor = foregroundColor;
           if (
             !this.pressStart &&
             this.highlight &&
@@ -272,8 +277,8 @@ export class HexComponent implements AfterViewInit, OnChanges, OnDestroy {
           ) {
             bgColor = 'lightgrey';
           } else if (this.selection && this.selection.overlaps(nibble.range)) {
-            bgColor = '#009e87';
-            fgColor = '#ffffff';
+            bgColor = accent;
+            fgColor = accentForeground;
           }
           if (bgColor) {
             this.g.fillRect({
@@ -328,7 +333,7 @@ export class HexComponent implements AfterViewInit, OnChanges, OnDestroy {
           this.selection &&
           this.selection.containsBitExclusive(component.bitpos)
         ) {
-          bgColor = '#009e87';
+          bgColor = accent;
         }
         if (bgColor && i !== line.hexComponents.length - 1) {
           this.g.fillRect({
@@ -346,6 +351,12 @@ export class HexComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   private drawAscii(line: Line, y: number) {
     let x = (6 + 39 + 2) * this.charWidth;
+
+    const attrContentForegroundColor = utils.getCssVariable(
+      '--y-attr-content-foreground-color',
+    );
+    const accent = utils.getCssVariable('--y-accent');
+    const accentForeground = utils.getCssVariable('--y-accent-foreground');
 
     for (const component of line.asciiComponents) {
       if (component.type === 'word') {
@@ -378,7 +389,7 @@ export class HexComponent implements AfterViewInit, OnChanges, OnDestroy {
             .addRect(x, y, this.charWidth, this.fontSize);
 
           let bgColor;
-          let fgColor = '#777';
+          let fgColor = attrContentForegroundColor;
           if (
             !this.pressStart &&
             this.highlight &&
@@ -386,8 +397,8 @@ export class HexComponent implements AfterViewInit, OnChanges, OnDestroy {
           ) {
             bgColor = 'lightgrey';
           } else if (this.selection && this.selection.overlaps(c.range)) {
-            bgColor = '#009e87';
-            fgColor = '#ffffff';
+            bgColor = accent;
+            fgColor = accentForeground;
           }
           if (bgColor) {
             this.g.fillRect({

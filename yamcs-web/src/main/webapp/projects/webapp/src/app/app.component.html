@@ -32,41 +32,56 @@
         <app-search-input matTooltip="Search (/)" />
       }
 
-      <a mat-icon-button routerLink="storage" routerLinkActive="active" matTooltip="Storage">
-        <mat-icon class="icon24">perm_media</mat-icon>
+      <a mat-icon-button routerLink="storage" matTooltip="Storage">
+        <mat-icon class="icon22">perm_media</mat-icon>
       </a>
 
-      @if (user | mayAccessAdminArea) {
-        <a mat-icon-button routerLink="admin" routerLinkActive="active" matTooltip="Admin area">
-          <mat-icon class="icon24">security</mat-icon>
+      @if (user$ | async | mayAccessAdminArea) {
+        <a mat-icon-button routerLink="admin" matTooltip="Admin area">
+          <mat-icon class="icon22">security</mat-icon>
         </a>
       }
 
-      <button mat-icon-button [matMenuTriggerFor]="moreMenu">
-        <mat-icon class="icon24">more_vert</mat-icon>
-      </button>
+      @if (siteLinks.length) {
+        <a mat-icon-button matTooltip="Links">
+          <mat-icon class="icon22">bookmarks</mat-icon>
+        </a>
+        <mat-menu #linkMenu="matMenu" overlapTrigger="false" xPosition="before" class="ya-menu">
+          @for (link of siteLinks; track link) {
+            <a mat-menu-item [href]="link.url" [target]="link.external ? '_blank' : '_self'">
+              <div style="display: flex; align-items: center; width: 100%">
+                <span>Go to {{ link.label }}</span>
+                <span style="flex: 1 1 auto; min-width: 10px"></span>
+                <mat-icon class="icon16">open_in_new</mat-icon>
+              </div>
+            </a>
+          }
+        </mat-menu>
+      }
 
-      <button mat-button [matMenuTriggerFor]="userMenu">
-        <mat-icon class="icon24">support_agent</mat-icon>
-        &nbsp;&nbsp;{{ user.getDisplayName() || user.getName() | uppercase }}
+      <button
+        mat-button
+        [matMenuTriggerFor]="userMenu"
+        class="user-button"
+        matTooltip="Profile and settings">
+        <mat-icon class="icon22">support_agent</mat-icon>
+        {{ user.getDisplayName() || user.getName() }} ▾
       </button>
     }
 
-    <mat-menu #moreMenu="matMenu" overlapTrigger="false" xPosition="before" class="ya-menu">
-      <button mat-menu-item [matMenuTriggerFor]="timezoneMenu">Timezone</button>
-      <mat-divider />
-      @if (siteLinks.length) {
-        @for (link of siteLinks; track link) {
-          <a mat-menu-item [href]="link.url" [target]="link.external ? '_blank' : '_self'">
-            <div style="display: flex; align-items: center; width: 100%">
-              <span>Go to {{ link.label }}</span>
-              <span style="flex: 1 1 auto; min-width: 10px"></span>
-              <mat-icon class="icon16">open_in_new</mat-icon>
-            </div>
-          </a>
-        }
-        <mat-divider />
+    <mat-menu #userMenu="matMenu" overlapTrigger="false" xPosition="before" class="ya-menu">
+      <a mat-menu-item routerLink="profile" routerLinkActive="active">Profile</a>
+      @if (enableAppearanceBeta) {
+        <button mat-menu-item [matMenuTriggerFor]="appearanceMenu">Appearance</button>
       }
+      <button mat-menu-item [matMenuTriggerFor]="timezoneMenu">Timezone</button>
+      @if (authInfo.requireAuthentication) {
+        <a mat-menu-item (click)="logout()">
+          <mat-icon>exit_to_app</mat-icon>
+          Sign out
+        </a>
+      }
+      <mat-divider />
       <a mat-menu-item href="https://docs.yamcs.org" target="_blank">
         <div style="display: flex; align-items: center; width: 100%">
           <span>Online documentation</span>
@@ -75,6 +90,22 @@
         </div>
       </a>
     </mat-menu>
+
+    <mat-menu #appearanceMenu="matMenu" class="ya-menu">
+      <button mat-menu-item (click)="setTheme('light')">
+        <mat-icon>{{ themePreference() === "light" ? "check" : "" }}</mat-icon>
+        Light
+      </button>
+      <button mat-menu-item (click)="setTheme('dark')">
+        <mat-icon>{{ themePreference() === "dark" ? "check" : "" }}</mat-icon>
+        Dark
+      </button>
+      <button mat-menu-item (click)="setTheme('system')">
+        <mat-icon>{{ themePreference() === "system" ? "check" : "" }}</mat-icon>
+        System
+      </button>
+    </mat-menu>
+
     <mat-menu #timezoneMenu="matMenu" class="ya-menu">
       <button mat-menu-item (click)="setUTC(true)">
         <mat-icon>{{ utc() ? "check" : "" }}</mat-icon>
@@ -84,19 +115,6 @@
         <mat-icon>{{ utc() ? "" : "check" }}</mat-icon>
         Local
       </button>
-    </mat-menu>
-
-    <mat-menu #userMenu="matMenu" overlapTrigger="false" xPosition="before" class="ya-menu">
-      <a mat-menu-item routerLink="profile" routerLinkActive="active">
-        <mat-icon>account_box</mat-icon>
-        &nbsp;Profile
-      </a>
-      @if (authInfo.requireAuthentication) {
-        <a mat-menu-item (click)="logout()">
-          <mat-icon>exit_to_app</mat-icon>
-          Sign out
-        </a>
-      }
     </mat-menu>
   </mat-toolbar-row>
 </mat-toolbar>

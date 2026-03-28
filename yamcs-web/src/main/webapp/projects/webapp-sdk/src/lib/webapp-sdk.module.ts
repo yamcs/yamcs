@@ -83,8 +83,10 @@ import { YaProgress } from './components/progress/progress.component';
 import { YaSearchFilter } from './components/search-filter/search-filter.component';
 import { YaSearchFilter2 } from './components/search-filter2/search-filter2.component';
 import { YaSelect } from './components/select/select.component';
-import { YaSidebarNavGroup } from './components/sidebar/sidebar-nav-group.component';
-import { YaSidebarNavItem } from './components/sidebar/sidebar-nav-item.component';
+import { YaSidenavDivider } from './components/sidenav/sidenav-divider.component';
+import { YaSidenavGroup } from './components/sidenav/sidenav-group.component';
+import { YaSidenavItem } from './components/sidenav/sidenav-item.component';
+import { YaSidenav } from './components/sidenav/sidenav.component';
 import { YaSlideToggle } from './components/slide-toggle/slide-toggle.component';
 import { YaSliderInput } from './components/slider-input/slider-input.component';
 import { YaStepperStepActions } from './components/stepper/stepper-step-actions.component';
@@ -242,8 +244,10 @@ const sharedComponents = [
   YaSearchFilter,
   YaSearchFilter2,
   YaSelect,
-  YaSidebarNavGroup,
-  YaSidebarNavItem,
+  YaSidenav,
+  YaSidenavDivider,
+  YaSidenavGroup,
+  YaSidenavItem,
   YaSliderInput,
   YaSlideToggle,
   YaStepper,

@@ -19,41 +19,42 @@ $ya-theme: mat.define-theme(
   @include mat.all-component-themes($ya-theme);
 
   & {
-    --mat-app-background-color: #ffffff;
+    --mat-app-background-color: var(--y-background-color);
     --mat-sidenav-container-shape: 0;
     --mat-list-active-indicator-shape: 0;
 
-    --mat-table-background-color: #ffffff;
-    --mat-table-row-item-outline-color: rgba(0, 0, 0, 0.12);
+    --mat-table-background-color: inherit;
+    --mat-table-row-item-outline-color: var(--y-border-color);
 
-    --mat-divider-color: rgba(0, 0, 0, 0.12);
+    --mat-divider-color: var(--y-border-color);
 
     --mat-button-text-label-text-size: 14px;
     --mat-button-text-label-text-weight: 400;
     --mat-button-text-label-text-tracking: 0.0892857143em;
-    --mat-button-text-state-layer-color: #009e87;
-    --mat-button-text-label-text-color: #009e87;
+    --mat-button-text-state-layer-color: var(--y-accent);
+    --mat-button-text-label-text-color: var(--y-accent);
     --mat-button-text-with-icon-horizontal-padding: 12px;
     --mat-button-text-container-shape: 4px;
     --mat-button-text-container-height: 30px;
-    --mat-icon-button-icon-color: #009e87;
-    --mat-button-outlined-label-text-color: #009e87;
-    --mat-button-outlined-label-text-color: #009e87;
+    --mat-icon-button-icon-color: var(--y-accent);
+    --mat-button-outlined-label-text-color: var(--y-accent);
+    --mat-button-outlined-label-text-color: var(--y-accent);
+    --mat-button-text-disabled-label-text-color: var(--y-disabled-color);
 
     --mat-menu-container-color: #fff;
     --mat-menu-divider-top-spacing: 0px;
     --mat-menu-divider-bottom-spacing: 0px;
     --mat-menu-item-label-text-weight: 400;
 
-    --mat-tab-active-indicator-color: #009e87;
-    --mat-tab-active-focus-indicator-color: #009e87;
-    --mat-tab-active-focus-label-text-color: #009e87;
-    --mat-tab-active-hover-indicator-color: #009e87;
-    --mat-tab-active-hover-label-text-color: #009e87;
-    --mat-tab-active-ripple-color: #009e87;
-    --mat-tab-active-label-text-color: #009e87;
-    --mat-tab-divider-color: rgba(0, 0, 0, 0.12);
-    --mat-tab-inactive-ripple-color: #009e87;
+    --mat-tab-active-indicator-color: var(--y-accent);
+    --mat-tab-active-focus-indicator-color: var(--y-accent);
+    --mat-tab-active-focus-label-text-color: var(--y-accent);
+    --mat-tab-active-hover-indicator-color: var(--y-accent);
+    --mat-tab-active-hover-label-text-color: var(--y-accent);
+    --mat-tab-active-ripple-color: var(--y-accent);
+    --mat-tab-active-label-text-color: var(--y-accent);
+    --mat-tab-divider-color: var(--y-border-color);
+    --mat-tab-inactive-ripple-color: var(--y-accent);
     --mat-tab-inactive-label-text-color: rgba(0, 0, 0, 0.6);
     --mat-tab-inactive-focus-label-text-color: rgba(0, 0, 0, 0.6);
     --mat-tab-inactive-hover-label-text-color: rgba(0, 0, 0, 0.6);
@@ -81,9 +82,13 @@ $ya-theme: mat.define-theme(
 
     --mat-paginator-container-size: 24px;
 
-    --mat-datepicker-calendar-date-selected-state-background-color: #009e97;
-    --mat-datepicker-calendar-date-today-selected-state-outline-color: #009e97;
-    --mat-datepicker-calendar-date-today-outline-color: #009e97;
+    --mat-datepicker-calendar-date-selected-state-background-color: var(
+      --y-accent
+    );
+    --mat-datepicker-calendar-date-today-selected-state-outline-color: var(
+      --y-accent
+    );
+    --mat-datepicker-calendar-date-today-outline-color: var(--y-accent);
     --mat-datepicker-calendar-container-background-color: #fff;
     --mat-datepicker-calendar-container-elevation-shadow:
       0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0.14),
@@ -123,7 +128,7 @@ $ya-theme: mat.define-theme(
 
 .mat-mdc-dialog-container .mat-mdc-dialog-actions {
   margin-top: 12px;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  border-top: 1px solid var(--y-border-color);
 }
 
 .mat-mdc-dialog-container .mat-mdc-dialog-content {

@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  input,
-  OnDestroy,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
 import {
   AuthService,
   GlobalActivityStatus,
@@ -23,7 +18,6 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 export class ActivitiesLabelComponent implements OnDestroy {
   private connectionInfoSubscription: Subscription;
 
-  mini = input.required<boolean>();
   context$ = new BehaviorSubject<string | null>(null);
   status$ = new BehaviorSubject<GlobalActivityStatus | null>(null);
 

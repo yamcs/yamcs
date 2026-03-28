@@ -1,8 +1,9 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
+  inject,
   input,
-  Input,
   OnDestroy,
   OnInit,
   signal,
@@ -12,42 +13,40 @@ import { NavigationEnd, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { BaseComponent } from '../../abc/BaseComponent';
+import { YaSidenavGroup } from './sidenav-group.component';
+import { YaSidenav } from './sidenav.component';
 
 @Component({
-  selector: 'ya-sidebar-nav-item',
-  templateUrl: './sidebar-nav-item.component.html',
-  styleUrl: './sidebar-nav-item.component.css',
+  selector: 'ya-sidenav-item',
+  templateUrl: './sidenav-item.component.html',
+  styleUrl: './sidenav-item.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    class: 'ya-sidenav-item',
+    '[class.mini]': 'mini()',
+    '[class.subitem]': 'subitem()',
+    '[class.active]': 'active()',
+  },
   imports: [MatIcon, RouterLink],
 })
-export class YaSidebarNavItem
-  extends BaseComponent
-  implements OnInit, OnDestroy
-{
-  mini = input(false);
+export class YaSidenavItem extends BaseComponent implements OnInit, OnDestroy {
+  icon = input<string>();
+  label = input<string>();
+  color = input<string>();
+  backgroundColor = input<string>();
+
   routerLink = input.required<string>();
+  queryParams = input<string>();
   activeWhen = input.required<string>();
   exact = input(false);
 
-  @Input()
-  icon: string;
+  private sidenav = inject(YaSidenav);
+  mini = this.sidenav.collapseItem;
 
-  @Input()
-  label: string;
+  private sidenavGroup = inject(YaSidenavGroup, { optional: true });
+  subitem = computed(() => !!this.sidenavGroup);
 
-  @Input()
-  queryParams: {};
-
-  @Input()
-  subitem = false;
-
-  @Input()
-  color: string;
-
-  @Input()
-  backgroundColor: string;
-
-  linkActive = signal(false);
+  active = signal(false);
 
   private routerSubscription: Subscription;
 
@@ -78,9 +77,9 @@ export class YaSidebarNavItem
         );
       }
 
-      this.linkActive.set(urlWithoutParams === activeWhen);
+      this.active.set(urlWithoutParams === activeWhen);
     } else {
-      this.linkActive.set(url.startsWith(this.activeWhen()));
+      this.active.set(url.startsWith(this.activeWhen()));
     }
   }
 

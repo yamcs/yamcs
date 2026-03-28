@@ -19,6 +19,7 @@ import {
   Formatter,
   Preferences,
   SiteLink,
+  Theme,
   User,
   WebappSdkModule,
   YamcsService,
@@ -58,8 +59,12 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   section$: Observable<string | null>;
   focusMode$: Observable<boolean>;
   utc: Signal<boolean>;
+  themePreference = this.appearanceService.themePreference;
 
   userSubscription: Subscription;
+
+  // Incomplete: for dev use only
+  enableAppearanceBeta = false;
 
   constructor(
     private yamcs: YamcsService,
@@ -69,7 +74,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private prefs: Preferences,
     private dialog: MatDialog,
     private extensionService: ExtensionService,
-    appearanceService: AppearanceService,
+    private appearanceService: AppearanceService,
     private configService: ConfigService,
     private formatter: Formatter,
   ) {
@@ -147,6 +152,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       this.prefs.setBoolean('utc', utc);
       this.yamcs.switchContext(this.yamcs.instance, this.yamcs.processor);
     }
+  }
+
+  setTheme(theme: Theme) {
+    this.appearanceService.setTheme(theme);
   }
 
   logout() {

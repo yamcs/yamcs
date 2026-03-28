@@ -23,7 +23,7 @@
   animation-duration: 1.4s;
   animation-iteration-count: infinite;
   animation-fill-mode: both;
-  color: #009e87;
+  color: var(--y-accent);
 }
 
 .dot2 {
