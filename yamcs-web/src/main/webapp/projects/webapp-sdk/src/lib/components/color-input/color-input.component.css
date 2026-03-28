@@ -16,7 +16,7 @@ span.color {
 }
 
 span.action {
-  color: #009e87;
+  color: var(--y-accent);
   cursor: pointer;
   text-decoration: underline;
 }

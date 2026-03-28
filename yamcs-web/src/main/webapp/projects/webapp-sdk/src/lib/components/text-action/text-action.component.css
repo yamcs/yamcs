@@ -4,7 +4,7 @@
   column-gap: 4px;
   vertical-align: middle;
   align-items: center;
-  color: #000;
+  color: var(--y-button-foreground);
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
@@ -12,18 +12,18 @@
 }
 
 :host:hover {
-  color: #009e87;
+  color: var(--y-accent);
 }
 
 :host.active {
-  color: #009e87;
+  color: var(--y-accent);
   margin-bottom: -2px;
-  border-bottom: 2px solid #009e87;
+  border-bottom: 2px solid var(--y-accent);
 }
 
 :host.disabled {
   cursor: not-allowed;
-  color: #aaa;
+  color: var(--y-disabled-color);
 }
 
 :host.padding {

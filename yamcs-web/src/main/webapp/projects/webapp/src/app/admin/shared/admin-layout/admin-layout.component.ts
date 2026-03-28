@@ -1,10 +1,7 @@
 import {
-  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
-  computed,
   OnDestroy,
-  signal,
   Signal,
   ViewChild,
 } from '@angular/core';
@@ -12,61 +9,45 @@ import { MatSidenav } from '@angular/material/sidenav';
 import { NavigationEnd, Router } from '@angular/router';
 import {
   AuthService,
-  ConfigService,
   Preferences,
   User,
   WebappSdkModule,
-  WebsiteConfig,
 } from '@yamcs/webapp-sdk';
 import { filter, Subscription } from 'rxjs';
 import { AppAppBaseToolbarLabel } from '../../../appbase/appbase-toolbar/appbase-toolbar-label.directive';
 import { AppAppBaseToolbar } from '../../../appbase/appbase-toolbar/appbase-toolbar.component';
-import { AppCollapseSidebar } from '../../../appbase/collapse-sidebar/collapse-sidebar.component';
 
 @Component({
   templateUrl: './admin-layout.component.html',
   styleUrl: './admin-layout.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    AppAppBaseToolbar,
-    AppAppBaseToolbarLabel,
-    AppCollapseSidebar,
-    WebappSdkModule,
-  ],
+  imports: [AppAppBaseToolbar, AppAppBaseToolbarLabel, WebappSdkModule],
   host: {
-    '[class.sidenav-hover]': 'sidenavHover()',
-    '[class.mini]': 'collapsed()',
-    '[class.no-transition]': '!pageLoaded()',
+    '[class.collapsed]': 'collapsed()',
   },
 })
-export class AdminLayoutComponent implements AfterViewInit, OnDestroy {
+export class AdminLayoutComponent implements OnDestroy {
   @ViewChild(MatSidenav)
   sidenav: MatSidenav;
 
   user: User;
-  config: WebsiteConfig;
 
   userManagementActive = false;
   userManagementExpanded = false;
   rocksDbActive = false;
   rocksDbExpanded = false;
 
-  pageLoaded = signal(false);
   collapsed: Signal<boolean>;
-  sidenavHover = signal(false);
-  collapseItem = computed(() => this.collapsed() && !this.sidenavHover());
 
   private routerSubscription: Subscription;
 
   constructor(
-    configService: ConfigService,
     authService: AuthService,
     private prefs: Preferences,
     router: Router,
   ) {
-    this.config = configService.getConfig();
     this.user = authService.getUser()!;
-    this.collapsed = this.prefs.watchBoolean('miniSidebar', false);
+    this.collapsed = this.prefs.watchBoolean('sidenav.collapsed', false);
 
     this.routerSubscription = router.events
       .pipe(filter((evt) => evt instanceof NavigationEnd))
@@ -85,11 +66,6 @@ export class AdminLayoutComponent implements AfterViewInit, OnDestroy {
       });
   }
 
-  ngAfterViewInit(): void {
-    // Avoid sidebar FOUC when actually collapsed
-    requestAnimationFrame(() => this.pageLoaded.set(true));
-  }
-
   private collapseAllGroups() {
     this.userManagementExpanded = false;
     this.rocksDbExpanded = false;
@@ -105,21 +81,6 @@ export class AdminLayoutComponent implements AfterViewInit, OnDestroy {
     const expanded = this.rocksDbExpanded;
     this.collapseAllGroups();
     this.rocksDbExpanded = !expanded;
-  }
-
-  toggleCollapse() {
-    const mini = !this.collapsed();
-    this.prefs.setBoolean('miniSidebar', mini);
-    if (mini) {
-      this.sidenavHover.set(false); // Close sidebar even if hovered
-    }
-  }
-
-  collapseSidebarIfMini() {
-    const mini = this.collapsed();
-    if (mini) {
-      this.sidenavHover.set(false); // Close sidebar even if hovered
-    }
   }
 
   showRocksDbItem() {

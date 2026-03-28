@@ -3,8 +3,9 @@
   align-items: center;
   min-height: 48px;
   font-weight: 400;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid var(--y-border-color);
   background-color: var(--y-background-color);
+  color: var(--y-foreground-color);
   box-sizing: content-box;
   padding: 0 16px 0 24px;
   font:
@@ -25,18 +26,13 @@
   column-gap: 8px;
 }
 
-.drop-down {
-  border-left: 1px solid #d3d3d3;
-  min-width: 0;
-  padding: 0 8px;
-}
-
 .hide {
   visibility: hidden;
 }
 
 .range,
 .processor-time {
+  color: var(--y-foreground-color);
   font-size: 12px;
   letter-spacing: 1.07143px;
 }

@@ -1,5 +1,6 @@
 :host {
-  background-color: #fcfcfc;
+  background-color: var(--y-detail-pane-background-color);
+  color: var(--y-detail-pane-foreground-color);
   float: right;
   height: 100%;
   width: 450px;

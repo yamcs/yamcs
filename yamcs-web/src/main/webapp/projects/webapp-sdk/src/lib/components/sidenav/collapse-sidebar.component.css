@@ -2,7 +2,7 @@
   display: flex;
   height: 32px;
   align-items: center;
-  color: #fff;
+  color: var(--y-sidenav-color);
   font-family: Roboto, sans-serif;
   font-size: 12px;
   line-height: 32px;
@@ -17,7 +17,7 @@ mat-icon {
   line-height: 24px;
   text-align: center;
   font-size: 18px;
-  color: #fff;
+  color: var(--y-sidenav-color);
 }
 
 .label {

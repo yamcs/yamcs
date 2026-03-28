@@ -6,7 +6,7 @@
 mat-toolbar-row {
   height: 48px;
   box-shadow: 0 0.125rem 0.3125rem rgba(0, 0, 0, 0.26);
-  z-index: 2;
+  z-index: 2000;
   padding-left: 6px;
   padding-right: calc(24px - 16px);
   --mat-icon-button-icon-color: #fff;
@@ -82,12 +82,17 @@ mat-toolbar-row {
   overflow: hidden;
 }
 
-.mat-mdc-button:hover {
+.user-button {
+  background-color: var(--y-accent);
+  border-radius: 25px;
+}
+
+.mat-mdc-button:hover:not(.user-button) {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-.material-symbols.icon24 {
-  font-size: 24px !important;
-  height: 24px !important;
-  width: 24px !important;
+.material-symbols.icon22 {
+  font-size: 22px !important;
+  height: 22px !important;
+  width: 22px !important;
 }

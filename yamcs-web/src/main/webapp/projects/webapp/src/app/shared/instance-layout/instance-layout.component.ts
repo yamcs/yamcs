@@ -1,13 +1,10 @@
 import {
-  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
-  computed,
   effect,
   ElementRef,
   OnDestroy,
   Signal,
-  signal,
   ViewChild,
 } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
@@ -27,7 +24,6 @@ import {
 } from '@yamcs/webapp-sdk';
 import { Observable, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { AppCollapseSidebar } from '../../appbase/collapse-sidebar/collapse-sidebar.component';
 import { ActivitiesLabelComponent } from '../activities-label/activities-label.component';
 import { AlarmLabelComponent } from '../alarm-label/alarm-label.component';
 
@@ -35,19 +31,12 @@ import { AlarmLabelComponent } from '../alarm-label/alarm-label.component';
   templateUrl: './instance-layout.component.html',
   styleUrl: './instance-layout.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    ActivitiesLabelComponent,
-    AlarmLabelComponent,
-    AppCollapseSidebar,
-    WebappSdkModule,
-  ],
+  imports: [ActivitiesLabelComponent, AlarmLabelComponent, WebappSdkModule],
   host: {
-    '[class.sidenav-hover]': 'sidenavHover()',
-    '[class.mini]': 'collapsed()',
-    '[class.no-transition]': '!pageLoaded()',
+    '[class.collapsed]': 'collapsed()',
   },
 })
-export class InstanceLayoutComponent implements AfterViewInit, OnDestroy {
+export class InstanceLayoutComponent implements OnDestroy {
   @ViewChild('pageContent')
   pageContent: ElementRef<HTMLElement>;
 
@@ -75,12 +64,9 @@ export class InstanceLayoutComponent implements AfterViewInit, OnDestroy {
   mdbItems: NavItem[] = [];
   extraItems: NavItem[] = [];
 
-  pageLoaded = signal(false);
   collapsed: Signal<boolean>;
-  sidenavHover = signal(false);
   fullScreenMode$: Observable<boolean>;
   focusMode$: Observable<boolean>;
-  collapseItem = computed(() => this.collapsed() && !this.sidenavHover());
 
   private routerSubscription: Subscription;
 
@@ -89,13 +75,13 @@ export class InstanceLayoutComponent implements AfterViewInit, OnDestroy {
     configService: ConfigService,
     authService: AuthService,
     appearanceService: AppearanceService,
-    private prefs: Preferences,
+    prefs: Preferences,
     extensionService: ExtensionService,
     messageService: MessageService,
     router: Router,
   ) {
     this.connectionInfo$ = this.yamcs.connectionInfo$;
-    this.collapsed = prefs.watchBoolean('miniSidebar', false);
+    this.collapsed = prefs.watchBoolean('sidenav.collapsed', false);
 
     this.fullScreenMode$ = appearanceService.fullScreenMode$;
     this.focusMode$ = appearanceService.focusMode$;
@@ -243,11 +229,6 @@ export class InstanceLayoutComponent implements AfterViewInit, OnDestroy {
       });
   }
 
-  ngAfterViewInit(): void {
-    // Avoid sidebar FOUC when actually collapsed
-    requestAnimationFrame(() => this.pageLoaded.set(true));
-  }
-
   private collapseAllGroups() {
     this.telemetryExpanded = false;
     this.commandingExpanded = false;
@@ -284,21 +265,6 @@ export class InstanceLayoutComponent implements AfterViewInit, OnDestroy {
     const expanded = this.timelineExpanded;
     this.collapseAllGroups();
     this.timelineExpanded = !expanded;
-  }
-
-  toggleCollapse() {
-    const mini = !this.collapsed();
-    this.prefs.setBoolean('miniSidebar', mini);
-    if (mini) {
-      this.sidenavHover.set(false); // Close sidebar even if hovered
-    }
-  }
-
-  collapseSidebarIfMini() {
-    const mini = this.collapsed();
-    if (mini) {
-      this.sidenavHover.set(false); // Close sidebar even if hovered
-    }
   }
 
   showLinksItem() {

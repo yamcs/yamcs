@@ -7,7 +7,10 @@ html {
 
   --y-accent: rgb(var(--y-accent-rgb));
   --y-accent-foreground: #ffffff;
+  --y-active-background: rgba(var(--y-contrast-rgb), 0.1);
   --y-border-color: rgba(var(--y-contrast-rgb), 0.1);
+  --y-hint-foreground: #707070;
+  --y-disabled-color: rgba(0, 0, 0, 0.26);
 
   --y-scrollbar-thumb: #606060;
   --y-horizontal-scrollbar-height: 16px;
@@ -15,13 +18,71 @@ html {
   --y-vertical-scrollbar-width: 16px;
   --y-vertical-scrollbar-border: 4px;
 
-  --y-background-color: #f7f7f7;
+  --y-background-color: #ffffff;
+  --y-foreground-color: #0d0d0d;
   --y-app-bar-background-color: #212121;
   --y-warning-color: #ff8c00;
   --y-error-color: #ff0000;
+
+  --y-attr-label-foreground-color: #000000;
+  --y-attr-content-foreground-color: rgba(0, 0, 0, 0.654);
+
+  --y-button-foreground: rgba(0, 0, 0, 0.75);
+  --y-button-hover-background: rgba(0, 0, 0, 0.08);
+
+  --y-detail-pane-background-color: #fcfcfc;
+  --y-detail-pane-foreground-color: var(--y-foreground-color);
+
+  --y-dl-horizontal-dt-foreground-color: var(--y-attr-label-foreground-color);
+  --y-dl-horizontal-dd-foreground-color: var(--y-attr-content-foreground-color);
+
+  --y-sidenav-background: #f7f7f7;
+  --y-sidenav-border-color: var(--y-border-color);
+  --y-sidenav-scrollbar-color: rgba(0, 0, 0, 0.2);
+  --y-sidenav-scrollbar-hover-color: rgba(0, 0, 0, 0.4);
+  --y-sidenav-color: rgba(0, 0, 0, 0.654);
+  --y-sidenav-item-height: 32px;
+  --y-sidenav-width: 220px;
+  --y-sidenav-collapsed-width: var(--y-sidenav-item-height);
+  --y-sidenav-font-size: 12px;
+
+  --y-tab-foreground: rgba(0, 0, 0, 0.6);
+  --y-tab-hover-background: rgba(255, 255, 255, 0.04);
+
+  --y-table-background: inherit;
+  --y-table-foreground: rgba(0, 0, 0, 0.654);
+  --y-table-header-background: #f7f7f7;
+  --y-table-header-foreground: #707070;
+  --y-table-hover-background: #fafafa;
+  --y-table-border-color: var(--y-border-color);
 }
 
 html.dark {
-  --y-accent-rgb: 62, 166, 255;
+  --y-accent-rgb: 209, 169, 11;
   --y-contrast-rgb: var(--y-white-rgb);
+
+  --y-hint-foreground: rgba(255, 255, 255, 0.6);
+  --y-disabled-color: rgba(255, 255, 255, 0.38);
+
+  --y-background-color: #000000;
+  --y-foreground-color: #e8eaed;
+
+  --y-attr-label-foreground-color: #ffffff;
+  --y-attr-content-foreground-color: rgba(255, 255, 255, 0.654);
+
+  --y-button-foreground: rgba(255, 255, 255, 0.75);
+  --y-button-hover-background: rgba(255, 255, 255, 0.08);
+
+  --y-detail-pane-background-color: #282828;
+
+  --y-sidenav-background: #181818;
+  --y-sidenav-color: #ffffff;
+
+  --y-tab-foreground: rgba(255, 255, 255, 0.6);
+  --y-tab-hover-background: rgba(0, 0, 0, 0.04);
+
+  --y-table-foreground: #e8eaed;
+  --y-table-header-background: rgb(41, 43, 46);
+  --y-table-header-foreground: rgba(255, 255, 255, 0.6);
+  --y-table-hover-background: #1f1f1f;
 }

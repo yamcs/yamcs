@@ -21,7 +21,7 @@
 .ya-form input[type="password"]:focus,
 .ya-input:focus,
 .ya-form textarea:focus {
-  border-color: #009e87;
+  border-color: var(--y-accent);
 }
 
 .ya-form input[type="radio"] {

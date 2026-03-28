@@ -2,7 +2,7 @@ import { LowerCasePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  input,
+  inject,
   OnDestroy,
 } from '@angular/core';
 import {
@@ -12,6 +12,7 @@ import {
   GlobalAlarmStatusSubscription,
   WebappSdkModule,
   YamcsService,
+  YaSidenav,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, map, Subscription } from 'rxjs';
 
@@ -25,7 +26,6 @@ import { BehaviorSubject, map, Subscription } from 'rxjs';
 export class AlarmLabelComponent implements OnDestroy {
   private connectionInfoSubscription: Subscription;
 
-  mini = input.required<boolean>();
   context$ = new BehaviorSubject<string | null>(null);
   status$ = new BehaviorSubject<GlobalAlarmStatus | null>(null);
   miniBackgroundColor$ = this.status$.pipe(
@@ -43,6 +43,9 @@ export class AlarmLabelComponent implements OnDestroy {
       }
     }),
   );
+
+  private sidenav = inject(YaSidenav);
+  mini = this.sidenav.collapseItem;
 
   private statusSubscription: GlobalAlarmStatusSubscription;
 

@@ -15,7 +15,6 @@ import { BucketPageTabsComponent } from '../bucket-page-tabs/bucket-page-tabs.co
 
 @Component({
   templateUrl: './bucket-properties.component.html',
-  styleUrl: './bucket-properties.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AppStorageToolbar,
@@ -38,16 +37,6 @@ export class BucketPropertiesComponent {
     this.storageClient.getBucket(this.name).then((bucket) => {
       this.bucket$.next(bucket);
     });
-  }
-
-  bucketSizePercentage(bucket: Bucket, ceil = false) {
-    var pct = (100 * bucket.size) / bucket.maxSize;
-    return ceil ? Math.min(100, pct) : pct;
-  }
-
-  objectCountPercentage(bucket: Bucket, ceil = false) {
-    var pct = (100 * bucket.numObjects) / bucket.maxObjects;
-    return ceil ? Math.min(100, pct) : pct;
   }
 
   zeroOrMore(value: number) {

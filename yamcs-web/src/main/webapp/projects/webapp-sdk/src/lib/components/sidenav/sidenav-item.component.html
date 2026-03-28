@@ -1,0 +1,32 @@
+@if (mini()) {
+  <a
+    [routerLink]="routerLink()"
+    [queryParams]="queryParams()"
+    [style.backgroundColor]="backgroundColor() ? backgroundColor() + ' !important' : undefined"
+    [style.color]="color() ? color() + ' !important' : undefined">
+    @if (icon()) {
+      <mat-icon class="item-icon">
+        {{ icon() }}
+      </mat-icon>
+    }
+  </a>
+} @else {
+  <a
+    [routerLink]="routerLink()"
+    [queryParams]="queryParams()"
+    [style.color]="color() ? color() + ' !important' : undefined">
+    @if (subitem()) {
+      <div style="display: inline-block; width: 34px"></div>
+    }
+    @if (icon()) {
+      <mat-icon class="item-icon">
+        {{ icon() }}
+      </mat-icon>
+    }
+
+    <div class="item-content">
+      {{ label() }}
+      <ng-content />
+    </div>
+  </a>
+}

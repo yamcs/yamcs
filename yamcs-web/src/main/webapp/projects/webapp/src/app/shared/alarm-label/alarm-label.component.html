@@ -1,10 +1,9 @@
 @if (context$ | async; as context) {
-  <ya-sidebar-nav-item
+  <ya-sidenav-item
     activeWhen="/alarms"
     routerLink="/alarms"
     [queryParams]="{ c: yamcs.context }"
     icon="notifications_none"
-    [mini]="mini()"
     label="Alarms"
     [backgroundColor]="mini() ? (miniBackgroundColor$ | async) : undefined">
     @if (status$ | async; as status) {
@@ -16,5 +15,5 @@
         <div class="count acked">{{ status.acknowledgedCount }} acked</div>
       }
     }
-  </ya-sidebar-nav-item>
+  </ya-sidenav-item>
 }

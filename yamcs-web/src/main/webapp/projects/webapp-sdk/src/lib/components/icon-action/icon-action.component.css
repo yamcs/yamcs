@@ -3,7 +3,7 @@
   display: inline-flex;
   vertical-align: middle;
   align-items: center;
-  color: #000;
+  color: var(--y-button-foreground);
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
@@ -12,12 +12,12 @@
 }
 
 :host:hover {
-  color: #009e87;
+  color: var(--y-accent);
 }
 
 :host.disabled {
   cursor: not-allowed;
-  color: #aaa;
+  color: var(--y-disabled-color);
 }
 
 :host.padding {
@@ -33,6 +33,6 @@
 }
 
 .material-symbols:hover {
-  background-color: rgba(0, 0, 0, 0.08);
+  background-color: var(--y-button-hover-background);
   border-radius: 50%;
 }

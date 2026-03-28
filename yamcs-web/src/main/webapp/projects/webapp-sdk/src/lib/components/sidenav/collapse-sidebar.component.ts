@@ -1,13 +1,13 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { WebappSdkModule } from '@yamcs/webapp-sdk';
+import { MatIcon } from '@angular/material/icon';
 
 @Component({
-  selector: 'app-collapse-sidebar',
+  selector: 'ya-collapse-sidebar',
   templateUrl: './collapse-sidebar.component.html',
   styleUrl: './collapse-sidebar.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [WebappSdkModule],
+  imports: [MatIcon],
 })
-export class AppCollapseSidebar {
+export class YaCollapseSidebar {
   collapsed = input.required<boolean>();
 }
