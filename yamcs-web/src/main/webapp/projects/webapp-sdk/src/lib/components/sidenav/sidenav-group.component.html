@@ -1,0 +1,22 @@
+<div class="nav-item-group" (click)="clickGroup($event)">
+  @if (!mini()) {
+    @if (expanded()) {
+      <mat-icon class="arrow">arrow_drop_down</mat-icon>
+    } @else {
+      <mat-icon class="arrow">arrow_right</mat-icon>
+    }
+  }
+  <mat-icon class="item-icon" [class.svg-icon]="!!svgIcon()" [svgIcon]="svgIcon()">
+    {{ icon() }}
+  </mat-icon>
+  @if (!mini()) {
+    <div class="item-content">
+      {{ label() }}
+    </div>
+  }
+</div>
+@if (expanded() && !mini()) {
+  <div class="nav-item-group-items">
+    <ng-content />
+  </div>
+}

@@ -35,7 +35,7 @@
     <button
       mat-menu-item
       (click)="writeValue(option.id())"
-      [matTooltip]="option.description"
+      [matTooltip]="option.description()"
       matTooltipPosition="right">
       <mat-icon [style.visibility]="isSelected(option.id()) ? 'visible' : 'hidden'">check</mat-icon>
       {{ option.label() }}

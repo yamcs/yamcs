@@ -1,16 +1,12 @@
-:host {
-  --y-navbar-item-height: 32px;
-}
-
 .nav-item-group {
   display: flex;
   align-items: center;
   flex-direction: row;
-  height: var(--y-navbar-item-height);
+  height: var(--y-sidenav-item-height);
   padding: 0 16px;
-  color: #fff;
+  color: var(--y-sidenav-color);
   font-family: Roboto, sans-serif;
-  font-size: 12px;
+  font-size: var(--y-sidenav-font-size);
   line-height: 1.5rem;
   letter-spacing: 0.031rem;
   text-overflow: ellipsis;
@@ -21,30 +17,29 @@
   -webkit-user-select: none;
 }
 
-.nav-item-group.mini {
+:host.mini .nav-item-group {
   padding: 0 4px;
 }
 
-.nav-item-group.active {
-  background-color: rgba(255, 255, 255, 0.1);
+:host.active .nav-item-group {
+  background-color: var(--y-active-background);
 }
 
-.mini.nav-item-group.active,
-.mini.nav-item-group.active:hover,
-.mini.nav-item-group.active:focus,
-.mini.nav-item-group.active.menu-open {
-  background-color: #009e87 !important;
+:host.mini.active .nav-item-group,
+:host.mini.active .nav-item-group:hover,
+:host.mini.active .nav-item-group:focus {
+  background-color: var(--y-accent) !important;
+  color: var(--y-accent-foreground);
 }
 
 .nav-item-group:hover,
-.nav-item-group:focus,
-.nav-item-group.menu-open {
-  background-color: rgba(255, 255, 255, 0.1) !important;
+.nav-item-group:focus {
+  background-color: var(--y-active-background) !important;
 }
 
 .arrow {
   position: absolute;
-  top: calc((var(--y-navbar-item-height) - 16px) / 2);
+  top: calc((var(--y-sidenav-item-height) - 16px) / 2);
   left: 0;
   font-size: 16px !important;
   height: 16px !important;

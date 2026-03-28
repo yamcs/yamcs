@@ -1,0 +1,18 @@
+<div class="sidenav-content">
+  <ng-content />
+
+  <div style="flex: 1 1 auto"></div>
+
+  @if (!collapseItem()) {
+    <ya-collapse-sidebar
+      (click)="toggleCollapse()"
+      [collapsed]="collapsed()"
+      style="margin-top: 32px" />
+
+    @if (config.logo) {
+      <div class="navbar-logo">
+        <img [src]="config.logo" />
+      </div>
+    }
+  }
+</div>
