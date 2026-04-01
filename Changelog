@@ -1,3 +1,20 @@
+Version 5.12.6 released 
+- UI: Full reimplementation of chart tab. Added features:
+  - Customize Y-axis zoom range
+  - Allow rendering the raw values of a parameter
+  - Remember chart configuration on browser refresh
+  - New functions: fill plot, step-connect points, zero-centering
+- UI: Left sidebar was restyled a bit, and can now be collapsed to icon-only mode
+- UI: Top-right navigation options take much less space
+- UI: Added a user preference to display in UTC or local (defaulting to the server-configured preference).
+- UI: Fixes issues with the progress bar length #1075
+- Allow CSV exports to make use of Parameter Archive instead of only packet replay
+- Fix precision issue with setting local double parameter #1081
+- Change default backfill policies. When using the backfiller, the previous default was introducing too much delay for dump imports.
+- Add optional granular permission management for objects in buckets
+- Allow SDLS for non UDP links
+
+
 Version 5.12.5 released 9-Feb-2025
 - Parameter subscription: Handle forbidden parameters the same way as unknown parameters
 - Fix mirror issues with event alarms
