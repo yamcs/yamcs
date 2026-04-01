@@ -66,8 +66,8 @@ accessRules (list of maps)
           accessRules:
             - role: Operator
               read:
-                - *.opi
-                - *.js
+                - "*.opi"
+                - "*.js"
 
 
 Bucket Providers
