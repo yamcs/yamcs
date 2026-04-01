@@ -191,12 +191,17 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
 
     @Override
     public int getBinaryLength(PreparedCommand pc) {
-        byte[] binary = pc.getBinary();
+        int binaryLength = binary.length;
         if (hasCrc(pc)) {
-            return binary.length + 2;
-        } else {
-            return binary.length;
+            binaryLength += 2;
         }
+        if (pc.getAttribute("pus11ScheduleAt") != null) {
+            binaryLength += 13 + timeEncoder.getEncodedLength();
+            if (pus11Crc) {
+                binaryLength += 2;
+            }
+        }
+        return binaryLength;
     }
 
     private boolean hasCrc(PreparedCommand pc) {
