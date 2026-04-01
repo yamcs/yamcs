@@ -12,6 +12,7 @@
 
   <properties>
     <javaModuleName>org.yamcs.core</javaModuleName>
+    <!--suppress UnresolvedMavenProperty -->
     <sonar.coverage.jacoco.xmlReportPaths>${basedir}/../${aggregate.report.dir}</sonar.coverage.jacoco.xmlReportPaths>
 
     <!-- If empty, revision is derived using git command,
