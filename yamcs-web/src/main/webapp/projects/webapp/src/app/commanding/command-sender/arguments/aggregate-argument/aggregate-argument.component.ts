@@ -99,7 +99,12 @@ export class AggregateArgumentComponent implements OnInit {
     if (this.index === undefined) {
       this.controlName = this.name;
       formGroup = new FormGroup({});
-      parent.setControl(this.name, formGroup);
+      parent.setControl(this.name, formGroup, {
+        // Avoid issues with nested aggregates inside arrays.
+        // Don't want to emit an event before the members
+        // were added to the formGroup.
+        emitEvent: false,
+      });
     } else {
       this.controlName = String(this.index);
       const index = Number(this.index);
