@@ -2,29 +2,23 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
-  effect,
   ElementRef,
   Input,
+  OnDestroy,
   ViewChild,
 } from '@angular/core';
-import { indentWithTab } from '@codemirror/commands';
-import { java } from '@codemirror/lang-java';
-import { javascript } from '@codemirror/lang-javascript';
-import { python } from '@codemirror/lang-python';
-import { Compartment, EditorState, Extension } from '@codemirror/state';
-import { oneDark } from '@codemirror/theme-one-dark';
-import { keymap } from '@codemirror/view';
 import {
   Algorithm,
   AlgorithmOverrides,
   AlgorithmStatus,
-  AppearanceService,
   AuthService,
+  CodeMirror,
+  CodeMirrorLanguage,
+  CodeMirrorService,
   MessageService,
   WebappSdkModule,
   YamcsService,
 } from '@yamcs/webapp-sdk';
-import { basicSetup, EditorView } from 'codemirror';
 import { BehaviorSubject } from 'rxjs';
 import { MarkdownComponent } from '../../shared/markdown/markdown.component';
 import { AlgorithmStatusComponent } from '../algorithm-status/algorithm-status.component';
@@ -36,7 +30,7 @@ import { AlgorithmStatusComponent } from '../algorithm-status/algorithm-status.c
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AlgorithmStatusComponent, MarkdownComponent, WebappSdkModule],
 })
-export class AlgorithmDetailComponent implements AfterViewInit {
+export class AlgorithmDetailComponent implements AfterViewInit, OnDestroy {
   @ViewChild('text')
   textContainer: ElementRef<HTMLDivElement>;
 
@@ -48,28 +42,15 @@ export class AlgorithmDetailComponent implements AfterViewInit {
 
   overrides$ = new BehaviorSubject<AlgorithmOverrides | null>(null);
 
-  private editorView: EditorView;
-  private themeCompartment = new Compartment();
+  codeMirror?: CodeMirror;
   dirty$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     readonly yamcs: YamcsService,
     private messageService: MessageService,
     private authService: AuthService,
-    appearanceService: AppearanceService,
-  ) {
-    effect(() => {
-      const isDark = appearanceService.dark();
-
-      if (!this.editorView) {
-        return;
-      }
-      const newTheme = isDark ? oneDark : [];
-      this.editorView.dispatch({
-        effects: this.themeCompartment.reconfigure(newTheme),
-      });
-    });
-  }
+    private codeMirrorService: CodeMirrorService,
+  ) {}
 
   ngAfterViewInit() {
     if (this.algorithm.text) {
@@ -84,56 +65,29 @@ export class AlgorithmDetailComponent implements AfterViewInit {
   }
 
   private initializeEditor() {
-    const extensions: Extension[] = [
-      basicSetup,
-      keymap.of([indentWithTab]),
-      EditorView.lineWrapping,
-    ];
-
-    if (this.isChangeMissionDatabaseEnabled()) {
-      extensions.push(
-        EditorView.updateListener.of((update) => {
-          if (update.docChanged) {
-            this.dirty$.next(true);
-          }
-        }),
-      );
-    } else {
-      extensions.push(EditorState.readOnly.of(true));
-    }
-
-    const baseTheme = EditorView.theme({
-      '&': { height: '300px', fontSize: '12px' },
-      '.cm-scroller': {
-        overflow: 'auto',
-        fontFamily: "'Roboto Mono', monospace",
-      },
-    });
-    extensions.push(baseTheme);
-    extensions.push(this.themeCompartment.of([]));
-
+    let language: CodeMirrorLanguage;
     switch (this.algorithm.language.toLowerCase()) {
       case 'java-expression':
-        extensions.push(java());
+        language = 'java';
         break;
       case 'javascript':
-        extensions.push(javascript());
+        language = 'javascript';
         break;
       case 'python':
-        extensions.push(python());
+        language = 'python';
         break;
       default:
         console.warn(`Unexpected language ${this.algorithm.language}`);
+        language = 'plain';
     }
 
-    const state = EditorState.create({
-      doc: this.algorithm.text,
-      extensions,
-    });
-
-    this.editorView = new EditorView({
-      state,
+    this.codeMirror = this.codeMirrorService.createEditorView({
       parent: this.textContainer.nativeElement,
+      height: '300px',
+      readonly: this.isChangeMissionDatabaseEnabled(),
+      language,
+      initialText: this.algorithm.text,
+      onDirty: (dirty) => this.dirty$.next(dirty),
     });
   }
 
@@ -146,28 +100,16 @@ export class AlgorithmDetailComponent implements AfterViewInit {
       .then((overrides) => {
         this.overrides$.next(overrides);
         if (overrides.textOverride) {
-          this.updateEditorValue(overrides.textOverride.text);
+          this.codeMirror?.setText(overrides.textOverride.text);
         } else {
-          this.updateEditorValue(this.algorithm.text);
+          this.codeMirror?.setText(this.algorithm.text);
         }
       })
       .catch((err) => this.messageService.showError(err));
   }
 
-  private updateEditorValue(text: string) {
-    this.editorView.dispatch({
-      changes: {
-        from: 0,
-        to: this.editorView.state.doc.length,
-        insert: text,
-      },
-    });
-
-    this.dirty$.next(false);
-  }
-
   saveTextChanges() {
-    const text = this.editorView.state.doc.toString();
+    const text = this.codeMirror?.getText() ?? '';
     const instance = this.yamcs.instance!;
     const processor = this.yamcs.processor!;
     this.yamcs.yamcsClient
@@ -188,5 +130,9 @@ export class AlgorithmDetailComponent implements AfterViewInit {
       .revertAlgorithmText(instance, processor, this.algorithm.qualifiedName)
       .then(() => this.refreshOverrides())
       .catch((err) => this.messageService.showError(err));
+  }
+
+  ngOnDestroy(): void {
+    this.codeMirror?.destroy();
   }
 }

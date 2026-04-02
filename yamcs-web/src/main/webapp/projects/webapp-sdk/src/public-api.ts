@@ -135,6 +135,7 @@ export * from './lib/print/printable.directive';
 export * from './lib/providers';
 export * from './lib/services/appearance.service';
 export * from './lib/services/auth.service';
+export * from './lib/services/codemirror.service';
 export * from './lib/services/config.service';
 export * from './lib/services/extension.service';
 export * from './lib/services/favicon.service';
