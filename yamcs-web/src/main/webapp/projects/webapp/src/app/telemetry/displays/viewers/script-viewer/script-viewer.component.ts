@@ -2,21 +2,19 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  OnDestroy,
   ViewChild,
 } from '@angular/core';
-import { indentWithTab } from '@codemirror/commands';
-import { javascript } from '@codemirror/lang-javascript';
-import { EditorState, Extension } from '@codemirror/state';
-import { keymap } from '@codemirror/view';
 import {
   AuthService,
+  CodeMirror,
+  CodeMirrorService,
   ConfigService,
   MessageService,
   StorageClient,
   WebappSdkModule,
   YamcsService,
 } from '@yamcs/webapp-sdk';
-import { EditorView, basicSetup } from 'codemirror';
 import { BehaviorSubject } from 'rxjs';
 import { Viewer } from '../Viewer';
 
@@ -33,13 +31,13 @@ import { Viewer } from '../Viewer';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
-export class ScriptViewerComponent implements Viewer {
+export class ScriptViewerComponent implements Viewer, OnDestroy {
   @ViewChild('scriptContainer')
   private scriptContainer: ElementRef<HTMLDivElement>;
 
   objectName: string;
 
-  private editorView: EditorView;
+  private codeMirror?: CodeMirror;
 
   private storageClient: StorageClient;
   private bucket: string;
@@ -51,6 +49,7 @@ export class ScriptViewerComponent implements Viewer {
     configService: ConfigService,
     private messageService: MessageService,
     private authService: AuthService,
+    private codeMirrorService: CodeMirrorService,
   ) {
     this.storageClient = yamcs.createStorageClient();
     this.bucket = configService.getDisplayBucket();
@@ -69,49 +68,14 @@ export class ScriptViewerComponent implements Viewer {
   }
 
   private initializeEditor(text: string) {
-    const extensions: Extension[] = [
-      basicSetup,
-      keymap.of([indentWithTab]),
-      javascript(),
-      EditorView.lineWrapping,
-    ];
-
-    if (this.mayManageDisplays()) {
-      extensions.push(
-        EditorView.updateListener.of((update) => {
-          if (update.docChanged) {
-            this.hasUnsavedChanges$.next(true);
-          }
-        }),
-      );
-    } else {
-      extensions.push(EditorState.readOnly.of(true));
-    }
-
-    const theme = EditorView.theme(
-      {
-        '&': {
-          width: '100%',
-          height: '100%',
-          fontSize: '12px',
-        },
-        '.cm-scroller': {
-          overflow: 'auto',
-          fontFamily: "'Roboto Mono', monospace",
-        },
-      },
-      { dark: false },
-    );
-    extensions.push(theme);
-
-    const state = EditorState.create({
-      doc: text,
-      extensions,
-    });
-
-    this.editorView = new EditorView({
-      state,
+    this.codeMirror = this.codeMirrorService.createEditorView({
       parent: this.scriptContainer.nativeElement,
+      width: '100%',
+      height: '100%',
+      readonly: !this.mayManageDisplays(),
+      language: 'javascript',
+      initialText: text,
+      onDirty: (dirty) => this.hasUnsavedChanges$.next(dirty),
     });
   }
 
@@ -128,12 +92,16 @@ export class ScriptViewerComponent implements Viewer {
   }
 
   async save() {
-    const text = this.editorView.state.doc.toString();
+    const text = this.codeMirror?.getText() ?? '';
     const b = new Blob([text], { type: 'text/javascript' });
     return this.storageClient
       .uploadObject(this.bucket, this.objectName, b)
       .then(() => {
         this.hasUnsavedChanges$.next(false);
       });
+  }
+
+  ngOnDestroy(): void {
+    this.codeMirror?.destroy();
   }
 }
