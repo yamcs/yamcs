@@ -12,8 +12,8 @@
   "sideEffects": false,
   "devDependencies": {
     "@lezer/generator": "^1.7.1",
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "mocha": "^10.7.3",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "mocha": "^11.7.5",
     "rollup": "^4.21.2"
   }
 }
