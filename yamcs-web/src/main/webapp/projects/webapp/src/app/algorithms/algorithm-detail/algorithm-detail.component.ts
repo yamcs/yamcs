@@ -2,6 +2,7 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  effect,
   ElementRef,
   Input,
   ViewChild,
@@ -10,18 +11,20 @@ import { indentWithTab } from '@codemirror/commands';
 import { java } from '@codemirror/lang-java';
 import { javascript } from '@codemirror/lang-javascript';
 import { python } from '@codemirror/lang-python';
-import { EditorState, Extension } from '@codemirror/state';
+import { Compartment, EditorState, Extension } from '@codemirror/state';
+import { oneDark } from '@codemirror/theme-one-dark';
 import { keymap } from '@codemirror/view';
 import {
   Algorithm,
   AlgorithmOverrides,
   AlgorithmStatus,
+  AppearanceService,
   AuthService,
   MessageService,
   WebappSdkModule,
   YamcsService,
 } from '@yamcs/webapp-sdk';
-import { EditorView, basicSetup } from 'codemirror';
+import { basicSetup, EditorView } from 'codemirror';
 import { BehaviorSubject } from 'rxjs';
 import { MarkdownComponent } from '../../shared/markdown/markdown.component';
 import { AlgorithmStatusComponent } from '../algorithm-status/algorithm-status.component';
@@ -46,13 +49,27 @@ export class AlgorithmDetailComponent implements AfterViewInit {
   overrides$ = new BehaviorSubject<AlgorithmOverrides | null>(null);
 
   private editorView: EditorView;
+  private themeCompartment = new Compartment();
   dirty$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     readonly yamcs: YamcsService,
     private messageService: MessageService,
     private authService: AuthService,
-  ) {}
+    appearanceService: AppearanceService,
+  ) {
+    effect(() => {
+      const isDark = appearanceService.dark();
+
+      if (!this.editorView) {
+        return;
+      }
+      const newTheme = isDark ? oneDark : [];
+      this.editorView.dispatch({
+        effects: this.themeCompartment.reconfigure(newTheme),
+      });
+    });
+  }
 
   ngAfterViewInit() {
     if (this.algorithm.text) {
@@ -85,17 +102,15 @@ export class AlgorithmDetailComponent implements AfterViewInit {
       extensions.push(EditorState.readOnly.of(true));
     }
 
-    const theme = EditorView.theme(
-      {
-        '&': { height: '300px', fontSize: '12px' },
-        '.cm-scroller': {
-          overflow: 'auto',
-          fontFamily: "'Roboto Mono', monospace",
-        },
+    const baseTheme = EditorView.theme({
+      '&': { height: '300px', fontSize: '12px' },
+      '.cm-scroller': {
+        overflow: 'auto',
+        fontFamily: "'Roboto Mono', monospace",
       },
-      { dark: false },
-    );
-    extensions.push(theme);
+    });
+    extensions.push(baseTheme);
+    extensions.push(this.themeCompartment.of([]));
 
     switch (this.algorithm.language.toLowerCase()) {
       case 'java-expression':
