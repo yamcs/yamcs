@@ -8,10 +8,11 @@ import {
   viewChild,
 } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { markdown } from '@codemirror/lang-markdown';
-import { Extension } from '@codemirror/state';
-import { WebappSdkModule } from '@yamcs/webapp-sdk';
-import { basicSetup, EditorView } from 'codemirror';
+import {
+  CodeMirror,
+  CodeMirrorService,
+  WebappSdkModule,
+} from '@yamcs/webapp-sdk';
 import { MarkdownComponent } from '../../../shared/markdown/markdown.component';
 
 @Component({
@@ -23,58 +24,33 @@ import { MarkdownComponent } from '../../../shared/markdown/markdown.component';
 export class EditTextEntryDialogComponent implements AfterViewInit, OnDestroy {
   textContainerRef =
     viewChild.required<ElementRef<HTMLDivElement>>('textContainer');
-  editorView?: EditorView;
+
+  codeMirror?: CodeMirror;
 
   text = signal<string>('');
 
   constructor(
     private dialogRef: MatDialogRef<EditTextEntryDialogComponent>,
     @Inject(MAT_DIALOG_DATA) readonly data: any,
+    private codeMirrorService: CodeMirrorService,
   ) {}
 
   ngAfterViewInit(): void {
     this.text.set(this.data.entry?.text || '');
 
-    const extensions: Extension[] = [
-      basicSetup,
-      EditorView.lineWrapping,
-      markdown(),
-      EditorView.updateListener.of((update) => {
-        if (update.docChanged) {
-          const newValue = update.state.doc.toString();
-          this.text.set(newValue);
-        }
-      }),
-    ];
-
-    const theme = EditorView.theme(
-      {
-        '&': {
-          height: '100%',
-          fontSize: '12px',
-        },
-        '.cm-scroller': {
-          overflow: 'auto',
-          fontFamily: "'Roboto Mono', monospace",
-        },
-        '&.cm-focused': {
-          outline: 'none',
-        },
-      },
-      { dark: false },
-    );
-    extensions.push(theme);
-
-    this.editorView = new EditorView({
-      doc: this.text(),
-      extensions,
+    this.codeMirror = this.codeMirrorService.createEditorView({
       parent: this.textContainerRef().nativeElement,
+      height: '100%',
+      language: 'markdown',
+      readonly: false,
+      initialText: this.text(),
+      focus: true,
+      onChange: (text) => this.text.set(text),
     });
-    this.editorView.focus();
   }
 
   save() {
-    const text = this.editorView?.state.doc.toString() || '';
+    const text = this.codeMirror?.getText() ?? '';
     this.dialogRef.close(text);
   }
 
@@ -87,6 +63,6 @@ export class EditTextEntryDialogComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.editorView?.destroy();
+    this.codeMirror?.destroy();
   }
 }

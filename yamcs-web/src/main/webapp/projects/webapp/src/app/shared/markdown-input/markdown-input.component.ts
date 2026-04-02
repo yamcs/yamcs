@@ -4,38 +4,17 @@ import {
   Component,
   ElementRef,
   forwardRef,
-  input,
+  inject,
   OnDestroy,
   signal,
   viewChild,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import {
-  autocompletion,
-  closeBrackets,
-  closeBracketsKeymap,
-  completionKeymap,
-} from '@codemirror/autocomplete';
-import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
-import { markdown } from '@codemirror/lang-markdown';
-import {
-  bracketMatching,
-  defaultHighlightStyle,
-  indentOnInput,
-  syntaxHighlighting,
-} from '@codemirror/language';
-import { lintKeymap } from '@codemirror/lint';
-import { highlightSelectionMatches } from '@codemirror/search';
-import { EditorState, Extension } from '@codemirror/state';
-import {
-  crosshairCursor,
-  drawSelection,
-  dropCursor,
-  highlightSpecialChars,
-  keymap,
-} from '@codemirror/view';
-import { WebappSdkModule } from '@yamcs/webapp-sdk';
-import { EditorView } from 'codemirror';
+  CodeMirror,
+  CodeMirrorService,
+  WebappSdkModule,
+} from '@yamcs/webapp-sdk';
 import { MarkdownComponent } from '../markdown/markdown.component';
 
 @Component({
@@ -55,11 +34,11 @@ import { MarkdownComponent } from '../markdown/markdown.component';
 export class AppMarkdownInput
   implements ControlValueAccessor, AfterViewInit, OnDestroy
 {
-  height = input('100px');
+  private codeMirrorService = inject(CodeMirrorService);
 
   private editorContainerRef =
     viewChild.required<ElementRef<HTMLDivElement>>('editorContainer');
-  private editorView: EditorView | null = null;
+  private codeMirror?: CodeMirror;
 
   private onChange = (_: string | null) => {};
 
@@ -76,13 +55,7 @@ export class AppMarkdownInput
   writeValue(value: any): void {
     this.initialDocString = value || undefined;
     this.text.set(this.initialDocString || '');
-    this.editorView?.dispatch({
-      changes: {
-        from: 0,
-        to: this.editorView.state.doc.length,
-        insert: this.initialDocString,
-      },
-    });
+    this.codeMirror?.setText(this.initialDocString ?? '');
   }
 
   registerOnChange(fn: any): void {
@@ -92,59 +65,17 @@ export class AppMarkdownInput
   registerOnTouched(fn: any): void {}
 
   private initializeEditor(targetEl: HTMLDivElement) {
-    const extensions: Extension[] = [
-      highlightSpecialChars(),
-      history(),
-      drawSelection(),
-      dropCursor(),
-      EditorState.allowMultipleSelections.of(true),
-      indentOnInput(),
-      syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
-      bracketMatching(),
-      closeBrackets(),
-      autocompletion(),
-      crosshairCursor(),
-      highlightSelectionMatches(),
-      keymap.of([
-        ...closeBracketsKeymap,
-        ...defaultKeymap,
-        ...historyKeymap,
-        ...completionKeymap,
-        ...lintKeymap,
-      ]),
-      EditorView.lineWrapping,
-      markdown(),
-      EditorView.updateListener.of((update) => {
-        if (update.docChanged) {
-          const newValue = update.state.doc.toString();
-          this.text.set(newValue);
-          this.onChange(newValue);
-        }
-      }),
-    ];
-
-    const theme = EditorView.theme(
-      {
-        '&': {
-          height: '100%',
-          fontSize: '12px',
-        },
-        '.cm-scroller': {
-          overflow: 'auto',
-          fontFamily: "'Roboto Mono', monospace",
-        },
-        '&.cm-focused': {
-          outline: 'none',
-        },
-      },
-      { dark: false },
-    );
-    extensions.push(theme);
-
-    this.editorView = new EditorView({
-      doc: this.initialDocString,
-      extensions,
+    this.codeMirror = this.codeMirrorService.createEditorView({
       parent: targetEl,
+      height: '100%',
+      readonly: false,
+      language: 'markdown',
+      initialText: this.initialDocString,
+      gutter: false,
+      onChange: (text: string) => {
+        this.text.set(text);
+        this.onChange(text);
+      },
     });
   }
 
@@ -157,7 +88,6 @@ export class AppMarkdownInput
   }
 
   ngOnDestroy(): void {
-    this.editorView?.destroy();
-    this.editorView = null;
+    this.codeMirror?.destroy();
   }
 }
