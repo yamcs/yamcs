@@ -7,34 +7,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.yamcs.simulator.SimulatorCcsdsPacket;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 
-/**
- * TM packets according to PUS standard
- * ECSS-E-ST-70-41C 15 April 2016
- * 
- * 
- * <pre>
- * Secondary header (16 bytes)
- * 
- *  version number - 4 bits
- *  spacecraft time reference status - 4 bits
- *  service type  -   8 bits
- *  message subtype  - 8 bits
- *  message type counter - 16 bits
- *  destination Id - 16 bits
- *  time - variable size but we use 9 bytes
- * </pre>
- * 
- * 
- * @author nm
- *
- */
 public class PusTmPacket extends SimulatorCcsdsPacket {
     public static final int SH_OFFSET = 6;
     public static final int DATA_OFFSET = SH_OFFSET + 7 + PusTime.LENGTH_BYTES;
 
     static final CrcCciitCalculator crcCalculator = new CrcCciitCalculator();
 
-    protected static HashMap<Integer, AtomicInteger> countMap = new HashMap<>(2); // destination -> msgCounter
+    protected static HashMap<Integer, AtomicInteger> countMap = new HashMap<>(2);
 
     public PusTmPacket(byte[] packet) {
         super(packet);
@@ -56,15 +35,22 @@ public class PusTmPacket extends SimulatorCcsdsPacket {
 
     public void setType(int type) {
         bb.put(SH_OFFSET + 1, (byte) type);
+    }
 
+    public int getType() {
+        return bb.get(SH_OFFSET + 1) & 0xFF;
     }
 
     public void setSubtype(int subtype) {
         bb.put(SH_OFFSET + 2, (byte) subtype);
     }
 
+    public int getSubtype() {
+        return bb.get(SH_OFFSET + 2) & 0xFF;
+    }
+
     private static int getPacketLength(int userDataLength) {
-        return DATA_OFFSET + userDataLength + 2;// 2 bytes for the CRC
+        return DATA_OFFSET + userDataLength + 2;
     }
 
     @Override
