@@ -58,7 +58,7 @@ public class TcTransferFrame extends UplinkTransferFrame {
 
     public static record SegmentHeader(byte seqFlags, byte mapId) {
         public byte get() {
-            return (byte) ((seqFlags << 6) | mapId);
+            return (byte) ((seqFlags << 6) | (mapId & 0x3F));
         }
     }
 }

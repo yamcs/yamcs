@@ -64,16 +64,17 @@ public class UslpUplinkFrameFactory implements UplinkFrameFactory<UslpUplinkTran
 
     @Override
     public UslpUplinkTransferFrame makeDataFrame(int dataLength, long generationTime) {
-        return makeFrame(dataLength, vcParams.mapId & 0xFF, false, generationTime);
+        return makeFrame(dataLength, vcParams.mapId, false, generationTime);
     }
 
     @Override
     public UslpUplinkTransferFrame makeDataFrame(int dataLength, long generationTime, byte mapId) {
-        int effectiveMapId = (mapId >= 0) ? mapId : (vcParams.mapId & 0xFF);
+        int effectiveMapId = (mapId >= 0) ? mapId : vcParams.mapId;
         return makeFrame(dataLength, effectiveMapId, false, generationTime);
     }
 
     private UslpUplinkTransferFrame makeFrame(int dataLength, int mapId, boolean cmdControl, long generationTime) {
+        mapId = mapId & 0x0F;
         int dataStart = primaryHeaderSize + ZONE_HEADER_SIZE;
         int length = dataStart + dataLength + crcSize;
 

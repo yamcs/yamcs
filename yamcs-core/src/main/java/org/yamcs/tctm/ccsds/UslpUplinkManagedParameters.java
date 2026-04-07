@@ -105,7 +105,10 @@ public class UslpUplinkManagedParameters extends UplinkManagedParameters<UslpUpl
                         + " exceeds master channel maxFrameLength " + uslpParams.maxFrameLength);
             }
 
-
+            this.mapId = (byte) config.getInt("mapId", 0);
+            if (mapId < 0 || mapId > 15) {
+                throw new ConfigurationException("Invalid mapId " + mapId + ". It has to be between 0 and 15");
+            }
         }
 
         String linkName() {

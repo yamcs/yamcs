@@ -27,7 +27,7 @@ public abstract class VcUplinkManagedParameters<T extends UplinkTransferFrame> {
 
     // if not negative, it contains the default MAP_ID to be used for this virtual channel
     // if negative, this virtual channel does not use the MAP service
-    protected final byte mapId;
+    protected byte mapId;
 
     boolean useCop1;
 

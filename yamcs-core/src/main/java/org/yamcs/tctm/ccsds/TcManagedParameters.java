@@ -150,6 +150,11 @@ public class TcManagedParameters extends UplinkManagedParameters<TcTransferFrame
                         + " has to be at most equal to the master channel max length " + tcParams.maxFrameLength);
             }
 
+            this.mapId = (byte) config.getInt("mapId", -1);
+            if (mapId < -1 || mapId > 15) {
+                throw new ConfigurationException("Invalid mapId " + mapId
+                        + ". It has to be either -1 (meaning that the MAP service is not used) or between 0 and 15");
+            }
         }
 
         public TcFrameFactory getFrameFactory() {
