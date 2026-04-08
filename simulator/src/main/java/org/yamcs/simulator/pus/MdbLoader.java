@@ -1,202 +1,204 @@
 package org.yamcs.simulator.pus;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
+import org.yamcs.xtce.BooleanExpression;
+import org.yamcs.xtce.Condition;
+import org.yamcs.xtce.Comparison;
+import org.yamcs.xtce.ComparisonList;
+import org.yamcs.xtce.EnumeratedParameterType;
+import org.yamcs.xtce.ExpressionList;
+import org.yamcs.xtce.MatchCriteria;
+import org.yamcs.xtce.OperatorType;
+import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.ParameterEntry;
+import org.yamcs.xtce.ParameterOrArgumentRef;
+import org.yamcs.xtce.SequenceContainer;
+import org.yamcs.xtce.SequenceEntry;
+import org.yamcs.xtce.SpaceSystem;
+import org.yamcs.xtce.ValueEnumeration;
+import org.yamcs.xtce.xml.XtceStaxReader;
 
+/**
+ * Simulator-side helper that reads the XTCE XML and extracts a few small pieces of information needed by the embedded
+ * simulator (APIDs, Service 5 event definitions, and Service 5 event-report subtypes).
+ * <p>
+ * Yamcs server already loads the MDB via core {@code XtceLoader}, but the simulator code runs independently and does not
+ * have a simple API hook to reuse that in-memory MDB.
+ */
 public class MdbLoader {
 
     private static final Logger log = LoggerFactory.getLogger(MdbLoader.class);
 
-    private static final String EVENT_PARAM_TYPE_NAME = "event_definition_id";
-    private static final String APID_PARAM_TYPE_NAME = "apid";
-    private static final String XTCE_NS = "http://www.omg.org/spec/XTCE/20180204";
+    private static final String EVENT_DEFINITION_ID = "event_definition_id";
+    private static final String APID = "apid";
+
+    private static volatile String cachedSpec;
+    private static volatile SpaceSystem cachedSpaceSystem;
 
     public static Map<Integer, String> loadEventDefinitions(String resourcePath) {
-        Map<Integer, String> events = new LinkedHashMap<>();
+        SpaceSystem ss = loadSpaceSystem(resourcePath);
+        if (ss == null) return Map.of();
 
-        Document doc = loadDocument(resourcePath);
-        if (doc == null) {
-            return events;
-        }
-
-        NodeList enumTypes = getElements(doc, "EnumeratedParameterType");
-        for (int i = 0; i < enumTypes.getLength(); i++) {
-            Element enumType = (Element) enumTypes.item(i);
-            if (!EVENT_PARAM_TYPE_NAME.equals(enumType.getAttribute("name"))) {
-                continue;
-            }
-
-            NodeList enumerations = getElements(enumType, "Enumeration");
-            for (int j = 0; j < enumerations.getLength(); j++) {
-                Element enumEntry = (Element) enumerations.item(j);
-                String valueStr = enumEntry.getAttribute("value");
-                String label = enumEntry.getAttribute("label");
-
-                try {
-                    int eventId = Integer.parseInt(valueStr);
-                    events.put(eventId, label);
-                    log.debug("Loaded event definition: id={}, label={}", eventId, label);
-                } catch (NumberFormatException e) {
-                    log.warn("Skipping invalid event value '{}' with label '{}'", valueStr, label);
+        Map<Integer, String> out = new LinkedHashMap<>();
+        EnumeratedParameterType ptype = findEnumType(ss, EVENT_DEFINITION_ID);
+        if (ptype != null) {
+            for (ValueEnumeration ve : ptype.getValueEnumerationList()) {
+                long v = ve.getValue();
+                if (v >= Integer.MIN_VALUE && v <= Integer.MAX_VALUE) {
+                    out.put((int) v, ve.getLabel());
                 }
             }
-            break;
         }
-
-        if (events.isEmpty()) {
-            log.warn("No event definitions found in MDB at {}. Check the file has "
-                    + "an EnumeratedParameterType named '{}'", resourcePath, EVENT_PARAM_TYPE_NAME);
+        if (out.isEmpty()) {
+            log.warn("No event definitions found in MDB at {} (expected EnumeratedParameterType '{}')",
+                    resourcePath, EVENT_DEFINITION_ID);
         } else {
-            log.info("Loaded {} event definition(s) from MDB: {}", events.size(), events);
+            log.info("Loaded {} event definition(s) from MDB: {}", out.size(), out);
         }
-
-        return events;
+        return out;
     }
 
     public static Map<String, Integer> loadApids(String resourcePath) {
-        Map<String, Integer> apids = new LinkedHashMap<>();
+        SpaceSystem ss = loadSpaceSystem(resourcePath);
+        if (ss == null) return Map.of();
 
-        Document doc = loadDocument(resourcePath);
-        if (doc == null) {
-            return apids;
-        }
-
-        NodeList enumTypes = getElements(doc, "EnumeratedParameterType");
-        for (int i = 0; i < enumTypes.getLength(); i++) {
-            Element enumType = (Element) enumTypes.item(i);
-            if (!APID_PARAM_TYPE_NAME.equals(enumType.getAttribute("name"))) {
-                continue;
-            }
-
-            NodeList enumerations = getElements(enumType, "Enumeration");
-            for (int j = 0; j < enumerations.getLength(); j++) {
-                Element enumEntry = (Element) enumerations.item(j);
-                String valueStr = enumEntry.getAttribute("value");
-                String label = enumEntry.getAttribute("label");
-                try {
-                    apids.put(label, Integer.parseInt(valueStr));
-                } catch (NumberFormatException e) {
-                    log.warn("Skipping invalid APID value '{}' with label '{}'", valueStr, label);
+        Map<String, Integer> out = new LinkedHashMap<>();
+        EnumeratedParameterType ptype = findEnumType(ss, APID);
+        if (ptype != null) {
+            for (ValueEnumeration ve : ptype.getValueEnumerationList()) {
+                long v = ve.getValue();
+                if (v >= 0 && v <= Integer.MAX_VALUE) {
+                    out.put(ve.getLabel(), (int) v);
                 }
             }
-            break;
         }
-
-        return apids;
+        return out;
     }
 
     public static List<Integer> loadEventReportSubtypes(String resourcePath) {
+        SpaceSystem ss = loadSpaceSystem(resourcePath);
+        if (ss == null) return List.of();
+
         TreeSet<Integer> subtypes = new TreeSet<>();
-
-        Document doc = loadDocument(resourcePath);
-        if (doc == null) {
-            return List.of();
-        }
-
-        NodeList containers = getElements(doc, "SequenceContainer");
-        for (int i = 0; i < containers.getLength(); i++) {
-            Element container = (Element) containers.item(i);
-            if (!containsParameterRef(container, "event_definition_id")) {
-                continue;
-            }
-
-            Element baseContainer = getFirstChild(container, "BaseContainer");
-            if (baseContainer == null) {
-                continue;
-            }
-
-            Integer serviceType = findRestrictionValue(baseContainer, "service_type");
-            Integer subtype = findRestrictionValue(baseContainer, "subservice_type");
-            if (serviceType != null && serviceType == 5 && subtype != null) {
-                subtypes.add(subtype);
-            }
-        }
-
+        forEachContainer(ss, sc -> {
+            if (!containsParameter(sc, EVENT_DEFINITION_ID)) return;
+            Integer st = findEqualsInt(sc.getRestrictionCriteria(), "service_type");
+            Integer sst = findEqualsInt(sc.getRestrictionCriteria(), "subservice_type");
+            if (st != null && st == 5 && sst != null) subtypes.add(sst);
+        });
         return new ArrayList<>(subtypes);
     }
 
-    private static Document loadDocument(String resourcePath) {
-        try (InputStream in = MdbLoader.class.getResourceAsStream(resourcePath)) {
-            if (in == null) {
-                log.error("MDB file not found at resource path: {}", resourcePath);
-                return null;
-            }
+    private static SpaceSystem loadSpaceSystem(String spec) {
+        SpaceSystem cached = cachedSpaceSystem;
+        if (cached != null && spec != null && spec.equals(cachedSpec)) return cached;
 
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            factory.setNamespaceAware(true);
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            Document doc = builder.parse(in);
-            doc.getDocumentElement().normalize();
-            return doc;
+        try {
+            SpaceSystem ss = new XtceStaxReader(resolveToReadableXml(spec).toString()).readXmlDocument();
+            cachedSpec = spec;
+            cachedSpaceSystem = ss;
+            return ss;
         } catch (Exception e) {
-            log.error("Failed to load MDB from {}", resourcePath, e);
+            log.error("Failed to load MDB from {}", spec, e);
             return null;
         }
     }
 
-    private static NodeList getElements(Document doc, String name) {
-        NodeList nodes = doc.getElementsByTagNameNS(XTCE_NS, name);
-        if (nodes.getLength() == 0) {
-            nodes = doc.getElementsByTagName(name);
+    private static Path resolveToReadableXml(String spec) throws IOException {
+        if (spec == null || spec.isBlank()) throw new IOException("No MDB spec provided");
+
+        Path p = Paths.get(spec);
+        if (Files.isRegularFile(p)) return p.toAbsolutePath().normalize();
+
+        p = Paths.get("target", "yamcs").resolve(spec);
+        if (Files.isRegularFile(p)) return p.toAbsolutePath().normalize();
+
+        String resource = spec.startsWith("/") ? spec : "/" + spec;
+        try (InputStream in = MdbLoader.class.getResourceAsStream(resource)) {
+            if (in == null) throw new IOException("MDB XML not found for spec '" + spec + "'");
+            Path tmp = Files.createTempFile("yamcs-mdb-", ".xml");
+            tmp.toFile().deleteOnExit();
+            Files.copy(in, tmp, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            return tmp.toAbsolutePath().normalize();
         }
-        return nodes;
     }
 
-    private static NodeList getElements(Element element, String name) {
-        NodeList nodes = element.getElementsByTagNameNS(XTCE_NS, name);
-        if (nodes.getLength() == 0) {
-            nodes = element.getElementsByTagName(name);
+    private static EnumeratedParameterType findEnumType(SpaceSystem ss, String name) {
+        for (var t : ss.getParameterTypes()) {
+            if (t instanceof EnumeratedParameterType ept && name.equals(ept.getName())) return ept;
         }
-        return nodes;
+        for (SpaceSystem sub : ss.getSubSystems()) {
+            EnumeratedParameterType found = findEnumType(sub, name);
+            if (found != null) return found;
+        }
+        return null;
     }
 
-    private static Element getFirstChild(Element element, String name) {
-        NodeList nodes = getElements(element, name);
-        return nodes.getLength() > 0 ? (Element) nodes.item(0) : null;
+    private static void forEachContainer(SpaceSystem ss, java.util.function.Consumer<SequenceContainer> consumer) {
+        ss.getSequenceContainers().forEach(consumer);
+        for (SpaceSystem sub : ss.getSubSystems()) forEachContainer(sub, consumer);
     }
 
-    private static boolean containsParameterRef(Element container, String parameterRef) {
-        NodeList entries = getElements(container, "ParameterRefEntry");
-        for (int i = 0; i < entries.getLength(); i++) {
-            Element entry = (Element) entries.item(i);
-            if (parameterRef.equals(entry.getAttribute("parameterRef"))) {
-                return true;
+    private static boolean containsParameter(SequenceContainer sc, String parameterName) {
+        for (SequenceEntry se : sc.getEntryList()) {
+            if (se instanceof ParameterEntry pe) {
+                Parameter p = pe.getParameter();
+                if (p != null && parameterName.equals(p.getName())) {
+                    return true;
+                }
             }
         }
         return false;
     }
 
-    private static Integer findRestrictionValue(Element baseContainer, String parameterRef) {
-        NodeList conditions = getElements(baseContainer, "Condition");
-        for (int i = 0; i < conditions.getLength(); i++) {
-            Element condition = (Element) conditions.item(i);
-            Element paramRef = getFirstChild(condition, "ParameterInstanceRef");
-            Element value = getFirstChild(condition, "Value");
-            if (paramRef == null || value == null) {
-                continue;
+    private static Integer findEqualsInt(MatchCriteria mc, String parameterName) {
+        if (mc == null) return null;
+
+        if (mc instanceof Comparison c) {
+            if (c.getComparisonOperator() != OperatorType.EQUALITY) return null;
+            return parseEq((c.getRef() instanceof org.yamcs.xtce.ParameterInstanceRef pir) ? pir.getParameter() : null,
+                    c.getStringValue(), parameterName);
+        }
+        if (mc instanceof Condition cond) {
+            if (cond.getComparisonOperator() != OperatorType.EQUALITY) return null;
+            return parseEq((cond.getLeftRef() instanceof org.yamcs.xtce.ParameterInstanceRef pir) ? pir.getParameter()
+                    : null, cond.getRightValue(), parameterName);
+        }
+        if (mc instanceof ComparisonList cl) {
+            for (Comparison c : cl.getComparisonList()) {
+                Integer v = findEqualsInt(c, parameterName);
+                if (v != null) return v;
             }
-            if (!parameterRef.equals(paramRef.getAttribute("parameterRef"))) {
-                continue;
+            return null;
+        }
+        if (mc instanceof ExpressionList el) {
+            for (BooleanExpression be : el.getExpressionList()) {
+                Integer v = findEqualsInt(be, parameterName);
+                if (v != null) return v;
             }
-            try {
-                return Integer.parseInt(value.getTextContent().trim());
-            } catch (NumberFormatException e) {
-                log.debug("Ignoring non-numeric restriction value '{}' for {}", value.getTextContent(), parameterRef);
-            }
+            return null;
         }
         return null;
+    }
+
+    private static Integer parseEq(Parameter p, String rhs, String expectedParamName) {
+        if (p == null || rhs == null || !expectedParamName.equals(p.getName())) return null;
+        try {
+            return Integer.parseInt(rhs.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 }

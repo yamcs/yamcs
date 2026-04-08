@@ -56,10 +56,10 @@ public class Pus5Service extends AbstractPusService {
         }
         String eventLabel = eventDefinitions.get(eventId);
         int subtype = getSubtypeForEmission(count);
-
-        PusTmPacket packet = newPacket(subtype, 1);
+        byte[] payload = buildEventPayload(eventId);
+        PusTmPacket packet = newPacket(subtype, payload.length);
         ByteBuffer bb = packet.getUserDataBuffer();
-        bb.put(toEventIdByte(eventId));
+        bb.put(payload);
 
         pusSimulator.transmitRealtimeTM(packet);
 
@@ -153,8 +153,10 @@ public class Pus5Service extends AbstractPusService {
                 continue;
             }
             int subtype = getSubtypeForEmission(reported);
-            PusTmPacket packet = newPacket(subtype, 1);
-            packet.getUserDataBuffer().put(toEventIdByte(eventId));
+            String eventLabel = eventDefinitions.get(eventId);
+            byte[] payload = buildEventPayload(eventId);
+            PusTmPacket packet = newPacket(subtype, payload.length);
+            packet.getUserDataBuffer().put(payload);
             pusSimulator.transmitRealtimeTM(packet);
             reported++;
         }
@@ -162,7 +164,8 @@ public class Pus5Service extends AbstractPusService {
         ack_completion(tc);
     }
 
-    private byte toEventIdByte(int eventId) {
-        return (byte) (eventId & 0xFF);
+    private byte[] buildEventPayload(int eventId) {
+        // In jtyu_mdb.xml, Service 5 event packets carry only `event_definition_id`.
+        return new byte[] { (byte) (eventId & 0xFF) };
     }
 }

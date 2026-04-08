@@ -24,41 +24,70 @@ import org.yamcs.simulator.TcpTmTcLink;
 
 /**
  * PUS (Packet Utilisation Standard) simulator.
- * 
+ *
+ * APIDs are loaded from the MDB (jTYU.xml):
+ *   APID 0   = Time
+ *   APID 16  = FSW  (Flight Software)
+ *   APID 32  = AOCS (Attitude Control)
+ *   APID 48  = COM  (Communications)
+ *   APID 64  = PRP  (Propulsion)
+ *   APID 80  = SYS  (System)
+ *   APID 96  = THM  (Thermal)
+ *   APID 112 = EPS  (Electrical Power System)
+ *
  * Supports services:
- * <ul>
- * <li>ST[01] - request verification</li>
- * <li>ST[03] - housekeeping</li>
- * <li>ST[05] - event reporting - TODO</li>
- * <li>ST[06] - memory management - TODO</li>
- * <li>ST[09] - time management - only sending the time packet</li>
- * <li>ST[11] - time based schedule</li>
- * <li>ST[12] - on-board monitoring - TODO</li>
- * <li>ST[13] - large packet transfer - TODO</li>
- * <li>ST[15] - on-board storage and retrieval - TODO</li>
- * <li>ST[17] - test</li>
- * <li>ST[23] - file management - TODO</li>
- * 
- * <li>
- * 
- * </ul>
- * 
+ *   ST[01] - request verification
+ *   ST[03] - housekeeping
+ *   ST[05] - event reporting (events loaded from MDB)
+ *   ST[09] - time management
+ *   ST[11] - time based schedule
+ *   ST[17] - test (ping)
  */
 public class PusSimulator extends AbstractSimulator {
-    static final int MAIN_APID = 1;
 
-    static final int PUS_TYPE_ACK = 1;
-    static final int PUS_TYPE_HK = 3;
+    // -------------------------------------------------------------------------
+    // APIDs from the MDB (jtyu_mdb.xml)
+    // -------------------------------------------------------------------------
+    private static final String MDB_SPEC = "/jtyu_mdb.xml";
+
+    // Defaults match the current jtyu_mdb.xml, but we override them at runtime by parsing the MDB.
+    private static final int DEFAULT_APID_TIME = 0;    // Time packets
+    private static final int DEFAULT_APID_FSW  = 16;   // Flight Software
+    private static final int DEFAULT_APID_AOCS = 32;   // Attitude & Orbit Control
+    private static final int DEFAULT_APID_COM  = 48;   // Communications
+    private static final int DEFAULT_APID_PRP  = 64;   // Propulsion
+    private static final int DEFAULT_APID_SYS  = 80;   // System
+    private static final int DEFAULT_APID_THM  = 96;   // Thermal
+    private static final int DEFAULT_APID_EPS  = 112;  // Electrical Power System
+
+    private int apidTime = DEFAULT_APID_TIME;
+    private int apidFsw = DEFAULT_APID_FSW;
+    private int apidAocs = DEFAULT_APID_AOCS;
+    private int apidCom = DEFAULT_APID_COM;
+    private int apidPrp = DEFAULT_APID_PRP;
+    private int apidSys = DEFAULT_APID_SYS;
+    private int apidThm = DEFAULT_APID_THM;
+    private int apidEps = DEFAULT_APID_EPS;
+
+    // Main APID used for PUS service packets (FSW handles most PUS services)
+    private int mainApid = DEFAULT_APID_FSW;
+
+    // -------------------------------------------------------------------------
+    // PUS Service and Subtype constants
+    // -------------------------------------------------------------------------
+    static final int PUS_TYPE_ACK   = 1;
+    static final int PUS_TYPE_HK    = 3;
     static final int PUS_TYPE_EVENT = 5;
 
-    static final int PUS_SUBTYPE_ACK_ACCEPTANCE = 1;
+    static final int PUS_SUBTYPE_ACK_ACCEPTANCE  = 1;
     static final int PUS_SUBTYPE_NACK_ACCEPTANCE = 2;
-    static final int PUS_SUBTYPE_ACK_START = 3;
-    static final int PUS_SUBTYPE_NACK_START = 4;
-    static final int PUS_SUBTYPE_ACK_COMPLETION = 7;
+    static final int PUS_SUBTYPE_ACK_START       = 3;
+    static final int PUS_SUBTYPE_NACK_START      = 4;
+    static final int PUS_SUBTYPE_ACK_COMPLETION  = 7;
     static final int PUS_SUBTYPE_NACK_COMPLETION = 8;
 
     static final int START_FAILURE_INVALID_VOLTAGE_NUM = 100;
+
     private static final Logger log = LoggerFactory.getLogger(PusSimulator.class);
 
     final Random random = new Random();
@@ -66,89 +95,333 @@ public class PusSimulator extends AbstractSimulator {
     ScheduledThreadPoolExecutor executor;
     TcpTmTcLink tmLink;
 
+    // Data handlers (CSV replay)
     FlightDataHandler flightDataHandler;
     DHSHandler dhsHandler;
     PowerHandler powerDataHandler;
     RCSHandler rcsHandler;
     EpsLvpduHandler epslvpduHandler;
+
+    // CFDP
     CfdpReceiver cfdpReceiver;
+
+    // PUS Service handlers
     Pus5Service pus5Service;
     Pus11Service pus11Service;
     Pus17Service pus17Service;
 
+    // TC queue — TCs are accepted immediately, executed on the next scheduler tick
     protected BlockingQueue<PusTcPacket> pendingCommands = new ArrayBlockingQueue<>(100);
 
     public PusSimulator(File dataDir) {
+        // Data handlers
         powerDataHandler = new PowerHandler();
         rcsHandler = new RCSHandler();
         epslvpduHandler = new EpsLvpduHandler();
         flightDataHandler = new FlightDataHandler();
         dhsHandler = new DHSHandler();
+
+        // CFDP
         cfdpReceiver = new CfdpReceiver(this, dataDir);
-        pus5Service = new Pus5Service(this);
+
+        // PUS services
+        pus5Service  = new Pus5Service(this);
         pus11Service = new Pus11Service(this);
         pus17Service = new Pus17Service(this);
     }
 
     @Override
     protected void doStart() {
+        loadApidsFromMdb();
         executor = new ScheduledThreadPoolExecutor(1);
-        executor.scheduleAtFixedRate(() -> sendTimePacket(), 0, 4, TimeUnit.SECONDS);
 
-        executor.scheduleAtFixedRate(() -> sendFlightPacket(), 0, 200, TimeUnit.MILLISECONDS);
-        executor.scheduleAtFixedRate(() -> sendHkTm(), 0, 1000, TimeUnit.MILLISECONDS);
-        // executor.scheduleAtFixedRate(() -> sendCfdp(), 0, 1000, TimeUnit.MILLISECONDS);
-        executor.scheduleAtFixedRate(() -> executePendingCommands(), 0, 200, TimeUnit.MILLISECONDS);
+        // ST[09] - Time packet every 4 seconds
+        executor.scheduleAtFixedRate(
+            () -> sendTimePacket(), 0, 4, TimeUnit.SECONDS);
 
-        pus5Service.start();
-        pus11Service.start();
+        // ST[03] - Flight data HK every 200ms
+        executor.scheduleAtFixedRate(
+            () -> sendFlightPacket(), 0, 200, TimeUnit.MILLISECONDS);
+
+        // ST[03] - Housekeeping TM every 1 second
+        executor.scheduleAtFixedRate(
+            () -> sendHkTm(), 0, 1000, TimeUnit.MILLISECONDS);
+
+        // TC execution loop every 200ms
+        executor.scheduleAtFixedRate(
+            () -> executePendingCommands(), 0, 200, TimeUnit.MILLISECONDS);
+
+        // Start PUS services (they set up their own schedules)
+        pus5Service.start();   // loads events from MDB, schedules event sending
+        pus11Service.start();  // time-based scheduling service
     }
 
+    // -------------------------------------------------------------------------
+    // TM Sending
+    // -------------------------------------------------------------------------
+
+    /**
+     * ST[03,25] - Flight data housekeeping report.
+     * Uses APID_AOCS since flight/attitude data belongs to AOCS subsystem.
+     */
     private void sendFlightPacket() {
-        PusTmPacket packet = new PusTmPacket(MAIN_APID, 4 + flightDataHandler.dataSize(), PUS_TYPE_HK, 25);
+        PusTmPacket packet = new PusTmPacket(
+            apidAocs,
+            4 + flightDataHandler.dataSize(),
+            PUS_TYPE_HK,
+            25
+        );
         ByteBuffer buffer = packet.getUserDataBuffer();
-        buffer.putInt(0);
+        buffer.putInt(0); // structure ID 0 = flight data
         flightDataHandler.fillPacket(buffer.slice());
         transmitRealtimeTM(packet);
     }
 
+    /**
+     * ST[03,25] - Housekeeping reports for all subsystems.
+     * Each subsystem uses its correct APID from the MDB.
+     */
     private void sendHkTm() {
         try {
-            PusTmPacket packet = new PusTmPacket(MAIN_APID, 4 + powerDataHandler.dataSize(), PUS_TYPE_HK, 25);
+            // EPS subsystem - power data (APID_EPS = 112)
+            PusTmPacket packet = new PusTmPacket(
+                apidEps,
+                4 + powerDataHandler.dataSize(),
+                PUS_TYPE_HK,
+                25
+            );
             ByteBuffer buffer = packet.getUserDataBuffer();
-            buffer.putInt(1);
+            buffer.putInt(1); // structure ID 1 = power
             powerDataHandler.fillPacket(buffer.slice());
             transmitRealtimeTM(packet);
 
-            packet = new PusTmPacket(MAIN_APID, 4 + dhsHandler.dataSize(), PUS_TYPE_HK, 25);
+            // FSW subsystem - DHS data (APID_FSW = 16)
+            packet = new PusTmPacket(
+                apidFsw,
+                4 + dhsHandler.dataSize(),
+                PUS_TYPE_HK,
+                25
+            );
             buffer = packet.getUserDataBuffer();
-            buffer.putInt(2);
+            buffer.putInt(2); // structure ID 2 = DHS
             dhsHandler.fillPacket(buffer.slice());
             transmitRealtimeTM(packet);
 
-            packet = new PusTmPacket(MAIN_APID, 4 + rcsHandler.dataSize(), PUS_TYPE_HK, 25);
+            // PRP subsystem - RCS/propulsion data (APID_PRP = 64)
+            packet = new PusTmPacket(
+                apidPrp,
+                4 + rcsHandler.dataSize(),
+                PUS_TYPE_HK,
+                25
+            );
             buffer = packet.getUserDataBuffer();
-            buffer.putInt(3);
+            buffer.putInt(3); // structure ID 3 = RCS
             rcsHandler.fillPacket(buffer.slice());
             transmitRealtimeTM(packet);
 
-            packet = new PusTmPacket(MAIN_APID, 4 + epslvpduHandler.dataSize(), PUS_TYPE_HK, 25);
+            // EPS subsystem - LVPDU data (APID_EPS = 112)
+            packet = new PusTmPacket(
+                apidEps,
+                4 + epslvpduHandler.dataSize(),
+                PUS_TYPE_HK,
+                25
+            );
             buffer = packet.getUserDataBuffer();
-            buffer.putInt(4);
+            buffer.putInt(4); // structure ID 4 = EPS LVPDU
             epslvpduHandler.fillPacket(buffer.slice());
             transmitRealtimeTM(packet);
+
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error sending HK TM", e);
         }
     }
 
+    /**
+     * ST[09] - Time packet. Uses APID_TIME = 0.
+     * Sent immediately (bypasses queue) to ensure accurate timestamps.
+     */
+    private void sendTimePacket() {
+        tmLink.sendImmediate(new PusTmTimePacket());
+    }
+
+    /**
+     * Transmits a TM packet — fills checksum then sends via TCP link.
+     */
     void transmitRealtimeTM(PusTmPacket packet) {
         packet.fillChecksum();
         tmLink.sendPacket(packet.getBytes());
     }
 
-    private void sendTimePacket() {
-        tmLink.sendImmediate(new PusTmTimePacket());
+    // -------------------------------------------------------------------------
+    // TC Handling
+    // -------------------------------------------------------------------------
+
+    /**
+     * Called by TcpTmTcLink when a TC arrives from YAMCS.
+     * Immediately sends ST[01,1] acceptance ACK, then queues for execution.
+     */
+    @Override
+    public void processTc(SimulatorCcsdsPacket tc) {
+        PusTcPacket pustc = (PusTcPacket) tc;
+
+        if (tc.getAPID() == CfdpCcsdsPacket.APID) {
+            // CFDP packets handled separately
+            // cfdpReceiver.processCfdp(tc.getUserDataBuffer());
+        } else {
+            // Immediately send acceptance ACK ST[01,1]
+            transmitRealtimeTM(ack(pustc, PUS_SUBTYPE_ACK_ACCEPTANCE));
+
+            // Queue for deferred execution
+            try {
+                pendingCommands.put(pustc);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    /**
+     * Drains the TC queue and dispatches each command to the right service.
+     * Runs every 200ms on the executor thread.
+     */
+    private void executePendingCommands() {
+        PusTcPacket commandPacket;
+        while ((commandPacket = pendingCommands.poll()) != null) {
+            try {
+                log.info("Executing PUS TC: type={} subtype={} (time: {})",
+                    commandPacket.getType(), commandPacket.getSubtype(), PusTime.now());
+
+                switch (commandPacket.getType()) {
+                    case 5  -> pus5Service.executeTc(commandPacket);
+                    case 11 -> pus11Service.executeTc(commandPacket);
+                    case 17 -> pus17Service.executeTc(commandPacket);
+                    case 25 -> {
+                        switch (commandPacket.getSubtype()) {
+                            case 1 -> switchBatteryOn(commandPacket);
+                            case 2 -> switchBatteryOff(commandPacket);
+                            default -> log.error("Unknown subtype {} for type 25",
+                                commandPacket.getSubtype());
+                        }
+                    }
+                    default -> log.warn("Unknown TC type {}", commandPacket.getType());
+                }
+            } catch (Exception e) {
+                log.warn("Error executing TC", e);
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Battery commands (type 25) — kept in PusSimulator directly
+    // -------------------------------------------------------------------------
+
+    private void switchBatteryOn(PusTcPacket commandPacket) {
+        int batNum = commandPacket.getUserDataBuffer().get(0);
+        if (batNum < 1 || batNum > 3) {
+            log.info("BATTERY ON {}: invalid number, sending NACK", batNum);
+            transmitRealtimeTM(nack(commandPacket, PUS_SUBTYPE_NACK_START,
+                START_FAILURE_INVALID_VOLTAGE_NUM));
+            return;
+        }
+        if (batNum != 2) {
+            log.info("BATTERY ON {}: sending ACK start", batNum);
+            transmitRealtimeTM(ack(commandPacket, PUS_SUBTYPE_ACK_START));
+        } else {
+            log.info("BATTERY ON {}: skipping ACK start", batNum);
+        }
+        executor.schedule(() -> {
+            if (batNum == 3) {
+                int returnCode = random.nextInt(5);
+                log.info("BATTERY ON {}: sending failure code={}", batNum, returnCode);
+                transmitRealtimeTM(nack(commandPacket, PUS_SUBTYPE_NACK_COMPLETION, returnCode));
+            } else {
+                powerDataHandler.setBatteryOn(batNum);
+                transmitRealtimeTM(ack(commandPacket, PUS_SUBTYPE_ACK_COMPLETION));
+            }
+        }, 1500, TimeUnit.MILLISECONDS);
+    }
+
+    private void switchBatteryOff(PusTcPacket commandPacket) {
+        transmitRealtimeTM(ack(commandPacket, PUS_SUBTYPE_ACK_START));
+        int batNum = commandPacket.getUserDataBuffer().get(0);
+        log.info("BATTERY OFF {}", batNum);
+        executor.schedule(() -> {
+            powerDataHandler.setBatteryOff(batNum);
+            transmitRealtimeTM(ack(commandPacket, PUS_SUBTYPE_ACK_COMPLETION));
+        }, 500, TimeUnit.MILLISECONDS);
+    }
+
+    // -------------------------------------------------------------------------
+    // ST[01] ACK/NACK helper packet builders
+    // -------------------------------------------------------------------------
+
+    /**
+     * Builds a ST[01,subtype] acknowledgement packet.
+     * User data = first 4 bytes of the TC (so YAMCS can correlate it).
+     */
+    protected PusTmPacket ack(PusTcPacket commandPacket, int subtype) {
+        PusTmPacket ackPacket = new PusTmPacket(mainApid, 4, PUS_TYPE_ACK, subtype);
+        ByteBuffer bb = ackPacket.getUserDataBuffer();
+        bb.put(commandPacket.getBytes(), 0, 4);
+        return ackPacket;
+    }
+
+    /**
+     * Builds a ST[01,subtype] negative acknowledgement packet with error code.
+     * User data = first 4 bytes of TC + 4-byte error code.
+     */
+    public PusTmPacket nack(PusTcPacket commandPacket, int subtype, int code) {
+        PusTmPacket ackPacket = new PusTmPacket(mainApid, 8, PUS_TYPE_ACK, subtype);
+        ByteBuffer bb = ackPacket.getUserDataBuffer();
+        bb.put(commandPacket.getBytes(), 0, 4);
+        bb.putInt(code);
+        return ackPacket;
+    }
+
+    private void loadApidsFromMdb() {
+        try {
+            var apids = MdbLoader.loadApids(MDB_SPEC);
+            if (apids.isEmpty()) {
+                log.warn("No APIDs loaded from MDB {}, keeping defaults", MDB_SPEC);
+                return;
+            }
+            apidTime = apids.getOrDefault("Time", apidTime);
+            apidFsw = apids.getOrDefault("FSW", apidFsw);
+            apidAocs = apids.getOrDefault("AOCS", apidAocs);
+            apidCom = apids.getOrDefault("COM", apidCom);
+            apidPrp = apids.getOrDefault("PRP", apidPrp);
+            apidSys = apids.getOrDefault("SYS", apidSys);
+            apidThm = apids.getOrDefault("THM", apidThm);
+            apidEps = apids.getOrDefault("EPS", apidEps);
+
+            mainApid = apidFsw;
+            log.info("Loaded APIDs from MDB: {}", apids);
+        } catch (Exception e) {
+            log.warn("Failed to load APIDs from MDB {}, keeping defaults", MDB_SPEC, e);
+        }
+    }
+
+    int getMainApid() {
+        return mainApid;
+    }
+
+    // -------------------------------------------------------------------------
+    // Link setters (called by SimulatorCommander)
+    // -------------------------------------------------------------------------
+
+    @Override
+    protected void setTmLink(TcpTmTcLink tmLink) {
+        this.tmLink = tmLink;
+    }
+
+    @Override
+    protected void setTm2Link(TcpTmTcLink tm2Link) {
+        // PUS simulator only uses the primary TM link
+    }
+
+    @Override
+    protected void setLosLink(TcpTmTcLink losLink) {
+        // PUS simulator does not support LOS recording
     }
 
     @Override
@@ -158,115 +431,7 @@ public class PusSimulator extends AbstractSimulator {
 
     @Override
     public void transmitCfdp(CfdpPacket packet) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void processTc(SimulatorCcsdsPacket tc) {
-        PusTcPacket pustc = (PusTcPacket) tc;
-        if (tc.getAPID() == CfdpCcsdsPacket.APID) {
-            // cfdpReceiver.processCfdp(tc.getUserDataBuffer());
-        } else {
-            transmitRealtimeTM(ack(pustc, 1));
-            try {
-                pendingCommands.put(pustc);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }
-    }
-
-    private void switchBatteryOn(PusTcPacket commandPacket) {
-        int batNum = commandPacket.getUserDataBuffer().get(0);
-        if (batNum < 1 || batNum > 3) {
-            log.info("CMD: BATERRY ON {}, sending NACK start", batNum);
-            transmitRealtimeTM(nack(commandPacket, 4, START_FAILURE_INVALID_VOLTAGE_NUM));
-            return;
-        }
-        if (batNum != 2) {
-            log.info("CMD: BATERRY ON {} ACK start", batNum);
-            transmitRealtimeTM(ack(commandPacket, 3));
-        } else {
-            log.info("CMD: BATERRY ON {}, skip ACK start", batNum);
-        }
-
-        executor.schedule(() -> {
-            if (batNum == 3) {
-                int returnCode = random.nextInt(5);
-                log.info("CMD: BATERRY ON {}, sending failure completion with code {}", batNum, returnCode);
-                transmitRealtimeTM(nack(commandPacket, 8, returnCode));
-            } else {
-                powerDataHandler.setBatteryOn(batNum);
-                transmitRealtimeTM(ack(commandPacket, 7));
-            }
-        }, 1500, TimeUnit.MILLISECONDS);
-    }
-
-    private void switchBatteryOff(PusTcPacket commandPacket) {
-        transmitRealtimeTM(ack(commandPacket, 3));
-        int batNum = commandPacket.getUserDataBuffer().get(0);
-        log.info("CMD: BATERRY OFF {}", batNum);
-        executor.schedule(() -> {
-            powerDataHandler.setBatteryOff(batNum);
-            transmitRealtimeTM(ack(commandPacket, 7));
-        }, 500, TimeUnit.MILLISECONDS);
-    }
-
-    private void executePendingCommands() {
-        PusTcPacket commandPacket;
-        while ((commandPacket = pendingCommands.poll()) != null) {
-            try {
-                log.info("Received PUS TC : {} (now: {})", commandPacket, PusTime.now());
-                switch (commandPacket.getType()) {
-                case 5 -> pus5Service.executeTc(commandPacket);
-                case 11 -> pus11Service.executeTc(commandPacket);
-                case 17 -> pus17Service.executeTc(commandPacket);
-                case 25 -> {
-                    switch (commandPacket.getSubtype()) {
-                    case 1 -> switchBatteryOn(commandPacket);
-                    case 2 -> switchBatteryOff(commandPacket);
-                    default -> log.error("Invalid command  subtype {}", commandPacket.getSubtype());
-                    }
-                }
-                default -> log.warn("Unknown command type {}", commandPacket.getType());
-                }
-            } catch (Exception e) {
-                log.warn("Error executing command", e);
-            }
-        }
-    }
-
-    protected static PusTmPacket ack(PusTcPacket commandPacket, int subtype) {
-        PusTmPacket ackPacket = new PusTmPacket(MAIN_APID, 4, PUS_TYPE_ACK, subtype);
-
-        ByteBuffer bb = ackPacket.getUserDataBuffer();
-        bb.put(commandPacket.getBytes(), 0, 4);
-        return ackPacket;
-    }
-
-    public static PusTmPacket nack(PusTcPacket commandPacket, int subtype, int code) {
-        PusTmPacket ackPacket = new PusTmPacket(MAIN_APID, 8, PUS_TYPE_ACK, subtype);
-
-        ByteBuffer bb = ackPacket.getUserDataBuffer();
-        bb.put(commandPacket.getBytes(), 0, 4);
-        bb.putInt(code);
-        return ackPacket;
-    }
-
-    @Override
-    protected void setTmLink(TcpTmTcLink tmLink) {
-        this.tmLink = tmLink;
-    }
-
-    @Override
-    protected void setTm2Link(TcpTmTcLink tm2Link) {
-        // ignore only send packets on tmlink
-    }
-
-    @Override
-    protected void setLosLink(TcpTmTcLink losLink) {
-        // ignore only send packets on tmlink
+        // TODO: implement CFDP transmission
     }
 
     @Override

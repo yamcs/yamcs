@@ -25,17 +25,18 @@ public class Pus5ServiceTest {
 
         service.sendEvent();
         PusTmPacket event = simulator.takeLast();
-        assertEquals(1, event.getBytes().length - PusTmPacket.DATA_OFFSET - 2);
         assertEquals(2, event.getUserDataBuffer().get(0) & 0xFF);
+        assertEquals(1, event.getBytes().length - PusTmPacket.DATA_OFFSET - 2);
 
         simulator.clear();
-        service.executeTc(tc(6, 2));
+        service.executeTc(tc(simulator.getMainApid(), 6, 2));
         assertEquals(2, simulator.packets.size());
 
         simulator.clear();
         service.sendEvent();
         event = simulator.takeLast();
         assertEquals(1, event.getUserDataBuffer().get(0) & 0xFF);
+        assertEquals(1, event.getBytes().length - PusTmPacket.DATA_OFFSET - 2);
     }
 
     @Test
@@ -45,10 +46,10 @@ public class Pus5ServiceTest {
         service.start();
 
         simulator.clear();
-        service.executeTc(tc(6, 2));
+        service.executeTc(tc(simulator.getMainApid(), 6, 2));
         simulator.clear();
 
-        service.executeTc(new PusTcPacket(PusSimulator.MAIN_APID, 0, 0, 5, 7));
+        service.executeTc(new PusTcPacket(simulator.getMainApid(), 0, 0, 5, 7));
 
         assertEquals(3, simulator.packets.size());
         assertEquals(PusSimulator.PUS_TYPE_ACK, simulator.packets.get(0).getType());
@@ -57,8 +58,8 @@ public class Pus5ServiceTest {
         assertEquals(PusSimulator.PUS_TYPE_ACK, simulator.packets.get(2).getType());
     }
 
-    private static PusTcPacket tc(int subtype, int eventId) {
-        PusTcPacket tc = new PusTcPacket(PusSimulator.MAIN_APID, 2, 0, 5, subtype);
+    private static PusTcPacket tc(int apid, int subtype, int eventId) {
+        PusTcPacket tc = new PusTcPacket(apid, 2, 0, 5, subtype);
         ByteBuffer bb = tc.getUserDataBuffer();
         bb.put((byte) 1);
         bb.put((byte) eventId);
