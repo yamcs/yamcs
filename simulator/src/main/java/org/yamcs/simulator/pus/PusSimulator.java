@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.cfdp.pdu.CfdpPacket;
+import org.yamcs.cfdp.pdu.CfdpHeader;
 import org.yamcs.simulator.AbstractSimulator;
 import org.yamcs.simulator.cfdp.CfdpCcsdsPacket;
 import org.yamcs.simulator.cfdp.CfdpReceiver;
@@ -165,15 +166,11 @@ public class PusSimulator extends AbstractSimulator {
      * Uses APID_AOCS since flight/attitude data belongs to AOCS subsystem.
      */
     private void sendFlightPacket() {
-        PusTmPacket packet = new PusTmPacket(
-            apidAocs,
-            4 + flightDataHandler.dataSize(),
-            PUS_TYPE_HK,
-            25
-        );
+        PusTmPacket packet = newHousekeepingPacket(apidAocs, "AOCS", 0, 1 + flightDataHandler.dataSize());
         ByteBuffer buffer = packet.getUserDataBuffer();
-        buffer.putInt(0); // structure ID 0 = flight data
+        buffer.put((byte) 0); // structure ID 0 = flight data
         flightDataHandler.fillPacket(buffer.slice());
+        padWithZeros(buffer);
         transmitRealtimeTM(packet);
     }
 
@@ -184,51 +181,35 @@ public class PusSimulator extends AbstractSimulator {
     private void sendHkTm() {
         try {
             // EPS subsystem - power data (APID_EPS = 112)
-            PusTmPacket packet = new PusTmPacket(
-                apidEps,
-                4 + powerDataHandler.dataSize(),
-                PUS_TYPE_HK,
-                25
-            );
+            PusTmPacket packet = newHousekeepingPacket(apidEps, "EPS", 1, 1 + powerDataHandler.dataSize());
             ByteBuffer buffer = packet.getUserDataBuffer();
-            buffer.putInt(1); // structure ID 1 = power
+            buffer.put((byte) 1); // structure ID 1 = power
             powerDataHandler.fillPacket(buffer.slice());
+            padWithZeros(buffer);
             transmitRealtimeTM(packet);
 
             // FSW subsystem - DHS data (APID_FSW = 16)
-            packet = new PusTmPacket(
-                apidFsw,
-                4 + dhsHandler.dataSize(),
-                PUS_TYPE_HK,
-                25
-            );
+            packet = newHousekeepingPacket(apidFsw, "FSW", 2, 1 + dhsHandler.dataSize());
             buffer = packet.getUserDataBuffer();
-            buffer.putInt(2); // structure ID 2 = DHS
+            buffer.put((byte) 2); // structure ID 2 = DHS
             dhsHandler.fillPacket(buffer.slice());
+            padWithZeros(buffer);
             transmitRealtimeTM(packet);
 
             // PRP subsystem - RCS/propulsion data (APID_PRP = 64)
-            packet = new PusTmPacket(
-                apidPrp,
-                4 + rcsHandler.dataSize(),
-                PUS_TYPE_HK,
-                25
-            );
+            packet = newHousekeepingPacket(apidPrp, "PRP", 3, 1 + rcsHandler.dataSize());
             buffer = packet.getUserDataBuffer();
-            buffer.putInt(3); // structure ID 3 = RCS
+            buffer.put((byte) 3); // structure ID 3 = RCS
             rcsHandler.fillPacket(buffer.slice());
+            padWithZeros(buffer);
             transmitRealtimeTM(packet);
 
             // EPS subsystem - LVPDU data (APID_EPS = 112)
-            packet = new PusTmPacket(
-                apidEps,
-                4 + epslvpduHandler.dataSize(),
-                PUS_TYPE_HK,
-                25
-            );
+            packet = newHousekeepingPacket(apidEps, "EPS", 4, 1 + epslvpduHandler.dataSize());
             buffer = packet.getUserDataBuffer();
-            buffer.putInt(4); // structure ID 4 = EPS LVPDU
+            buffer.put((byte) 4); // structure ID 4 = EPS LVPDU
             epslvpduHandler.fillPacket(buffer.slice());
+            padWithZeros(buffer);
             transmitRealtimeTM(packet);
 
         } catch (Exception e) {
@@ -250,6 +231,23 @@ public class PusSimulator extends AbstractSimulator {
     void transmitRealtimeTM(PusTmPacket packet) {
         packet.fillChecksum();
         tmLink.sendPacket(packet.getBytes());
+    }
+
+    private PusTmPacket newHousekeepingPacket(int apid, String apidLabel, int structureId, int minimumUserDataLength) {
+        int expectedBits = MdbLoader.loadHousekeepingPacketSize(MDB_SPEC, apidLabel, structureId);
+        int userDataLength = minimumUserDataLength;
+        if (expectedBits > 0) {
+            // XTCE container size corresponds to the housekeeping payload for this report variant.
+            int expectedUserDataLength = Math.max(0, (expectedBits + 7) / 8);
+            userDataLength = Math.max(userDataLength, expectedUserDataLength);
+        }
+        return new PusTmPacket(apid, userDataLength, PUS_TYPE_HK, 25);
+    }
+
+    private void padWithZeros(ByteBuffer buffer) {
+        while (buffer.hasRemaining()) {
+            buffer.put((byte) 0);
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -431,7 +429,12 @@ public class PusSimulator extends AbstractSimulator {
 
     @Override
     public void transmitCfdp(CfdpPacket packet) {
-        // TODO: implement CFDP transmission
+        CfdpHeader header = packet.getHeader();
+        int length = header.getLength() + packet.getDataFieldLength();
+        CfdpCcsdsPacket pkt = new CfdpCcsdsPacket(length);
+        ByteBuffer buffer = pkt.getUserDataBuffer();
+        packet.writeToBuffer(buffer);
+        tmLink.sendImmediate(pkt);
     }
 
     @Override

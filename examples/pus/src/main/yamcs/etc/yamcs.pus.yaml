@@ -55,7 +55,7 @@ services:
        AckLimitReached: suspend
   - class: org.yamcs.pus.PusEventDecoder
     args: 
-        eventIdParameter: /PUS5/event_id
+        eventIdParameter: /jTYU/event_definition_id
         eventTemplateFile: etc/events.json
 
 dataLinks:
@@ -92,20 +92,8 @@ dataLinks:
         tcoService: tco0
         
 mdb:
-  # Configuration of the active loaders
-  # Valid loaders are: sheet, xtce or fully qualified name of the class
   - type: "xtce"
-    spec: "mdb/dt.xml"
-  - type: "xtce"
-    spec: "mdb/pus.xml"
-  - type: "xtce"
-    spec: "mdb/pus5.xml"
-  - type: "xtce"
-    spec: "mdb/pus11.xml"
-  - type: "xtce"
-    spec: "mdb/pus17.xml"
-  - type: "xtce"
-    spec: "mdb/landing.xml"
+    spec: "mdb/jtyu_mdb.xml"
 
 #Configuration for streams created at server startup
 streamConfig:

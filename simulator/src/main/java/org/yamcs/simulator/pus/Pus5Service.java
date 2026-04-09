@@ -1,6 +1,7 @@
 package org.yamcs.simulator.pus;
 
 import java.nio.ByteBuffer;
+import java.util.HexFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -11,6 +12,7 @@ public class Pus5Service extends AbstractPusService {
 
     private static final String MDB_RESOURCE_PATH = "/jtyu_mdb.xml";
     private static final List<Integer> DEFAULT_EVENT_SUBTYPES = List.of(1, 2, 3, 4);
+    private static final HexFormat HEX = HexFormat.of().withUpperCase();
 
     private Map<Integer, String> eventDefinitions = new LinkedHashMap<>();
     private final Map<Integer, Boolean> eventEnabled = new LinkedHashMap<>();
@@ -42,11 +44,31 @@ public class Pus5Service extends AbstractPusService {
             log.info("Registered event id={} label={}", eventId, eventDefinitions.get(eventId));
         }
 
-        pusSimulator.executor.scheduleAtFixedRate(
-            () -> sendEvent(), 0, 1000, TimeUnit.MILLISECONDS
-        );
+        pusSimulator.executor.scheduleAtFixedRate(this::safeSendEvent, 0, 1000, TimeUnit.MILLISECONDS);
+
+        emitStartupEvents();
 
         log.info("Pus5Service started with {} event(s) loaded from MDB", eventDefinitions.size());
+    }
+
+    private void safeSendEvent() {
+        try {
+            sendEvent();
+        } catch (Exception e) {
+            log.error("Error while sending periodic PUS5 event", e);
+        }
+    }
+
+    private void emitStartupEvents() {
+        int startupCount = 0;
+        for (int eventId : eventDefinitions.keySet()) {
+            if (!eventEnabled.getOrDefault(eventId, false)) {
+                continue;
+            }
+            int subtype = eventReportSubtypes.get(startupCount % eventReportSubtypes.size());
+            emitEvent(eventId, subtype, "startup");
+            startupCount++;
+        }
     }
 
     public void sendEvent() {
@@ -54,16 +76,8 @@ public class Pus5Service extends AbstractPusService {
         if (eventId == null) {
             return;
         }
-        String eventLabel = eventDefinitions.get(eventId);
         int subtype = getSubtypeForEmission(count);
-        byte[] payload = buildEventPayload(eventId);
-        PusTmPacket packet = newPacket(subtype, payload.length);
-        ByteBuffer bb = packet.getUserDataBuffer();
-        bb.put(payload);
-
-        pusSimulator.transmitRealtimeTM(packet);
-
-        log.debug("Sent TM[05,{}] for event id={} label={}", subtype, eventId, eventLabel);
+        emitEvent(eventId, subtype, "periodic");
         count++;
     }
 
@@ -153,19 +167,28 @@ public class Pus5Service extends AbstractPusService {
                 continue;
             }
             int subtype = getSubtypeForEmission(reported);
-            String eventLabel = eventDefinitions.get(eventId);
-            byte[] payload = buildEventPayload(eventId);
-            PusTmPacket packet = newPacket(subtype, payload.length);
-            packet.getUserDataBuffer().put(payload);
-            pusSimulator.transmitRealtimeTM(packet);
+            emitEvent(eventId, subtype, "disabled");
             reported++;
         }
         log.info("Pus5Service: reported {} disabled event(s)", reported);
         ack_completion(tc);
     }
 
-    private byte[] buildEventPayload(int eventId) {
-        // In jtyu_mdb.xml, Service 5 event packets carry only `event_definition_id`.
-        return new byte[] { (byte) (eventId & 0xFF) };
+    private void emitEvent(int eventId, int subtype, String context) {
+        String eventLabel = eventDefinitions.get(eventId);
+        byte[] payload = buildEventPayload(eventId, subtype);
+        PusTmPacket packet = newPacket(subtype, payload.length);
+        packet.getUserDataBuffer().put(payload);
+        pusSimulator.transmitRealtimeTM(packet);
+        log.info("Sent TM[05,{}] for {} event id={} label={} payload={}", subtype, context, eventId, eventLabel,
+                HEX.formatHex(payload));
+    }
+
+    private byte[] buildEventPayload(int eventId, int subtype) {
+        if (eventId < 0 || eventId > 0xFF) {
+            throw new IllegalArgumentException("Event id " + eventId + " does not fit in one byte");
+        }
+        log.debug("Building raw TM[05,{}] event payload for event id={}", subtype, eventId);
+        return new byte[] { (byte) eventId };
     }
 }
