@@ -11,13 +11,14 @@ import org.yamcs.utils.StringConverter;
 public class StreamSelectBinaryFunctionTest extends YarchTestCase {
 
     final int n = 10;
+    final int xLength = 300;
 
     public void createFeeder1() throws YarchException {
         Stream s;
         final TupleDefinition tpdef = new TupleDefinition();
         tpdef.addColumn("x", DataType.BINARY);
         tpdef.addColumn("y", DataType.INT);
-        byte[] x = new byte[300];
+        byte[] x = new byte[xLength];
         s = (new Stream(ydb, "stream_in", tpdef) {
             @Override
             public void doStart() {
@@ -40,12 +41,31 @@ public class StreamSelectBinaryFunctionTest extends YarchTestCase {
     public void testSubstring() throws Exception {
         createFeeder1();
 
-        execute("create stream stream_out1 as select substring(x, y) from stream_in");
+        execute("create stream stream_out1 as select substring(x, y), y from stream_in");
         List<Tuple> l = fetchAll("stream_out1");
         assertEquals(n, l.size());
         for (int i = 0; i < n; i++) {
             Tuple t = l.get(i);
             byte[] x = (byte[]) t.getColumn(0);
+            int y = (int) t.getColumn(1);
+            assertEquals(xLength-y, x.length);
+            assertEquals(i, ByteArrayUtils.decodeShort(x, 0));
+        }
+    }
+
+    @Test
+    public void testSubstring_withLength() throws Exception {
+        createFeeder1();
+
+        int substringLength = 2;
+
+        execute("create stream stream_out1 as select substring(x, y, " + substringLength + ") from stream_in");
+        List<Tuple> l = fetchAll("stream_out1");
+        assertEquals(n, l.size());
+        for (int i = 0; i < n; i++) {
+            Tuple t = l.get(i);
+            byte[] x = (byte[]) t.getColumn(0);
+            assertEquals(substringLength, x.length);
             assertEquals(i, ByteArrayUtils.decodeShort(x, 0));
         }
     }
