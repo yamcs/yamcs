@@ -3,7 +3,6 @@ package org.yamcs.pus;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -14,8 +13,10 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.InitException;
 import org.yamcs.ProcessorConfig;
 import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.StreamConfig;
+import org.yamcs.StreamConfig.TmStreamConfigEntry;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.archive.EventRecorder;
@@ -39,10 +40,6 @@ import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.protobuf.Db.Event;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
-
-
-import org.yamcs.Spec.OptionType;
-import org.yamcs.StreamConfig.TmStreamConfigEntry;
 
 /**
  * Generates Yamcs events from PUS event packets (PUS service 5).
@@ -92,7 +89,8 @@ public class PusEventDecoder extends AbstractYamcsService {
         if (config.containsKey("realtimeStreams")) {
             var realtimeEventStream = findStream(config.getString("realtimeEventStream"));
 
-            List<String> streamNames = config.getList("realtimeStreams");
+            List<String> streamNames;
+            streamNames = config.getList("realtimeStreams");
             for (String sn : streamNames) {
                 TmStreamConfigEntry sce = streamConfig.getTmEntry(sn);
                 if (sce == null) {
@@ -240,10 +238,23 @@ public class PusEventDecoder extends AbstractYamcsService {
                 return;
             }
             String eventId = eventIdValue.getEngValue().getStringValue();
+            String rawEventId = null;
+            if (eventIdValue.getRawValue() != null) {
+                rawEventId = Integer.toString(eventIdValue.getRawValue().getUint32Value());
+            }
+            if (eventId == null || eventId.isBlank() || "UNDEF".equals(eventId)) {
+                if (rawEventId != null) {
+                    eventId = rawEventId;
+                }
+            }
 
             String msg = eventFormatter.format(apid, eventId, params);
+            if (msg == null && rawEventId != null && !rawEventId.equals(eventId)) {
+                // If engineering value had no template, retry with raw numeric id.
+                msg = eventFormatter.format(apid, rawEventId, params);
+            }
             if (msg == null) {
-                log.warn("No template found for message apid={}, eventId={}", apid, eventId);
+                log.warn("No template found for message apid={}, eventId={}, rawEventId={}", apid, eventId, rawEventId);
             } else {
                 Event ev = Event.newBuilder()
                         .setType(eventId)

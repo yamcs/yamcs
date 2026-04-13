@@ -11,7 +11,7 @@ import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
  * 
  * <pre>
  * rate exponential value - 1 byte = 2 (reporting time every 2^2 = 4 seconds)
- * time - 8 byes
+ * time - 6 bytes (CUC T-field, implicit p-field 0x2E)
  * crc - 2 bytes
  * </pre>
  * 
@@ -22,12 +22,12 @@ public class PusTmTimePacket extends SimulatorCcsdsPacket {
     static final CrcCciitCalculator crcCalculator = new CrcCciitCalculator();
 
     public PusTmTimePacket() {
-        super(ByteBuffer.allocate(6 + 1 + PusTime.LENGTH_BYTES + 2));
+        super(ByteBuffer.allocate(6 + 1 + PusTime.TM_CUC_LENGTH_BYTES + 2));
         setHeader(0, 1, 0, 3, getSeq(0));
         bb.position(6);
         bb.put((byte)2);
         PusTime now = PusTime.now();
-        now.encode(bb);
+        now.encodeTmCuc(bb);
         fillChecksum();
     }
 

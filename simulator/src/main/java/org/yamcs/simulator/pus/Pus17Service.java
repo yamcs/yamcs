@@ -9,7 +9,8 @@ public class Pus17Service extends AbstractPusService {
     @Override
     public void executeTc(PusTcPacket tc) {
 
-        if (tc.getSubtype() != 1) {
+        // jTYU MDB defines are_you_alive_command as TC[17,2].
+        if (tc.getSubtype() != 2) {
             log.info("invalid subtype {}, sending NACK start", tc.getSubtype());
             nack_start(tc, START_ERR_INVALID_PUS_SUBTYPE);
             return;

@@ -1,19 +1,15 @@
 package org.yamcs.simulator.pus;
 
 import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.yamcs.simulator.SimulatorCcsdsPacket;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 
 public class PusTmPacket extends SimulatorCcsdsPacket {
     public static final int SH_OFFSET = 6;
-    public static final int DATA_OFFSET = SH_OFFSET + 7 + PusTime.LENGTH_BYTES;
+    // PUS secondary header (5 bytes) + TM CUC time (6 bytes) = 11 bytes after CCSDS primary header.
+    public static final int DATA_OFFSET = SH_OFFSET + 5 + PusTime.TM_CUC_LENGTH_BYTES;
 
     static final CrcCciitCalculator crcCalculator = new CrcCciitCalculator();
-
-    protected static HashMap<Integer, AtomicInteger> countMap = new HashMap<>(2);
 
     public PusTmPacket(byte[] packet) {
         super(packet);
@@ -27,10 +23,9 @@ public class PusTmPacket extends SimulatorCcsdsPacket {
         bb.put((byte) type);
         bb.put((byte) subtype);
         int destination = 0;
-        bb.putShort((short) getCount(destination));
         bb.putShort((short) destination);
         PusTime now = PusTime.now();
-        now.encode(bb);
+        now.encodeTmCuc(bb);
     }
 
     public void setType(int type) {
@@ -66,8 +61,4 @@ public class PusTmPacket extends SimulatorCcsdsPacket {
         bb.putShort((short) crc);
     }
 
-    protected static int getCount(int apid) {
-        AtomicInteger count = countMap.computeIfAbsent(apid, a -> new AtomicInteger(0));
-        return count.getAndIncrement() & 0xFFFF;
-    }
 }

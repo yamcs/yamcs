@@ -78,7 +78,19 @@ public class SequenceContainerProcessor {
                         buf.setPosition(buf.getPosition() + se.getRepeatEntry().getOffsetSizeInBits());
                     }
                 }
+            } catch (XtceProcessingException e) {
+                if (options.ignoreOutOfContainerEntries()
+                        && e.getMessage() != null
+                        && e.getMessage().contains("falls beyond the end of the container")) {
+                    break;
+                }
+                throw e;
             } catch (BufferUnderflowException | BufferOverflowException | IndexOutOfBoundsException e) {
+                if (options.ignoreOutOfContainerEntries()) {
+                    // Entry starts inside the packet but extends beyond available bits.
+                    // In ignore mode, stop decoding this container without raising an exception.
+                    break;
+                }
                 if (se instanceof ParameterEntry) {
                     ParameterEntry pe = (ParameterEntry) se;
                     throw new XtceProcessingException(

@@ -10,6 +10,8 @@ import java.nio.ByteBuffer;
  */
 public class PusTime implements Comparable<PusTime> {
     public static final int LENGTH_BYTES = 8;
+    // TM uses a 6-byte CUC T-field (implicit p-field 0x2E) as defined by the jTYU MDB.
+    public static final int TM_CUC_LENGTH_BYTES = 6;
     static final long NANOS_IN_SEC = 1000_000_000l;
     static final long MAX_FRACTIONAL_PART = 0xFFFFFFl;
     static final byte TIME_PFIELD = (byte) 0x2F;
@@ -32,6 +34,16 @@ public class PusTime implements Comparable<PusTime> {
         bb.put((byte) (fractionalTime >> 16));
         bb.putShort((short) (fractionalTime & 0xFFFF));
 
+    }
+
+    /**
+     * Encode TM CUC time as 6-byte T-field (coarse 4 bytes + fine 2 bytes).
+     * The corresponding p-field is implicit (0x2E / 46) and is not part of the packet.
+     */
+    public void encodeTmCuc(ByteBuffer bb) {
+        bb.putInt(seconds);
+        int frac16 = (int) ((fractionalTime * 65535L) / MAX_FRACTIONAL_PART);
+        bb.putShort((short) (frac16 & 0xFFFF));
     }
 
     public static PusTime now() {

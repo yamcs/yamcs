@@ -166,9 +166,9 @@ public class PusSimulator extends AbstractSimulator {
      * Uses APID_AOCS since flight/attitude data belongs to AOCS subsystem.
      */
     private void sendFlightPacket() {
-        PusTmPacket packet = newHousekeepingPacket(apidAocs, "AOCS", 0, 1 + flightDataHandler.dataSize());
+        PusTmPacket packet = newHousekeepingPacket(apidAocs, "AOCS", 0, Integer.BYTES + flightDataHandler.dataSize());
         ByteBuffer buffer = packet.getUserDataBuffer();
-        buffer.put((byte) 0); // structure ID 0 = flight data
+        buffer.putInt(0); // structure ID 0 = flight data (XTCE defines structure_id as 32-bit)
         flightDataHandler.fillPacket(buffer.slice());
         padWithZeros(buffer);
         transmitRealtimeTM(packet);
@@ -181,33 +181,33 @@ public class PusSimulator extends AbstractSimulator {
     private void sendHkTm() {
         try {
             // EPS subsystem - power data (APID_EPS = 112)
-            PusTmPacket packet = newHousekeepingPacket(apidEps, "EPS", 1, 1 + powerDataHandler.dataSize());
+            PusTmPacket packet = newHousekeepingPacket(apidEps, "EPS", 1, Integer.BYTES + powerDataHandler.dataSize());
             ByteBuffer buffer = packet.getUserDataBuffer();
-            buffer.put((byte) 1); // structure ID 1 = power
+            buffer.putInt(1); // structure ID 1 = power
             powerDataHandler.fillPacket(buffer.slice());
             padWithZeros(buffer);
             transmitRealtimeTM(packet);
 
             // FSW subsystem - DHS data (APID_FSW = 16)
-            packet = newHousekeepingPacket(apidFsw, "FSW", 2, 1 + dhsHandler.dataSize());
+            packet = newHousekeepingPacket(apidFsw, "FSW", 2, Integer.BYTES + dhsHandler.dataSize());
             buffer = packet.getUserDataBuffer();
-            buffer.put((byte) 2); // structure ID 2 = DHS
+            buffer.putInt(2); // structure ID 2 = DHS
             dhsHandler.fillPacket(buffer.slice());
             padWithZeros(buffer);
             transmitRealtimeTM(packet);
 
             // PRP subsystem - RCS/propulsion data (APID_PRP = 64)
-            packet = newHousekeepingPacket(apidPrp, "PRP", 3, 1 + rcsHandler.dataSize());
+            packet = newHousekeepingPacket(apidPrp, "PRP", 3, Integer.BYTES + rcsHandler.dataSize());
             buffer = packet.getUserDataBuffer();
-            buffer.put((byte) 3); // structure ID 3 = RCS
+            buffer.putInt(3); // structure ID 3 = RCS
             rcsHandler.fillPacket(buffer.slice());
             padWithZeros(buffer);
             transmitRealtimeTM(packet);
 
             // EPS subsystem - LVPDU data (APID_EPS = 112)
-            packet = newHousekeepingPacket(apidEps, "EPS", 4, 1 + epslvpduHandler.dataSize());
+            packet = newHousekeepingPacket(apidEps, "EPS", 4, Integer.BYTES + epslvpduHandler.dataSize());
             buffer = packet.getUserDataBuffer();
-            buffer.put((byte) 4); // structure ID 4 = EPS LVPDU
+            buffer.putInt(4); // structure ID 4 = EPS LVPDU
             epslvpduHandler.fillPacket(buffer.slice());
             padWithZeros(buffer);
             transmitRealtimeTM(packet);
@@ -358,9 +358,13 @@ public class PusSimulator extends AbstractSimulator {
      * User data = first 4 bytes of the TC (so YAMCS can correlate it).
      */
     protected PusTmPacket ack(PusTcPacket commandPacket, int subtype) {
-        PusTmPacket ackPacket = new PusTmPacket(mainApid, 4, PUS_TYPE_ACK, subtype);
+        // The jTYU MDB defines successful_acceptance / successful_completion with:
+        // - apid_tcack + seq_count_tcack (decoded from the first 4 bytes of the TC primary header)
+        // - plus a 1-byte (8-bit) error code field that must be present even on success.
+        PusTmPacket ackPacket = new PusTmPacket(mainApid, 5, PUS_TYPE_ACK, subtype);
         ByteBuffer bb = ackPacket.getUserDataBuffer();
         bb.put(commandPacket.getBytes(), 0, 4);
+        bb.put((byte) 0); // acceptance_error_code / completion_error_code = 0 on success
         return ackPacket;
     }
 

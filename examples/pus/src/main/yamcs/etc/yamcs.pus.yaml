@@ -70,9 +70,12 @@ dataLinks:
     packetPreprocessorArgs:
         errorDetection:
            type: CRC-16-CCIIT
+        # jTYU MDB defines TM CUC as a 6-byte T-field (implicit p-field 0x2E) starting at byte 11.
+        pktTimeOffset: 11
         timeEncoding:
            type: CUC
-           epoch: NONE           
+           epoch: NONE
+           implicitPField: 46
         tcoService: tco0
     
   - name: tc_realtime

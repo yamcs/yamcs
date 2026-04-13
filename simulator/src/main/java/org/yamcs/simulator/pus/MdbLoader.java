@@ -5,25 +5,34 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.xtce.BooleanExpression;
+import org.yamcs.xtce.Container;
+import org.yamcs.xtce.ContainerEntry;
 import org.yamcs.xtce.Comparison;
 import org.yamcs.xtce.ComparisonList;
 import org.yamcs.xtce.Condition;
+import org.yamcs.xtce.DynamicIntegerValue;
 import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.ExpressionList;
+import org.yamcs.xtce.FixedIntegerValue;
 import org.yamcs.xtce.MatchCriteria;
 import org.yamcs.xtce.OperatorType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
+import org.yamcs.xtce.ParameterType;
+import org.yamcs.xtce.Repeat;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SequenceEntry;
+import org.yamcs.xtce.SequenceEntry.ReferenceLocationType;
 import org.yamcs.xtce.SpaceSystem;
 import org.yamcs.xtce.ValueEnumeration;
 import org.yamcs.xtce.xml.XtceStaxReader;
@@ -106,7 +115,25 @@ public class MdbLoader {
         }
 
         SequenceContainer match = findHousekeepingContainer(ss, apidLabel, structureId);
-        return match == null ? -1 : match.getSizeInBits();
+        if (match == null && apidLabel != null) {
+            // Some MDB variants use a different APID label than the simulator alias.
+            // Fall back to structure-id based lookup so we still derive a safe packet size.
+            match = findHousekeepingContainer(ss, null, structureId);
+        }
+        if (match == null) {
+            return -1;
+        }
+
+        int sizeInBits = match.getSizeInBits();
+        if (sizeInBits > 0) {
+            return sizeInBits;
+        }
+
+        int derived = computeContainerSize(match, new HashSet<>());
+        if (derived < 0) {
+            log.warn("Could not derive size for housekeeping container {}", match.getQualifiedName());
+        }
+        return derived;
     }
 
     private static SpaceSystem loadSpaceSystem(String spec) {
@@ -176,13 +203,14 @@ public class MdbLoader {
     }
 
     private static SequenceContainer findHousekeepingContainer(SequenceContainer sc, String apidLabel, int structureId) {
-        if (!containsParameter(sc, "structure_id")) {
-            return null;
-        }
-        Integer st = findEqualsInt(sc.getRestrictionCriteria(), "service_type");
-        Integer sst = findEqualsInt(sc.getRestrictionCriteria(), "structure_id");
-        String apid = findEqualsString(sc.getRestrictionCriteria(), "apid");
-        if (st != null && st == 3 && sst != null && sst == structureId && (apidLabel == null || apidLabel.equals(apid))) {
+        Integer st = findEqualsIntInHierarchy(sc, "service_type");
+        Integer sstype = findEqualsIntInHierarchy(sc, "subservice_type");
+        Integer sst = findEqualsIntInHierarchy(sc, "structure_id");
+        String apid = findEqualsStringInHierarchy(sc, "apid");
+        if (st != null && st == 3
+                && sstype != null && sstype == 25
+                && sst != null && sst == structureId
+                && (apidLabel == null || apidLabel.equals(apid))) {
             return sc;
         }
         return null;
@@ -272,5 +300,122 @@ public class MdbLoader {
     private static String parseEqString(Parameter p, String rhs, String expectedParamName) {
         if (p == null || rhs == null || !expectedParamName.equals(p.getName())) return null;
         return rhs.trim();
+    }
+
+    private static Integer findEqualsIntInHierarchy(SequenceContainer sc, String parameterName) {
+        for (SequenceContainer c = sc; c != null; c = c.getBaseContainer()) {
+            Integer v = findEqualsInt(c.getRestrictionCriteria(), parameterName);
+            if (v != null) {
+                return v;
+            }
+        }
+        return null;
+    }
+
+    private static String findEqualsStringInHierarchy(SequenceContainer sc, String parameterName) {
+        for (SequenceContainer c = sc; c != null; c = c.getBaseContainer()) {
+            String v = findEqualsString(c.getRestrictionCriteria(), parameterName);
+            if (v != null) {
+                return v;
+            }
+        }
+        return null;
+    }
+
+    private static int computeContainerSize(SequenceContainer sc, Set<Container> visited) {
+        if (sc == null || !visited.add(sc)) {
+            return -1;
+        }
+        try {
+            int position = 0;
+            int maxPosition = 0;
+
+            SequenceContainer base = sc.getBaseContainer();
+            if (base != null) {
+                int baseSize = base.getSizeInBits();
+                if (baseSize < 0) {
+                    baseSize = computeContainerSize(base, visited);
+                }
+                if (baseSize < 0) {
+                    return -1;
+                }
+                position = baseSize;
+                maxPosition = baseSize;
+            }
+
+            for (SequenceEntry se : sc.getEntryList()) {
+                if (se.getReferenceLocation() == ReferenceLocationType.CONTAINER_START) {
+                    position = se.getLocationInContainerInBits();
+                } else {
+                    position += se.getLocationInContainerInBits();
+                }
+
+                int entrySize = computeEntrySize(se, visited);
+
+                Repeat repeat = se.getRepeatEntry();
+                if (repeat == null) {
+                    position += entrySize;
+                    maxPosition = Math.max(maxPosition, position);
+                } else {
+                    long count = fixedCount(repeat);
+                    if (count < 0) {
+                        count = 1;
+                    }
+                    for (long i = 0; i < count; i++) {
+                        position += entrySize;
+                        maxPosition = Math.max(maxPosition, position);
+                        if (i != count - 1) {
+                            position += repeat.getOffsetSizeInBits();
+                        }
+                    }
+                }
+            }
+            return maxPosition;
+        } finally {
+            visited.remove(sc);
+        }
+    }
+
+    private static int computeEntrySize(SequenceEntry se, Set<Container> visited) {
+        if (se instanceof ParameterEntry pe) {
+            return getParameterSizeInBits(pe.getParameter());
+        } else if (se instanceof ContainerEntry ce) {
+            SequenceContainer refc = ce.getRefContainer();
+            if (refc == null) {
+                return 0;
+            }
+            int refSize = refc.getSizeInBits();
+            return refSize >= 0 ? refSize : computeContainerSize(refc, visited);
+        }
+        return 0;
+    }
+
+    private static int getParameterSizeInBits(Parameter p) {
+        if (p == null) {
+            return 0;
+        }
+        ParameterType pt = p.getParameterType();
+        if (pt == null) {
+            return 0;
+        }
+        try {
+            if (pt.getEncoding() == null) {
+                return 0;
+            }
+            int sizeInBits = pt.getEncoding().getSizeInBits();
+            return sizeInBits > 0 ? sizeInBits : 0;
+        } catch (UnsupportedOperationException e) {
+            return 0;
+        }
+    }
+
+    private static long fixedCount(Repeat repeat) {
+        if (repeat.getCount() instanceof FixedIntegerValue fiv) {
+            return fiv.getValue();
+        }
+        if (repeat.getCount() instanceof DynamicIntegerValue) {
+            return -1;
+        }
+        return -1;
     }
 }
