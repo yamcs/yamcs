@@ -26,12 +26,19 @@ public class SubstringExpression extends Expression {
         children[0].fillCode_getValueReturn(code);
         code.append(",");
         children[1].fillCode_getValueReturn(code);
-        
+        if (children.length==3) {
+            code.append(",");
+            children[2].fillCode_getValueReturn(code);
+        }
         code.append(")");
     }
-    
+
     static public byte[] substring(byte[] b, int offset) {
         return  Arrays.copyOfRange(b, offset, b.length);
     }
-    
+
+    static public byte[] substring(byte[] b, int offset, int length) {
+        return Arrays.copyOfRange(b, offset, offset+length);
+    }
+
 }
