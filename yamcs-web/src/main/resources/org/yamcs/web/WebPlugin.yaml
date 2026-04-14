@@ -16,7 +16,7 @@ options:
     title: Logo
     description:
       - Filesystem path to an image to be shown in the bottom of the left sidebar. Images
-        larger than the width of the sidebar (currently 250px) are resized to fit.
+        larger than the width of the sidebar (currently 220px) are resized to fit.
     type: STRING
 
   preferredNamespace:
