@@ -37,11 +37,19 @@
 }
 
 .sidenav-content {
-  width: var(--y-sidenav-width);
   height: 100%;
   white-space: nowrap;
   display: flex;
   flex-direction: column;
+}
+
+.sidenav-logo {
+  text-align: center;
+  line-height: 0;
+}
+
+.sidenav-logo img {
+  max-width: 100%;
 }
 
 @media print {
