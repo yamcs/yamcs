@@ -226,6 +226,9 @@ public class PusEventDecoder extends AbstractYamcsService {
 
             int apid = PusPacket.getApid(packet);
             int subtype = PusPacket.getSubtype(packet);
+            if (subtype < 1 || subtype > 4) {
+                return; // only TM[5,1-4] are event reports; TM[5,8] etc. are not
+            }
 
             long gentime = tuple.getColumn(StandardTupleDefinitions.GENTIME_COLUMN);
             int seqCount = tuple.getColumn(StandardTupleDefinitions.SEQNUM_COLUMN);
