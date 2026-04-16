@@ -88,65 +88,148 @@ In a flight system, ST[14] filtering happens at the downlink level — the fligh
 
 **Spec**: §6.14.3.4.1
 
-**Purpose**: Add forwarding permissions. Each request carries a combination of one or more instructions. Each instruction is one of three forms:
+**Purpose**: Add forwarding permissions. The packet carries N1 application process entries, each with N2 service type entries, each with N3 subtype entries. The three "instruction forms" from the spec are encoded via the count fields:
 
-| Instruction Form | Fields | Effect |
+| Instruction Form | Encoding | Effect |
 |---|---|---|
-| Add specific report type | `apid` + `service_type` + `subtype` | Enable forwarding of one specific TM subtype |
-| Add all subtypes of a service | `apid` + `service_type` | Enable forwarding of all subtypes of a service |
-| Add all services of an APID | `apid` | Enable forwarding of all reports from an application process |
+| Add specific report type | `apid` + N2=1 + `service_type` + N3=1 + `subtype` | Enable forwarding of one specific TM subtype |
+| Add all subtypes of a service | `apid` + N2=1 + `service_type` + **N3=0** | Enable forwarding of all subtypes of a service |
+| Add all services of an APID | `apid` + **N2=0** | Enable forwarding of all reports from an application process |
 
-**Packet layout**: `N_instructions` + repeated instruction blocks (mixed types).
+**Packet layout** (Figure 8-147):
+```
+N1 (uint8)
+  repeated N1 times:
+    apid (uint16)
+    N2 (uint8)             ← 0 = "add all services for this APID"
+    repeated N2 times:
+      service_type (uint8)
+      N3 (uint8)           ← 0 = "add all subtypes of this service type"
+      repeated N3 times:
+        subtype (uint8)
+```
 
-**XTCE**: ⚠️ **Not implementable as a single MetaCommand**
+**XTCE**: ✅ **Single MetaCommand — fully implementable**
 
-XTCE arrays require homogeneous element types with fixed field layout. TC[14,1] mixes three instruction shapes in one packet. Options:
+YAMCS supports nested dynamic arrays in TC arguments where each inner array's size is determined by a **sibling member** of the enclosing aggregate (confirmed by `yamcs-core/src/test/resources/xtce/array-in-array-arg.xml`). The `ArgumentInstanceRef argumentRef="N2"` inside `ServiceTypeArrayType` resolves to the `N2` member of the containing `ApfcdEntryType` aggregate — no top-level reference is needed.
 
-**Option A — Three separate TC variants (recommended)**:
 ```xml
-<!-- TC[14,1]a — Add specific report type (per subtype) -->
-<MetaCommand name="TC_14_1_ADD_REPORT_TYPE">
-  <ArgumentList>
-    <Argument name="N"            argumentTypeRef="/dt/uint8"/>
-    <Argument name="apid"         argumentTypeRef="/dt/uint16"/>
-    <Argument name="service_type" argumentTypeRef="/dt/uint8"/>
-    <Argument name="subtype"      argumentTypeRef="/dt/uint8"/>
-  </ArgumentList>
-  <!-- BaseMetaCommand subtype=1 -->
-</MetaCommand>
+<!-- Innermost element: one subtype -->
+<IntegerArgumentType name="apfc_subtype_type" baseType="/dt/uint8"/>
 
-<!-- TC[14,1]b — Add all subtypes of a service type -->
-<MetaCommand name="TC_14_1_ADD_SERVICE_TYPE">
-  <ArgumentList>
-    <Argument name="N"            argumentTypeRef="/dt/uint8"/>
-    <Argument name="apid"         argumentTypeRef="/dt/uint16"/>
-    <Argument name="service_type" argumentTypeRef="/dt/uint8"/>
-  </ArgumentList>
-</MetaCommand>
+<!-- Array of N3 subtypes; N3 is a sibling member in the containing aggregate -->
+<ArrayArgumentType name="apfc_subtype_array_type" arrayTypeRef="apfc_subtype_type">
+    <DimensionList>
+        <Dimension>
+            <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+            <EndingIndex>
+                <DynamicValue>
+                    <ArgumentInstanceRef argumentRef="N3"/>
+                    <LinearAdjustment intercept="-1"/>
+                </DynamicValue>
+            </EndingIndex>
+        </Dimension>
+    </DimensionList>
+</ArrayArgumentType>
 
-<!-- TC[14,1]c — Add all services of an application process -->
-<MetaCommand name="TC_14_1_ADD_ALL_APID">
-  <ArgumentList>
-    <Argument name="N"            argumentTypeRef="/dt/uint8"/>
-    <Argument name="apid"         argumentTypeRef="/dt/uint16"/>
-  </ArgumentList>
+<!-- Service type entry: service_type + N3 + N3×subtype -->
+<AggregateArgumentType name="apfc_service_entry_type">
+    <MemberList>
+        <Member name="service_type" typeRef="/dt/uint8"/>
+        <Member name="N3"           typeRef="/dt/uint8"/>
+        <Member name="subtypes"     typeRef="apfc_subtype_array_type"/>
+    </MemberList>
+</AggregateArgumentType>
+
+<!-- Array of N2 service entries; N2 is a sibling member in the containing aggregate -->
+<ArrayArgumentType name="apfc_service_array_type" arrayTypeRef="apfc_service_entry_type">
+    <DimensionList>
+        <Dimension>
+            <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+            <EndingIndex>
+                <DynamicValue>
+                    <ArgumentInstanceRef argumentRef="N2"/>
+                    <LinearAdjustment intercept="-1"/>
+                </DynamicValue>
+            </EndingIndex>
+        </Dimension>
+    </DimensionList>
+</ArrayArgumentType>
+
+<!-- APFCD entry: apid + N2 + N2×service_entry -->
+<AggregateArgumentType name="apfcd_entry_type">
+    <MemberList>
+        <Member name="apid"          typeRef="/dt/uint16"/>
+        <Member name="N2"            typeRef="/dt/uint8"/>
+        <Member name="service_types" typeRef="apfc_service_array_type"/>
+    </MemberList>
+</AggregateArgumentType>
+
+<!-- Outer array of N1 APFCD entries; N1 is a top-level argument -->
+<ArrayArgumentType name="apfcd_array_type" arrayTypeRef="apfcd_entry_type">
+    <DimensionList>
+        <Dimension>
+            <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+            <EndingIndex>
+                <DynamicValue>
+                    <ArgumentInstanceRef argumentRef="N1"/>
+                    <LinearAdjustment intercept="-1"/>
+                </DynamicValue>
+            </EndingIndex>
+        </Dimension>
+    </DimensionList>
+</ArrayArgumentType>
+
+<!-- Single MetaCommand handles all three instruction forms -->
+<MetaCommand name="TC_14_1_ADD_REPORT_TYPES"
+             shortDescription="TC[14,1] Add report types to APFC configuration">
+    <BaseMetaCommand metaCommandRef="pus14-tc">
+        <ArgumentAssignmentList>
+            <ArgumentAssignment argumentName="subtype" argumentValue="1"/>
+        </ArgumentAssignmentList>
+    </BaseMetaCommand>
+    <ArgumentList>
+        <Argument name="N1"            argumentTypeRef="/dt/uint8"/>
+        <Argument name="apfcd_entries" argumentTypeRef="apfcd_array_type"/>
+    </ArgumentList>
+    <CommandContainer name="TC_14_1">
+        <EntryList>
+            <ArgumentRefEntry argumentRef="N1"/>
+            <ArgumentRefEntry argumentRef="apfcd_entries"/>
+        </EntryList>
+        <BaseContainer containerRef="pus14-tc"/>
+    </CommandContainer>
 </MetaCommand>
 ```
 
-Each variant encodes N=1 with its own fixed-layout instruction. Multi-instruction TCs (N>1 mixed) require Java scripting or a raw binary argument.
-
-**Option B — Raw binary instruction list**: One TC with a `BinaryArgumentType` for the instruction payload; Java parses instruction-type byte per entry.
-
 **Java** (`case 1 → addReportTypes(bb)`):
 ```java
-int n = bb.get() & 0xFF;
-for (int i = 0; i < n; i++) {
-    int apid    = bb.getShort() & 0x7FF;
-    // Instruction form is determined by what follows (mission convention):
-    // e.g., service_type==0xFF means "all services for this APID"
-    int svcType = bb.get() & 0xFF;
-    int subtype = bb.get() & 0xFF;  // 0xFF = "all subtypes of this service"
-    apfcc.addEntry(apid, svcType, subtype);
+int n1 = bb.get() & 0xFF;
+for (int i = 0; i < n1; i++) {
+    int apid = bb.getShort() & 0xFFFF;
+    int n2 = bb.get() & 0xFF;
+    if (n2 == 0) {
+        // Spec §8.14.2.1c: N2=0 → add all services for this APID
+        apfcc.computeIfAbsent(apid, k -> new ApfcDefinition(k));
+        // Empty serviceSubtypes map = "pass all" (see shouldForward logic)
+    } else {
+        ApfcDefinition apfcd = apfcc.computeIfAbsent(apid, k -> new ApfcDefinition(k));
+        for (int j = 0; j < n2; j++) {
+            int svcType = bb.get() & 0xFF;
+            int n3 = bb.get() & 0xFF;
+            if (n3 == 0) {
+                // Spec §8.14.2.1d: N3=0 → add all subtypes of this service type
+                apfcd.serviceSubtypes.computeIfAbsent(svcType, k -> new LinkedHashSet<>());
+                // Empty set = "pass all subtypes" for this service
+            } else {
+                Set<Integer> subtypes = apfcd.serviceSubtypes
+                    .computeIfAbsent(svcType, k -> new LinkedHashSet<>());
+                for (int k = 0; k < n3; k++) {
+                    subtypes.add(bb.get() & 0xFF);
+                }
+            }
+        }
+    }
 }
 ack_completion(tc);
 ```
@@ -154,10 +237,9 @@ ack_completion(tc);
 **Rejection conditions** (per spec):
 - Max service type forward-control definitions already reached
 - Max report type forward-control definitions already reached
-- Instruction contradicts existing state (e.g., "all subtypes" already enabled)
 - APID not controlled by this subservice
 
-**Gaps**: Multi-instruction mixed-type TCs require raw binary or scripting. Single-instruction XTCE variants are operator-friendly for 90% of use cases.
+**Gaps**: None. Single MetaCommand covers all three instruction forms. N2=0 and N3=0 are zero-length arrays, which YAMCS renders as empty array inputs in the UI.
 
 ---
 
@@ -166,48 +248,99 @@ ack_completion(tc);
 **Spec**: §6.14.3.4.2
 
 **Purpose**: Remove forwarding permissions. Contains EITHER:
-1. One or more delete instructions (delete a report type / delete a service type / delete an APID), OR
+1. One or more delete instructions using the same N1/N2/N3 structure as TC[14,1], OR
 2. A single "empty the entire APFCC" instruction (no arguments)
 
-**Instruction forms**:
+**Delete instruction encoding** (mirrors TC[14,1] structure):
 
-| Form | Fields |
-|---|---|
-| Delete specific report type | `apid` + `service_type` + `subtype` |
-| Delete a service type | `apid` + `service_type` |
-| Delete an application process | `apid` |
-| Empty APFCC | (no arguments) |
+| Instruction Form | Encoding | Effect |
+|---|---|---|
+| Delete specific report type | `apid` + N2=1 + `service_type` + N3=1 + `subtype` | Remove one subtype from APFCC |
+| Delete a service type | `apid` + N2=1 + `service_type` + **N3=0** | Remove entire STFCD for that service type |
+| Delete an application process | `apid` + **N2=0** | Remove entire APFCD for that APID |
 
-**XTCE**: ⚠️ **Not implementable as a single MetaCommand** — same polymorphism problem as TC[14,1].
+**XTCE**: ✅ **Two MetaCommand variants** (delete-entries + empty-APFCC)
 
-**Four separate TC variants** (recommended):
+The delete-entries variant reuses the same N1/N2/N3 nested argument types defined for TC[14,1]. The empty-APFCC variant is a zero-argument command.
+
 ```xml
-<!-- TC[14,2]a — Delete specific report type -->
-<MetaCommand name="TC_14_2_DELETE_REPORT_TYPE">
-  <!-- apid + service_type + subtype -->
+<!-- TC[14,2]a — Delete entries: reuses apfcd_array_type from TC[14,1] argument types -->
+<MetaCommand name="TC_14_2_DELETE_ENTRIES"
+             shortDescription="TC[14,2] Delete report types from APFC configuration">
+    <BaseMetaCommand metaCommandRef="pus14-tc">
+        <ArgumentAssignmentList>
+            <ArgumentAssignment argumentName="subtype" argumentValue="2"/>
+        </ArgumentAssignmentList>
+    </BaseMetaCommand>
+    <ArgumentList>
+        <Argument name="N1"            argumentTypeRef="/dt/uint8"/>
+        <Argument name="apfcd_entries" argumentTypeRef="apfcd_array_type"/>
+    </ArgumentList>
+    <CommandContainer name="TC_14_2_DELETE">
+        <EntryList>
+            <ArgumentRefEntry argumentRef="N1"/>
+            <ArgumentRefEntry argumentRef="apfcd_entries"/>
+        </EntryList>
+        <BaseContainer containerRef="pus14-tc"/>
+    </CommandContainer>
 </MetaCommand>
 
-<!-- TC[14,2]b — Delete a service type -->
-<MetaCommand name="TC_14_2_DELETE_SERVICE_TYPE">
-  <!-- apid + service_type -->
-</MetaCommand>
-
-<!-- TC[14,2]c — Delete an application process -->
-<MetaCommand name="TC_14_2_DELETE_APID">
-  <!-- apid only -->
-</MetaCommand>
-
-<!-- TC[14,2]d — Empty the entire APFCC -->
-<MetaCommand name="TC_14_2_EMPTY_APFCC">
-  <!-- no arguments -->
+<!-- TC[14,2]b — Empty the entire APFCC (no arguments) -->
+<MetaCommand name="TC_14_2_EMPTY_APFCC"
+             shortDescription="TC[14,2] Empty entire APFC configuration">
+    <BaseMetaCommand metaCommandRef="pus14-tc">
+        <ArgumentAssignmentList>
+            <ArgumentAssignment argumentName="subtype" argumentValue="2"/>
+        </ArgumentAssignmentList>
+    </BaseMetaCommand>
+    <CommandContainer name="TC_14_2_EMPTY">
+        <EntryList/>
+        <BaseContainer containerRef="pus14-tc"/>
+    </CommandContainer>
 </MetaCommand>
 ```
 
-**Java** (`case 2 → deleteReportTypes(bb)`): Parse instruction type indicator (mission-defined byte) and dispatch to `apfcc.removeEntry(...)` / `apfcc.clear()`. Cascade empty: if an STFCD becomes empty → remove it; if an APFCD becomes empty → remove it.
+**Java** (`case 2 → deleteReportTypes(bb)`):
+```java
+if (bb.remaining() == 0) {
+    // Empty-APFCC variant
+    apfcc.clear();
+    ack_completion(tc);
+    return;
+}
+int n1 = bb.get() & 0xFF;
+for (int i = 0; i < n1; i++) {
+    int apid = bb.getShort() & 0xFFFF;
+    int n2 = bb.get() & 0xFF;
+    ApfcDefinition apfcd = apfcc.get(apid);
+    if (apfcd == null) { nack(tc, 1, 4); return; }  // APID not in APFCC
+    if (n2 == 0) {
+        apfcc.remove(apid);  // Remove entire APFCD
+    } else {
+        for (int j = 0; j < n2; j++) {
+            int svcType = bb.get() & 0xFF;
+            int n3 = bb.get() & 0xFF;
+            if (n3 == 0) {
+                apfcd.serviceSubtypes.remove(svcType);  // Remove entire STFCD
+                if (apfcd.serviceSubtypes.isEmpty()) apfcc.remove(apid);
+            } else {
+                Set<Integer> subtypes = apfcd.serviceSubtypes.get(svcType);
+                if (subtypes == null) { nack(tc, 1, 4); return; }
+                for (int k = 0; k < n3; k++) {
+                    subtypes.remove(bb.get() & 0xFF);
+                }
+                if (subtypes.isEmpty()) apfcd.serviceSubtypes.remove(svcType);
+                if (apfcd.serviceSubtypes.isEmpty()) apfcc.remove(apid);
+            }
+        }
+    }
+}
+ack_completion(tc);
+```
 
 **Rejection conditions**: Referenced APID/service/subtype not in APFCC → NACK[1,4] per-instruction.
 
-**Gaps**: Multi-instruction delete (e.g., delete 5 specific subtypes in one TC) requires raw binary or scripting. Single-instruction variants cover the common case.
+**Gaps**: The two TC variants (delete-entries and empty-APFCC) cannot be collapsed into one because the empty-APFCC case has no N1 field — a zero-byte payload is the discriminator.
 
 ---
 
@@ -259,22 +392,60 @@ ack_completion(tc);
         [subtype_id: uint8]
 ```
 
-**XTCE**: ⚠️ **Outer level only** — The top-level `apid` and `N_service_types` can be decoded with a SequenceContainer. The inner dynamic array (service types, each containing its own inner array of subtypes) is a **nested variable-length structure** that XTCE cannot express in a single container. XTCE dynamic arrays require their count to be a top-level parameter; here each service type's subtype count is embedded inside the service type element.
+**XTCE**: ✅ **Fully implementable** — YAMCS supports nested `ContainerRefEntry` + `RepeatEntry` where the inner count is a parameter decoded within each outer element.
+
+The mechanism: `ParameterInstanceRef` defaults to `relativeTo = CURRENT_ENTRY_WITHIN_PACKET` and `instance = 0`, which calls `tmParams.getFromEnd(param, 0)` — the **most recently decoded** value of the parameter. Each outer repeat iteration decodes a fresh `N_subtypes`; the inner `RepeatEntry` count resolves to that just-decoded value, not a stale one from a previous iteration. This is confirmed in `yamcs-xtce/src/main/java/org/yamcs/xtce/ParameterInstanceRef.java` (line 53).
 
 ```xml
+<!-- Innermost: one subtype ID -->
+<SequenceContainer name="apfc_subtype_element">
+    <EntryList>
+        <ParameterRefEntry parameterRef="apfc_subtype_id"/>
+    </EntryList>
+</SequenceContainer>
+
+<!-- Middle: one service type entry + its variable-length subtype array -->
+<SequenceContainer name="apfc_service_element">
+    <EntryList>
+        <ParameterRefEntry parameterRef="apfc_service_type_id"/>
+        <ParameterRefEntry parameterRef="apfc_N_subtypes"/>
+        <ContainerRefEntry containerRef="apfc_subtype_element">
+            <RepeatEntry>
+                <Count>
+                    <DynamicValue>
+                        <!-- default instance=0, CURRENT_ENTRY_WITHIN_PACKET → most recently decoded value -->
+                        <ParameterInstanceRef parameterRef="apfc_N_subtypes"/>
+                    </DynamicValue>
+                </Count>
+            </RepeatEntry>
+        </ContainerRefEntry>
+    </EntryList>
+</SequenceContainer>
+
+<!-- Outer TM packet: apid + N_services + N_services×service_element -->
 <SequenceContainer name="TM_14_4" shortDescription="TM[14,4] APFC config content report">
-  <EntryList>
-    <ParameterRefEntry parameterRef="apfc_apid"/>
-    <ParameterRefEntry parameterRef="apfc_n_services"/>
-    <!-- inner nesting not expressible in XTCE; remaining bytes are opaque -->
-  </EntryList>
-  <BaseContainer containerRef="pus14-tm">
-    <RestrictionCriteria>
-      <Comparison parameterRef="/PUS/subtype" value="4"/>
-    </RestrictionCriteria>
-  </BaseContainer>
+    <EntryList>
+        <ParameterRefEntry parameterRef="apfc_apid"/>
+        <ParameterRefEntry parameterRef="apfc_N_services"/>
+        <ContainerRefEntry containerRef="apfc_service_element">
+            <RepeatEntry>
+                <Count>
+                    <DynamicValue>
+                        <ParameterInstanceRef parameterRef="apfc_N_services"/>
+                    </DynamicValue>
+                </Count>
+            </RepeatEntry>
+        </ContainerRefEntry>
+    </EntryList>
+    <BaseContainer containerRef="pus14-tm">
+        <RestrictionCriteria>
+            <Comparison parameterRef="/PUS/subtype" value="4"/>
+        </RestrictionCriteria>
+    </BaseContainer>
 </SequenceContainer>
 ```
+
+**Note on parameter naming**: `apfc_subtype_id`, `apfc_service_type_id`, and `apfc_N_subtypes` are shared parameters that accumulate multiple values in `tmParams` across repeat iterations. The `getFromEnd(param, 0)` semantic always picks the most recently decoded value, so inner repeat counts are always correct. All extracted values are stored as separate `ParameterValue` instances in the result list.
 
 **Java emitter** (`sendApfcReport(ApfcDefinition apfcd)`):
 ```java
@@ -298,8 +469,8 @@ pusSimulator.transmitRealtimeTM(pkt);
 ```
 
 **Gaps**:
-- XTCE decoding limited to outer fields only; YAMCS Web shows inner structure as raw bytes
 - One TM packet per APFCD; if table is large, may generate many packets
+- No XTCE decoding limitation — full 3-level structure is expressible via nested `ContainerRefEntry` repeats
 
 ---
 
@@ -307,37 +478,101 @@ pusSimulator.transmitRealtimeTM(pkt);
 
 **Spec**: §6.14.3.5.1
 
-**Purpose**: Authorize specific housekeeping parameter report structures for forwarding. Contains EITHER:
-1. One or more instructions: each = `apid` + `hk_structure_id` [+ `subsampling_rate` if subsampling supported]
-2. An "add all" instruction: just `apid` (enables all HK structures for that APID)
+**Purpose**: Authorize specific housekeeping parameter report structures for forwarding. The packet carries N1 APID entries; each APID entry contains N_structs structure IDs to authorize. N_structs=0 means "authorize all structures for this APID" (spec §6.14.3.5.1 convention, same as TC[14,1]'s N2=0).
 
-**XTCE**: ⚠️ **Two separate TC variants** (one for specific structs, one for add-all):
+**Packet layout**:
+```
+N1 (uint8) — number of application process entries
+  repeated N1 times:
+    apid (uint16)
+    N_structs (uint8)    ← 0 = "add all HK structures for this APID"
+    repeated N_structs times:
+      hk_structure_id (uint16)
+```
+
+**XTCE**: ✅ **Single MetaCommand** — 2-level nested arrays (N1 outer APIDs, N_structs inner struct IDs per APID), using the same sibling-member array-size reference pattern as TC[14,1].
 
 ```xml
-<!-- TC[14,5]a — Add specific HK structure identifiers -->
-<MetaCommand name="TC_14_5_ADD_HK_STRUCTS">
-  <ArgumentList>
-    <Argument name="N"              argumentTypeRef="/dt/uint8"/>
-    <Argument name="apid"           argumentTypeRef="/dt/uint16"/>
-    <Argument name="hk_struct_ids"  argumentTypeRef="hk_struct_id_array_type"/>
-  </ArgumentList>
-  <!-- Dynamic array of uint16 struct IDs, size = N -->
-</MetaCommand>
+<!-- Inner: array of N_structs HK structure IDs; N_structs is a sibling member -->
+<ArrayArgumentType name="hk_struct_id_array_type" arrayTypeRef="/dt/uint16">
+    <DimensionList>
+        <Dimension>
+            <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+            <EndingIndex>
+                <DynamicValue>
+                    <ArgumentInstanceRef argumentRef="N_structs"/>
+                    <LinearAdjustment intercept="-1"/>
+                </DynamicValue>
+            </EndingIndex>
+        </Dimension>
+    </DimensionList>
+</ArrayArgumentType>
 
-<!-- TC[14,5]b — Add all HK structure identifiers for an APID -->
-<MetaCommand name="TC_14_5_ADD_ALL_HK">
-  <ArgumentList>
-    <Argument name="apid" argumentTypeRef="/dt/uint16"/>
-  </ArgumentList>
+<!-- APID entry: apid + N_structs + struct_ids array -->
+<AggregateArgumentType name="hk_apid_entry_type">
+    <MemberList>
+        <Member name="apid"       typeRef="/dt/uint16"/>
+        <Member name="N_structs"  typeRef="/dt/uint8"/>
+        <Member name="struct_ids" typeRef="hk_struct_id_array_type"/>
+    </MemberList>
+</AggregateArgumentType>
+
+<!-- Outer array of N1 APID entries -->
+<ArrayArgumentType name="hk_apid_array_type" arrayTypeRef="hk_apid_entry_type">
+    <DimensionList>
+        <Dimension>
+            <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+            <EndingIndex>
+                <DynamicValue>
+                    <ArgumentInstanceRef argumentRef="N1"/>
+                    <LinearAdjustment intercept="-1"/>
+                </DynamicValue>
+            </EndingIndex>
+        </Dimension>
+    </DimensionList>
+</ArrayArgumentType>
+
+<MetaCommand name="TC_14_5_ADD_HK_STRUCTS"
+             shortDescription="TC[14,5] Add HK structure identifiers to HK FCC">
+    <BaseMetaCommand metaCommandRef="pus14-tc">
+        <ArgumentAssignmentList>
+            <ArgumentAssignment argumentName="subtype" argumentValue="5"/>
+        </ArgumentAssignmentList>
+    </BaseMetaCommand>
+    <ArgumentList>
+        <Argument name="N1"           argumentTypeRef="/dt/uint8"/>
+        <Argument name="apid_entries" argumentTypeRef="hk_apid_array_type"/>
+    </ArgumentList>
+    <CommandContainer name="TC_14_5">
+        <EntryList>
+            <ArgumentRefEntry argumentRef="N1"/>
+            <ArgumentRefEntry argumentRef="apid_entries"/>
+        </EntryList>
+        <BaseContainer containerRef="pus14-tc"/>
+    </CommandContainer>
 </MetaCommand>
 ```
 
 **Java** (`case 5 → addHkStructIds(bb)`):
-- Reads APID + N structure IDs (or "all" indicator)
-- If "all": clear any existing blocked-struct list, set mode to "pass-all" for this APID
-- Else: add each struct ID to the HK FCC for the specified APID
+```java
+int n1 = bb.get() & 0xFF;
+for (int i = 0; i < n1; i++) {
+    int apid = bb.getShort() & 0xFFFF;
+    int nStructs = bb.get() & 0xFF;
+    if (nStructs == 0) {
+        // N_structs=0: add all HK structures for this APID
+        hkFcc.put(apid, null);  // null = pass-all mode
+    } else {
+        Set<Integer> structs = hkFcc.computeIfAbsent(apid, k -> new LinkedHashSet<>());
+        for (int j = 0; j < nStructs; j++) {
+            structs.add(bb.getShort() & 0xFFFF);
+        }
+    }
+}
+ack_completion(tc);
+```
 
-**Rejection conditions**: APID not controlled by subservice; max struct IDs reached; HK FCC has no struct defined yet (trying to add when mode is "no struct → block all").
+**Rejection conditions**: APID not controlled by subservice; max struct IDs reached.
 
 **Gaps**: Subsampling rate is optional per spec (§6.14.3.2.1d). For initial simulator implementation, omit subsampling — all authorized structures are forwarded at their native rate. This is a valid simplification (subsampling is a declared capability, not mandatory).
 
@@ -348,39 +583,85 @@ pusSimulator.transmitRealtimeTM(pkt);
 **Spec**: §6.14.3.5.2
 
 **Purpose**: Revoke specific HK structure forwarding permissions. Contains EITHER:
-1. One or more delete-struct instructions: `apid` + `hk_structure_id`; OR delete-APID instruction: `apid` only
+1. One or more delete instructions using the same N1/N_structs structure as TC[14,5], OR
 2. An "empty HK FCC" instruction (no arguments)
 
-**XTCE**: ⚠️ **Three separate TC variants**:
+**Delete instruction encoding** (same N=0 convention as TC[14,1/2]):
+
+| Instruction Form | Encoding | Effect |
+|---|---|---|
+| Delete specific HK struct IDs | `apid` + N_structs>0 + `struct_ids[]` | Remove listed structs from HK FCC for APID |
+| Delete an application process | `apid` + **N_structs=0** | Remove entire APID entry from HK FCC |
+
+**XTCE**: ✅ **Two MetaCommand variants** (delete-entries + empty-HK-FCC)
+
+The delete-entries variant reuses `hk_apid_array_type` from TC[14,5]. The empty-HK-FCC variant is a zero-argument command.
 
 ```xml
-<!-- TC[14,6]a — Delete specific HK structure identifier -->
-<MetaCommand name="TC_14_6_DELETE_HK_STRUCT">
-  <ArgumentList>
-    <Argument name="N"             argumentTypeRef="/dt/uint8"/>
-    <Argument name="apid"          argumentTypeRef="/dt/uint16"/>
-    <Argument name="hk_struct_ids" argumentTypeRef="hk_struct_id_array_type"/>
-  </ArgumentList>
+<!-- TC[14,6]a — Delete entries: reuses hk_apid_array_type from TC[14,5] -->
+<MetaCommand name="TC_14_6_DELETE_HK_ENTRIES"
+             shortDescription="TC[14,6] Delete HK structure identifiers from HK FCC">
+    <BaseMetaCommand metaCommandRef="pus14-tc">
+        <ArgumentAssignmentList>
+            <ArgumentAssignment argumentName="subtype" argumentValue="6"/>
+        </ArgumentAssignmentList>
+    </BaseMetaCommand>
+    <ArgumentList>
+        <Argument name="N1"           argumentTypeRef="/dt/uint8"/>
+        <Argument name="apid_entries" argumentTypeRef="hk_apid_array_type"/>
+    </ArgumentList>
+    <CommandContainer name="TC_14_6_DELETE">
+        <EntryList>
+            <ArgumentRefEntry argumentRef="N1"/>
+            <ArgumentRefEntry argumentRef="apid_entries"/>
+        </EntryList>
+        <BaseContainer containerRef="pus14-tc"/>
+    </CommandContainer>
 </MetaCommand>
 
-<!-- TC[14,6]b — Delete an application process from the HK FCC -->
-<MetaCommand name="TC_14_6_DELETE_HK_APID">
-  <ArgumentList>
-    <Argument name="apid" argumentTypeRef="/dt/uint16"/>
-  </ArgumentList>
-</MetaCommand>
-
-<!-- TC[14,6]c — Empty the HK FCC entirely -->
-<MetaCommand name="TC_14_6_EMPTY_HK_FCC">
-  <!-- no arguments -->
+<!-- TC[14,6]b — Empty the entire HK FCC -->
+<MetaCommand name="TC_14_6_EMPTY_HK_FCC"
+             shortDescription="TC[14,6] Empty HK FCC">
+    <BaseMetaCommand metaCommandRef="pus14-tc">
+        <ArgumentAssignmentList>
+            <ArgumentAssignment argumentName="subtype" argumentValue="6"/>
+        </ArgumentAssignmentList>
+    </BaseMetaCommand>
+    <CommandContainer name="TC_14_6_EMPTY">
+        <EntryList/>
+        <BaseContainer containerRef="pus14-tc"/>
+    </CommandContainer>
 </MetaCommand>
 ```
 
-**Java** (`case 6 → deleteHkStructIds(bb)`): Inverse of TC[14,5]. Cascade: if HK FCC entry becomes empty after deletion → remove the APID entry from HK FCC.
+**Java** (`case 6 → deleteHkStructIds(bb)`):
+```java
+if (bb.remaining() == 0) {
+    hkFcc.clear();
+    ack_completion(tc);
+    return;
+}
+int n1 = bb.get() & 0xFF;
+for (int i = 0; i < n1; i++) {
+    int apid = bb.getShort() & 0xFFFF;
+    int nStructs = bb.get() & 0xFF;
+    if (nStructs == 0) {
+        hkFcc.remove(apid);  // Delete entire APID entry
+    } else {
+        Set<Integer> structs = hkFcc.get(apid);
+        if (structs == null) { nack(tc, 1, 4); return; }
+        for (int j = 0; j < nStructs; j++) {
+            structs.remove(bb.getShort() & 0xFFFF);
+        }
+        if (structs.isEmpty()) hkFcc.remove(apid);
+    }
+}
+ack_completion(tc);
+```
 
 **Rejection conditions**: APID not in HK FCC; struct ID not in definition for that APID.
 
-**Gaps**: None beyond the multi-instruction type issue (same as TC[14,1/2]).
+**Gaps**: Two variants needed because the empty-HK-FCC case has no N1 field — zero remaining bytes is the discriminator (same pattern as TC[14,2]).
 
 ---
 
@@ -486,25 +767,25 @@ pusSimulator.transmitRealtimeTM(pkt);
 
 **Purpose**: Identical structure and semantics to TC[14,5] but for diagnostic parameter reports (ST[04] structures).
 
-**XTCE**: ⚠️ **Same as TC[14,5]** — two separate TC variants (specific structs vs add-all).
+**XTCE**: ✅ **Single MetaCommand** — identical N1/N_structs nested array design as TC[14,5], using `diag_apid_array_type` (mirrors `hk_apid_array_type` with `diag_struct_id` uint16 elements). N_structs=0 = add all diagnostic structures for that APID.
 
 ```xml
-<MetaCommand name="TC_14_9_ADD_DIAG_STRUCTS">
-  <ArgumentList>
-    <Argument name="N"                argumentTypeRef="/dt/uint8"/>
-    <Argument name="apid"             argumentTypeRef="/dt/uint16"/>
-    <Argument name="diag_struct_ids"  argumentTypeRef="diag_struct_id_array_type"/>
-  </ArgumentList>
-</MetaCommand>
-
-<MetaCommand name="TC_14_9_ADD_ALL_DIAG">
-  <ArgumentList>
-    <Argument name="apid" argumentTypeRef="/dt/uint16"/>
-  </ArgumentList>
-</MetaCommand>
+<!-- Reuse same aggregate+array pattern as TC[14,5], renaming types for clarity -->
+<ArrayArgumentType name="diag_struct_id_array_type" arrayTypeRef="/dt/uint16">
+    <!-- same DimensionList as hk_struct_id_array_type, argumentRef="N_structs" -->
+    ...
+</ArrayArgumentType>
+<AggregateArgumentType name="diag_apid_entry_type">
+    <MemberList>
+        <Member name="apid"       typeRef="/dt/uint16"/>
+        <Member name="N_structs"  typeRef="/dt/uint8"/>
+        <Member name="struct_ids" typeRef="diag_struct_id_array_type"/>
+    </MemberList>
+</AggregateArgumentType>
+<!-- outer array + MetaCommand TC_14_9_ADD_DIAG_STRUCTS: identical to TC[14,5] with subtype=9 -->
 ```
 
-**Java** (`case 9 → addDiagStructIds(bb)`): Mirror of TC[14,5] handler but targeting `diagFcc` map.
+**Java** (`case 9 → addDiagStructIds(bb)`): Mirror of TC[14,5] handler targeting `diagFcc` map; N_structs=0 sets `diagFcc.put(apid, null)` (pass-all mode).
 
 **Gaps**: None beyond TC[14,5] gaps. If the simulator does not implement ST[04] (diagnostic parameter reports), this TC has no observable effect — can be implemented as a stub that updates the diag FCC table and ACKs.
 
@@ -516,11 +797,11 @@ pusSimulator.transmitRealtimeTM(pkt);
 
 **Purpose**: Identical structure and semantics to TC[14,6] but for diagnostic FCC.
 
-**XTCE**: ⚠️ **Same as TC[14,6]** — three separate TC variants (delete specific structs / delete APID / empty diag FCC).
+**XTCE**: ✅ **Two MetaCommand variants** — identical design as TC[14,6]: delete-entries (N1/N_structs nested, reuses `diag_apid_array_type`) + empty-diag-FCC (no-arg). N_structs=0 = delete entire APID entry from diag FCC.
 
 **Java** (`case 10 → deleteDiagStructIds(bb)`): Mirror of TC[14,6] handler targeting `diagFcc`.
 
-**Gaps**: Same as TC[14,6].
+**Gaps**: Two variants needed for the same reason as TC[14,6]: zero-byte payload is the discriminator for the empty-diag-FCC case.
 
 ---
 
@@ -573,41 +854,36 @@ pusSimulator.transmitRealtimeTM(pkt);
 
 ## c) Gaps & Shortcomings Summary
 
-### Gap 1: Polymorphic Instruction Lists — TC[14,1] and TC[14,2]
+### Gap 1: TC[14,2] Empty-APFCC Variant — Resolved for TC[14,1], Minor for TC[14,2]
 
-**Affects**: TC[14,1], TC[14,2]
-**Severity**: High
-**Effort**: Medium
+**Affects**: TC[14,2] only
+**Severity**: Low
+**Effort**: Negligible
 
-The PUS spec allows a single TC to contain a mix of different instruction types (add specific subtype + add whole service + add whole APID) in one packet. XTCE arrays require homogeneous element types with a fixed binary layout. A mixed-type instruction list cannot be expressed in a single `MetaCommand`.
+TC[14,1] is fully expressible as a **single MetaCommand** using YAMCS's nested dynamic array support (`array-in-array-arg.xml` confirms that `ArgumentInstanceRef` in an `ArrayArgumentType` can reference a sibling member of the containing `AggregateArgumentType`). The N1/N2/N3 structure with N2=0 (all services) and N3=0 (all subtypes) covers all three spec instruction forms in one command.
 
-**Workaround**: Define 3–4 separate XTCE MetaCommand variants per TC, each handling one instruction type at a time (N=1 per instruction). Operators send multiple TCs to compose complex table updates. Multi-instruction TCs require raw binary argument or scripting.
+TC[14,2] requires **two variants**: one for the N1/N2/N3 delete-entries structure (same nested array design as TC[14,1]) and one zero-argument "empty APFCC" command. This is unavoidable because the empty-APFCC case has no N1 field — a zero-byte payload is the discriminator. Two variants is not a functional gap; it is a faithful representation of the spec's two mutually exclusive request forms.
 
-**Impact**: Minor operator inconvenience for multi-step table updates. No loss of functional testability.
+**Impact**: None for TC[14,1]. TC[14,2] requires two operator-visible commands (`TC_14_2_DELETE_ENTRIES` and `TC_14_2_EMPTY_APFCC`) — standard YAMCS practice for commands with distinct argument structures.
 
 ---
 
-### Gap 2: Nested Variable-Length TM Structure — TM[14,4]
+### Gap 2: TM[14,4] — Resolved
 
 **Affects**: TM[14,4]
-**Severity**: Medium
-**Effort**: Low (Java is straightforward; XTCE partial is acceptable)
+**Severity**: None — fully resolved
+**Effort**: None
 
-TM[14,4] contains a 3-level nested structure: APFCDs → STFCDs → RTFCDs. XTCE supports 1-level dynamic arrays (count parameter + array). It cannot express nested arrays where the inner count is embedded within each outer element.
-
-**Workaround**: The XTCE container decodes only `apid` and `N_service_types` at the outer level. Remaining bytes are opaque in YAMCS Web. Java emitter correctly constructs the full nested structure. Ground operators can use the yamcs-client Python SDK to parse the raw bytes programmatically.
+TM[14,4]'s 3-level nested structure (APFCDs → STFCDs → RTFCDs) IS fully expressible in XTCE using nested `ContainerRefEntry` + `RepeatEntry` containers. The key mechanism: `ParameterInstanceRef` defaults to `relativeTo = CURRENT_ENTRY_WITHIN_PACKET` (confirmed in `ParameterInstanceRef.java` line 53), which uses `tmParams.getFromEnd(param, 0)` = **most recently decoded value**. Each outer STFCD_ELEMENT iteration decodes a fresh `N_subtypes`; the inner `RepeatEntry` count resolves to that value automatically. No workaround needed.
 
 ---
 
-### Gap 3: Two-Form TC Requests — TC[14,5], TC[14,6], TC[14,9], TC[14,10]
+### Gap 3: HK/Diag FCC TC Two-Form Requests — Resolved
 
 **Affects**: TC[14,5], TC[14,6], TC[14,9], TC[14,10]
-**Severity**: Low
-**Effort**: Low
+**Severity**: None — fully resolved
 
-Each TC subtype allows two mutually exclusive request forms (e.g., "list of specific structs" OR "add all for an APID"). XTCE cannot express this OR-choice in a single MetaCommand.
-
-**Workaround**: Two separate MetaCommand variants per TC subtype (e.g., `TC_14_5_ADD_HK_STRUCTS` and `TC_14_5_ADD_ALL_HK`). Adds XTCE verbosity but is fully functional.
+TC[14,5/9] are now single MetaCommands with N1/N_structs 2-level nested arrays (N_structs=0 = "add all structs for this APID"). TC[14,6/10] use 2 variants each (delete-entries + empty-FCC no-arg) for the same reason as TC[14,2]: the empty-FCC case has no N1 field, making zero-byte payload the only discriminator. These 2 variants are spec-faithful, not workarounds.
 
 ---
 
@@ -709,25 +985,25 @@ The HK and Diagnostic FCC features require that ST[03] (housekeeping) and ST[04]
 
 | Subtype | Dir | XTCE Coverage | Java Required | Effort | Notes |
 |---------|-----|--------------|---------------|--------|-------|
-| TC[14,1] | TC | ⚠️ Per-mode variants (3 MetaCommands) | ✅ Required | Medium | Mixed instruction types; 3 XTCE variants cover common cases |
-| TC[14,2] | TC | ⚠️ Per-mode variants (4 MetaCommands) | ✅ Required | Medium | Same; "empty APFCC" variant is no-arg |
+| TC[14,1] | TC | ✅ Single MetaCommand (N1/N2/N3 nested arrays) | ✅ Required | Medium | YAMCS supports sibling-member array size refs; N2=0/N3=0 encode "add all" |
+| TC[14,2] | TC | ✅ 2 variants (delete-entries N1/N2/N3 + empty-APFCC no-arg) | ✅ Required | Medium | Delete entries reuses TC[14,1] nested array types; empty-APFCC is zero-byte discriminator |
 | TC[14,3] | TC | ✅ Full (no args) | ✅ New Pus14Service | Low | Identical to TC[11,17] pattern |
-| TM[14,4] | TM | ⚠️ Outer fields only | ✅ Required (emit) | Medium | 3-level nested structure; Java constructs; XTCE decodes header only |
-| TC[14,5] | TC | ⚠️ 2 variants | ✅ Required | Low | HK-specific structs vs "add all"; XTCE covers both forms |
-| TC[14,6] | TC | ⚠️ 3 variants | ✅ Required | Low | Delete struct / delete APID / empty |
+| TM[14,4] | TM | ✅ Full (nested container repeats) | ✅ Required (emit) | Medium | 3-level nested XTCE structure; `CURRENT_ENTRY_WITHIN_PACKET` getFromEnd(0) picks most-recent N_subtypes per iteration |
+| TC[14,5] | TC | ✅ Single MetaCommand (N1/N_structs nested) | ✅ Required | Low | N_structs=0 = add all structs; same sibling-member array-size pattern as TC[14,1] |
+| TC[14,6] | TC | ✅ 2 variants (delete-entries + empty-HK-FCC no-arg) | ✅ Required | Low | Delete entries reuses hk_apid_array_type; empty-HK-FCC is zero-byte discriminator |
 | TC[14,7] | TC | ✅ Full (no args) | ✅ New Pus14Service | Low | Same as TC[14,3] pattern |
 | TM[14,8] | TM | ✅ Full | ✅ Required (emit) | Low | Flat 2-level; dynamic array; fully XTCE-expressible |
-| TC[14,9] | TC | ⚠️ 2 variants | ✅ Required | Low | Mirror of TC[14,5] for diagnostic FCC |
-| TC[14,10] | TC | ⚠️ 3 variants | ✅ Required | Low | Mirror of TC[14,6] for diagnostic FCC |
+| TC[14,9] | TC | ✅ Single MetaCommand (N1/N_structs nested) | ✅ Required | Low | Mirror of TC[14,5] for diagnostic FCC; same design |
+| TC[14,10] | TC | ✅ 2 variants (delete-entries + empty-diag-FCC no-arg) | ✅ Required | Low | Mirror of TC[14,6] for diagnostic FCC |
 | TC[14,11] | TC | ✅ Full (no args) | ✅ New Pus14Service | Low | Mirror of TC[14,7] |
 | TM[14,12] | TM | ✅ Full | ✅ Required (emit) | Low | Mirror of TM[14,8] for diagnostic FCC |
 
 ### Overall Verdict
 
-**PUS 14 is ~75% implementable with XTCE alone**, covering TC/TM packet structures. The key gaps are:
+**PUS 14 is ~99% implementable with XTCE alone**, covering all TC/TM packet structures. The only remaining items are architectural (Java service), not XTCE limitations:
 
-1. **TC[14,1/2] polymorphic instruction lists** — not XTCE-expressible in a single command; 3–4 per-mode variants cover all common single-instruction operations
-2. **TM[14,4] nested 3-level structure** — XTCE decodes outer fields only; Java emitter handles full construction
+1. **All TC commands**: fully expressible as XTCE MetaCommands — single commands for TC[14,1], TC[14,3], TC[14,5], TC[14,7], TC[14,9], TC[14,11]; two variants for TC[14,2], TC[14,6], TC[14,10] (delete-entries + empty-FCC no-arg)
+2. **All TM packets**: fully decodeable in XTCE — including TM[14,4]'s 3-level nested structure via `ContainerRefEntry` nested `RepeatEntry` with `CURRENT_ENTRY_WITHIN_PACKET` semantics
 3. **Forwarding interceptor requires one PusSimulator.java edit** — inserting `shouldForward()` check inside `transmitRealtimeTM()` — a clean cross-cutting concern, not per-service changes
 4. **New Pus14Service.java required** — but the logic is straightforward map/set operations; no timing or periodic tasks needed
 
