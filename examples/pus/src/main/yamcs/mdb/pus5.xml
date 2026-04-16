@@ -5,27 +5,53 @@
 	<TelemetryMetaData>
 		<ParameterTypeSet>
 			<EnumeratedParameterType name="event_id_type">
-				<IntegerDataEncoding sizeInBits="8"/>
+				<IntegerDataEncoding/>
 				<EnumerationList>
 					<Enumeration value="1" label="EVENT_1" />
 					<Enumeration value="2" label="EVENT_2" />
 				</EnumerationList>
 			</EnumeratedParameterType>
+			<IntegerParameterType name="disabled_count_type" baseType="/dt/uint8"/>
+			<ArrayParameterType arrayTypeRef="event_id_type" name="disabled_event_ids_type">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ParameterInstanceRef parameterRef="disabled_count" />
+								<LinearAdjustment intercept="-1" />
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayParameterType>
 		</ParameterTypeSet>
 		<ParameterSet>
 			<Parameter parameterTypeRef="event_id_type" name="event_id"/>
 			<Parameter parameterTypeRef="/dt/uint16" name="event1_para1"/>
 			<Parameter parameterTypeRef="/dt/float32" name="event1_para2"/>
 			<Parameter parameterTypeRef="/dt/prepended_string" name="event2_msg"/>
+			<Parameter parameterTypeRef="disabled_count_type" name="disabled_count"/>
+			<Parameter parameterTypeRef="disabled_event_ids_type" name="disabled_event_ids"/>
 		</ParameterSet>
 		<ContainerSet>
+			<!-- Thin base for all ST[05] packets (type==5); no payload parsed here -->
 			<SequenceContainer name="pus5-tm">
-				<EntryList>
-					<ParameterRefEntry parameterRef="event_id"></ParameterRefEntry>
-				</EntryList>
+				<EntryList/>
 				<BaseContainer containerRef="/PUS/pus-tm">
 					<RestrictionCriteria>
-						<Comparison parameterRef="/PUS/type" comparisonOperator="==" value="5" />
+						<Comparison parameterRef="/PUS/type" value="5" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<!-- Intermediate container for event reports TM[5,1-4] only; extracts event_id -->
+			<SequenceContainer name="pus5-event-report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="event_id"/>
+				</EntryList>
+				<BaseContainer containerRef="pus5-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="&lt;" value="5" />
 					</RestrictionCriteria>
 				</BaseContainer>
 			</SequenceContainer>
@@ -34,28 +60,44 @@
 					<ParameterRefEntry parameterRef="event1_para1"/>
 					<ParameterRefEntry parameterRef="event1_para2"/>
 				</EntryList>
-				<BaseContainer containerRef="pus5-tm">
+				<BaseContainer containerRef="pus5-event-report">
 					<RestrictionCriteria>
 						<Comparison value="EVENT_1" parameterRef="event_id" />
 					</RestrictionCriteria>
-					</BaseContainer>
+				</BaseContainer>
 			</SequenceContainer>
 			<SequenceContainer name="event2">
 				<EntryList>
 					<ParameterRefEntry parameterRef="event2_msg"/>
 				</EntryList>
-				<BaseContainer containerRef="pus5-tm">
+				<BaseContainer containerRef="pus5-event-report">
 					<RestrictionCriteria>
 						<Comparison value="EVENT_2" parameterRef="event_id" />
 					</RestrictionCriteria>
-					</BaseContainer>
+				</BaseContainer>
+			</SequenceContainer>
+			<!-- TM[5,8] Disabled event definitions list report (§8.5.2.8) -->
+			<SequenceContainer name="pus5-disabled-list">
+				<EntryList>
+					<ParameterRefEntry parameterRef="disabled_count"/>
+					<ParameterRefEntry parameterRef="disabled_event_ids">
+						<IncludeCondition>
+							<Comparison parameterRef="disabled_count" comparisonOperator="&gt;" value="0"/>
+						</IncludeCondition>
+					</ParameterRefEntry>
+				</EntryList>
+				<BaseContainer containerRef="pus5-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" value="8" />
+					</RestrictionCriteria>
+				</BaseContainer>
 			</SequenceContainer>
 		</ContainerSet>
 	</TelemetryMetaData>
 	<CommandMetaData>
 		<ArgumentTypeSet>
 			<EnumeratedArgumentType name="event_id_type">
-				<IntegerDataEncoding sizeInBits="8"/>
+				<IntegerDataEncoding/>
 				<EnumerationList>
 					<Enumeration value="1" label="EVENT_1" />
 					<Enumeration value="2" label="EVENT_2" />
@@ -122,6 +164,19 @@
 						<ArgumentRefEntry argumentRef="N" />
 						<ArgumentRefEntry argumentRef="events" />
 					</EntryList>
+					<BaseContainer containerRef="pus5-tc" />
+				</CommandContainer>
+			</MetaCommand>
+			<!-- TC[5,7] Report the list of disabled event definitions (§8.5.2.7) -->
+			<!-- No arguments — application data field shall be omitted -->
+			<MetaCommand name="REPORT_DISABLED_LIST">
+				<BaseMetaCommand metaCommandRef="pus5-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="7" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="REPORT_DISABLED_LIST">
+					<EntryList/>
 					<BaseContainer containerRef="pus5-tc" />
 				</CommandContainer>
 			</MetaCommand>
