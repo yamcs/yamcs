@@ -124,13 +124,42 @@ repeat N times:
 **Java**: ✅ `insertActivities()` reads subschedule + N, then for each: reads `PusTime`, reads CCSDS packet (using length field at offset +4), schedules into priority queue.
 
 **Implementation plan** (MDB change):
+
+The N-activity repetition IS expressible using YAMCS's nested array support. Each activity is an aggregate of `{release_time, tc_packet}`. The tc_packet must be declared as fixed-size binary (all scheduled TCs must have the same encoded size — typically the smallest common TC size for the mission).
+
 ```xml
 <!-- Add to ArgumentTypeSet: -->
+<!-- Fixed-size TC packet binary (adjust sizeInBits to match mission's common TC size) -->
 <BinaryArgumentType name="TcPacketType">
-    <!-- Variable-length: operator supplies pre-encoded TC hex -->
+    <BinaryDataEncoding>
+        <SizeInBits><FixedValue>128</FixedValue></SizeInBits>  <!-- 16 bytes example -->
+    </BinaryDataEncoding>
 </BinaryArgumentType>
 
-<!-- Add MetaCommand: -->
+<!-- Activity entry: one {release_time, tc_packet} pair -->
+<AggregateArgumentType name="ActivityEntryType">
+    <MemberList>
+        <Member name="release_time" typeRef="/PUS/PusTimeType"/>
+        <Member name="tc_packet"    typeRef="TcPacketType"/>
+    </MemberList>
+</AggregateArgumentType>
+
+<!-- Array of N activity entries; N is a top-level argument -->
+<ArrayArgumentType arrayTypeRef="ActivityEntryType" name="ActivityArrayType">
+    <DimensionList>
+        <Dimension>
+            <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+            <EndingIndex>
+                <DynamicValue>
+                    <ArgumentInstanceRef argumentRef="n"/>
+                    <LinearAdjustment intercept="-1"/>
+                </DynamicValue>
+            </EndingIndex>
+        </Dimension>
+    </DimensionList>
+</ArrayArgumentType>
+
+<!-- MetaCommand: -->
 <MetaCommand name="INSERT_ACTIVITIES" shortDescription="TC[11,4] insert activities into the time-based schedule">
     <BaseMetaCommand metaCommandRef="pus11-tc">
         <ArgumentAssignmentList>
@@ -140,15 +169,22 @@ repeat N times:
     <ArgumentList>
         <Argument argumentTypeRef="/dt/uint8" name="subschedule_id"/>
         <Argument argumentTypeRef="/dt/uint8" name="n"/>
-        <!-- Per-activity args: release_time + tc_packet defined as binary blob -->
-        <Argument argumentTypeRef="/PUS/PusTimeType" name="release_time"/>
-        <Argument argumentTypeRef="TcPacketType" name="tc_packet"/>
+        <Argument argumentTypeRef="ActivityArrayType" name="activities"/>
     </ArgumentList>
-    ...
+    <CommandContainer name="INSERT_ACTIVITIES">
+        <EntryList>
+            <ArgumentRefEntry argumentRef="subschedule_id"/>
+            <ArgumentRefEntry argumentRef="n"/>
+            <ArgumentRefEntry argumentRef="activities"/>
+        </EntryList>
+        <BaseContainer containerRef="pus11-tc"/>
+    </CommandContainer>
 </MetaCommand>
 ```
 
-**Limitation**: XTCE cannot natively repeat `{release_time, tc_packet}` N times in a single command definition because command arrays with mixed-type elements and variable-size binary fields are not well-supported in XTCE 1.2. The practical workaround is: define the command for a single activity (n=1), or use the `yamcs-client` `pus11ScheduleAt` extra which bypasses this entirely. See Section C — Gap #1.
+**Constraint**: All N TCs inside `activities` must have the same declared binary size (`TcPacketType` `FixedValue`). Operators supply each `tc_packet` as a hex string. For heterogeneous TC sizes, use `yamcs-client` `pus11ScheduleAt` instead.
+
+**Limitation**: YAMCS supports repeating a structured aggregate N times in a single command using nested `AggregateArgumentType` + `ArrayArgumentType` (confirmed by `array-in-array-arg.xml`). The `{release_time, tc_packet}` pair COULD be defined as a fixed-size aggregate array — BUT only if `tc_packet` has a known fixed size. Since `tc_packet` is a variable-length CCSDS TC packet (its length is determined by the CCSDS length field embedded within it, not by a preceding count in the outer command), this is the actual barrier. The practical workaround is: define the command for a single activity (n=1) with a fixed-size tc_packet, or use the `yamcs-client` `pus11ScheduleAt` extra which bypasses this entirely. See Section C — Gap #1.
 
 ---
 
@@ -630,20 +666,21 @@ repeat N:
 
 ## C. Gaps & Shortcomings
 
-### Gap 1 — TC[11,4]: Embedding a TC packet in XTCE (Critical)
+### Gap 1 — TC[11,4]: Variable-length embedded TC packet (Critical)
 
-**Problem**: PUS 11 INSERT_ACTIVITIES requires embedding a complete, variable-length CCSDS TC packet inside the scheduling TC. The embedded TC's length is determined by its own CCSDS length field (at byte offset +4 from the packet start), not a preceding count field in the outer TC.
+**Problem**: PUS 11 INSERT_ACTIVITIES embeds a complete, variable-length CCSDS TC packet inside each scheduled activity. The embedded TC's length is determined by its **own CCSDS length field** (at byte offset +4 from the packet start), not by a preceding count field in the outer TC.
 
-**XTCE limitation**: XTCE 1.2 supports `BinaryArgumentType` with `DynamicValue` size derivation, but the size expression must reference an **argument in the same command**, not an offset inside the binary blob itself. It is not possible to express "read 2 bytes at offset +4 inside this binary field, multiply by 8, add 56" as an XTCE dynamic size.
+**What nested array support resolves**: YAMCS supports repeating a `{release_time, tc_packet}` pair N times as a single MetaCommand using `AggregateArgumentType` + `ArrayArgumentType` (confirmed by `array-in-array-arg.xml`). The N-activity repetition is NOT the barrier.
 
-**YAMCS-specific limitation**: YAMCS Web UI cannot construct the inner TC packet as a typed structure if it is declared as opaque binary. There is no XTCE mechanism to say "this argument is itself a MetaCommand."
+**What it does NOT resolve**: The `tc_packet` field within each activity is variable-length. Its size cannot be declared as a static `FixedValue` and cannot be derived from a sibling argument (the CCSDS length is embedded inside the binary payload, not in a separate argument). XTCE `BinaryArgumentType` requires either a `FixedValue` or a `DynamicValue` that references an **argument in the same command** — not a field buried inside the binary blob.
 
-**Impact**: TC[11,4] cannot be fully defined in XTCE for multi-activity scheduling. For single-activity scheduling with a known fixed TC, a workaround exists:
+**Impact**: TC[11,4] cannot be fully defined in XTCE for multi-activity scheduling with heterogeneous TC types. For single-activity scheduling with one known fixed-size TC, a workaround exists:
 
-- Define `tc_packet` as a `BinaryArgumentType` with a `FixedValue` size (e.g., 16 bytes for simple TCs).
-- Operators must supply the pre-encoded TC as a hex string.
+- Define an `ActivityEntryType` aggregate: `{release_time (PusTimeType), tc_packet (BinaryArgumentType, FixedValue size)}`.
+- Use `ArrayArgumentType` over `ActivityEntryType` sized by `N`.
+- Operators supply the pre-encoded TC as a hex string; all TCs must be the same declared size.
 
-**Recommended approach**: Use `yamcs-client` with the `pus11ScheduleAt` extra for all production scheduling. The MDB definition of TC[11,4] is for documentation and manual testing only (N=1, fixed TC size).
+**Recommended approach**: Use `yamcs-client` with the `pus11ScheduleAt` extra for all production scheduling. The MDB definition of TC[11,4] is for documentation and manual testing only (N=1 or N>1 with uniform fixed-size TCs).
 
 ---
 
@@ -703,7 +740,7 @@ repeat N:
 
 | Gap | Severity | XTCE-only fix? | Effort |
 |-----|----------|----------------|--------|
-| #1 TC[11,4] embedded TC | High | ❌ No — needs scripting/client | N/A (by design) |
+| #1 TC[11,4] embedded TC | High | ❌ No — N-activity array is expressible, but variable-length tc_packet binary is not | N/A (by design) |
 | #2 TC[11,7/8] missing offset | High | ✅ Yes | Trivial |
 | #3 TC[11,15] wrong args | High | ✅ Yes | Trivial |
 | #4 Groups TC[11,22–26]+TM[11,27] | Medium | Partial — MDB ✅, Java ❌ | Low |
