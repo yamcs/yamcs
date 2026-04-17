@@ -36,9 +36,7 @@ export const APP_ROUTES: Routes = [
       {
         path: 'admin',
         loadChildren: () =>
-          import('projects/webapp/src/app/admin/admin.routes').then(
-            (m) => m.ROUTES,
-          ),
+          import('./admin/admin.routes').then((m) => m.ROUTES),
         canActivate: [authGuardFn],
       },
       {
@@ -87,9 +85,7 @@ export const APP_ROUTES: Routes = [
       {
         path: 'storage',
         loadChildren: () =>
-          import('projects/webapp/src/app/storage/storage.routes').then(
-            (m) => m.ROUTES,
-          ),
+          import('./storage/storage.routes').then((m) => m.ROUTES),
         canActivate: [authGuardFn],
         data: { hasSidebar: false },
       },
@@ -103,49 +99,37 @@ export const APP_ROUTES: Routes = [
           {
             path: 'activities',
             loadChildren: () =>
-              import('projects/webapp/src/app/activities/activities.routes').then(
-                (m) => m.ROUTES,
-              ),
+              import('./activities/activities.routes').then((m) => m.ROUTES),
             canActivate: [authGuardFn],
           },
           {
             path: 'alarms',
             loadChildren: () =>
-              import('projects/webapp/src/app/alarms/alarms.routes').then(
-                (m) => m.ROUTES,
-              ),
+              import('./alarms/alarms.routes').then((m) => m.ROUTES),
             canActivate: [authGuardFn],
           },
           {
             path: 'algorithms',
             loadChildren: () =>
-              import('projects/webapp/src/app/algorithms/algorithms.routes').then(
-                (m) => m.ROUTES,
-              ),
+              import('./algorithms/algorithms.routes').then((m) => m.ROUTES),
             canActivate: [authGuardFn],
           },
           {
             path: 'archive',
             loadChildren: () =>
-              import('projects/webapp/src/app/archive/archive.routes').then(
-                (m) => m.ROUTES,
-              ),
+              import('./archive/archive.routes').then((m) => m.ROUTES),
             canActivate: [authGuardFn],
           },
           {
             path: 'commanding',
             loadChildren: () =>
-              import('projects/webapp/src/app/commanding/commanding.routes').then(
-                (m) => m.ROUTES,
-              ),
+              import('./commanding/commanding.routes').then((m) => m.ROUTES),
             canActivate: [authGuardFn],
           },
           {
             path: 'events',
             loadChildren: () =>
-              import('projects/webapp/src/app/events/events.routes').then(
-                (m) => m.ROUTES,
-              ),
+              import('./events/events.routes').then((m) => m.ROUTES),
             canActivate: [authGuardFn],
           },
           {
@@ -163,7 +147,7 @@ export const APP_ROUTES: Routes = [
           {
             path: 'file-transfer',
             loadChildren: () =>
-              import('projects/webapp/src/app/file-transfer/file-transfer.routes').then(
+              import('./file-transfer/file-transfer.routes').then(
                 (m) => m.ROUTES,
               ),
             canActivate: [authGuardFn],
@@ -171,7 +155,7 @@ export const APP_ROUTES: Routes = [
           {
             path: 'instance',
             loadChildren: () =>
-              import('projects/webapp/src/app/instance-home/instance-home.routes').then(
+              import('./instance-home/instance-home.routes').then(
                 (m) => m.ROUTES,
               ),
             canActivate: [authGuardFn],
@@ -180,51 +164,39 @@ export const APP_ROUTES: Routes = [
           {
             path: 'links',
             loadChildren: () =>
-              import('projects/webapp/src/app/links/links.routes').then(
-                (m) => m.ROUTES,
-              ),
+              import('./links/links.routes').then((m) => m.ROUTES),
             canActivate: [authGuardFn],
           },
           {
             path: 'mdb',
             loadChildren: () =>
-              import('projects/webapp/src/app/mdb/mdb.routes').then(
-                (m) => m.ROUTES,
-              ),
+              import('./mdb/mdb.routes').then((m) => m.ROUTES),
             canActivate: [authGuardFn],
           },
           {
             path: 'procedures',
             loadChildren: () =>
-              import('projects/webapp/src/app/procedures/procedures.routes').then(
-                (m) => m.ROUTES,
-              ),
+              import('./procedures/procedures.routes').then((m) => m.ROUTES),
             canActivate: [authGuardFn],
           },
           {
             path: 'search',
             loadChildren: () =>
-              import('projects/webapp/src/app/search/search.routes').then(
-                (m) => m.ROUTES,
-              ),
+              import('./search/search.routes').then((m) => m.ROUTES),
             canActivate: [authGuardFn],
             data: { preload: true },
           },
           {
             path: 'telemetry',
             loadChildren: () =>
-              import('projects/webapp/src/app/telemetry/telemetry.routes').then(
-                (m) => m.ROUTES,
-              ),
+              import('./telemetry/telemetry.routes').then((m) => m.ROUTES),
             canActivate: [authGuardFn],
             data: { preload: true },
           },
           {
             path: 'timeline',
             loadChildren: () =>
-              import('projects/webapp/src/app/timeline/timeline.routes').then(
-                (m) => m.ROUTES,
-              ),
+              import('./timeline/timeline.routes').then((m) => m.ROUTES),
             canActivate: [authGuardFn],
           },
         ],
