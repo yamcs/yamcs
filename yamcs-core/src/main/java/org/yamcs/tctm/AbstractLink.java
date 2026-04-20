@@ -212,7 +212,7 @@ public abstract class AbstractLink extends AbstractService
         list.add(getPV(spDataInRate, time, dataInRateMeter.getFiveSecondsRate()));
     }
 
-    protected void addAction(LinkAction action) {
+    public void addAction(LinkAction action) {
         if (actions.containsKey(action.getId())) {
             throw new IllegalArgumentException("Action '" + action.getId() + "' already registered");
         }

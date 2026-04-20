@@ -8,8 +8,6 @@ import org.yamcs.utils.ByteArrayUtils;
 /**
  * Fills in the time, seq and checksum
  * 
- * @author nm
- *
  */
 public class CcsdsSeqCountFiller {
     static Map<Integer, Integer> seqCounts = new HashMap<Integer, Integer>();
@@ -21,12 +19,9 @@ public class CcsdsSeqCountFiller {
      * @return
      */
     private synchronized int getSeqCount(int apid) {
-        int seqCount = 0;
-        if (seqCounts.containsKey(apid)) {
-            seqCount = seqCounts.get(apid);
-        }
-        seqCount = (seqCount + 1) % (1 << 14);
-        seqCounts.put(apid, seqCount);
+        int seqCount = seqCounts.getOrDefault(apid, 0);
+        var nextSeqCount = (seqCount + 1) % (1 << 14);
+        seqCounts.put(apid, nextSeqCount);
         return seqCount;
     }
 
@@ -47,5 +42,9 @@ public class CcsdsSeqCountFiller {
         ByteArrayUtils.encodeUnsignedShort((short) ((seqFlags << 14) | seqCount), packet, 2);
 
         return seqCount;
+    }
+
+    public synchronized void setSequence(int apid, int seqCount) {
+        seqCounts.put(apid, seqCount);
     }
 }

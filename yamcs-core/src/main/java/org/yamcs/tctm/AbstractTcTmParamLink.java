@@ -101,7 +101,7 @@ public abstract class AbstractTcTmParamLink extends AbstractLink
                 if (commandPostprocessorArgs == null) {
                     commandPostprocessorArgs = YConfiguration.emptyConfig();
                 }
-                cmdPostProcessor.init(instance, commandPostprocessorArgs);
+                cmdPostProcessor.init(instance, commandPostprocessorArgs, this);
             }
         } catch (ConfigurationException e) {
             log.error("Cannot instantiate the command postprocessor", e);

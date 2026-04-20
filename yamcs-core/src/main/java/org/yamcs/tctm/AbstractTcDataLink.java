@@ -24,7 +24,6 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
     static final PreparedCommand SIGNAL_QUIT = new PreparedCommand(new byte[0]);
 
     protected long housekeepingInterval = 10000;
-    
 
     @Override
     public Spec getDefaultSpec() {
@@ -54,27 +53,11 @@ public abstract class AbstractTcDataLink extends AbstractLink implements TcDataL
         }
 
         try {
-            boolean initRequired = false;
-            try {
-                cmdPostProcessor = YObjectLoader.loadObject(commandPostprocessorClassName);
-                initRequired = true;
-            } catch (ConfigurationException e) {
-                // Fallback to the current behaviour if no default constructor is found.
-                // TODO: remove after all postprocessors have been migrated to the init method
-                if (commandPostprocessorArgs != null) {
-                    cmdPostProcessor = YObjectLoader.loadObject(commandPostprocessorClassName, instance,
-                            commandPostprocessorArgs);
-                } else {
-                    cmdPostProcessor = YObjectLoader.loadObject(commandPostprocessorClassName, instance);
-                }
+            cmdPostProcessor = YObjectLoader.loadObject(commandPostprocessorClassName);
+            if (commandPostprocessorArgs == null) {
+                commandPostprocessorArgs = YConfiguration.emptyConfig();
             }
-
-            if (initRequired) {
-                if (commandPostprocessorArgs == null) {
-                    commandPostprocessorArgs = YConfiguration.emptyConfig();
-                }
-                cmdPostProcessor.init(instance, commandPostprocessorArgs);
-            }
+            cmdPostProcessor.init(instance, commandPostprocessorArgs, this);
         } catch (Exception e) {
             log.error("Cannot instantiate the command postprocessor", e);
             throw new ConfigurationException("Failed to initialize postprocessor", e);

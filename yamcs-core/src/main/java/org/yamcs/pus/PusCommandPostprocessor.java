@@ -5,9 +5,12 @@ import java.util.Arrays;
 
 import org.yamcs.CommandOption;
 import org.yamcs.ConfigurationException;
+import org.yamcs.Spec;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.CommandOption.CommandOptionType;
+import org.yamcs.Spec.OptionType;
+import org.yamcs.actions.ActionResult;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.tctm.AbstractCommandPostProcessor;
@@ -15,10 +18,15 @@ import org.yamcs.tctm.AbstractPacketPreprocessor;
 import org.yamcs.tctm.CcsdsPacket;
 import org.yamcs.tctm.CcsdsSeqCountFiller;
 import org.yamcs.tctm.ErrorDetectionWordCalculator;
+import org.yamcs.tctm.Link;
+import org.yamcs.tctm.LinkAction;
+import org.yamcs.tctm.LinkActionProvider;
 import org.yamcs.tctm.ccsds.time.CucTimeEncoder;
 import org.yamcs.time.TimeCorrelationService;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
+
+import com.google.gson.JsonObject;
 
 import static org.yamcs.tctm.AbstractPacketPreprocessor.CONFIG_KEY_TCO_SERVICE;
 
@@ -46,13 +54,18 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
      * if it is different than -1 it will be used as the APID for the TC(11,4)
      */
     int pus11Apid = -1;
+    // allow changing the sequence count during runtime
+    private ChangeSeqCountAction seqCountAction = new ChangeSeqCountAction();
 
 
     @Override
-    public void init(String yamcsInstance, YConfiguration config) {
-        super.init(yamcsInstance, config);
+    public void init(String yamcsInstance, YConfiguration config, Link link) {
+        super.init(yamcsInstance, config, link);
         this.pus11Crc = config.getBoolean("pus11Crc", true);
         this.pus11Apid = config.getInt("pus11Apid", -1);
+        if (link instanceof LinkActionProvider lap) {
+            lap.addAction(seqCountAction);
+        }
 
         errorDetectionCalculator = AbstractPacketPreprocessor.getErrorDetectionWordCalculator(config);
         if (config.containsKey("timeEncoding")) {
@@ -206,6 +219,34 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
             return (errorDetectionCalculator != null);
         } else {
             return false;
+        }
+    }
+
+    private class ChangeSeqCountAction extends LinkAction {
+
+        ChangeSeqCountAction() {
+            super("change-seq-count", "Change sequence count for the outgoing commands");
+        }
+
+        @Override
+        public Spec getSpec() {
+            var spec = new Spec();
+            spec.addOption("apid", OptionType.INTEGER)
+                    .withRequired(true);
+            spec.addOption("seq-count", OptionType.INTEGER)
+                    .withRequired(true)
+                    .withDefault(0);
+            return spec;
+        }
+
+        @Override
+        public void execute(Link link, JsonObject request, ActionResult result) {
+            int apid = request.get("apid").getAsInt();
+            int seqCount = request.get("seq-count").getAsInt();
+            log.info("Changing Sequence count for APID {} to {}", apid, seqCount);
+
+            seqFiller.setSequence(apid, seqCount);
+            result.complete();
         }
     }
 }

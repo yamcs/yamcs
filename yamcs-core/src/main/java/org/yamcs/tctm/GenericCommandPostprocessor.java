@@ -18,7 +18,7 @@ public class GenericCommandPostprocessor implements CommandPostprocessor {
 
     protected CommandHistoryPublisher commandHistoryListener;
 
-    public void init(String yamcsInstance, YConfiguration config) {
+    public void init(String yamcsInstance, YConfiguration config, Link link) {
         if (config != null && config.containsKey(CONFIG_KEY_ERROR_DETECTION)) {
             errorDetectionCalculator = AbstractPacketPreprocessor.getErrorDetectionWordCalculator(config);
         } else {

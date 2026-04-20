@@ -26,7 +26,7 @@ public class IssCommandPostprocessor implements CommandPostprocessor {
     protected CommandHistoryPublisher commandHistory;
     boolean enforceEvenNumberOfBytes;
 
-    public void init(String yamcsInstance, YConfiguration config) {
+    public void init(String yamcsInstance, YConfiguration config, Link link) {
         minimumTcPacketLength = config.getInt("minimumTcPacketLength", -1);
         maximumTcPacketLength = config.getInt("maximumTcPacketLength", -1);
         enforceEvenNumberOfBytes = config.getBoolean("enforceEvenNumberOfBytes", false);
