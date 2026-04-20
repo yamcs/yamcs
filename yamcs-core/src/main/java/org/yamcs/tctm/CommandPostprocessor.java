@@ -4,6 +4,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 
+
 /**
  * The command post processor is responsible to provide the binary packet that will be send out for a PreparedCommand.
  * 
@@ -13,12 +14,21 @@ import org.yamcs.commanding.PreparedCommand;
 public interface CommandPostprocessor {
 
     /**
-     * Called to initialise the postprocessor and set the cmd hist publisher (used to publish command acknowledgments),
-     * the timeService (required to timestamp acks) and the configuration
+     * Called to initialise the postprocessor.
+     *
+     * @deprecated override {@link #init(String, YConfiguration, Link)} instead
      */
+    @Deprecated
     default public void init(String yamcsInstance, YConfiguration config) {
     }
 
+    /**
+     * Called to initialise the postprocessor. The link parameter can be used to register link actions.
+     * 
+     */
+    default public void init(String yamcsInstance, YConfiguration config, Link link) {
+        init(yamcsInstance, config);
+    }
     /**
      * processes the command and returns the binary buffer.
      * 

@@ -12,6 +12,7 @@ import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.CommandPostprocessor;
+import org.yamcs.tctm.Link;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -23,7 +24,7 @@ public class CspCommandPostprocessor implements CommandPostprocessor {
     protected int maximumTcPacketLength = -1; // the maximum size of the CSP packets uplinked
     protected CommandHistoryPublisher commandHistory;
 
-    public void init(String yamcsInstance, YConfiguration config) {
+    public void init(String yamcsInstance, YConfiguration config, Link link) {
         maximumTcPacketLength = config.getInt("maximumTcPacketLength", -1);
     }
 

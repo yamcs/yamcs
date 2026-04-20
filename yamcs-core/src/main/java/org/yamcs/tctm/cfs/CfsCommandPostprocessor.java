@@ -10,6 +10,7 @@ import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.tctm.CcsdsSeqCountFiller;
 import org.yamcs.tctm.CommandPostprocessor;
+import org.yamcs.tctm.Link;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
 
@@ -56,7 +57,7 @@ public class CfsCommandPostprocessor implements CommandPostprocessor {
     private boolean swapChecksumFc = false;
     static Logger log = LoggerFactory.getLogger(CfsCommandPostprocessor.class);
     
-    public void init(String yamcsInstance, YConfiguration config) {
+    public void init(String yamcsInstance, YConfiguration config, Link link) {
         this.yamcsInstance = yamcsInstance;
         this.swapChecksumFc = config.getBoolean("swapChecksumFc", false);
     }

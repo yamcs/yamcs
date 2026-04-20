@@ -7,4 +7,6 @@ public interface LinkActionProvider {
     List<LinkAction> getActions();
 
     LinkAction getAction(String actionId);
+
+    void addAction(LinkAction action);
 }

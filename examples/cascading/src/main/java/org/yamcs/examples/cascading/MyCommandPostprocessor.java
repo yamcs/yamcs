@@ -2,6 +2,8 @@ package org.yamcs.examples.cascading;
 
 
 import org.yamcs.tctm.CommandPostprocessor;
+import org.yamcs.tctm.Link;
+import org.yamcs.YConfiguration;
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.events.EventProducer;
@@ -13,7 +15,8 @@ import org.yamcs.events.EventProducerFactory;
 public class MyCommandPostprocessor implements CommandPostprocessor {
     CommandHistoryPublisher cmdHistoryPublisher;
     EventProducer eventProducer;
-    public MyCommandPostprocessor(String yamcsInstance) {
+
+    public void init(String yamcsInstance, YConfiguration config, Link link) {
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, "MyCommandPostprocessor", -1);
     }
 

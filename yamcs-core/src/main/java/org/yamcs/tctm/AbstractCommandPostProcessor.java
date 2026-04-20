@@ -18,7 +18,7 @@ public abstract class AbstractCommandPostProcessor implements CommandPostprocess
     protected Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Override
-    public void init(String yamcsInstance, YConfiguration config) {
+    public void init(String yamcsInstance, YConfiguration config, Link link) {
         this.timeService = YamcsServer.getTimeService(yamcsInstance);
     }
 
