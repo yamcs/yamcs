@@ -22,7 +22,7 @@
     "useDefineForClassFields": false,
     "allowJs": true,
     "paths": {
-      "@yamcs/webapp-sdk": ["./dist/webapp-sdk"]
+      "@yamcs/webapp-sdk": ["./projects/webapp-sdk/src/public-api.ts"]
     }
   },
   "angularCompilerOptions": {
