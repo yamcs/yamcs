@@ -17,15 +17,13 @@
     "files.insertFinalNewline": true,
     "files.trimTrailingWhitespace": true,
     "html.format.enable": true,
-    "javascript.format.enable": true,
-    "javascript.preferences.importModuleSpecifier": "relative",
+    "js/ts.format.enabled": true,
+    "js/ts.preferences.importModuleSpecifier": "shortest",
     "json.format.enable": true,
     "search.exclude": {
       "**/dist": true,
       "**/node_modules": true,
     },
-    "typescript.format.enable": true,
-    "typescript.preferences.importModuleSpecifier": "project-relative",
     "[css]": {
       "editor.defaultFormatter": "esbenp.prettier-vscode",
     },
