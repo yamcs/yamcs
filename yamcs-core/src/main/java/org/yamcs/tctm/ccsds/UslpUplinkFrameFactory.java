@@ -33,7 +33,7 @@ public class UslpUplinkFrameFactory implements UplinkFrameFactory<UslpUplinkTran
     final UslpUplinkManagedParameters uslpParams;
     final UslpUplinkVcManagedParameters vcParams;
     final int vcfCountLength;
-    /** Size in bytes of the primary header: 4 (fixed ID) + 2 (length) + 1 (flags) + vcfCountLength + insertZoneLength */
+    /** Size in bytes of the primary header: 4 (fixed ID) + 2 (length) + 1 (flags) + vcfCountLength */
     final int primaryHeaderSize;
     final ErrorDetectionWordCalculator crc;
     final int crcSize;
@@ -42,7 +42,7 @@ public class UslpUplinkFrameFactory implements UplinkFrameFactory<UslpUplinkTran
         this.vcParams = vcParams;
         this.uslpParams = vcParams.uslpParams;
         this.vcfCountLength = vcParams.vcfCountLength;
-        this.primaryHeaderSize = 7 + vcfCountLength + uslpParams.insertZoneLength;
+        this.primaryHeaderSize = 7 + vcfCountLength;
 
         FrameErrorDetection err = uslpParams.errorDetection;
         if (err == FrameErrorDetection.CRC16) {
@@ -75,7 +75,7 @@ public class UslpUplinkFrameFactory implements UplinkFrameFactory<UslpUplinkTran
 
     private UslpUplinkTransferFrame makeFrame(int dataLength, int mapId, boolean cmdControl, long generationTime) {
         mapId = mapId & 0x0F;
-        int dataStart = primaryHeaderSize + ZONE_HEADER_SIZE;
+        int dataStart = primaryHeaderSize + uslpParams.insertZoneLength + ZONE_HEADER_SIZE;
         int length = dataStart + dataLength + crcSize;
 
         short spi = vcParams.encryptionSpi;
@@ -107,7 +107,7 @@ public class UslpUplinkFrameFactory implements UplinkFrameFactory<UslpUplinkTran
 
     @Override
     public int getFramingLength(int vcId) {
-        int length = primaryHeaderSize + ZONE_HEADER_SIZE + crcSize;
+        int length = primaryHeaderSize + uslpParams.insertZoneLength + ZONE_HEADER_SIZE + crcSize;
         short spi = vcParams.encryptionSpi;
         SdlsInfo sdlsInfo = uslpParams.sdlsSecurityAssociations.get(spi);
         if (sdlsInfo != null) {
@@ -145,7 +145,7 @@ public class UslpUplinkFrameFactory implements UplinkFrameFactory<UslpUplinkTran
         // Insert zone is left as zero (Java initialises byte arrays to 0)
 
         // Data zone header
-        data[primaryHeaderSize - uslpParams.insertZoneLength] = ZONE_HEADER_BYTE;
+        data[primaryHeaderSize + uslpParams.insertZoneLength] = ZONE_HEADER_BYTE;
 
         // SDLS encryption
         short spi = vcParams.encryptionSpi;
@@ -153,10 +153,9 @@ public class UslpUplinkFrameFactory implements UplinkFrameFactory<UslpUplinkTran
         if (sdlsInfo != null && !frame.isCmdControl()) {
             try {
                 SdlsSecurityAssociation sa = sdlsInfo.sa();
-                int phLength = 7 + vcfCountLength; // primary header length without insert zone
                 byte[] authMask = sdlsInfo.customAuthMask();
                 if (authMask == null) {
-                    authMask = StandardAuthMask.USLP(phLength, uslpParams.insertZoneLength,
+                    authMask = StandardAuthMask.USLP(primaryHeaderSize, uslpParams.insertZoneLength,
                             sa.securityHdrAuthMask());
                 }
                 sa.applySecurity(data, 0, frame.getDataStart() - sa.getHeaderSize(),
