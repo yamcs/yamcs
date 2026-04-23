@@ -21,8 +21,8 @@ import org.yamcs.utils.TimeEncoding;
  */
 public class UslpUplinkFrameFactory implements UplinkFrameFactory<UslpUplinkTransferFrame> {
     static final int USLP_VERSION = 12;
-    /** Source-or-Destination = 0 for uplink (source) */
-    static final int SOURCE_OR_DEST = 0;
+    /** Source-or-Destination = 1 for uplink (spacecraft ID is the destination) */
+    static final int SOURCE_OR_DEST = 1;
     /**
      * Data zone header byte: construction rule 0b111 (3 MSBs) + protocol ID 0 (5 LSBs).
      * Rule 0b111 means the first packet header starts at the beginning of the data zone.
