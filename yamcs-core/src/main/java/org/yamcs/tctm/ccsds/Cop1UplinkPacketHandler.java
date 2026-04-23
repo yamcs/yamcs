@@ -40,7 +40,7 @@ import org.yamcs.xtce.Member;
 import org.yamcs.xtce.Parameter;
 
 /**
- * Assembles TC packets into TC frames as per CCSDS 232.0-B-3 and sends them out via FOP1
+ * Assembles TC packets into TC (CCSDS 232.0-B-3) or USLP (CCSDS 732.1-B-2) frames and sends them out via FOP1
  * 
  * <p>
  * Implements the FOP (transmitter) part of the Communications Operations Procedure-1 CCSDS 232.1-B-2 September 2010
@@ -50,7 +50,7 @@ import org.yamcs.xtce.Parameter;
  * to be set manually to an CLCW observed value before calling the "Initiate AD with CLCW check" directive.
  * 
  */
-public class Cop1TcPacketHandler<T extends UplinkTransferFrame> extends AbstractTcDataLink
+public class Cop1UplinkPacketHandler<T extends UplinkTransferFrame> extends AbstractTcDataLink
         implements VcUplinkHandler<T> {
     static final String[] STATE_NAMES = new String[] { "Invalid", "Active", "Retransmit without wait",
             "Retransmit with wait", "Initialising without BC Frame", "Initialising with BC Frame", "Initial" };
@@ -167,7 +167,7 @@ public class Cop1TcPacketHandler<T extends UplinkTransferFrame> extends Abstract
     protected Parameter spCop1Status;
     private volatile ParameterValue cop1Status;
 
-    public Cop1TcPacketHandler(String yamcsInstance, String linkName,
+    public Cop1UplinkPacketHandler(String yamcsInstance, String linkName,
             VcUplinkManagedParameters<T> vmp, ScheduledThreadPoolExecutor executor) {
         super.init(yamcsInstance, linkName, vmp.config);
 

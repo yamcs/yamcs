@@ -31,7 +31,7 @@ import org.yamcs.utils.ValueHelper;
 
 public class Cop1TcPacketHandlerTest {
 
-    Cop1TcPacketHandler<TcTransferFrame> fop1ph;
+    Cop1UplinkPacketHandler<TcTransferFrame> fop1ph;
 
     ScheduledThreadPoolExecutor executor;
     static TcFrameFactory tcFrameFactory;
@@ -69,7 +69,7 @@ public class Cop1TcPacketHandlerTest {
         executor = new ScheduledThreadPoolExecutor(1);
         monitor = new MyMonitor();
 
-        fop1ph = new Cop1TcPacketHandler("test", "test", tcParams.getVcParams(0), executor);
+        fop1ph = new Cop1UplinkPacketHandler("test", "test", tcParams.getVcParams(0), executor);
         fop1ph.addMonitor(monitor);
         fop1ph.setCommandHistoryPublisher(new TcpTcDataLinkTest.MyCmdHistPublisher(new Semaphore(0)));
 
@@ -727,7 +727,7 @@ public class Cop1TcPacketHandlerTest {
         CommandId id = CommandId.newBuilder().setOrigin("test").setGenerationTime(t).setSequenceNumber(seqNum).build();
         PreparedCommand pc = new PreparedCommand(id);
         if (bypass) {
-            pc.addAttribute(CommandHistoryAttribute.newBuilder().setName(Cop1TcPacketHandler.OPTION_BYPASS.getId())
+            pc.addAttribute(CommandHistoryAttribute.newBuilder().setName(Cop1UplinkPacketHandler.OPTION_BYPASS.getId())
                     .setValue(ValueHelper.newValue(true)).build());
         }
         pc.setBinary(new byte[length]);

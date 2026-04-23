@@ -52,7 +52,20 @@ public class UslpUplinkManagedParameters extends UplinkManagedParameters<UslpUpl
         List<VcUplinkHandler<UslpUplinkTransferFrame>> l = new ArrayList<>();
         for (UslpUplinkVcManagedParameters vmp : vcParams) {
             String linkName = parentLinkName + "." + vmp.linkName();
-            l.add(new UplinkPacketHandler<>(yamcsInstance, linkName, vmp));
+            switch (vmp.service) {
+            case PACKET:
+                VcUplinkHandler<UslpUplinkTransferFrame> vcph;
+                if (vmp.useCop1) {
+                    var cop1Handler = new Cop1UplinkPacketHandler<UslpUplinkTransferFrame>(yamcsInstance, linkName, vmp,
+                            executor);
+                    cop1Handler.addMonitor(new Cop1MonitorImpl(yamcsInstance, linkName));
+                    vcph = cop1Handler;
+                } else {
+                    vcph = new UplinkPacketHandler<UslpUplinkTransferFrame>(yamcsInstance, linkName, vmp);
+                }
+                l.add(vcph);
+                break;
+            }
         }
         return l;
     }

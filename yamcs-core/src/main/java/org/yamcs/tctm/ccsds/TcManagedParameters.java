@@ -68,7 +68,7 @@ public class TcManagedParameters extends UplinkManagedParameters<TcTransferFrame
             case PACKET:
                 VcUplinkHandler<TcTransferFrame> vcph;
                 if (vmp.useCop1) {
-                    var cop1Handler = new Cop1TcPacketHandler<TcTransferFrame>(yamcsInstance, linkName, vmp, executor);
+                    var cop1Handler = new Cop1UplinkPacketHandler<TcTransferFrame>(yamcsInstance, linkName, vmp, executor);
                     cop1Handler.addMonitor(new Cop1MonitorImpl(yamcsInstance, linkName));
                     vcph = cop1Handler;
                 } else {
@@ -122,8 +122,6 @@ public class TcManagedParameters extends UplinkManagedParameters<TcTransferFrame
          */
         FrameErrorDetection errorDetection;
 
-        ServiceType service;
-
         int maxFrameLength;
 
 
@@ -139,7 +137,7 @@ public class TcManagedParameters extends UplinkManagedParameters<TcTransferFrame
             if (vcId < 0 || vcId > 63) {
                 throw new ConfigurationException("Invalid vcId: " + vcId + ". Allowed values are from 0 to 63.");
             }
-            service = config.getEnum("service", ServiceType.class, ServiceType.PACKET);
+
 
             maxFrameLength = config.getInt("maxFrameLength", tcParams.maxFrameLength);
             if (maxFrameLength < 8) {

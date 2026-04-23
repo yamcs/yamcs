@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.IntSupplier;
 import java.util.logging.LogManager;
 import java.util.stream.Collectors;
 
@@ -147,8 +148,8 @@ public class SimulatorCommander extends ProcessRunner {
                 // Pass all custom encryption arguments in the format:
                 // --encryption-args arg1=val1:arg2=val2
                 List<String> sArgs = encryptionArgs.entrySet().stream()
-                                        .map(e -> e.getKey() + "=" + e.getValue())
-                                        .toList();
+                        .map(e -> e.getKey() + "=" + e.getValue())
+                        .toList();
                 cmdl.addAll(Arrays.asList("--encryption-args", String.join(":", sArgs)));
             }
 
@@ -294,14 +295,13 @@ public class SimulatorCommander extends ProcessRunner {
                 if (encryptionClass != null) {
                     String argStr = runtimeOptions.encryptionArgs;
                     Yaml yaml = new Yaml();
-                    Map<String, Object> args =
-                            Arrays.stream(argStr.split(":"))
-                                    .map(s -> s.split("="))
-                                    .collect(Collectors.toMap(a -> a[0], a -> yaml.load(a[1])));
+                    Map<String, Object> args = Arrays.stream(argStr.split(":"))
+                            .map(s -> s.split("="))
+                            .collect(Collectors.toMap(a -> a[0], a -> yaml.load(a[1])));
                     YConfiguration argsConfig = new YConfiguration(null, null, args);
 
-
-                    ServiceLoader<SdlsSecurityAssociationFactory> loader = ServiceLoader.load(SdlsSecurityAssociationFactory.class);
+                    ServiceLoader<SdlsSecurityAssociationFactory> loader = ServiceLoader
+                            .load(SdlsSecurityAssociationFactory.class);
                     Optional<ServiceLoader.Provider<SdlsSecurityAssociationFactory>> maybeSaImpl = loader.stream()
                             .filter(l -> l.get().getClass().getName().equals(encryptionClass))
                             .findFirst();
@@ -320,20 +320,25 @@ public class SimulatorCommander extends ProcessRunner {
                 }
 
                 UdpTcFrameLink tcFrameLink = new UdpTcFrameLink(colSimulator, runtimeOptions.tcFramePort, maybeSdlsTc);
+
+                UdpUslpFrameLink uslpFrameLink = null;
+                if (runtimeOptions.uslpTcFramePort > 0) {
+                    uslpFrameLink = new UdpUslpFrameLink(colSimulator, runtimeOptions.uslpTcFramePort);
+                    services.add(uslpFrameLink);
+                }
+
+                final UdpUslpFrameLink finalUslpFrameLink = uslpFrameLink;
+                IntSupplier clcwSupplier = finalUslpFrameLink != null
+                        ? finalUslpFrameLink::getClcw
+                        : tcFrameLink::getClcw;
                 UdpTmFrameLink frameLink = new UdpTmFrameLink(runtimeOptions.scid, runtimeOptions.tmFrameType,
-                        runtimeOptions.tmFrameHost,
-                        runtimeOptions.tmFramePort,
-                        runtimeOptions.tmFrameLength, runtimeOptions.tmFrameFreq, () -> {
-                            return tcFrameLink.getClcw();
-                        }, maybeSdlsTm);
+                        runtimeOptions.tmFrameHost, runtimeOptions.tmFramePort, runtimeOptions.tmFrameLength,
+                        runtimeOptions.tmFrameFreq,
+                        clcwSupplier, maybeSdlsTm);
 
                 services.add(tcFrameLink);
                 services.add(frameLink);
                 colSimulator.setTmFrameLink(frameLink);
-
-                if (runtimeOptions.uslpTcFramePort > 0) {
-                    services.add(new UdpUslpFrameLink(colSimulator, runtimeOptions.uslpTcFramePort));
-                }
             }
 
             if (runtimeOptions.perfNp > 0) {

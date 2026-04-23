@@ -50,13 +50,16 @@ dataLinks:
     virtualChannels:
       - vcId: 0
         service: "PACKET"
-        vcfCountLength: 0 # number of bytes used for the VC frame count field (0-7)
+        vcfCountLength: 2 # number of bytes used for the VC frame count field (0-7)
         commandPostprocessorClassName: org.yamcs.tctm.IssCommandPostprocessor
         commandPostprocessorArgs:
           errorDetection:
             type: 16-SUM
           enforceEvenNumberOfBytes: true
         stream: "tc_realtime"
+        useCop1: true
+        clcwStream: "clcw"
+        initialClcwWait: 3600
 
   # Receives USLP TM frames (CCSDS 732.1-B-3) on multiple virtual channels.
   - name: UDP_FRAME_IN

@@ -2,6 +2,7 @@ package org.yamcs.tctm.ccsds;
 
 import org.yamcs.ConfigurationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.tctm.ccsds.UplinkManagedParameters.ServiceType;
 
 /**
  * Stores configuration related to Virtual Channels for uplink
@@ -19,7 +20,7 @@ public abstract class VcUplinkManagedParameters<T extends UplinkTransferFrame> {
      * The Security Parameter Index used on this channel
      */
     short encryptionSpi;
-
+    ServiceType service;
 
     public boolean multiplePacketsPerFrame;
 
@@ -45,6 +46,8 @@ public abstract class VcUplinkManagedParameters<T extends UplinkTransferFrame> {
         this.config = config;
         this.vcId = config.getInt("vcId");
         this.priority = config.getInt("priority", 1);
+        this.service = config.getEnum("service", ServiceType.class, ServiceType.PACKET);
+
         if (config.containsKey("encryptionSpi")) {
             encryptionSpi = (short) config.getInt("encryptionSpi");
             // If there is no security association for this SPI, it's a configuration error.

@@ -73,4 +73,8 @@ public class UdpUslpFrameLink extends AbstractExecutionThreadService {
             handler.processFrame(data, offset, length);
         }
     }
+
+    public int getClcw() {
+        return vcHandlers[0].getCLCW();
+    }
 }
