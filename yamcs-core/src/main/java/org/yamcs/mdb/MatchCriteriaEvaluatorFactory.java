@@ -23,6 +23,7 @@ import org.yamcs.xtce.ComparisonList;
 import org.yamcs.xtce.Condition;
 import org.yamcs.xtce.DataSource;
 import org.yamcs.xtce.DataType;
+import org.yamcs.xtce.IntegerDataType;
 import org.yamcs.xtce.MatchCriteria;
 import org.yamcs.xtce.ORedConditions;
 import org.yamcs.xtce.OperatorType;
@@ -132,9 +133,9 @@ public class MatchCriteriaEvaluatorFactory {
                     dtype = DataTypeUtil.getMemberType(dtype, ref.getMemberPath());
                 }
                 if (ref.useCalibratedValue()) {
-                    rValue = resolveValue(dtype.convertType(stringValue));
+                    rValue = resolveValue(dtype.convertType(stringValue), dtype);
                 } else {
-                    rValue = resolveValue(dtype.parseStringForRawValue(stringValue));
+                    rValue = resolveValue(dtype.parseStringForRawValue(stringValue), dtype);
                 }
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException("Cannot parse value required for comparing with "
@@ -275,11 +276,18 @@ public class MatchCriteriaEvaluatorFactory {
         }
     }
 
-    static ResolvedValue resolveValue(Object value) {
+    static boolean isUnsignedIntegerType(DataType type) {
+        if(type instanceof IntegerDataType) {
+            return !((IntegerDataType) type).isSigned();
+        }
+        return false;
+    }
+
+    static ResolvedValue resolveValue(Object value, DataType type) {
         if (value instanceof Integer) {
-            return new ResolvedValue(((Integer) value).longValue(), false, intEvaluator);
+            return new ResolvedValue(((Integer) value).longValue(), isUnsignedIntegerType(type), intEvaluator);
         } else if (value instanceof Long) {
-            return new ResolvedValue((Long) value, false, intEvaluator);
+            return new ResolvedValue((Long) value, isUnsignedIntegerType(type), intEvaluator);
         } else if (value instanceof Float) {
             return new ResolvedValue(((Float) value).doubleValue(), false, floatEvaluator);
         } else if (value instanceof Double) {
@@ -376,7 +384,7 @@ public class MatchCriteriaEvaluatorFactory {
         case SINT64:
             return new ResolvedValue(v.getSint64Value(), false, intEvaluator);
         case UINT32:
-            return new ResolvedValue((long) v.getUint32Value() & 0xFFFFFFFFFFFFFFFFL, true, intEvaluator);
+            return new ResolvedValue((long) v.getUint32Value() & 0xFFFFFFFFL, true, intEvaluator);
         case UINT64:
             return new ResolvedValue(v.getUint64Value(), true, intEvaluator);
         case FLOAT:
