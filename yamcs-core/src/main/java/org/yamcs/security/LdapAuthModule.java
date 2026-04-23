@@ -230,7 +230,7 @@ public class LdapAuthModule implements AuthModule {
             var controls = new SearchControls();
             controls.setReturningAttributes(searchAttributes);
             controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-            var filter = userFilter.replace("{0}", username);
+            var filter = userFilter.replace("{0}", escapeLdapFilter(username));
             var searchResult = getSingleResult(ctx, userBase, filter, controls);
             if (searchResult == null) {
                 return null;
@@ -369,6 +369,33 @@ public class LdapAuthModule implements AuthModule {
             }
         }
         return new ArrayList<>();
+    }
+
+    private static String escapeLdapFilter(String input) {
+        var buf = new StringBuilder(input.length());
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+            switch (c) {
+            case '\\':
+                buf.append("\\5c");
+                break;
+            case '*':
+                buf.append("\\2a");
+                break;
+            case '(':
+                buf.append("\\28");
+                break;
+            case ')':
+                buf.append("\\29");
+                break;
+            case '\0':
+                buf.append("\\00");
+                break;
+            default:
+                buf.append(c);
+            }
+        }
+        return buf.toString();
     }
 
     private static final class GroupMapping {
