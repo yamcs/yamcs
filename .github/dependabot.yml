@@ -1,0 +1,9 @@
+version: 2
+updates:
+  - package-ecosystem: "maven"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    # Don't generate version update PRs for webapp (too noisy)
+    exclude-paths:
+      - "yamcs-web/src/main/webapp/**"
