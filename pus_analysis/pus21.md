@@ -761,3 +761,101 @@ with two categories of workarounds:
 
 The remaining 10 subtypes are fully XTCE-compatible using standard patterns (fixed-string
 arguments, zero-payload MetaCommands, AggregateParameterType arrays).
+
+---
+
+## d) YAMCS-Native Implementation (Java)
+
+Given the MDB is generated separately, the following Java-side changes are required.
+
+### New file: `Pus21Service.java`
+
+**Path**: `simulator/src/main/java/org/yamcs/simulator/pus/Pus21Service.java`
+
+Follows the same pattern as `Pus11Service.java`. Key design points:
+
+| Aspect | Decision |
+|--------|----------|
+| State | `LinkedHashMap<String, RequestSequence> sequenceStore` — keyed on `seq_id` |
+| seq_id encoding | 16-byte null-padded ASCII; `readSeqId` / `encodeSeqId` helpers |
+| Delay encoding | `uint32 milliseconds` — stored as `int delayMs` in `Entry` |
+| TC relay | `pusSimulator.processTc(new PusTcPacket(entry.rawTc))` — same mechanism as ST[11] |
+| Thread model | One daemon thread per executing sequence (`"pus21-seq-<id>"`); `seq.active` is `volatile` for abort signalling |
+| Synchronization | `executeTc` is `synchronized` on the service instance; `runSequence` re-enters with `synchronized(this)` at completion to reset `active` |
+| CRC (TC[21,9]) | `CrcCciitCalculator.compute(raw, 0, len)` over concatenation of `{tc_bytes ‖ delay_ms(uint32)}` for all entries |
+| TC[21,2]/TC[21,8] | NACK with `COMPL_ERR_FILE_NOT_SUPPORTED` — no filesystem in the simulator |
+
+**Subtype dispatch table**:
+
+```java
+case 1  -> loadDirectly(tc)          // TC[21,1]: parse seq_id+N+entries, store inactive
+case 2  -> loadByReference(tc, false) // TC[21,2]: NACK (no filesystem)
+case 3  -> unloadSequence(tc)         // TC[21,3]: remove if inactive
+case 4  -> activateSequence(tc)       // TC[21,4]: set active, spawn thread
+case 5  -> abortSequence(tc)          // TC[21,5]: set active=false (thread exits on next check)
+case 6  -> reportExecutionStatus(tc)  // TC[21,6]: build TM[21,7]
+case 8  -> loadByReference(tc, true)  // TC[21,8]: NACK (no filesystem)
+case 9  -> checksumSequence(tc)       // TC[21,9]: build TM[21,10]
+case 11 -> reportSequenceContent(tc)  // TC[21,11]: build TM[21,12]
+case 13 -> abortAll(tc)               // TC[21,13]: abort all active, build TM[21,14]
+```
+
+TM subtype 7, 10, 12, 14 are generated inside the TC handlers above (not dispatched separately).
+
+---
+
+### Modified file: `PusSimulator.java`
+
+Three changes needed:
+
+**1. Field declaration** (alongside other service fields):
+```java
+Pus21Service pus21Service;
+```
+
+**2. Constructor** (alongside other service instantiations):
+```java
+pus21Service = new Pus21Service(this);
+```
+
+**3. `doStart()`** (alongside other `start()` calls):
+```java
+pus21Service.start();
+```
+
+**4. `executePendingCommands()` switch** (adds case 21):
+```java
+case 21 -> pus21Service.executeTc(commandPacket);
+```
+
+---
+
+### Optional: `yamcs.pus.yaml` MDB entry
+
+Once the `pus21.xml` MDB file is generated, add it to the `mdb` list:
+
+```yaml
+  - type: "xtce"
+    spec: "mdb/pus21.xml"
+```
+
+---
+
+### Gap summary for Java implementation
+
+| Gap | Impact | How handled |
+|-----|--------|-------------|
+| TC[21,1] entry body (variable-length TC + delay) | Cannot be parsed by YAMCS MDB alone | `Pus21Service.loadDirectly()` reads the entry block manually from `getUserDataBuffer()` |
+| TC[21,2]/TC[21,8] file loading | No filesystem in simulator | NACK with error code 14; ground must use TC[21,1] instead |
+| TC relay (gap #5 from §c) | YAMCS has no native ST[21] executor | `runSequence()` calls `pusSimulator.processTc()` — same approach as ST[11] scheduled TC release |
+| TM[21,12] variable-length content | Cannot be built by YAMCS alone | Built entirely in `reportSequenceContent()` by manual ByteBuffer assembly |
+
+
+Configuration needed (not yet changed)
+In processors.yaml, replace StreamTcCommandReleaser with:
+- class: org.yamcs.pus.Pus21RequestSequencingService
+  args:
+  apid: 1
+  timeEncoding:
+  implicitPfield: false
+  pfield: 0x2f
