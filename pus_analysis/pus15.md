@@ -361,19 +361,135 @@ The packet selection subservice controls *which* incoming TM packets are admitte
 
 **Purpose**: Enable storage of specific TM types (identified by APID, service type, message subtype) into a packet store.
 
-**Packet format**:
+**Packet format** (Figure 8-117 / same hierarchical encoding as TC[14,1]):
 ```
 store_id: uint16
-N: uint8   (number of instructions)
-For each instruction — one of:
-  (a) {apid: uint16, svc_type: uint8, msg_subtype: uint8}   add specific report type
-  (b) {apid: uint16, svc_type: uint8}                        add all subtypes of a service
-  (c) {apid: uint16}                                          add all types of an app process
+N1: uint8   (number of application process entries)
+  repeated N1 times:
+    apid: uint16
+    N2: uint8              ← 0 = "add all services for this APID"
+    repeated N2 times:
+      svc_type: uint8
+      N3: uint8            ← 0 = "add all subtypes of this service type"
+      repeated N3 times:
+        msg_subtype: uint8
 ```
 
-**XTCE approach**: For simplicity in the test environment, model as a fixed `{apid, svc_type, msg_subtype}` AggregateArgumentType. A `0xFF` sentinel for svc_type or msg_subtype means "all". This avoids the variable-length inner instructions problem.
+The three instruction forms from the spec are encoded via the count fields (same as TC[14,1]):
 
-**Code**: For each instruction, upsert into `store.app_process_config[apid][svc_type].add(msg_subtype)`.
+| Instruction Form | Encoding | Effect |
+|---|---|---|
+| Add specific report type | `apid` + N2=1 + `svc_type` + N3=1 + `subtype` | Enable storage of one specific TM subtype |
+| Add all subtypes of a service | `apid` + N2=1 + `svc_type` + **N3=0** | Enable storage of all subtypes of a service |
+| Add all services of an APID | `apid` + **N2=0** | Enable storage of all reports from that APID |
+
+**XTCE approach**: ✅ **Single MetaCommand — fully implementable** using the same sibling-member nested array pattern as TC[14,1] (confirmed by `yamcs-core/src/test/resources/xtce/array-in-array-arg.xml`). `ArgumentInstanceRef argumentRef="N3"` inside `pkt_sel_svc_entry_type` resolves to the `N3` member of the containing aggregate; `argumentRef="N2"` inside `pkt_sel_apid_entry_type` resolves to its `N2` sibling. No top-level reference needed.
+
+```xml
+<!-- Array of N3 subtypes; N3 is a sibling member in the containing aggregate -->
+<ArrayArgumentType name="pkt_sel_subtype_array_type" arrayTypeRef="/dt/uint8">
+    <DimensionList>
+        <Dimension>
+            <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+            <EndingIndex>
+                <DynamicValue>
+                    <ArgumentInstanceRef argumentRef="N3"/>
+                    <LinearAdjustment intercept="-1"/>
+                </DynamicValue>
+            </EndingIndex>
+        </Dimension>
+    </DimensionList>
+</ArrayArgumentType>
+
+<!-- Service type entry: svc_type + N3 + N3×subtype -->
+<AggregateArgumentType name="pkt_sel_svc_entry_type">
+    <MemberList>
+        <Member name="svc_type"  typeRef="/dt/uint8"/>
+        <Member name="N3"        typeRef="/dt/uint8"/>
+        <Member name="subtypes"  typeRef="pkt_sel_subtype_array_type"/>
+    </MemberList>
+</AggregateArgumentType>
+
+<!-- Array of N2 service entries; N2 is a sibling member in the containing aggregate -->
+<ArrayArgumentType name="pkt_sel_svc_array_type" arrayTypeRef="pkt_sel_svc_entry_type">
+    <DimensionList>
+        <Dimension>
+            <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+            <EndingIndex>
+                <DynamicValue>
+                    <ArgumentInstanceRef argumentRef="N2"/>
+                    <LinearAdjustment intercept="-1"/>
+                </DynamicValue>
+            </EndingIndex>
+        </Dimension>
+    </DimensionList>
+</ArrayArgumentType>
+
+<!-- App process entry: apid + N2 + N2×service_entry -->
+<AggregateArgumentType name="pkt_sel_apid_entry_type">
+    <MemberList>
+        <Member name="apid"        typeRef="/dt/uint16"/>
+        <Member name="N2"          typeRef="/dt/uint8"/>
+        <Member name="svc_entries" typeRef="pkt_sel_svc_array_type"/>
+    </MemberList>
+</AggregateArgumentType>
+
+<!-- Outer array of N1 app process entries; N1 is a top-level argument -->
+<ArrayArgumentType name="pkt_sel_apid_array_type" arrayTypeRef="pkt_sel_apid_entry_type">
+    <DimensionList>
+        <Dimension>
+            <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+            <EndingIndex>
+                <DynamicValue>
+                    <ArgumentInstanceRef argumentRef="N1"/>
+                    <LinearAdjustment intercept="-1"/>
+                </DynamicValue>
+            </EndingIndex>
+        </Dimension>
+    </DimensionList>
+</ArrayArgumentType>
+
+<MetaCommand name="TC_15_3_ADD_REPORT_TYPES"
+             shortDescription="TC[15,3] Add report types to app-process storage-control config">
+    <ArgumentList>
+        <Argument name="store_id"     argumentTypeRef="/dt/uint16"/>
+        <Argument name="N1"           argumentTypeRef="/dt/uint8"/>
+        <Argument name="apid_entries" argumentTypeRef="pkt_sel_apid_array_type"/>
+    </ArgumentList>
+    <CommandContainer name="TC_15_3">
+        <EntryList>
+            <ArgumentRefEntry argumentRef="store_id"/>
+            <ArgumentRefEntry argumentRef="N1"/>
+            <ArgumentRefEntry argumentRef="apid_entries"/>
+        </EntryList>
+        <BaseContainer containerRef="pus15-tc"/>
+    </CommandContainer>
+</MetaCommand>
+```
+
+N2=0 and N3=0 are zero-length arrays, which YAMCS renders as empty array inputs in the UI. Single MetaCommand covers all three instruction forms.
+
+**Code** (Python):
+```python
+store_id = struct.unpack_from(">H", data, 8)[0]; offset = 10
+n1 = data[offset]; offset += 1
+store = packet_stores.get(store_id)
+for _ in range(n1):
+    apid = struct.unpack_from(">H", data, offset)[0]; offset += 2
+    n2 = data[offset]; offset += 1
+    if n2 == 0:
+        store.app_process_config.setdefault(apid, {})
+    else:
+        for _ in range(n2):
+            svc_type = data[offset]; offset += 1
+            n3 = data[offset]; offset += 1
+            if n3 == 0:
+                store.app_process_config.setdefault(apid, {})[svc_type] = set()
+            else:
+                subtypes = store.app_process_config.setdefault(apid, {}).setdefault(svc_type, set())
+                for _ in range(n3):
+                    subtypes.add(data[offset]); offset += 1
+```
 
 ---
 
@@ -381,11 +497,17 @@ For each instruction — one of:
 
 **Purpose**: Reverse of TC[15,3].
 
-**Packet format**: Same structure as TC[15,3] but for deletion.
+**Packet format**: Same N1/N2/N3 hierarchical structure as TC[15,3].
 
-**XTCE approach**: Same aggregate/array pattern, service_subtype=4.
+| Instruction Form | Encoding | Effect |
+|---|---|---|
+| Delete specific report type | `apid` + N2=1 + `svc_type` + N3=1 + `subtype` | Remove one subtype from storage filter |
+| Delete a service type | `apid` + N2=1 + `svc_type` + **N3=0** | Remove entire service-type entry |
+| Delete an application process | `apid` + **N2=0** | Remove entire APID entry |
 
-**Code**: For each instruction, remove from filter table. If the resulting svc_type entry is empty, delete it. If apid entry is empty, delete it. If store entry is empty, delete it.
+**XTCE approach**: ✅ **Single MetaCommand** — reuses `pkt_sel_apid_array_type` from TC[15,3] with subtype=4. Same sibling-member nested array design.
+
+**Code**: Mirror TC[15,3] handler but remove from filter table. If svc_type entry becomes empty, delete it. If APID entry becomes empty, delete it.
 
 ---
 
@@ -416,10 +538,73 @@ For each app process:
     [msg_subtype: uint8] × N_subtypes
 ```
 
-**XTCE approach**: This is a nested array structure. Model as:
-- `AppProcessEntryType = {apid: uint16, N_svc: uint8, svc_entries: SvcTypeEntryType[]}`
-- `SvcTypeEntryType = {svc_type: uint8, N_sub: uint8, subtypes: uint8[]}`
-XTCE supports this nesting but the dimension of inner arrays depends on a field in the outer aggregate — this requires `DynamicValue` with `ParameterInstanceRef` pointing into the aggregate context. **Feasible but complex; the most advanced XTCE pattern in this implementation.**
+**XTCE approach**: ✅ **Fully implementable** — 3-level nested structure is expressible using nested `ContainerRefEntry` + `RepeatEntry`, identical to TM[14,4]. `ParameterInstanceRef` defaults to `relativeTo = CURRENT_ENTRY_WITHIN_PACKET` (`getFromEnd(param, 0)`), so the inner `RepeatEntry` count always resolves to the **most recently decoded** `N_subtypes` for the current outer iteration — not a stale value from a prior loop (confirmed in `ParameterInstanceRef.java` line 53).
+
+```xml
+<!-- Innermost: one message subtype -->
+<SequenceContainer name="pkt_sel_subtype_element">
+    <EntryList>
+        <ParameterRefEntry parameterRef="pkt_sel_msg_subtype"/>
+    </EntryList>
+</SequenceContainer>
+
+<!-- Middle: one service type entry + its variable-length subtype array -->
+<SequenceContainer name="pkt_sel_svc_element">
+    <EntryList>
+        <ParameterRefEntry parameterRef="pkt_sel_svc_type"/>
+        <ParameterRefEntry parameterRef="pkt_sel_N_subtypes"/>
+        <ContainerRefEntry containerRef="pkt_sel_subtype_element">
+            <RepeatEntry>
+                <Count>
+                    <DynamicValue>
+                        <!-- default instance=0, CURRENT_ENTRY_WITHIN_PACKET → most recently decoded N_subtypes -->
+                        <ParameterInstanceRef parameterRef="pkt_sel_N_subtypes"/>
+                    </DynamicValue>
+                </Count>
+            </RepeatEntry>
+        </ContainerRefEntry>
+    </EntryList>
+</SequenceContainer>
+
+<!-- Per-APID element: apid + N_svc_types + N_svc_types×service_element -->
+<SequenceContainer name="pkt_sel_apid_element">
+    <EntryList>
+        <ParameterRefEntry parameterRef="pkt_sel_apid"/>
+        <ParameterRefEntry parameterRef="pkt_sel_N_svc_types"/>
+        <ContainerRefEntry containerRef="pkt_sel_svc_element">
+            <RepeatEntry>
+                <Count>
+                    <DynamicValue>
+                        <ParameterInstanceRef parameterRef="pkt_sel_N_svc_types"/>
+                    </DynamicValue>
+                </Count>
+            </RepeatEntry>
+        </ContainerRefEntry>
+    </EntryList>
+</SequenceContainer>
+
+<!-- TM[15,6]: store_id + N_app_processes + N_app_processes×apid_element -->
+<SequenceContainer name="TM_15_6" shortDescription="TM[15,6] App process storage-control config report">
+    <EntryList>
+        <ParameterRefEntry parameterRef="pkt_store_id"/>
+        <ParameterRefEntry parameterRef="pkt_sel_N_app_processes"/>
+        <ContainerRefEntry containerRef="pkt_sel_apid_element">
+            <RepeatEntry>
+                <Count>
+                    <DynamicValue>
+                        <ParameterInstanceRef parameterRef="pkt_sel_N_app_processes"/>
+                    </DynamicValue>
+                </Count>
+            </RepeatEntry>
+        </ContainerRefEntry>
+    </EntryList>
+    <BaseContainer containerRef="pus15-tm">
+        <RestrictionCriteria>
+            <Comparison parameterRef="/PUS/subtype" value="6"/>
+        </RestrictionCriteria>
+    </BaseContainer>
+</SequenceContainer>
+```
 
 **Code**: Walk `store.app_process_config` and serialize.
 
@@ -514,7 +699,7 @@ For each app process:
   [subsampling_rate: uint8 per struct if supported]
 ```
 
-**XTCE approach**: Nested aggregate array — same complexity class as TM[15,6].
+**XTCE approach**: ✅ **Fully implementable** — 3-level nested structure (store_id → N_app_processes × per-apid → N_hk_structs × hk_struct_id) uses the same nested `ContainerRefEntry` + `RepeatEntry` approach as TM[15,6]. `ParameterInstanceRef` with default `CURRENT_ENTRY_WITHIN_PACKET` semantics resolves the inner count to the most recently decoded `N_hk_structs` per outer iteration. If subsampling rates are included, each innermost entry becomes a fixed `{hk_struct_id: uint16, subsampling_rate: uint8}` aggregate — no additional complexity.
 
 ---
 
@@ -527,6 +712,8 @@ For each app process:
 #### TM[15,38] — Diagnostic parameter report storage-control configuration content report
 
 **Packet format**: Same structure as TM[15,36] but with `diag_struct_id` entries.
+
+**XTCE approach**: ✅ **Fully implementable** — identical design as TM[15,36]; reuse the same nested container structure with `diag_struct_id` parameter names.
 
 ---
 
@@ -547,6 +734,8 @@ For each app process:
   N_events: uint8
   [event_def_id: uint16] × N_events
 ```
+
+**XTCE approach**: ✅ **Fully implementable** — same 3-level nested `ContainerRefEntry` + `RepeatEntry` pattern as TM[15,36], with `event_def_id: uint16` as the innermost element.
 
 ---
 
@@ -582,17 +771,15 @@ Both share the same APID and service_subtype in the packet; the Python simulator
 
 ---
 
-### Gap 3 — Nested arrays-of-arrays in TM[15,6/36/38/40] exceed standard XTCE complexity
+### Gap 3 — Nested arrays-of-arrays in TM[15,6/36/38/40] — Resolved
 
 **Affects**: TM[15,6], TM[15,36], TM[15,38], TM[15,40].
+**Severity**: None — fully resolved
+**Effort**: None
 
-**Problem**: These TM packets contain a list of per-application-process entries, each of which contains a variable-length list of sub-entries (service types / HK struct IDs / event IDs). XTCE `ArrayParameterType` dimension must reference a `ParameterInstanceRef`, but when the length field is inside a containing aggregate rather than a standalone parameter, some YAMCS versions may not resolve the reference correctly.
+These TM packets' 3-level nested structures (store_id → per-APID → per-sub-entry) **are** fully expressible in XTCE using nested `ContainerRefEntry` + `RepeatEntry` containers. The key mechanism: `ParameterInstanceRef` defaults to `relativeTo = CURRENT_ENTRY_WITHIN_PACKET` (confirmed in `ParameterInstanceRef.java` line 53), which uses `tmParams.getFromEnd(param, 0)` = **most recently decoded value** of that parameter. Each outer per-APID element iteration decodes a fresh inner count (e.g. `N_hk_structs`); the inner `RepeatEntry` count resolves to that value automatically. No workaround, no flattening needed.
 
-**Fix option A**: Flatten the structure — use a single flat array where each entry carries both the outer key (apid) and inner value (svc_type, msg_subtype). Duplicate apid across rows. Simpler XTCE, slightly redundant wire format.
-
-**Fix option B**: Use nested AggregateParameterType with dynamic inner dimension referencing the N_svc field of the outer aggregate member. Spec-faithful but relies on YAMCS correctly tracking inner-aggregate parameter references. Test required.
-
-**Recommendation**: Use option A for initial implementation; upgrade to option B only if YAMCS handles it correctly.
+The `AggregateParameterType` approach (ArrayParameterType with inner dynamic dimension referencing a field inside a containing aggregate) does **not** work in YAMCS for TM — that inner-aggregate reference path is the incorrect pattern. The correct pattern is exclusively `ContainerRefEntry` + `RepeatEntry`, as used in TM[14,4] (see pus14.md for the canonical XTCE XML).
 
 ---
 
@@ -656,7 +843,7 @@ All services import and call `PacketStoreManager.submit_tm()` instead of sending
 | Criterion | Answer |
 |-----------|--------|
 | All 35 TC/TM formats expressible in XTCE? | **YES** — using aggregates, arrays, dynamic dimensions |
-| Any XTCE features needed that are untested in this codebase? | Nested aggregate arrays (TM 6/36/38/40) — verify YAMCS resolves inner dimension references |
+| Any XTCE features needed that are untested in this codebase? | **None remaining** — nested TM containers use `ContainerRefEntry`+`RepeatEntry` (confirmed by `ParameterInstanceRef.java` line 53); nested TC arrays use sibling-member `ArgumentInstanceRef` (confirmed by `array-in-array-arg.xml`) |
 | MDB-only with zero code? | **NO** — packet store state machine, retrieval threads, and TM bus are required |
 | Simulator code complexity vs PUS 20? | Significantly higher — stateful, threaded, cross-service interception needed |
 
