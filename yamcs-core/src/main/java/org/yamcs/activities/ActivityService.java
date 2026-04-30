@@ -42,6 +42,10 @@ public class ActivityService extends AbstractService {
 
     public static final String ACTIVITY_TYPE_MANUAL = "MANUAL";
 
+    // The COMMAND_STACK type was renamed to STACK. We'll automatically
+    // convert the old type name for a while
+    private static final String COMMAND_STACK = "COMMAND_STACK";
+
     private String yamcsInstance;
     private Log log;
 
@@ -114,7 +118,11 @@ public class ActivityService extends AbstractService {
     }
 
     public ActivityExecutor getExecutor(String activity) {
-        return executors.get(activity);
+        if (activity.equals(COMMAND_STACK)) {
+            return executors.get("STACK");
+        } else {
+            return executors.get(activity);
+        }
     }
 
     public void addActivityListener(ActivityListener listener) {
@@ -140,7 +148,7 @@ public class ActivityService extends AbstractService {
                 UUID.randomUUID(),
                 TimeEncoding.getWallclockTime(),
                 activitySeqSequence.getAndIncrement(),
-                type,
+                executor != null ? executor.getActivityType() : null,
                 args,
                 user);
         activity.setComment(comment);
@@ -298,7 +306,9 @@ public class ActivityService extends AbstractService {
     private ActivityExecutor findExecutor(String activityType) {
         ActivityExecutor executor = null;
         if (!ACTIVITY_TYPE_MANUAL.equals(activityType)) {
-            executor = executors.get(activityType);
+            executor = activityType.equals(COMMAND_STACK)
+                    ? executors.get("STACK")
+                    : executors.get(activityType);
             if (executor == null) {
                 throw new IllegalArgumentException("Unexpected activity type '" + activityType + "'");
             }

@@ -362,7 +362,7 @@ export class OpiDisplayViewerComponent
         const objectName = resolvedPath.slice(bucketRoot.length);
         this.yamcs.yamcsClient
           .startActivity(this.yamcs.instance!, {
-            type: 'COMMAND_STACK',
+            type: 'STACK',
             args: {
               processor: this.yamcs.processor!,
               bucket: this.bucket,

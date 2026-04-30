@@ -30,7 +30,7 @@ import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.security.User;
 import org.yamcs.yarch.YarchDatabase;
 
-public class CommandStackExecution extends ActivityExecution {
+public class StackExecution extends ActivityExecution {
 
     private Processor processor;
     private Bucket bucket;
@@ -40,9 +40,9 @@ public class CommandStackExecution extends ActivityExecution {
     private int seq = 0;
     private AtomicReference<PendingCommand> pendingCommandRef = new AtomicReference<>();
 
-    public CommandStackExecution(
+    public StackExecution(
             ActivityService activityService,
-            CommandStackExecutor executor,
+            StackExecutor executor,
             Activity activity,
             Processor processor,
             Bucket bucket,
@@ -62,7 +62,7 @@ public class CommandStackExecution extends ActivityExecution {
 
         var bytes = bucket.getObjectAsync(stackName).get();
         var json = new String(bytes, StandardCharsets.UTF_8);
-        var stack = CommandStack.fromJson(json, mdb);
+        var stack = Stack.fromJson(json, mdb);
 
         var histSubscription = histManager.subscribeCommandHistory(
                 null, processor.getCurrentTime(), new CommandHistoryConsumer() {
@@ -210,7 +210,7 @@ public class CommandStackExecution extends ActivityExecution {
         }
     }
 
-    private void runCommand(CommandStack stack, StackedCommand stackedCommand)
+    private void runCommand(Stack stack, StackedCommand stackedCommand)
             throws UnknownHostException, ErrorInCommand, YamcsException, InterruptedException, ExecutionException {
         logActivityInfo("Running command " + stackedCommand);
 
