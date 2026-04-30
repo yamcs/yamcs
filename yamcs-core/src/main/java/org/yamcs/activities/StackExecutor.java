@@ -13,7 +13,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.security.User;
 
-public class CommandStackExecutor implements ActivityExecutor {
+public class StackExecutor implements ActivityExecutor {
 
     private String yamcsInstance;
     private ActivityService activityService;
@@ -21,17 +21,17 @@ public class CommandStackExecutor implements ActivityExecutor {
 
     @Override
     public String getActivityType() {
-        return "COMMAND_STACK";
+        return "STACK";
     }
 
     @Override
     public String getDisplayName() {
-        return "Command Stack";
+        return "Stack";
     }
 
     @Override
     public String getDescription() {
-        return "Run a command stack.";
+        return "Run a stack.";
     }
 
     @Override
@@ -51,16 +51,7 @@ public class CommandStackExecutor implements ActivityExecutor {
         yamcsInstance = activityService.getYamcsInstance();
 
         activitySpec = new Spec();
-        var processorOption = activitySpec.addOption("processor", OptionType.STRING);
-
-        var ysi = YamcsServer.getServer().getInstance(yamcsInstance);
-        var processor = ysi.getFirstProcessor();
-        if (processor != null && processor.hasCommanding()) {
-            processorOption.withDefault(processor.getName());
-        } else {
-            processorOption.withRequired(true);
-        }
-
+        activitySpec.addOption("processor", OptionType.STRING);
         activitySpec.addOption("bucket", OptionType.STRING).withRequired(true);
         activitySpec.addOption("stack", OptionType.STRING).withRequired(true);
     }
@@ -76,11 +67,23 @@ public class CommandStackExecutor implements ActivityExecutor {
     }
 
     @Override
-    public CommandStackExecution createExecution(Activity activity, User caller) throws ValidationException {
+    public StackExecution createExecution(Activity activity, User caller) throws ValidationException {
         var args = getActivitySpec().validate(activity.getArgs());
         var processorName = YConfiguration.getString(args, "processor");
         var bucketName = YConfiguration.getString(args, "bucket");
         var stackName = YConfiguration.getString(args, "stack");
+
+        // Default to the first processor with commanding enabled
+        if (processorName == null) {
+            var ysi = YamcsServer.getServer().getInstance(yamcsInstance);
+            for (var candidate : ysi.getProcessors()) {
+                if (candidate.hasCommanding()) {
+                    processorName = candidate.getName();
+                    break;
+                }
+            }
+        }
+
         var processor = YamcsServer.getServer().getProcessor(yamcsInstance, processorName);
 
         var bucketManager = YamcsServer.getServer().getBucketManager();
@@ -91,6 +94,6 @@ public class CommandStackExecutor implements ActivityExecutor {
             throw new UncheckedIOException(e);
         }
 
-        return new CommandStackExecution(activityService, this, activity, processor, bucket, stackName, caller);
+        return new StackExecution(activityService, this, activity, processor, bucket, stackName, caller);
     }
 }
