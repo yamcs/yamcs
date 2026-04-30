@@ -51,16 +51,7 @@ public class CommandExecutor implements ActivityExecutor {
         yamcsInstance = activityService.getYamcsInstance();
 
         activitySpec = new Spec();
-        var processorOption = activitySpec.addOption("processor", OptionType.STRING);
-
-        var ysi = YamcsServer.getServer().getInstance(yamcsInstance);
-        var processor = ysi.getFirstProcessor();
-        if (processor != null && processor.hasCommanding()) {
-            processorOption.withDefault(processor.getName());
-        } else {
-            processorOption.withRequired(true);
-        }
-
+        activitySpec.addOption("processor", OptionType.STRING);
         activitySpec.addOption("command", OptionType.STRING).withRequired(true);
         activitySpec.addOption("args", OptionType.MAP).withSpec(Spec.ANY);
         activitySpec.addOption("extra", OptionType.MAP).withSpec(Spec.ANY);
@@ -82,6 +73,17 @@ public class CommandExecutor implements ActivityExecutor {
         var args = getActivitySpec().validate(activity.getArgs());
         var processorName = YConfiguration.getString(args, "processor");
         var commandName = YConfiguration.getString(args, "command");
+
+        // Default to the first processor with commanding enabled
+        if (processorName == null) {
+            var ysi = YamcsServer.getServer().getInstance(yamcsInstance);
+            for (var candidate : ysi.getProcessors()) {
+                if (candidate.hasCommanding()) {
+                    processorName = candidate.getName();
+                    break;
+                }
+            }
+        }
 
         Map<String, Object> commandArgs = Collections.emptyMap();
         if (args.containsKey("args")) {

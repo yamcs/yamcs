@@ -915,7 +915,7 @@ export class StackFileComponent implements OnInit, OnDestroy {
             start: scheduleOptions['executionTime'],
             tags: scheduleOptions['tags'],
             activityDefinition: {
-              type: 'COMMAND_STACK',
+              type: 'STACK',
               args: {
                 processor: this.yamcs.processor!,
                 bucket: this.bucket,

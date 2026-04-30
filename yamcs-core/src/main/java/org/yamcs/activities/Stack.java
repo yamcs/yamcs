@@ -10,7 +10,7 @@ import org.yamcs.xtce.MetaCommand;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
-public class CommandStack {
+public class Stack {
 
     private List<Step> steps = new ArrayList<>();
     private String acknowledgment = CommandHistoryPublisher.AcknowledgeQueued_KEY;
@@ -40,8 +40,8 @@ public class CommandStack {
         return steps;
     }
 
-    public static CommandStack fromJson(String json, Mdb mdb) throws CommandStackParseException {
-        var stack = new CommandStack();
+    public static Stack fromJson(String json, Mdb mdb) throws StackParseException {
+        var stack = new Stack();
 
         var gson = new Gson();
         var stackObject = gson.fromJson(json, JsonObject.class);
@@ -82,7 +82,7 @@ public class CommandStack {
         return stack;
     }
 
-    private static StackedVerify parseVerify(Mdb mdb, JsonObject verifyObject) throws CommandStackParseException {
+    private static StackedVerify parseVerify(Mdb mdb, JsonObject verifyObject) throws StackParseException {
         var stackedVerify = new StackedVerify();
 
         if (verifyObject.has("condition")) {
@@ -93,7 +93,7 @@ public class CommandStack {
                 var parameterName = comparisonObject.get("parameter").getAsString();
                 var parameter = mdb.getParameter(parameterName);
                 if (parameter == null) {
-                    throw new CommandStackParseException(
+                    throw new StackParseException(
                             "Parameter " + parameterName + " does not exist in MDB");
                 }
 
@@ -108,7 +108,7 @@ public class CommandStack {
                 } else if (jsonValue.isString()) {
                     value = jsonValue.getAsString();
                 } else {
-                    throw new CommandStackParseException("Unexpected comparand of class " + jsonValue.getClass());
+                    throw new StackParseException("Unexpected comparand of class " + jsonValue.getClass());
                 }
 
                 stackedVerify.addComparison(parameter, operator, value);
@@ -125,7 +125,7 @@ public class CommandStack {
         return stackedVerify;
     }
 
-    private static StackedCommand parseCommand(Mdb mdb, JsonObject commandObject) throws CommandStackParseException {
+    private static StackedCommand parseCommand(Mdb mdb, JsonObject commandObject) throws StackParseException {
         var name = commandObject.get("name").getAsString();
 
         MetaCommand mdbInfo;
@@ -133,13 +133,13 @@ public class CommandStack {
             var namespace = commandObject.get("namespace").getAsString();
             mdbInfo = mdb.getMetaCommand(namespace, name);
             if (mdbInfo == null) {
-                throw new CommandStackParseException(
+                throw new StackParseException(
                         "Command " + name + " (" + namespace + ") does not exist in MDB");
             }
         } else {
             mdbInfo = mdb.getMetaCommand(name);
             if (mdbInfo == null) {
-                throw new CommandStackParseException(
+                throw new StackParseException(
                         "Command " + name + " does not exist in MDB");
             }
         }
@@ -176,7 +176,7 @@ public class CommandStack {
                 var argValue = argumentObject.get("value");
                 var argInfo = mdbInfo.getEffectiveArgument(argName);
                 if (argInfo == null) {
-                    throw new CommandStackParseException(
+                    throw new StackParseException(
                             "Argument " + argName + " does not exist in MDB for command " + name);
                 }
                 if (argValue.isJsonNull()) {
@@ -188,7 +188,7 @@ public class CommandStack {
                 } else if (argValue.isJsonObject()) {
                     command.addAssignment(argInfo, argValue.getAsJsonObject().toString());
                 } else {
-                    throw new CommandStackParseException("Unexpected value: " + argValue);
+                    throw new StackParseException("Unexpected value: " + argValue);
                 }
             }
         }
@@ -211,10 +211,10 @@ public class CommandStack {
                     } else if (primitive.isString()) {
                         command.setExtra(extraId, primitive.getAsString());
                     } else {
-                        throw new CommandStackParseException("Unexpected value type for " + extraValue);
+                        throw new StackParseException("Unexpected value type for " + extraValue);
                     }
                 } else {
-                    throw new CommandStackParseException("Unexpected value type for " + extraValue);
+                    throw new StackParseException("Unexpected value type for " + extraValue);
                 }
             }
         }
