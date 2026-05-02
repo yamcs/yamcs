@@ -61,9 +61,12 @@ export class AlgorithmDetailComponent implements AfterViewInit {
     }
   }
 
-  isChangeMissionDatabaseEnabled() {
+  mayEditAlgorithm() {
     const user = this.authService.getUser()!;
-    return user.hasSystemPrivilege('ChangeMissionDatabase');
+    return (
+      user.hasSystemPrivilege('ChangeMissionDatabase') &&
+      this.yamcs.getProcessor().overrideAlgorithmsEnabled
+    );
   }
 
   private initializeEditor() {
@@ -73,7 +76,7 @@ export class AlgorithmDetailComponent implements AfterViewInit {
       EditorView.lineWrapping,
     ];
 
-    if (this.isChangeMissionDatabaseEnabled()) {
+    if (this.mayEditAlgorithm()) {
       extensions.push(
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {

@@ -16,7 +16,7 @@ public class MethodNotAllowedException extends HttpException {
 
     private static final long serialVersionUID = 1L;
 
-    private List<HttpMethod> allowedMethods;
+    private final List<HttpMethod> allowedMethods;
 
     public MethodNotAllowedException(HttpMethod method, String uri, Collection<HttpMethod> allowedMethods) {
         super(String.format("Unsupported HTTP method '%s' for resource '%s'", method, uri));
@@ -28,8 +28,13 @@ public class MethodNotAllowedException extends HttpException {
         this(method, uri, Arrays.asList(allowedMethods));
     }
 
-    public MethodNotAllowedException(HandlerContext ctx, HttpMethod... method) {
-        this(ctx.getNettyFullHttpRequest().method(), ctx.getNettyFullHttpRequest().uri(), Arrays.asList(method));
+    public MethodNotAllowedException(HandlerContext ctx, HttpMethod... allowedMethod) {
+        this(ctx.getNettyFullHttpRequest().method(), ctx.getNettyFullHttpRequest().uri(), Arrays.asList(allowedMethod));
+    }
+
+    public MethodNotAllowedException(String message) {
+        super(message);
+        allowedMethods = Collections.emptyList();
     }
 
     public List<HttpMethod> getAllowedMethods() {

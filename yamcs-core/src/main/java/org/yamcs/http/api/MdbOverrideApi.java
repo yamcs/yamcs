@@ -15,11 +15,13 @@ import org.yamcs.algorithms.AlgorithmTextListener;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
+import org.yamcs.http.MethodNotAllowedException;
 import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.logging.Log;
+import org.yamcs.mdb.Mdb;
+import org.yamcs.mdb.MdbFactory;
 import org.yamcs.mdb.ParameterTypeListener;
 import org.yamcs.mdb.ProcessorData;
-import org.yamcs.mdb.MdbFactory;
 import org.yamcs.protobuf.AbstractMdbOverrideApi;
 import org.yamcs.protobuf.AlgorithmTextOverride;
 import org.yamcs.protobuf.GetAlgorithmOverridesRequest;
@@ -42,7 +44,6 @@ import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.NumericParameterType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
-import org.yamcs.mdb.Mdb;
 
 import com.google.protobuf.Empty;
 
@@ -146,6 +147,7 @@ public class MdbOverrideApi extends AbstractMdbOverrideApi<Context> {
         ctx.checkSystemPrivilege(SystemPrivilege.ChangeMissionDatabase);
 
         Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
+
         List<AlgorithmManager> l = processor.getServices(AlgorithmManager.class);
         if (l.size() == 0) {
             throw new BadRequestException("No AlgorithmManager available for this processor");
@@ -161,6 +163,10 @@ public class MdbOverrideApi extends AbstractMdbOverrideApi<Context> {
             throw new BadRequestException("Can only patch CustomAlgorithm instances");
         }
         CustomAlgorithm calg = (CustomAlgorithm) a;
+
+        if (!processor.getConfig().isOverrideAlgorithmsEnabled()) {
+            throw new MethodNotAllowedException("Capability to update algorithms is not enabled");
+        }
 
         switch (request.getAction()) {
         case RESET:
