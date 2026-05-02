@@ -38,7 +38,8 @@ public final class ManagementGpbHelper {
                 .setProtected(processor.isProtected())
                 .setTime(TimeEncoding.toProtobufTimestamp(processor.getCurrentTime()))
                 .setReplay(processor.isReplay())
-                .setCheckCommandClearance(processor.getConfig().checkCommandClearance());
+                .setCheckCommandClearance(processor.getConfig().checkCommandClearance())
+                .setOverrideAlgorithmsEnabled(processor.getConfig().isOverrideAlgorithmsEnabled());
 
         if (processor.isReplay()) {
             ReplayRequest request = processor.getCurrentReplayRequest();

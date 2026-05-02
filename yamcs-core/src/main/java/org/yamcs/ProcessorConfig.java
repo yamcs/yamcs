@@ -23,6 +23,7 @@ public class ProcessorConfig {
     private static final String CONFIG_KEY_CHECK_PARAMETER_VALIDITY_RANGES = "checkParameterValidityRanges";
     private static final String CONFIG_KEY_SUBSCRIBE_CONTAINER_ARCHPART = "subscribeContainerArchivePartitions";
     private static final String CONFIG_KEY_PERSIST_PARAMETERS = "persistParameters";
+    private static final String CONFIG_KEY_OVERRIDE_ALGORITHMS = "overrideAlgorithmsEnabled";
 
     boolean checkParameterAlarms = true;
     boolean parameterAlarmServerEnabled = false;
@@ -35,6 +36,7 @@ public class ProcessorConfig {
     boolean generateEvents = false;
     boolean checkCommandClearance = false;
     boolean checkParameterValidityRanges = true;
+    boolean overrideAlgorithmsEnabled = false;
 
     // if true, save at shutdown and load at startup the value of all parameters having the persistent flag set
     boolean persistParameters = false;
@@ -92,6 +94,8 @@ public class ProcessorConfig {
                     subscribeContainerArchivePartitions = config.getBoolean(key);
                 } else if (CONFIG_KEY_PERSIST_PARAMETERS.equals(key)) {
                     persistParameters = config.getBoolean(key);
+                } else if (CONFIG_KEY_OVERRIDE_ALGORITHMS.equals(key)) {
+                    overrideAlgorithmsEnabled = config.getBoolean(key);
                 } else {
                     log.warn("Ignoring unknown config key '{}'", key);
                 }
@@ -115,6 +119,7 @@ public class ProcessorConfig {
         spec.addOption(CONFIG_KEY_CHECK_PARAMETER_VALIDITY_RANGES, OptionType.ANY);
         spec.addOption(CONFIG_KEY_SUBSCRIBE_CONTAINER_ARCHPART, OptionType.BOOLEAN).withDefault(true);
         spec.addOption(CONFIG_KEY_PERSIST_PARAMETERS, OptionType.BOOLEAN).withDefault(false);
+        spec.addOption(CONFIG_KEY_OVERRIDE_ALGORITHMS, OptionType.BOOLEAN).withDefault(false);
 
         return spec;
     }
@@ -245,6 +250,10 @@ public class ProcessorConfig {
 
     public void setAlarmLoadDays(double alarmLoadDays) {
         this.alarmLoadDays = alarmLoadDays;
+    }
+
+    public boolean isOverrideAlgorithmsEnabled() {
+        return overrideAlgorithmsEnabled;
     }
 
     @Override

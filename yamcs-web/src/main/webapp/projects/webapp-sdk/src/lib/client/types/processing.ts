@@ -116,6 +116,7 @@ export interface Processor {
   hasAlarms: boolean;
   hasCommanding: boolean;
   checkCommandClearance: boolean;
+  overrideAlgorithmsEnabled: boolean;
   state: ServiceState;
   persistent: boolean;
   protected: boolean;
