@@ -122,7 +122,11 @@ public class HandlerContext {
     public String getOriginalHostAddress() {
         var forwardedFor = nettyRequest.headers().get("x-forwarded-for");
         if (forwardedFor != null) {
-            return forwardedFor;
+            if (forwardedFor.contains(",")) {
+                return forwardedFor.split(",")[0].trim();
+            } else {
+                return forwardedFor;
+            }
         } else {
             var address = (InetSocketAddress) nettyContext.channel().remoteAddress();
             return address.getAddress().getHostAddress();

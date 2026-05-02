@@ -80,6 +80,11 @@ nThreads (integer)
 reverseLookup (boolean)
     If enabled, hostnames instead of IP addresses are used to identify clients. Use of this option may trigger name service reverse lookups. Default: ``false``
 
+maxAuthRequestsPerSecond (integer)
+    Maximum allowed authentication requests per second for a single IP.
+
+    Default: ``5``.
+
 webSocket (map)
     Configure WebSocket properties. Detailed below. If unset, Yamcs uses sensible defaults.
 
