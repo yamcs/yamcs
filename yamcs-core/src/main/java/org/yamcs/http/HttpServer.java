@@ -126,6 +126,7 @@ public class HttpServer extends AbstractYamcsService {
 
     private String contextPath;
     private boolean reverseLookup;
+    public int maxAuthRequestsPerSecond;
     private int nThreads;
 
     // Cross-origin Resource Sharing (CORS) enables use of the HTTP API in non-official client web applications
@@ -190,6 +191,7 @@ public class HttpServer extends AbstractYamcsService {
         spec.addOption("maxHeaderSize", OptionType.INTEGER).withDefault(8192);
         spec.addOption("maxContentLength", OptionType.INTEGER).withDefault(65536);
         spec.addOption("maxPageSize", OptionType.INTEGER).withDefault(1000);
+        spec.addOption("maxAuthRequestsPerSecond", OptionType.INTEGER).withDefault(5);
         spec.addOption("cors", OptionType.MAP).withSpec(corsSpec);
         spec.addOption("webSocket", OptionType.MAP).withSpec(websocketSpec).withApplySpecDefaults(true);
         spec.addOption("bindings", OptionType.LIST)
@@ -249,6 +251,7 @@ public class HttpServer extends AbstractYamcsService {
         }
 
         reverseLookup = config.getBoolean("reverseLookup");
+        maxAuthRequestsPerSecond = config.getInt("maxAuthRequestsPerSecond");
 
         if (config.containsKey("cors")) {
             YConfiguration ycors = config.getConfig("cors");
@@ -481,6 +484,10 @@ public class HttpServer extends AbstractYamcsService {
 
     public boolean getReverseLookup() {
         return reverseLookup;
+    }
+
+    public int getMaxAuthRequestsPerSecond() {
+        return maxAuthRequestsPerSecond;
     }
 
     public CorsConfig getCorsConfig() {

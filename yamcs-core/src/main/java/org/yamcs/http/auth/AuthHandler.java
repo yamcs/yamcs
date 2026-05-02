@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.YamcsServer;
 import org.yamcs.http.BadRequestException;
@@ -16,6 +17,7 @@ import org.yamcs.http.HandlerContext;
 import org.yamcs.http.HttpServer;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
+import org.yamcs.http.TooManyRequestsException;
 import org.yamcs.http.UnauthorizedException;
 import org.yamcs.http.api.IamApi;
 import org.yamcs.http.auth.TokenStore.RefreshResult;
@@ -63,13 +65,20 @@ public class AuthHandler extends BodyHandler {
     // Cache for temporary authorization codes. This is an indermediate format provided
     // to browsers so that they can provide it to a server-side web application that
     // will exchange it for their id_token on our token endpoint.
-    private static Cache<String, AuthenticationInfo> CODE_CACHE = CacheBuilder.newBuilder()
+    private static final Cache<String, AuthenticationInfo> CODE_CACHE = CacheBuilder.newBuilder()
             .expireAfterWrite(60, TimeUnit.SECONDS).build();
 
+    // Limit auth requests by IP, expires after 1 min of inactivity
+    private static final Cache<String, IpLimit> IP_LIMIT_CACHE = CacheBuilder.newBuilder()
+            .expireAfterAccess(1, TimeUnit.MINUTES)
+            .build();
+
     private TokenStore tokenStore;
+    private int maxAuthRequestsPerSecond;
 
     public AuthHandler(HttpServer httpServer) {
         tokenStore = httpServer.getTokenStore();
+        maxAuthRequestsPerSecond = httpServer.getMaxAuthRequestsPerSecond();
     }
 
     @Override
@@ -93,6 +102,7 @@ public class AuthHandler extends BodyHandler {
             handleAuthorize(ctx);
             return;
         } else if (path.equals("/auth/token")) {
+            checkRateLimit(ctx);
             handleToken(ctx);
             return;
         } else if (path.equals("/auth/spnego")) {
@@ -409,11 +419,40 @@ public class AuthHandler extends BodyHandler {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 
+    /**
+     * Check request rate per IP, to protect against brute-force login attempts
+     */
+    private void checkRateLimit(HandlerContext ctx) throws TooManyRequestsException {
+        try {
+            var ip = ctx.getOriginalHostAddress();
+            var ipLimit = IP_LIMIT_CACHE.get(ip, () -> new IpLimit());
+            var now = System.currentTimeMillis();
+
+            if (now - ipLimit.timestamp > 1000) { // Reset every second
+                ipLimit.count.set(0);
+                ipLimit.timestamp = now;
+            }
+
+            if (ipLimit.count.incrementAndGet() > maxAuthRequestsPerSecond) {
+                // Send 429
+                throw new TooManyRequestsException("Too many login attempts");
+            }
+        } catch (ExecutionException e) {
+            log.error("Unexpected exception", e);
+            return; // Fallback to allow if cache fails
+        }
+    }
+
     public static SecurityStore getSecurityStore() {
         return YamcsServer.getServer().getSecurityStore();
     }
 
     private static Directory getDirectory() {
         return getSecurityStore().getDirectory();
+    }
+
+    private static class IpLimit {
+        final AtomicInteger count = new AtomicInteger(0);
+        volatile long timestamp = System.currentTimeMillis();
     }
 }
