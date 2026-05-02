@@ -59,9 +59,12 @@ export class AlgorithmDetailComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  isChangeMissionDatabaseEnabled() {
+  mayEditAlgorithm() {
     const user = this.authService.getUser()!;
-    return user.hasSystemPrivilege('ChangeMissionDatabase');
+    return (
+      user.hasSystemPrivilege('ChangeMissionDatabase') &&
+      this.yamcs.getProcessor().overrideAlgorithmsEnabled
+    );
   }
 
   private initializeEditor() {
@@ -84,7 +87,7 @@ export class AlgorithmDetailComponent implements AfterViewInit, OnDestroy {
     this.codeMirror = this.codeMirrorService.createEditorView({
       parent: this.textContainer.nativeElement,
       height: '300px',
-      readonly: this.isChangeMissionDatabaseEnabled(),
+      readonly: !this.mayEditAlgorithm(),
       language,
       initialText: this.algorithm.text,
       onDirty: (dirty) => this.dirty$.next(dirty),

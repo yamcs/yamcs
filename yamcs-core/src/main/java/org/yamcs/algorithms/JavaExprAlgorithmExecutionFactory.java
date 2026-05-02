@@ -51,8 +51,6 @@ import org.yamcs.xtce.OutputParameter;
  * <p>
  * The output parameter generation time are initialised with the generation time of the parameter that triggered the
  * algorithm but can be changed in the algorithm text.
- * 
- * 
  */
 public class JavaExprAlgorithmExecutionFactory implements AlgorithmExecutorFactory {
     static final Logger log = LoggerFactory.getLogger(ScriptAlgorithmExecutorFactory.class);
@@ -67,6 +65,8 @@ public class JavaExprAlgorithmExecutionFactory implements AlgorithmExecutorFacto
             log.debug("Compiling:\n{}", code);
             SimpleCompiler compiler = new SimpleCompiler();
             compiler.cook(code);
+
+            @SuppressWarnings("unchecked")
             Class<? extends AlgorithmExecutor> cexprClass = (Class<? extends AlgorithmExecutor>) compiler
                     .getClassLoader()
                     .loadClass("org.yamcs.algorithms.javaexpr." + className);
@@ -183,5 +183,4 @@ public class JavaExprAlgorithmExecutionFactory implements AlgorithmExecutorFacto
 
         return sb.toString();
     }
-
 }

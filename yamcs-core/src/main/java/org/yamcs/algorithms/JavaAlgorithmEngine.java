@@ -14,7 +14,7 @@ public class JavaAlgorithmEngine implements AlgorithmEngine {
         } else if ("java-expression".equalsIgnoreCase(language)) {
             return javaExprFactory;
         } else {
-            throw new IllegalArgumentException("Unknown lanaguage '" + language + "'");
+            throw new IllegalArgumentException("Unknown language '" + language + "'");
         }
     }
 }

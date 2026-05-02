@@ -2033,7 +2033,7 @@ export default class YamcsClient implements HttpHandler {
     qualifiedName: string,
     text: string,
   ) {
-    const url = `${this.apiUrl}/mdb/${instance}/${processorName}/algorithms${qualifiedName}`;
+    const url = `${this.apiUrl}/mdb-overrides/${instance}/${processorName}/algorithms${qualifiedName}`;
     return this.doFetch(url, {
       body: JSON.stringify({
         action: 'SET',
@@ -2058,7 +2058,7 @@ export default class YamcsClient implements HttpHandler {
     processorName: string,
     qualifiedName: string,
   ) {
-    const url = `${this.apiUrl}/mdb/${instance}/${processorName}/algorithms${qualifiedName}`;
+    const url = `${this.apiUrl}/mdb-overrides/${instance}/${processorName}/algorithms${qualifiedName}`;
     return this.doFetch(url, {
       body: JSON.stringify({
         action: 'RESET',

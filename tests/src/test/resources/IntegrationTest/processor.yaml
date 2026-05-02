@@ -28,6 +28,7 @@ realtime:
             eventServer: enabled
         recordInitialValues: true
         recordLocalValues: true
+        overrideAlgorithmsEnabled: true
 
 
 #used for archive replays (to displays, etc)
