@@ -5,6 +5,55 @@ Architecture learnings for implementing PUS services natively in yamcs-core
 
 ---
 
+## 0. Deployment Context
+
+### System topology
+
+```
+[Ground operators / Mission Control]
+        |  REST / WebSocket (HTTP API, Yamcs Web UI)
+        ↓
+[YAMCS Server — Linux VM]
+        |  TCP socket (TcpTcDataLink / TcpTmDataLink)
+        ↓
+[Ground Station]
+        |  RF / SLE (Space Link Extension)
+        ↓
+[Spacecraft]
+```
+
+YAMCS is a **single Java process** on Linux x64 (also supports macOS and Windows).
+It embeds a Netty HTTP server for the API and web UI. All TM/TC interaction with
+the ground station happens via standard TCP sockets (or CCSDS frame links via SLE
+plugins). The ground station handles RF modulation/demodulation; YAMCS only sees
+framed or raw binary packets on a socket.
+
+### Configuration files
+
+| File | Scope | Purpose |
+|------|-------|---------|
+| `etc/yamcs.yaml` | Global | Server-wide: HTTP port, instances list, data directory |
+| `etc/yamcs.<instance>.yaml` | Per-instance | Links, streams, MDB loaders, instance services |
+| `etc/processor.yaml` | Per-instance | Processor type definitions and their service lists |
+| `etc/command-queue.yaml` | Per-instance | Command queue definitions (optional) |
+| `etc/UTC-TAI.history` | Global | IERS leap second table for TAI↔UTC conversion |
+| `etc/extra_streams.sql` | Per-instance | Custom StreamSQL for additional streams/tables |
+
+### Storage engine
+
+The archive backend is **RocksDB**, accessed via the **Yarch** layer (YAMCS's
+embedded stream/table engine). All archive data (TM packets, command history,
+parameters, events) lives under the configured `dataDir`.
+
+Two archive types:
+- **Stream Archive**: Time-sorted tuple store, optimal for inserting packets as
+  they arrive. Tables: `tm`, `cmdhist`, `events`, `alarms_*`.
+- **Parameter Archive**: Column-oriented store (~70-min segments per parameter),
+  optimal for long-range retrieval of a small number of parameters. Populated by
+  scheduled background replay processors, not directly from the realtime stream.
+
+---
+
 ## 1. Full TC Pipeline
 
 ```
@@ -589,3 +638,279 @@ inject TM via stream Tuple emission.
 5. In `processors.yaml`: replace `StreamTcCommandReleaser` with the new class
 6. In the MDB: define TC commands and TM containers matching the packet layout
 7. Optional: add command verifiers in MDB using `Pus1Verifier` for acknowledgement tracking
+
+---
+
+## 14. Time Handling
+
+### Internal representation
+
+YAMCS stores all timestamps as **signed 64-bit integers (milliseconds since
+1970-01-01T00:00:00 TAI, including leap seconds)**. The leap second table is
+read from `etc/UTC-TAI.history` (sourced from IERS). High-resolution timestamps
+use `org.yamcs.time.Instant` (picosecond precision) for earth reception time
+and time correlation, but the archive stores milliseconds.
+
+### Three timestamp concepts
+
+| Timestamp | Source | Usage |
+|-----------|--------|-------|
+| **Generation time** | Decoded from packet by preprocessor | Primary archive key; when the data was created on-board |
+| **Reception time** | Set to current mission time when packet enters YAMCS | When data arrived at YAMCS |
+| **Earth Reception Time (ERT)** | High-res timestamp from ground station | Used for time correlation; not stored in `tm` table main key |
+
+Generation time + sequence count form the **composite primary key** of the `tm`
+table. Duplicate packets sharing the same (gentime, seqNum) are silently discarded.
+
+If `useLocalGenerationTime` is enabled on a link, gentime defaults to mission
+time when the packet has no embedded timestamp — useful for test benches.
+
+### Mission time
+
+Two built-in `TimeService` implementations:
+
+- **RealtimeTimeService** (default): tracks wall-clock time.
+- **SimulationTimeService**: allows arbitrary speed adjustments, controllable
+  via HTTP API or telemetry — for hardware-in-the-loop or HITL simulations.
+
+### Time Correlation Service (TCO)
+
+Used when the spacecraft has a free-running onboard clock with no epoch sync.
+The service computes a linear model:
+
+```
+ground_time = m × obt + c
+```
+
+Derived from sample pairs of `(obt, ert)` using least squares. Key parameters:
+
+| Parameter | Default | Meaning |
+|-----------|---------|---------|
+| `onboardDelay` | 0 s | Fixed onboard sampling + radiation delay |
+| `defaultTof` | 0 s | Static one-way light time (spacecraft → ground station) |
+| `useTofEstimator` | false | Enable dynamic TOF polynomial (configured via HTTP API) |
+| `accuracy` | 0.1 s | Deviation threshold triggering coefficient recalculation |
+| `validity` | 0.2 s | Deviation threshold invalidating coefficients |
+| `numSamples` | 3 | Minimum samples required before computing (≥2) |
+
+Coefficients are **invalid** until `numSamples` are collected. When deviation
+exceeds `validity`, the sample buffer is cleared and the process restarts.
+
+`PusPacketPreprocessor` integrates with TCO via `tcoService` config key:
+- In TM: calls `tcoService.addSample(obt, ert)` from time packets (APID=0)
+- In TC: `PusCommandPostprocessor` calls `tcoService.getObt(scheduleTime)` to
+  convert ground schedule time to on-board time for TC[11,4] wrappers.
+
+---
+
+## 15. TCP Data Links — Operational Details
+
+### TCP TM Data Link (`TcpTmDataLink`)
+
+Receives raw TM packets from the ground station over a plain TCP socket.
+
+- **Auto-reconnect**: retries every 10 seconds on connection loss.
+- **Packet framing**: uses a `PacketInputStream` to frame individual packets
+  from the byte stream. Default: `CcsdsPacketInputStream` (reads CCSDS packet
+  length field to determine end of packet). Always set this explicitly — the
+  default will be removed in a future release.
+  - Not needed for UDP links (naturally framed per datagram).
+- **Preprocessor**: runs after framing. For PUS, use `PusPacketPreprocessor`.
+- **initialDelay**: optional ms delay before connecting (useful when a simulator
+  needs time to start before YAMCS tries to connect).
+
+Full pipeline per received packet:
+```
+raw bytes → PacketInputStream.readPacket()
+           → PacketPreprocessor.process(TmPacket)   # CRC, time, seqcount
+           → LinkManager.processTmPacket()           # → Tuple on TM stream
+```
+
+### TCP TC Data Link (`TcpTcDataLink`)
+
+Sends binary TC packets to the ground station over a plain TCP socket.
+
+Key config options:
+
+| Option | Default | Meaning |
+|--------|---------|---------|
+| `host` | — | Remote TC provider address (required) |
+| `port` | — | TCP port (required) |
+| `tcQueueSize` | unlimited | Max pending-command queue depth |
+| `tcMaxRate` | unlimited | Max commands per second (rate limiter) |
+| `initialDelay` | 0 | ms delay before first connection attempt |
+| `commandPostprocessorClassName` | `GenericCommandPostprocessor` | Postprocessor class |
+
+For PUS, set `commandPostprocessorClassName: org.yamcs.pus.PusCommandPostprocessor`.
+
+### CCSDS Frame Processing (alternative to plain TCP TM)
+
+Use CCSDS frame links when:
+- Spacecraft uses AOS, TM, or USLP standardized data link protocols
+- Multiple virtual channels carry independent data streams
+- Ground station provides SLE (Space Link Extension) interfaces
+- Frame-level Reed-Solomon error correction is required
+- Per-channel SDLS encryption/authentication is needed
+
+CCSDS frames carry **Virtual Channels (VCs)**, each with independent priority
+and packet preprocessing. Each VC extracts CCSDS packets and routes them to
+its own TM stream. The Operational Control Field (OCF) transports CLCWs.
+
+Plain `TcpTmDataLink` is appropriate for simpler ground stations that deliver
+already-framed CCSDS space packets directly on a TCP socket.
+
+---
+
+## 16. Command Queues
+
+### Queue states
+
+| State | Behavior |
+|-------|----------|
+| **Enabled** | Commands released immediately after transmission constraints pass |
+| **Blocked** | Commands held in queue until manually released by operator |
+| **Disabled** | Commands immediately rejected (negative ack) |
+
+Queue state **persists across server restarts** (stored in MementoDb). Default
+state is enabled if no prior state is recorded.
+
+### Matching
+
+Each command is routed to the **first matching queue**. Matching conditions:
+
+- `minLevel`: minimum command significance level (none < watch < warning < distress < critical < severe)
+- `users` / `groups`: issuer identity (OR logic — either condition is sufficient)
+- `tcPatterns`: list of regex patterns on the fully-qualified command name
+
+Non-identity conditions (minLevel, tcPatterns) must ALL match. Identity conditions
+(users/groups) use OR logic among themselves. If both user and group are specified,
+either matching is sufficient.
+
+### Command significance levels
+
+`none` (default), `watch`, `warning`, `distress`, `critical`, `severe`.
+Currently informational only; future releases may restrict access by user privilege.
+
+---
+
+## 17. Processor Configuration Reference
+
+Relevant options from `processor.yaml` / `processorConfig`:
+
+### Parameter handling
+
+| Option | Default | Meaning |
+|--------|---------|---------|
+| `subscribeAll` | false | Subscribe all MDB parameters proactively (vs. on-demand) |
+| `recordInitialValues` | false | Archive MDB default parameter values at startup |
+| `persistParameters` | false | Restore parameter values across processor restarts |
+
+### TC processing
+
+| Option | Default | Meaning |
+|--------|---------|---------|
+| `maxTcSize` | 4096 bytes | Hard limit on TC binary size regardless of MDB definition |
+
+### Alarm configuration (`config.alarm.*`)
+
+| Option | Default | Meaning |
+|--------|---------|---------|
+| `parameterCheck` | true | Enable limit checking against MDB |
+| `parameterServer` | enabled | Parameter alarm management |
+| `eventServer` | enabled | Event alarm management |
+| `eventAlarmMinViolations` | 1 | Occurrences before raising alarm |
+| `loadDays` | 30 | Historical alarm days loaded at startup |
+
+### TM processing (`config.tmProcessor.*`)
+
+| Option | Default | Meaning |
+|--------|---------|---------|
+| `ignoreOutOfContainerEntries` | false | Suppress warnings for out-of-bounds fields |
+| `expirationTolerance` | 1.9 | Multiplier on packet rate for parameter expiration |
+| `maxArraySize` | 10,000 | Dynamic array size limit extracted from packets |
+
+---
+
+## 18. Stream Configuration Details
+
+Key behaviors from `streamConfig` in `yamcs.<instance>.yaml`:
+
+### TC stream `tcPatterns`
+
+```yaml
+tc:
+  - name: tc_realtime
+    processor: realtime
+    tcPatterns:
+      - "/pus/.*"      # route PUS commands here
+  - name: tc_other
+    processor: realtime
+                       # catches everything else
+```
+
+- Patterns are **regular expressions** on fully-qualified command names.
+- Matching is **first-match**: a command goes to the first stream whose
+  pattern matches. A stream with no `tcPatterns` catches everything.
+- Order matters — put specific patterns before catch-all streams.
+
+### TM stream options
+
+```yaml
+tm:
+  - name: tm_realtime
+    processor: realtime
+    rootContainer: /my/RootContainer   # override MDB root container (optional)
+  - name: tm_dump
+    processor: realtime                 # same processor receives both live and dump data
+```
+
+`tm_dump` is for data recorded onboard and downlinked later (not real-time).
+Both streams are processed identically by the processor and archive services.
+
+### Invalid TM routing
+
+```yaml
+dataLinks:
+  - name: tm_realtime
+    ...
+    invalidPackets: DIVERT              # DROP | PROCESS | DIVERT
+    invalidPacketsStream: invalid_tm_stream
+```
+
+| Mode | Behavior |
+|------|----------|
+| `DROP` | Discard bad packets silently (default) |
+| `PROCESS` | Route to normal TM stream anyway |
+| `DIVERT` | Send to separate `invalidPacketsStream` |
+
+### `sqlFile` for custom streams/tables
+
+```yaml
+streamConfig:
+  sqlFile: etc/extra_streams.sql
+```
+
+Executed at startup, before services initialize. Use for custom cross-stream
+joins, additional archive tables, or stream transformations.
+
+### `PusEventDecoder` stream dependency
+
+`PusEventDecoder` (ST[05]) hardcodes `events_realtime` as its output stream name.
+This stream **must** exist in the `event` section of `streamConfig`, or the
+service will fail to start.
+
+---
+
+## 19. Parameter Archive vs Stream Archive
+
+| Aspect | Stream Archive (`tm`, `cmdhist`) | Parameter Archive |
+|--------|----------------------------------|-------------------|
+| Storage | RocksDB, time-sorted tuples | RocksDB, column-oriented segments (~70 min) |
+| Best for | Whole-packet retrieval, command history | Long-range single-parameter retrieval |
+| Write path | Realtime — stream subscriber writes as packets arrive | Background — scheduled replay processor fills it |
+| Read path | SQL query on Yarch tables | Dedicated retrieval service API |
+| Overhead | Low realtime overhead | High write throughput possible but not realtime |
+| Alarm context | Not stored | Captured per-sample (context-aware) |
+
+For PUS telemetry: stream archive stores the raw packets (queryable via `tm` table);
+parameter archive stores decoded engineering values per parameter over time.
