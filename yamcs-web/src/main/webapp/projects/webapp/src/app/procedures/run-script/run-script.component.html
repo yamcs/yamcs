@@ -3,8 +3,14 @@
 
   <ya-form-content>
     <form [formGroup]="form" novalidate autocomplete="off">
+      @if (runnerOptions().length > 1) {
+        <ya-field label="Runner" hint="(required)">
+          <ya-select formControlName="runner" [options]="runnerOptions()" />
+        </ya-field>
+      }
+
       <ya-field label="Script" hint="(required)">
-        <ya-select formControlName="script" [options]="scriptOptions$ | async" />
+        <ya-file-picker formControlName="script" [scripts]="scripts()" />
       </ya-field>
 
       <ya-field label="Script arguments">

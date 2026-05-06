@@ -70,7 +70,7 @@ service ActivitiesApi {
   //   }
   //   ```
   //
-  // * `COMMAND_STACK`: Execute a command stack
+  // * `STACK`: Execute a stack
   //
   //   Args:
   //   * `bucket` (string): **Required.** The name of the bucket containg the stack
@@ -81,7 +81,7 @@ service ActivitiesApi {
   //   Example:
   //   ```json
   //   {
-  //     "type": "COMMAND_STACK",
+  //     "type": "STACK",
   //     "args": {
   //       "bucket": "mybucket",
   //       "stack": "mystack.ycs",
@@ -100,6 +100,8 @@ service ActivitiesApi {
   //   * `args` (string or string[]): Script arguments
   //   * `processor` (string): If provided, this information is passed to the
   //     script in an environment variable `YAMCS_PROCESSOR`.
+  //   * `runner` (string): In case of multiple script runners, you can provide
+  //     this field, to indicate which runner this script execution applies to.
   //
   //   Example:
   //   ```json
@@ -169,6 +171,13 @@ service ActivitiesApi {
   rpc ListExecutors(ListExecutorsRequest) returns (ListExecutorsResponse) {
     option (yamcs.api.route) = {
       get: "/api/activities/{instance}/executors"
+    };
+  }
+
+  // List script runners available for activities of type SCRIPT
+  rpc ListScriptRunners(ListScriptRunnersRequest) returns (ListScriptRunnersResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/activities/{instance}/script-runners"
     };
   }
 
@@ -255,9 +264,34 @@ message ListExecutorsResponse {
   repeated ExecutorInfo executors = 1;
 }
 
+message ListScriptRunnersRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+}
+
+message ListScriptRunnersResponse {
+  repeated ScriptRunnerInfo runners = 1;
+}
+
+message ScriptRunnerInfo {
+  // Runner name
+  optional string name = 1;
+}
+
 message ListScriptsRequest {
   // Yamcs instance name
   optional string instance = 1;
+
+  // List the scripts of this runner.
+  //
+  // This does not need to be provided if there is
+  // only one runner, because then that runner is
+  // considered the default.
+  //
+  // Also if there are multiple runners, the default
+  // runner is the built-in local runner (unless disabled
+  // through configuration).
+  optional string runner = 2;
 }
 
 message ListScriptsResponse {

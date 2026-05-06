@@ -1,5 +1,12 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { FormGroup, UntypedFormBuilder, Validators } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { NonNullableFormBuilder, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
@@ -13,7 +20,6 @@ import {
   YaSelectOption,
   YamcsService,
 } from '@yamcs/webapp-sdk';
-import { BehaviorSubject } from 'rxjs';
 import { ScheduleScriptDialogComponent } from '../schedule-script-dialog/schedule-script-dialog.component';
 
 @Component({
@@ -22,13 +28,24 @@ import { ScheduleScriptDialogComponent } from '../schedule-script-dialog/schedul
   imports: [WebappSdkModule],
 })
 export class RunScriptComponent {
-  form: FormGroup;
+  private fb = inject(NonNullableFormBuilder);
 
-  scriptOptions$ = new BehaviorSubject<YaSelectOption[]>([]);
+  form = this.fb.group({
+    runner: ['', Validators.required],
+    script: ['', Validators.required],
+    args: '',
+  });
+
+  // Signal following runner form control
+  runnerValue = toSignal(this.form.controls.runner.valueChanges, {
+    initialValue: '',
+  });
+
+  runnerOptions = signal<YaSelectOption[]>([]);
+  scripts = signal<string[]>([]);
 
   constructor(
     title: Title,
-    formBuilder: UntypedFormBuilder,
     readonly yamcs: YamcsService,
     private messageService: MessageService,
     private authService: AuthService,
@@ -36,22 +53,43 @@ export class RunScriptComponent {
     private dialog: MatDialog,
   ) {
     title.setTitle('Run a script');
-    this.form = formBuilder.group({
-      script: ['', [Validators.required]],
-      args: [''],
-    });
 
     yamcs.yamcsClient
-      .getActivityScripts(this.yamcs.instance!)
+      .getScriptRunners(this.yamcs.instance!)
       .then((page) => {
-        for (const script of page.scripts || []) {
-          this.scriptOptions$.next([
-            ...this.scriptOptions$.value,
-            { id: script, label: script },
-          ]);
+        const runnerOptions = (page.runners || []).map((runner) => {
+          return { id: runner.name, label: runner.name };
+        });
+        this.runnerOptions.set(runnerOptions);
+
+        // Select first runner by default
+        if (runnerOptions.length) {
+          this.form.controls.runner.setValue(runnerOptions[0].id);
         }
       })
-      .catch((err) => messageService.showError(err));
+      .catch((err) => this.messageService.showError(err));
+
+    effect(() => {
+      const selectedRunner = this.runnerValue();
+      if (selectedRunner) {
+        // Reset script selection
+        this.form.controls.script.setValue('');
+        this.form.controls.args.setValue('');
+
+        yamcs.yamcsClient
+          .getActivityScripts(this.yamcs.instance!, selectedRunner)
+          .then((page) => {
+            const scripts = page.scripts || [];
+            this.scripts.set(scripts);
+
+            // Select first script by default
+            if (scripts.length > 0) {
+              this.form.controls.script.setValue(scripts[0]);
+            }
+          })
+          .catch((err) => messageService.showError(err));
+      }
+    });
   }
 
   runScript() {
@@ -109,7 +147,7 @@ export class RunScriptComponent {
           const options: SaveTimelineItemRequest = {
             type: 'ACTIVITY',
             duration: '0s',
-            name: formValue['script'],
+            name: formValue.script!,
             start: scheduleOptions['executionTime'],
             tags: scheduleOptions['tags'],
             activityDefinition: this.createActivityDefinition(),
