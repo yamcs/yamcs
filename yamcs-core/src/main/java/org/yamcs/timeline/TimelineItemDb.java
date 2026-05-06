@@ -117,10 +117,14 @@ public class TimelineItemDb implements ItemProvider {
 
     private Stream setupTimelineRecording() throws StreamSqlException, ParseException {
         String streamName = TABLE_NAME + "_in";
-        if (ydb.getTable(TABLE_NAME) == null) {
+        var table = ydb.getTable(TABLE_NAME);
+        if (table == null) {
             String query = "create table " + TABLE_NAME + "(" + TIMELINE_DEF.getStringDefinition1()
                     + ", primary key(start, uuid), index(reltime_id))";
             ydb.execute(query);
+        } else {
+            // Ensure presence of newly added columns
+            table.addMissingValueColumns(TIMELINE_DEF);
         }
         if (ydb.getStream(streamName) == null) {
             ydb.execute("create stream " + streamName + TIMELINE_DEF.getStringDefinition());
