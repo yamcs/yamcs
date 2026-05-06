@@ -36,6 +36,7 @@ export * from './lib/components/errors/errors.component';
 export * from './lib/components/field-divider/field-divider.component';
 export * from './lib/components/field/field-label.directive';
 export * from './lib/components/field/field.component';
+export * from './lib/components/file-picker/file-picker.component';
 export * from './lib/components/filter-bar/filter-bar.component';
 export * from './lib/components/filter/filter-input.component';
 export * from './lib/components/filter/filter-textarea.component';

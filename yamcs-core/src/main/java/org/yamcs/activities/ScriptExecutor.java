@@ -1,15 +1,14 @@
 package org.yamcs.activities;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import static org.yamcs.activities.LocalScriptRunner.LOCAL_SCRIPT_RUNNER_NAME;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.ServiceLoader;
 
 import org.yamcs.Spec;
 import org.yamcs.Spec.NamedSpec;
@@ -18,14 +17,14 @@ import org.yamcs.ValidationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.security.User;
-import org.yamcs.utils.FileUtils;
 
 public class ScriptExecutor implements ActivityExecutor {
 
     private ActivityService activityService;
-    private List<Path> searchPath;
     private boolean impersonateCaller;
-    private Map<String, String> fileAssociations = new HashMap<>();
+
+    // Preserve definition order
+    private Map<String, ScriptRunner> scriptRunners = new LinkedHashMap<>();
 
     @Override
     public String getActivityType() {
@@ -61,31 +60,68 @@ public class ScriptExecutor implements ActivityExecutor {
         spec.addOption("fileAssociations", OptionType.MAP)
                 .withSpec(Spec.ANY)
                 .withApplySpecDefaults(true);
+
+        var runnerFactoriesByType = new HashMap<String, ScriptRunnerFactory>();
+        for (var factory : ServiceLoader.load(ScriptRunnerFactory.class)) {
+            runnerFactoriesByType.put(factory.getType(), factory);
+        }
+
+        var runnersSpec = new Spec();
+        runnersSpec.addOption("name", OptionType.STRING).withRequired(true);
+        runnersSpec.addOption("type", OptionType.STRING)
+                .withRequired(true)
+                .withChoices(runnerFactoriesByType.keySet());
+
+        for (var factory : runnerFactoriesByType.values()) {
+            var argsSpec = factory.getSpec() != null ? factory.getSpec() : Spec.ANY;
+            runnersSpec.when("type", factory.getType())
+                    .addOption("args", OptionType.MAP)
+                    .withSpec(argsSpec)
+                    .withApplySpecDefaults(true);
+        }
+
+        spec.addOption("runners", OptionType.LIST)
+                .withElementType(OptionType.MAP)
+                .withSpec(runnersSpec)
+                .withDefault(Collections.emptyList());
+
+        spec.addOption("enableLocalRunner", OptionType.BOOLEAN).withDefault(true);
         return spec;
     }
 
     @Override
     public void init(ActivityService activityService, YConfiguration options) {
         this.activityService = activityService;
-        searchPath = options.<String> getList("searchPath").stream()
-                .map(Path::of)
-                .collect(Collectors.toList());
+
         impersonateCaller = options.getBoolean("impersonateCaller");
 
-        fileAssociations.put("java", "java");
-        fileAssociations.put("js", "node");
-        fileAssociations.put("mjs", "node");
-        fileAssociations.put("pl", "perl");
-        fileAssociations.put("py", "python -u");
-        fileAssociations.put("rb", "ruby");
-        for (var assoc : options.<String, String> getMap("fileAssociations").entrySet()) {
-            fileAssociations.put(assoc.getKey().toLowerCase(), assoc.getValue());
+        if (options.getBoolean("enableLocalRunner")) {
+            var localScriptRunner = new LocalScriptRunner(options);
+            scriptRunners.put(localScriptRunner.getName(), localScriptRunner);
+        }
+
+        var runnerFactoriesByType = new HashMap<String, ScriptRunnerFactory>();
+        for (var factory : ServiceLoader.load(ScriptRunnerFactory.class)) {
+            runnerFactoriesByType.put(factory.getType(), factory);
+        }
+
+        for (var runnerConfig : options.getConfigList("runners")) {
+            var name = runnerConfig.getString("name");
+            var factory = runnerFactoriesByType.get(runnerConfig.getString("type"));
+            var args = runnerConfig.getConfig("args");
+
+            var scriptRunner = factory.createScriptRunner(name, args);
+            if (scriptRunners.containsKey(name)) {
+                throw new IllegalArgumentException("Runner names must be unique");
+            }
+            scriptRunners.put(name, scriptRunner);
         }
     }
 
     @Override
     public Spec getActivitySpec() {
         var spec = new Spec();
+        spec.addOption("runner", OptionType.STRING);
         spec.addOption("processor", OptionType.STRING);
         spec.addOption("script", OptionType.STRING).withRequired(true);
         spec.addOption("args", OptionType.LIST_OR_ELEMENT).withElementType(OptionType.STRING);
@@ -97,51 +133,32 @@ public class ScriptExecutor implements ActivityExecutor {
         return YConfiguration.getString(args, "script");
     }
 
-    public List<String> getScripts() throws IOException {
-        var scripts = new ArrayList<String>();
-        for (var scriptsDir : searchPath) {
-            if (Files.exists(scriptsDir)) {
-                try (var stream = Files.walk(scriptsDir)) {
-                    stream.filter(path -> canExecute(path))
-                            .map(path -> scriptsDir.relativize(path).toString())
-                            .forEach(scripts::add);
-                }
-            }
-        }
-        Collections.sort(scripts);
-        return scripts;
+    /**
+     * Returns the available script runners in definition order
+     */
+    public List<ScriptRunner> getRunners() {
+        return new ArrayList<>(scriptRunners.values());
     }
 
-    private boolean canExecute(Path file) {
-        if (!Files.isRegularFile(file)) {
-            return false;
-        }
-        if (Files.isExecutable(file)) {
-            return true;
-        }
-
-        // If there's a file association, the script may be non-executable
-        var fileExtension = FileUtils.getFileExtension(file);
-        if (fileExtension != null && fileAssociations.containsKey(fileExtension)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    private Path locateScript(String script) throws IOException {
-        for (var scriptsDir : searchPath) {
-            var path = scriptsDir.resolve(script);
-
-            if (!path.normalize().toAbsolutePath().startsWith(scriptsDir.normalize().toAbsolutePath())) {
-                throw new IOException("Directory traversal attempted: " + path);
+    /**
+     * Returns the runner for the provided name.
+     * <p>
+     * If a null name is provided, this returns the "default" runner;
+     * <ul>
+     * <li>If there is only one runner: return that runner
+     * <li>If there are multiple runners: return local runner (if it exists)
+     * </ul>
+     */
+    public ScriptRunner getRunner(String name) {
+        if (name == null) {
+            if (scriptRunners.size() == 1) {
+                return scriptRunners.values().iterator().next();
+            } else {
+                return scriptRunners.get(LOCAL_SCRIPT_RUNNER_NAME);
             }
-
-            if (canExecute(path)) {
-                return path;
-            }
+        } else {
+            return scriptRunners.get(name);
         }
-        return null;
     }
 
     @Override
@@ -155,31 +172,17 @@ public class ScriptExecutor implements ActivityExecutor {
             scriptArgs = YConfiguration.<String> getList(args, "args");
         }
 
-        Path scriptFile;
-        try {
-            scriptFile = locateScript(script);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-
-        if (scriptFile == null) {
-            throw new IllegalArgumentException("Unexpected script '" + script + "'");
-        }
-
-        var program = scriptFile.toString();
-        var fileExtension = FileUtils.getFileExtension(scriptFile);
-        if (fileExtension != null) {
-            var assoc = fileAssociations.get(fileExtension);
-            if (assoc != null) {
-                program = assoc + " " + scriptFile.toString();
-            }
-        }
-
         var becomeUser = caller;
         if (!impersonateCaller) {
             becomeUser = YamcsServer.getServer().getSecurityStore().getSystemUser();
         }
 
-        return new ScriptExecution(activityService, this, activity, processor, program, scriptArgs, becomeUser);
+        var runnerName = YConfiguration.getString(args, "runner", LOCAL_SCRIPT_RUNNER_NAME);
+        var runner = scriptRunners.get(runnerName);
+        if (runner == null) {
+            throw new IllegalArgumentException("Unknown runner '" + runnerName + "'");
+        }
+
+        return new ScriptExecution(activityService, this, activity, runner, processor, script, scriptArgs, becomeUser);
     }
 }
