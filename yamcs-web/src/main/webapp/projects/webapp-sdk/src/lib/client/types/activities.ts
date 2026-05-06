@@ -44,6 +44,14 @@ export interface Executor {
   icon?: string;
 }
 
+export interface ScriptRunnersPage {
+  runners?: ScriptRunner[];
+}
+
+export interface ScriptRunner {
+  name: string;
+}
+
 export interface ActivityScriptsPage {
   scripts: string[];
 }

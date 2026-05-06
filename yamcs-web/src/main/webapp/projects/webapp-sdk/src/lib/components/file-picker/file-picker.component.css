@@ -1,0 +1,31 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.ya-data-table,
+.ya-data-table th,
+.ya-data-table td {
+  border-color: #d3d3d3 !important;
+}
+
+tr.file-row {
+  cursor: pointer;
+}
+
+tr.file-row:hover:not(.selected) td {
+  background: var(--y-table-hover-background);
+}
+
+td {
+  padding-left: 0 !important;
+}
+
+.ya-link {
+  cursor: pointer;
+}
+
+.folder-label {
+  text-decoration: underline;
+  cursor: pointer;
+}

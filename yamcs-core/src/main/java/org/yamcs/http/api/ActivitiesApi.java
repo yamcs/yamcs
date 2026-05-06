@@ -1,6 +1,5 @@
 package org.yamcs.http.api;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
@@ -35,8 +34,11 @@ import org.yamcs.protobuf.activities.ListActivitiesRequest;
 import org.yamcs.protobuf.activities.ListActivitiesResponse;
 import org.yamcs.protobuf.activities.ListExecutorsRequest;
 import org.yamcs.protobuf.activities.ListExecutorsResponse;
+import org.yamcs.protobuf.activities.ListScriptRunnersRequest;
+import org.yamcs.protobuf.activities.ListScriptRunnersResponse;
 import org.yamcs.protobuf.activities.ListScriptsRequest;
 import org.yamcs.protobuf.activities.ListScriptsResponse;
+import org.yamcs.protobuf.activities.ScriptRunnerInfo;
 import org.yamcs.protobuf.activities.StartActivityRequest;
 import org.yamcs.protobuf.activities.SubscribeActivitiesRequest;
 import org.yamcs.protobuf.activities.SubscribeActivityLogRequest;
@@ -288,17 +290,42 @@ public class ActivitiesApi extends AbstractActivitiesApi<Context> {
     }
 
     @Override
+    public void listScriptRunners(Context ctx, ListScriptRunnersRequest request,
+            Observer<ListScriptRunnersResponse> observer) {
+        ctx.checkAnyOfSystemPrivileges(SystemPrivilege.ReadActivities, SystemPrivilege.ControlActivities);
+        var activityService = verifyService(request.getInstance());
+        var scriptExecutor = (ScriptExecutor) activityService.getExecutor("SCRIPT");
+
+        var responseb = ListScriptRunnersResponse.newBuilder();
+        for (var runner : scriptExecutor.getRunners()) {
+            var runnerb = ScriptRunnerInfo.newBuilder()
+                    .setName(runner.getName());
+            responseb.addRunners(runnerb);
+        }
+
+        observer.complete(responseb.build());
+    }
+
+    @Override
     public void listScripts(Context ctx, ListScriptsRequest request, Observer<ListScriptsResponse> observer) {
         ctx.checkAnyOfSystemPrivileges(SystemPrivilege.ReadActivities, SystemPrivilege.ControlActivities);
         var activityService = verifyService(request.getInstance());
         var scriptExecutor = (ScriptExecutor) activityService.getExecutor("SCRIPT");
-        try {
-            var responseb = ListScriptsResponse.newBuilder()
-                    .addAllScripts(scriptExecutor.getScripts());
-            observer.next(responseb.build());
-        } catch (IOException e) {
-            observer.completeExceptionally(e);
+        var runnerName = request.hasRunner() ? request.getRunner() : null;
+        var runner = scriptExecutor.getRunner(runnerName);
+        if (runner == null) {
+            throw new BadRequestException("Unknown runner '" + runnerName + "'");
         }
+
+        runner.getScripts().whenComplete((scripts, err) -> {
+            if (err != null) {
+                observer.completeExceptionally(err);
+            } else {
+                var responseb = ListScriptsResponse.newBuilder()
+                        .addAllScripts(scripts);
+                observer.complete(responseb.build());
+            }
+        });
     }
 
     public static ActivityInfo toActivityInfo(Activity activity) {

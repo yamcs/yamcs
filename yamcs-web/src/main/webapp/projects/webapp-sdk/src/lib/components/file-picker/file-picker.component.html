@@ -1,0 +1,38 @@
+<table yaDataTable style="width: 100%">
+  @if (currentDir() !== "") {
+    <tr>
+      <td width="1" class="iconcol"></td>
+      <td>
+        <span class="folder-label" (click)="goUp()">Parent directory</span>
+      </td>
+    </tr>
+  }
+
+  @for (item of visibleItems(); track item.fullPath) {
+    <tr
+      [class.selected]="selectedPath() === item.fullPath"
+      [class.folder-row]="item.type === 'folder'"
+      [class.file-row]="item.type === 'file'"
+      (click)="handleItemClick(item)">
+      <td width="1" class="iconcol">
+        @if (item.type === "folder") {
+          <mat-icon class="icon12" style="vertical-align: middle">folder</mat-icon>
+        } @else {
+          <mat-icon class="icon12" style="vertical-align: middle">description</mat-icon>
+        }
+      </td>
+      <td>
+        @if (item.type === "folder") {
+          <span class="folder-label" (click)="handleFolderClick(item)">{{ item.name }}/</span>
+        } @else {
+          {{ item.name }}
+        }
+      </td>
+    </tr>
+  } @empty {
+    <tr>
+      <td width="1" class="iconcol"></td>
+      <td>Empty directory.</td>
+    </tr>
+  }
+</table>

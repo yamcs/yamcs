@@ -51,6 +51,7 @@ import { YaErrors } from './components/errors/errors.component';
 import { YaFieldDivider } from './components/field-divider/field-divider.component';
 import { YaFieldLabel } from './components/field/field-label.directive';
 import { YaField } from './components/field/field.component';
+import { YaFilePicker } from './components/file-picker/file-picker.component';
 import { YaFilterBar } from './components/filter-bar/filter-bar.component';
 import { YaFilterInput } from './components/filter/filter-input.component';
 import { YaFilterTextarea } from './components/filter/filter-textarea.component';
@@ -215,6 +216,7 @@ const sharedComponents = [
   YaErrors,
   YaField,
   YaFieldDivider,
+  YaFilePicker,
   YaFilterBar,
   YaFilterInput,
   YaFilterTextarea,

@@ -18,6 +18,7 @@ import {
   GetActivityLogResponse,
   GlobalActivityStatus,
   GlobalActivityStatusSubscription,
+  ScriptRunnersPage,
   StartActivityOptions,
   SubscribeActivitiesRequest,
   SubscribeActivityLogRequest,
@@ -2190,9 +2191,16 @@ export default class YamcsClient implements HttpHandler {
     return wrapper.executors || [];
   }
 
-  async getActivityScripts(instance: string) {
-    const url = `${this.apiUrl}/activities/${instance}/scripts`;
+  async getScriptRunners(instance: string) {
+    const url = `${this.apiUrl}/activities/${instance}/script-runners`;
     const response = await this.doFetch(url);
+    return (await response.json()) as ScriptRunnersPage;
+  }
+
+  async getActivityScripts(instance: string, runner: string) {
+    const qs = this.queryString({ runner });
+    const url = `${this.apiUrl}/activities/${instance}/scripts${qs}`;
+    const response = await this.doFetch(url, {});
     return (await response.json()) as ActivityScriptsPage;
   }
 
