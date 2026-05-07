@@ -48,7 +48,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<protobufVersion>3.25.5</protobufVersion>
+		<protobufVersion>4.34.1</protobufVersion>
 		<rocksdbVersion>9.4.0.11</rocksdbVersion>
 	</properties>
 
