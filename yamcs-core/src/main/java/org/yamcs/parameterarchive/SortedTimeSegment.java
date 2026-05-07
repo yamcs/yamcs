@@ -19,6 +19,7 @@ import me.lemire.integercompression.IntWrapper;
  */
 public class SortedTimeSegment extends BaseSegment {
 
+    static final byte SUBFORMAT_ID_RAW = 0; // uncompressed big-endian int32 values (written by RocksDB merge operator)
     static final byte SUBFORMAT_ID_DELTAZG_FPF128_VB = 1; // compressed with DeltaZigzag and then FastPFOR128 plus
                                                           // VarInt32 for remaining
     static final byte SUBFORMAT_ID_DELTAZG_VB = 2; // compressed with DeltaZigzag plus VarInt32
@@ -182,6 +183,15 @@ public class SortedTimeSegment extends BaseSegment {
     static SortedIntArray parse(ByteBuffer bb) throws DecodingException {
         byte subFormatId = bb.get();
         int n = VarIntUtil.readVarInt32(bb);
+
+        if (subFormatId == SUBFORMAT_ID_RAW) {
+            int[] values = new int[n];
+            for (int i = 0; i < n; i++) {
+                values[i] = bb.getInt();
+            }
+            return new SortedIntArray(values);
+        }
+
         int position = bb.position();
 
         IntWrapper inputoffset = new IntWrapper(0);
