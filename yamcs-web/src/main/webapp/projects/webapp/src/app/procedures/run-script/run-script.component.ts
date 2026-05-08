@@ -169,6 +169,7 @@ export class RunScriptComponent {
     const options: ActivityDefinition = {
       type: 'SCRIPT',
       args: {
+        runner: formValue.runner,
         processor: this.yamcs.processor || null,
         script: formValue['script'],
       },
