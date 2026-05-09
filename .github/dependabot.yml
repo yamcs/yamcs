@@ -4,6 +4,13 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    # Don't notify for regular version updates, only security ones
+    open-pull-requests-limit: 0
+
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
     # Don't generate version update PRs for webapp (too noisy)
     exclude-paths:
       - "yamcs-web/src/main/webapp/**"
