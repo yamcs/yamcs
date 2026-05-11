@@ -2,13 +2,31 @@
   <ya-panel padding="small">
     <dl class="dl-horizontal no-lead no-trail">
       <dt>{{ item.type | titlecase }}</dt>
-      <dd>{{ item.name }}</dd>
+      <dd>
+        @if (item.name) {
+          {{ item.name }}
+        } @else {
+          <i>(none)</i>
+        }
+      </dd>
       <dt>Status</dt>
       <dd>{{ item.status() }}</dd>
       @if (item.status() === "FAILED" && item.item.failureReason) {
         <dt>Error message</dt>
         <dd>{{ item.item.failureReason }}</dd>
       }
+      <dt>Tags</dt>
+      <dd>
+        @if (item.tags.length) {
+          <ul yaTagBar>
+            @for (tag of item.tags; track tag) {
+              <li yaTag>{{ tag }}</li>
+            }
+          </ul>
+        } @else {
+          -
+        }
+      </dd>
     </dl>
 
     <div class="section-divider">
