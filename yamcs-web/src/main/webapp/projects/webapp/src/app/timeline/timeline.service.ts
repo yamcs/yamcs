@@ -113,7 +113,7 @@ export class TimelineService {
         .subscribe((result) => {
           if (result) {
             this.yamcs.yamcsClient
-              .completeManualActivity(this.yamcs.instance!, item.id, {
+              .completeManualActivity(this.yamcs.instance!, activity.id, {
                 failureReason: result.failureReason,
               })
               .catch((err) => this.messageService.showError(err));

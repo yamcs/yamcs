@@ -47,6 +47,11 @@ import {
 import { ExtraAcknowledgmentsTableComponent } from '../../../commanding/command-history/extra-acknowledgments-table/extra-acknowledgments-table.component';
 import { YamcsAcknowledgmentsTableComponent } from '../../../commanding/command-history/yamcs-acknowledgments-table/yamcs-acknowledgments-table.component';
 import { MarkdownComponent } from '../../../shared/markdown/markdown.component';
+import {
+  ScheduleActivityDialogComponent,
+  ScheduleActivityDialogData,
+  ScheduleActivityDialogResult,
+} from '../../../shared/schedule-activity-dialog/schedule-activity-dialog.component';
 import { AdvanceAckHelpComponent } from '../advance-ack-help/advance-ack-help.component';
 import { EditCheckEntryDialogComponent } from '../edit-check-entry-dialog/edit-check-entry-dialog.component';
 import {
@@ -55,7 +60,6 @@ import {
 } from '../edit-command-entry-dialog/edit-command-entry-dialog.component';
 import { EditTextEntryDialogComponent } from '../edit-text-entry-dialog/edit-text-entry-dialog.component';
 import { EditVerifyEntryDialogComponent } from '../edit-verify-entry-dialog/edit-verify-entry-dialog.component';
-import { ScheduleStackDialogComponent } from '../schedule-stack-dialog/schedule-stack-dialog.component';
 import { StackFilePageTabsComponent } from '../stack-file-page-tabs/stack-file-page-tabs.component';
 import { StackedCheckEntryComponent } from '../stacked-check-entry/stacked-check-entry.component';
 import { StackedCommandEntryComponent } from '../stacked-command-entry/stacked-command-entry.component';
@@ -902,18 +906,23 @@ export class StackFileComponent implements OnInit, OnDestroy {
 
   openScheduleStackDialog() {
     this.dialog
-      .open(ScheduleStackDialogComponent, {
+      .open<
+        ScheduleActivityDialogComponent,
+        ScheduleActivityDialogData,
+        ScheduleActivityDialogResult
+      >(ScheduleActivityDialogComponent, {
         width: '600px',
+        data: {
+          type: 'stack',
+          name: `Run ${this.filename}`,
+        },
       })
       .afterClosed()
       .subscribe((scheduleOptions) => {
         if (scheduleOptions) {
           const options: SaveTimelineItemRequest = {
             type: 'ACTIVITY',
-            duration: '0s',
-            name: this.filename,
-            start: scheduleOptions['executionTime'],
-            tags: scheduleOptions['tags'],
+            ...scheduleOptions,
             activityDefinition: {
               type: 'STACK',
               args: {

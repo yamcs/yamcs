@@ -19,8 +19,13 @@ import {
   YaHelpDialog,
   YaSelectOption,
   YamcsService,
+  utils,
 } from '@yamcs/webapp-sdk';
-import { ScheduleScriptDialogComponent } from '../schedule-script-dialog/schedule-script-dialog.component';
+import {
+  ScheduleActivityDialogComponent,
+  ScheduleActivityDialogData,
+  ScheduleActivityDialogResult,
+} from '../../shared/schedule-activity-dialog/schedule-activity-dialog.component';
 
 @Component({
   templateUrl: './run-script.component.html',
@@ -136,20 +141,23 @@ export class RunScriptComponent {
 
   openScheduleScriptDialog() {
     this.dialog
-      .open(ScheduleScriptDialogComponent, {
+      .open<
+        ScheduleActivityDialogComponent,
+        ScheduleActivityDialogData,
+        ScheduleActivityDialogResult
+      >(ScheduleActivityDialogComponent, {
         width: '600px',
+        data: {
+          type: 'script',
+          name: `Run ${utils.getFilename(this.form.value.script!)}`,
+        },
       })
       .afterClosed()
       .subscribe((scheduleOptions) => {
-        const formValue = this.form.value;
-
         if (scheduleOptions) {
           const options: SaveTimelineItemRequest = {
             type: 'ACTIVITY',
-            duration: '0s',
-            name: formValue.script!,
-            start: scheduleOptions['executionTime'],
-            tags: scheduleOptions['tags'],
+            ...scheduleOptions,
             activityDefinition: this.createActivityDefinition(),
           };
 

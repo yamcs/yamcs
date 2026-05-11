@@ -48,7 +48,7 @@ export class CreateEventDialogComponent implements OnDestroy {
   ) {
     const props = resolveProperties(itemPropertyInfo, {});
     this.form = formBuilder.group({
-      name: ['', Validators.required],
+      name: ['', []],
       start: [utils.toISOString(yamcs.getMissionTime()), Validators.required],
       duration: ['', Validators.required],
       tags: [[], []],

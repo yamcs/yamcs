@@ -99,7 +99,9 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         if (!request.hasType()) {
             throw new BadRequestException("Type is mandatory");
         }
-        if (!request.hasName()) {
+
+        // Allow nameless for events
+        if (request.getType() != TimelineItemType.EVENT && !request.hasName()) {
             throw new BadRequestException("Name is mandatory");
         }
 

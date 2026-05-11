@@ -95,6 +95,8 @@ export * from './lib/components/value/value.component';
 export * from './lib/components/vertical-divider/vertical-divider.component';
 export * from './lib/components/warning-message/warning-message.component';
 export * from './lib/directives/data-table.directive';
+export * from './lib/directives/tag-bar.directive';
+export * from './lib/directives/tag.directive';
 export * from './lib/extension.directive';
 export * as mdb from './lib/mdb';
 export * from './lib/navigation';

@@ -110,6 +110,8 @@ import { YaValue } from './components/value/value.component';
 import { YaVerticalDivider } from './components/vertical-divider/vertical-divider.component';
 import { YaWarningMessage } from './components/warning-message/warning-message.component';
 import { DataTableDirective } from './directives/data-table.directive';
+import { YaTagBar } from './directives/tag-bar.directive';
+import { YaTag } from './directives/tag.directive';
 import { AliasPipe } from './pipes/alias.pipe';
 import { AllConstraintsPipe } from './pipes/all-constraints.pipe';
 import { ArrayContainsPipe } from './pipes/array-contains.pipe';
@@ -188,6 +190,8 @@ const directives = [
   YaHref,
   YaPrintZoneHide,
   YaPrintZoneShow,
+  YaTag,
+  YaTagBar,
 ];
 
 const sharedComponents = [

@@ -38,6 +38,7 @@ export class ItemsTabComponent implements AfterViewInit {
 
   displayedColumns = [
     'name',
+    'tags',
     'progress',
     'type',
     'start',

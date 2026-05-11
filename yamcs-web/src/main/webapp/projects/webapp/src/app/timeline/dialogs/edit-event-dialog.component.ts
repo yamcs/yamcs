@@ -59,7 +59,7 @@ export class EditEventDialogComponent implements OnDestroy {
     const props = resolveProperties(itemPropertyInfo, itemProperties);
 
     this.form = formBuilder.group({
-      name: [item.name, Validators.required],
+      name: [item.name, []],
       start: [item.start, Validators.required],
       duration: [item.duration, Validators.required],
       tags: [item.tags || [], []],
