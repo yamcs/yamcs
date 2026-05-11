@@ -60,6 +60,10 @@ export class ItemState {
     }
   }
 
+  get tags() {
+    return this.item.tags || [];
+  }
+
   get failureReason() {
     return this.item.failureReason;
   }

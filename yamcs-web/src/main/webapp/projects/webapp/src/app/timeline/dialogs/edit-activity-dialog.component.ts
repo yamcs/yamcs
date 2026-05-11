@@ -46,7 +46,7 @@ export class EditActivityDialogComponent {
     this.form = formBuilder.group({
       name: [item.name, Validators.required],
       start: [item.start, Validators.required],
-      autoStart: [false, Validators.required],
+      autoStart: [item.autoStart, Validators.required],
       duration: [item.duration, Validators.required],
       tags: [item.tags || [], []],
     });
