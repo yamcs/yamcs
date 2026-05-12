@@ -94,11 +94,15 @@ public class UslpUplinkFrameFactory implements UplinkFrameFactory<UslpUplinkTran
         UslpUplinkTransferFrame frame = new UslpUplinkTransferFrame(data, uslpParams.spacecraftId,
                 vcParams.vcId, mapId, cmdControl);
         frame.genTime = generationTime;
+
+        // In this case, data start := first byte of TFDF *after* TFDF header
         frame.setDataStart(dataStart);
         frame.setDataEnd(dataStart + dataLength);
 
         if (isEncrypted) {
+            // Move data start forward to leave space for header
             frame.setDataStart(frame.getDataStart() + sdlsInfo.sa().getHeaderSize());
+            // Move data end forward to account for header
             frame.setDataEnd(frame.getDataEnd() + sdlsInfo.sa().getHeaderSize());
         }
 
@@ -148,8 +152,11 @@ public class UslpUplinkFrameFactory implements UplinkFrameFactory<UslpUplinkTran
 
         // Insert zone is left as zero (Java initialises byte arrays to 0)
 
+        // The start of the transfer frame data field (TFDF), points to the TFDF header
+        int tfdfStart = getTfdfStart(frame);
+
         // Data zone header
-        data[primaryHeaderSize + uslpParams.insertZoneLength] = ZONE_HEADER_BYTE;
+        data[tfdfStart] = ZONE_HEADER_BYTE;
 
         // SDLS encryption
         short spi = vcParams.encryptionSpi;
@@ -162,7 +169,7 @@ public class UslpUplinkFrameFactory implements UplinkFrameFactory<UslpUplinkTran
                     authMask = StandardAuthMask.USLP(primaryHeaderSize, uslpParams.insertZoneLength,
                             sa.securityHdrAuthMask());
                 }
-                sa.applySecurity(data, 0, getTfdfStart(frame) - sa.getHeaderSize(),
+                sa.applySecurity(data, 0, tfdfStart - sa.getHeaderSize(),
                         frame.getDataEnd() + sa.getTrailerSize(), authMask);
             } catch (GeneralSecurityException e) {
                 throw new RuntimeException(e);
