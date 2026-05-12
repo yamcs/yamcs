@@ -116,6 +116,10 @@ public class UslpUplinkFrameFactory implements UplinkFrameFactory<UslpUplinkTran
         return length;
     }
 
+    int getTfdfStart(UslpUplinkTransferFrame frame) {
+        return frame.getDataStart() - ZONE_HEADER_SIZE;
+    }
+
     @Override
     public byte[] encodeFrame(UslpUplinkTransferFrame frame) {
         byte[] data = frame.getData();
@@ -158,7 +162,7 @@ public class UslpUplinkFrameFactory implements UplinkFrameFactory<UslpUplinkTran
                     authMask = StandardAuthMask.USLP(primaryHeaderSize, uslpParams.insertZoneLength,
                             sa.securityHdrAuthMask());
                 }
-                sa.applySecurity(data, 0, frame.getDataStart() - sa.getHeaderSize(),
+                sa.applySecurity(data, 0, getTfdfStart(frame) - sa.getHeaderSize(),
                         frame.getDataEnd() + sa.getTrailerSize(), authMask);
             } catch (GeneralSecurityException e) {
                 throw new RuntimeException(e);
