@@ -7,7 +7,7 @@ Yamcs can run background activities whose execution state are tracked in the UI.
     :alt: Activities Page
     :align: center
 
-Yamcs includes a core set of activity types that cover command execution, stack execution, script execution and manual execution. Yamcs plugins may add more types.
+Yamcs includes a core set of activity types that cover command execution, stack execution and script execution. Yamcs plugins may add additional types.
 
 .. note::
     Prior to Yamcs 5.13.0, activities were only available by enabling the :doc:`Timeline Service <../services/instance/timeline-service>`. Since then, activities were upgraded to a core Yamcs functionality, and so no longer require presence of the Timeline Service.
@@ -40,4 +40,3 @@ Planned activities are submitted via the UI or API to the Timeline (saved as act
     commands
     stacks
     scripts
-    manual
