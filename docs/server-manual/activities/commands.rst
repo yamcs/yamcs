@@ -53,18 +53,21 @@ Run a command activity one minute from now:
 
     from datetime import datetime, timedelta, timezone
 
-    from yamcs.client import CommandActivity, Item, YamcsClient
+    from yamcs.client import CommandActivity, YamcsClient, TimelineActivity
 
     client = YamcsClient("http://localhost:8090")
     timeline = client.get_timeline_client("simulator")
 
     now = datetime.now(tz=timezone.utc)
 
-    item = Item()
-    item.start = now + timedelta(minutes=1)
-    item.duration = timedelta(seconds=1)  # Planned duration
-    item.activity = CommandActivity(
-        command="/YSS/SIMULATOR/SWITCH_VOLTAGE_ON",
-        args={"voltage_num": 1},
+    item = TimelineActivity(
+        name="Switch on battery 1 voltage",
+        start=now + timedelta(minutes=1),
+        duration=timedelta(seconds=1),  # Planned duration
+        activity=CommandActivity(
+            command="/YSS/SIMULATOR/SWITCH_VOLTAGE_ON",
+            args={"voltage_num": 1},
+        ),
     )
+
     timeline.save_item(item)

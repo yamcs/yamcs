@@ -171,7 +171,7 @@ To execute a script **at a later time**, choose the option :guilabel:`Run later.
 Python Yamcs Client
 -------------------
 
-Run a script activity immediately:
+Run a script activity immediately (does not use Yamcs Timeline):
 
 .. code-block:: python
 
@@ -191,19 +191,21 @@ Run a script activity one minute from now:
 
     from datetime import datetime, timedelta, timezone
 
-    from yamcs.client import ScriptActivity, Item, YamcsClient
+    from yamcs.client import ScriptActivity, YamcsClient, TimelineActivity
 
     client = YamcsClient("http://localhost:8090")
     timeline = client.get_timeline_client("simulator")
 
     now = datetime.now(tz=timezone.utc)
 
-    item = Item()
-    item.start = now + timedelta(minutes=1)
-    item.duration = timedelta(seconds=5)  # Planned duration
-    item.activity = ScriptActivity(
-        script="simulate_los.py",
-        args="--duration 5",
-        processor="realtime",
+    item = TimelineActivity(
+        name="Simulate LOS",
+        start=now + timedelta(minutes=1),
+        duration=timedelta(seconds=5),  # Planned duration
+        activity=ScriptActivity(
+            script="simulate_los.py",
+            args="--duration 5",
+            processor="realtime",
+        ),
     )
     timeline.save_item(item)
