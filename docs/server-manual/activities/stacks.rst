@@ -42,18 +42,20 @@ Run a stack activity one minute from now:
 
     from datetime import datetime, timedelta, timezone
 
-    from yamcs.client import CommandStackActivity, Item, YamcsClient
+    from yamcs.client import TimelineActivity, StackActivity, YamcsClient
 
     client = YamcsClient("http://localhost:8090")
     timeline = client.get_timeline_client("simulator")
 
     now = datetime.now(tz=timezone.utc)
 
-    item = Item()
-    item.start = now + timedelta(minutes=1)
-    item.duration = timedelta(seconds=1)  # Planned duration
-    item.activity = CommandStackActivity(
-        bucket="stacks",
-        stack="stack.ycs",
+    item = TimelineActivity(
+        name="Run stack",
+        start=now + timedelta(minutes=1),
+        duration=timedelta(seconds=1),  # Planned duration
+        activity=StackActivity(
+            bucket="stacks",
+            stack="stack.ycs",
+        ),
     )
     timeline.save_item(item)

@@ -36,7 +36,7 @@ Item height
     Height of items in pixels.
 
 Item background color
-    RGB color for the background fill of items.
+    RGB color for the background fill of an item's box.
 
     .. note::
         This property can be overridden at item level

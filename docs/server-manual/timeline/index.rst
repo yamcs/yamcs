@@ -28,4 +28,7 @@ Bands (or individual items) have many configuration options so that different ty
 
     model
     bands/index
-    scheduling
+    events
+    tasks
+    activities
+    dependencies
