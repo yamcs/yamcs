@@ -9,10 +9,10 @@ import {
   Cop1Status,
   Cop1Subscription,
   InitiateCop1Request,
-  SdlsLinkConfig,
   Link,
   LinkSubscription,
   MessageService,
+  SdlsLinkConfig,
   WebappSdkModule,
   YamcsService,
 } from '@yamcs/webapp-sdk';
@@ -77,8 +77,10 @@ export class LinkComponent implements OnDestroy {
       this.yamcs.yamcsClient
         .getSdlsSpis(this.yamcs.instance!, name)
         .then((sdlsLinkConfig) => {
-          sdlsLinkConfig.spis.sort();
-          this.sdlsLinkConfig$.next(sdlsLinkConfig);
+          if (sdlsLinkConfig.spis?.length) {
+            sdlsLinkConfig.spis.sort();
+            this.sdlsLinkConfig$.next(sdlsLinkConfig);
+          }
         });
 
       if (link.type.indexOf('Cop1Uplink') !== -1) {
