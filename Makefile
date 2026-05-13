@@ -11,6 +11,11 @@ clean:
 build:
 	@mvn install -DskipTests
 
+.PHONY: build-web
+build-web:
+	cd yamcs-web/src/main/webapp && npm install && npm run build
+	@mvn install -DskipTests -pl yamcs-web -am
+
 .PHONY: rebuild
 rebuild: clean all
 
