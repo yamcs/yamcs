@@ -175,7 +175,7 @@ export class CommandHistoryListComponent
           const aliasColumn = {
             id: namespace,
             label: namespace,
-            alwaysVisible: true,
+            visible: this.config.showAliasColumns,
           };
           aliasColumns.push(aliasColumn);
         }
