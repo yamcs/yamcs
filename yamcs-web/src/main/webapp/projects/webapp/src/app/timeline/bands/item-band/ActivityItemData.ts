@@ -59,6 +59,23 @@ export class ActivityItemData {
             stop: execStart + this.getPlannedDuration(),
           };
         }
+      } else if (execStart < plannedStart) {
+        const aheadRangeStart = execStart + this.getPlannedDuration();
+        const aheadRangeStop = plannedStart;
+        // Don't want to show this if it overlaps with the
+        // shifted planned range
+        if (aheadRangeStart < aheadRangeStop) {
+          this.aheadRange = {
+            start: aheadRangeStart,
+            stop: aheadRangeStop,
+          };
+        }
+        if (itemInfo.status === 'IN_PROGRESS') {
+          this.shiftedPlannedRange = {
+            start: execStart,
+            stop: execStart + this.getPlannedDuration(),
+          };
+        }
       }
     } else {
       if (itemInfo.status === 'READY') {

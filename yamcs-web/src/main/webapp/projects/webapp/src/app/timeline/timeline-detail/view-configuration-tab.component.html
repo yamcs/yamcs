@@ -48,12 +48,13 @@
 
     <ng-container cdkColumnDef="tags">
       <th mat-header-cell *cdkHeaderCellDef>Tags</th>
-      <td mat-cell *cdkCellDef="let row">
-        @for (tag of row.tags || []; track tag) {
-          <ya-label>{{ tag }}</ya-label>
-        }
-        @if (!row.tags) {
-          -
+      <td mat-cell *cdkCellDef="let row" style="min-width: 200px; max-width: 200px">
+        @if (row.tags?.length) {
+          <ul yaTagBar yaTagBarTruncate>
+            @for (tag of row.tags; track tag) {
+              <li yaTag>{{ tag }}</li>
+            }
+          </ul>
         }
       </td>
     </ng-container>
