@@ -1,5 +1,5 @@
 export interface SdlsLinkConfig {
-  spis: number[];
+  spis?: number[];
 }
 
 export interface SdlsSeqCtr {
