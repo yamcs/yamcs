@@ -684,7 +684,10 @@ export class ParameterChartTabComponent
     index?: number,
     traceState?: TraceState,
   ) {
-    const traceId: string = crypto.randomUUID();
+    // Sufficiently random identifier
+    const traceId: string =
+      Math.random().toString(36).substring(2, 10) +
+      Math.random().toString(36).substring(2, 10);
 
     const lookupIndex = index === undefined ? 0 : index + 1;
     const hexColor = DEFAULT_COLORS[lookupIndex % DEFAULT_COLORS.length];
