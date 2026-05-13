@@ -12,9 +12,11 @@ import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import {
+  ConfigService,
   ConnectionInfo,
   GetCommandsOptions,
   WebappSdkModule,
+  WebsiteConfig,
   YaColumnChooser,
   YaColumnInfo,
   YamcsService,
@@ -38,6 +40,7 @@ export class SendCommandComponent implements AfterViewInit, OnDestroy {
   connectionInfo$: Observable<ConnectionInfo | null>;
 
   pageSize = 100;
+  private config: WebsiteConfig;
 
   system: string | null = null;
   breadcrumb$ = new BehaviorSubject<BreadCrumbItem[]>([]);
@@ -74,8 +77,10 @@ export class SendCommandComponent implements AfterViewInit, OnDestroy {
     readonly yamcs: YamcsService,
     private route: ActivatedRoute,
     private router: Router,
+    configService: ConfigService,
   ) {
     title.setTitle('Send a command');
+    this.config = configService.getConfig();
     this.connectionInfo$ = yamcs.connectionInfo$;
     this.dataSource = new CommandsDataSource(yamcs);
   }
@@ -151,7 +156,7 @@ export class SendCommandComponent implements AfterViewInit, OnDestroy {
         const aliasColumn = {
           id: namespace,
           label: namespace,
-          alwaysVisible: true,
+          visible: this.config.showAliasColumns,
         };
         aliasColumns.push(aliasColumn);
       }

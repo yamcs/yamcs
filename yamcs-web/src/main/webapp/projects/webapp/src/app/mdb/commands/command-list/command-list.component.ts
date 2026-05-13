@@ -12,9 +12,11 @@ import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   Command,
+  ConfigService,
   GetCommandsOptions,
   MessageService,
   WebappSdkModule,
+  WebsiteConfig,
   YaColumnChooser,
   YaColumnInfo,
   YamcsService,
@@ -31,6 +33,7 @@ import { CommandsDataSource } from './commands.datasource';
 export class CommandListComponent implements AfterViewInit {
   shortName = false;
   pageSize = 100;
+  private config: WebsiteConfig;
 
   @ViewChild('top', { static: true })
   top: ElementRef;
@@ -64,8 +67,10 @@ export class CommandListComponent implements AfterViewInit {
     private route: ActivatedRoute,
     private router: Router,
     private messageService: MessageService,
+    configService: ConfigService,
   ) {
     title.setTitle('Commands');
+    this.config = configService.getConfig();
     this.dataSource = new CommandsDataSource(yamcs);
   }
 
@@ -123,7 +128,7 @@ export class CommandListComponent implements AfterViewInit {
           const aliasColumn = {
             id: namespace,
             label: namespace,
-            alwaysVisible: true,
+            visible: this.config.showAliasColumns,
           };
           aliasColumns.push(aliasColumn);
         }
