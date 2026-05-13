@@ -2,7 +2,6 @@ import { SelectionModel } from '@angular/cdk/collections';
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   ElementRef,
   forwardRef,
@@ -17,9 +16,11 @@ import {
 import { MatPaginator } from '@angular/material/paginator';
 import {
   Command,
+  ConfigService,
   GetCommandsOptions,
   SpaceSystem,
   WebappSdkModule,
+  WebsiteConfig,
   YaColumnChooser,
   YaColumnInfo,
   YamcsService,
@@ -50,6 +51,7 @@ export class CommandSelectorComponent
   path: string;
 
   pageSize = 100;
+  private config: WebsiteConfig;
 
   system: string | null = null;
   breadcrumb$ = new BehaviorSubject<BreadCrumbItem[]>([]);
@@ -88,8 +90,9 @@ export class CommandSelectorComponent
 
   constructor(
     readonly yamcs: YamcsService,
-    private changeDetection: ChangeDetectorRef,
+    configService: ConfigService,
   ) {
+    this.config = configService.getConfig();
     this.dataSource = new CommandsDataSource(yamcs);
     this.selectedCommand$.subscribe(async (item) => {
       if (item && item.command) {
@@ -159,7 +162,7 @@ export class CommandSelectorComponent
         const aliasColumn = {
           id: namespace,
           label: namespace,
-          alwaysVisible: true,
+          visible: this.config.showAliasColumns,
         };
         aliasColumns.push(aliasColumn);
       }

@@ -84,6 +84,15 @@ options:
     type: BOOLEAN
     default: true
 
+  showAliasColumns:
+    title: Show Alias Columns
+    description:
+      - Whether to show alias columns on listings (parameters, containers, ...).
+        Regardless of this setting, users can choose to hide/show individual columns,
+        overriding this default setting.
+    type: BOOLEAN
+    default: true
+
   disableLoginForm:
     title: Disable Login Form
     description:

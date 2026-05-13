@@ -11,10 +11,12 @@ import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
+  ConfigService,
   GetParameterTypesOptions,
   MessageService,
   ParameterType,
   WebappSdkModule,
+  WebsiteConfig,
   YaColumnChooser,
   YaColumnInfo,
   YamcsService,
@@ -30,6 +32,7 @@ import { ParameterTypesDataSource } from './parameter-types.datasource';
 export class ParameterTypesComponent implements AfterViewInit {
   shortName = false;
   pageSize = 100;
+  private config: WebsiteConfig;
 
   @ViewChild('top', { static: true })
   top: ElementRef;
@@ -63,8 +66,10 @@ export class ParameterTypesComponent implements AfterViewInit {
     private route: ActivatedRoute,
     private router: Router,
     private messageService: MessageService,
+    configService: ConfigService,
   ) {
     title.setTitle('Parameter types');
+    this.config = configService.getConfig();
     this.dataSource = new ParameterTypesDataSource(yamcs);
   }
 
@@ -122,7 +127,7 @@ export class ParameterTypesComponent implements AfterViewInit {
           const aliasColumn = {
             id: namespace,
             label: namespace,
-            alwaysVisible: true,
+            visible: this.config.showAliasColumns,
           };
           aliasColumns.push(aliasColumn);
         }

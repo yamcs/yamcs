@@ -11,10 +11,12 @@ import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
+  ConfigService,
   GetParametersOptions,
   MessageService,
   Parameter,
   WebappSdkModule,
+  WebsiteConfig,
   YaColumnChooser,
   YaColumnInfo,
   YaSelectOption,
@@ -36,6 +38,7 @@ export class ParameterListComponent implements AfterViewInit {
   });
 
   pageSize = 100;
+  private config: WebsiteConfig;
 
   @ViewChild('top', { static: true })
   top: ElementRef;
@@ -102,8 +105,10 @@ export class ParameterListComponent implements AfterViewInit {
     private route: ActivatedRoute,
     private router: Router,
     private messageService: MessageService,
+    configService: ConfigService,
   ) {
     title.setTitle('Parameters');
+    this.config = configService.getConfig();
     this.dataSource = new ParametersDataSource(yamcs);
   }
 
@@ -182,7 +187,7 @@ export class ParameterListComponent implements AfterViewInit {
           const aliasColumn = {
             id: namespace,
             label: namespace,
-            alwaysVisible: true,
+            visible: this.config.showAliasColumns,
           };
           aliasColumns.push(aliasColumn);
         }
