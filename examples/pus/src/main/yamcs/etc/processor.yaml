@@ -9,7 +9,17 @@
 realtime:
   services:
     - class: org.yamcs.StreamTmPacketProvider
-    - class: org.yamcs.StreamTcCommandReleaser
+    - class: org.yamcs.pus.PusCommandReleaser
+      args:
+        apid: 1
+        timeEncoding:
+          implicitPfield: false
+          pfield: 0x2f
+        handlers:
+          - serviceType: 5
+            class: org.yamcs.pus.Pus5Service
+            args:
+              eventIdParameter: /PUS5/event_id
     - class: org.yamcs.tctm.StreamParameterProvider
     - class: org.yamcs.algorithms.AlgorithmManager
     # implements provider of parameters from sys_param stream (these are collected and sent on this stream by SystemParametersService)
