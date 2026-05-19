@@ -133,10 +133,13 @@ public class PusXxService extends PusTcHandler {
 | `emitTm(serviceType, subtype, appData)` | Build + inject PUS TM packet on tm_realtime |
 | `publishAckSent(pc)` | Publish `Acknowledge_Sent OK` to command history |
 | `publishCompletion(pc, success, msg)` | Publish `CommandComplete OK/NOK` to command history |
-| `computeCrc(data, offset, length)` | CRC-16-CCIIT over a byte range |
 | `getCurrentTime()` | Current YAMCS mission time (ms) |
 | `APP_DATA_OFFSET = 11` | Byte offset of PUS TC app data |
 | `log` | Logger (initialised with handler class name) |
+
+**`doStart` / `doStop` lifecycle gotcha**: `PusCommandReleaser.doStart()` calls `notifyStarted()` itself after calling each handler's `doStart()`. Do **not** call `super.doStart()` from `PusCommandReleaser` — `StreamTcCommandReleaser.doStart()` would call `notifyStarted()` a second time. Handler `doStart()`/`doStop()` are plain callbacks (not Guava service hooks), so no `notifyStarted()` is needed in them.
+
+**`commandHistory` access**: Use `processor.getCommandHistoryPublisher()` directly in `PusCommandReleaser` helper methods. Do not rely on `setCommandHistory()` — `StreamTcCommandReleaser` overrides it as a no-op and restoring it requires care.
 
 ### How to identify a PUS TC from raw binary
 
@@ -193,6 +196,12 @@ tm_realtime → two parallel subscribers:
 | `rectime` | TIMESTAMP | reception time |
 | `status` | INT | 0 = OK |
 | `packet` | BINARY | full raw packet bytes |
+| `ertime` | HRES_TIMESTAMP | earth reception time (nullable) |
+| `obt` | LONG | on-board time raw (nullable) |
+| `link` | ENUM | data link name (nullable) |
+| `rootContainer` | ENUM | XTCE root container FQN (nullable) |
+
+⚠️ `Tuple(TupleDefinition, Object[])` validates that column count == definition size and throws `IllegalArgumentException` if they differ. Always supply all 9 values (last 4 can be `null`).
 
 ---
 
@@ -206,9 +215,10 @@ processor (real-time parameter distribution) and the archive.
 // Internally:
 byte[] pkt = buildPusTmPacket(serviceType, subtype, appData);
 long now = processor.getCurrentTime();
-int seqCount = ((pkt[2] & 0x3F) << 8) | (pkt[3] & 0xFF);
-TupleDefinition td = StandardTupleDefinitions.TM.copy();
-Tuple t = new Tuple(td, new Object[]{ now, seqCount, now, 0, pkt });
+int seqNum = ((pkt[2] & 0x3F) << 8) | (pkt[3] & 0xFF);
+// Must supply all 9 TM columns; last 4 are nullable
+Tuple t = new Tuple(StandardTupleDefinitions.TM,
+    new Object[]{ now, seqNum, now, 0, pkt, null, null, null, null });
 tmStream.emitTuple(t);
 ```
 
@@ -390,7 +400,8 @@ CRC-16, sequence counter, TM stream). Routes by PUS service type to registered `
 
 ### `PusTcHandler`
 Abstract base for individual PUS service handlers. Provides `emitTm`, `publishAckSent`,
-`publishCompletion`, `computeCrc`, `getCurrentTime`, `APP_DATA_OFFSET`. Lifecycle: `doInit`, `doStart`, `doStop`.
+`publishCompletion`, `getCurrentTime`, `APP_DATA_OFFSET`. Lifecycle: `doInit`, `doStart`, `doStop`.
+CRC computation is owned by `PusCommandReleaser`, not exposed to handlers.
 
 ### `Pus5Service` (ST[05])
 Handles TC[5,5/6/7], emits TM[5,1-4,8]. Event enabled/disabled state persisted in MementoDb.
@@ -449,13 +460,20 @@ Config: `eventIdParameter`, `eventTemplateFile`.
 
 1. Create a class extending `PusTcHandler`
 2. Override `doInit(YConfiguration config)` — read handler-specific config
+   - If the handler maintains an ID registry (e.g. event IDs), **derive it from the MDB** rather than a hand-maintained config list:
+     ```java
+     var mdb = MdbFactory.getInstance(releaser.getYamcsInstance());
+     var ept = (EnumeratedParameterType) mdb.getParameter(fqn).getParameterType();
+     for (var ve : ept.getValueEnumerationList()) { registry.put((int) ve.getValue(), defaultState); }
+     ```
+   - Overlay persisted state from `MementoDb` after seeding defaults
 3. Implement `handleTc(PreparedCommand pc)`:
    - Check `bin.length < APP_DATA_OFFSET` and return early if malformed
    - Call `publishAckSent(pc)`
    - Switch on `PusPacket.getSubtype(bin)`, delegate to private methods
    - Call `publishCompletion(pc, success, msg)` in each branch
 4. For TM responses: call `emitTm(SERVICE_TYPE, subtype, appData)` with app-data bytes
-5. If the handler needs threads: override `doStart()` / `doStop()`
+5. If the handler needs threads: override `doStart()` / `doStop()` (no `notifyStarted()` needed here)
 6. Register in `processor.yaml` under `handlers:` with its `serviceType`
 7. In the MDB: define TC commands and TM containers matching the packet layout
 8. Optional: add `Pus1Verifier` entries in the MDB MetaCommand `CommandVerifierSet`

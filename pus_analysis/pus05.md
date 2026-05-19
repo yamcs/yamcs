@@ -120,69 +120,41 @@ TM stream (tm_realtime)
 
 ## Native YAMCS Implementation
 
-### Feasibility: YES
+### Feasibility: YES — IMPLEMENTED ✅
 
-PUS ST[05] can be natively implemented using XTCE MDB definitions + a new Java service. The existing `pus5.xml` already defines all 8 required message types — **no new XTCE definitions are needed**.
+PUS ST[05] is implemented natively using XTCE MDB definitions + `Pus5Service`. The existing `pus5.xml` already defines all 8 required message types — **no new XTCE definitions are needed**.
 
-### New Class: `Pus5NativeService`
+### Actual Class: `org.yamcs.pus.Pus5Service`
 
-Pattern: extend `StreamTcCommandReleaser` (same as `Pus21RequestSequencingService`).
+Pattern: extend `PusTcHandler`, registered under `PusCommandReleaser` in `processor.yaml`.  
+See `pus_native_arch.md §2` for the full dispatcher pattern.
 
+**processor.yaml config:**
+```yaml
+- class: org.yamcs.pus.PusCommandReleaser
+  args:
+    apid: 1
+    timeEncoding:
+      implicitPfield: false
+      pfield: 0x2f
+    handlers:
+      - serviceType: 5
+        class: org.yamcs.pus.Pus5Service
+        args:
+          eventIdParameter: /PUS5/event_id   # FQN of the EnumeratedParameterType in the MDB
+          defaultEnabled: true               # optional, default true
+```
+
+**Event registry seeded from MDB** (not from a hand-maintained list in config):
 ```java
-public class Pus5NativeService extends StreamTcCommandReleaser {
-
-    static final int SERVICE_TYPE = 5;
-    static final int APP_DATA_OFFSET = 11;
-
-    Map<Integer, Boolean> enabled;   // event registry; seeded from config
-    Stream tmStream;
-    int apid;
-
-    @Override
-    public void init(String instance, String name, YConfiguration config) throws InitException {
-        super.init(instance, name, config);
-        apid = config.getInt("apid");
-        // Seed registry from config: list of {id, initiallyEnabled}
-        enabled = buildRegistry(config);
-        // Resolve TM stream (see pus_native_arch.md §4)
-        tmStream = resolveTmStream(instance);
-    }
-
-    @Override
-    public synchronized void releaseCommand(PreparedCommand pc) {
-        byte[] bin = pc.getBinary();
-        if (bin == null || bin.length < APP_DATA_OFFSET) {
-            super.releaseCommand(pc);
-            return;
-        }
-        int type    = PusPacket.getType(bin);
-        int subtype = PusPacket.getSubtype(bin);
-        if (type != SERVICE_TYPE) {
-            super.releaseCommand(pc);
-            return;
-        }
-        commandHistory.publishAck(pc.getCommandId(), AcknowledgeSent_KEY,
-            processor.getCurrentTime(), AckStatus.OK);
-
-        switch (subtype) {
-            case 5 -> enableDisableEvents(pc, true);
-            case 6 -> enableDisableEvents(pc, false);
-            case 7 -> sendDisabledList(pc);
-            default -> {
-                commandHistory.publishAck(pc.getCommandId(), CommandComplete_KEY,
-                    processor.getCurrentTime(), AckStatus.NOK, "unknown subtype " + subtype);
-            }
-        }
-    }
-
-    // Called by other YAMCS services to raise an event
-    public void raiseEvent(int eventId, int subtype, byte[] auxData) {
-        if (!enabled.getOrDefault(eventId, false)) return;
-        byte[] pkt = buildEventTm(eventId, subtype, auxData);
-        emitTm(pkt);
-    }
+var mdb = MdbFactory.getInstance(releaser.getYamcsInstance());
+Parameter param = mdb.getParameter(paramFqn);              // e.g. /PUS5/event_id
+EnumeratedParameterType ept = (EnumeratedParameterType) param.getParameterType();
+for (var ve : ept.getValueEnumerationList()) {
+    enabled.put((int) ve.getValue(), defaultEnabled);
 }
 ```
+Adding a new event only requires a new `<Enumeration>` in `pus5.xml` — no `processor.yaml` change.
 
 ---
 
@@ -209,14 +181,16 @@ Packet layout:
 [-2..-1] CRC-16-CCIIT
 ```
 
-**Emit TM tuple**:
+**Emit TM tuple** — `StandardTupleDefinitions.TM` has 9 columns; all must be provided (last 4 nullable):
 ```java
 long now = processor.getCurrentTime();
-int seqCount = ((pkt[2] & 0x3F) << 8) | (pkt[3] & 0xFF);
-TupleDefinition td = StandardTupleDefinitions.TM.copy();
-Tuple t = new Tuple(td, new Object[]{ now, seqCount, now, 0, pkt });
+int seqNum = ((pkt[2] & 0x3F) << 8) | (pkt[3] & 0xFF);
+// columns: gentime, seqNum, rectime, status, packet, ertime, obt, link, rootContainer
+Tuple t = new Tuple(StandardTupleDefinitions.TM,
+    new Object[]{ now, seqNum, now, 0, pkt, null, null, null, null });
 tmStream.emitTuple(t);
 ```
+⚠️ `Tuple` validates that column count == definition size; passing fewer values throws `IllegalArgumentException`.
 
 ---
 
@@ -236,7 +210,7 @@ Same as TM[5,1] with `subtype = 4`.
 ---
 
 ### TC[5,5] Enable Report Generation
-**Direction**: TC (ground → `Pus5NativeService`)
+**Direction**: TC (ground → `Pus5Service`)
 
 **XTCE**: `ENABLE_REPORT_GENERATION` MetaCommand (already in `pus5.xml`).
 Arguments: `N` (uint8), `events` (array of event_id_type).
@@ -267,7 +241,7 @@ void enableDisableEvents(PreparedCommand pc, boolean enable) {
 ---
 
 ### TC[5,6] Disable Report Generation
-**Direction**: TC (ground → `Pus5NativeService`)
+**Direction**: TC (ground → `Pus5Service`)
 
 **XTCE**: `DISABLE_REPORT_GENERATION` MetaCommand (already in `pus5.xml`). Same arguments as TC[5,5].
 
@@ -276,7 +250,7 @@ void enableDisableEvents(PreparedCommand pc, boolean enable) {
 ---
 
 ### TC[5,7] Report List of Disabled Event Definitions
-**Direction**: TC (ground → `Pus5NativeService`) → triggers TM[5,8]
+**Direction**: TC (ground → `Pus5Service`) → triggers TM[5,8]
 
 **XTCE**: `REPORT_DISABLED_LIST` MetaCommand (already in `pus5.xml`). No arguments.
 
@@ -312,8 +286,8 @@ Layout: `disabled_count (uint8)` + `disabled_event_ids (array, IncludeCondition:
 - N = 0: just the count byte, no event IDs. The MDB's IncludeCondition prevents the empty-array crash.
 - N > 0: count byte + N event_id bytes (each uint8).
 
-**Processor config**: Replace `StreamTcCommandReleaser` with `Pus5NativeService` in `processors.yaml`.
-`PusEventDecoder` remains as an instance-level service (not processor-level).
+**Processor config**: Replace `StreamTcCommandReleaser` with `PusCommandReleaser` (with `Pus5Service` handler) in `processor.yaml`.
+`PusEventDecoder` remains as an instance-level service in `yamcs.<instance>.yaml` (not processor-level).
 
 ---
 
@@ -323,8 +297,8 @@ Layout: `disabled_count (uint8)` + `disabled_event_ids (array, IncludeCondition:
 
 | Message | Gap | Severity |
 |---------|-----|----------|
-| TM[5,1-4] | Event registry is **static** (declared at MDB/config load time). Adding a new event type at runtime requires editing `pus5.xml` (new XTCE sub-container) + restarting YAMCS. | Medium |
-| TM[5,1-4] | Enabled/disabled state is **in-memory only**. A YAMCS restart resets all events to their initial enabled state from config. | Medium |
+| TM[5,1-4] | Event registry is **static** (declared at MDB load time). Adding a new event type at runtime requires a new `<Enumeration>` in `pus5.xml` + YAMCS restart. | Medium |
+| TM[5,1-4] | ~~Enabled/disabled state is in-memory only~~ — **FIXED**: state is persisted in `MementoDb` (key `pus5.enabled`); survives restarts. | ~~Medium~~ ✅ |
 | TM[5,1-4] | Auxiliary data is "deduced" — each event type needs its own XTCE sub-container AND matching Java byte layout. There is no generic mechanism; adding an event requires both MDB and Java changes in sync. | Medium |
 | TM[5,1-4] | Subtype 3 maps to YAMCS `DISTRESS` (not `WARNING`). This is per-spec but may surprise operators expecting a WARNING level. | Low |
 | TC[5,5/6] | Event IDs are encoded as raw bytes (uint8) matching the MDB `IntegerDataEncoding` default. If the mission changes event IDs to uint16, **both** the MDB and the Java parsing code must be updated together. | Low |
