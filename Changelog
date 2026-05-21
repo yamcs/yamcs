@@ -1,4 +1,14 @@
-Version 5.12.6 released 
+Version 5.13.0 released 21-May-2026
+- API: Allow chaining timeline activities together (for example, "B starts after successful A", or "C starts when event X starts"). Note you can only express this via the Python API client >=2.0.0 (not the UI).
+- UI: Timeline: Show relations between items/activities.
+- UI: Timeline: Add bottom detail bar for managing activity execution.
+- UI: Fix command form issue when using nested aggregates inside arrays.
+- Security updates
+- PUS post-processor: added a link action to set the CCSDS sequence count for outgoing commands.
+
+
+
+Version 5.12.6 released 1-Apr-2026
 - UI: Full reimplementation of chart tab. Added features:
   - Customize Y-axis zoom range
   - Allow rendering the raw values of a parameter
