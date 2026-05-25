@@ -311,6 +311,82 @@ forwarded via `super.releaseCommand()`.
 
 ---
 
+### 2.4 Python MDB Builder — Time / Non-Time Container Split
+
+Every TM[9,2] packet is either a **time packet** (`apid == 0`, no PUS secondary
+header) or a **non-time packet** (`apid != 0`, full PUS secondary header). Both
+can be handled at the MDB level with two containers and no special preprocessing.
+
+#### Container structure
+
+```python
+# pus_tm_time_container — matches APID=0 only (TM[9,2])
+pus_tm_time_container = Container(
+    name="pus_time_packet",
+    abstract=False,
+    base=ccsds_header.tm_container,
+    entries=[
+        ParameterEntry(rate_exponent),          # byte 6: uint8
+        # if explicit P-field: ParameterEntry(time_pfield),  # byte 7: uint8
+        ParameterEntry(absolute_time),          # basic_time (32-bit) + fractional_time (N-bit)
+        ParameterEntry(onboard_cuctime, offset=-(FRACTIONAL_TIME_SIZE + BASIC_TIME_SIZE))
+    ],
+    condition=EqExpression(ref=ccsds_header.tm_apid, value=0)
+)
+
+# pus_tm_nontime_container — abstract base for all other TM (apid != 0)
+pus_tm_nontime_container = Container(
+    name="pus_space_packet",
+    abstract=True,
+    base=ccsds_header.tm_container,
+    entries=[
+        ParameterEntry(pus_tm_version),
+        ParameterEntry(pus_spacecraft_time_reference_status_member),
+        ParameterEntry(pus_tm_message_type),
+        ParameterEntry(pus_message_type_counter),
+        ParameterEntry(pus_tm_destination_id),
+        # if explicit P-field: ParameterEntry(time_pfield),
+        ParameterEntry(absolute_time),
+        ParameterEntry(onboard_cuctime, offset=-(FRACTIONAL_TIME_SIZE + BASIC_TIME_SIZE))
+    ],
+)
+```
+
+The `onboard_cuctime` negative offset is the standard YAMCS overlay technique:
+the decoded `AbsoluteTimeParameter` covers the same bits as `absolute_time`
+(raw `basic_time` + `fractional_time` integers), matching the `pus-time` pattern
+in pus.xml line 108–112.
+
+#### `onboard_cuctime` encoding
+
+```python
+onboard_cuctime = AbsoluteTimeParameter(
+    encoding=BinaryTimeEncoding(
+        bits=-1,   # size determined by decoder
+        decoder=UnnamedJavaAlgorithm(
+            java=f"""
+            org.yamcs.algo.TimeBinaryDecoder({{
+                type: CUC,
+                epoch: {cuctime_fields.epoch.name},
+                implicitPField: {cuctime_fields.pfield}
+            }})
+            """
+        )
+    )
+)
+```
+
+#### Design decisions and open questions
+
+| Item | Detail |
+|------|--------|
+| `rateExponent` must be in time container | The time packet layout (§4 below) has `rateExponent` at byte 6. `absolute_time.basic_time` must start after it (and after the P-field if explicit), not at byte 6. Without a `rate_exponent` entry, `basic_time` reads the wrong bytes. |
+| Explicit vs implicit P-field | `implicitPField: {pfield}` tells the decoder the P-field is **not** in the packet. If the actual packet carries an explicit P-field byte (as in the XML-based approach in §2.1), the decoder must use `implicitPField: false` and a `time_pfield` entry must appear before `absolute_time`. Verify against actual satellite packet format. |
+| `pfield` must be consistent with time sizes | `CucTime.pfield` encodes the CUC format. Its F-bits must match `FRACTIONAL_TIME_SIZE`: F=2 → 2-byte fine (16 bits), F=3 → 3-byte fine (24 bits). Mismatch silently truncates or over-reads fine time. |
+| `+7` magic in `bits` formula | `(((FRACTIONAL_TIME_SIZE // 8) + (BASIC_TIME_SIZE // 8) + 7) * 8)` hardcodes 7 as the pre-time PUS secondary header byte count (version+sc_time_ref=1, service=1, subservice=1, counter=2, destination=2). Fragile if field sizes change; derive from actual field sizes instead. |
+
+---
+
 ## 3. Gaps and Shortcomings
 
 ### TC[9,1]

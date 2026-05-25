@@ -10,6 +10,26 @@
 PUS ST[20] is the **On-Board Parameter Management** service. It provides capabilities for
 managing on-board parameters, including reading current values and setting new values.
 
+---
+
+### Ground vs. On-board Responsibility (MCS is ground segment only)
+
+| Responsibility | Where |
+|---|---|
+| Send TC[20,1] to request parameter values | **Ground (YAMCS MCS)** — XTCE encodes TC packet |
+| Send TC[20,3] to set parameter values | **Ground (YAMCS MCS)** — XTCE encodes TC packet |
+| Receive and display TM[20,2] parameter value reports | **Ground (YAMCS MCS)** — XTCE decodes TM packet |
+| Maintain the on-board parameter store (param_id → value mapping) | **On-board (satellite)** |
+| Validate param_ids and reject invalid requests (NACK via PUS-1) | **On-board (satellite)** |
+| Apply set-parameter commands and update the parameter store | **On-board (satellite)** |
+| Generate TM[20,2] responses with current parameter values | **On-board (satellite)** |
+
+**YAMCS/MCS implementation = XTCE only (`pus20.xml`). No Java changes to `yamcs-core` are needed for ST[20].**
+
+The `pus20_simulator.py` described in this document lives in the **simulator package** and emulates the satellite's on-board parameter management behavior for ground testing. It is not part of the MCS.
+
+---
+
 ### Key characteristics
 
 | Property | Value |
@@ -57,6 +77,15 @@ param_store: { param_id (uint16) → value (uint32) }
 **Spec §6.20.4.1 + §8.20.2.1**
 
 **Purpose**: Ground requests values for one or more on-board parameters.
+
+**Execution flow**:
+
+```
+[GROUND → SAT]  TC[20,1] uplinked by YAMCS (XTCE-encoded)
+[ON-BOARD]      TC arrives → validate param_ids → lookup values in parameter store
+[ON-BOARD]      Build TM[20,2] response with current values → transmit
+[SAT → GROUND]  TM[20,2] downlinked, decoded by YAMCS via XTCE
+```
 
 **Packet structure (Figure 8-219)**:
 
@@ -121,7 +150,9 @@ CCSDS primary header (6 bytes)
 </MetaCommand>
 ```
 
-**Simulator logic** (`pus20_simulator.py` — already implemented):
+**Simulator (on-board emulation)** (`pus20_simulator.py` — already implemented):
+
+Emulates the satellite-side behavior: receives TC[20,1], looks up the requested param_ids in the on-board parameter store, and transmits TM[20,2] back to ground.
 
 ```python
 def parse_tc_20_1(data):
@@ -145,7 +176,7 @@ def handle_tc(data, addr, tm_sock):
 
 **Spec §6.20.4.1 + §8.20.2.2**
 
-**Purpose**: Reports current values of requested parameters (response to TC[20,1]).
+**Purpose**: Reports current values of requested parameters (response to TC[20,1]). Generated on-board; decoded on the ground by YAMCS via XTCE.
 
 **Packet structure (Figure 8-220)**:
 
@@ -210,7 +241,9 @@ CCSDS primary header (6 bytes)
 </SequenceContainer>
 ```
 
-**Simulator logic** (`pus20_simulator.py` — already implemented):
+**Simulator (on-board emulation)** (`pus20_simulator.py` — already implemented):
+
+Emulates the satellite-side behavior: builds and transmits TM[20,2] with the values retrieved from the on-board parameter store.
 
 ```python
 def build_tm_20_2(params):
@@ -237,6 +270,15 @@ def build_tm_20_2(params):
 **Spec §6.20.4.2 + §8.20.2.3**
 
 **Purpose**: Ground sets new values for one or more on-board parameters.
+
+**Execution flow**:
+
+```
+[GROUND → SAT]  TC[20,3] uplinked by YAMCS (XTCE-encoded)
+[ON-BOARD]      TC arrives → validate param_ids → update values in parameter store
+[ON-BOARD]      Emit PUS-1 acknowledgement (success or failure per param)
+[SAT → GROUND]  PUS-1 ACK/NACK downlinked, received and displayed by YAMCS
+```
 
 **Packet structure (Figure 8-221)**:
 
@@ -309,7 +351,9 @@ Add to `<MetaCommandSet>`:
 </MetaCommand>
 ```
 
-**Simulator logic** (not yet in `pus20_simulator.py` — ~20 lines to add):
+**Simulator (on-board emulation)** (not yet in `pus20_simulator.py` — ~20 lines to add):
+
+Emulates the satellite-side behavior: receives TC[20,3], validates each param_id against the on-board parameter store, and applies the new values. Unknown param_ids are skipped with a warning (matching the on-board NACK behavior defined in §6.20.4.1d).
 
 ```python
 def parse_tc_20_3(data):
@@ -345,21 +389,35 @@ def handle_tc_20_3(entries, tm_sock):
 
 ## c) Gaps / Shortcomings
 
-| # | Subtype | Gap | Impact | Workaround |
-|---|---------|-----|--------|------------|
-| 1 | TM[20,2], TC[20,3] | **"Deduced" value type**: The spec says the value field type/width is derived from the `param_id`. XTCE cannot express type-dependent encoding. | If parameters have mixed types (int8, float, uint64 etc.), a single XTCE aggregate cannot handle them. | Mission convention: fix all on-board parameters to uint32. Document in ICD. |
-| 2 | TC[20,1], TC[20,3] | **Partial execution**: Spec §6.20.4.1f/g says: process all valid param instructions even when some are invalid. XTCE cannot model this per-param validity logic. | Valid params in a mixed TC will still be processed; invalid ones skipped. Cannot be expressed in MDB. | Simulator handles per-param validation in Python; XTCE is only the wire format. |
-| 3 | TC[20,1], TC[20,3] | **param_id enumeration**: Spec says param_id is "enumerated" (from a mission-defined list). XTCE declares it as raw uint16 — no MDB-level enforcement that an ID is valid. | Ground can send any uint16 without YAMCS rejecting it at encoding time. | Acceptable for test/sim use. For flight, add YAMCS argument ranges or enumeration lists. |
+| # | Subtype | Gap | Layer | Impact | Workaround |
+|---|---------|-----|-------|--------|------------|
+| 1 | TM[20,2], TC[20,3] | **"Deduced" value type**: The spec says the value field type/width is derived from the `param_id`. XTCE cannot express type-dependent encoding. | MCS / YAMCS ground (XTCE) | If parameters have mixed types (int8, float, uint64 etc.), a single XTCE aggregate cannot handle them. | Mission convention: fix all on-board parameters to uint32. Document in ICD. |
+| 2 | TC[20,1], TC[20,3] | **Partial execution on-board**: Spec §6.20.4.1f/g says the satellite should process all valid param instructions even when some are invalid. This is purely on-board logic — XTCE encodes the wire format only. | On-board (satellite) | Valid params in a mixed TC will still be processed on-board; invalid ones are skipped. YAMCS has no visibility into per-param on-board validation — it only sees the PUS-1 ACK/NACK. | Simulator handles per-param validation in Python, emulating on-board behavior. XTCE is only the wire format. |
+| 3 | TC[20,1], TC[20,3] | **param_id enumeration**: Spec says param_id is "enumerated" (from a mission-defined list). XTCE declares it as raw uint16 — no MDB-level enforcement that an ID is valid. | MCS / YAMCS ground (XTCE) | Ground can send any uint16 without YAMCS rejecting it at encoding time. The satellite rejects invalid IDs with a NACK. | Acceptable for test/sim use. For flight, add YAMCS argument ranges or enumeration lists. |
+
+---
 
 ### Overall feasibility verdict
 
-**YES — PUS ST[20] (TC[20,1], TM[20,2], TC[20,3]) can be implemented using XTCE standards
-with minor code changes**, provided the mission adopts the uint32 convention for all parameter
-values. The three in-scope subtypes require:
+**YES — PUS ST[20] (TC[20,1], TM[20,2], TC[20,3]) is XTCE-only for the MCS scope.** No Java
+changes to `yamcs-core` are needed. The three in-scope subtypes require only:
 
-- `pus20.xml`: add `TC_20_3` MetaCommand with `AggregateArgumentType` (standard XTCE pattern, ~30 lines)
-- `pus20_simulator.py`: add `parse_tc_20_3` + `handle_tc_20_3` + dispatch (~20 lines)
+- **MCS (XTCE)**: `pus20.xml` needs `TC_20_3` MetaCommand with `AggregateArgumentType` (standard XTCE pattern, ~30 lines). TC[20,1] and TM[20,2] are already implemented.
+- **Simulator (on-board emulation)**: `pus20_simulator.py` needs `parse_tc_20_3` + `handle_tc_20_3` + dispatch (~20 lines) to emulate the satellite-side parameter store update logic.
 
 No structural XTCE workarounds are needed (unlike ST[19] where an embedded raw TC packet
 required a non-standard length prefix). The deduced-value issue is resolved by a documented
 mission convention, not a workaround.
+
+#### Two-layer artifact table
+
+| Layer | Artifact | Status |
+|---|---|---|
+| **MCS / YAMCS ground** | `pus20.xml` — TC[20,1] MetaCommand (XTCE encoding) | Already implemented |
+| **MCS / YAMCS ground** | `pus20.xml` — TM[20,2] SequenceContainer (XTCE decoding) | Already implemented |
+| **MCS / YAMCS ground** | `pus20.xml` — TC[20,3] MetaCommand (XTCE encoding) | Minor addition required (~30 lines) |
+| **MCS / YAMCS ground** | `examples/pus/src/main/yamcs/etc/yamcs.pus.yaml` — MDB reference | Verify `pus20.xml` is listed |
+| **Simulator (on-board emulation)** | `pus20_simulator.py` — `parse_tc_20_1` + `handle_tc` (TC[20,1] + TM[20,2] response) | Already implemented |
+| **Simulator (on-board emulation)** | `pus20_simulator.py` — `parse_tc_20_3` + `handle_tc_20_3` (TC[20,3] handling) | Not yet implemented |
+
+> **Key finding:** YAMCS/MCS sends TC[20,1] and TC[20,3] (ground → satellite) and receives TM[20,2] (satellite → ground). All on-board logic — maintaining the parameter store, validating param_ids, applying set-value commands, and generating TM[20,2] responses — executes on the satellite. The simulator emulates this on-board behavior for ground testing. No `yamcs-core` Java changes are required.

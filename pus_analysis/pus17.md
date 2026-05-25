@@ -33,12 +33,29 @@ TM[17,2].
 > The spec also defines TC[17,3] (on-board connection test between two on-board processes) and
 > TM[17,4], but these are **not in scope** for this implementation.
 
+### Ground vs. On-board Responsibility (MCS is ground segment only)
+
+| Responsibility | Where |
+|---|---|
+| Construct and send TC[17,1] to the spacecraft | **Ground (YAMCS MCS)** — XTCE encodes the TC packet |
+| Receive and display TM[17,2] | **Ground (YAMCS MCS)** — XTCE decodes the TM packet |
+| Receive TC[17,1], validate it, and generate TM[17,2] | **On-board (satellite)** |
+| Maintain end-to-end round-trip state | **On-board (satellite)** — ground only observes the result |
+
+**YAMCS/MCS implementation = XTCE only (`pus17.xml`). No Java changes to `yamcs-core` are needed for ST[17].**
+
+The `pus17_simulator.py` described in this document emulates the satellite's on-board behavior (receiving TC[17,1] and replying with TM[17,2]) for ground testing. It is not part of the MCS.
+
+---
+
 ### End-to-end semantics
 
-1. Ground operator sends TC[17,1]
-2. Spacecraft test subservice receives and validates the TC
-3. Spacecraft generates TM[17,2] (no payload, just the header)
-4. Ground receives TM[17,2] — confirms both uplink and downlink are live
+1. **[GROUND]** Ground operator sends TC[17,1] via YAMCS
+2. **[GROUND → SAT]** TC[17,1] is transmitted over the uplink
+3. **[ON-BOARD]** Spacecraft test subservice receives and validates the TC
+4. **[ON-BOARD]** Spacecraft generates TM[17,2] (no payload, just the header)
+5. **[SAT → GROUND]** TM[17,2] is transmitted over the downlink
+6. **[GROUND]** YAMCS receives TM[17,2] — confirms both uplink and downlink are live
 
 The reception of TM[17,2] on the ground confirms:
 - Uplink path (TC) is operational
@@ -50,6 +67,8 @@ The reception of TM[17,2] on the ground confirms:
 ## b) Per-subtype Implementation Plan
 
 ### TC[17,1] — Perform are-you-alive connection test
+
+> **Layer**: **GROUND (YAMCS MCS)** — XTCE encodes this TC for uplink. The on-board software handles execution after receipt.
 
 **PUS Spec §8.17.2.1:**
 - Service type = 17, subtype = 1
@@ -97,7 +116,9 @@ Replace `00AA` with the chosen APID in 11-bit hex (e.g. APID=170 → `0xAA` → 
 - `ccsds-length` = total_bytes_after_length_field − 1 = (8 − 6) − 1 = 1 → `0x0001`
 - This is the **zero-argument MetaCommand** pattern — the simplest possible TC in XTCE
 
-**Python simulator code:**
+**Simulator (on-board emulation):**
+
+The following code emulates the satellite-side behavior of receiving TC[17,1] and replying with TM[17,2]. This runs in `pus17_simulator.py` — it is not part of YAMCS/MCS.
 
 ```python
 def handle_tc(data: bytes, addr, tm_sock: socket.socket) -> None:
@@ -117,6 +138,8 @@ No payload parsing beyond the secondary header bytes is needed.
 ---
 
 ### TM[17,2] — Are-you-alive connection test report
+
+> **Layer**: **GROUND (YAMCS MCS)** — XTCE decodes this TM packet received from the spacecraft. The on-board software is responsible for generating it.
 
 **PUS Spec §8.17.2.2:**
 - Service type = 17, subtype = 2
@@ -187,7 +210,9 @@ Total packet size: **8 bytes**.
   `service_subtype` as telemetry parameters; no additional parameters are defined
 - This is the simplest possible SequenceContainer in XTCE
 
-**Python simulator code:**
+**Simulator (on-board emulation):**
+
+The following code emulates the satellite-side behavior of building and sending TM[17,2] in response to TC[17,1]. This runs in `pus17_simulator.py` — it is not part of YAMCS/MCS.
 
 ```python
 _seq_count = 0
@@ -228,19 +253,36 @@ def build_tm_17_2() -> bytes:
 
 ---
 
+## Overall Verdict
+
+**MCS scope (YAMCS ground)**: XTCE only — `pus17.xml` is sufficient. No Java changes to `yamcs-core` are needed for ST[17].
+
+**Simulator scope (on-board emulation)**: `pus17_simulator.py` emulates the satellite side for ground testing. It is not part of the MCS.
+
+### Two-layer artifact table
+
+| Artifact | Layer | Purpose |
+|---|---|---|
+| `pus17.xml` | **MCS / YAMCS ground** | XTCE definition: encodes TC[17,1] for uplink; decodes TM[17,2] from downlink |
+| `pus17_simulator.py` | **Simulator (on-board emulation)** | Receives TC[17,1], validates it, generates and sends TM[17,2] back to YAMCS |
+
+> **Key finding**: All on-board logic (receiving the TC, validating it, building and sending TM[17,2]) is purely a satellite responsibility. YAMCS/MCS only defines the packet shapes in XTCE — it does not participate in on-board execution. The simulator emulates this satellite behavior for test purposes only.
+
+---
+
 ## Recommended Implementation Sequence
 
-1. Add `pus17.xml` to `test_yamcs/src/main/yamcs/mdb/` (modelled on `pus20.xml`)
-2. Register it in `yamcs.pus-test.yaml` MDB list
-3. Write `pus17_simulator.py` (~50 lines): TC listener + TM builder
-4. Smoke-test: send TC[17,1] from YAMCS UI → confirm TM[17,2] appears in parameter view
+1. **[GROUND]** Add `pus17.xml` to `test_yamcs/src/main/yamcs/mdb/` (modelled on `pus20.xml`)
+2. **[GROUND]** Register it in `yamcs.pus-test.yaml` MDB list
+3. **[Simulator / on-board emulation]** Write `pus17_simulator.py` (~50 lines): TC listener + TM builder
+4. **[GROUND]** Smoke-test: send TC[17,1] from YAMCS UI → confirm TM[17,2] appears in parameter view
 
 ST[17] makes an excellent **integration smoke test** for a new YAMCS + simulator setup — if TC[17,1]
 round-trips to TM[17,2], the entire CCSDS framing, XTCE decoding, and UDP link stack is proven.
 
 ---
 
-## Full pus17.xml (Reference Implementation)
+## Full pus17.xml (Reference Implementation — MCS / YAMCS ground layer)
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -344,7 +386,7 @@ round-trips to TM[17,2], the entire CCSDS framing, XTCE decoding, and UDP link s
 
 ---
 
-## Full pus17_simulator.py (Reference Implementation)
+## Full pus17_simulator.py (Reference Implementation — Simulator / on-board emulation layer)
 
 ```python
 #!/usr/bin/env python3

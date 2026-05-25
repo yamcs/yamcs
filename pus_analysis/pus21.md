@@ -5,6 +5,25 @@
 
 ---
 
+## Ground vs. On-board Responsibility
+
+| Concern | YAMCS / MCS (ground) | Satellite / On-board software |
+|---------|----------------------|-------------------------------|
+| Uplink TC[21,1..6,8,9,11,13] to spacecraft | **YES** — YAMCS encodes and transmits all TCs | No (receives them) |
+| Sequence storage (SEQUENCE_STORE) | No — ground has no visibility into on-board store | **YES** — OBS maintains the authoritative store |
+| Sequence activation / scheduling / execution | No — ground only sends the activate command | **YES** — OBS releases each embedded TC per the delay schedule |
+| TC relay (releasing embedded TCs during execution) | No | **YES** — OBS sends each embedded TC to target subsystems |
+| Receive and decode TM[21,7,10,12,14] telemetry | **YES** — YAMCS decodes incoming packets via XTCE | No (transmits them) |
+| Display / archive telemetry | **YES** — YAMCS standard pipeline | No |
+| Checksum computation for TC[21,9] | No — ground requests it | **YES** — OBS computes CRC over stored sequence and replies with TM[21,10] |
+
+> **YAMCS/MCS implementation = XTCE only. No Java changes to `yamcs-core` are needed for ST[21].**
+> All sequence execution, TC relay, and on-board state management run entirely within the satellite's on-board software. The simulator (Python/Java) emulates this on-board behaviour for ground testing.
+
+**Simulator note**: The simulator emulates the satellite's on-board ST[21] software — it maintains SEQUENCE_STORE, manages sequence threads, relays embedded TCs, and generates TM replies. It is **not** part of the YAMCS/MCS ground implementation.
+
+---
+
 ## a) General Context
 
 PUS ST[21] is the **Request Sequencing** service. It manages on-board sequences of TC requests,
@@ -18,9 +37,9 @@ on those sequences.
 |----------|-------|
 | PUS service type | 21 |
 | Sub-service | Request sequencing subservice (single subservice per §6.21.2.1) |
-| State maintained | SEQUENCE_STORE: dict[seq_id → RequestSequence] |
-| Background tasks | One execution thread per active ("under execution") sequence |
-| New pus_dt.xml types needed | `string16` (fixed-string, 128 bits) if not already present |
+| State maintained | **[ON-BOARD]** SEQUENCE_STORE: dict[seq_id → RequestSequence] — on-board only; not visible to YAMCS ground |
+| Background tasks | **[ON-BOARD]** One execution thread per active ("under execution") sequence — on-board only |
+| New pus_dt.xml types needed | `string16` (fixed-string, 128 bits) if not already present — MCS/ground XTCE |
 | Major XTCE limitations | (1) Embedded TC packets inside repeating array — same gap as ST[19]. (2) Variable-length + optional file path strings in TC[21,2]/TC[21,8]. |
 
 ### Spec-defined message types (§8.21.2)
@@ -61,14 +80,17 @@ RequestSequence:
 
 ### Sequence lifecycle
 
+All steps below occur **on-board**. Ground sends TCs to trigger each transition; YAMCS is responsible only for uplink (steps marked **[GROUND → SAT]**). Everything else is on-board logic.
+
 ```
-load (TC[21,1] or TC[21,2])  → status = "inactive"
-activate (TC[21,4])          → status = "under_execution"
-                               start release thread
-  [thread releases each TC, waits delay, continues]
-  [after last TC + delay]    → status = "inactive"
-abort (TC[21,5])             → cancel thread, status = "inactive"
-unload (TC[21,3])            → only if inactive; remove from store
+[GROUND → SAT]  load (TC[21,1] or TC[21,2])  → [ON-BOARD] status = "inactive"
+[GROUND → SAT]  activate (TC[21,4])           → [ON-BOARD] status = "under_execution"
+                                                 [ON-BOARD] start release thread
+                [ON-BOARD] thread releases each TC, waits delay, continues
+                [ON-BOARD] after last TC + delay → status = "inactive"
+[GROUND → SAT]  abort (TC[21,5])              → [ON-BOARD] cancel thread, status = "inactive"
+[GROUND → SAT]  unload (TC[21,3])             → [ON-BOARD] only if inactive; remove from store
+[ON-BOARD]      (periodic or on-request)      → [SAT → GROUND] TM[21,7/10/12/14] reports
 ```
 
 TC[21,8] is a combined load-by-reference + activate in one TC.
@@ -83,7 +105,7 @@ TC[21,8] is a combined load-by-reference + activate in one TC.
 
 **Spec §6.21.5.2 + §8.21.2.1**
 
-**Purpose**: Ground sends the full sequence content (TC packets + delays) to be loaded on-board.
+**Purpose**: **[GROUND → SAT]** Ground encodes and uplinks the full sequence content (TC packets + delays); the on-board software receives it and loads it into SEQUENCE_STORE.
 
 **Packet structure (Figure 8-228)**:
 
@@ -146,7 +168,7 @@ inside an array.
 </MetaCommand>
 ```
 
-**Simulator logic**:
+**Simulator (on-board emulation)**:
 
 ```python
 def parse_tc_21_1(data):
@@ -162,6 +184,7 @@ def parse_tc_21_1(data):
     return seq_id, entries
 
 def handle_tc_21_1(data):
+    # [ON-BOARD] Receive TC from ground, parse, store in on-board SEQUENCE_STORE
     seq_id, entries = parse_tc_21_1(data)
     if seq_id in SEQUENCE_STORE:
         log.warning("TC[21,1] seq '%s' already loaded, rejecting", seq_id)
@@ -178,7 +201,7 @@ def handle_tc_21_1(data):
 
 **Spec §6.21.5.3 + §8.21.2.2**
 
-**Purpose**: Ground points to an on-board file; the on-board software loads the sequence from it.
+**Purpose**: **[GROUND → SAT]** Ground uplinks a reference (file path) pointing to an on-board file; **[ON-BOARD]** the on-board software reads and loads the sequence from its local filesystem.
 
 **Packet structure (Figure 8-229)**:
 
@@ -215,7 +238,7 @@ request_sequence_ID   (fixed character-string)
 <!-- TC_21_2_with_path: seq_id + raw path bytes (parsed in Python) -->
 ```
 
-**Simulator logic**:
+**Simulator (on-board emulation)**:
 
 ```python
 def parse_tc_21_2(data):
@@ -230,6 +253,7 @@ def parse_tc_21_2(data):
     return seq_id, repo_path, file_name
 
 def handle_tc_21_2(data):
+    # [ON-BOARD] Receive TC from ground; look up file on the on-board filesystem and load
     seq_id, repo_path, file_name = parse_tc_21_2(data)
     if seq_id in SEQUENCE_STORE:
         log.warning("TC[21,2] seq '%s' already loaded", seq_id)
@@ -248,7 +272,7 @@ def handle_tc_21_2(data):
 
 **Spec §6.21.5.4 + §8.21.2.3**
 
-**Purpose**: Remove a loaded request sequence from the on-board store.
+**Purpose**: **[GROUND → SAT]** Ground uplinks an unload command; **[ON-BOARD]** the on-board software removes the named sequence from its store (only if it is not currently executing).
 
 **Packet structure (Figure 8-230)**:
 
@@ -275,10 +299,11 @@ request_sequence_ID   (fixed character-string)
 </MetaCommand>
 ```
 
-**Simulator logic**:
+**Simulator (on-board emulation)**:
 
 ```python
 def handle_tc_21_3(data):
+    # [ON-BOARD] Receive unload TC from ground; remove sequence from on-board store if inactive
     seq_id = data[8:24].decode('ascii').rstrip('\x00')
     seq = SEQUENCE_STORE.get(seq_id)
     if seq is None or seq.status == "under_execution":
@@ -296,7 +321,7 @@ def handle_tc_21_3(data):
 
 **Spec §6.21.5.5 + §8.21.2.4**
 
-**Purpose**: Start releasing the requests in a loaded sequence.
+**Purpose**: **[GROUND → SAT]** Ground uplinks the activate command; **[ON-BOARD]** the on-board software begins releasing embedded TC requests from the named sequence according to the configured inter-request delays.
 
 **Packet structure (Figure 8-231)**:
 
@@ -323,10 +348,11 @@ request_sequence_ID   (fixed character-string)
 </MetaCommand>
 ```
 
-**Simulator logic**:
+**Simulator (on-board emulation)**:
 
 ```python
 def handle_tc_21_4(data):
+    # [ON-BOARD] Receive activate TC from ground; start on-board execution thread
     seq_id = data[8:24].decode('ascii').rstrip('\x00')
     seq = SEQUENCE_STORE.get(seq_id)
     if seq is None or seq.status == "under_execution":
@@ -338,6 +364,7 @@ def handle_tc_21_4(data):
     log.info("TC[21,4] activated seq '%s'", seq_id)
 
 def _run_sequence(seq):
+    # [ON-BOARD] Release each embedded TC per its inter-request delay (on-board logic only)
     for raw_tc, delay_ms in seq.entries:
         TC_RELAY_SOCK.sendto(raw_tc, TC_RELAY_ADDR)
         time.sleep(delay_ms / 1000.0)
@@ -354,7 +381,7 @@ def _run_sequence(seq):
 
 **Spec §6.21.5.7 + §8.21.2.5**
 
-**Purpose**: Stop a running sequence and reset its status to inactive.
+**Purpose**: **[GROUND → SAT]** Ground uplinks an abort command; **[ON-BOARD]** the on-board software stops the running sequence and resets its status to inactive.
 
 **Packet structure (Figure 8-232)**:
 
@@ -366,10 +393,11 @@ request_sequence_ID   (fixed character-string)
 
 **XTCE implementation**: Same pattern as TC[21,3]/TC[21,4] with subtype=5.
 
-**Simulator logic**:
+**Simulator (on-board emulation)**:
 
 ```python
 def handle_tc_21_5(data):
+    # [ON-BOARD] Receive abort TC from ground; signal execution thread to stop
     seq_id = data[8:24].decode('ascii').rstrip('\x00')
     seq = SEQUENCE_STORE.get(seq_id)
     if seq is None or seq.status == "inactive":
@@ -387,7 +415,7 @@ def handle_tc_21_5(data):
 
 **Spec §6.21.6 + §8.21.2.6**
 
-**Purpose**: Ground requests the execution status of all loaded sequences.
+**Purpose**: **[GROUND → SAT]** Ground uplinks a status-report request; **[ON-BOARD]** the on-board software iterates SEQUENCE_STORE and replies with TM[21,7]. **[SAT → GROUND]** YAMCS receives and decodes TM[21,7].
 
 **Packet structure**: Application data field omitted (zero payload).
 
@@ -406,7 +434,7 @@ def handle_tc_21_5(data):
 </MetaCommand>
 ```
 
-**Simulator logic**: Iterates SEQUENCE_STORE, builds TM[21,7].
+**Simulator (on-board emulation)**: **[ON-BOARD]** Iterates SEQUENCE_STORE, builds and downlinks TM[21,7].
 
 **XTCE status**: Fully compatible.
 
@@ -416,7 +444,7 @@ def handle_tc_21_5(data):
 
 **Spec §6.21.6 + §8.21.2.7**
 
-**Purpose**: Reports the identifier and execution status of every currently loaded sequence.
+**Purpose**: **[SAT → GROUND]** On-board software downlinks a status report listing all loaded sequences and their execution state; **[GROUND]** YAMCS receives and decodes it via the XTCE definition below.
 
 **Packet structure (Figure 8-233)**:
 
@@ -468,10 +496,11 @@ Execution status: `inactive`=0, `under execution`=1 (Table 8-22).
 </SequenceContainer>
 ```
 
-**Simulator logic**:
+**Simulator (on-board emulation)**:
 
 ```python
 def build_tm_21_7() -> bytes:
+    # [ON-BOARD] Build TM report from on-board SEQUENCE_STORE and downlink to ground
     entries = list(SEQUENCE_STORE.values())
     n = len(entries)
     user_data = struct.pack(">B", n)
@@ -490,14 +519,13 @@ def build_tm_21_7() -> bytes:
 
 **Spec §6.21.5.6 + §8.21.2.8**
 
-**Purpose**: Combined TC[21,2] + TC[21,4] in one command.
+**Purpose**: **[GROUND → SAT]** Combined TC[21,2] + TC[21,4] uplinkable in one command; **[ON-BOARD]** the on-board software loads the sequence from its filesystem and immediately starts execution.
 
 **Packet structure (Figure 8-234)**: Identical to TC[21,2] (seq_id + optional file path).
 
 **XTCE implementation**: Same dual-MetaCommand approach as TC[21,2], with subtype=8.
 
-**Simulator logic**: Parse same as TC[21,2]; after loading, immediately activate (set status to
-`under_execution` and start `_run_sequence` thread).
+**Simulator (on-board emulation)**: **[ON-BOARD]** Parse same as TC[21,2]; after loading, immediately activate (set status to `under_execution` and start `_run_sequence` thread).
 
 **XTCE status**: Partial (same workaround as TC[21,2]).
 
@@ -507,7 +535,7 @@ def build_tm_21_7() -> bytes:
 
 **Spec §6.21.7 + §8.21.2.9**
 
-**Purpose**: Ground requests an integrity checksum of a loaded sequence.
+**Purpose**: **[GROUND → SAT]** Ground uplinks a checksum request; **[ON-BOARD]** the on-board software computes a CRC over the stored sequence and replies with TM[21,10]. **[SAT → GROUND]** YAMCS receives and decodes TM[21,10].
 
 **Packet structure (Figure 8-235)**:
 
@@ -517,10 +545,11 @@ request_sequence_ID   (fixed character-string)
 
 **XTCE implementation**: Same as TC[21,3] with subtype=9.
 
-**Simulator logic**:
+**Simulator (on-board emulation)**:
 
 ```python
 def handle_tc_21_9(data, tm_sock):
+    # [ON-BOARD] Receive checksum request from ground; compute CRC over on-board sequence; downlink TM[21,10]
     seq_id = data[8:24].decode('ascii').rstrip('\x00')
     seq = SEQUENCE_STORE.get(seq_id)
     if seq is None:
@@ -540,7 +569,7 @@ def handle_tc_21_9(data, tm_sock):
 
 **Spec §6.21.7 + §8.21.2.10**
 
-**Purpose**: Reports the computed checksum of the requested sequence.
+**Purpose**: **[SAT → GROUND]** On-board software downlinks the computed checksum of the requested sequence; **[GROUND]** YAMCS receives and decodes it via the XTCE definition below.
 
 **Packet structure (Figure 8-236)**:
 
@@ -569,10 +598,11 @@ def handle_tc_21_9(data, tm_sock):
 </SequenceContainer>
 ```
 
-**Simulator logic**:
+**Simulator (on-board emulation)**:
 
 ```python
 def build_tm_21_10(seq_id: str, checksum: int) -> bytes:
+    # [ON-BOARD] Build checksum report and downlink to ground
     seq_id_bytes = seq_id.encode('ascii').ljust(16, b'\x00')[:16]
     user_data = seq_id_bytes + struct.pack(">H", checksum)
     return _build_tm_packet(21, 10, user_data)
@@ -586,7 +616,7 @@ def build_tm_21_10(seq_id: str, checksum: int) -> bytes:
 
 **Spec §6.21.8 + §8.21.2.11**
 
-**Purpose**: Ground requests the full content (entries) of a loaded sequence.
+**Purpose**: **[GROUND → SAT]** Ground uplinks a content-report request; **[ON-BOARD]** the on-board software reads its SEQUENCE_STORE and replies with TM[21,12]. **[SAT → GROUND]** YAMCS receives and decodes TM[21,12].
 
 **Packet structure (Figure 8-237)**:
 
@@ -596,7 +626,7 @@ request_sequence_ID   (fixed character-string)
 
 **XTCE implementation**: Same as TC[21,3] with subtype=11.
 
-**Simulator logic**: Validates seq loaded; builds and sends TM[21,12].
+**Simulator (on-board emulation)**: **[ON-BOARD]** Validates sequence is loaded in on-board store; builds and downlinks TM[21,12].
 
 **XTCE status**: Fully compatible.
 
@@ -606,7 +636,7 @@ request_sequence_ID   (fixed character-string)
 
 **Spec §6.21.8 + §8.21.2.12**
 
-**Purpose**: Reports the full ordered list of entries (TC packets + delays) for a sequence.
+**Purpose**: **[SAT → GROUND]** On-board software downlinks the full ordered list of entries (TC packets + delays) for the requested sequence; **[GROUND]** YAMCS receives and partially decodes it (seq_id + N via XTCE; entry body via Python workaround).
 
 **Packet structure (Figure 8-238)**:
 
@@ -618,10 +648,11 @@ request_sequence_ID   (fixed character-string)
 
 Same embedded-TC limitation as TC[21,1] — XTCE declares seq_id + N only; Python builds the rest.
 
-**Simulator logic**:
+**Simulator (on-board emulation)**:
 
 ```python
 def build_tm_21_12(seq) -> bytes:
+    # [ON-BOARD] Read sequence entries from on-board store; build and downlink TM content report
     seq_id_bytes = seq.id.encode('ascii').ljust(16, b'\x00')[:16]
     n = len(seq.entries)
     user_data = seq_id_bytes + struct.pack(">B", n)
@@ -639,7 +670,7 @@ def build_tm_21_12(seq) -> bytes:
 
 **Spec §6.21.5.8 + §8.21.2.13**
 
-**Purpose**: Abort every sequence currently under execution; send a single TM[21,14] listing them.
+**Purpose**: **[GROUND → SAT]** Ground uplinks a global abort command; **[ON-BOARD]** the on-board software aborts every sequence currently under execution and downlinks a single TM[21,14] listing them. **[SAT → GROUND]** YAMCS receives and decodes TM[21,14].
 
 **Packet structure**: Application data field omitted (zero payload).
 
@@ -658,10 +689,11 @@ def build_tm_21_12(seq) -> bytes:
 </MetaCommand>
 ```
 
-**Simulator logic**:
+**Simulator (on-board emulation)**:
 
 ```python
 def handle_tc_21_13(tm_sock):
+    # [ON-BOARD] Receive global abort from ground; abort all running sequences; downlink TM[21,14]
     aborted = []
     for seq in SEQUENCE_STORE.values():
         if seq.status == "under_execution":
@@ -680,7 +712,7 @@ def handle_tc_21_13(tm_sock):
 
 **Spec §6.21.5.8 + §8.21.2.14**
 
-**Purpose**: Reports the identifiers of all sequences that were aborted by TC[21,13].
+**Purpose**: **[SAT → GROUND]** On-board software downlinks the identifiers of all sequences aborted by TC[21,13]; **[GROUND]** YAMCS receives and decodes it via the XTCE definition below.
 
 **Packet structure (Figure 8-239)**:
 
@@ -723,10 +755,11 @@ def handle_tc_21_13(tm_sock):
 </SequenceContainer>
 ```
 
-**Simulator logic**:
+**Simulator (on-board emulation)**:
 
 ```python
 def build_tm_21_14(aborted_ids: list) -> bytes:
+    # [ON-BOARD] Build aborted-sequences report and downlink to ground
     n = len(aborted_ids)
     user_data = struct.pack(">B", n)
     for sid in aborted_ids:
@@ -746,15 +779,20 @@ def build_tm_21_14(aborted_ids: list) -> bytes:
 | 2 | TC[21,2], TC[21,8] | **Variable-length + optional file path strings** — XTCE cannot express variable-length strings or optional blocks. | Two different packet layouts (with/without path) cannot share a single MetaCommand. | Two MetaCommand variants per subtype (`_no_path` / `_with_path`). Path strings encoded as length-prefixed byte sequences; Python decodes them. |
 | 3 | All | **request_sequence_ID length** — spec says "fixed character-string" but does not define the length. | Wire format ambiguous without a mission decision. | Mission fixes to 16 bytes (128 bits); document in ICD. |
 | 4 | TC[21,1], TM[21,12] | **`delay: relative time`** — PUS relative time encoding is not defined at this spec level. | Cannot express duration without a mission encoding decision. | Mission convention: encode delay as **uint32 milliseconds** (big-endian). |
-| 5 | TC[21,1], TM[21,12] | **TC relay logic** — when a sequence executes, the embedded TC packets must be "released" (sent to the target subsystem). YAMCS has no native mechanism for this. | Cannot be modeled in MDB at all. | Simulator extracts raw TC bytes from the sequence and relays them via UDP to the appropriate destination; YAMCS only sees the ST[21] wrapper packet. |
+| 5 | TC[21,1], TM[21,12] | **TC relay logic** — when a sequence executes, the embedded TC packets must be "released" (sent to the target subsystem). This is **on-board logic only**; YAMCS/MCS is not involved in sequence execution. | Not a YAMCS gap — YAMCS only uplinks the TC[21,x] commands and decodes returned TM. | **[ON-BOARD]** The on-board software (emulated by simulator) extracts raw TC bytes from the sequence and relays them to target subsystems; YAMCS only sees the ST[21] wrapper packet. |
 
 ### Overall feasibility verdict
 
-**YES — PUS ST[21] (all 14 in-scope subtypes) can be implemented with XTCE + simulator code**,
-with two categories of workarounds:
+**YES — PUS ST[21] (all 14 in-scope subtypes) can be implemented for the MCS ground scope with XTCE only. No Java changes to `yamcs-core` are needed.**
+
+All sequence storage, scheduling, execution, TC relay, and checksum computation are **on-board responsibilities**. YAMCS/MCS is responsible only for:
+- Encoding and uplinking TC[21,1..6,8,9,11,13] (XTCE MetaCommand definitions).
+- Receiving and decoding TM[21,7,10,12,14] (XTCE SequenceContainer definitions).
+
+Two categories of XTCE workarounds are needed for the ground (MCS) XTCE definitions:
 
 1. **Embedded TC arrays** (TC[21,1], TM[21,12]): use the established ST[19] length-prefix
-   workaround. XTCE covers only the fixed header; Python handles the entry body.
+   workaround. XTCE covers only the fixed header; Python/ground-tool handles the entry body.
 
 2. **Optional variable-length file paths** (TC[21,2], TC[21,8]): use dual MetaCommand variants
    (`_no_path` / `_with_path`).
@@ -762,15 +800,29 @@ with two categories of workarounds:
 The remaining 10 subtypes are fully XTCE-compatible using standard patterns (fixed-string
 arguments, zero-payload MetaCommands, AggregateParameterType arrays).
 
+#### Two-layer artifact summary
+
+| Layer | Artifact | Purpose |
+|-------|----------|---------|
+| **MCS / YAMCS ground** | `pus21.xml` (XTCE) | TC encoding (MetaCommands) + TM decoding (SequenceContainers) |
+| **MCS / YAMCS ground** | Ground tool / script (Python, optional) | Assembles variable-length TC[21,1] entry body; parses TM[21,12] entry body |
+| **Simulator (on-board emulation)** | `Pus21Service.java` / `pus21_sim.py` | Emulates on-board SEQUENCE_STORE, sequence execution, TC relay, TM generation |
+
+> **Key finding**: YAMCS/MCS is purely a TC uplink and TM decode layer for ST[21]. All sequencing intelligence — loading, activating, scheduling, TC relay, abort, checksum — runs on-board. The simulator emulates this on-board intelligence for ground testing; it is not part of the operational YAMCS/MCS software.
+
 ---
 
-## d) YAMCS-Native Implementation (Java)
+## d) Simulator On-board Emulation (Java)
 
-Given the MDB is generated separately, the following Java-side changes are required.
+> **Note**: This section describes the **simulator** implementation that emulates on-board ST[21] behaviour for ground testing. These are **not** changes to `yamcs-core` or the operational MCS ground software. The MCS ground implementation is XTCE-only (`pus21.xml`).
+
+The following Java changes are required **in the simulator only** to emulate the on-board Request Sequencing service.
 
 ### New file: `Pus21Service.java`
 
 **Path**: `simulator/src/main/java/org/yamcs/simulator/pus/Pus21Service.java`
+
+**Layer**: Simulator (on-board emulation) — NOT part of `yamcs-core` or YAMCS MCS ground software.
 
 Follows the same pattern as `Pus11Service.java`. Key design points:
 
@@ -806,6 +858,8 @@ TM subtype 7, 10, 12, 14 are generated inside the TC handlers above (not dispatc
 
 ### Modified file: `PusSimulator.java`
 
+**Layer**: Simulator (on-board emulation) — NOT part of `yamcs-core` or YAMCS MCS ground software.
+
 Three changes needed:
 
 **1. Field declaration** (alongside other service fields):
@@ -832,6 +886,8 @@ case 21 -> pus21Service.executeTc(commandPacket);
 
 ### Optional: `yamcs.pus.yaml` MDB entry
 
+**Layer**: MCS / YAMCS ground — this registers the XTCE definitions with the YAMCS ground server.
+
 Once the `pus21.xml` MDB file is generated, add it to the `mdb` list:
 
 ```yaml
@@ -841,21 +897,25 @@ Once the `pus21.xml` MDB file is generated, add it to the `mdb` list:
 
 ---
 
-### Gap summary for Java implementation
+### Gap summary for simulator (on-board emulation) Java implementation
 
-| Gap | Impact | How handled |
-|-----|--------|-------------|
-| TC[21,1] entry body (variable-length TC + delay) | Cannot be parsed by YAMCS MDB alone | `Pus21Service.loadDirectly()` reads the entry block manually from `getUserDataBuffer()` |
-| TC[21,2]/TC[21,8] file loading | No filesystem in simulator | NACK with error code 14; ground must use TC[21,1] instead |
-| TC relay (gap #5 from §c) | YAMCS has no native ST[21] executor | `runSequence()` calls `pusSimulator.processTc()` — same approach as ST[11] scheduled TC release |
-| TM[21,12] variable-length content | Cannot be built by YAMCS alone | Built entirely in `reportSequenceContent()` by manual ByteBuffer assembly |
+> These gaps are all simulator/on-board concerns. They are not MCS/YAMCS ground gaps — YAMCS ground only uplinks TCs and decodes TM.
 
+| Gap | Layer | Impact | How handled |
+|-----|-------|--------|-------------|
+| TC[21,1] entry body (variable-length TC + delay) | **Simulator (on-board emulation)** | On-board must parse the mission-convention `tc_len:uint16` prefix format | `Pus21Service.loadDirectly()` reads the entry block manually from `getUserDataBuffer()` |
+| TC[21,2]/TC[21,8] file loading | **Simulator (on-board emulation)** | Simulator has no on-board filesystem | NACK with error code 14; ground must use TC[21,1] instead for simulator testing |
+| TC relay during sequence execution | **Simulator (on-board emulation)** | On-board must relay embedded TCs to target subsystems | `runSequence()` calls `pusSimulator.processTc()` — same approach as ST[11] scheduled TC release |
+| TM[21,12] variable-length content | **Simulator (on-board emulation)** | On-board builds content report with variable-length entry body | Built entirely in `reportSequenceContent()` by manual ByteBuffer assembly |
 
-Configuration needed (not yet changed)
-In processors.yaml, replace StreamTcCommandReleaser with:
+**Configuration note** (processors.yaml — simulator config, not MCS ground):
+
+```yaml
+# In processors.yaml, replace StreamTcCommandReleaser with:
 - class: org.yamcs.pus.Pus21RequestSequencingService
   args:
-  apid: 1
-  timeEncoding:
-  implicitPfield: false
-  pfield: 0x2f
+    apid: 1
+    timeEncoding:
+      implicitPfield: false
+      pfield: 0x2f
+```

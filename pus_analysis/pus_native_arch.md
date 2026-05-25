@@ -19,6 +19,9 @@ Architecture learnings for implementing PUS services natively in yamcs-core
 [Ground Station / Simulator]
 ```
 
+### THIS APPLICATION YAMCS IS GOING TO BE GROUNDSTATION ONLY.
+### SIMULATOR CODE/Refernces are for testing purposes
+
 ### Configuration files
 
 | File | Scope | Purpose |

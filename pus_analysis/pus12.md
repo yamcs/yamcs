@@ -6,6 +6,25 @@
 
 ST[12] On-board Monitoring provides the capability to monitor on-board parameters against ground-defined conditions and raise events (via ST[05]) when violations occur. The satellite evaluates monitoring rules autonomously — no ground contact required during monitoring.
 
+---
+
+### Ground vs. On-board Responsibility (MCS is ground segment only)
+
+| Responsibility | Where |
+|---|---|
+| Send PMON configuration TCs (add, delete, enable, disable, modify) | **Ground (YAMCS MCS)** — XTCE encodes TC packets |
+| Receive and display TM reports (TM[12,9], TM[12,12], TM[12,14]) | **Ground (YAMCS MCS)** — XTCE decodes TM packets |
+| Maintain the PMON list at runtime | **On-board (satellite)** |
+| Run the periodic parameter evaluation loop | **On-board (satellite)** |
+| Raise PUS-5 events on monitoring violations | **On-board (satellite)** |
+| Maintain the check transition list | **On-board (satellite)** |
+
+**YAMCS/MCS implementation = XTCE only (`pus12.xml`). No Java changes to `yamcs-core` are needed for ST[12].**
+
+The `Pus12Service.java` described in this document lives in the **simulator package** and emulates the satellite's on-board monitoring behavior for ground testing. It is not part of the MCS.
+
+---
+
 ### Two Subservices
 
 | Subservice | Description | Required? |
@@ -81,26 +100,37 @@ This document covers only the **parameter monitoring subservice**.
 
 ### Execution Flow
 
+Annotated by where each step executes:
+
 ```
-TC[12,5] arrives → ACK[1,1] → executeTc() → parse + add to pmonList → ACK[1,7]
-Periodic task   → for each enabled PMON def → sample param → evaluate check
-                  → if N consecutive matches → establish new checking status
-                  → if status changed → add to check transition list
-                  → if event_id != 0 → raise PUS-5 event
-TC[12,13]       → collect all PMON statuses → emit TM[12,14]
-TC[12,8]        → collect requested PMON definitions → emit TM[12,9]
+[GROUND → SAT]  TC[12,5] uplinked by YAMCS
+[ON-BOARD]      TC arrives → ACK[1,1] → executeTc() → parse + add to pmonList → ACK[1,7]
+[ON-BOARD]      Periodic task → for each enabled PMON def → sample param → evaluate check
+                              → if N consecutive matches → establish new checking status
+                              → if status changed → add to check transition list
+                              → if event_id != 0 → raise PUS-5 event
+[ON-BOARD]      TC[12,13] arrives → collect all PMON statuses → emit TM[12,14]
+[SAT → GROUND]  TM[12,14] downlinked, decoded by YAMCS via XTCE
+[ON-BOARD]      TC[12,8] arrives → collect requested PMON definitions → emit TM[12,9]
+[SAT → GROUND]  TM[12,9] downlinked, decoded by YAMCS (header only — criteria bytes opaque)
+[ON-BOARD]      TC[12,11] arrives → flush check transition list → emit TM[12,12]
+[SAT → GROUND]  TM[12,12] downlinked, decoded by YAMCS via XTCE
 ```
+
+YAMCS (MCS) is involved only at the TC uplink and TM downlink boundaries. All runtime monitoring state is on-board.
 
 ---
 
 ### Architecture Files (to be created)
 
-| Purpose | Path |
-|---|---|
-| Java service | `simulator/src/main/java/org/yamcs/simulator/pus/Pus12Service.java` |
-| XTCE MDB | `examples/pus/src/main/yamcs/mdb/pus12.xml` |
-| Register in | `simulator/src/main/java/org/yamcs/simulator/pus/PusSimulator.java` |
-| Add MDB to | `examples/pus/src/main/yamcs/etc/yamcs.pus.yaml` |
+| Layer | Purpose | Path |
+|---|---|---|
+| **Simulator (on-board emulation)** | Java service emulating satellite monitoring logic | `simulator/src/main/java/org/yamcs/simulator/pus/Pus12Service.java` |
+| **Simulator (on-board emulation)** | Register service | `simulator/src/main/java/org/yamcs/simulator/pus/PusSimulator.java` |
+| **MCS / YAMCS ground** | XTCE MDB (TC encoding + TM decoding) | `examples/pus/src/main/yamcs/mdb/pus12.xml` |
+| **MCS / YAMCS ground** | Add MDB reference | `examples/pus/src/main/yamcs/etc/yamcs.pus.yaml` |
+
+No changes to `yamcs-core` are required. ST[12] support in YAMCS is purely declarative (XTCE).
 
 ---
 
@@ -399,6 +429,51 @@ criteria_size = 14 for limit-f32 (4+2+4+2+2 spare), 6 for expected-u8, etc.
 
 ---
 
+### TC[12,11] — Report Parameter Monitoring Check Transition (missing from original doc)
+
+**Spec:** §6.12.3.12
+
+**Packet structure:** No arguments — application data field omitted.
+
+**Action:** Emit TM[12,12] containing all accumulated check transitions since the last flush; then clear the check transition list.
+
+**XTCE:** ✅ **XTCE-only** — no-argument command, same pattern as TC[12,13].
+
+**Java (simulator):** `case 11 → sendCheckTransitionReport()` — iterates `checkTransitionList`, emits TM[12,12], clears the list.
+
+**Note:** The check transition list accumulates on-board; YAMCS only sees the outgoing TM[12,12]. There is no MCS-side state for this.
+
+---
+
+### TM[12,12] — Parameter Monitoring Transition Report
+
+**Spec:** §6.12.3.12
+
+**Packet structure:**
+
+```
+| N (uint) | repeated N times:
+    | PMON_ID (enumerated) | prev_checking_status (enumerated) | new_checking_status (enumerated) |
+```
+
+**XTCE:** ✅ **XTCE-only** — same aggregate+array pattern as TM[12,14], using the check status enumerations from the tables in Section A.
+
+**Java emitter (simulator):** `sendCheckTransitionReport()`:
+```java
+PusTmPacket pkt = newPacket(12, 1 + checkTransitionList.size() * 5);
+ByteBuffer bb = pkt.getUserDataBuffer();
+bb.put((byte) checkTransitionList.size());
+for (CheckTransition t : checkTransitionList) {
+    bb.putShort((short) t.pmonId);
+    bb.put((byte) t.prevStatus.ordinal());
+    bb.put((byte) t.newStatus.ordinal());
+}
+checkTransitionList.clear();
+pusSimulator.transmitRealtimeTM(pkt);
+```
+
+---
+
 ### TC[12,13] — Report Status of Each Parameter Monitoring Definition
 
 **Spec:** §6.12.3.11 / §8.12.2.13
@@ -538,13 +613,13 @@ The `mask`, `low_limit`, `high_limit`, `expected_value`, `low_threshold`, `high_
 
 ---
 
-### Gap 2: Full Pus12Service.java needed from scratch
+### Gap 2: Full Pus12Service.java needed from scratch (simulator / on-board emulation only)
 
 **Affects:** All subtypes
 **Severity:** Medium
 **Effort:** Medium
 
-No existing `Pus12Service.java` exists. The service requires:
+No existing `Pus12Service.java` exists. This service lives in the **simulator package** and emulates the satellite's on-board monitoring — it is **not** an MCS component and requires no changes to `yamcs-core`. The service requires:
 
 ```java
 // Key data structures
@@ -593,12 +668,12 @@ The check validity condition (`validity_param_id + mask + expected_value` — pr
 
 ---
 
-### Gap 5: Integration with PUS 5 event system
+### Gap 5: Integration with PUS 5 event system (simulator-side only)
 
-**Affects:** Periodic monitoring logic in Pus12Service
+**Affects:** Periodic monitoring logic in Pus12Service (simulator / on-board emulation)
 **Severity:** Medium
 
-PUS 12 violations must raise PUS 5 events. The `Pus12Service` must call `pusSimulator.pus5Service.raiseEvent(eventId)`. The event IDs encoded in PMON definitions (e.g., `low_event_id`, `high_event_id`) must exist in the PUS 5 event enumeration defined in `pus5.xml` and handled by `Pus5Service.java`. A new set of event IDs for monitoring violations (e.g., `EVENT_TEMP_BELOW_LIMIT=10`, `EVENT_TEMP_ABOVE_LIMIT=11`) needs to be added to `pus5.xml` and the simulator.
+On-board monitoring violations raise PUS-5 events; YAMCS/MCS receives the resulting TM[5,x] downlink and displays them — no MCS-side action is needed for this integration. In the simulator, `Pus12Service` must call `pusSimulator.pus5Service.raiseEvent(eventId)` when a check transition fires an event. The event IDs encoded in PMON definitions (e.g., `low_event_id`, `high_event_id`) must exist in the PUS 5 event enumeration in `pus5.xml`. A new set of event IDs for monitoring violations (e.g., `EVENT_TEMP_BELOW_LIMIT=10`, `EVENT_TEMP_ABOVE_LIMIT=11`) needs to be added to `pus5.xml` and the simulator event handler.
 
 ---
 
@@ -613,8 +688,10 @@ The `monitoring_interval` field in TC[12,5] is marked optional in the spec. Whet
 
 ## Summary Table
 
-| Subtype | Type | XTCE Coverage | Java Required | Existing Code | Effort |
-|---------|------|--------------|---------------|---------------|--------|
+"Java (simulator)" = on-board emulation in `simulator/`; "XTCE" = MCS ground configuration in `pus12.xml`. No `yamcs-core` Java changes are needed for any subtype.
+
+| Subtype | Type | XTCE Coverage (MCS) | Java (simulator) | Existing Code | Effort |
+|---------|------|---------------------|------------------|---------------|--------|
 | TC[12,1] | TC | ✅ Full | ✅ New Pus12Service | ❌ None | Low |
 | TC[12,2] | TC | ✅ Full | ✅ New Pus12Service | ❌ None | Low |
 | TC[12,5] | TC | ⚠️ Per-type variants | ✅ Required (parsing) | ❌ None | High |
@@ -622,7 +699,9 @@ The `monitoring_interval` field in TC[12,5] is marked optional in the spec. Whet
 | TC[12,7] | TC | ⚠️ Per-type variants | ✅ Required (parsing) | ❌ None | High |
 | TC[12,8] | TC | ✅ Full | ✅ New Pus12Service | ❌ None | Low |
 | TM[12,9] | TM | ⚠️ Partial (header only) | ✅ Required (emit) | ❌ None | Medium |
+| TC[12,11] | TC | ✅ Full (no args) | ✅ New Pus12Service | ❌ None | Low |
+| TM[12,12] | TM | ✅ Full | ✅ Required (emit) | ❌ None | Low |
 | TC[12,13] | TC | ✅ Full (no args) | ✅ New Pus12Service | ❌ None | Low |
-| TM[12,14] | TM | ✅ Full | ✅ New Pus12Service | ❌ None | Low |
+| TM[12,14] | TM | ✅ Full | ✅ Required (emit) | ❌ None | Low |
 
-**Key finding:** TC[12,1], TC[12,2], TC[12,6], TC[12,8], TC[12,13], TM[12,14] are fully expressible in XTCE. TC[12,5], TC[12,7], TM[12,9] require per-type XTCE variants or raw binary workarounds due to type-deduced field sizes — the primary limitation for PUS 12 XTCE coverage.
+**Key finding:** TC[12,1], TC[12,2], TC[12,6], TC[12,8], TC[12,11], TC[12,13], TM[12,12], TM[12,14] are fully expressible in XTCE. TC[12,5], TC[12,7], TM[12,9] require per-type XTCE variants or raw binary workarounds due to type-deduced field sizes — the primary limitation for PUS 12 XTCE coverage. All on-board monitoring logic (evaluation loop, state machine, event raising) lives in the simulator, not in YAMCS.

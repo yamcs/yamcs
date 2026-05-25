@@ -2,6 +2,12 @@
 
 ## A. General Context
 
+### Deployment Context
+
+This codebase implements a **ground-station MCS only** — the spacecraft is on the other end of the link. The Java simulator (`Pus11Service.java`) and all example MDB/XML/XTCE files exist solely for **testing and demonstration**. Production concerns are limited to MDB/XTCE definitions (operator interface and TC encoding/TM decoding in YAMCS). Java simulator gaps are test/demo concerns; MDB/XTCE gaps directly affect the ground operator interface.
+
+---
+
 ### What is ST[11]?
 
 PUS Service 11 (Time-based Scheduling) lets ground operators pre-load telecommands into an on-board schedule. The spacecraft releases them at their designated release time without requiring live ground contact. This is essential for autonomous operations during communication blackouts.
@@ -32,12 +38,14 @@ At release time:
 
 ### Architecture Files
 
-| Layer | File |
-|-------|------|
-| Java simulator | `simulator/src/main/java/org/yamcs/simulator/pus/Pus11Service.java` |
-| XTCE MDB | `examples/pus/src/main/yamcs/mdb/pus11.xml` |
-| PUS base types | `examples/pus/src/main/yamcs/mdb/pus.xml` |
-| Data types | `examples/pus/src/main/yamcs/mdb/dt.xml` |
+All files below are **test/demonstration** — not production MCS code.
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Java simulator | `simulator/src/main/java/org/yamcs/simulator/pus/Pus11Service.java` | Demo/test only |
+| XTCE MDB | `examples/pus/src/main/yamcs/mdb/pus11.xml` | Demo/test only |
+| PUS base types | `examples/pus/src/main/yamcs/mdb/pus.xml` | Demo/test only |
+| Data types | `examples/pus/src/main/yamcs/mdb/dt.xml` | Demo/test only |
 
 ### Time Encoding
 
@@ -53,7 +61,9 @@ The primary ground-side workflow uses `yamcs-client` with the `pus11ScheduleAt` 
 
 ### Overall Status Table
 
-| Subtype | Type | Name | MDB | Java | Action Required |
+> **Java column** = simulator (`Pus11Service.java`) — **test/demo code only**. MDB column reflects the YAMCS operator interface, which is the production-relevant concern.
+
+| Subtype | Type | Name | MDB | Java (sim) | Action Required |
 |---------|------|------|-----|------|-----------------|
 | 1 | TC | Enable Scheduler | ✅ | ✅ | None |
 | 2 | TC | Disable Scheduler | ✅ | ✅ | None |
@@ -708,21 +718,25 @@ repeat N:
 
 **Problem**: All group management subtypes return `NACK(NOT_IMPLEMENTED)` and have no MDB definitions. Groups are an optional PUS 11 feature, but they are listed as required in the task spec.
 
-**Impact**: TC[11,22–26] cannot be sent or processed. TM[11,27] is never emitted.
+**Impact**: TC[11,22–26] cannot be sent via the operator interface (no MDB). TM[11,27] is never emitted by the simulator.
 
-**Effort**: Low-to-medium. Java needs a new `Map<Integer, Boolean> groupStatus`, 5 new case handlers, and 1 new TM emitter (~80 lines). MDB needs new parameter types and 6 new definitions. No architectural change required — mirrors the existing subschedule pattern exactly.
+**Scope**: MDB additions are the **production-relevant** concern (they define what operators can send from the MCS). The Java simulator additions are **test/demo only** — needed only to validate the MDB against an on-board behaviour stub.
+
+**Effort**: Low-to-medium. MDB needs new parameter types and 6 new definitions. Java simulator (demo) needs a new `Map<Integer, Boolean> groupStatus`, 5 new case handlers, and 1 new TM emitter (~80 lines). No architectural change required — mirrors the existing subschedule pattern exactly.
 
 **XTCE feasibility**: ✅ Fully implementable in XTCE. Group management uses the same patterns as subschedule management (TC[11,20/21] + TM[11,19]) which already work.
 
 ---
 
-### Gap 5 — TC[11,20/21]: Java only handles N=1
+### Gap 5 — TC[11,20/21]: Java simulator only handles N=1
 
 **Problem**: `enableSubschedule()` and `disableSubschedule()` each read only a single `bb.get()` — they ignore `num_schedules` and only process the first subschedule ID. The MDB correctly encodes an array.
 
-**Impact**: Sending ENABLE_SCHEDULE or DISABLE_SCHEDULE with N > 1 from YAMCS will only enable/disable the first subschedule. No error is reported.
+**Scope**: **Simulator (test/demo) only.** The MCS ground interface is correct; this is a gap in the demo simulator's TC handler.
 
-**Fix** (minor, Java only): Loop `num_schedules` times.
+**Impact**: When testing against the simulator, sending ENABLE_SCHEDULE or DISABLE_SCHEDULE with N > 1 will only enable/disable the first subschedule. No error is reported. Does not affect production MCS TC encoding.
+
+**Fix** (minor, simulator Java only): Loop `num_schedules` times.
 
 ---
 
@@ -738,11 +752,11 @@ repeat N:
 
 ### Summary
 
-| Gap | Severity | XTCE-only fix? | Effort |
-|-----|----------|----------------|--------|
-| #1 TC[11,4] embedded TC | High | ❌ No — N-activity array is expressible, but variable-length tc_packet binary is not | N/A (by design) |
-| #2 TC[11,7/8] missing offset | High | ✅ Yes | Trivial |
-| #3 TC[11,15] wrong args | High | ✅ Yes | Trivial |
-| #4 Groups TC[11,22–26]+TM[11,27] | Medium | Partial — MDB ✅, Java ❌ | Low |
-| #5 TC[11,20/21] N>1 | Low | ❌ Java only | Trivial |
-| #6 TC[11,6/8/14] filter_type | Low | ✅ Yes | Minor |
+| Gap | Severity | Scope | XTCE-only fix? | Effort |
+|-----|----------|-------|----------------|--------|
+| #1 TC[11,4] embedded TC | High | MCS (operator interface) | ❌ No — N-activity array is expressible, but variable-length tc_packet binary is not | N/A (by design) |
+| #2 TC[11,7/8] missing offset | High | MCS (operator interface) | ✅ Yes | Trivial |
+| #3 TC[11,15] wrong args | High | MCS (operator interface) | ✅ Yes | Trivial |
+| #4 Groups TC[11,22–26]+TM[11,27] | Medium | MDB: MCS; Java: demo/test only | Partial — MDB ✅, Java (sim) ❌ | Low |
+| #5 TC[11,20/21] N>1 | Low | Demo/test simulator only | ❌ Java sim only | Trivial |
+| #6 TC[11,6/8/14] filter_type | Low | MCS (operator interface) | ✅ Yes | Minor |
