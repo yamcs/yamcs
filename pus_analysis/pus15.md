@@ -13,6 +13,28 @@ ST[15] provides the ability to store TM packets on-board and retrieve them later
 - Ground station coverage is intermittent (store all TM during eclipse, dump at next pass)
 - Recovering lost packets (retain last N packets in a circular buffer)
 
+---
+
+### Ground vs. On-board Responsibility (MCS is ground segment only)
+
+| Responsibility | Where |
+|---|---|
+| Send storage/retrieval configuration TCs (create stores, enable/disable, add filter rules, start/stop retrieval) | **Ground (YAMCS MCS)** — XTCE encodes TC packets |
+| Receive and display TM reports (TM[15,6], TM[15,13], TM[15,19], TM[15,23], TM[15,36], TM[15,38], TM[15,40]) | **Ground (YAMCS MCS)** — XTCE decodes TM packets |
+| Maintain packet stores (allocate, resize, delete) at runtime | **On-board (satellite)** |
+| Intercept outgoing TM and copy matching packets into stores | **On-board (satellite)** |
+| Apply filter rules (by APID, service type, subtype, HK struct ID, event ID) to incoming TM | **On-board (satellite)** |
+| Execute open retrieval (continuously transmit stored packets from cursor forward) | **On-board (satellite)** |
+| Execute by-time-range retrieval (transmit packets in fixed time window, then stop) | **On-board (satellite)** |
+| Manage retrieval threads and open-retrieval cursor state | **On-board (satellite)** |
+| Track fill percentage and time boundaries of each packet store | **On-board (satellite)** |
+
+**YAMCS/MCS implementation = XTCE only (`pus15.xml`). No Java changes to `yamcs-core` are needed for ST[15].**
+
+The `pus15_simulator.py` described in this document emulates the satellite's on-board packet store behavior (filtering, storage, retrieval threads, state machine) for ground testing. It is not part of the MCS.
+
+---
+
 ### Two Sub-Services
 
 | Sub-service | Role |
@@ -85,7 +107,7 @@ Option B — all stores:
 
 **XTCE approach**: Two MetaCommands — `TC_15_1_specific` (with N + array of store_ids) and `TC_15_1_all` (no arguments). Both set service_type=15, service_subtype=1.
 
-**Code**: For each store_id, set `store.storage_enabled = True`. Reject if store_id unknown (send PUS-1 NACK).
+**Simulator (on-board emulation)**: For each store_id, set `store.storage_enabled = True`. Reject if store_id unknown (send PUS-1 NACK). This logic runs in the satellite-side simulator, not in YAMCS.
 
 ---
 
@@ -97,7 +119,7 @@ Option B — all stores:
 
 **XTCE approach**: Same two-MetaCommand pattern (service_subtype=2).
 
-**Code**: Set `store.storage_enabled = False` per store.
+**Simulator (on-board emulation)**: Set `store.storage_enabled = False` per store. This logic runs in the satellite-side simulator, not in YAMCS.
 
 ---
 
@@ -117,7 +139,7 @@ For each instruction:
 
 **XTCE approach**: `TC_15_9` with an AggregateArgumentType `BtrInstrType = {store_id:uint16, start_time:uint64, end_time:uint64}` and `ArrayArgumentType` of N entries.
 
-**Code**: For each instruction, validate store exists and btr_status is not already enabled, then launch a background thread that reads `store.packets` where `start_time <= ts <= end_time` and transmits each. When done, set `btr_status = disabled`.
+**Simulator (on-board emulation)**: For each instruction, validate store exists and btr_status is not already enabled, then launch a background thread that reads `store.packets` where `start_time <= ts <= end_time` and transmits each via UDP. When done, set `btr_status = disabled`. This retrieval execution logic runs entirely in the satellite-side simulator; YAMCS only receives the resulting TM stream.
 
 **Gap**: uint64 type not in pus_dt.xml — needs to be added (see Gap §1).
 
@@ -136,7 +158,7 @@ N: uint8             (0 means all stores)
 
 **XTCE approach**: Single MetaCommand with `time_limit` argument, `N` uint8, and ArrayArgumentType of store_ids. When N=0 the array has zero length (all stores).
 
-**Code**: For each target store, remove packets where `ts <= time_limit`. Reject if store is currently in active btr or open retrieval (to avoid deleting in-flight data).
+**Simulator (on-board emulation)**: For each target store, remove packets where `ts <= time_limit`. Reject if store is currently in active btr or open retrieval (to avoid deleting in-flight data). This deletion logic runs in the satellite-side simulator, not in YAMCS.
 
 ---
 
@@ -148,7 +170,7 @@ N: uint8             (0 means all stores)
 
 **XTCE approach**: Two MetaCommands (`_specific` and `_all`).
 
-**Code**: For each targeted store, build and send TM[15,13] immediately.
+**Simulator (on-board emulation)**: For each targeted store, build and send TM[15,13] immediately — emulating the satellite-side response to a status query TC.
 
 ---
 
@@ -170,7 +192,7 @@ For each store:
 
 **XTCE approach**: AggregateParameterType `StoreSummaryType` with 7 members; ArrayParameterType driven by `N`.
 
-**Code**: Compute fill_pct = `len(store.packets) / store.max_packets * 100`.
+**Simulator (on-board emulation)**: Computes fill_pct = `len(store.packets) / store.max_packets * 100`, serializes store state, and emits TM[15,13] — emulating satellite-side reporting. YAMCS receives and decodes the packet via XTCE.
 
 ---
 
@@ -187,7 +209,7 @@ N: uint8
 
 **XTCE approach**: Single MetaCommand with `start_time` + N + array.
 
-**Code**: Validate store is suspended (reject otherwise), then `store.open_retrieval_start_time = start_time`.
+**Simulator (on-board emulation)**: Validate store is suspended (reject otherwise), then update `store.open_retrieval_start_time = start_time`. This cursor management runs in the satellite-side simulator, not in YAMCS.
 
 ---
 
@@ -199,7 +221,7 @@ N: uint8
 
 **XTCE approach**: Two MetaCommands.
 
-**Code**: For each store, set `open_retrieval_status = IN_PROGRESS`, launch background thread that continuously reads `store.packets` from cursor forward and transmits. Thread auto-updates `open_retrieval_start_time` as packets are sent.
+**Simulator (on-board emulation)**: For each store, set `open_retrieval_status = IN_PROGRESS`, launch background thread that continuously reads `store.packets` from cursor forward and transmits via UDP. Thread auto-updates `open_retrieval_start_time` as packets are sent. This retrieval execution runs entirely in the satellite-side simulator; YAMCS only receives the resulting TM stream.
 
 ---
 
@@ -211,7 +233,7 @@ N: uint8
 
 **XTCE approach**: Two MetaCommands.
 
-**Code**: Set `open_retrieval_status = SUSPENDED`, signal background thread to stop. Cursor remains.
+**Simulator (on-board emulation)**: Set `open_retrieval_status = SUSPENDED`, signal background thread to stop. Cursor position is preserved so TC[15,15] can resume without gap. This state management runs in the satellite-side simulator, not in YAMCS.
 
 ---
 
@@ -223,7 +245,7 @@ N: uint8
 
 **XTCE approach**: Two MetaCommands.
 
-**Code**: Cancel BTR thread for each store, set `btr_status = DISABLED`.
+**Simulator (on-board emulation)**: Cancel BTR thread for each store, set `btr_status = DISABLED`. This thread management runs in the satellite-side simulator, not in YAMCS.
 
 ---
 
@@ -235,7 +257,7 @@ N: uint8
 
 **XTCE approach**: Single MetaCommand, no arguments.
 
-**Code**: Iterate all stores, build and send TM[15,19].
+**Simulator (on-board emulation)**: Iterate all stores, build and send TM[15,19] — emulating the satellite-side response to a status poll TC. YAMCS receives and decodes the report via XTCE.
 
 ---
 
@@ -273,7 +295,7 @@ For each instruction:
 
 **XTCE approach**: AggregateArgumentType `CreateStoreInstrType`; ArrayArgumentType of N entries.
 
-**Code**: Check store_id not already in use and max stores not exceeded. Create `PacketStore(store_id, size_bytes, store_type, vc_id)`. Initial state: storage=DISABLED, open_retrieval=SUSPENDED, btr=DISABLED.
+**Simulator (on-board emulation)**: Check store_id not already in use and max stores not exceeded. Create `PacketStore(store_id, size_bytes, store_type, vc_id)`. Initial state: storage=DISABLED, open_retrieval=SUSPENDED, btr=DISABLED. This store allocation runs in the satellite-side simulator; YAMCS only uplinks the TC that triggers it.
 
 ---
 
@@ -285,7 +307,7 @@ For each instruction:
 
 **XTCE approach**: Two MetaCommands.
 
-**Code**: For each store, validate all statuses are inactive, then remove from store map. Reject with NACK if active.
+**Simulator (on-board emulation)**: For each store, validate all statuses are inactive, then remove from store map. Reject with NACK if active. Store lifecycle management runs in the satellite-side simulator, not in YAMCS.
 
 ---
 
@@ -331,7 +353,7 @@ For each instruction:
 
 **XTCE approach**: AggregateArgumentType `ResizeInstrType`; ArrayArgumentType.
 
-**Code**: Validate all statuses inactive, update `store.size_bytes`. Reject if active or if new_size is 0 or exceeds available memory (check is implementation-defined).
+**Simulator (on-board emulation)**: Validate all statuses inactive, update `store.size_bytes`. Reject if active or if new_size is 0 or exceeds available memory. This memory management runs in the satellite-side simulator, not in YAMCS.
 
 ---
 
@@ -347,7 +369,7 @@ new_vc_id: uint8
 
 **XTCE approach**: Single MetaCommand with two arguments.
 
-**Code**: Validate store exists and not currently in btr or open retrieval. Update `store.vc_id`.
+**Simulator (on-board emulation)**: Validate store exists and not currently in btr or open retrieval. Update `store.vc_id`. Virtual-channel routing is managed on-board; YAMCS only uplinks the TC.
 
 ---
 
@@ -469,7 +491,7 @@ The three instruction forms from the spec are encoded via the count fields (same
 
 N2=0 and N3=0 are zero-length arrays, which YAMCS renders as empty array inputs in the UI. Single MetaCommand covers all three instruction forms.
 
-**Code** (Python):
+**Simulator (on-board emulation)** (Python — runs in `pus15_simulator.py`, not YAMCS):
 ```python
 store_id = struct.unpack_from(">H", data, 8)[0]; offset = 10
 n1 = data[offset]; offset += 1
@@ -507,7 +529,7 @@ for _ in range(n1):
 
 **XTCE approach**: ✅ **Single MetaCommand** — reuses `pkt_sel_apid_array_type` from TC[15,3] with subtype=4. Same sibling-member nested array design.
 
-**Code**: Mirror TC[15,3] handler but remove from filter table. If svc_type entry becomes empty, delete it. If APID entry becomes empty, delete it.
+**Simulator (on-board emulation)**: Mirror TC[15,3] handler but remove from filter table. If svc_type entry becomes empty, delete it. If APID entry becomes empty, delete it. Filter table management runs in the satellite-side simulator, not in YAMCS.
 
 ---
 
@@ -606,7 +628,7 @@ For each app process:
 </SequenceContainer>
 ```
 
-**Code**: Walk `store.app_process_config` and serialize.
+**Simulator (on-board emulation)**: Walk `store.app_process_config` and serialize the TM[15,6] response — emulating satellite-side report generation. YAMCS receives and decodes the packet via XTCE.
 
 ---
 
@@ -626,7 +648,7 @@ For each instruction:
 
 **XTCE approach**: AggregateArgumentType `HkStructInstrType`; ArrayArgumentType. For test environment, always include subsampling_rate (set to 1 if not used).
 
-**Code**: Add to `store.hk_config[apid].add(hk_struct_id)`.
+**Simulator (on-board emulation)**: Add to `store.hk_config[apid].add(hk_struct_id)`. HK filter table management runs in the satellite-side simulator, not in YAMCS.
 
 ---
 
@@ -793,69 +815,112 @@ The `AggregateParameterType` approach (ArrayParameterType with inner dynamic dim
 
 ---
 
-### Gap 5 — Active retrieval is a stateful background process requiring threading
+### Gap 5 — Active retrieval is a stateful background process requiring threading (simulator / on-board emulation only)
 
 **Affects**: TC[15,9] (BTR), TC[15,15] (open retrieval resume).
 
-**Problem**: Both retrieval modes require continuously transmitting stored packets over time. This cannot be modelled in XTCE — it is purely simulator-side behavior.
+**Scope**: This is an on-board satellite concern. YAMCS MCS has no role here beyond uplink of the trigger TC — the retrieval execution is entirely satellite-side.
 
-**Code requirement**: Two thread patterns per store (similar to ST[11] scheduled execution):
+**Problem**: Both retrieval modes require continuously transmitting stored packets over time. This cannot be modelled in XTCE — it is purely simulator-side (on-board emulation) behavior and has no YAMCS MCS component.
+
+**Simulator requirement** (on-board emulation — `pus15_simulator.py`): Two thread patterns per store (similar to ST[11] scheduled execution):
 - Open retrieval thread: reads `store.packets[cursor:]`, transmits each via UDP, advances cursor, then waits for new packets
 - BTR thread: reads `store.packets` where `start_time ≤ ts ≤ end_time`, transmits, then signals completion and sets `btr_status = DISABLED`
 
-**Complexity**: Moderate. Directly analogous to the ST[11] pattern already implemented.
+**Complexity**: Moderate. Directly analogous to the ST[11] pattern already implemented in the simulator.
 
 ---
 
-### Gap 6 — TM bus / packet store interception requires architectural addition to simulator
+### Gap 6 — TM bus / packet store interception requires architectural addition to simulator (on-board emulation only)
 
 **Affects**: The core storage function (all TC[15,1]/TC[15,3] etc. are useless without this).
 
-**Problem**: Currently each Python service (e.g. `pus20_simulator.py`) sends TM directly via UDP to YAMCS. PUS 15 requires that all outgoing TM be optionally intercepted and copied into packet stores before (or during) transmission. This is not in the current architecture.
+**Scope**: This is an on-board satellite concern. On a real satellite the OBC intercepts all outgoing TM before downlink. In the test environment this must be emulated in the simulator. YAMCS MCS is not involved — it simply receives whatever the simulator downlinks.
 
-**Fix**: Introduce a shared `PacketStoreManager` class that wraps the TM send socket:
+**Problem**: Currently each Python service (e.g. `pus20_simulator.py`) sends TM directly via UDP to YAMCS. PUS 15 requires that all outgoing TM be optionally intercepted and copied into packet stores before (or during) transmission. This is not in the current simulator architecture.
+
+**Simulator fix** (on-board emulation — `pus15_simulator.py`): Introduce a shared `PacketStoreManager` class that wraps the TM send socket:
 ```python
 class PacketStoreManager:
     def submit_tm(self, raw_packet: bytes) -> None:
-        """Called by all services before sending TM via UDP.
-        Checks each enabled store's filter config; appends matching packets."""
+        """Called by all simulator services before sending TM via UDP.
+        Emulates on-board interception: checks each enabled store's filter config;
+        appends matching packets. YAMCS MCS receives only the forwarded UDP packet."""
         for store in self.stores.values():
             if store.storage_enabled and self._matches_filter(store, raw_packet):
                 store.append(raw_packet, timestamp=now())
         self.udp_sock.sendto(raw_packet, (TM_HOST, TM_PORT))
 ```
-All services import and call `PacketStoreManager.submit_tm()` instead of sending directly. This is a one-time shared infrastructure addition.
+All simulator services import and call `PacketStoreManager.submit_tm()` instead of sending directly. This is a one-time shared infrastructure addition to the simulator — no YAMCS MCS change.
 
 ---
 
-### Gap 7 — Fill percentage tracking requires capacity bookkeeping
+### Gap 7 — Fill percentage tracking requires capacity bookkeeping (simulator / on-board emulation only)
 
 **Affects**: TM[15,13] (content summary).
 
-**Problem**: `fill_pct` is `stored_bytes / capacity_bytes * 100`. This needs the simulator to track byte count (not just packet count) since packets vary in size.
+**Scope**: This is an on-board satellite concern. The satellite tracks store fill and reports it in TM[15,13]; YAMCS MCS only decodes and displays that report via XTCE.
 
-**Fix**: Each `PacketStore` maintains a `used_bytes` counter incremented on append and decremented on deletion or circular overwrite.
+**Problem**: `fill_pct` is `stored_bytes / capacity_bytes * 100`. The simulator needs to track byte count (not just packet count) since packets vary in size.
+
+**Simulator fix** (on-board emulation): Each `PacketStore` maintains a `used_bytes` counter incremented on append and decremented on deletion or circular overwrite.
 
 ---
 
-## Summary: XTCE Feasibility
+## Overall Verdict
+
+**MCS scope (YAMCS ground): XTCE only.** All 35 TC/TM packet formats required by ST[15] are fully expressible in XTCE using aggregates, arrays, and dynamic dimensions. **No Java changes to `yamcs-core` are needed for ST[15].** YAMCS MCS encodes outgoing TC packets (uplink) and decodes incoming TM packets (downlink) — both purely via `pus15.xml`.
+
+All packet store logic — state machine, filtering, storage, retrieval threads, fill tracking, and the TM bus intercept — is **on-board satellite behavior** and must be implemented in the simulator only.
+
+### XTCE Feasibility Summary
 
 | Criterion | Answer |
 |-----------|--------|
 | All 35 TC/TM formats expressible in XTCE? | **YES** — using aggregates, arrays, dynamic dimensions |
 | Any XTCE features needed that are untested in this codebase? | **None remaining** — nested TM containers use `ContainerRefEntry`+`RepeatEntry` (confirmed by `ParameterInstanceRef.java` line 53); nested TC arrays use sibling-member `ArgumentInstanceRef` (confirmed by `array-in-array-arg.xml`) |
-| MDB-only with zero code? | **NO** — packet store state machine, retrieval threads, and TM bus are required |
+| MCS (YAMCS ground) needs Java code? | **NO** — XTCE only; `yamcs-core` is untouched |
 | Simulator code complexity vs PUS 20? | Significantly higher — stateful, threaded, cross-service interception needed |
+
+### Required Artifacts by Layer
+
+| Layer | Artifact | Purpose |
+|-------|----------|---------|
+| **MCS / YAMCS ground** | `mdb/pus15.xml` | XTCE TC encoding (all TC[15,x] uplinks) and TM decoding (all TM[15,x] downlinks) |
+| **MCS / YAMCS ground** | `yamcs.pus-test.yaml` update | Load `mdb/pus15.xml` into the Mission Database |
+| **MCS / YAMCS ground** | `mdb/pus_dt.xml` update | Add `uint64` type for CUC timestamp fields (Gap §1) |
+| **Simulator (on-board emulation)** | `simulators/pus15_simulator.py` | Emulates satellite: `PacketStore` state machine, `PacketStoreManager` TM bus intercept, storage filter tables, open-retrieval thread, BTR thread, all TM[15,x] report generation |
+
+> **Key finding**: All on-board logic (packet store allocation, TM interception and filtering, retrieval thread execution, fill tracking, cursor management) lives exclusively in `pus15_simulator.py`. YAMCS MCS only uplinks TC packets and decodes incoming TM reports — both purely via XTCE. No YAMCS server code is modified.
+
+---
+
+## Implementation Files (when building)
+
+| Layer | File | Action |
+|-------|------|--------|
+| **MCS / YAMCS ground** | `test_yamcs/src/main/yamcs/mdb/pus15.xml` | Create — XTCE containers + commands for all TC[15,x] encoding and TM[15,x] decoding |
+| **MCS / YAMCS ground** | `test_yamcs/src/main/yamcs/etc/yamcs.pus-test.yaml` | Update — add `mdb/pus15.xml` to MDB list |
+| **MCS / YAMCS ground** | `test_yamcs/src/main/yamcs/mdb/pus_dt.xml` | Update — add `uint64` IntegerParameterType and IntegerArgumentType |
+| **Simulator (on-board emulation)** | `test_yamcs/simulators/pus15_simulator.py` | Create — Python sim emulating satellite: `PacketStore` + `PacketStoreManager`, storage filter tables (app-process/HK/diag/event), open-retrieval thread, BTR thread, all TM report emission |
+
+### Reference Files
+- `test_yamcs/src/main/yamcs/mdb/pus20.xml` — XTCE structure pattern
+- `test_yamcs/simulators/pus20_simulator.py` — Python simulator pattern
+- `test_yamcs/src/main/yamcs/mdb/pus_dt.xml` — shared data types (uint8/16/32)
+
+---
 
 ## Recommended Implementation Sequence
 
-1. Add `uint64` to `pus_dt.xml`
-2. Add `PacketStore` class + `PacketStoreManager` to simulator
-3. Implement TC[15,20/21/22/23] (create/delete/configure stores) — static management, no threads
-4. Implement TC[15,1/2/18/19] (enable/disable storage + status report) — basic state transitions
-5. Implement TC[15,3/4/5/6] (app process storage-control config) — filter table management
-6. Implement TC[15,12/13] (content summary) — fills in remaining store state
-7. Implement TC[15,9/17] (BTR start/abort) — adds BTR thread
-8. Implement TC[15,14/15/16] (open retrieval start/resume/suspend) — adds open retrieval thread
-9. Implement TC[15,11/25/28] (delete content, resize, change VC)
-10. Implement TC[15,29-40] (HK/diag/event storage-control configs)
+1. **[GROUND]** Add `uint64` to `pus_dt.xml`
+2. **[ON-BOARD sim]** Add `PacketStore` class + `PacketStoreManager` TM-bus wrapper to simulator
+3. **[ON-BOARD sim]** Implement TC[15,20/21/22/23] handlers (create/delete/configure stores) — static management, no threads
+4. **[ON-BOARD sim]** Implement TC[15,1/2/18/19] handlers (enable/disable storage + status report) — basic state transitions
+5. **[ON-BOARD sim]** Implement TC[15,3/4/5/6] handlers (app process storage-control config) — filter table management
+6. **[ON-BOARD sim]** Implement TC[15,12/13] handlers (content summary) — fills in remaining store state
+7. **[ON-BOARD sim]** Implement TC[15,9/17] handlers (BTR start/abort) — adds BTR thread
+8. **[ON-BOARD sim]** Implement TC[15,14/15/16] handlers (open retrieval cursor/resume/suspend) — adds open retrieval thread
+9. **[ON-BOARD sim]** Implement TC[15,11/25/28] handlers (delete content, resize, change VC)
+10. **[ON-BOARD sim]** Implement TC[15,29-40] handlers (HK/diag/event storage-control configs)
+11. **[GROUND]** Author `pus15.xml` in parallel — XTCE definitions for all TC argument structures and TM container hierarchies
