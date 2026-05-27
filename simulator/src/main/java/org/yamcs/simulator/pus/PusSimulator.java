@@ -164,15 +164,26 @@ public class PusSimulator extends AbstractSimulator {
 
     @Override
     public void processTc(SimulatorCcsdsPacket tc) {
-        PusTcPacket pustc = (PusTcPacket) tc;
-        if (tc.getAPID() == CfdpCcsdsPacket.APID) {
-            // cfdpReceiver.processCfdp(tc.getUserDataBuffer());
-        } else {
+        if (tc instanceof PusTcPacket pustc) {
             transmitRealtimeTM(ack(pustc, 1));
             try {
                 pendingCommands.put(pustc);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+            }
+        } else {
+            if (tc.getAPID() == CfdpCcsdsPacket.APID) {
+                byte b0 = tc.getUserDataBuffer().get();
+                if ((b0 & 0x08) == 0) { // towards receiver
+                    cfdpReceiver.processCfdp(tc.getUserDataBuffer());
+                } else {// towards sender
+                    /*if (cfdpSender != null) {
+                        cfdpSender.processCfdp(tc.getUserDataBuffer());
+                    } else {*/
+                        log.warn("Received CFDP packet for sender but have no sender");
+                    // }
+                }
+                cfdpReceiver.processCfdp(tc.getUserDataBuffer());
             }
         }
     }
