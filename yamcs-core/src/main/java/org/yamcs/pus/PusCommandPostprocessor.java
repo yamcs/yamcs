@@ -213,13 +213,7 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
     }
 
     private boolean hasCrc(PreparedCommand pc) {
-        byte[] binary = pc.getBinary();
-        boolean secHeaderFlag = CcsdsPacket.getSecondaryHeaderFlag(binary);
-        if (secHeaderFlag) {
-            return (errorDetectionCalculator != null);
-        } else {
-            return false;
-        }
+        return (errorDetectionCalculator != null);
     }
 
     private class ChangeSeqCountAction extends LinkAction {
