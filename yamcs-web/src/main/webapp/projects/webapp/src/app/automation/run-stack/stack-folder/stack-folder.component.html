@@ -41,7 +41,7 @@
         @if (breadcrumb.length) {
           <ya-breadcrumb-trail>
             <ya-breadcrumb
-              link="/procedures/stacks/browse"
+              link="/automation/stacks/browse"
               [queryParams]="{ c: yamcs.context }"
               icon="account_tree" />
             @for (item of breadcrumb; track item) {
@@ -84,7 +84,7 @@
                   folder
                 </mat-icon>
                 <a
-                  [routerLink]="'/procedures/stacks/browse/' + item.name"
+                  [routerLink]="'/automation/stacks/browse/' + item.name"
                   [queryParams]="{ c: yamcs.context }"
                   (click)="$event.stopPropagation()">
                   {{ item.name | filename }}
@@ -94,7 +94,7 @@
                   description
                 </mat-icon>
                 <a
-                  [routerLink]="'/procedures/stacks/files/' + item.name"
+                  [routerLink]="'/automation/stacks/files/' + item.name"
                   [queryParams]="{ c: yamcs.context }"
                   (click)="$event.stopPropagation()"
                   [title]="item.name | filename">

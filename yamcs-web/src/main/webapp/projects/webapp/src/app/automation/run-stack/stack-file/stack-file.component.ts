@@ -179,11 +179,11 @@ export class StackFileComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const idx = this.objectName.lastIndexOf('/');
     if (idx === -1) {
-      this.folderLink = '/procedures/stacks/browse/';
+      this.folderLink = '/automation/stacks/browse/';
       this.filename = this.objectName;
     } else {
       const folderName = this.objectName.substring(0, idx);
-      this.folderLink = '/procedures/stacks/browse/' + folderName;
+      this.folderLink = '/automation/stacks/browse/' + folderName;
       this.filename = this.objectName.substring(idx + 1);
     }
 

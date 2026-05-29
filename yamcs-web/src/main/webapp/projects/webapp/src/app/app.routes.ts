@@ -174,9 +174,9 @@ export const APP_ROUTES: Routes = [
             canActivate: [authGuardFn],
           },
           {
-            path: 'procedures',
+            path: 'automation',
             loadChildren: () =>
-              import('./procedures/procedures.routes').then((m) => m.ROUTES),
+              import('./automation/automation.routes').then((m) => m.ROUTES),
             canActivate: [authGuardFn],
           },
           {
