@@ -1,6 +1,6 @@
 <ya-page-tabs>
   <a
-    [routerLink]="'/procedures/stacks/files/' + objectName()"
+    [routerLink]="'/automation/stacks/files/' + objectName()"
     routerLinkActive
     [routerLinkActiveOptions]="{ exact: true }"
     #rla="routerLinkActive"
@@ -9,7 +9,7 @@
     Steps
   </a>
   <a
-    [routerLink]="'/procedures/stacks/files/' + objectName() + '/-/log'"
+    [routerLink]="'/automation/stacks/files/' + objectName() + '/-/log'"
     routerLinkActive
     #rlb="routerLinkActive"
     [class.active]="rlb.isActive"
@@ -17,7 +17,7 @@
     Log
   </a>
   <a
-    [routerLink]="'/procedures/stacks/files/' + objectName() + '/-/settings'"
+    [routerLink]="'/automation/stacks/files/' + objectName() + '/-/settings'"
     routerLinkActive
     #rlc="routerLinkActive"
     [class.active]="rlc.isActive"

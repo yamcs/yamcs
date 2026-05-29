@@ -148,7 +148,7 @@ export class StackFolderComponent implements OnDestroy {
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.router.navigateByUrl(
-          `/procedures/stacks/files/${result}?c=${this.yamcs.context}`,
+          `/automation/stacks/files/${result}?c=${this.yamcs.context}`,
         );
       }
     });
@@ -339,7 +339,7 @@ export class StackFolderComponent implements OnDestroy {
       path += '/' + segment.path;
       breadcrumb.push({
         name: segment.path,
-        route: '/procedures/stacks/browse' + path,
+        route: '/automation/stacks/browse' + path,
       });
     }
     this.breadcrumb$.next(breadcrumb);

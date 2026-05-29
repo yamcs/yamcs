@@ -104,17 +104,17 @@
         label="File transfer" />
     }
 
-    @if (proceduresItems.length) {
+    @if (automationItems.length) {
       <ya-sidenav-group
-        label="Procedures"
+        label="Automation"
         icon="playlist_play"
-        [active]="proceduresActive"
-        [expanded]="proceduresExpanded"
-        (toggle)="toggleProceduresGroup()">
-        @for (item of proceduresItems; track item) {
+        [active]="automationActive"
+        [expanded]="automationExpanded"
+        (toggle)="toggleAutomationGroup()">
+        @for (item of automationItems; track item) {
           <ya-sidenav-item
-            [activeWhen]="'/procedures/' + (item.activeWhen ?? item.path)"
-            [routerLink]="'/procedures/' + item.path"
+            [activeWhen]="'/automation/' + (item.activeWhen ?? item.path)"
+            [routerLink]="'/automation/' + item.path"
             [queryParams]="{ c: yamcs.context }"
             [exact]="item.path === ''"
             [label]="item.label" />
