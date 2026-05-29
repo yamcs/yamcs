@@ -33,10 +33,10 @@ export class StackFileSettingsComponent {
     const objectName = this.objectName();
     const idx = objectName.lastIndexOf('/');
     if (idx === -1) {
-      return '/procedures/stacks/browse/';
+      return '/automation/stacks/browse/';
     } else {
       const folderName = objectName.substring(0, idx);
-      return '/procedures/stacks/browse/' + folderName;
+      return '/automation/stacks/browse/' + folderName;
     }
   });
 
