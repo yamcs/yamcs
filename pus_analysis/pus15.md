@@ -1,7 +1,7 @@
 # PUS ST[15] On-Board Storage and Retrieval — Implementation Analysis
 
 **Standard**: ECSS-E-ST-70-41C §6.15 and §8.15  
-**Context**: YAMCS/Pixxel test_yamcs environment — Python simulator + XTCE MDB (pus_dt.xml / pus20.xml pattern)
+**Context**: YAMCS/Pixxel — YAMCS is the **ground-station MCS only**. `pus15_simulator.py` emulates satellite on-board behavior for testing.
 
 ---
 
@@ -9,84 +9,91 @@
 
 ### What ST[15] Does
 
-ST[15] provides the ability to store TM packets on-board and retrieve them later on ground request. This is essential when:
-- Ground station coverage is intermittent (store all TM during eclipse, dump at next pass)
-- Recovering lost packets (retain last N packets in a circular buffer)
+ST[15] stores TM packets on-board and retrieves them on ground request:
+- When ground-station coverage is intermittent (store during eclipse, dump at next pass)
+- To recover lost packets (retain last N packets in a circular buffer)
 
 ---
 
-### Ground vs. On-board Responsibility (MCS is ground segment only)
+### Ground vs. On-board Responsibility
 
 | Responsibility | Where |
 |---|---|
-| Send storage/retrieval configuration TCs (create stores, enable/disable, add filter rules, start/stop retrieval) | **Ground (YAMCS MCS)** — XTCE encodes TC packets |
-| Receive and display TM reports (TM[15,6], TM[15,13], TM[15,19], TM[15,23], TM[15,36], TM[15,38], TM[15,40]) | **Ground (YAMCS MCS)** — XTCE decodes TM packets |
-| Maintain packet stores (allocate, resize, delete) at runtime | **On-board (satellite)** |
-| Intercept outgoing TM and copy matching packets into stores | **On-board (satellite)** |
-| Apply filter rules (by APID, service type, subtype, HK struct ID, event ID) to incoming TM | **On-board (satellite)** |
-| Execute open retrieval (continuously transmit stored packets from cursor forward) | **On-board (satellite)** |
-| Execute by-time-range retrieval (transmit packets in fixed time window, then stop) | **On-board (satellite)** |
-| Manage retrieval threads and open-retrieval cursor state | **On-board (satellite)** |
-| Track fill percentage and time boundaries of each packet store | **On-board (satellite)** |
+| Send storage / retrieval configuration TCs | **Ground (YAMCS MCS)** — XTCE encodes TC packets |
+| Receive and display TM status / config reports | **Ground (YAMCS MCS)** — XTCE decodes TM packets |
+| Maintain packet stores at runtime | **On-board (satellite)** |
+| Intercept outgoing TM and copy into stores | **On-board (satellite)** |
+| Apply filter rules to incoming TM | **On-board (satellite)** |
+| Execute open retrieval (continuous) | **On-board (satellite)** |
+| Execute by-time-range retrieval | **On-board (satellite)** |
+| Track fill percentage and time boundaries | **On-board (satellite)** |
 
-**YAMCS/MCS implementation = XTCE only (`pus15.xml`). No Java changes to `yamcs-core` are needed for ST[15].**
-
-The `pus15_simulator.py` described in this document emulates the satellite's on-board packet store behavior (filtering, storage, retrieval threads, state machine) for ground testing. It is not part of the MCS.
+**YAMCS MCS role = XTCE only (`pus15.xml`). No Java changes to `yamcs-core` are needed for ST[15].**
 
 ---
 
 ### Two Sub-Services
 
 | Sub-service | Role |
-|-------------|------|
-| **Storage & Retrieval Subservice** | Manages packet stores (create, delete, resize, enable/disable storage, request retrieval) |
-| **Packet Selection Subservice** | Controls *which* TM packets are stored in which packet store (filtering by APID, service type, message subtype, HK structure ID, event ID) |
+|---|---|
+| **Storage & Retrieval** | Manages packet stores (create, delete, resize, enable/disable storage, request retrieval) |
+| **Packet Selection** | Controls *which* TM packets are stored in which packet store (filter by APID / service type / subtype / HK struct / event ID) |
+
+---
+
+### Scope: Excluded Subtypes
+
+Three subtypes are out of scope for this implementation:
+
+| Sub | Message | Reason excluded |
+|---|---|---|
+| 24 | TC[15,24] — Copy packets by time-window | Store-to-store copy; on-board concern only; not required for initial MCS integration |
+| 26 | TC[15,26] — Change store type to circular | Maintenance operation; deferred from initial scope |
+| 27 | TC[15,27] — Change store type to bounded | Maintenance operation; deferred from initial scope |
+
+All remaining **34 TC/TM subtypes** are covered below.
+
+---
 
 ### Packet Store Model
 
-Each packet store has:
-
 | Property | Type | Description |
-|----------|------|-------------|
+|---|---|---|
 | `store_id` | uint16 | Unique identifier |
 | `size_bytes` | uint32 | Allocated capacity |
-| `store_type` | uint8 | 0=circular (oldest overwritten), 1=bounded (stops when full) |
+| `store_type` | uint8 | 0=circular (overwrite oldest), 1=bounded (stop when full) |
 | `vc_id` | uint8 | Virtual channel for downlink during retrieval |
 | `storage_status` | enum | enabled / disabled |
 | `open_retrieval_status` | enum | in-progress / suspended |
-| `btr_status` | enum | enabled (retrieval running) / disabled |
+| `btr_status` | enum | enabled / disabled |
 | `open_retrieval_start_time` | uint64 (CUC) | Cursor for open retrieval |
 
 ### Two Retrieval Modes
 
 | Mode | Trigger | Behaviour |
-|------|---------|-----------|
-| **Open retrieval** | TC[15,15] resume | Continuously transmit stored packets from `open_retrieval_start_time` forward until caught up, then wait for new packets |
-| **By-time-range retrieval** | TC[15,9] | Transmit all packets in a fixed `[start_time, end_time]` window, then auto-stop |
+|---|---|---|
+| **Open retrieval** | TC[15,15] resume | Continuously transmit from `open_retrieval_start_time` forward; cursor advances as packets are sent |
+| **By-time-range (BTR)** | TC[15,9] start | Transmit all packets in fixed `[start_time, end_time]` window, then auto-stop and set `btr_status = disabled` |
 
-### Packet Store Lifecycle (State Machine)
+### Packet Store Lifecycle
 
 ```
-                   TC[15,20] create
-                        │
-                  storage=DISABLED
-                  open_retrieval=SUSPENDED
-                  btr=DISABLED
-                        │
-    TC[15,1] ──► storage=ENABLED ──► TC[15,2] ──► storage=DISABLED
-                        │
-    TC[15,15] ──► open_retrieval=IN-PROGRESS ──► TC[15,16] ──► SUSPENDED
-                        │
-    TC[15,9]  ──► btr=ENABLED ──► TC[15,17] / end-reached ──► btr=DISABLED
+         TC[15,20] create
+               │
+         storage=DISABLED
+         open_retrieval=SUSPENDED
+         btr=DISABLED
+               │
+  TC[15,1] ──► storage=ENABLED ──► TC[15,2] ──► DISABLED
+               │
+  TC[15,15] ──► open_retrieval=IN-PROGRESS ──► TC[15,16] ──► SUSPENDED
+               │
+  TC[15,9]  ──► btr=ENABLED ──► TC[15,17] / end-reached ──► DISABLED
 ```
 
 ---
 
-## b) Required TC/TM — Context and Implementation Plan
-
-All 35 required subtypes are listed below in two groups.
-
----
+## b) Required TC/TM — Detail
 
 ### Storage & Retrieval Subservice
 
@@ -94,83 +101,77 @@ All 35 required subtypes are listed below in two groups.
 
 #### TC[15,1] — Enable storage function of packet stores
 
-**Purpose**: Set `storage_status = enabled` for one or more (or all) packet stores so that incoming TM matching the selection filter gets stored.
+**Purpose**: Set `storage_status = enabled` for one or more (or all) packet stores.
 
 **Packet format**:
 ```
-Option A — specific stores:
-  [N: uint8] [store_id_1: uint16] … [store_id_N: uint16]
-
-Option B — all stores:
-  (no application data)
+Option A (specific):  [N: uint8] [store_id: uint16] × N
+Option B (all stores): (no application data)
 ```
 
-**XTCE approach**: Two MetaCommands — `TC_15_1_specific` (with N + array of store_ids) and `TC_15_1_all` (no arguments). Both set service_type=15, service_subtype=1.
+**XTCE**: Two MetaCommands — `TC_15_1_specific` (N + store_id array) and `TC_15_1_all` (no args), both with service_subtype=1.
 
-**Simulator (on-board emulation)**: For each store_id, set `store.storage_enabled = True`. Reject if store_id unknown (send PUS-1 NACK). This logic runs in the satellite-side simulator, not in YAMCS.
+**Simulator (on-board)**: Set `store.storage_enabled = True` per store; reject and NACK if store_id unknown.
 
 ---
 
 #### TC[15,2] — Disable storage function of packet stores
 
-**Purpose**: Set `storage_status = disabled`. New incoming TM will no longer be written to those stores.
+**Purpose**: Set `storage_status = disabled`; new TM no longer written to those stores.
 
-**Packet format**: Same as TC[15,1] (N×store_id or no-arg all).
+**Packet format**: Same as TC[15,1].
 
-**XTCE approach**: Same two-MetaCommand pattern (service_subtype=2).
+**XTCE**: Two MetaCommands — `TC_15_2_specific` and `TC_15_2_all` (service_subtype=2).
 
-**Simulator (on-board emulation)**: Set `store.storage_enabled = False` per store. This logic runs in the satellite-side simulator, not in YAMCS.
+**Simulator (on-board)**: Set `store.storage_enabled = False` per store.
 
 ---
 
 #### TC[15,9] — Start by-time-range retrieval of packet stores
 
-**Purpose**: Begin transmitting stored packets in a time window `[start_time, end_time]`. Sets `btr_status = enabled` for each specified store.
+**Purpose**: Transmit stored packets in `[start_time, end_time]`; sets `btr_status = enabled`.
 
 **Packet format**:
 ```
 N: uint8
-For each instruction:
-  store_id: uint16
-  start_time: uint64   (CUC 4B coarse + 3B fine, encoded as 8 bytes with pfield)
-  end_time:   uint64
+Per entry:
+  store_id:   uint16
+  start_time: uint64 (CUC 4B coarse + 3B fine)
+  end_time:   uint64 (CUC)
 ```
-*(Note: if priority is supported, an additional priority uint8 precedes each time pair — omit for simplified implementation)*
 
-**XTCE approach**: `TC_15_9` with an AggregateArgumentType `BtrInstrType = {store_id:uint16, start_time:uint64, end_time:uint64}` and `ArrayArgumentType` of N entries.
+**XTCE**: `AggregateArgumentType BtrInstrType = {store_id, start_time, end_time}`; `ArrayArgumentType` of N entries. Requires `uint64` in pus_dt.xml (Gap §1).
 
-**Simulator (on-board emulation)**: For each instruction, validate store exists and btr_status is not already enabled, then launch a background thread that reads `store.packets` where `start_time <= ts <= end_time` and transmits each via UDP. When done, set `btr_status = disabled`. This retrieval execution logic runs entirely in the satellite-side simulator; YAMCS only receives the resulting TM stream.
-
-**Gap**: uint64 type not in pus_dt.xml — needs to be added (see Gap §1).
+**Simulator (on-board)**: Validate store exists and btr_status not already enabled; launch BTR thread that reads `store.packets` where `start_time ≤ ts ≤ end_time`, transmits via UDP, then sets `btr_status = DISABLED`.
 
 ---
 
 #### TC[15,11] — Delete content of packet stores up to specified time
 
-**Purpose**: Free space by deleting all packets with `timestamp <= time_limit` from one or more (or all) stores.
+**Purpose**: Free space by deleting all packets with `timestamp ≤ time_limit`.
 
 **Packet format**:
 ```
-time_limit: uint64   (CUC)
-N: uint8             (0 means all stores)
-[store_id_1: uint16] … [store_id_N: uint16]
+time_limit: uint64 (CUC)
+N: uint8            (0 = all stores)
+[store_id: uint16] × N
 ```
 
-**XTCE approach**: Single MetaCommand with `time_limit` argument, `N` uint8, and ArrayArgumentType of store_ids. When N=0 the array has zero length (all stores).
+**XTCE**: Two MetaCommands — `TC_15_11_specific` (`time_limit` + N + store_id array) and `TC_15_11_all` (`time_limit` only). Requires uint64 (Gap §1 + §2).
 
-**Simulator (on-board emulation)**: For each target store, remove packets where `ts <= time_limit`. Reject if store is currently in active btr or open retrieval (to avoid deleting in-flight data). This deletion logic runs in the satellite-side simulator, not in YAMCS.
+**Simulator (on-board)**: Remove packets where `ts ≤ time_limit` from each target store. Reject if store is in active BTR or open retrieval (btr_status=enabled or open_retrieval_status=in-progress).
 
 ---
 
 #### TC[15,12] — Summary-report content of packet stores
 
-**Purpose**: Request a TM[15,13] status summary for one or more (or all) packet stores.
+**Purpose**: Request TM[15,13] for one or more (or all) packet stores.
 
-**Packet format**: N×store_id or no-arg (all).
+**Packet format**: N×store_id or no-arg.
 
-**XTCE approach**: Two MetaCommands (`_specific` and `_all`).
+**XTCE**: Two MetaCommands — `TC_15_12_specific` and `TC_15_12_all`.
 
-**Simulator (on-board emulation)**: For each targeted store, build and send TM[15,13] immediately — emulating the satellite-side response to a status query TC.
+**Simulator (on-board)**: Build and send TM[15,13] immediately for each targeted store.
 
 ---
 
@@ -181,18 +182,18 @@ N: uint8             (0 means all stores)
 **Packet format**:
 ```
 N: uint8
-For each store:
-  store_id:                    uint16
-  oldest_ts:                   uint64   (CUC of oldest stored packet)
-  newest_ts:                   uint64   (CUC of newest stored packet)
-  open_retrieval_start_time:   uint64   (current open-retrieval cursor)
-  fill_pct:                    uint8    (0–100 % capacity used)
-  fill_pct_from_start:         uint8    (fill % from open-retrieval cursor to newest)
+Per store:
+  store_id:                  uint16
+  oldest_ts:                 uint64  (CUC of oldest stored packet)
+  newest_ts:                 uint64  (CUC of newest stored packet)
+  open_retrieval_start_time: uint64  (current open-retrieval cursor)
+  fill_pct:                  uint8   (0–100% capacity used)
+  fill_pct_from_start:       uint8   (fill% from cursor to newest packet)
 ```
 
-**XTCE approach**: AggregateParameterType `StoreSummaryType` with 7 members; ArrayParameterType driven by `N`.
+**XTCE**: `AggregateParameterType StoreSummaryType` with 6 members; `ArrayParameterType` driven by N. Requires uint64 (Gap §1).
 
-**Simulator (on-board emulation)**: Computes fill_pct = `len(store.packets) / store.max_packets * 100`, serializes store state, and emits TM[15,13] — emulating satellite-side reporting. YAMCS receives and decodes the packet via XTCE.
+**Simulator (on-board)**: Compute `fill_pct = used_bytes / capacity_bytes * 100`; serialize store state; emit TM[15,13]. YAMCS receives and decodes via XTCE.
 
 ---
 
@@ -202,50 +203,50 @@ For each store:
 
 **Packet format**:
 ```
-start_time: uint64   (new cursor value)
-N: uint8
-[store_id: uint16] × N   OR   N=0 means all suspended stores
+start_time: uint64 (new cursor value)
+N: uint8            (0 = all suspended stores)
+[store_id: uint16] × N
 ```
 
-**XTCE approach**: Single MetaCommand with `start_time` + N + array.
+**XTCE**: Two MetaCommands — `TC_15_14_specific` (`start_time` + N + array) and `TC_15_14_all` (`start_time` only). Requires uint64 (Gap §1 + §2).
 
-**Simulator (on-board emulation)**: Validate store is suspended (reject otherwise), then update `store.open_retrieval_start_time = start_time`. This cursor management runs in the satellite-side simulator, not in YAMCS.
+**Simulator (on-board)**: Validate `open_retrieval_status = SUSPENDED` (reject otherwise); update `store.open_retrieval_start_time = start_time`.
 
 ---
 
 #### TC[15,15] — Resume open retrieval of packet stores
 
-**Purpose**: Set `open_retrieval_status = in-progress`, triggering continuous transmission from `open_retrieval_start_time`.
+**Purpose**: Set `open_retrieval_status = in-progress`; begins continuous transmission from cursor.
 
-**Packet format**: N×store_id or no-arg. *(priority uint8 per entry if supported — omit for simplified implementation)*
+**Packet format**: N×store_id or no-arg.
 
-**XTCE approach**: Two MetaCommands.
+**XTCE**: Two MetaCommands — `TC_15_15_specific` and `TC_15_15_all`.
 
-**Simulator (on-board emulation)**: For each store, set `open_retrieval_status = IN_PROGRESS`, launch background thread that continuously reads `store.packets` from cursor forward and transmits via UDP. Thread auto-updates `open_retrieval_start_time` as packets are sent. This retrieval execution runs entirely in the satellite-side simulator; YAMCS only receives the resulting TM stream.
+**Simulator (on-board)**: Set `open_retrieval_status = IN_PROGRESS`; launch thread that reads `store.packets` from cursor forward, transmits via UDP, advances cursor. Thread auto-updates cursor as packets are sent.
 
 ---
 
 #### TC[15,16] — Suspend open retrieval of packet stores
 
-**Purpose**: Pause open retrieval. The cursor position is preserved so TC[15,15] can resume without gap.
+**Purpose**: Pause open retrieval; cursor position preserved so TC[15,15] can resume without gap.
 
 **Packet format**: N×store_id or no-arg.
 
-**XTCE approach**: Two MetaCommands.
+**XTCE**: Two MetaCommands — `TC_15_16_specific` and `TC_15_16_all`.
 
-**Simulator (on-board emulation)**: Set `open_retrieval_status = SUSPENDED`, signal background thread to stop. Cursor position is preserved so TC[15,15] can resume without gap. This state management runs in the satellite-side simulator, not in YAMCS.
+**Simulator (on-board)**: Set `open_retrieval_status = SUSPENDED`; signal background thread to stop; cursor preserved.
 
 ---
 
 #### TC[15,17] — Abort by-time-range retrieval of packet stores
 
-**Purpose**: Cancel an in-progress BTR. Sets `btr_status = disabled`.
+**Purpose**: Cancel in-progress BTR; sets `btr_status = disabled`.
 
 **Packet format**: N×store_id or no-arg.
 
-**XTCE approach**: Two MetaCommands.
+**XTCE**: Two MetaCommands — `TC_15_17_specific` and `TC_15_17_all`.
 
-**Simulator (on-board emulation)**: Cancel BTR thread for each store, set `btr_status = DISABLED`. This thread management runs in the satellite-side simulator, not in YAMCS.
+**Simulator (on-board)**: Cancel BTR thread per store; set `btr_status = DISABLED`.
 
 ---
 
@@ -255,9 +256,9 @@ N: uint8
 
 **Packet format**: No application data.
 
-**XTCE approach**: Single MetaCommand, no arguments.
+**XTCE**: Single MetaCommand, no arguments.
 
-**Simulator (on-board emulation)**: Iterate all stores, build and send TM[15,19] — emulating the satellite-side response to a status poll TC. YAMCS receives and decodes the report via XTCE.
+**Simulator (on-board)**: Iterate all stores; build and send TM[15,19].
 
 ---
 
@@ -268,46 +269,46 @@ N: uint8
 **Packet format**:
 ```
 N: uint8
-For each store:
+Per store:
   store_id:               uint16
-  storage_status:         uint8   (0=disabled, 1=enabled)
-  open_retrieval_status:  uint8   (0=suspended, 1=in-progress)
-  btr_status:             uint8   (0=disabled, 1=enabled)
+  storage_status:         uint8  (0=disabled, 1=enabled)
+  open_retrieval_status:  uint8  (0=suspended, 1=in-progress)
+  btr_status:             uint8  (0=disabled, 1=enabled)
 ```
 
-**XTCE approach**: AggregateParameterType `StoreStatusType` with 4 members; ArrayParameterType driven by N.
+**XTCE**: `AggregateParameterType StoreStatusType` with 4 members; `ArrayParameterType` driven by N.
 
 ---
 
 #### TC[15,20] — Create packet stores
 
-**Purpose**: Dynamically allocate a new packet store with given size and type.
+**Purpose**: Dynamically allocate a new packet store.
 
 **Packet format**:
 ```
 N: uint8
-For each instruction:
-  store_id:    uint16
-  size_bytes:  uint32
-  store_type:  uint8   (0=circular, 1=bounded)
-  vc_id:       uint8
+Per entry:
+  store_id:   uint16
+  size_bytes: uint32
+  store_type: uint8  (0=circular, 1=bounded)
+  vc_id:      uint8
 ```
 
-**XTCE approach**: AggregateArgumentType `CreateStoreInstrType`; ArrayArgumentType of N entries.
+**XTCE**: `AggregateArgumentType CreateStoreInstrType`; `ArrayArgumentType` of N entries.
 
-**Simulator (on-board emulation)**: Check store_id not already in use and max stores not exceeded. Create `PacketStore(store_id, size_bytes, store_type, vc_id)`. Initial state: storage=DISABLED, open_retrieval=SUSPENDED, btr=DISABLED. This store allocation runs in the satellite-side simulator; YAMCS only uplinks the TC that triggers it.
+**Simulator (on-board)**: Check store_id not already in use and max stores not exceeded; create `PacketStore`. Initial state: storage=DISABLED, open_retrieval=SUSPENDED, btr=DISABLED.
 
 ---
 
 #### TC[15,21] — Delete packet stores
 
-**Purpose**: Remove one or more packet stores (only deletable when all three statuses are inactive).
+**Purpose**: Remove one or more packet stores (only valid when all three statuses are inactive).
 
-**Packet format**: N×store_id or no-arg (delete all eligible).
+**Packet format**: N×store_id or no-arg (delete all eligible stores).
 
-**XTCE approach**: Two MetaCommands.
+**XTCE**: Two MetaCommands — `TC_15_21_specific` and `TC_15_21_all`.
 
-**Simulator (on-board emulation)**: For each store, validate all statuses are inactive, then remove from store map. Reject with NACK if active. Store lifecycle management runs in the satellite-side simulator, not in YAMCS.
+**Simulator (on-board)**: Validate all statuses inactive before deletion; NACK if any store is active.
 
 ---
 
@@ -317,7 +318,7 @@ For each instruction:
 
 **Packet format**: No application data.
 
-**XTCE approach**: Single MetaCommand, no arguments.
+**XTCE**: Single MetaCommand, no arguments.
 
 ---
 
@@ -328,14 +329,14 @@ For each instruction:
 **Packet format**:
 ```
 N: uint8
-For each store:
-  store_id:    uint16
-  size_bytes:  uint32
-  store_type:  uint8
-  vc_id:       uint8
+Per store:
+  store_id:   uint16
+  size_bytes: uint32
+  store_type: uint8
+  vc_id:      uint8
 ```
 
-**XTCE approach**: AggregateParameterType `StoreConfigType`; ArrayParameterType.
+**XTCE**: `AggregateParameterType StoreConfigType` with 4 members; `ArrayParameterType` driven by N.
 
 ---
 
@@ -346,14 +347,12 @@ For each store:
 **Packet format**:
 ```
 N: uint8
-For each instruction:
-  store_id:     uint16
-  new_size:     uint32
+Per entry: store_id (uint16) + new_size (uint32)
 ```
 
-**XTCE approach**: AggregateArgumentType `ResizeInstrType`; ArrayArgumentType.
+**XTCE**: `AggregateArgumentType ResizeInstrType = {store_id, new_size}`; `ArrayArgumentType`.
 
-**Simulator (on-board emulation)**: Validate all statuses inactive, update `store.size_bytes`. Reject if active or if new_size is 0 or exceeds available memory. This memory management runs in the satellite-side simulator, not in YAMCS.
+**Simulator (on-board)**: Validate all statuses inactive, `new_size > 0`, and new_size compatible with available memory; update `store.size_bytes`.
 
 ---
 
@@ -367,135 +366,67 @@ store_id:  uint16
 new_vc_id: uint8
 ```
 
-**XTCE approach**: Single MetaCommand with two arguments.
+**XTCE**: Single MetaCommand with two arguments.
 
-**Simulator (on-board emulation)**: Validate store exists and not currently in btr or open retrieval. Update `store.vc_id`. Virtual-channel routing is managed on-board; YAMCS only uplinks the TC.
+**Simulator (on-board)**: Validate store exists and not in active BTR or open retrieval; update `store.vc_id`.
 
 ---
 
 ### Packet Selection Subservice
 
-The packet selection subservice controls *which* incoming TM packets are admitted to each packet store. It is structured as a three-level filter hierarchy: **application process → service type → message subtype**. Additionally there are separate HK-parameter, diagnostic-parameter, and event-definition filter tables.
+Controls *which* incoming TM packets are admitted to each packet store. Three-level filter hierarchy: **APID → service type → message subtype**. Separate optional filter tables for HK parameter reports, diagnostic parameter reports, and event definitions.
 
 ---
 
 #### TC[15,3] — Add report types to application process storage-control configuration
 
-**Purpose**: Enable storage of specific TM types (identified by APID, service type, message subtype) into a packet store.
+**Purpose**: Enable storage of specific TM types (by APID, service type, message subtype) in a packet store.
 
-**Packet format** (Figure 8-117 / same hierarchical encoding as TC[14,1]):
+**Packet format** (§6.15.4.4.1):
 ```
 store_id: uint16
-N1: uint8   (number of application process entries)
-  repeated N1 times:
+N1: uint8
+  Per APID entry:
     apid: uint16
-    N2: uint8              ← 0 = "add all services for this APID"
-    repeated N2 times:
+    N2: uint8   (0 = add all services for this APID)
+    Per service type entry:
       svc_type: uint8
-      N3: uint8            ← 0 = "add all subtypes of this service type"
-      repeated N3 times:
-        msg_subtype: uint8
+      N3: uint8   (0 = add all subtypes of this service)
+      [msg_subtype: uint8] × N3
 ```
 
-The three instruction forms from the spec are encoded via the count fields (same as TC[14,1]):
-
-| Instruction Form | Encoding | Effect |
+| Instruction form | Encoding | Effect |
 |---|---|---|
-| Add specific report type | `apid` + N2=1 + `svc_type` + N3=1 + `subtype` | Enable storage of one specific TM subtype |
-| Add all subtypes of a service | `apid` + N2=1 + `svc_type` + **N3=0** | Enable storage of all subtypes of a service |
-| Add all services of an APID | `apid` + **N2=0** | Enable storage of all reports from that APID |
+| Add specific report type | N2≥1, N3=1 + subtype | Enable one TM subtype |
+| Add all subtypes of a service | N2≥1, N3=0 | Enable all subtypes of a service type |
+| Add all services of an APID | N2=0 | Enable all reports from that APID |
 
-**XTCE approach**: ✅ **Single MetaCommand — fully implementable** using the same sibling-member nested array pattern as TC[14,1] (confirmed by `yamcs-core/src/test/resources/xtce/array-in-array-arg.xml`). `ArgumentInstanceRef argumentRef="N3"` inside `pkt_sel_svc_entry_type` resolves to the `N3` member of the containing aggregate; `argumentRef="N2"` inside `pkt_sel_apid_entry_type` resolves to its `N2` sibling. No top-level reference needed.
+**XTCE**: ✅ **Single MetaCommand** — 3-level nested `ArrayArgumentType` using sibling-member `ArgumentInstanceRef` (confirmed by `array-in-array-arg.xml`). N2=0 and N3=0 are zero-length arrays. Covers all three instruction forms.
 
 ```xml
 <!-- Array of N3 subtypes; N3 is a sibling member in the containing aggregate -->
 <ArrayArgumentType name="pkt_sel_subtype_array_type" arrayTypeRef="/dt/uint8">
-    <DimensionList>
-        <Dimension>
-            <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
-            <EndingIndex>
-                <DynamicValue>
-                    <ArgumentInstanceRef argumentRef="N3"/>
-                    <LinearAdjustment intercept="-1"/>
-                </DynamicValue>
-            </EndingIndex>
-        </Dimension>
-    </DimensionList>
+    <DimensionList><Dimension>
+        <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+        <EndingIndex><DynamicValue>
+            <ArgumentInstanceRef argumentRef="N3"/>
+            <LinearAdjustment intercept="-1"/>
+        </DynamicValue></EndingIndex>
+    </Dimension></DimensionList>
 </ArrayArgumentType>
 
 <!-- Service type entry: svc_type + N3 + N3×subtype -->
 <AggregateArgumentType name="pkt_sel_svc_entry_type">
     <MemberList>
-        <Member name="svc_type"  typeRef="/dt/uint8"/>
-        <Member name="N3"        typeRef="/dt/uint8"/>
-        <Member name="subtypes"  typeRef="pkt_sel_subtype_array_type"/>
+        <Member name="svc_type" typeRef="/dt/uint8"/>
+        <Member name="N3"       typeRef="/dt/uint8"/>
+        <Member name="subtypes" typeRef="pkt_sel_subtype_array_type"/>
     </MemberList>
 </AggregateArgumentType>
-
-<!-- Array of N2 service entries; N2 is a sibling member in the containing aggregate -->
-<ArrayArgumentType name="pkt_sel_svc_array_type" arrayTypeRef="pkt_sel_svc_entry_type">
-    <DimensionList>
-        <Dimension>
-            <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
-            <EndingIndex>
-                <DynamicValue>
-                    <ArgumentInstanceRef argumentRef="N2"/>
-                    <LinearAdjustment intercept="-1"/>
-                </DynamicValue>
-            </EndingIndex>
-        </Dimension>
-    </DimensionList>
-</ArrayArgumentType>
-
-<!-- App process entry: apid + N2 + N2×service_entry -->
-<AggregateArgumentType name="pkt_sel_apid_entry_type">
-    <MemberList>
-        <Member name="apid"        typeRef="/dt/uint16"/>
-        <Member name="N2"          typeRef="/dt/uint8"/>
-        <Member name="svc_entries" typeRef="pkt_sel_svc_array_type"/>
-    </MemberList>
-</AggregateArgumentType>
-
-<!-- Outer array of N1 app process entries; N1 is a top-level argument -->
-<ArrayArgumentType name="pkt_sel_apid_array_type" arrayTypeRef="pkt_sel_apid_entry_type">
-    <DimensionList>
-        <Dimension>
-            <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
-            <EndingIndex>
-                <DynamicValue>
-                    <ArgumentInstanceRef argumentRef="N1"/>
-                    <LinearAdjustment intercept="-1"/>
-                </DynamicValue>
-            </EndingIndex>
-        </Dimension>
-    </DimensionList>
-</ArrayArgumentType>
-
-<MetaCommand name="TC_15_3_ADD_REPORT_TYPES"
-             shortDescription="TC[15,3] Add report types to app-process storage-control config">
-    <ArgumentList>
-        <Argument name="store_id"     argumentTypeRef="/dt/uint16"/>
-        <Argument name="N1"           argumentTypeRef="/dt/uint8"/>
-        <Argument name="apid_entries" argumentTypeRef="pkt_sel_apid_array_type"/>
-    </ArgumentList>
-    <CommandContainer name="TC_15_3">
-        <EntryList>
-            <ArgumentRefEntry argumentRef="store_id"/>
-            <ArgumentRefEntry argumentRef="N1"/>
-            <ArgumentRefEntry argumentRef="apid_entries"/>
-        </EntryList>
-        <BaseContainer containerRef="pus15-tc"/>
-    </CommandContainer>
-</MetaCommand>
 ```
 
-N2=0 and N3=0 are zero-length arrays, which YAMCS renders as empty array inputs in the UI. Single MetaCommand covers all three instruction forms.
-
-**Simulator (on-board emulation)** (Python — runs in `pus15_simulator.py`, not YAMCS):
+**Simulator (on-board)**:
 ```python
-store_id = struct.unpack_from(">H", data, 8)[0]; offset = 10
-n1 = data[offset]; offset += 1
-store = packet_stores.get(store_id)
 for _ in range(n1):
     apid = struct.unpack_from(">H", data, offset)[0]; offset += 2
     n2 = data[offset]; offset += 1
@@ -508,28 +439,28 @@ for _ in range(n1):
             if n3 == 0:
                 store.app_process_config.setdefault(apid, {})[svc_type] = set()
             else:
-                subtypes = store.app_process_config.setdefault(apid, {}).setdefault(svc_type, set())
+                s = store.app_process_config.setdefault(apid, {}).setdefault(svc_type, set())
                 for _ in range(n3):
-                    subtypes.add(data[offset]); offset += 1
+                    s.add(data[offset]); offset += 1
 ```
 
 ---
 
 #### TC[15,4] — Delete report types from application process storage-control configuration
 
-**Purpose**: Reverse of TC[15,3].
+**Purpose**: Reverse of TC[15,3]; remove from filter table.
 
 **Packet format**: Same N1/N2/N3 hierarchical structure as TC[15,3].
 
-| Instruction Form | Encoding | Effect |
+| Instruction form | Encoding | Effect |
 |---|---|---|
-| Delete specific report type | `apid` + N2=1 + `svc_type` + N3=1 + `subtype` | Remove one subtype from storage filter |
-| Delete a service type | `apid` + N2=1 + `svc_type` + **N3=0** | Remove entire service-type entry |
-| Delete an application process | `apid` + **N2=0** | Remove entire APID entry |
+| Delete specific report type | N2≥1, N3=1 + subtype | Remove one subtype from filter |
+| Delete a service type | N2≥1, N3=0 | Remove entire service-type entry |
+| Delete an application process | N2=0 | Remove entire APID entry |
 
-**XTCE approach**: ✅ **Single MetaCommand** — reuses `pkt_sel_apid_array_type` from TC[15,3] with subtype=4. Same sibling-member nested array design.
+**XTCE**: ✅ **Single MetaCommand** — reuses `pkt_sel_apid_array_type` from TC[15,3], service_subtype=4.
 
-**Simulator (on-board emulation)**: Mirror TC[15,3] handler but remove from filter table. If svc_type entry becomes empty, delete it. If APID entry becomes empty, delete it. Filter table management runs in the satellite-side simulator, not in YAMCS.
+**Simulator (on-board)**: Mirror TC[15,3] handler but remove from filter table; cascade-delete empty entries.
 
 ---
 
@@ -539,85 +470,66 @@ for _ in range(n1):
 
 **Packet format**: `store_id: uint16`
 
-**XTCE approach**: Single MetaCommand with one argument.
+**XTCE**: Single MetaCommand, one argument.
 
 ---
 
 #### TM[15,6] — Application process storage-control configuration content report
 
-**Purpose**: Lists the filter configuration for a packet store.
+**Purpose**: Lists the app-process filter configuration for a packet store.
 
 **Packet format**:
 ```
 store_id: uint16
 N_app_processes: uint8
-For each app process:
+Per app process:
   apid: uint16
   N_service_types: uint8
-  For each service type:
+  Per service type:
     svc_type: uint8
     N_subtypes: uint8
     [msg_subtype: uint8] × N_subtypes
 ```
 
-**XTCE approach**: ✅ **Fully implementable** — 3-level nested structure is expressible using nested `ContainerRefEntry` + `RepeatEntry`, identical to TM[14,4]. `ParameterInstanceRef` defaults to `relativeTo = CURRENT_ENTRY_WITHIN_PACKET` (`getFromEnd(param, 0)`), so the inner `RepeatEntry` count always resolves to the **most recently decoded** `N_subtypes` for the current outer iteration — not a stale value from a prior loop (confirmed in `ParameterInstanceRef.java` line 53).
+**XTCE**: ✅ **3-level nested `ContainerRefEntry` + `RepeatEntry`**. `ParameterInstanceRef` defaults to `relativeTo = CURRENT_ENTRY_WITHIN_PACKET` (`getFromEnd(param, 0)`), meaning the inner `RepeatEntry` count resolves to the **most recently decoded** value of that parameter per outer iteration (confirmed in `ParameterInstanceRef.java` line 53). Same proven pattern as TM[14,4].
 
 ```xml
-<!-- Innermost: one message subtype -->
 <SequenceContainer name="pkt_sel_subtype_element">
-    <EntryList>
-        <ParameterRefEntry parameterRef="pkt_sel_msg_subtype"/>
-    </EntryList>
+    <EntryList><ParameterRefEntry parameterRef="pkt_sel_msg_subtype"/></EntryList>
 </SequenceContainer>
 
-<!-- Middle: one service type entry + its variable-length subtype array -->
 <SequenceContainer name="pkt_sel_svc_element">
     <EntryList>
         <ParameterRefEntry parameterRef="pkt_sel_svc_type"/>
         <ParameterRefEntry parameterRef="pkt_sel_N_subtypes"/>
         <ContainerRefEntry containerRef="pkt_sel_subtype_element">
-            <RepeatEntry>
-                <Count>
-                    <DynamicValue>
-                        <!-- default instance=0, CURRENT_ENTRY_WITHIN_PACKET → most recently decoded N_subtypes -->
-                        <ParameterInstanceRef parameterRef="pkt_sel_N_subtypes"/>
-                    </DynamicValue>
-                </Count>
-            </RepeatEntry>
+            <RepeatEntry><Count><DynamicValue>
+                <ParameterInstanceRef parameterRef="pkt_sel_N_subtypes"/>
+            </DynamicValue></Count></RepeatEntry>
         </ContainerRefEntry>
     </EntryList>
 </SequenceContainer>
 
-<!-- Per-APID element: apid + N_svc_types + N_svc_types×service_element -->
 <SequenceContainer name="pkt_sel_apid_element">
     <EntryList>
         <ParameterRefEntry parameterRef="pkt_sel_apid"/>
         <ParameterRefEntry parameterRef="pkt_sel_N_svc_types"/>
         <ContainerRefEntry containerRef="pkt_sel_svc_element">
-            <RepeatEntry>
-                <Count>
-                    <DynamicValue>
-                        <ParameterInstanceRef parameterRef="pkt_sel_N_svc_types"/>
-                    </DynamicValue>
-                </Count>
-            </RepeatEntry>
+            <RepeatEntry><Count><DynamicValue>
+                <ParameterInstanceRef parameterRef="pkt_sel_N_svc_types"/>
+            </DynamicValue></Count></RepeatEntry>
         </ContainerRefEntry>
     </EntryList>
 </SequenceContainer>
 
-<!-- TM[15,6]: store_id + N_app_processes + N_app_processes×apid_element -->
-<SequenceContainer name="TM_15_6" shortDescription="TM[15,6] App process storage-control config report">
+<SequenceContainer name="TM_15_6">
     <EntryList>
         <ParameterRefEntry parameterRef="pkt_store_id"/>
         <ParameterRefEntry parameterRef="pkt_sel_N_app_processes"/>
         <ContainerRefEntry containerRef="pkt_sel_apid_element">
-            <RepeatEntry>
-                <Count>
-                    <DynamicValue>
-                        <ParameterInstanceRef parameterRef="pkt_sel_N_app_processes"/>
-                    </DynamicValue>
-                </Count>
-            </RepeatEntry>
+            <RepeatEntry><Count><DynamicValue>
+                <ParameterInstanceRef parameterRef="pkt_sel_N_app_processes"/>
+            </DynamicValue></Count></RepeatEntry>
         </ContainerRefEntry>
     </EntryList>
     <BaseContainer containerRef="pus15-tm">
@@ -628,27 +540,27 @@ For each app process:
 </SequenceContainer>
 ```
 
-**Simulator (on-board emulation)**: Walk `store.app_process_config` and serialize the TM[15,6] response — emulating satellite-side report generation. YAMCS receives and decodes the packet via XTCE.
+**Simulator (on-board)**: Walk `store.app_process_config`; serialize and emit TM[15,6].
 
 ---
 
 #### TC[15,29] — Add structure identifiers to HK parameter report storage-control configuration
 
-**Purpose**: Enable storage of specific housekeeping parameter report structures (identified by HK structure ID) into a packet store.
+**Purpose**: Enable storage of specific HK parameter report structures (by APID + HK struct ID) in a packet store.
 
-**Packet format**:
+**Packet format** (§6.15.4.5.1):
 ```
 store_id: uint16
 N: uint8
-For each instruction:
-  apid: uint16
-  hk_struct_id: uint16
-  [subsampling_rate: uint8]   (if subsampling supported)
+Per entry:
+  apid:            uint16
+  hk_struct_id:    uint16
+  [subsampling_rate: uint8]  (if subsampling supported — include always in test env)
 ```
 
-**XTCE approach**: AggregateArgumentType `HkStructInstrType`; ArrayArgumentType. For test environment, always include subsampling_rate (set to 1 if not used).
+**XTCE**: `AggregateArgumentType HkStructInstrType = {apid, hk_struct_id, subsampling_rate}`; `ArrayArgumentType` of N entries.
 
-**Simulator (on-board emulation)**: Add to `store.hk_config[apid].add(hk_struct_id)`. HK filter table management runs in the satellite-side simulator, not in YAMCS.
+**Simulator (on-board)**: Add `(apid, hk_struct_id)` to `store.hk_config`.
 
 ---
 
@@ -656,39 +568,60 @@ For each instruction:
 
 **Purpose**: Reverse of TC[15,29].
 
-**Packet format**: Same minus subsampling_rate.
+**Packet format**: `store_id` + N × `{apid: uint16, hk_struct_id: uint16}` (no subsampling_rate).
+
+**XTCE**: `AggregateArgumentType HkStructDelInstrType = {apid, hk_struct_id}`; `ArrayArgumentType`.
+
+**Simulator (on-board)**: Remove `(apid, hk_struct_id)` from `store.hk_config`; cascade-delete empty entries.
 
 ---
 
 #### TC[15,31] — Add structure identifiers to diagnostic parameter report storage-control configuration
 
-**Purpose**: Same as TC[15,29] but for diagnostic (ST[04]) parameter report structures.
+**Purpose**: Same as TC[15,29] but for ST[04] diagnostic parameter report structures.
 
 **Packet format**:
 ```
 store_id: uint16
 N: uint8
-For each: {apid: uint16, diag_struct_id: uint16}
+Per entry:
+  apid:           uint16
+  diag_struct_id: uint16
+  [subsampling_rate: uint8]
 ```
+
+**XTCE**: `AggregateArgumentType DiagStructInstrType = {apid, diag_struct_id, subsampling_rate}`; `ArrayArgumentType`.
+
+**Simulator (on-board)**: Add to `store.diag_config`.
 
 ---
 
 #### TC[15,32] — Delete structure identifiers from diagnostic parameter report storage-control configuration
 
-Reverse of TC[15,31].
+**Purpose**: Reverse of TC[15,31].
+
+**Packet format**: `store_id` + N × `{apid: uint16, diag_struct_id: uint16}`.
+
+**XTCE**: `AggregateArgumentType DiagStructDelInstrType = {apid, diag_struct_id}`; `ArrayArgumentType`.
+
+**Simulator (on-board)**: Remove from `store.diag_config`; cascade-delete empty entries.
 
 ---
 
 #### TC[15,33] — Delete event definition identifiers from event report blocking storage-control configuration
 
-**Purpose**: Remove specific event IDs from the block list, allowing those events to be stored again.
+**Purpose**: Remove event IDs from the block list — allows those events to be stored again.
 
 **Packet format**:
 ```
 store_id: uint16
 N: uint8
-For each: {apid: uint16, event_def_id: uint16}
+Per entry: apid (uint16) + event_def_id (uint16)
 ```
+
+**XTCE**: `AggregateArgumentType EventDefInstrType = {apid, event_def_id}`; `ArrayArgumentType`.
+
+**Simulator (on-board)**: Remove `event_def_id` from block list; cascade-delete empty entries.
 
 ---
 
@@ -698,6 +631,10 @@ For each: {apid: uint16, event_def_id: uint16}
 
 **Packet format**: Same as TC[15,33].
 
+**XTCE**: Reuses `EventDefInstrType`; service_subtype=34.
+
+**Simulator (on-board)**: Add `event_def_id` to `store.event_block_config[apid]`.
+
 ---
 
 #### TC[15,35] — Report content of HK parameter report storage-control configuration
@@ -706,58 +643,75 @@ For each: {apid: uint16, event_def_id: uint16}
 
 **Packet format**: `store_id: uint16`
 
+**XTCE**: Single MetaCommand, one argument.
+
 ---
 
 #### TM[15,36] — HK parameter report storage-control configuration content report
+
+**Purpose**: Lists the HK-structure filter configuration for a packet store.
 
 **Packet format**:
 ```
 store_id: uint16
 N_app_processes: uint8
-For each app process:
+Per app process:
   apid: uint16
   N_hk_structs: uint8
-  [hk_struct_id: uint16] × N_hk_structs
-  [subsampling_rate: uint8 per struct if supported]
+  Per HK struct entry:
+    hk_struct_id:      uint16
+    [subsampling_rate: uint8]  (if subsampling supported)
 ```
 
-**XTCE approach**: ✅ **Fully implementable** — 3-level nested structure (store_id → N_app_processes × per-apid → N_hk_structs × hk_struct_id) uses the same nested `ContainerRefEntry` + `RepeatEntry` approach as TM[15,6]. `ParameterInstanceRef` with default `CURRENT_ENTRY_WITHIN_PACKET` semantics resolves the inner count to the most recently decoded `N_hk_structs` per outer iteration. If subsampling rates are included, each innermost entry becomes a fixed `{hk_struct_id: uint16, subsampling_rate: uint8}` aggregate — no additional complexity.
+**XTCE**: ✅ **3-level nested `ContainerRefEntry` + `RepeatEntry`** — same `CURRENT_ENTRY_WITHIN_PACKET` pattern as TM[15,6]. If subsampling is included, the innermost entry is an aggregate `{hk_struct_id, subsampling_rate}` — no additional complexity.
 
 ---
 
 #### TC[15,37] — Report content of diagnostic parameter report storage-control configuration
 
+**Purpose**: Request TM[15,38] for a packet store.
+
 **Packet format**: `store_id: uint16`
+
+**XTCE**: Single MetaCommand, one argument.
 
 ---
 
 #### TM[15,38] — Diagnostic parameter report storage-control configuration content report
 
+**Purpose**: Lists the diagnostic-structure filter configuration.
+
 **Packet format**: Same structure as TM[15,36] but with `diag_struct_id` entries.
 
-**XTCE approach**: ✅ **Fully implementable** — identical design as TM[15,36]; reuse the same nested container structure with `diag_struct_id` parameter names.
+**XTCE**: ✅ Identical design to TM[15,36]; reuse nested container structure with `diag_struct_id` parameter names.
 
 ---
 
 #### TC[15,39] — Report content of event report blocking storage-control configuration
 
+**Purpose**: Request TM[15,40] for a packet store.
+
 **Packet format**: `store_id: uint16`
+
+**XTCE**: Single MetaCommand, one argument.
 
 ---
 
 #### TM[15,40] — Event report blocking storage-control configuration content report
 
+**Purpose**: Lists the event-blocking filter configuration.
+
 **Packet format**:
 ```
 store_id: uint16
 N_app_processes: uint8
-For each app process:
+Per app process:
   apid: uint16
   N_events: uint8
   [event_def_id: uint16] × N_events
 ```
 
-**XTCE approach**: ✅ **Fully implementable** — same 3-level nested `ContainerRefEntry` + `RepeatEntry` pattern as TM[15,36], with `event_def_id: uint16` as the innermost element.
+**XTCE**: ✅ Same 3-level nested `ContainerRefEntry` + `RepeatEntry` pattern as TM[15,36]. Innermost element: `event_def_id: uint16`.
 
 ---
 
@@ -765,162 +719,187 @@ For each app process:
 
 ### Gap 1 — `uint64` / CUC timestamp not in pus_dt.xml
 
-**Affects**: TC[15,9], TC[15,11], TC[15,13], TC[15,14] and all their TM counterparts.
-
-**Problem**: CUC time is 8 bytes (1B pfield + 4B coarse + 3B fine). `pus_dt.xml` only defines uint8/uint16/uint32. There is no uint64, uint24, or composite time type.
+**Affects**: TC[15,9] `start_time`/`end_time`, TC[15,11] `time_limit`, TC[15,14] `start_time`, TM[15,13] `oldest_ts`/`newest_ts`/`open_retrieval_start_time`.
 
 **Fix**: Add to `pus_dt.xml`:
 ```xml
 <IntegerParameterType signed="false" name="uint64">
-    <IntegerDataEncoding encoding="unsigned" sizeInBits="64" />
+    <IntegerDataEncoding encoding="unsigned" sizeInBits="64"/>
 </IntegerParameterType>
+<IntegerArgumentType signed="false" name="uint64">
+    <IntegerDataEncoding encoding="unsigned" sizeInBits="64"/>
+</IntegerArgumentType>
 ```
-And treat the 8-byte CUC block as a raw uint64 (ignoring pfield byte interpretation in XTCE; handle decoding in Python). Alternatively, split into `cuc_coarse: uint32` + `cuc_fine: uint32` and omit the pfield byte for simplicity.
+Treat the 8-byte CUC block as a raw uint64 (ignoring pfield interpretation in XTCE; handle in Python). Alternative: split into `cuc_coarse: uint32` + `cuc_fine: uint32`, omitting the 1-byte pfield for simplicity.
 
 ---
 
-### Gap 2 — "All stores" vs. "Specific stores" duality requires two MetaCommands per TC
+### Gap 2 — "All stores" vs "Specific stores" duality requires two MetaCommands per TC
 
-**Affects**: TC[15,1], TC[15,2], TC[15,12], TC[15,14], TC[15,15], TC[15,16], TC[15,17], TC[15,21].
+**Affects**: TC[15,1], TC[15,2], TC[15,11], TC[15,12], TC[15,14], TC[15,15], TC[15,16], TC[15,17], TC[15,21].
 
-**Problem**: The spec allows a TC to carry either N specific store IDs or zero arguments (meaning "all stores"). XTCE MetaCommands require a fixed argument schema — there is no way to make all arguments optional-or-present.
+**Problem**: XTCE MetaCommands require a fixed argument schema — arguments cannot be optional-or-present.
 
-**Fix**: Define two MetaCommands per ambiguous subtype:
-- `TC_15_1_specific` — arguments: `N:uint8`, `store_ids: uint16[]`
-- `TC_15_1_all` — no arguments, fixed subtype=1
+**Fix**: Two MetaCommands per affected subtype:
+- `TC_15_X_specific` — N:uint8 + store_ids:uint16[]
+- `TC_15_X_all` — no arguments (fixed subtype=X)
 
-Both share the same APID and service_subtype in the packet; the Python simulator disambiguates by checking remaining payload length after the header.
+Simulator disambiguates by checking remaining payload length after the primary header.
 
 ---
 
-### Gap 3 — Nested arrays-of-arrays in TM[15,6/36/38/40] — Resolved
+### Gap 3 — Nested TM structures (TM[15,6/36/38/40]) — **Resolved**
 
 **Affects**: TM[15,6], TM[15,36], TM[15,38], TM[15,40].
-**Severity**: None — fully resolved
-**Effort**: None
 
-These TM packets' 3-level nested structures (store_id → per-APID → per-sub-entry) **are** fully expressible in XTCE using nested `ContainerRefEntry` + `RepeatEntry` containers. The key mechanism: `ParameterInstanceRef` defaults to `relativeTo = CURRENT_ENTRY_WITHIN_PACKET` (confirmed in `ParameterInstanceRef.java` line 53), which uses `tmParams.getFromEnd(param, 0)` = **most recently decoded value** of that parameter. Each outer per-APID element iteration decodes a fresh inner count (e.g. `N_hk_structs`); the inner `RepeatEntry` count resolves to that value automatically. No workaround, no flattening needed.
+These 3-level nested structures are fully expressible using nested `ContainerRefEntry` + `RepeatEntry`. The key: `ParameterInstanceRef` defaults to `CURRENT_ENTRY_WITHIN_PACKET` (confirmed `ParameterInstanceRef.java` line 53), resolving inner count to the most recently decoded value of that parameter per outer iteration.
 
-The `AggregateParameterType` approach (ArrayParameterType with inner dynamic dimension referencing a field inside a containing aggregate) does **not** work in YAMCS for TM — that inner-aggregate reference path is the incorrect pattern. The correct pattern is exclusively `ContainerRefEntry` + `RepeatEntry`, as used in TM[14,4] (see pus14.md for the canonical XTCE XML).
+**Critical note**: `AggregateParameterType` with inner dynamic dimension (array-in-array) does **not** work for TM decoding in YAMCS. Only `ContainerRefEntry` + `RepeatEntry` works. Canonical reference: TM[14,4] in pus14.md.
 
 ---
 
-### Gap 4 — Optional/conditional fields in TC[15,20] and TM[15,23]
+### Gap 4 — `store_type` and `vc_id` are optional in the spec
 
-**Affects**: TC[15,20] (create stores), TM[15,23] (configuration report).
+**Affects**: TC[15,20], TM[15,23].
 
-**Problem**: `store_type` and `vc_id` are optional in the spec (only present if the subservice supports multiple store types / multiple VCs). XTCE `IncludeCondition` requires a preceding indicator field.
-
-**Fix**: For the test environment, always include `store_type` and `vc_id` as fixed-size fields. Add a `flags: uint8` byte before them where bit 0 = store_type present, bit 1 = vc_id present. Set flags=0x03 always.
+**Fix**: For the test environment, always include `store_type` and `vc_id` as fixed-size fields. Add a `flags: uint8` before them (bit0=store_type present, bit1=vc_id present); set `flags=0x03` always.
 
 ---
 
-### Gap 5 — Active retrieval is a stateful background process requiring threading (simulator / on-board emulation only)
+### Gap 5 — Active retrieval requires threading (simulator / on-board emulation only)
 
-**Affects**: TC[15,9] (BTR), TC[15,15] (open retrieval resume).
+**Affects**: TC[15,9] (BTR start), TC[15,15] (open retrieval resume). On-board concern — no MCS involvement.
 
-**Scope**: This is an on-board satellite concern. YAMCS MCS has no role here beyond uplink of the trigger TC — the retrieval execution is entirely satellite-side.
-
-**Problem**: Both retrieval modes require continuously transmitting stored packets over time. This cannot be modelled in XTCE — it is purely simulator-side (on-board emulation) behavior and has no YAMCS MCS component.
-
-**Simulator requirement** (on-board emulation — `pus15_simulator.py`): Two thread patterns per store (similar to ST[11] scheduled execution):
-- Open retrieval thread: reads `store.packets[cursor:]`, transmits each via UDP, advances cursor, then waits for new packets
-- BTR thread: reads `store.packets` where `start_time ≤ ts ≤ end_time`, transmits, then signals completion and sets `btr_status = DISABLED`
-
-**Complexity**: Moderate. Directly analogous to the ST[11] pattern already implemented in the simulator.
+**Simulator requirement**: Two thread patterns per store:
+- **Open retrieval thread**: reads `store.packets[cursor:]`, transmits each via UDP, advances cursor, then waits for new packets
+- **BTR thread**: reads `store.packets` where `start_time ≤ ts ≤ end_time`, transmits, then sets `btr_status = DISABLED`
 
 ---
 
-### Gap 6 — TM bus / packet store interception requires architectural addition to simulator (on-board emulation only)
+### Gap 6 — TM bus interception requires shared infrastructure in simulator
 
-**Affects**: The core storage function (all TC[15,1]/TC[15,3] etc. are useless without this).
+**Affects**: All storage functions (TC[15,1/2/3] are useless without this). On-board concern only.
 
-**Scope**: This is an on-board satellite concern. On a real satellite the OBC intercepts all outgoing TM before downlink. In the test environment this must be emulated in the simulator. YAMCS MCS is not involved — it simply receives whatever the simulator downlinks.
-
-**Problem**: Currently each Python service (e.g. `pus20_simulator.py`) sends TM directly via UDP to YAMCS. PUS 15 requires that all outgoing TM be optionally intercepted and copied into packet stores before (or during) transmission. This is not in the current simulator architecture.
-
-**Simulator fix** (on-board emulation — `pus15_simulator.py`): Introduce a shared `PacketStoreManager` class that wraps the TM send socket:
+**Simulator fix**: Introduce a shared `PacketStoreManager` class:
 ```python
 class PacketStoreManager:
     def submit_tm(self, raw_packet: bytes) -> None:
-        """Called by all simulator services before sending TM via UDP.
-        Emulates on-board interception: checks each enabled store's filter config;
-        appends matching packets. YAMCS MCS receives only the forwarded UDP packet."""
         for store in self.stores.values():
             if store.storage_enabled and self._matches_filter(store, raw_packet):
                 store.append(raw_packet, timestamp=now())
         self.udp_sock.sendto(raw_packet, (TM_HOST, TM_PORT))
 ```
-All simulator services import and call `PacketStoreManager.submit_tm()` instead of sending directly. This is a one-time shared infrastructure addition to the simulator — no YAMCS MCS change.
+All simulator services call `submit_tm()` instead of sending directly.
 
 ---
 
-### Gap 7 — Fill percentage tracking requires capacity bookkeeping (simulator / on-board emulation only)
+### Gap 7 — Fill percentage tracking requires byte-level bookkeeping (simulator only)
 
-**Affects**: TM[15,13] (content summary).
+**Affects**: TM[15,13] `fill_pct` and `fill_pct_from_start`.
 
-**Scope**: This is an on-board satellite concern. The satellite tracks store fill and reports it in TM[15,13]; YAMCS MCS only decodes and displays that report via XTCE.
-
-**Problem**: `fill_pct` is `stored_bytes / capacity_bytes * 100`. The simulator needs to track byte count (not just packet count) since packets vary in size.
-
-**Simulator fix** (on-board emulation): Each `PacketStore` maintains a `used_bytes` counter incremented on append and decremented on deletion or circular overwrite.
+**Fix**: Each `PacketStore` maintains `used_bytes` counter; incremented on append, decremented on delete or circular overwrite.
 
 ---
 
-## Overall Verdict
+## d) XTCE-Only vs Native Java — Per-Message Table
 
-**MCS scope (YAMCS ground): XTCE only.** All 35 TC/TM packet formats required by ST[15] are fully expressible in XTCE using aggregates, arrays, and dynamic dimensions. **No Java changes to `yamcs-core` are needed for ST[15].** YAMCS MCS encodes outgoing TC packets (uplink) and decodes incoming TM packets (downlink) — both purely via `pus15.xml`.
+**YAMCS is ground-station only.** All on-board logic lives in `pus15_simulator.py`. YAMCS MCS encodes uplink TC packets and decodes downlink TM reports — both exclusively via XTCE. **No `yamcs-core` Java is needed for ST[15].**
 
-All packet store logic — state machine, filtering, storage, retrieval threads, fill tracking, and the TM bus intercept — is **on-board satellite behavior** and must be implemented in the simulator only.
+| Sub | Message | Direction | XTCE Approach (MCS) | Java in yamcs-core? | XTCE Complexity | Notes |
+|---|---|---|---|---|---|---|
+| 1 | TC[15,1] | Send | Two MetaCommands: `_specific` (N + store_id[]) and `_all` (no args) | **No** | Low | Gap §2 dual-variant |
+| 2 | TC[15,2] | Send | Two MetaCommands: `_specific` and `_all` | **No** | Low | Same pattern as TC[15,1] |
+| 3 | TC[15,3] | Send | Single MetaCommand; 3-level nested `ArrayArgumentType` with sibling-member `ArgumentInstanceRef` | **No** | **High** | store_id + N1×{apid+N2×{svc_type+N3×subtype}}; N=0 → zero-length arrays |
+| 4 | TC[15,4] | Send | Single MetaCommand; reuses TC[15,3] nested array types | **No** | **High** | Same wire format as TC[15,3] |
+| 5 | TC[15,5] | Send | Single MetaCommand; `store_id` arg only | **No** | Low | |
+| 6 | TM[15,6] | Receive | 3-level nested `ContainerRefEntry` + `RepeatEntry`; `ParameterInstanceRef` `CURRENT_ENTRY` | **No** | **High** | Proven — same pattern as TM[14,4] |
+| — | — | — | — | — | — | — |
+| 9 | TC[15,9] | Send | `AggregateArgType BtrInstrType`; `ArrayArgType` of N | **No** | Medium | Needs uint64 (Gap §1) |
+| 11 | TC[15,11] | Send | `time_limit` (uint64) + two MetaCommands `_specific`/`_all` | **No** | Medium | Gap §1 + §2 |
+| 12 | TC[15,12] | Send | Two MetaCommands: `_specific` and `_all` | **No** | Low | Gap §2 |
+| 13 | TM[15,13] | Receive | `AggregateParamType` (6 fields incl. 3× uint64); `ArrayParamType` driven by N | **No** | Medium | Needs uint64 (Gap §1) |
+| 14 | TC[15,14] | Send | `start_time` (uint64) + two MetaCommands `_specific`/`_all` | **No** | Medium | Gap §1 + §2 |
+| 15 | TC[15,15] | Send | Two MetaCommands: `_specific` and `_all` | **No** | Low | Gap §2 |
+| 16 | TC[15,16] | Send | Two MetaCommands: `_specific` and `_all` | **No** | Low | Gap §2 |
+| 17 | TC[15,17] | Send | Two MetaCommands: `_specific` and `_all` | **No** | Low | Gap §2 |
+| 18 | TC[15,18] | Send | Single MetaCommand, no args | **No** | Low | |
+| 19 | TM[15,19] | Receive | `AggregateParamType StoreStatusType` (4 fields); `ArrayParamType` | **No** | Low | |
+| 20 | TC[15,20] | Send | `AggregateArgType CreateStoreInstrType` (4 fields); `ArrayArgType` | **No** | Medium | |
+| 21 | TC[15,21] | Send | Two MetaCommands: `_specific` and `_all` | **No** | Low | Gap §2 |
+| 22 | TC[15,22] | Send | Single MetaCommand, no args | **No** | Low | |
+| 23 | TM[15,23] | Receive | `AggregateParamType StoreConfigType` (4 fields); `ArrayParamType` | **No** | Low | |
+| **24** | **TC[15,24]** | — | **OUT OF SCOPE** | — | — | Copy packets by time window; excluded |
+| 25 | TC[15,25] | Send | `AggregateArgType ResizeInstrType = {store_id, new_size}`; `ArrayArgType` | **No** | Low | |
+| **26** | **TC[15,26]** | — | **OUT OF SCOPE** | — | — | Change store type to circular; excluded |
+| **27** | **TC[15,27]** | — | **OUT OF SCOPE** | — | — | Change store type to bounded; excluded |
+| 28 | TC[15,28] | Send | Single MetaCommand; `store_id (uint16)` + `new_vc_id (uint8)` | **No** | Low | |
+| — | — | — | — | — | — | — |
+| 29 | TC[15,29] | Send | `AggregateArgType HkStructInstrType = {apid, hk_struct_id, subsampling_rate}`; `ArrayArgType` | **No** | Low | |
+| 30 | TC[15,30] | Send | `AggregateArgType HkStructDelInstrType = {apid, hk_struct_id}`; `ArrayArgType` | **No** | Low | |
+| 31 | TC[15,31] | Send | `AggregateArgType DiagStructInstrType = {apid, diag_struct_id, subsampling_rate}`; `ArrayArgType` | **No** | Low | |
+| 32 | TC[15,32] | Send | `AggregateArgType DiagStructDelInstrType = {apid, diag_struct_id}`; `ArrayArgType` | **No** | Low | |
+| 33 | TC[15,33] | Send | `AggregateArgType EventDefInstrType = {apid, event_def_id}`; `ArrayArgType` | **No** | Low | **Delete** from block list (re-enables storage) |
+| 34 | TC[15,34] | Send | `AggregateArgType EventDefInstrType = {apid, event_def_id}`; `ArrayArgType` | **No** | Low | **Add** to block list (prevents storage) |
+| 35 | TC[15,35] | Send | Single MetaCommand; `store_id` arg only | **No** | Low | |
+| 36 | TM[15,36] | Receive | 3-level nested `ContainerRefEntry` + `RepeatEntry`; `CURRENT_ENTRY` | **No** | **High** | store_id + N_app×{apid+N_hk×{hk_struct_id[+subsampling]}} |
+| 37 | TC[15,37] | Send | Single MetaCommand; `store_id` arg only | **No** | Low | |
+| 38 | TM[15,38] | Receive | 3-level nested `ContainerRefEntry` + `RepeatEntry`; `CURRENT_ENTRY` | **No** | **High** | Identical design to TM[15,36] with `diag_struct_id` |
+| 39 | TC[15,39] | Send | Single MetaCommand; `store_id` arg only | **No** | Low | |
+| 40 | TM[15,40] | Receive | 3-level nested `ContainerRefEntry` + `RepeatEntry`; `CURRENT_ENTRY` | **No** | Medium | store_id + N_app×{apid+N_evt×event_def_id} |
 
-### XTCE Feasibility Summary
+**All 34 required messages: XTCE only. Java required: 0 of 34.**
+
+---
+
+### Overall Verdict
 
 | Criterion | Answer |
-|-----------|--------|
-| All 35 TC/TM formats expressible in XTCE? | **YES** — using aggregates, arrays, dynamic dimensions |
-| Any XTCE features needed that are untested in this codebase? | **None remaining** — nested TM containers use `ContainerRefEntry`+`RepeatEntry` (confirmed by `ParameterInstanceRef.java` line 53); nested TC arrays use sibling-member `ArgumentInstanceRef` (confirmed by `array-in-array-arg.xml`) |
-| MCS (YAMCS ground) needs Java code? | **NO** — XTCE only; `yamcs-core` is untouched |
-| Simulator code complexity vs PUS 20? | Significantly higher — stateful, threaded, cross-service interception needed |
-
-### Required Artifacts by Layer
-
-| Layer | Artifact | Purpose |
-|-------|----------|---------|
-| **MCS / YAMCS ground** | `mdb/pus15.xml` | XTCE TC encoding (all TC[15,x] uplinks) and TM decoding (all TM[15,x] downlinks) |
-| **MCS / YAMCS ground** | `yamcs.pus-test.yaml` update | Load `mdb/pus15.xml` into the Mission Database |
-| **MCS / YAMCS ground** | `mdb/pus_dt.xml` update | Add `uint64` type for CUC timestamp fields (Gap §1) |
-| **Simulator (on-board emulation)** | `simulators/pus15_simulator.py` | Emulates satellite: `PacketStore` state machine, `PacketStoreManager` TM bus intercept, storage filter tables, open-retrieval thread, BTR thread, all TM[15,x] report generation |
-
-> **Key finding**: All on-board logic (packet store allocation, TM interception and filtering, retrieval thread execution, fill tracking, cursor management) lives exclusively in `pus15_simulator.py`. YAMCS MCS only uplinks TC packets and decodes incoming TM reports — both purely via XTCE. No YAMCS server code is modified.
+|---|---|
+| All 34 TC/TM formats expressible in XTCE? | **YES** — aggregates, arrays, dynamic dimensions, nested containers |
+| XTCE features needed that are untested in this codebase? | **None** — nested TM uses `ContainerRefEntry`+`RepeatEntry` (confirmed `ParameterInstanceRef.java:53`); nested TC uses sibling-member `ArgumentInstanceRef` (confirmed `array-in-array-arg.xml`) |
+| MCS (YAMCS ground) needs Java code? | **NO** |
+| Simulator complexity vs PUS-20? | Significantly higher — stateful, threaded, cross-service interception required |
 
 ---
 
-## Implementation Files (when building)
+### Contrast with other services
+
+| Service | XTCE Sufficient for MCS? | Java in yamcs-core? | Why Java is / is not needed |
+|---|---|---|---|
+| **ST[05]** | Partial | **Yes — `PusEventDecoder`** | TM[5,1–4] must be promoted to YAMCS native events; no XTCE mechanism exists for event emission |
+| **ST[11]** | Yes | No (`PusCommandPostprocessor` only) | TC[11,4] wrapping via command extra; all TM are plain containers |
+| **ST[14]** | Yes | No | Forwarding-control logic is on-board; MCS only sends config TCs and decodes FCC dump reports |
+| **ST[15]** | **Yes** | **No** | Packet store lifecycle, TM interception, retrieval threads are on-board; MCS only encodes TCs and decodes status/config TMs |
+
+---
+
+## e) Implementation Files
 
 | Layer | File | Action |
-|-------|------|--------|
-| **MCS / YAMCS ground** | `test_yamcs/src/main/yamcs/mdb/pus15.xml` | Create — XTCE containers + commands for all TC[15,x] encoding and TM[15,x] decoding |
-| **MCS / YAMCS ground** | `test_yamcs/src/main/yamcs/etc/yamcs.pus-test.yaml` | Update — add `mdb/pus15.xml` to MDB list |
-| **MCS / YAMCS ground** | `test_yamcs/src/main/yamcs/mdb/pus_dt.xml` | Update — add `uint64` IntegerParameterType and IntegerArgumentType |
-| **Simulator (on-board emulation)** | `test_yamcs/simulators/pus15_simulator.py` | Create — Python sim emulating satellite: `PacketStore` + `PacketStoreManager`, storage filter tables (app-process/HK/diag/event), open-retrieval thread, BTR thread, all TM report emission |
+|---|---|---|
+| **MCS / YAMCS ground** | `mdb/pus15.xml` | Create — XTCE TC encoding (all TC[15,x]) and TM decoding (all TM[15,x]) |
+| **MCS / YAMCS ground** | `yamcs.pus-test.yaml` | Update — add `mdb/pus15.xml` to MDB list |
+| **MCS / YAMCS ground** | `mdb/pus_dt.xml` | Update — add `uint64` `IntegerParameterType` + `IntegerArgumentType` (Gap §1) |
+| **Simulator (on-board)** | `simulators/pus15_simulator.py` | Create — `PacketStore`, `PacketStoreManager` TM-bus intercept, storage filter tables (app-process / HK / diag / event), open-retrieval thread, BTR thread, all TM report generation |
 
 ### Reference Files
-- `test_yamcs/src/main/yamcs/mdb/pus20.xml` — XTCE structure pattern
-- `test_yamcs/simulators/pus20_simulator.py` — Python simulator pattern
-- `test_yamcs/src/main/yamcs/mdb/pus_dt.xml` — shared data types (uint8/16/32)
+- `mdb/pus20.xml` — XTCE structure pattern
+- `simulators/pus20_simulator.py` — Python simulator pattern
+- `mdb/pus_dt.xml` — shared data types (uint8/16/32)
+- `mdb/pus14.xml` — canonical TM[14,4] nested `ContainerRefEntry`+`RepeatEntry` pattern
 
 ---
 
-## Recommended Implementation Sequence
+## f) Recommended Implementation Sequence
 
 1. **[GROUND]** Add `uint64` to `pus_dt.xml`
-2. **[ON-BOARD sim]** Add `PacketStore` class + `PacketStoreManager` TM-bus wrapper to simulator
-3. **[ON-BOARD sim]** Implement TC[15,20/21/22/23] handlers (create/delete/configure stores) — static management, no threads
-4. **[ON-BOARD sim]** Implement TC[15,1/2/18/19] handlers (enable/disable storage + status report) — basic state transitions
-5. **[ON-BOARD sim]** Implement TC[15,3/4/5/6] handlers (app process storage-control config) — filter table management
-6. **[ON-BOARD sim]** Implement TC[15,12/13] handlers (content summary) — fills in remaining store state
-7. **[ON-BOARD sim]** Implement TC[15,9/17] handlers (BTR start/abort) — adds BTR thread
-8. **[ON-BOARD sim]** Implement TC[15,14/15/16] handlers (open retrieval cursor/resume/suspend) — adds open retrieval thread
-9. **[ON-BOARD sim]** Implement TC[15,11/25/28] handlers (delete content, resize, change VC)
-10. **[ON-BOARD sim]** Implement TC[15,29-40] handlers (HK/diag/event storage-control configs)
+2. **[ON-BOARD sim]** Add `PacketStore` class + `PacketStoreManager` TM-bus wrapper
+3. **[ON-BOARD sim]** TC[15,20/21/22/23] — create/delete/configure stores (static, no threads)
+4. **[ON-BOARD sim]** TC[15,1/2/18/19] — enable/disable storage + status report
+5. **[ON-BOARD sim]** TC[15,3/4/5/6] — app-process storage-control config
+6. **[ON-BOARD sim]** TC[15,12/13] — content summary report
+7. **[ON-BOARD sim]** TC[15,9/17] — BTR start/abort (BTR thread)
+8. **[ON-BOARD sim]** TC[15,14/15/16] — open-retrieval cursor/resume/suspend (open-retrieval thread)
+9. **[ON-BOARD sim]** TC[15,11/25/28] — delete content, resize, change VC
+10. **[ON-BOARD sim]** TC[15,29–40] — HK/diag/event storage-control configs
 11. **[GROUND]** Author `pus15.xml` in parallel — XTCE definitions for all TC argument structures and TM container hierarchies

@@ -46,9 +46,7 @@ import org.yamcs.yarch.YarchDatabase;
  *         - serviceType: 5
  *           class: org.yamcs.pus.Pus5Service
  *           args:
- *             events:
- *               - {id: 1, initiallyEnabled: true}
- *               - {id: 2, initiallyEnabled: true}
+ *             eventIdParameter: /PUS5/event_id
  * </pre>
  */
 public class PusCommandReleaser extends StreamTcCommandReleaser {

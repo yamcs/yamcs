@@ -1068,6 +1068,58 @@ All TC/TM packet structures for ST[14] are fully expressible in XTCE:
 
 ---
 
+## d) Native MCS Implementation — Java vs XTCE-only
+
+### Verdict: XTCE-only
+
+ST[14] is **XTCE-only on the ground side**. No Java exists or is needed in `yamcs-core` for ST[14]. This is stated in §a):
+
+> *YAMCS/MCS implementation = XTCE only (`pus14.xml`). No Java changes to `yamcs-core` are needed for ST[14].*
+
+All TC sends are encoded as XTCE MetaCommands. All TM receives (TM[14,4], TM[14,8], TM[14,12]) are XTCE parameter containers. The on-board forwarding control logic (APFCC/HK FCC/Diag FCC management, `shouldForward()` gate) lives **entirely in the simulator** — it emulates satellite-side behavior. YAMCS MCS only sends configuration TCs and decodes FCC dump TM reports — both purely via XTCE.
+
+---
+
+### Per-message table (MCS ground side only)
+
+| Message | MCS Role | XTCE Sufficient? | Java Required? | Notes |
+|---------|----------|-----------------|----------------|-------|
+| TC[14,1] | Send | **Yes** | No | Single MetaCommand with N1/N2/N3 nested arrays; N2=0/N3=0 encode "add all" |
+| TC[14,2] | Send | **Yes** | No | 2 variants: delete-entries (reuses TC[14,1] types) + empty-APFCC (no args) |
+| TC[14,3] | Send | **Yes** | No | No args — identical to TC[11,17] pattern |
+| TM[14,4] | Receive | **Yes** | No | 3-level nested `ContainerRefEntry` repeats; `CURRENT_ENTRY_WITHIN_PACKET` picks most-recent `N_subtypes` per iteration |
+| TC[14,5] | Send | **Yes** | No | Single MetaCommand, N1/N_structs 2-level nested; N_structs=0 = "add all" |
+| TC[14,6] | Send | **Yes** | No | 2 variants: delete-entries + empty-HK-FCC (no args) |
+| TC[14,7] | Send | **Yes** | No | No args |
+| TM[14,8] | Receive | **Yes** | No | Flat 2-level dynamic array; fully XTCE-expressible |
+| TC[14,9] | Send | **Yes** | No | Mirror of TC[14,5] for diagnostic FCC |
+| TC[14,10] | Send | **Yes** | No | Mirror of TC[14,6] for diagnostic FCC |
+| TC[14,11] | Send | **Yes** | No | No args; mirror of TC[14,7] |
+| TM[14,12] | Receive | **Yes** | No | Mirror of TM[14,8] for diagnostic FCC |
+
+---
+
+### Contrast with ST[05] and ST[11]
+
+| | ST[05] | ST[11] | ST[14] |
+|--|--------|--------|--------|
+| Native Java needed in yamcs-core? | **Yes** — `PusEventDecoder` | **No** | **No** |
+| Why Java for TM? | TM[5,1–4] must be promoted to YAMCS native events (events stream) — no XTCE mechanism | N/A | N/A |
+| Existing yamcs-core Java | `Pus5Service`, `PusEventDecoder` | `PusCommandPostprocessor.buildScheduledTc()` (already present) | None needed |
+| XTCE for TC? | Yes | Yes | Yes |
+| XTCE for TM? | Partial (params decoded, events need Java) | Full | Full |
+| On-board Java (simulator only) | `Pus5Service` in simulator | `Pus11Service` in simulator | `Pus14Service` in simulator (to be created) |
+
+---
+
+### When would yamcs-core Java be needed?
+
+Only if YAMCS itself acted as a forwarding filter — i.e., if YAMCS should gate TM packets before archiving them based on an APFCC. That is explicitly **not** the design here: the forwarding control table lives on-board (or in the simulator), and YAMCS MCS archives whatever packets the satellite chooses to downlink.
+
+If a future requirement added MCS-side filtering (e.g., suppressing certain TM packets before they reach the parameter archive), a `PusTmFilter` service in `yamcs-core` would be needed. That is not a ST[14] requirement — it would be a YAMCS architectural extension.
+
+---
+
 ## Implementation Files (when building)
 
 | Layer | File | Action |

@@ -25,23 +25,27 @@ public class Pus5Service extends AbstractPusService {
 
     public void sendEvent() {
         var id = count % 5;
-        if (id == 0 && enabled.getOrDefault(1, false)) {
-            // send event1 (informative, subtype 1)
-            PusTmPacket packet = newPacket(1, 7);
-            ByteBuffer bb = packet.getUserDataBuffer();
-            bb.put((byte) 1);
-            bb.putShort((short) count);
-            bb.putFloat((float) (count + 3.14159265));
-            pusSimulator.transmitRealtimeTM(packet);
-        } else if (enabled.getOrDefault(2, false)) {
-            // send event2 with subtype (severity level) id
-            byte[] msg = ("This is an event with subtype " + id).getBytes(StandardCharsets.UTF_8);
-            PusTmPacket packet = newPacket(id, 3 + msg.length);
-            ByteBuffer bb = packet.getUserDataBuffer();
-            bb.put((byte) 2);
-            bb.putShort((short) msg.length);
-            bb.put(msg);
-            pusSimulator.transmitRealtimeTM(packet);
+        if (id == 0) {
+            if (enabled.getOrDefault(1, false)) {
+                // send event1 (informative, subtype 1)
+                PusTmPacket packet = newPacket(1, 7);
+                ByteBuffer bb = packet.getUserDataBuffer();
+                bb.put((byte) 1);
+                bb.putShort((short) count);
+                bb.putFloat((float) (count + 3.14159265));
+                pusSimulator.transmitRealtimeTM(packet);
+            }
+        } else {
+            if (enabled.getOrDefault(2, false)) {
+                // send event2 with subtype (severity level) id
+                byte[] msg = ("This is an event with subtype " + id).getBytes(StandardCharsets.UTF_8);
+                PusTmPacket packet = newPacket(id, 3 + msg.length);
+                ByteBuffer bb = packet.getUserDataBuffer();
+                bb.put((byte) 2);
+                bb.putShort((short) msg.length);
+                bb.put(msg);
+                pusSimulator.transmitRealtimeTM(packet);
+            }
         }
         count++;
     }
