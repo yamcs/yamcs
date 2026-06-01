@@ -5,6 +5,48 @@ Architecture learnings for implementing PUS services natively in yamcs-core
 
 ---
 
+## Contents
+
+| § | Section | Line |
+|---|---------|------|
+| 0 | Deployment Context | 50 |
+| — | · System topology | 52 |
+| — | · Configuration files | 67 |
+| — | · Storage | 75 |
+| 1 | TC Pipeline | 83 |
+| — | · How CommandReleaser is discovered | 104 |
+| — | · TC stream tuple (StandardTupleDefinitions.TC) | 112 |
+| 2 | Implementing a Native PUS Service | 124 |
+| — | · Pattern: PusCommandReleaser + PusTcHandler | 126 |
+| — | · How to identify a PUS TC from raw binary | 189 |
+| — | · TC relay (for ST[21] sequence execution) | 199 |
+| 3 | TM Pipeline | 221 |
+| — | · TM stream tuple (StandardTupleDefinitions.TM) | 235 |
+| 4 | Injecting TM from a Native Service | 253 |
+| — | · PUS TM packet structure | 272 |
+| 5 | Command History Integration | 291 |
+| — | · Standard ack key constants | 303 |
+| 6 | Processor Configuration | 315 |
+| 7 | State Persistence (MementoDb) | 352 |
+| 8 | Archive / Database Layer | 376 |
+| — | · Tables | 378 |
+| — | · Stream types | 387 |
+| 9 | XTCE / MDB Notes | 398 |
+| 10 | Command Verification | 416 |
+| — | · Pus1Verifier | 424 |
+| 11 | PUS-Specific Classes | 440 |
+| 12 | Limitations | 491 |
+| 13 | Checklist: Adding a New PUS Service | 504 |
+| 14 | Testing a Native PUS Service | 528 |
+| — | · Setup | 532 |
+| — | · What to verify for any new service | 544 |
+| — | · Automated test pattern | 580 |
+| — | · Debugging checklist | 627 |
+| 15 | Time Handling | 640 |
+| — | · Time Correlation Service (TCO) | 650 |
+
+---
+
 ## 0. Deployment Context
 
 ### System topology
@@ -483,7 +525,119 @@ Config: `eventIdParameter`, `eventTemplateFile`.
 
 ---
 
-## 14. Time Handling
+## 14. Testing a Native PUS Service
+
+The examples/pus project is the canonical integration harness. It bundles YAMCS + the PUS simulator into a single `mvn yamcs:run` command, providing a full TC→handler→TM→XTCE decode loop without any external infrastructure.
+
+### Setup
+
+```bash
+# one-time build (skip if yamcs-core artifacts are already installed)
+mvn install -DskipTests -pl simulator,yamcs-core,examples/pus
+
+cd examples/pus
+mvn yamcs:run          # starts YAMCS + embedded PUS simulator on localhost:8090
+```
+
+Wait for: `[SimulatorCommander] PUS simulator started`
+
+### What to verify for any new service
+
+#### 1. TC path — command history
+
+Issue a TC via the web UI (*Telecommanding*) or Python client. Navigate to *Commanding → Command History* and confirm:
+
+| Stage | Entry | Expected |
+|-------|-------|----------|
+| Accepted | `Acknowledge_Sent` | `OK` — handler received the TC |
+| Completed | `CommandComplete` | `OK` or `NOK` with error message |
+
+A missing `CommandComplete` means `publishCompletion()` was never called in one of the switch branches.
+
+#### 2. TM path — parameters and containers
+
+After the handler calls `emitTm(...)`, go to *Monitoring → Parameters* and filter by the service's XTCE namespace. Verify:
+- Parameter values decoded correctly (check against raw packet bytes if suspicious)
+- Array parameters (`disabled_event_ids` style) show correct element count
+- No container mismatch errors in the YAMCS log
+
+For event-flavored TM (ST[05] style): check *Monitoring → Events* for the formatted message. Missing entries mean `PusEventDecoder` didn't match the event ID or the template is absent from `events.json`.
+
+#### 3. Simulator-side TC handling
+
+The `simulator/.../pus/Pus<XX>Service.java` mirrors the ground handler. Confirm:
+- Simulator logs no `invalid subtype` or `invalid event id` lines
+- Simulator sends the expected TM response (check via TM stream subscription or raw container values)
+
+#### 4. State persistence (MementoDb)
+
+If the service persists state:
+1. Apply a TC that changes state (e.g. disable an event).
+2. Stop YAMCS (`Ctrl-C`), restart with `mvn yamcs:run`.
+3. Query the state immediately (e.g. TC[5,7]) — the persisted change must survive the restart.
+4. Confirm the init path loaded MementoDb *after* seeding defaults (defaults must not overwrite persisted state).
+
+### Automated test pattern
+
+Place tests in `examples/pus/tests/test-pus<XX>.py`. The standard structure:
+
+```python
+from yamcs.client import YamcsClient
+
+INSTANCE  = "pus"
+PROCESSOR = "realtime"
+HOST      = "localhost:8090"
+
+def run_tests():
+    client   = YamcsClient(HOST)
+    proc     = client.get_processor(INSTANCE, PROCESSOR)
+    cmd_conn = proc.create_command_connection()
+
+    # Optional: subscribe to a container for TM response validation
+    tm_queue = queue.Queue()
+    sub = proc.create_container_subscription(
+        "/PUS<XX>/pus<xx>-response",
+        on_data=lambda c: tm_queue.put(c.binary),
+    )
+
+    def issue(cmd_path, args=None, timeout=5.0):
+        cmd = cmd_conn.issue(cmd_path, args=args or {})
+        cmd.await_acknowledgment("Acknowledge_Sent", timeout=timeout)
+        return cmd.await_acknowledgment("CommandComplete", timeout=timeout)
+
+    # --- tests ---
+    # assert compl.status == "OK"
+    # assert tm_queue.get(timeout=5).hex() == expected_hex
+
+    sub.cancel()
+
+if __name__ == "__main__":
+    sys.exit(0 if run_tests() else 1)
+```
+
+Run with: `python3 tests/test-pus<XX>.py` (YAMCS must be running).
+
+Tests should cover at minimum:
+- **Happy path**: nominal TC → expected TM response, correct CommandComplete
+- **Bulk/array args**: multiple IDs in one TC (N > 1)
+- **Idempotency**: repeat the same TC — state must not double-count
+- **Unknown ID / invalid subtype**: TC with bad payload → `NOK` CommandComplete, no crash
+- **State survives query**: apply change → query state → confirm change is reflected in TM response
+
+### Debugging checklist
+
+| Symptom | Where to look |
+|---------|---------------|
+| `CommandComplete` never appears | Missing `publishCompletion()` call in a code branch |
+| TM container parameters all zero | XTCE field offsets or sizes don't match `emitTm()` byte layout |
+| Event not in Events stream | `PusEventDecoder` event ID mismatch or missing template in `events.json` |
+| State lost after restart | MementoDb write omitted, or defaults seed overwrites loaded state |
+| `Pus1Verifier` reports failure on unrelated TC | Service type guard missing — add `if (reportServiceType != 1) return NO_RESULT` |
+| Array container crashes on empty list | Missing `IncludeCondition` on the array `ParameterRefEntry` when count == 0 |
+
+---
+
+## 15. Time Handling
 
 YAMCS timestamps: **signed 64-bit ms since 1970-01-01T00:00:00 TAI** (including leap seconds).
 

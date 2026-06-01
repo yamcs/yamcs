@@ -1,5 +1,68 @@
 # PUS Simulator Architecture Reference
 
+## Contents
+
+| § | Section | Line |
+|---|---------|------|
+| — | Key File Locations | 66 |
+| — | Service Registration Pattern (PusSimulator.java) | 88 |
+| — | AbstractPusService API | 110 |
+| — | Packet Classes | 143 |
+| — | · PusTmPacket (APID != 0, has secondary header) | 145 |
+| — | · PusTmTimePacket (APID = 0, NO secondary header) | 151 |
+| — | · PusTcPacket | 156 |
+| — | PusTime (CUC format) | 163 |
+| — | Periodic Task Pattern (from Pus5Service) | 172 |
+| — | MDB Container Hierarchy | 194 |
+| — | MDB File Pattern (pus5.xml as template) | 208 |
+| — | · Base container for a new service (type==N) | 210 |
+| — | · Abstract TC base | 222 |
+| — | · Dynamic-size array (TM side) | 235 |
+| — | · Conditional field | 256 |
+| — | pus.xml Base Parameters | 267 |
+| — | yamcs.pus.yaml — How to Add a New MDB File | 285 |
+| — | Nested Dynamic Array Patterns (Multi-Level) | 303 |
+| — | · TC Side — Sibling-Member ArgumentInstanceRef | 305 |
+| — | · TM Side — Nested ContainerRefEntry + RepeatEntry | 390 |
+| — | Zero-Payload TC/TM Pattern (ST[17] reference) | 450 |
+| — | · Zero-argument MetaCommand (TC[17,1]) | 455 |
+| — | · Zero-payload SequenceContainer (TM[17,2]) | 479 |
+| — | · Python builder for zero-payload TM | 499 |
+| — | · Smoke-test value | 510 |
+| ST[19] | Event-Action Service Patterns | 517 |
+| — | · Embedded TC Packet in TC/TM Payload | 519 |
+| — | · Event-Action Function State Machine | 528 |
+| — | · EventBus Pattern (ST[05]/ST[19] coupling) | 538 |
+| — | · N=0 "All Definitions" Encoding Variants | 556 |
+| ST[14] | Real-Time Forwarding Control Patterns | 567 |
+| — | · Cross-Cutting Forwarding Gate | 569 |
+| — | · APFCC Data Structures | 586 |
+| — | · shouldForward Logic | 606 |
+| — | · Two-Variant MetaCommand Pattern for "Delete-All" TCs | 627 |
+| ST[15] | Service Patterns | 665 |
+| — | · PacketStore State Machine | 667 |
+| — | · "All stores" vs "Specific stores" TC Pattern | 681 |
+| — | · CUC Timestamp in Simplified PUS (test_yamcs style) | 689 |
+| — | · TM Bus / Packet Store Interception Pattern | 703 |
+| — | · Retrieval Background Thread Pattern | 718 |
+| — | · Nested Aggregate Arrays in XTCE | 745 |
+| ST[20] | On-Board Parameter Management Patterns | 755 |
+| — | · Overall Feasibility | 757 |
+| — | · PARAM_STORE Pattern | 762 |
+| — | · Deduced-Value Mission Convention | 775 |
+| — | · Partial Per-Param Execution Pattern | 783 |
+| — | · TC[20,3] Set Values — Packet Layout | 798 |
+| ST[21] | Request Sequencing Patterns | 811 |
+| — | · Fixed-String ID Mission Convention | 813 |
+| — | · SEQUENCE_STORE State Model | 830 |
+| — | · Embedded-TC-in-Sequence Workaround | 844 |
+| — | · Sequence Execution Thread Pattern | 867 |
+| — | · Dual-MetaCommand Variant for Optional File Path | 886 |
+| — | · Sequence Checksum Convention | 895 |
+| — | Build & Run | 912 |
+
+---
+
 ## Key File Locations
 
 | Purpose | Path |

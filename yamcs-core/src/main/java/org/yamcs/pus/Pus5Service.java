@@ -83,11 +83,11 @@ public class Pus5Service extends PusTcHandler {
     @Override
     public void handleTc(PreparedCommand pc) {
         byte[] bin = pc.getBinary();
+        publishAckSent(pc);
         if (bin.length < APP_DATA_OFFSET) {
             publishCompletion(pc, false, "packet too short");
             return;
         }
-        publishAckSent(pc);
         switch (PusPacket.getSubtype(bin)) {
             case 5 -> enableDisableEvents(pc, true);
             case 6 -> enableDisableEvents(pc, false);
@@ -104,7 +104,15 @@ public class Pus5Service extends PusTcHandler {
     synchronized void enableDisableEvents(PreparedCommand pc, boolean enable) {
         byte[] bin = pc.getBinary();
         int offset = APP_DATA_OFFSET;
+        if (bin.length < offset + 1) {
+            publishCompletion(pc, false, "packet too short");
+            return;
+        }
         int n = bin[offset++] & 0xFF;
+        if (bin.length < offset + n) {
+            publishCompletion(pc, false, "packet too short for " + n + " event IDs");
+            return;
+        }
         boolean anyFailure = false;
 
         for (int i = 0; i < n; i++) {
