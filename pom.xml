@@ -46,7 +46,7 @@
 	</developers>
 
 	<properties>
-		<revision>5.12.6-0.1.0.Pixxel-SNAPSHOT</revision>
+		<revision>jtyu_Pixxel-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<protobufVersion>3.25.5</protobufVersion>
 		<rocksdbVersion>9.4.0.11</rocksdbVersion>
@@ -79,14 +79,14 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
-				<groupId>com.beust</groupId>
+				<groupId>org.jcommander</groupId>
 				<artifactId>jcommander</artifactId>
-				<version>1.48</version>
+				<version>3.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.fazecast</groupId>
 				<artifactId>jSerialComm</artifactId>
-				<version>2.10.3</version>
+				<version>2.11.4</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.code.gson</groupId>
@@ -179,7 +179,7 @@
 			<dependency>
 				<groupId>org.yaml</groupId>
 				<artifactId>snakeyaml</artifactId>
-				<version>2.3</version>
+				<version>2.6</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -230,7 +230,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.12.1</version>
+					<version>3.15.0</version>
 					<configuration>
 						<release>17</release>
 					</configuration>
@@ -337,7 +337,7 @@
 				<plugin>
 					<groupId>org.sonarsource.scanner.maven</groupId>
 					<artifactId>sonar-maven-plugin</artifactId>
-					<version>3.9.1.2184</version>
+					<version>5.6.0.6792</version>
 				</plugin>
 				<plugin>
 					<groupId>org.sonatype.central</groupId>

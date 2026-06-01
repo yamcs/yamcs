@@ -2,6 +2,12 @@
 
 ## A. General Context
 
+### Deployment Context
+
+This codebase implements a **ground-station MCS only** — the spacecraft is on the other end of the link. The Java simulator (`Pus11Service.java`) and all example MDB/XML/XTCE files exist solely for **testing and demonstration**. Production concerns are limited to MDB/XTCE definitions (operator interface and TC encoding/TM decoding in YAMCS). Java simulator gaps are test/demo concerns; MDB/XTCE gaps directly affect the ground operator interface.
+
+---
+
 ### What is ST[11]?
 
 PUS Service 11 (Time-based Scheduling) lets ground operators pre-load telecommands into an on-board schedule. The spacecraft releases them at their designated release time without requiring live ground contact. This is essential for autonomous operations during communication blackouts.
@@ -32,12 +38,14 @@ At release time:
 
 ### Architecture Files
 
-| Layer | File |
-|-------|------|
-| Java simulator | `simulator/src/main/java/org/yamcs/simulator/pus/Pus11Service.java` |
-| XTCE MDB | `examples/pus/src/main/yamcs/mdb/pus11.xml` |
-| PUS base types | `examples/pus/src/main/yamcs/mdb/pus.xml` |
-| Data types | `examples/pus/src/main/yamcs/mdb/dt.xml` |
+All files below are **test/demonstration** — not production MCS code.
+
+| Layer | File | Purpose |
+|-------|------|---------|
+| Java simulator | `simulator/src/main/java/org/yamcs/simulator/pus/Pus11Service.java` | Demo/test only |
+| XTCE MDB | `examples/pus/src/main/yamcs/mdb/pus11.xml` | Demo/test only |
+| PUS base types | `examples/pus/src/main/yamcs/mdb/pus.xml` | Demo/test only |
+| Data types | `examples/pus/src/main/yamcs/mdb/dt.xml` | Demo/test only |
 
 ### Time Encoding
 
@@ -53,7 +61,9 @@ The primary ground-side workflow uses `yamcs-client` with the `pus11ScheduleAt` 
 
 ### Overall Status Table
 
-| Subtype | Type | Name | MDB | Java | Action Required |
+> **Java column** = simulator (`Pus11Service.java`) — **test/demo code only**. MDB column reflects the YAMCS operator interface, which is the production-relevant concern.
+
+| Subtype | Type | Name | MDB | Java (sim) | Action Required |
 |---------|------|------|-----|------|-----------------|
 | 1 | TC | Enable Scheduler | ✅ | ✅ | None |
 | 2 | TC | Disable Scheduler | ✅ | ✅ | None |
@@ -708,21 +718,25 @@ repeat N:
 
 **Problem**: All group management subtypes return `NACK(NOT_IMPLEMENTED)` and have no MDB definitions. Groups are an optional PUS 11 feature, but they are listed as required in the task spec.
 
-**Impact**: TC[11,22–26] cannot be sent or processed. TM[11,27] is never emitted.
+**Impact**: TC[11,22–26] cannot be sent via the operator interface (no MDB). TM[11,27] is never emitted by the simulator.
 
-**Effort**: Low-to-medium. Java needs a new `Map<Integer, Boolean> groupStatus`, 5 new case handlers, and 1 new TM emitter (~80 lines). MDB needs new parameter types and 6 new definitions. No architectural change required — mirrors the existing subschedule pattern exactly.
+**Scope**: MDB additions are the **production-relevant** concern (they define what operators can send from the MCS). The Java simulator additions are **test/demo only** — needed only to validate the MDB against an on-board behaviour stub.
+
+**Effort**: Low-to-medium. MDB needs new parameter types and 6 new definitions. Java simulator (demo) needs a new `Map<Integer, Boolean> groupStatus`, 5 new case handlers, and 1 new TM emitter (~80 lines). No architectural change required — mirrors the existing subschedule pattern exactly.
 
 **XTCE feasibility**: ✅ Fully implementable in XTCE. Group management uses the same patterns as subschedule management (TC[11,20/21] + TM[11,19]) which already work.
 
 ---
 
-### Gap 5 — TC[11,20/21]: Java only handles N=1
+### Gap 5 — TC[11,20/21]: Java simulator only handles N=1
 
 **Problem**: `enableSubschedule()` and `disableSubschedule()` each read only a single `bb.get()` — they ignore `num_schedules` and only process the first subschedule ID. The MDB correctly encodes an array.
 
-**Impact**: Sending ENABLE_SCHEDULE or DISABLE_SCHEDULE with N > 1 from YAMCS will only enable/disable the first subschedule. No error is reported.
+**Scope**: **Simulator (test/demo) only.** The MCS ground interface is correct; this is a gap in the demo simulator's TC handler.
 
-**Fix** (minor, Java only): Loop `num_schedules` times.
+**Impact**: When testing against the simulator, sending ENABLE_SCHEDULE or DISABLE_SCHEDULE with N > 1 will only enable/disable the first subschedule. No error is reported. Does not affect production MCS TC encoding.
+
+**Fix** (minor, simulator Java only): Loop `num_schedules` times.
 
 ---
 
@@ -738,11 +752,112 @@ repeat N:
 
 ### Summary
 
-| Gap | Severity | XTCE-only fix? | Effort |
-|-----|----------|----------------|--------|
-| #1 TC[11,4] embedded TC | High | ❌ No — N-activity array is expressible, but variable-length tc_packet binary is not | N/A (by design) |
-| #2 TC[11,7/8] missing offset | High | ✅ Yes | Trivial |
-| #3 TC[11,15] wrong args | High | ✅ Yes | Trivial |
-| #4 Groups TC[11,22–26]+TM[11,27] | Medium | Partial — MDB ✅, Java ❌ | Low |
-| #5 TC[11,20/21] N>1 | Low | ❌ Java only | Trivial |
-| #6 TC[11,6/8/14] filter_type | Low | ✅ Yes | Minor |
+| Gap | Severity | Scope | XTCE-only fix? | Effort |
+|-----|----------|-------|----------------|--------|
+| #1 TC[11,4] embedded TC | High | MCS (operator interface) | ❌ No — N-activity array is expressible, but variable-length tc_packet binary is not | N/A (by design) |
+| #2 TC[11,7/8] missing offset | High | MCS (operator interface) | ✅ Yes | Trivial |
+| #3 TC[11,15] wrong args | High | MCS (operator interface) | ✅ Yes | Trivial |
+| #4 Groups TC[11,22–26]+TM[11,27] | Medium | MDB: MCS; Java: demo/test only | Partial — MDB ✅, Java (sim) ❌ | Low |
+| #5 TC[11,20/21] N>1 | Low | Demo/test simulator only | ❌ Java sim only | Trivial |
+| #6 TC[11,6/8/14] filter_type | Low | MCS (operator interface) | ✅ Yes | Minor |
+
+---
+
+## D. Native MCS Implementation — Java vs XTCE-only
+
+### Verdict: XTCE-only (with one built-in exception)
+
+ST[11] is **XTCE-only on the ground side**. No `Pus11Service.java` exists in `yamcs-core` and none is required for normal MCS operation. This is the opposite of ST[05], where `PusEventDecoder` is mandatory because TM[5,1–4] must be promoted to YAMCS native events — a conversion that cannot be expressed in XTCE.
+
+For ST[11]:
+- All **TC sends** are encoded as XTCE MetaCommands + `PusCommandPostprocessor`
+- All **TM receives** (TM[11,13], TM[11,19], TM[11,27]) are ordinary XTCE parameter containers — no native event emission needed
+
+The one "Java" piece is `PusCommandPostprocessor.buildScheduledTc()` in `yamcs-core/src/main/java/org/yamcs/pus/PusCommandPostprocessor.java` (lines 128–190), but that code already exists and requires no new implementation. It handles the `pus11ScheduleAt` command extra transparently.
+
+---
+
+### Per-message table
+
+| Message | MCS Role | XTCE Sufficient? | Java Required? | Notes |
+|---------|----------|-----------------|----------------|-------|
+| TC[11,1] | Send | **Yes** | No | `ENABLE_SCHEDULER`, no args |
+| TC[11,2] | Send | **Yes** | No | `DISABLE_SCHEDULER`, no args |
+| TC[11,3] | Send | **Yes** | No | `RESET_SCHEDULER`, no args |
+| TC[11,4] | Send | **Partial** | No (already done) | Direct MDB limited to fixed-size TCs (Gap #1); production path uses `pus11ScheduleAt` extra handled by `PusCommandPostprocessor` |
+| TC[11,5] | Send | **Yes** | No | Array of `{source_id, apid, seqcount}` |
+| TC[11,6] | Send | **Yes** | No | filter_type hardcoded to 0x01 (Gap #6) |
+| TC[11,7] | Send | **Yes** (with fix) | No | Missing `time_offset_ms` arg (Gap #2) |
+| TC[11,8] | Send | **Yes** (with fix) | No | Same as TC[11,7] (Gap #2) |
+| TC[11,12] | Send | **Yes** | No | Array of request IDs |
+| TC[11,14] | Send | **Yes** | No | Same as TC[11,6] |
+| TC[11,15] | Send | **Yes** (with fix) | No | Wrong args currently (Gap #3) |
+| TC[11,16] | Send | **Yes** | No | No args |
+| TC[11,17] | Send | **Yes** | No | No args |
+| TC[11,18] | Send | **Yes** | No | No args |
+| TC[11,20] | Send | **Yes** | No | Array of subschedule IDs |
+| TC[11,21] | Send | **Yes** | No | Same as TC[11,20] |
+| TC[11,22–25] | Send | **Yes** | No | Not in MDB yet (Gap #4), but fully expressible in XTCE |
+| TC[11,26] | Send | **Yes** | No | Not in MDB yet (Gap #4) |
+| TM[11,13] | Receive | **Yes** | No | XTCE container with dynamic array of summary entries |
+| TM[11,19] | Receive | **Yes** | No | XTCE container with `{id, status}` array |
+| TM[11,27] | Receive | **Yes** | No | Not in MDB yet (Gap #4), but fully expressible in XTCE |
+
+---
+
+### `pus11ScheduleAt` command extra (already implemented)
+
+`org.yamcs.pus.PusCommandPostprocessor` registers the `pus11ScheduleAt` command option at class load time:
+
+```java
+public static final CommandOption OPTION_SCHEDULE_TIME = new CommandOption(
+    "pus11ScheduleAt", "Schedule Time", CommandOptionType.TIMESTAMP);
+```
+
+When a TC is issued with this attribute set, `buildScheduledTc()` wraps the encoded TC binary inside a TC[11,4] packet:
+- Writes `subschedule_id=1`, `N=1`
+- Encodes the CUC release time
+- Appends the original TC binary verbatim
+- Fills CCSDS sequence count and optional CRC
+
+This means **operators can schedule any existing TC from YAMCS Web** by setting the Schedule Time option. No MDB change or new Java is needed for this path.
+
+Config in `yamcs.*.yaml` (tc_realtime data link):
+```yaml
+commandPostprocessorClassName: org.yamcs.pus.PusCommandPostprocessor
+commandPostprocessorArgs:
+    errorDetection:
+        type: CRC-16-CCIIT
+    timeEncoding:
+        implicitPfield: false
+        pfield: 0x2f
+    pus11Crc: true        # optional, default true — add CRC to TC[11,4]
+    pus11Apid: 1          # optional — override APID on the TC[11,4] wrapper
+    tcoService: tco0
+```
+
+---
+
+### Contrast with ST[05]
+
+| | ST[05] | ST[11] |
+|--|--------|--------|
+| Native Java needed? | **Yes** — `PusEventDecoder` | **No** |
+| Why Java for TM? | TM[5,1–4] must be promoted to YAMCS native events (events stream) — no XTCE mechanism exists for this | TM[11,13/19/27] are parameter containers — decoded by XTCE directly |
+| Existing Java in yamcs-core | `Pus5Service`, `PusEventDecoder` | `PusCommandPostprocessor.buildScheduledTc()` (already present) |
+| XTCE for TC? | Yes (TC[5,5/6/7]) | Yes (all subtypes) |
+| XTCE for TM? | Partial — XTCE decodes params, but Java needed for event emission | Full — XTCE decodes all TM packets |
+
+---
+
+### When would a `Pus11Service` in yamcs-core be needed?
+
+Only if you run the on-board scheduler **inside the YAMCS process** (HITL or a YAMCS-as-spacecraft scenario). In that case:
+
+1. Create `yamcs-core/src/main/java/org/yamcs/pus/Pus11Service.java` extending `PusTcHandler`
+2. Register under `PusCommandReleaser` with `serviceType: 11`
+3. Implement `handleTc(PreparedCommand)` dispatching to subtypes 1–21 (groups 22–26 optional)
+
+This mirrors `Pus11Service.java` in `simulator/` exactly, but uses `emitTm(serviceType, subtype, appData)` from `PusCommandReleaser` instead of `pusSimulator.transmitRealtimeTM(pkt)`.
+
+For a ground-only MCS, no such service is needed.
