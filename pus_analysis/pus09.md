@@ -450,20 +450,22 @@ App data byte 11: rateExponent (uint8, 0..8)
 
 ---
 
-## 5. Testing
+## 5. Testing Methodology
 
-### Start the simulator
+### 5.1 Simulator Testing (Manual / Functional Verification)
+
+#### Start the simulator
 ```bash
 mvn -pl examples/pus yamcs:run
 ```
 
-### Observe TM[9,2] time packets
+#### Observe TM[9,2] time packets
 YAMCS UI → Telemetry → Parameters:
 - `/PUS/time-rate` — current rateExponent in last time packet
 - `/PUS/pus-time` — decoded on-board time (correlated via `tco0`)
 - `/PUS/obt-coarse`, `/PUS/obt-fine` — raw CUC time components
 
-### Send TC[9,1] — change rate to 1 s (exponent=0)
+#### TC[9,1] — change rate to 1 s (exponent=0)
 Command: `SET_TIME_REPORT_RATE` with `rateExponent=0`
 
 Expected:
@@ -472,12 +474,165 @@ Expected:
 - Time packets now arrive every ~1 s
 - `/PUS/time-rate` shows `0`
 
-### Send TC[9,1] — invalid exponent
+#### TC[9,1] — invalid exponent
 Command: `SET_TIME_REPORT_RATE` with `rateExponent=9`
 
 Expected:
 - TM[1,4] (NACK start) received with failure code `INVALID_RATE_EXPONENT` (3)
 - Rate unchanged; time packets continue at previous period
+
+---
+
+### 5.2 Native Service — Unit Tests
+
+Target class: `org.yamcs.pus.Pus9TimeManagementService`
+
+Unit tests should mock `CommandHistoryPublisher`, `ScheduledExecutorService`, and
+the TM `Stream`. They do **not** require a running YAMCS instance.
+
+#### 5.2.1 Packet byte-layout test
+
+Directly call `sendTimePacket()` via reflection (or extract the builder to a
+package-private method) and verify every byte field:
+
+| Assertion | Expected value |
+|-----------|---------------|
+| `pkt[0..1]` (APID word) | `0x0000` (APID=0, no sec hdr, TM) |
+| `pkt[4..5]` (data length) | `0x000A` (10 = 17 − 6 − 1) |
+| `pkt[2] & 0xC0` (seq flags) | `0xC0` (unsegmented) |
+| `pkt[6]` (rateExponent) | matches `rateExponent` field |
+| `pkt[7]` (P-field) | `0x2F` (CUC 1+4+3) |
+| `pkt[8..11]` (OBT coarse) | big-endian uint32 from `CucTimeEncoder` |
+| `pkt[12..14]` (OBT fine) | big-endian uint24 from `CucTimeEncoder` |
+| `pkt[15..16]` (CRC) | CRC-16-CCITT over bytes 0–14 |
+
+Inject a fixed `nowMs` via a mock `TimeService` so the CUC encoding is
+deterministic and the CRC can be pre-computed.
+
+#### 5.2.2 `handleSetRate()` — valid exponent boundary values
+
+Test all boundary values that must be accepted (0, 1, 8):
+
+```java
+@ParameterizedTest
+@ValueSource(ints = {0, 1, 4, 8})
+void validExponent_ackAndReschedule(int exp) {
+    byte[] tc = buildTc91(exp);
+    service.handleSetRate(mockPc, tc);
+
+    verify(commandHistory).publishAck(any(), eq(AcknowledgeSent_KEY), anyLong(), eq(AckStatus.OK));
+    verify(commandHistory).publishAck(any(), eq(CommandComplete_KEY), anyLong(), eq(AckStatus.OK));
+    assertEquals(exp, service.rateExponent);
+    // executor was rescheduled with period 2^exp seconds
+    verify(executor).scheduleAtFixedRate(any(), eq(0L), eq(1L << exp), eq(TimeUnit.SECONDS));
+}
+```
+
+#### 5.2.3 `handleSetRate()` — invalid exponent rejection
+
+```java
+@ParameterizedTest
+@ValueSource(ints = {9, 10, 255})
+void invalidExponent_nackStart(int exp) {
+    byte[] tc = buildTc91(exp);
+    service.handleSetRate(mockPc, tc);
+
+    verify(commandHistory).publishAck(any(), eq(AcknowledgeSent_KEY), anyLong(), eq(AckStatus.NOK), contains("rateExponent"));
+    // rateExponent must be unchanged
+    assertEquals(defaultRateExponent, service.rateExponent);
+    // executor must NOT have been called
+    verifyNoInteractions(executor);
+}
+```
+
+#### 5.2.4 `releaseCommand()` routing
+
+| TC binary service byte | Expected behaviour |
+|------------------------|-------------------|
+| `binary[7] == 9`, `binary[8] == 1` | `handleSetRate()` invoked |
+| `binary[7] == 9`, `binary[8] == 99` | `publishNackStart()` for unknown subtype |
+| `binary[7] == 17` (non-ST09) | `super.releaseCommand()` called (TC forwarded to stream) |
+
+#### 5.2.5 `reschedule()` — previous task cancelled
+
+Verify that calling `reschedule()` twice cancels the first `ScheduledFuture`
+before scheduling a new one:
+
+```java
+ScheduledFuture<?> first = mock(ScheduledFuture.class);
+when(executor.scheduleAtFixedRate(...)).thenReturn(first, mock(ScheduledFuture.class));
+
+service.reschedule(2);
+service.reschedule(3);
+
+verify(first).cancel(false);
+```
+
+---
+
+### 5.3 Native Service — Integration Tests
+
+Integration tests run against a live YAMCS instance (in-process, using
+`YamcsServer.getServer().getInstance(...)`) with `Pus9TimeManagementService`
+loaded. No mocks.
+
+#### 5.3.1 Default-rate TM[9,2] emission
+
+1. Start YAMCS with `defaultRateExponent: 2` (4 s period).
+2. Subscribe to the realtime TM stream.
+3. Wait 10 s; assert ≥ 2 and ≤ 4 packets were emitted on APID=0.
+4. For each packet: decode and assert structural validity (CRC passes,
+   P-field == 0x2F, OBT coarse within ±2 s of wall clock).
+
+#### 5.3.2 Rate change via TC[9,1]
+
+1. Start at `defaultRateExponent: 2`.
+2. Send TC[9,1] `rateExponent=0` (1 s) via `CommandingManager`.
+3. Assert command history shows `AcknowledgeSent=OK` and `CommandComplete=OK`.
+4. Count TM[9,2] packets over 5 s; assert ≥ 4 packets received.
+5. Send TC[9,1] `rateExponent=4` (16 s).
+6. Count TM[9,2] packets over 10 s; assert ≤ 1 packet received.
+
+#### 5.3.3 Parameter archive population
+
+After 5+ TM[9,2] packets are emitted:
+- Query parameter `/PUS/time-rate` from the archive; assert all values equal current `rateExponent`.
+- Query `/PUS/obt-coarse`; assert values are monotonically increasing.
+- Query `/PUS/pus-time`; assert decoded `Instant` is within 2 s of the
+  emission timestamp stored in the `gentime` column.
+
+#### 5.3.4 Invalid exponent rejection (integration)
+
+1. Send TC[9,1] `rateExponent=9`.
+2. Assert command history shows `AcknowledgeSent=NOK`.
+3. Assert `rateExponent` field on service remains unchanged.
+4. Assert no new TM[9,2] packet arrives within one expected period
+   with `time-rate == 9`.
+
+#### 5.3.5 Sequence counter rollover
+
+Force `msgCounter` to `0x3FFE` (two increments from overflow). Emit two
+packets and check that sequence counts wrap from `0x3FFF` → `0x0000` and
+that both packets are accepted into the archive (no duplicate-key discard
+in the `tm` table — see §3, "Duplicate gentime" gap).
+
+---
+
+### 5.4 Acceptance Criteria Summary
+
+| Test ID | Scenario | Pass condition |
+|---------|----------|---------------|
+| T-01 | TM[9,2] emitted at default rate | Packet count ≈ `floor(elapsed / 2^defaultExp)` ± 1 |
+| T-02 | TC[9,1] valid exponent, rate increases | Period halves; command history = ACK OK |
+| T-03 | TC[9,1] valid exponent, rate decreases | Period doubles; command history = ACK OK |
+| T-04 | TC[9,1] `rateExponent=9` (out of range) | Command history = NACK; rate unchanged |
+| T-05 | TC[9,1] `rateExponent=0` (boundary min) | Rate = 1 s; ACK OK |
+| T-06 | TC[9,1] `rateExponent=8` (boundary max) | Rate = 256 s; ACK OK |
+| T-07 | Packet byte layout | CRC valid; APID=0; P-field=0x2F; data length=0x000A |
+| T-08 | OBT monotonicity | `obt-coarse` never decreases across consecutive packets |
+| T-09 | Sequence counter rollover | No packets lost at counter wrap; archive contains both |
+| T-10 | Non-ST09 TC forwarded | TC reaches downstream stream unchanged |
+| T-11 | YAMCS parameter archive population | `pus-time`, `obt-coarse`, `obt-fine` visible after emission |
 
 ---
 
