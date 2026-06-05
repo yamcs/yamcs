@@ -20,6 +20,10 @@ realtime:
             class: org.yamcs.pus.Pus5Service
             args:
               eventIdParameter: /PUS5/event_id
+          - serviceType: 9
+            class: org.yamcs.pus.Pus9Service
+            args:
+              defaultRateExponent: 2
     - class: org.yamcs.tctm.StreamParameterProvider
     - class: org.yamcs.algorithms.AlgorithmManager
     # implements provider of parameters from sys_param stream (these are collected and sent on this stream by SystemParametersService)
