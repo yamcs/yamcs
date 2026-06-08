@@ -106,7 +106,7 @@ public class ValueExpression extends Expression {
      * @param s
      * @return
      */
-    private void escapeJavaString(String str, StringBuilder sb) {
+    static void escapeJavaString(String str, StringBuilder sb) {
         int sz;
         sz = str.length();
         for (int i = 0; i < sz; i++) {
