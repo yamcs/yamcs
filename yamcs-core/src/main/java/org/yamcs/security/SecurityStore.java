@@ -104,14 +104,6 @@ public class SecurityStore {
         blockUnknownUsers = config.getBoolean("blockUnknownUsers");
         accessTokenLifespan = config.getInt("accessTokenLifespan");
 
-        if (directory.getUsers().isEmpty()) {
-            try {
-                generateDefaultAdminUser();
-            } catch (IOException e) {
-                throw new InitException("Could not create default admin user", e);
-            }
-        }
-
         if (config.containsKey("authModules")) {
             for (YConfiguration moduleConfig : config.getConfigList("authModules")) {
                 AuthModule authModule = loadAuthModule(moduleConfig);
@@ -161,22 +153,6 @@ public class SecurityStore {
                 }
             }
         }
-    }
-
-    /**
-     * Generate a default admin user. This user is stored in the directory and can be used for log in.
-     * 
-     * TODO mark password as expired.
-     */
-    private void generateDefaultAdminUser() throws IOException {
-        User adminUser = new User("admin", systemUser);
-        adminUser.setDisplayName("Administrator");
-        adminUser.setSuperuser(true);
-        adminUser.setEmail("admin@example.com");
-        adminUser.setActive(true);
-        adminUser.confirm();
-        directory.addUser(adminUser);
-        directory.changePassword(adminUser, "admin".toCharArray());
     }
 
     private void generatePredefinedPrivileges() {
