@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnDestroy,
-  OnInit,
-  input,
-  viewChild,
-} from '@angular/core';
+import { Component, OnDestroy, OnInit, input, viewChild } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
@@ -42,7 +35,6 @@ const defaultInterval = 'PT1H';
 @Component({
   templateUrl: './event-list.component.html',
   styleUrl: './event-list.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     EventMessageComponent,
     EventsPageTabsComponent,

@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnInit,
-  input,
-} from '@angular/core';
+import { Component, OnInit, input } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
@@ -23,7 +18,6 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
 @Component({
   selector: 'app-clearances-action-log-tab',
   templateUrl: './clearances-action-log-tab.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ClearancesPageTabsComponent, WebappSdkModule],
 })
 export class ClearancesActionLogTabComponent implements OnInit {

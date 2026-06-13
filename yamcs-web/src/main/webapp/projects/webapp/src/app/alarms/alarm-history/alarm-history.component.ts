@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute } from '@angular/router';
@@ -15,7 +15,6 @@ import { AlarmsPageTabsComponent } from '../alarms-page-tabs/alarms-page-tabs.co
 
 @Component({
   templateUrl: './alarm-history.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AlarmsPageTabsComponent, WebappSdkModule],
 })
 export class AlarmHistoryComponent extends BaseComponent {

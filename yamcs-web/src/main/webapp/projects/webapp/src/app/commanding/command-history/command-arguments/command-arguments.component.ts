@@ -1,11 +1,10 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { CommandHistoryRecord, WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-command-arguments',
   templateUrl: './command-arguments.component.html',
   styleUrl: './command-arguments.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class.nomargin]': 'nomargin',
   },

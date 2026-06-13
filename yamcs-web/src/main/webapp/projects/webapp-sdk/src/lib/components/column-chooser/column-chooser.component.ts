@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  input,
-  Input,
-  OnInit,
-} from '@angular/core';
+import { Component, input, Input, OnInit } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import {
   MatMenu,
@@ -32,7 +26,6 @@ interface StoredColumnInfo {
 @Component({
   selector: 'ya-column-chooser',
   templateUrl: './column-chooser.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     MatMenu,
     MatMenuContent,

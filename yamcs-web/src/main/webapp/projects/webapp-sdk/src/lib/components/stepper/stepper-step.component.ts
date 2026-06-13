@@ -1,15 +1,9 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  input,
-  model,
-} from '@angular/core';
+import { Component, input, model } from '@angular/core';
 
 @Component({
   selector: 'ya-stepper-step',
   templateUrl: './stepper-step.component.html',
   styleUrls: ['./vars.css', './stepper-step.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'ya-stepper-step',
     '[class.hidden]': '!visible()',

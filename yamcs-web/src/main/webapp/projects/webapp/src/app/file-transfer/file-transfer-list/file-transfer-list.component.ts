@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   OnInit,
   Signal,
@@ -35,7 +34,6 @@ const defaultInterval = 'NO_LIMIT';
   selector: 'app-file-transfer-list',
   templateUrl: './file-transfer-list.component.html',
   styleUrl: './file-transfer-list.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     FileTransferIconComponent,
     FileTransferTabsComponent,

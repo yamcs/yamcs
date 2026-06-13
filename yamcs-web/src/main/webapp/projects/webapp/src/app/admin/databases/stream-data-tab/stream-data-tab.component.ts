@@ -1,7 +1,6 @@
 import { CdkColumnDef } from '@angular/cdk/table';
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   OnDestroy,
   QueryList,
@@ -22,7 +21,6 @@ import { StreamDataDataSource } from './stream-data.datasource';
 @Component({
   templateUrl: './stream-data-tab.component.html',
   styleUrl: './stream-data-tab.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ColumnValuePipe, WebappSdkModule, StreamDataComponent],
 })
 export class StreamDataTabComponent

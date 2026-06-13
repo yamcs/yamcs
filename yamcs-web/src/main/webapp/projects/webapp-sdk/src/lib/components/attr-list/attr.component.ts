@@ -1,17 +1,11 @@
 import { CdkPortalOutlet } from '@angular/cdk/portal';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ContentChild,
-  input,
-} from '@angular/core';
+import { Component, ContentChild, input } from '@angular/core';
 import { YA_ATTR, YaAttrLabel } from './attr-label.directive';
 
 @Component({
   selector: 'ya-attr',
   templateUrl: './attr.component.html',
   styleUrl: './attr.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: YA_ATTR,

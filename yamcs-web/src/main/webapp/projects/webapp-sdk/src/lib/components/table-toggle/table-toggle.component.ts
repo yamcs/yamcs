@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnInit,
-  inject,
-} from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Preferences } from '../../services/preferences.service';
 import { YaSlideToggle } from '../slide-toggle/slide-toggle.component';
@@ -12,7 +6,6 @@ import { YaSlideToggle } from '../slide-toggle/slide-toggle.component';
 @Component({
   selector: 'ya-table-toggle',
   templateUrl: './table-toggle.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ReactiveFormsModule, YaSlideToggle],
 })
 export class YaTableToggle implements OnInit {

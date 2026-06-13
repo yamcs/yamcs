@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute } from '@angular/router';
 import {
@@ -12,7 +12,6 @@ import { ShowEnumDialogComponent } from '../show-enum-dialog/show-enum-dialog.co
 @Component({
   templateUrl: './table-info-tab.component.html',
   styleUrl: './table-info-tab.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class TableInfoTabComponent {

@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnDestroy,
-  OnInit,
-  forwardRef,
-  input,
-} from '@angular/core';
+import { Component, OnDestroy, OnInit, forwardRef, input } from '@angular/core';
 import {
   ControlValueAccessor,
   FormControl,
@@ -25,7 +18,6 @@ import { Subscription } from 'rxjs';
   selector: 'app-boolean-option',
   templateUrl: './boolean-option.component.html',
   styleUrl: './boolean-option.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
   providers: [
     {

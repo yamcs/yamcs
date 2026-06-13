@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
@@ -18,7 +18,6 @@ import { ShowStreamsDialogComponent } from '../show-streams-dialog/show-streams-
 @Component({
   templateUrl: './replication.component.html',
   styleUrl: './replication.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AdminPageComponent,
     AppAdminToolbar,

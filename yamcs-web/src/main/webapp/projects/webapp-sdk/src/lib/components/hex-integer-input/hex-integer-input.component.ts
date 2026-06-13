@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  forwardRef,
-  ViewChild,
-} from '@angular/core';
+import { Component, ElementRef, forwardRef, ViewChild } from '@angular/core';
 import {
   ControlValueAccessor,
   NG_VALIDATORS,
@@ -17,7 +11,6 @@ import {
   selector: 'ya-hex-integer-input',
   templateUrl: './hex-integer-input.component.html',
   styleUrl: './hex-integer-input.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

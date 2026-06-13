@@ -1,6 +1,5 @@
 import {
   AfterContentInit,
-  ChangeDetectionStrategy,
   Component,
   ContentChildren,
   effect,
@@ -17,7 +16,6 @@ import { YaStepperStep } from './stepper-step.component';
   selector: 'ya-stepper',
   templateUrl: './stepper.component.html',
   styleUrls: ['./vars.css', './stepper.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'ya-stepper',
   },

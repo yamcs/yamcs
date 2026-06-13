@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   computed,
   inject,
@@ -14,7 +13,6 @@ import { DomSanitizer } from '@angular/platform-browser';
 @Component({
   selector: './ya-action-log-summary',
   templateUrl: './action-log-summary.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class YaActionLogSummary {
   sanitizer = inject(DomSanitizer);

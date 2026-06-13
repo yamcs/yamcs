@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import {
   UntypedFormBuilder,
   UntypedFormGroup,
@@ -14,13 +14,11 @@ import {
   YamcsService,
   utils,
 } from '@yamcs/webapp-sdk';
-import { ItemStylesComponent } from '../bands/item-band/item-styles/item-styles.component';
 
 @Component({
   selector: 'app-edit-activity-dialog',
   templateUrl: './edit-activity-dialog.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ItemStylesComponent, WebappSdkModule],
+  imports: [WebappSdkModule],
 })
 export class EditActivityDialogComponent {
   resolutionOptions: YaSelectOption[] = [

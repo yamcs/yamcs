@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
@@ -9,7 +9,6 @@ import { AppAdminToolbar } from '../../shared/admin-toolbar/admin-toolbar.compon
 
 @Component({
   templateUrl: './rocksdb-database.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AdminPageComponent,
     AppAdminToolbar,

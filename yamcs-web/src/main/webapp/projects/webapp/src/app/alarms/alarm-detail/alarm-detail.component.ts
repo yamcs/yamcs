@@ -1,16 +1,9 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-} from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Alarm, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-alarm-detail',
   templateUrl: './alarm-detail.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class AlarmDetailComponent {

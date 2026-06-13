@@ -2,7 +2,6 @@ import { Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
   HostListener,
@@ -77,7 +76,6 @@ function makeGradient(rgb: RGB) {
 @Component({
   templateUrl: './archive-browser.component.html',
   styleUrl: './archive-browser.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class ArchiveBrowserComponent implements AfterViewInit, OnDestroy {

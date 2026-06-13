@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnDestroy,
-  OnInit,
-  input,
-} from '@angular/core';
+import { Component, OnDestroy, OnInit, input } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import {
   CommandHistoryEntry,
@@ -19,7 +13,6 @@ import { SendCommandWizardStepComponent } from '../send-command-wizard-step/send
 
 @Component({
   templateUrl: './command-report.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommandDetailComponent,
     SendCommandWizardStepComponent,

@@ -1,10 +1,5 @@
 import { CdkPortalOutlet } from '@angular/cdk/portal';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ContentChild,
-  input,
-} from '@angular/core';
+import { Component, ContentChild, input } from '@angular/core';
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
 import {
   APP_STORAGE_TOOLBAR,
@@ -15,7 +10,6 @@ import {
   selector: 'app-storage-toolbar',
   templateUrl: './storage-toolbar.component.html',
   styleUrl: './storage-toolbar.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: APP_STORAGE_TOOLBAR,

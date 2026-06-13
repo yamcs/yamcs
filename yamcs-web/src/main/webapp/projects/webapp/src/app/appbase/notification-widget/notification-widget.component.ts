@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   computed,
   DestroyRef,
@@ -29,7 +28,6 @@ interface NotificationState {
   selector: 'app-notification-widget',
   templateUrl: './notification-widget.component.html',
   styleUrl: './notification-widget.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AgoPipe, WebappSdkModule],
 })
 export class NotificationWidgetComponent

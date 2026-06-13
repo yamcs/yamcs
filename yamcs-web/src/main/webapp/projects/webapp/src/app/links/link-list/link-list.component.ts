@@ -1,10 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  OnDestroy,
-} from '@angular/core';
+import { AfterViewInit, Component, OnDestroy } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute } from '@angular/router';
@@ -26,7 +21,6 @@ import { LinkItem } from './model';
 @Component({
   templateUrl: './link-list.component.html',
   styleUrl: './link-list.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     LinkDetailComponent,
     LinkStatusComponent,

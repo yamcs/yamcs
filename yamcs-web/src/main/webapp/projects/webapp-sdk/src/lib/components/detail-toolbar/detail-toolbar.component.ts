@@ -1,4 +1,9 @@
-import { booleanAttribute, Component, input } from '@angular/core';
+import {
+  booleanAttribute,
+  ChangeDetectionStrategy,
+  Component,
+  input,
+} from '@angular/core';
 import { MatToolbar } from '@angular/material/toolbar';
 import { MatTooltip } from '@angular/material/tooltip';
 import { BaseComponent } from '../../abc/BaseComponent';
@@ -11,6 +16,7 @@ import { YaIconAction } from '../icon-action/icon-action.component';
   host: {
     class: 'ya-detail-toolbar',
   },
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [MatToolbar, MatTooltip, YaIconAction],
 })
 export class YaDetailToolbar extends BaseComponent {

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { WebappSdkModule, YaStepper, YaStepperStep } from '@yamcs/webapp-sdk';
@@ -10,7 +10,6 @@ import { StackedVerifyEntry } from '../stack-file/StackedEntry';
   selector: 'app-edit-verify-entry-dialog',
   templateUrl: './edit-verify-entry-dialog.component.html',
   styleUrl: './edit-verify-entry-dialog.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AppMarkdownInput,
     AppParameterInput,

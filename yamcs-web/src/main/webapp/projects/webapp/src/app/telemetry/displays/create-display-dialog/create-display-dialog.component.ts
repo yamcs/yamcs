@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   ElementRef,
@@ -21,6 +22,7 @@ import {
 @Component({
   selector: 'app-create-display-dialog',
   templateUrl: './create-display-dialog.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [WebappSdkModule],
 })
 export class CreateDisplayDialogComponent {

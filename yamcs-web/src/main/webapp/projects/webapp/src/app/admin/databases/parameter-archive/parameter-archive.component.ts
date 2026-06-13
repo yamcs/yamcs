@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   input,
   Input,
@@ -24,7 +23,6 @@ import { PID_COMPLETIONS } from './completions';
 @Component({
   templateUrl: './parameter-archive.component.html',
   styleUrl: './parameter-archive.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class ParameterArchiveComponent implements OnInit, OnDestroy {

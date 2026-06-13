@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   Input,
   OnChanges,
@@ -14,7 +13,6 @@ import { TraceElementComponent } from '../trace-element/trace-element.component'
 @Component({
   selector: 'app-threads-table',
   templateUrl: './threads-table.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule, TraceElementComponent],
 })
 export class ThreadsTableComponent implements AfterViewInit, OnChanges {

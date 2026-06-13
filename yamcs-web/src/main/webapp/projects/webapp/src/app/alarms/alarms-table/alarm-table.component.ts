@@ -1,5 +1,12 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { Alarm, BaseComponent, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { AgoComponent } from '../../shared/ago/ago.component';
 import { AlarmStateIconComponent } from '../alarm-state-icon/alarm-state-icon.component';
@@ -9,6 +16,7 @@ import { AlarmsDataSource } from '../alarms.datasource';
   selector: 'app-alarms-table',
   templateUrl: './alarm-table.component.html',
   styleUrl: './alarm-table.component.css',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [AgoComponent, AlarmStateIconComponent, WebappSdkModule],
 })
 export class AlarmsTableComponent extends BaseComponent implements OnInit {

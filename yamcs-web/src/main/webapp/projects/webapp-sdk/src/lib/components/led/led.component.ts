@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
   Input,
@@ -23,7 +22,6 @@ export let SEQ = 0;
     style="display: inline-block; line-height: 0"
   ></div>`,
   styleUrl: './led.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class YaLed implements AfterViewInit, OnChanges {
   @Input()

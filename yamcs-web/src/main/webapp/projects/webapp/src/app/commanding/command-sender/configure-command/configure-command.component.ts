@@ -1,7 +1,6 @@
 import { Location } from '@angular/common';
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   input,
   OnDestroy,
@@ -12,7 +11,7 @@ import {
 import { UntypedFormControl } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
-import { MatStepperIcon, MatStepperModule } from '@angular/material/stepper';
+import { MatStepperModule } from '@angular/material/stepper';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
@@ -45,13 +44,11 @@ import { CommandHistoryTemplateProvider } from './CommandHistoryTemplateProvider
 
 @Component({
   templateUrl: './configure-command.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommandConstraintsComponent,
     CommandFormComponent,
     MarkdownComponent,
     MatIconModule,
-    MatStepperIcon,
     MatStepperModule,
     SendCommandWizardStepComponent,
     SignificanceLevelComponent,

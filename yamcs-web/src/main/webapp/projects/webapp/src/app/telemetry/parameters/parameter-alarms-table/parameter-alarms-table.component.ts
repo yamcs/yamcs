@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { Router } from '@angular/router';
 import { Alarm, WebappSdkModule, YamcsService, utils } from '@yamcs/webapp-sdk';
 import { addHours } from 'date-fns';
@@ -7,7 +7,6 @@ import { ParameterAlarmsDataSource } from './parameter-alarms.datasource';
 @Component({
   selector: 'app-parameter-alarms-table',
   templateUrl: './parameter-alarms-table.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class ParameterAlarmsTableComponent {

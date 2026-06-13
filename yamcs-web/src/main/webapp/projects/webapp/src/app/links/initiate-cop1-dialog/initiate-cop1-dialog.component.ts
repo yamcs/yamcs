@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import {
   UntypedFormBuilder,
   UntypedFormGroup,
@@ -28,6 +28,7 @@ const CombinedValidator: ValidatorFn = (form: UntypedFormGroup) => {
 @Component({
   selector: 'app-initiate-cop1-dialog',
   templateUrl: './initiate-cop1-dialog.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [WebappSdkModule],
 })
 export class InitiateCop1DialogComponent {

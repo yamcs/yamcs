@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import {
@@ -21,7 +21,6 @@ interface DatabaseObject {
 @Component({
   templateUrl: './database.component.html',
   styleUrl: './database.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AdminPageComponent,
     AppAdminToolbar,

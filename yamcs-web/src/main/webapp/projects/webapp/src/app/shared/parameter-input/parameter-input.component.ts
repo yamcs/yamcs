@@ -1,10 +1,4 @@
-import {
-  booleanAttribute,
-  ChangeDetectionStrategy,
-  Component,
-  forwardRef,
-  input,
-} from '@angular/core';
+import { booleanAttribute, Component, forwardRef, input } from '@angular/core';
 import {
   ControlValueAccessor,
   FormControl,
@@ -22,7 +16,6 @@ import { debounceTime, Observable, switchMap, tap } from 'rxjs';
   selector: 'app-parameter-input',
   templateUrl: './parameter-input.component.html',
   styleUrl: './parameter-input.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

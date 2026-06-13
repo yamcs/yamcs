@@ -1,7 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
   OnDestroy,
@@ -29,7 +28,6 @@ import { CommandsDataSource, ListItem } from './commands.datasource';
 @Component({
   templateUrl: './send-command.component.html',
   styleUrl: './send-command.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     SendCommandWizardStepComponent,
     WebappSdkModule,

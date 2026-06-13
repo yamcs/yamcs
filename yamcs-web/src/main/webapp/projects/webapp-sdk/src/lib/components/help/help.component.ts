@@ -1,4 +1,10 @@
-import { Component, ElementRef, Input, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  Input,
+  ViewChild,
+} from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIcon } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -9,6 +15,7 @@ import { YaHelpDialog } from './help.dialog';
   selector: 'ya-help',
   templateUrl: './help.component.html',
   styleUrl: './help.component.css',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [MatIcon, YaTextAction],
 })
 export class YaHelp {

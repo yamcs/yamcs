@@ -1,7 +1,6 @@
 import { Overlay } from '@angular/cdk/overlay';
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
   input,
@@ -66,7 +65,6 @@ export const DEFAULT_COLORS = [
   selector: 'app-parameter-chart-tab',
   templateUrl: './parameter-chart-tab.component.html',
   styleUrls: ['./parameter-chart-tab.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LegendComponent, TraceConfigComponent, WebappSdkModule],
 })
 export class ParameterChartTabComponent

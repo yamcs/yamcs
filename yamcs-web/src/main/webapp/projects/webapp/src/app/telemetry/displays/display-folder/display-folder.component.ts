@@ -1,6 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import {
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
   OnDestroy,
@@ -32,7 +31,6 @@ import { DisplayTypePipe } from './display-type.pipe';
 @Component({
   templateUrl: './display-folder.component.html',
   styleUrl: './display-folder.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [DisplayTypePipe, WebappSdkModule],
 })
 export class DisplayFolderComponent implements OnDestroy {

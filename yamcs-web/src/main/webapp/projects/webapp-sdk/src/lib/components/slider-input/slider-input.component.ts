@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  forwardRef,
-  input,
-} from '@angular/core';
+import { Component, forwardRef, input } from '@angular/core';
 import {
   ControlValueAccessor,
   FormControl,
@@ -15,7 +10,6 @@ import {
   selector: 'ya-slider-input',
   templateUrl: './slider-input.component.html',
   styleUrl: './slider-input.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'ya-slider-input',
   },

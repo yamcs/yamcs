@@ -1,7 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
   OnDestroy,
@@ -23,7 +22,6 @@ import { AlgorithmsDataSource, ListItem } from './algorithms.datasource';
 @Component({
   templateUrl: './algorithm-list.component.html',
   styleUrl: './algorithm-list.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class AlgorithmListComponent implements AfterViewInit, OnDestroy {

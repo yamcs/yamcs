@@ -1,11 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  signal,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewInit, Component, signal, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSort } from '@angular/material/sort';
@@ -26,7 +20,6 @@ import { CreateBucketDialogComponent } from '../create-bucket-dialog/create-buck
 
 @Component({
   templateUrl: './bucket-list.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AppStorageToolbar, StoragePageComponent, WebappSdkModule],
 })
 export class BucketListComponent implements AfterViewInit {

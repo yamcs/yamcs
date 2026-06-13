@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { NonNullableFormBuilder, Validators } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
@@ -6,6 +6,7 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
 @Component({
   selector: 'app-add-message-dialog',
   templateUrl: './add-message-dialog.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [WebappSdkModule],
 })
 export class AddMessageDialogComponent {

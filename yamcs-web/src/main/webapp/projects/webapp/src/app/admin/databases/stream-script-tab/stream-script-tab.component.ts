@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   input,
   OnInit,
@@ -18,7 +17,6 @@ import * as utils from '../utils';
   selector: 'app-stream-script-tab',
   templateUrl: './stream-script-tab.component.html',
   styleUrls: ['./stream-script-tab.component.css', '../streamsql.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class StreamScriptTabComponent implements OnInit {

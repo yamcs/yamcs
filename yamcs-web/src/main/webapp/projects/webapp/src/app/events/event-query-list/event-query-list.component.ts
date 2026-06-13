@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import {
@@ -14,6 +14,7 @@ import { EventsPageTabsComponent } from '../events-page-tabs/events-page-tabs.co
 @Component({
   selector: 'app-event-query-list',
   templateUrl: './event-query-list.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [EventsPageTabsComponent, WebappSdkModule],
 })
 export class EventQueryListComponent {

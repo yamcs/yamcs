@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import {
   MAT_DIALOG_DATA,
   MatDialogActions,
@@ -13,6 +13,7 @@ import { YaButton } from '../button/button.component';
   selector: 'ya-help-dialog',
   templateUrl: './help.dialog.html',
   styleUrl: './help.dialog.css',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
     MatDialogActions,
     MatDialogClose,

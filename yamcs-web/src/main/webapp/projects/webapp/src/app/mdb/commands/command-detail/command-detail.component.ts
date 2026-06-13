@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import {
   Argument,
@@ -15,7 +15,6 @@ import { ArgumentEnumDialogComponent } from '../argument-enum-dialog/argument-en
   selector: 'app-command-detail',
   templateUrl: './command-detail.component.html',
   styleUrl: './command-detail.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ExpressionComponent,
     MarkdownComponent,

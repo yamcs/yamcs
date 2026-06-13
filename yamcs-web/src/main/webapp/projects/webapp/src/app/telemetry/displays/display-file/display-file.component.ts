@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
   OnDestroy,
@@ -30,20 +29,7 @@ import { ViewerHostDirective } from './viewer-host.directive';
 
 @Component({
   templateUrl: './display-file.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    ImageViewerComponent,
-    OpiDisplayViewerComponent,
-    OpiDisplayViewerControlsComponent,
-    ParameterTableViewerComponent,
-    ParameterTableViewerControlsComponent,
-    ScriptViewerComponent,
-    ScriptViewerControlsComponent,
-    WebappSdkModule,
-    TextViewerComponent,
-    ViewerControlsHostDirective,
-    ViewerHostDirective,
-  ],
+  imports: [WebappSdkModule, ViewerControlsHostDirective, ViewerHostDirective],
 })
 export class DisplayFileComponent implements AfterViewInit, OnDestroy {
   @ViewChild(ViewerControlsHostDirective)

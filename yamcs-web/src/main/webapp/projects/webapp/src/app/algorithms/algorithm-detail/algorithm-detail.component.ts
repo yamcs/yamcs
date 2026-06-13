@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
   Input,
@@ -27,7 +26,6 @@ import { AlgorithmStatusComponent } from '../algorithm-status/algorithm-status.c
   selector: 'app-algorithm-detail',
   templateUrl: './algorithm-detail.component.html',
   styleUrl: './algorithm-detail.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AlgorithmStatusComponent, MarkdownComponent, WebappSdkModule],
 })
 export class AlgorithmDetailComponent implements AfterViewInit, OnDestroy {

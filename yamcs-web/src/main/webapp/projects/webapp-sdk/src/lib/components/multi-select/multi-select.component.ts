@@ -1,12 +1,5 @@
 import { AsyncPipe } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnChanges,
-  forwardRef,
-  input,
-} from '@angular/core';
+import { Component, Input, OnChanges, forwardRef, input } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatDivider } from '@angular/material/divider';
 import { MatIcon } from '@angular/material/icon';
@@ -18,7 +11,6 @@ import { YaSelectOption } from '../select/select.component';
 @Component({
   selector: 'ya-multi-select',
   templateUrl: './multi-select.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnChanges,
-  OnInit,
-} from '@angular/core';
+import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import {
   AcknowledgmentInfo,
@@ -15,14 +9,12 @@ import {
   YaSelectOption,
 } from '@yamcs/webapp-sdk';
 import { AdvanceAckHelpComponent } from '../../../automation/run-stack/advance-ack-help/advance-ack-help.component';
-import { AppMarkdownInput } from '../../../shared/markdown-input/markdown-input.component';
 import { TemplateProvider } from './TemplateProvider';
 
 @Component({
   selector: 'app-stack-advancement-form',
   templateUrl: './stack-advancement-form.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AdvanceAckHelpComponent, AppMarkdownInput, WebappSdkModule],
+  imports: [AdvanceAckHelpComponent, WebappSdkModule],
 })
 export class StackAdvancementForm implements OnInit, OnChanges {
   @Input()

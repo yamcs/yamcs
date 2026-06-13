@@ -1,10 +1,5 @@
 import { LowerCasePipe } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  OnDestroy,
-} from '@angular/core';
+import { Component, inject, OnDestroy } from '@angular/core';
 import {
   AuthService,
   FaviconService,
@@ -20,7 +15,6 @@ import { BehaviorSubject, map, Subscription } from 'rxjs';
   selector: 'app-alarm-label',
   templateUrl: './alarm-label.component.html',
   styleUrl: './alarm-label.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LowerCasePipe, WebappSdkModule],
 })
 export class AlarmLabelComponent implements OnDestroy {

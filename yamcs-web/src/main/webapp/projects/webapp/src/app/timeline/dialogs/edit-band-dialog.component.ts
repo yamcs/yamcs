@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Inject,
-  OnDestroy,
-} from '@angular/core';
+import { Component, Inject, OnDestroy } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {
@@ -25,7 +20,6 @@ import { removeUnsetProperties } from '../bands/properties';
 @Component({
   templateUrl: './edit-band-dialog.component.html',
   styleUrl: './edit-band-dialog.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     EditCommandBandComponent,
     EditItemBandComponent,

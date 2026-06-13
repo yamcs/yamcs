@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnInit,
-  input,
-} from '@angular/core';
+import { Component, OnInit, input } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute } from '@angular/router';
@@ -20,7 +15,6 @@ import { AlarmsPageTabsComponent } from '../alarms-page-tabs/alarms-page-tabs.co
 @Component({
   selector: 'app-alarms-action-log-tab',
   templateUrl: './action-log-tab.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AlarmsPageTabsComponent, WebappSdkModule],
 })
 export class ActionLogTabComponent extends BaseComponent implements OnInit {

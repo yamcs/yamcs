@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { ThreadInfo, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
@@ -10,7 +10,6 @@ import { TraceElementComponent } from '../trace-element/trace-element.component'
 
 @Component({
   templateUrl: './thread.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AdminPageComponent,
     AppAdminToolbar,

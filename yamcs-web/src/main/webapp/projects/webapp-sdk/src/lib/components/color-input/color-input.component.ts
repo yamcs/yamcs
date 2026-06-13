@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
   forwardRef,
@@ -12,7 +11,6 @@ import {
   NG_VALUE_ACCESSOR,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
 import { YaIconAction } from '../icon-action/icon-action.component';
 
@@ -20,7 +18,6 @@ import { YaIconAction } from '../icon-action/icon-action.component';
   selector: 'ya-color-input',
   templateUrl: './color-input.component.html',
   styleUrl: './color-input.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -28,7 +25,7 @@ import { YaIconAction } from '../icon-action/icon-action.component';
       multi: true,
     },
   ],
-  imports: [MatIcon, MatTooltip, ReactiveFormsModule, YaIconAction],
+  imports: [MatTooltip, ReactiveFormsModule, YaIconAction],
 })
 export class YaColorInput implements ControlValueAccessor {
   label = input('Set color');

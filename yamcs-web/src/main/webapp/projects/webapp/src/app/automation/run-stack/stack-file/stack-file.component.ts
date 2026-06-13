@@ -1,6 +1,5 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import {
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
   Input,
@@ -52,7 +51,6 @@ import {
   ScheduleActivityDialogData,
   ScheduleActivityDialogResult,
 } from '../../../shared/schedule-activity-dialog/schedule-activity-dialog.component';
-import { AdvanceAckHelpComponent } from '../advance-ack-help/advance-ack-help.component';
 import { EditCheckEntryDialogComponent } from '../edit-check-entry-dialog/edit-check-entry-dialog.component';
 import {
   CommandResult,
@@ -79,9 +77,7 @@ import { StackFileService } from './StackFileService';
 @Component({
   templateUrl: './stack-file.component.html',
   styleUrl: './stack-file.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    AdvanceAckHelpComponent,
     ExtraAcknowledgmentsTableComponent,
     MarkdownComponent,
     StackedCheckEntryComponent,

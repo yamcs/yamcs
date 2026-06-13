@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import {
   MissionDatabase,
@@ -8,7 +8,6 @@ import {
 
 @Component({
   templateUrl: './overview-component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class OverviewComponent {

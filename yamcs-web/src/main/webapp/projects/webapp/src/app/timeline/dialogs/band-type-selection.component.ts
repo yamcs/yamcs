@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
   OnDestroy,
@@ -22,7 +21,6 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
   selector: 'app-band-type-selection',
   templateUrl: './band-type-selection.component.html',
   styleUrl: './band-type-selection.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class BandTypeSelectionComponent implements AfterViewInit, OnDestroy {

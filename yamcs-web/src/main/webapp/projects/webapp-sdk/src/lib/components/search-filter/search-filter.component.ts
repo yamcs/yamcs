@@ -1,7 +1,6 @@
 import { AsyncPipe } from '@angular/common';
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   ElementRef,
@@ -21,7 +20,6 @@ import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
   selector: 'ya-search-filter',
   templateUrl: './search-filter.component.html',
   styleUrl: './search-filter.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

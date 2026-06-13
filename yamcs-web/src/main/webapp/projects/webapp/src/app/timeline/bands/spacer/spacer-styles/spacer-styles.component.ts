@@ -1,11 +1,10 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { UntypedFormGroup } from '@angular/forms';
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-spacer-styles',
   templateUrl: './spacer-styles.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class SpacerStylesComponent {

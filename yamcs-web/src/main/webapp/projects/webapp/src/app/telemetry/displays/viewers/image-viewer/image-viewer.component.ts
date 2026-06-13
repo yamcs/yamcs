@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import {
   ConfigService,
   StorageClient,
@@ -23,7 +23,6 @@ import { Viewer } from '../Viewer';
       transform: translate(-50%, -50%);
     }
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class ImageViewerComponent implements Viewer {

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { Table, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
@@ -6,7 +6,6 @@ import { Table, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 @Component({
   selector: 'app-table-page',
   templateUrl: './table.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class TableComponent {

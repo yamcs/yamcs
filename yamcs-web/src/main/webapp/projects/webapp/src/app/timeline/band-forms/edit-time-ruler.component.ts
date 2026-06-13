@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   Input,
@@ -16,7 +15,6 @@ import { BehaviorSubject } from 'rxjs';
 @Component({
   selector: 'app-edit-time-ruler',
   templateUrl: './edit-time-ruler.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class EditTimeRulerComponent implements AfterViewInit {

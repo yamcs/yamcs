@@ -1,21 +1,25 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
   Input,
   OnChanges,
+  SimpleChanges,
   ViewChild,
   inject,
 } from '@angular/core';
-import { ExtensionService, WebappSdkModule } from '@yamcs/webapp-sdk';
+import {
+  ConfigService,
+  ExtensionService,
+  WebappSdkModule,
+} from '@yamcs/webapp-sdk';
 
 @Component({
   templateUrl: './extension.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class ExtensionComponent implements AfterViewInit, OnChanges {
+  private configService = inject(ConfigService);
   private extensionService = inject(ExtensionService);
 
   @Input()
@@ -31,9 +35,21 @@ export class ExtensionComponent implements AfterViewInit, OnChanges {
     this.loadExtension(this.extension);
   }
 
-  ngOnChanges() {
-    if (this.extension && this.customElementHolder) {
+  ngOnChanges(changes: SimpleChanges) {
+    if (!this.extension || !this.customElementHolder) {
+      return;
+    }
+
+    // reloadOnNavigation is backwards compatible behavior, we'll eventually remove it.
+    const reloadOnNavigation =
+      !this.extensionService.isDisablingReloadOnNavigation(this.extension);
+    if (changes['extension'] || reloadOnNavigation) {
       this.loadExtension(this.extension);
+    } else if (changes['subroute']) {
+      const el = this.customElementHolder.nativeElement.firstChild as any;
+      if (el) {
+        el.subroute = this.subroute;
+      }
     }
   }
 

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import {
   CommandHistoryRecord,
   Printable,
@@ -9,7 +9,6 @@ import { CommandDetailComponent } from '../command-detail/command-detail.compone
 @Component({
   selector: 'app-command-history-printable',
   templateUrl: './command-history-printable.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommandDetailComponent, WebappSdkModule],
 })
 export class CommandHistoryPrintableComponent implements Printable {

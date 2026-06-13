@@ -1,9 +1,4 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewInit, Component, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
@@ -20,7 +15,6 @@ import { AppAdminToolbar } from '../../shared/admin-toolbar/admin-toolbar.compon
 
 @Component({
   templateUrl: './service-account-list.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AdminPageComponent, AppAdminToolbar, WebappSdkModule],
 })
 export class ServiceAccountListComponent implements AfterViewInit {

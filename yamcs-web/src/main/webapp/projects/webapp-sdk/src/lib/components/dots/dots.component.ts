@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   input,
   numberAttribute,
@@ -13,7 +12,6 @@ import { BaseComponent } from '../../abc/BaseComponent';
   selector: 'ya-dots',
   templateUrl: './dots.component.html',
   styleUrl: './dots.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'ya-dots',
     '[class.connected]': 'isConnected()',

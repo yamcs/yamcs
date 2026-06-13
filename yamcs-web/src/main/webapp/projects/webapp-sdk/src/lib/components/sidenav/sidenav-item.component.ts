@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   computed,
   inject,
@@ -20,7 +19,6 @@ import { YaSidenav } from './sidenav.component';
   selector: 'ya-sidenav-item',
   templateUrl: './sidenav-item.component.html',
   styleUrl: './sidenav-item.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'ya-sidenav-item',
     '[class.mini]': 'mini()',

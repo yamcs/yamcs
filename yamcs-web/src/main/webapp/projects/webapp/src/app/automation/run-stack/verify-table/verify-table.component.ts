@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
 import { StackedVerifyEntry } from '../stack-file/StackedEntry';
 import { VerifyIconComponent } from '../verify-icon/verify-icon.component';
@@ -8,6 +8,7 @@ import { VerifyIconComponent } from '../verify-icon/verify-icon.component';
   templateUrl: './verify-table.component.html',
   styleUrl: './verify-table.component.css',
   //changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [VerifyIconComponent, WebappSdkModule],
 })
 export class VerifyTableComponent {

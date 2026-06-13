@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
@@ -29,7 +29,6 @@ const defaultInterval = 'PT1H';
 @Component({
   templateUrl: './parameter-list-historical-data-tab.component.html',
   styleUrl: './parameter-list-historical-data-tab.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class ParameterListHistoricalDataTabComponent {

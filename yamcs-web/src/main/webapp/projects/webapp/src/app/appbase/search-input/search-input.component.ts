@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
   OnInit,
@@ -16,7 +15,6 @@ import { debounceTime, map, Observable, of, switchMap } from 'rxjs';
   selector: 'app-search-input',
   templateUrl: './search-input.component.html',
   styleUrl: './search-input.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
   host: {
     '[class.expanded]': 'expanded()',

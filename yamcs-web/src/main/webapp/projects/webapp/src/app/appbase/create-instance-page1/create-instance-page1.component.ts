@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import { InstanceTemplate, YamcsService } from '@yamcs/webapp-sdk';
@@ -10,7 +10,6 @@ import { AppAppBaseToolbar } from '../appbase-toolbar/appbase-toolbar.component'
 
 @Component({
   templateUrl: './create-instance-page1.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AppAppBaseToolbar,
     AppAppBaseToolbarLabel,

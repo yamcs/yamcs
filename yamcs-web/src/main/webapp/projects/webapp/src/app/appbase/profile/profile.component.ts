@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import {
   ConfigService,
@@ -14,7 +14,6 @@ import { AppAppBaseToolbar } from '../appbase-toolbar/appbase-toolbar.component'
 @Component({
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AppAppBaseToolbar, WebappSdkModule, SignificanceLevelComponent],
 })
 export class ProfileComponent {

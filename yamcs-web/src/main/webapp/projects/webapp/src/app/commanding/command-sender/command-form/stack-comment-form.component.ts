@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnChanges,
-} from '@angular/core';
+import { Component, Input, OnChanges } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
 import { AppMarkdownInput } from '../../../shared/markdown-input/markdown-input.component';
@@ -12,7 +7,6 @@ import { TemplateProvider } from './TemplateProvider';
 @Component({
   selector: 'app-stack-comment-form',
   templateUrl: './stack-comment-form.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AppMarkdownInput, WebappSdkModule],
 })
 export class StackCommentForm implements OnChanges {

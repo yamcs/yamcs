@@ -1,7 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   ElementRef,
@@ -67,7 +66,6 @@ export const PLIST_SOURCE_OPTIONS: YaSelectOption[] = [
 @Component({
   templateUrl: './parameters.component.html',
   styleUrl: './parameters.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class ParametersComponent implements AfterViewInit, OnDestroy {

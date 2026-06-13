@@ -43,10 +43,7 @@ export interface CommandQueue {
 
 export interface CommandQueueEvent {
   type:
-    | 'COMMAND_ADDED'
-    | 'COMMAND_UPDATED'
-    | 'COMMAND_REJECTED'
-    | 'COMMAND_SENT';
+    'COMMAND_ADDED' | 'COMMAND_UPDATED' | 'COMMAND_REJECTED' | 'COMMAND_SENT';
   data: CommandQueueEntry;
 }
 

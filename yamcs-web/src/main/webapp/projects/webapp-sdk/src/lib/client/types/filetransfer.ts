@@ -4,12 +4,7 @@ import { ActionInfo } from './management';
 export type FileTransferDirection = 'UPLOAD' | 'DOWNLOAD';
 
 export type FileTransferStatus =
-  | 'RUNNING'
-  | 'PAUSED'
-  | 'FAILED'
-  | 'COMPLETED'
-  | 'CANCELLING'
-  | 'QUEUED';
+  'RUNNING' | 'PAUSED' | 'FAILED' | 'COMPLETED' | 'CANCELLING' | 'QUEUED';
 
 export interface FileTransferService {
   instance: string;
