@@ -476,6 +476,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         Mdb mdb = MdbFactory.getInstance(processor.getInstance());
         Algorithm alg = MdbApi.verifyAlgorithm(mdb, request.getName());
         AlgorithmManager algMng = verifyAlgorithmManager(processor);
+        ctx.checkObjectPrivileges(ObjectPrivilegeType.ReadAlgorithm, alg.getQualifiedName());
 
         ScheduledExecutorService exec = YamcsServer.getServer().getThreadPoolExecutor();
         ScheduledFuture<?> future = exec.scheduleAtFixedRate(() -> {

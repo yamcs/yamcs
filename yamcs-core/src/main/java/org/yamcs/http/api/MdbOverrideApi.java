@@ -273,6 +273,7 @@ public class MdbOverrideApi extends AbstractMdbOverrideApi<Context> {
     @Override
     public void subscribeMdbChanges(Context ctx, SubscribeMdbChangesRequest request,
             Observer<MdbOverrideInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.GetMissionDatabase);
         var processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
         var pdata = processor.getProcessorData();
 

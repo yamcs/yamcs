@@ -52,6 +52,7 @@ import org.yamcs.protobuf.SubscribePacketsRequest;
 import org.yamcs.protobuf.TmPacketData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.security.ObjectPrivilegeType;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
@@ -498,24 +499,29 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
             Processor processor = ProcessingApi.verifyProcessor(instance, request.getProcessor());
             ContainerRequestManager containerRequestManager = processor.getContainerRequestManager();
             ContainerConsumer containerConsumer = (link, result) -> {
-                var tmb = TmPacketData.newBuilder()
-                        .setId(NamedObjectId.newBuilder().setName(result.getContainer().getQualifiedName()))
-                        .setPacket(ByteString.copyFrom(result.getContainerContent()))
-                        .setSize(result.getContainerContent().length)
-                        .setGenerationTime(TimeEncoding.toProtobufTimestamp(result.getGenerationTime()))
-                        .setReceptionTime(TimeEncoding.toProtobufTimestamp(result.getAcquisitionTime()))
-                        .setSequenceNumber(result.getSeqCount());
-                if (link != null) {
-                    tmb.setLink(link);
-                }
+                var packetName = result.getContainer().getQualifiedName();
+                if (ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadPacket, packetName)) {
+                    var tmb = TmPacketData.newBuilder()
+                            .setId(NamedObjectId.newBuilder().setName(packetName))
+                            .setPacket(ByteString.copyFrom(result.getContainerContent()))
+                            .setSize(result.getContainerContent().length)
+                            .setGenerationTime(TimeEncoding.toProtobufTimestamp(result.getGenerationTime()))
+                            .setReceptionTime(TimeEncoding.toProtobufTimestamp(result.getAcquisitionTime()))
+                            .setSequenceNumber(result.getSeqCount());
+                    if (link != null) {
+                        tmb.setLink(link);
+                    }
 
-                observer.next(tmb.build());
+                    observer.next(tmb.build());
+                }
             };
             observer.setCancelHandler(
                     () -> containerRequestManager.unsubscribe(containerConsumer, mdb.getRootSequenceContainer()));
             containerRequestManager.subscribe(containerConsumer, mdb.getRootSequenceContainer());
 
         } else if (request.hasStream()) {
+            // Low-level privilege. Packet names are not known through this kind of subscription.
+            ctx.checkSystemPrivilege(SystemPrivilege.ReadTables);
             YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
             Stream stream = TableApi.verifyStream(ctx, ydb, request.getStream());
             StreamSubscriber streamSubscriber = new StreamSubscriber() {
@@ -528,7 +534,8 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
                     int seqNumber = (Integer) tuple.getColumn(StandardTupleDefinitions.SEQNUM_COLUMN);
                     String link = tuple.getColumn(StandardTupleDefinitions.TM_LINK_COLUMN);
 
-                    var tmb = TmPacketData.newBuilder().setPacket(ByteString.copyFrom(pktData))
+                    var tmb = TmPacketData.newBuilder()
+                            .setPacket(ByteString.copyFrom(pktData))
                             .setSize(pktData.length)
                             .setGenerationTime(TimeEncoding.toProtobufTimestamp(genTime))
                             .setReceptionTime(TimeEncoding.toProtobufTimestamp(receptionTime))
