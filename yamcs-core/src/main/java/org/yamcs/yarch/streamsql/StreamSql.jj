@@ -234,7 +234,7 @@ TOKEN:
     < S_IDENTIFIER: (<LETTER>)+ (<DIGIT> | <LETTER> |<SPECIAL_CHARS>)* >
   | < #LETTER: ["a"-"z", "A"-"Z"] >
   | < #SPECIAL_CHARS: "$" | "_" | "#" | ".">
-  | < S_DOUBLE_QUOTED_IDENTIFIER: "\"" (~["\n","\r","\""])* "\"" >
+  | < S_DOUBLE_QUOTED_IDENTIFIER: "\"" (<LETTER> | <DIGIT> | <SPECIAL_CHARS>)+ "\"" >
   | < S_QMARK: "?" >
 }
 
@@ -930,7 +930,6 @@ String ObjectName() throws StreamSqlException:
     <S_IDENTIFIER>        {return token.image;}
   | <S_DOUBLE_QUOTED_IDENTIFIER> {String s1 = token.image; return s1.substring(1, s1.length() - 1);}  
 }
-
 
 BitwiseOp BitwiseOp()  throws StreamSqlException: {
 } {
