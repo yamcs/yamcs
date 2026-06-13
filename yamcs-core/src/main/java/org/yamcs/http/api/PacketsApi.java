@@ -472,11 +472,14 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
                     return;
                 }
 
-                byte[] raw = (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
-                HttpBody body = HttpBody.newBuilder()
-                        .setData(ByteString.copyFrom(raw))
-                        .build();
-                observer.next(body);
+                String pname = tuple.getColumn(XtceTmRecorder.PNAME_COLUMN);
+                if (ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadPacket, pname)) {
+                    byte[] raw = (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
+                    HttpBody body = HttpBody.newBuilder()
+                            .setData(ByteString.copyFrom(raw))
+                            .build();
+                    observer.next(body);
+                }
             }
 
             @Override
