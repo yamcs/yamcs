@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-} from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
 
 // Generated with node:
@@ -48,7 +42,6 @@ export const PALETTE = [
   selector: 'app-color-palette',
   templateUrl: './color-palette.component.html',
   styleUrl: './color-palette.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class ColorPaletteComponent {

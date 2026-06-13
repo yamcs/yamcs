@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import {
   UntypedFormBuilder,
   UntypedFormControl,
@@ -19,7 +19,6 @@ import { AppAdminToolbar } from '../../shared/admin-toolbar/admin-toolbar.compon
 
 @Component({
   templateUrl: './create-user.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AdminPageComponent,
     AppAdminToolbar,

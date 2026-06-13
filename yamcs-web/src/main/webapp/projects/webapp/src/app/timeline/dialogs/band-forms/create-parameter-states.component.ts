@@ -1,5 +1,5 @@
 import { TitleCasePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { outputFromObservable } from '@angular/core/rxjs-interop';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
@@ -16,7 +16,6 @@ import { removeUnsetProperties } from '../../bands/properties';
   selector: 'app-create-parameter-states',
   templateUrl: './create-parameter-states.component.html',
   styleUrl: './create-parameter-states.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ParameterStatesStylesComponent, TitleCasePipe, WebappSdkModule],
 })
 export class CreateParameterStatesComponent extends BaseComponent {

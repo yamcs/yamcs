@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   inject,
   input,
@@ -18,7 +17,6 @@ import { ViewConfigurationTabComponent } from './view-configuration-tab.componen
   selector: 'app-timeline-detail',
   templateUrl: './timeline-detail.component.html',
   styleUrl: './timeline-detail.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AllBandsTabComponent,
     ItemsTabComponent,

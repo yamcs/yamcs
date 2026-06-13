@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   OnDestroy,
@@ -23,7 +22,6 @@ import {
 @Component({
   templateUrl: './parameter-list-summary-tab.component.html',
   styleUrl: './parameter-list-summary-tab.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class ParameterListSummaryTabComponent implements OnDestroy {

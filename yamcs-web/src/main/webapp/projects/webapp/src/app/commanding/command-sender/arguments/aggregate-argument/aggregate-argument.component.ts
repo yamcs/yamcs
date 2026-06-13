@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   Input,
   OnInit,
@@ -29,7 +28,6 @@ import { TimeArgumentComponent } from '../time-argument/time-argument.component'
   selector: 'app-aggregate-argument',
   templateUrl: './aggregate-argument.component.html',
   styleUrl: './aggregate-argument.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   viewProviders: [
     {
       provide: ControlContainer,

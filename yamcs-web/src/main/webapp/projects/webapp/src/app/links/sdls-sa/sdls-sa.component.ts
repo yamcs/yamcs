@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewChild,
-  ElementRef,
-} from '@angular/core';
+import { Component, ViewChild, ElementRef } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { Link, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
@@ -52,7 +47,6 @@ function bigIntToBigEndianByteString(value: bigint): string {
 
 @Component({
   templateUrl: './sdls-sa.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class SdlsSaComponent {

@@ -1,10 +1,4 @@
-import {
-  booleanAttribute,
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  input,
-} from '@angular/core';
+import { booleanAttribute, Component, computed, input } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
 import { ParameterValue } from '../../client';
@@ -13,7 +7,6 @@ import { ParameterValue } from '../../client';
   selector: 'ya-parameter-status',
   templateUrl: './parameter-status.component.html',
   styleUrl: './parameter-status.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'ya-parameter-status',
     '[class.invalid]': 'invalid()',

@@ -1,4 +1,10 @@
-import { Directive, inject, Input } from '@angular/core';
+import {
+  Directive,
+  inject,
+  Input,
+  OnChanges,
+  SimpleChanges,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ConfigService } from './services/config.service';
 import { ExtensionService } from './services/extension.service';
@@ -7,8 +13,9 @@ import { SdkBridge } from './services/sdk-bridge.service';
 import { YamcsService } from './services/yamcs.service';
 
 @Directive()
-export abstract class YamcsWebExtension {
+export abstract class YamcsWebExtension implements OnChanges {
   private _extensionService: ExtensionService;
+  private extensionInitialized = false;
   sdkBridge = inject(SdkBridge);
 
   @Input()
@@ -27,7 +34,18 @@ export abstract class YamcsWebExtension {
     this.sdkBridge.router = extensionService.router;
     this.sdkBridge.yamcs = extensionService.yamcs;
 
+    this.extensionInitialized = true;
     this.onExtensionInit();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (
+      this.extensionInitialized &&
+      changes['subroute'] &&
+      !changes['subroute'].isFirstChange()
+    ) {
+      this.onExtensionChanges(this.subroute);
+    }
   }
 
   get configService(): ConfigService {
@@ -55,4 +73,10 @@ export abstract class YamcsWebExtension {
    * At this time, main services are available.
    */
   abstract onExtensionInit(): void;
+
+  /**
+   * Called when the subroute changes after initial load.
+   * Services are available at this point.
+   */
+  onExtensionChanges(subroute: string): void {}
 }

@@ -98,8 +98,7 @@ export function provideSdkBridge(): EnvironmentProviders[] {
 }
 
 export function provideYamcsWebExtension(): (
-  | Provider
-  | EnvironmentProviders
+  Provider | EnvironmentProviders
 )[] {
   return [
     provideBaseHrefFromIndexHtml(),

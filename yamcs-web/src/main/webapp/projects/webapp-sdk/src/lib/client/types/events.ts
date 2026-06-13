@@ -6,13 +6,7 @@ export interface SubscribeEventsRequest {
 }
 
 export type EventSeverity =
-  | 'INFO'
-  | 'WARNING'
-  | 'ERROR'
-  | 'WATCH'
-  | 'DISTRESS'
-  | 'CRITICAL'
-  | 'SEVERE';
+  'INFO' | 'WARNING' | 'ERROR' | 'WATCH' | 'DISTRESS' | 'CRITICAL' | 'SEVERE';
 
 export interface Event {
   source: string;

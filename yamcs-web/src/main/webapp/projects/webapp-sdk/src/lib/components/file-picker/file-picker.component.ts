@@ -1,4 +1,11 @@
-import { Component, computed, forwardRef, Input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  forwardRef,
+  Input,
+  signal,
+} from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { MatIcon } from '@angular/material/icon';
 import { DataTableDirective } from '../../directives/data-table.directive';
@@ -24,6 +31,7 @@ interface ScriptItem {
   host: {
     class: 'ya-file-picker',
   },
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [DataTableDirective, MatIcon],
 })
 export class YaFilePicker implements ControlValueAccessor {

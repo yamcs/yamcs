@@ -44,11 +44,7 @@ export type AlarmNotificationType =
   | 'RESET';
 
 export type AlarmSeverity =
-  | 'WATCH'
-  | 'WARNING'
-  | 'DISTRESS'
-  | 'CRITICAL'
-  | 'SEVERE';
+  'WATCH' | 'WARNING' | 'DISTRESS' | 'CRITICAL' | 'SEVERE';
 
 export interface Alarm {
   seqNum: number;

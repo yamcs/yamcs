@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   EventEmitter,
@@ -25,7 +24,6 @@ import { BehaviorSubject, Subscription } from 'rxjs';
   selector: 'app-object-selector',
   templateUrl: './object-selector.component.html',
   styleUrl: './object-selector.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

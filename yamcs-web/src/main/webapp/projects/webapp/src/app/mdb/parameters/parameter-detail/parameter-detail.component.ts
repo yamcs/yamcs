@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnChanges,
-} from '@angular/core';
+import { Component, Input, OnChanges } from '@angular/core';
 import {
   ContextAlarmInfo,
   Parameter,
@@ -22,7 +17,6 @@ import { ParameterCalibrationComponent } from '../parameter-calibration/paramete
   selector: 'app-parameter-detail',
   templateUrl: './parameter-detail.component.html',
   styleUrl: './parameter-detail.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ExpressionComponent,
     MarkdownComponent,

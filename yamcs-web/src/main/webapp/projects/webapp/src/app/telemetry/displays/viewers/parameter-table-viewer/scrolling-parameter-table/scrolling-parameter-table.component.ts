@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   EventEmitter,
@@ -25,7 +24,6 @@ import { ParameterTable } from '../ParameterTableModel';
   selector: 'app-scrolling-parameter-table',
   templateUrl: './scrolling-parameter-table.component.html',
   styleUrl: './scrolling-parameter-table.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class ScrollingParameterTable implements OnInit, OnChanges, OnDestroy {

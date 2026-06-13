@@ -1,6 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import {
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   EventEmitter,
@@ -25,7 +24,6 @@ import { ParameterTable } from '../ParameterTableModel';
   selector: 'app-multiple-parameter-table',
   templateUrl: './multiple-parameter-table.component.html',
   styleUrl: './multiple-parameter-table.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class MultipleParameterTableComponent

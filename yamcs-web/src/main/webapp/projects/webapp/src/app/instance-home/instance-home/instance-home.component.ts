@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import {
   AuthService,
@@ -15,7 +15,6 @@ import { TmStatsTableComponent } from '../tm-stats-table/tm-stats-table.componen
 
 @Component({
   templateUrl: './instance-home.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule, TmStatsTableComponent],
 })
 export class InstanceHomeComponent implements OnDestroy {

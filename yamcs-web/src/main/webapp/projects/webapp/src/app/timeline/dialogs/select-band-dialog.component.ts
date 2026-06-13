@@ -1,9 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-} from '@angular/core';
+import { AfterViewInit, Component } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
@@ -13,7 +9,6 @@ import { TimelineBand, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
   selector: 'app-select-band-dialog',
   templateUrl: './select-band-dialog.component.html',
   styleUrl: './select-band-dialog.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class SelectBandDialogComponent implements AfterViewInit {

@@ -1,5 +1,10 @@
 import { AsyncPipe } from '@angular/common';
-import { Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit,
+} from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { YaLabel } from '../label/label.component';
 
@@ -11,6 +16,7 @@ interface Entry {
 @Component({
   selector: 'ya-labels',
   templateUrl: './labels.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [AsyncPipe, YaLabel],
 })
 export class YaLabels implements OnInit {

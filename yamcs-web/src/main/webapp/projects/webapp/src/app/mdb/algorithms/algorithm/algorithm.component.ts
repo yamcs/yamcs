@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { Algorithm, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
@@ -6,7 +6,6 @@ import { AlgorithmDetailComponent } from '../algorithm-detail/algorithm-detail.c
 
 @Component({
   templateUrl: './algorithm.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AlgorithmDetailComponent, WebappSdkModule],
 })
 export class AlgorithmComponent {

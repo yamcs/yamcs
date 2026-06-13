@@ -1,12 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  effect,
-  input,
-} from '@angular/core';
+import { Component, effect, input } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { ParameterValue, WebappSdkModule } from '@yamcs/webapp-sdk';
-import { MarkdownComponent } from '../../../shared/markdown/markdown.component';
 import { EntryLabel } from '../entry-label/entry-label.component';
 import { StackedCheckEntry } from '../stack-file/StackedEntry';
 
@@ -19,8 +13,7 @@ interface Record {
   selector: 'app-stacked-check-entry',
   templateUrl: './stacked-check-entry.component.html',
   styleUrl: './stacked-check-entry.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [EntryLabel, MarkdownComponent, WebappSdkModule],
+  imports: [EntryLabel, WebappSdkModule],
 })
 export class StackedCheckEntryComponent {
   entry = input.required<StackedCheckEntry>();

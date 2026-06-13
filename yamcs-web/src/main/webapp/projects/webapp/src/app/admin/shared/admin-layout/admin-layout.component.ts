@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  OnDestroy,
-  ViewChild,
-} from '@angular/core';
+import { Component, inject, OnDestroy, ViewChild } from '@angular/core';
 import { MatSidenav } from '@angular/material/sidenav';
 import { NavigationEnd, Router } from '@angular/router';
 import {
@@ -14,14 +8,11 @@ import {
   WebappSdkModule,
 } from '@yamcs/webapp-sdk';
 import { filter, Subscription } from 'rxjs';
-import { AppAppBaseToolbarLabel } from '../../../appbase/appbase-toolbar/appbase-toolbar-label.directive';
-import { AppAppBaseToolbar } from '../../../appbase/appbase-toolbar/appbase-toolbar.component';
 
 @Component({
   templateUrl: './admin-layout.component.html',
   styleUrl: './admin-layout.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AppAppBaseToolbar, AppAppBaseToolbarLabel, WebappSdkModule],
+  imports: [WebappSdkModule],
   host: {
     '[class.collapsed]': 'isCollapsed()',
   },

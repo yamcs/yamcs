@@ -1,5 +1,6 @@
 import {
   booleanAttribute,
+  ChangeDetectionStrategy,
   Component,
   ElementRef,
   input,
@@ -10,6 +11,7 @@ import { YaButton, YaButtonAppearance } from '../button/button.component';
 @Component({
   selector: 'ya-download-button',
   templateUrl: './download-button.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [YaButton],
 })
 export class YaDownloadButton {

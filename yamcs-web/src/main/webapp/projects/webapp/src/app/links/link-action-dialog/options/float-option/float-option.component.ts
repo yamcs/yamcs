@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnDestroy,
-  OnInit,
-  forwardRef,
-  input,
-} from '@angular/core';
+import { Component, OnDestroy, OnInit, forwardRef, input } from '@angular/core';
 import {
   ControlValueAccessor,
   FormControl,
@@ -24,7 +17,6 @@ import { Subscription } from 'rxjs';
   selector: 'app-float-option',
   templateUrl: './float-option.component.html',
   styleUrl: './float-option.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
   providers: [
     {

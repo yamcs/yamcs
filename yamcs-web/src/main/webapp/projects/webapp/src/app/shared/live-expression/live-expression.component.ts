@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnDestroy,
-  OnInit,
-  signal,
-} from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormulaCompiler } from '@yamcs/opi';
 import {
   NamedObjectId,
@@ -19,7 +12,6 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-live-expression',
   template: '{{ result() }}',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LiveExpressionComponent implements OnInit, OnDestroy {
   @Input()

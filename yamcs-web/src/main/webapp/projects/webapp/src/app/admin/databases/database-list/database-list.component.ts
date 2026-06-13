@@ -1,9 +1,4 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewInit, Component, ViewChild } from '@angular/core';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
@@ -18,7 +13,6 @@ import { AppAdminToolbar } from '../../shared/admin-toolbar/admin-toolbar.compon
 
 @Component({
   templateUrl: './database-list.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AdminPageComponent, AppAdminToolbar, WebappSdkModule],
 })
 export class DatabaseListComponent implements AfterViewInit {

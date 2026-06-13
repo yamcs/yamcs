@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ActionInfo, WebappSdkModule } from '@yamcs/webapp-sdk';
@@ -14,7 +14,6 @@ export interface LinkActionDialogData {
 @Component({
   templateUrl: './link-action-dialog.component.html',
   styleUrl: './link-action-dialog.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     BooleanOptionComponent,
     FloatOptionComponent,

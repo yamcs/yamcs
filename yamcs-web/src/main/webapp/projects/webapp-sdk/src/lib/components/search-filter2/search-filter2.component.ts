@@ -1,6 +1,5 @@
 import { AsyncPipe } from '@angular/common';
 import {
-  ChangeDetectionStrategy,
   Component,
   forwardRef,
   input,
@@ -16,9 +15,7 @@ import {
   NG_VALUE_ACCESSOR,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { MatIcon } from '@angular/material/icon';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
-import { MatTooltip } from '@angular/material/tooltip';
 import { Completion } from '@codemirror/autocomplete';
 import { BehaviorSubject, debounceTime, Subscription } from 'rxjs';
 import { YaButtonGroup } from '../button-group/button-group.component';
@@ -37,7 +34,6 @@ interface ErrorState {
   selector: 'ya-search-filter2',
   templateUrl: './search-filter2.component.html',
   styleUrl: './search-filter2.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -47,11 +43,9 @@ interface ErrorState {
   ],
   imports: [
     AsyncPipe,
-    MatIcon,
     MatMenu,
     MatMenuItem,
     MatMenuTrigger,
-    MatTooltip,
     ReactiveFormsModule,
     YaButton,
     YaButtonGroup,

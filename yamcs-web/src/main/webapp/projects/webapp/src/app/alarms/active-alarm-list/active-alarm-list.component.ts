@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute } from '@angular/router';
@@ -21,7 +21,6 @@ import { ShelveAlarmDialogComponent } from '../shelve-alarm-dialog/shelve-alarm-
 @Component({
   templateUrl: './active-alarm-list.component.html',
   styleUrl: './active-alarm-list.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AlarmDetailComponent,
     AlarmsPageTabsComponent,

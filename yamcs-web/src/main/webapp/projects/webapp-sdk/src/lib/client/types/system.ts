@@ -129,12 +129,7 @@ export interface CommandOption {
 }
 
 export type ServiceState =
-  | 'NEW'
-  | 'STARTING'
-  | 'RUNNING'
-  | 'STOPPING'
-  | 'TERMINATED'
-  | 'FAILED';
+  'NEW' | 'STARTING' | 'RUNNING' | 'STOPPING' | 'TERMINATED' | 'FAILED';
 
 export type InstanceState =
   | 'OFFLINE'

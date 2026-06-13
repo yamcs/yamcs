@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { FormArray, FormControl, FormGroup } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
@@ -10,7 +10,6 @@ import { StackedCheckEntry } from '../stack-file/StackedEntry';
   selector: 'app-edit-check-entry-dialog',
   templateUrl: './edit-check-entry-dialog.component.html',
   styleUrl: './edit-check-entry-dialog.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AppMarkdownInput, AppParameterInput, WebappSdkModule],
 })
 export class EditCheckEntryDialogComponent {

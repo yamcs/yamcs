@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   EventEmitter,
   Input,
@@ -15,7 +14,6 @@ import { UserInfo, WebappSdkModule } from '@yamcs/webapp-sdk';
 @Component({
   selector: 'app-users-table',
   templateUrl: './users-table.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class UsersTableComponent implements AfterViewInit, OnChanges {

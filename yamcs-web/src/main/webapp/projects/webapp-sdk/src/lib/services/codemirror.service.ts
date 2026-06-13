@@ -41,11 +41,7 @@ import { EditorView } from 'codemirror';
 import { AppearanceService } from './appearance.service';
 
 export type CodeMirrorLanguage =
-  | 'java'
-  | 'javascript'
-  | 'markdown'
-  | 'plain'
-  | 'python';
+  'java' | 'javascript' | 'markdown' | 'plain' | 'python';
 
 export interface CodeMirrorOptions {
   parent: Element;

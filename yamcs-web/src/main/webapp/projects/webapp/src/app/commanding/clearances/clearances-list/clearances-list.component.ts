@@ -1,10 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewInit, Component, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
@@ -17,7 +12,6 @@ import { ClearancesPageTabsComponent } from '../clearances-page-tabs/clearances-
 
 @Component({
   templateUrl: './clearances-list.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ClearancesPageTabsComponent,
     WebappSdkModule,

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { Container, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
@@ -7,7 +7,6 @@ import { ContainerDetailComponent } from '../container-detail/container-detail.c
 
 @Component({
   templateUrl: './container.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ContainerDetailComponent, WebappSdkModule],
 })
 export class ContainerComponent {

@@ -1,4 +1,9 @@
-import { Component, Inject, OnDestroy } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Inject,
+  OnDestroy,
+} from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {
@@ -13,6 +18,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 
 @Component({
   templateUrl: './export-commands-dialog.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [WebappSdkModule],
 })
 export class ExportCommandsDialogComponent implements OnDestroy {

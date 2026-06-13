@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import {
   ParameterType,
   WebappSdkModule,
@@ -10,7 +10,6 @@ import { PolynomialPipe } from './polynomial.pipe';
 @Component({
   selector: 'app-parameter-calibration',
   templateUrl: './parameter-calibration.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ExpressionComponent, PolynomialPipe, WebappSdkModule],
 })
 export class ParameterCalibrationComponent {

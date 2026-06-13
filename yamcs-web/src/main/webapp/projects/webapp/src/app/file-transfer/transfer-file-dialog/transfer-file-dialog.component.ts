@@ -1,4 +1,11 @@
-import { Component, Inject, OnDestroy, Signal, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Inject,
+  OnDestroy,
+  Signal,
+  ViewChild,
+} from '@angular/core';
 import {
   UntypedFormBuilder,
   UntypedFormGroup,
@@ -29,6 +36,7 @@ import {
   selector: 'app-transfer-file-dialog',
   templateUrl: './transfer-file-dialog.component.html',
   styleUrl: './transfer-file-dialog.component.css',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [ObjectSelector, WebappSdkModule, RemoteFileSelectorComponent],
 })
 export class TransferFileDialogComponent implements OnDestroy {

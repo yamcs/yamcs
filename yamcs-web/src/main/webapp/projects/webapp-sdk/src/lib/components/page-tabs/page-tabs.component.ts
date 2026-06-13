@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
   inject,
@@ -12,7 +11,6 @@ import { MatTabsModule } from '@angular/material/tabs';
   selector: 'ya-page-tabs',
   templateUrl: './page-tabs.component.html',
   styleUrl: './page-tabs.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'ya-page-tabs',
   },

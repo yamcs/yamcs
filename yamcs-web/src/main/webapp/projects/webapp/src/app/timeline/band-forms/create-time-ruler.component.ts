@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { outputFromObservable } from '@angular/core/rxjs-interop';
 import {
   UntypedFormBuilder,
@@ -15,7 +15,6 @@ import { map, Observable } from 'rxjs';
 @Component({
   selector: 'app-create-time-ruler',
   templateUrl: './create-time-ruler.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class CreateTimeRulerComponent extends BaseComponent {

@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Inject,
-  OnDestroy,
-} from '@angular/core';
+import { Component, Inject, OnDestroy } from '@angular/core';
 import {
   FormGroup,
   UntypedFormBuilder,
@@ -30,7 +25,6 @@ const OVERRIDE_SUFFIX = '_overrideBand';
 @Component({
   selector: 'app-edit-event-dialog',
   templateUrl: './edit-event-dialog.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ItemStylesComponent, WebappSdkModule],
 })
 export class EditEventDialogComponent implements OnDestroy {

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 import { OpiDisplayViewerComponent } from '../opi-display-viewer/opi-display-viewer.component';
@@ -6,6 +6,7 @@ import { OpiDisplayViewerComponent } from '../opi-display-viewer/opi-display-vie
 @Component({
   selector: 'app-opi-display-viewer-controls',
   templateUrl: './opi-display-viewer-controls.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [WebappSdkModule],
 })
 export class OpiDisplayViewerControlsComponent {

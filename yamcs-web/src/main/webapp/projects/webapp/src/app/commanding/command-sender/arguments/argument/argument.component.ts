@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnInit,
-} from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { ControlContainer, FormGroupName } from '@angular/forms';
 import { ArgumentType, Value, WebappSdkModule, utils } from '@yamcs/webapp-sdk';
 import { TemplateProvider } from '../../command-form/TemplateProvider';
@@ -74,7 +69,6 @@ function renderJsonElement(jsonElement: any): any {
 @Component({
   selector: 'app-argument',
   templateUrl: './argument.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   viewProviders: [
     {
       provide: ControlContainer,

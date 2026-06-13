@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
 import { OopsComponent } from '../oops/oops.component';
@@ -6,7 +6,6 @@ import { OopsComponent } from '../oops/oops.component';
 @Component({
   templateUrl: './not-found.component.html',
   styleUrl: './not-found.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [OopsComponent, WebappSdkModule],
 })
 export class NotFoundComponent implements OnInit {

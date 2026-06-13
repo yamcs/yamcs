@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService, ConfigService, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
@@ -6,6 +6,7 @@ import { ScriptViewerComponent } from '../script-viewer/script-viewer.component'
 
 @Component({
   templateUrl: './script-viewer-controls.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [WebappSdkModule],
 })
 export class ScriptViewerControlsComponent {

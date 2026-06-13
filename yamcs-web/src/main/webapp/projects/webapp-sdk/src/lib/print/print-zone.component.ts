@@ -1,11 +1,4 @@
-import { NgTemplateOutlet } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  Type,
-  ViewChild,
-} from '@angular/core';
+import { Component, ElementRef, Type, ViewChild } from '@angular/core';
 import { Printable } from './Printable';
 import { PrintService } from './print.service';
 import { PrintableDirective } from './printable.directive';
@@ -14,8 +7,7 @@ import { PrintableDirective } from './printable.directive';
   selector: 'ya-print-zone',
   templateUrl: './print-zone.component.html',
   styleUrl: './print-zone.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgTemplateOutlet, PrintableDirective],
+  imports: [PrintableDirective],
 })
 export class YaPrintZone {
   /*

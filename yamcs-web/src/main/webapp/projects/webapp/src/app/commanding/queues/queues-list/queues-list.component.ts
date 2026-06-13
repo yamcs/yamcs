@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   OnDestroy,
@@ -23,7 +22,6 @@ import { SignificanceLevelComponent } from '../../../shared/significance-level/s
 
 @Component({
   templateUrl: './queues-list.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule, SignificanceLevelComponent],
 })
 export class QueuesListComponent implements AfterViewInit, OnDestroy {

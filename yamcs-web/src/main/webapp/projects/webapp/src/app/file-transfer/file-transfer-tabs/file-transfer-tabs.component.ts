@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import {
   FileTransferService,
   WebappSdkModule,
@@ -9,7 +9,6 @@ import {
   selector: 'app-file-transfer-tabs',
   templateUrl: './file-transfer-tabs.component.html',
   styleUrl: './file-transfer-tabs.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class FileTransferTabsComponent {

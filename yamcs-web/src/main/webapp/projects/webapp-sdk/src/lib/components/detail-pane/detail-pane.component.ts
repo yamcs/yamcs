@@ -1,6 +1,5 @@
 import {
   booleanAttribute,
-  ChangeDetectionStrategy,
   Component,
   computed,
   input,
@@ -19,7 +18,6 @@ import { BaseComponent } from '../../abc/BaseComponent';
     class: 'ya-detail-pane',
     '[class.hidden]': 'hidden()',
   },
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class YaDetailPane extends BaseComponent implements OnInit, OnDestroy {
   padding = input(true, { transform: booleanAttribute });

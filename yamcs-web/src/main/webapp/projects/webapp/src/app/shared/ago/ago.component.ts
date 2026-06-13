@@ -1,11 +1,5 @@
 import { AsyncPipe } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnChanges,
-  OnDestroy,
-} from '@angular/core';
+import { Component, Input, OnChanges, OnDestroy } from '@angular/core';
 import { Synchronizer } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { AgoPipe } from '../pipes/ago.pipe';
@@ -13,7 +7,6 @@ import { AgoPipe } from '../pipes/ago.pipe';
 @Component({
   selector: 'app-ago',
   template: '{{ value$ | async }}',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AsyncPipe],
 })
 export class AgoComponent implements OnChanges, OnDestroy {

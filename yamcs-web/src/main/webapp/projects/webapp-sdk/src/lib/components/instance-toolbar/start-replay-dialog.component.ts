@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -24,6 +24,7 @@ import { YaWarningMessage } from '../warning-message/warning-message.component';
 @Component({
   selector: 'ya-start-replay-dialog',
   templateUrl: './start-replay-dialog.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
     MatDialogActions,
     MatDialogClose,

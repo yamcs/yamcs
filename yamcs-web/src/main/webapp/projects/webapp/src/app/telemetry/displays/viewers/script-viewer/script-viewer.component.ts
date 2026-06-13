@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  OnDestroy,
-  ViewChild,
-} from '@angular/core';
+import { Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import {
   AuthService,
   CodeMirror,
@@ -28,7 +22,6 @@ import { Viewer } from '../Viewer';
       display: flex;
     }
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class ScriptViewerComponent implements Viewer, OnDestroy {

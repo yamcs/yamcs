@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   computed,
   contentChildren,
@@ -27,7 +26,6 @@ export interface YaSelectOption {
 @Component({
   selector: 'ya-select',
   templateUrl: './select.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

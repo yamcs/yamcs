@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { Stream, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
@@ -6,7 +6,6 @@ import { Stream, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 @Component({
   selector: 'app-stream-page',
   templateUrl: './stream.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class StreamComponent {

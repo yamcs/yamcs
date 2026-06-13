@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnInit,
-  input,
-} from '@angular/core';
+import { Component, OnInit, input } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
@@ -23,7 +18,6 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
 @Component({
   selector: 'app-links-action-log-tab',
   templateUrl: './action-log-tab.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LinksPageTabsComponent, WebappSdkModule],
 })
 export class ActionLogTabComponent implements OnInit {

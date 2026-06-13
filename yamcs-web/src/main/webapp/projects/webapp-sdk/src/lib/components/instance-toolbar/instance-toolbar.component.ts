@@ -1,7 +1,6 @@
 import { CdkPortalOutlet } from '@angular/cdk/portal';
 import { AsyncPipe } from '@angular/common';
 import {
-  ChangeDetectionStrategy,
   Component,
   computed,
   ContentChild,
@@ -33,7 +32,6 @@ import { StartReplayDialogComponent } from './start-replay-dialog.component';
   selector: 'ya-instance-toolbar',
   templateUrl: './instance-toolbar.component.html',
   styleUrl: './instance-toolbar.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: YA_INSTANCE_TOOLBAR,

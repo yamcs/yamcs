@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Table, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 import * as utils from '../utils';
@@ -7,7 +7,6 @@ import * as utils from '../utils';
   selector: 'app-table-script-tab',
   templateUrl: './table-script-tab.component.html',
   styleUrls: ['./table-script-tab.component.css', '../streamsql.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class TableScriptTabComponent {

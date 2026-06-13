@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
 import {
@@ -11,7 +11,6 @@ import { AppAdminToolbar } from '../../shared/admin-toolbar/admin-toolbar.compon
 
 @Component({
   templateUrl: './rocksdb-database-list.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AdminPageComponent, AppAdminToolbar, WebappSdkModule],
 })
 export class RocksDbDatabasesComponent {

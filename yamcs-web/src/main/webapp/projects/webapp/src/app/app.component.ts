@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
   OnDestroy,
@@ -34,7 +33,6 @@ import { SelectInstanceDialogComponent } from './shared/select-instance-dialog/s
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class]': 'componentCssClass',
   },

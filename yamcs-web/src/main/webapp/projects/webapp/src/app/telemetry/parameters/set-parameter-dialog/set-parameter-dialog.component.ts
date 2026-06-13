@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import {
   UntypedFormControl,
   UntypedFormGroup,
@@ -19,6 +19,7 @@ import { ParameterFormComponent } from '../parameter-form/parameter-form.compone
 @Component({
   selector: 'app-set-parameter-dialog',
   templateUrl: './set-parameter-dialog.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [ParameterFormComponent, WebappSdkModule],
 })
 export class SetParameterDialogComponent {

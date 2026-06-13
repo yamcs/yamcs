@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { outputFromObservable } from '@angular/core/rxjs-interop';
 import {
   UntypedFormBuilder,
@@ -19,7 +19,6 @@ import { ItemBandStylesComponent } from '../bands/item-band/item-band-styles/ite
 @Component({
   selector: 'app-create-item-band',
   templateUrl: './create-item-band.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ItemBandStylesComponent, WebappSdkModule],
 })
 export class CreateItemBandComponent {

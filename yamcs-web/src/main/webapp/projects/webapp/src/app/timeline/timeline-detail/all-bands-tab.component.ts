@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  effect,
-  inject,
-} from '@angular/core';
+import { ChangeDetectorRef, Component, effect, inject } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import {
   AuthService,
@@ -20,7 +14,6 @@ import { TimelineService } from '../timeline.service';
   selector: 'app-all-bands-tab',
   templateUrl: './all-bands-tab.component.html',
   styleUrl: './all-bands-tab.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class AllBandsTabComponent {

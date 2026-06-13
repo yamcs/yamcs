@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 
 /**
@@ -15,7 +15,6 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-route-refresh',
   template: '',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RouteRefreshComponent {
   constructor(private router: Router) {

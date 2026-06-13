@@ -1,7 +1,6 @@
 import { APP_BASE_HREF } from '@angular/common';
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
   HostListener,
@@ -26,7 +25,6 @@ import { HexModel, Line } from './model';
   selector: 'app-hex',
   templateUrl: './hex.component.html',
   styleUrl: './hex.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [HexDumpPipe, YaPrintZoneHide, YaPrintZoneShow],
 })
 export class HexComponent implements AfterViewInit, OnChanges, OnDestroy {

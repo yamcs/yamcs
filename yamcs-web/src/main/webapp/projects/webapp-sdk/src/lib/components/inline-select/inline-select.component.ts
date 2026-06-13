@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   computed,
   contentChildren,
@@ -16,7 +15,6 @@ import { YaSelectOption } from '../select/select.component';
 @Component({
   selector: 'ya-inline-select',
   templateUrl: './inline-select.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

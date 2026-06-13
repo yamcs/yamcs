@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnDestroy,
-  OnInit,
-  input,
-} from '@angular/core';
+import { Component, OnDestroy, OnInit, input } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import {
   GetAlarmsOptions,
@@ -20,7 +14,6 @@ const defaultInterval = 'P1M';
 
 @Component({
   templateUrl: './parameter-alarms-tab.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ParameterAlarmsTableComponent, WebappSdkModule],
 })
 export class ParameterAlarmsTabComponent implements OnInit, OnDestroy {

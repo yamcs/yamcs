@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   effect,
   ElementRef,
@@ -30,7 +29,6 @@ import { filter } from './lang-filter';
   selector: 'ya-filter-input',
   templateUrl: './filter-input.component.html',
   styleUrl: './filter-input.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { outputFromObservable } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
@@ -13,7 +13,6 @@ import { SpacerStylesComponent } from '../bands/spacer/spacer-styles/spacer-styl
 @Component({
   selector: 'app-create-spacer',
   templateUrl: './create-spacer.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [SpacerStylesComponent, WebappSdkModule],
 })
 export class CreateSpacerComponent extends BaseComponent {

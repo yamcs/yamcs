@@ -1,11 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  OnDestroy,
-  ViewChild,
-} from '@angular/core';
+import { Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
@@ -34,7 +28,6 @@ import { ViewObjectMetadataDialogComponent } from '../view-object-metadata-dialo
 @Component({
   templateUrl: './bucket-object-list.component.html',
   styleUrl: './bucket-object-list.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AppStorageToolbar,
     AppStorageToolbarLabel,

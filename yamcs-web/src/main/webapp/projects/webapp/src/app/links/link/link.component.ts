@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
@@ -23,7 +23,6 @@ import { LinkService } from '../shared/link.service';
 
 @Component({
   templateUrl: './link.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LinkStatusComponent, WebappSdkModule],
 })
 export class LinkComponent implements OnDestroy {

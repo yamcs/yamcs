@@ -1,4 +1,10 @@
-import { Component, ElementRef, Inject, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  Inject,
+  ViewChild,
+} from '@angular/core';
 import {
   UntypedFormBuilder,
   UntypedFormGroup,
@@ -16,6 +22,7 @@ import {
 @Component({
   selector: 'app-create-stack-dialog',
   templateUrl: './create-stack-dialog.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [WebappSdkModule],
 })
 export class CreateStackDialogComponent {

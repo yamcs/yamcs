@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnInit,
-  input,
-} from '@angular/core';
+import { Component, OnInit, input } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
@@ -23,7 +18,6 @@ import { FileTransferTabsComponent } from '../file-transfer-tabs/file-transfer-t
 @Component({
   selector: 'app-file-transfer-action-log-tab',
   templateUrl: './action-log-tab.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FileTransferTabsComponent, WebappSdkModule],
 })
 export class ActionLogTabComponent implements OnInit {

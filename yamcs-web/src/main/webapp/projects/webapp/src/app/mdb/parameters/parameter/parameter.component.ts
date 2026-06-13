@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { Parameter, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
@@ -8,7 +8,6 @@ import { ParameterDetailComponent } from '../parameter-detail/parameter-detail.c
 @Component({
   templateUrl: './parameter.component.html',
   styleUrl: './parameter.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ParameterDetailComponent, WebappSdkModule],
 })
 export class ParameterComponent {

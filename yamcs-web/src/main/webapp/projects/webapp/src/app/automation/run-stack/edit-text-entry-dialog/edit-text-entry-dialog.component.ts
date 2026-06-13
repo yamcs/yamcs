@@ -1,5 +1,6 @@
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
   Component,
   ElementRef,
   Inject,
@@ -19,6 +20,7 @@ import { MarkdownComponent } from '../../../shared/markdown/markdown.component';
   selector: 'app-edit-text-entry-dialog',
   templateUrl: './edit-text-entry-dialog.component.html',
   styleUrl: './edit-text-entry-dialog.component.css',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [MarkdownComponent, WebappSdkModule],
 })
 export class EditTextEntryDialogComponent implements AfterViewInit, OnDestroy {

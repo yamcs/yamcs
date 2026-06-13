@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnChanges,
-  OnInit,
-} from '@angular/core';
+import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import {
   CommandOption,
@@ -20,7 +14,6 @@ import { TemplateProvider } from './TemplateProvider';
 @Component({
   selector: 'app-command-options-form',
   templateUrl: './command-options-form.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class CommandOptionsForm implements OnInit, OnChanges {

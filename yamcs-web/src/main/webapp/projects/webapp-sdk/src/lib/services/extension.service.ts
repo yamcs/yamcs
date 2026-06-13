@@ -18,6 +18,7 @@ export class ExtensionService {
   readonly yamcs = inject(YamcsService);
 
   private navItems = new Map<NavGroup, NavItem[]>();
+  private extensionsDisablingReloadOnNavigation = new Set<string>();
 
   getNavItems(group: NavGroup) {
     const navItems = [...(this.navItems.get(group) || [])];
@@ -35,5 +36,17 @@ export class ExtensionService {
       this.navItems.set(group, items);
     }
     items.push(item);
+  }
+
+  // Temporary during transition.
+  // Disabling reloadOnNavigation should become the default.
+  disableReloadOnNavigation(extensionId: string) {
+    this.extensionsDisablingReloadOnNavigation.add(extensionId);
+  }
+
+  // Temporary during transition.
+  // Disabling reloadOnNavigation should become the default.
+  isDisablingReloadOnNavigation(extensionId: string) {
+    return this.extensionsDisablingReloadOnNavigation.has(extensionId) ?? false;
   }
 }

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import {
@@ -15,6 +15,7 @@ import { PacketsPageTabsComponent } from '../packets-page-tabs/packets-page-tabs
 @Component({
   selector: 'app-packet-query-list',
   templateUrl: './packet-query-list.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [PacketsPageTabsComponent, WebappSdkModule],
 })
 export class PacketQueryListComponent {

@@ -1,5 +1,5 @@
 import { Location } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import {
   UntypedFormBuilder,
   UntypedFormControl,
@@ -25,7 +25,6 @@ import {
 
 @Component({
   templateUrl: './edit-user.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AdminPageComponent, AppAdminToolbar, WebappSdkModule],
 })
 export class EditUserComponent implements OnDestroy {

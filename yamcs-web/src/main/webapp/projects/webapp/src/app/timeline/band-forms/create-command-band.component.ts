@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { outputFromObservable } from '@angular/core/rxjs-interop';
 import {
   UntypedFormBuilder,
@@ -17,7 +17,6 @@ import { map, Observable } from 'rxjs';
 @Component({
   selector: 'app-create-command-band',
   templateUrl: './create-command-band.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class CreateCommandBandComponent {

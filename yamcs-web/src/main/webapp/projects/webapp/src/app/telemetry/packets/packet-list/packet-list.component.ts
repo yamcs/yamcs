@@ -1,12 +1,5 @@
 import { Clipboard } from '@angular/cdk/clipboard';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  input,
-  OnDestroy,
-  OnInit,
-  viewChild,
-} from '@angular/core';
+import { Component, input, OnDestroy, OnInit, viewChild } from '@angular/core';
 import {
   FormControl,
   UntypedFormControl,
@@ -39,7 +32,6 @@ const defaultInterval = 'PT1H';
 @Component({
   templateUrl: './packet-list.component.html',
   styleUrl: './packet-list.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     HexComponent,
     PacketDownloadLinkPipe,

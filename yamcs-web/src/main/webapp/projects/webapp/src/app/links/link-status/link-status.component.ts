@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnChanges,
-  OnDestroy,
-} from '@angular/core';
+import { Component, Input, OnChanges, OnDestroy } from '@angular/core';
 import {
   Link,
   OFF_COLOR,
@@ -21,7 +15,6 @@ const EXPIRY = 2000;
   selector: 'app-link-status',
   templateUrl: './link-status.component.html',
   styleUrl: './link-status.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class LinkStatusComponent implements OnChanges, OnDestroy {

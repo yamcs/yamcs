@@ -2,7 +2,6 @@ import { Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
   HostListener,
@@ -68,7 +67,6 @@ export interface DateRange {
 @Component({
   templateUrl: './timeline.component.html',
   styleUrl: './timeline.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TimelineDetail, WebappSdkModule],
   providers: [TimelineService],
 })

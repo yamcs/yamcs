@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  input,
-} from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { StartCondition, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { ItemState } from '../ItemState';
 
@@ -11,7 +6,6 @@ import { ItemState } from '../ItemState';
   selector: 'app-item-detail-tab-summary',
   templateUrl: './item-detail-tab-summary.component.html',
   styleUrl: './item-detail-tab-summary.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class ItemDetailTabSummaryComponent {

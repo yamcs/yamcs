@@ -1,5 +1,5 @@
 import { Clipboard } from '@angular/cdk/clipboard';
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import {
   CommandHistoryRecord,
   WebappSdkModule,
@@ -15,7 +15,6 @@ import { YamcsAcknowledgmentsTableComponent } from '../yamcs-acknowledgments-tab
 @Component({
   selector: 'app-command-detail2',
   templateUrl: './command-detail.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[style.display]': '"block"',
   },

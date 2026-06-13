@@ -1,10 +1,4 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  OnInit,
-  input,
-} from '@angular/core';
+import { AfterViewInit, Component, OnInit, input } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   AlgorithmStatus,
@@ -18,7 +12,6 @@ import { BehaviorSubject } from 'rxjs';
 @Component({
   templateUrl: './algorithm-trace-tab.component.html',
   styleUrl: './algorithm-trace-tab.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class AlgorithmTraceTabComponent implements OnInit, AfterViewInit {

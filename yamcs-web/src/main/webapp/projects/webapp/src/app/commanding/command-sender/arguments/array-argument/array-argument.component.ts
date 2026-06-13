@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   Input,
@@ -42,7 +41,6 @@ import { TimeArgumentComponent } from '../time-argument/time-argument.component'
   selector: 'app-array-argument',
   templateUrl: './array-argument.component.html',
   styleUrl: './array-argument.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   viewProviders: [
     {
       provide: ControlContainer,

@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  input,
-  OnChanges,
-} from '@angular/core';
+import { Component, computed, input, OnChanges } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import {
   AuthService,
@@ -22,7 +16,6 @@ import { TemplateProvider } from '../command-form/TemplateProvider';
   selector: 'app-command-constraints',
   templateUrl: './command-constraints.component.html',
   styleUrl: './command-constraints.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ExpressionComponent,
     LiveExpressionComponent,

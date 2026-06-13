@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   effect,
   ElementRef,
@@ -25,7 +24,6 @@ import { ItemDetailComponent } from './item-detail.component';
   selector: 'app-items-tab',
   templateUrl: 'items-tab.component.html',
   styleUrl: 'items-tab.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AgoComponent, ItemDetailComponent, WebappSdkModule],
 })
 export class ItemsTabComponent implements AfterViewInit {

@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnDestroy,
-  OnInit,
-  forwardRef,
-  input,
-} from '@angular/core';
+import { Component, OnDestroy, OnInit, forwardRef, input } from '@angular/core';
 import {
   AbstractControl,
   ControlValueAccessor,
@@ -24,7 +17,6 @@ import { Subscription } from 'rxjs';
   selector: 'app-integer-option',
   templateUrl: './integer-option.component.html',
   styleUrl: './integer-option.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
   providers: [
     {

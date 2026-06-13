@@ -1,15 +1,8 @@
-import {
-  booleanAttribute,
-  ChangeDetectionStrategy,
-  Component,
-  input,
-  output,
-} from '@angular/core';
+import { booleanAttribute, Component, input, output } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 
 @Component({
   selector: 'ya-icon-action',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './icon-action.component.html',
   styleUrl: './icon-action.component.css',
   host: {

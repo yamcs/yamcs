@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import {
   Alarm,
   BaseComponent,
@@ -12,7 +12,6 @@ import { AlarmsDataSource } from '../alarms.datasource';
 
 @Component({
   templateUrl: './pending-alarm-list.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AlarmsPageTabsComponent, AlarmsTableComponent, WebappSdkModule],
 })
 export class PendingAlarmListComponent

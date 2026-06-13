@@ -1,11 +1,10 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { TraceElementInfo } from '@yamcs/webapp-sdk';
 
 @Component({
   selector: 'app-trace-element',
   templateUrl: './trace-element.component.html',
   styleUrl: './trace-element.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TraceElementComponent {
   element = input.required<TraceElementInfo>();

@@ -1,5 +1,5 @@
 import { KeyValue } from '@angular/common';
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
 import { AcknowledgmentNamePipe } from '../acknowledgment-name.pipe';
 import { EntryLabel } from '../entry-label/entry-label.component';
@@ -9,7 +9,6 @@ import { StackedCommandEntry } from '../stack-file/StackedEntry';
   selector: 'app-stacked-command-entry',
   templateUrl: './stacked-command-entry.component.html',
   styleUrl: './stacked-command-entry.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AcknowledgmentNamePipe, EntryLabel, WebappSdkModule],
 })
 export class StackedCommandEntryComponent {

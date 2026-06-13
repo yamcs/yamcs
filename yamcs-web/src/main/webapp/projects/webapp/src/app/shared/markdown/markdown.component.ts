@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   effect,
   ElementRef,
@@ -14,7 +13,6 @@ import { marked } from 'marked';
   selector: 'app-markdown',
   templateUrl: './markdown.component.html',
   styleUrl: './markdown.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MarkdownComponent {
   text = input.required<string>();

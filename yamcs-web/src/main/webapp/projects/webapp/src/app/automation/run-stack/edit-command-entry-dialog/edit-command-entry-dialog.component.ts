@@ -1,4 +1,10 @@
-import { ChangeDetectorRef, Component, Inject, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Inject,
+  ViewChild,
+} from '@angular/core';
 import {
   UntypedFormBuilder,
   UntypedFormGroup,
@@ -15,7 +21,6 @@ import {
 import { BehaviorSubject } from 'rxjs';
 import { CommandFormComponent } from '../../../commanding/command-sender/command-form/command-form.component';
 import { CommandSelectorComponent } from '../../../shared/command-selector/command-selector.component';
-import { AdvanceAckHelpComponent } from '../advance-ack-help/advance-ack-help.component';
 import { StackedCommandEntry } from '../stack-file/StackedEntry';
 import { CommandStepTemplateProvider } from './CommandStepTemplateProvider';
 
@@ -31,12 +36,8 @@ export interface CommandResult {
 @Component({
   templateUrl: './edit-command-entry-dialog.component.html',
   styleUrl: './edit-command-entry-dialog.component.css',
-  imports: [
-    AdvanceAckHelpComponent,
-    CommandFormComponent,
-    CommandSelectorComponent,
-    WebappSdkModule,
-  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  imports: [CommandFormComponent, CommandSelectorComponent, WebappSdkModule],
 })
 export class EditCommandEntryDialogComponent {
   okLabel = 'OK';
