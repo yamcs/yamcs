@@ -186,14 +186,22 @@ public abstract class Context {
         }
     }
 
-    public void checkParameterPrivilege(ObjectPrivilegeType type, Collection<Parameter> objects) throws ForbiddenException {
+    public void checkAnyObjectPrivilege(ObjectPrivilegeType type) throws ForbiddenException {
+        if (!user.hasAnyObjectPrivilege(type)) {
+            throw new ForbiddenException("Missing object privilege '" + type + "'");
+        }
+    }
+
+    public void checkParameterPrivilege(ObjectPrivilegeType type, Collection<Parameter> objects)
+            throws ForbiddenException {
         checkParameterPrivilege(type, objects.toArray(new Parameter[objects.size()]));
     }
 
-    public void checkParameterPrivilege(ObjectPrivilegeType type, Parameter... parameters) throws ForbiddenException  {
+    public void checkParameterPrivilege(ObjectPrivilegeType type, Parameter... parameters) throws ForbiddenException {
         for (Parameter parameter : parameters) {
             if (!user.hasParameterPrivilege(type, parameter)) {
-                throw new ForbiddenException("No " + type + " authorization for '" + parameter.getQualifiedName() + "'");
+                throw new ForbiddenException(
+                        "No " + type + " authorization for '" + parameter.getQualifiedName() + "'");
             }
         }
     }

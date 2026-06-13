@@ -18,7 +18,13 @@ public class SystemPrivilege {
      */
     public static final SystemPrivilege ControlProcessor = new SystemPrivilege("ControlProcessor");
 
-    // Not used. Deprecate?
+    /**
+     * Allows to set time on a simulation time service.
+     */
+    public static final SystemPrivilege ControlTime = new SystemPrivilege("ControlTime");
+
+    // Not used. To be deleted
+    @Deprecated
     public static final SystemPrivilege ReadCommandHistory = new SystemPrivilege("ReadCommandHistory");
 
     /**

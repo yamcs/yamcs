@@ -251,13 +251,24 @@ public class User extends Account {
         return false;
     }
 
+    public boolean hasAnyObjectPrivilege(ObjectPrivilegeType type) {
+        if (superuser) {
+            return true;
+        }
+
+        return !getObjectPrivileges(type).isEmpty();
+    }
+
     /**
      * Special privilege check helper method for parameter permissions, allowing to check against both the qualified
-     * name of a parameter and its OPS name (if any), returning true when the user has the privilege
-     * (OPS name: in XTCE defined as alias for namespace "MDB:OPS Name")
+     * name of a parameter and its OPS name (if any), returning true when the user has the privilege (OPS name: in XTCE
+     * defined as alias for namespace "MDB:OPS Name")
      *
-     * @param type parameter privilege type (either ObjectPrivilegeType.ReadParameter or ObjectPrivilegeType.WriteParameter)
-     * @param parameter parameter to check against
+     * @param type
+     *            parameter privilege type (either ObjectPrivilegeType.ReadParameter or
+     *            ObjectPrivilegeType.WriteParameter)
+     * @param parameter
+     *            parameter to check against
      * @return whether the user has the given privilege type for the parameter
      */
     public boolean hasParameterPrivilege(ObjectPrivilegeType type, Parameter parameter) {
