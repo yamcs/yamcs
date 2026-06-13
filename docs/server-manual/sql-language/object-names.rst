@@ -5,4 +5,4 @@ Object Names
 
    .. productionlist:: sql-grammar
       objectName: `identifier` | `doubleQuotedIdentifier`
-      doubleQuotedIdentifier: '"' `stringchar`* '"'
+      doubleQuotedIdentifier: '"' ( `letter` | `digit` | `specialchars` )+ '"'
