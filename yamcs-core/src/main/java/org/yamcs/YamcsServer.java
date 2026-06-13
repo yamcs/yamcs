@@ -648,7 +648,7 @@ public class YamcsServer {
         metadata.setLabels(labels);
         customMetadata.forEach((k, v) -> metadata.put(k, v));
 
-        String processed = template.process(metadata.getTemplateArgs());
+        String processed = template.processAndSanitizeYaml(metadata.getTemplateArgs());
 
         Path confFile = instanceDefDir.resolve(configFileName(name));
         try (Writer writer = Files.newBufferedWriter(confFile)) {
