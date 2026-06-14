@@ -4,6 +4,7 @@ import static io.netty.handler.codec.http.HttpHeaderNames.ACCESS_CONTROL_ALLOW_O
 import static io.netty.handler.codec.http.HttpHeaderNames.CACHE_CONTROL;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONNECTION;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_SECURITY_POLICY;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 import static io.netty.handler.codec.http.HttpHeaderNames.DATE;
 import static io.netty.handler.codec.http.HttpHeaderNames.EXPIRES;
@@ -56,6 +57,17 @@ public class StaticFileHandler extends HttpHandler {
     public static final int HTTP_CACHE_SECONDS = 60;
     public static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
     public static final String HTTP_DATE_GMT_TIMEZONE = "GMT";
+
+    // Allow things used by our app, block other things
+    public static final String DEFAULT_CSP = String.join("; ",
+            "default-src 'self'",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+            "style-src 'self' 'unsafe-inline'",
+            "worker-src 'self' blob:",
+            "frame-src 'self'",
+            "img-src 'self' data:",
+            "connect-src 'self'",
+            "form-action 'self'");
 
     protected String route;
     protected List<Path> staticRoots;
@@ -165,6 +177,8 @@ public class StaticFileHandler extends HttpHandler {
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
         setContentTypeHeader(response, file);
         setDateAndCacheHeaders(response, file);
+
+        response.headers().set(CONTENT_SECURITY_POLICY, DEFAULT_CSP);
 
         // Allow e.g. yamcs-web to load fonts from within display iframe
         // (no concern to add to any static file)

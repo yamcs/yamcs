@@ -2,6 +2,7 @@ package org.yamcs.web;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.CACHE_CONTROL;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_SECURITY_POLICY;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_TYPE;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
@@ -107,7 +108,7 @@ public class AngularHandler extends StaticFileHandler {
     }
 
     /**
-     * Sends a rendered template, while recommend clients to not cache it. We hash all of our web files, and this
+     * Sends a rendered template, while recommending clients to not cache it. We hash all of our web files, and this
      * reduces likelihood of attempting to load the app from an outdated index.html
      */
     private void serveUncached(HandlerContext ctx, Path file, String contentType) {
@@ -129,6 +130,7 @@ public class AngularHandler extends StaticFileHandler {
         response.headers().set(CONTENT_TYPE, contentType);
         response.headers().set(CONTENT_LENGTH, body.readableBytes());
         response.headers().set(CACHE_CONTROL, "no-store, must-revalidate");
+        response.headers().set(CONTENT_SECURITY_POLICY, DEFAULT_CSP);
         ctx.sendResponse(response);
     }
 
