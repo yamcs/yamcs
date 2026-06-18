@@ -21,6 +21,11 @@
 
   <dependencies>
     <dependency>
+      <groupId>org.jcommander</groupId>
+      <artifactId>jcommander</artifactId>
+      <version>3.0</version>
+    </dependency>
+    <dependency>
       <groupId>org.yamcs</groupId>
       <artifactId>yamcs-client</artifactId>
       <version>${project.version}</version>
