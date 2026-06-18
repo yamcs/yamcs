@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.yamcs</groupId>
     <artifactId>yamcs</artifactId>
-    <version>5.12.6-0.1.0.Pixxel-SNAPSHOT</version>
+    <version>${revision}</version>
   </parent>
 
   <artifactId>yamcs-core</artifactId>
@@ -67,10 +67,6 @@
     <dependency>
       <groupId>org.codehaus.janino</groupId>
       <artifactId>janino</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jcommander</groupId>
-      <artifactId>jcommander</artifactId>
     </dependency>
     <dependency>
       <groupId>org.openjdk.nashorn</groupId>
