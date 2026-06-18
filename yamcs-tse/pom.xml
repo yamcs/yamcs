@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.yamcs</groupId>
     <artifactId>yamcs</artifactId>
-    <version>5.12.6-0.1.0.Pixxel-SNAPSHOT</version>
+    <version>${revision}</version>
   </parent>
 
   <artifactId>yamcs-tse</artifactId>
@@ -34,6 +34,11 @@
   </build>
 
   <dependencies>
+    <dependency>
+      <groupId>org.jcommander</groupId>
+      <artifactId>jcommander</artifactId>
+      <version>3.0</version>
+    </dependency>
     <dependency>
       <groupId>com.fazecast</groupId>
       <artifactId>jSerialComm</artifactId>

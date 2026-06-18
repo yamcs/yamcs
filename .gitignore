@@ -13,3 +13,4 @@ server.lock
 
 #Vscode
 .vscode
+.flattened-pom.xml
