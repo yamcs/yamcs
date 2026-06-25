@@ -31,6 +31,7 @@ import com.google.gson.JsonObject;
 import static org.yamcs.tctm.AbstractPacketPreprocessor.CONFIG_KEY_TCO_SERVICE;
 
 public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
+    public static final String CCSDS_SEQCOUNT_PARA_NAME = "ccsds-seqcount";
 
     public static final CommandOption OPTION_SCHEDULE_TIME = new CommandOption("pus11ScheduleAt", "Schedule Time",
             CommandOptionType.TIMESTAMP).withHelp("If set, embeed this command into a PUS 11 SCHEDULE_TC commad");
@@ -82,6 +83,9 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
                         "Cannot find a time correlation service with name " + tcoServiceName);
             }
         }
+        if (config.containsKey("seqCounterName")) {
+            seqFiller = new CcsdsSeqCountFiller(config.getString("seqCounterName"));
+        }
     }
 
     private CucTimeEncoder configureTimeEncoding(YConfiguration config) {
@@ -105,7 +109,7 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
         bb.putShort(4, (short) (binary.length - 7)); // write packet length
         int seqCount = seqFiller.fill(binary); // write sequence count
 
-        commandHistoryPublisher.publish(pc.getCommandId(), "ccsds-seqcount", seqCount);
+        commandHistoryPublisher.publish(pc.getCommandId(), CCSDS_SEQCOUNT_PARA_NAME, seqCount);
 
         if (hasCrc) {
             int pos = binary.length - 2;

@@ -60,6 +60,9 @@ public class CfsCommandPostprocessor implements CommandPostprocessor {
     public void init(String yamcsInstance, YConfiguration config, Link link) {
         this.yamcsInstance = yamcsInstance;
         this.swapChecksumFc = config.getBoolean("swapChecksumFc", false);
+        if (config.containsKey("seqCounterName")) {
+            seqFiller = new CcsdsSeqCountFiller(config.getString("seqCounterName"));
+        }
     }
 
     @Override

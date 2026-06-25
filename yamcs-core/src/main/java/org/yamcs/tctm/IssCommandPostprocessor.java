@@ -35,6 +35,9 @@ public class IssCommandPostprocessor implements CommandPostprocessor {
         } else {
             errorDetectionCalculator = new Running16BitChecksumCalculator();
         }
+        if (config.containsKey("seqCounterName")) {
+            seqFiller = new CcsdsSeqCountFiller(config.getString("seqCounterName"));
+        }
     }
 
     @Override

@@ -15,6 +15,14 @@ Class Name
 Configuration Options
 ---------------------
 
+seqCounterName (string)
+    Name of a shared CCSDS sequence counter. By default each link maintains its own per-APID
+    sequence counter independently of all other links. When two or more links specify the same
+    ``seqCounterName`` they share a single per-APID counter, so the target receives a continuous
+    sequence across those links.
+
+    If not specified, the counter is local to this link.
+
 errorDetection (map)
     If specified, a checksum is appended at the end of each command.
     Detailed below.
