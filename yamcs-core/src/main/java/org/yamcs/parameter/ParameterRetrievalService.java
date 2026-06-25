@@ -177,6 +177,7 @@ public class ParameterRetrievalService extends AbstractYamcsService {
     public CompletableFuture<Void> retrieveSingle(ParameterWithId pid, ParameterRetrievalOptions opts,
             Consumer<ParameterValueWithId> consumer) {
         log.debug("retrieveSingle requestedParamWithId: {}, opts: {}", pid, opts);
+        System.out.println("parchive.getRealtimeFiller: " + parchive.getRealtimeFiller());
 
         var cf = new CompletableFuture<Void>();
         executor.submit(() -> {
@@ -187,6 +188,7 @@ public class ParameterRetrievalService extends AbstractYamcsService {
                     retrieveSingleParameterArchive(pid, opts, consumer);
                 } else {
                     long coverageEnd = parchive.coverageEnd();
+                    System.out.println("coverageEnd: " + TimeEncoding.toString(coverageEnd));
                     if (opts.ascending()) {
                         // ascending case -> retrieve max possible from the parameter archive
                         var tc = retrieveSingleParameterArchive(pid, opts, consumer);
@@ -296,6 +298,7 @@ public class ParameterRetrievalService extends AbstractYamcsService {
     private TimeAndCount retrieveScalarParameterArchive(ParameterWithId pid, ParameterRetrievalOptions request,
             Consumer<ParameterValueArray> consumer) throws IOException {
         log.debug("retrieveScalarParameterArchive pid: {}, request: {}", pid, request);
+        System.out.println("retrieve pid: " + pid + " request: " + request);
         SingleParameterRetrieval spar = new SingleParameterRetrieval(parchive, pid.getQualifiedName(), request);
         TimeAndCount tc = new TimeAndCount(TimeEncoding.INVALID_INSTANT, 0);
         try {
