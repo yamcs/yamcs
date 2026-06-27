@@ -38,6 +38,11 @@
                 "input": "node_modules/@yamcs/opi/dist/fonts/",
                 "output": "/media/"
               },
+              {
+                "glob": "opi.standalone.js",
+                "input": "node_modules/@yamcs/opi/dist/",
+                "output": "/"
+              },
               "projects/webapp/src/manifest.webmanifest"
             ],
             "styles": ["projects/webapp-sdk/src/styles/index.scss"],

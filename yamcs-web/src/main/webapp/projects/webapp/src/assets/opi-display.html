@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <!--
+    Strict CSP for the sandboxed display iframe.
+    connect-src 'none' prevents scripts from making any direct network requests;
+    all data flows through postMessage with the parent frame.
+  -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'unsafe-inline'; connect-src 'none'; img-src * data:; font-src *; frame-src 'none'" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        overflow: auto;
+        background: transparent;
+        display: flex;
+        min-height: 100vh;
+      }
+      #display {
+        margin: auto;
+        line-height: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="display"></div>
+    <script src="/opi.standalone.js"></script>
+  </body>
+</html>

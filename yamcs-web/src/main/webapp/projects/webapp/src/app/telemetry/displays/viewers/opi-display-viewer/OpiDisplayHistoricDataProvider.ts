@@ -1,4 +1,4 @@
-import { HistoricalDataProvider, NullablePoint, Widget } from '@yamcs/opi';
+import { HistoricalDataProvider, NullablePoint } from '@yamcs/opi';
 import {
   BackfillingSubscription,
   ConfigService,
@@ -20,7 +20,7 @@ export class OpiDisplayHistoricDataProvider implements HistoricalDataProvider {
 
   constructor(
     pvName: string,
-    widget: Widget,
+    private onUpdate: () => void,
     private yamcs: YamcsService,
     synchronizer: Synchronizer,
     configService: ConfigService,
@@ -38,7 +38,7 @@ export class OpiDisplayHistoricDataProvider implements HistoricalDataProvider {
 
     this.dataSource.data$.subscribe((data) => {
       this.processSamples(data);
-      widget.requestRepaint();
+      this.onUpdate();
     });
 
     // Autoscroll
@@ -49,7 +49,7 @@ export class OpiDisplayHistoricDataProvider implements HistoricalDataProvider {
       this.dataSource.updateWindowOnly(start, stop);
       this.rebuildRenderSamples();
 
-      widget.requestRepaint();
+      this.onUpdate();
     });
 
     this.subscriptions.push(sub);

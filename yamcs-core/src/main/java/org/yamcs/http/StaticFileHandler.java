@@ -1,5 +1,6 @@
 package org.yamcs.http;
 
+import static io.netty.handler.codec.http.HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN;
 import static io.netty.handler.codec.http.HttpHeaderNames.CACHE_CONTROL;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONNECTION;
 import static io.netty.handler.codec.http.HttpHeaderNames.CONTENT_LENGTH;
@@ -164,6 +165,10 @@ public class StaticFileHandler extends HttpHandler {
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
         setContentTypeHeader(response, file);
         setDateAndCacheHeaders(response, file);
+
+        // Allow e.g. yamcs-web to load fonts from within display iframe
+        // (no concern to add to any static file)
+        response.headers().set(ACCESS_CONTROL_ALLOW_ORIGIN, "*");
 
         if (HttpUtil.isKeepAlive(req)) {
             response.headers().set(CONNECTION, KEEP_ALIVE);

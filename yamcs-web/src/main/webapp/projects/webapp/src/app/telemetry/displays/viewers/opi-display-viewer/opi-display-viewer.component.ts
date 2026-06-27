@@ -7,16 +7,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import {
-  AlarmSeverity,
-  colorFromCssColor,
-  Display,
-  Font,
-  PV,
-  PVProvider,
-  Sample,
-  Widget,
-} from '@yamcs/opi';
+import { AlarmSeverity, Sample } from '@yamcs/opi';
 import {
   ConfigService,
   Formatter,
@@ -32,56 +23,62 @@ import {
   YamcsService,
 } from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
-import { Viewer } from '../Viewer';
-import { OpiDisplayConsoleHandler } from './OpiDisplayConsoleHandler';
-import { OpiDisplayFontResolver } from './OpiDisplayFontResolver';
 import { OpiDisplayHistoricDataProvider } from './OpiDisplayHistoricDataProvider';
-import { OpiDisplayPathResolver } from './OpiDisplayPathResolver';
-import { YamcsScriptLibrary } from './YamcsScriptLibrary';
+import { Viewer } from '../Viewer';
 
 // Legacy namespace. New projects should not make use of this.
-// Yamcs Studio maps names under this namespace to an "ops://"
-// datasource.
 const OPS_NAMESPACE = 'MDB:OPS Name';
 const OPS_DATASOURCE = 'ops://';
 
-// Prefix used in query params to distinguish from non-OPI params
 const ARGS_PREFIX = 'args.';
 
 @Component({
   selector: 'app-opi-display-viewer',
   template: `
     <div #frameInner class="frame-inner">
-      <div #displayContainer class="display-container"></div>
+      <iframe
+        #sandboxFrame
+        class="display-sandbox"
+        sandbox="allow-scripts allow-modals"
+        src="/opi-display.html"
+      ></iframe>
     </div>
   `,
   styleUrl: './opi-display-viewer.component.css',
   imports: [WebappSdkModule],
 })
-export class OpiDisplayViewerComponent
-  implements Viewer, PVProvider, OnDestroy
-{
+export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
   private storageClient: StorageClient;
   private bucket: string;
 
-  // Parent element, used to calculate 100% bounds (excluding scroll size)
   private viewerContainerEl: HTMLDivElement;
 
   @ViewChild('frameInner')
   private frameInner: ElementRef<HTMLDivElement>;
 
-  @ViewChild('displayContainer', { static: true })
-  private displayContainer: ElementRef<HTMLDivElement>;
-
-  private display: Display;
+  @ViewChild('sandboxFrame', { static: true })
+  private sandboxFrame: ElementRef<HTMLIFrameElement>;
 
   private parameterSubscription: ParameterSubscription;
   private idMapping: { [key: number]: NamedObjectId } = {};
   private idInfo: { [key: number]: SubscribedParameterInfo } = {};
 
-  private pvsByName = new Map<string, PV>();
+  private pvNames = new Set<string>();
   private subscriptionDirty = false;
   private syncSubscription: Subscription;
+  private historyProviders = new Map<string, OpiDisplayHistoricDataProvider>();
+
+  // Resolved once the sandbox HTML has loaded and is ready to receive messages
+  private sandboxReady: Promise<void>;
+  private sandboxReadyResolve: () => void;
+
+  // Prefix values for resolving script paths in the outer frame
+  private relPrefix = '';
+  private absPrefix = '';
+
+  private currentScale = 1;
+
+  private messageListener = (event: MessageEvent) => this.handleMessage(event);
 
   constructor(
     private yamcs: YamcsService,
@@ -95,10 +92,276 @@ export class OpiDisplayViewerComponent
   ) {
     this.storageClient = yamcs.createStorageClient();
     this.bucket = configService.getDisplayBucket();
+    this.sandboxReady = new Promise((resolve) => {
+      this.sandboxReadyResolve = resolve;
+    });
   }
 
   setViewerContainerEl(viewerContainerEl: HTMLDivElement) {
     this.viewerContainerEl = viewerContainerEl;
+  }
+
+  ngAfterViewInit() {
+    const iframe = this.sandboxFrame.nativeElement;
+    iframe.addEventListener('load', () => this.sandboxReadyResolve(), {
+      once: true,
+    });
+    window.addEventListener('message', this.messageListener);
+  }
+
+  private handleMessage(event: MessageEvent) {
+    if (event.source !== this.sandboxFrame.nativeElement.contentWindow) {
+      return;
+    }
+    const msg = event.data;
+    if (!msg?.type) {
+      return;
+    }
+
+    switch (msg.type) {
+      case 'subscribe':
+        for (const pvName of msg.pvNames as string[]) {
+          this.pvNames.add(pvName);
+        }
+        this.subscriptionDirty = true;
+        break;
+
+      case 'unsubscribe':
+        for (const pvName of msg.pvNames as string[]) {
+          this.pvNames.delete(pvName);
+        }
+        this.subscriptionDirty = true;
+        break;
+
+      case 'write':
+        this.writeValue(msg.pvName, msg.value);
+        break;
+
+      case 'loadScript':
+        this.serveScript(msg.path);
+        break;
+
+      case 'opendisplay':
+        this.openDisplay(msg.path, msg.args);
+        break;
+
+      case 'closedisplay':
+        this.router.navigateByUrl(
+          `/telemetry/displays/browse?c=${this.yamcs.context}`,
+        );
+        break;
+
+      case 'openpv':
+        this.openPV(msg.pvName);
+        break;
+
+      case 'runcommand':
+        this.yamcs.yamcsClient
+          .issueCommand(
+            this.yamcs.instance!,
+            this.yamcs.processor!,
+            msg.command,
+            { args: msg.args },
+          )
+          .catch((err) => this.messageService.showError(err));
+        break;
+
+      case 'runstack':
+        this.runStack(msg.path);
+        break;
+
+      case 'runprocedure':
+        this.yamcs.yamcsClient
+          .startProcedure(this.yamcs.instance!, msg.procedure, {
+            arguments: msg.args,
+          })
+          .catch((err) => this.messageService.showError(err));
+        break;
+
+      case 'openwebpage': {
+        const url: string = msg.url;
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+          window.open(url, '_blank', 'noopener');
+        }
+        break;
+      }
+
+      case 'displaybackground':
+        this.frameInner.nativeElement.style.backgroundColor = msg.color;
+        break;
+
+      case 'loadImage':
+        this.serveImage(msg.url);
+        break;
+
+      case 'historySubscribe': {
+        const pvName: string = msg.pvName;
+        if (!this.historyProviders.has(pvName)) {
+          const provider = new OpiDisplayHistoricDataProvider(
+            pvName,
+            () =>
+              this.postToSandbox({
+                type: 'historySamples',
+                pvName,
+                samples: provider.getSamples(),
+              }),
+            this.yamcs,
+            this.synchronizer,
+            this.configService,
+          );
+          this.historyProviders.set(pvName, provider);
+        }
+        break;
+      }
+
+      case 'historyUnsubscribe': {
+        const provider = this.historyProviders.get(msg.pvName);
+        if (provider) {
+          provider.disconnect();
+          this.historyProviders.delete(msg.pvName);
+        }
+        break;
+      }
+    }
+  }
+
+  private openDisplay(path: string, args?: Record<string, string>) {
+    let url: string;
+    const qs = `?c=${this.yamcs.context}&range=${this.yamcs.getTimeRange()}`;
+    const currentFolder = this.relPrefix.slice(this.absPrefix.length);
+    if (path.startsWith('/')) {
+      url = `/telemetry/displays/files${path}${qs}`;
+    } else {
+      url = `/telemetry/displays/files/${currentFolder}${path}${qs}`;
+    }
+    if (args) {
+      for (const k in args) {
+        url +=
+          '&' +
+          ARGS_PREFIX +
+          encodeURIComponent(k) +
+          '=' +
+          encodeURIComponent(args[k]);
+      }
+    }
+    this.router.navigateByUrl(url);
+  }
+
+  private openPV(pvName: string) {
+    if (pvName.startsWith('/')) {
+      this.router.navigateByUrl(
+        `/telemetry/parameters${pvName}/-/summary?c=${this.yamcs.context}`,
+      );
+    } else if (pvName.startsWith(OPS_DATASOURCE)) {
+      this.yamcs.yamcsClient
+        .getParameterById(this.yamcs.instance!, {
+          namespace: OPS_NAMESPACE,
+          name: pvName.substring(OPS_DATASOURCE.length),
+        })
+        .then((response) => {
+          this.router.navigateByUrl(
+            `/telemetry/parameters${response.qualifiedName}/-/summary?c=${this.yamcs.context}`,
+          );
+        });
+    } else {
+      alert(`Can't navigate to PV ${pvName}`);
+    }
+  }
+
+  private runStack(path: string) {
+    const parts = path.split('/');
+    const resolvedParts: string[] = [];
+    for (const part of parts) {
+      if (part === '.') {
+        // ignore
+      } else if (part === '..') {
+        resolvedParts.pop();
+      } else {
+        resolvedParts.push(part);
+      }
+    }
+    const resolvedPath = resolvedParts.join('/');
+    const bucketRoot = this.storageClient.getObjectURL(this.bucket, '');
+    if (resolvedPath.startsWith(bucketRoot)) {
+      const objectName = resolvedPath.slice(bucketRoot.length);
+      this.yamcs.yamcsClient
+        .startActivity(this.yamcs.instance!, {
+          type: 'STACK',
+          args: {
+            processor: this.yamcs.processor!,
+            bucket: this.bucket,
+            stack: objectName,
+          },
+        })
+        .catch((err) => this.messageService.showError(err));
+    } else {
+      this.messageService.showError('Failed to resolve stack path');
+    }
+  }
+
+  private writeValue(pvName: string, value: any) {
+    let parameter = pvName;
+    if (pvName.startsWith(OPS_DATASOURCE)) {
+      parameter = OPS_NAMESPACE + '/' + pvName.substring(OPS_DATASOURCE.length);
+    }
+    this.yamcs.yamcsClient
+      .setParameterValue(
+        this.yamcs.instance!,
+        this.yamcs.processor!,
+        parameter,
+        { type: 'STRING', stringValue: String(value) },
+      )
+      .then(() =>
+        this.messageService.showInfo(`Parameter ${pvName} set to ${value}`),
+      )
+      .catch((err) => this.messageService.showError(err));
+  }
+
+  private async serveScript(path: string) {
+    const url = this.resolveScriptPath(path);
+    try {
+      const response = await fetch(url, { credentials: 'same-origin' });
+      const content = response.ok ? await response.text() : null;
+      this.postToSandbox({ type: 'scriptContent', path, content });
+    } catch {
+      this.postToSandbox({ type: 'scriptContent', path, content: null });
+    }
+  }
+
+  private async serveImage(url: string) {
+    try {
+      const response = await fetch(url, { credentials: 'same-origin' });
+      if (!response.ok) {
+        this.postToSandbox({ type: 'imageData', url, dataUrl: null });
+        return;
+      }
+      const blob = await response.blob();
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+      this.postToSandbox({ type: 'imageData', url, dataUrl });
+    } catch {
+      this.postToSandbox({ type: 'imageData', url, dataUrl: null });
+    }
+  }
+
+  private resolveScriptPath(path: string): string {
+    if (path.startsWith('ys://')) {
+      const match = path.match(/ys:\/\/([^/]+)\/(.+)/);
+      if (match) {
+        return this.storageClient.getObjectURL(match[1], match[2]);
+      }
+    }
+    if (path.startsWith('/')) {
+      return this.absPrefix + path.slice(1);
+    }
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return path;
+    }
+    return this.relPrefix + path;
   }
 
   private updateSubscription() {
@@ -110,7 +373,7 @@ export class OpiDisplayViewerComponent
       }
 
       const ids: NamedObjectId[] = [];
-      for (const pvName of this.pvsByName.keys()) {
+      for (const pvName of this.pvNames) {
         ids.push(this.getIdForPvName(pvName));
       }
 
@@ -130,66 +393,76 @@ export class OpiDisplayViewerComponent
               if (data.mapping) {
                 this.idMapping = data.mapping;
               }
+
+              const meta: Record<
+                string,
+                { labels?: string[]; writable: boolean }
+              > = {};
               if (data.info) {
                 this.idInfo = data.info;
                 for (const key in data.info) {
                   const id = data.mapping[key];
                   const info = data.info[key];
-                  const pv = this.getPVById(id);
-                  if (pv) {
-                    if (info.enumValues) {
-                      pv.labels = info.enumValues.map((x) => x.label);
-                    }
-                    pv.writable =
-                      info.dataSource === 'LOCAL' ||
-                      info.dataSource === 'EXTERNAL1' ||
-                      info.dataSource === 'EXTERNAL2' ||
-                      info.dataSource === 'EXTERNAL3';
+                  const pvName = this.pvNameById(id);
+                  if (pvName) {
+                    meta[pvName] = {
+                      labels: info.enumValues?.map((x) => x.label),
+                      writable:
+                        info.dataSource === 'LOCAL' ||
+                        info.dataSource === 'EXTERNAL1' ||
+                        info.dataSource === 'EXTERNAL2' ||
+                        info.dataSource === 'EXTERNAL3',
+                    };
                   }
                 }
               }
+
+              const disconnected: string[] = [];
               for (const id of data.invalid || []) {
-                const pv = this.getPVById(id);
-                if (pv) {
-                  pv.disconnected = true;
+                const pvName = this.pvNameById(id);
+                if (pvName) {
+                  disconnected.push(pvName);
                 }
               }
-              if (data.values?.length) {
-                const samples = new Map<string, Sample>();
-                for (const pval of data.values) {
-                  pval.id = this.idMapping[pval.numericId];
-                  let pvName = pval.id.name;
-                  if (pval.id.namespace === OPS_NAMESPACE) {
-                    pvName = OPS_DATASOURCE + pvName;
-                  }
+
+              const samples: Record<string, Sample> = {};
+              for (const pval of data.values || []) {
+                pval.id = this.idMapping[pval.numericId];
+                const pvName = this.pvNameById(pval.id);
+                if (pvName) {
                   const info = this.idInfo[pval.numericId];
-                  samples.set(pvName, this.toSample(pval, info));
+                  samples[pvName] = this.toSample(pval, info);
                 }
-                this.display.setValues(samples);
               }
+
+              this.postToSandbox({
+                type: 'pvData',
+                samples,
+                meta,
+                disconnected,
+              });
             },
           );
       }
     }
   }
 
-  private getIdForPvName(pvName: string) {
+  private getIdForPvName(pvName: string): NamedObjectId {
     if (pvName.startsWith(OPS_DATASOURCE)) {
       return {
         namespace: OPS_NAMESPACE,
         name: pvName.substring(OPS_DATASOURCE.length),
       };
-    } else {
-      return { name: pvName };
     }
+    return { name: pvName };
   }
 
-  private getPVById(id: NamedObjectId) {
-    let pvName = id.name;
+  private pvNameById(id: NamedObjectId): string | null {
+    if (!id) return null;
     if (id.namespace === OPS_NAMESPACE) {
-      pvName = OPS_DATASOURCE + pvName;
+      return OPS_DATASOURCE + id.name;
     }
-    return this.display.getPV(pvName);
+    return id.name;
   }
 
   private toSample(
@@ -200,7 +473,6 @@ export class OpiDisplayViewerComponent
     const severity = this.toAlarmSeverity(pval);
     const sample: Sample = { time, severity, value: undefined };
     if (pval.engValue) {
-      // Can be unset if acquisitionStatus is invalid
       sample.value = utils.convertValue(pval.engValue);
       if (pval.engValue.type === 'ENUMERATED') {
         sample.valueIndex = Number(pval.engValue.sint64Value);
@@ -208,25 +480,23 @@ export class OpiDisplayViewerComponent
         sample.typeHint = 'BINARY_STRING';
       }
     }
-    if (info.units) {
+    if (info?.units) {
       sample.units = info.units;
     }
     return sample;
   }
 
-  private toAlarmSeverity(pval: ParameterValue) {
+  private toAlarmSeverity(pval: ParameterValue): AlarmSeverity {
     if (
       pval.acquisitionStatus === 'EXPIRED' ||
-      pval.acquisitionStatus == 'NOT_RECEIVED' ||
+      pval.acquisitionStatus === 'NOT_RECEIVED' ||
       pval.acquisitionStatus === 'INVALID'
     ) {
       return AlarmSeverity.INVALID;
     }
-
     if (!pval.monitoringResult) {
       return AlarmSeverity.NONE;
     }
-
     switch (pval.monitoringResult) {
       case 'DISABLED':
       case 'IN_LIMITS':
@@ -241,267 +511,92 @@ export class OpiDisplayViewerComponent
     }
   }
 
-  /**
-   * Don't call before ngAfterViewInit()
-   */
-  public init(objectName: string) {
-    const container: HTMLDivElement = this.displayContainer.nativeElement;
-
+  public async init(objectName: string) {
     const opiConfig = this.configService.getConfig().opi;
-    if (opiConfig.legacyFontSizing) {
-      Font.LEGACY_FONT_SIZING = true;
-    }
-
-    this.display = new Display(container);
-    this.display.disconnectedColor = colorFromCssColor(
-      opiConfig.disconnectedColor,
-    );
-    this.display.invalidColor = colorFromCssColor(opiConfig.invalidColor);
-    this.display.majorColor = colorFromCssColor(opiConfig.majorColor);
-    this.display.minorColor = colorFromCssColor(opiConfig.minorColor);
-    this.display.utc = this.formatter.utc();
-    this.display.imagesPrefix = this.baseHref + 'media/';
-    this.display.setPathResolver(
-      new OpiDisplayPathResolver(this.storageClient, this.display),
-    );
-    this.display.setConsoleHandler(
-      new OpiDisplayConsoleHandler(this.messageService),
-    );
-    this.display.setFontResolver(new OpiDisplayFontResolver(this.baseHref));
-
-    let currentFolder = '';
-    if (objectName.lastIndexOf('/') !== -1) {
-      currentFolder = objectName.substring(0, objectName.lastIndexOf('/') + 1);
-    }
-
-    this.display.addScriptLibrary(
-      'Yamcs',
-      new YamcsScriptLibrary(this.yamcs, this.messageService),
-    );
-
-    this.display.addEventListener('opendisplay', (evt) => {
-      let url;
-      const qs = `?c=${this.yamcs.context}&range=${this.yamcs.getTimeRange()}`;
-      if (evt.path.startsWith('/')) {
-        url = `/telemetry/displays/files${evt.path}${qs}`;
-      } else {
-        url = `/telemetry/displays/files/${currentFolder}${evt.path}${qs}`;
-      }
-      if (evt.args) {
-        for (const k in evt.args) {
-          url +=
-            '&' +
-            ARGS_PREFIX +
-            encodeURIComponent(k) +
-            '=' +
-            encodeURIComponent(evt.args[k]);
-        }
-      }
-      this.router.navigateByUrl(url);
-    });
-
-    this.display.addEventListener('closedisplay', (evt) => {
-      this.router.navigateByUrl(
-        `/telemetry/displays/browse?c=${this.yamcs.context}`,
-      );
-    });
-
-    this.display.addEventListener('openpv', (evt) => {
-      if (evt.pvName.startsWith('/')) {
-        this.router.navigateByUrl(
-          `/telemetry/parameters${evt.pvName}/-/summary?c=${this.yamcs.context}`,
-        );
-      } else if (evt.pvName.startsWith(OPS_DATASOURCE)) {
-        // Find first the qualified name
-        this.yamcs.yamcsClient
-          .getParameterById(this.yamcs.instance!, {
-            namespace: OPS_NAMESPACE,
-            name: evt.pvName.substring(6),
-          })
-          .then((response) => {
-            this.router.navigateByUrl(
-              `/telemetry/parameters${response.qualifiedName}/-/summary?c=${this.yamcs.context}`,
-            );
-          });
-      } else {
-        alert(`Can't navigate to PV ${evt.pvName}`);
-      }
-    });
-
-    this.display.addEventListener('runcommand', (evt) => {
-      this.yamcs.yamcsClient
-        .issueCommand(
-          this.yamcs.instance!,
-          this.yamcs.processor!,
-          evt.command,
-          {
-            args: evt.args,
-          },
-        )
-        .catch((err) => this.messageService.showError(err));
-    });
-
-    this.display.addEventListener('runstack', (evt) => {
-      const parts = evt.path.split('/');
-      const resolvedParts: string[] = [];
-      for (const part of parts) {
-        if (part === '.') {
-          // Ignore
-        } else if (part === '..') {
-          resolvedParts.pop();
-        } else {
-          resolvedParts.push(part);
-        }
-      }
-
-      const resolvedPath = resolvedParts.join('/');
-      const bucketRoot = this.storageClient.getObjectURL(this.bucket, '');
-      if (resolvedPath.startsWith(bucketRoot)) {
-        const objectName = resolvedPath.slice(bucketRoot.length);
-        this.yamcs.yamcsClient
-          .startActivity(this.yamcs.instance!, {
-            type: 'STACK',
-            args: {
-              processor: this.yamcs.processor!,
-              bucket: this.bucket,
-              stack: objectName,
-            },
-          })
-          .catch((err) => this.messageService.showError(err));
-      } else {
-        this.messageService.showError('Failed to resolve stack path');
-      }
-    });
-
-    this.display.addEventListener('runprocedure', (evt) => {
-      this.yamcs.yamcsClient
-        .startProcedure(this.yamcs.instance!, evt.procedure, {
-          arguments: evt.args,
-        })
-        .catch((err) => this.messageService.showError(err));
-    });
-
-    this.display.addProvider(this);
-    this.display.absPrefix = this.storageClient.getObjectURL(this.bucket, '');
-
     const objectUrl = this.storageClient.getObjectURL(this.bucket, objectName);
-    const displayArgs: { [key: string]: string } = {};
+    const idx = objectUrl.lastIndexOf('/') + 1;
+    this.relPrefix = objectUrl.substring(0, idx);
+    this.absPrefix = this.storageClient.getObjectURL(this.bucket, '');
+
+    const displayArgs: Record<string, string> = {};
     const queryParams = this.route.snapshot.queryParams;
     for (const param in queryParams) {
-      if (param.startsWith('args.')) {
-        displayArgs[param.substring('args.'.length)] = queryParams[param];
+      if (param.startsWith(ARGS_PREFIX)) {
+        displayArgs[param.substring(ARGS_PREFIX.length)] = queryParams[param];
       }
     }
-    const promise = this.display.setSource(objectUrl, displayArgs);
-    promise.then(() => {
-      // Apply display background to entire pane
-      let backgroundColor: string;
-      if (!this.display.transparent && this.display.instance) {
-        backgroundColor = this.display.instance.backgroundColor.hex();
-      } else {
-        backgroundColor = 'unset';
-      }
-      this.frameInner.nativeElement.style.backgroundColor = backgroundColor;
 
-      this.syncSubscription = this.synchronizer.syncFast(() =>
-        this.updateSubscription(),
-      );
-      // Quick emit, don't wait on sync tick
-      this.updateSubscription();
+    const [xml] = await Promise.all([
+      fetch(objectUrl, { credentials: 'same-origin' }).then((r) =>
+        r.ok ? r.text() : Promise.reject(`Failed to load ${objectUrl}`),
+      ),
+      this.sandboxReady,
+    ]);
+
+    this.postToSandbox({
+      type: 'init',
+      xml,
+      relPrefix: this.relPrefix,
+      absPrefix: this.absPrefix,
+      imagesPrefix: this.baseHref + 'media/',
+      mediaPrefix: this.baseHref + 'media/',
+      args: displayArgs,
+      config: {
+        legacyFontSizing: opiConfig.legacyFontSizing ?? false,
+        disconnectedColor: opiConfig.disconnectedColor,
+        invalidColor: opiConfig.invalidColor,
+        majorColor: opiConfig.majorColor,
+        minorColor: opiConfig.minorColor,
+        utc: this.formatter.utc(),
+      },
     });
-    return promise;
+
+    this.syncSubscription = this.synchronizer.syncFast(() =>
+      this.updateSubscription(),
+    );
+    this.updateSubscription();
   }
 
-  canProvide(pvName: string): boolean {
-    return true; // Try it all (we run after defaults)
+  private postToSandbox(msg: object) {
+    this.sandboxFrame.nativeElement.contentWindow?.postMessage(msg, '*');
   }
-
-  startProviding(pvs: PV[]): void {
-    for (const pv of pvs) {
-      this.pvsByName.set(pv.name, pv);
-    }
-    this.subscriptionDirty = true;
-  }
-
-  stopProviding(pvs: PV[]): void {
-    for (const pv of pvs) {
-      this.pvsByName.delete(pv.name);
-    }
-    this.subscriptionDirty = true;
-  }
-
-  writeValue(pvName: string, value: any): void {
-    let parameter = pvName;
-    if (pvName.startsWith(OPS_DATASOURCE)) {
-      parameter = OPS_NAMESPACE + '/' + pvName.substring(OPS_DATASOURCE.length);
-    }
-    this.yamcs.yamcsClient
-      .setParameterValue(
-        this.yamcs.instance!,
-        this.yamcs.processor!,
-        parameter,
-        {
-          type: 'STRING',
-          stringValue: String(value),
-        },
-      )
-      .then(() =>
-        this.messageService.showInfo(`Parameter ${pvName} set to ${value}`),
-      )
-      .catch((err) => this.messageService.showError(err));
-  }
-
-  createHistoricalDataProvider(pvName: string, widget: Widget) {
-    const { yamcs, synchronizer } = this;
-    if (this.configService.getConfig().tmArchive) {
-      return new OpiDisplayHistoricDataProvider(
-        pvName,
-        widget,
-        yamcs,
-        synchronizer,
-        this.configService,
-      );
-    }
-  }
-
-  isNavigable() {
-    return true;
-  }
-
-  shutdown() {}
 
   public hasPendingChanges() {
     return false;
   }
 
   public zoomIn() {
-    this.display.scale += 0.1;
+    this.currentScale += 0.1;
+    this.postToSandbox({ type: 'setScale', scale: this.currentScale });
   }
 
   public zoomOut() {
-    this.display.scale -= 0.1;
+    this.currentScale -= 0.1;
+    this.postToSandbox({ type: 'setScale', scale: this.currentScale });
   }
 
   public resetZoom() {
-    this.display.scale = 1;
+    this.currentScale = 1;
+    this.postToSandbox({ type: 'setScale', scale: this.currentScale });
   }
 
   public fitZoom() {
-    const displayInstance = this.display.instance;
-    if (displayInstance && this.viewerContainerEl) {
-      const frameWidth = this.viewerContainerEl.clientWidth;
-      const frameHeight = this.viewerContainerEl.clientHeight;
-
-      const { width, height } = displayInstance.unscaledBounds;
-      const xScale = frameWidth / width;
-      const yScale = frameHeight / height;
-      this.display.scale = Math.min(xScale, yScale);
+    if (this.viewerContainerEl) {
+      this.postToSandbox({
+        type: 'fitZoom',
+        containerWidth: this.viewerContainerEl.clientWidth,
+        containerHeight: this.viewerContainerEl.clientHeight,
+      });
     }
   }
 
   ngOnDestroy() {
+    window.removeEventListener('message', this.messageListener);
     this.syncSubscription?.unsubscribe();
     this.parameterSubscription?.cancel();
-    this.display.destroy();
+    for (const provider of this.historyProviders.values()) {
+      provider.disconnect();
+    }
+    this.historyProviders.clear();
   }
 }
