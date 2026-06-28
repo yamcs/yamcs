@@ -1,13 +1,13 @@
-import { Injectable, inject } from '@angular/core';
+import { Service, inject } from '@angular/core';
 import { CanActivateFn } from '@angular/router';
 import { YamcsService } from '@yamcs/webapp-sdk';
 
 export const clearContextGuardFn: CanActivateFn = () =>
   inject(ClearContextGuard).canActivate();
 
-@Injectable({ providedIn: 'root' })
+@Service()
 class ClearContextGuard {
-  constructor(private yamcsService: YamcsService) {}
+  private yamcsService = inject(YamcsService);
 
   canActivate() {
     this.yamcsService.clearContext();

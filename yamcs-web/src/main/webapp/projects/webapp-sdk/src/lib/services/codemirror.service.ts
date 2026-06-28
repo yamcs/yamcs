@@ -1,4 +1,4 @@
-import { effect, inject, Injectable } from '@angular/core';
+import { effect, inject, Service } from '@angular/core';
 import {
   autocompletion,
   closeBrackets,
@@ -202,9 +202,7 @@ export class CodeMirror {
   }
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class CodeMirrorService {
   private appearanceService = inject(AppearanceService);
   private instances = new Set<CodeMirror>();

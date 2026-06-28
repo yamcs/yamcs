@@ -1,5 +1,5 @@
 import { Location } from '@angular/common';
-import { Injectable, inject } from '@angular/core';
+import { Service, inject } from '@angular/core';
 import {
   ActivatedRouteSnapshot,
   CanActivateFn,
@@ -15,13 +15,11 @@ export const attachContextGuardFn: CanActivateFn = (
   return inject(AttachContextGuard).canActivate(route, state);
 };
 
-@Injectable({ providedIn: 'root' })
+@Service()
 class AttachContextGuard {
-  constructor(
-    private yamcsService: YamcsService,
-    private router: Router,
-    private location: Location,
-  ) {}
+  private yamcsService = inject(YamcsService);
+  private router = inject(Router);
+  private location = inject(Location);
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
     let instanceId: string = route.queryParams['c'];

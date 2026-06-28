@@ -1,5 +1,5 @@
 import { APP_BASE_HREF } from '@angular/common';
-import { Inject, Injectable, inject } from '@angular/core';
+import { Service, inject } from '@angular/core';
 import {
   ActivatedRouteSnapshot,
   CanActivateChildFn,
@@ -8,7 +8,6 @@ import {
   RouterStateSnapshot,
 } from '@angular/router';
 import {
-  AuthInfo,
   AuthService,
   ConfigService,
   OpenIDConnectInfo,
@@ -30,24 +29,19 @@ export const authGuardChildFn: CanActivateChildFn = (
   return inject(AuthGuard).canActivateChild(route, state);
 };
 
-@Injectable({ providedIn: 'root' })
+@Service()
 class AuthGuard {
-  private authInfo: AuthInfo;
-
-  constructor(
-    @Inject(APP_BASE_HREF) private baseHref: string,
-    private authService: AuthService,
-    private yamcs: YamcsService,
-    private router: Router,
-    private configService: ConfigService,
-  ) {
-    this.authInfo = configService.getAuthInfo();
-  }
+  private baseHref = inject(APP_BASE_HREF);
+  private authService = inject(AuthService);
+  private yamcs = inject(YamcsService);
+  private router = inject(Router);
+  private configService = inject(ConfigService);
 
   async canActivate(
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot,
   ): Promise<boolean> {
+    const authInfo = this.configService.getAuthInfo();
     try {
       await this.authService.loginAutomatically();
       this.yamcs.yamcsClient.prepareWebSocketClient();
@@ -63,11 +57,11 @@ class AuthGuard {
         } else {
           this.authService.logout(false);
         }
-        if (this.authInfo.openid) {
+        if (authInfo.openid) {
           const redirectURI =
             this.authService.buildServerSideOpenIDRedirectURI();
           window.location.href = this.buildRedirector(
-            this.authInfo.openid,
+            authInfo.openid,
             redirectURI,
             state.url,
           );

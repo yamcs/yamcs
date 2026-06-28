@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Service, inject } from '@angular/core';
 import {
   ActivatedRouteSnapshot,
   CanActivateChildFn,
@@ -22,12 +22,10 @@ export const mayControlCommandQueueGuardChildFn: CanActivateChildFn = (
   return inject(MayControlCommandQueueGuard).canActivateChild(route, state);
 };
 
-@Injectable({ providedIn: 'root' })
+@Service()
 class MayControlCommandQueueGuard {
-  constructor(
-    private authService: AuthService,
-    private router: Router,
-  ) {}
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
   canActivate(
     route: ActivatedRouteSnapshot,

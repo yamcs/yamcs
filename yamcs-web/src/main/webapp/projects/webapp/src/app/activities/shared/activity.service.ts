@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import {
   Activity,
   ActivitySubscription,
@@ -10,9 +10,7 @@ import { BehaviorSubject } from 'rxjs';
 /**
  * Shared information about the detail of an activity
  */
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class ActivityService {
   private yamcs = inject(YamcsService);
   private messageService = inject(MessageService);

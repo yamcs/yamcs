@@ -1,4 +1,4 @@
-import { computed, Injectable } from '@angular/core';
+import { computed, inject, Service } from '@angular/core';
 import { formatInTimeZone, FormatOptionsWithTZ } from 'date-fns-tz';
 import { Value } from '../client';
 import * as utils from '../utils';
@@ -12,8 +12,11 @@ export interface FormatValueOptions {
   maxBytes?: number;
 }
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class Formatter {
+  private configService = inject(ConfigService);
+  private prefs = inject(Preferences);
+
   private DT_FMT_LONG = 'yyyy-MM-dd HH:mm:ss.SSS';
   private DT_FMT_LONG_TZ = 'yyyy-MM-dd HH:mm:ss.SSS zzz';
 
@@ -32,11 +35,6 @@ export class Formatter {
   public utc = computed(() => {
     return this.timezone() === 'UTC';
   });
-
-  constructor(
-    private configService: ConfigService,
-    private prefs: Preferences,
-  ) {}
 
   /** @deprecated */
   getTimezone() {

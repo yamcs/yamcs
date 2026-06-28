@@ -1,9 +1,9 @@
-import { Injectable } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { Router } from '@angular/router';
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class NavigationService {
-  constructor(private router: Router) {}
+  private router = inject(Router);
 
   /**
    * Triggers a full component reload by bouncing through the RouteRefreshComponent.

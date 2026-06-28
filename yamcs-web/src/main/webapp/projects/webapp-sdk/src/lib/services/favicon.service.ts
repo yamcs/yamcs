@@ -1,9 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 
 const FAVICON_SUFFIX = 'favicon.ico';
 const FAVICON_NOTIFICATION_SUFFIX = 'favicon-notification.ico';
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class FaviconService {
   showNotification(showNotification: boolean) {
     const linkEl = document.querySelector(
