@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Service, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NavGroup, NavItem } from '../navigation';
 import { AppearanceService } from './appearance.service';
@@ -7,7 +7,7 @@ import { ConfigService } from './config.service';
 import { MessageService } from './message.service';
 import { YamcsService } from './yamcs.service';
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class ExtensionService {
   readonly authService = inject(AuthService);
   readonly configService = inject(ConfigService);

@@ -1,4 +1,4 @@
-import { Injectable, Type } from '@angular/core';
+import { Service, Type } from '@angular/core';
 import { Subject } from 'rxjs';
 import { Printable } from './Printable';
 
@@ -8,9 +8,7 @@ export class PrintOrder {
   data: any;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class PrintService {
   printOrders$ = new Subject<PrintOrder>();
 

@@ -1,7 +1,7 @@
 import {
   DestroyRef,
   inject,
-  Injectable,
+  Service,
   signal,
   Signal,
   WritableSignal,
@@ -20,9 +20,7 @@ import {
  * When using a signal you will also be notified of changes to the
  * local storage that occur in another window or tab.
  */
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class Preferences {
   private readonly destroyRef = inject(DestroyRef);
 

@@ -1,17 +1,18 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { inject, OnDestroy, Service } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NavigationEnd, Router } from '@angular/router';
-import { BehaviorSubject, Subscription, filter, map } from 'rxjs';
+import { BehaviorSubject, filter, map, Subscription } from 'rxjs';
 
 export interface SiteMessage {
   level: 'WARNING' | 'ERROR';
   message: string;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class MessageService implements OnDestroy {
+  private snackBar = inject(MatSnackBar);
+  private router = inject(Router);
+
   /**
    * Active error message. Each message replaces
    * the previous one.
@@ -20,11 +21,8 @@ export class MessageService implements OnDestroy {
 
   private routerSubscription: Subscription;
 
-  constructor(
-    private snackBar: MatSnackBar,
-    router: Router,
-  ) {
-    this.routerSubscription = router.events
+  constructor() {
+    this.routerSubscription = this.router.events
       .pipe(
         filter((evt) => evt instanceof NavigationEnd),
         map((evt) => this.dismiss()),
