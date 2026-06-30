@@ -115,7 +115,10 @@ public record ParameterRetrievalOptions(
                 .withAscending(this.ascending)
                 .withRetrieveEngineeringValues(this.retrieveEngValues)
                 .withRetrieveRawValues(this.retrieveRawValues)
-                .withRetrieveParameterStatus(this.retrieveParameterStatus);
+                .withRetrieveParameterStatus(this.retrieveParameterStatus)
+                .withoutReplay(this.noreplay)
+                .withoutParchive(this.noparchive)
+                .withoutRealtime(this.norealtime);
     }
 
     public ParameterRetrievalOptions withUpdatedStart(long newStart) {

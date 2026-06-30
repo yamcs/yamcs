@@ -1,3 +1,6 @@
+Version 5.13.1 released
+- Change in the CCSDS sequence count handling for outgoing commands: in the previous version there was one per-APID counter for the entire Yamcs server. Starting with this version, by default every link mantains its own independent counter. The newly added property seqCounterName allows two or more links to share the same counter.
+
 Version 5.13.0 released 21-May-2026
 - API: Allow chaining timeline activities together (for example, "B starts after successful A", or "C starts when event X starts"). Note you can only express this via the Python API client >=2.0.0 (not the UI).
 - UI: Timeline: Show relations between items/activities.

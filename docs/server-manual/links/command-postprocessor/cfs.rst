@@ -36,3 +36,11 @@ swapChecksumFc (boolean)
     This may be needed when using cFS prior to `this commit <https://github.com/nasa/cFE/pull/586/commits/ff3aa947bbd146747707f2ae13acfe3a30eb9e0a>`_ on little endian systems.
 
     Default: ``false``.
+
+seqCounterName (string)
+    Name of a shared CCSDS sequence counter. By default each link maintains its own per-APID
+    sequence counter independently of all other links. When two or more links specify the same
+    ``seqCounterName`` they share a single per-APID counter, so the target receives a continuous
+    sequence across those links.
+
+    If not specified, the counter is local to this link.
