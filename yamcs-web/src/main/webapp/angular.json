@@ -40,9 +40,7 @@
               },
               "projects/webapp/src/manifest.webmanifest"
             ],
-            "styles": [
-              "projects/webapp-sdk/src/styles/index.scss"
-            ],
+            "styles": ["projects/webapp-sdk/src/styles/index.scss"],
             "serviceWorker": "projects/webapp/ngsw-config.json"
           },
           "configurations": {
