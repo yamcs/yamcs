@@ -22,10 +22,14 @@ public class PusTmTimePacket extends SimulatorCcsdsPacket {
     static final CrcCciitCalculator crcCalculator = new CrcCciitCalculator();
 
     public PusTmTimePacket() {
+        this(2);
+    }
+
+    public PusTmTimePacket(int rateExponent) {
         super(ByteBuffer.allocate(6 + 1 + PusTime.LENGTH_BYTES + 2));
-        setHeader(0, 1, 0, 3, getSeq(0));
+        setHeader(0, 0, 0, 3, getSeq(0));
         bb.position(6);
-        bb.put((byte)2);
+        bb.put((byte) rateExponent);
         PusTime now = PusTime.now();
         now.encode(bb);
         fillChecksum();

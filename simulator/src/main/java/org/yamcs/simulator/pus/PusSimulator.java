@@ -75,6 +75,7 @@ public class PusSimulator extends AbstractSimulator {
     CfdpReceiver cfdpReceiver;
     Pus2Service pus2Service;
     Pus5Service pus5Service;
+    Pus9Service pus9Service;
     Pus11Service pus11Service;
     Pus17Service pus17Service;
 
@@ -89,6 +90,7 @@ public class PusSimulator extends AbstractSimulator {
         cfdpReceiver = new CfdpReceiver(this, dataDir);
         pus2Service = new Pus2Service(this);
         pus5Service = new Pus5Service(this);
+        pus9Service = new Pus9Service(this);
         pus11Service = new Pus11Service(this);
         pus17Service = new Pus17Service(this);
     }
@@ -96,14 +98,13 @@ public class PusSimulator extends AbstractSimulator {
     @Override
     protected void doStart() {
         executor = new ScheduledThreadPoolExecutor(1);
-        executor.scheduleAtFixedRate(() -> sendTimePacket(), 0, 4, TimeUnit.SECONDS);
-
         executor.scheduleAtFixedRate(() -> sendFlightPacket(), 0, 200, TimeUnit.MILLISECONDS);
         executor.scheduleAtFixedRate(() -> sendHkTm(), 0, 1000, TimeUnit.MILLISECONDS);
         // executor.scheduleAtFixedRate(() -> sendCfdp(), 0, 1000, TimeUnit.MILLISECONDS);
         executor.scheduleAtFixedRate(() -> executePendingCommands(), 0, 200, TimeUnit.MILLISECONDS);
 
         pus5Service.start();
+        pus9Service.start();
         pus11Service.start();
     }
 
@@ -148,10 +149,6 @@ public class PusSimulator extends AbstractSimulator {
     void transmitRealtimeTM(PusTmPacket packet) {
         packet.fillChecksum();
         tmLink.sendPacket(packet.getBytes());
-    }
-
-    private void sendTimePacket() {
-        tmLink.sendImmediate(new PusTmTimePacket());
     }
 
     @Override
@@ -235,6 +232,7 @@ public class PusSimulator extends AbstractSimulator {
                 switch (commandPacket.getType()) {
                 case 2 -> pus2Service.executeTc(commandPacket);
                 case 5 -> pus5Service.executeTc(commandPacket);
+                case 9 -> pus9Service.executeTc(commandPacket);
                 case 11 -> pus11Service.executeTc(commandPacket);
                 case 17 -> pus17Service.executeTc(commandPacket);
                 case 25 -> {

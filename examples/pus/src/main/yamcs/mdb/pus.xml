@@ -11,6 +11,7 @@
 					<Enumeration label="INVALID_PUS_SUBTYPE" value="1" />
 					<Enumeration label="NOT_IMPLEMENTED" value="2" />
 					<Enumeration label="INVALID_EVENT_ID" value="3" />
+					<Enumeration label="INVALID_RATE_EXPONENT" value="4" />
 					<Enumeration label="UNKNOWN_PHYSICAL_DEVICE" value="10" />
 					<Enumeration label="UNKNOWN_LOGICAL_DEVICE" value="11" />
 					<Enumeration label="UNKNOWN_DEVICE_COMMAND" value="12" />

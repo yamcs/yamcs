@@ -11,6 +11,7 @@ public abstract class AbstractPusService {
     // start errors
     static final int START_ERR_INVALID_PUS_SUBTYPE = 1;
     static final int START_ERR_NOT_IMPLEMENTED = 2;
+    static final int START_ERR_INVALID_RATE_EXPONENT = 4;
 
     // completion errors
     static final int COMPL_ERR_NOT_IMPLEMENTED = 2;
