@@ -40,7 +40,9 @@
               },
               "projects/webapp/src/manifest.webmanifest"
             ],
-            "styles": ["projects/webapp-sdk/src/styles/index.scss"],
+            "styles": [
+              "projects/webapp-sdk/src/styles/index.scss"
+            ],
             "serviceWorker": "projects/webapp/ngsw-config.json"
           },
           "configurations": {
@@ -58,6 +60,14 @@
             }
           },
           "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "options": {
+            "buildTarget": "webapp:build",
+            "proxyConfig": "proxy.dev.json",
+            "port": 4200
+          }
         }
       }
     },
