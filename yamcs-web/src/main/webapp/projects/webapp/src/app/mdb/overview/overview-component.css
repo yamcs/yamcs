@@ -3,8 +3,14 @@
 ========================= */
 
 :host {
-  font-family: 'Roboto', system-ui, -apple-system, BlinkMacSystemFont,
-               'Segoe UI', Arial, sans-serif;
+  font-family:
+    "Roboto",
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Arial,
+    sans-serif;
 }
 
 /* =========================
@@ -29,7 +35,6 @@
 .system-version {
   margin-bottom: 0.25rem;
 }
-
 
 /* =========================
    Sections
@@ -87,13 +92,11 @@
   text-decoration: underline;
 }
 
-
 /* =========================
    Responsive
 ========================= */
 
 @media (max-width: 768px) {
-
   .history-table {
     font-size: 0.8rem;
   }

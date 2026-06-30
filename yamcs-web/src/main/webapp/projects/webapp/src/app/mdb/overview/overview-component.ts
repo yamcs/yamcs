@@ -22,9 +22,7 @@ export class OverviewComponent {
     title: Title,
   ) {
     title.setTitle('Mission database');
-    this.mdb$ = this.yamcs.yamcsClient.getMissionDatabase(
-      this.yamcs.instance!,
-    );
+    this.mdb$ = this.yamcs.yamcsClient.getMissionDatabase(this.yamcs.instance!);
   }
 
   /* -------------------------------
