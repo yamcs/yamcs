@@ -73,6 +73,7 @@
 | TC packet class | `simulator/src/main/java/org/yamcs/simulator/pus/PusTcPacket.java` |
 | TM packet class | `simulator/src/main/java/org/yamcs/simulator/pus/PusTmPacket.java` |
 | PUS time encoding | `simulator/src/main/java/org/yamcs/simulator/pus/PusTime.java` |
+| ST[02] service (device access) | `simulator/src/main/java/org/yamcs/simulator/pus/Pus2Service.java` |
 | ST[05] service (event reporting) | `simulator/src/main/java/org/yamcs/simulator/pus/Pus5Service.java` |
 | ST[11] service (scheduling) | `simulator/src/main/java/org/yamcs/simulator/pus/Pus11Service.java` |
 | ST[17] service (test) | `simulator/src/main/java/org/yamcs/simulator/pus/Pus17Service.java` |
@@ -911,10 +912,21 @@ def crc16(data: bytes) -> int:
 
 ## Build & Run
 
-```bash
-# Build (skip tests)
-mvn -pl simulator,examples/pus clean install -DskipTests
+**Prerequisites:** JDK 17+ and Maven.
 
-# Run
+```bash
+# 1. Build (first build needs -am to also build the yamcs-core/yamcs-tse deps)
+mvn -pl simulator,examples/pus -am clean install -DskipTests
+
+# 2. Run Yamcs + the embedded PUS simulator
 mvn -pl examples/pus yamcs:run
 ```
+
+Then open the web UI at **http://localhost:8090** (instance `pus`) to send commands and view
+telemetry. Stop the server with Ctrl-C.
+
+After editing Java in `simulator/` or XML in `examples/pus/`, repeat both steps (the build is
+incremental, so it's fast).
+
+Per-service valid command inputs are documented alongside each service's analysis (e.g.
+`pus_analysis/pus02.md` for PUS2 Device Access).

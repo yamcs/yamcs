@@ -28,6 +28,7 @@ import org.yamcs.simulator.TcpTmTcLink;
  * Supports services:
  * <ul>
  * <li>ST[01] - request verification</li>
+ * <li>ST[02] - device access</li>
  * <li>ST[03] - housekeeping</li>
  * <li>ST[05] - event reporting - TODO</li>
  * <li>ST[06] - memory management - TODO</li>
@@ -72,6 +73,7 @@ public class PusSimulator extends AbstractSimulator {
     RCSHandler rcsHandler;
     EpsLvpduHandler epslvpduHandler;
     CfdpReceiver cfdpReceiver;
+    Pus2Service pus2Service;
     Pus5Service pus5Service;
     Pus11Service pus11Service;
     Pus17Service pus17Service;
@@ -85,6 +87,7 @@ public class PusSimulator extends AbstractSimulator {
         flightDataHandler = new FlightDataHandler();
         dhsHandler = new DHSHandler();
         cfdpReceiver = new CfdpReceiver(this, dataDir);
+        pus2Service = new Pus2Service(this);
         pus5Service = new Pus5Service(this);
         pus11Service = new Pus11Service(this);
         pus17Service = new Pus17Service(this);
@@ -230,6 +233,7 @@ public class PusSimulator extends AbstractSimulator {
             try {
                 log.info("Received PUS TC : {} (now: {})", commandPacket, PusTime.now());
                 switch (commandPacket.getType()) {
+                case 2 -> pus2Service.executeTc(commandPacket);
                 case 5 -> pus5Service.executeTc(commandPacket);
                 case 11 -> pus11Service.executeTc(commandPacket);
                 case 17 -> pus17Service.executeTc(commandPacket);
