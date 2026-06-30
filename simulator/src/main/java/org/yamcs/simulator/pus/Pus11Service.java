@@ -32,6 +32,8 @@ public class Pus11Service extends AbstractPusService {
 
     // subschedule id -> subschedule status (true = enabled, false = disabled)
     Map<Integer, Boolean> subschStatus = new HashMap<>();
+    // group id -> group status (true = enabled, false = disabled)
+    Map<Integer, Boolean> groupStatus = new HashMap<>();
 
     Pus11Service(PusSimulator pusSimulator) {
         super(pusSimulator, 11);
@@ -97,15 +99,15 @@ public class Pus11Service extends AbstractPusService {
         // TC[11,21] disable time-based sub-schedules
         case 21 -> disableSubschedule(tc);
         // TC[11,22] create time-based scheduling groups
-        case 22 -> nack_start(tc, START_ERR_NOT_IMPLEMENTED);
+        case 22 -> createGroups(tc);
         // TC[11,23] delete time-based scheduling groups
-        case 23 -> nack_start(tc, START_ERR_NOT_IMPLEMENTED);
+        case 23 -> deleteGroups(tc);
         // TC[11,24] enable time-based scheduling groups
-        case 24 -> nack_start(tc, START_ERR_NOT_IMPLEMENTED);
+        case 24 -> enableGroups(tc);
         // TC[11,25] disable time-based scheduling groups
-        case 25 -> nack_start(tc, START_ERR_NOT_IMPLEMENTED);
+        case 25 -> disableGroups(tc);
         // TC[11,26] report the status of each time-based scheduling group
-        case 26 -> nack_start(tc, START_ERR_NOT_IMPLEMENTED);
+        case 26 -> groupStatusReport(tc);
         default -> nack_start(tc, START_ERR_INVALID_PUS_SUBTYPE);
         }
     }
@@ -294,22 +296,100 @@ public class Pus11Service extends AbstractPusService {
     private void enableSubschedule(PusTcPacket tc) {
         ack_start(tc);
         ByteBuffer bb = tc.getUserDataBuffer();
-        int subschedule = bb.get() & 0xFF;
+        int n = bb.get() & 0xFF;
         synchronized (subschStatus) {
-            subschStatus.put(subschedule, true);
+            for (int i = 0; i < n; i++) {
+                int subschedule = bb.get() & 0xFF;
+                subschStatus.put(subschedule, true);
+                log.info("Enabled subschedule {}", subschedule);
+            }
         }
-        log.info("Enabled subschedule {}", subschedule);
         ack_completion(tc);
     }
 
     private void disableSubschedule(PusTcPacket tc) {
         ack_start(tc);
         ByteBuffer bb = tc.getUserDataBuffer();
-        int subschedule = bb.get() & 0xFF;
+        int n = bb.get() & 0xFF;
         synchronized (subschStatus) {
-            subschStatus.put(subschedule, false);
+            for (int i = 0; i < n; i++) {
+                int subschedule = bb.get() & 0xFF;
+                subschStatus.put(subschedule, false);
+                log.info("Disabled subschedule {}", subschedule);
+            }
         }
-        log.info("Disabled subschedule {}", subschedule);
+        ack_completion(tc);
+    }
+
+    private void createGroups(PusTcPacket tc) {
+        ack_start(tc);
+        ByteBuffer bb = tc.getUserDataBuffer();
+        int n = bb.get() & 0xFF;
+        synchronized (groupStatus) {
+            for (int i = 0; i < n; i++) {
+                int groupId = bb.get() & 0xFF;
+                boolean enabled = (bb.get() & 0xFF) == 1;
+                groupStatus.put(groupId, enabled);
+                log.info("Created group {} status={}", groupId, enabled);
+            }
+        }
+        ack_completion(tc);
+    }
+
+    private void deleteGroups(PusTcPacket tc) {
+        ack_start(tc);
+        ByteBuffer bb = tc.getUserDataBuffer();
+        int n = bb.get() & 0xFF;
+        synchronized (groupStatus) {
+            for (int i = 0; i < n; i++) {
+                int groupId = bb.get() & 0xFF;
+                groupStatus.remove(groupId);
+                log.info("Deleted group {}", groupId);
+            }
+        }
+        ack_completion(tc);
+    }
+
+    private void enableGroups(PusTcPacket tc) {
+        ack_start(tc);
+        ByteBuffer bb = tc.getUserDataBuffer();
+        int n = bb.get() & 0xFF;
+        synchronized (groupStatus) {
+            for (int i = 0; i < n; i++) {
+                int groupId = bb.get() & 0xFF;
+                groupStatus.put(groupId, true);
+                log.info("Enabled group {}", groupId);
+            }
+        }
+        ack_completion(tc);
+    }
+
+    private void disableGroups(PusTcPacket tc) {
+        ack_start(tc);
+        ByteBuffer bb = tc.getUserDataBuffer();
+        int n = bb.get() & 0xFF;
+        synchronized (groupStatus) {
+            for (int i = 0; i < n; i++) {
+                int groupId = bb.get() & 0xFF;
+                groupStatus.put(groupId, false);
+                log.info("Disabled group {}", groupId);
+            }
+        }
+        ack_completion(tc);
+    }
+
+    private void groupStatusReport(PusTcPacket tc) {
+        ack_start(tc);
+        synchronized (groupStatus) {
+            var pkt = newPacket(27, 4 + groupStatus.size() * 2);
+            var bb = pkt.getUserDataBuffer();
+            bb.putInt(groupStatus.size());
+            for (var me : groupStatus.entrySet()) {
+                bb.put(me.getKey().byteValue());
+                bb.put((byte) (me.getValue() ? 1 : 0));
+            }
+            pusSimulator.transmitRealtimeTM(pkt);
+        }
         ack_completion(tc);
     }
 

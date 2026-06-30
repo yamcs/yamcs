@@ -58,6 +58,14 @@
             }
           },
           "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "options": {
+            "buildTarget": "webapp:build",
+            "proxyConfig": "proxy.dev.json",
+            "port": 4200
+          }
         }
       }
     },

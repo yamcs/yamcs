@@ -612,3 +612,61 @@ ST[02] is implementable **entirely with XTCE MDB definitions and zero Java code 
 3. **TC[2,7/8]** require per-device MetaCommands with N=1 for heterogeneous device types; a generic N-instruction MetaCommand is possible when the mission standardizes `protocol_specific_data` and `command_data` sizes.
 4. **TM[2,9/12]** are the hardest: "deduced presence" auxiliary data and variable-type payload fields are not expressible generically. Per-device `SequenceContainer`s with APID-based discrimination are the correct approach. Discrimination without separate APIDs requires the spacecraft to echo a device discriminator field in the TM (a mission extension beyond the minimum PUS spec).
 5. The PUS spec's "deduced" fields are a design-time declaration — they become concrete fixed types per mission device declaration. XTCE handles this correctly by requiring per-device definitions.
+
+## D. Sending Commands from the Web UI — Valid Inputs
+
+After starting Yamcs + the simulator (see `pus_analysis/pus_simulator_architecture.md` for
+build/run), go to **Commanding → Send a command → `/PUS2/...`** in the web UI and fill in the
+arguments.
+
+The simulator validates every request against this sample device registry (`Pus2Service.java`):
+
+- **Physical devices:** `1`, `2`
+- **Logical devices & commands:** device `1` → command `1` or `2`; device `2` → command `1`
+- **Logical parameters (device, parameter → value):** `(1,1)→100`, `(1,2)→25`, `(2,1)→4200`
+
+Set `n` to the number of entries in the `instructions` array (they must match). The examples
+below use `n = 1`. Valid inputs get ACK start + ACK completion, and the acquire commands also
+emit a TM report. Any device/command/parameter outside the registry gets a **NACK start**
+(unknown physical device / logical device / device command / device parameter).
+
+**`DISTRIBUTE_PHYSICAL_CMDS` — TC[2,7]**
+```
+n = 1
+instructions = [
+  { physical_device_id: 1,
+    protocol_data: { direction: 0, sub_address: 1, word_count: 4 },
+    command_data: 0x1122334455667788 }   # 8-byte binary
+]
+```
+
+**`ACQUIRE_PHYSICAL_DATA` — TC[2,8]** → replies TM[2,9]
+```
+n = 1
+instructions = [
+  { transaction_id: 777, physical_device_id: 1,
+    protocol_data: { direction: 1, sub_address: 1, word_count: 4 } }
+]
+```
+
+**`DISTRIBUTE_LOGICAL_CMDS` — TC[2,10]**
+```
+n = 1
+instructions = [
+  { logical_device_id: 1, command_id: 2, command_args: 42 }
+]
+```
+
+**`ACQUIRE_LOGICAL_DATA` — TC[2,11]** → replies TM[2,12]
+```
+n = 1
+instructions = [
+  { transaction_id: 777, logical_device_id: 1, parameter_id: 2 }
+]
+```
+
+To send multiple instructions in one command, set `n` accordingly and add that many entries,
+e.g. `n = 2` with two objects in `instructions`.
+
+The TM reports (TM[2,9] / TM[2,12]) and the command acknowledgements appear in the web UI
+under the `/PUS2` space system and in the command history.

@@ -16,10 +16,14 @@ realtime:
           implicitPfield: false
           pfield: 0x2f
         handlers:
-          - serviceType: 5
-            class: org.yamcs.pus.Pus5Service
+          # ST[05] is ground-station only: no on-board handler is registered, so
+          # TC[5,5/6/7] fall through to the TC stream and are radiated to the
+          # spacecraft. TM[5,1-4] are turned into Yamcs events by PusEventDecoder
+          # (see yamcs.<instance>.yaml services); TM[5,8] is decoded purely by XTCE.
+          - serviceType: 9
+            class: org.yamcs.pus.Pus9Service
             args:
-              eventIdParameter: /PUS5/event_id
+              defaultRateExponent: 2
     - class: org.yamcs.tctm.StreamParameterProvider
     - class: org.yamcs.algorithms.AlgorithmManager
     # implements provider of parameters from sys_param stream (these are collected and sent on this stream by SystemParametersService)

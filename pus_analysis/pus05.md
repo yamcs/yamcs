@@ -71,9 +71,11 @@ ST[05] reports events of operational significance: on-board failures/anomalies, 
 
 | Component | File | Role |
 |-----------|------|------|
-| Ground decoder | `yamcs-core/.../pus/PusEventDecoder.java` | Decodes TM[5,1–4] → YAMCS native events via XtceTmExtractor + YAML event templates |
-| MDB | `examples/pus/src/main/yamcs/mdb/pus5.xml` | XTCE definitions for all 8 message types |
-| Simulator | `simulator/.../pus/Pus5Service.java` | On-board: generates TM[5,1–4]; handles TC[5,5/6/7] |
+| Ground decoder | `yamcs-core/.../pus/PusEventDecoder.java` | Decodes TM[5,1–4] → YAMCS native events via XtceTmExtractor + YAML event templates. **Only Java the ground-only MCS needs.** |
+| MDB | `examples/pus/src/main/yamcs/mdb/pus5.xml` | XTCE definitions for all 8 message types (TC[5,5/6/7] sends + TM[5,8]/TM[5,1–4] decode) |
+| Simulator | `simulator/.../pus/Pus5Service.java` | **Spacecraft side** (test target): generates TM[5,1–4]; handles TC[5,5/6/7] and replies TM[5,8] |
+
+> No on-board handler runs on the ground. The former `yamcs-core/.../pus/Pus5Service` (a `PusTcHandler` that intercepted TC[5,5/6/7] locally) has been **removed** — for a ground-only MCS those TCs must reach the spacecraft. `PusCommandReleaser` no longer registers a service-5 handler, so the TCs fall through to `StreamTcCommandReleaser` and are radiated over the link.
 
 ### XTCE Container Hierarchy
 
@@ -98,15 +100,11 @@ TM stream → PusEventDecoder (guards: type==5, subtype in [1,4])
 
 ---
 
-## On-Board Service: `org.yamcs.pus.Pus5Service`
+## On-Board Service (spacecraft side, not the MCS)
 
-Extends `PusTcHandler`, registered under `PusCommandReleaser`. Event registry seeded from the MDB `EnumeratedParameterType` for `event_id` — adding an event only requires a new `<Enumeration>` in `pus5.xml`.
+The enable/disable bookkeeping and TM[5,8] generation are **on-board responsibilities** and live only in the spacecraft (modelled by `simulator/.../pus/Pus5Service.java` for testing). The MCS does not run this logic — it sends TC[5,5/6/7] over the link and receives the spacecraft's TM[5,8] / TM[5,1–4] in response.
 
-State (enabled/disabled map) persisted in `MementoDb` (key `pus5.enabled`); survives restarts.
-
-**TC[5,5/6]**: `enableDisableEvents(pc, enable)` — iterates raw event ID list; rejects unknown IDs with nack-completion, continues processing valid IDs (per §6.5.5.2f / §6.5.5.3f).
-
-**TC[5,7]**: builds TM[5,8] from current disabled map and emits on `tm_realtime`.
+For a ground-only MCS the previous `yamcs-core` on-board emulation (`org.yamcs.pus.Pus5Service`, a `PusTcHandler` that intercepted these TCs locally, kept a `Map<Integer,Boolean>` in `MementoDb`, and fabricated TM[5,8] on `tm_realtime`) has been removed. Keeping it would have silently swallowed the TCs on the ground and faked spacecraft telemetry.
 
 ---
 
@@ -115,12 +113,12 @@ State (enabled/disabled map) persisted in `MementoDb` (key `pus5.enabled`); surv
 | Message | Issue | Severity |
 |---------|-------|----------|
 | TM[5,1–4] | Event registry is static (MDB load-time). New event type requires `<Enumeration>` + restart. | Medium |
-| TM[5,1–4] | Aux data is "deduced" — each event type needs its own XTCE sub-container AND matching Java byte layout. No generic mechanism. | Medium |
-| TC[5,7] / TM[5,8] | `ContainerVerifier` on `pus5-disabled-list` not yet defined in MDB — TC[5,7] complete verifier is an open item. | Medium |
-| TC[5,5/6] | Event IDs encoded as uint8. If mission uses uint16, both MDB and Java parsing must change together. | Low |
-| All | §6.5.6 observables (accumulated occurrences, disabled count, last event ID/time per severity) not implemented. | Low |
+| TM[5,1–4] | Aux data is "deduced" — each event type needs its own XTCE sub-container matching the on-board byte layout. No generic mechanism. | Medium |
+| TC[5,7] / TM[5,8] | `ContainerVerifier` on `pus5-disabled-list` not yet defined in MDB — TC[5,7] complete verification still relies on the ST[01] completion report. | Medium |
+| TC[5,5/6] | Event IDs encoded as uint8. If mission uses uint16, the MDB types must change. | Low |
+| All | §6.5.6 observables (accumulated occurrences, disabled count, last event ID/time per severity) are on-board concerns — out of MCS scope. | Low |
 
-**Architectural**: enabled/disabled state is instance-local (no multi-instance broadcast). `PusEventDecoder` must remain as an instance-level service — it is the only path from TM[5,1–4] packets to YAMCS native events.
+**Architectural**: `PusEventDecoder` is the only path from TM[5,1–4] packets to YAMCS native events and must remain an instance-level service. The enable/disable state is held on-board; the MCS observes it only via TC[5,7] → TM[5,8].
 
 ---
 
@@ -128,7 +126,7 @@ State (enabled/disabled map) persisted in `MementoDb` (key `pus5.enabled`); surv
 
 **`prepended_string` encoding**: YAMCS-specific 2-byte-length-prefixed string used in event aux data. Replace with actual FSW encoding (fixed-length, null-terminated, or 1-byte prefix).
 
-**Event ID bit width**: MDB and Java assume uint8. For 16-bit IDs: add `<IntegerDataEncoding sizeInBits="16"/>` to MDB types; use `bb.getShort() & 0xFFFF` in Java.
+**Event ID bit width**: MDB assumes uint8. For 16-bit IDs add `<IntegerDataEncoding sizeInBits="16"/>` to the MDB types (the on-board FSW must match).
 
 **TC[5,7] Complete Verifier (open)**: add a `ContainerVerifier` on `pus5-disabled-list` to the `REPORT_DISABLED_LIST` `CommandVerifierSet` in `pus5.xml`.
 
@@ -142,4 +140,4 @@ State (enabled/disabled map) persisted in `MementoDb` (key `pus5.enabled`); surv
 | 2 | `pus5.xml` restructured to `pus5-tm` → `pus5-event-report` (subtypes 1–4) + `pus5-disabled-list` (subtype 8) |
 | 3 | `IncludeCondition` on `disabled_event_ids` — prevents empty-array crash when N=0 |
 | 4 | `Pus1Verifier` returns `NO_RESULT` for packets where service type ≠ 1 — prevents false failure on TC[5,7] |
-| 5 | `Pus5Service` replaced `boolean[]` with `Map<Integer,Boolean>` — unknown IDs rejected via `containsKey` |
+| 5 | Ground-only MCS: removed the on-board emulation handler (`yamcs-core` `Pus5Service`) and unregistered service 5 from `PusCommandReleaser`, so TC[5,5/6/7] are radiated to the spacecraft instead of being handled locally |

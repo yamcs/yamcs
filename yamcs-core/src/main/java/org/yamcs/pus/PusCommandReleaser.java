@@ -43,10 +43,10 @@ import org.yamcs.yarch.YarchDatabase;
  *         implicitPfield: false
  *         pfield: 0x2f
  *       handlers:
- *         - serviceType: 5
- *           class: org.yamcs.pus.Pus5Service
+ *         - serviceType: 9
+ *           class: org.yamcs.pus.Pus9Service
  *           args:
- *             eventIdParameter: /PUS5/event_id
+ *             defaultRateExponent: 2
  * </pre>
  */
 public class PusCommandReleaser extends StreamTcCommandReleaser {
