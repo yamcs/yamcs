@@ -7,10 +7,11 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UncheckedIOException;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import org.yamcs.Experimental;
@@ -214,16 +216,7 @@ public class WebFileDeployer {
         var cssFiles = new ArrayList<Path>();
         var jsFiles = new ArrayList<Path>();
         for (var extraStaticRoot : extraStaticRoots) {
-            try (var listing = Files.list(extraStaticRoot)) {
-                listing.forEachOrdered(extensionFile -> {
-                    var lcFilename = extensionFile.getFileName().toString().toLowerCase();
-                    if (lcFilename.endsWith(".css")) {
-                        cssFiles.add(extensionFile);
-                    } else if (lcFilename.endsWith(".js")) {
-                        jsFiles.add(extensionFile);
-                    }
-                });
-            }
+            collectReferencedAssets(extraStaticRoot, cssFiles, jsFiles);
         }
 
         var extraHeaderHtml = new StringBuilder();
@@ -306,6 +299,55 @@ public class WebFileDeployer {
         return TemplateProcessor.process(template, args);
     }
 
+    private static final Pattern STYLESHEET_HREF_PATTERN = Pattern.compile("href=\"([^\"]+\\.css)\"");
+    private static final Pattern SCRIPT_SRC_PATTERN = Pattern.compile("src=\"([^\"]+\\.js)\"");
+
+    /**
+     * Determines which JS/CSS files an extension's build actually references, by reading the asset
+     * filenames straight out of its own generated index.html, rather than listing every *.js/*.css
+     * file that happens to be sitting in its directory. Angular's watch mode doesn't always reliably
+     * delete a previous build's hashed output once it's superseded (observed: a stale main-*.js
+     * lingering for several minutes after a newer one was written, even though Angular's own
+     * regenerated index.html only referenced the new one). Blindly listing the directory in that
+     * situation would emit a &lt;script&gt; tag for both, and loading a stale bundle alongside the
+     * current one throws when it tries to re-register the same custom element name.
+     */
+    private void collectReferencedAssets(Path extraStaticRoot, List<Path> cssFiles, List<Path> jsFiles)
+            throws IOException {
+        var indexFile = extraStaticRoot.resolve(PATH_INDEX);
+        if (!Files.exists(indexFile)) {
+            // Not an Angular build (no index.html to consult) -- fall back to a directory listing
+            try (var listing = Files.list(extraStaticRoot)) {
+                listing.forEachOrdered(file -> {
+                    var lcFilename = file.getFileName().toString().toLowerCase();
+                    if (lcFilename.endsWith(".css")) {
+                        cssFiles.add(file);
+                    } else if (lcFilename.endsWith(".js")) {
+                        jsFiles.add(file);
+                    }
+                });
+            }
+            return;
+        }
+
+        var html = Files.readString(indexFile, UTF_8);
+        for (var filename : extractAssetFilenames(html, STYLESHEET_HREF_PATTERN)) {
+            cssFiles.add(extraStaticRoot.resolve(filename));
+        }
+        for (var filename : extractAssetFilenames(html, SCRIPT_SRC_PATTERN)) {
+            jsFiles.add(extraStaticRoot.resolve(filename));
+        }
+    }
+
+    private static List<String> extractAssetFilenames(String html, Pattern pattern) {
+        var filenames = new ArrayList<String>();
+        var matcher = pattern.matcher(html);
+        while (matcher.find()) {
+            filenames.add(matcher.group(1));
+        }
+        return filenames;
+    }
+
     private String renderWebManifest(Path file) throws IOException, ParseException {
         var template = new String(Files.readAllBytes(file), UTF_8);
         var args = new HashMap<String, Object>();
@@ -377,61 +419,129 @@ public class WebFileDeployer {
             this.target = target;
         }
 
+        // How long to wait after the first detected change before redeploying, so that a burst of
+        // several file writes from a single build (index.html, main-*.js, *.css, ...) is more likely
+        // to have fully settled before we scan the directory, rather than catching it mid-write.
+        private static final long SETTLE_DELAY_MILLIS = 250;
+
+        // Upper bound on how long a poll cycle waits for an event before looping back around to
+        // re-check which paths currently exist. This -- not a WatchKey ever reporting itself invalid
+        // -- is what guarantees recovery: a directory that gets deleted and recreated out from under
+        // an existing registration (e.g. a clean rebuild racing this watcher) is not reliably
+        // reported as such by every WatchService implementation, so this loop can't wait indefinitely
+        // for that signal. Re-deriving the watched set on a fixed cadence instead means recovery
+        // never depends on it.
+        private static final long POLL_TIMEOUT_MILLIS = 2000;
+
         @Override
         public void run() {
+            WatchService watchService = null;
+            var registeredPaths = List.<Path>of();
+            var forceDeploy = false;
+            // Whether we've ever registered a non-empty path set. Deliberately NOT set on the very
+            // first registration below: the constructor already called prepareWebApplication()
+            // synchronously before this thread was started, so an immediate redeploy here would be
+            // redundant -- and worse, it would race setupRedeployer(), which is synchronized on this
+            // WebFileDeployer and, immediately after starting this thread, may go on to interrupt()
+            // and join() a *later* Redeployer generation while still holding that lock. If this
+            // thread's first move were to block trying to acquire that same lock inside
+            // prepareWebApplication(), the two threads would deadlock. Only a *later* re-registration
+            // (paths disappeared and came back, e.g. a clean rebuild raced this watcher) represents
+            // state we might have missed and need to force a catch-up deploy for.
+            var everRegistered = false;
             try {
                 while (true) {
-                    var watchedPaths = new ArrayList<Path>();
+                    var currentPaths = new ArrayList<Path>();
                     if (source != null && Files.exists(source)) {
-                        watchedPaths.add(source);
+                        currentPaths.add(source);
                     }
                     for (var extraStaticRoot : extraStaticRoots) {
                         if (Files.exists(extraStaticRoot)) {
-                            watchedPaths.add(extraStaticRoot);
+                            currentPaths.add(extraStaticRoot);
                         }
                     }
 
-                    if (!watchedPaths.isEmpty()) {
-                        // Assume all source paths are on same file system
-                        var watchService = watchedPaths.get(0).getFileSystem().newWatchService();
-
-                        for (var path : watchedPaths) {
-                            path.register(watchService, ENTRY_CREATE, ENTRY_MODIFY);
-                        }
-
-                        var forceDeploy = false;
-                        var loop = true;
-                        while (loop) {
-                            var key = watchService.take();
-                            var watchEvents = key.pollEvents();
-                            if (forceDeploy || !watchEvents.isEmpty()) {
-                                forceDeploy = false;
-
-                                log.debug("Redeploying yamcs-web from {}", source);
-                                FileUtils.deleteContents(target);
-                                FileUtils.copyRecursively(source, target);
-                                try {
-                                    prepareWebApplication();
-                                } catch (EOFException e) {
-                                    // Ignore, expect another later watch event
-                                }
+                    if (!currentPaths.equals(registeredPaths)) {
+                        if (watchService != null) {
+                            try {
+                                watchService.close();
+                            } catch (IOException e) {
+                                // Ignore; we're replacing it anyway
                             }
-                            loop = key.reset();
                         }
+                        watchService = null;
+                        registeredPaths = currentPaths;
+                        forceDeploy = everRegistered;
+                        everRegistered = true;
 
-                        // If the source directory goes away (webapp rebuild),
-                        // force a redeploy whenever the directory comes back.
-                        forceDeploy = true;
-                    } else {
-                        Thread.sleep(500);
+                        if (!currentPaths.isEmpty()) {
+                            try {
+                                // Assume all paths are on same file system
+                                watchService = currentPaths.get(0).getFileSystem().newWatchService();
+                                for (var path : currentPaths) {
+                                    path.register(watchService, ENTRY_CREATE, ENTRY_MODIFY);
+                                }
+                            } catch (IOException e) {
+                                log.warn("Failed to set up a watch service for {}; will retry", currentPaths, e);
+                                watchService = null;
+                                registeredPaths = List.of();
+                            }
+                        }
                     }
+
+                    if (watchService == null) {
+                        Thread.sleep(500);
+                        continue;
+                    }
+
+                    if (forceDeploy) {
+                        forceDeploy = false;
+                        redeployQuietly();
+                    }
+
+                    var key = watchService.poll(POLL_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+                    if (key == null) {
+                        // Nothing happened within the timeout; loop back around to re-check which
+                        // paths currently exist rather than waiting on this WatchService any longer
+                        continue;
+                    }
+                    key.pollEvents();
+
+                    // Let a burst of writes from one build settle, then drain whatever else arrived
+                    // meanwhile (on this key or any other watched path) before doing a single
+                    // redeploy that reflects the (by then hopefully final) state.
+                    Thread.sleep(SETTLE_DELAY_MILLIS);
+                    WatchKey pending;
+                    while ((pending = watchService.poll()) != null) {
+                        pending.pollEvents();
+                        if (pending != key) {
+                            pending.reset();
+                        }
+                    }
+
+                    redeployQuietly();
+                    key.reset();
                 }
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            } catch (ParseException e) {
-                throw new RuntimeException(e);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+            }
+        }
+
+        /**
+         * Redeploys, logging (rather than propagating) failures so that a transient error -- e.g.
+         * racing a build tool that is still mid-write -- doesn't permanently kill this thread and
+         * leave the server stuck serving a stale deployment until restart.
+         */
+        private void redeployQuietly() {
+            log.debug("Redeploying yamcs-web from {}", source);
+            try {
+                FileUtils.deleteContents(target);
+                FileUtils.copyRecursively(source, target);
+                prepareWebApplication();
+            } catch (EOFException e) {
+                // Ignore, expect another later watch event
+            } catch (IOException | ParseException e) {
+                log.warn("Failed to redeploy web application; will retry on next change", e);
             }
         }
     }
