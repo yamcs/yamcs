@@ -74,6 +74,7 @@ public class PusSimulator extends AbstractSimulator {
     EpsLvpduHandler epslvpduHandler;
     CfdpReceiver cfdpReceiver;
     Pus2Service pus2Service;
+    Pus3Service pus3Service;
     Pus5Service pus5Service;
     Pus9Service pus9Service;
     Pus11Service pus11Service;
@@ -89,6 +90,8 @@ public class PusSimulator extends AbstractSimulator {
         dhsHandler = new DHSHandler();
         cfdpReceiver = new CfdpReceiver(this, dataDir);
         pus2Service = new Pus2Service(this);
+        pus3Service = new Pus3Service(this, flightDataHandler, powerDataHandler,
+                dhsHandler, rcsHandler, epslvpduHandler);
         pus5Service = new Pus5Service(this);
         pus9Service = new Pus9Service(this);
         pus11Service = new Pus11Service(this);
@@ -98,52 +101,13 @@ public class PusSimulator extends AbstractSimulator {
     @Override
     protected void doStart() {
         executor = new ScheduledThreadPoolExecutor(1);
-        executor.scheduleAtFixedRate(() -> sendFlightPacket(), 0, 200, TimeUnit.MILLISECONDS);
-        executor.scheduleAtFixedRate(() -> sendHkTm(), 0, 1000, TimeUnit.MILLISECONDS);
         // executor.scheduleAtFixedRate(() -> sendCfdp(), 0, 1000, TimeUnit.MILLISECONDS);
         executor.scheduleAtFixedRate(() -> executePendingCommands(), 0, 200, TimeUnit.MILLISECONDS);
 
+        pus3Service.start();
         pus5Service.start();
         pus9Service.start();
         pus11Service.start();
-    }
-
-    private void sendFlightPacket() {
-        PusTmPacket packet = new PusTmPacket(MAIN_APID, 4 + flightDataHandler.dataSize(), PUS_TYPE_HK, 25);
-        ByteBuffer buffer = packet.getUserDataBuffer();
-        buffer.putInt(0);
-        flightDataHandler.fillPacket(buffer.slice());
-        transmitRealtimeTM(packet);
-    }
-
-    private void sendHkTm() {
-        try {
-            PusTmPacket packet = new PusTmPacket(MAIN_APID, 4 + powerDataHandler.dataSize(), PUS_TYPE_HK, 25);
-            ByteBuffer buffer = packet.getUserDataBuffer();
-            buffer.putInt(1);
-            powerDataHandler.fillPacket(buffer.slice());
-            transmitRealtimeTM(packet);
-
-            packet = new PusTmPacket(MAIN_APID, 4 + dhsHandler.dataSize(), PUS_TYPE_HK, 25);
-            buffer = packet.getUserDataBuffer();
-            buffer.putInt(2);
-            dhsHandler.fillPacket(buffer.slice());
-            transmitRealtimeTM(packet);
-
-            packet = new PusTmPacket(MAIN_APID, 4 + rcsHandler.dataSize(), PUS_TYPE_HK, 25);
-            buffer = packet.getUserDataBuffer();
-            buffer.putInt(3);
-            rcsHandler.fillPacket(buffer.slice());
-            transmitRealtimeTM(packet);
-
-            packet = new PusTmPacket(MAIN_APID, 4 + epslvpduHandler.dataSize(), PUS_TYPE_HK, 25);
-            buffer = packet.getUserDataBuffer();
-            buffer.putInt(4);
-            epslvpduHandler.fillPacket(buffer.slice());
-            transmitRealtimeTM(packet);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     void transmitRealtimeTM(PusTmPacket packet) {
@@ -231,6 +195,7 @@ public class PusSimulator extends AbstractSimulator {
                 log.info("Received PUS TC : {} (now: {})", commandPacket, PusTime.now());
                 switch (commandPacket.getType()) {
                 case 2 -> pus2Service.executeTc(commandPacket);
+                case 3 -> pus3Service.executeTc(commandPacket);
                 case 5 -> pus5Service.executeTc(commandPacket);
                 case 9 -> pus9Service.executeTc(commandPacket);
                 case 11 -> pus11Service.executeTc(commandPacket);
