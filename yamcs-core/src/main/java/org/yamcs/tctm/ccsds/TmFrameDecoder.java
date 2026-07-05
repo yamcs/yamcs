@@ -83,7 +83,9 @@ public class TmFrameDecoder implements TransferFrameDecoder {
         boolean syncFlag = (tfdfs & 0x4000) == 0x4000;
 
         if (secHeaderPresent) {
-            int secHeaderLength = 1 + data[dataOffset] & 0x3F;
+            // CCSDS 132.0-B-3 4.1.3.2.3: low 6 bits of the first secondary header byte
+            // encode (length - 1); the top 2 bits are the secondary header version number
+            int secHeaderLength = 1 + (data[dataOffset] & 0x3F);
             ttf.setShStart(dataOffset);
             ttf.setShLength(secHeaderLength);
             dataOffset += secHeaderLength;

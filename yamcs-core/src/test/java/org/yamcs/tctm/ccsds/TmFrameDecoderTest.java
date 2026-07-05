@@ -47,6 +47,66 @@ public class TmFrameDecoderTest {
         });
     }
 
+    @Test
+    public void testSecHeaderLengthWithVersionNumberBits() throws TcTmException {
+        // CCSDS 132.0-B-3 4.1.3.2.3: the top 2 bits of the first secondary header
+        // byte are the version number and must not leak into the length (issue #1125)
+        TmFrameDecoder tfd = new TmFrameDecoder(getParamsSecHeader());
+
+        // 0x7F: version number 01, length-1 = 63 -> length 64
+        TmTransferFrame tf = tfd.decode(buildFrameWithSecHeader((byte) 0x7F), 0, 128);
+        assertEquals(6, tf.getShStart());
+        assertEquals(64, tf.getShLength());
+        assertEquals(70, tf.getDataStart());
+
+        // 0xBF: version number 10, length-1 = 63 -> length 64
+        tf = tfd.decode(buildFrameWithSecHeader((byte) 0xBF), 0, 128);
+        assertEquals(64, tf.getShLength());
+        assertEquals(70, tf.getDataStart());
+    }
+
+    @Test
+    public void testSecHeaderLengthWithoutVersionNumberBits() throws TcTmException {
+        // 0x09: version number 00, length-1 = 9 -> length 10
+        TmFrameDecoder tfd = new TmFrameDecoder(getParamsSecHeader());
+
+        TmTransferFrame tf = tfd.decode(buildFrameWithSecHeader((byte) 0x09), 0, 128);
+        assertEquals(6, tf.getShStart());
+        assertEquals(10, tf.getShLength());
+        assertEquals(16, tf.getDataStart());
+    }
+
+    byte[] buildFrameWithSecHeader(byte shIdLengthByte) {
+        byte[] data = new byte[128];
+        data[0] = 0x2F; // version 0, spacecraft id 758
+        data[1] = 0x60; // vcId 0, no OCF
+        data[4] = (byte) 0x87; // secondary header present, sync flag 0
+        data[5] = (byte) 0xFF; // first header pointer 0x7FF (no packet starting in this frame)
+        data[6] = shIdLengthByte;
+        return data;
+    }
+
+    TmManagedParameters getParamsSecHeader() {
+        Map<String, Object> m = new HashMap<>();
+        m.put("spacecraftId", 758);
+        m.put("frameLength", 128);
+        m.put("errorDetection", "NONE");
+
+        List<Map<String, Object>> vclist = new ArrayList<>();
+        m.put("virtualChannels", vclist);
+
+        Map<String, Object> vc0 = new HashMap<>();
+        vc0.put("vcId", 0);
+        vc0.put("ocfPresent", false);
+        vc0.put("service", "PACKET");
+        vc0.put("packetPreprocessorClassName", "org.yamcs.tctm.GenericPacketPreprocessor");
+
+        vclist.add(vc0);
+
+        YConfiguration config = YConfiguration.wrap(m);
+        return new TmManagedParameters(config, null, null);
+    }
+
     TmManagedParameters getParams() {
         Map<String, Object> m = new HashMap<>();
         m.put("spacecraftId", 35);
