@@ -1599,7 +1599,8 @@ export default class YamcsClient implements HttpHandler {
     qualifiedName: string,
     options: GetAlarmsOptions = {},
   ) {
-    const url = `${this.apiUrl}/archive/${instance}/alarms${qualifiedName}`;
+    const encodedName = this.encodeParameterName(qualifiedName);
+    const url = `${this.apiUrl}/archive/${instance}/alarms${encodedName}`;
     const response = await this.doFetch(url + this.queryString(options));
     const wrapper = (await response.json()) as AlarmsWrapper;
     return (await wrapper.alarms) || [];
@@ -1917,7 +1918,8 @@ export default class YamcsClient implements HttpHandler {
     qualifiedName: string,
     options: GetParameterValuesOptions = {},
   ): Promise<ParameterValue[]> {
-    const url = `${this.apiUrl}/archive/${instance}/parameters${qualifiedName}`;
+    const encodedName = this.encodeParameterName(qualifiedName);
+    const url = `${this.apiUrl}/archive/${instance}/parameters${encodedName}`;
     const response = await this.doFetch(url + this.queryString(options));
     const wrapper = (await response.json()) as ParameterData;
     return wrapper.parameter || [];
@@ -2072,7 +2074,8 @@ export default class YamcsClient implements HttpHandler {
     qualifiedName: string,
     options: DownsampleMeanOptions = {},
   ): Promise<MeanSample[]> {
-    const url = `${this.apiUrl}/archive/${instance}/parameters${qualifiedName}/samples`;
+    const encodedName = this.encodeParameterName(qualifiedName);
+    const url = `${this.apiUrl}/archive/${instance}/parameters${encodedName}/samples`;
     const response = await this.doFetch(url + this.queryString(options));
     const wrapper = (await response.json()) as MeanSamplesWrapper;
     return wrapper.sample || [];
@@ -2083,7 +2086,8 @@ export default class YamcsClient implements HttpHandler {
     qualifiedName: string,
     options: GetParameterRangesOptions = {},
   ): Promise<Range[]> {
-    const url = `${this.apiUrl}/archive/${instance}/parameters${qualifiedName}/ranges`;
+    const encodedName = this.encodeParameterName(qualifiedName);
+    const url = `${this.apiUrl}/archive/${instance}/parameters${encodedName}/ranges`;
     const response = await this.doFetch(url + this.queryString(options));
     const wrapper = (await response.json()) as RangesWrapper;
     return wrapper.range || [];
