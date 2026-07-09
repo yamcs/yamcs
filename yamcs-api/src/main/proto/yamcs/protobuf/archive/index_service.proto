@@ -56,38 +56,43 @@ service IndexesApi {
     option (yamcs.api.route) = {
       post: "/api/archive/{instance}:streamPacketIndex"
       body: "*"
+      offloaded: true
     };
   }
-  
+
   // Streams back parameter index records
   rpc StreamParameterIndex(StreamParameterIndexRequest) returns (stream ArchiveRecord) {
     option (yamcs.api.route) = {
       post: "/api/archive/{instance}:streamParameterIndex"
       body: "*"
+      offloaded: true
     };
   }
-  
+
   // Streams back processed parameter index records
   rpc StreamCommandIndex(StreamCommandIndexRequest) returns (stream ArchiveRecord) {
     option (yamcs.api.route) = {
       post: "/api/archive/{instance}:streamCommandIndex"
       body: "*"
+      offloaded: true
     };
   }
-  
+
   // Streams back event index records
   rpc StreamEventIndex(StreamEventIndexRequest) returns (stream ArchiveRecord) {
     option (yamcs.api.route) = {
       post: "/api/archive/{instance}:streamEventIndex"
       body: "*"
+      offloaded: true
     };
   }
-  
+
   // Streams back event index records
   rpc StreamCompletenessIndex(StreamCompletenessIndexRequest) returns (stream ArchiveRecord) {
     option (yamcs.api.route) = {
       post: "/api/archive/{instance}:streamCompletenessIndex"
       body: "*"
+      offloaded: true
     };
   }
   
