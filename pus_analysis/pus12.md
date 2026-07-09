@@ -112,7 +112,7 @@ Annotated by where each step executes:
 [ON-BOARD]      TC[12,13] arrives → collect all PMON statuses → emit TM[12,14]
 [SAT → GROUND]  TM[12,14] downlinked, decoded by YAMCS via XTCE
 [ON-BOARD]      TC[12,8] arrives → collect requested PMON definitions → emit TM[12,9]
-[SAT → GROUND]  TM[12,9] downlinked, decoded by YAMCS (header only — criteria bytes opaque)
+[SAT → GROUND]  TM[12,9] downlinked, decoded by YAMCS via XTCE (criteria typed per check_type)
 [ON-BOARD]      TC[12,11] arrives → flush check transition list → emit TM[12,12]
 [SAT → GROUND]  TM[12,12] downlinked, decoded by YAMCS via XTCE
 ```
@@ -138,7 +138,9 @@ No changes to `yamcs-core` are required. ST[12] support in YAMCS is purely decla
 
 The most significant challenge for PUS 12 in XTCE is that the packet fields for check criteria (`mask`, `low_limit`, `high_limit`, `expected_value`, `low_threshold`, `high_threshold`) have **sizes and formats deduced from the monitored parameter's type** at definition time. The spec says these are "deduced" — meaning a float32 parameter uses 4-byte limits, a uint8 parameter uses 1-byte limits, etc.
 
-XTCE cannot express this polymorphism within a single `MetaCommand` or `SequenceContainer`. This affects TC[12,5], TC[12,7], and TM[12,9]. Options are documented per-subtype below.
+XTCE cannot express arbitrary type polymorphism (an unbounded set of parameter types) within a single `MetaCommand` or `SequenceContainer`. On the **TC side** (TC[12,5], TC[12,7]) this mission still uses per-check-type command variants (Option A below) — collapsing those into one command isn't worth it (see per-subtype section).
+
+On the **TM side** (TM[12,9]), XTCE *can* fully resolve this for a finite, mission-known set of check types: `IncludeCondition` (`ParameterRefEntry`/`ArgumentRefEntry`) lets an entry be conditionally present based on a comparison against an **already-decoded sibling field in the same entry** — in this case `check_type`, decoded earlier in the same repeating entry. Combined with `ContainerRefEntry` + `RepeatEntry` (a dynamic repeat count referencing `pmon_def_count`, the same pattern already used for `pus3-sc-set-entry` in `pus3.xml` and `DETAIL_REPORT_ELEMENT`/`SUMMARY_REPORT_ELEMENT` in `pus11.xml`), each TM[12,9] entry is now decoded via a nested `PMON_ENTRY` container whose criteria fields are typed and mutually-exclusive per `check_type` — no opaque binary blob, no zero-padding. See TM[12,9] below and Gap 1.
 
 ---
 
@@ -394,16 +396,42 @@ Same `deduced` field issue as TC[12,5]. Check type dependent criteria structures
 
 *optional fields
 
-**XTCE:** ⚠️ **XTCE partial — fixed header only**
+**XTCE:** ✅ **Fully decoded — discriminated union via `IncludeCondition`**
 
-Same `deduced` field issue in criteria. For the YAMCS container, define a SequenceContainer that decodes the outer fixed fields only:
+Each entry is decoded via a nested `PMON_ENTRY` container (`ContainerRefEntry` + `RepeatEntry`, dynamic count = `pmon_def_count` — the same pattern as `pus3-sc-set-entry` in `pus3.xml` / `DETAIL_REPORT_ELEMENT` in `pus11.xml`). The fixed header fields decode first; the criteria fields are typed, mutually-exclusive members gated by `IncludeCondition` comparing the entry's own `check_type` (Table 8-6), so YAMCS displays real `low_limit`/`mask`/`expected_value`/thresholds per entry instead of opaque bytes:
 
 ```xml
+<SequenceContainer name="PMON_ENTRY"> <!-- no BaseContainer: only included via ContainerRefEntry -->
+  <EntryList>
+    <ParameterRefEntry parameterRef="pmondef_pmon_id"/>
+    <ParameterRefEntry parameterRef="pmondef_param_id"/>
+    <ParameterRefEntry parameterRef="pmondef_status"/>
+    <ParameterRefEntry parameterRef="pmondef_repetition_number"/>
+    <ParameterRefEntry parameterRef="pmondef_check_type"/>
+    <ParameterRefEntry parameterRef="pmondef_mask">
+      <IncludeCondition><Comparison parameterRef="pmondef_check_type" value="expected-value-checking"/></IncludeCondition>
+    </ParameterRefEntry>
+    <!-- pmondef_expected_value, pmondef_expected_event_id: same condition -->
+    <ParameterRefEntry parameterRef="pmondef_low_limit">
+      <IncludeCondition><Comparison parameterRef="pmondef_check_type" value="limit-checking"/></IncludeCondition>
+    </ParameterRefEntry>
+    <!-- pmondef_low_limit_event_id, pmondef_high_limit, pmondef_high_limit_event_id: same condition -->
+    <ParameterRefEntry parameterRef="pmondef_low_threshold">
+      <IncludeCondition><Comparison parameterRef="pmondef_check_type" value="delta-checking"/></IncludeCondition>
+    </ParameterRefEntry>
+    <!-- pmondef_low_threshold_event_id, pmondef_high_threshold, pmondef_high_threshold_event_id,
+         pmondef_num_consecutive_deltas: same condition -->
+  </EntryList>
+</SequenceContainer>
+
 <SequenceContainer name="PMON_DEFINITION_REPORT">
   <EntryList>
     <ParameterRefEntry parameterRef="pmon_def_count"/>
-    <!-- per-entry PMON_ID, param_ID, pmon_status, check_type decoded here -->
-    <!-- criteria bytes remain opaque binary -->
+    <ContainerRefEntry containerRef="PMON_ENTRY">
+      <RepeatEntry>
+        <Count><DynamicValue><ParameterInstanceRef parameterRef="pmon_def_count"/></DynamicValue></Count>
+      </RepeatEntry>
+    </ContainerRefEntry>
   </EntryList>
   <BaseContainer containerRef="pus12-tm">
     <RestrictionCriteria>
@@ -413,7 +441,7 @@ Same `deduced` field issue in criteria. For the YAMCS container, define a Sequen
 </SequenceContainer>
 ```
 
-**Java emitter:** `sendPmonDefinitionReport(List<Integer> pmonIds)`:
+**Java emitter:** `sendPmonDefinitionReport(List<Integer> pmonIds)` writes each entry with exactly the fields the XTCE side expects for that `check_type` — no padding:
 ```
 Packet layout per entry:
   uint16 pmon_id
@@ -421,10 +449,12 @@ Packet layout per entry:
   uint8  pmon_status
   uint8  repetition_number
   uint8  check_type
-  [criteria bytes based on check_type and param type]
+  [criteria bytes based on check_type, sized by Pus12Service.criteriaSize()]
 
-Total size: 2 + N × (7 + criteria_size)
-criteria_size = 14 for limit-f32 (4+2+4+2+2 spare), 6 for expected-u8, etc.
+Total size: 1 + sum over entries of (7 + criteria_size)
+criteria_size = 4 for expected-value (mask+expected_value+event_id),
+                12 for limit (low_limit+low_event_id+high_limit+high_event_id),
+                13 for delta (same as limit + num_consecutive_deltas)
 ```
 
 ---
@@ -592,24 +622,21 @@ pusSimulator.transmitRealtimeTM(pkt);
 
 ---
 
-### Gap 1: Type-deduced field sizes in TC[12,5], TC[12,7], TM[12,9] — Critical XTCE Limitation
+### Gap 1: Type-deduced field sizes in TC[12,5], TC[12,7], TM[12,9] — Critical XTCE Limitation (TM side resolved)
 
-**Affects:** TC[12,5], TC[12,7], TM[12,9]
-**Severity:** High
-**Effort:** High
+**Affects:** TC[12,5], TC[12,7] (still workaround); TM[12,9] (resolved natively)
+**Severity:** Medium (was High)
+**Effort:** High (already spent — TM[12,9] fix implemented)
 
 The `mask`, `low_limit`, `high_limit`, `expected_value`, `low_threshold`, `high_threshold` fields in the check criteria are **"deduced"** — their binary size and encoding depend on the type of the monitored parameter, which is declared at spec/mission time rather than encoded in the packet itself. For example:
 - Monitoring a `float32` temperature → 4-byte limit fields
 - Monitoring a `uint8` mode register → 1-byte expected-value + mask fields
 
-**XTCE cannot express this polymorphism in a single MetaCommand or SequenceContainer.** XTCE field sizes must be known at definition time, not at packet parse time.
+XTCE cannot size a field directly from an arbitrary referenced parameter's declared type. It **can**, however, express a bounded discriminated union: `IncludeCondition` (on `ArgumentRefEntry`/`ParameterRefEntry`) conditionally includes a fully-typed, fixed-size field based on a comparison against an already-decoded sibling field — here, `check_type` (Table 8-6), which is finite (3 values) and always decoded immediately before the criteria in the same entry.
 
-**Workarounds:**
-1. **Per-type TC variants (recommended for simulator):** `ADD_PMON_LIMIT_F32`, `ADD_PMON_LIMIT_U16`, `ADD_PMON_EXPECTED_U8`, etc. Each command has fixed-size criteria fields matching its parameter type. Practical for a simulator with a small, known parameter set.
-2. **Raw binary `criteria` argument:** TC[12,5/7] pass the criteria as an opaque `BinaryArgumentType` blob. YAMCS Web cannot construct it intelligently; scripting via `yamcs-client` required.
-3. **Operator convention:** Document that all simulator PMON parameters are `float32`, allowing a single universal `ADD_PMON_LIMIT_F32` command definition with no ambiguity.
+**TC[12,5]/TC[12,7] (still workaround):** kept as 3 per-check-type MetaCommand variants (`ADD_PMON_LIMIT_F32`, `ADD_PMON_EXPECTED_U8`, `ADD_PMON_DELTA_F32`, and their `MODIFY_*` counterparts). `IncludeCondition` on `ArgumentRefEntry` could in principle collapse these into one command gated on a `check_type` argument, but YAMCS Web doesn't visually hide irrelevant arguments based on another argument's value, so operators would still have to know which fields to fill in — three self-documenting typed commands are the better UX here, not a real limitation of XTCE.
 
-**Impact on TM[12,9]:** The response packet mixes criteria of potentially different sizes per entry. XTCE container can only decode the fixed outer fields (count, PMON_ID, param_ID, PMON_status, check_type); criteria bytes remain opaque in YAMCS display.
+**TM[12,9] (resolved):** `IncludeCondition` and `ContainerRefEntry`/`RepeatEntry` together fully decode variable criteria without opaque bytes or padding — see the TM[12,9] section above. This is the same nested-container pattern already used for `pus3-sc-set-entry` (`pus3.xml`) and `DETAIL_REPORT_ELEMENT`/`SUMMARY_REPORT_ELEMENT` (`pus11.xml`), just combined with per-sibling-field `IncludeCondition` for the first time in this mission's MDB.
 
 ---
 
@@ -698,10 +725,129 @@ The `monitoring_interval` field in TC[12,5] is marked optional in the spec. Whet
 | TC[12,6] | TC | ✅ Full | ✅ New Pus12Service | ❌ None | Low |
 | TC[12,7] | TC | ⚠️ Per-type variants | ✅ Required (parsing) | ❌ None | High |
 | TC[12,8] | TC | ✅ Full | ✅ New Pus12Service | ❌ None | Low |
-| TM[12,9] | TM | ⚠️ Partial (header only) | ✅ Required (emit) | ❌ None | Medium |
+| TM[12,9] | TM | ✅ Full (discriminated union via `IncludeCondition`) | ✅ Required (emit) | ❌ None | Medium |
 | TC[12,11] | TC | ✅ Full (no args) | ✅ New Pus12Service | ❌ None | Low |
 | TM[12,12] | TM | ✅ Full | ✅ Required (emit) | ❌ None | Low |
 | TC[12,13] | TC | ✅ Full (no args) | ✅ New Pus12Service | ❌ None | Low |
 | TM[12,14] | TM | ✅ Full | ✅ Required (emit) | ❌ None | Low |
 
-**Key finding:** TC[12,1], TC[12,2], TC[12,6], TC[12,8], TC[12,11], TC[12,13], TM[12,12], TM[12,14] are fully expressible in XTCE. TC[12,5], TC[12,7], TM[12,9] require per-type XTCE variants or raw binary workarounds due to type-deduced field sizes — the primary limitation for PUS 12 XTCE coverage. All on-board monitoring logic (evaluation loop, state machine, event raising) lives in the simulator, not in YAMCS.
+**Key finding:** TC[12,1], TC[12,2], TC[12,6], TC[12,8], TC[12,11], TC[12,13], TM[12,9], TM[12,12], TM[12,14] are fully expressible in XTCE. Only TC[12,5]/TC[12,7] still use per-type command variants due to type-deduced field sizes — a UX choice, not a hard XTCE limitation (see Gap 1: `IncludeCondition` + `ContainerRefEntry`/`RepeatEntry` fully resolved the equivalent problem on the TM[12,9] decode side). All on-board monitoring logic (evaluation loop, state machine, event raising) lives in the simulator, not in YAMCS.
+
+---
+
+## Section D: Testing Methodology
+
+Reflects the actual implementation: `Pus12Service.java`, `examples/pus/src/main/yamcs/mdb/pus12.xml`,
+and the `pus5.xml`/`events.json` PMON-event additions. Command paths, argument names, enum labels,
+and byte layouts below are taken directly from those files, not the pseudocode in Section B.
+
+### D.1 Start the instance
+
+```bash
+mvn -pl simulator,examples/pus -am clean install -DskipTests   # first build only
+mvn -pl examples/pus yamcs:run
+```
+Web UI: `http://localhost:8090`, instance `pus`. Commands live under `/PUS12/...`, TM containers
+under the same `/PUS12/` subsystem (see D.3).
+
+### D.2 Seed PMON definitions (pre-registered, enabled, no TC required)
+
+| pmon_id | param_id | check_type | thresholds | rep# | interval | events |
+|---|---|---|---|---|---|---|
+| 1 `PMON_SINE_TEMP_LIMIT` | 1 `PARAM_SINE_TEMP` | limit-checking | low=-10.0, high=50.0 | 3 | 1000ms | low=`EVENT_SINE_TEMP_LOW`(10), high=`EVENT_SINE_TEMP_HIGH`(11) |
+| 2 `PMON_RANDWALK_LIMIT` | 2 `PARAM_BUS_CURRENT` | limit-checking | low=1.0, high=8.0 | 2 | 500ms | low=`EVENT_RANDWALK_LOW`(12), high=`EVENT_RANDWALK_HIGH`(13) |
+| 3 `PMON_BUSVOLT_DELTA` | 3 `PARAM_BUS_VOLTAGE` | delta-checking | low=0.05 (no event), high=1.0 | 3 | 1000ms | high=`EVENT_BUSVOLT_DELTA_HIGH`(14) |
+| 4 `PMON_MODE_EXPECTED` | 4 `PARAM_MODE_REGISTER` | expected-value-checking | mask=0xFF, expected=1 | 2 | 1000ms | `EVENT_MODE_UNEXPECTED`(15) |
+
+`pmon_id_type`/`monitored_param_id_type` in `pus12.xml` only enumerate these 4 IDs each — ground
+can only reference these when adding/deleting/reporting; there is no free slot to add a genuinely
+new 5th definition without first deleting one of the seeds (see D.4 Test 5 for that workflow).
+
+### D.3 Command reference — valid inputs
+
+All commands are under `/PUS12/`. `N`/`pmon_ids` arguments take **enum label strings** (e.g.
+`"PMON_SINE_TEMP_LIMIT"`), matching how `test-pus5.py` passes `"EVENT_1"` rather than `1`.
+
+| Command | Subtype | Valid example args |
+|---|---|---|
+| `ENABLE_PARAMETER_MONITORING` | TC[12,1] | `{"N": 1, "pmon_ids": ["PMON_SINE_TEMP_LIMIT"]}` |
+| `DISABLE_PARAMETER_MONITORING` | TC[12,2] | `{"N": 2, "pmon_ids": ["PMON_SINE_TEMP_LIMIT", "PMON_RANDWALK_LIMIT"]}` |
+| `ADD_PMON_LIMIT_F32` | TC[12,5] | `{"pmon_id": "PMON_SINE_TEMP_LIMIT", "param_id": "PARAM_SINE_TEMP", "monitoring_interval_ms": 1000, "repetition_number": 3, "low_limit": -10.0, "low_event_id": 10, "high_limit": 50.0, "high_event_id": 11}` |
+| `ADD_PMON_EXPECTED_U8` | TC[12,5] | `{"pmon_id": "PMON_MODE_EXPECTED", "param_id": "PARAM_MODE_REGISTER", "monitoring_interval_ms": 1000, "repetition_number": 2, "mask": 255, "expected_value": 1, "event_id": 15}` |
+| `ADD_PMON_DELTA_F32` | TC[12,5] | `{"pmon_id": "PMON_BUSVOLT_DELTA", "param_id": "PARAM_BUS_VOLTAGE", "monitoring_interval_ms": 1000, "repetition_number": 3, "low_threshold": 0.05, "low_event_id": 0, "high_threshold": 1.0, "high_event_id": 14, "num_consecutive_deltas": 3}` |
+| `DELETE_PMON_DEFINITIONS` | TC[12,6] | `{"N": 1, "pmon_ids": ["PMON_SINE_TEMP_LIMIT"]}` — target must be **disabled** first |
+| `MODIFY_PMON_LIMIT_F32` | TC[12,7] | Same shape as `ADD_PMON_LIMIT_F32` minus `monitoring_interval_ms`; `pmon_id`/`param_id`/check_type must match the existing definition exactly |
+| `MODIFY_PMON_EXPECTED_U8` | TC[12,7] | Same shape as `ADD_PMON_EXPECTED_U8` minus `monitoring_interval_ms` |
+| `MODIFY_PMON_DELTA_F32` | TC[12,7] | Same shape as `ADD_PMON_DELTA_F32` minus `monitoring_interval_ms` |
+| `REPORT_PMON_DEFINITIONS` | TC[12,8] | `{"N": 0, "pmon_ids": []}` → all; or `{"N": 1, "pmon_ids": ["PMON_MODE_EXPECTED"]}` → one |
+| `REPORT_PMON_CHECK_TRANSITIONS` | TC[12,11] | `{}` (no arguments) |
+| `REPORT_PMON_STATUS` | TC[12,13] | `{}` (no arguments) |
+
+Rejection conditions to exercise (all respond NACK completion, not NACK start — the command is
+accepted then rejected during execution): re-adding an existing `pmon_id` (`ALREADY_EXISTS`),
+deleting/modifying an unknown `pmon_id` (`PMON_ID_UNKNOWN`), deleting a still-`enabled` definition
+(`PMON_STILL_ENABLED`), modifying with the wrong check-type variant (`CHECK_TYPE_MISMATCH`), or
+modifying with a `param_id` that doesn't match the stored definition (`PARAM_ID_MISMATCH`).
+
+### D.4 TMs to check
+
+| Container | Subtype | Triggered by | Layout (after the 21-byte common PUS TM header) |
+|---|---|---|---|
+| `/PUS12/PMON_DEFINITION_REPORT` | TM[12,9] | TC[12,8] | `count:u8` + count × variable-length entries (see D.5): `pmon_id:u16, param_id:u16, pmon_status:u8, repetition_number:u8, check_type:u8`, then criteria fields gated by `check_type` — no padding, fully decoded per-entry by XTCE (`PMON_ENTRY` container) |
+| `/PUS12/PMON_TRANSITION_REPORT` | TM[12,12] | TC[12,11] | `count:u8` + count × 4B entries: `pmon_id:u16, prev_status:u8, new_status:u8` (flushes and clears `checkTransitionList`) |
+| `/PUS12/PMON_STATUS_REPORT` | TM[12,14] | TC[12,13] | `count:u8` + count × 3B entries: `pmon_id:u16, pmon_status:u8` |
+| `/PUS5/event_sine_temp_low`, `event_sine_temp_high`, `event_randwalk_low`, `event_randwalk_high`, `event_busvolt_delta_high`, `event_mode_unexpected` | TM[5,2] (subtype always hardcoded to 2 by `Pus12Service.maybeRaiseEvent`) | An enabled PMON transitioning into LOW/HIGH (never on recovery) | `event_id:u8` (10-15) + `pmon_id:u16` + `value:f32` (or `value:u8` for `event_mode_unexpected`) |
+
+`pmon_status`: `0=disabled, 1=enabled`. `check_type`: `0=expected-value-checking, 1=limit-checking, 2=delta-checking`.
+`prev_status`/`new_status` (generic across all 3 check types, see `PmonCheckingStatus`): `0=good, 1=unchecked, 2=invalid, 3=low_or_unexpected, 4=high`.
+
+Criteria decode by `check_type` (all big-endian, no padding — entries are genuinely variable-length):
+- limit-checking (12B): `low_limit:f32, low_event_id:u16, high_limit:f32, high_event_id:u16`
+- delta-checking (13B): `low_threshold:f32, low_event_id:u16, high_threshold:f32, high_event_id:u16, num_consecutive_deltas:u8`
+- expected-value-checking (4B): `mask:u8, expected_value:u8, event_id:u16`
+
+### D.5 Automated integration test
+
+`examples/pus/tests/test-pus12.py` (same `yamcs.client.YamcsClient` pattern as `test-pus5.py`/`test-pus11.py`):
+
+```bash
+python3 examples/pus/tests/test-pus12.py
+```
+
+Covers, in order: initial 4-seed state via TM[12,14]; enable/disable round-trip; TC[12,8] N=0 full
+report via TM[12,9]; delete-while-enabled rejection; disable→delete→re-add round-trip (the only way
+to exercise a successful TC[12,5] given the fixed 4-entry `pmon_id_type` enum); duplicate-add
+rejection; modify check-type-mismatch and param-id-mismatch rejections; a valid modify verified by
+re-reading TM[12,9] criteria bytes; and a structural check of TM[12,12]. It restores the original
+seed state at the end, so it is safe to re-run against the same live instance.
+
+It deliberately does **not** assert which checking-status transitions fire from the synthetic
+signals — that depends on wall-clock timing (see D.6) — only on the deterministic command/response
+state machine.
+
+### D.6 Manual verification of the timing-based monitoring loop
+
+The four signal generators run in `Pus12Service.advanceSignalGenerators()` on a 100ms master tick,
+independent of the CLI/UI. With the seed defaults, on a freshly started instance:
+
+- **PMON 1** (sine wave, ±35 around 20°C over a 24s period, low=-10/high=50, rep#=3, 1000ms interval):
+  expect a `HIGH` transition within the first ~10-12s (sine peak ≈ 55 > 50), a `GOOD` recovery a few
+  seconds later, and a `LOW` transition around the trough (sine trough ≈ -15 < -10) roughly every
+  24s cycle thereafter.
+- **PMON 2** (mean-reverting random walk around 4.5, low=1.0/high=8.0, rep#=2, 500ms interval):
+  stochastic — expect occasional `LOW`/`HIGH` excursions within the first ~30-60s, not on a fixed
+  schedule.
+- **PMON 3** (flat 28.0V with a scripted spike to 31.0V every 15s held for 1.5s, low=0.05 [no event]/
+  high=1.0, rep#=3, 1000ms interval): expect a `HIGH` transition roughly every 15s window (the
+  averaged delta across 3 consecutive 1s samples crosses the spike).
+- **PMON 4** (mode register cycling NOMINAL(1)×8 ticks / SAFE(2)×2 ticks, expected=1, rep#=2, 1000ms
+  interval): expect a `LOW` ("unexpected value") transition roughly every 10 ticks of its own
+  sampling cadence, recovering to `GOOD` shortly after.
+
+To observe: subscribe to `/PUS12/PMON_TRANSITION_REPORT` (send `REPORT_PMON_CHECK_TRANSITIONS`
+periodically, or poll it) and to the YAMCS Events view for `EVENT_SINE_TEMP_LOW`/`HIGH`,
+`EVENT_RANDWALK_LOW`/`HIGH`, `EVENT_BUSVOLT_DELTA_HIGH`, `EVENT_MODE_UNEXPECTED` (ids 10-15) —
+each should have a readable rendered message from `events.json`. Recovery-to-`GOOD` transitions are
+visible in TM[12,12] but do **not** raise an event — the spec's `low_event_id`/`high_event_id`/
+`event_id` fields (Fig 8-116/8-117) have no dedicated "recovered" counterpart, so `Pus12Service`
+fires events only on entry into `LOW`/`HIGH`.

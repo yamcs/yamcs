@@ -176,7 +176,7 @@
          ================================================================ -->
     <CommandMetaData>
         <ArgumentTypeSet>
-            <!-- ---- Simple reusable types ---- -->
+            <!-- Simple reusable types -->
             <IntegerArgumentType name="StructIdType" baseType="/dt/uint32"/>
             <IntegerArgumentType name="ParamIdType" baseType="/dt/uint32"/>
             <IntegerArgumentType name="CollectionIntervalType" baseType="/dt/uint32"/>
@@ -204,7 +204,7 @@
                 </EnumerationList>
             </EnumeratedArgumentType>
 
-            <!-- ---- Struct-ID array (N + array for TC[3,3/4/5/6/7/8/9/11/27/28/33/34]) ---- -->
+            <!-- Struct-ID array (N + array for TC[3,3/4/5/6/7/8/9/11/27/28/33/34]) -->
             <ArrayArgumentType name="StructIdArrayType" arrayTypeRef="StructIdType">
                 <DimensionList>
                     <Dimension>
@@ -219,7 +219,7 @@
                 </DimensionList>
             </ArrayArgumentType>
 
-            <!-- ---- PFRD-ID array (N + array for TC[3,39/40]) ---- -->
+            <!-- PFRD-ID array (N + array for TC[3,39/40]) -->
             <ArrayArgumentType name="PfrdIdArrayType" arrayTypeRef="PfrdIdType">
                 <DimensionList>
                     <Dimension>
@@ -234,7 +234,7 @@
                 </DimensionList>
             </ArrayArgumentType>
 
-            <!-- ---- Simply-commuted param-ID array (dimension from N1) for TC[3,1/29] ---- -->
+            <!-- Simply-commuted param-ID array (dimension from N1) for TC[3,1/29] -->
             <ArrayArgumentType name="ParamIdArrayType" arrayTypeRef="ParamIdType">
                 <DimensionList>
                     <Dimension>
@@ -249,7 +249,7 @@
                 </DimensionList>
             </ArrayArgumentType>
 
-            <!-- ---- Super-commuted param-ID array (dimension from sibling N2) for TC[3,1/29] ---- -->
+            <!-- Super-commuted param-ID array (dimension from sibling N2) for TC[3,1/29] -->
             <ArrayArgumentType name="ScParamIdArrayType" arrayTypeRef="ParamIdType">
                 <DimensionList>
                     <Dimension>
@@ -264,7 +264,7 @@
                 </DimensionList>
             </ArrayArgumentType>
 
-            <!-- ---- Super-commuted set aggregate (rep_num + N2 + param_ids) for TC[3,1/29] ---- -->
+            <!-- Super-commuted set aggregate (rep_num + N2 + param_ids) for TC[3,1/29] -->
             <AggregateArgumentType name="ScSetType">
                 <MemberList>
                     <Member name="rep_num" typeRef="/dt/uint8"/>
@@ -273,7 +273,7 @@
                 </MemberList>
             </AggregateArgumentType>
 
-            <!-- ---- Array of NFA super-commuted sets (dimension from NFA) for TC[3,1/29] ---- -->
+            <!-- Array of NFA super-commuted sets (dimension from NFA) for TC[3,1/29] -->
             <ArrayArgumentType name="ScSetsArrayType" arrayTypeRef="ScSetType">
                 <DimensionList>
                     <Dimension>
@@ -288,7 +288,7 @@
                 </DimensionList>
             </ArrayArgumentType>
 
-            <!-- ---- Struct-interval aggregate + array for TC[3,31/32] ---- -->
+            <!-- Struct-interval aggregate + array for TC[3,31/32] -->
             <AggregateArgumentType name="StructIntervalEntryType">
                 <MemberList>
                     <Member name="struct_id" typeRef="StructIdType"/>
@@ -309,7 +309,7 @@
                 </DimensionList>
             </ArrayArgumentType>
 
-            <!-- ---- PFRD entry aggregate: nature + def_id + status + interval (TC[3,38/42/44]) ---- -->
+            <!-- PFRD entry aggregate: nature + def_id + status + interval (TC[3,38/42/44]) -->
             <AggregateArgumentType name="PfrdEntryType">
                 <MemberList>
                     <Member name="report_nature" typeRef="ReportNatureArgType"/>
@@ -332,7 +332,7 @@
                 </DimensionList>
             </ArrayArgumentType>
 
-            <!-- ---- PFRD remove entry: nature + def_id only (TC[3,43]) ---- -->
+            <!-- PFRD remove entry: nature + def_id only (TC[3,43]) -->
             <AggregateArgumentType name="PfrdRemoveEntryType">
                 <MemberList>
                     <Member name="report_nature" typeRef="ReportNatureArgType"/>

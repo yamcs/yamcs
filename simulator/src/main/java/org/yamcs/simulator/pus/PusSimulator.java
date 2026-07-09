@@ -34,7 +34,7 @@ import org.yamcs.simulator.TcpTmTcLink;
  * <li>ST[06] - memory management - TODO</li>
  * <li>ST[09] - time management - only sending the time packet</li>
  * <li>ST[11] - time based schedule</li>
- * <li>ST[12] - on-board monitoring - TODO</li>
+ * <li>ST[12] - on-board monitoring - parameter monitoring subservice</li>
  * <li>ST[13] - large packet transfer - TODO</li>
  * <li>ST[15] - on-board storage and retrieval - TODO</li>
  * <li>ST[17] - test</li>
@@ -78,6 +78,7 @@ public class PusSimulator extends AbstractSimulator {
     Pus5Service pus5Service;
     Pus9Service pus9Service;
     Pus11Service pus11Service;
+    Pus12Service pus12Service;
     Pus17Service pus17Service;
 
     protected BlockingQueue<PusTcPacket> pendingCommands = new ArrayBlockingQueue<>(100);
@@ -95,6 +96,7 @@ public class PusSimulator extends AbstractSimulator {
         pus5Service = new Pus5Service(this);
         pus9Service = new Pus9Service(this);
         pus11Service = new Pus11Service(this);
+        pus12Service = new Pus12Service(this);
         pus17Service = new Pus17Service(this);
     }
 
@@ -108,6 +110,7 @@ public class PusSimulator extends AbstractSimulator {
         pus5Service.start();
         pus9Service.start();
         pus11Service.start();
+        pus12Service.start();
     }
 
     void transmitRealtimeTM(PusTmPacket packet) {
@@ -199,6 +202,7 @@ public class PusSimulator extends AbstractSimulator {
                 case 5 -> pus5Service.executeTc(commandPacket);
                 case 9 -> pus9Service.executeTc(commandPacket);
                 case 11 -> pus11Service.executeTc(commandPacket);
+                case 12 -> pus12Service.executeTc(commandPacket);
                 case 17 -> pus17Service.executeTc(commandPacket);
                 case 25 -> {
                     switch (commandPacket.getSubtype()) {
