@@ -163,6 +163,7 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
     private FileListingService fileListingService;
     private FileListingParser fileListingParser;
     private boolean automaticDirectoryListingReloads;
+    private String directoryListingFileName;
 
     private boolean canChangePduSize;
     private List<Integer> pduSizePredefinedValues;
@@ -262,6 +263,11 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
         spec.addOption("fileListingParserArgs", OptionType.MAP).withSpec(Spec.ANY)
                 .withDefault(new HashMap<>());
         spec.addOption("automaticDirectoryListingReloads", OptionType.BOOLEAN).withDefault(false);
+        spec.addOption("directoryListingFileName", OptionType.STRING).withDefault(".dirlist.notsaved")
+                .withDescription("Name of the temporary file the remote entity writes the directory listing into "
+                        + "before downlinking it. The default \".dirlist.notsaved\" signals a receiver not to persist "
+                        + "it, but some receivers reject filenames that don't match their own naming convention -- "
+                        + "override this to a name they accept.");
         spec.addOption("checksumType", OptionType.STRING).withDefault("MODULAR");
 
         return spec;
@@ -341,6 +347,7 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
         }
 
         automaticDirectoryListingReloads = config.getBoolean("automaticDirectoryListingReloads");
+        directoryListingFileName = config.getString("directoryListingFileName");
 
         initSrcDst(config);
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance, "CfdpService", 10000);
@@ -1100,7 +1107,7 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
 
         long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
 
-        DirectoryListingRequest directoryListingRequest = new DirectoryListingRequest(dirPath, ".dirlist.notsaved");
+        DirectoryListingRequest directoryListingRequest = new DirectoryListingRequest(dirPath, directoryListingFileName);
         ArrayList<MessageToUser> messagesToUser = new ArrayList<>(List.of(directoryListingRequest));
 
         PutRequest request = new PutRequest(
