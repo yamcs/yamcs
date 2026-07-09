@@ -232,6 +232,9 @@ fileListingServiceArgs (map)
 automaticDirectoryListingReloads (boolean)
     Whether the CFDP Service should automatically try to send a directory listing request when a client fetches a file listing. Default: ``false``
 
+directoryListingFileName (string)
+    Name of the temporary file the remote entity writes the directory listing into before downlinking it. The default ``.dirlist.notsaved`` signals a receiver not to persist it, but some receivers reject filenames that don't match their own naming convention -- override this to a name they accept. Default: ``.dirlist.notsaved``
+
 fileListingParserClassName (string)
     Class for parsing the CFDP directory listing response files. Default: ``org.yamcs.filetransfer.BasicListingParser``
 
