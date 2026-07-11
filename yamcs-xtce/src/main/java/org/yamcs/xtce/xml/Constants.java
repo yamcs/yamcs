@@ -8,6 +8,11 @@ public final class Constants {
     public static final String ATTR_SIZE_IN_BITS = "sizeInBits";
     public static final String ATTR_ENCODING = "encoding";
     public static final String ATTR_ALIAS_NAME_SPACE = "aliasNameSpace";
+    public static final String ATTR_INSTANCE = "instance";
+    public static final String ATTR_USE_CALIBRATED_VALUE = "useCalibratedValue";
+    public static final String ATTR_INTERPOLATE_TIME = "interpolateTime";
+    public static final String ATTR_OFFSET = "offset";
+    public static final String ATTR_UNIT = "unit";
     
 
     public static final String ELEM_RELATIVE_TIME_PARAMETER_TYPE = "RelativeTimeParameterType";

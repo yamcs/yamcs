@@ -2601,6 +2601,8 @@ public class XtceStaxReader extends AbstractStaxReader {
 
             if (isStartElementWithName(ELEM_LOCATION_IN_CONTAINER_IN_BITS)) {
                 readLocationInContainerInBits(indirectParameterRefEntry);
+            } else if (isStartElementWithName(ELEM_TIME_ASSOCIATION)) {
+                indirectParameterRefEntry.setTimeAssociation(readTimeAssociation(spaceSystem));
             } else if (isStartElementWithName(ELEM_PARAMETER_INSTANCE)) {
                 ParameterInstanceRef ref = readParameterInstanceRef(spaceSystem, null);
                 ref.setRelativeTo(InstanceRelativeTo.CURRENT_ENTRY_WITHIN_PACKET);
@@ -2634,6 +2636,8 @@ public class XtceStaxReader extends AbstractStaxReader {
 
             if (isStartElementWithName(ELEM_LOCATION_IN_CONTAINER_IN_BITS)) {
                 readLocationInContainerInBits(parameterEntry);
+            } else if (isStartElementWithName(ELEM_TIME_ASSOCIATION)) {
+                parameterEntry.setTimeAssociation(readTimeAssociation(spaceSystem));
             } else if (isStartElementWithName(ELEM_REPEAT_ENTRY)) {
                 Repeat r = readRepeatEntry(spaceSystem);
                 parameterEntry.setRepeatEntry(r);
@@ -2727,6 +2731,8 @@ public class XtceStaxReader extends AbstractStaxReader {
 
             if (isStartElementWithName(ELEM_LOCATION_IN_CONTAINER_IN_BITS)) {
                 readLocationInContainerInBits(parameterEntry);
+            } else if (isStartElementWithName(ELEM_TIME_ASSOCIATION)) {
+                parameterEntry.setTimeAssociation(readTimeAssociation(spaceSystem));
             } else if (isStartElementWithName(ELEM_REPEAT_ENTRY)) {
                 Repeat r = readRepeatEntry(spaceSystem);
                 parameterEntry.setRepeatEntry(r);
@@ -2765,6 +2771,8 @@ public class XtceStaxReader extends AbstractStaxReader {
 
             if (isStartElementWithName(ELEM_LOCATION_IN_CONTAINER_IN_BITS)) {
                 readLocationInContainerInBits(containerEntry);
+            } else if (isStartElementWithName(ELEM_TIME_ASSOCIATION)) {
+                containerEntry.setTimeAssociation(readTimeAssociation(spaceSystem));
             } else if (isStartElementWithName(ELEM_REPEAT_ENTRY)) {
                 Repeat r = readRepeatEntry(spaceSystem);
                 containerEntry.setRepeatEntry(r);
@@ -2865,8 +2873,8 @@ public class XtceStaxReader extends AbstractStaxReader {
         StartElement startElement = checkStartElementPreconditions();
 
         String paramRef = readMandatoryAttribute(ATTR_PARAMETER_REF, startElement);
-        boolean useCalibrated = readBooleanAttribute("useCalibratedValue", startElement, true);
-        int instance = readIntAttribute("instance", startElement, 0);
+        boolean useCalibrated = readBooleanAttribute(ATTR_USE_CALIBRATED_VALUE, startElement, true);
+        int instance = readIntAttribute(ATTR_INSTANCE, startElement, 0);
 
         final ParameterInstanceRef instanceRef = new ParameterInstanceRef(useCalibrated);
         instanceRef.setInstance(instance);
@@ -2881,6 +2889,35 @@ public class XtceStaxReader extends AbstractStaxReader {
         });
 
         return instanceRef;
+    }
+
+    private TimeAssociation readTimeAssociation(SpaceSystem spaceSystem) throws XMLStreamException {
+        log.trace(ELEM_TIME_ASSOCIATION);
+
+        StartElement startElement = checkStartElementPreconditions();
+
+        String paramRef = readMandatoryAttribute(ATTR_PARAMETER_REF, startElement);
+        boolean useCalibrated = readBooleanAttribute(ATTR_USE_CALIBRATED_VALUE, startElement, true);
+        int instance = readIntAttribute(ATTR_INSTANCE, startElement, 0);
+        boolean interpolateTime = readBooleanAttribute(ATTR_INTERPOLATE_TIME, startElement, true);
+        String unitName = readAttribute(ATTR_UNIT, startElement, TimeAssociation.UnitType.SI_SECOND.xtceName());
+        String offsetValue = readAttribute(ATTR_OFFSET, startElement, null);
+
+        TimeAssociation timeAssociation = new TimeAssociation(useCalibrated);
+        timeAssociation.setInstance(instance);
+        timeAssociation.setRelativeTo(InstanceRelativeTo.PACKET_START_WITHIN_PACKET);
+        timeAssociation.setInterpolateTime(interpolateTime);
+        timeAssociation.setUnit(TimeAssociation.UnitType.fromXtceName(unitName));
+        if (offsetValue != null) {
+            timeAssociation.setOffset(Double.valueOf(offsetValue));
+        }
+
+        makeParameterReference(spaceSystem, paramRef, (para, path) -> {
+            timeAssociation.setParameter(para);
+            timeAssociation.setMemberPath(path);
+        });
+
+        return timeAssociation;
     }
 
     private ArgumentInstanceRef readArgumentInstanceRef(SpaceSystem spaceSystem, MetaCommand metaCmd)
