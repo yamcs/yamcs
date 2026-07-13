@@ -29,7 +29,7 @@ import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Event.EventSeverity;
 import org.yamcs.pus.MessageTemplate.ParameterValueResolver;
 import org.yamcs.time.TimeService;
-import org.yamcs.xtce.EnumeratedParameterType;
+import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.yarch.Stream;
@@ -81,8 +81,8 @@ public class PusEventDecoder extends AbstractYamcsService {
         if (eventIdParameter == null) {
             throw new ConfigurationException("Parameter " + idfqn + " not found");
         }
-        if (!(eventIdParameter.getParameterType() instanceof EnumeratedParameterType)) {
-            throw new ConfigurationException("Wrong type for " + idfqn + ". Expected EnumeratedParameterType but got "
+        if (!(eventIdParameter.getParameterType() instanceof IntegerParameterType)) {
+            throw new ConfigurationException("Wrong type for " + idfqn + ". Expected IntegerParameterType but got "
                     + eventIdParameter.getParameterType());
         }
         StreamConfig streamConfig = StreamConfig.getInstance(yamcsInstance);
@@ -242,7 +242,7 @@ public class PusEventDecoder extends AbstractYamcsService {
                 log.warn("Did not find {} in packet extraction", eventIdParameter.getQualifiedName());
                 return;
             }
-            String eventId = eventIdValue.getEngValue().getStringValue();
+            String eventId = Integer.toString(eventIdValue.getEngValue().getUint32Value());
 
             String msg = eventFormatter.format(apid, eventId, params);
             if (msg == null) {
