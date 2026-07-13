@@ -14,6 +14,8 @@ import {
   WebappSdkModule,
 } from '@yamcs/webapp-sdk';
 
+const VALID_EXTENSION_NAME_REGEX = /^[a-z][a-z0-9_]*-[a-z0-9_-]*$/;
+
 @Component({
   templateUrl: './extension.component.html',
   imports: [WebappSdkModule],
@@ -32,7 +34,9 @@ export class ExtensionComponent implements AfterViewInit, OnChanges {
   customElementHolder: ElementRef<HTMLDivElement>;
 
   ngAfterViewInit() {
-    this.loadExtension(this.extension);
+    if (this.extension) {
+      this.loadExtension(this.extension);
+    }
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -43,7 +47,10 @@ export class ExtensionComponent implements AfterViewInit, OnChanges {
     // reloadOnNavigation is backwards compatible behavior, we'll eventually remove it.
     const reloadOnNavigation =
       !this.extensionService.isDisablingReloadOnNavigation(this.extension);
-    if (changes['extension'] || reloadOnNavigation) {
+
+    const reloadExtension = changes['extension'] || reloadOnNavigation;
+
+    if (this.customElementHolder && reloadExtension && this.extension) {
       this.loadExtension(this.extension);
     } else if (changes['subroute']) {
       const el = this.customElementHolder.nativeElement.firstChild as any;
@@ -54,11 +61,16 @@ export class ExtensionComponent implements AfterViewInit, OnChanges {
   }
 
   private loadExtension(extension: string) {
-    const { nativeElement: holder } = this.customElementHolder;
-    holder.innerHTML = `<${extension}></${extension}>`;
+    if (!VALID_EXTENSION_NAME_REGEX.test(extension)) {
+      console.error(`Blocking malformed extension name: ${extension}`);
+      return;
+    }
 
-    const extensionEl = holder.childNodes.item(0);
+    const { nativeElement: holder } = this.customElementHolder;
+    holder.innerHTML = '';
+    const extensionEl = document.createElement(extension);
     (extensionEl as any).subroute = this.subroute;
     (extensionEl as any).extensionService = this.extensionService;
+    holder.appendChild(extensionEl);
   }
 }
