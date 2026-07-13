@@ -30,18 +30,25 @@ import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
  */
 public class PusTmPacket extends SimulatorCcsdsPacket {
     public static final int SH_OFFSET = 6;
-    public static final int DATA_OFFSET = SH_OFFSET + 7 + PusTime.LENGTH_BYTES;
+    public static final int DATA_OFFSET = SH_OFFSET + 7 + PusTimeEncoding.DEFAULT.getEncodedLength();
 
     static final CrcCciitCalculator crcCalculator = new CrcCciitCalculator();
 
     protected static HashMap<Integer, AtomicInteger> countMap = new HashMap<>(2); // destination -> msgCounter
+    private final int dataOffset;
 
     public PusTmPacket(byte[] packet) {
         super(packet);
+        dataOffset = DATA_OFFSET;
     }
 
     public PusTmPacket(int apid, int userDataLength, int type, int subtype) {
-        super(ByteBuffer.allocate(getPacketLength(userDataLength)));
+        this(apid, userDataLength, type, subtype, PusTimeEncoding.DEFAULT);
+    }
+
+    public PusTmPacket(int apid, int userDataLength, int type, int subtype, PusTimeEncoding timeEncoding) {
+        super(ByteBuffer.allocate(getPacketLength(userDataLength, timeEncoding)));
+        dataOffset = SH_OFFSET + 7 + timeEncoding.getEncodedLength();
         setHeader(apid, 0, 1, 3, getSeq(apid));
         bb.position(SH_OFFSET);
         bb.put((byte) (0x21));
@@ -50,8 +57,8 @@ public class PusTmPacket extends SimulatorCcsdsPacket {
         int destination = 0;
         bb.putShort((short) getCount(destination));
         bb.putShort((short) destination);
-        PusTime now = PusTime.now();
-        now.encode(bb);
+        PusTime now = timeEncoding.now();
+        now.encode(bb, timeEncoding);
     }
 
     public void setType(int type) {
@@ -64,12 +71,20 @@ public class PusTmPacket extends SimulatorCcsdsPacket {
     }
 
     private static int getPacketLength(int userDataLength) {
-        return DATA_OFFSET + userDataLength + 2;// 2 bytes for the CRC
+        return getPacketLength(userDataLength, PusTimeEncoding.DEFAULT);
+    }
+
+    private static int getPacketLength(int userDataLength, PusTimeEncoding timeEncoding) {
+        return SH_OFFSET + 7 + timeEncoding.getEncodedLength() + userDataLength + 2;// 2 bytes for the CRC
+    }
+
+    public int getUserDataOffset() {
+        return dataOffset;
     }
 
     @Override
     public ByteBuffer getUserDataBuffer() {
-        bb.position(DATA_OFFSET);
+        bb.position(dataOffset);
         return bb.slice();
     }
 

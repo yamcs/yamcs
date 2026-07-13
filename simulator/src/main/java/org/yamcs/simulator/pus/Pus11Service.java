@@ -120,7 +120,7 @@ public class Pus11Service extends AbstractPusService {
 
         log.info("Received {} command(s) for subschedule {}", n, subschedule);
 
-        var now = PusTime.now();
+        var now = pusSimulator.timeEncoding.now();
 
         synchronized (subschStatus) {
             if (!subschStatus.containsKey(subschedule)) {
@@ -130,7 +130,7 @@ public class Pus11Service extends AbstractPusService {
         PusTime firstReleaseTime = null;
 
         for (int i = 0; i < n; i++) {
-            PusTime releaseTime = PusTime.read(bb);
+            PusTime releaseTime = pusSimulator.timeEncoding.read(bb);
             if (releaseTime.isBefore(now)) {
                 log.warn("Command schedule time {} is before now {}, rejecting command", releaseTime, now);
                 nack_completion(tc, COMPL_ERR_SCHEDULE_TIME_IN_THE_PAST);
@@ -394,12 +394,12 @@ public class Pus11Service extends AbstractPusService {
     }
 
     private void sendSummaryReport(Collection<ScheduledCommand> cmds) {
-        var pkt = newPacket(13, 4 + cmds.size() * 15);
+        var pkt = newPacket(13, 4 + cmds.size() * (7 + pusSimulator.timeEncoding.getEncodedLength()));
         var bb = pkt.getUserDataBuffer();
         bb.putShort((short) cmds.size());
         for (var cmd : cmds) {
             bb.put((byte) cmd.subschedule);
-            cmd.releaseTime.encode(bb);
+            cmd.releaseTime.encode(bb, pusSimulator.timeEncoding);
             encodeRequestId(bb, cmd.tc);
         }
         pusSimulator.transmitRealtimeTM(pkt);
@@ -416,7 +416,7 @@ public class Pus11Service extends AbstractPusService {
 
             while (iterator.hasNext()) {
                 ScheduledCommand cmd = iterator.next();
-                int cmdSize = 9 + cmd.tc.getLength();
+                int cmdSize = 1 + pusSimulator.timeEncoding.getEncodedLength() + cmd.tc.getLength();
 
                 if (totalSize + cmdSize > MAX_DETAIL_REPORT_SIZE) {
                     break;
@@ -432,7 +432,7 @@ public class Pus11Service extends AbstractPusService {
             bb.putShort((short) batch.size());
             for (var cmd : batch) {
                 bb.put((byte) cmd.subschedule);
-                cmd.releaseTime.encode(bb);
+                cmd.releaseTime.encode(bb, pusSimulator.timeEncoding);
                 bb.put(cmd.tc.getBytes());
             }
             pusSimulator.transmitRealtimeTM(pkt);
@@ -471,9 +471,9 @@ public class Pus11Service extends AbstractPusService {
         int type = bb.get() & 0xFF; // Type of time window (enumerated)
 
         // First time tag (for "from time tag" types)
-        PusTime timeTag1 = (type == 1 || type == 2) ? PusTime.read(bb) : null;
+        PusTime timeTag1 = (type == 1 || type == 2) ? pusSimulator.timeEncoding.read(bb) : null;
         // Second time tag (for "to time tag" types)
-        PusTime timeTag2 = (type == 1 || type == 3) ? PusTime.read(bb) : null;
+        PusTime timeTag2 = (type == 1 || type == 3) ? pusSimulator.timeEncoding.read(bb) : null;
 
         BitSet subschedules = null;
         // Read the number of sub-schedules
@@ -563,7 +563,7 @@ public class Pus11Service extends AbstractPusService {
         if (cmd == null) {
             return;
         }
-        long millis = cmd.releaseTime.deltaMillis(PusTime.now());
+        long millis = cmd.releaseTime.deltaMillis(pusSimulator.timeEncoding.now());
         if (scheduledFuture != null) {
             scheduledFuture.cancel(false);
         }

@@ -21,6 +21,7 @@ import org.yamcs.simulator.PowerHandler;
 import org.yamcs.simulator.RCSHandler;
 import org.yamcs.simulator.SimulatorCcsdsPacket;
 import org.yamcs.simulator.TcpTmTcLink;
+import org.yamcs.simulator.UdpTmFrameLink;
 
 /**
  * PUS (Packet Utilisation Standard) simulator.
@@ -66,6 +67,8 @@ public class PusSimulator extends AbstractSimulator {
 
     ScheduledThreadPoolExecutor executor;
     TcpTmTcLink tmLink;
+    UdpTmFrameLink tmFrameLink;
+    final PusTimeEncoding timeEncoding;
 
     FlightDataHandler flightDataHandler;
     DHSHandler dhsHandler;
@@ -81,6 +84,11 @@ public class PusSimulator extends AbstractSimulator {
     protected BlockingQueue<PusTcPacket> pendingCommands = new ArrayBlockingQueue<>(100);
 
     public PusSimulator(File dataDir) {
+        this(dataDir, PusTimeEncoding.DEFAULT);
+    }
+
+    public PusSimulator(File dataDir, PusTimeEncoding timeEncoding) {
+        this.timeEncoding = timeEncoding;
         powerDataHandler = new PowerHandler();
         rcsHandler = new RCSHandler();
         epslvpduHandler = new EpsLvpduHandler();
@@ -108,7 +116,7 @@ public class PusSimulator extends AbstractSimulator {
     }
 
     private void sendFlightPacket() {
-        PusTmPacket packet = new PusTmPacket(MAIN_APID, 4 + flightDataHandler.dataSize(), PUS_TYPE_HK, 25);
+        PusTmPacket packet = newPacket(PUS_TYPE_HK, 25, 4 + flightDataHandler.dataSize());
         ByteBuffer buffer = packet.getUserDataBuffer();
         buffer.putInt(0);
         flightDataHandler.fillPacket(buffer.slice());
@@ -117,25 +125,25 @@ public class PusSimulator extends AbstractSimulator {
 
     private void sendHkTm() {
         try {
-            PusTmPacket packet = new PusTmPacket(MAIN_APID, 4 + powerDataHandler.dataSize(), PUS_TYPE_HK, 25);
+            PusTmPacket packet = newPacket(PUS_TYPE_HK, 25, 4 + powerDataHandler.dataSize());
             ByteBuffer buffer = packet.getUserDataBuffer();
             buffer.putInt(1);
             powerDataHandler.fillPacket(buffer.slice());
             transmitRealtimeTM(packet);
 
-            packet = new PusTmPacket(MAIN_APID, 4 + dhsHandler.dataSize(), PUS_TYPE_HK, 25);
+            packet = newPacket(PUS_TYPE_HK, 25, 4 + dhsHandler.dataSize());
             buffer = packet.getUserDataBuffer();
             buffer.putInt(2);
             dhsHandler.fillPacket(buffer.slice());
             transmitRealtimeTM(packet);
 
-            packet = new PusTmPacket(MAIN_APID, 4 + rcsHandler.dataSize(), PUS_TYPE_HK, 25);
+            packet = newPacket(PUS_TYPE_HK, 25, 4 + rcsHandler.dataSize());
             buffer = packet.getUserDataBuffer();
             buffer.putInt(3);
             rcsHandler.fillPacket(buffer.slice());
             transmitRealtimeTM(packet);
 
-            packet = new PusTmPacket(MAIN_APID, 4 + epslvpduHandler.dataSize(), PUS_TYPE_HK, 25);
+            packet = newPacket(PUS_TYPE_HK, 25, 4 + epslvpduHandler.dataSize());
             buffer = packet.getUserDataBuffer();
             buffer.putInt(4);
             epslvpduHandler.fillPacket(buffer.slice());
@@ -147,11 +155,20 @@ public class PusSimulator extends AbstractSimulator {
 
     void transmitRealtimeTM(PusTmPacket packet) {
         packet.fillChecksum();
-        tmLink.sendPacket(packet.getBytes());
+        sendPacket(packet);
     }
 
     private void sendTimePacket() {
-        tmLink.sendImmediate(new PusTmTimePacket());
+        sendPacket(new PusTmTimePacket(timeEncoding));
+    }
+
+    private void sendPacket(SimulatorCcsdsPacket packet) {
+        if (tmLink != null) {
+            tmLink.sendPacket(packet.getBytes());
+        }
+        if (tmFrameLink != null) {
+            tmFrameLink.queuePacket(0, packet.getBytes());
+        }
     }
 
     @Override
@@ -231,7 +248,7 @@ public class PusSimulator extends AbstractSimulator {
         PusTcPacket commandPacket;
         while ((commandPacket = pendingCommands.poll()) != null) {
             try {
-                log.info("Received PUS TC : {} (now: {})", commandPacket, PusTime.now());
+                log.info("Received PUS TC : {} (now: {})", commandPacket, timeEncoding.now());
                 switch (commandPacket.getType()) {
                 case 2 -> pus2Service.executeTc(commandPacket);
                 case 5 -> pus5Service.executeTc(commandPacket);
@@ -252,16 +269,20 @@ public class PusSimulator extends AbstractSimulator {
         }
     }
 
-    protected static PusTmPacket ack(PusTcPacket commandPacket, int subtype) {
-        PusTmPacket ackPacket = new PusTmPacket(MAIN_APID, 4, PUS_TYPE_ACK, subtype);
+    PusTmPacket newPacket(int type, int subtype, int userDataLength) {
+        return new PusTmPacket(MAIN_APID, userDataLength, type, subtype, timeEncoding);
+    }
+
+    protected PusTmPacket ack(PusTcPacket commandPacket, int subtype) {
+        PusTmPacket ackPacket = newPacket(PUS_TYPE_ACK, subtype, 4);
 
         ByteBuffer bb = ackPacket.getUserDataBuffer();
         bb.put(commandPacket.getBytes(), 0, 4);
         return ackPacket;
     }
 
-    public static PusTmPacket nack(PusTcPacket commandPacket, int subtype, int code) {
-        PusTmPacket ackPacket = new PusTmPacket(MAIN_APID, 8, PUS_TYPE_ACK, subtype);
+    public PusTmPacket nack(PusTcPacket commandPacket, int subtype, int code) {
+        PusTmPacket ackPacket = newPacket(PUS_TYPE_ACK, subtype, 8);
 
         ByteBuffer bb = ackPacket.getUserDataBuffer();
         bb.put(commandPacket.getBytes(), 0, 4);
@@ -282,6 +303,10 @@ public class PusSimulator extends AbstractSimulator {
     @Override
     protected void setLosLink(TcpTmTcLink losLink) {
         // ignore only send packets on tmlink
+    }
+
+    public void setTmFrameLink(UdpTmFrameLink tmFrameLink) {
+        this.tmFrameLink = tmFrameLink;
     }
 
     @Override

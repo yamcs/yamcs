@@ -24,22 +24,41 @@ import com.google.common.util.concurrent.AbstractExecutionThreadService;
  *
  */
 public class UdpTcFrameLink extends AbstractExecutionThreadService {
-    final ColSimulator simulator;
+    public enum TcEncoding {
+        BCH,
+        LDPC64,
+        LDPC256,
+        RAW
+    }
+
+    final AbstractSimulator simulator;
     int port;
     private DatagramSocket socket;
     DatagramPacket datagram;
     private static final Logger log = LoggerFactory.getLogger(UdpTcFrameLink.class);
 
     Encoding enc = Encoding.BCH;
+    final TcEncoding tcEncoding;
     boolean ldpcTailSeq; // if enc is LDPC64 or LDPC256
     TcVcFrameLink[] vcHandlers;
     int[] clcw;
 
     public UdpTcFrameLink(ColSimulator simulator, int port, SdlsSecurityAssociation maybeSdls) {
+        this(simulator, port, maybeSdls, TcPacketFactory.COL_PACKET_FACTORY, TcEncoding.BCH);
+    }
+
+    public UdpTcFrameLink(AbstractSimulator simulator, int port, SdlsSecurityAssociation maybeSdls,
+            TcPacketFactory packetFactory, TcEncoding tcEncoding) {
         this.simulator = simulator;
         this.port = port;
+        this.tcEncoding = tcEncoding;
+        this.enc = switch (tcEncoding) {
+        case BCH, RAW -> Encoding.BCH;
+        case LDPC64 -> Encoding.LDCP64;
+        case LDPC256 -> Encoding.LDPC256;
+        };
         datagram = new DatagramPacket(new byte[2048], 2048);
-        vcHandlers = new TcVcFrameLink[] { new TcVcFrameLink(simulator, 0, maybeSdls) };
+        vcHandlers = new TcVcFrameLink[] { new TcVcFrameLink(simulator, 0, maybeSdls, packetFactory) };
         clcw = new int[] { vcHandlers[0].getCLCW() };
     }
 
@@ -52,13 +71,19 @@ public class UdpTcFrameLink extends AbstractExecutionThreadService {
     protected void run() throws Exception {
         while (isRunning()) {
             socket.receive(datagram);
-            if (enc == Encoding.BCH) {
-                processBCH_CLTU(datagram.getData(), datagram.getOffset(), datagram.getLength());
-            } else {
-                processLDPC_CLTU(datagram.getData(), datagram.getOffset(), datagram.getLength());
-            }
+            processDatagram(datagram.getData(), datagram.getOffset(), datagram.getLength());
         }
 
+    }
+
+    void processDatagram(byte[] data, int offset, int length) {
+        if (tcEncoding == TcEncoding.RAW) {
+            processTcFrame(data, offset, length);
+        } else if (enc == Encoding.BCH) {
+            processBCH_CLTU(data, offset, length);
+        } else {
+            processLDPC_CLTU(data, offset, length);
+        }
     }
 
     private void processBCH_CLTU(byte[] data, int offset, int length) {
@@ -206,5 +231,12 @@ public class UdpTcFrameLink extends AbstractExecutionThreadService {
             nextClcwVc = 0;
         }
         return clcw[nextClcwVc];
+    }
+
+    @Override
+    protected void triggerShutdown() {
+        if (socket != null) {
+            socket.close();
+        }
     }
 }
