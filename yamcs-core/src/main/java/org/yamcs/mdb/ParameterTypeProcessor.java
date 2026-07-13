@@ -182,7 +182,8 @@ public class ParameterTypeProcessor {
     private static Value convertToEnumerated(EnumeratedParameterType ept, Value rawValue) {
         switch (rawValue.getType()) {
         case UINT32:
-            return ValueUtility.getEnumeratedValue(rawValue.getUint32Value(), ept.calibrate(rawValue.getUint32Value()));
+            long uv = rawValue.getUint32Value() & 0xFFFFFFFFL;
+            return ValueUtility.getEnumeratedValue(uv, ept.calibrate(uv));
         case UINT64:
             return ValueUtility.getEnumeratedValue(rawValue.getUint64Value(), ept.calibrate(rawValue.getUint64Value()));
         case SINT32:
