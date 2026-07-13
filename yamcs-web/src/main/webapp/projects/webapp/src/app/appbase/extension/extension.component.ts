@@ -10,6 +10,8 @@ import {
 } from '@angular/core';
 import { ExtensionService, WebappSdkModule } from '@yamcs/webapp-sdk';
 
+const VALID_EXTENSION_NAME_REGEX = /^[a-z][a-z0-9_]*-[a-z0-9_-]*$/;
+
 @Component({
   templateUrl: './extension.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,21 +30,28 @@ export class ExtensionComponent implements AfterViewInit, OnChanges {
   customElementHolder: ElementRef<HTMLDivElement>;
 
   ngAfterViewInit() {
-    this.loadExtension(this.extension);
+    if (this.extension) {
+      this.loadExtension(this.extension);
+    }
   }
 
   ngOnChanges() {
-    if (this.extension && this.customElementHolder) {
+    if (this.customElementHolder && this.extension) {
       this.loadExtension(this.extension);
     }
   }
 
   private loadExtension(extension: string) {
-    const { nativeElement: holder } = this.customElementHolder;
-    holder.innerHTML = `<${extension}></${extension}>`;
+    if (!VALID_EXTENSION_NAME_REGEX.test(extension)) {
+      console.error(`Blocking malformed extension name: ${extension}`);
+      return;
+    }
 
-    const extensionEl = holder.childNodes.item(0);
+    const { nativeElement: holder } = this.customElementHolder;
+    holder.innerHTML = '';
+    const extensionEl = document.createElement(extension);
     (extensionEl as any).subroute = this.subroute;
     (extensionEl as any).extensionService = this.extensionService;
+    holder.appendChild(extensionEl);
   }
 }
