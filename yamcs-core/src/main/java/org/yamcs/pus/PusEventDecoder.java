@@ -54,7 +54,8 @@ import org.yamcs.StreamConfig.TmStreamConfigEntry;
  * <pre>
  * {
  *   "eventId": 1234,
- *   "template": "Event occurred: {parameter_name; format}"
+ *   "template": "Event occurred: {parameter_name; format}",
+ *   "subsystem": "FSW"
  * }
  * </pre>
  * 
@@ -244,28 +245,37 @@ public class PusEventDecoder extends AbstractYamcsService {
             }
             String eventId = Integer.toString(eventIdValue.getEngValue().getUint32Value());
 
-            String msg = eventFormatter.format(apid, eventId, params);
-            if (msg == null) {
+            Smessage smsg = eventFormatter.format(apid, eventId, params);
+            if (smsg == null) {
                 log.warn("No template found for message apid={}, eventId={}", apid, eventId);
             } else {
-                Event ev = Event.newBuilder()
+                String msg = smsg.message;
+                String subsystem = smsg.subsystem;
+
+                Event.Builder evb = Event.newBuilder()
                         .setType(eventId)
+                        .setSource(subsystem)
                         .setSeverity(getSeverity(subtype))
                         .setGenerationTime(gentime)
                         .setSeqNumber(seqCount)
-                        .setMessage(msg).build();
+                        .setMessage(msg);
+                if (subsystem != null) {
+                    evb.setSource(subsystem);
+                }
+                Event ev = evb.build();
                 TupleDefinition tdef = eventStream.getDefinition();
                 Tuple t = new Tuple(tdef, new Object[] { ev.getGenerationTime(),
                         ev.getSource(), ev.getSeqNumber(), ev });
                 eventStream.emitTuple(t);
             }
-
         }
     }
+    private record Stemplate(MessageTemplate template, String subsystem) {}
+    private record Smessage(String message, String subsystem) {}
 
     class EventFormatter {
         // Map to hold the templates with eventId and apid as keys
-        private Map<String, MessageTemplate> templates = new HashMap<>();
+        private Map<String, Stemplate> templates = new HashMap<>();
 
         public EventFormatter(String fileName) throws ConfigurationException {
             LoaderOptions loaderOptions = new LoaderOptions();
@@ -287,10 +297,11 @@ public class PusEventDecoder extends AbstractYamcsService {
                     Map<?, ?> map = (Map<?, ?>) o1;
                     String eventId = (String) map.get("eventId");
                     String template = (String) map.get("template");
+                    String subsystem = (String) map.get("subsystem");
 
-                    MessageTemplate stemplate = new MessageTemplate(template, mdb);
+                    MessageTemplate pstemplate = new MessageTemplate(template, mdb);
 
-                    templates.put(eventId, stemplate);
+                    templates.put(eventId, new Stemplate(pstemplate, subsystem));
                 } else {
                     throw new ConfigurationException(
                             "Error in file " + fileName + ": each list element must be a map.");
@@ -303,35 +314,38 @@ public class PusEventDecoder extends AbstractYamcsService {
         }
 
         // Format method to replace the template parameters with actual values
-        public String format(int apid, String eventId, ParameterValueList params) {
+        public Smessage format(int apid, String eventId, ParameterValueList params) {
             String key = generateKey(eventId, apid);
-            MessageTemplate template = templates.get(key);
+            Stemplate stemplate = templates.get(key);
 
-            if (template == null) {
+            if (stemplate == null) {
                 key = generateKey(eventId, null);
-                template = templates.get(key);
+                stemplate = templates.get(key);
             }
-
-            if (template == null) {
+            if (stemplate == null) {
                 return null; // No template found
             }
-            return template.format(new ParameterValueResolver() {
 
-                @Override
-                public ParameterValue resolve(String name) {
-                    for (var pv : params) {
-                        if (name.equals(pv.getParameter().getName())) {
-                            return pv;
+            MessageTemplate template = stemplate.template;
+            String subsystem = stemplate.subsystem;
+
+            return new Smessage(
+                template.format(new ParameterValueResolver() {
+                    @Override
+                    public ParameterValue resolve(String name) {
+                        for (var pv : params) {
+                            if (name.equals(pv.getParameter().getName())) {
+                                return pv;
+                            }
                         }
+                        return null;
                     }
-                    return null;
-                }
 
-                @Override
-                public ParameterValue resolve(Parameter p) {             
-                    return params.getLastInserted(p);
-                }
-            });
+                    @Override
+                    public ParameterValue resolve(Parameter p) {             
+                        return params.getLastInserted(p);
+                    }
+                }), subsystem);
         }
     }
 }
