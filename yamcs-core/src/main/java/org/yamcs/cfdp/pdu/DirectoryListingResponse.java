@@ -44,7 +44,7 @@ public class DirectoryListingResponse extends ReservedMessageToUser {
         super(MessageType.DIRECTORY_LISTING_RESPONSE, content);
 
         ByteBuffer buffer = ByteBuffer.wrap(content);
-        this.listingResponseCode = ListingResponseCode.fromValue(buffer.get() >> 7);
+        this.listingResponseCode = ListingResponseCode.fromValue((buffer.get() & 0xFF) >> 7);
         this.directoryName = new String(LV.readLV(buffer).getValue());
         this.directoryFileName = new String(LV.readLV(buffer).getValue());
     }

@@ -3,7 +3,8 @@ import { User } from './User';
 export type NavGroup =
   | 'telemetry'
   | 'commanding'
-  | 'procedures'
+  | 'procedures' // Deprecated (renamed to "automation")
+  | 'automation'
   | 'archive'
   | 'mdb';
 

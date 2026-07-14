@@ -14,7 +14,7 @@ import {
   YamcsService,
   YaSelectOption,
 } from '@yamcs/webapp-sdk';
-import { AdvanceAckHelpComponent } from '../../../procedures/run-stack/advance-ack-help/advance-ack-help.component';
+import { AdvanceAckHelpComponent } from '../../../automation/run-stack/advance-ack-help/advance-ack-help.component';
 import { AppMarkdownInput } from '../../../shared/markdown-input/markdown-input.component';
 import { TemplateProvider } from './TemplateProvider';
 

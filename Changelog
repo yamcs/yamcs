@@ -1,5 +1,12 @@
-Version 5.13.1 released
+Version 5.13.1 released 9-Jul-2026
 - Change in the CCSDS sequence count handling for outgoing commands: in the previous version there was one per-APID counter for the entire Yamcs server. Starting with this version, by default every link mantains its own independent counter. The newly added property seqCounterName allows two or more links to share the same counter.
+- Fixed a bug in the TM secondary header length decoding where the version number bits could corrupt the decoded length.
+- CFDP: fixed the upload when PUS was used (the CRC should not depend on the presence of the PUS header).
+- CFDP: added the directoryListingFileName option, to allow overriding the temporary filename used for directory listing requests, for receivers that reject the default name.
+- Fixed the propagation of the noreplay/noparchive/norealtime parameter retrieval options to sub-retrievals.
+- UI: Rename "Procedures" section to "Automation"
+- OPI: Fix x-axis glitch on XY Graph widgets
+- moved ccsds-index requests off-netty thread to avoid blocking other requests in case the retrieval takes a long time (which offten happens when the CCSDS packets sequence count and timestamps contradict eachother)
 
 Version 5.13.0 released 21-May-2026
 - API: Allow chaining timeline activities together (for example, "B starts after successful A", or "C starts when event X starts"). Note you can only express this via the Python API client >=2.0.0 (not the UI).
