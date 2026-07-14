@@ -2,6 +2,7 @@ package org.yamcs.pus;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.yamcs.YConfiguration;
 import org.yamcs.algorithms.AbstractAlgorithmExecutor;
@@ -9,6 +10,7 @@ import org.yamcs.algorithms.AlgorithmExecutionContext;
 import org.yamcs.algorithms.AlgorithmExecutionResult;
 import org.yamcs.commanding.VerificationResult;
 import org.yamcs.mdb.ProcessingContext;
+import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.RawEngValue;
 import org.yamcs.pus.MessageTemplate.ParameterValueResolver;
 import org.yamcs.xtce.Algorithm;
@@ -59,11 +61,25 @@ public class Pus1Verifier extends AbstractAlgorithmExecutor {
     private final MessageTemplate template;
     public static AlgorithmExecutionResult NO_RESULT = new AlgorithmExecutionResult(Collections.emptyList());
 
+    Map<Integer, String> verificationStageToFlagMapping = new HashMap<>();
+
     public Pus1Verifier(Algorithm algorithmDef, AlgorithmExecutionContext execCtx, HashMap<String, Object> config) {
         super(algorithmDef, execCtx);
         var yc = YConfiguration.wrap(config);
 
         verificationStage = yc.getInt("stage");
+
+        if (yc.containsKey("ackFlags")){
+            Map<Integer, String> ackFlags = yc.getMap("ackFlags");
+            for (Map.Entry<Integer, String> entry: ackFlags.entrySet()) {
+                verificationStageToFlagMapping.put(entry.getKey(), entry.getValue());
+            }
+        } else {
+            verificationStageToFlagMapping.put(1, "pus_acceptance_flag");
+            verificationStageToFlagMapping.put(3, "pus_start_exec_flag");
+            verificationStageToFlagMapping.put(5, "pus_progress_exec_flag");
+            verificationStageToFlagMapping.put(7, "pus_completion_flag");
+        }
 
         if (yc.containsKey("template")) {
             template = new MessageTemplate(yc.getString("template"));
@@ -80,19 +96,30 @@ public class Pus1Verifier extends AbstractAlgorithmExecutor {
                 return NO_RESULT;
             }
         }
-        long sentApid = inputValues.get(0).getRawValue().getSint64Value();
+        String sentApid = inputValues.get(0).getEngValue().getStringValue();
 
         // the sequence count set by the post-processor has no raw value
         int sentSeq = inputValues.get(1).getEngValue().getSint32Value();
-        int rcvdApid = inputValues.get(2).getRawValue().getUint32Value();
+        String rcvdApid = inputValues.get(2).getEngValue().getStringValue();
         int rcvdSeq = inputValues.get(3).getRawValue().getUint32Value();
         int reportSubType = inputValues.get(4).getRawValue().getUint32Value();
-        boolean ackFlag = inputValues.get(5).getEngValue().getBooleanValue();
+
+        // FIXME:
+        // This assumes for now that the ack flags (which is obtained from the cmd args), are an aggregate value
+        // Hence, as a workaround, I am obtaining the ackFlag by relying the the flag member name.
+
+        // If the flags were not an aggregate, there this needs to be changed
+
+        // FIXME:
+        // Reinvestigate this behaviour for ArgumentParameter (maybe its called ArgumentValue, idk), because this problem does
+        // not exist for rcvdApid or rcvdSeq
+        AggregateValue ackFlags = (AggregateValue)  inputValues.get(5).getEngValue();
+        boolean ackFlag = ackFlags.getMemberValue(verificationStageToFlagMapping.get(verificationStage)).getBooleanValue();
 
         if (!ackFlag) {
             return NO_RESULT;
         }
-        if (sentApid != rcvdApid || sentSeq != rcvdSeq) {
+        if (!sentApid.equalsIgnoreCase(rcvdApid) || sentSeq != rcvdSeq) {
             return NO_RESULT;
         }
 
