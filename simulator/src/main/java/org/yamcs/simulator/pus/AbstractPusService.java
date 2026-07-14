@@ -35,15 +35,20 @@ public abstract class AbstractPusService {
     public void ack_start(PusTcPacket tc) {
         pusSimulator.transmitRealtimeTM(pusSimulator.ack(tc, 3));
     }
-
     public void nack_start(PusTcPacket tc, int code) {
         pusSimulator.transmitRealtimeTM(pusSimulator.nack(tc, 4, code));
+    }
+
+    public void ack_progress(PusTcPacket tc) {
+        pusSimulator.transmitRealtimeTM(pusSimulator.ack(tc, 5));
+    }
+    public void nack_progress(PusTcPacket tc, int code) {
+        pusSimulator.transmitRealtimeTM(pusSimulator.nack(tc, 6, code));
     }
 
     public void ack_completion(PusTcPacket tc) {
         pusSimulator.transmitRealtimeTM(pusSimulator.ack(tc, 7));
     }
-
     public void nack_completion(PusTcPacket tc, int code) {
         pusSimulator.transmitRealtimeTM(pusSimulator.nack(tc, 8, code));
     }

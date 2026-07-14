@@ -72,9 +72,11 @@ public class Pus5Service extends AbstractPusService {
     public void executeTc(PusTcPacket tc) {
         if (tc.getSubtype() == 5 || tc.getSubtype() == 6) {
             ack_start(tc);
+            ack_progress(tc);
             enableDisableEvents(tc, tc.getSubtype() == 5);
         } else if (tc.getSubtype() == 7) {
             ack_start(tc);
+            ack_progress(tc);
             sendDisabledList(tc);
         } else {
             log.info("invalid subtype {}, sending NACK start", tc.getSubtype());
