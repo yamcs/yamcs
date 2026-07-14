@@ -9,6 +9,23 @@
 				<EnumerationList>
 					<Enumeration value="1" label="EVENT_1" />
 					<Enumeration value="2" label="EVENT_2" />
+					<!-- Raised by Pus12Service on PMON checking-status violations (see pus12.xml) -->
+					<Enumeration value="10" label="EVENT_SINE_TEMP_LOW" />
+					<Enumeration value="11" label="EVENT_SINE_TEMP_HIGH" />
+					<Enumeration value="12" label="EVENT_RANDWALK_LOW" />
+					<Enumeration value="13" label="EVENT_RANDWALK_HIGH" />
+					<Enumeration value="14" label="EVENT_BUSVOLT_DELTA_HIGH" />
+					<Enumeration value="15" label="EVENT_MODE_UNEXPECTED" />
+				</EnumerationList>
+			</EnumeratedParameterType>
+			<!-- Local duplicate of pus12.xml's pmon_id_type (not cross-referenced) to avoid an mdb: load-order dependency -->
+			<EnumeratedParameterType name="pmon_event_pmon_id_type">
+				<IntegerDataEncoding sizeInBits="16" />
+				<EnumerationList>
+					<Enumeration value="1" label="PMON_SINE_TEMP_LIMIT" />
+					<Enumeration value="2" label="PMON_RANDWALK_LIMIT" />
+					<Enumeration value="3" label="PMON_BUSVOLT_DELTA" />
+					<Enumeration value="4" label="PMON_MODE_EXPECTED" />
 				</EnumerationList>
 			</EnumeratedParameterType>
 			<IntegerParameterType name="disabled_count_type" baseType="/dt/uint8"/>
@@ -33,6 +50,9 @@
 			<Parameter parameterTypeRef="/dt/prepended_string" name="event2_msg"/>
 			<Parameter parameterTypeRef="disabled_count_type" name="disabled_count"/>
 			<Parameter parameterTypeRef="disabled_event_ids_type" name="disabled_event_ids"/>
+			<Parameter parameterTypeRef="pmon_event_pmon_id_type" name="pmon_event_pmon_id"/>
+			<Parameter parameterTypeRef="/dt/float32" name="pmon_event_value_f32"/>
+			<Parameter parameterTypeRef="/dt/uint8" name="pmon_event_value_u8"/>
 		</ParameterSet>
 		<ContainerSet>
 			<!-- Thin base for all ST[05] packets (type==5); no payload parsed here -->
@@ -73,6 +93,73 @@
 				<BaseContainer containerRef="pus5-event-report">
 					<RestrictionCriteria>
 						<Comparison value="EVENT_2" parameterRef="event_id" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<!-- PMON violation events raised by Pus12Service: pmon_id + triggering sample value -->
+			<SequenceContainer name="event_sine_temp_low">
+				<EntryList>
+					<ParameterRefEntry parameterRef="pmon_event_pmon_id"/>
+					<ParameterRefEntry parameterRef="pmon_event_value_f32"/>
+				</EntryList>
+				<BaseContainer containerRef="pus5-event-report">
+					<RestrictionCriteria>
+						<Comparison value="EVENT_SINE_TEMP_LOW" parameterRef="event_id" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="event_sine_temp_high">
+				<EntryList>
+					<ParameterRefEntry parameterRef="pmon_event_pmon_id"/>
+					<ParameterRefEntry parameterRef="pmon_event_value_f32"/>
+				</EntryList>
+				<BaseContainer containerRef="pus5-event-report">
+					<RestrictionCriteria>
+						<Comparison value="EVENT_SINE_TEMP_HIGH" parameterRef="event_id" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="event_randwalk_low">
+				<EntryList>
+					<ParameterRefEntry parameterRef="pmon_event_pmon_id"/>
+					<ParameterRefEntry parameterRef="pmon_event_value_f32"/>
+				</EntryList>
+				<BaseContainer containerRef="pus5-event-report">
+					<RestrictionCriteria>
+						<Comparison value="EVENT_RANDWALK_LOW" parameterRef="event_id" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="event_randwalk_high">
+				<EntryList>
+					<ParameterRefEntry parameterRef="pmon_event_pmon_id"/>
+					<ParameterRefEntry parameterRef="pmon_event_value_f32"/>
+				</EntryList>
+				<BaseContainer containerRef="pus5-event-report">
+					<RestrictionCriteria>
+						<Comparison value="EVENT_RANDWALK_HIGH" parameterRef="event_id" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="event_busvolt_delta_high">
+				<EntryList>
+					<ParameterRefEntry parameterRef="pmon_event_pmon_id"/>
+					<ParameterRefEntry parameterRef="pmon_event_value_f32"/>
+				</EntryList>
+				<BaseContainer containerRef="pus5-event-report">
+					<RestrictionCriteria>
+						<Comparison value="EVENT_BUSVOLT_DELTA_HIGH" parameterRef="event_id" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="event_mode_unexpected">
+				<EntryList>
+					<ParameterRefEntry parameterRef="pmon_event_pmon_id"/>
+					<ParameterRefEntry parameterRef="pmon_event_value_u8"/>
+				</EntryList>
+				<BaseContainer containerRef="pus5-event-report">
+					<RestrictionCriteria>
+						<Comparison value="EVENT_MODE_UNEXPECTED" parameterRef="event_id" />
 					</RestrictionCriteria>
 				</BaseContainer>
 			</SequenceContainer>

@@ -12,7 +12,10 @@ import java.util.concurrent.TimeUnit;
 public class Pus5Service extends AbstractPusService {
     int count;
     // Map of eventId -> enabled status. Add all mission event IDs here with their initial state.
-    Map<Integer, Boolean> enabled = new HashMap<>(Map.of(1, true, 2, true));
+    // 10-15 are raised by Pus12Service (PMON limit/expected-value/delta violations).
+    Map<Integer, Boolean> enabled = new HashMap<>(Map.of(
+            1, true, 2, true,
+            10, true, 11, true, 12, true, 13, true, 14, true, 15, true));
 
     Pus5Service(PusSimulator pusSimulator) {
         super(pusSimulator, 5);
@@ -50,6 +53,21 @@ public class Pus5Service extends AbstractPusService {
         count++;
     }
 
+
+    /**
+     * Generic event-raising API for other PUS services (e.g. {@link Pus12Service}) to trigger a
+     * PUS-5 event outside this class's own demo cadence. No-op if the event id is unknown/disabled.
+     */
+    public void raiseEvent(int eventId, int subtype, byte[] payload) {
+        if (!enabled.getOrDefault(eventId, false)) {
+            return;
+        }
+        PusTmPacket packet = newPacket(subtype, 1 + payload.length);
+        ByteBuffer bb = packet.getUserDataBuffer();
+        bb.put((byte) eventId);
+        bb.put(payload);
+        pusSimulator.transmitRealtimeTM(packet);
+    }
 
     public void executeTc(PusTcPacket tc) {
         if (tc.getSubtype() == 5 || tc.getSubtype() == 6) {

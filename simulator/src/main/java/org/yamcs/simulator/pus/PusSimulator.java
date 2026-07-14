@@ -35,7 +35,7 @@ import org.yamcs.simulator.UdpTmFrameLink;
  * <li>ST[06] - memory management - TODO</li>
  * <li>ST[09] - time management - only sending the time packet</li>
  * <li>ST[11] - time based schedule</li>
- * <li>ST[12] - on-board monitoring - TODO</li>
+ * <li>ST[12] - on-board monitoring - parameter monitoring subservice</li>
  * <li>ST[13] - large packet transfer - TODO</li>
  * <li>ST[15] - on-board storage and retrieval - TODO</li>
  * <li>ST[17] - test</li>
@@ -77,8 +77,11 @@ public class PusSimulator extends AbstractSimulator {
     EpsLvpduHandler epslvpduHandler;
     CfdpReceiver cfdpReceiver;
     Pus2Service pus2Service;
+    Pus3Service pus3Service;
     Pus5Service pus5Service;
+    Pus9Service pus9Service;
     Pus11Service pus11Service;
+    Pus12Service pus12Service;
     Pus17Service pus17Service;
 
     protected BlockingQueue<PusTcPacket> pendingCommands = new ArrayBlockingQueue<>(100);
@@ -96,70 +99,31 @@ public class PusSimulator extends AbstractSimulator {
         dhsHandler = new DHSHandler();
         cfdpReceiver = new CfdpReceiver(this, dataDir);
         pus2Service = new Pus2Service(this);
+        pus3Service = new Pus3Service(this, flightDataHandler, powerDataHandler,
+                dhsHandler, rcsHandler, epslvpduHandler);
         pus5Service = new Pus5Service(this);
+        pus9Service = new Pus9Service(this);
         pus11Service = new Pus11Service(this);
+        pus12Service = new Pus12Service(this);
         pus17Service = new Pus17Service(this);
     }
 
     @Override
     protected void doStart() {
         executor = new ScheduledThreadPoolExecutor(1);
-        executor.scheduleAtFixedRate(() -> sendTimePacket(), 0, 4, TimeUnit.SECONDS);
-
-        executor.scheduleAtFixedRate(() -> sendFlightPacket(), 0, 200, TimeUnit.MILLISECONDS);
-        executor.scheduleAtFixedRate(() -> sendHkTm(), 0, 1000, TimeUnit.MILLISECONDS);
         // executor.scheduleAtFixedRate(() -> sendCfdp(), 0, 1000, TimeUnit.MILLISECONDS);
         executor.scheduleAtFixedRate(() -> executePendingCommands(), 0, 200, TimeUnit.MILLISECONDS);
 
+        pus3Service.start();
         pus5Service.start();
+        pus9Service.start();
         pus11Service.start();
-    }
-
-    private void sendFlightPacket() {
-        PusTmPacket packet = newPacket(PUS_TYPE_HK, 25, 4 + flightDataHandler.dataSize());
-        ByteBuffer buffer = packet.getUserDataBuffer();
-        buffer.putInt(0);
-        flightDataHandler.fillPacket(buffer.slice());
-        transmitRealtimeTM(packet);
-    }
-
-    private void sendHkTm() {
-        try {
-            PusTmPacket packet = newPacket(PUS_TYPE_HK, 25, 4 + powerDataHandler.dataSize());
-            ByteBuffer buffer = packet.getUserDataBuffer();
-            buffer.putInt(1);
-            powerDataHandler.fillPacket(buffer.slice());
-            transmitRealtimeTM(packet);
-
-            packet = newPacket(PUS_TYPE_HK, 25, 4 + dhsHandler.dataSize());
-            buffer = packet.getUserDataBuffer();
-            buffer.putInt(2);
-            dhsHandler.fillPacket(buffer.slice());
-            transmitRealtimeTM(packet);
-
-            packet = newPacket(PUS_TYPE_HK, 25, 4 + rcsHandler.dataSize());
-            buffer = packet.getUserDataBuffer();
-            buffer.putInt(3);
-            rcsHandler.fillPacket(buffer.slice());
-            transmitRealtimeTM(packet);
-
-            packet = newPacket(PUS_TYPE_HK, 25, 4 + epslvpduHandler.dataSize());
-            buffer = packet.getUserDataBuffer();
-            buffer.putInt(4);
-            epslvpduHandler.fillPacket(buffer.slice());
-            transmitRealtimeTM(packet);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        pus12Service.start();
     }
 
     void transmitRealtimeTM(PusTmPacket packet) {
         packet.fillChecksum();
         sendPacket(packet);
-    }
-
-    private void sendTimePacket() {
-        sendPacket(new PusTmTimePacket(timeEncoding));
     }
 
     private void sendPacket(SimulatorCcsdsPacket packet) {
@@ -251,8 +215,11 @@ public class PusSimulator extends AbstractSimulator {
                 log.info("Received PUS TC : {} (now: {})", commandPacket, timeEncoding.now());
                 switch (commandPacket.getType()) {
                 case 2 -> pus2Service.executeTc(commandPacket);
+                case 3 -> pus3Service.executeTc(commandPacket);
                 case 5 -> pus5Service.executeTc(commandPacket);
+                case 9 -> pus9Service.executeTc(commandPacket);
                 case 11 -> pus11Service.executeTc(commandPacket);
+                case 12 -> pus12Service.executeTc(commandPacket);
                 case 17 -> pus17Service.executeTc(commandPacket);
                 case 25 -> {
                     switch (commandPacket.getSubtype()) {
