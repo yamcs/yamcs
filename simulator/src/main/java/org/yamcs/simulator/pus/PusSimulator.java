@@ -123,12 +123,7 @@ public class PusSimulator extends AbstractSimulator {
 
     void transmitRealtimeTM(PusTmPacket packet) {
         packet.fillChecksum();
-        tmLink.sendPacket(packet.getBytes());
-//        sendPacket(packet);
-    }
-
-    private void sendTimePacket() {
-        sendPacket(new PusTmTimePacket(timeEncoding));
+        sendPacket(packet);
     }
 
     private void sendPacket(SimulatorCcsdsPacket packet) {

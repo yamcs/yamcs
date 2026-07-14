@@ -14,6 +14,7 @@ public class Pus9Service extends AbstractPusService {
     static final int DEFAULT_RATE_EXPONENT = 2; // 2^2 = 4 s
 
     private volatile int rateExponent = DEFAULT_RATE_EXPONENT;
+
     private ScheduledFuture<?> scheduledFuture;
 
     Pus9Service(PusSimulator pusSimulator) {
@@ -58,6 +59,6 @@ public class Pus9Service extends AbstractPusService {
     }
 
     private void sendTimePacket() {
-        pusSimulator.tmLink.sendImmediate(new PusTmTimePacket(rateExponent));
+        pusSimulator.tmLink.sendImmediate(new PusTmTimePacket(rateExponent, pusSimulator.timeEncoding));
     }
 }
