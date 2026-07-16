@@ -45,6 +45,7 @@ public abstract class AbstractTcFrameLink extends AbstractLink implements Aggreg
 
     protected CommandHistoryPublisher commandHistoryPublisher;
     protected CltuGenerator cltuGenerator;
+    protected TcFrameEncapsulator frameEncapsulator;
     final static String CLTU_START_SEQ_KEY = "cltuStartSequence";
     final static String CLTU_TAIL_SEQ_KEY = "cltuTailSequence";
 
@@ -90,12 +91,27 @@ public abstract class AbstractTcFrameLink extends AbstractLink implements Aggreg
         spec.addOption("cltuGeneratorClassName", OptionType.STRING);
         spec.addOption("cltuGeneratorArgs", OptionType.MAP).withSpec(Spec.ANY);
 
+        Spec encapsulatorSpec = new Spec();
+        encapsulatorSpec.addOption("class", OptionType.STRING).withRequired(true);
+        encapsulatorSpec.addOption("args", OptionType.MAP).withSpec(Spec.ANY);
+        spec.addOption("frameEncapsulation", OptionType.MAP).withSpec(encapsulatorSpec);
+
         return spec;
     }
 
     @Override
     public void init(String yamcsInstance, String linkName, YConfiguration config) {
         super.init(yamcsInstance, linkName, config);
+        if (config.containsKey("frameEncapsulation")) {
+            YConfiguration ec = config.getConfig("frameEncapsulation");
+            YConfiguration args = ec.containsKey("args") ? ec.getConfig("args") : YConfiguration.emptyConfig();
+            Object provider = YObjectLoader.loadObject(ec.getString("class"), args);
+            if (!(provider instanceof TcFrameEncapsulator)) {
+                throw new ConfigurationException("Frame encapsulation class " + provider.getClass().getName()
+                        + " does not implement " + TcFrameEncapsulator.class.getName());
+            }
+            frameEncapsulator = (TcFrameEncapsulator) provider;
+        }
         if (config.containsKey("skipRandomizationForVcs")) {
             List<Integer> l = config.getList("skipRandomizationForVcs");
             if (!l.isEmpty()) {
@@ -143,8 +159,16 @@ public abstract class AbstractTcFrameLink extends AbstractLink implements Aggreg
         }
 
         multiplexer = new MasterChannelFrameMultiplexer(yamcsInstance, linkName, config);
+        if (frameEncapsulator != null) {
+            var vcIds = multiplexer.getVcHandlers().stream()
+                    .map(h -> h.getParameters().getVirtualChannelId())
+                    .distinct()
+                    .toList();
+            frameEncapsulator.validate(multiplexer.managedParameters.getMaxFrameLength(), vcIds);
+            multiplexer.getVcHandlers().forEach(h -> h.setFrameEncapsulator(frameEncapsulator));
+        }
         subLinks = new ArrayList<>();
-        for (VcUplinkHandler vch : multiplexer.getVcHandlers()) {
+        for (VcUplinkHandler<?> vch : multiplexer.getVcHandlers()) {
             if (vch instanceof Link) {
                 Link l = (Link) vch;
                 subLinks.add(l);

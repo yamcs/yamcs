@@ -17,6 +17,7 @@ import org.yamcs.tctm.RawFrameDecoder;
 import org.yamcs.tctm.TcTmException;
 import org.yamcs.tctm.ccsds.TransferFrameDecoder.CcsdsFrameType;
 import org.yamcs.time.Instant;
+import org.yamcs.utils.YObjectLoader;
 
 public abstract class AbstractTmFrameLink extends AbstractLink implements AggregatedDataLink {
     // all the TM frame links should move the TM frame config under this section, to allow having both TM and TC frame
@@ -30,6 +31,7 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
 
     protected long errFrameCount;
     protected RawFrameDecoder rawFrameDecoder;
+    protected TmFrameDecapsulator frameDecapsulator;
 
     @Override
     public Spec getDefaultSpec() {
@@ -66,6 +68,11 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
 
         spec.addOption("rawFrameDecoder", OptionType.MAP).withSpec(Spec.ANY);
 
+        Spec decapsulatorSpec = new Spec();
+        decapsulatorSpec.addOption("class", OptionType.STRING).withRequired(true);
+        decapsulatorSpec.addOption("args", OptionType.MAP).withSpec(Spec.ANY);
+        spec.addOption("frameDecapsulation", OptionType.MAP).withSpec(decapsulatorSpec);
+
         return spec;
     }
 
@@ -81,12 +88,25 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
 
         frameHandler = new MasterChannelFrameHandler(yamcsInstance, name, config);
 
+        if (config.containsKey("frameDecapsulation")) {
+            YConfiguration dc = config.getConfig("frameDecapsulation");
+            YConfiguration args = dc.containsKey("args") ? dc.getConfig("args") : YConfiguration.emptyConfig();
+            Object provider = YObjectLoader.loadObject(dc.getString("class"), args);
+            if (!(provider instanceof TmFrameDecapsulator)) {
+                throw new ConfigurationException("Frame decapsulation class " + provider.getClass().getName()
+                        + " does not implement " + TmFrameDecapsulator.class.getName());
+            }
+            frameDecapsulator = (TmFrameDecapsulator) provider;
+            var vcIds = frameHandler.getVirtualChannelIds();
+            frameDecapsulator.validate(frameHandler.getMaxFrameSize(), vcIds);
+        }
+
         if (dfl != -1) {
             int mindfl = frameHandler.getMinFrameSize();
-            int maxdfl = frameHandler.getMinFrameSize();
+            int maxdfl = frameHandler.getMaxFrameSize() + getFrameDecapsulationOverhead();
             if (dfl < mindfl || dfl > maxdfl) {
                 throw new ConfigurationException("Raw frame decoder output frame length " + dfl +
-                        " does not match the defined frame length "
+                        " does not match the defined frame length including decapsulation overhead "
                         + (mindfl == maxdfl ? Integer.toString(mindfl) : "[" + mindfl + ", " + maxdfl + "]"));
             }
         }
@@ -115,6 +135,7 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
      */
     protected void handleFrame(Instant ert, byte[] data, int offset, int length) {
         try {
+            Integer expectedVcId = null;
             if (rawFrameDecoder != null) {
                 length = rawFrameDecoder.decodeFrame(data, offset, length);
                 if (length == -1) {
@@ -122,6 +143,13 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
                     errFrameCount++;
                     return;
                 }
+            }
+            if (frameDecapsulator != null) {
+                var frame = frameDecapsulator.decapsulate(data, offset, length);
+                data = frame.data();
+                offset = frame.offset();
+                length = frame.length();
+                expectedVcId = frame.expectedVirtualChannelId();
             }
 
             if (length < frameHandler.getMinFrameSize()) {
@@ -136,13 +164,24 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
                 errFrameCount++;
             }
 
-            frameHandler.handleFrame(ert, data, offset, length);
+            frameHandler.handleFrame(ert, data, offset, length, expectedVcId);
 
             validFrameCount.getAndIncrement();
         } catch (TcTmException e) {
             eventProducer.sendWarning("Error processing frame: " + e);
             invalidFrameCount.getAndIncrement();
         }
+    }
+
+    protected int getFrameDecapsulationOverhead() {
+        return frameDecapsulator == null ? 0 : frameDecapsulator.maxFrameOverhead();
+    }
+
+    protected int getMaximumInputFrameLength() {
+        if (rawFrameDecoder != null && rawFrameDecoder.encodedFrameLength() != -1) {
+            return rawFrameDecoder.encodedFrameLength();
+        }
+        return frameHandler.getMaxFrameSize() + getFrameDecapsulationOverhead();
     }
 
     @Override

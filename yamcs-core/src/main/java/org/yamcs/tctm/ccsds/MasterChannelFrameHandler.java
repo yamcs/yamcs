@@ -74,6 +74,11 @@ public class MasterChannelFrameHandler {
     }
 
     public void handleFrame(Instant ertime, byte[] data, int offset, int length) throws TcTmException {
+        handleFrame(ertime, data, offset, length, null);
+    }
+
+    public void handleFrame(Instant ertime, byte[] data, int offset, int length, Integer expectedVcId)
+            throws TcTmException {
         DownlinkTransferFrame frame = null;
         try {
             frame = frameDecoder.decode(data, offset, length);
@@ -90,6 +95,14 @@ public class MasterChannelFrameHandler {
             badframeCount++;
             frameStreamHelper.sendBadFrame(badframeCount, ertime, data, offset, length, "wrong spacecraft id");
             return;
+        }
+
+        if (expectedVcId != null && frame.getVirtualChannelId() != expectedVcId) {
+            String reason = "outer header identifies vcId " + expectedVcId + " but CCSDS frame contains vcId "
+                    + frame.getVirtualChannelId();
+            badframeCount++;
+            frameStreamHelper.sendBadFrame(badframeCount, ertime, data, offset, length, reason);
+            throw new TcTmException(reason);
         }
         
         frame.setEearthRceptionTime(ertime);
@@ -124,6 +137,10 @@ public class MasterChannelFrameHandler {
 
     public Collection<VcDownlinkHandler> getVcHandlers() {
         return handlers.values();
+    }
+
+    public Collection<Integer> getVirtualChannelIds() {
+        return handlers.keySet();
     }
 
     public int getSpacecraftId() {
