@@ -1,0 +1,45 @@
+<SpaceSystem name="PUS20" xmlns="http://www.omg.org/spec/XTCE/20180204"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
+	<Header validationStatus="Unknown" version="1.0" date="2020-07-01T16:48:10Z" />
+	<TelemetryMetaData>
+		<ParameterSet>
+			<Parameter  parameterTypeRef="sss" name="bbb" >
+				<AliasSet>
+					<Alias nameSpace="PARAMETER_HASH" alias="233232" />
+				</AliasSet>
+			</Parameter>
+		</ParameterSet>
+		<ContainerSet>
+			<SequenceContainer name="TM(20,2)_parameter_value_report">
+                <EntryList>
+                    <ParameterRefEntry parameterRef="number_of_parameters" />
+                    <IndirectParameterRefEntry aliasNameSpace="/parameters-dt">
+                        <ParameterInstance parameterRef="parameter_hash"  />
+                    </IndirectParameterRefEntry>
+                </EntryList>
+                <BaseContainer containerRef="/PUS/pus-tm">
+                    <RestrictionCriteria><ComparisonList>
+                        <Comparison parameterRef="/PUS/type" value="20" />
+                        <Comparison parameterRef="/PUS/subtype" value="2" />
+                    </ComparisonList></RestrictionCriteria>
+                </BaseContainer>
+            </SequenceContainer>
+		</ContainerSet>
+	</TelemetryMetaData>
+	<CommandMetaData>
+		<MetaCommandSet>
+			<MetaCommand name="pus20-tc" abstract="true">
+				<BaseMetaCommand metaCommandRef="/PUS/pus-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="apid"	argumentValue="1" />
+						<ArgumentAssignment argumentName="type"	argumentValue="20" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="pus19-tc">
+					<EntryList />
+				</CommandContainer>
+			</MetaCommand>
+		</MetaCommandSet>
+	</CommandMetaData>
+</SpaceSystem>
