@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Inject,
-  OnInit,
-} from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {
@@ -31,7 +26,6 @@ export interface SelectParameterOptions {
 @Component({
   selector: 'app-select-parameter-dialog',
   templateUrl: './select-parameter-dialog.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class SelectParameterDialogComponent implements OnInit {

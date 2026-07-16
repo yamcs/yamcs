@@ -11,7 +11,6 @@ import { MarkdownComponent } from '../../../shared/markdown/markdown.component';
 @Component({
   selector: 'app-container-detail',
   templateUrl: './container-detail.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ExpressionComponent, MarkdownComponent, WebappSdkModule],
 })
 export class ContainerDetailComponent {

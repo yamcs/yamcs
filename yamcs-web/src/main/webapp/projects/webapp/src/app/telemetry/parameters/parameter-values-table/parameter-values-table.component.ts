@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-} from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import {
   BaseComponent,
   ParameterValue,
@@ -16,7 +10,6 @@ import { ParameterDataDataSource } from '../parameter-data-tab/parameter-data.da
   selector: 'app-parameter-values-table',
   templateUrl: './parameter-values-table.component.html',
   styleUrl: './parameter-values-table.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class ParameterValuesTableComponent extends BaseComponent {

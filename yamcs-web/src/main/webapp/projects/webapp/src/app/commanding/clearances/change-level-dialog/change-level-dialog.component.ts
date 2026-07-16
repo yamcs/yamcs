@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import {
   UntypedFormBuilder,
   UntypedFormControl,
@@ -13,6 +13,7 @@ import { SignificanceLevelComponent } from '../../../shared/significance-level/s
   selector: 'app-change-level-dialog',
   templateUrl: './change-level-dialog.component.html',
   styleUrl: './change-level-dialog.component.css',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [WebappSdkModule, SignificanceLevelComponent],
 })
 export class ChangeLevelDialogComponent {

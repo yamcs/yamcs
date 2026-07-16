@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
 import { AppParameterInput } from '../../../shared/parameter-input/parameter-input.component';
@@ -6,7 +6,6 @@ import { AppParameterInput } from '../../../shared/parameter-input/parameter-inp
 @Component({
   selector: 'app-trace-config',
   templateUrl: './trace-config.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AppParameterInput, WebappSdkModule],
 })
 export class TraceConfigComponent {

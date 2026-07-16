@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
   inject,
@@ -26,7 +25,6 @@ import { AddMessageDialogComponent } from '../../activities/activity-log-tab/add
   selector: 'app-item-detail-tab-logs',
   templateUrl: './item-detail-tab-logs.component.html',
   styleUrl: './item-detail-tab-logs.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class ItemDetailTabLogsComponent implements OnChanges, OnDestroy {

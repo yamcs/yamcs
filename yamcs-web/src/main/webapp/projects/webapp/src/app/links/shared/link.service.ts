@@ -1,12 +1,10 @@
-import { Injectable, inject } from '@angular/core';
+import { Service, inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActionInfo, MessageService, YamcsService } from '@yamcs/webapp-sdk';
 import { LinkActionDialogComponent } from '../link-action-dialog/link-action-dialog.component';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class LinkService {
   private dialog = inject(MatDialog);
   private yamcs = inject(YamcsService);

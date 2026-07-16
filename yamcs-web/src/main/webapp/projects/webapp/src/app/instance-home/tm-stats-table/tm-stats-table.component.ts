@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   Input,
   OnDestroy,
@@ -28,7 +27,6 @@ export interface PacketStats {
 @Component({
   selector: 'app-tmstats-table',
   templateUrl: './tm-stats-table.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class TmStatsTableComponent implements AfterViewInit, OnDestroy {

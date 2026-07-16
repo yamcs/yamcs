@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import {
   CommandHistoryEntry,
@@ -12,7 +12,6 @@ import { CommandDetailComponent } from '../command-detail/command-detail.compone
 
 @Component({
   templateUrl: './command.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommandDetailComponent, WebappSdkModule],
 })
 export class CommandComponent {

@@ -1,10 +1,4 @@
-import {
-  booleanAttribute,
-  ChangeDetectionStrategy,
-  Component,
-  input,
-  output,
-} from '@angular/core';
+import { booleanAttribute, Component, input, output } from '@angular/core';
 import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 
@@ -12,7 +6,6 @@ import { MatIcon } from '@angular/material/icon';
   selector: 'ya-page-icon-button',
   templateUrl: './page-icon-button.component.html',
   styleUrl: './page-icon-button.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [MatIconButton, MatIcon],
   host: {
     class: 'ya-page-icon-button',

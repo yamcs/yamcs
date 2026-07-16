@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
   input,
@@ -11,7 +10,6 @@ import { DomSanitizer } from '@angular/platform-browser';
 @Component({
   template: '<div #tt class="ya-tooltip"></div>',
   styleUrl: './tooltip.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class YaTooltip {
   html = input(false);

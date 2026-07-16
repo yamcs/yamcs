@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import {
   ActionInfo,
   AuthService,
@@ -14,7 +14,6 @@ import { LinkService } from '../shared/link.service';
   selector: 'app-link-detail',
   templateUrl: './link-detail.component.html',
   styleUrl: './link-detail.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LinkStatusComponent, WebappSdkModule],
 })
 export class LinkDetailComponent {

@@ -1,7 +1,6 @@
 import { DecimalPipe } from '@angular/common';
 import {
   booleanAttribute,
-  ChangeDetectionStrategy,
   Component,
   computed,
   inject,
@@ -15,14 +14,12 @@ export type YaProgressMode = 'determinate' | 'indeterminate';
   selector: 'ya-progress',
   templateUrl: './progress.component.html',
   styleUrl: './progress.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'ya-progress',
     '[class.alarm]': 'isAlarm()',
     '[style.height.px]': 'height()',
     '[style.width.px]': 'width()',
   },
-  imports: [DecimalPipe],
   providers: [DecimalPipe],
 })
 export class YaProgress {

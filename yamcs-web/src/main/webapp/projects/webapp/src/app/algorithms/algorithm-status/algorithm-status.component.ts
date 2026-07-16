@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import {
   AlgorithmStatus,
   OFF_COLOR,
@@ -10,7 +10,6 @@ import {
   selector: 'app-algorithm-status',
   templateUrl: './algorithm-status.component.html',
   styleUrl: './algorithm-status.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class AlgorithmStatusComponent {

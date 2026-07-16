@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
   Input,
@@ -20,7 +19,6 @@ function replaceAll(str: string, find: string, replace: string) {
 @Component({
   selector: 'app-expression',
   template: '<span #expr></span>',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExpressionComponent implements AfterViewInit {
   @Input()

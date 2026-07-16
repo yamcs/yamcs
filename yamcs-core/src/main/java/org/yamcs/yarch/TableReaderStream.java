@@ -57,7 +57,7 @@ public class TableReaderStream extends Stream implements Runnable, TableVisitor 
         }
         // when the thread is blocked on sending something (for example to a merge stream), if we don't call this, it
         // will be hanging forever
-        if (Thread.currentThread() != thread) {
+        if (thread != null && Thread.currentThread() != thread) {
             thread.interrupt();
         }
     }

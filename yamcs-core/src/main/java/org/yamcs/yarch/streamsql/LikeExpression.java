@@ -23,7 +23,7 @@ public class LikeExpression extends Expression {
         code.append("org.yamcs.yarch.streamsql.Utils.like(");
         children[0].fillCode_getValueReturn(code);
         code.append(", \"");
-        code.append(likeClause.pattern);
+        ValueExpression.escapeJavaString(likeClause.pattern, code);
         code.append("\")");
     }
 

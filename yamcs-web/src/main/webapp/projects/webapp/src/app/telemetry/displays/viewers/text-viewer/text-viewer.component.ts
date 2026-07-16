@@ -1,8 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-} from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import {
   ConfigService,
   StorageClient,
@@ -23,7 +19,6 @@ import { Viewer } from '../Viewer';
       margin: 1em;
     }
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class TextViewerComponent implements Viewer {

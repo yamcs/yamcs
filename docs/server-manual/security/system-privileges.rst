@@ -89,6 +89,9 @@ ControlFileTransfers
 ReadFileTransfers
     Allows read access to file transfer information.
 
+ControlTime
+    Allows to set time on a simulation time service.
+
 
 .. note::
 

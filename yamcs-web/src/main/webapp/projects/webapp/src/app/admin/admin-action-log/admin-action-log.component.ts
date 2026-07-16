@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnInit,
-  input,
-} from '@angular/core';
+import { Component, OnInit, input } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
@@ -27,7 +22,6 @@ const defaultInterval = 'NO_LIMIT';
 @Component({
   templateUrl: './admin-action-log.component.html',
   styleUrl: './admin-action-log.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AdminPageComponent, AppAdminToolbar, WebappSdkModule],
 })
 export class AdminActionLogComponent implements OnInit {

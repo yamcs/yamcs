@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 
 @Component({
@@ -10,7 +10,6 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
     class: 'ya-form',
   },
   imports: [ReactiveFormsModule],
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class YaForm {
   formGroup = input.required<FormGroup>();

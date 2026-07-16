@@ -269,17 +269,24 @@ public class ActivityService {
             activity.cancel(stopRequester);
         } catch (Exception e) {
             var cause = ExceptionUtil.unwind(e);
-            if (cause instanceof ManualFailureException) {
-                log.error("{} failed: {}", loggedName, cause.getMessage());
+            if (cause instanceof ActivityCancelledException cancelledException) {
+                var cancelledBy = cancelledException.getCancelledBy();
+                log.info("{} was cancelled by {}: {}", loggedName, cancelledBy.getName(), cause.getMessage());
+                logServiceInfo(activity, "Activity cancelled by " + cancelledBy.getName() + ": " + cause.getMessage());
+                activity.cancel(cancelledBy);
             } else {
-                log.error("{} failed", loggedName, cause);
+                if (cause instanceof ManualFailureException) {
+                    log.error("{} failed: {}", loggedName, cause.getMessage());
+                } else {
+                    log.error("{} failed", loggedName, cause);
+                }
+                var failureReason = cause.getMessage();
+                if (failureReason == null) {
+                    failureReason = cause.getClass().getSimpleName();
+                }
+                logServiceError(activity, "Activity failed: " + failureReason);
+                activity.completeExceptionally(failureReason, ongoingActivity.getStopRequester());
             }
-            var failureReason = cause.getMessage();
-            if (failureReason == null) {
-                failureReason = cause.getClass().getSimpleName();
-            }
-            logServiceError(activity, "Activity failed: " + failureReason);
-            activity.completeExceptionally(failureReason, ongoingActivity.getStopRequester());
         } finally {
             ongoingActivities.remove(activity.getId());
             activityDb.update(activity);

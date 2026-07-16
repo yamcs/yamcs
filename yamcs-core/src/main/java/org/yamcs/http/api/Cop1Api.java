@@ -21,6 +21,7 @@ import org.yamcs.protobuf.InitializeRequest;
 import org.yamcs.protobuf.ResumeRequest;
 import org.yamcs.protobuf.SubscribeStatusRequest;
 import org.yamcs.protobuf.UpdateConfigRequest;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.tctm.Link;
 import org.yamcs.tctm.ccsds.Cop1Monitor;
 import org.yamcs.tctm.ccsds.Cop1UplinkPacketHandler;
@@ -33,6 +34,7 @@ public class Cop1Api extends AbstractCop1Api<Context> {
 
     @Override
     public void initialize(Context ctx, InitializeRequest request, Observer<Empty> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlLinks);
         Cop1UplinkPacketHandler<?> cop1Link = verifyCop1Link(request.getInstance(), request.getLink());
 
         if (!request.hasType()) {
@@ -76,6 +78,7 @@ public class Cop1Api extends AbstractCop1Api<Context> {
 
     @Override
     public void resume(Context ctx, ResumeRequest request, Observer<Empty> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlLinks);
         Cop1UplinkPacketHandler<?> cop1Link = verifyCop1Link(request.getInstance(), request.getLink());
         cop1Link.resume().whenComplete((v, error) -> {
             if (error == null) {
@@ -88,6 +91,7 @@ public class Cop1Api extends AbstractCop1Api<Context> {
 
     @Override
     public void disable(Context ctx, DisableRequest request, Observer<Empty> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlLinks);
         Cop1UplinkPacketHandler<?> cop1Link = verifyCop1Link(request.getInstance(), request.getLink());
         boolean bypassAll = request.hasSetBypassAll() ? request.getSetBypassAll() : true;
         cop1Link.disableCop1(bypassAll);
@@ -96,6 +100,7 @@ public class Cop1Api extends AbstractCop1Api<Context> {
 
     @Override
     public void updateConfig(Context ctx, UpdateConfigRequest request, Observer<Cop1Config> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlLinks);
         Cop1UplinkPacketHandler<?> link = verifyCop1Link(request.getInstance(), request.getLink());
         link.setConfig(request.getCop1Config()).whenComplete((v, err) -> {
             if (err == null) {
@@ -114,6 +119,7 @@ public class Cop1Api extends AbstractCop1Api<Context> {
 
     @Override
     public void getConfig(Context ctx, GetConfigRequest request, Observer<Cop1Config> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadLinks);
         Cop1UplinkPacketHandler<?> cop1Link = verifyCop1Link(request.getInstance(), request.getLink());
         CompletableFuture<Cop1Config> cf = cop1Link.getCop1Config();
         cf.whenComplete((v, error) -> {
@@ -127,6 +133,7 @@ public class Cop1Api extends AbstractCop1Api<Context> {
 
     @Override
     public void getStatus(Context ctx, GetStatusRequest request, Observer<Cop1Status> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadLinks);
         Cop1UplinkPacketHandler<?> cop1Link = verifyCop1Link(request.getInstance(), request.getLink());
         CompletableFuture<Cop1Status> cf = cop1Link.getCop1Status();
         cf.whenComplete((v, error) -> {
@@ -140,6 +147,7 @@ public class Cop1Api extends AbstractCop1Api<Context> {
 
     @Override
     public void subscribeStatus(Context ctx, SubscribeStatusRequest request, Observer<Cop1Status> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadLinks);
         Cop1UplinkPacketHandler<?> cop1Link = verifyCop1Link(request.getInstance(), request.getLink());
 
         MyCop1Monitor monitor = new MyCop1Monitor(cop1Link, observer);
@@ -162,8 +170,8 @@ public class Cop1Api extends AbstractCop1Api<Context> {
         if (link == null) {
             throw new BadRequestException("There is no link named '" + linkName + "' in instance " + instance);
         }
-        if (link instanceof Cop1UplinkPacketHandler) {
-            return (Cop1UplinkPacketHandler<?>) link;
+        if (link instanceof Cop1UplinkPacketHandler cop1Link) {
+            return cop1Link;
         }
         throw new BadRequestException(String.format(
                 "Link '%s' for instance '%s' does not support COP-1",

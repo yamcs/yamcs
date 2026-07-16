@@ -1,8 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewEncapsulation,
-} from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 
 /**
  * Applies styling to the attributed table host
@@ -54,7 +50,6 @@ import {
       min-width: 200px;
     }
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
 })
 export class DataTableDirective {

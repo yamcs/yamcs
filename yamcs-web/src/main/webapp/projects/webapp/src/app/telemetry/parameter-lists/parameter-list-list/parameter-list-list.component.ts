@@ -1,8 +1,4 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-} from '@angular/core';
+import { AfterViewInit, Component } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { Title } from '@angular/platform-browser';
@@ -17,7 +13,6 @@ import {
 
 @Component({
   templateUrl: './parameter-list-list.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class ParameterListListComponent implements AfterViewInit {

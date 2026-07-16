@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  forwardRef,
-  ViewChild,
-} from '@angular/core';
+import { Component, ElementRef, forwardRef, ViewChild } from '@angular/core';
 import {
   ControlValueAccessor,
   NG_VALIDATORS,
@@ -18,7 +12,6 @@ import { requireHex } from '../../validators';
   selector: 'ya-binary-input',
   templateUrl: './binary-input.component.html',
   styleUrl: './binary-input.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

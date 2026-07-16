@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import {
   UntypedFormBuilder,
   UntypedFormControl,
@@ -21,7 +21,6 @@ import { AppAppBaseToolbar } from '../appbase-toolbar/appbase-toolbar.component'
 
 @Component({
   templateUrl: './create-instance-page2.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AppAppBaseToolbar,
     AppAppBaseToolbarLabel,

@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Service, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NavGroup, NavItem } from '../navigation';
 import { AppearanceService } from './appearance.service';
@@ -7,7 +7,7 @@ import { ConfigService } from './config.service';
 import { MessageService } from './message.service';
 import { YamcsService } from './yamcs.service';
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class ExtensionService {
   readonly authService = inject(AuthService);
   readonly configService = inject(ConfigService);
@@ -18,6 +18,7 @@ export class ExtensionService {
   readonly yamcs = inject(YamcsService);
 
   private navItems = new Map<NavGroup, NavItem[]>();
+  private extensionsDisablingReloadOnNavigation = new Set<string>();
 
   getNavItems(group: NavGroup) {
     const navItems = [...(this.navItems.get(group) || [])];
@@ -35,5 +36,17 @@ export class ExtensionService {
       this.navItems.set(group, items);
     }
     items.push(item);
+  }
+
+  // Temporary during transition.
+  // Disabling reloadOnNavigation should become the default.
+  disableReloadOnNavigation(extensionId: string) {
+    this.extensionsDisablingReloadOnNavigation.add(extensionId);
+  }
+
+  // Temporary during transition.
+  // Disabling reloadOnNavigation should become the default.
+  isDisablingReloadOnNavigation(extensionId: string) {
+    return this.extensionsDisablingReloadOnNavigation.has(extensionId) ?? false;
   }
 }

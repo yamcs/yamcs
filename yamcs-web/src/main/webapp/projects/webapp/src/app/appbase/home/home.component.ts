@@ -1,11 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  OnDestroy,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
@@ -27,7 +21,6 @@ import { AppAppBaseToolbar } from '../appbase-toolbar/appbase-toolbar.component'
 @Component({
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AppAppBaseToolbar, WebappSdkModule],
 })
 export class HomeComponent implements AfterViewInit, OnDestroy {

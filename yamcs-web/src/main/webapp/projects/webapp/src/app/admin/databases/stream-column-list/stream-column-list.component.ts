@@ -1,10 +1,9 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Stream, WebappSdkModule, YamcsService } from '@yamcs/webapp-sdk';
 
 @Component({
   templateUrl: './stream-column-list.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class StreamColumnListComponent {

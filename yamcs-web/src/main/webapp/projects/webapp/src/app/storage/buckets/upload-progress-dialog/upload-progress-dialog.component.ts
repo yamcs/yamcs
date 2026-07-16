@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  Inject,
-  ViewChild,
-} from '@angular/core';
+import { Component, ElementRef, Inject, ViewChild } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
 import { Observable } from 'rxjs';
@@ -15,7 +9,6 @@ import { Upload } from './Upload';
   selector: 'app-upload-progress-dialog',
   templateUrl: './upload-progress-dialog.component.html',
   styleUrl: './upload-progress-dialog.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class UploadProgressDialogComponent {

@@ -1,6 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import {
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
   OnDestroy,
@@ -32,7 +31,6 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
 @Component({
   templateUrl: './stack-folder.component.html',
   styleUrl: './stack-folder.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class StackFolderComponent implements OnDestroy {

@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  contentChildren,
-  input,
-} from '@angular/core';
+import { Component, computed, contentChildren, input } from '@angular/core';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { YaIconAction } from '../icon-action/icon-action.component';
 
@@ -12,7 +6,6 @@ import { YaIconAction } from '../icon-action/icon-action.component';
   selector: 'ya-more',
   templateUrl: 'more.component.html',
   styleUrl: 'more.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [YaIconAction, MatMenu, MatMenuTrigger],
   host: {
     class: 'ya-more',

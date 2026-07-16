@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { outputFromObservable } from '@angular/core/rxjs-interop';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
@@ -18,7 +18,6 @@ import { removeUnsetProperties } from '../bands/properties';
 @Component({
   selector: 'app-create-parameter-plot',
   templateUrl: './create-parameter-plot.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ParameterPlotStylesComponent,
     TraceStylesComponent,

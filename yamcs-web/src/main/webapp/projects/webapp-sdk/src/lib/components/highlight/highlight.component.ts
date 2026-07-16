@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   computed,
   inject,
@@ -10,7 +9,6 @@ import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
   selector: 'ya-highlight',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './highlight.component.html',
 })
 export class YaHighlight {

@@ -220,7 +220,8 @@ public class DataTypeProcessor {
         case SINT64:
             return ValueUtility.getEnumeratedValue(v.getSint64Value(), type.calibrate(v.getSint64Value()));
         case UINT32:
-            return ValueUtility.getEnumeratedValue(v.getUint32Value(), type.calibrate(v.getUint32Value()));
+            long uv = Integer.toUnsignedLong(v.getUint32Value());
+            return ValueUtility.getEnumeratedValue(uv, type.calibrate(uv));
         case UINT64:
             return ValueUtility.getEnumeratedValue(v.getUint64Value(), type.calibrate(v.getUint64Value()));
         case STRING:

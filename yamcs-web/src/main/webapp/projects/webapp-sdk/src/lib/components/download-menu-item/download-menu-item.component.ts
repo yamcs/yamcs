@@ -1,9 +1,16 @@
-import { Component, ElementRef, Input, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  Input,
+  ViewChild,
+} from '@angular/core';
 import { MatMenuItem } from '@angular/material/menu';
 
 @Component({
   selector: 'ya-download-menu-item',
   templateUrl: './download-menu-item.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [MatMenuItem],
 })
 export class YaDownloadMenuItem {

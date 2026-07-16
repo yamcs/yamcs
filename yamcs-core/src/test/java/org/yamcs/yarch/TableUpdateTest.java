@@ -20,7 +20,7 @@ public class TableUpdateTest extends YarchTestCase {
     @Test
     public void testInvalidTable() {
         assertThrows(StreamSqlException.class, () -> {
-            execute("update invalid_table set d =\"new value\"");
+            execute("update invalid_table set d ='new value'");
         });
     }
 

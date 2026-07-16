@@ -270,12 +270,7 @@ export interface ArgumentAssignment {
 
 export interface Significance {
   consequenceLevel:
-    | 'NONE'
-    | 'WATCH'
-    | 'WARNING'
-    | 'DISTRESS'
-    | 'CRITICAL'
-    | 'SEVERE';
+    'NONE' | 'WATCH' | 'WARNING' | 'DISTRESS' | 'CRITICAL' | 'SEVERE';
   reasonForWarning: string;
 }
 
@@ -300,12 +295,7 @@ export interface EnumRange {
 }
 
 export type AlarmLevelType =
-  | 'NORMAL'
-  | 'WATCH'
-  | 'WARNING'
-  | 'DISTRESS'
-  | 'CRITICAL'
-  | 'SEVERE';
+  'NORMAL' | 'WATCH' | 'WARNING' | 'DISTRESS' | 'CRITICAL' | 'SEVERE';
 
 export interface AlarmRange {
   level: AlarmLevelType;

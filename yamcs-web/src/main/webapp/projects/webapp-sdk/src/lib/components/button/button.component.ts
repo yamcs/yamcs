@@ -1,10 +1,4 @@
-import {
-  booleanAttribute,
-  ChangeDetectionStrategy,
-  Component,
-  input,
-  output,
-} from '@angular/core';
+import { booleanAttribute, Component, input, output } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 
 export type YaButtonAppearance = 'basic' | 'text' | 'primary';
@@ -13,7 +7,6 @@ export type YaButtonAppearance = 'basic' | 'text' | 'primary';
   selector: 'ya-button',
   templateUrl: './button.component.html',
   styleUrl: './button.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'ya-button',
   },

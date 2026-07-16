@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnDestroy,
-  OnInit,
-  input,
-} from '@angular/core';
+import { Component, OnDestroy, OnInit, input } from '@angular/core';
 import {
   AlgorithmStatus,
   AlgorithmStatusSubscription,
@@ -16,7 +10,6 @@ import { AlgorithmDetailComponent } from '../algorithm-detail/algorithm-detail.c
 
 @Component({
   templateUrl: './algorithm-summary-tab.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AlgorithmDetailComponent, WebappSdkModule],
 })
 export class AlgorithmSummaryTabComponent implements OnInit, OnDestroy {

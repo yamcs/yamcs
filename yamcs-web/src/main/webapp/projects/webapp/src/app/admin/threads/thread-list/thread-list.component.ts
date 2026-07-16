@@ -1,9 +1,4 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  OnDestroy,
-} from '@angular/core';
+import { AfterViewInit, Component, OnDestroy } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -21,7 +16,6 @@ import { ThreadsTableComponent } from '../threads-table/threads-table.component'
 
 @Component({
   templateUrl: './thread-list.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AdminPageComponent,
     AppAdminToolbar,

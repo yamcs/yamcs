@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import {
   UntypedFormBuilder,
   UntypedFormGroup,
@@ -14,7 +14,6 @@ import {
 @Component({
   selector: 'app-create-display-folder-dialog',
   templateUrl: './create-display-folder-dialog.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class CreateDisplayFolderDialogComponent {

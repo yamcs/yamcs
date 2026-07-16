@@ -43,10 +43,7 @@ export interface TimelineItem {
 }
 
 export type StartCondition =
-  | 'ON_COMPLETION'
-  | 'ON_SUCCESS'
-  | 'ON_FAILURE'
-  | 'ON_START';
+  'ON_COMPLETION' | 'ON_SUCCESS' | 'ON_FAILURE' | 'ON_START';
 
 export interface Predecessor {
   itemId: string;

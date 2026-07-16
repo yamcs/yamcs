@@ -1,5 +1,5 @@
 import { APP_BASE_HREF } from '@angular/common';
-import { Inject, Injectable, OnDestroy } from '@angular/core';
+import { inject, OnDestroy, Service } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import {
@@ -21,10 +21,14 @@ export interface Claims {
   exp: number;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class AuthService implements OnDestroy {
+  private yamcsService = inject(YamcsService);
+  private configService = inject(ConfigService);
+  private router = inject(Router);
+  private baseHref = inject(APP_BASE_HREF);
+  private synchronizer = inject(Synchronizer);
+
   private authInfo: AuthInfo;
   public user$ = new BehaviorSubject<User | null>(null);
 
@@ -35,17 +39,11 @@ export class AuthService implements OnDestroy {
   // If unset, defaults to a local login page.
   private logoutRedirectUrl?: string;
 
-  constructor(
-    private yamcsService: YamcsService,
-    private configService: ConfigService,
-    private router: Router,
-    @Inject(APP_BASE_HREF) private baseHref: string,
-    synchronizer: Synchronizer,
-  ) {
-    this.authInfo = configService.getAuthInfo();
-    this.logoutRedirectUrl = configService.getConfig().logoutRedirectUrl;
+  constructor() {
+    this.authInfo = this.configService.getAuthInfo();
+    this.logoutRedirectUrl = this.configService.getConfig().logoutRedirectUrl;
 
-    yamcsService.sessionEnded$.subscribe((ended) => {
+    this.yamcsService.sessionEnded$.subscribe((ended) => {
       if (ended && !this.authInfo.spnego) {
         this.logout(true);
       }
@@ -56,7 +54,7 @@ export class AuthService implements OnDestroy {
      * tokens should (still) work. If not, then the user is navigated
      * to the login page.
      */
-    yamcsService.yamcsClient.setHttpInterceptor(
+    this.yamcsService.yamcsClient.setHttpInterceptor(
       async (next: HttpHandler, url: string, init?: RequestInit) => {
         let response;
         try {
@@ -99,7 +97,7 @@ export class AuthService implements OnDestroy {
     }
 
     // Proactively extends a login session when it's close to being expired.
-    this.syncSubscription = synchronizer.syncSlow(() => {
+    this.syncSubscription = this.synchronizer.syncSlow(() => {
       if (this.nextRefresh) {
         const now = new Date().getTime();
         if (now >= this.nextRefresh.getTime()) {

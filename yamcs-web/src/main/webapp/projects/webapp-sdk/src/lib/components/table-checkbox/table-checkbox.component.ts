@@ -1,6 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import {
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   inject,
@@ -14,7 +13,6 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'ya-table-checkbox',
   templateUrl: './table-checkbox.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class YaTableCheckbox implements OnInit, OnDestroy {
   changeDetection = inject(ChangeDetectorRef);

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import {
@@ -15,7 +15,6 @@ import { BucketPageTabsComponent } from '../bucket-page-tabs/bucket-page-tabs.co
 
 @Component({
   templateUrl: './bucket-properties.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AppStorageToolbar,
     AppStorageToolbarLabel,

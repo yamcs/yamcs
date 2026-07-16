@@ -1,7 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
   forwardRef,
@@ -34,7 +33,6 @@ import { SignificanceLevelComponent } from '../significance-level/significance-l
   selector: 'app-command-selector',
   templateUrl: './command-selector.component.html',
   styleUrl: './command-selector.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

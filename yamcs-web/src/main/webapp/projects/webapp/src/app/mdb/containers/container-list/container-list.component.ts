@@ -1,11 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { Title } from '@angular/platform-browser';
@@ -27,7 +21,6 @@ import { ContainersDataSource } from './containers.datasource';
 
 @Component({
   templateUrl: './container-list.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ExpressionComponent, WebappSdkModule],
 })
 export class ContainerListComponent implements AfterViewInit {

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import {
   AbstractControl,
   UntypedFormBuilder,
@@ -19,7 +19,6 @@ const PASSWORD_VALIDATOR: ValidatorFn = (control: AbstractControl) => {
 @Component({
   selector: 'app-change-user-password-dialog',
   templateUrl: './change-user-password-dialog.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class ChangeUserPasswordDialogComponent {

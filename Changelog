@@ -1,3 +1,12 @@
+Version 5.13.2 released 14-Jul-2026
+- Improved privilege checks (CVE-2026-55521, CVE-2026-55547, CVE-2026-55548 and CVE-2026-55545)
+- Fix XSS in extension route (CVE-2026-55566)
+- Sanitize YAML for templated instances (CVE-2026-55559)
+- Avoid RCE through double-quoted identifiers (CVE-2026-55511)
+- Escape LIKE pattern before embedding in generated StreamSQL Java (CVE-2026-55565)
+- Other minor tweaks and fixes.
+
+
 Version 5.13.1 released 9-Jul-2026
 - Change in the CCSDS sequence count handling for outgoing commands: in the previous version there was one per-APID counter for the entire Yamcs server. Starting with this version, by default every link mantains its own independent counter. The newly added property seqCounterName allows two or more links to share the same counter.
 - Fixed a bug in the TM secondary header length decoding where the version number bits could corrupt the decoded length.

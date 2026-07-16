@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnChanges,
-  OnDestroy,
-  input,
-} from '@angular/core';
+import { Component, OnChanges, OnDestroy, input } from '@angular/core';
 import {
   Parameter,
   ParameterSubscription,
@@ -18,7 +12,6 @@ import { ParameterDetailComponent } from '../parameter-detail/parameter-detail.c
 
 @Component({
   templateUrl: './parameter-summary-tab.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ParameterDetailComponent, WebappSdkModule],
 })
 export class ParameterSummaryTabComponent implements OnChanges, OnDestroy {

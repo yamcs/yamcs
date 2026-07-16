@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   ContentChildren,
   EventEmitter,
@@ -9,7 +8,6 @@ import {
   QueryList,
 } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
-import { RouterLink } from '@angular/router';
 import { BaseComponent } from '../../abc/BaseComponent';
 import { YaSidenavItem } from './sidenav-item.component';
 import { YaSidenav } from './sidenav.component';
@@ -18,8 +16,7 @@ import { YaSidenav } from './sidenav.component';
   selector: 'ya-sidenav-group',
   templateUrl: './sidenav-group.component.html',
   styleUrl: './sidenav-group.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatIcon, RouterLink],
+  imports: [MatIcon],
   host: {
     class: 'ya-sidenav-group',
     '[class.mini]': 'mini()',

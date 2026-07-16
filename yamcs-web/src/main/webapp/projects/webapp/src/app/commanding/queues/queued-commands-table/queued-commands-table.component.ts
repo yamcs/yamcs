@@ -1,10 +1,4 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewInit, Component, Input, ViewChild } from '@angular/core';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import {
@@ -19,7 +13,6 @@ import { Observable } from 'rxjs';
   selector: 'app-queued-commands-table',
   templateUrl: './queued-commands-table.component.html',
   styleUrl: './queued-commands-table.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class QueuedCommandsTableComponent implements AfterViewInit {

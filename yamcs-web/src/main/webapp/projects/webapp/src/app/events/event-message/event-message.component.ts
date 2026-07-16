@@ -1,16 +1,10 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnInit,
-} from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
 import { BehaviorSubject } from 'rxjs';
 
 @Component({
   selector: 'app-event-message',
   templateUrl: './event-message.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class EventMessageComponent implements OnInit {

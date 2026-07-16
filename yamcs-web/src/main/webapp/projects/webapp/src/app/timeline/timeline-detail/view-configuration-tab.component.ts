@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  effect,
-  inject,
-  input,
-} from '@angular/core';
+import { Component, effect, inject, input } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
@@ -25,7 +19,6 @@ import { TimelineService } from '../timeline.service';
   selector: 'app-view-configuration-tab',
   templateUrl: './view-configuration-tab.component.html',
   styleUrl: './view-configuration-tab.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class ViewConfigurationTabComponent {

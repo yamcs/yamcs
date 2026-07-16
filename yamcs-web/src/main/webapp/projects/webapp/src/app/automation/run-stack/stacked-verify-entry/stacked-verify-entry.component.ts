@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  effect,
-  input,
-} from '@angular/core';
+import { Component, effect, input } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { ParameterValue, WebappSdkModule } from '@yamcs/webapp-sdk';
 import { LiveExpressionComponent } from '../../../shared/live-expression/live-expression.component';
@@ -22,7 +17,6 @@ interface Record {
   selector: 'app-stacked-verify-entry',
   templateUrl: './stacked-verify-entry.component.html',
   styleUrl: './stacked-verify-entry.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [EntryLabel, LiveExpressionComponent, WebappSdkModule],
 })
 export class StackedVerifyEntryComponent {

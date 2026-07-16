@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   effect,
   ElementRef,
@@ -29,7 +28,6 @@ import { AlarmLabelComponent } from '../alarm-label/alarm-label.component';
 @Component({
   templateUrl: './instance-layout.component.html',
   styleUrl: './instance-layout.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ActivitiesLabelComponent, AlarmLabelComponent, WebappSdkModule],
   host: {
     '[class.collapsed]': 'isCollapsed()',

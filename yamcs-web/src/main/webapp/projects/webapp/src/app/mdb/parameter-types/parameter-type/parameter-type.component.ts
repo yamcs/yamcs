@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import {
@@ -11,7 +11,6 @@ import { ParameterTypeDetailComponent } from '../parameter-type-detail/parameter
 
 @Component({
   templateUrl: './parameter-type.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ParameterTypeDetailComponent, WebappSdkModule],
 })
 export class ParameterTypeComponent {

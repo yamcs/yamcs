@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import {
   UntypedFormBuilder,
   UntypedFormGroup,
@@ -16,6 +16,7 @@ import {
 @Component({
   selector: 'app-rename-display-dialog',
   templateUrl: './rename-display-dialog.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [WebappSdkModule],
 })
 export class RenameDisplayDialogComponent {

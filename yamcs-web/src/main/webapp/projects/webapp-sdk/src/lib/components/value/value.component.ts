@@ -1,10 +1,5 @@
 import { AsyncPipe } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnChanges,
-} from '@angular/core';
+import { Component, Input, OnChanges } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { AggregateValue, Value } from '../../client';
 import { ValuePipe } from '../../pipes/value.pipe';
@@ -24,7 +19,6 @@ interface ValueNode {
   selector: 'ya-value',
   templateUrl: './value.component.html',
   styleUrl: './value.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AsyncPipe, ValuePipe],
 })
 export class YaValue implements OnChanges {

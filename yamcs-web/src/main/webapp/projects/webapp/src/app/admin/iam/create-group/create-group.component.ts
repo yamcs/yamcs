@@ -1,5 +1,5 @@
 import { Location } from '@angular/common';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import {
   UntypedFormBuilder,
   UntypedFormControl,
@@ -26,7 +26,6 @@ import {
 
 @Component({
   templateUrl: './create-group.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AdminPageComponent,
     AppAdminToolbar,

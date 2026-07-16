@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  forwardRef,
-  Input,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
 import {
   ControlValueAccessor,
   NG_VALIDATORS,
@@ -23,7 +16,6 @@ import { Subscription } from 'rxjs';
   selector: 'app-string-argument',
   templateUrl: './string-argument.component.html',
   styleUrl: './string-argument.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

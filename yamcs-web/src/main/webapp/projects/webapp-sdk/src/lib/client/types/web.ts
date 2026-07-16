@@ -47,11 +47,7 @@ export interface ListNotificationsResponse {
 }
 
 export type NotificationType =
-  | 'IN_PROGRESS'
-  | 'INFO'
-  | 'WARNING'
-  | 'ERROR'
-  | 'SUCCESS';
+  'IN_PROGRESS' | 'INFO' | 'WARNING' | 'ERROR' | 'SUCCESS';
 
 export interface Notification {
   tag: string;

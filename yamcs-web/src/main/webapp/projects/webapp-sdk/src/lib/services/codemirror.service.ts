@@ -1,4 +1,4 @@
-import { effect, inject, Injectable } from '@angular/core';
+import { effect, inject, Service } from '@angular/core';
 import {
   autocompletion,
   closeBrackets,
@@ -41,11 +41,7 @@ import { EditorView } from 'codemirror';
 import { AppearanceService } from './appearance.service';
 
 export type CodeMirrorLanguage =
-  | 'java'
-  | 'javascript'
-  | 'markdown'
-  | 'plain'
-  | 'python';
+  'java' | 'javascript' | 'markdown' | 'plain' | 'python';
 
 export interface CodeMirrorOptions {
   parent: Element;
@@ -206,9 +202,7 @@ export class CodeMirror {
   }
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class CodeMirrorService {
   private appearanceService = inject(AppearanceService);
   private instances = new Set<CodeMirror>();

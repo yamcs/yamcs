@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
   Input,
@@ -20,7 +19,6 @@ import { MarkdownComponent } from '../../../shared/markdown/markdown.component';
   selector: 'app-algorithm-detail',
   templateUrl: './algorithm-detail.component.html',
   styleUrl: './algorithm-detail.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [MarkdownComponent, WebappSdkModule],
 })
 export class AlgorithmDetailComponent implements OnDestroy {

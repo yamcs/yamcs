@@ -1,10 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewInit, Component, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
@@ -20,7 +15,6 @@ import {
 @Component({
   templateUrl: './select-instance-dialog.component.html',
   styleUrl: './select-instance-dialog.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class SelectInstanceDialogComponent implements AfterViewInit {

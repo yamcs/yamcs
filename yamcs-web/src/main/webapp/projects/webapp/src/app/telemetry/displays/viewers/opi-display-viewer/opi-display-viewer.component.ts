@@ -1,6 +1,5 @@
 import { APP_BASE_HREF } from '@angular/common';
 import {
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
   Inject,
@@ -57,7 +56,6 @@ const ARGS_PREFIX = 'args.';
     </div>
   `,
   styleUrl: './opi-display-viewer.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class OpiDisplayViewerComponent

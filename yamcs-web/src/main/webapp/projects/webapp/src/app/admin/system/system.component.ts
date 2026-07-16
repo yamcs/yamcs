@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import {
   PluginInfo,
@@ -14,7 +14,6 @@ import { AppAdminToolbar } from '../shared/admin-toolbar/admin-toolbar.component
 @Component({
   templateUrl: './system.component.html',
   styleUrl: './system.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AdminPageComponent, AppAdminToolbar, WebappSdkModule],
 })
 export class SystemComponent implements OnDestroy {

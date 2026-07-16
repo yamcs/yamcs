@@ -1,17 +1,11 @@
 import { CdkPortalOutlet } from '@angular/cdk/portal';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ContentChild,
-  input,
-} from '@angular/core';
+import { Component, ContentChild, input } from '@angular/core';
 import { YA_FIELD, YaFieldLabel } from './field-label.directive';
 
 @Component({
   selector: 'ya-field',
   templateUrl: './field.component.html',
   styleUrl: './field.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: YA_FIELD,

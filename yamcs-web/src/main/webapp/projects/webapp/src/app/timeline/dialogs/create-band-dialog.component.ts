@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  signal,
-  viewChild,
-} from '@angular/core';
+import { Component, inject, signal, viewChild } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {
   MessageService,
@@ -30,7 +24,6 @@ export interface CreateBandDialogData {
   selector: 'app-create-band-dialog',
   templateUrl: './create-band-dialog.component.html',
   styleUrl: './create-band-dialog.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     BandTypeSelectionComponent,
     CreateCommandBandComponent,

@@ -1,7 +1,6 @@
 import { TitleCasePipe } from '@angular/common';
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   Input,
@@ -27,7 +26,6 @@ import { resolveProperties } from '../../bands/properties';
   selector: 'app-edit-parameter-states',
   templateUrl: './edit-parameter-states.component.html',
   styleUrl: './edit-parameter-states.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ParameterStatesStylesComponent, TitleCasePipe, WebappSdkModule],
 })
 export class EditParameterStatesComponent implements AfterViewInit {

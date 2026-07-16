@@ -1,5 +1,5 @@
 import { Location } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import {
   UntypedFormBuilder,
   UntypedFormControl,
@@ -21,7 +21,6 @@ import { SelectParameterDialogComponent } from '../../../shared/select-parameter
 
 @Component({
   templateUrl: './edit-parameter-list.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class EditParameterListComponent implements OnDestroy {

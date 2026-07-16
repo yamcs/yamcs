@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import {
   BaseComponent,
@@ -14,7 +14,6 @@ import { ColumnValuePipe } from '../shared/column-value.pipe';
 @Component({
   templateUrl: './table-data-tab.component.html',
   styleUrl: './table-data-tab.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ColumnValuePipe, RecordComponent, WebappSdkModule],
 })
 export class TableDataTabComponent extends BaseComponent {

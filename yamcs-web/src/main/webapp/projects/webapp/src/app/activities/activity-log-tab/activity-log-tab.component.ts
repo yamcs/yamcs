@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
   OnDestroy,
@@ -25,7 +24,6 @@ import { AddMessageDialogComponent } from './add-message-dialog.component';
 @Component({
   templateUrl: './activity-log-tab.component.html',
   styleUrl: './activity-log-tab.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class ActivityLogTabComponent implements OnDestroy {

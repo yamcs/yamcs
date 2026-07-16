@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  viewChild,
-} from '@angular/core';
+import { Component, Input, viewChild } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import {
   AuthService,
@@ -24,7 +19,6 @@ import { TemplateProvider } from './TemplateProvider';
 @Component({
   selector: 'app-command-form',
   templateUrl: './command-form.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommandArgumentsForm,
     CommandCommentForm,

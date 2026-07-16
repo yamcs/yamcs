@@ -1,11 +1,5 @@
 import { Clipboard } from '@angular/cdk/clipboard';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnInit,
-  ViewChild,
-  input,
-} from '@angular/core';
+import { Component, OnInit, ViewChild, input } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute } from '@angular/router';
 import {
@@ -100,7 +94,6 @@ export type Node =
 @Component({
   templateUrl: './packet.component.html',
   styleUrl: './packet.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [HexComponent, WebappSdkModule],
 })
 export class PacketComponent extends BaseComponent implements OnInit {

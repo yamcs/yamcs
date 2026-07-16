@@ -12,6 +12,7 @@ import org.yamcs.protobuf.LeapSecondsTable;
 import org.yamcs.protobuf.LeapSecondsTable.ValidityRange;
 import org.yamcs.protobuf.SetTimeRequest;
 import org.yamcs.protobuf.SubscribeTimeRequest;
+import org.yamcs.security.SystemPrivilege;
 import org.yamcs.time.SimulationTimeService;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.TaiUtcConverter.ValidityLine;
@@ -45,6 +46,7 @@ public class TimeApi extends AbstractTimeApi<Context> {
 
     @Override
     public void setTime(Context ctx, SetTimeRequest request, Observer<Empty> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlTime);
         String instance = InstancesApi.verifyInstance(request.getInstance());
         YamcsServer yamcs = YamcsServer.getServer();
         TimeService timeService = yamcs.getInstance(instance).getTimeService();

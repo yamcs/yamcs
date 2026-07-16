@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Legend } from './Legend';
@@ -13,7 +13,6 @@ export interface SelectItemEvent {
   selector: 'app-legend',
   templateUrl: './legend.component.html',
   styleUrl: './legend.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [MatIcon, MatTooltipModule],
 })
 export class LegendComponent {

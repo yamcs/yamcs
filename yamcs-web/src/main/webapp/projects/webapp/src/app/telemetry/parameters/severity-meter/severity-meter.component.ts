@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
   Input,
@@ -21,7 +20,6 @@ const XMLNS = 'http://www.w3.org/2000/svg';
     preserveAspectRatio="none"
     style="overflow: visible"
   ></svg>`,
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SeverityMeterComponent implements AfterViewInit, OnChanges {
   @Input()

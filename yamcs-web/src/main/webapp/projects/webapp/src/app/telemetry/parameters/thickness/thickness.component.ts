@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   Input,
@@ -11,7 +10,6 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
   selector: 'app-thickness',
   templateUrl: './thickness.component.html',
   styleUrl: './thickness.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class ThicknessComponent {

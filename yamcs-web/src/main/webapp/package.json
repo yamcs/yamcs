@@ -16,18 +16,17 @@
   },
   "private": true,
   "dependencies": {
-    "@angular/animations": "^21.0.6",
-    "@angular/cdk": "^21.0.5",
-    "@angular/common": "^21.0.6",
-    "@angular/compiler": "^21.0.6",
-    "@angular/core": "^21.0.6",
-    "@angular/forms": "^21.0.6",
-    "@angular/language-service": "^21.0.6",
-    "@angular/material": "^21.0.5",
-    "@angular/platform-browser": "^21.0.6",
-    "@angular/platform-browser-dynamic": "^21.0.6",
-    "@angular/router": "^21.0.6",
-    "@angular/service-worker": "^21.0.6",
+    "@angular/animations": "^22.0.4",
+    "@angular/cdk": "^22.0.2",
+    "@angular/common": "^22.0.4",
+    "@angular/compiler": "^22.0.4",
+    "@angular/core": "^22.0.4",
+    "@angular/forms": "^22.0.4",
+    "@angular/language-service": "^22.0.4",
+    "@angular/material": "^22.0.2",
+    "@angular/platform-browser": "^22.0.4",
+    "@angular/router": "^22.0.4",
+    "@angular/service-worker": "^22.0.4",
     "@codemirror/lang-java": "^6.0.1",
     "@codemirror/lang-javascript": "^6.2.2",
     "@codemirror/lang-markdown": "^6.2.5",
@@ -44,11 +43,18 @@
     "tslib": "^2.4.0"
   },
   "devDependencies": {
-    "@angular/build": "^21.0.4",
-    "@angular/cli": "^21.0.4",
-    "@angular/compiler-cli": "^21.0.6",
-    "ng-packagr": "^21.0.1",
+    "@angular/build": "^22.0.4",
+    "@angular/cli": "^22.0.4",
+    "@angular/compiler-cli": "^22.0.4",
+    "ng-packagr": "^22.0.0",
     "prettier": "^3.5.0",
-    "typescript": "~5.9.3"
+    "typescript": "~6.0.3"
+  },
+  "allowScripts": {
+    "@parcel/watcher": true,
+    "esbuild": true,
+    "fsevents": true,
+    "lmdb": true,
+    "msgpackr-extract": true
   }
 }

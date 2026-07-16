@@ -1,17 +1,10 @@
-import {
-  booleanAttribute,
-  ChangeDetectionStrategy,
-  Component,
-  input,
-  output,
-} from '@angular/core';
+import { booleanAttribute, Component, input, output } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 
 @Component({
   selector: 'ya-icon-button',
   templateUrl: './icon-button.component.html',
   styleUrl: './icon-button.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [MatIcon],
 })
 export class YaIconButton {

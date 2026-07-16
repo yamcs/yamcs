@@ -1,11 +1,14 @@
 package org.yamcs.templating;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+import org.yaml.snakeyaml.Yaml;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -126,5 +129,28 @@ public class TemplateProcessorTest {
         assertThrows(IllegalArgumentException.class, () -> {
             TemplateProcessor.process(template, args);
         });
+    }
+
+    @Test
+    public void testSanitizeYaml() throws ParseException {
+        String template = "people:\n- {{ a }}\n- {{ b }}";
+
+        // Work the same for normal input
+        Map<String, Object> args = ImmutableMap.of("a", "alice", "b", "bob");
+        assertEquals("people:\n- alice\n- bob", TemplateProcessor.process(template, args).trim());
+        assertEquals("people:\n- alice\n- bob", TemplateProcessor.processAndSanitizeYaml(template, args).trim());
+
+        // Attempt at changing the YAML structure
+        args = ImmutableMap.of("a", "alice", "b", "bob\n- eve");
+        var unsafeOutput = "people:\n- alice\n- bob\n- eve";
+        assertEquals(unsafeOutput, TemplateProcessor.process(template, args).trim());
+        assertNotEquals(unsafeOutput, TemplateProcessor.processAndSanitizeYaml(template, args).trim());
+
+        // Deeper verification
+        var sanitizedOutput = TemplateProcessor.processAndSanitizeYaml(template, args);
+        Map<String, Object> map = new Yaml().load(sanitizedOutput);
+        assertEquals("alice", ((List<?>) map.get("people")).get(0));
+        assertEquals("bob\n- eve", ((List<?>) map.get("people")).get(1));
+
     }
 }

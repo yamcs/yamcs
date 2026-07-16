@@ -1,10 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Service } from '@angular/core';
 import { Observable, Subscription, timer } from 'rxjs';
 import { share } from 'rxjs/operators';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Service()
 export class Synchronizer {
   /**
    * Shared observable that emits every second.

@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
   forwardRef,
@@ -21,7 +20,6 @@ import { MarkdownComponent } from '../markdown/markdown.component';
   selector: 'app-markdown-input',
   templateUrl: './markdown-input.component.html',
   styleUrl: './markdown-input.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnChanges,
-  OnDestroy,
-  input,
-} from '@angular/core';
+import { Component, OnChanges, OnDestroy, input } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import {
@@ -28,7 +22,6 @@ import { WebappSdkModule } from '@yamcs/webapp-sdk';
 @Component({
   templateUrl: './parameter.component.html',
   styleUrl: './parameter.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class ParameterComponent implements OnChanges, OnDestroy {

@@ -2,7 +2,7 @@ import { BreakpointObserver } from '@angular/cdk/layout';
 import {
   DOCUMENT,
   DestroyRef,
-  Injectable,
+  Service,
   computed,
   effect,
   inject,
@@ -17,7 +17,7 @@ export type Theme = 'system' | 'light' | 'dark';
 // TODO change to system, when dark mode is in decent shape
 const DEFAULT_THEME: Theme = 'light';
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class AppearanceService {
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);

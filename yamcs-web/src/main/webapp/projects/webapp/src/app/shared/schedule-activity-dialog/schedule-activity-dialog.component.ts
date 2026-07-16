@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { NonNullableFormBuilder, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { WebappSdkModule } from '@yamcs/webapp-sdk';
@@ -19,7 +19,6 @@ export interface ScheduleActivityDialogResult {
 @Component({
   selector: 'app-schedule-activity-dialog',
   templateUrl: './schedule-activity-dialog.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class ScheduleActivityDialogComponent {

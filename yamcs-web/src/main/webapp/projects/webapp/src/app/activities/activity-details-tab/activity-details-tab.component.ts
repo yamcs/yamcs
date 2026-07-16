@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnInit,
-  input,
-} from '@angular/core';
+import { Component, OnInit, input } from '@angular/core';
 import {
   Activity,
   MessageService,
@@ -14,7 +9,6 @@ import { BehaviorSubject } from 'rxjs';
 
 @Component({
   templateUrl: './activity-details-tab.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class ActivityDetailsTabComponent implements OnInit {

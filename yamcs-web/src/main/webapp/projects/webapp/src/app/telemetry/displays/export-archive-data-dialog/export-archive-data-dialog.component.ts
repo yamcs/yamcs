@@ -1,4 +1,9 @@
-import { Component, Inject, OnDestroy } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Inject,
+  OnDestroy,
+} from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {
@@ -14,6 +19,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 @Component({
   selector: 'app-export-archive-data-dialog',
   templateUrl: './export-archive-data-dialog.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [WebappSdkModule],
 })
 export class ExportArchiveDataDialogComponent implements OnDestroy {

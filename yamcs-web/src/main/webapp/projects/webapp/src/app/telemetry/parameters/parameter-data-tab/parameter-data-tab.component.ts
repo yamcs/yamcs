@@ -1,11 +1,5 @@
 import { Clipboard } from '@angular/cdk/clipboard';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnDestroy,
-  OnInit,
-  input,
-} from '@angular/core';
+import { Component, OnDestroy, OnInit, input } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -29,7 +23,6 @@ const defaultInterval = 'PT1H';
 @Component({
   templateUrl: './parameter-data-tab.component.html',
   styleUrl: './parameter-data-tab.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [HexComponent, ParameterValuesTableComponent, WebappSdkModule],
 })
 export class ParameterDataTabComponent implements OnInit, OnDestroy {

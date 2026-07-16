@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnDestroy,
-  OnInit,
-  input,
-} from '@angular/core';
+import { Component, OnDestroy, OnInit, input } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Title } from '@angular/platform-browser';
 import {
@@ -22,7 +16,6 @@ import { ActivityService } from '../shared/activity.service';
 @Component({
   templateUrl: './activity.component.html',
   styleUrl: './activity.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ActivityStatusComponent, WebappSdkModule],
 })
 export class ActivityComponent implements OnInit, OnDestroy {

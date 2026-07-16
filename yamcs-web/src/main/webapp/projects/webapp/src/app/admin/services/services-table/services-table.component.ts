@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   EventEmitter,
   Input,
@@ -16,7 +15,6 @@ import { ServiceStateComponent } from '../service-state/service-state.component'
   selector: 'app-services-table',
   templateUrl: './services-table.component.html',
   styleUrl: './services-table.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ServiceStateComponent, WebappSdkModule],
 })
 export class ServicesTableComponent implements AfterViewInit {

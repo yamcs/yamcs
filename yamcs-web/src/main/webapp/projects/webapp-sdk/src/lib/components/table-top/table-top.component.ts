@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 
 @Component({
@@ -8,6 +8,7 @@ import { MatIcon } from '@angular/material/icon';
   host: {
     '[class.error]': 'error',
   },
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [MatIcon],
 })
 export class YaTableTop {

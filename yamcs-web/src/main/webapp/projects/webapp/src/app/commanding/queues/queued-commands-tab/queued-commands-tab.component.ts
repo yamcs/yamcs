@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import {
   CommandQueue,
   QueueEventsSubscription,
@@ -10,7 +10,6 @@ import { QueuedCommandsTableComponent } from '../queued-commands-table/queued-co
 
 @Component({
   templateUrl: './queued-commands-tab.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule, QueuedCommandsTableComponent],
 })
 export class QueuedCommandsTabComponent implements OnDestroy {

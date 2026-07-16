@@ -1,5 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, signal, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  signal,
+  ViewChild,
+} from '@angular/core';
 import { LinePoint } from '@fqqb/timeline';
 import { DateTimePipe } from '@yamcs/webapp-sdk';
 
@@ -13,6 +19,7 @@ interface Legend {
   selector: 'app-parameter-plot-tooltip',
   templateUrl: './parameter-plot-tooltip.component.html',
   styleUrl: './parameter-plot-tooltip.component.css',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [CommonModule, DateTimePipe],
 })
 export class ParameterPlotTooltipComponent {

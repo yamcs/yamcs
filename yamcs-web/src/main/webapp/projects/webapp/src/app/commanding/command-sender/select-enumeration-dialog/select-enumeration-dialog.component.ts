@@ -1,11 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  Inject,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewInit, Component, Inject, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
@@ -16,7 +10,6 @@ import { ArgumentType, EnumValue, WebappSdkModule } from '@yamcs/webapp-sdk';
   selector: 'app-select-enumeration-dialog',
   templateUrl: './select-enumeration-dialog.component.html',
   styleUrl: './select-enumeration-dialog.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class SelectEnumerationDialogComponent implements AfterViewInit {

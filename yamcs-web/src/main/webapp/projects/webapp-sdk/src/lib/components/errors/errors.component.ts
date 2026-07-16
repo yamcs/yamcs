@@ -1,5 +1,11 @@
 import { AsyncPipe } from '@angular/common';
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import {
   AbstractControl,
   ControlContainer,
@@ -39,6 +45,7 @@ const defaultErrors: { [key: string]: any } = {
   selector: 'ya-errors',
   templateUrl: './errors.component.html',
   styleUrl: './errors.component.css',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [AsyncPipe],
 })
 export class YaErrors implements OnInit, OnDestroy {

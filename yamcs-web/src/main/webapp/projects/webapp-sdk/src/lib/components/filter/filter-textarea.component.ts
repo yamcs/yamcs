@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   effect,
   ElementRef,
@@ -28,7 +27,6 @@ import { filter } from './lang-filter';
   selector: 'ya-filter-textarea',
   templateUrl: './filter-textarea.component.html',
   styleUrl: './filter-textarea.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

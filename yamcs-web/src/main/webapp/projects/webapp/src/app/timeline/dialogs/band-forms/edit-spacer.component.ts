@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   Input,
@@ -19,7 +18,6 @@ import { SpacerStylesComponent } from '../../bands/spacer/spacer-styles/spacer-s
 @Component({
   selector: 'app-edit-spacer',
   templateUrl: './edit-spacer.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule, SpacerStylesComponent],
 })
 export class EditSpacerComponent implements AfterViewInit {

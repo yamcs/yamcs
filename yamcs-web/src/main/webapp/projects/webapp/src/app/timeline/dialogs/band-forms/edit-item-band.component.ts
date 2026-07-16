@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   Input,
@@ -15,7 +14,6 @@ import { resolveProperties } from '../../bands/properties';
 @Component({
   selector: 'app-edit-item-band',
   templateUrl: './edit-item-band.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ItemBandStylesComponent, WebappSdkModule],
 })
 export class EditItemBandComponent implements AfterViewInit {

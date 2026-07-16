@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import {
   AuthService,
   GlobalActivityStatus,
@@ -12,7 +12,6 @@ import { BehaviorSubject, Subscription } from 'rxjs';
   selector: 'app-activities-label',
   templateUrl: './activities-label.component.html',
   styleUrl: './activities-label.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class ActivitiesLabelComponent implements OnDestroy {

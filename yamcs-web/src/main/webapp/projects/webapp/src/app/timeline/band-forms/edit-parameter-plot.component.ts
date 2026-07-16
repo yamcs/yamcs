@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   Input,
@@ -27,7 +26,6 @@ import { resolveProperties } from '../bands/properties';
 @Component({
   selector: 'app-edit-parameter-plot',
   templateUrl: './edit-parameter-plot.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ParameterPlotStylesComponent,
     TraceStylesComponent,

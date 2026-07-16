@@ -1,11 +1,10 @@
-import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { WebappSdkModule, utils } from '@yamcs/webapp-sdk';
 
 @Component({
   templateUrl: './jump-to-dialog.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
 })
 export class JumpToDialogComponent {

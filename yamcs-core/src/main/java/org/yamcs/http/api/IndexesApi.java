@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import org.yamcs.YamcsServer;
 import org.yamcs.api.Observer;
@@ -35,6 +36,7 @@ import org.yamcs.protobuf.StreamPacketIndexRequest;
 import org.yamcs.protobuf.StreamParameterIndexRequest;
 import org.yamcs.protobuf.Yamcs.ArchiveRecord;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimeInterval;
@@ -43,6 +45,8 @@ import org.yamcs.yarch.YarchException;
 import com.google.protobuf.Empty;
 
 public class IndexesApi extends AbstractIndexesApi<Context> {
+
+    private static final Predicate<ArchiveRecord> ACCEPT_ALL = x -> true;
 
     @Override
     public void listCommandHistoryIndex(Context ctx, ListCommandHistoryIndexRequest request,
@@ -74,11 +78,17 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
             indexRequest.setSendAllCmd(true);
         }
 
-        handleOneIndexResult(tmIndex, indexRequest, observer, limit, next);
+        var privilegeCache = new HashMap<NamedObjectId, Boolean>();
+        handleOneIndexResult(tmIndex, indexRequest, observer, limit, next, archiveRecord -> {
+            return privilegeCache.computeIfAbsent(archiveRecord.getId(), x -> {
+                return ctx.user.hasObjectPrivilege(ObjectPrivilegeType.CommandHistory, x.getName());
+            });
+        });
     }
 
     @Override
     public void listEventIndex(Context ctx, ListEventIndexRequest request, Observer<IndexResponse> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadEvents);
         String instance = InstancesApi.verifyInstance(request.getInstance());
         TmIndexService indexServer = getIndexService(instance);
 
@@ -106,7 +116,7 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
             indexRequest.setSendAllEvent(true);
         }
 
-        handleOneIndexResult(indexServer, indexRequest, observer, limit, next);
+        handleOneIndexResult(indexServer, indexRequest, observer, limit, next, ACCEPT_ALL);
     }
 
     @Override
@@ -138,7 +148,12 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
             indexRequest.setSendAllTm(true);
         }
 
-        handleOneIndexResult(indexServer, indexRequest, observer, limit, next);
+        var privilegeCache = new HashMap<NamedObjectId, Boolean>();
+        handleOneIndexResult(indexServer, indexRequest, observer, limit, next, archiveRecord -> {
+            return privilegeCache.computeIfAbsent(archiveRecord.getId(), x -> {
+                return ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadPacket, x.getName());
+            });
+        });
     }
 
     @Override
@@ -171,16 +186,22 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
             indexRequest.setSendAllPp(true);
         }
 
-        handleOneIndexResult(indexServer, indexRequest, observer, limit, next);
+        var privilegeCache = new HashMap<NamedObjectId, Boolean>();
+        handleOneIndexResult(indexServer, indexRequest, observer, limit, next, archiveRecord -> {
+            return privilegeCache.computeIfAbsent(archiveRecord.getId(), x -> {
+                return ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, x.getName());
+            });
+        });
     }
 
     @Override
     public void listCompletenessIndex(Context ctx, ListCompletenessIndexRequest request,
             Observer<IndexResponse> observer) {
+        ctx.checkAnyObjectPrivilege(ObjectPrivilegeType.ReadPacket);
         String instance = InstancesApi.verifyInstance(request.getInstance());
         TmIndexService indexServer = getIndexService(instance);
         if (indexServer == null) {
-            throw new BadRequestException("CCSDS Tm Index not enabled for instance '" + instance + "'");
+            throw new BadRequestException("CCSDS TM Index not enabled for instance '" + instance + "'");
         }
 
         int limit = request.hasLimit() ? request.getLimit() : 500;
@@ -201,7 +222,7 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
         }
         String next = request.hasNext() ? request.getNext() : null;
 
-        handleOneIndexResult(indexServer, indexRequest, observer, limit, next);
+        handleOneIndexResult(indexServer, indexRequest, observer, limit, next, ACCEPT_ALL);
     }
 
     @Override
@@ -224,7 +245,13 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
         if (request.hasMergeTime()) {
             indexRequest.setMergeTime(request.getMergeTime());
         }
-        streamArchiveRecords(null, indexRequest, observer);
+
+        var privilegeCache = new HashMap<NamedObjectId, Boolean>();
+        streamArchiveRecords(null, indexRequest, observer, archiveRecord -> {
+            return privilegeCache.computeIfAbsent(archiveRecord.getId(), x -> {
+                return ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadPacket, x.getName());
+            });
+        });
     }
 
     @Override
@@ -245,7 +272,12 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
             indexRequest.setStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
         }
 
-        streamArchiveRecords(null, indexRequest, observer);
+        var privilegeCache = new HashMap<NamedObjectId, Boolean>();
+        streamArchiveRecords(null, indexRequest, observer, archiveRecord -> {
+            return privilegeCache.computeIfAbsent(archiveRecord.getId(), x -> {
+                return ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadParameter, x.getName());
+            });
+        });
     }
 
     @Override
@@ -265,11 +297,17 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
             indexRequest.setStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
         }
 
-        streamArchiveRecords(null, indexRequest, observer);
+        var privilegeCache = new HashMap<NamedObjectId, Boolean>();
+        streamArchiveRecords(null, indexRequest, observer, archiveRecord -> {
+            return privilegeCache.computeIfAbsent(archiveRecord.getId(), x -> {
+                return ctx.user.hasObjectPrivilege(ObjectPrivilegeType.CommandHistory, x.getName());
+            });
+        });
     }
 
     @Override
     public void streamEventIndex(Context ctx, StreamEventIndexRequest request, Observer<ArchiveRecord> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ReadEvents);
         String instance = InstancesApi.verifyInstance(request.getInstance());
 
         IndexRequest indexRequest = new IndexRequest(instance);
@@ -285,12 +323,13 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
             indexRequest.setStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
         }
 
-        streamArchiveRecords(null, indexRequest, observer);
+        streamArchiveRecords(null, indexRequest, observer, ACCEPT_ALL);
     }
 
     @Override
     public void streamCompletenessIndex(Context ctx, StreamCompletenessIndexRequest request,
             Observer<ArchiveRecord> observer) {
+        ctx.checkAnyObjectPrivilege(ObjectPrivilegeType.ReadPacket);
         String instance = InstancesApi.verifyInstance(request.getInstance());
         TmIndexService indexServer = getIndexService(instance);
         if (indexServer == null) {
@@ -310,7 +349,7 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
             indexRequest.setStop(TimeEncoding.fromProtobufTimestamp(request.getStop()));
         }
 
-        streamArchiveRecords(indexServer, indexRequest, observer);
+        streamArchiveRecords(indexServer, indexRequest, observer, ACCEPT_ALL);
     }
 
     @Override
@@ -359,7 +398,7 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
      * The batch size is determined by the IndexServer and is set to 500 (shared between all requested groups).
      */
     private void handleOneIndexResult(TmIndexService tmIndex, IndexRequest request, Observer<IndexResponse> observer,
-            int limit, String token) throws HttpException {
+            int limit, String token, Predicate<ArchiveRecord> authChecker) throws HttpException {
         try {
             IndexResponse.Builder responseb = IndexResponse.newBuilder();
             Map<NamedObjectId, IndexGroup.Builder> groupBuilders = new HashMap<>();
@@ -370,6 +409,9 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
 
                         @Override
                         public void processData(ArchiveRecord rec) {
+                            if (!authChecker.test(rec)) {
+                                return;
+                            }
                             IndexGroup.Builder groupb = groupBuilders.get(rec.getId());
                             if (groupb == null) {
                                 groupb = IndexGroup.newBuilder().setId(rec.getId());
@@ -417,12 +459,14 @@ public class IndexesApi extends AbstractIndexesApi<Context> {
     }
 
     private static void streamArchiveRecords(TmIndexService tmIndex, IndexRequest request,
-            Observer<ArchiveRecord> observer) {
+            Observer<ArchiveRecord> observer, Predicate<ArchiveRecord> authChecker) {
         IndexRequestProcessor p = new IndexRequestProcessor(tmIndex, request, -1, null,
                 new IndexRequestListener() {
                     @Override
                     public void processData(ArchiveRecord record) {
-                        observer.next(record);
+                        if (authChecker.test(record)) {
+                            observer.next(record);
+                        }
                     }
 
                     @Override

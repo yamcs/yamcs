@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnChanges,
-} from '@angular/core';
+import { Component, Input, OnChanges } from '@angular/core';
 import {
   FormArray,
   FormControl,
@@ -30,7 +25,6 @@ import { TemplateProvider } from './TemplateProvider';
   selector: 'app-command-arguments-form',
   templateUrl: './command-arguments-form.component.html',
   styleUrl: './command-arguments-form.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ArgumentComponent, WebappSdkModule],
 })
 export class CommandArgumentsForm implements OnChanges {

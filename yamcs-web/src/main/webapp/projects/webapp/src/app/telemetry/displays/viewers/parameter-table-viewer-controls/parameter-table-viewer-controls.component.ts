@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService, ConfigService, WebappSdkModule } from '@yamcs/webapp-sdk';
@@ -10,6 +10,7 @@ import { ParameterTableViewerComponent } from '../parameter-table-viewer/paramet
 @Component({
   selector: 'app-parameter-table-viewer-controls',
   templateUrl: './parameter-table-viewer-controls.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [WebappSdkModule],
 })
 export class ParameterTableViewerControlsComponent {

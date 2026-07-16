@@ -1,5 +1,5 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import {
   ConfigService,
@@ -21,7 +21,6 @@ import { ScrollingParameterTable } from './scrolling-parameter-table/scrolling-p
   selector: 'app-parameter-table-viewer',
   templateUrl: './parameter-table-viewer.component.html',
   styleUrl: './parameter-table-viewer.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     MultipleParameterTableComponent,
     ScrollingParameterTable,

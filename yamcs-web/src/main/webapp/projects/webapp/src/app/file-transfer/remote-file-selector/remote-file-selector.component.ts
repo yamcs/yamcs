@@ -1,5 +1,4 @@
 import {
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   EventEmitter,
@@ -30,7 +29,6 @@ export interface FileActionRequest {
   selector: 'app-remote-file-selector',
   templateUrl: './remote-file-selector.component.html',
   styleUrl: './remote-file-selector.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [WebappSdkModule],
   providers: [
     {

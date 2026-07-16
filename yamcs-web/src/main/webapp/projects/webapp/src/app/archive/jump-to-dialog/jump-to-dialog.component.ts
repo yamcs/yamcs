@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { WebappSdkModule, utils } from '@yamcs/webapp-sdk';
@@ -6,6 +6,7 @@ import { WebappSdkModule, utils } from '@yamcs/webapp-sdk';
 @Component({
   selector: 'app-jump-to-dialog',
   templateUrl: './jump-to-dialog.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [WebappSdkModule],
 })
 export class JumpToDialogComponent {

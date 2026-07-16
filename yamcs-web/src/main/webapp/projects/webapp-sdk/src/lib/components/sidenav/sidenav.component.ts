@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   computed,
   inject,
@@ -16,7 +15,6 @@ import { YaCollapseSidebar } from './collapse-sidebar.component';
   selector: 'ya-sidenav',
   templateUrl: './sidenav.component.html',
   styleUrl: './sidenav.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'ya-sidenav',
     '[class.collapsed]': 'collapsed()',

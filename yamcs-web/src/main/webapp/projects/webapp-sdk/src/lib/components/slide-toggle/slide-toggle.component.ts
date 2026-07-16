@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  forwardRef,
-  model,
-  output,
-} from '@angular/core';
+import { Component, forwardRef, model, output } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import {
   MatSlideToggle,
@@ -15,7 +9,6 @@ import {
   selector: 'ya-slide-toggle',
   templateUrl: './slide-toggle.component.html',
   styleUrl: './slide-toggle.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

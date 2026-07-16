@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import {
   MAT_DIALOG_DATA,
   MatDialogActions,
@@ -13,7 +13,6 @@ import { YaButton } from '../button/button.component';
   selector: 'ya-session-expired-dialog',
   templateUrl: './session-expired-dialog.component.html',
   styleUrl: './session-expired-dialog.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     MatDialogActions,
     MatDialogContent,

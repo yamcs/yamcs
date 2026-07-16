@@ -71,6 +71,7 @@ public class IamApi extends AbstractIamApi<Context> {
 
     @Override
     public void listRoles(Context ctx, Empty request, Observer<ListRolesResponse> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlAccess);
         SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
         List<Role> roles = securityStore.getDirectory().getRoles();
         Collections.sort(roles, (p1, p2) -> p1.getName().compareTo(p2.getName()));
@@ -85,6 +86,7 @@ public class IamApi extends AbstractIamApi<Context> {
 
     @Override
     public void getRole(Context ctx, GetRoleRequest request, Observer<RoleInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlAccess);
         SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
         Role role = securityStore.getDirectory().getRole(request.getName());
         if (role == null) {
@@ -110,6 +112,7 @@ public class IamApi extends AbstractIamApi<Context> {
 
     @Override
     public void listPrivileges(Context ctx, Empty request, Observer<ListPrivilegesResponse> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlAccess);
         SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
         List<SystemPrivilege> privileges = new ArrayList<>(securityStore.getSystemPrivileges());
         Collections.sort(privileges, (p1, p2) -> p1.getName().compareTo(p2.getName()));
