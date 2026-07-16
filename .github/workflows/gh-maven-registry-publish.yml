@@ -1,18 +1,6 @@
 name: Maven Publish
 
 on:
-  push:
-    branches:
-      - pixxel/master
-  pull_request:
-    types:
-      - opened
-      - synchronize
-      - ready_for_review
-    branches:
-      - master
-      - pixxel/master
-
   workflow_dispatch:
 
 jobs:
