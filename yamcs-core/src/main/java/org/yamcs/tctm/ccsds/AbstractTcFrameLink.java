@@ -22,6 +22,7 @@ import org.yamcs.tctm.ccsds.error.BchCltuGenerator;
 import org.yamcs.tctm.ccsds.error.CltuGenerator;
 import org.yamcs.tctm.ccsds.error.Ldpc256CltuGenerator;
 import org.yamcs.tctm.ccsds.error.Ldpc64CltuGenerator;
+import org.yamcs.tctm.ccsds.srs4.Srs4ConfigSpec;
 import org.yamcs.utils.IntArray;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.YObjectLoader;
@@ -93,7 +94,11 @@ public abstract class AbstractTcFrameLink extends AbstractLink implements Aggreg
 
         Spec encapsulatorSpec = new Spec();
         encapsulatorSpec.addOption("class", OptionType.STRING).withRequired(true);
-        encapsulatorSpec.addOption("args", OptionType.MAP).withSpec(Spec.ANY);
+        
+        // When using SRS4 encapsulator only
+        encapsulatorSpec.addOption("args", OptionType.MAP).withSpec(Srs4ConfigSpec.providerArgsSpec(true));
+        encapsulatorSpec.when("class", Srs4ConfigSpec.TC_CLASS).requireAll("args");
+
         spec.addOption("frameEncapsulation", OptionType.MAP).withSpec(encapsulatorSpec);
 
         return spec;

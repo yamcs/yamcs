@@ -16,6 +16,7 @@ import org.yamcs.tctm.Link;
 import org.yamcs.tctm.RawFrameDecoder;
 import org.yamcs.tctm.TcTmException;
 import org.yamcs.tctm.ccsds.TransferFrameDecoder.CcsdsFrameType;
+import org.yamcs.tctm.ccsds.srs4.Srs4ConfigSpec;
 import org.yamcs.time.Instant;
 import org.yamcs.utils.YObjectLoader;
 
@@ -70,7 +71,11 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
 
         Spec decapsulatorSpec = new Spec();
         decapsulatorSpec.addOption("class", OptionType.STRING).withRequired(true);
-        decapsulatorSpec.addOption("args", OptionType.MAP).withSpec(Spec.ANY);
+
+        // When using SRS4 decapsulator only
+        decapsulatorSpec.addOption("args", OptionType.MAP).withSpec(Srs4ConfigSpec.providerArgsSpec(false));
+        decapsulatorSpec.when("class", Srs4ConfigSpec.TM_CLASS).requireAll("args");
+
         spec.addOption("frameDecapsulation", OptionType.MAP).withSpec(decapsulatorSpec);
 
         return spec;

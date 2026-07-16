@@ -2,6 +2,7 @@ package org.yamcs.tctm.ccsds.srs4;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.LinkedHashMap;
@@ -10,9 +11,13 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.yamcs.ConfigurationException;
+import org.yamcs.Spec;
+import org.yamcs.ValidationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.tctm.TcTmException;
+import org.yamcs.tctm.ccsds.AbstractTcFrameLink;
+import org.yamcs.tctm.ccsds.AbstractTmFrameLink;
 import org.yamcs.tctm.ccsds.TcTransferFrame;
 
 public class Srs4FrameCodecTest {
@@ -90,6 +95,46 @@ public class Srs4FrameCodecTest {
 
         var encoder = new Srs4TcFrameEncapsulator(tcConfig(false, true, false));
         assertThrows(ConfigurationException.class, () -> encoder.validate(2018, List.of(3)));
+    }
+
+    @Test
+    public void testTcLinkSpecValidatesSrs4Arguments() throws ValidationException {
+        Spec spec = AbstractTcFrameLink.addDefaultOptions(new Spec());
+        Map<String, Object> args = new LinkedHashMap<>();
+        args.put("srs4", base(true, true, false, true));
+        Map<String, Object> link = Map.of("frameEncapsulation", Map.of(
+                "class", Srs4ConfigSpec.TC_CLASS,
+                "args", args));
+
+        assertDoesNotThrow(() -> spec.validate(link));
+        assertThrows(ValidationException.class, () -> spec.validate(Map.of("frameEncapsulation", Map.of(
+                "class", Srs4ConfigSpec.TC_CLASS,
+                "args", Map.of("srs4", Map.of("radio", Map.of("spacecraftId", "not-an-integer")))))));
+        assertThrows(ValidationException.class, () -> spec.validate(Map.of("frameEncapsulation", Map.of(
+                "class", Srs4ConfigSpec.TC_CLASS))));
+        assertDoesNotThrow(() -> spec.validate(Map.of("frameEncapsulation", Map.of(
+                "class", "example.CustomEncapsulator",
+                "args", Map.of("customOption", "accepted")))));
+    }
+
+    @Test
+    public void testTmLinkSpecValidatesSrs4Arguments() throws ValidationException {
+        Spec spec = AbstractTmFrameLink.addDefaultOptions(new Spec());
+        Map<String, Object> args = new LinkedHashMap<>();
+        args.put("srs4", base(true, true, false, false));
+        Map<String, Object> link = Map.of("frameDecapsulation", Map.of(
+                "class", Srs4ConfigSpec.TM_CLASS,
+                "args", args));
+
+        assertDoesNotThrow(() -> spec.validate(link));
+        assertThrows(ValidationException.class, () -> spec.validate(Map.of("frameDecapsulation", Map.of(
+                "class", Srs4ConfigSpec.TM_CLASS,
+                "args", Map.of("srs4", Map.of("radio", Map.of("spacecraftId", "not-an-integer")))))));
+        assertThrows(ValidationException.class, () -> spec.validate(Map.of("frameDecapsulation", Map.of(
+                "class", Srs4ConfigSpec.TM_CLASS))));
+        assertDoesNotThrow(() -> spec.validate(Map.of("frameDecapsulation", Map.of(
+                "class", "example.CustomDecapsulator",
+                "args", Map.of("customOption", "accepted")))));
     }
 
     private static TcTransferFrame frame(byte[] data, int vcId, PreparedCommand command) {
