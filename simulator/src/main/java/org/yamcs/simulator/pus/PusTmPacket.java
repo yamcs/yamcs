@@ -66,8 +66,16 @@ public class PusTmPacket extends SimulatorCcsdsPacket {
 
     }
 
+    public int getType() {
+        return bb.get(SH_OFFSET + 1) & 0xFF;
+    }
+
     public void setSubtype(int subtype) {
         bb.put(SH_OFFSET + 2, (byte) subtype);
+    }
+
+    public int getSubtype() {
+        return bb.get(SH_OFFSET + 2) & 0xFF;
     }
 
     private static int getPacketLength(int userDataLength) {

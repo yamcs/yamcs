@@ -1,0 +1,711 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem name="PUS15" xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
+	<Header validationStatus="Unknown" version="1.0" date="2026-07-17T00:00:00Z">
+		<NoteSet>
+			<Note>ST[15] On-Board Storage and Retrieval. See pus_analysis/pus15.md and
+				pus_simulator_architecture.md for the full design rationale.</Note>
+			<Note>Core lifecycle scope only: packet store CRUD (TC[15,20/21/22/23/25/28]), storage
+				enable/disable (TC[15,1/2] + TM[15,19]), summary reporting (TC[15,12] + TM[15,13]),
+				by-time-range retrieval (TC[15,9/17]) and open retrieval (TC[15,14/15/16]). The Packet
+				Selection subservice (TC[15,3/4/5/6] and the HK/diagnostic/event filter tables,
+				TC[15,29-40]) is deferred -- see Pus15Service javadoc for the pass-all storage default
+				used in the meantime. TC[15,24/26/27] are out of scope per pus15.md.</Note>
+			<Note>All packet-store state (stores map, fill tracking, retrieval threads) lives on-board
+				(emulated by Pus15Service in the simulator). This MDB only encodes the TC[15,x]
+				configuration/retrieval commands and decodes the TM[15,13]/[15,19]/[15,23] reports.</Note>
+			<Note>Timestamps (TC[15,9] start_time/end_time, TC[15,11] time_limit, TC[15,14] start_time,
+				TM[15,13] oldest_ts/newest_ts/open_retrieval_start_time) are a raw unsigned 64-bit
+				milliseconds value, not a CUC-encoded field -- see pus15.md Gap 1. Pus15Service compares
+				these directly against its internal packet-store timestamps (also raw millis).</Note>
+			<Note>Several TCs accept either N specific store ids or "all stores" (zero-byte payload) --
+				XTCE cannot express optional arguments, so each is split into a "_SPECIFIC" and "_ALL"
+				MetaCommand pair (Gap 2). Pus15Service disambiguates at runtime via
+				bb.remaining()==0. Affected subtypes: 1, 2, 12, 14, 15, 16, 17, 21. TC[15,14]'s "all"
+				variant additionally means "all suspended stores" (silently filtered); a store id
+				named explicitly in the "_SPECIFIC" variant that isn't suspended is rejected.</Note>
+			<Note>store_type and vc_id are always included as fixed fields in TC[15,20]/TM[15,23]
+				(mission convention, see pus15.md Gap 4) rather than modelled as optional.</Note>
+		</NoteSet>
+	</Header>
+	<TelemetryMetaData>
+		<ParameterTypeSet>
+			<EnumeratedParameterType name="storage_status_type">
+				<IntegerDataEncoding sizeInBits="8" />
+				<EnumerationList>
+					<Enumeration value="0" label="disabled" />
+					<Enumeration value="1" label="enabled" />
+				</EnumerationList>
+			</EnumeratedParameterType>
+			<EnumeratedParameterType name="open_retrieval_status_type">
+				<IntegerDataEncoding sizeInBits="8" />
+				<EnumerationList>
+					<Enumeration value="0" label="suspended" />
+					<Enumeration value="1" label="in_progress" />
+				</EnumerationList>
+			</EnumeratedParameterType>
+			<EnumeratedParameterType name="btr_status_type">
+				<IntegerDataEncoding sizeInBits="8" />
+				<EnumerationList>
+					<Enumeration value="0" label="disabled" />
+					<Enumeration value="1" label="enabled" />
+				</EnumerationList>
+			</EnumeratedParameterType>
+			<EnumeratedParameterType name="store_type_type">
+				<IntegerDataEncoding sizeInBits="8" />
+				<EnumerationList>
+					<Enumeration value="0" label="circular" />
+					<Enumeration value="1" label="bounded" />
+				</EnumerationList>
+			</EnumeratedParameterType>
+
+			<IntegerParameterType name="store_count_type" baseType="/dt/uint8" />
+
+			<!-- TM[15,13] packet store content summary report -->
+			<AggregateParameterType name="store_summary_entry_type">
+				<MemberList>
+					<Member typeRef="/dt/uint16" name="store_id" />
+					<Member typeRef="/dt/uint64" name="oldest_ts" />
+					<Member typeRef="/dt/uint64" name="newest_ts" />
+					<Member typeRef="/dt/uint64" name="open_retrieval_start_time" />
+					<Member typeRef="/dt/uint8" name="fill_pct" />
+					<Member typeRef="/dt/uint8" name="fill_pct_from_start" />
+				</MemberList>
+			</AggregateParameterType>
+			<ArrayParameterType arrayTypeRef="store_summary_entry_type" name="store_summary_array_type">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ParameterInstanceRef parameterRef="store_summary_count" />
+								<LinearAdjustment intercept="-1" />
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayParameterType>
+
+			<!-- TM[15,19] packet store status report -->
+			<AggregateParameterType name="store_status_entry_type">
+				<MemberList>
+					<Member typeRef="/dt/uint16" name="store_id" />
+					<Member typeRef="storage_status_type" name="storage_status" />
+					<Member typeRef="open_retrieval_status_type" name="open_retrieval_status" />
+					<Member typeRef="btr_status_type" name="btr_status" />
+				</MemberList>
+			</AggregateParameterType>
+			<ArrayParameterType arrayTypeRef="store_status_entry_type" name="store_status_array_type">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ParameterInstanceRef parameterRef="store_status_count" />
+								<LinearAdjustment intercept="-1" />
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayParameterType>
+
+			<!-- TM[15,23] packet store configuration report -->
+			<AggregateParameterType name="store_config_entry_type">
+				<MemberList>
+					<Member typeRef="/dt/uint16" name="store_id" />
+					<Member typeRef="/dt/uint32" name="size_bytes" />
+					<Member typeRef="store_type_type" name="store_type" />
+					<Member typeRef="/dt/uint8" name="vc_id" />
+				</MemberList>
+			</AggregateParameterType>
+			<ArrayParameterType arrayTypeRef="store_config_entry_type" name="store_config_array_type">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ParameterInstanceRef parameterRef="store_config_count" />
+								<LinearAdjustment intercept="-1" />
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayParameterType>
+		</ParameterTypeSet>
+		<ParameterSet>
+			<Parameter parameterTypeRef="store_count_type" name="store_summary_count" />
+			<Parameter parameterTypeRef="store_summary_array_type" name="store_summary_entries" />
+			<Parameter parameterTypeRef="store_count_type" name="store_status_count" />
+			<Parameter parameterTypeRef="store_status_array_type" name="store_status_entries" />
+			<Parameter parameterTypeRef="store_count_type" name="store_config_count" />
+			<Parameter parameterTypeRef="store_config_array_type" name="store_config_entries" />
+		</ParameterSet>
+		<ContainerSet>
+			<SequenceContainer name="pus15-tm">
+				<EntryList/>
+				<BaseContainer containerRef="/PUS/pus-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/type" comparisonOperator="==" value="15"/>
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+
+			<!-- TM[15,13] Packet store content summary report -->
+			<SequenceContainer name="STORE_SUMMARY_REPORT" shortDescription="TM[15,13] packet store content summary report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="store_summary_count" />
+					<ArrayParameterRefEntry parameterRef="store_summary_entries">
+						<IncludeCondition>
+							<Comparison parameterRef="store_summary_count" comparisonOperator="&gt;" value="0" />
+						</IncludeCondition>
+					</ArrayParameterRefEntry>
+				</EntryList>
+				<BaseContainer containerRef="pus15-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="13" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+
+			<!-- TM[15,19] Packet store status report -->
+			<SequenceContainer name="STORE_STATUS_REPORT" shortDescription="TM[15,19] packet store status report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="store_status_count" />
+					<ArrayParameterRefEntry parameterRef="store_status_entries">
+						<IncludeCondition>
+							<Comparison parameterRef="store_status_count" comparisonOperator="&gt;" value="0" />
+						</IncludeCondition>
+					</ArrayParameterRefEntry>
+				</EntryList>
+				<BaseContainer containerRef="pus15-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="19" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+
+			<!-- TM[15,23] Packet store configuration report -->
+			<SequenceContainer name="STORE_CONFIG_REPORT" shortDescription="TM[15,23] packet store configuration report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="store_config_count" />
+					<ArrayParameterRefEntry parameterRef="store_config_entries">
+						<IncludeCondition>
+							<Comparison parameterRef="store_config_count" comparisonOperator="&gt;" value="0" />
+						</IncludeCondition>
+					</ArrayParameterRefEntry>
+				</EntryList>
+				<BaseContainer containerRef="pus15-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="23" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+		</ContainerSet>
+	</TelemetryMetaData>
+	<CommandMetaData>
+		<ArgumentTypeSet>
+			<EnumeratedArgumentType name="store_type_arg_type">
+				<IntegerDataEncoding sizeInBits="8" />
+				<EnumerationList>
+					<Enumeration value="0" label="circular" />
+					<Enumeration value="1" label="bounded" />
+				</EnumerationList>
+			</EnumeratedArgumentType>
+
+			<!-- Reusable "N store ids" array, used by every dual-variant TC's "_SPECIFIC" MetaCommand.
+			     Each such MetaCommand declares its own top-level "N" argument (uint8); the sibling
+			     ArgumentInstanceRef below resolves to that MetaCommand's own N. -->
+			<ArrayArgumentType arrayTypeRef="/dt/uint16" name="store_id_array_type">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="N" />
+								<LinearAdjustment intercept="-1" />
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+
+			<!-- TC[15,9] start by-time-range retrieval -->
+			<AggregateArgumentType name="btr_entry_type">
+				<MemberList>
+					<Member typeRef="/dt/uint16" name="store_id" />
+					<Member typeRef="/dt/uint64" name="start_time" />
+					<Member typeRef="/dt/uint64" name="end_time" />
+				</MemberList>
+			</AggregateArgumentType>
+			<ArrayArgumentType arrayTypeRef="btr_entry_type" name="btr_entry_array_type">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="N" />
+								<LinearAdjustment intercept="-1" />
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+
+			<!-- TC[15,20] create packet stores -->
+			<AggregateArgumentType name="create_store_entry_type">
+				<MemberList>
+					<Member typeRef="/dt/uint16" name="store_id" />
+					<Member typeRef="/dt/uint32" name="size_bytes" />
+					<Member typeRef="store_type_arg_type" name="store_type" />
+					<Member typeRef="/dt/uint8" name="vc_id" />
+				</MemberList>
+			</AggregateArgumentType>
+			<ArrayArgumentType arrayTypeRef="create_store_entry_type" name="create_store_array_type">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="N" />
+								<LinearAdjustment intercept="-1" />
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+
+			<!-- TC[15,25] resize packet stores -->
+			<AggregateArgumentType name="resize_entry_type">
+				<MemberList>
+					<Member typeRef="/dt/uint16" name="store_id" />
+					<Member typeRef="/dt/uint32" name="new_size" />
+				</MemberList>
+			</AggregateArgumentType>
+			<ArrayArgumentType arrayTypeRef="resize_entry_type" name="resize_array_type">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="N" />
+								<LinearAdjustment intercept="-1" />
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+		</ArgumentTypeSet>
+		<MetaCommandSet>
+			<MetaCommand name="pus15-tc" abstract="true">
+				<BaseMetaCommand metaCommandRef="/PUS/pus-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="apid" argumentValue="1"/>
+						<ArgumentAssignment argumentName="type" argumentValue="15"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="pus15-tc">
+					<EntryList/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[15,1] Enable storage function of packet stores -->
+			<MetaCommand name="TC_15_1_SPECIFIC" shortDescription="TC[15,1] Enable storage on specific packet stores">
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="1"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="N" argumentTypeRef="/dt/uint8"/>
+					<Argument name="store_ids" argumentTypeRef="store_id_array_type"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_1_SPECIFIC">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="N"/>
+						<ArgumentRefEntry argumentRef="store_ids"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="TC_15_1_ALL" shortDescription="TC[15,1] Enable storage on all packet stores">
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="1"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="TC_15_1_ALL">
+					<EntryList/>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[15,2] Disable storage function of packet stores -->
+			<MetaCommand name="TC_15_2_SPECIFIC" shortDescription="TC[15,2] Disable storage on specific packet stores">
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="2"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="N" argumentTypeRef="/dt/uint8"/>
+					<Argument name="store_ids" argumentTypeRef="store_id_array_type"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_2_SPECIFIC">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="N"/>
+						<ArgumentRefEntry argumentRef="store_ids"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="TC_15_2_ALL" shortDescription="TC[15,2] Disable storage on all packet stores">
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="2"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="TC_15_2_ALL">
+					<EntryList/>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[15,9] Start by-time-range retrieval of packet stores -->
+			<MetaCommand name="TC_15_9_START_BTR" shortDescription="TC[15,9] Start by-time-range retrieval">
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="9"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="N" argumentTypeRef="/dt/uint8"/>
+					<Argument name="btr_entries" argumentTypeRef="btr_entry_array_type"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_9_START_BTR">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="N"/>
+						<ArgumentRefEntry argumentRef="btr_entries"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[15,11] Delete content of packet stores up to specified time -->
+			<MetaCommand name="TC_15_11_SPECIFIC" shortDescription="TC[15,11] Delete content up to time_limit on specific packet stores">
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="11"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="time_limit" argumentTypeRef="/dt/uint64"/>
+					<Argument name="N" argumentTypeRef="/dt/uint8"/>
+					<Argument name="store_ids" argumentTypeRef="store_id_array_type"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_11_SPECIFIC">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="time_limit"/>
+						<ArgumentRefEntry argumentRef="N"/>
+						<ArgumentRefEntry argumentRef="store_ids"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="TC_15_11_ALL" shortDescription="TC[15,11] Delete content up to time_limit on all packet stores">
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="11"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="time_limit" argumentTypeRef="/dt/uint64"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_11_ALL">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="time_limit"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[15,12] Summary-report content of packet stores -->
+			<MetaCommand name="TC_15_12_SPECIFIC" shortDescription="TC[15,12] Request TM[15,13] for specific packet stores">
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="12"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="N" argumentTypeRef="/dt/uint8"/>
+					<Argument name="store_ids" argumentTypeRef="store_id_array_type"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_12_SPECIFIC">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="N"/>
+						<ArgumentRefEntry argumentRef="store_ids"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="TC_15_12_ALL" shortDescription="TC[15,12] Request TM[15,13] for all packet stores">
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="12"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="TC_15_12_ALL">
+					<EntryList/>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[15,14] Change open retrieval start time tag of packet stores -->
+			<MetaCommand name="TC_15_14_SPECIFIC" shortDescription="TC[15,14] Change open retrieval cursor on specific (suspended) packet stores">
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="14"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="start_time" argumentTypeRef="/dt/uint64"/>
+					<Argument name="N" argumentTypeRef="/dt/uint8"/>
+					<Argument name="store_ids" argumentTypeRef="store_id_array_type"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_14_SPECIFIC">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="start_time"/>
+						<ArgumentRefEntry argumentRef="N"/>
+						<ArgumentRefEntry argumentRef="store_ids"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="TC_15_14_ALL" shortDescription="TC[15,14] Change open retrieval cursor on all suspended packet stores">
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="14"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="start_time" argumentTypeRef="/dt/uint64"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_14_ALL">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="start_time"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[15,15] Resume open retrieval of packet stores -->
+			<MetaCommand name="TC_15_15_SPECIFIC" shortDescription="TC[15,15] Resume open retrieval on specific packet stores">
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="15"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="N" argumentTypeRef="/dt/uint8"/>
+					<Argument name="store_ids" argumentTypeRef="store_id_array_type"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_15_SPECIFIC">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="N"/>
+						<ArgumentRefEntry argumentRef="store_ids"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="TC_15_15_ALL" shortDescription="TC[15,15] Resume open retrieval on all packet stores">
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="15"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="TC_15_15_ALL">
+					<EntryList/>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[15,16] Suspend open retrieval of packet stores -->
+			<MetaCommand name="TC_15_16_SPECIFIC" shortDescription="TC[15,16] Suspend open retrieval on specific packet stores">
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="16"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="N" argumentTypeRef="/dt/uint8"/>
+					<Argument name="store_ids" argumentTypeRef="store_id_array_type"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_16_SPECIFIC">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="N"/>
+						<ArgumentRefEntry argumentRef="store_ids"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="TC_15_16_ALL" shortDescription="TC[15,16] Suspend open retrieval on all packet stores">
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="16"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="TC_15_16_ALL">
+					<EntryList/>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[15,17] Abort by-time-range retrieval of packet stores -->
+			<MetaCommand name="TC_15_17_SPECIFIC" shortDescription="TC[15,17] Abort BTR on specific packet stores">
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="17"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="N" argumentTypeRef="/dt/uint8"/>
+					<Argument name="store_ids" argumentTypeRef="store_id_array_type"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_17_SPECIFIC">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="N"/>
+						<ArgumentRefEntry argumentRef="store_ids"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="TC_15_17_ALL" shortDescription="TC[15,17] Abort BTR on all packet stores">
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="17"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="TC_15_17_ALL">
+					<EntryList/>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[15,18] Report status of each packet store -->
+			<MetaCommand name="TC_15_18_REPORT_STATUS" shortDescription="TC[15,18] Report status of each packet store">
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="18"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="TC_15_18">
+					<EntryList/>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[15,20] Create packet stores -->
+			<MetaCommand name="TC_15_20_CREATE_STORES" shortDescription="TC[15,20] Create packet stores">
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="20"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="N" argumentTypeRef="/dt/uint8"/>
+					<Argument name="stores" argumentTypeRef="create_store_array_type"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_20">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="N"/>
+						<ArgumentRefEntry argumentRef="stores"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[15,21] Delete packet stores -->
+			<MetaCommand name="TC_15_21_SPECIFIC" shortDescription="TC[15,21] Delete specific packet stores">
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="21"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="N" argumentTypeRef="/dt/uint8"/>
+					<Argument name="store_ids" argumentTypeRef="store_id_array_type"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_21_SPECIFIC">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="N"/>
+						<ArgumentRefEntry argumentRef="store_ids"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="TC_15_21_ALL" shortDescription="TC[15,21] Delete all eligible (inactive) packet stores">
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="21"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="TC_15_21_ALL">
+					<EntryList/>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[15,22] Report configuration of each packet store -->
+			<MetaCommand name="TC_15_22_REPORT_CONFIG" shortDescription="TC[15,22] Report configuration of each packet store">
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="22"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="TC_15_22">
+					<EntryList/>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[15,25] Resize packet stores -->
+			<MetaCommand name="TC_15_25_RESIZE_STORES" shortDescription="TC[15,25] Resize packet stores">
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="25"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="N" argumentTypeRef="/dt/uint8"/>
+					<Argument name="resize_entries" argumentTypeRef="resize_array_type"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_25">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="N"/>
+						<ArgumentRefEntry argumentRef="resize_entries"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[15,28] Change virtual channel used by a packet store -->
+			<MetaCommand name="TC_15_28_CHANGE_VC" shortDescription="TC[15,28] Change the virtual channel used by a packet store">
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="28"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="store_id" argumentTypeRef="/dt/uint16"/>
+					<Argument name="new_vc_id" argumentTypeRef="/dt/uint8"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_28">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="store_id"/>
+						<ArgumentRefEntry argumentRef="new_vc_id"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+		</MetaCommandSet>
+	</CommandMetaData>
+</SpaceSystem>

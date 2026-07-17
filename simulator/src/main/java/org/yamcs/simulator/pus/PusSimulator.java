@@ -31,13 +31,14 @@ import org.yamcs.simulator.UdpTmFrameLink;
  * <li>ST[01] - request verification</li>
  * <li>ST[02] - device access</li>
  * <li>ST[03] - housekeeping</li>
- * <li>ST[05] - event reporting - TODO</li>
+ * <li>ST[05] - event reporting</li>
  * <li>ST[06] - memory management - TODO</li>
  * <li>ST[09] - time management - only sending the time packet</li>
  * <li>ST[11] - time based schedule</li>
  * <li>ST[12] - on-board monitoring - parameter monitoring subservice</li>
  * <li>ST[13] - large packet transfer</li>
- * <li>ST[15] - on-board storage and retrieval - TODO</li>
+ * <li>ST[14] - real-time forwarding control</li>
+ * <li>ST[15] - on-board storage and retrieval - core lifecycle only, see Pus15Service</li>
  * <li>ST[17] - test</li>
  * <li>ST[23] - file management - TODO</li>
  * 
@@ -83,6 +84,8 @@ public class PusSimulator extends AbstractSimulator {
     Pus11Service pus11Service;
     Pus12Service pus12Service;
     Pus13Service pus13Service;
+    Pus14Service pus14Service;
+    Pus15Service pus15Service;
     Pus17Service pus17Service;
 
     protected BlockingQueue<PusTcPacket> pendingCommands = new ArrayBlockingQueue<>(100);
@@ -107,6 +110,8 @@ public class PusSimulator extends AbstractSimulator {
         pus11Service = new Pus11Service(this);
         pus12Service = new Pus12Service(this);
         pus13Service = new Pus13Service(this);
+        pus14Service = new Pus14Service(this);
+        pus15Service = new Pus15Service(this);
         pus17Service = new Pus17Service(this);
     }
 
@@ -126,16 +131,31 @@ public class PusSimulator extends AbstractSimulator {
 
     void transmitRealtimeTM(PusTmPacket packet) {
         packet.fillChecksum();
+        // ST[15] storage is independent of ST[14] real-time forwarding: a packet can be stored
+        // on-board even if it's not forwarded live, so the store hook runs unconditionally.
+        pus15Service.submitToStores(packet);
+        if (!pus14Service.shouldForward(packet)) {
+            return; // blocked by ST[14] forwarding control configuration
+        }
         sendPacket(packet);
     }
 
-    private void sendPacket(SimulatorCcsdsPacket packet) {
+    /**
+     * Re-transmits a packet previously captured by ST[15] packet-store retrieval (open retrieval /
+     * BTR). Bypasses {@link #transmitRealtimeTM} entirely -- the bytes are already checksummed and
+     * ST[14]'s forwarding gate must not re-block a dump that ground explicitly requested.
+     */
+    void sendStoredPacket(byte[] rawPacket) {
         if (tmLink != null) {
-            tmLink.sendPacket(packet.getBytes());
+            tmLink.sendPacket(rawPacket);
         }
         if (tmFrameLink != null) {
-            tmFrameLink.queuePacket(0, packet.getBytes());
+            tmFrameLink.queuePacket(0, rawPacket);
         }
+    }
+
+    private void sendPacket(SimulatorCcsdsPacket packet) {
+        sendStoredPacket(packet.getBytes());
     }
 
     @Override
@@ -224,6 +244,8 @@ public class PusSimulator extends AbstractSimulator {
                 case 11 -> pus11Service.executeTc(commandPacket);
                 case 12 -> pus12Service.executeTc(commandPacket);
                 case 13 -> pus13Service.executeTc(commandPacket);
+                case 14 -> pus14Service.executeTc(commandPacket);
+                case 15 -> pus15Service.executeTc(commandPacket);
                 case 17 -> pus17Service.executeTc(commandPacket);
                 case 25 -> {
                     switch (commandPacket.getSubtype()) {
