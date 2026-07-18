@@ -309,6 +309,24 @@ message SubscribeContainersRequest {
   
   // Container names to subscribe to.
   repeated string names = 3;
+
+  // Filter query. See {doc}`../filtering` for how to write a filter query.
+  //
+  // Literal text search matches against the `name` field.
+  // Field comparisons can use any of the following fields:
+  //
+  // | Field       | Type   | Description                                 |
+  // | ----------- | ------ | -------------------------------------------- |
+  // | `name`      | string | Filter by qualified container name           |
+  // | `link`      | string | Filter by receiving link                     |
+  // | `size`      | number | Filter by received container size in bytes   |
+  // | `seqNumber` | number | Filter by sequence count                     |
+  //
+  // If `names` is empty and this filter only uses text search or `name` comparisons, only
+  // matching containers are subscribed to. If it also uses `link`, `size` or `seqNumber`
+  // (only known once a container has actually been received), every container in the
+  // Mission Database is subscribed to instead.
+  optional string filter = 4;
 }
 
 message ContainerData {

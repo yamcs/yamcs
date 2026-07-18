@@ -563,23 +563,49 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
     public void subscribeContainers(Context ctx, SubscribeContainersRequest request, Observer<ContainerData> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
         Mdb mdb = MdbFactory.getInstance(instance);
-        if (request.getNamesCount() == 0) {
-            throw new BadRequestException("At least one container name must be specified");
-        }
-        ctx.checkObjectPrivileges(ObjectPrivilegeType.ReadPacket, request.getNamesList());
 
-        List<SequenceContainer> containers = new ArrayList<>(request.getNamesCount());
-        for (String name : request.getNamesList()) {
-            SequenceContainer container = mdb.getSequenceContainer(name);
-            if (container == null) {
-                throw new BadRequestException("Unknown container '" + name + "'");
+        ContainerFilter filter = request.hasFilter() ? ContainerFilterFactory.create(request.getFilter()) : null;
+
+        if (request.getNamesCount() == 0 && filter == null) {
+            throw new BadRequestException("At least one container name or a filter must be specified");
+        }
+
+        List<SequenceContainer> containers;
+        if (request.getNamesCount() > 0) {
+            // Explicit names: privilege gap on any of them rejects the whole request (unchanged).
+            ctx.checkObjectPrivileges(ObjectPrivilegeType.ReadPacket, request.getNamesList());
+
+            containers = new ArrayList<>(request.getNamesCount());
+            for (String name : request.getNamesList()) {
+                SequenceContainer container = mdb.getSequenceContainer(name);
+                if (container == null) {
+                    throw new BadRequestException("Unknown container '" + name + "'");
+                }
+                containers.add(container);
             }
-            containers.add(container);
+        } else {
+            // No live message to match link/size/seqNumber against yet, so pre-narrow by name where possible;
+            // otherwise subscribe to everything and let the live filter in the callback do the work.
+            boolean requiresLiveFields = filter.isQueryField("link")
+                    || filter.isQueryField("size")
+                    || filter.isQueryField("seqNumber");
+            containers = new ArrayList<>();
+            for (SequenceContainer container : mdb.getSequenceContainers()) {
+                if (!ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadPacket, container.getQualifiedName())) {
+                    continue;
+                }
+                if (requiresLiveFields || filter.matches(ContainerFilter.MatchTarget.forDiscovery(container))) {
+                    containers.add(container);
+                }
+            }
         }
 
         Processor processor = ProcessingApi.verifyProcessor(instance, request.getProcessor());
         ContainerRequestManager containerRequestManager = processor.getContainerRequestManager();
         ContainerConsumer containerConsumer = (link, result) -> {
+            if (filter != null && !filter.matches(ContainerFilter.MatchTarget.forDelivery(link, result))) {
+                return;
+            }
             var packetb = ContainerData.newBuilder()
                     .setName(result.getContainer().getQualifiedName())
                     .setBinary(ByteString.copyFrom(result.getContainerContent()))
