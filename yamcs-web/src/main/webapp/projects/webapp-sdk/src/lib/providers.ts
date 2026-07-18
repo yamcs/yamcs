@@ -4,6 +4,7 @@ import {
 } from '@angular/cdk/overlay';
 import { APP_BASE_HREF } from '@angular/common';
 import {
+  ANIMATION_MODULE_TYPE,
   EnvironmentProviders,
   inject,
   provideAppInitializer,
@@ -16,7 +17,6 @@ import {
   MAT_TOOLTIP_DEFAULT_OPTIONS,
   MatTooltipDefaultOptions,
 } from '@angular/material/tooltip';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
 import { UtcDateAdapter } from './components/date-time-input/UtcDateAdapter';
 import { AppearanceService } from './services/appearance.service';
@@ -60,7 +60,7 @@ export function provideYamcsMaterialConfiguration(): Provider[] {
     // The default OverlayContainer does not show overlays if
     // requestFullscreen is used.
     { provide: OverlayContainer, useClass: FullscreenOverlayContainer },
-    provideNoopAnimations(),
+    { provide: ANIMATION_MODULE_TYPE, useValue: 'NoopAnimations' },
   ];
 }
 
