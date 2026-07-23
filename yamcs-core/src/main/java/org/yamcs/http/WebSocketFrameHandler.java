@@ -176,7 +176,9 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
     private void dumpState(ChannelHandlerContext nettyContext) throws IOException {
         State.Builder stateb = State.newBuilder();
         for (TopicContext ctx : contexts) {
-            stateb.addCalls(ctx.dumpState());
+            if (!ctx.isDone() && !ctx.isCancelled()) {
+                stateb.addCalls(ctx.dumpState());
+            }
         }
         writeMessage(nettyContext, "state", stateb.build());
     }
@@ -193,9 +195,23 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         for (TopicContext ctx : new ArrayList<>(contexts)) {
             if (ctx.getId() == callId) {
                 ctx.close();
-                clientObserversByCall.remove(callId);
+                removeContext(ctx);
             }
         }
+    }
+
+    private void removeContext(TopicContext ctx) {
+        var executor = ctx.nettyContext.executor();
+        if (executor.inEventLoop()) {
+            removeContext0(ctx);
+        } else {
+            executor.execute(() -> removeContext0(ctx));
+        }
+    }
+
+    private void removeContext0(TopicContext ctx) {
+        contexts.remove(ctx);
+        clientObserversByCall.remove(ctx.getId());
     }
 
     private void startNewContext(ChannelHandlerContext nettyContext, ClientMessage clientMessage, Topic topic)
@@ -212,7 +228,9 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         WebSocketObserver observer = new WebSocketObserver(ctx);
         ctx.addListener(cancellationCause -> {
             observer.cancelCall(cancellationCause != null ? cancellationCause.getMessage() : null);
+            removeContext(ctx);
         });
+        ctx.requestFuture.whenComplete((unused, failure) -> removeContext(ctx));
 
         contexts.add(ctx);
 
