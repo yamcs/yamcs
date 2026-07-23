@@ -3,11 +3,13 @@ package org.yamcs.tctm.cfs;
 import static org.yamcs.StandardTupleDefinitions.GENTIME_COLUMN;
 import static org.yamcs.StandardTupleDefinitions.TM_RECTIME_COLUMN;
 
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -55,6 +57,8 @@ public class CfsEventDecoder extends AbstractYamcsService implements StreamSubsc
     Charset charset;
     Integer appNameMax;
     Integer eventMsgMax;
+
+    static final int MINIMUM_LENGTH = 20;
 
     @Override
     public Spec getSpec() {
@@ -131,20 +135,39 @@ public class CfsEventDecoder extends AbstractYamcsService implements StreamSubsc
         int msgId = ByteArrayUtils.decodeUnsignedShort(packet, 0);
 
         if (msgIds.contains(msgId)) {
+            if (packet.length < MINIMUM_LENGTH) {
+                log.error("Packet must be at least " + MINIMUM_LENGTH + " bytes in size.\n"
+                        + "Packet size:" + packet.length);
+                return;
+            }
             long rectime = (Long) t.getColumn(TM_RECTIME_COLUMN);
             long gentime = (Long) t.getColumn(GENTIME_COLUMN);
 
             try {
                 processPacket(rectime, gentime, packet);
+            } catch (BufferUnderflowException e) {
+                eventProducer.sendWarning("SHORT_PACKET",
+                        "Short packet received, length: " + packet.length);
             } catch (Exception e) {
-                log.warn("Failed to process event packet", e);
+                log.error("Failed to process event packet", e);
             }
         }
     }
 
-    private void processPacket(long rectime, long gentime, byte[] packet) {
+    private void processPacket(long rectime, long gentime, byte[] packet) throws Exception {
         ByteBuffer buf = ByteBuffer.wrap(packet);
+
+        // As per CCSDS protocol, primary header is big endian
+        int expectedLength = ByteArrayUtils.decodeUnsignedShort(packet, 4) + 7;
+
+        if (packet.length < expectedLength) {
+            log.warn("Packet is smaller than the expected length."
+                    + "Packet length:" + packet.length + "\n"
+                    + "Expected length:" + expectedLength);
+        }
+
         buf.order(byteOrder);
+
         buf.position(12);
         String app = decodeString(buf, appNameMax);
         int eventId = buf.getShort();
