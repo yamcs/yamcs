@@ -270,7 +270,6 @@ public class PusEventDecoder extends AbstractYamcsService {
 
                 Event.Builder evb = Event.newBuilder()
                         .setType(eventId)
-                        .setSource(subsystem)
                         .setSeverity(getSeverity(subtype))
                         .setGenerationTime(gentime)
                         .setSeqNumber(seqCount)
