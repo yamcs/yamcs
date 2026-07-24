@@ -26,7 +26,7 @@ public final class GPBHelper {
     public static TmPacketData tupleToTmPacketData(Tuple tuple) {
         long recTime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_RECTIME_COLUMN);
         byte[] pbody = (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
-        long genTime = (Long) tuple.getColumn(StandardTupleDefinitions.GENTIME_COLUMN);
+        Instant genTime = tuple.getHresTimestampColumn(StandardTupleDefinitions.GENTIME_COLUMN);
         int seqNum = (Integer) tuple.getColumn(StandardTupleDefinitions.SEQNUM_COLUMN);
         String pname = (String) tuple.getColumn(XtceTmRecorder.PNAME_COLUMN);
         var b = TmPacketData.newBuilder()
@@ -37,7 +37,7 @@ public final class GPBHelper {
                 .setSequenceNumber(seqNum)
                 .setId(NamedObjectId.newBuilder().setName(pname).build());
         if (tuple.hasColumn(StandardTupleDefinitions.TM_ERTIME_COLUMN)) {
-            long erTime = ((Instant) tuple.getColumn(StandardTupleDefinitions.TM_ERTIME_COLUMN)).getMillis();
+            Instant erTime = (Instant) tuple.getColumn(StandardTupleDefinitions.TM_ERTIME_COLUMN);
             b.setEarthReceptionTime(TimeEncoding.toProtobufTimestamp(erTime));
         }
         if (tuple.hasColumn(StandardTupleDefinitions.TM_LINK_COLUMN)) {
@@ -47,10 +47,10 @@ public final class GPBHelper {
     }
 
     public static CommandHistoryEntry tupleToCommandHistoryEntry(Tuple tuple, Mdb mdb) {
-        long gentime = (Long) tuple.getColumn(PreparedCommand.CNAME_GENTIME);
+        Instant gentime = tuple.getHresTimestampColumn(PreparedCommand.CNAME_GENTIME);
         String origin = (String) tuple.getColumn(PreparedCommand.CNAME_ORIGIN);
         int sequenceNumber = (Integer) tuple.getColumn(PreparedCommand.CNAME_SEQNUM);
-        String id = gentime + "-" + origin + "-" + sequenceNumber;
+        String id = gentime.getMillis() + "-" + origin + "-" + sequenceNumber;
         var commandName = (String) tuple.getColumn(PreparedCommand.CNAME_CMDNAME);
 
         CommandHistoryEntry.Builder che = CommandHistoryEntry.newBuilder()

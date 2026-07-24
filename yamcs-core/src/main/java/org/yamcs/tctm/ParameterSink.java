@@ -3,6 +3,7 @@ package org.yamcs.tctm;
 import java.util.Collection;
 
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.time.Instant;
 
 /**
  * Used by the ParameterDataLink to propagate processed parameters inside Yamcs.
@@ -28,7 +29,7 @@ public interface ParameterSink {
      * @param seqNum
      * @param params
      */
-    public abstract void updateParameters(long gentime, String group, int seqNum, Collection<ParameterValue> params);
+    public abstract void updateParameters(Instant gentime, String group, int seqNum, Collection<ParameterValue> params);
 
     /**
      * Update the parameters. Alternative method to provide ProtoBuf parameter values instead of POJO versions. The
@@ -36,12 +37,12 @@ public interface ParameterSink {
      * <p>
      * The ParameterRecorder will use the FQN to record them. If they are sent to a processor (e.g. on a pp_realtime
      * stream), they have to be found in the MDB for clients to be able subscribe to them. Also for triggering alarms.
-     * 
+     *
      * @param gentime
      * @param group
      * @param seqNum
      * @param params
      */
-    void updateParams(long gentime, String group, int seqNum,
+    void updateParams(Instant gentime, String group, int seqNum,
             Collection<org.yamcs.protobuf.Pvalue.ParameterValue> params);
 }

@@ -227,7 +227,7 @@ public class PusEventDecoder extends AbstractYamcsService {
             int apid = PusPacket.getApid(packet);
             int subtype = PusPacket.getSubtype(packet);
 
-            long gentime = tuple.getColumn(StandardTupleDefinitions.GENTIME_COLUMN);
+            long gentime = tuple.getTimestampColumn(StandardTupleDefinitions.GENTIME_COLUMN);
             int seqCount = tuple.getColumn(StandardTupleDefinitions.SEQNUM_COLUMN);
 
             ContainerProcessingResult cpr = tmExtractor.processPacket(packet, gentime, timeService.getMissionTime(),

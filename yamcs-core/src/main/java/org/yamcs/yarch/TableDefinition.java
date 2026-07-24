@@ -175,7 +175,7 @@ public class TableDefinition {
                 throw new GenericStreamSqlException(
                         "time partition specified on a column not part of the primary key: '" + pspec.timeColumn + "'");
             }
-            if (cd.getType() != DataType.TIMESTAMP) {
+            if (cd.getType() != DataType.TIMESTAMP && cd.getType() != DataType.HRES_TIMESTAMP) {
                 throw new GenericStreamSqlException("time partition specified on a column of type " + cd.getType());
             }
             if (!keyDef.get(0).getName().equals(pspec.timeColumn)) {
@@ -622,9 +622,9 @@ public class TableDefinition {
     }
 
     public void setHistogramColumns(List<String> histoColumns) throws StreamSqlException {
-        if (keyDef.get(0).getType() != DataType.TIMESTAMP)
+        if (keyDef.get(0).getType() != DataType.TIMESTAMP && keyDef.get(0).getType() != DataType.HRES_TIMESTAMP)
             throw new StreamSqlException(ErrCode.INVALID_HISTOGRAM_COLUMN,
-                    "Cannot only create histogram on tables with the first column of the primary key of type TIMESTAMP");
+                    "Cannot only create histogram on tables with the first column of the primary key of type TIMESTAMP or HRES_TIMESTAMP");
 
         for (String hc : histoColumns) {
             if (keyDef.getIndex(hc) == 0)
