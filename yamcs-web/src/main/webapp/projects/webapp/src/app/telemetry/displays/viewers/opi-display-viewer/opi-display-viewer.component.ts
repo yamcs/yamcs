@@ -7,7 +7,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AlarmSeverity, Sample } from '@yamcs/opi';
+import { AlarmSeverity, AutoScaleOverride, Sample } from '@yamcs/opi';
 import {
   ConfigService,
   Formatter,
@@ -77,6 +77,11 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
   private absPrefix = '';
 
   private currentScale = 1;
+
+  // DEFAULT matches Display's own default (respect the display's own
+  // auto_scale_widgets XML property) - no message needs to be sent for this
+  // case, it's already the library's behavior.
+  autoScaleOverride: AutoScaleOverride = AutoScaleOverride.DEFAULT;
 
   private messageListener = (event: MessageEvent) => this.handleMessage(event);
 
@@ -588,6 +593,11 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
         containerHeight: this.viewerContainerEl.clientHeight,
       });
     }
+  }
+
+  public setAutoScaleOverride(value: AutoScaleOverride) {
+    this.autoScaleOverride = value;
+    this.postToSandbox({ type: 'setAutoScaleOverride', value });
   }
 
   ngOnDestroy() {
