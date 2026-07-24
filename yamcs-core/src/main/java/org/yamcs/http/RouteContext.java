@@ -40,6 +40,7 @@ public class RouteContext extends Context {
     public final HttpRequest nettyRequest;
     public FullHttpRequest fullNettyRequest;
 
+    HttpServer httpServer;
     private Route route;
     private Matcher regexMatch;
 
@@ -49,6 +50,7 @@ public class RouteContext extends Context {
     RouteContext(HttpServer httpServer, ChannelHandlerContext nettyContext, User user, HttpRequest nettyRequest,
             Route route, Matcher regexMatch) {
         super(httpServer, nettyContext, user, route.getApi());
+        this.httpServer = httpServer;
         this.nettyRequest = nettyRequest;
         this.route = route;
         this.regexMatch = regexMatch;
@@ -112,12 +114,13 @@ public class RouteContext extends Context {
 
     @Override
     public String getClientAddress() {
-        String forwardedFor = nettyRequest.headers().get("x-forwarded-for");
-        if (forwardedFor != null) {
-            return forwardedFor;
-        } else {
-            return super.getClientAddress();
+        if (httpServer.isTrustedProxy(nettyContext.channel().remoteAddress())) {
+            String forwardedFor = nettyRequest.headers().get("x-forwarded-for");
+            if (forwardedFor != null) {
+                return httpServer.peelForwardedFor(forwardedFor);
+            }
         }
+        return super.getClientAddress();
     }
 
     @Override

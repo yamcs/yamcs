@@ -1,23 +1,18 @@
 package org.yamcs.security;
 
-import java.net.Inet4Address;
-import java.net.Inet6Address;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.yamcs.InitException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
+import org.yamcs.utils.IpSubnetRuleUtils;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.ipfilter.IpFilterRule;
-import io.netty.handler.ipfilter.IpFilterRuleType;
-import io.netty.handler.ipfilter.IpSubnetFilterRule;
 
 /**
  * An AuthModule that enforces a login of one fixed user account, where the remote IP address must match one of the
@@ -32,7 +27,7 @@ public class IPAddressAuthModule extends AbstractHttpRequestAuthModule {
     protected static final String OPTION_SUPERUSER = "superuser";
     protected static final String OPTION_PRIVILEGES = "privileges";
 
-    private List<IpFilterRule> rules = new ArrayList<>();
+    private List<IpFilterRule> rules = List.of();
 
     private AuthenticationInfo authenticationInfo;
     private AuthorizationInfo authorizationInfo;
@@ -84,23 +79,7 @@ public class IPAddressAuthModule extends AbstractHttpRequestAuthModule {
         }
 
         try {
-            for (var address : args.<String> getList(OPTION_ADDRESS)) {
-                if (address.indexOf('/') > 0) {
-                    var parts = address.split("\\/");
-                    var ipAddress = InetAddress.getByName(parts[0]);
-                    var cidrPrefix = Integer.parseInt(parts[1]);
-                    rules.add(new IpSubnetFilterRule(ipAddress, cidrPrefix, IpFilterRuleType.ACCEPT));
-                } else {
-                    var ipAddress = InetAddress.getByName(address);
-                    if (ipAddress instanceof Inet4Address) {
-                        rules.add(new IpSubnetFilterRule(ipAddress, 32, IpFilterRuleType.ACCEPT));
-                    } else if (ipAddress instanceof Inet6Address) {
-                        rules.add(new IpSubnetFilterRule(ipAddress, 128, IpFilterRuleType.ACCEPT));
-                    } else {
-                        throw new IllegalArgumentException("Only IPv4 and IPv6 addresses are supported");
-                    }
-                }
-            }
+            rules = IpSubnetRuleUtils.parseRules(args.<String> getList(OPTION_ADDRESS));
         } catch (UnknownHostException e) {
             throw new InitException(e);
         }
@@ -139,11 +118,6 @@ public class IPAddressAuthModule extends AbstractHttpRequestAuthModule {
     }
 
     private boolean accept(InetSocketAddress remoteAddress) {
-        for (var rule : rules) {
-            if (rule.matches(remoteAddress)) {
-                return rule.ruleType() == IpFilterRuleType.ACCEPT;
-            }
-        }
-        return false;
+        return IpSubnetRuleUtils.matches(rules, remoteAddress);
     }
 }
