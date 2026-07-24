@@ -903,3 +903,156 @@ All simulator services call `submit_tm()` instead of sending directly.
 9. **[ON-BOARD sim]** TC[15,11/25/28] — delete content, resize, change VC
 10. **[ON-BOARD sim]** TC[15,29–40] — HK/diag/event storage-control configs
 11. **[GROUND]** Author `pus15.xml` in parallel — XTCE definitions for all TC argument structures and TM container hierarchies
+
+---
+
+## g) Testing Methodology
+
+Reflects the actual implementation: `Pus15Service.java` and
+`examples/pus/src/main/yamcs/mdb/pus15.xml`. Command paths, argument names, and byte layouts below
+are taken directly from those files, not the pseudocode in section b). **Scope**: core lifecycle
+only (steps 1-9 of section f) — TC[15,1/2/9/11/12/14/15/16/17/18/20/21/22/25/28] and
+TM[15,13/19/23]. The Packet Selection subservice (TC[15,3/4/5/6], TC[15,29-40]) is not implemented,
+so it has no test coverage here.
+
+### g.1 Start the instance
+
+```bash
+mvn -pl simulator,examples/pus -am clean install -DskipTests   # first build only
+mvn -pl examples/pus yamcs:run
+```
+Web UI: `http://localhost:8090`, instance `pus`. Commands live under `/PUS15/...`, TM containers
+under the same `/PUS15/` subsystem (see g.3). An automated walkthrough of most of this table is in
+`examples/pus/tests/test-pus15.py`.
+
+### g.2 Command reference — valid inputs
+
+All commands are under `/PUS15/`. `N` count fields must be supplied explicitly alongside their
+corresponding arrays — YAMCS does not infer them from array length (same convention as PUS12's
+`N`/`pmon_ids`). The "_ALL" variant of a dual-variant command takes no arguments at all (not even
+`N`); the "_SPECIFIC" variant always carries `N` + the id array (see Gap 2).
+
+| Command | Subtype | Valid example args |
+|---|---|---|
+| `TC_15_20_CREATE_STORES` | TC[15,20] | `{"N": 2, "stores": [{"store_id": 100, "size_bytes": 200000, "store_type": "circular", "vc_id": 0}, {"store_id": 200, "size_bytes": 5000, "store_type": "bounded", "vc_id": 1}]}` |
+| `TC_15_22_REPORT_CONFIG` | TC[15,22] | `{}` (no arguments) — dumps TM[15,23] for every store |
+| `TC_15_1_SPECIFIC` | TC[15,1] | `{"N": 1, "store_ids": [100]}` — enable storage on store 100 |
+| `TC_15_1_ALL` | TC[15,1] | `{}` — enable storage on every store |
+| `TC_15_2_SPECIFIC` | TC[15,2] | `{"N": 1, "store_ids": [100]}` |
+| `TC_15_2_ALL` | TC[15,2] | `{}` |
+| `TC_15_18_REPORT_STATUS` | TC[15,18] | `{}` (no arguments) — dumps TM[15,19] for every store |
+| `TC_15_12_SPECIFIC` | TC[15,12] | `{"N": 1, "store_ids": [100]}` — TM[15,13] for store 100 only |
+| `TC_15_12_ALL` | TC[15,12] | `{}` — TM[15,13] for every store |
+| `TC_15_9_START_BTR` | TC[15,9] | `{"N": 1, "btr_entries": [{"store_id": 100, "start_time": 0, "end_time": 9223372036854775807}]}` — dumps everything currently in store 100 (timestamps are raw millis, see Gap 1; `end_time` here is `2**63-1`) |
+| `TC_15_17_SPECIFIC` | TC[15,17] | `{"N": 1, "store_ids": [100]}` — abort an in-progress BTR |
+| `TC_15_17_ALL` | TC[15,17] | `{}` |
+| `TC_15_15_SPECIFIC` | TC[15,15] | `{"N": 1, "store_ids": [100]}` — resume open retrieval |
+| `TC_15_15_ALL` | TC[15,15] | `{}` |
+| `TC_15_16_SPECIFIC` | TC[15,16] | `{"N": 1, "store_ids": [100]}` — suspend open retrieval |
+| `TC_15_16_ALL` | TC[15,16] | `{}` |
+| `TC_15_14_SPECIFIC` | TC[15,14] | `{"start_time": 0, "N": 1, "store_ids": [100]}` — reposition the cursor on a *suspended* store 100 |
+| `TC_15_14_ALL` | TC[15,14] | `{"start_time": 0}` — reposition the cursor on every currently-suspended store |
+| `TC_15_11_SPECIFIC` | TC[15,11] | `{"time_limit": 9223372036854775807, "N": 1, "store_ids": [100]}` — delete all content of store 100 (see g.5 on timestamp scale) |
+| `TC_15_11_ALL` | TC[15,11] | `{"time_limit": 9223372036854775807}` |
+| `TC_15_25_RESIZE_STORES` | TC[15,25] | `{"N": 1, "resize_entries": [{"store_id": 200, "new_size": 8000}]}` |
+| `TC_15_28_CHANGE_VC` | TC[15,28] | `{"store_id": 200, "new_vc_id": 3}` |
+| `TC_15_21_SPECIFIC` | TC[15,21] | `{"N": 1, "store_ids": [100]}` — delete only if storage disabled, open retrieval suspended, and BTR disabled |
+| `TC_15_21_ALL` | TC[15,21] | `{}` — delete every store currently eligible, silently skipping active ones |
+
+Rejection conditions to exercise (all respond NACK completion, not NACK start — the command is
+accepted then rejected during execution; see the `Pus15Service` completion error codes):
+unknown `store_id` (`COMPL_ERR_STORE_NOT_FOUND` = 5), `TC_15_20_CREATE_STORES` reusing an existing
+id (`COMPL_ERR_STORE_ALREADY_EXISTS` = 6), delete/resize/change-VC on a store that still has
+storage enabled, open retrieval in progress, or BTR enabled (`COMPL_ERR_STORE_ACTIVE` = 7), more
+than 64 total stores (`COMPL_ERR_MAX_STORES_EXCEEDED` = 8), `TC_15_9_START_BTR` on a store with an
+already-active BTR (`COMPL_ERR_BTR_ALREADY_ACTIVE` = 9), `TC_15_14_SPECIFIC` naming a store whose
+open retrieval isn't suspended (`COMPL_ERR_NOT_SUSPENDED` = 10), and `TC_15_11_*` targeting a store
+with an active BTR or open retrieval (`COMPL_ERR_ACTIVE_RETRIEVAL` = 11). An unrecognized subtype
+gets NACK **start** (`START_ERR_INVALID_PUS_SUBTYPE`) instead, since the command is rejected before
+execution begins.
+
+### g.3 TMs to check
+
+| Container | Subtype | Triggered by | Layout |
+|---|---|---|---|
+| `/PUS15/STORE_CONFIG_REPORT` | TM[15,23] | `TC_15_22_REPORT_CONFIG` | `N:u8`, then `N` × `{store_id:u16, size_bytes:u32, store_type:u8, vc_id:u8}` |
+| `/PUS15/STORE_STATUS_REPORT` | TM[15,19] | `TC_15_18_REPORT_STATUS` | `N:u8`, then `N` × `{store_id:u16, storage_status:u8, open_retrieval_status:u8, btr_status:u8}` (0/1 enums, see pus15.xml) |
+| `/PUS15/STORE_SUMMARY_REPORT` | TM[15,13] | `TC_15_12_SPECIFIC` / `TC_15_12_ALL` | `N:u8`, then `N` × `{store_id:u16, oldest_ts:u64, newest_ts:u64, open_retrieval_start_time:u64, fill_pct:u8, fill_pct_from_start:u8}` |
+
+If there are zero stores (config report) or the target list resolves to zero entries, the report is
+still sent with `N=0` and no entries — unlike ST[14]'s dump reports, which send nothing at all when
+the underlying table is empty (compare `Pus15Service.sendStatusReport`/`sendConfigReport`, always
+called with a materialized list, vs `Pus14Service.reportApfcc` iterating a possibly-empty map).
+
+Also watch the standard PUS-1 verification containers (`/PUS/pus-tc-ack-*`) for ACK/NACK
+start/completion of every TC[15,x] above.
+
+### g.4 Suggested manual test walkthrough
+
+1. **Create stores**: send `TC_15_20_CREATE_STORES` with the example args from g.2 (store 100
+   circular/200000B, store 200 bounded/5000B). Confirm ACK completion, then
+   `TC_15_22_REPORT_CONFIG` → `STORE_CONFIG_REPORT` shows both with the right type/size/vc.
+2. **Reject duplicate id**: resend `TC_15_20_CREATE_STORES` reusing `store_id: 100` and confirm NACK
+   completion with code 6 (`COMPL_ERR_STORE_ALREADY_EXISTS`); confirm the config report is
+   unchanged (still exactly 2 stores).
+3. **Enable storage, watch it fill**: send `TC_15_1_SPECIFIC` for store 100. Wait a couple of
+   seconds (ST[3]'s periodic HK reports are flowing by default), then `TC_15_12_SPECIFIC` for store
+   100 → `STORE_SUMMARY_REPORT` shows `fill_pct > 0` and `oldest_ts <= newest_ts`. This exercises the
+   pass-all storage default (see Note in the MDB header and the `Pus15Service` class javadoc) — no
+   packet-selection filter was configured, yet everything got captured.
+4. **Active-store deletion is rejected**: with storage still enabled on store 100, send
+   `TC_15_21_SPECIFIC` for store 100 and confirm NACK completion with code 7
+   (`COMPL_ERR_STORE_ACTIVE`).
+5. **Open retrieval resume/suspend**: disable storage (`TC_15_2_SPECIFIC`), then
+   `TC_15_15_SPECIFIC` for store 100 → `TC_15_18_REPORT_STATUS` shows `open_retrieval_status=1`
+   (in_progress); watch previously-captured packets replay on the TM link (same containers as their
+   original type, e.g. `/PUS3/...` HK reports, now arriving a second time via
+   `PusSimulator.sendStoredPacket`). Then `TC_15_16_SPECIFIC` → status flips back to `0`
+   (suspended), and replay stops.
+6. **Cursor reposition requires suspended**: with store 100 back in `SUSPENDED` state, send
+   `TC_15_14_SPECIFIC` with `start_time: 0` and confirm ACK completion (cursor rewound to the
+   oldest packet). Then resume open retrieval again (`TC_15_15_SPECIFIC`) and confirm every
+   captured packet up to the newest gets replayed once, in order.
+7. **By-time-range retrieval**: send `TC_15_9_START_BTR` for store 100 with the full-range example
+   from g.2. Immediately check `TC_15_18_REPORT_STATUS` → `btr_status=1` (enabled) while packets are
+   still draining (100ms between sends, see `BTR_STEP_DELAY_MS`); after a couple of seconds, status
+   flips back to `0` (disabled) once the backlog is exhausted.
+8. **BTR double-start rejected**: while a BTR is still draining on store 100 (or immediately restart
+   one on a store with plenty of backlog), send a second `TC_15_9_START_BTR` for the same store and
+   confirm NACK completion with code 9 (`COMPL_ERR_BTR_ALREADY_ACTIVE`).
+9. **Resize + VC change**: with store 200 untouched (storage never enabled, so it's inactive), send
+   `TC_15_25_RESIZE_STORES` (`new_size: 8000`) and `TC_15_28_CHANGE_VC` (`new_vc_id: 3`); confirm
+   `TC_15_22_REPORT_CONFIG` reflects both changes.
+10. **Delete content by time, then delete the stores**: send `TC_15_11_SPECIFIC` for store 100 with
+    a far-future `time_limit` and confirm the next `TC_15_12_SPECIFIC` summary shows
+    `fill_pct=0`. Finally send `TC_15_21_ALL` (no args) and confirm `TC_15_22_REPORT_CONFIG` reports
+    zero stores.
+
+### g.5 Caveats specific to this simulator
+
+- **Single fixed APID**: every TC and TM in this simulator uses `MAIN_APID = 1`
+  (`PusSimulator.newPacket`), so the deferred Packet Selection subservice's APID dimension would not
+  be observably exercised even once implemented (same caveat as ST[14], see pus14.md e.5).
+- **Timestamps are elapsed-millis-since-server-start, not wall-clock or CUC**: `Pus15Service` reads
+  `pusSimulator.timeEncoding.now().millis()` (an `Epoch.SIMULATOR` clock that starts near zero at
+  server boot) for every stored packet, and all wire-visible timestamp fields
+  (`start_time`/`end_time`/`time_limit`/`oldest_ts`/`newest_ts`/`open_retrieval_start_time`) carry
+  that same raw value as a `uint64`, not a CUC-encoded field (Gap 1). There is no real-time
+  correlation to compute when testing — a small integer close to the server's uptime in
+  milliseconds, or a maximal value like `2**63-1` to mean "everything", are the only inputs that
+  make sense.
+- **Pass-all storage default**: since the Packet Selection subservice isn't implemented, any store
+  with `storage_enabled=true` captures *all* outgoing TM, not just a filtered subset — see the
+  `Pus15Service` class javadoc. This makes storage observable/testable now, but is a deliberate
+  deviation from spec-strict behaviour (which would store nothing without an explicit filter) that
+  narrows once TC[15,3/4] land.
+- **Open retrieval replay reuses the original TM containers**: a replayed packet decodes identically
+  to its original transmission (same container, same fields) — there's no separate "this came from
+  a packet store" wrapper. The only way to distinguish a replay from a live packet in this simulator
+  is timing (it arrives again, later, while `open_retrieval_status=in_progress`) or byte-for-byte
+  comparison.
+- **BTR/open-retrieval replay bypasses ST[14]'s forwarding gate**: `PusSimulator.sendStoredPacket`
+  is used for retrieval replay specifically so a restrictive APFCC (ST[14]) can't silently swallow a
+  ground-requested dump; only live, first-time transmissions are subject to `shouldForward()`. Keep
+  this in mind if testing ST[14] and ST[15] together — a packet blocked in real time can still show
+  up later via retrieval.

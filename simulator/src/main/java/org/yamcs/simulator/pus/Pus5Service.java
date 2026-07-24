@@ -37,6 +37,7 @@ public class Pus5Service extends AbstractPusService {
                 bb.putShort((short) count);
                 bb.putFloat((float) (count + 3.14159265));
                 pusSimulator.transmitRealtimeTM(packet);
+                pusSimulator.pus19Service.onEvent(PusSimulator.MAIN_APID, 1);
             }
         } else {
             if (enabled.getOrDefault(2, false)) {
@@ -48,6 +49,7 @@ public class Pus5Service extends AbstractPusService {
                 bb.putShort((short) msg.length);
                 bb.put(msg);
                 pusSimulator.transmitRealtimeTM(packet);
+                pusSimulator.pus19Service.onEvent(PusSimulator.MAIN_APID, 2);
             }
         }
         count++;
@@ -57,6 +59,8 @@ public class Pus5Service extends AbstractPusService {
     /**
      * Generic event-raising API for other PUS services (e.g. {@link Pus12Service}) to trigger a
      * PUS-5 event outside this class's own demo cadence. No-op if the event id is unknown/disabled.
+     * Also notifies ST[19] (event-action) so any enabled definition matching this event can release
+     * its stored request -- see {@link Pus19Service#onEvent}.
      */
     public void raiseEvent(int eventId, int subtype, byte[] payload) {
         if (!enabled.getOrDefault(eventId, false)) {
@@ -67,6 +71,7 @@ public class Pus5Service extends AbstractPusService {
         bb.put((byte) eventId);
         bb.put(payload);
         pusSimulator.transmitRealtimeTM(packet);
+        pusSimulator.pus19Service.onEvent(PusSimulator.MAIN_APID, eventId);
     }
 
     public void executeTc(PusTcPacket tc) {

@@ -1330,3 +1330,169 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 ```
+
+---
+
+## Testing Methodology — Actual Implementation
+
+The `pus19_simulator.py` reference code above assumed a standalone "test_yamcs" style simulator
+(6-byte CCSDS header, no PUS secondary header, `request_tc_len:uint16` length prefix). **That is not
+what was built.** The actual implementation reuses the same Java `PusSimulator`/`AbstractPusService`
+framework as every other PUS service in this repo (ST[05], ST[13], ST[15], ST[17], ...):
+
+| Artifact | Path |
+|---|---|
+| Simulator service | `simulator/src/main/java/org/yamcs/simulator/pus/Pus19Service.java` |
+| MDB | `examples/pus/src/main/yamcs/mdb/pus19.xml` |
+| Registration | `PusSimulator.java` (`pus19Service` field/constructor/dispatch), `yamcs.pus.yaml` (`mdb:` list) |
+| ST[05] coupling | `Pus5Service.sendEvent()`/`raiseEvent()` call `pus19Service.onEvent(...)` directly (no separate `EventBus` class) |
+
+Key differences from the reference pseudocode, all driven by real framework constraints discovered
+while implementing (see `Pus19Service.java` javadoc and the `NoteSet` in `pus19.xml`):
+
+- **TC header is 11 bytes, not 8**: `PusTcPacket.DATA_OFFSET = 11` (6B CCSDS + 5B PUS secondary
+  header), so all the byte offsets in section b) above do not apply to the real wire format.
+- **Embedded request TC is a real dynamically-sized XTCE binary field, not a manual length prefix**:
+  the `request_tc_len:uint16` workaround from Gap 1 turned out to be unnecessary. `pus19.xml` uses
+  the same validated `BinaryArgumentType`/`BinaryParameterType` + sibling `DynamicValue` pattern
+  already proven by `pus13.xml` (`TC[13,11]`/`TM[13,3]`), so `TC_19_1_ADD` is fully buildable from
+  the YAMCS command UI/API and `TM_19_11` fully decodable — no raw/undecoded bytes remain.
+- **Single application process**: `app_process_id` is always `PusSimulator.MAIN_APID` (`1`) in this
+  simulator; there is no second process to exercise the identifier's real purpose.
+- **Release mechanism**: on a matching enabled event, `Pus19Service.onEvent` reconstructs
+  `new PusTcPacket(storedBytes)` and calls `PusSimulator.processTc(...)` — the same mechanism
+  `Pus13Service` uses for reassembled large commands. The released command gets its own independent
+  ACK/NACK/completion chain, exactly as if uplinked from ground.
+
+### Start the instance
+
+```bash
+mvn -pl simulator,examples/pus -am clean install -DskipTests   # first build only
+mvn -pl examples/pus yamcs:run
+```
+Web UI: `http://localhost:8090`, instance `pus`. Commands live under `/PUS19/...`, TM containers
+under the same subsystem (see below).
+
+### Command reference — valid inputs
+
+All commands are under `/PUS19/`. `N` count fields must be supplied explicitly alongside their
+corresponding arrays (same convention as PUS12/PUS15). The `_ALL` variant of `TC_19_4`/`TC_19_5`
+takes no arguments at all; the `_SPECIFIC` variant always carries `N` + the event-id array.
+`TC_19_10_REPORT_DEFS` is a single command where `N=0` means "report all" (in-band, per spec).
+
+| Command | Subtype | Valid example args |
+|---|---|---|
+| `TC_19_8_ENABLE_FUNCTION` | TC[19,8] | `{}` — turns the global event-action function on |
+| `TC_19_9_DISABLE_FUNCTION` | TC[19,9] | `{}` — turns it off (definition statuses untouched) |
+| `TC_19_1_ADD` | TC[19,1] | `{"N": 1, "entries": [{"app_process_id": 1, "event_def_id": 1, "request_len": 13, "request": <13 raw bytes>}]}` — see "Building the embedded request" below for how to get real bytes |
+| `TC_19_4_SPECIFIC` | TC[19,4] | `{"N": 1, "event_ids": [{"app_process_id": 1, "event_def_id": 1}]}` |
+| `TC_19_4_ALL` | TC[19,4] | `{}` — enable every definition |
+| `TC_19_5_SPECIFIC` | TC[19,5] | `{"N": 1, "event_ids": [{"app_process_id": 1, "event_def_id": 1}]}` |
+| `TC_19_5_ALL` | TC[19,5] | `{}` — disable every definition |
+| `TC_19_6_REPORT_STATUS` | TC[19,6] | `{}` (no arguments) — dumps TM[19,7] for every definition |
+| `TC_19_10_REPORT_DEFS` | TC[19,10] | `{"N": 0, "event_ids": []}` — dumps TM[19,11] for every definition; or `{"N": 1, "event_ids": [{"app_process_id": 1, "event_def_id": 1}]}` for a specific one |
+| `TC_19_2_DELETE` | TC[19,2] | `{"N": 1, "event_ids": [{"app_process_id": 1, "event_def_id": 1}]}` — only succeeds if the definition exists and is disabled |
+
+Rejection conditions to exercise (all respond NACK completion, not NACK start — the command is
+accepted then rejected during execution; see `Pus19Service`'s completion error codes):
+`TC_19_2_DELETE`/`TC_19_4_SPECIFIC`/`TC_19_5_SPECIFIC` referencing an unknown `(app_process_id,
+event_def_id)` pair (`COMPL_ERR_EA_DEF_NOT_FOUND` = 5), and `TC_19_2_DELETE` referencing a
+definition that is still enabled (`COMPL_ERR_EA_DEF_ENABLED` = 6, per §6.19.8.3d). An unrecognized
+subtype gets NACK **start** (`START_ERR_INVALID_PUS_SUBTYPE`) instead.
+
+### TMs to check
+
+| Container | Subtype | Triggered by | Layout |
+|---|---|---|---|
+| `/PUS19/TM_19_7` | TM[19,7] | `TC_19_6_REPORT_STATUS` | `N:u8`, then `N` × `{app_process_id:u16, event_def_id:u16, ea_status:u8}` (0=disabled/1=enabled) |
+| `/PUS19/TM_19_11` | TM[19,11] | `TC_19_10_REPORT_DEFS` | `N:u8`, then `N` × `{app_process_id:u16, event_def_id:u16, ea_status:u8, request_len:u16, request:<request_len bytes>}` |
+
+Also watch the standard PUS-1 verification containers (`/PUS/pus-tc-ack-*`) — both for the TC[19,x]
+commands you send, **and** for whatever command gets autonomously released (e.g. `TC[17,1]`'s own
+ACK start/completion appears with no corresponding TC[19,x] ground command in the command history,
+which is the tell that the release actually happened on-board rather than being sent from ground).
+
+### Building the embedded "request" bytes for TC[19,1]
+
+The `request` argument must be a complete, encoded TC packet (same convention as ST[13]/ST[21]'s
+embedded-TC handling). The simplest released action to test with is `/PUS17/ARE_YOU_ALIVE`
+(`TC[17,1]`, zero arguments, responds with `TM[17,2]`) since its effect is trivially observable.
+Preferred way to get real, correctly-encoded bytes — a dry-run command issue via `yamcs-client`
+(same library `examples/pus/tests/test-pus15.py` uses):
+
+```python
+from yamcs.client import YamcsClient
+
+client = YamcsClient("localhost:8090")
+processor = client.get_processor("pus", "realtime")
+issued = processor.issue_command("/PUS17/ARE_YOU_ALIVE", args={}, dry_run=True)
+request_bytes = issued.binary     # complete, CRC'd raw TC packet, ready to embed
+print(len(request_bytes), issued.hex)
+```
+
+`dry_run=True` prepares and encodes the command without transmitting it, so `issued.binary` is safe
+to reuse as the `request`/`request_len` pair in `TC_19_1_ADD`.
+
+For a purely manual/offline reference, an `ARE_YOU_ALIVE` packet targeting `MAIN_APID=1` with the
+default `ackflags=7` looks like this (13 bytes; CRC zeroed since `Pus19Service.onEvent` dispatches
+the reconstructed packet straight to `PusSimulator.processTc` without re-validating the checksum —
+only externally-uplinked TCs go through the CRC-checking `packetPreprocessor`):
+
+```
+1801 C000 0006 27 11 01 0000 0000
+```
+(`18 01` CCSDS word0, `C0 00` word1 seq=0, `00 06` packet-data-length, `27` PUS version+ackflags,
+`11` type=17, `01` subtype=1, `00 00` source, `00 00` CRC placeholder) — `request_len = 13`.
+
+### Suggested manual test walkthrough
+
+1. **Build the request bytes**: dry-run `/PUS17/ARE_YOU_ALIVE` as above (or use the manual hex).
+2. **Add a disabled definition**: `TC_19_1_ADD` with `app_process_id=1, event_def_id=1` and the
+   request bytes from step 1. Confirm ACK completion, then `TC_19_6_REPORT_STATUS` →
+   `TM_19_7` shows one entry with `ea_status=0` (new definitions start disabled, §6.19).
+3. **Function gate**: with the definition still disabled, `TC_19_8_ENABLE_FUNCTION`, then wait ~5s
+   for Pus5Service's periodic event id=1 to fire (`count % 5 == 0` on a 1s tick — see
+   `Pus5Service.sendEvent`) and confirm **no** `TM[17,2]` appears — the function is enabled but the
+   definition itself is still disabled, so nothing releases.
+4. **Enable the definition**: `TC_19_4_SPECIFIC` for `(1,1)`. Confirm via `TC_19_6_REPORT_STATUS` →
+   `TM_19_7` now shows `ea_status=1`. Wait for the next event id=1 tick (≤5s) and confirm `TM[17,2]`
+   now appears autonomously, with its own `/PUS/pus-tc-ack-*` ACK start/completion — with no
+   `TC[17,1]` ever sent from ground. This is the core event→release chain working end to end.
+5. **Function-disable gate**: `TC_19_9_DISABLE_FUNCTION`. Wait for the next event id=1 tick and
+   confirm `TM[17,2]` does **not** reappear, even though the definition itself is still enabled
+   (§6.19.5: disabling the function does not change definition statuses, but it does stop releases).
+6. **Re-enable and confirm resume**: `TC_19_8_ENABLE_FUNCTION`, wait for the next tick, confirm
+   `TM[17,2]` resumes.
+7. **Per-definition disable**: `TC_19_5_SPECIFIC` for `(1,1)` (function still enabled). Wait for the
+   next tick and confirm `TM[17,2]` does not appear — this time it's the definition, not the
+   function, gating the release.
+8. **Inspect via TM[19,11]**: `TC_19_10_REPORT_DEFS` with `N=0` → `TM_19_11` shows one entry for
+   `(1,1)` with `ea_status=0` and `request`/`request_len` matching the bytes from step 1 exactly
+   (byte-for-byte compare against `issued.binary`).
+9. **Delete-while-enabled is rejected**: `TC_19_4_SPECIFIC` to re-enable `(1,1)`, then
+   `TC_19_2_DELETE` for `(1,1)` and confirm NACK completion with code 6
+   (`COMPL_ERR_EA_DEF_ENABLED`).
+10. **Delete after disable succeeds**: `TC_19_5_SPECIFIC` to disable `(1,1)`, then `TC_19_2_DELETE`
+    again and confirm ACK completion; `TC_19_10_REPORT_DEFS` with `N=0` now returns `N=0` entries.
+11. **Unknown-id rejection**: `TC_19_4_SPECIFIC` (or `TC_19_2_DELETE`) for an id that was never
+    added, e.g. `(1, 99)`, and confirm NACK completion with code 5 (`COMPL_ERR_EA_DEF_NOT_FOUND`).
+
+### Caveats specific to this simulator
+
+- **Single fixed APID**: every TC and TM uses `MAIN_APID = 1` (`PusSimulator.newPacket`), so
+  `app_process_id` should always be `1` in test definitions — there is no second process to exercise
+  a mismatch against (same caveat noted for ST[14]/ST[15]).
+- **Event cadence for manual testing**: `Pus5Service.sendEvent()` fires **event id=1** every 5th
+  tick (1s ticks, so ~every 5s) and **event id=2** on the other four ticks (with a `subtype` in
+  1-4 that varies but does not affect the `event_def_id` used for ST[19] matching — it is always
+  literally `2`). Event ids 10-15 are only raised by `Pus12Service` on PMON checking-status
+  violations, which requires arranging a parameter-limit/expected-value/delta violation first — use
+  event id 1 or 2 for straightforward manual testing instead.
+- **CRC is not verified for autonomously-released commands**: `Pus19Service.onEvent` builds a
+  `PusTcPacket` directly from the stored bytes and calls `PusSimulator.processTc`, bypassing the
+  CRC-checking `packetPreprocessor` that only sits on the externally-facing TC data link. A
+  malformed CRC in the stored `request` will not block a release; only `type`/`subtype`/argument
+  bytes need to be correct.
+- **No cap on definition count**: unlike ST[15]'s `MAX_STORES`, `Pus19Service` does not bound the
+  number of event-action definitions — this mirrors `Pus5Service`'s uncapped `enabled` map and is
+  not spec-mandated for ST[19].

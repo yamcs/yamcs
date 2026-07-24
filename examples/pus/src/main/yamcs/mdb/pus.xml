@@ -16,6 +16,7 @@
 					<Enumeration label="UNKNOWN_LOGICAL_DEVICE" value="11" />
 					<Enumeration label="UNKNOWN_DEVICE_COMMAND" value="12" />
 					<Enumeration label="UNKNOWN_DEVICE_PARAMETER" value="13" />
+					<Enumeration label="UNKNOWN_PARAM_ID" value="20" />
 					<Enumeration label="INVALID_VOLTAGE_NUM" value="100" />
 				</EnumerationList>
 			</EnumeratedParameterType>

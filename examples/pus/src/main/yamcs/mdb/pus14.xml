@@ -1,0 +1,514 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem name="PUS14" xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
+	<Header validationStatus="Unknown" version="1.0" date="2026-07-15T00:00:00Z">
+		<NoteSet>
+			<Note>ST[14] Real-Time Forwarding Control. See pus_analysis/pus14.md and
+				pus_simulator_architecture.md for the full design rationale.</Note>
+			<Note>All forwarding-control logic (APFCC/HK FCC/Diag FCC tables, the shouldForward() gate,
+				TC parsing, TM dump generation) lives on-board (emulated by Pus14Service in the
+				simulator). This MDB only encodes the TC[14,x] configuration/dump-request commands and
+				decodes the TM[14,4]/[14,8]/[14,12] dump reports -- it performs no filtering of its own.</Note>
+			<Note>N2=0 (TC[14,1]/[14,2]) and N_structs=0 (TC[14,5]/[14,6]/[14,9]/[14,10]) mean
+				"all services/structures for this APID" per spec convention; N3=0 means "all subtypes
+				of this service type". TC[14,2]/[14,6]/[14,10] additionally have a zero-argument
+				"empty the whole table" variant, since that request form has no N1 field -- a zero-byte
+				payload is the runtime discriminator (checked in Pus14Service via bb.remaining()==0).</Note>
+			<Note>HK FCC (TC[14,5-8]) and Diagnostic FCC (TC[14,9-12]) are maintained as pure
+				bookkeeping in the simulator: ST[03] HK reports don't carry structure identifiers and
+				ST[04] diagnostic reports don't exist in this simulator, so these two tables have no
+				effect on which TM is actually forwarded (see pus14.md Gap 6).</Note>
+			<Note>Default gate state is pass-all (an APID with no APFCC entry is forwarded), and PUS-1
+				verification reports (type=1) and ST[14]'s own TM (type=14) always bypass the gate --
+				this simulator uses a single fixed APID for all traffic, so a restrictive APFCC entry
+				would otherwise block its own control channel.</Note>
+		</NoteSet>
+	</Header>
+	<TelemetryMetaData>
+		<ParameterTypeSet>
+			<!-- Flat array of RTFCD subtype ids within one STFCD entry; dimension from apfc_n_subtypes (sibling) -->
+			<ArrayParameterType name="ApfcSubtypeIdsType" arrayTypeRef="/dt/uint8">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ParameterInstanceRef parameterRef="apfc_n_subtypes"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayParameterType>
+			<!-- Flat array of HK structure ids; dimension from hk_fcc_n_structs -->
+			<ArrayParameterType name="HkFccStructIdsType" arrayTypeRef="/dt/uint16">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ParameterInstanceRef parameterRef="hk_fcc_n_structs"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayParameterType>
+			<!-- Flat array of diagnostic structure ids; dimension from diag_fcc_n_structs -->
+			<ArrayParameterType name="DiagFccStructIdsType" arrayTypeRef="/dt/uint16">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ParameterInstanceRef parameterRef="diag_fcc_n_structs"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayParameterType>
+		</ParameterTypeSet>
+		<ParameterSet>
+			<!-- TM[14,4] APFCC content report -->
+			<Parameter parameterTypeRef="/dt/uint16" name="apfc_apid"/>
+			<Parameter parameterTypeRef="/dt/uint8" name="apfc_n_services"/>
+			<Parameter parameterTypeRef="/dt/uint8" name="apfc_service_type_id"/>
+			<Parameter parameterTypeRef="/dt/uint8" name="apfc_n_subtypes"/>
+			<Parameter parameterTypeRef="ApfcSubtypeIdsType" name="apfc_subtype_ids"/>
+
+			<!-- TM[14,8] HK FCC content report -->
+			<Parameter parameterTypeRef="/dt/uint16" name="hk_fcc_apid"/>
+			<Parameter parameterTypeRef="/dt/uint8" name="hk_fcc_n_structs"/>
+			<Parameter parameterTypeRef="HkFccStructIdsType" name="hk_fcc_struct_ids"/>
+
+			<!-- TM[14,12] Diagnostic FCC content report -->
+			<Parameter parameterTypeRef="/dt/uint16" name="diag_fcc_apid"/>
+			<Parameter parameterTypeRef="/dt/uint8" name="diag_fcc_n_structs"/>
+			<Parameter parameterTypeRef="DiagFccStructIdsType" name="diag_fcc_struct_ids"/>
+		</ParameterSet>
+		<ContainerSet>
+			<SequenceContainer name="pus14-tm">
+				<EntryList/>
+				<BaseContainer containerRef="/PUS/pus-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/type" comparisonOperator="==" value="14"/>
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+
+			<!-- TM[14,4]: one packet per APFCD (application process) -->
+			<SequenceContainer name="apfc_service_element" shortDescription="One STFCD entry (service type + its authorized subtypes)">
+				<EntryList>
+					<ParameterRefEntry parameterRef="apfc_service_type_id"/>
+					<ParameterRefEntry parameterRef="apfc_n_subtypes"/>
+					<ArrayParameterRefEntry parameterRef="apfc_subtype_ids">
+						<IncludeCondition>
+							<Comparison parameterRef="apfc_n_subtypes" comparisonOperator="&gt;" value="0"/>
+						</IncludeCondition>
+					</ArrayParameterRefEntry>
+				</EntryList>
+			</SequenceContainer>
+			<SequenceContainer name="TM_14_4" shortDescription="TM[14,4] APFC configuration content report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="apfc_apid"/>
+					<ParameterRefEntry parameterRef="apfc_n_services"/>
+					<ContainerRefEntry containerRef="apfc_service_element">
+						<RepeatEntry>
+							<Count>
+								<DynamicValue>
+									<ParameterInstanceRef parameterRef="apfc_n_services"/>
+								</DynamicValue>
+							</Count>
+						</RepeatEntry>
+					</ContainerRefEntry>
+				</EntryList>
+				<BaseContainer containerRef="pus14-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="4"/>
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+
+			<!-- TM[14,8]: one packet per HK FCC APID entry -->
+			<SequenceContainer name="TM_14_8" shortDescription="TM[14,8] HK FCC content report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="hk_fcc_apid"/>
+					<ParameterRefEntry parameterRef="hk_fcc_n_structs"/>
+					<ArrayParameterRefEntry parameterRef="hk_fcc_struct_ids">
+						<IncludeCondition>
+							<Comparison parameterRef="hk_fcc_n_structs" comparisonOperator="&gt;" value="0"/>
+						</IncludeCondition>
+					</ArrayParameterRefEntry>
+				</EntryList>
+				<BaseContainer containerRef="pus14-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="8"/>
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+
+			<!-- TM[14,12]: one packet per Diagnostic FCC APID entry -->
+			<SequenceContainer name="TM_14_12" shortDescription="TM[14,12] Diagnostic FCC content report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="diag_fcc_apid"/>
+					<ParameterRefEntry parameterRef="diag_fcc_n_structs"/>
+					<ArrayParameterRefEntry parameterRef="diag_fcc_struct_ids">
+						<IncludeCondition>
+							<Comparison parameterRef="diag_fcc_n_structs" comparisonOperator="&gt;" value="0"/>
+						</IncludeCondition>
+					</ArrayParameterRefEntry>
+				</EntryList>
+				<BaseContainer containerRef="pus14-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="12"/>
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+		</ContainerSet>
+	</TelemetryMetaData>
+	<CommandMetaData>
+		<ArgumentTypeSet>
+			<!-- ============ APFCC nested arrays (TC[14,1] / TC[14,2] delete-entries) ============ -->
+			<!-- Level 3: array of RTFCD subtype ids; sized by sibling member "n3" -->
+			<ArrayArgumentType name="ApfcSubtypeArrayType" arrayTypeRef="/dt/uint8">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="n3"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+			<!-- Level 2 aggregate: one STFCD entry (service_type + n3 + n3 x subtype) -->
+			<AggregateArgumentType name="ApfcServiceEntryType">
+				<MemberList>
+					<Member name="service_type" typeRef="/dt/uint8"/>
+					<Member name="n3" typeRef="/dt/uint8"/>
+					<Member name="subtypes" typeRef="ApfcSubtypeArrayType"/>
+				</MemberList>
+			</AggregateArgumentType>
+			<!-- Level 2 array: sized by sibling member "n2" -->
+			<ArrayArgumentType name="ApfcServiceArrayType" arrayTypeRef="ApfcServiceEntryType">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="n2"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+			<!-- Level 1 aggregate: one APFCD entry (apid + n2 + n2 x service_entry) -->
+			<AggregateArgumentType name="ApfcdEntryType">
+				<MemberList>
+					<Member name="apid" typeRef="/dt/uint16"/>
+					<Member name="n2" typeRef="/dt/uint8"/>
+					<Member name="service_types" typeRef="ApfcServiceArrayType"/>
+				</MemberList>
+			</AggregateArgumentType>
+			<!-- Level 1 array: sized by top-level argument "N1" -->
+			<ArrayArgumentType name="ApfcdArrayType" arrayTypeRef="ApfcdEntryType">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="N1"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+
+			<!-- ============ HK FCC nested arrays (TC[14,5] / TC[14,6] delete-entries) ============ -->
+			<ArrayArgumentType name="HkStructIdArrayType" arrayTypeRef="/dt/uint16">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="n_structs"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+			<AggregateArgumentType name="HkApidEntryType">
+				<MemberList>
+					<Member name="apid" typeRef="/dt/uint16"/>
+					<Member name="n_structs" typeRef="/dt/uint8"/>
+					<Member name="struct_ids" typeRef="HkStructIdArrayType"/>
+				</MemberList>
+			</AggregateArgumentType>
+			<ArrayArgumentType name="HkApidArrayType" arrayTypeRef="HkApidEntryType">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="N1"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+
+			<!-- ============ Diagnostic FCC nested arrays (TC[14,9] / TC[14,10] delete-entries) ============ -->
+			<ArrayArgumentType name="DiagStructIdArrayType" arrayTypeRef="/dt/uint16">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="n_structs"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+			<AggregateArgumentType name="DiagApidEntryType">
+				<MemberList>
+					<Member name="apid" typeRef="/dt/uint16"/>
+					<Member name="n_structs" typeRef="/dt/uint8"/>
+					<Member name="struct_ids" typeRef="DiagStructIdArrayType"/>
+				</MemberList>
+			</AggregateArgumentType>
+			<ArrayArgumentType name="DiagApidArrayType" arrayTypeRef="DiagApidEntryType">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="N1"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+		</ArgumentTypeSet>
+		<MetaCommandSet>
+			<MetaCommand name="pus14-tc" abstract="true">
+				<BaseMetaCommand metaCommandRef="/PUS/pus-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="apid" argumentValue="1"/>
+						<ArgumentAssignment argumentName="type" argumentValue="14"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="pus14-tc">
+					<EntryList/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[14,1] Add report types to the APFC configuration -->
+			<MetaCommand name="TC_14_1_ADD_REPORT_TYPES" shortDescription="TC[14,1] Add report types to APFC configuration">
+				<BaseMetaCommand metaCommandRef="pus14-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="1"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="N1" argumentTypeRef="/dt/uint8"/>
+					<Argument name="apfcd_entries" argumentTypeRef="ApfcdArrayType"/>
+				</ArgumentList>
+				<CommandContainer name="TC_14_1">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="N1"/>
+						<ArgumentRefEntry argumentRef="apfcd_entries"/>
+					</EntryList>
+					<BaseContainer containerRef="pus14-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[14,2]a Delete report types from the APFC configuration -->
+			<MetaCommand name="TC_14_2_DELETE_ENTRIES" shortDescription="TC[14,2] Delete report types from APFC configuration">
+				<BaseMetaCommand metaCommandRef="pus14-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="2"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="N1" argumentTypeRef="/dt/uint8"/>
+					<Argument name="apfcd_entries" argumentTypeRef="ApfcdArrayType"/>
+				</ArgumentList>
+				<CommandContainer name="TC_14_2_DELETE">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="N1"/>
+						<ArgumentRefEntry argumentRef="apfcd_entries"/>
+					</EntryList>
+					<BaseContainer containerRef="pus14-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[14,2]b Empty the entire APFC configuration -->
+			<MetaCommand name="TC_14_2_EMPTY_APFCC" shortDescription="TC[14,2] Empty entire APFC configuration">
+				<BaseMetaCommand metaCommandRef="pus14-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="2"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="TC_14_2_EMPTY">
+					<EntryList/>
+					<BaseContainer containerRef="pus14-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[14,3] Report the content of the APFC configuration -->
+			<MetaCommand name="TC_14_3_REPORT_APFCC" shortDescription="TC[14,3] Report APFC configuration">
+				<BaseMetaCommand metaCommandRef="pus14-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="3"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="TC_14_3">
+					<EntryList/>
+					<BaseContainer containerRef="pus14-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[14,5] Add structure identifiers to the HK Parameter Report FCC -->
+			<MetaCommand name="TC_14_5_ADD_HK_STRUCTS" shortDescription="TC[14,5] Add HK structure identifiers to HK FCC">
+				<BaseMetaCommand metaCommandRef="pus14-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="5"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="N1" argumentTypeRef="/dt/uint8"/>
+					<Argument name="apid_entries" argumentTypeRef="HkApidArrayType"/>
+				</ArgumentList>
+				<CommandContainer name="TC_14_5">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="N1"/>
+						<ArgumentRefEntry argumentRef="apid_entries"/>
+					</EntryList>
+					<BaseContainer containerRef="pus14-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[14,6]a Delete structure identifiers from the HK Parameter Report FCC -->
+			<MetaCommand name="TC_14_6_DELETE_HK_ENTRIES" shortDescription="TC[14,6] Delete HK structure identifiers from HK FCC">
+				<BaseMetaCommand metaCommandRef="pus14-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="6"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="N1" argumentTypeRef="/dt/uint8"/>
+					<Argument name="apid_entries" argumentTypeRef="HkApidArrayType"/>
+				</ArgumentList>
+				<CommandContainer name="TC_14_6_DELETE">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="N1"/>
+						<ArgumentRefEntry argumentRef="apid_entries"/>
+					</EntryList>
+					<BaseContainer containerRef="pus14-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[14,6]b Empty the entire HK FCC -->
+			<MetaCommand name="TC_14_6_EMPTY_HK_FCC" shortDescription="TC[14,6] Empty HK FCC">
+				<BaseMetaCommand metaCommandRef="pus14-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="6"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="TC_14_6_EMPTY">
+					<EntryList/>
+					<BaseContainer containerRef="pus14-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[14,7] Report the content of the HK Parameter Report FCC -->
+			<MetaCommand name="TC_14_7_REPORT_HK_FCC" shortDescription="TC[14,7] Report HK FCC content">
+				<BaseMetaCommand metaCommandRef="pus14-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="7"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="TC_14_7">
+					<EntryList/>
+					<BaseContainer containerRef="pus14-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[14,9] Add structure identifiers to the Diagnostic Parameter Report FCC -->
+			<MetaCommand name="TC_14_9_ADD_DIAG_STRUCTS" shortDescription="TC[14,9] Add diagnostic structure identifiers to Diagnostic FCC">
+				<BaseMetaCommand metaCommandRef="pus14-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="9"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="N1" argumentTypeRef="/dt/uint8"/>
+					<Argument name="apid_entries" argumentTypeRef="DiagApidArrayType"/>
+				</ArgumentList>
+				<CommandContainer name="TC_14_9">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="N1"/>
+						<ArgumentRefEntry argumentRef="apid_entries"/>
+					</EntryList>
+					<BaseContainer containerRef="pus14-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[14,10]a Delete structure identifiers from the Diagnostic Parameter Report FCC -->
+			<MetaCommand name="TC_14_10_DELETE_DIAG_ENTRIES" shortDescription="TC[14,10] Delete diagnostic structure identifiers from Diagnostic FCC">
+				<BaseMetaCommand metaCommandRef="pus14-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="10"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="N1" argumentTypeRef="/dt/uint8"/>
+					<Argument name="apid_entries" argumentTypeRef="DiagApidArrayType"/>
+				</ArgumentList>
+				<CommandContainer name="TC_14_10_DELETE">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="N1"/>
+						<ArgumentRefEntry argumentRef="apid_entries"/>
+					</EntryList>
+					<BaseContainer containerRef="pus14-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[14,10]b Empty the entire Diagnostic FCC -->
+			<MetaCommand name="TC_14_10_EMPTY_DIAG_FCC" shortDescription="TC[14,10] Empty Diagnostic FCC">
+				<BaseMetaCommand metaCommandRef="pus14-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="10"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="TC_14_10_EMPTY">
+					<EntryList/>
+					<BaseContainer containerRef="pus14-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[14,11] Report the content of the Diagnostic Parameter Report FCC -->
+			<MetaCommand name="TC_14_11_REPORT_DIAG_FCC" shortDescription="TC[14,11] Report Diagnostic FCC content">
+				<BaseMetaCommand metaCommandRef="pus14-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="11"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="TC_14_11">
+					<EntryList/>
+					<BaseContainer containerRef="pus14-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+		</MetaCommandSet>
+	</CommandMetaData>
+</SpaceSystem>
