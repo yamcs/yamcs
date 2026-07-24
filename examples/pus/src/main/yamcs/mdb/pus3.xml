@@ -1,0 +1,1070 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Sample implementation of PUS Service 3 (ST[03]) — Housekeeping.
+
+    Wire format conventions (match Pus3Service.java):
+      struct_id / param_id / pfrd_id : uint32  (4 bytes) — consistent with /PUS/hkid uint32
+      collection_interval            : uint32  (4 bytes, milliseconds)
+      count fields (N, N1, NFA …)   : uint8   (1 byte)
+      gen_status / report_nature     : uint8   (1 byte, enums)
+
+    TM[3,25] (HK param report) is already handled by /PUS/hk25 + landing.xml containers.
+    This file adds TC[3,1–44] and TM[3,10/12/35/36/41].
+
+    See pus_analysis/pus03.md for the full analysis and design rationale.
+-->
+<SpaceSystem name="PUS3"
+    xmlns="http://www.omg.org/spec/XTCE/20180204"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
+    <Header validationStatus="Unknown" version="1.0" date="2026-06-30T00:00:00Z">
+        <NoteSet>
+            <Note>Sample implementation of PUS3 Housekeeping (HK and diagnostic parameter report structures).</Note>
+        </NoteSet>
+    </Header>
+
+    <!-- ================================================================
+         TELEMETRY — TM[3,35], TM[3,36], TM[3,41]
+         TM[3,10] and TM[3,12] live in the STRUCT_REPORT sub-system below.
+         TM[3,25] / TM[3,26] are handled by /PUS/hk25 + landing.xml.
+         ================================================================ -->
+    <TelemetryMetaData>
+        <ParameterTypeSet>
+            <EnumeratedParameterType name="HkGenStatusType">
+                <IntegerDataEncoding sizeInBits="8"/>
+                <EnumerationList>
+                    <Enumeration value="0" label="DISABLED"/>
+                    <Enumeration value="1" label="ENABLED"/>
+                </EnumerationList>
+            </EnumeratedParameterType>
+            <EnumeratedParameterType name="ReportNatureType">
+                <IntegerDataEncoding sizeInBits="8"/>
+                <EnumerationList>
+                    <Enumeration value="0" label="HK"/>
+                    <Enumeration value="1" DIAG="1" label="DIAG"/>
+                </EnumerationList>
+            </EnumeratedParameterType>
+
+            <!-- TM[3,35/36] gen-props entry: struct_id + gen_status + collection_interval -->
+            <AggregateParameterType name="HkGenPropsEntryType">
+                <MemberList>
+                    <Member typeRef="/dt/uint32" name="struct_id"/>
+                    <Member typeRef="HkGenStatusType" name="gen_status"/>
+                    <Member typeRef="/dt/uint32" name="collection_interval"/>
+                </MemberList>
+            </AggregateParameterType>
+            <ArrayParameterType name="HkGenPropsArrayType" arrayTypeRef="HkGenPropsEntryType">
+                <DimensionList>
+                    <Dimension>
+                        <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+                        <EndingIndex>
+                            <DynamicValue>
+                                <ParameterInstanceRef parameterRef="gen_props_n"/>
+                                <LinearAdjustment intercept="-1"/>
+                            </DynamicValue>
+                        </EndingIndex>
+                    </Dimension>
+                </DimensionList>
+            </ArrayParameterType>
+
+            <!-- TM[3,41] PFRD entry: report_nature + report_def_id + gen_status + collection_interval -->
+            <AggregateParameterType name="PfrdTmEntryType">
+                <MemberList>
+                    <Member typeRef="ReportNatureType" name="report_nature"/>
+                    <Member typeRef="/dt/uint32" name="report_def_id"/>
+                    <Member typeRef="HkGenStatusType" name="gen_status"/>
+                    <Member typeRef="/dt/uint32" name="collection_interval"/>
+                </MemberList>
+            </AggregateParameterType>
+            <ArrayParameterType name="PfrdTmEntriesType" arrayTypeRef="PfrdTmEntryType">
+                <DimensionList>
+                    <Dimension>
+                        <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+                        <EndingIndex>
+                            <DynamicValue>
+                                <ParameterInstanceRef parameterRef="pfrd_entry_n"/>
+                                <LinearAdjustment intercept="-1"/>
+                            </DynamicValue>
+                        </EndingIndex>
+                    </Dimension>
+                </DimensionList>
+            </ArrayParameterType>
+        </ParameterTypeSet>
+
+        <ParameterSet>
+            <!-- TM[3,35/36] -->
+            <Parameter parameterTypeRef="/dt/uint8" name="gen_props_n"/>
+            <Parameter parameterTypeRef="HkGenPropsArrayType" name="gen_props_entries"
+                shortDescription="Gen-props entries (struct_id + status + interval) for TM[3,35/36]"/>
+            <!-- TM[3,41] -->
+            <Parameter parameterTypeRef="/dt/uint32" name="pfrd_id"/>
+            <Parameter parameterTypeRef="/dt/uint8" name="pfrd_entry_n"/>
+            <Parameter parameterTypeRef="PfrdTmEntriesType" name="pfrd_entries"
+                shortDescription="PFRD entries (nature + def_id + status + interval) for TM[3,41]"/>
+        </ParameterSet>
+
+        <ContainerSet>
+            <!-- Thin base for all ST[03] packets (type==3) -->
+            <SequenceContainer name="pus3-tm">
+                <EntryList/>
+                <BaseContainer containerRef="/PUS/pus-tm">
+                    <RestrictionCriteria>
+                        <Comparison parameterRef="/PUS/type" value="3"/>
+                    </RestrictionCriteria>
+                </BaseContainer>
+            </SequenceContainer>
+
+            <!-- TM[3,35] HK parameter report periodic generation properties report -->
+            <SequenceContainer name="TM_3_35"
+                shortDescription="TM[3,35] HK periodic generation properties report">
+                <EntryList>
+                    <ParameterRefEntry parameterRef="gen_props_n"/>
+                    <ArrayParameterRefEntry parameterRef="gen_props_entries">
+                        <IncludeCondition>
+                            <Comparison parameterRef="gen_props_n" comparisonOperator="&gt;" value="0"/>
+                        </IncludeCondition>
+                    </ArrayParameterRefEntry>
+                </EntryList>
+                <BaseContainer containerRef="pus3-tm">
+                    <RestrictionCriteria>
+                        <Comparison parameterRef="/PUS/subtype" value="35"/>
+                    </RestrictionCriteria>
+                </BaseContainer>
+            </SequenceContainer>
+
+            <!-- TM[3,36] diagnostic parameter report periodic generation properties report -->
+            <SequenceContainer name="TM_3_36"
+                shortDescription="TM[3,36] diagnostic periodic generation properties report">
+                <EntryList>
+                    <ParameterRefEntry parameterRef="gen_props_n"/>
+                    <ArrayParameterRefEntry parameterRef="gen_props_entries">
+                        <IncludeCondition>
+                            <Comparison parameterRef="gen_props_n" comparisonOperator="&gt;" value="0"/>
+                        </IncludeCondition>
+                    </ArrayParameterRefEntry>
+                </EntryList>
+                <BaseContainer containerRef="pus3-tm">
+                    <RestrictionCriteria>
+                        <Comparison parameterRef="/PUS/subtype" value="36"/>
+                    </RestrictionCriteria>
+                </BaseContainer>
+            </SequenceContainer>
+
+            <!-- TM[3,41] parameter functional reporting definition report -->
+            <SequenceContainer name="TM_3_41"
+                shortDescription="TM[3,41] PFRD report">
+                <EntryList>
+                    <ParameterRefEntry parameterRef="pfrd_id"/>
+                    <ParameterRefEntry parameterRef="pfrd_entry_n"/>
+                    <ArrayParameterRefEntry parameterRef="pfrd_entries">
+                        <IncludeCondition>
+                            <Comparison parameterRef="pfrd_entry_n" comparisonOperator="&gt;" value="0"/>
+                        </IncludeCondition>
+                    </ArrayParameterRefEntry>
+                </EntryList>
+                <BaseContainer containerRef="pus3-tm">
+                    <RestrictionCriteria>
+                        <Comparison parameterRef="/PUS/subtype" value="41"/>
+                    </RestrictionCriteria>
+                </BaseContainer>
+            </SequenceContainer>
+        </ContainerSet>
+    </TelemetryMetaData>
+
+    <!-- ================================================================
+         TELECOMMANDS — TC[3,1–44]
+         ================================================================ -->
+    <CommandMetaData>
+        <ArgumentTypeSet>
+            <!-- Simple reusable types -->
+            <IntegerArgumentType name="StructIdType" baseType="/dt/uint32"/>
+            <IntegerArgumentType name="ParamIdType" baseType="/dt/uint32"/>
+            <IntegerArgumentType name="CollectionIntervalType" baseType="/dt/uint32"/>
+            <IntegerArgumentType name="PfrdIdType" baseType="/dt/uint32"/>
+
+            <EnumeratedArgumentType name="ReportNatureArgType">
+                <IntegerDataEncoding sizeInBits="8"/>
+                <EnumerationList>
+                    <Enumeration value="0" label="HK"/>
+                    <Enumeration value="1" label="DIAG"/>
+                </EnumerationList>
+            </EnumeratedArgumentType>
+            <EnumeratedArgumentType name="GenStatusArgType">
+                <IntegerDataEncoding sizeInBits="8"/>
+                <EnumerationList>
+                    <Enumeration value="0" label="DISABLED"/>
+                    <Enumeration value="1" label="ENABLED"/>
+                </EnumerationList>
+            </EnumeratedArgumentType>
+            <EnumeratedArgumentType name="ExecFlagType">
+                <IntegerDataEncoding sizeInBits="8"/>
+                <EnumerationList>
+                    <Enumeration value="0" label="NON_EXCLUSIVE"/>
+                    <Enumeration value="1" label="EXCLUSIVE"/>
+                </EnumerationList>
+            </EnumeratedArgumentType>
+
+            <!-- Struct-ID array (N + array for TC[3,3/4/5/6/7/8/9/11/27/28/33/34]) -->
+            <ArrayArgumentType name="StructIdArrayType" arrayTypeRef="StructIdType">
+                <DimensionList>
+                    <Dimension>
+                        <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+                        <EndingIndex>
+                            <DynamicValue>
+                                <ArgumentInstanceRef argumentRef="N"/>
+                                <LinearAdjustment intercept="-1"/>
+                            </DynamicValue>
+                        </EndingIndex>
+                    </Dimension>
+                </DimensionList>
+            </ArrayArgumentType>
+
+            <!-- PFRD-ID array (N + array for TC[3,39/40]) -->
+            <ArrayArgumentType name="PfrdIdArrayType" arrayTypeRef="PfrdIdType">
+                <DimensionList>
+                    <Dimension>
+                        <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+                        <EndingIndex>
+                            <DynamicValue>
+                                <ArgumentInstanceRef argumentRef="N"/>
+                                <LinearAdjustment intercept="-1"/>
+                            </DynamicValue>
+                        </EndingIndex>
+                    </Dimension>
+                </DimensionList>
+            </ArrayArgumentType>
+
+            <!-- Simply-commuted param-ID array (dimension from N1) for TC[3,1/29] -->
+            <ArrayArgumentType name="ParamIdArrayType" arrayTypeRef="ParamIdType">
+                <DimensionList>
+                    <Dimension>
+                        <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+                        <EndingIndex>
+                            <DynamicValue>
+                                <ArgumentInstanceRef argumentRef="N1"/>
+                                <LinearAdjustment intercept="-1"/>
+                            </DynamicValue>
+                        </EndingIndex>
+                    </Dimension>
+                </DimensionList>
+            </ArrayArgumentType>
+
+            <!-- Super-commuted param-ID array (dimension from sibling N2) for TC[3,1/29] -->
+            <ArrayArgumentType name="ScParamIdArrayType" arrayTypeRef="ParamIdType">
+                <DimensionList>
+                    <Dimension>
+                        <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+                        <EndingIndex>
+                            <DynamicValue>
+                                <ArgumentInstanceRef argumentRef="N2"/>
+                                <LinearAdjustment intercept="-1"/>
+                            </DynamicValue>
+                        </EndingIndex>
+                    </Dimension>
+                </DimensionList>
+            </ArrayArgumentType>
+
+            <!-- Super-commuted set aggregate (rep_num + N2 + param_ids) for TC[3,1/29] -->
+            <AggregateArgumentType name="ScSetType">
+                <MemberList>
+                    <Member name="rep_num" typeRef="/dt/uint8"/>
+                    <Member name="N2" typeRef="/dt/uint8"/>
+                    <Member name="param_ids" typeRef="ScParamIdArrayType"/>
+                </MemberList>
+            </AggregateArgumentType>
+
+            <!-- Array of NFA super-commuted sets (dimension from NFA) for TC[3,1/29] -->
+            <ArrayArgumentType name="ScSetsArrayType" arrayTypeRef="ScSetType">
+                <DimensionList>
+                    <Dimension>
+                        <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+                        <EndingIndex>
+                            <DynamicValue>
+                                <ArgumentInstanceRef argumentRef="NFA"/>
+                                <LinearAdjustment intercept="-1"/>
+                            </DynamicValue>
+                        </EndingIndex>
+                    </Dimension>
+                </DimensionList>
+            </ArrayArgumentType>
+
+            <!-- Struct-interval aggregate + array for TC[3,31/32] -->
+            <AggregateArgumentType name="StructIntervalEntryType">
+                <MemberList>
+                    <Member name="struct_id" typeRef="StructIdType"/>
+                    <Member name="collection_interval" typeRef="CollectionIntervalType"/>
+                </MemberList>
+            </AggregateArgumentType>
+            <ArrayArgumentType name="StructIntervalArrayType" arrayTypeRef="StructIntervalEntryType">
+                <DimensionList>
+                    <Dimension>
+                        <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+                        <EndingIndex>
+                            <DynamicValue>
+                                <ArgumentInstanceRef argumentRef="N"/>
+                                <LinearAdjustment intercept="-1"/>
+                            </DynamicValue>
+                        </EndingIndex>
+                    </Dimension>
+                </DimensionList>
+            </ArrayArgumentType>
+
+            <!-- PFRD entry aggregate: nature + def_id + status + interval (TC[3,38/42/44]) -->
+            <AggregateArgumentType name="PfrdEntryType">
+                <MemberList>
+                    <Member name="report_nature" typeRef="ReportNatureArgType"/>
+                    <Member name="report_def_id" typeRef="StructIdType"/>
+                    <Member name="gen_status" typeRef="GenStatusArgType"/>
+                    <Member name="collection_interval" typeRef="CollectionIntervalType"/>
+                </MemberList>
+            </AggregateArgumentType>
+            <ArrayArgumentType name="PfrdEntryArrayType" arrayTypeRef="PfrdEntryType">
+                <DimensionList>
+                    <Dimension>
+                        <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+                        <EndingIndex>
+                            <DynamicValue>
+                                <ArgumentInstanceRef argumentRef="N"/>
+                                <LinearAdjustment intercept="-1"/>
+                            </DynamicValue>
+                        </EndingIndex>
+                    </Dimension>
+                </DimensionList>
+            </ArrayArgumentType>
+
+            <!-- PFRD remove entry: nature + def_id only (TC[3,43]) -->
+            <AggregateArgumentType name="PfrdRemoveEntryType">
+                <MemberList>
+                    <Member name="report_nature" typeRef="ReportNatureArgType"/>
+                    <Member name="report_def_id" typeRef="StructIdType"/>
+                </MemberList>
+            </AggregateArgumentType>
+            <ArrayArgumentType name="PfrdRemoveEntryArrayType" arrayTypeRef="PfrdRemoveEntryType">
+                <DimensionList>
+                    <Dimension>
+                        <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+                        <EndingIndex>
+                            <DynamicValue>
+                                <ArgumentInstanceRef argumentRef="N"/>
+                                <LinearAdjustment intercept="-1"/>
+                            </DynamicValue>
+                        </EndingIndex>
+                    </Dimension>
+                </DimensionList>
+            </ArrayArgumentType>
+        </ArgumentTypeSet>
+
+        <MetaCommandSet>
+            <!-- Abstract base for all ST[03] TCs -->
+            <MetaCommand name="pus3-tc" abstract="true">
+                <BaseMetaCommand metaCommandRef="/PUS/pus-tc">
+                    <ArgumentAssignmentList>
+                        <ArgumentAssignment argumentName="apid" argumentValue="1"/>
+                        <ArgumentAssignment argumentName="type" argumentValue="3"/>
+                    </ArgumentAssignmentList>
+                </BaseMetaCommand>
+                <CommandContainer name="pus3-tc">
+                    <EntryList/>
+                </CommandContainer>
+            </MetaCommand>
+
+            <!-- TC[3,1] create housekeeping parameter report structure -->
+            <MetaCommand name="CREATE_HK_STRUCTURE"
+                shortDescription="TC[3,1] create housekeeping parameter report structure">
+                <BaseMetaCommand metaCommandRef="pus3-tc">
+                    <ArgumentAssignmentList>
+                        <ArgumentAssignment argumentName="subtype" argumentValue="1"/>
+                    </ArgumentAssignmentList>
+                </BaseMetaCommand>
+                <ArgumentList>
+                    <Argument name="struct_id"           argumentTypeRef="StructIdType"/>
+                    <Argument name="collection_interval" argumentTypeRef="CollectionIntervalType"/>
+                    <Argument name="N1"                  argumentTypeRef="/dt/uint8"/>
+                    <Argument name="param_ids"           argumentTypeRef="ParamIdArrayType"/>
+                    <Argument name="NFA"                 argumentTypeRef="/dt/uint8"/>
+                    <Argument name="sc_sets"             argumentTypeRef="ScSetsArrayType"/>
+                </ArgumentList>
+                <CommandContainer name="CREATE_HK_STRUCTURE">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="struct_id"/>
+                        <ArgumentRefEntry argumentRef="collection_interval"/>
+                        <ArgumentRefEntry argumentRef="N1"/>
+                        <ArgumentRefEntry argumentRef="param_ids"/>
+                        <ArgumentRefEntry argumentRef="NFA"/>
+                        <ArgumentRefEntry argumentRef="sc_sets"/>
+                    </EntryList>
+                    <BaseContainer containerRef="pus3-tc"/>
+                </CommandContainer>
+            </MetaCommand>
+
+            <!-- TC[3,2] create diagnostic parameter report structure -->
+            <MetaCommand name="CREATE_DIAG_STRUCTURE"
+                shortDescription="TC[3,2] create diagnostic parameter report structure">
+                <BaseMetaCommand metaCommandRef="pus3-tc">
+                    <ArgumentAssignmentList>
+                        <ArgumentAssignment argumentName="subtype" argumentValue="2"/>
+                    </ArgumentAssignmentList>
+                </BaseMetaCommand>
+                <ArgumentList>
+                    <Argument name="struct_id"           argumentTypeRef="StructIdType"/>
+                    <Argument name="collection_interval" argumentTypeRef="CollectionIntervalType"/>
+                    <Argument name="N1"                  argumentTypeRef="/dt/uint8"/>
+                    <Argument name="param_ids"           argumentTypeRef="ParamIdArrayType"/>
+                    <Argument name="NFA"                 argumentTypeRef="/dt/uint8"/>
+                    <Argument name="sc_sets"             argumentTypeRef="ScSetsArrayType"/>
+                </ArgumentList>
+                <CommandContainer name="CREATE_DIAG_STRUCTURE">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="struct_id"/>
+                        <ArgumentRefEntry argumentRef="collection_interval"/>
+                        <ArgumentRefEntry argumentRef="N1"/>
+                        <ArgumentRefEntry argumentRef="param_ids"/>
+                        <ArgumentRefEntry argumentRef="NFA"/>
+                        <ArgumentRefEntry argumentRef="sc_sets"/>
+                    </EntryList>
+                    <BaseContainer containerRef="pus3-tc"/>
+                </CommandContainer>
+            </MetaCommand>
+
+            <!-- TC[3,3] delete housekeeping parameter report structures -->
+            <MetaCommand name="DELETE_HK_STRUCTURES"
+                shortDescription="TC[3,3] delete housekeeping parameter report structures">
+                <BaseMetaCommand metaCommandRef="pus3-tc">
+                    <ArgumentAssignmentList>
+                        <ArgumentAssignment argumentName="subtype" argumentValue="3"/>
+                    </ArgumentAssignmentList>
+                </BaseMetaCommand>
+                <ArgumentList>
+                    <Argument name="N"          argumentTypeRef="/dt/uint8"/>
+                    <Argument name="struct_ids" argumentTypeRef="StructIdArrayType"/>
+                </ArgumentList>
+                <CommandContainer name="DELETE_HK_STRUCTURES">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="N"/>
+                        <ArgumentRefEntry argumentRef="struct_ids"/>
+                    </EntryList>
+                    <BaseContainer containerRef="pus3-tc"/>
+                </CommandContainer>
+            </MetaCommand>
+
+            <!-- TC[3,4] delete diagnostic parameter report structures -->
+            <MetaCommand name="DELETE_DIAG_STRUCTURES"
+                shortDescription="TC[3,4] delete diagnostic parameter report structures">
+                <BaseMetaCommand metaCommandRef="pus3-tc">
+                    <ArgumentAssignmentList>
+                        <ArgumentAssignment argumentName="subtype" argumentValue="4"/>
+                    </ArgumentAssignmentList>
+                </BaseMetaCommand>
+                <ArgumentList>
+                    <Argument name="N"          argumentTypeRef="/dt/uint8"/>
+                    <Argument name="struct_ids" argumentTypeRef="StructIdArrayType"/>
+                </ArgumentList>
+                <CommandContainer name="DELETE_DIAG_STRUCTURES">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="N"/>
+                        <ArgumentRefEntry argumentRef="struct_ids"/>
+                    </EntryList>
+                    <BaseContainer containerRef="pus3-tc"/>
+                </CommandContainer>
+            </MetaCommand>
+
+            <!-- TC[3,5] enable periodic generation of HK parameter reports -->
+            <MetaCommand name="ENABLE_HK_PERIODIC_GEN"
+                shortDescription="TC[3,5] enable periodic generation of HK parameter reports">
+                <BaseMetaCommand metaCommandRef="pus3-tc">
+                    <ArgumentAssignmentList>
+                        <ArgumentAssignment argumentName="subtype" argumentValue="5"/>
+                    </ArgumentAssignmentList>
+                </BaseMetaCommand>
+                <ArgumentList>
+                    <Argument name="N"          argumentTypeRef="/dt/uint8"/>
+                    <Argument name="struct_ids" argumentTypeRef="StructIdArrayType"/>
+                </ArgumentList>
+                <CommandContainer name="ENABLE_HK_PERIODIC_GEN">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="N"/>
+                        <ArgumentRefEntry argumentRef="struct_ids"/>
+                    </EntryList>
+                    <BaseContainer containerRef="pus3-tc"/>
+                </CommandContainer>
+            </MetaCommand>
+
+            <!-- TC[3,6] disable periodic generation of HK parameter reports -->
+            <MetaCommand name="DISABLE_HK_PERIODIC_GEN"
+                shortDescription="TC[3,6] disable periodic generation of HK parameter reports">
+                <BaseMetaCommand metaCommandRef="pus3-tc">
+                    <ArgumentAssignmentList>
+                        <ArgumentAssignment argumentName="subtype" argumentValue="6"/>
+                    </ArgumentAssignmentList>
+                </BaseMetaCommand>
+                <ArgumentList>
+                    <Argument name="N"          argumentTypeRef="/dt/uint8"/>
+                    <Argument name="struct_ids" argumentTypeRef="StructIdArrayType"/>
+                </ArgumentList>
+                <CommandContainer name="DISABLE_HK_PERIODIC_GEN">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="N"/>
+                        <ArgumentRefEntry argumentRef="struct_ids"/>
+                    </EntryList>
+                    <BaseContainer containerRef="pus3-tc"/>
+                </CommandContainer>
+            </MetaCommand>
+
+            <!-- TC[3,7] enable periodic generation of diagnostic parameter reports -->
+            <MetaCommand name="ENABLE_DIAG_PERIODIC_GEN"
+                shortDescription="TC[3,7] enable periodic generation of diagnostic parameter reports">
+                <BaseMetaCommand metaCommandRef="pus3-tc">
+                    <ArgumentAssignmentList>
+                        <ArgumentAssignment argumentName="subtype" argumentValue="7"/>
+                    </ArgumentAssignmentList>
+                </BaseMetaCommand>
+                <ArgumentList>
+                    <Argument name="N"          argumentTypeRef="/dt/uint8"/>
+                    <Argument name="struct_ids" argumentTypeRef="StructIdArrayType"/>
+                </ArgumentList>
+                <CommandContainer name="ENABLE_DIAG_PERIODIC_GEN">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="N"/>
+                        <ArgumentRefEntry argumentRef="struct_ids"/>
+                    </EntryList>
+                    <BaseContainer containerRef="pus3-tc"/>
+                </CommandContainer>
+            </MetaCommand>
+
+            <!-- TC[3,8] disable periodic generation of diagnostic parameter reports -->
+            <MetaCommand name="DISABLE_DIAG_PERIODIC_GEN"
+                shortDescription="TC[3,8] disable periodic generation of diagnostic parameter reports">
+                <BaseMetaCommand metaCommandRef="pus3-tc">
+                    <ArgumentAssignmentList>
+                        <ArgumentAssignment argumentName="subtype" argumentValue="8"/>
+                    </ArgumentAssignmentList>
+                </BaseMetaCommand>
+                <ArgumentList>
+                    <Argument name="N"          argumentTypeRef="/dt/uint8"/>
+                    <Argument name="struct_ids" argumentTypeRef="StructIdArrayType"/>
+                </ArgumentList>
+                <CommandContainer name="DISABLE_DIAG_PERIODIC_GEN">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="N"/>
+                        <ArgumentRefEntry argumentRef="struct_ids"/>
+                    </EntryList>
+                    <BaseContainer containerRef="pus3-tc"/>
+                </CommandContainer>
+            </MetaCommand>
+
+            <!-- TC[3,9] report housekeeping parameter report structures → TM[3,10] -->
+            <MetaCommand name="REPORT_HK_STRUCTURES"
+                shortDescription="TC[3,9] report HK parameter report structures (response: TM[3,10])">
+                <BaseMetaCommand metaCommandRef="pus3-tc">
+                    <ArgumentAssignmentList>
+                        <ArgumentAssignment argumentName="subtype" argumentValue="9"/>
+                    </ArgumentAssignmentList>
+                </BaseMetaCommand>
+                <ArgumentList>
+                    <Argument name="N"          argumentTypeRef="/dt/uint8"/>
+                    <Argument name="struct_ids" argumentTypeRef="StructIdArrayType"/>
+                </ArgumentList>
+                <CommandContainer name="REPORT_HK_STRUCTURES">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="N"/>
+                        <ArgumentRefEntry argumentRef="struct_ids"/>
+                    </EntryList>
+                    <BaseContainer containerRef="pus3-tc"/>
+                </CommandContainer>
+            </MetaCommand>
+
+            <!-- TC[3,11] report diagnostic parameter report structures → TM[3,12] -->
+            <MetaCommand name="REPORT_DIAG_STRUCTURES"
+                shortDescription="TC[3,11] report diagnostic parameter report structures (response: TM[3,12])">
+                <BaseMetaCommand metaCommandRef="pus3-tc">
+                    <ArgumentAssignmentList>
+                        <ArgumentAssignment argumentName="subtype" argumentValue="11"/>
+                    </ArgumentAssignmentList>
+                </BaseMetaCommand>
+                <ArgumentList>
+                    <Argument name="N"          argumentTypeRef="/dt/uint8"/>
+                    <Argument name="struct_ids" argumentTypeRef="StructIdArrayType"/>
+                </ArgumentList>
+                <CommandContainer name="REPORT_DIAG_STRUCTURES">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="N"/>
+                        <ArgumentRefEntry argumentRef="struct_ids"/>
+                    </EntryList>
+                    <BaseContainer containerRef="pus3-tc"/>
+                </CommandContainer>
+            </MetaCommand>
+
+            <!-- TC[3,27] generate one-shot HK report → TM[3,25] -->
+            <MetaCommand name="ONESHOT_HK"
+                shortDescription="TC[3,27] generate one-shot HK parameter report (response: TM[3,25])">
+                <BaseMetaCommand metaCommandRef="pus3-tc">
+                    <ArgumentAssignmentList>
+                        <ArgumentAssignment argumentName="subtype" argumentValue="27"/>
+                    </ArgumentAssignmentList>
+                </BaseMetaCommand>
+                <ArgumentList>
+                    <Argument name="N"          argumentTypeRef="/dt/uint8"/>
+                    <Argument name="struct_ids" argumentTypeRef="StructIdArrayType"/>
+                </ArgumentList>
+                <CommandContainer name="ONESHOT_HK">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="N"/>
+                        <ArgumentRefEntry argumentRef="struct_ids"/>
+                    </EntryList>
+                    <BaseContainer containerRef="pus3-tc"/>
+                </CommandContainer>
+            </MetaCommand>
+
+            <!-- TC[3,28] generate one-shot diagnostic report → TM[3,26] -->
+            <MetaCommand name="ONESHOT_DIAG"
+                shortDescription="TC[3,28] generate one-shot diagnostic parameter report (response: TM[3,26])">
+                <BaseMetaCommand metaCommandRef="pus3-tc">
+                    <ArgumentAssignmentList>
+                        <ArgumentAssignment argumentName="subtype" argumentValue="28"/>
+                    </ArgumentAssignmentList>
+                </BaseMetaCommand>
+                <ArgumentList>
+                    <Argument name="N"          argumentTypeRef="/dt/uint8"/>
+                    <Argument name="struct_ids" argumentTypeRef="StructIdArrayType"/>
+                </ArgumentList>
+                <CommandContainer name="ONESHOT_DIAG">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="N"/>
+                        <ArgumentRefEntry argumentRef="struct_ids"/>
+                    </EntryList>
+                    <BaseContainer containerRef="pus3-tc"/>
+                </CommandContainer>
+            </MetaCommand>
+
+            <!-- TC[3,29] append parameters to a HK parameter report structure -->
+            <MetaCommand name="APPEND_HK_PARAMS"
+                shortDescription="TC[3,29] append parameters to a HK parameter report structure">
+                <BaseMetaCommand metaCommandRef="pus3-tc">
+                    <ArgumentAssignmentList>
+                        <ArgumentAssignment argumentName="subtype" argumentValue="29"/>
+                    </ArgumentAssignmentList>
+                </BaseMetaCommand>
+                <ArgumentList>
+                    <Argument name="struct_id" argumentTypeRef="StructIdType"/>
+                    <Argument name="N1"        argumentTypeRef="/dt/uint8"/>
+                    <Argument name="param_ids" argumentTypeRef="ParamIdArrayType"/>
+                    <Argument name="NFA"       argumentTypeRef="/dt/uint8"/>
+                    <Argument name="sc_sets"   argumentTypeRef="ScSetsArrayType"/>
+                </ArgumentList>
+                <CommandContainer name="APPEND_HK_PARAMS">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="struct_id"/>
+                        <ArgumentRefEntry argumentRef="N1"/>
+                        <ArgumentRefEntry argumentRef="param_ids"/>
+                        <ArgumentRefEntry argumentRef="NFA"/>
+                        <ArgumentRefEntry argumentRef="sc_sets"/>
+                    </EntryList>
+                    <BaseContainer containerRef="pus3-tc"/>
+                </CommandContainer>
+            </MetaCommand>
+
+            <!-- TC[3,30] append parameters to a diagnostic parameter report structure -->
+            <MetaCommand name="APPEND_DIAG_PARAMS"
+                shortDescription="TC[3,30] append parameters to a diagnostic parameter report structure">
+                <BaseMetaCommand metaCommandRef="pus3-tc">
+                    <ArgumentAssignmentList>
+                        <ArgumentAssignment argumentName="subtype" argumentValue="30"/>
+                    </ArgumentAssignmentList>
+                </BaseMetaCommand>
+                <ArgumentList>
+                    <Argument name="struct_id" argumentTypeRef="StructIdType"/>
+                    <Argument name="N1"        argumentTypeRef="/dt/uint8"/>
+                    <Argument name="param_ids" argumentTypeRef="ParamIdArrayType"/>
+                    <Argument name="NFA"       argumentTypeRef="/dt/uint8"/>
+                    <Argument name="sc_sets"   argumentTypeRef="ScSetsArrayType"/>
+                </ArgumentList>
+                <CommandContainer name="APPEND_DIAG_PARAMS">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="struct_id"/>
+                        <ArgumentRefEntry argumentRef="N1"/>
+                        <ArgumentRefEntry argumentRef="param_ids"/>
+                        <ArgumentRefEntry argumentRef="NFA"/>
+                        <ArgumentRefEntry argumentRef="sc_sets"/>
+                    </EntryList>
+                    <BaseContainer containerRef="pus3-tc"/>
+                </CommandContainer>
+            </MetaCommand>
+
+            <!-- TC[3,31] modify collection interval of HK parameter report structures -->
+            <MetaCommand name="MODIFY_HK_INTERVAL"
+                shortDescription="TC[3,31] modify collection interval of HK parameter report structures">
+                <BaseMetaCommand metaCommandRef="pus3-tc">
+                    <ArgumentAssignmentList>
+                        <ArgumentAssignment argumentName="subtype" argumentValue="31"/>
+                    </ArgumentAssignmentList>
+                </BaseMetaCommand>
+                <ArgumentList>
+                    <Argument name="N"       argumentTypeRef="/dt/uint8"/>
+                    <Argument name="entries" argumentTypeRef="StructIntervalArrayType"/>
+                </ArgumentList>
+                <CommandContainer name="MODIFY_HK_INTERVAL">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="N"/>
+                        <ArgumentRefEntry argumentRef="entries"/>
+                    </EntryList>
+                    <BaseContainer containerRef="pus3-tc"/>
+                </CommandContainer>
+            </MetaCommand>
+
+            <!-- TC[3,32] modify collection interval of diagnostic parameter report structures -->
+            <MetaCommand name="MODIFY_DIAG_INTERVAL"
+                shortDescription="TC[3,32] modify collection interval of diagnostic parameter report structures">
+                <BaseMetaCommand metaCommandRef="pus3-tc">
+                    <ArgumentAssignmentList>
+                        <ArgumentAssignment argumentName="subtype" argumentValue="32"/>
+                    </ArgumentAssignmentList>
+                </BaseMetaCommand>
+                <ArgumentList>
+                    <Argument name="N"       argumentTypeRef="/dt/uint8"/>
+                    <Argument name="entries" argumentTypeRef="StructIntervalArrayType"/>
+                </ArgumentList>
+                <CommandContainer name="MODIFY_DIAG_INTERVAL">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="N"/>
+                        <ArgumentRefEntry argumentRef="entries"/>
+                    </EntryList>
+                    <BaseContainer containerRef="pus3-tc"/>
+                </CommandContainer>
+            </MetaCommand>
+
+            <!-- TC[3,33] report periodic generation properties of HK structures → TM[3,35] -->
+            <MetaCommand name="REPORT_HK_GEN_PROPS"
+                shortDescription="TC[3,33] report HK periodic generation properties (response: TM[3,35])">
+                <BaseMetaCommand metaCommandRef="pus3-tc">
+                    <ArgumentAssignmentList>
+                        <ArgumentAssignment argumentName="subtype" argumentValue="33"/>
+                    </ArgumentAssignmentList>
+                </BaseMetaCommand>
+                <ArgumentList>
+                    <Argument name="N"          argumentTypeRef="/dt/uint8"/>
+                    <Argument name="struct_ids" argumentTypeRef="StructIdArrayType"/>
+                </ArgumentList>
+                <CommandContainer name="REPORT_HK_GEN_PROPS">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="N"/>
+                        <ArgumentRefEntry argumentRef="struct_ids"/>
+                    </EntryList>
+                    <BaseContainer containerRef="pus3-tc"/>
+                </CommandContainer>
+            </MetaCommand>
+
+            <!-- TC[3,34] report periodic generation properties of diagnostic structures → TM[3,36] -->
+            <MetaCommand name="REPORT_DIAG_GEN_PROPS"
+                shortDescription="TC[3,34] report diagnostic periodic generation properties (response: TM[3,36])">
+                <BaseMetaCommand metaCommandRef="pus3-tc">
+                    <ArgumentAssignmentList>
+                        <ArgumentAssignment argumentName="subtype" argumentValue="34"/>
+                    </ArgumentAssignmentList>
+                </BaseMetaCommand>
+                <ArgumentList>
+                    <Argument name="N"          argumentTypeRef="/dt/uint8"/>
+                    <Argument name="struct_ids" argumentTypeRef="StructIdArrayType"/>
+                </ArgumentList>
+                <CommandContainer name="REPORT_DIAG_GEN_PROPS">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="N"/>
+                        <ArgumentRefEntry argumentRef="struct_ids"/>
+                    </EntryList>
+                    <BaseContainer containerRef="pus3-tc"/>
+                </CommandContainer>
+            </MetaCommand>
+
+            <!-- TC[3,37] apply parameter functional reporting configurations -->
+            <MetaCommand name="APPLY_PFRC"
+                shortDescription="TC[3,37] apply parameter functional reporting configurations">
+                <BaseMetaCommand metaCommandRef="pus3-tc">
+                    <ArgumentAssignmentList>
+                        <ArgumentAssignment argumentName="subtype" argumentValue="37"/>
+                    </ArgumentAssignmentList>
+                </BaseMetaCommand>
+                <ArgumentList>
+                    <Argument name="exec_flag" argumentTypeRef="ExecFlagType"/>
+                    <Argument name="N"         argumentTypeRef="/dt/uint8"/>
+                    <Argument name="pfrd_ids"  argumentTypeRef="PfrdIdArrayType"/>
+                </ArgumentList>
+                <CommandContainer name="APPLY_PFRC">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="exec_flag"/>
+                        <ArgumentRefEntry argumentRef="N"/>
+                        <ArgumentRefEntry argumentRef="pfrd_ids"/>
+                    </EntryList>
+                    <BaseContainer containerRef="pus3-tc"/>
+                </CommandContainer>
+            </MetaCommand>
+
+            <!-- TC[3,38] create parameter functional reporting definition -->
+            <MetaCommand name="CREATE_PFRD"
+                shortDescription="TC[3,38] create parameter functional reporting definition">
+                <BaseMetaCommand metaCommandRef="pus3-tc">
+                    <ArgumentAssignmentList>
+                        <ArgumentAssignment argumentName="subtype" argumentValue="38"/>
+                    </ArgumentAssignmentList>
+                </BaseMetaCommand>
+                <ArgumentList>
+                    <Argument name="pfrd_id" argumentTypeRef="PfrdIdType"/>
+                    <Argument name="N"       argumentTypeRef="/dt/uint8"/>
+                    <Argument name="entries" argumentTypeRef="PfrdEntryArrayType"/>
+                </ArgumentList>
+                <CommandContainer name="CREATE_PFRD">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="pfrd_id"/>
+                        <ArgumentRefEntry argumentRef="N"/>
+                        <ArgumentRefEntry argumentRef="entries"/>
+                    </EntryList>
+                    <BaseContainer containerRef="pus3-tc"/>
+                </CommandContainer>
+            </MetaCommand>
+
+            <!-- TC[3,39] delete parameter functional reporting definitions -->
+            <MetaCommand name="DELETE_PFRDS"
+                shortDescription="TC[3,39] delete parameter functional reporting definitions">
+                <BaseMetaCommand metaCommandRef="pus3-tc">
+                    <ArgumentAssignmentList>
+                        <ArgumentAssignment argumentName="subtype" argumentValue="39"/>
+                    </ArgumentAssignmentList>
+                </BaseMetaCommand>
+                <ArgumentList>
+                    <Argument name="N"        argumentTypeRef="/dt/uint8"/>
+                    <Argument name="pfrd_ids" argumentTypeRef="PfrdIdArrayType"/>
+                </ArgumentList>
+                <CommandContainer name="DELETE_PFRDS">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="N"/>
+                        <ArgumentRefEntry argumentRef="pfrd_ids"/>
+                    </EntryList>
+                    <BaseContainer containerRef="pus3-tc"/>
+                </CommandContainer>
+            </MetaCommand>
+
+            <!-- TC[3,40] report parameter functional reporting definitions → TM[3,41] -->
+            <MetaCommand name="REPORT_PFRDS"
+                shortDescription="TC[3,40] report parameter functional reporting definitions (response: TM[3,41])">
+                <BaseMetaCommand metaCommandRef="pus3-tc">
+                    <ArgumentAssignmentList>
+                        <ArgumentAssignment argumentName="subtype" argumentValue="40"/>
+                    </ArgumentAssignmentList>
+                </BaseMetaCommand>
+                <ArgumentList>
+                    <Argument name="N"        argumentTypeRef="/dt/uint8"/>
+                    <Argument name="pfrd_ids" argumentTypeRef="PfrdIdArrayType"/>
+                </ArgumentList>
+                <CommandContainer name="REPORT_PFRDS">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="N"/>
+                        <ArgumentRefEntry argumentRef="pfrd_ids"/>
+                    </EntryList>
+                    <BaseContainer containerRef="pus3-tc"/>
+                </CommandContainer>
+            </MetaCommand>
+
+            <!-- TC[3,42] add parameter report definitions to a PFRD -->
+            <MetaCommand name="ADD_PFRD_ENTRIES"
+                shortDescription="TC[3,42] add parameter report definitions to a PFRD">
+                <BaseMetaCommand metaCommandRef="pus3-tc">
+                    <ArgumentAssignmentList>
+                        <ArgumentAssignment argumentName="subtype" argumentValue="42"/>
+                    </ArgumentAssignmentList>
+                </BaseMetaCommand>
+                <ArgumentList>
+                    <Argument name="pfrd_id" argumentTypeRef="PfrdIdType"/>
+                    <Argument name="N"       argumentTypeRef="/dt/uint8"/>
+                    <Argument name="entries" argumentTypeRef="PfrdEntryArrayType"/>
+                </ArgumentList>
+                <CommandContainer name="ADD_PFRD_ENTRIES">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="pfrd_id"/>
+                        <ArgumentRefEntry argumentRef="N"/>
+                        <ArgumentRefEntry argumentRef="entries"/>
+                    </EntryList>
+                    <BaseContainer containerRef="pus3-tc"/>
+                </CommandContainer>
+            </MetaCommand>
+
+            <!-- TC[3,43] remove parameter report definitions from a PFRD -->
+            <MetaCommand name="REMOVE_PFRD_ENTRIES"
+                shortDescription="TC[3,43] remove parameter report definitions from a PFRD">
+                <BaseMetaCommand metaCommandRef="pus3-tc">
+                    <ArgumentAssignmentList>
+                        <ArgumentAssignment argumentName="subtype" argumentValue="43"/>
+                    </ArgumentAssignmentList>
+                </BaseMetaCommand>
+                <ArgumentList>
+                    <Argument name="pfrd_id" argumentTypeRef="PfrdIdType"/>
+                    <Argument name="N"       argumentTypeRef="/dt/uint8"/>
+                    <Argument name="entries" argumentTypeRef="PfrdRemoveEntryArrayType"/>
+                </ArgumentList>
+                <CommandContainer name="REMOVE_PFRD_ENTRIES">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="pfrd_id"/>
+                        <ArgumentRefEntry argumentRef="N"/>
+                        <ArgumentRefEntry argumentRef="entries"/>
+                    </EntryList>
+                    <BaseContainer containerRef="pus3-tc"/>
+                </CommandContainer>
+            </MetaCommand>
+
+            <!-- TC[3,44] modify periodic generation properties of report defs in a PFRD -->
+            <MetaCommand name="MODIFY_PFRD_GEN_PROPS"
+                shortDescription="TC[3,44] modify periodic generation properties of report defs in a PFRD">
+                <BaseMetaCommand metaCommandRef="pus3-tc">
+                    <ArgumentAssignmentList>
+                        <ArgumentAssignment argumentName="subtype" argumentValue="44"/>
+                    </ArgumentAssignmentList>
+                </BaseMetaCommand>
+                <ArgumentList>
+                    <Argument name="pfrd_id" argumentTypeRef="PfrdIdType"/>
+                    <Argument name="N"       argumentTypeRef="/dt/uint8"/>
+                    <Argument name="entries" argumentTypeRef="PfrdEntryArrayType"/>
+                </ArgumentList>
+                <CommandContainer name="MODIFY_PFRD_GEN_PROPS">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="pfrd_id"/>
+                        <ArgumentRefEntry argumentRef="N"/>
+                        <ArgumentRefEntry argumentRef="entries"/>
+                    </EntryList>
+                    <BaseContainer containerRef="pus3-tc"/>
+                </CommandContainer>
+            </MetaCommand>
+        </MetaCommandSet>
+    </CommandMetaData>
+
+    <!-- ================================================================
+         TM[3,10] and TM[3,12] — HK / diagnostic parameter report structure report.
+         Placed in a sub-system so parameter names are nicely scoped.
+
+         Wire layout (Pus3Service.sendStructureReport):
+           struct_id(4) | gen_status(1) | collection_interval(4) | N1(1) |
+           N1 × param_id(4) | NFA(1) | NFA × [rep_num(1) + N2(1) + N2 × param_id(4)]
+         ================================================================ -->
+    <SpaceSystem name="STRUCT_REPORT">
+        <TelemetryMetaData>
+            <ParameterTypeSet>
+                <!-- Array of simply-commuted param IDs; dimension from sr_n1 in outer container -->
+                <ArrayParameterType name="SrSimplyParamIdsType" arrayTypeRef="/dt/uint32">
+                    <DimensionList>
+                        <Dimension>
+                            <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+                            <EndingIndex>
+                                <DynamicValue>
+                                    <ParameterInstanceRef parameterRef="sr_n1"/>
+                                    <LinearAdjustment intercept="-1"/>
+                                </DynamicValue>
+                            </EndingIndex>
+                        </Dimension>
+                    </DimensionList>
+                </ArrayParameterType>
+                <!-- Array of param IDs within one sc-set entry; dimension from sc_n2 (sibling) -->
+                <ArrayParameterType name="ScParamIdsType" arrayTypeRef="/dt/uint32">
+                    <DimensionList>
+                        <Dimension>
+                            <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+                            <EndingIndex>
+                                <DynamicValue>
+                                    <ParameterInstanceRef parameterRef="sc_n2"/>
+                                    <LinearAdjustment intercept="-1"/>
+                                </DynamicValue>
+                            </EndingIndex>
+                        </Dimension>
+                    </DimensionList>
+                </ArrayParameterType>
+            </ParameterTypeSet>
+
+            <ParameterSet>
+                <Parameter parameterTypeRef="/dt/uint32" name="sr_struct_id"/>
+                <Parameter parameterTypeRef="/PUS3/HkGenStatusType" name="sr_gen_status"/>
+                <Parameter parameterTypeRef="/dt/uint32" name="sr_collection_interval"/>
+                <Parameter parameterTypeRef="/dt/uint8" name="sr_n1"/>
+                <Parameter parameterTypeRef="SrSimplyParamIdsType" name="sr_simply_param_ids"
+                    shortDescription="Simply-commuted parameter IDs in declaration order"/>
+                <Parameter parameterTypeRef="/dt/uint8" name="sr_nfa"/>
+                <!-- sc-set inner container parameters -->
+                <Parameter parameterTypeRef="/dt/uint8" name="sc_rep_number"/>
+                <Parameter parameterTypeRef="/dt/uint8" name="sc_n2"/>
+                <Parameter parameterTypeRef="ScParamIdsType" name="sc_param_ids"
+                    shortDescription="Parameter IDs in one super-commuted set"/>
+            </ParameterSet>
+
+            <ContainerSet>
+                <!-- One super-commuted set entry: rep_num + N2 + N2 param_ids -->
+                <SequenceContainer name="pus3-sc-set-entry">
+                    <EntryList>
+                        <ParameterRefEntry parameterRef="sc_rep_number"/>
+                        <ParameterRefEntry parameterRef="sc_n2"/>
+                        <ArrayParameterRefEntry parameterRef="sc_param_ids">
+                            <IncludeCondition>
+                                <Comparison parameterRef="sc_n2" comparisonOperator="&gt;" value="0"/>
+                            </IncludeCondition>
+                        </ArrayParameterRefEntry>
+                    </EntryList>
+                </SequenceContainer>
+
+                <!-- TM[3,10] HK parameter report structure report -->
+                <SequenceContainer name="TM_3_10"
+                    shortDescription="TM[3,10] HK parameter report structure report">
+                    <EntryList>
+                        <ParameterRefEntry parameterRef="sr_struct_id"/>
+                        <ParameterRefEntry parameterRef="sr_gen_status"/>
+                        <ParameterRefEntry parameterRef="sr_collection_interval"/>
+                        <ParameterRefEntry parameterRef="sr_n1"/>
+                        <ArrayParameterRefEntry parameterRef="sr_simply_param_ids">
+                            <IncludeCondition>
+                                <Comparison parameterRef="sr_n1" comparisonOperator="&gt;" value="0"/>
+                            </IncludeCondition>
+                        </ArrayParameterRefEntry>
+                        <ParameterRefEntry parameterRef="sr_nfa"/>
+                        <ContainerRefEntry containerRef="pus3-sc-set-entry">
+                            <RepeatEntry>
+                                <Count>
+                                    <DynamicValue>
+                                        <ParameterInstanceRef parameterRef="sr_nfa"/>
+                                    </DynamicValue>
+                                </Count>
+                            </RepeatEntry>
+                        </ContainerRefEntry>
+                    </EntryList>
+                    <BaseContainer containerRef="/PUS3/pus3-tm">
+                        <RestrictionCriteria>
+                            <Comparison parameterRef="/PUS/subtype" value="10"/>
+                        </RestrictionCriteria>
+                    </BaseContainer>
+                </SequenceContainer>
+
+                <!-- TM[3,12] diagnostic parameter report structure report (same layout, subtype==12) -->
+                <SequenceContainer name="TM_3_12"
+                    shortDescription="TM[3,12] diagnostic parameter report structure report">
+                    <EntryList>
+                        <ParameterRefEntry parameterRef="sr_struct_id"/>
+                        <ParameterRefEntry parameterRef="sr_gen_status"/>
+                        <ParameterRefEntry parameterRef="sr_collection_interval"/>
+                        <ParameterRefEntry parameterRef="sr_n1"/>
+                        <ArrayParameterRefEntry parameterRef="sr_simply_param_ids">
+                            <IncludeCondition>
+                                <Comparison parameterRef="sr_n1" comparisonOperator="&gt;" value="0"/>
+                            </IncludeCondition>
+                        </ArrayParameterRefEntry>
+                        <ParameterRefEntry parameterRef="sr_nfa"/>
+                        <ContainerRefEntry containerRef="pus3-sc-set-entry">
+                            <RepeatEntry>
+                                <Count>
+                                    <DynamicValue>
+                                        <ParameterInstanceRef parameterRef="sr_nfa"/>
+                                    </DynamicValue>
+                                </Count>
+                            </RepeatEntry>
+                        </ContainerRefEntry>
+                    </EntryList>
+                    <BaseContainer containerRef="/PUS3/pus3-tm">
+                        <RestrictionCriteria>
+                            <Comparison parameterRef="/PUS/subtype" value="12"/>
+                        </RestrictionCriteria>
+                    </BaseContainer>
+                </SequenceContainer>
+            </ContainerSet>
+        </TelemetryMetaData>
+    </SpaceSystem>
+</SpaceSystem>

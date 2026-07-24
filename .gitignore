@@ -13,3 +13,6 @@ server.lock
 
 #Vscode
 .vscode
+
+# Flattened pom.xmls
+.flattened-pom.xml

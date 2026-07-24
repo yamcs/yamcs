@@ -9,6 +9,7 @@ import org.yamcs.xtce.FixedIntegerValue;
 import org.yamcs.xtce.IntegerValue;
 import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtce.SequenceEntry;
+import org.yamcs.xtce.TimeAssociation;
 
 /**
  * Keeps track of where we are when processing a packet.
@@ -33,17 +34,25 @@ public class ContainerProcessingContext {
     public final DataEncodingDecoder dataEncodingProcessor;
     public boolean provideContainerResult = true;
     public final boolean derivedFromRoot;
+    public final TimeAssociation inheritedTimeAssociation;
 
     SequenceEntry currentEntry;
 
     public ContainerProcessingContext(ProcessorData pdata, BitBuffer buffer, ContainerProcessingResult result,
             Subscription subscription, ContainerProcessingOptions options, boolean derivedFromRoot) {
+        this(pdata, buffer, result, subscription, options, derivedFromRoot, null);
+    }
+
+    public ContainerProcessingContext(ProcessorData pdata, BitBuffer buffer, ContainerProcessingResult result,
+            Subscription subscription, ContainerProcessingOptions options, boolean derivedFromRoot,
+            TimeAssociation inheritedTimeAssociation) {
         this.proccessorData = pdata;
         this.buffer = buffer;
         this.subscription = subscription;
         this.result = result;
         this.options = options;
         this.derivedFromRoot = derivedFromRoot;
+        this.inheritedTimeAssociation = inheritedTimeAssociation;
 
         sequenceContainerProcessor = new SequenceContainerProcessor(this);
         sequenceEntryProcessor = new SequenceEntryProcessor(this);

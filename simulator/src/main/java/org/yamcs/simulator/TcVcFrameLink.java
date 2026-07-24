@@ -1,6 +1,8 @@
 package org.yamcs.simulator;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.security.sdls.SdlsSecurityAssociation;
@@ -21,7 +23,8 @@ import org.yamcs.utils.StringConverter;
 public class TcVcFrameLink {
     private static final Logger log = LoggerFactory.getLogger(TcVcFrameLink.class);
     final static CrcCciitCalculator crc = new CrcCciitCalculator();
-    final ColSimulator simulator;
+    final AbstractSimulator simulator;
+    final TcPacketFactory packetFactory;
 
     // FARM parameters
     boolean lockout;
@@ -39,8 +42,14 @@ public class TcVcFrameLink {
     SdlsSecurityAssociation maybeSdls = null;
 
     public TcVcFrameLink(ColSimulator simulator, int vcId, SdlsSecurityAssociation maybeSdls) {
+        this(simulator, vcId, maybeSdls, TcPacketFactory.COL_PACKET_FACTORY);
+    }
+
+    public TcVcFrameLink(AbstractSimulator simulator, int vcId, SdlsSecurityAssociation maybeSdls,
+            TcPacketFactory packetFactory) {
         this.simulator = simulator;
         this.vcId = vcId;
+        this.packetFactory = packetFactory;
 
         // If we have an encryption key, configure encryption
         if (maybeSdls != null) {
@@ -162,7 +171,7 @@ public class TcVcFrameLink {
     private void processCommand(byte[] data, int offset, int length) {
         ByteBuffer bb = ByteBuffer.wrap(data, offset, length).slice();
         SimulatorCcsdsPacket packet = (CcsdsPacket.getAPID(bb) == CfdpCcsdsPacket.APID) ? new CfdpCcsdsPacket(bb)
-                : new ColumbusCcsdsPacket(bb);
+                : packetFactory.getPacket(Arrays.copyOfRange(data, offset, offset + length));
 
         simulator.processTc(packet);
     }

@@ -1,0 +1,45 @@
+<SpaceSystem name="PUS9" xmlns="http://www.omg.org/spec/XTCE/20180204"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
+	<Header validationStatus="Unknown" version="1.0" date="2025-01-01T00:00:00Z" />
+	<CommandMetaData>
+		<ArgumentTypeSet>
+			<!-- rateExponent: uint8, valid range 0..8 (period = 2^exp seconds, §6.9.3c) -->
+			<IntegerArgumentType name="rate_exponent_type" baseType="/dt/uint8">
+				<ValidRangeSet>
+					<ValidRange minInclusive="0" maxInclusive="8" />
+				</ValidRangeSet>
+			</IntegerArgumentType>
+		</ArgumentTypeSet>
+		<MetaCommandSet>
+			<MetaCommand name="pus9-tc" abstract="true">
+				<BaseMetaCommand metaCommandRef="/PUS/pus-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="apid" argumentValue="1" />
+						<ArgumentAssignment argumentName="type" argumentValue="9" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="pus9-tc">
+					<EntryList />
+				</CommandContainer>
+			</MetaCommand>
+			<!-- TC[9,1] Set Time Report Generation Rate (§6.9.5.1) -->
+			<MetaCommand name="SET_TIME_REPORT_RATE">
+				<BaseMetaCommand metaCommandRef="pus9-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="1" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="rate_exponent_type" name="rateExponent" />
+				</ArgumentList>
+				<CommandContainer name="SET_TIME_REPORT_RATE">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="rateExponent" />
+					</EntryList>
+					<BaseContainer containerRef="pus9-tc" />
+				</CommandContainer>
+			</MetaCommand>
+		</MetaCommandSet>
+	</CommandMetaData>
+</SpaceSystem>

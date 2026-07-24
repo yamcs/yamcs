@@ -1,0 +1,622 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem name="PUS12" xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
+	<Header validationStatus="Unknown" version="1.0" date="2026-07-02T00:00:00Z">
+		<NoteSet>
+			<Note>ST[12] On-board Monitoring — parameter monitoring (PMON) subservice only. See pus_analysis/pus12.md.</Note>
+			<Note>criteria fields (mask/limits/thresholds) are "deduced" per spec (size depends on the monitored
+				parameter's type). This mission fixes ADD/MODIFY to 3 per-check-type command variants
+				(LIMIT/DELTA use float32, EXPECTED_VALUE uses uint8). TM[12,9] entries are genuinely
+				variable-length: each is decoded via the PMON_ENTRY container, whose criteria fields are
+				gated by IncludeCondition on the entry's own check_type — no opaque/padded bytes.</Note>
+		</NoteSet>
+	</Header>
+	<TelemetryMetaData>
+		<ParameterTypeSet>
+			<EnumeratedParameterType name="pmon_id_type">
+				<IntegerDataEncoding sizeInBits="16" />
+				<EnumerationList>
+					<Enumeration value="1" label="PMON_SINE_TEMP_LIMIT" />
+					<Enumeration value="2" label="PMON_RANDWALK_LIMIT" />
+					<Enumeration value="3" label="PMON_BUSVOLT_DELTA" />
+					<Enumeration value="4" label="PMON_MODE_EXPECTED" />
+				</EnumerationList>
+			</EnumeratedParameterType>
+			<EnumeratedParameterType name="monitored_param_id_type">
+				<IntegerDataEncoding sizeInBits="16" />
+				<EnumerationList>
+					<Enumeration value="1" label="PARAM_SINE_TEMP" />
+					<Enumeration value="2" label="PARAM_BUS_CURRENT" />
+					<Enumeration value="3" label="PARAM_BUS_VOLTAGE" />
+					<Enumeration value="4" label="PARAM_MODE_REGISTER" />
+				</EnumerationList>
+			</EnumeratedParameterType>
+			<EnumeratedParameterType name="pmon_status_type">
+				<IntegerDataEncoding sizeInBits="8" />
+				<EnumerationList>
+					<Enumeration value="0" label="disabled" />
+					<Enumeration value="1" label="enabled" />
+				</EnumerationList>
+			</EnumeratedParameterType>
+			<!-- Table 8-6 -->
+			<EnumeratedParameterType name="check_type_type">
+				<IntegerDataEncoding sizeInBits="8" />
+				<EnumerationList>
+					<Enumeration value="0" label="expected-value-checking" />
+					<Enumeration value="1" label="limit-checking" />
+					<Enumeration value="2" label="delta-checking" />
+				</EnumerationList>
+			</EnumeratedParameterType>
+			<!-- Generic reuse of Tables 8-7/8-8/8-9 raw values across all 3 check types (see Pus12Service) -->
+			<EnumeratedParameterType name="pmon_checking_status_type">
+				<IntegerDataEncoding sizeInBits="8" />
+				<EnumerationList>
+					<Enumeration value="0" label="good" />
+					<Enumeration value="1" label="unchecked" />
+					<Enumeration value="2" label="invalid" />
+					<Enumeration value="3" label="low_or_unexpected" />
+					<Enumeration value="4" label="high" />
+				</EnumerationList>
+			</EnumeratedParameterType>
+
+			<IntegerParameterType name="pmon_def_count_type" baseType="/dt/uint8" />
+
+			<IntegerParameterType name="pmon_transition_count_type" baseType="/dt/uint8" />
+			<AggregateParameterType name="pmon_transition_entry_type">
+				<MemberList>
+					<Member typeRef="pmon_id_type" name="pmon_id" />
+					<Member typeRef="pmon_checking_status_type" name="prev_status" />
+					<Member typeRef="pmon_checking_status_type" name="new_status" />
+				</MemberList>
+			</AggregateParameterType>
+			<ArrayParameterType arrayTypeRef="pmon_transition_entry_type" name="pmon_transition_array_type">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ParameterInstanceRef parameterRef="pmon_transition_count" />
+								<LinearAdjustment intercept="-1" />
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayParameterType>
+
+			<IntegerParameterType name="pmon_status_count_type" baseType="/dt/uint8" />
+			<AggregateParameterType name="pmon_status_entry_type">
+				<MemberList>
+					<Member typeRef="pmon_id_type" name="pmon_id" />
+					<Member typeRef="pmon_status_type" name="pmon_status" />
+				</MemberList>
+			</AggregateParameterType>
+			<ArrayParameterType arrayTypeRef="pmon_status_entry_type" name="pmon_status_array_type">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ParameterInstanceRef parameterRef="pmon_status_count" />
+								<LinearAdjustment intercept="-1" />
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayParameterType>
+		</ParameterTypeSet>
+		<ParameterSet>
+			<Parameter parameterTypeRef="pmon_def_count_type" name="pmon_def_count" />
+			<!-- PMON_ENTRY members (TM[12,9]) — a discriminated union keyed by pmondef_check_type;
+			     see the PMON_ENTRY container's IncludeConditions for which fields apply to which check type. -->
+			<Parameter parameterTypeRef="pmon_id_type" name="pmondef_pmon_id" />
+			<Parameter parameterTypeRef="monitored_param_id_type" name="pmondef_param_id" />
+			<Parameter parameterTypeRef="pmon_status_type" name="pmondef_status" />
+			<Parameter parameterTypeRef="/dt/uint8" name="pmondef_repetition_number" />
+			<Parameter parameterTypeRef="check_type_type" name="pmondef_check_type" />
+			<Parameter parameterTypeRef="/dt/uint8" name="pmondef_mask" />
+			<Parameter parameterTypeRef="/dt/uint8" name="pmondef_expected_value" />
+			<Parameter parameterTypeRef="/dt/uint16" name="pmondef_expected_event_id" />
+			<Parameter parameterTypeRef="/dt/float32" name="pmondef_low_limit" />
+			<Parameter parameterTypeRef="/dt/uint16" name="pmondef_low_limit_event_id" />
+			<Parameter parameterTypeRef="/dt/float32" name="pmondef_high_limit" />
+			<Parameter parameterTypeRef="/dt/uint16" name="pmondef_high_limit_event_id" />
+			<Parameter parameterTypeRef="/dt/float32" name="pmondef_low_threshold" />
+			<Parameter parameterTypeRef="/dt/uint16" name="pmondef_low_threshold_event_id" />
+			<Parameter parameterTypeRef="/dt/float32" name="pmondef_high_threshold" />
+			<Parameter parameterTypeRef="/dt/uint16" name="pmondef_high_threshold_event_id" />
+			<Parameter parameterTypeRef="/dt/uint8" name="pmondef_num_consecutive_deltas" />
+			<Parameter parameterTypeRef="pmon_transition_count_type" name="pmon_transition_count" />
+			<Parameter parameterTypeRef="pmon_transition_array_type" name="pmon_transition_entries" />
+			<Parameter parameterTypeRef="pmon_status_count_type" name="pmon_status_count" />
+			<Parameter parameterTypeRef="pmon_status_array_type" name="pmon_status_entries" />
+		</ParameterSet>
+		<ContainerSet>
+			<SequenceContainer name="pus12-tm">
+				<EntryList />
+				<BaseContainer containerRef="/PUS/pus-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/type" comparisonOperator="==" value="12" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<!-- One TM[12,9] entry. No BaseContainer: only ever included via ContainerRefEntry below
+			     (same standalone-nested-container pattern as pus3-sc-set-entry in pus3.xml). Fixed
+			     header fields are always present; the criteria fields are a discriminated union
+			     gated by IncludeCondition on pmondef_check_type — this is the Gap 1 fix (see
+			     pus_analysis/pus12.md Section C / Gap 1): XTCE cannot size a field from the
+			     monitored parameter's type directly, but it can select among fully-typed,
+			     fixed-size fields based on a sibling field's value already decoded earlier in the
+			     same entry, which is exactly what check_type is. -->
+			<SequenceContainer name="PMON_ENTRY">
+				<EntryList>
+					<ParameterRefEntry parameterRef="pmondef_pmon_id" />
+					<ParameterRefEntry parameterRef="pmondef_param_id" />
+					<ParameterRefEntry parameterRef="pmondef_status" />
+					<ParameterRefEntry parameterRef="pmondef_repetition_number" />
+					<ParameterRefEntry parameterRef="pmondef_check_type" />
+					<!-- expected-value-checking (Table 8-6, raw 0) -->
+					<ParameterRefEntry parameterRef="pmondef_mask">
+						<IncludeCondition>
+							<Comparison parameterRef="pmondef_check_type" comparisonOperator="==" value="expected-value-checking" />
+						</IncludeCondition>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="pmondef_expected_value">
+						<IncludeCondition>
+							<Comparison parameterRef="pmondef_check_type" comparisonOperator="==" value="expected-value-checking" />
+						</IncludeCondition>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="pmondef_expected_event_id">
+						<IncludeCondition>
+							<Comparison parameterRef="pmondef_check_type" comparisonOperator="==" value="expected-value-checking" />
+						</IncludeCondition>
+					</ParameterRefEntry>
+					<!-- limit-checking (raw 1) -->
+					<ParameterRefEntry parameterRef="pmondef_low_limit">
+						<IncludeCondition>
+							<Comparison parameterRef="pmondef_check_type" comparisonOperator="==" value="limit-checking" />
+						</IncludeCondition>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="pmondef_low_limit_event_id">
+						<IncludeCondition>
+							<Comparison parameterRef="pmondef_check_type" comparisonOperator="==" value="limit-checking" />
+						</IncludeCondition>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="pmondef_high_limit">
+						<IncludeCondition>
+							<Comparison parameterRef="pmondef_check_type" comparisonOperator="==" value="limit-checking" />
+						</IncludeCondition>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="pmondef_high_limit_event_id">
+						<IncludeCondition>
+							<Comparison parameterRef="pmondef_check_type" comparisonOperator="==" value="limit-checking" />
+						</IncludeCondition>
+					</ParameterRefEntry>
+					<!-- delta-checking (raw 2) -->
+					<ParameterRefEntry parameterRef="pmondef_low_threshold">
+						<IncludeCondition>
+							<Comparison parameterRef="pmondef_check_type" comparisonOperator="==" value="delta-checking" />
+						</IncludeCondition>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="pmondef_low_threshold_event_id">
+						<IncludeCondition>
+							<Comparison parameterRef="pmondef_check_type" comparisonOperator="==" value="delta-checking" />
+						</IncludeCondition>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="pmondef_high_threshold">
+						<IncludeCondition>
+							<Comparison parameterRef="pmondef_check_type" comparisonOperator="==" value="delta-checking" />
+						</IncludeCondition>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="pmondef_high_threshold_event_id">
+						<IncludeCondition>
+							<Comparison parameterRef="pmondef_check_type" comparisonOperator="==" value="delta-checking" />
+						</IncludeCondition>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="pmondef_num_consecutive_deltas">
+						<IncludeCondition>
+							<Comparison parameterRef="pmondef_check_type" comparisonOperator="==" value="delta-checking" />
+						</IncludeCondition>
+					</ParameterRefEntry>
+				</EntryList>
+			</SequenceContainer>
+			<!-- TM[12,9] Parameter monitoring definition report (max_transition_reporting_delay omitted, always required in this mission) -->
+			<SequenceContainer name="PMON_DEFINITION_REPORT" shortDescription="TM[12,9] parameter monitoring definition report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="pmon_def_count" />
+					<ContainerRefEntry containerRef="PMON_ENTRY">
+						<RepeatEntry>
+							<Count>
+								<DynamicValue>
+									<ParameterInstanceRef parameterRef="pmon_def_count" />
+								</DynamicValue>
+							</Count>
+						</RepeatEntry>
+					</ContainerRefEntry>
+				</EntryList>
+				<BaseContainer containerRef="pus12-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="9" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<!-- TM[12,12] Parameter monitoring check transition report -->
+			<SequenceContainer name="PMON_TRANSITION_REPORT" shortDescription="TM[12,12] parameter monitoring check transition report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="pmon_transition_count" />
+					<ArrayParameterRefEntry parameterRef="pmon_transition_entries">
+						<IncludeCondition>
+							<Comparison parameterRef="pmon_transition_count" comparisonOperator="&gt;" value="0" />
+						</IncludeCondition>
+					</ArrayParameterRefEntry>
+				</EntryList>
+				<BaseContainer containerRef="pus12-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="12" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<!-- TM[12,14] Parameter monitoring definition status report -->
+			<SequenceContainer name="PMON_STATUS_REPORT" shortDescription="TM[12,14] parameter monitoring definition status report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="pmon_status_count" />
+					<ArrayParameterRefEntry parameterRef="pmon_status_entries">
+						<IncludeCondition>
+							<Comparison parameterRef="pmon_status_count" comparisonOperator="&gt;" value="0" />
+						</IncludeCondition>
+					</ArrayParameterRefEntry>
+				</EntryList>
+				<BaseContainer containerRef="pus12-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="14" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+		</ContainerSet>
+	</TelemetryMetaData>
+	<CommandMetaData>
+		<ArgumentTypeSet>
+			<EnumeratedArgumentType name="pmon_id_type">
+				<IntegerDataEncoding sizeInBits="16" />
+				<EnumerationList>
+					<Enumeration value="1" label="PMON_SINE_TEMP_LIMIT" />
+					<Enumeration value="2" label="PMON_RANDWALK_LIMIT" />
+					<Enumeration value="3" label="PMON_BUSVOLT_DELTA" />
+					<Enumeration value="4" label="PMON_MODE_EXPECTED" />
+				</EnumerationList>
+			</EnumeratedArgumentType>
+			<EnumeratedArgumentType name="monitored_param_id_type">
+				<IntegerDataEncoding sizeInBits="16" />
+				<EnumerationList>
+					<Enumeration value="1" label="PARAM_SINE_TEMP" />
+					<Enumeration value="2" label="PARAM_BUS_CURRENT" />
+					<Enumeration value="3" label="PARAM_BUS_VOLTAGE" />
+					<Enumeration value="4" label="PARAM_MODE_REGISTER" />
+				</EnumerationList>
+			</EnumeratedArgumentType>
+			<ArrayArgumentType arrayTypeRef="pmon_id_type" name="pmon_id_array_type">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="N" />
+								<LinearAdjustment intercept="-1" />
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+			<!-- dt.xml has no argument-side float32 (only a ParameterType); declared locally here -->
+			<FloatArgumentType name="float32" sizeInBits="32">
+				<FloatDataEncoding encoding="IEEE754_1985" sizeInBits="32" />
+			</FloatArgumentType>
+		</ArgumentTypeSet>
+		<MetaCommandSet>
+			<MetaCommand name="pus12-tc" abstract="true">
+				<BaseMetaCommand metaCommandRef="/PUS/pus-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="apid" argumentValue="1" />
+						<ArgumentAssignment argumentName="type" argumentValue="12" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="pus12-tc">
+					<EntryList />
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[12,1] Enable parameter monitoring definitions -->
+			<MetaCommand name="ENABLE_PARAMETER_MONITORING" shortDescription="TC[12,1] enable parameter monitoring definitions">
+				<BaseMetaCommand metaCommandRef="pus12-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="1" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="/dt/uint8" name="N" />
+					<Argument argumentTypeRef="pmon_id_array_type" name="pmon_ids" />
+				</ArgumentList>
+				<CommandContainer name="ENABLE_PARAMETER_MONITORING">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="N" />
+						<ArgumentRefEntry argumentRef="pmon_ids" />
+					</EntryList>
+					<BaseContainer containerRef="pus12-tc" />
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[12,2] Disable parameter monitoring definitions -->
+			<MetaCommand name="DISABLE_PARAMETER_MONITORING" shortDescription="TC[12,2] disable parameter monitoring definitions">
+				<BaseMetaCommand metaCommandRef="pus12-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="2" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="/dt/uint8" name="N" />
+					<Argument argumentTypeRef="pmon_id_array_type" name="pmon_ids" />
+				</ArgumentList>
+				<CommandContainer name="DISABLE_PARAMETER_MONITORING">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="N" />
+						<ArgumentRefEntry argumentRef="pmon_ids" />
+					</EntryList>
+					<BaseContainer containerRef="pus12-tc" />
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[12,5] Add parameter monitoring definitions — one definition per TC (mission simplification).
+			     3 per-check-type variants (Gap 1: criteria field sizes are "deduced" from the monitored
+			     parameter's type; XTCE cannot express that polymorphism in one MetaCommand). -->
+			<MetaCommand name="ADD_PMON_LIMIT_F32" shortDescription="TC[12,5] add a limit-checking PMON definition (float32 parameter)">
+				<BaseMetaCommand metaCommandRef="pus12-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="5" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="pmon_id_type" name="pmon_id" />
+					<Argument argumentTypeRef="monitored_param_id_type" name="param_id" />
+					<Argument argumentTypeRef="/dt/uint16" name="monitoring_interval_ms" />
+					<Argument argumentTypeRef="/dt/uint8" name="repetition_number" />
+					<Argument argumentTypeRef="float32" name="low_limit" />
+					<Argument argumentTypeRef="/dt/uint16" name="low_event_id" />
+					<Argument argumentTypeRef="float32" name="high_limit" />
+					<Argument argumentTypeRef="/dt/uint16" name="high_event_id" />
+				</ArgumentList>
+				<CommandContainer name="ADD_PMON_LIMIT_F32">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="pmon_id" />
+						<ArgumentRefEntry argumentRef="param_id" />
+						<ArgumentRefEntry argumentRef="monitoring_interval_ms" />
+						<ArgumentRefEntry argumentRef="repetition_number" />
+						<FixedValueEntry name="check_type" binaryValue="01" sizeInBits="8" />
+						<ArgumentRefEntry argumentRef="low_limit" />
+						<ArgumentRefEntry argumentRef="low_event_id" />
+						<ArgumentRefEntry argumentRef="high_limit" />
+						<ArgumentRefEntry argumentRef="high_event_id" />
+					</EntryList>
+					<BaseContainer containerRef="pus12-tc" />
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="ADD_PMON_EXPECTED_U8" shortDescription="TC[12,5] add an expected-value-checking PMON definition (uint8 parameter)">
+				<BaseMetaCommand metaCommandRef="pus12-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="5" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="pmon_id_type" name="pmon_id" />
+					<Argument argumentTypeRef="monitored_param_id_type" name="param_id" />
+					<Argument argumentTypeRef="/dt/uint16" name="monitoring_interval_ms" />
+					<Argument argumentTypeRef="/dt/uint8" name="repetition_number" />
+					<Argument argumentTypeRef="/dt/uint8" name="mask" />
+					<Argument argumentTypeRef="/dt/uint8" name="expected_value" />
+					<Argument argumentTypeRef="/dt/uint16" name="event_id" />
+				</ArgumentList>
+				<CommandContainer name="ADD_PMON_EXPECTED_U8">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="pmon_id" />
+						<ArgumentRefEntry argumentRef="param_id" />
+						<ArgumentRefEntry argumentRef="monitoring_interval_ms" />
+						<ArgumentRefEntry argumentRef="repetition_number" />
+						<FixedValueEntry name="check_type" binaryValue="00" sizeInBits="8" />
+						<ArgumentRefEntry argumentRef="mask" />
+						<ArgumentRefEntry argumentRef="expected_value" />
+						<ArgumentRefEntry argumentRef="event_id" />
+					</EntryList>
+					<BaseContainer containerRef="pus12-tc" />
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="ADD_PMON_DELTA_F32" shortDescription="TC[12,5] add a delta-checking PMON definition (float32 parameter)">
+				<BaseMetaCommand metaCommandRef="pus12-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="5" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="pmon_id_type" name="pmon_id" />
+					<Argument argumentTypeRef="monitored_param_id_type" name="param_id" />
+					<Argument argumentTypeRef="/dt/uint16" name="monitoring_interval_ms" />
+					<Argument argumentTypeRef="/dt/uint8" name="repetition_number" />
+					<Argument argumentTypeRef="float32" name="low_threshold" />
+					<Argument argumentTypeRef="/dt/uint16" name="low_event_id" />
+					<Argument argumentTypeRef="float32" name="high_threshold" />
+					<Argument argumentTypeRef="/dt/uint16" name="high_event_id" />
+					<Argument argumentTypeRef="/dt/uint8" name="num_consecutive_deltas" />
+				</ArgumentList>
+				<CommandContainer name="ADD_PMON_DELTA_F32">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="pmon_id" />
+						<ArgumentRefEntry argumentRef="param_id" />
+						<ArgumentRefEntry argumentRef="monitoring_interval_ms" />
+						<ArgumentRefEntry argumentRef="repetition_number" />
+						<FixedValueEntry name="check_type" binaryValue="02" sizeInBits="8" />
+						<ArgumentRefEntry argumentRef="low_threshold" />
+						<ArgumentRefEntry argumentRef="low_event_id" />
+						<ArgumentRefEntry argumentRef="high_threshold" />
+						<ArgumentRefEntry argumentRef="high_event_id" />
+						<ArgumentRefEntry argumentRef="num_consecutive_deltas" />
+					</EntryList>
+					<BaseContainer containerRef="pus12-tc" />
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[12,6] Delete parameter monitoring definitions (must be disabled first) -->
+			<MetaCommand name="DELETE_PMON_DEFINITIONS" shortDescription="TC[12,6] delete parameter monitoring definitions">
+				<BaseMetaCommand metaCommandRef="pus12-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="6" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="/dt/uint8" name="N" />
+					<Argument argumentTypeRef="pmon_id_array_type" name="pmon_ids" />
+				</ArgumentList>
+				<CommandContainer name="DELETE_PMON_DEFINITIONS">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="N" />
+						<ArgumentRefEntry argumentRef="pmon_ids" />
+					</EntryList>
+					<BaseContainer containerRef="pus12-tc" />
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[12,7] Modify parameter monitoring definitions — same 3 variants as ADD, minus
+			     monitoring_interval_ms (spec Fig 8-119 omits it from modify). param_id/check_type are
+			     validated against the existing definition, not applied as mutations (see Pus12Service). -->
+			<MetaCommand name="MODIFY_PMON_LIMIT_F32" shortDescription="TC[12,7] modify a limit-checking PMON definition (float32 parameter)">
+				<BaseMetaCommand metaCommandRef="pus12-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="7" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="pmon_id_type" name="pmon_id" />
+					<Argument argumentTypeRef="monitored_param_id_type" name="param_id" />
+					<Argument argumentTypeRef="/dt/uint8" name="repetition_number" />
+					<Argument argumentTypeRef="float32" name="low_limit" />
+					<Argument argumentTypeRef="/dt/uint16" name="low_event_id" />
+					<Argument argumentTypeRef="float32" name="high_limit" />
+					<Argument argumentTypeRef="/dt/uint16" name="high_event_id" />
+				</ArgumentList>
+				<CommandContainer name="MODIFY_PMON_LIMIT_F32">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="pmon_id" />
+						<ArgumentRefEntry argumentRef="param_id" />
+						<ArgumentRefEntry argumentRef="repetition_number" />
+						<FixedValueEntry name="check_type" binaryValue="01" sizeInBits="8" />
+						<ArgumentRefEntry argumentRef="low_limit" />
+						<ArgumentRefEntry argumentRef="low_event_id" />
+						<ArgumentRefEntry argumentRef="high_limit" />
+						<ArgumentRefEntry argumentRef="high_event_id" />
+					</EntryList>
+					<BaseContainer containerRef="pus12-tc" />
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="MODIFY_PMON_EXPECTED_U8" shortDescription="TC[12,7] modify an expected-value-checking PMON definition (uint8 parameter)">
+				<BaseMetaCommand metaCommandRef="pus12-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="7" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="pmon_id_type" name="pmon_id" />
+					<Argument argumentTypeRef="monitored_param_id_type" name="param_id" />
+					<Argument argumentTypeRef="/dt/uint8" name="repetition_number" />
+					<Argument argumentTypeRef="/dt/uint8" name="mask" />
+					<Argument argumentTypeRef="/dt/uint8" name="expected_value" />
+					<Argument argumentTypeRef="/dt/uint16" name="event_id" />
+				</ArgumentList>
+				<CommandContainer name="MODIFY_PMON_EXPECTED_U8">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="pmon_id" />
+						<ArgumentRefEntry argumentRef="param_id" />
+						<ArgumentRefEntry argumentRef="repetition_number" />
+						<FixedValueEntry name="check_type" binaryValue="00" sizeInBits="8" />
+						<ArgumentRefEntry argumentRef="mask" />
+						<ArgumentRefEntry argumentRef="expected_value" />
+						<ArgumentRefEntry argumentRef="event_id" />
+					</EntryList>
+					<BaseContainer containerRef="pus12-tc" />
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="MODIFY_PMON_DELTA_F32" shortDescription="TC[12,7] modify a delta-checking PMON definition (float32 parameter)">
+				<BaseMetaCommand metaCommandRef="pus12-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="7" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="pmon_id_type" name="pmon_id" />
+					<Argument argumentTypeRef="monitored_param_id_type" name="param_id" />
+					<Argument argumentTypeRef="/dt/uint8" name="repetition_number" />
+					<Argument argumentTypeRef="float32" name="low_threshold" />
+					<Argument argumentTypeRef="/dt/uint16" name="low_event_id" />
+					<Argument argumentTypeRef="float32" name="high_threshold" />
+					<Argument argumentTypeRef="/dt/uint16" name="high_event_id" />
+					<Argument argumentTypeRef="/dt/uint8" name="num_consecutive_deltas" />
+				</ArgumentList>
+				<CommandContainer name="MODIFY_PMON_DELTA_F32">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="pmon_id" />
+						<ArgumentRefEntry argumentRef="param_id" />
+						<ArgumentRefEntry argumentRef="repetition_number" />
+						<FixedValueEntry name="check_type" binaryValue="02" sizeInBits="8" />
+						<ArgumentRefEntry argumentRef="low_threshold" />
+						<ArgumentRefEntry argumentRef="low_event_id" />
+						<ArgumentRefEntry argumentRef="high_threshold" />
+						<ArgumentRefEntry argumentRef="high_event_id" />
+						<ArgumentRefEntry argumentRef="num_consecutive_deltas" />
+					</EntryList>
+					<BaseContainer containerRef="pus12-tc" />
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[12,8] Report parameter monitoring definitions -> TM[12,9]. N=0 (empty array) means "report all". -->
+			<MetaCommand name="REPORT_PMON_DEFINITIONS" shortDescription="TC[12,8] report parameter monitoring definitions">
+				<BaseMetaCommand metaCommandRef="pus12-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="8" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="/dt/uint8" name="N" />
+					<Argument argumentTypeRef="pmon_id_array_type" name="pmon_ids" />
+				</ArgumentList>
+				<CommandContainer name="REPORT_PMON_DEFINITIONS">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="N" />
+						<ArgumentRefEntry argumentRef="pmon_ids" />
+					</EntryList>
+					<BaseContainer containerRef="pus12-tc" />
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[12,11] Report parameter monitoring check transitions -> TM[12,12]. No arguments. -->
+			<MetaCommand name="REPORT_PMON_CHECK_TRANSITIONS" shortDescription="TC[12,11] report parameter monitoring check transitions">
+				<BaseMetaCommand metaCommandRef="pus12-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="11" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="REPORT_PMON_CHECK_TRANSITIONS">
+					<EntryList />
+					<BaseContainer containerRef="pus12-tc" />
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[12,13] Report status of each parameter monitoring definition -> TM[12,14]. No arguments. -->
+			<MetaCommand name="REPORT_PMON_STATUS" shortDescription="TC[12,13] report status of each parameter monitoring definition">
+				<BaseMetaCommand metaCommandRef="pus12-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="13" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="REPORT_PMON_STATUS">
+					<EntryList />
+					<BaseContainer containerRef="pus12-tc" />
+				</CommandContainer>
+			</MetaCommand>
+		</MetaCommandSet>
+	</CommandMetaData>
+</SpaceSystem>

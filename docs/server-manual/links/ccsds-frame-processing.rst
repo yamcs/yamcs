@@ -104,6 +104,9 @@ The following general options are supported:
 rawFrameDecoder (map) supported since Yamcs 5.5.7
    Decodes raw frame data using an error correction scheme and/or randomization. For the moment only the Reed-Solomon codec is supported. If this is not set, the frames are considered already decoded. See below for the options to the Reed-Solomon codec.
 
+frameDecapsulation (map)
+    Optional provider which removes mission-specific headers after raw-frame decoding and before CCSDS transfer-frame decoding. The map contains a required ``class`` and optional ``args``. See `SRS4 Outer Frame Processing`_ for the built-in SRS4 provider.
+
 frameType (string)
     **Required.** One of ``AOS``, ``TM`` or ``USLP``. The first 2 bits for AOS/TM and 4 bits for USLP represent the version number and have to have the value 0, 1 or 12 respectively. If a frame is received that has a different version, it is discarded (with a warning log message).
 
@@ -316,6 +319,10 @@ errorDetection (string)
 frameMaxRate (double)
     maximum number of command frames to send per second. This option is specific to the UDP TC link.
 
+frameEncapsulation (map)
+    Optional provider which adds mission-specific headers after CCSDS/SDLS frame construction and before optional CLTU encoding. The map contains a required ``class`` and optional ``args``. See `SRS4 Outer Frame Processing`_ for the built-in SRS4 provider.
+
+
 For each item in the ``encryption`` list, the following parameters can be used:
 
 spi (integer)
@@ -465,3 +472,249 @@ The managed parameters for this built-in implementation are:
 * Encryption key: the same key as in authentication is used, because AES-GCM provides authenticated encryption. Length is 256 bits, key is configured by user in the Yamcs configuration.
 * Sequence number: set to 0 when a Security Association is created. Not user-configurable, but can be reset via the API.
 * Encryption initialization vector: initialized with a random value on every encryption; not user-configurable.
+
+
+SRS4 Outer Frame Processing
+---------------------------
+
+The SRS4 providers add or remove the SRS4 radio header and either a CSP v1 or IPv4/UDP bus header. All SRS4-specific configuration is kept below the ``srs4`` provider argument. These layers are not part of CCSDS framing and are disabled when no provider is configured.
+
+The following TC example enables both buses. The boolean command option ``useCan`` is then registered system-wide. A missing or false value selects Ethernet; true selects CAN. Commands with different selections are placed in different transfer frames.
+
+.. code-block:: yaml
+
+    frameEncapsulation:
+      class: org.yamcs.tctm.ccsds.srs4.Srs4TcFrameEncapsulator
+      args:
+        srs4:
+          radio:
+            enabled: true
+            spacecraftId: 0x1234
+          csp:
+            enabled: true
+            sourceAddress: 1
+            sourcePort: 10
+            priority: 0
+            hmac: false
+            xtea: false
+            rdp: false
+            crc: false
+          ipv4Udp:
+            enabled: true
+            sourceAddress: 10.0.0.1
+            sourcePort: 1000
+            ttl: 64
+            calculateUdpChecksum: false
+          controlFrameFlow: ETHERNET
+          virtualChannels:
+            - vcId: 0
+              csp:
+                destinationAddress: 2
+                destinationPort: 20
+              ipv4Udp:
+                destinationAddress: 10.0.0.2
+                destinationPort: 2000
+
+For TM, the spacecraft source is selected by VC and the ground destination is fixed:
+
+.. code-block:: yaml
+
+    frameDecapsulation:
+      class: org.yamcs.tctm.ccsds.srs4.Srs4TmFrameDecapsulator
+      args:
+        srs4:
+          radio:
+            enabled: true
+            spacecraftId: 0x1234
+          csp:
+            enabled: true
+            destinationAddress: 1
+            destinationPort: 10
+          ipv4Udp:
+            enabled: true
+            destinationAddress: 10.0.0.1
+            destinationPort: 1000
+            ttl: 64
+          virtualChannels:
+            - vcId: 0
+              csp:
+                sourceAddress: 2
+                sourcePort: 20
+              ipv4Udp:
+                sourceAddress: 10.0.0.2
+                sourcePort: 2000
+
+Provider activation and flow selection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``frameEncapsulation.class``
+    For TC, set this to ``org.yamcs.tctm.ccsds.srs4.Srs4TcFrameEncapsulator``. The provider receives an already constructed CCSDS transfer frame and adds the configured SRS4 layers before optional CLTU encoding.
+
+``frameDecapsulation.class``
+    For TM, set this to ``org.yamcs.tctm.ccsds.srs4.Srs4TmFrameDecapsulator``. After optional raw-frame decoding, the provider removes and validates the SRS4 layers before CCSDS transfer-frame decoding.
+
+``args.srs4``
+    Contains all SRS4-specific configuration. Keeping these fields below this map prevents the SRS4 wire format from becoming part of the general CCSDS link configuration.
+
+``radio.enabled``
+    Enables the four-byte SRS4 radio header. If the ``radio`` map is present, this defaults to true. The radio layer is mandatory whenever either bus layer is enabled.
+
+``csp.enabled``
+    Enables the four-byte CSP v1 header used by the CAN contingency flow. If the ``csp`` map is present, this defaults to true.
+
+``ipv4Udp.enabled``
+    Enables the 28-byte IPv4/UDP header used by the Ethernet nominal flow. If the ``ipv4Udp`` map is present, this defaults to true.
+
+The permitted combinations are:
+
+* radio and CSP: the link always uses CAN;
+* radio and IPv4/UDP: the link always uses Ethernet;
+* radio, CSP and IPv4/UDP: TC flow is selected at runtime and TM flow is selected from the received radio type bit;
+* no SRS4 provider: existing Yamcs framing behavior is unchanged.
+
+A bus layer without the radio layer, a radio layer without a bus layer, or an SRS4 provider without either bus layer is rejected during initialization.
+
+When both TC bus layers are enabled, Yamcs registers the system-wide boolean command option ``useCan``:
+
+* missing or false selects the Ethernet nominal flow;
+* true selects the CAN contingency flow;
+* commands with different values are not aggregated into the same CCSDS transfer frame;
+* the option is not registered by a single-bus SRS4 TC configuration.
+
+Radio fields and wire format
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``radio.spacecraftId``
+    **Required.** Unsigned 16-bit identifier written into the SRS4 radio header. This identifier is independent of the CCSDS ``spacecraftId`` configured on the frame link. TM frames whose radio identifier does not match are discarded.
+
+The radio header is four bytes in network byte order:
+
+* bits 15 to 12: reserved and required to be zero;
+* bit 11: type, where 0 identifies CSP/CAN and 1 identifies IPv4/UDP/Ethernet;
+* bits 10 to 0: content length;
+* the following two bytes: ``radio.spacecraftId``.
+
+The 11-bit length excludes the two-byte type/length word. It includes the two-byte radio spacecraft ID, the selected bus header, and the complete CCSDS transfer frame including SDLS overhead and the CCSDS frame error-control field. Therefore the maximum value is 2047. Yamcs rejects a configuration whose maximum CCSDS frame length plus SRS4 overhead cannot fit in this field.
+
+On TM, Yamcs verifies the reserved bits, declared length, configured spacecraft ID and type before selecting a bus-header decoder.
+
+CSP fields
+~~~~~~~~~~
+
+The CSP layer uses the existing Yamcs CSP v1 bit layout. All CSP integers are encoded in network byte order.
+
+``csp.sourceAddress``
+    **Required for TC.** Fixed ground source address in the range 0 to 31.
+
+``csp.sourcePort``
+    **Required for TC.** Fixed ground source port in the range 0 to 63.
+
+``csp.destinationAddress``
+    **Required for TM.** Fixed ground destination address in the range 0 to 31.
+
+``csp.destinationPort``
+    **Required for TM.** Fixed ground destination port in the range 0 to 63.
+
+``csp.priority``
+    CSP priority in the range 0 to 3. Default: ``0``. TM requires the received priority to equal this configured value.
+
+``csp.hmac``
+    Sets or validates the CSP HMAC flag. Default: ``false``.
+
+``csp.xtea``
+    Sets or validates the CSP XTEA flag. Default: ``false``.
+
+``csp.rdp``
+    Sets or validates the CSP RDP flag. Default: ``false``.
+
+``csp.crc``
+    Sets or validates the CSP CRC flag. Default: ``false``.
+
+The four CSP flags affect only the bits in the CSP header. The SRS4 provider does not perform CSP authentication, encryption or RDP processing, and does not append or remove a CSP CRC trailer. Any such processing must be implemented outside this provider.
+
+IPv4/UDP fields
+~~~~~~~~~~~~~~~
+
+``ipv4Udp.sourceAddress``
+    **Required for TC.** Fixed ground IPv4 source address. Specify a dotted-decimal IPv4 literal; host names and IPv6 addresses are not accepted.
+
+``ipv4Udp.sourcePort``
+    **Required for TC.** Fixed UDP source port in the range 0 to 65535.
+
+``ipv4Udp.destinationAddress``
+    **Required for TM.** Fixed ground IPv4 destination address.
+
+``ipv4Udp.destinationPort``
+    **Required for TM.** Fixed ground UDP destination port in the range 0 to 65535.
+
+``ipv4Udp.ttl``
+    IPv4 time-to-live in the range 1 to 255. Default: ``64``. TC writes this value and TM requires the received value to match.
+
+``ipv4Udp.calculateUdpChecksum``
+    TC-only option controlling UDP checksum generation. Default: ``false``. If false, Yamcs writes zero, which indicates that no UDP checksum is supplied for IPv4. If true, Yamcs calculates the checksum using the IPv4 pseudo-header. TM always accepts zero and verifies every nonzero UDP checksum, independently of this setting.
+
+Yamcs constructs a fixed 20-byte IPv4 header followed by an eight-byte UDP header. It sets IPv4 version 4, IHL 5, DSCP/ECN zero, identification zero, no fragmentation and protocol UDP. IP total length, UDP length and the IPv4 header checksum are calculated automatically. IPv4 options and fragmented packets are not supported.
+
+Virtual-channel endpoint fields
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``virtualChannels``
+    **Required.** SRS4 routing entries. Every VC configured on the parent CCSDS link must have exactly one SRS4 route containing an endpoint for each enabled bus layer. Duplicate VC entries are rejected.
+
+``virtualChannels[].vcId``
+    CCSDS virtual-channel identifier to which the nested endpoints apply.
+
+For TC, the fixed endpoints are the ground sources and each VC supplies spacecraft destinations:
+
+``virtualChannels[].csp.destinationAddress`` / ``destinationPort``
+    CSP destination for this VC.
+
+``virtualChannels[].ipv4Udp.destinationAddress`` / ``destinationPort``
+    IPv4/UDP destination for this VC.
+
+For TM, the fixed endpoints are the ground destinations and each VC supplies spacecraft sources:
+
+``virtualChannels[].csp.sourceAddress`` / ``sourcePort``
+    Expected CSP source for this VC.
+
+``virtualChannels[].ipv4Udp.sourceAddress`` / ``sourcePort``
+    Expected IPv4/UDP source for this VC.
+
+TM source endpoint pairs must be unique within each bus layer. Yamcs first resolves the received source endpoint to an expected VC, then compares it with the VC decoded from the inner CCSDS frame. A mismatch causes the frame to be discarded.
+
+``controlFrameFlow`` and COP-1
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``controlFrameFlow`` selects the SRS4 bus used for a TC frame that has no originating ``PreparedCommand`` from which Yamcs could read ``useCan``. Valid values are ``ETHERNET`` and ``CAN``. Default: ``ETHERNET``.
+
+The principal use is internally generated COP-1 BC control frames, including Unlock and Set V(R). These frames are created by the COP-1 state machine rather than submitted by an operator, so they do not carry command options.
+
+``controlFrameFlow`` does not override ``useCan`` on normal telecommands:
+
+* COP-1 AD frames use the ``useCan`` value of their contained command;
+* COP-1 BD frames, including commands sent with ``cop1Bypass``, also use their command's ``useCan`` value;
+* retransmitted AD frames retain the commands and therefore retain their originally selected flow;
+* COP-1 BC frames and any other command-control frame without a command use ``controlFrameFlow``.
+
+This field is meaningful only when both CSP and IPv4/UDP are enabled. With a single enabled bus, all frames—including control frames—use that bus. Configure ``controlFrameFlow: CAN`` only when CSP is enabled. If COP-1 is disabled and the link never creates command-control frames, this field has no operational effect.
+
+TM validation and processing order
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+After validating the radio header, TM performs strict validation of the selected bus header. CSP destination, source route, priority, flags and reserved bits must match configuration. IPv4 version, IHL, DSCP/ECN, fragmentation, TTL, protocol, lengths and checksum are validated, followed by UDP lengths, checksum and endpoints.
+
+TC processing order is:
+
+#. Construct the CCSDS transfer frame, including optional SDLS and the CCSDS frame error-control field.
+#. Add the selected CSP or IPv4/UDP header.
+#. Add the SRS4 radio header.
+#. Apply optional CLTU encoding to the complete result.
+
+TM processing reverses the uplink layering:
+
+#. Apply the configured raw-frame decoder, including Reed-Solomon decoding and/or derandomization.
+#. Remove and validate the SRS4 radio header.
+#. Remove and validate the selected CSP or IPv4/UDP header.
+#. Pass the resulting CCSDS frame to the configured TM/AOS/USLP transfer-frame decoder.
+
+Any channel coding not supported by ``rawFrameDecoder`` must still be removed before the frame reaches this link.

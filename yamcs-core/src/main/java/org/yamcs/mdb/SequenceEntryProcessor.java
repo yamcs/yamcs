@@ -7,8 +7,10 @@ import org.slf4j.LoggerFactory;
 import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ArrayValue;
 import org.yamcs.parameter.ContainerParameterValue;
+import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.utils.BitBuffer;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.AggregateDataType;
 import org.yamcs.xtce.ArrayDataType;
 import org.yamcs.xtce.ArrayParameterEntry;
@@ -25,6 +27,7 @@ import org.yamcs.xtce.ParameterInstanceRef;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.xtce.SequenceEntry;
+import org.yamcs.xtce.TimeAssociation;
 
 public class SequenceEntryProcessor {
     static Logger log = LoggerFactory.getLogger(SequenceEntryProcessor.class.getName());
@@ -73,9 +76,12 @@ public class SequenceEntryProcessor {
         SubscribedContainer subsribedContainer = pcontext.subscription.getSubscribedContainer(refContainer);
         if (subsribedContainer != null) {
             BitBuffer buf1 = buf.slice();
+            TimeAssociation inheritedTimeAssociation = ce.getTimeAssociation() != null
+                    ? ce.getTimeAssociation()
+                    : pcontext.inheritedTimeAssociation;
 
             ContainerProcessingContext cpc1 = new ContainerProcessingContext(pcontext.proccessorData, buf1,
-                    pcontext.result, pcontext.subscription, pcontext.options, false);
+                    pcontext.result, pcontext.subscription, pcontext.options, false, inheritedTimeAssociation);
             if (!pcontext.options.resultIncludesSubcontainers) {
                 cpc1.provideContainerResult = false;
             }
@@ -89,7 +95,7 @@ public class SequenceEntryProcessor {
         }
     }
 
-    private ContainerParameterValue extractParameter(Parameter param) {
+    private ContainerParameterValue extractParameter(Parameter param, SequenceEntry se) {
         ContainerProcessingResult result = pcontext.result;
 
         ParameterType ptype = param.getParameterType();
@@ -110,13 +116,13 @@ public class SequenceEntryProcessor {
         pcontext.proccessorData.parameterTypeProcessor.calibrate(result, pv);
 
         pv.setAcquisitionTime(result.acquisitionTime);
-        pv.setGenerationTime(result.generationTime);
+        pv.setGenerationTime(getGenerationTime(se));
         pv.setExpireMillis(result.expireMillis);
         return pv;
     }
 
     private void extractParameterEntry(ParameterEntry pe) {
-        ContainerParameterValue pv = extractParameter(pe.getParameter());
+        ContainerParameterValue pv = extractParameter(pe.getParameter(), pe);
         if (pv != null) {
             pv.setSequenceEntry(pe);
             pcontext.result.addTmParam(pv);
@@ -148,7 +154,7 @@ public class SequenceEntryProcessor {
         }
 
         pv.setAcquisitionTime(pcontext.result.acquisitionTime);
-        pv.setGenerationTime(pcontext.result.generationTime);
+        pv.setGenerationTime(getGenerationTime(pe));
         pv.setExpireMillis(pcontext.result.expireMillis);
         pv.setSequenceEntry(pe);
 
@@ -227,11 +233,68 @@ public class SequenceEntryProcessor {
                         "Cannot find a parameter with name '" + name + "' in nameSpace '" + nameSpace + "'");
             }
         }
-        ContainerParameterValue pv = extractParameter(p);
+        ContainerParameterValue pv = extractParameter(p, se);
         if (pv != null) {
             pv.setSequenceEntry(se);
             pcontext.result.addTmParam(pv);
         }
+    }
+
+    private long getGenerationTime(SequenceEntry se) {
+        TimeAssociation timeAssociation = null;
+        if (se != null && se.getTimeAssociation() != null) {
+            timeAssociation = se.getTimeAssociation();
+        } else if (pcontext.inheritedTimeAssociation != null) {
+            timeAssociation = pcontext.inheritedTimeAssociation;
+        }
+
+        if (timeAssociation == null) {
+            return pcontext.result.generationTime;
+        }
+
+        long generationTime = resolveTimeAssociation(timeAssociation);
+        return generationTime == TimeEncoding.INVALID_INSTANT ? pcontext.result.generationTime : generationTime;
+    }
+
+    private long resolveTimeAssociation(TimeAssociation timeAssociation) {
+        ParameterValue pv = pcontext.result.getParameterInstance(timeAssociation);
+        if (pv == null) {
+            log.warn("Could not resolve time association reference {}", timeAssociation);
+            return TimeEncoding.INVALID_INSTANT;
+        }
+
+        Value v = timeAssociation.useCalibratedValue() ? pv.getEngValue() : pv.getRawValue();
+        if (v == null || v.getType() != org.yamcs.protobuf.Yamcs.Value.Type.TIMESTAMP) {
+            log.warn("Time association reference {} resolved to non-timestamp value {}", timeAssociation,
+                    v == null ? null : v.getType());
+            return TimeEncoding.INVALID_INSTANT;
+        }
+
+        long generationTime = v.getTimestampValue();
+        if (timeAssociation.isInterpolateTime()
+                && pcontext.result.generationTime != TimeEncoding.INVALID_INSTANT
+                && pv.getGenerationTime() != TimeEncoding.INVALID_INSTANT) {
+            generationTime += pcontext.result.generationTime - pv.getGenerationTime();
+        }
+        if (timeAssociation.getOffset() != null) {
+            generationTime += toMillis(timeAssociation.getOffset(), timeAssociation.getUnit());
+        }
+        return generationTime;
+    }
+
+    private long toMillis(double offset, TimeAssociation.UnitType unit) {
+        if (unit == null) {
+            return Math.round(offset * 1000);
+        }
+        return switch (unit) {
+        case SI_NANOSECOND -> Math.round(offset / 1_000_000d);
+        case SI_MICROSECOND -> Math.round(offset / 1_000d);
+        case SI_MILLSECOND -> Math.round(offset);
+        case SI_SECOND -> Math.round(offset * 1000d);
+        case MINUTE -> Math.round(offset * 60_000d);
+        case DAY -> Math.round(offset * 86_400_000d);
+        case JULIAN_YEAR -> Math.round(offset * 31_557_600_000d);
+        };
     }
 
     private Value extract(ParameterType ptype) {

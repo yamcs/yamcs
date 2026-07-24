@@ -8,6 +8,11 @@ public final class Constants {
     public static final String ATTR_SIZE_IN_BITS = "sizeInBits";
     public static final String ATTR_ENCODING = "encoding";
     public static final String ATTR_ALIAS_NAME_SPACE = "aliasNameSpace";
+    public static final String ATTR_INSTANCE = "instance";
+    public static final String ATTR_USE_CALIBRATED_VALUE = "useCalibratedValue";
+    public static final String ATTR_INTERPOLATE_TIME = "interpolateTime";
+    public static final String ATTR_OFFSET = "offset";
+    public static final String ATTR_UNIT = "unit";
     
 
     public static final String ELEM_RELATIVE_TIME_PARAMETER_TYPE = "RelativeTimeParameterType";
@@ -18,6 +23,8 @@ public final class Constants {
     public static final String ELEM_AUTHOR_SET = "AuthorSet";
     public static final String ELEM_NOTE_SET = "NoteSet";
     public static final String ELEM_HISTORY_SET = "HistorySet";
+    public static final String ELEM_HISTORY = "History";
+    public static final String ELEM_AUTHOR = "Author";
 
     public static final String ELEM_TELEMTRY_META_DATA = "TelemetryMetaData";
     public static final String ELEM_PARAMETER_TYPE_SET = "ParameterTypeSet";

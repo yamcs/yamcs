@@ -21,6 +21,7 @@ import org.yamcs.simulator.PowerHandler;
 import org.yamcs.simulator.RCSHandler;
 import org.yamcs.simulator.SimulatorCcsdsPacket;
 import org.yamcs.simulator.TcpTmTcLink;
+import org.yamcs.simulator.UdpTmFrameLink;
 
 /**
  * PUS (Packet Utilisation Standard) simulator.
@@ -28,15 +29,19 @@ import org.yamcs.simulator.TcpTmTcLink;
  * Supports services:
  * <ul>
  * <li>ST[01] - request verification</li>
+ * <li>ST[02] - device access</li>
  * <li>ST[03] - housekeeping</li>
- * <li>ST[05] - event reporting - TODO</li>
+ * <li>ST[05] - event reporting</li>
  * <li>ST[06] - memory management - TODO</li>
  * <li>ST[09] - time management - only sending the time packet</li>
  * <li>ST[11] - time based schedule</li>
- * <li>ST[12] - on-board monitoring - TODO</li>
- * <li>ST[13] - large packet transfer - TODO</li>
- * <li>ST[15] - on-board storage and retrieval - TODO</li>
+ * <li>ST[12] - on-board monitoring - parameter monitoring subservice</li>
+ * <li>ST[13] - large packet transfer</li>
+ * <li>ST[14] - real-time forwarding control</li>
+ * <li>ST[15] - on-board storage and retrieval - core lifecycle only, see Pus15Service</li>
  * <li>ST[17] - test</li>
+ * <li>ST[19] - event-action</li>
+ * <li>ST[20] - on-board parameter management</li>
  * <li>ST[23] - file management - TODO</li>
  * 
  * <li>
@@ -65,6 +70,8 @@ public class PusSimulator extends AbstractSimulator {
 
     ScheduledThreadPoolExecutor executor;
     TcpTmTcLink tmLink;
+    UdpTmFrameLink tmFrameLink;
+    final PusTimeEncoding timeEncoding;
 
     FlightDataHandler flightDataHandler;
     DHSHandler dhsHandler;
@@ -72,83 +79,89 @@ public class PusSimulator extends AbstractSimulator {
     RCSHandler rcsHandler;
     EpsLvpduHandler epslvpduHandler;
     CfdpReceiver cfdpReceiver;
+    Pus2Service pus2Service;
+    Pus3Service pus3Service;
     Pus5Service pus5Service;
+    Pus9Service pus9Service;
     Pus11Service pus11Service;
+    Pus12Service pus12Service;
+    Pus13Service pus13Service;
+    Pus14Service pus14Service;
+    Pus15Service pus15Service;
     Pus17Service pus17Service;
+    Pus19Service pus19Service;
+    Pus20Service pus20Service;
 
     protected BlockingQueue<PusTcPacket> pendingCommands = new ArrayBlockingQueue<>(100);
 
     public PusSimulator(File dataDir) {
+        this(dataDir, PusTimeEncoding.DEFAULT);
+    }
+
+    public PusSimulator(File dataDir, PusTimeEncoding timeEncoding) {
+        this.timeEncoding = timeEncoding;
         powerDataHandler = new PowerHandler();
         rcsHandler = new RCSHandler();
         epslvpduHandler = new EpsLvpduHandler();
         flightDataHandler = new FlightDataHandler();
         dhsHandler = new DHSHandler();
         cfdpReceiver = new CfdpReceiver(this, dataDir);
+        pus2Service = new Pus2Service(this);
+        pus3Service = new Pus3Service(this, flightDataHandler, powerDataHandler,
+                dhsHandler, rcsHandler, epslvpduHandler);
         pus5Service = new Pus5Service(this);
+        pus9Service = new Pus9Service(this);
         pus11Service = new Pus11Service(this);
+        pus12Service = new Pus12Service(this);
+        pus13Service = new Pus13Service(this);
+        pus14Service = new Pus14Service(this);
+        pus15Service = new Pus15Service(this);
         pus17Service = new Pus17Service(this);
+        pus19Service = new Pus19Service(this);
+        pus20Service = new Pus20Service(this);
     }
 
     @Override
     protected void doStart() {
         executor = new ScheduledThreadPoolExecutor(1);
-        executor.scheduleAtFixedRate(() -> sendTimePacket(), 0, 4, TimeUnit.SECONDS);
-
-        executor.scheduleAtFixedRate(() -> sendFlightPacket(), 0, 200, TimeUnit.MILLISECONDS);
-        executor.scheduleAtFixedRate(() -> sendHkTm(), 0, 1000, TimeUnit.MILLISECONDS);
         // executor.scheduleAtFixedRate(() -> sendCfdp(), 0, 1000, TimeUnit.MILLISECONDS);
         executor.scheduleAtFixedRate(() -> executePendingCommands(), 0, 200, TimeUnit.MILLISECONDS);
 
+        pus3Service.start();
         pus5Service.start();
+        pus9Service.start();
         pus11Service.start();
-    }
-
-    private void sendFlightPacket() {
-        PusTmPacket packet = new PusTmPacket(MAIN_APID, 4 + flightDataHandler.dataSize(), PUS_TYPE_HK, 25);
-        ByteBuffer buffer = packet.getUserDataBuffer();
-        buffer.putInt(0);
-        flightDataHandler.fillPacket(buffer.slice());
-        transmitRealtimeTM(packet);
-    }
-
-    private void sendHkTm() {
-        try {
-            PusTmPacket packet = new PusTmPacket(MAIN_APID, 4 + powerDataHandler.dataSize(), PUS_TYPE_HK, 25);
-            ByteBuffer buffer = packet.getUserDataBuffer();
-            buffer.putInt(1);
-            powerDataHandler.fillPacket(buffer.slice());
-            transmitRealtimeTM(packet);
-
-            packet = new PusTmPacket(MAIN_APID, 4 + dhsHandler.dataSize(), PUS_TYPE_HK, 25);
-            buffer = packet.getUserDataBuffer();
-            buffer.putInt(2);
-            dhsHandler.fillPacket(buffer.slice());
-            transmitRealtimeTM(packet);
-
-            packet = new PusTmPacket(MAIN_APID, 4 + rcsHandler.dataSize(), PUS_TYPE_HK, 25);
-            buffer = packet.getUserDataBuffer();
-            buffer.putInt(3);
-            rcsHandler.fillPacket(buffer.slice());
-            transmitRealtimeTM(packet);
-
-            packet = new PusTmPacket(MAIN_APID, 4 + epslvpduHandler.dataSize(), PUS_TYPE_HK, 25);
-            buffer = packet.getUserDataBuffer();
-            buffer.putInt(4);
-            epslvpduHandler.fillPacket(buffer.slice());
-            transmitRealtimeTM(packet);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        pus12Service.start();
+        pus13Service.start();
     }
 
     void transmitRealtimeTM(PusTmPacket packet) {
         packet.fillChecksum();
-        tmLink.sendPacket(packet.getBytes());
+        // ST[15] storage is independent of ST[14] real-time forwarding: a packet can be stored
+        // on-board even if it's not forwarded live, so the store hook runs unconditionally.
+        pus15Service.submitToStores(packet);
+        if (!pus14Service.shouldForward(packet)) {
+            return; // blocked by ST[14] forwarding control configuration
+        }
+        sendPacket(packet);
     }
 
-    private void sendTimePacket() {
-        tmLink.sendImmediate(new PusTmTimePacket());
+    /**
+     * Re-transmits a packet previously captured by ST[15] packet-store retrieval (open retrieval /
+     * BTR). Bypasses {@link #transmitRealtimeTM} entirely -- the bytes are already checksummed and
+     * ST[14]'s forwarding gate must not re-block a dump that ground explicitly requested.
+     */
+    void sendStoredPacket(byte[] rawPacket) {
+        if (tmLink != null) {
+            tmLink.sendPacket(rawPacket);
+        }
+        if (tmFrameLink != null) {
+            tmFrameLink.queuePacket(0, rawPacket);
+        }
+    }
+
+    private void sendPacket(SimulatorCcsdsPacket packet) {
+        sendStoredPacket(packet.getBytes());
     }
 
     @Override
@@ -228,11 +241,20 @@ public class PusSimulator extends AbstractSimulator {
         PusTcPacket commandPacket;
         while ((commandPacket = pendingCommands.poll()) != null) {
             try {
-                log.info("Received PUS TC : {} (now: {})", commandPacket, PusTime.now());
+                log.info("Received PUS TC : {} (now: {})", commandPacket, timeEncoding.now());
                 switch (commandPacket.getType()) {
+                case 2 -> pus2Service.executeTc(commandPacket);
+                case 3 -> pus3Service.executeTc(commandPacket);
                 case 5 -> pus5Service.executeTc(commandPacket);
+                case 9 -> pus9Service.executeTc(commandPacket);
                 case 11 -> pus11Service.executeTc(commandPacket);
+                case 12 -> pus12Service.executeTc(commandPacket);
+                case 13 -> pus13Service.executeTc(commandPacket);
+                case 14 -> pus14Service.executeTc(commandPacket);
+                case 15 -> pus15Service.executeTc(commandPacket);
                 case 17 -> pus17Service.executeTc(commandPacket);
+                case 19 -> pus19Service.executeTc(commandPacket);
+                case 20 -> pus20Service.executeTc(commandPacket);
                 case 25 -> {
                     switch (commandPacket.getSubtype()) {
                     case 1 -> switchBatteryOn(commandPacket);
@@ -248,16 +270,20 @@ public class PusSimulator extends AbstractSimulator {
         }
     }
 
-    protected static PusTmPacket ack(PusTcPacket commandPacket, int subtype) {
-        PusTmPacket ackPacket = new PusTmPacket(MAIN_APID, 4, PUS_TYPE_ACK, subtype);
+    PusTmPacket newPacket(int type, int subtype, int userDataLength) {
+        return new PusTmPacket(MAIN_APID, userDataLength, type, subtype, timeEncoding);
+    }
+
+    protected PusTmPacket ack(PusTcPacket commandPacket, int subtype) {
+        PusTmPacket ackPacket = newPacket(PUS_TYPE_ACK, subtype, 4);
 
         ByteBuffer bb = ackPacket.getUserDataBuffer();
         bb.put(commandPacket.getBytes(), 0, 4);
         return ackPacket;
     }
 
-    public static PusTmPacket nack(PusTcPacket commandPacket, int subtype, int code) {
-        PusTmPacket ackPacket = new PusTmPacket(MAIN_APID, 8, PUS_TYPE_ACK, subtype);
+    public PusTmPacket nack(PusTcPacket commandPacket, int subtype, int code) {
+        PusTmPacket ackPacket = newPacket(PUS_TYPE_ACK, subtype, 8);
 
         ByteBuffer bb = ackPacket.getUserDataBuffer();
         bb.put(commandPacket.getBytes(), 0, 4);
@@ -278,6 +304,10 @@ public class PusSimulator extends AbstractSimulator {
     @Override
     protected void setLosLink(TcpTmTcLink losLink) {
         // ignore only send packets on tmlink
+    }
+
+    public void setTmFrameLink(UdpTmFrameLink tmFrameLink) {
+        this.tmFrameLink = tmFrameLink;
     }
 
     @Override

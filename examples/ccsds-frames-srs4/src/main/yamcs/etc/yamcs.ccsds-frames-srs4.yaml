@@ -1,0 +1,199 @@
+services:
+  - class: org.yamcs.archive.XtceTmRecorder
+  - class: org.yamcs.archive.ParameterRecorder
+  - class: org.yamcs.archive.AlarmRecorder
+  - class: org.yamcs.archive.EventRecorder
+  - class: org.yamcs.archive.ReplayServer
+  - class: org.yamcs.archive.CcsdsTmIndex
+    args:
+      streams:
+        - tm_realtime
+  - class: org.yamcs.parameter.SystemParametersService
+    args:
+      producers: ["jvm", "fs"]
+  - class: org.yamcs.ProcessorCreatorService
+    args:
+      name: "realtime"
+      type: "realtime"
+  - class: org.yamcs.archive.CommandHistoryRecorder
+  - class: org.yamcs.parameterarchive.ParameterArchive
+  - class: org.yamcs.timeline.TimelineService
+  - class: org.yamcs.time.TimeCorrelationService
+    name: tco0
+    args:
+       onboardDelay: 0.02
+       accuracy: 0.5
+       validity: 1.0
+       defaultTof: 0.001
+  - class: org.yamcs.pus.PusEventDecoder
+    args: 
+        eventIdParameter: /PUS5/event_id
+        eventTemplateFile: etc/events.json
+dataLinks:
+  # UDP is only the ground transport for this example. Inside each datagram the
+  # SRS4 provider emits: radio header + selected bus header + CCSDS TC frame.
+  - name: SRS4_TC_OUT
+    class: org.yamcs.tctm.ccsds.UdpTcFrameLink
+    host: localhost
+    port: 10058
+    spacecraftId: 0x01
+    maxFrameLength: 1024
+    errorDetection: NONE
+
+    frameEncapsulation:
+      class: org.yamcs.tctm.ccsds.srs4.Srs4TcFrameEncapsulator
+      args:
+        srs4:
+          radio:
+            enabled: true
+            # SRS4 ID is independent of the CCSDS spacecraftId above.
+            spacecraftId: 0xABCD
+
+          # Contingency CAN flow: CSP v1 header.
+          csp:
+            enabled: true
+            sourceAddress: 1
+            sourcePort: 10
+            priority: 0
+            hmac: false
+            xtea: false
+            rdp: false
+            # This controls only the CSP header bit. No CSP CRC trailer is added.
+            crc: false
+
+          # Nominal Ethernet flow: 20-byte IPv4 + 8-byte UDP header.
+          ipv4Udp:
+            enabled: true
+            sourceAddress: 192.0.2.1
+            sourcePort: 10000
+            ttl: 64
+            calculateUdpChecksum: true
+
+          # Used for internally generated COP-1 control frames. COP-1 is disabled
+          # below, but the dual-flow default is included for completeness.
+          controlFrameFlow: ETHERNET
+
+          # TC source endpoints above are fixed. Destinations vary with CCSDS VC.
+          virtualChannels:
+            - vcId: 0
+              csp:
+                destinationAddress: 2
+                destinationPort: 20
+              ipv4Udp:
+                destinationAddress: 192.0.2.2
+                destinationPort: 11000
+
+    virtualChannels:
+      - vcId: 0
+        service: PACKET
+        commandPostprocessorClassName: org.yamcs.pus.PusCommandPostprocessor
+        commandPostprocessorArgs:
+            errorDetection:
+                type: CRC-16-CCIIT
+            timeEncoding:
+                implicitPfield: false
+                pfield: 0x2f
+        stream: tc_realtime
+        useCop1: false
+
+  # Each UDP datagram must contain one complete SRS4-wrapped TM frame. The
+  # provider validates and removes radio and bus headers before TmFrameDecoder.
+  - name: SRS4_TM_IN
+    class: org.yamcs.tctm.ccsds.UdpTmFrameLink
+    port: 10057
+    frameType: TM
+    spacecraftId: 0x01
+    frameLength: 1115
+    errorDetection: NONE
+    goodFrameStream: good_frame_stream
+    badFrameStream: bad_frame_stream
+
+    frameDecapsulation:
+      class: org.yamcs.tctm.ccsds.srs4.Srs4TmFrameDecapsulator
+      args:
+        srs4:
+          radio:
+            enabled: true
+            spacecraftId: 0xABCD
+
+          # TM reverses the TC endpoint direction: the ground destination is
+          # fixed, while spacecraft sources are selected by CCSDS VC.
+          csp:
+            enabled: true
+            destinationAddress: 1
+            destinationPort: 10
+            priority: 0
+            hmac: false
+            xtea: false
+            rdp: false
+            crc: false
+
+          ipv4Udp:
+            enabled: true
+            destinationAddress: 192.0.2.1
+            destinationPort: 10000
+            ttl: 64
+
+          virtualChannels:
+            - vcId: 0
+              csp:
+                sourceAddress: 2
+                sourcePort: 20
+              ipv4Udp:
+                sourceAddress: 192.0.2.2
+                sourcePort: 11000
+
+    virtualChannels:
+      - vcId: 0
+        linkName: vc0
+        stream: tm_realtime
+        ocfPresent: false
+        service: PACKET
+        maxPacketLength: 2048
+        packetPreprocessorClassName: org.yamcs.pus.PusPacketPreprocessor
+        packetPreprocessorArgs:
+          pktTimeOffset: 13
+          timePktTimeOffset: 7
+          timeEncoding:
+              type: CUC
+              epoch: NONE           
+          tcoService: tco0
+        invalidPackets: DIVERT
+        invalidPacketsStream: invalid_tm_stream
+
+mdb:
+  - type: "xtce"
+    spec: "mdb/dt.xml"
+  - type: "xtce"
+    spec: "mdb/pus.xml"
+  - type: "xtce"
+    spec: "mdb/pus2.xml"
+  - type: "xtce"
+    spec: "mdb/pus3.xml"
+  - type: "xtce"
+    spec: "mdb/pus5.xml"
+  - type: "xtce"
+    spec: "mdb/pus9.xml"
+  - type: "xtce"
+    spec: "mdb/pus11.xml"
+  - type: "xtce"
+    spec: "mdb/pus12.xml"
+  - type: "xtce"
+    spec: "mdb/pus17.xml"
+  - type: "xtce"
+    spec: "mdb/landing.xml"
+
+streamConfig:
+  tm:
+    - name: tm_realtime
+      processor: realtime
+  invalidTm: "invalid_tm_stream"
+  cmdHist: ["cmdhist_realtime", "cmdhist_dump"]
+  event: ["events_realtime", "events_dump"]
+  param: ["pp_realtime", "sys_param", "proc_param"]
+  parameterAlarm: ["alarms_realtime"]
+  eventAlarm: ["event_alarms_realtime"]
+  tc:
+    - name: tc_realtime
+      processor: realtime
+  sqlFile: etc/extra_streams.sql

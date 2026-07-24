@@ -15,6 +15,7 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.tctm.AbstractCommandPostProcessor;
 import org.yamcs.tctm.AbstractPacketPreprocessor;
+import org.yamcs.tctm.AbstractPacketPreprocessor.TimeEpochs;
 import org.yamcs.tctm.CcsdsPacket;
 import org.yamcs.tctm.CcsdsSeqCountFiller;
 import org.yamcs.tctm.ErrorDetectionWordCalculator;
@@ -45,6 +46,9 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
 
     protected CucTimeEncoder timeEncoder;
     TimeCorrelationService tcoService;
+    TimeEpochs timeEpoch = TimeEpochs.NONE;
+    long customEpoch;
+    boolean customEpochIncludeLeapSecond;
 
     int pus11SourceId = 0;
     /**
@@ -92,6 +96,15 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
         boolean implicitPfield = config.getBoolean("implicitPfield", true);
         int pfield1 = config.getInt("pfield");
         int pfield2 = config.getInt("pfieldCont", -1);
+        timeEpoch = config.getEnum("epoch", TimeEpochs.class, TimeEpochs.NONE);
+        if (timeEpoch == TimeEpochs.CUSTOM) {
+            customEpochIncludeLeapSecond = config.getBoolean("timeIncludesLeapSeconds", true);
+            String epochs = config.getString("epochUTC");
+            customEpoch = TimeEncoding.parse(epochs);
+            if (!customEpochIncludeLeapSecond) {
+                customEpoch = TimeEncoding.toUnixMillisec(customEpoch);
+            }
+        }
 
         return new CucTimeEncoder(pfield1, pfield2, implicitPfield);
     }
@@ -179,7 +192,8 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
         scheduleTcPacket[offset++] = 1;
 
         if (tcoService == null) {
-            offset += timeEncoder.encode(scheduleTime, scheduleTcPacket, offset);
+            long shiftedScheduleTime = shiftToEpoch(scheduleTime);
+            offset += timeEncoder.encode(shiftedScheduleTime, scheduleTcPacket, offset);
         } else {
             long obt = tcoService.getObt(scheduleTime);
             if (obt == Long.MIN_VALUE) {
@@ -204,6 +218,29 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
         commandHistoryPublisher.publish(cmdId, "pus11-binary", scheduleTcPacket);
 
         return scheduleTcPacket;
+    }
+
+    private long shiftToEpoch(long t) {
+        switch (timeEpoch) {
+        case GPS:
+            return TimeEncoding.toGpsTimeMillisec(t);
+        case J2000:
+            return TimeEncoding.toJ2000Millisec(t);
+        case TAI:
+            return TimeEncoding.toTaiMillisec(t);
+        case UNIX:
+            return TimeEncoding.toUnixMillisec(t);
+        case CUSTOM:
+            if (customEpochIncludeLeapSecond) {
+                return t - customEpoch;
+            } else {
+                return TimeEncoding.toUnixMillisec(t) - customEpoch;
+            }
+        case NONE:
+            return t;
+        default:
+            throw new IllegalStateException("Unknown epoch " + timeEpoch);
+        }
     }
 
     @Override
