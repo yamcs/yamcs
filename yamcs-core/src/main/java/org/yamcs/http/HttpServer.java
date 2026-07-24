@@ -5,6 +5,7 @@ import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,6 +65,7 @@ import org.yamcs.http.auth.TokenStore;
 import org.yamcs.protobuf.CancelOptions;
 import org.yamcs.protobuf.Reply;
 import org.yamcs.utils.ExceptionUtil;
+import org.yamcs.utils.IpSubnetRuleUtils;
 
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.util.concurrent.FutureCallback;
@@ -87,6 +89,7 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.cors.CorsConfig;
 import io.netty.handler.codec.http.cors.CorsConfigBuilder;
+import io.netty.handler.ipfilter.IpFilterRule;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
@@ -128,6 +131,9 @@ public class HttpServer extends AbstractYamcsService {
     private boolean reverseLookup;
     public int maxAuthRequestsPerSecond;
     private int nThreads;
+
+    // Peers allowed to set X-Forwarded-Proto/X-Forwarded-Host/X-Forwarded-For
+    private List<IpFilterRule> trustedProxyRules = Collections.emptyList();
 
     // Cross-origin Resource Sharing (CORS) enables use of the HTTP API in non-official client web applications
     private CorsConfig corsConfig;
@@ -199,6 +205,8 @@ public class HttpServer extends AbstractYamcsService {
                 .withSpec(bindingSpec);
         spec.addOption("nThreads", OptionType.INTEGER).withDefault(0);
         spec.addOption("reverseLookup", OptionType.BOOLEAN).withDefault(false);
+        spec.addOption("trustedProxies", OptionType.LIST).withElementType(OptionType.STRING)
+                .withDefault(List.of("127.0.0.1", "::1"));
 
         // When using multiple bindings, best to avoid confusion and disable the top-level properties
         spec.mutuallyExclusive("address", "bindings");
@@ -252,6 +260,12 @@ public class HttpServer extends AbstractYamcsService {
 
         reverseLookup = config.getBoolean("reverseLookup");
         maxAuthRequestsPerSecond = config.getInt("maxAuthRequestsPerSecond");
+
+        try {
+            trustedProxyRules = IpSubnetRuleUtils.parseRules(config.<String> getList("trustedProxies"));
+        } catch (UnknownHostException e) {
+            throw new InitException("Invalid trustedProxies entry: " + e.getMessage());
+        }
 
         if (config.containsKey("cors")) {
             YConfiguration ycors = config.getConfig("cors");
@@ -484,6 +498,39 @@ public class HttpServer extends AbstractYamcsService {
 
     public boolean getReverseLookup() {
         return reverseLookup;
+    }
+
+    /**
+     * Returns whether {@code remoteAddress} is a configured trusted reverse proxy, i.e. whether
+     * X-Forwarded-Proto/X-Forwarded-Host/X-Forwarded-For headers coming from it should be honored. Headers from any
+     * other peer are ignored, since a direct, unproxied client could otherwise forge them.
+     */
+    public boolean isTrustedProxy(SocketAddress remoteAddress) {
+        if (!(remoteAddress instanceof InetSocketAddress)) {
+            return false;
+        }
+        return IpSubnetRuleUtils.matches(trustedProxyRules, (InetSocketAddress) remoteAddress);
+    }
+
+    /**
+     * Walks a (possibly multi-hop) X-Forwarded-For header from right to left, peeling off trailing entries that
+     * themselves match a trusted proxy rule, and returns the first entry (from the right) that doesn't -- i.e. the
+     * closest hop this server cannot vouch for itself, which is either the original client or an untrusted
+     * intermediary. This correctly supports chains of multiple trusted proxies (e.g. CDN -> load balancer -> Yamcs)
+     * without trusting entries a client could have pre-pended itself.
+     * <p>
+     * Only call this once the immediate peer has already been established as a trusted proxy via
+     * {@link #isTrustedProxy(SocketAddress)}.
+     */
+    public String peelForwardedFor(String forwardedForHeader) {
+        return IpSubnetRuleUtils.peelForwardedFor(trustedProxyRules, forwardedForHeader);
+    }
+
+    /**
+     * @return {@code true} if {@link #peelForwardedFor} would discard part of this header due to an untrusted hop.
+     */
+    public boolean hasUntrustedForwardedForHop(String forwardedForHeader) {
+        return IpSubnetRuleUtils.hasUntrustedHop(trustedProxyRules, forwardedForHeader);
     }
 
     public int getMaxAuthRequestsPerSecond() {
