@@ -23,8 +23,8 @@ import {
   YamcsService,
 } from '@yamcs/webapp-sdk';
 import { Subscription } from 'rxjs';
-import { OpiDisplayHistoricDataProvider } from './OpiDisplayHistoricDataProvider';
 import { Viewer } from '../Viewer';
+import { OpiDisplayHistoricDataProvider } from './OpiDisplayHistoricDataProvider';
 
 // Legacy namespace. New projects should not make use of this.
 const OPS_NAMESPACE = 'MDB:OPS Name';
@@ -315,9 +315,6 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
         this.yamcs.processor!,
         parameter,
         { type: 'STRING', stringValue: String(value) },
-      )
-      .then(() =>
-        this.messageService.showInfo(`Parameter ${pvName} set to ${value}`),
       )
       .catch((err) => this.messageService.showError(err));
   }
