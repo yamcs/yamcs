@@ -6,6 +6,7 @@ import { ActivatedRoute } from '@angular/router';
 import {
   ActionInfo,
   BaseComponent,
+  Link,
   LinkEvent,
   LinkSubscription,
   WebappSdkModule,
@@ -103,7 +104,12 @@ export class LinkListComponent
     // before we get an update via websocket.
     this.yamcs.yamcsClient.getLinks(this.yamcs.instance!).then((links) => {
       for (const link of links) {
-        const linkItem = { link, hasChildren: false, expanded: false };
+        const linkItem = {
+          link,
+          hasChildren: false,
+          expanded: false,
+          depth: 0,
+        };
         this.itemsByName[link.name] = linkItem;
       }
       for (const link of links) {
@@ -113,6 +119,9 @@ export class LinkListComponent
           parent.hasChildren = true;
           this.itemsByName[link.name].parentLink = parent.link;
         }
+      }
+      for (const item of Object.values(this.itemsByName)) {
+        item.depth = this.computeDepth(item.link);
       }
 
       this.updateDataSource();
@@ -203,6 +212,7 @@ export class LinkListComponent
           link: linkInfo,
           hasChildren: false,
           expanded: false,
+          depth: 0,
         };
         this.itemsByName[linkInfo.name] = linkItem;
       }
@@ -229,22 +239,47 @@ export class LinkListComponent
       delete this.itemsByName[itemName];
     }
 
+    for (const item of Object.values(this.itemsByName)) {
+      item.depth = this.computeDepth(item.link);
+    }
+
     this.updateDataSource();
 
     // Needed to show table updates in combination with trackBy
     this.changeDetection.detectChanges();
   }
 
-  private updateDataSource() {
-    const data = Object.values(this.itemsByName).filter((item) => {
-      const parentName = item.link.parentName;
-      if (!parentName) {
-        return true;
-      } else {
-        const parent = this.itemsByName[parentName];
-        return parent.expanded;
+  // Walks the actual parent/child chain (not the dotted name) so
+  // indentation stays correct regardless of a link's naming convention.
+  private computeDepth(link: Link): number {
+    let depth = 0;
+    let parentName = link.parentName;
+    while (parentName) {
+      depth++;
+      parentName = this.itemsByName[parentName]?.link.parentName;
+    }
+    return depth;
+  }
+
+  // A row is visible only if every ancestor up the chain is expanded —
+  // not just its immediate parent — so collapsing a node also hides
+  // deeper descendants whose own `expanded` flag was never touched.
+  private isVisible(item: LinkItem): boolean {
+    let parentName = item.link.parentName;
+    while (parentName) {
+      const parent = this.itemsByName[parentName];
+      if (!parent.expanded) {
+        return false;
       }
-    });
+      parentName = parent.link.parentName;
+    }
+    return true;
+  }
+
+  private updateDataSource() {
+    const data = Object.values(this.itemsByName).filter((item) =>
+      this.isVisible(item),
+    );
     data.sort((x, y) => {
       const xParts = x.link.name.split('.');
       const yParts = y.link.name.split('.');
