@@ -2,11 +2,11 @@ package org.yamcs.cascading;
 
 import static org.yamcs.cmdhistory.CommandHistoryPublisher.AcknowledgeSent_KEY;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.ArrayList;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -17,8 +17,8 @@ import org.yamcs.YamcsServer;
 import org.yamcs.client.Command;
 import org.yamcs.client.CommandListener;
 import org.yamcs.client.CommandSubscription;
+import org.yamcs.client.UnauthorizedException;
 import org.yamcs.client.YamcsClient;
-import org.yamcs.client.base.WebSocketClient;
 import org.yamcs.client.mdb.MissionDatabaseClient;
 import org.yamcs.client.processor.ProcessorClient;
 import org.yamcs.client.processor.ProcessorClient.CommandBuilder;
@@ -57,6 +57,7 @@ public class YamcsTcLink extends AbstractTcDataLink {
         this.parentLink = parentLink;
     }
 
+    @Override
     public void init(String instance, String name, YConfiguration config) {
         super.init(instance, name, config);
         this.cmdOrigin = YamcsServer.getServer().getServerId() + "-" + instance + "-" + this.linkName;
@@ -165,6 +166,7 @@ public class YamcsTcLink extends AbstractTcDataLink {
             if (t != null) {
                 log.warn("Error sending command ", t);
                 failedCommand(pc.getCommandId(), t.getMessage());
+                reconnectIfUnauthorized(t);
             } else {
                 dataOut(1, size);
                 commandHistoryPublisher.publishAck(pc.getCommandId(), AcknowledgeSent_KEY, time, AckStatus.OK);
@@ -225,12 +227,22 @@ public class YamcsTcLink extends AbstractTcDataLink {
             if (t != null) {
                 log.warn("Error sending command ", t);
                 failedCommand(pc.getCommandId(), t.getMessage());
+                reconnectIfUnauthorized(t);
             } else {
                 commandHistoryPublisher.publishAck(pc.getCommandId(), AcknowledgeSent_KEY, time, AckStatus.OK);
             }
         });
 
         return true;
+    }
+
+    /**
+     * The upstream session can die independently of the WebSocket transport
+     */
+    private void reconnectIfUnauthorized(Throwable t) {
+        if (t instanceof UnauthorizedException || t.getCause() instanceof UnauthorizedException) {
+            parentLink.forceReconnect();
+        }
     }
 
     private Object toClientValue(ArgumentValue value) {
@@ -377,6 +389,7 @@ public class YamcsTcLink extends AbstractTcDataLink {
                 commandUpdated(command, cmdHistEntry);
             }
 
+            @Override
             public void onError(Throwable t) {
                 eventProducer.sendWarning("Got error when subscribign to commanding: " + t);
             }

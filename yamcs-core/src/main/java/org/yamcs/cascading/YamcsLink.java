@@ -352,6 +352,16 @@ public class YamcsLink extends AbstractLink implements AggregatedDataLink, Conne
         }
     }
 
+    /**
+     * Forces a reconnection to the upstream Yamcs server.
+     */
+    void forceReconnect() {
+        WebSocketClient wsclient = yclient.getWebSocketClient();
+        if (wsclient != null && wsclient.isConnected()) {
+            wsclient.disconnect();
+        }
+    }
+
     YamcsClient getClient() {
         return yclient;
     }

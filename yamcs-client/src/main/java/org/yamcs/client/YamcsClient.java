@@ -260,8 +260,9 @@ public class YamcsClient {
         Credentials creds = baseClient.getCredentials();
         if (creds == null) {
             connect(null, false);
-        } else if (creds instanceof OAuth2Credentials) {
-            String accessToken = ((OAuth2Credentials) creds).getAccessToken();
+        } else if (creds instanceof OAuth2Credentials oauth2) {
+            baseClient.refreshIfNeeded(oauth2); // Avoid handing the server an already-stale token
+            String accessToken = ((OAuth2Credentials) baseClient.getCredentials()).getAccessToken();
             String authorization = "Bearer " + accessToken;
             connect(authorization, true);
         } else if (creds instanceof BasicAuthCredentials) {

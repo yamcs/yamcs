@@ -14,7 +14,12 @@ import java.util.Map.Entry;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManagerFactory;
@@ -69,7 +74,14 @@ import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
 public class HttpClient {
 
+    private static final Logger log = Logger.getLogger(HttpClient.class.getName());
+
     public static final String MT_PROTOBUF = "application/protobuf";
+
+    // Refresh an OAuth2 access token once its remaining lifetime drops to this
+    // fraction of its original time-to-live.
+    private static final double TOKEN_REFRESH_MARGIN_FRACTION = 0.2;
+    private static final long TOKEN_REFRESH_POLL_INTERVAL_MS = 10_000;
 
     private String sendMediaType = MT_PROTOBUF;
     private String acceptMediaType = MT_PROTOBUF;
@@ -84,8 +96,11 @@ public class HttpClient {
     private int maxResponseLength = 1024 * 1024;// max length of the expected response
 
     private String tokenUrl;
-    private Credentials credentials;
+    private volatile Credentials credentials;
     private String userAgent;
+
+    private ScheduledExecutorService refreshExecutor;
+    private ScheduledFuture<?> refreshTask;
 
     public synchronized void login(String tokenUrl, String username, char[] password) throws ClientException {
         this.tokenUrl = tokenUrl;
@@ -96,6 +111,7 @@ public class HttpClient {
 
         try {
             credentials = requestTokens(tokenUrl, attrs).get();
+            maybeStartTokenRefresh();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } catch (ExecutionException e) {
@@ -118,6 +134,7 @@ public class HttpClient {
 
         try {
             credentials = requestTokens(tokenUrl, attrs).get();
+            maybeStartTokenRefresh();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } catch (ExecutionException e) {
@@ -168,12 +185,58 @@ public class HttpClient {
         }
     }
 
+    /**
+     * Refreshes the given credentials if they are already expired.
+     */
+    public synchronized void refreshIfNeeded(OAuth2Credentials credentials) throws ClientException {
+        if (credentials.isExpired()) {
+            refreshAccessToken(credentials);
+        }
+    }
+
+    /**
+     * Starts a background task that periodically checks whether the current OAuth2 access token is close to expiring,
+     * and refreshes it proactively if so.
+     */
+    private synchronized void maybeStartTokenRefresh() {
+        if (!(credentials instanceof OAuth2Credentials)) {
+            return;
+        }
+        if (refreshTask != null) {
+            return; // Already running
+        }
+        if (refreshExecutor == null) {
+            refreshExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
+                Thread t = new Thread(r, "yamcs-client-token-refresh");
+                t.setDaemon(true);
+                return t;
+            });
+        }
+        refreshTask = refreshExecutor.scheduleWithFixedDelay(this::checkAndRefreshToken,
+                TOKEN_REFRESH_POLL_INTERVAL_MS, TOKEN_REFRESH_POLL_INTERVAL_MS, TimeUnit.MILLISECONDS);
+    }
+
+    private void checkAndRefreshToken() {
+        try {
+            Credentials creds = credentials;
+            if (creds instanceof OAuth2Credentials oauth2 && oauth2.isExpiringWithin(TOKEN_REFRESH_MARGIN_FRACTION)) {
+                refreshAccessToken(oauth2);
+                log.fine("Proactively refreshed access token");
+            }
+        } catch (ClientException e) {
+            log.log(Level.WARNING, "Proactive token refresh failed; will retry", e);
+        } catch (RuntimeException e) {
+            log.log(Level.SEVERE, "Unexpected error during proactive token refresh", e);
+        }
+    }
+
     public Credentials getCredentials() {
         return credentials;
     }
 
     public void setCredentials(Credentials credentials) {
         this.credentials = credentials;
+        maybeStartTokenRefresh();
     }
 
     public void setUserAgent(String userAgent) {
@@ -412,7 +475,7 @@ public class HttpClient {
                             p.addLast(sslCtx.newHandler(ch.alloc()));
                         }
                         p.addLast(new HttpClientCodec());
-                        p.addLast(new HttpContentDecompressor());
+                        p.addLast(new HttpContentDecompressor(0));
                         p.addLast(channelHandler);
                     }
                 });
@@ -521,7 +584,17 @@ public class HttpClient {
         this.acceptMediaType = acceptMediaType;
     }
 
-    public void close() {
+    public synchronized void close() {
+        if (refreshTask != null) {
+            refreshTask.cancel(false);
+            refreshTask = null;
+        }
+        if (refreshExecutor != null) {
+            // Daemon threads, so a caller that forgets to close() (e.g. a leaked YamcsClient)
+            // is no worse off than it already is due to the Netty EventLoopGroup below.
+            refreshExecutor.shutdownNow();
+            refreshExecutor = null;
+        }
         if (group != null) {
             group.shutdownGracefully(0, 5, TimeUnit.SECONDS);
         }
@@ -557,7 +630,6 @@ public class HttpClient {
 
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-            // cause.printStackTrace();
             exception = cause;
             ctx.close();
             cf.completeExceptionally(cause);

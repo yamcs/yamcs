@@ -27,6 +27,7 @@ public class OAuth2Credentials implements Credentials {
     private String accessToken;
     private String refreshToken;
     private Date expiry;
+    private long ttlMillis;
 
     // We keep this around for when we need to acquire a new access token
     // (SPNEGO connections do not get refreshed using oauth, so that the TGT can be reconfirmed)
@@ -65,6 +66,18 @@ public class OAuth2Credentials implements Credentials {
         return expiry != null && new Date().getTime() >= expiry.getTime();
     }
 
+    /**
+     * Returns true if the remaining lifetime of this token is at or below the given fraction of its original
+     * time-to-live.
+     */
+    public boolean isExpiringWithin(double fraction) {
+        if (expiry == null) {
+            return false;
+        }
+        long remaining = expiry.getTime() - new Date().getTime();
+        return remaining <= ttlMillis * fraction;
+    }
+
     @Override
     public void modifyRequest(HttpRequest request) {
         request.headers().set(HttpHeaderNames.AUTHORIZATION, "Bearer " + accessToken);
@@ -77,7 +90,8 @@ public class OAuth2Credentials implements Credentials {
         var credentials = new OAuth2Credentials(accessToken, refreshToken);
 
         int ttl = Integer.valueOf(map.get("expires_in"));
-        credentials.expiry = new Date(new Date().getTime() + (ttl * 1000));
+        credentials.ttlMillis = ttl * 1000L;
+        credentials.expiry = new Date(new Date().getTime() + credentials.ttlMillis);
         credentials.tokenResponse = json;
         return credentials;
     }

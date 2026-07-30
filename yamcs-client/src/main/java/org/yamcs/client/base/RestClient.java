@@ -8,6 +8,7 @@ import java.util.concurrent.CompletableFuture;
 
 import org.yamcs.client.ClientException;
 import org.yamcs.client.Credentials;
+import org.yamcs.client.OAuth2Credentials;
 
 import com.google.protobuf.Message;
 
@@ -305,6 +306,10 @@ public class RestClient {
 
     public void setCredentials(Credentials credentials) {
         httpClient.setCredentials(credentials);
+    }
+
+    public void refreshIfNeeded(OAuth2Credentials credentials) throws ClientException {
+        httpClient.refreshIfNeeded(credentials);
     }
 
     /**
