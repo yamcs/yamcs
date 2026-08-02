@@ -70,6 +70,30 @@ jobs:
         run: cd yamcs-web/src/main/webapp; npm run build
       - name: Check formatting
         run: cd yamcs-web/src/main/webapp; npm run prettier:check
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+      - name: Cache browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ hashFiles('web-tests/pom.xml') }}
+      - name: Build Yamcs
+        run: mvn -B --no-transfer-progress -pl web-tests -am -DskipTests install
+      # Playwright otherwise fetches every browser on first use (~1G). The tests
+      # only drive Chromium, so install just that, and let the test run itself
+      # work with what is already there.
+      - name: Install Chromium
+        run: mvn -B --no-transfer-progress -pl web-tests exec:java -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.classpathScope=test -Dexec.args="install --with-deps chromium"
+      - name: Run web UI tests
+        run: mvn -B --no-transfer-progress -Dsurefire.useFile=false -Dplaywright.skipBrowserDownload=1 -pl web-tests test
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: web-test-results
+          path: web-tests/target/surefire-reports/*
 
   docs:
     name: Documentation

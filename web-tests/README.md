@@ -44,5 +44,7 @@ on first use into `~/.cache/ms-playwright` and should be cached between runs:
         path: ~/.cache/ms-playwright
         key: playwright-${{ hashFiles('web-tests/pom.xml') }}
 
-Set `-Dplaywright.skipBrowserDownload=1` to force use of an already-installed
-browser instead.
+By default Playwright downloads a matching browser. If one is already installed
+(for example via `PLAYWRIGHT_BROWSERS_PATH`), reuse it instead with:
+
+    mvn -pl web-tests test -Dplaywright.skipBrowserDownload=1

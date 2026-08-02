@@ -21,7 +21,12 @@
 		<javaModuleName>org.yamcs.web.tests</javaModuleName>
 		<webdir>${basedir}/../yamcs-web/src/main/webapp/dist/webapp</webdir>
 		<playwrightVersion>1.56.0</playwrightVersion>
-		<playwright.skipBrowserDownload>1</playwright.skipBrowserDownload>
+		<!--
+			Override with 1 to reuse a browser that is already installed, rather
+			than letting Playwright fetch every browser it supports. CI does this,
+			after installing Chromium on its own.
+		-->
+		<playwright.skipBrowserDownload>0</playwright.skipBrowserDownload>
 		<sonar.skip>true</sonar.skip>
 		<!-- Skipped unless the webapp has been compiled (see profile below) -->
 		<skipTests>true</skipTests>
