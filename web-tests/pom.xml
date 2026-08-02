@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.yamcs</groupId>
+		<artifactId>yamcs</artifactId>
+		<version>5.13.3-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>web-tests</artifactId>
+	<packaging>jar</packaging>
+
+	<name>Yamcs :: Web Tests</name>
+	<description>
+		End-to-end tests for the web interface, driven by Playwright.
+	</description>
+
+	<properties>
+		<javaModuleName>org.yamcs.web.tests</javaModuleName>
+		<webdir>${basedir}/../yamcs-web/src/main/webapp/dist/webapp</webdir>
+		<playwrightVersion>1.56.0</playwrightVersion>
+		<playwright.skipBrowserDownload>1</playwright.skipBrowserDownload>
+		<sonar.skip>true</sonar.skip>
+		<!-- Skipped unless the webapp has been compiled (see profile below) -->
+		<skipTests>true</skipTests>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.yamcs</groupId>
+			<artifactId>yamcs-core</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.yamcs</groupId>
+			<artifactId>yamcs-web</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.microsoft.playwright</groupId>
+			<artifactId>playwright</artifactId>
+			<version>${playwrightVersion}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<profiles>
+		<!--
+			Only run these tests when the webapp has actually been compiled.
+			This mirrors the activation trick already used by the yamcs-web module,
+			and keeps 'mvn test' a no-op for contributors (and CI jobs) that did
+			not run 'npm run build'.
+		-->
+		<profile>
+			<id>webapp-built</id>
+			<activation>
+				<file>
+					<exists>${basedir}/../yamcs-web/src/main/webapp/dist/webapp</exists>
+				</file>
+			</activation>
+			<properties>
+				<skipTests>false</skipTests>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<configuration>
+							<forkCount>1</forkCount>
+							<reuseForks>false</reuseForks>
+							<environmentVariables>
+								<!--
+									Honour a browser that is already present (see PLAYWRIGHT_BROWSERS_PATH).
+									Set to 0 to let Playwright fetch its own matching build.
+								-->
+								<PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD>${playwright.skipBrowserDownload}</PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD>
+							</environmentVariables>
+							<systemPropertyVariables>
+								<yamcs.web.staticRoot>${webdir}</yamcs.web.staticRoot>
+								<java.util.logging.config.file>
+									${project.build.directory}/test-classes/logging.properties
+								</java.util.logging.config.file>
+							</systemPropertyVariables>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+</project>
