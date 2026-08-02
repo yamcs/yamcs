@@ -1,6 +1,5 @@
 package org.yamcs.web.tests;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.AfterAll;
@@ -39,34 +38,13 @@ public abstract class AbstractWebTest {
         yamcs.start();
 
         playwright = Playwright.create();
-        browser = playwright.chromium().launch(launchOptions());
-    }
 
-    /**
-     * Use a preinstalled browser when one is available, so that CI does not have to
-     * download one on every run.
-     */
-    private static BrowserType.LaunchOptions launchOptions() {
-        var options = new BrowserType.LaunchOptions().setHeadless(true);
-        var browsersPath = System.getenv("PLAYWRIGHT_BROWSERS_PATH");
-        if (browsersPath != null) {
-            var dir = Path.of(browsersPath);
-            if (Files.isDirectory(dir)) {
-                try (var stream = Files.list(dir)) {
-                    var chrome = stream
-                            .filter(p -> p.getFileName().toString().startsWith("chromium-"))
-                            .map(p -> p.resolve("chrome-linux").resolve("chrome"))
-                            .filter(Files::isExecutable)
-                            .findFirst();
-                    if (chrome.isPresent()) {
-                        options.setExecutablePath(chrome.get());
-                    }
-                } catch (Exception e) {
-                    // Fall back to the bundled browser
-                }
-            }
-        }
-        return options;
+        // Playwright locates a browser itself, honouring PLAYWRIGHT_BROWSERS_PATH,
+        // and matches the build to the driver version. Do not point it at an
+        // executable here: picking a browser by hand bypasses that check, and a
+        // mismatched build fails in ways that are tedious to diagnose.
+        browser = playwright.chromium().launch(
+                new BrowserType.LaunchOptions().setHeadless(true));
     }
 
     @AfterAll
