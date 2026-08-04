@@ -223,12 +223,15 @@ public class YamcsTcLink extends AbstractTcDataLink {
         // we take the time now because after the command is issued, the current time will be after the upstream
         // Queued/Released timestamps
         long time = getCurrentTime();
-        cb.issue().whenComplete((c, t) -> {
+        var cf = cb.issue();
+        var size = cb.getSizeOfTheLastCommandIssued();
+        cf.whenComplete((c, t) -> {
             if (t != null) {
                 log.warn("Error sending command ", t);
                 failedCommand(pc.getCommandId(), t.getMessage());
                 reconnectIfUnauthorized(t);
             } else {
+                dataOut(1, size);
                 commandHistoryPublisher.publishAck(pc.getCommandId(), AcknowledgeSent_KEY, time, AckStatus.OK);
             }
         });
