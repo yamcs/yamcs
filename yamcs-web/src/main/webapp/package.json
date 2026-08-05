@@ -12,7 +12,9 @@
     "publish-lib": "cd dist/webapp-sdk; npm publish",
     "watch-lib": "ng build webapp-sdk --watch --configuration development",
     "prettier:check": "prettier --check .",
-    "prettier:write": "prettier --check --write ."
+    "prettier:write": "prettier --check --write .",
+    "e2e": "playwright test --config e2e/playwright.config.ts",
+    "e2e:ui": "playwright test --config e2e/playwright.config.ts --ui"
   },
   "private": true,
   "dependencies": {
@@ -44,6 +46,8 @@
   },
   "devDependencies": {
     "@angular/build": "^22.0.4",
+    "@playwright/test": "^1.56.0",
+    "@types/node": "^22.10.0",
     "@angular/cli": "^22.0.4",
     "@angular/compiler-cli": "^22.0.4",
     "ng-packagr": "^22.0.0",

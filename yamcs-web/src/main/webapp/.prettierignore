@@ -5,3 +5,5 @@
 **/parser.js
 **/parser.terms.js
 **/package-lock.json
+**/test-results/
+**/playwright-report/
