@@ -70,6 +70,32 @@ jobs:
         run: cd yamcs-web/src/main/webapp; npm run build
       - name: Check formatting
         run: cd yamcs-web/src/main/webapp; npm run prettier:check
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+      # The e2e tests drive a real Yamcs, booted through 'yamcs:run' against the
+      # webapp built above. That resolves the server artifacts from the local
+      # repository, so they have to be installed first.
+      - name: Build Yamcs
+        run: mvn -B --no-transfer-progress -DskipTests install
+      - name: Cache browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ hashFiles('yamcs-web/src/main/webapp/package-lock.json') }}
+      # Only Chromium is used. '--with-deps' pulls in its system libraries
+      # rather than assuming the runner provides them.
+      - name: Install Chromium
+        run: cd yamcs-web/src/main/webapp; npx playwright install --with-deps chromium
+      - name: Run web UI tests
+        run: cd yamcs-web/src/main/webapp; npm run e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: yamcs-web/src/main/webapp/e2e/playwright-report/
 
   docs:
     name: Documentation
