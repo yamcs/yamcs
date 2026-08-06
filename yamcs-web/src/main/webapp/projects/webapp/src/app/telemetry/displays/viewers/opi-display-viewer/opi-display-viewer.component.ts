@@ -195,6 +195,10 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
         this.frameInner.nativeElement.style.backgroundColor = msg.color;
         break;
 
+      case 'scale':
+        this.currentScale = msg.scale;
+        break;
+
       case 'loadImage':
         this.serveImage(msg.url);
         break;
@@ -232,7 +236,11 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
 
   private openDisplay(path: string, args?: Record<string, string>) {
     let url: string;
-    const qs = `?c=${this.yamcs.context}&range=${this.yamcs.getTimeRange()}`;
+    let qs = `?c=${this.yamcs.context}&range=${this.yamcs.getTimeRange()}`;
+    const zoom = this.route.snapshot.queryParams['zoom'];
+    if (zoom) {
+      qs += `&zoom=${encodeURIComponent(zoom)}`;
+    }
     const currentFolder = this.relPrefix.slice(this.absPrefix.length);
     if (path.startsWith('/')) {
       url = `/telemetry/displays/files${path}${qs}`;
@@ -527,6 +535,7 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
         displayArgs[param.substring(ARGS_PREFIX.length)] = queryParams[param];
       }
     }
+    const zoomMode = queryParams['zoom'] === 'fit' ? 'fit' : undefined;
 
     const [xml] = await Promise.all([
       fetch(objectUrl, { credentials: 'same-origin' }).then((r) =>
@@ -543,6 +552,11 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
       imagesPrefix: this.baseHref + 'media/',
       mediaPrefix: this.baseHref + 'media/',
       args: displayArgs,
+      // Applied by the sandbox before its first repaint, so the display
+      // never flashes at actual size before jumping to the fitted scale.
+      zoomMode,
+      containerWidth: this.viewerContainerEl?.clientWidth,
+      containerHeight: this.viewerContainerEl?.clientHeight,
       config: {
         legacyFontSizing: opiConfig.legacyFontSizing ?? false,
         disconnectedColor: opiConfig.disconnectedColor,
@@ -570,16 +584,19 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
   public zoomIn() {
     this.currentScale += 0.1;
     this.postToSandbox({ type: 'setScale', scale: this.currentScale });
+    this.updateZoomQueryParam(null);
   }
 
   public zoomOut() {
     this.currentScale -= 0.1;
     this.postToSandbox({ type: 'setScale', scale: this.currentScale });
+    this.updateZoomQueryParam(null);
   }
 
   public resetZoom() {
     this.currentScale = 1;
     this.postToSandbox({ type: 'setScale', scale: this.currentScale });
+    this.updateZoomQueryParam(null);
   }
 
   public fitZoom() {
@@ -589,7 +606,17 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
         containerWidth: this.viewerContainerEl.clientWidth,
         containerHeight: this.viewerContainerEl.clientHeight,
       });
+      this.updateZoomQueryParam('fit');
     }
+  }
+
+  private updateZoomQueryParam(zoom: 'fit' | null) {
+    this.router.navigate([], {
+      replaceUrl: true,
+      relativeTo: this.route,
+      queryParams: { zoom },
+      queryParamsHandling: 'merge',
+    });
   }
 
   public setAutoScaleOverride(value: AutoScaleOverride) {
