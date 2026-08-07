@@ -32,22 +32,29 @@ built-in `guest` user is a superuser. There is no login step.
 
 ## Running
 
-Requires the Yamcs artifacts in the local Maven repository:
+Needs Java 17+, Maven, and Node 24 — the versions CI pins.
+
+First, the Yamcs artifacts have to be in the local Maven repository. From the
+**repository root**, not this directory:
 
     mvn -DskipTests install
 
 Then, from `yamcs-web/src/main/webapp`:
 
     npm install
-    npx playwright install chromium
+    npx playwright install --with-deps chromium
     npm run build
     npm run e2e
+
+`--with-deps` installs Chromium's system libraries as well as the browser. It
+needs sudo, and is only meaningful on Linux; on macOS the flag is accepted and
+does nothing, so the same line works everywhere.
 
 `npm run build` matters. The `-Dyamcs.web.staticRoot` override only wins while
 `dist/webapp` exists; without it Yamcs quietly serves the copy baked into the
 `yamcs-web` jar at package time, and the suite passes against a webapp that may
 bear no relation to the working tree. `global-setup.ts` turns that silent
-fallback into an explicit failure, but a *stale* `dist/webapp` is still tested
+fallback into an explicit failure, but a _stale_ `dist/webapp` is still tested
 as-is — rebuild before trusting a green run.
 
 Useful variants:
@@ -56,13 +63,23 @@ Useful variants:
     npm run e2e -- --headed         # watch a real browser
     npm run e2e -- --debug          # step through with the inspector
 
-A server already listening on 8090 is reused outside CI, which makes for a
-much faster edit-run loop: leave `./run-example.sh simulation` running in one
-terminal and re-run the tests in another. In CI a dedicated server is always
-started.
+A server already listening on 8090 is reused outside CI, which makes for a much
+faster edit-run loop: leave one running in a separate terminal and re-run the
+tests as often as you like. It has to be started with the same data and cache
+overrides the config uses, or it will try the non-existent
+`/storage/yamcs-data`:
+
+    ./run-example.sh simulation \
+        --data-dir yamcs-web/src/main/webapp/e2e/.cache/data \
+        --cache-dir yamcs-web/src/main/webapp/e2e/.cache/cache
+
+`global-setup.ts` checks that whatever answers on the port really is the
+simulation example, so an unrelated Yamcs left running fails with a clear
+message rather than producing baffling results. In CI a dedicated server is
+always started.
 
 ## Layout
 
     playwright.config.ts   Server lifecycle, browser and reporter configuration
-    global-setup.ts        Waits for the simulator instance to be RUNNING
+    global-setup.ts        Preflight checks and instance readiness
     tests/                 Specs

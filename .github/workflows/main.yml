@@ -95,7 +95,10 @@ jobs:
         if: failure()
         with:
           name: playwright-report
-          path: yamcs-web/src/main/webapp/e2e/playwright-report/
+          # test-results holds the traces and screenshots the report links to
+          path: |
+            yamcs-web/src/main/webapp/e2e/playwright-report/
+            yamcs-web/src/main/webapp/e2e/test-results/
 
   docs:
     name: Documentation

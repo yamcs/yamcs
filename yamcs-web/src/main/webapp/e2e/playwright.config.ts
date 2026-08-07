@@ -13,6 +13,10 @@ const BASE_URL = `http://localhost:${PORT}`;
 // extra arguments, so the run is redirected into a gitignored scratch dir.
 const RUNTIME_DIR = path.join(__dirname, '.cache');
 
+// The command runs through a shell, so any path interpolated into it has to
+// survive spaces in the checkout location.
+const shellQuote = (value: string) => `'${value.replace(/'/g, `'\\''`)}'`;
+
 export default defineConfig({
   testDir: './tests',
   // Keep run artifacts inside e2e/ rather than wherever the runner was invoked
@@ -40,8 +44,8 @@ export default defineConfig({
     // this serves whatever 'npm run build' last produced.
     command:
       `./run-example.sh simulation` +
-      ` --data-dir ${path.join(RUNTIME_DIR, 'data')}` +
-      ` --cache-dir ${path.join(RUNTIME_DIR, 'cache')}`,
+      ` --data-dir ${shellQuote(path.join(RUNTIME_DIR, 'data'))}` +
+      ` --cache-dir ${shellQuote(path.join(RUNTIME_DIR, 'cache'))}`,
     cwd: REPO_ROOT,
     url: `${BASE_URL}/api`,
     reuseExistingServer: !process.env.CI,
