@@ -40,6 +40,7 @@
     <module>replication2</module>
     <module>replication3</module>
     <module>simulation</module>
+    <module>simulator-hires</module>
     <module>templates</module>
   </modules>
 

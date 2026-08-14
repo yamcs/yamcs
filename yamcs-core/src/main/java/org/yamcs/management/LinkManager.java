@@ -269,7 +269,7 @@ public class LinkManager {
                 ? tmPacket.getRootContainer().getQualifiedName()
                 : null;
         t = new Tuple(StandardTupleDefinitions.TM, new Object[] {
-                tmPacket.getGenerationTime(),
+                tmPacket.getHresGenerationTime(),
                 tmPacket.getSeqCount(),
                 tmPacket.getReceptionTime(),
                 tmPacket.getStatus(),

@@ -15,6 +15,7 @@ import java.util.Set;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorConfig;
 import org.yamcs.StandardTupleDefinitions;
+import org.yamcs.time.Instant;
 import org.yamcs.api.HttpBody;
 import org.yamcs.api.Observer;
 import org.yamcs.archive.GPBHelper;
@@ -529,7 +530,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
                 public void onTuple(Stream stream, Tuple tuple) {
 
                     byte[] pktData = (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
-                    long genTime = (Long) tuple.getColumn(GENTIME_COLUMN);
+                    Instant genTime = tuple.getHresTimestampColumn(GENTIME_COLUMN);
                     long receptionTime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_RECTIME_COLUMN);
                     int seqNumber = (Integer) tuple.getColumn(StandardTupleDefinitions.SEQNUM_COLUMN);
                     String link = tuple.getColumn(StandardTupleDefinitions.TM_LINK_COLUMN);

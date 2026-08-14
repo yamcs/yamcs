@@ -4,6 +4,7 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.YamcsServer;
 import org.yamcs.archive.EventRecorder;
 import org.yamcs.yarch.protobuf.Db.Event;
+import org.yamcs.time.Instant;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.Stream;
@@ -34,7 +35,7 @@ public class StreamEventProducer extends AbstractEventProducer {
 
     @Override
     public void sendEvent(Event event) {
-        Tuple t = new Tuple(tdef, new Object[] { event.getGenerationTime(),
+        Tuple t = new Tuple(tdef, new Object[] { Instant.get(event.getGenerationTime()),
                 event.getSource(), event.getSeqNumber(), event });
 
         realtimeEventStream.emitTuple(t);
