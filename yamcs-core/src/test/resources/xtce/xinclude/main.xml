@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SpaceSystem name="xinclude-test"
+<SpaceSystem name="spacecraft"
     xmlns="http://www.omg.org/spec/XTCE/20180204"
     xmlns:xi="http://www.w3.org/2001/XInclude">
-    <xi:include href="subsystem.xml"/>
+    <xi:include href="tm.xml"/>
+    <xi:include href="tc.xml"/>
+    <xi:include href="tse.xml"/>
 </SpaceSystem>

@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SpaceSystem name="subsys1" xmlns="http://www.omg.org/spec/XTCE/20180204">
+<SpaceSystem name="TM" xmlns="http://www.omg.org/spec/XTCE/20180204">
     <TelemetryMetaData>
         <ParameterTypeSet>
             <IntegerParameterType name="uint16" signed="false">
                 <IntegerDataEncoding sizeInBits="16" encoding="unsigned"/>
             </IntegerParameterType>
+            <FloatParameterType name="float32">
+                <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985"/>
+            </FloatParameterType>
         </ParameterTypeSet>
         <ParameterSet>
-            <Parameter name="param1" parameterTypeRef="uint16"/>
+            <Parameter name="voltage" parameterTypeRef="float32"/>
+            <Parameter name="packetId" parameterTypeRef="uint16"/>
         </ParameterSet>
     </TelemetryMetaData>
 </SpaceSystem>
