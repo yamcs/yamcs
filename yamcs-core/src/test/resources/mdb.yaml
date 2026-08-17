@@ -118,3 +118,8 @@ ArrayInArrayArgCommandTest:
     - type: xtce
       args:
           file: "src/test/resources/xtce/array-in-array-arg.xml"
+
+xtce-xinclude:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/xinclude/main.xml"

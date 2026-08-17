@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem name="subsys1" xmlns="http://www.omg.org/spec/XTCE/20180204">
+    <TelemetryMetaData>
+        <ParameterTypeSet>
+            <IntegerParameterType name="uint16" signed="false">
+                <IntegerDataEncoding sizeInBits="16" encoding="unsigned"/>
+            </IntegerParameterType>
+        </ParameterTypeSet>
+        <ParameterSet>
+            <Parameter name="param1" parameterTypeRef="uint16"/>
+        </ParameterSet>
+    </TelemetryMetaData>
+</SpaceSystem>
