@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem name="TSE" xmlns="http://www.omg.org/spec/XTCE/20180204">
+    <TelemetryMetaData>
+        <ParameterTypeSet>
+            <FloatParameterType name="float64">
+                <FloatDataEncoding sizeInBits="64" encoding="IEEE754_1985"/>
+            </FloatParameterType>
+        </ParameterTypeSet>
+        <ParameterSet>
+            <Parameter name="temperature" parameterTypeRef="float64"/>
+        </ParameterSet>
+    </TelemetryMetaData>
+</SpaceSystem>

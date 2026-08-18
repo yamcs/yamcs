@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem name="TC" xmlns="http://www.omg.org/spec/XTCE/20180204">
+    <CommandMetaData>
+        <ArgumentTypeSet>
+            <IntegerArgumentType name="uint8" signed="false">
+                <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+            </IntegerArgumentType>
+        </ArgumentTypeSet>
+        <MetaCommandSet>
+            <MetaCommand name="SWITCH_ON">
+                <ArgumentList>
+                    <Argument name="channel" argumentTypeRef="uint8"/>
+                </ArgumentList>
+            </MetaCommand>
+        </MetaCommandSet>
+    </CommandMetaData>
+</SpaceSystem>

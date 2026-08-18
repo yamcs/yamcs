@@ -1,5 +1,7 @@
 package org.yamcs.xtce.xml;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -8,6 +10,8 @@ import java.io.InputStream;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
@@ -15,6 +19,14 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 /**
  * Abstract class for XML readers
@@ -28,8 +40,35 @@ public class AbstractStaxReader implements AutoCloseable {
     
     protected AbstractStaxReader(String fileName) throws IOException, XMLStreamException {
         this.fileName = fileName;
-        in = new FileInputStream(new File(fileName));
+        in = resolveXIncludes(fileName);
         xmlEventReader = initEventReader(in);
+    }
+
+    /**
+     * Pre-processes the XML file through a namespace-aware DOM parser with XInclude support,
+     * resolving any {@code xi:include} directives before the StAX reader sees the document.
+     * Files without {@code xi:include} elements produce identical output.
+     */
+    private InputStream resolveXIncludes(String fileName) throws IOException {
+        try {
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            dbf.setNamespaceAware(true);
+            dbf.setXIncludeAware(true);
+            dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+
+            Document doc = dbf.newDocumentBuilder().parse(new File(fileName));
+
+            TransformerFactory tf = TransformerFactory.newInstance();
+            tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+            Transformer transformer = tf.newTransformer();
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            transformer.transform(new DOMSource(doc), new StreamResult(baos));
+            return new ByteArrayInputStream(baos.toByteArray());
+        } catch (ParserConfigurationException | SAXException | TransformerException e) {
+            throw new IOException("Failed to resolve XIncludes in " + fileName, e);
+        }
     }
 
     private XMLEventReader initEventReader(InputStream in) throws XMLStreamException {
