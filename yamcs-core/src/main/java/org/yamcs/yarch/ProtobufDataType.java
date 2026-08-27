@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import org.yamcs.ConfigurationException;
 
 import com.google.protobuf.Descriptors.Descriptor;
+import com.google.protobuf.MessageLite;
 
 public class ProtobufDataType extends DataType {
 
@@ -63,9 +64,15 @@ private final String className;
     
     public Descriptor getDescriptor() {
         try {
-            Class<?> c = Class.forName(className);
+            Class<?> c = Class.forName(className, false, ProtobufDataType.class.getClassLoader());
+            if (!MessageLite.class.isAssignableFrom(c)) {
+                throw new ConfigurationException(
+                        "Class " + className + " is not a protobuf message type");
+            }
             Method m = c.getMethod("getDescriptor");
             return (Descriptor) m.invoke(null);
+        } catch (ConfigurationException e) {
+            throw e;
         } catch (Exception e) {
             throw new ConfigurationException("cannot get the descriptor for class "+className, e);
         }
