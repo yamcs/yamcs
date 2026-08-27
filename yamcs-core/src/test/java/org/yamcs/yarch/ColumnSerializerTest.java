@@ -2,6 +2,7 @@ package org.yamcs.yarch;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -68,6 +69,13 @@ public class ColumnSerializerTest {
         assertEquals(expected.getGenerationTime(), actual.getGenerationTime());
         assertEquals(expected.getEngValue(), actual.getEngValue());
 
+    }
+
+    @Test
+    public void testNonProtobufClassRejected() {
+        ColumnDefinition cd = new ColumnDefinition("test", DataType.protobuf("java.lang.Runtime"));
+        assertThrows(IllegalArgumentException.class,
+                () -> ColumnSerializerFactory.getProtobufSerializer(cd));
     }
 
     @Test

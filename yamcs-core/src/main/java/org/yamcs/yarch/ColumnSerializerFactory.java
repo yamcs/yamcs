@@ -211,7 +211,11 @@ public class ColumnSerializerFactory {
             }
             Class<?> c;
             try {
-                c = Class.forName(className);
+                c = Class.forName(className, false, ColumnSerializerFactory.class.getClassLoader());
+                if (!MessageLite.class.isAssignableFrom(c)) {
+                    throw new IllegalArgumentException("Class '" + className + "' required to deserialize column '"
+                            + colName + "' is not a protobuf message type");
+                }
                 Method newBuilderMethod = c.getMethod("newBuilder");
                 pcs = new ProtobufColumnSerializer(newBuilderMethod);
                 protoSerialziers.put(className, pcs);
