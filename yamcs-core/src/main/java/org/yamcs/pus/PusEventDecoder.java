@@ -3,7 +3,6 @@ package org.yamcs.pus;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -14,8 +13,10 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.InitException;
 import org.yamcs.ProcessorConfig;
 import org.yamcs.Spec;
+import org.yamcs.Spec.OptionType;
 import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.StreamConfig;
+import org.yamcs.StreamConfig.TmStreamConfigEntry;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.archive.EventRecorder;
@@ -39,10 +40,6 @@ import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.protobuf.Db.Event;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
-
-
-import org.yamcs.Spec.OptionType;
-import org.yamcs.StreamConfig.TmStreamConfigEntry;
 
 /**
  * Generates Yamcs events from PUS event packets (PUS service 5).
@@ -247,6 +244,7 @@ public class PusEventDecoder extends AbstractYamcsService {
             } else {
                 Event ev = Event.newBuilder()
                         .setType(eventId)
+                        .setSource("APID_" + apid)
                         .setSeverity(getSeverity(subtype))
                         .setGenerationTime(gentime)
                         .setSeqNumber(seqCount)
@@ -325,7 +323,7 @@ public class PusEventDecoder extends AbstractYamcsService {
                 }
 
                 @Override
-                public ParameterValue resolve(Parameter p) {             
+                public ParameterValue resolve(Parameter p) {
                     return params.getLastInserted(p);
                 }
             });
