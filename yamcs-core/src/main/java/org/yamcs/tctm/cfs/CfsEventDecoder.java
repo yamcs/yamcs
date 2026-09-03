@@ -3,6 +3,7 @@ package org.yamcs.tctm.cfs;
 import static org.yamcs.StandardTupleDefinitions.GENTIME_COLUMN;
 import static org.yamcs.StandardTupleDefinitions.TM_RECTIME_COLUMN;
 
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
@@ -56,6 +57,9 @@ public class CfsEventDecoder extends AbstractYamcsService implements StreamSubsc
     Integer appNameMax;
     Integer eventMsgMax;
 
+    // 12 bytes header + appNameMax + eventId(2) + eventType(2) + spacecraftId(4) + processorId(4)
+    int minPacketLength;
+
     @Override
     public Spec getSpec() {
         Spec spec = new Spec();
@@ -75,6 +79,7 @@ public class CfsEventDecoder extends AbstractYamcsService implements StreamSubsc
 
         appNameMax = config.getInt("appNameMax");
         eventMsgMax = config.getInt("eventMsgMax");
+        minPacketLength = 12 + appNameMax + 12;
 
         if (config.containsKey("streams")) {
             streamNames = config.getList("streams");
@@ -99,6 +104,7 @@ public class CfsEventDecoder extends AbstractYamcsService implements StreamSubsc
         List<Integer> l = config.getList("msgIds");
         l.forEach(x -> msgIds.add(x));
         eventProducer = EventProducerFactory.getEventProducer(yamcsInstance);
+        eventProducer.setSource(serviceName);
     }
 
     @Override
@@ -127,22 +133,43 @@ public class CfsEventDecoder extends AbstractYamcsService implements StreamSubsc
     @Override
     public void onTuple(Stream stream, Tuple t) {
         byte[] packet = (byte[]) t.getColumn("packet");
+        if (packet.length < 2) {
+            // too short to read the message id used for filtering
+            return;
+        }
 
         int msgId = ByteArrayUtils.decodeUnsignedShort(packet, 0);
 
         if (msgIds.contains(msgId)) {
+            if (packet.length < minPacketLength) {
+                eventProducer.sendWarning("SHORT_PACKET", String.format(
+                        "Ignoring event packet for msgId 0x%X: length %d shorter than minimum %d",
+                        msgId, packet.length, minPacketLength));
+                return;
+            }
             long rectime = (Long) t.getColumn(TM_RECTIME_COLUMN);
             long gentime = (Long) t.getColumn(GENTIME_COLUMN);
 
             try {
                 processPacket(rectime, gentime, packet);
+            } catch (BufferUnderflowException e) {
+                eventProducer.sendWarning("SHORT_PACKET", String.format(
+                        "Truncated event packet for msgId 0x%X, length %d", msgId, packet.length));
             } catch (Exception e) {
-                log.warn("Failed to process event packet", e);
+                log.error("Failed to process event packet", e);
             }
         }
     }
 
     private void processPacket(long rectime, long gentime, byte[] packet) {
+        // the CCSDS primary header is big endian
+        int expectedLength = ByteArrayUtils.decodeUnsignedShort(packet, 4) + 7;
+        if (packet.length < expectedLength) {
+            eventProducer.sendWarning("SHORT_PACKET", String.format(
+                    "Event packet length %d shorter than %d declared in the CCSDS primary header",
+                    packet.length, expectedLength));
+        }
+
         ByteBuffer buf = ByteBuffer.wrap(packet);
         buf.order(byteOrder);
         buf.position(12);
