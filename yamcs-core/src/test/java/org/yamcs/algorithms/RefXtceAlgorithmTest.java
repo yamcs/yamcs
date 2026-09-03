@@ -102,6 +102,21 @@ public class RefXtceAlgorithmTest {
     }
 
     @Test
+    public void testAggregateOutput() {
+        List<ParameterValue> params = subscribe(mdb.getParameter("/RefXtce/aggregate_result"));
+
+        ByteBuffer buf = ByteBuffer.allocate(6);
+        buf.putFloat(0.5f);
+        buf.putShort((short) 10);
+        mpp.injectPacket(buf.array(), "/RefXtce/packet2");
+
+        assertEquals(1, params.size());
+        AggregateValue v = (AggregateValue) params.get(0).getEngValue();
+        assertEquals(1.0f, v.getMemberValue("m1").getFloatValue(), 1e-5);
+        assertEquals(11, v.getMemberValue("m2").getUint32Value());
+    }
+
+    @Test
     public void testFlipFlop() {
         Parameter param11 = mdb.getParameter("/RefXtce/param11");
         List<ParameterValue> params = subscribe(param11);

@@ -24,6 +24,7 @@ import org.yamcs.mdb.DataEncodingDecoder;
 import org.yamcs.mdb.ParameterTypeProcessor;
 import org.yamcs.mdb.ParameterTypeUtils;
 import org.yamcs.mdb.ProcessingContext;
+import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.RawEngValue;
 import org.yamcs.parameter.Value;
@@ -32,6 +33,7 @@ import org.yamcs.time.Instant;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.AbsoluteTimeDataType;
+import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.BinaryParameterType;
 import org.yamcs.xtce.BooleanParameterType;
@@ -499,9 +501,42 @@ public class ScriptAlgorithmExecutor extends AbstractAlgorithmExecutor {
             } else {
                 return null;
             }
+        } else if (ptype instanceof AggregateParameterType aggregateType) {
+            if (value instanceof Map<?, ?> map) {
+                return getAggregateValue(aggregateType, map);
+            } else {
+                return null;
+            }
         } else {
             throw new IllegalStateException("Unknown parameter type '" + ptype + "'");
         }
+    }
+
+    /**
+     * converts a map (e.g. a JavaScript object) to an {@link AggregateValue}.
+     * <p>
+     * All members of the aggregate type have to be present in the map and convertible to the member type; extra map
+     * keys not corresponding to a member are ignored. Nested aggregates are converted recursively.
+     *
+     * @return the aggregate value or null if one of the members is missing or cannot be converted
+     */
+    private static AggregateValue getAggregateValue(AggregateParameterType ptype, Map<?, ?> map) {
+        var memberNames = ptype.getMemberNames();
+        AggregateValue v = new AggregateValue(memberNames);
+
+        for (int i = 0; i < memberNames.size(); i++) {
+            String name = memberNames.get(i);
+            Object memberValue = map.get(name);
+            if (memberValue == null) {
+                return null;
+            }
+            Value mv = getEngValue((ParameterType) ptype.getMember(name).getType(), memberValue);
+            if (mv == null) {
+                return null;
+            }
+            v.setMemberValue(name, mv);
+        }
+        return v;
     }
 
 }
