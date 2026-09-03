@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE SpaceSystem [
+	<!ENTITY a "aaaaaaaaaa">
+	<!ENTITY b "&a;&a;&a;&a;&a;&a;&a;&a;&a;&a;">
+]>
+<SpaceSystem name="DtdTest"
+	xmlns="http://www.omg.org/spec/XTCE/20180204"
+	shortDescription="&b;">
+</SpaceSystem>
