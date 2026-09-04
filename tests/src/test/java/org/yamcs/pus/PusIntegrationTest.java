@@ -86,6 +86,9 @@ public class PusIntegrationTest {
 
         assertEquals(EventSeverity.INFO, ev.getSeverity());
         assertEquals("this is 2 and 5", ev.getMessage());
+        // the source must always be set, otherwise event consumers break
+        // (sorting on an undefined source crashed the web interface, #1058)
+        assertEquals("PusEventDecoder", ev.getSource());
 
         tmLink.generateEvent1(2, (short) 2, (short) 5);
         ev = eventCaptor.expectTimely();
