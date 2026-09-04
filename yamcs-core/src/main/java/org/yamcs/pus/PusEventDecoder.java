@@ -71,11 +71,13 @@ public class PusEventDecoder extends AbstractYamcsService {
     List<StreamEventDecoder> decoders;
     Parameter eventIdParameter;
     EventFormatter eventFormatter;
+    String eventSource;
 
     @Override
     public void init(String yamcsInstance, String serviceName, YConfiguration config) throws InitException {
         super.init(yamcsInstance, serviceName, config);
         mdb = MdbFactory.getInstance(yamcsInstance);
+        eventSource = config.getString("eventSource", "PusEventDecoder");
         String idfqn = config.getString("eventIdParameter");
         eventIdParameter = mdb.getParameter(idfqn);
         if (eventIdParameter == null) {
@@ -246,6 +248,7 @@ public class PusEventDecoder extends AbstractYamcsService {
                 log.warn("No template found for message apid={}, eventId={}", apid, eventId);
             } else {
                 Event ev = Event.newBuilder()
+                        .setSource(eventSource)
                         .setType(eventId)
                         .setSeverity(getSeverity(subtype))
                         .setGenerationTime(gentime)
