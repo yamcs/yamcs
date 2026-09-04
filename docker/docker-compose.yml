@@ -1,0 +1,20 @@
+# Containerised development build and run: builds the workspace in a Maven
+# container and starts one of the examples, without requiring a local JDK,
+# Maven or npm. Works with docker compose and rootless podman-compose.
+services:
+  yamcs:
+    image: docker.io/library/maven:3.9.9-eclipse-temurin-17
+    hostname: yamcs
+    container_name: yamcs-dev
+    working_dir: /yamcs
+    command: bash -c "mvn install -DskipTests && ./run-example.sh ${EXAMPLE:-simulation}"
+    volumes:
+      - ../:/yamcs
+      # cache the Maven repository between runs
+      - m2:/root/.m2
+    ports:
+      # bound to localhost: the examples run without authentication
+      - "127.0.0.1:8090:8090"
+
+volumes:
+  m2:
