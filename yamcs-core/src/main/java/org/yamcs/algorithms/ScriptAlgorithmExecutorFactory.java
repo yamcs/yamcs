@@ -100,7 +100,7 @@ public class ScriptAlgorithmExecutorFactory implements AlgorithmExecutorFactory 
 
     @Override
     public ScriptAlgorithmExecutor makeExecutor(CustomAlgorithm calg, AlgorithmExecutionContext execCtx) {
-        String functionName = calg.getQualifiedName().replace("/", "_");
+        String functionName = sanitizeFunctionName(calg.getQualifiedName());
         String functionScript = generateFunctionCode(functionName, calg);
         log.debug("Evaluating script:\n{}", functionScript);
         try {
@@ -114,6 +114,14 @@ public class ScriptAlgorithmExecutorFactory implements AlgorithmExecutorFactory 
             throw new AlgorithmException(msg);
         }
         return new ScriptAlgorithmExecutor(calg, (Invocable) scriptEngine, functionName, functionScript, execCtx);
+    }
+
+    /**
+     * Converts an algorithm qualified name into a valid script function name by replacing any character that is not a
+     * letter, digit or underscore (path separators, but also spaces, dashes, etc.) with an underscore.
+     */
+    static String sanitizeFunctionName(String qualifiedName) {
+        return qualifiedName.replaceAll("[^A-Za-z0-9_]", "_");
     }
 
     public static String generateFunctionCode(String functionName, CustomAlgorithm algorithmDef) {
