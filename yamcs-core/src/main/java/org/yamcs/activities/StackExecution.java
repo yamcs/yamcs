@@ -67,6 +67,10 @@ public class StackExecution extends ActivityExecution {
         var histManager = processor.getCommandHistoryManager();
 
         var bytes = bucket.getObjectAsync(stackName).get();
+        if (bytes == null) {
+            throw new IllegalArgumentException(
+                    "No stack named '" + stackName + "' in bucket '" + bucket.getName() + "'");
+        }
         var json = new String(bytes, StandardCharsets.UTF_8);
         var stack = Stack.fromJson(json, mdb);
 
