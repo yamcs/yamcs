@@ -1,5 +1,5 @@
 import { LineStyle } from '@fqqb/timeline';
-import { Parameter } from '@yamcs/webapp-sdk';
+import { EnumValue, Parameter } from '@yamcs/webapp-sdk';
 
 export type ValueType = 'raw' | 'engineering';
 
@@ -10,4 +10,10 @@ export interface TraceConfig {
   lineStyle: LineStyle;
   fill: boolean;
   valueType: ValueType;
+
+  /**
+   * Enum value table for an enum-typed engineering trace, used to render
+   * ordinal↔label on the axis, tooltip and legend. Absent for numeric traces.
+   */
+  enumValues?: EnumValue[];
 }

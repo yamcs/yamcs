@@ -38,6 +38,7 @@ export class ParameterChartTooltipComponent {
     legend: Legend,
     trace2point: Map<string, LinePoint>,
     labelFormatter: (value: number) => string,
+    traceIds?: string[],
   ) {
     this.date.set(date);
 
@@ -45,6 +46,10 @@ export class ParameterChartTooltipComponent {
 
     const legendItems = legend.getItems();
     for (const legendItem of legendItems) {
+      // Restrict to the traces of the hovered band (stacked layout).
+      if (traceIds && !traceIds.includes(legendItem.traceId)) {
+        continue;
+      }
       let value: string | null = null;
       const point = trace2point.get(legendItem.traceId);
       if (point && point.y !== null) {

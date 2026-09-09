@@ -96,7 +96,7 @@ public class ArgumentReference extends NameReference {
             path = null;
         } else {
             argName = argRef.substring(0, pos);
-            path = AggregateTypeUtil.parseReference(argRef.substring(pos));
+            path = AggregateTypeUtil.parseReference(argRef.substring(pos + 1));
         }
         MetaCommand tmpcmd = metaCmd;
         Argument arg = null;

@@ -1,0 +1,20 @@
+table.enum-key {
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+table.enum-key td {
+  padding: 1px 0;
+  vertical-align: top;
+}
+
+table.enum-key .enum-code {
+  padding-right: 8px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: #888;
+}
+
+table.enum-key .enum-label {
+  word-break: break-word;
+}

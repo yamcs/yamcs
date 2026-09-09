@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem name="PUS" xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
+	<Header validationStatus="Unknown" version="1.0" date="2020-07-01T16:48:10Z" />
+	<TelemetryMetaData>
+		<ParameterTypeSet>
+			<EnumeratedParameterType name="start-failure-code">
+				<IntegerDataEncoding sizeInBits="32" />
+				<EnumerationList>
+					<Enumeration label="INVALID_VOLTAGE_NUM" value="1" />
+				</EnumerationList>
+			</EnumeratedParameterType>
+			<EnumeratedParameterType name="completion-failure-code">
+				<IntegerDataEncoding sizeInBits="32" />
+				<EnumerationList>
+					<Enumeration label="COMPLETION_ERROR_0" value="0" />
+					<Enumeration label="COMPLETION_ERROR_1" value="1" />
+					<Enumeration label="COMPLETION_ERROR_2" value="2" />
+					<Enumeration label="COMPLETION_ERROR_3" value="3" />
+				</EnumerationList>
+			</EnumeratedParameterType>
+
+		</ParameterTypeSet>
+		<ParameterSet>
+			<Parameter parameterTypeRef="/dt/uint11" name="apid" />
+			<Parameter parameterTypeRef="/dt/uint14" name="seqcount" />
+			<Parameter parameterTypeRef="/dt/uint8" name="type" />
+			<Parameter parameterTypeRef="/dt/uint8" name="subtype" />
+			<Parameter parameterTypeRef="/dt/uint16" name="counter" />
+			<Parameter parameterTypeRef="/dt/uint16" name="destination" />
+			<Parameter parameterTypeRef="/dt/uint8" name="time-rate" />
+			<Parameter parameterTypeRef="/dt/uint8" name="time-type" />
+			<Parameter parameterTypeRef="/dt/uint32" name="obt-coarse" />
+			<Parameter parameterTypeRef="/dt/uint24" name="obt-fine" />
+			<Parameter parameterTypeRef="/dt/uint32" name="hkid" />
+			<Parameter parameterTypeRef="/dt/uint11" name="tc-ack-apid" />
+			<Parameter parameterTypeRef="/dt/uint14" name="tc-ack-seq" />
+			<Parameter parameterTypeRef="/dt/uint32" name="tc-ack-acceptance-failure-code" />
+			<Parameter parameterTypeRef="start-failure-code" name="tc-ack-start-failure-code" />
+			<Parameter parameterTypeRef="completion-failure-code" name="tc-ack-completion-failure-code" />
+		</ParameterSet>
+		<ContainerSet>
+			<SequenceContainer name="ccsds">
+				<EntryList>
+					<ParameterRefEntry parameterRef="apid">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>5</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="seqcount">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>18</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+				</EntryList>
+			</SequenceContainer>
+			<SequenceContainer name="pus-time">
+				<EntryList>
+					<ParameterRefEntry parameterRef="time-rate">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>48</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="time-type" />
+					<ParameterRefEntry parameterRef="obt-coarse" />
+					<ParameterRefEntry parameterRef="obt-fine" />
+				</EntryList>
+				<BaseContainer containerRef="ccsds">
+					<RestrictionCriteria>
+						<Comparison parameterRef="apid" comparisonOperator="==" value="0" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="pus-tm">
+				<EntryList>
+					<ParameterRefEntry parameterRef="type">
+						<LocationInContainerInBits referenceLocation="containerStart">
+							<FixedValue>56</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="subtype" />
+					<ParameterRefEntry parameterRef="counter" />
+					<ParameterRefEntry parameterRef="destination" />
+					<ParameterRefEntry parameterRef="time-type" />
+					<ParameterRefEntry parameterRef="obt-coarse" />
+					<ParameterRefEntry parameterRef="obt-fine" />
+				</EntryList>
+				<BaseContainer containerRef="ccsds">
+					<RestrictionCriteria>
+						<Comparison parameterRef="apid" comparisonOperator="!=" value="0" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+
+			<SequenceContainer name="pus-tc-ack">
+				<EntryList>
+					<ParameterRefEntry parameterRef="tc-ack-apid">
+						<LocationInContainerInBits>
+							<FixedValue>5</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="tc-ack-seq">
+						<LocationInContainerInBits>
+							<FixedValue>2</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+				</EntryList>
+				<BaseContainer containerRef="pus-tm">
+					<RestrictionCriteria>
+						<ComparisonList>
+							<Comparison parameterRef="type" comparisonOperator="==" value="1" />
+						</ComparisonList>
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="pus-tc-ack-acceptance-failure">
+				<EntryList>
+					<ParameterRefEntry parameterRef="tc-ack-acceptance-failure-code" />
+				</EntryList>
+				<BaseContainer containerRef="pus-tc-ack">
+					<RestrictionCriteria>
+						<ComparisonList>
+							<Comparison parameterRef="subtype" comparisonOperator="==" value="2" />
+						</ComparisonList>
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="pus-tc-ack-start-failure">
+				<EntryList>
+					<ParameterRefEntry parameterRef="tc-ack-start-failure-code" />
+				</EntryList>
+				<BaseContainer containerRef="pus-tc-ack">
+					<RestrictionCriteria>
+						<ComparisonList>
+							<Comparison parameterRef="subtype" comparisonOperator="==" value="4" />
+						</ComparisonList>
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="pus-tc-ack-completion-failure">
+				<EntryList>
+					<ParameterRefEntry parameterRef="tc-ack-completion-failure-code" />
+				</EntryList>
+				<BaseContainer containerRef="pus-tc-ack">
+					<RestrictionCriteria>
+						<ComparisonList>
+							<Comparison parameterRef="subtype" comparisonOperator="==" value="8" />
+						</ComparisonList>
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="hk">
+				<EntryList>
+				</EntryList>
+				<BaseContainer containerRef="pus-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="type" comparisonOperator="==" value="3" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="hk25">
+				<AncillaryDataSet>
+					<AncillaryData name="Yamcs" mimeType="text/plain">UseAsArchivingPartition</AncillaryData>
+				</AncillaryDataSet>
+				<EntryList>
+					<ParameterRefEntry parameterRef="hkid" />
+				</EntryList>
+				<BaseContainer containerRef="hk">
+					<RestrictionCriteria>
+						<Comparison parameterRef="subtype" comparisonOperator="==" value="25" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+		</ContainerSet>
+	</TelemetryMetaData>
+	<CommandMetaData>
+		<MetaCommandSet>
+			<MetaCommand name="pus-tc" abstract="true" shortDescription="Super-container for all PUS telecommand packets">
+				<ArgumentList>
+					<Argument argumentTypeRef="/dt/uint11" name="apid" />
+					<Argument argumentTypeRef="/dt/uint4" name="ackflags" initialValue="7" />
+					<Argument argumentTypeRef="/dt/uint8" name="type" />
+					<Argument argumentTypeRef="/dt/uint8" name="subtype" />
+					<Argument argumentTypeRef="/dt/uint16" name="source" initialValue="0" />
+				</ArgumentList>
+				<CommandContainer name="pus-tc">
+					<EntryList>
+						<FixedValueEntry name="ccsds-vesion" binaryValue="00" sizeInBits="3" />
+						<FixedValueEntry name="ccsds-tctm" binaryValue="01" sizeInBits="1" />
+						<FixedValueEntry name="ccsds-2ndheader" binaryValue="01" sizeInBits="1" />
+						<ArgumentRefEntry argumentRef="apid" />
+						<FixedValueEntry name="ccsds-seqFlags" binaryValue="03" sizeInBits="2" />
+						<FixedValueEntry name="ccsds-seq" binaryValue="0000" sizeInBits="14" />
+						<FixedValueEntry name="ccsds-length" binaryValue="0000" sizeInBits="16" />
+						<FixedValueEntry name="pus-version" binaryValue="02" sizeInBits="4" />
+						<ArgumentRefEntry argumentRef="ackflags" />
+						<ArgumentRefEntry argumentRef="type" />
+						<ArgumentRefEntry argumentRef="subtype" />
+						<ArgumentRefEntry argumentRef="source" />
+					</EntryList>
+				</CommandContainer>
+				<VerifierSet>
+					<ReceivedVerifier name="Accepted">
+						<BooleanExpression>
+							<ANDedConditions>
+								<Condition>
+									<ParameterInstanceRef parameterRef="/yamcs/cmd/arg/apid" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<ParameterInstanceRef parameterRef="tc-ack-apid" />
+								</Condition>
+								<Condition>
+									<ParameterInstanceRef parameterRef="/yamcs/cmdHist/ccsds-seqcount" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<ParameterInstanceRef parameterRef="tc-ack-seq" />
+								</Condition>
+								<Condition>
+									<ParameterInstanceRef parameterRef="type" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<Value>1</Value>
+								</Condition>
+								<Condition>
+									<ParameterInstanceRef parameterRef="subtype" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<Value>1</Value>
+								</Condition>
+							</ANDedConditions>
+						</BooleanExpression>
+						<CheckWindow timeToStopChecking="PT5S" />
+					</ReceivedVerifier>
+					<ExecutionVerifier name="Started">
+						<BooleanExpression>
+							<ANDedConditions>
+								<Condition>
+									<ParameterInstanceRef parameterRef="/yamcs/cmd/arg/apid" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<ParameterInstanceRef parameterRef="tc-ack-apid" />
+								</Condition>
+								<Condition>
+									<ParameterInstanceRef parameterRef="/yamcs/cmdHist/ccsds-seqcount" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<ParameterInstanceRef parameterRef="tc-ack-seq" />
+								</Condition>
+								<Condition>
+									<ParameterInstanceRef parameterRef="type" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<Value>1</Value>
+								</Condition>
+								<Condition>
+									<ParameterInstanceRef parameterRef="subtype" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<Value>3</Value>
+								</Condition>
+							</ANDedConditions>
+						</BooleanExpression>
+						<CheckWindow timeToStopChecking="PT5S" timeWindowIsRelativeTo="commandRelease" />
+					</ExecutionVerifier>
+					<CompleteVerifier name="Complete">
+						<BooleanExpression>
+							<ANDedConditions>
+								<Condition>
+									<ParameterInstanceRef parameterRef="/yamcs/cmd/arg/apid" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<ParameterInstanceRef parameterRef="tc-ack-apid" />
+								</Condition>
+								<Condition>
+									<ParameterInstanceRef parameterRef="/yamcs/cmdHist/ccsds-seqcount" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<ParameterInstanceRef parameterRef="tc-ack-seq" />
+								</Condition>
+								<Condition>
+									<ParameterInstanceRef parameterRef="type" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<Value>1</Value>
+								</Condition>
+								<Condition>
+									<ParameterInstanceRef parameterRef="subtype" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<Value>7</Value>
+								</Condition>
+							</ANDedConditions>
+						</BooleanExpression>
+						<CheckWindow timeToStopChecking="PT15S" timeWindowIsRelativeTo="commandRelease" />
+					</CompleteVerifier>
+					<FailedVerifier>
+						<BooleanExpression>
+							<ANDedConditions>
+								<Condition>
+									<ParameterInstanceRef parameterRef="/yamcs/cmd/arg/apid" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<ParameterInstanceRef parameterRef="tc-ack-apid" />
+								</Condition>
+								<Condition>
+									<ParameterInstanceRef parameterRef="/yamcs/cmdHist/ccsds-seqcount" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<ParameterInstanceRef parameterRef="tc-ack-seq" />
+								</Condition>
+								<Condition>
+									<ParameterInstanceRef parameterRef="type" />
+									<ComparisonOperator>==</ComparisonOperator>
+									<Value>1</Value>
+								</Condition>
+								<ORedConditions>
+									<Condition>
+										<ParameterInstanceRef parameterRef="subtype" />
+										<ComparisonOperator>==</ComparisonOperator>
+										<Value>2</Value>
+									</Condition>
+									<Condition>
+										<ParameterInstanceRef parameterRef="subtype" />
+										<ComparisonOperator>==</ComparisonOperator>
+										<Value>4</Value>
+									</Condition>
+									<Condition>
+										<ParameterInstanceRef parameterRef="subtype" />
+										<ComparisonOperator>==</ComparisonOperator>
+										<Value>8</Value>
+									</Condition>
+								</ORedConditions>
+							</ANDedConditions>
+						</BooleanExpression>
+						<CheckWindow timeToStopChecking="PT15S" timeWindowIsRelativeTo="commandRelease" />
+					</FailedVerifier>
+				</VerifierSet>
+			</MetaCommand>
+		</MetaCommandSet>
+	</CommandMetaData>
+</SpaceSystem>

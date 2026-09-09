@@ -78,7 +78,9 @@
             <ya-icon-action icon="add_circle" matTooltip="Add trace below" (click)="addTrace(i)" />
           </ya-stepper-step-actions>
 
-          <app-trace-config [form]="traceForm" />
+          <app-trace-config
+            [form]="traceForm"
+            [enumValues]="enumValuesForTrace(traceForm)" />
         </ya-stepper-step>
       }
     </ya-stepper>
@@ -113,6 +115,21 @@
       <ya-icon-button (click)="zoomOut()" icon="remove" />
     </ya-button-group>
 
+    <ya-button-group>
+      <ya-button
+        (click)="setLayout('overlay')"
+        [toggled]="chartLayout() === 'overlay'"
+        matTooltip="All parameters in one plot, sharing a Y-axis">
+        Overlay
+      </ya-button>
+      <ya-button
+        (click)="setLayout('split')"
+        [toggled]="chartLayout() === 'split'"
+        matTooltip="One plot per parameter, each with its own Y-axis">
+        Stacked
+      </ya-button>
+    </ya-button-group>
+
     @if (!range()) {
       <ya-button (click)="jumpToNow()" icon="double_arrow">Now</ya-button>
     }
@@ -126,13 +143,58 @@
     }
   </div>
 
-  <div class="legend-wrapper">
-    <app-legend
-      [leftMargin]="5 + sidebarWidth()"
-      [data]="legend"
-      backgroundColor="#fff"
-      [borderColor]="gridColor" />
-  </div>
+  @if (chartLayout() === 'overlay') {
+    <div class="legend-wrapper">
+      <app-legend
+        [leftMargin]="5 + sidebarWidth()"
+        [data]="legend"
+        backgroundColor="#fff"
+        [borderColor]="gridColor" />
+    </div>
+  } @else {
+    <!-- One chip per stacked plot, so each section is identifiable -->
+    <div class="band-legends" [style.left.px]="5 + sidebarWidth()">
+      @for (offset of bandOffsets(); track offset.traceId) {
+        @if (legendItemFor(offset.traceId); as item) {
+          <div
+            class="legend-box"
+            [style.top.px]="offset.top + 4"
+            [style.borderLeft]="'3px solid ' + item.color">
+            <span class="item-label">{{ item.label }}</span>
+            @let value = item.value();
+            @if (value !== undefined && value !== null) {
+              <span class="yvalue">{{ value }}</span>
+              @if (item.showUnits && item.units) {
+                <span class="units">{{ item.units }}</span>
+              }
+            }
+            @if (item.error; as error) {
+              <mat-icon class="error icon12" [matTooltip]="error">error</mat-icon>
+            }
+          </div>
+        }
+      }
+    </div>
+  }
+
+  @if (enumKeys().length) {
+    <div class="enum-key-overlay">
+      @for (key of enumKeys(); track key.traceId) {
+        <table class="enum-key">
+          <caption>
+            <span class="swatch" [style.background]="key.color"></span>
+            {{ key.name }}
+          </caption>
+          @for (ev of key.values; track ev.value) {
+            <tr>
+              <td class="enum-code">{{ ev.value }}</td>
+              <td class="enum-label">{{ ev.label }}</td>
+            </tr>
+          }
+        </table>
+      }
+    </div>
+  }
 
   <div #container class="timeline-container"></div>
 </div>

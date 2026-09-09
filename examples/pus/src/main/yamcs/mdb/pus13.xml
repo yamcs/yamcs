@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem name="PUS13" xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
+	<Header validationStatus="Unknown" version="1.0" date="2026-07-15T00:00:00Z">
+		<NoteSet>
+			<Note>ST[13] Large Packet Transfer. See pus_analysis/pus13.md.</Note>
+			<Note>Mission convention (Gap fix, see pus13.md Section c): the spec marks the "part" field
+				as a "deduced size" octet-string for TM[13,3] and TC[13,11] (the last part), meaning the
+				length is inferred from the surrounding CCSDS packet length. XTCE cannot express that
+				directly for command arguments, and relying on an unverified "trailing binary consumes
+				rest of packet" behaviour was flagged as risky in the analysis doc. Instead this mission
+				fixes all non-last parts (TM[13,1]/[13,2], TC[13,9]/[13,10]) to a constant 64-byte
+				part_data, and prefixes the last part (TM[13,3], TC[13,11]) with an explicit
+				part_len:uint8 (1-64) followed by a part_data_last field whose size is dynamically
+				derived from part_len (same validated pattern as yamcs-core's
+				xtce/VariableBinary.xml test resource). This is genuinely variable-length (no
+				zero-padding waste) and avoids the unverified XTCE feature entirely.</Note>
+			<Note>Downlink trigger: the real ECSS spec never has ground command a ST[13] downlink -- it
+				fires whenever some other on-board subsystem has a large TM to send. The simulator
+				emulates this by periodically (every 20s) synthesizing a fake large payload on its own
+				and downlinking it fragmented as TM[13,1]/[13,2]/[13,3], with no TC involved.</Note>
+			<Note>Uplink reconstruction: the spec says the on-board software "reconstructs the large
+				command and executes it" after TC[13,11], with no completion TM defined for success
+				(only TM[13,16] on abort). This simulator treats the reassembled bytes as a raw embedded
+				PUS TC packet (same idea as the ST[19]/ST[21] embedded-TC pattern) and dispatches it via
+				the normal command path (PusSimulator.processTc), so the embedded command gets its own
+				independent ACK/NACK/completion chain. The ground/test tooling is responsible for
+				building a valid, CRC'd TC packet and splitting it into 64-byte chunks before uplinking
+				it as TC[13,9]/[13,10]/[13,11].</Note>
+			<Note>Only one uplink reassembly transaction is tracked at a time (mission simplification).
+				A new TC[13,9] received while another transaction is still in progress aborts the old one
+				(TM[13,16], InternalError) before starting the new one.</Note>
+		</NoteSet>
+	</Header>
+	<TelemetryMetaData>
+		<ParameterTypeSet>
+			<BinaryParameterType name="part_data_type">
+				<BinaryDataEncoding>
+					<SizeInBits>
+						<FixedValue>512</FixedValue>
+					</SizeInBits>
+				</BinaryDataEncoding>
+			</BinaryParameterType>
+			<BinaryParameterType name="part_data_last_type">
+				<BinaryDataEncoding>
+					<SizeInBits>
+						<DynamicValue>
+							<ParameterInstanceRef parameterRef="part_len_last" />
+							<LinearAdjustment slope="8" />
+						</DynamicValue>
+					</SizeInBits>
+				</BinaryDataEncoding>
+			</BinaryParameterType>
+			<EnumeratedParameterType name="failure_reason_type">
+				<IntegerDataEncoding encoding="unsigned" sizeInBits="8" />
+				<EnumerationList>
+					<Enumeration value="1" label="ReceptionTimeout" />
+					<Enumeration value="2" label="SequenceDiscontinuity" />
+					<Enumeration value="3" label="InternalError" />
+				</EnumerationList>
+			</EnumeratedParameterType>
+		</ParameterTypeSet>
+		<ParameterSet>
+			<Parameter parameterTypeRef="/dt/uint16" name="transaction_id" />
+			<Parameter parameterTypeRef="/dt/uint16" name="part_seq_num" />
+			<Parameter parameterTypeRef="part_data_type" name="part_data" />
+			<Parameter parameterTypeRef="/dt/uint8" name="part_len_last" />
+			<Parameter parameterTypeRef="part_data_last_type" name="part_data_last" />
+			<Parameter parameterTypeRef="failure_reason_type" name="failure_reason" />
+		</ParameterSet>
+		<ContainerSet>
+			<SequenceContainer name="pus13-tm">
+				<EntryList />
+				<BaseContainer containerRef="/PUS/pus-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/type" comparisonOperator="==" value="13" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="TM_13_1" shortDescription="TM[13,1] first downlink part report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="transaction_id" />
+					<ParameterRefEntry parameterRef="part_seq_num" />
+					<ParameterRefEntry parameterRef="part_data" />
+				</EntryList>
+				<BaseContainer containerRef="pus13-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="1" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="TM_13_2" shortDescription="TM[13,2] intermediate downlink part report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="transaction_id" />
+					<ParameterRefEntry parameterRef="part_seq_num" />
+					<ParameterRefEntry parameterRef="part_data" />
+				</EntryList>
+				<BaseContainer containerRef="pus13-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="2" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="TM_13_3" shortDescription="TM[13,3] last downlink part report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="transaction_id" />
+					<ParameterRefEntry parameterRef="part_seq_num" />
+					<ParameterRefEntry parameterRef="part_len_last" />
+					<ParameterRefEntry parameterRef="part_data_last" />
+				</EntryList>
+				<BaseContainer containerRef="pus13-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="3" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="TM_13_16" shortDescription="TM[13,16] large packet uplink abort report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="transaction_id" />
+					<ParameterRefEntry parameterRef="failure_reason" />
+				</EntryList>
+				<BaseContainer containerRef="pus13-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="16" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+		</ContainerSet>
+	</TelemetryMetaData>
+	<CommandMetaData>
+		<ArgumentTypeSet>
+			<BinaryArgumentType name="part_data_arg_type">
+				<BinaryDataEncoding>
+					<SizeInBits>
+						<FixedValue>512</FixedValue>
+					</SizeInBits>
+				</BinaryDataEncoding>
+			</BinaryArgumentType>
+			<IntegerArgumentType name="part_len_arg_type" signed="false">
+				<IntegerDataEncoding encoding="unsigned" sizeInBits="8" />
+				<ValidRangeSet>
+					<ValidRange minInclusive="1" maxInclusive="64" />
+				</ValidRangeSet>
+			</IntegerArgumentType>
+			<BinaryArgumentType name="part_data_last_arg_type">
+				<BinaryDataEncoding>
+					<SizeInBits>
+						<DynamicValue>
+							<ArgumentInstanceRef argumentRef="part_len" />
+							<LinearAdjustment slope="8" />
+						</DynamicValue>
+					</SizeInBits>
+				</BinaryDataEncoding>
+			</BinaryArgumentType>
+		</ArgumentTypeSet>
+		<MetaCommandSet>
+			<MetaCommand name="pus13-tc" abstract="true">
+				<BaseMetaCommand metaCommandRef="/PUS/pus-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="apid" argumentValue="1" />
+						<ArgumentAssignment argumentName="type" argumentValue="13" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="pus13-tc">
+					<EntryList />
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[13,9] Uplink the first part -->
+			<MetaCommand name="TC_13_9" shortDescription="TC[13,9] uplink the first part of a large packet">
+				<BaseMetaCommand metaCommandRef="pus13-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="9" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="/dt/uint16" name="transaction_id" />
+					<Argument argumentTypeRef="/dt/uint16" name="part_seq_num" />
+					<Argument argumentTypeRef="part_data_arg_type" name="part_data" />
+				</ArgumentList>
+				<CommandContainer name="TC_13_9">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="transaction_id" />
+						<ArgumentRefEntry argumentRef="part_seq_num" />
+						<ArgumentRefEntry argumentRef="part_data" />
+					</EntryList>
+					<BaseContainer containerRef="pus13-tc" />
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[13,10] Uplink an intermediate part -->
+			<MetaCommand name="TC_13_10" shortDescription="TC[13,10] uplink an intermediate part of a large packet">
+				<BaseMetaCommand metaCommandRef="pus13-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="10" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="/dt/uint16" name="transaction_id" />
+					<Argument argumentTypeRef="/dt/uint16" name="part_seq_num" />
+					<Argument argumentTypeRef="part_data_arg_type" name="part_data" />
+				</ArgumentList>
+				<CommandContainer name="TC_13_10">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="transaction_id" />
+						<ArgumentRefEntry argumentRef="part_seq_num" />
+						<ArgumentRefEntry argumentRef="part_data" />
+					</EntryList>
+					<BaseContainer containerRef="pus13-tc" />
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[13,11] Uplink the last part -->
+			<MetaCommand name="TC_13_11" shortDescription="TC[13,11] uplink the last part of a large packet">
+				<BaseMetaCommand metaCommandRef="pus13-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="11" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="/dt/uint16" name="transaction_id" />
+					<Argument argumentTypeRef="/dt/uint16" name="part_seq_num" />
+					<Argument argumentTypeRef="part_len_arg_type" name="part_len" />
+					<Argument argumentTypeRef="part_data_last_arg_type" name="part_data_last" />
+				</ArgumentList>
+				<CommandContainer name="TC_13_11">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="transaction_id" />
+						<ArgumentRefEntry argumentRef="part_seq_num" />
+						<ArgumentRefEntry argumentRef="part_len" />
+						<ArgumentRefEntry argumentRef="part_data_last" />
+					</EntryList>
+					<BaseContainer containerRef="pus13-tc" />
+				</CommandContainer>
+			</MetaCommand>
+		</MetaCommandSet>
+	</CommandMetaData>
+</SpaceSystem>

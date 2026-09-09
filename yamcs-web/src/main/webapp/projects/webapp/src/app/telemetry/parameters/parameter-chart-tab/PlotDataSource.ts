@@ -288,10 +288,20 @@ export class PlotDataSource {
         this.latestRealtimeRawValues.set(qualifiedName, rawValue);
       }
 
-      const engValue =
+      let engValue =
         pval.engValue && pval.acquisitionStatus === 'ACQUIRED'
           ? utils.convertValueToNumber(pval.engValue)
           : null;
+      // Drop enum ordinals that aren't in the MDB enumeration table (eng type
+      // ENUMERATED with label "UNDEF"), matching Downsampler's categorical path.
+      // Otherwise a raw unmapped ordinal plots as a spurious out-of-range value.
+      if (
+        engValue !== null &&
+        pval.engValue?.type === 'ENUMERATED' &&
+        this.isUnmappedEnumOrdinal(qualifiedName, engValue)
+      ) {
+        engValue = null;
+      }
       if (engValue === null) {
         this.latestRealtimeEngValues.delete(qualifiedName);
       } else {
@@ -300,6 +310,23 @@ export class PlotDataSource {
 
       this.plotBuffer.addRealtimeValue(qualifiedName, time, rawValue, engValue);
     }
+  }
+
+  private isUnmappedEnumOrdinal(qualifiedName: string, ordinal: number): boolean {
+    let sawEnumTrace = false;
+    for (const traceConfig of this.traceById.values()) {
+      if (utils.getMemberPath(traceConfig.parameter) !== qualifiedName) {
+        continue;
+      }
+      if (traceConfig.valueType !== 'engineering' || !traceConfig.enumValues) {
+        continue;
+      }
+      sawEnumTrace = true;
+      if (traceConfig.enumValues.some((ev) => ev.value === ordinal)) {
+        return false;
+      }
+    }
+    return sawEnumTrace;
   }
 
   disconnect() {

@@ -18,7 +18,10 @@ import org.yamcs.xtce.CommandContainer;
 import org.yamcs.xtce.Container;
 import org.yamcs.xtce.DataEncoding;
 import org.yamcs.xtce.DataType;
+import org.yamcs.xtce.DynamicIntegerValue;
 import org.yamcs.xtce.FixedValueEntry;
+import org.yamcs.xtce.FixedIntegerValue;
+import org.yamcs.xtce.IntegerValue;
 import org.yamcs.xtce.Member;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Parameter;
@@ -53,29 +56,7 @@ public class MetaCommandContainerProcessor {
         }
 
         for (SequenceEntry se : container.getEntryList()) {
-
-            int size = 0;
-            BitBuffer bitbuf = pcontext.bitbuf;
-            switch (se.getReferenceLocation()) {
-            case PREVIOUS_ENTRY:
-                bitbuf.setPosition(bitbuf.getPosition() + se.getLocationInContainerInBits());
-                break;
-            case CONTAINER_START:
-                bitbuf.setPosition(se.getLocationInContainerInBits());
-            }
-            if (se instanceof ArgumentEntry) {
-                fillInArgumentEntry((ArgumentEntry) se, pcontext);
-                size = (bitbuf.getPosition() + 7) / 8;
-            } else if (se instanceof FixedValueEntry) {
-                fillInFixedValueEntry((FixedValueEntry) se, pcontext);
-                size = (bitbuf.getPosition() + 7) / 8;
-            } else if (se instanceof ParameterEntry) {
-                fillInParameterEntry((ParameterEntry) se, pcontext);
-                size = (bitbuf.getPosition() + 7) / 8;
-            }
-            if (size > pcontext.getSize()) {
-                pcontext.setSize(size);
-            }
+            encodeEntry(se);
         }
     }
 
@@ -85,15 +66,27 @@ public class MetaCommandContainerProcessor {
             encode(baseContainer);
         }
         for (SequenceEntry se : container.getEntryList()) {
+            encodeEntry(se);
+        }
+    }
+
+    private void encodeEntry(SequenceEntry se) {
+        BitBuffer bitbuf = pcontext.bitbuf;
+        switch (se.getReferenceLocation()) {
+        case PREVIOUS_ENTRY:
+            bitbuf.setPosition(bitbuf.getPosition() + se.getLocationInContainerInBits());
+            break;
+        case CONTAINER_START:
+            bitbuf.setPosition(se.getLocationInContainerInBits());
+        }
+
+        long repeatCount = 1;
+        if (se.getRepeatEntry() != null) {
+            repeatCount = getIntegerValue(se.getRepeatEntry().getCount());
+        }
+
+        for (long i = 0; i < repeatCount; i++) {
             int size = 0;
-            BitBuffer bitbuf = pcontext.bitbuf;
-            switch (se.getReferenceLocation()) {
-            case PREVIOUS_ENTRY:
-                bitbuf.setPosition(bitbuf.getPosition() + se.getLocationInContainerInBits());
-                break;
-            case CONTAINER_START:
-                bitbuf.setPosition(se.getLocationInContainerInBits());
-            }
             if (se instanceof ArgumentEntry) {
                 fillInArgumentEntry((ArgumentEntry) se, pcontext);
                 size = (bitbuf.getPosition() + 7) / 8;
@@ -107,7 +100,20 @@ public class MetaCommandContainerProcessor {
             if (size > pcontext.getSize()) {
                 pcontext.setSize(size);
             }
+            if (se.getRepeatEntry() != null) {
+                bitbuf.setPosition(bitbuf.getPosition() + se.getRepeatEntry().getOffsetSizeInBits());
+            }
         }
+    }
+
+    private long getIntegerValue(IntegerValue iv) {
+        if (iv instanceof FixedIntegerValue) {
+            return ((FixedIntegerValue) iv).getValue();
+        } else if (iv instanceof DynamicIntegerValue) {
+            return pcontext.resolveDynamicIntegerValue((DynamicIntegerValue) iv);
+        }
+
+        throw new UnsupportedOperationException("values of type " + iv + " not implemented");
     }
 
     private void fillInArgumentEntry(ArgumentEntry argEntry, TcProcessingContext pcontext) {

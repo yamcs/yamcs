@@ -24,12 +24,15 @@ import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.mdb.ProcessorData;
 import org.yamcs.mdb.XtceTmExtractor;
+import org.yamcs.parameter.EnumeratedValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
+import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Event.EventSeverity;
 import org.yamcs.pus.MessageTemplate.ParameterValueResolver;
 import org.yamcs.time.TimeService;
 import org.yamcs.xtce.EnumeratedParameterType;
+import org.yamcs.xtce.IntegerParameterType;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.yarch.Stream;
@@ -54,7 +57,8 @@ import org.yamcs.StreamConfig.TmStreamConfigEntry;
  * <pre>
  * {
  *   "eventId": 1234,
- *   "template": "Event occurred: {parameter_name; format}"
+ *   "template": "Event occurred: {parameter_name; format}",
+ *   "subsystem": "FSW"
  * }
  * </pre>
  * 
@@ -81,8 +85,10 @@ public class PusEventDecoder extends AbstractYamcsService {
         if (eventIdParameter == null) {
             throw new ConfigurationException("Parameter " + idfqn + " not found");
         }
-        if (!(eventIdParameter.getParameterType() instanceof EnumeratedParameterType)) {
-            throw new ConfigurationException("Wrong type for " + idfqn + ". Expected EnumeratedParameterType but got "
+        if (!(eventIdParameter.getParameterType() instanceof IntegerParameterType)
+                && !(eventIdParameter.getParameterType() instanceof EnumeratedParameterType)) {
+            throw new ConfigurationException("Wrong type for " + idfqn
+                    + ". Expected IntegerParameterType or EnumeratedParameterType but got "
                     + eventIdParameter.getParameterType());
         }
         StreamConfig streamConfig = StreamConfig.getInstance(yamcsInstance);
@@ -187,6 +193,17 @@ public class PusEventDecoder extends AbstractYamcsService {
         notifyStopped();
     }
 
+    /**
+     * eventIdParameter can be an enumerated parameter (looked up by its label, e.g. "EVENT_SINE_TEMP_LOW", to
+     * match the keys in the event template file) or a plain integer one (looked up by its numeric value).
+     */
+    private static String eventIdToString(Value engValue) {
+        if (engValue instanceof EnumeratedValue enumeratedValue) {
+            return enumeratedValue.getStringValue();
+        }
+        return Long.toString(engValue.toLong());
+    }
+
     EventSeverity getSeverity(int pusSubtype) {
         return switch (pusSubtype) {
         case 1 -> EventSeverity.INFO;
@@ -226,6 +243,9 @@ public class PusEventDecoder extends AbstractYamcsService {
 
             int apid = PusPacket.getApid(packet);
             int subtype = PusPacket.getSubtype(packet);
+            if (subtype < 1 || subtype > 4) {
+                return; // only TM[5,1-4] are event reports; TM[5,8] etc. are not
+            }
 
             long gentime = tuple.getColumn(StandardTupleDefinitions.GENTIME_COLUMN);
             int seqCount = tuple.getColumn(StandardTupleDefinitions.SEQNUM_COLUMN);
@@ -239,30 +259,38 @@ public class PusEventDecoder extends AbstractYamcsService {
                 log.warn("Did not find {} in packet extraction", eventIdParameter.getQualifiedName());
                 return;
             }
-            String eventId = eventIdValue.getEngValue().getStringValue();
+            String eventId = eventIdToString(eventIdValue.getEngValue());
 
-            String msg = eventFormatter.format(apid, eventId, params);
-            if (msg == null) {
+            Smessage smsg = eventFormatter.format(apid, eventId, params);
+            if (smsg == null) {
                 log.warn("No template found for message apid={}, eventId={}", apid, eventId);
             } else {
-                Event ev = Event.newBuilder()
+                String msg = smsg.message;
+                String subsystem = smsg.subsystem;
+
+                Event.Builder evb = Event.newBuilder()
                         .setType(eventId)
                         .setSeverity(getSeverity(subtype))
                         .setGenerationTime(gentime)
                         .setSeqNumber(seqCount)
-                        .setMessage(msg).build();
+                        .setMessage(msg);
+                if (subsystem != null) {
+                    evb.setSource(subsystem);
+                }
+                Event ev = evb.build();
                 TupleDefinition tdef = eventStream.getDefinition();
                 Tuple t = new Tuple(tdef, new Object[] { ev.getGenerationTime(),
                         ev.getSource(), ev.getSeqNumber(), ev });
                 eventStream.emitTuple(t);
             }
-
         }
     }
+    private record Stemplate(MessageTemplate template, String subsystem) {}
+    private record Smessage(String message, String subsystem) {}
 
     class EventFormatter {
         // Map to hold the templates with eventId and apid as keys
-        private Map<String, MessageTemplate> templates = new HashMap<>();
+        private Map<String, Stemplate> templates = new HashMap<>();
 
         public EventFormatter(String fileName) throws ConfigurationException {
             LoaderOptions loaderOptions = new LoaderOptions();
@@ -284,10 +312,11 @@ public class PusEventDecoder extends AbstractYamcsService {
                     Map<?, ?> map = (Map<?, ?>) o1;
                     String eventId = (String) map.get("eventId");
                     String template = (String) map.get("template");
+                    String subsystem = (String) map.get("subsystem");
 
-                    MessageTemplate stemplate = new MessageTemplate(template, mdb);
+                    MessageTemplate pstemplate = new MessageTemplate(template, mdb);
 
-                    templates.put(eventId, stemplate);
+                    templates.put(eventId, new Stemplate(pstemplate, subsystem));
                 } else {
                     throw new ConfigurationException(
                             "Error in file " + fileName + ": each list element must be a map.");
@@ -300,35 +329,38 @@ public class PusEventDecoder extends AbstractYamcsService {
         }
 
         // Format method to replace the template parameters with actual values
-        public String format(int apid, String eventId, ParameterValueList params) {
+        public Smessage format(int apid, String eventId, ParameterValueList params) {
             String key = generateKey(eventId, apid);
-            MessageTemplate template = templates.get(key);
+            Stemplate stemplate = templates.get(key);
 
-            if (template == null) {
+            if (stemplate == null) {
                 key = generateKey(eventId, null);
-                template = templates.get(key);
+                stemplate = templates.get(key);
             }
-
-            if (template == null) {
+            if (stemplate == null) {
                 return null; // No template found
             }
-            return template.format(new ParameterValueResolver() {
 
-                @Override
-                public ParameterValue resolve(String name) {
-                    for (var pv : params) {
-                        if (name.equals(pv.getParameter().getName())) {
-                            return pv;
+            MessageTemplate template = stemplate.template;
+            String subsystem = stemplate.subsystem;
+
+            return new Smessage(
+                template.format(new ParameterValueResolver() {
+                    @Override
+                    public ParameterValue resolve(String name) {
+                        for (var pv : params) {
+                            if (name.equals(pv.getParameter().getName())) {
+                                return pv;
+                            }
                         }
+                        return null;
                     }
-                    return null;
-                }
 
-                @Override
-                public ParameterValue resolve(Parameter p) {             
-                    return params.getLastInserted(p);
-                }
-            });
+                    @Override
+                    public ParameterValue resolve(Parameter p) {             
+                        return params.getLastInserted(p);
+                    }
+                }), subsystem);
         }
     }
 }

@@ -1,18 +1,387 @@
-<SpaceSystem name="PUS19" xmlns="http://www.omg.org/spec/XTCE/20180204"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem name="PUS19" xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
-	<Header validationStatus="Unknown" version="1.0" date="2020-07-01T16:48:10Z" />
+	<Header validationStatus="Unknown" version="1.0" date="2026-07-20T00:00:00Z">
+		<NoteSet>
+			<Note>ST[19] Event-Action Service. See pus_analysis/pus19.md and pus_simulator_architecture.md
+				for the full design rationale. In-scope subtypes: TC[19,1/2/4/5/6/8/9/10], TM[19,7/11].
+				TC[19,3] (delete all definitions) is out of scope, matching pus19.md.</Note>
+			<Note>Event system identifier: (app_process_id, event_def_id), both uint16. This simulator has
+				a single application process (MAIN_APID=1); Pus5Service notifies Pus19Service.onEvent with
+				app_process_id fixed to MAIN_APID whenever it raises an event, so ground-side definitions
+				should always use app_process_id=1.</Note>
+			<Note>Embedded TC packet (TC[19,1] "request" field, TM[19,11] "request" field): unlike the
+				length-prefixed-raw-bytes workaround assumed in pus19.md's "test_yamcs" reference (Gap 1),
+				this MDB expresses the embedded TC as a genuine dynamically-sized binary argument/parameter,
+				sized by a sibling request_len field -- the same validated pattern already used by
+				TC[13,11]/TM[13,3] (see pus13.xml, based on yamcs-core's xtce/VariableBinary.xml test
+				resource) for a single instance, extended here to a per-entry sibling reference inside an
+				array (TC side, confirmed pattern -- see "Nested Dynamic Array Patterns" in
+				pus_simulator_architecture.md) resp. inside a nested RepeatEntry container (TM side, the
+				only pattern YAMCS supports for variable-size repeated TM structures). Ground/test tooling
+				must supply a complete, CRC'd TC packet as the request (same convention as ST[13]/ST[21]).</Note>
+			<Note>TC[19,4]/TC[19,5] (enable/disable definitions) use the two-MetaCommand "_SPECIFIC"/"_ALL"
+				zero-payload pattern (per spec section 6.19.7.1b), same as ST[15]'s dual-variant TCs.
+				TC[19,10] (report definitions) instead uses the spec's in-band N=0 convention (section
+				8.19.2.10c) as a single MetaCommand -- N=0 naturally yields a zero-length array.</Note>
+		</NoteSet>
+	</Header>
+	<TelemetryMetaData>
+		<ParameterTypeSet>
+			<!-- Table 8-20: per-definition event-action status -->
+			<EnumeratedParameterType name="ea_status_type">
+				<IntegerDataEncoding sizeInBits="8" />
+				<EnumerationList>
+					<Enumeration value="0" label="disabled" />
+					<Enumeration value="1" label="enabled" />
+				</EnumerationList>
+			</EnumeratedParameterType>
+
+			<IntegerParameterType name="ea_count_type" baseType="/dt/uint8" />
+
+			<!-- TM[19,7] status report: fixed-size entries, safe to model as a flat array -->
+			<AggregateParameterType name="ea_status_entry_type">
+				<MemberList>
+					<Member typeRef="/dt/uint16" name="app_process_id" />
+					<Member typeRef="/dt/uint16" name="event_def_id" />
+					<Member typeRef="ea_status_type" name="ea_status" />
+				</MemberList>
+			</AggregateParameterType>
+			<ArrayParameterType arrayTypeRef="ea_status_entry_type" name="ea_status_array_type">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ParameterInstanceRef parameterRef="ea_status_count" />
+								<LinearAdjustment intercept="-1" />
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayParameterType>
+
+			<!-- TM[19,11] definition report: entries carry a variable-length embedded request TC, so
+			     they cannot use a flat ArrayParameterType (stride would be wrong once request_len > 0
+			     on any but the last entry). Decoded instead via nested ContainerRefEntry + RepeatEntry
+			     (see ea_def_entry container below), with request_data dynamically sized per entry. -->
+			<BinaryParameterType name="ea_request_data_type">
+				<BinaryDataEncoding>
+					<SizeInBits>
+						<DynamicValue>
+							<ParameterInstanceRef parameterRef="ea11_request_len" />
+							<LinearAdjustment slope="8" />
+						</DynamicValue>
+					</SizeInBits>
+				</BinaryDataEncoding>
+			</BinaryParameterType>
+		</ParameterTypeSet>
+		<ParameterSet>
+			<Parameter parameterTypeRef="ea_count_type" name="ea_status_count" />
+			<Parameter parameterTypeRef="ea_status_array_type" name="ea_status_entries" />
+
+			<Parameter parameterTypeRef="ea_count_type" name="ea11_count" />
+			<Parameter parameterTypeRef="/dt/uint16" name="ea11_app_process_id" />
+			<Parameter parameterTypeRef="/dt/uint16" name="ea11_event_def_id" />
+			<Parameter parameterTypeRef="ea_status_type" name="ea11_status" />
+			<Parameter parameterTypeRef="/dt/uint16" name="ea11_request_len" />
+			<Parameter parameterTypeRef="ea_request_data_type" name="ea11_request_data" />
+		</ParameterSet>
+		<ContainerSet>
+			<SequenceContainer name="pus19-tm">
+				<EntryList />
+				<BaseContainer containerRef="/PUS/pus-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/type" comparisonOperator="==" value="19" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+
+			<!-- TM[19,7] Event-action status report -->
+			<SequenceContainer name="TM_19_7" shortDescription="TM[19,7] Event-action status report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="ea_status_count" />
+					<ArrayParameterRefEntry parameterRef="ea_status_entries">
+						<IncludeCondition>
+							<Comparison parameterRef="ea_status_count" comparisonOperator="&gt;" value="0" />
+						</IncludeCondition>
+					</ArrayParameterRefEntry>
+				</EntryList>
+				<BaseContainer containerRef="pus19-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="7" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+
+			<!-- One TM[19,11] entry: fixed identifier/status fields + the embedded request TC, sized by
+			     the request_len decoded earlier in the same entry (getFromEnd(0) resolution). Free-standing
+			     container (no BaseContainer) only ever reached via the ContainerRefEntry below. -->
+			<SequenceContainer name="ea_def_entry">
+				<EntryList>
+					<ParameterRefEntry parameterRef="ea11_app_process_id" />
+					<ParameterRefEntry parameterRef="ea11_event_def_id" />
+					<ParameterRefEntry parameterRef="ea11_status" />
+					<ParameterRefEntry parameterRef="ea11_request_len" />
+					<ParameterRefEntry parameterRef="ea11_request_data" />
+				</EntryList>
+			</SequenceContainer>
+
+			<!-- TM[19,11] Event-action definition report -->
+			<SequenceContainer name="TM_19_11" shortDescription="TM[19,11] Event-action definition report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="ea11_count" />
+					<ContainerRefEntry containerRef="ea_def_entry">
+						<RepeatEntry>
+							<Count>
+								<DynamicValue>
+									<ParameterInstanceRef parameterRef="ea11_count" />
+								</DynamicValue>
+							</Count>
+						</RepeatEntry>
+					</ContainerRefEntry>
+				</EntryList>
+				<BaseContainer containerRef="pus19-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="11" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+		</ContainerSet>
+	</TelemetryMetaData>
+
 	<CommandMetaData>
+		<ArgumentTypeSet>
+			<!-- Reusable (app_process_id, event_def_id) identifier pair, used by TC[19,2],
+			     TC[19,4]_SPECIFIC, TC[19,5]_SPECIFIC and TC[19,10]. Each such MetaCommand declares its
+			     own top-level "N" argument; the sibling ArgumentInstanceRef below resolves to it
+			     (same reuse pattern as pus15.xml's store_id_array_type). -->
+			<AggregateArgumentType name="event_id_entry_type">
+				<MemberList>
+					<Member typeRef="/dt/uint16" name="app_process_id" />
+					<Member typeRef="/dt/uint16" name="event_def_id" />
+				</MemberList>
+			</AggregateArgumentType>
+			<ArrayArgumentType arrayTypeRef="event_id_entry_type" name="event_id_array_type">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="N" />
+								<LinearAdjustment intercept="-1" />
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+
+			<!-- TC[19,1] Add: each entry embeds the raw request TC, dynamically sized by its own
+			     sibling request_len member (same mechanism as TC[13,11]'s part_data_last_arg_type,
+			     applied per-array-element). -->
+			<BinaryArgumentType name="ea_request_arg_type">
+				<BinaryDataEncoding>
+					<SizeInBits>
+						<DynamicValue>
+							<ArgumentInstanceRef argumentRef="request_len" />
+							<LinearAdjustment slope="8" />
+						</DynamicValue>
+					</SizeInBits>
+				</BinaryDataEncoding>
+			</BinaryArgumentType>
+			<AggregateArgumentType name="ea_add_entry_type">
+				<MemberList>
+					<Member typeRef="/dt/uint16" name="app_process_id" />
+					<Member typeRef="/dt/uint16" name="event_def_id" />
+					<Member typeRef="/dt/uint16" name="request_len" />
+					<Member typeRef="ea_request_arg_type" name="request" />
+				</MemberList>
+			</AggregateArgumentType>
+			<ArrayArgumentType arrayTypeRef="ea_add_entry_type" name="ea_add_array_type">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="N" />
+								<LinearAdjustment intercept="-1" />
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+		</ArgumentTypeSet>
 		<MetaCommandSet>
 			<MetaCommand name="pus19-tc" abstract="true">
 				<BaseMetaCommand metaCommandRef="/PUS/pus-tc">
 					<ArgumentAssignmentList>
-						<ArgumentAssignment argumentName="apid"	argumentValue="1" />
-						<ArgumentAssignment argumentName="type"	argumentValue="19" />
+						<ArgumentAssignment argumentName="apid" argumentValue="1" />
+						<ArgumentAssignment argumentName="type" argumentValue="19" />
 					</ArgumentAssignmentList>
 				</BaseMetaCommand>
 				<CommandContainer name="pus19-tc">
 					<EntryList />
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[19,1] Add event-action definitions -->
+			<MetaCommand name="TC_19_1_ADD" shortDescription="TC[19,1] Add event-action definitions">
+				<BaseMetaCommand metaCommandRef="pus19-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="1" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="N" argumentTypeRef="/dt/uint8" />
+					<Argument name="entries" argumentTypeRef="ea_add_array_type" />
+				</ArgumentList>
+				<CommandContainer name="TC_19_1_ADD">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="N" />
+						<ArgumentRefEntry argumentRef="entries" />
+					</EntryList>
+					<BaseContainer containerRef="pus19-tc" />
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[19,2] Delete event-action definitions (must be unknown-free and disabled, §6.19.8.3d) -->
+			<MetaCommand name="TC_19_2_DELETE" shortDescription="TC[19,2] Delete event-action definitions">
+				<BaseMetaCommand metaCommandRef="pus19-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="2" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="N" argumentTypeRef="/dt/uint8" />
+					<Argument name="event_ids" argumentTypeRef="event_id_array_type" />
+				</ArgumentList>
+				<CommandContainer name="TC_19_2_DELETE">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="N" />
+						<ArgumentRefEntry argumentRef="event_ids" />
+					</EntryList>
+					<BaseContainer containerRef="pus19-tc" />
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[19,4] Enable event-action definitions -->
+			<MetaCommand name="TC_19_4_SPECIFIC" shortDescription="TC[19,4] Enable specific event-action definitions">
+				<BaseMetaCommand metaCommandRef="pus19-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="4" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="N" argumentTypeRef="/dt/uint8" />
+					<Argument name="event_ids" argumentTypeRef="event_id_array_type" />
+				</ArgumentList>
+				<CommandContainer name="TC_19_4_SPECIFIC">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="N" />
+						<ArgumentRefEntry argumentRef="event_ids" />
+					</EntryList>
+					<BaseContainer containerRef="pus19-tc" />
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="TC_19_4_ALL" shortDescription="TC[19,4] Enable ALL event-action definitions">
+				<BaseMetaCommand metaCommandRef="pus19-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="4" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="TC_19_4_ALL">
+					<EntryList />
+					<BaseContainer containerRef="pus19-tc" />
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[19,5] Disable event-action definitions -->
+			<MetaCommand name="TC_19_5_SPECIFIC" shortDescription="TC[19,5] Disable specific event-action definitions">
+				<BaseMetaCommand metaCommandRef="pus19-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="5" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="N" argumentTypeRef="/dt/uint8" />
+					<Argument name="event_ids" argumentTypeRef="event_id_array_type" />
+				</ArgumentList>
+				<CommandContainer name="TC_19_5_SPECIFIC">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="N" />
+						<ArgumentRefEntry argumentRef="event_ids" />
+					</EntryList>
+					<BaseContainer containerRef="pus19-tc" />
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="TC_19_5_ALL" shortDescription="TC[19,5] Disable ALL event-action definitions">
+				<BaseMetaCommand metaCommandRef="pus19-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="5" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="TC_19_5_ALL">
+					<EntryList />
+					<BaseContainer containerRef="pus19-tc" />
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[19,6] Report status of each event-action definition (zero payload, triggers TM[19,7]) -->
+			<MetaCommand name="TC_19_6_REPORT_STATUS" shortDescription="TC[19,6] Report event-action status">
+				<BaseMetaCommand metaCommandRef="pus19-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="6" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="TC_19_6_REPORT_STATUS">
+					<EntryList />
+					<BaseContainer containerRef="pus19-tc" />
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[19,8] Enable the event-action function (zero payload) -->
+			<MetaCommand name="TC_19_8_ENABLE_FUNCTION" shortDescription="TC[19,8] Enable the event-action function">
+				<BaseMetaCommand metaCommandRef="pus19-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="8" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="TC_19_8_ENABLE_FUNCTION">
+					<EntryList />
+					<BaseContainer containerRef="pus19-tc" />
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[19,9] Disable the event-action function (zero payload) -->
+			<MetaCommand name="TC_19_9_DISABLE_FUNCTION" shortDescription="TC[19,9] Disable the event-action function">
+				<BaseMetaCommand metaCommandRef="pus19-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="9" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="TC_19_9_DISABLE_FUNCTION">
+					<EntryList />
+					<BaseContainer containerRef="pus19-tc" />
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[19,10] Report event-action definitions (N=0 means "all", in-band per §8.19.2.10c) -->
+			<MetaCommand name="TC_19_10_REPORT_DEFS" shortDescription="TC[19,10] Report event-action definitions (N=0 = all)">
+				<BaseMetaCommand metaCommandRef="pus19-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="10" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="N" argumentTypeRef="/dt/uint8" />
+					<Argument name="event_ids" argumentTypeRef="event_id_array_type" />
+				</ArgumentList>
+				<CommandContainer name="TC_19_10_REPORT_DEFS">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="N" />
+						<ArgumentRefEntry argumentRef="event_ids" />
+					</EntryList>
+					<BaseContainer containerRef="pus19-tc" />
 				</CommandContainer>
 			</MetaCommand>
 		</MetaCommandSet>

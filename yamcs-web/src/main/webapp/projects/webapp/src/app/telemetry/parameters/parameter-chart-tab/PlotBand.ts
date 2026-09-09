@@ -1,14 +1,6 @@
-import { Overlay, OverlayRef } from '@angular/cdk/overlay';
-import { ComponentPortal } from '@angular/cdk/portal';
-import { ElementRef } from '@angular/core';
 import { Line, LinePlot, LinePoint, Timeline } from '@fqqb/timeline';
-import {
-  BackfillingSubscription,
-  ConfigService,
-  Synchronizer,
-  utils,
-  YamcsService,
-} from '@yamcs/webapp-sdk';
+import { utils } from '@yamcs/webapp-sdk';
+import { Subscription } from 'rxjs';
 import { convertColor } from '../../../timeline/bands/properties';
 import { Legend } from './Legend';
 import { PlotData } from './PlotBuffer';
@@ -16,22 +8,26 @@ import { PlotDataSource } from './PlotDataSource';
 import { TraceConfig } from './TraceConfig';
 import { ParameterChartTooltipComponent } from './tooltip.component';
 
+/**
+ * One plot area of the chart.
+ *
+ * A band renders a subset of the chart's traces (all of them in overlay
+ * layout, exactly one in stacked layout). It owns no data: the data source,
+ * the tooltip and the legend are shared singletons owned by
+ * ParameterChartTabComponent, so that bands can be cheaply destroyed and
+ * recreated whenever the layout or the trace order changes.
+ */
 export class PlotBand extends LinePlot {
-  private dataSource: PlotDataSource;
-
   private traceConfigById = new Map<string, TraceConfig>();
   private orderedTraceIds: string[] = [];
 
-  private tooltipInstance: ParameterChartTooltipComponent;
-  private tooltipOverlayRef?: OverlayRef;
-  private backfillSubscription?: BackfillingSubscription;
+  private latestData: PlotData[] = [];
+  private dataSubscription: Subscription;
 
   constructor(
     timeline: Timeline,
-    yamcs: YamcsService,
-    synchronizer: Synchronizer,
-    configService: ConfigService,
-    private overlay: Overlay,
+    private dataSource: PlotDataSource,
+    tooltip: ParameterChartTooltipComponent,
     legend: Legend,
   ) {
     super(timeline);
@@ -43,21 +39,12 @@ export class PlotBand extends LinePlot {
     this.pointRadius = 0;
     this.resetAxisZoomOnDoubleClick = false;
 
-    this.dataSource = new PlotDataSource(yamcs, synchronizer, configService);
-    this.dataSource.data$.subscribe((data) => this.loadData(data));
+    this.dataSubscription = dataSource.data$.subscribe((data) => {
+      this.latestData = data;
+      this.loadData(data);
+    });
 
-    this.setupTooltip();
-
-    this.backfillSubscription = yamcs.yamcsClient.createBackfillingSubscription(
-      {
-        instance: yamcs.instance!,
-      },
-      (update) => {
-        if (update.finished) {
-          this.dataSource.reloadVisibleRange();
-        }
-      },
-    );
+    this.addMouseLeaveListener(() => tooltip.hide());
 
     this.addMouseMoveListener((evt) => {
       // Highlight closest hovered points
@@ -93,50 +80,40 @@ export class PlotBand extends LinePlot {
         this.updatePlot();
       }
 
-      // Update tooltip
-      this.tooltipInstance.show(
+      // Update tooltip. Only the traces of this band are listed, so that a
+      // stacked layout does not show empty rows for the other bands.
+      tooltip.show(
         evt.clientX,
         evt.clientY,
         new Date(evt.time),
         legend,
         trace2point,
         this.hoveredValueLabelFormatter,
+        this.orderedTraceIds,
       );
-      this.addMouseLeaveListener((evt) => {
-        this.tooltipInstance.hide();
-      });
     });
   }
 
-  private setupTooltip() {
-    const bodyRef = new ElementRef(document.body);
-    const positionStrategy = this.overlay
-      .position()
-      .flexibleConnectedTo(bodyRef)
-      .withPositions([
-        {
-          originX: 'start',
-          originY: 'top',
-          overlayX: 'start',
-          overlayY: 'top',
-        },
-      ])
-      .withPush(false);
-
-    this.tooltipOverlayRef = this.overlay.create({ positionStrategy });
-    const tooltipPortal = new ComponentPortal(ParameterChartTooltipComponent);
-    this.tooltipInstance =
-      this.tooltipOverlayRef.attach(tooltipPortal).instance;
+  /**
+   * Assigns the traces rendered by this band. The configs map is owned by the
+   * component and may hold traces belonging to other bands; only the provided
+   * ids are rendered.
+   */
+  setTraces(traceIds: string[], configById: Map<string, TraceConfig>) {
+    this.orderedTraceIds = traceIds.filter((id) => configById.has(id));
+    this.traceConfigById = new Map();
+    for (const traceId of this.orderedTraceIds) {
+      this.traceConfigById.set(traceId, configById.get(traceId)!);
+    }
+    this.loadData(this.latestData);
   }
 
-  updateWindow(fetch: boolean) {
-    const loadStart = this.timeline.start;
-    const loadStop = this.timeline.stop;
-    this.dataSource.updateWindow(
-      new Date(loadStart),
-      new Date(loadStop),
-      fetch,
-    );
+  getTraceIds() {
+    return [...this.orderedTraceIds];
+  }
+
+  hasTrace(traceId: string) {
+    return this.traceConfigById.has(traceId);
   }
 
   private loadData(data: PlotData[]) {
@@ -149,17 +126,18 @@ export class PlotBand extends LinePlot {
       for (let i = 0; i < data.length; i++) {
         const traceData = data[i];
         if (traceData.traceId === traceId) {
-          for (const point of traceData.points || []) {
+          const samples = traceData.points || [];
+          for (let j = 0; j < samples.length; j++) {
+            const point = samples[j];
             if (point.n === 0) {
               points.push({
                 x: point.time,
                 y: null,
               });
             } else {
-              const prevIsGap = i === 0 || traceData.points[i - 1].n === 0;
+              const prevIsGap = j === 0 || samples[j - 1].n === 0;
               const nextIsGap =
-                i === traceData.points.length - 1 ||
-                traceData.points[i + 1].n === 0;
+                j === samples.length - 1 || samples[j + 1].n === 0;
 
               let time: number;
               if (prevIsGap && !nextIsGap) {
@@ -202,6 +180,7 @@ export class PlotBand extends LinePlot {
     }
 
     this.lines = lines;
+    this.updateValueFormatters();
   }
 
   applyTraceConfigs() {
@@ -227,11 +206,69 @@ export class PlotBand extends LinePlot {
     }
 
     this.lines = orderedLines;
+
+    this.updateValueFormatters();
   }
 
-  toggleFill(enabled: boolean) {
-    this.traceConfigById.forEach((config) => (config.fill = enabled));
-    this.applyTraceConfigs();
+  /**
+   * Sets axis / tooltip formatters so enum traces render labels instead of raw
+   * ordinals. Labels from every enum trace on the band are merged into one
+   * ordinal→label table (last write wins on a collision). Resets to the plain
+   * numeric formatting when no enum trace is present.
+   *
+   * In a stacked layout a band holds a single trace, so its axis shows exactly
+   * that parameter's enumeration.
+   */
+  private updateValueFormatters() {
+    const labelByOrdinal = new Map<number, string>();
+    const configs = [...this.traceConfigById.values()];
+    for (const config of configs) {
+      if (config.valueType === 'engineering') {
+        for (const ev of config.enumValues ?? []) {
+          labelByOrdinal.set(ev.value, ev.label);
+        }
+      }
+    }
+
+    // Only when every trace on this band is categorical may the axis suppress
+    // fractional ticks. A band mixing an enum with a numeric trace (possible in
+    // overlay layout) still needs plain numbers for the numeric scale.
+    const allCategorical =
+      configs.length > 0 &&
+      configs.every(
+        (config) =>
+          config.valueType === 'engineering' && !!config.enumValues?.length,
+      );
+
+    if (labelByOrdinal.size > 0) {
+      const fmt = (value: number) =>
+        Number.isInteger(value) && labelByOrdinal.has(value)
+          ? labelByOrdinal.get(value)!
+          : String(value);
+      // Auto-generated ticks land on half-ordinals (1.5), which name no state.
+      this.axisLabelFormatter = (value) =>
+        allCategorical && !Number.isInteger(value) ? '' : fmt(value);
+      this.hoveredValueLabelFormatter = fmt;
+    } else {
+      // Library defaults.
+      this.axisLabelFormatter = (value) => String(value);
+      this.hoveredValueLabelFormatter = (value) => value.toFixed(2);
+    }
+  }
+
+  /**
+   * Formats a realtime value for a single trace, mapping enum ordinals to their
+   * label. Used by the legend.
+   */
+  getValueLabel(traceId: string, value: number): string {
+    const config = this.getTrace(traceId);
+    if (config?.valueType === 'engineering') {
+      const ev = config.enumValues?.find((e) => e.value === value);
+      if (ev) {
+        return ev.label;
+      }
+    }
+    return String(value);
   }
 
   onResize() {
@@ -241,39 +278,6 @@ export class PlotBand extends LinePlot {
 
   getTrace(traceId: string) {
     return this.traceConfigById.get(traceId);
-  }
-
-  addOrUpdateTrace(traceId: string, config: TraceConfig) {
-    if (this.orderedTraceIds.indexOf(traceId) === -1) {
-      this.orderedTraceIds.push(traceId);
-    }
-
-    this.traceConfigById.set(traceId, config);
-    this.dataSource.addOrUpdateTrace(traceId, config);
-
-    // Apply order
-    this.applyTraceConfigs();
-  }
-
-  removeTrace(traceId: string) {
-    const idx = this.orderedTraceIds.indexOf(traceId);
-    if (idx !== -1) {
-      this.orderedTraceIds.splice(idx, 1);
-    }
-    this.traceConfigById.delete(traceId);
-    this.dataSource.removeTrace(traceId);
-
-    // Apply order
-    this.applyTraceConfigs();
-  }
-
-  applyOrder(traceIds: string[]) {
-    // Filter out traceIds that are not (yet) added to PlotBand
-    // (for example: empty parameter field)
-    this.orderedTraceIds = traceIds.filter(
-      (id) => this.orderedTraceIds.indexOf(id) !== -1,
-    );
-    this.applyTraceConfigs();
   }
 
   getParameterValue(traceId: string) {
@@ -303,8 +307,6 @@ export class PlotBand extends LinePlot {
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
-    this.tooltipOverlayRef?.dispose();
-    this.backfillSubscription?.cancel();
-    this.dataSource.disconnect();
+    this.dataSubscription?.unsubscribe();
   }
 }

@@ -56,6 +56,7 @@ import org.yamcs.protobuf.Mdb.SignificanceInfo.SignificanceLevelType;
 import org.yamcs.protobuf.Mdb.SpaceSystemInfo;
 import org.yamcs.protobuf.Mdb.SplineCalibratorInfo;
 import org.yamcs.protobuf.Mdb.SplineCalibratorInfo.SplinePointInfo;
+import org.yamcs.protobuf.Mdb.TimeAssociationInfo;
 import org.yamcs.protobuf.Mdb.TransmissionConstraintInfo;
 import org.yamcs.protobuf.Mdb.UnitInfo;
 import org.yamcs.protobuf.Mdb.ValidRangeInfo;
@@ -154,6 +155,7 @@ import org.yamcs.xtce.StringArgumentType;
 import org.yamcs.xtce.StringDataEncoding;
 import org.yamcs.xtce.StringParameterType;
 import org.yamcs.xtce.TimeEpoch;
+import org.yamcs.xtce.TimeAssociation;
 import org.yamcs.xtce.TransmissionConstraint;
 import org.yamcs.xtce.TriggerSetType;
 import org.yamcs.xtce.UnitType;
@@ -246,6 +248,9 @@ public class XtceToGpbAssembler {
         if (e.getRepeatEntry() != null) {
             b.setRepeat(toRepeatInfo(e.getRepeatEntry(), detail));
         }
+        if (e.getTimeAssociation() != null) {
+            b.setTimeAssociation(toTimeAssociationInfo(e.getTimeAssociation(), detail));
+        }
 
         if (e instanceof ContainerEntry ce) {
             if (detail == DetailLevel.SUMMARY) {
@@ -291,6 +296,27 @@ public class XtceToGpbAssembler {
         return b.build();
     }
 
+    public static TimeAssociationInfo toTimeAssociationInfo(TimeAssociation xtceTimeAssociation, DetailLevel detail) {
+        TimeAssociationInfo.Builder b = TimeAssociationInfo.newBuilder();
+        if (detail == DetailLevel.SUMMARY) {
+            b.setParameter(toParameterInfo(xtceTimeAssociation.getParameter(), DetailLevel.LINK));
+        } else if (detail == DetailLevel.FULL) {
+            b.setParameter(toParameterInfo(xtceTimeAssociation.getParameter(), DetailLevel.FULL));
+        } else {
+            b.setParameter(toParameterInfo(xtceTimeAssociation));
+        }
+        b.setInstance(xtceTimeAssociation.getInstance());
+        b.setUseCalibratedValue(xtceTimeAssociation.useCalibratedValue());
+        b.setInterpolateTime(xtceTimeAssociation.isInterpolateTime());
+        if (xtceTimeAssociation.getOffset() != null) {
+            b.setOffset(xtceTimeAssociation.getOffset());
+        }
+        if (xtceTimeAssociation.getUnit() != null) {
+            b.setUnit(xtceTimeAssociation.getUnit().xtceName());
+        }
+        return b.build();
+    }
+
     public static FixedValueInfo toFixedValueInfo(FixedValueEntry entry) {
         FixedValueInfo.Builder b = FixedValueInfo.newBuilder();
         if (entry.getName() != null) {
@@ -311,12 +337,17 @@ public class XtceToGpbAssembler {
             b.setFixedCount(val.getValue());
         } else if (xtceRepeat.getCount() instanceof DynamicIntegerValue) {
             DynamicIntegerValue val = (DynamicIntegerValue) xtceRepeat.getCount();
-            if (detail == DetailLevel.SUMMARY) {
-                b.setDynamicCount(
-                        toParameterInfo(val.getParameterInstanceRef().getParameter(), DetailLevel.LINK));
-            } else if (detail == DetailLevel.FULL) {
-                b.setDynamicCount(
-                        toParameterInfo(val.getParameterInstanceRef().getParameter(), DetailLevel.FULL));
+            ParameterOrArgumentRef ref = val.getDynamicInstanceRef();
+            if (ref instanceof ParameterInstanceRef parameterRef) {
+                if (detail == DetailLevel.SUMMARY) {
+                    b.setDynamicCount(toParameterInfo(parameterRef.getParameter(), DetailLevel.LINK));
+                } else if (detail == DetailLevel.FULL) {
+                    b.setDynamicCount(toParameterInfo(parameterRef.getParameter(), DetailLevel.FULL));
+                }
+            } else if (ref instanceof ArgumentInstanceRef argumentRef) {
+                b.setDynamicCountArgument(toArgumentInfo(argumentRef));
+            } else {
+                throw new IllegalStateException("Unexpected repeat count reference " + ref);
             }
         } else {
             throw new IllegalStateException("Unexpected repeat count " + xtceRepeat.getCount());
@@ -458,18 +489,22 @@ public class XtceToGpbAssembler {
 
     public static ArgumentInfo toArgumentInfo(ArgumentInstanceRef ref) {
         ArgumentInfo.Builder b = ArgumentInfo.newBuilder();
+        b.setName(toArgumentReference(ref));
+        return b.build();
+    }
+
+    private static String toArgumentReference(ArgumentInstanceRef ref) {
         Argument arg = ref.getArgument();
         PathElement[] path = ref.getMemberPath();
         if (path == null) {
-            b.setName(arg.getName());
-        } else {
-            String memberPath = "";
-            for (PathElement el : path) {
-                memberPath += "." + el.toString();
-            }
-            b.setName(arg.getName() + memberPath);
+            return arg.getName();
         }
-        return b.build();
+
+        String memberPath = "";
+        for (PathElement el : path) {
+            memberPath += "." + el.toString();
+        }
+        return arg.getName() + memberPath;
     }
 
     public static ArgumentAssignmentInfo toArgumentAssignmentInfo(ArgumentAssignment xtceArgument) {

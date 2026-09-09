@@ -3,6 +3,7 @@ package org.yamcs.http.api;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.function.Consumer;
@@ -36,6 +37,18 @@ public class Downsampler implements Consumer<ParameterValueArray> {
     private long lastSampleTime;
     private long gapTime;
 
+    /**
+     * When set, categorical (enum) downsampling is used: each bucket keeps the last value seen (min=max=avg=last
+     * ordinal) instead of a rolling average, since averaging an arbitrary enum ordinal order is meaningless.
+     */
+    private boolean categorical;
+
+    /**
+     * Enum label -&gt; ordinal lookup, only needed by the columnar {@link #accept(ParameterValueArray)} path where the
+     * engineering value arrives as a String label rather than the numeric ordinal. May be null.
+     */
+    private Map<String, Integer> enumLabelToOrdinal;
+
     public Downsampler(long start, long stop) {
         this(start, stop, DEFAULT_SAMPLE_COUNT);
     }
@@ -67,6 +80,16 @@ public class Downsampler implements Consumer<ParameterValueArray> {
         this.gapTime = gapTime;
     }
 
+    /**
+     * Switch to categorical (enum) downsampling: last-value-per-bucket instead of averaging. The optional map resolves
+     * enum labels to ordinals for the columnar retrieval path (pass null when ordinals are already available, e.g. row
+     * retrieval or raw values).
+     */
+    public void enableCategoricalMode(Map<String, Integer> enumLabelToOrdinal) {
+        this.categorical = true;
+        this.enumLabelToOrdinal = enumLabelToOrdinal;
+    }
+
     public void process(org.yamcs.parameter.ParameterValue pval) {
         Value value = useRawValue ? pval.getRawValue() : pval.getEngValue();
         if (value == null) {
@@ -95,7 +118,15 @@ public class Downsampler implements Consumer<ParameterValueArray> {
             process(gentime, value.getUint64Value(), expireMillis);
             break;
         case ENUMERATED:
-            process(gentime, value.getSint64Value(), expireMillis);
+            if (categorical && enumLabelToOrdinal != null
+                    && !enumLabelToOrdinal.containsKey(value.getStringValue())) {
+                process(gentime, Double.NaN, expireMillis);
+            } else {
+                process(gentime, value.getSint64Value(), expireMillis);
+            }
+            break;
+        case BOOLEAN:
+            process(gentime, value.getBooleanValue() ? 1 : 0, expireMillis);
             break;
         default:
             process(gentime, Double.NaN, expireMillis);
@@ -157,6 +188,24 @@ public class Downsampler implements Consumer<ParameterValueArray> {
                 process(timestamps[i], lv[i], expireMillis);
             }
             break;
+        case ENUMERATED:
+            // Columnar enum eng-values are String labels, not ordinals. Resolve via the MDB label->ordinal map.
+            for (int i = 0; i < n; i++) {
+                double ordinal = Double.NaN;
+                if (enumLabelToOrdinal != null) {
+                    Integer o = enumLabelToOrdinal.get(va.getValue(i).getStringValue());
+                    if (o != null) {
+                        ordinal = o.doubleValue();
+                    }
+                }
+                process(timestamps[i], ordinal, expireMillis);
+            }
+            break;
+        case BOOLEAN:
+            for (int i = 0; i < n; i++) {
+                process(timestamps[i], va.getValue(i).getBooleanValue() ? 1 : 0, expireMillis);
+            }
+            break;
         case NONE:
             // No value (for example: pval without raw). Do nothing.
             break;
@@ -183,6 +232,8 @@ public class Downsampler implements Consumer<ParameterValueArray> {
         if (sample == null) {
             var newSample = new Sample(entry.getKey(), time, value, expireMillis);
             samplesByTime.put(entry.getKey(), newSample);
+        } else if (categorical) {
+            sample.processLast(time, value, expireMillis);
         } else {
             sample.process(time, value, expireMillis);
         }
@@ -249,6 +300,18 @@ public class Downsampler implements Consumer<ParameterValueArray> {
             min = avg = max = value;
             minTime = maxTime = firstTime = lastTime = valueTime;
             n = 1;
+        }
+
+        /**
+         * Categorical variant: keep only the last value seen in the bucket (min=max=avg=last). Used for enum traces,
+         * where a rolling average over arbitrary ordinal declaration order has no meaning.
+         */
+        public void processLast(long valueTime, double value, long expireMillis) {
+            this.expireMillis = expireMillis;
+            lastTime = valueTime;
+            min = max = avg = value;
+            minTime = maxTime = valueTime;
+            n++;
         }
 
         public void process(long valueTime, double value, long expireMillis) {

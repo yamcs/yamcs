@@ -92,6 +92,7 @@
           <th>Type</th>
           <th>Ref</th>
           <th>Repeat</th>
+          <th>Time association</th>
           <th>Description</th>
         </tr>
         @for (entry of container.entry; track entry) {
@@ -139,6 +140,24 @@
                 }
               </td>
               <td class="wrap200">
+                @if (entry.timeAssociation) {
+                  <a
+                    [routerLink]="['/mdb/parameters/', entry.timeAssociation.parameter.qualifiedName]"
+                    [queryParams]="{ c: yamcs.context }"
+                    class="ya-link">
+                    {{
+                      entry.timeAssociation.parameter.qualifiedName
+                        | relativize: (container.qualifiedName | spaceSystemName)
+                    }}
+                  </a>
+                  <div>
+                    {{ formatTimeAssociation(entry.timeAssociation) }}
+                  </div>
+                } @else {
+                  -
+                }
+              </td>
+              <td class="wrap200">
                 {{ entry.parameter.shortDescription || "-" }}
               </td>
             }
@@ -169,6 +188,24 @@
                     </a>
                     times
                   }
+                } @else {
+                  -
+                }
+              </td>
+              <td class="wrap200">
+                @if (entry.timeAssociation) {
+                  <a
+                    [routerLink]="['/mdb/parameters/', entry.timeAssociation.parameter.qualifiedName]"
+                    [queryParams]="{ c: yamcs.context }"
+                    class="ya-link">
+                    {{
+                      entry.timeAssociation.parameter.qualifiedName
+                        | relativize: (container.qualifiedName | spaceSystemName)
+                    }}
+                  </a>
+                  <div>
+                    {{ formatTimeAssociation(entry.timeAssociation) }}
+                  </div>
                 } @else {
                   -
                 }

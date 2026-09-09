@@ -345,13 +345,13 @@ export interface Clearance {
   hasCommandPrivileges: boolean;
 }
 
-export type ClearanceSubscription = WebSocketCall<void, Clearance>;
+export type ClearanceSubscription = WebSocketCall<{}, Clearance>;
 
-export type ReplicationInfoSubscription = WebSocketCall<void, ReplicationInfo>;
+export type ReplicationInfoSubscription = WebSocketCall<{}, ReplicationInfo>;
 
-export type SystemInfoSubscription = WebSocketCall<void, SystemInfo>;
+export type SystemInfoSubscription = WebSocketCall<{}, SystemInfo>;
 
-export type HttpTrafficSubscription = WebSocketCall<void, HttpTraffic>;
+export type HttpTrafficSubscription = WebSocketCall<{}, HttpTraffic>;
 
 export interface Service {
   instance: string;

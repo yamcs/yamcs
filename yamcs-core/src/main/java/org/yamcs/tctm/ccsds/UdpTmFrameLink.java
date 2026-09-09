@@ -48,8 +48,12 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
     public void init(String instance, String name, YConfiguration config) throws ConfigurationException {
         super.init(instance, name, config);
         port = config.getInt("port");
-        int maxLength = frameHandler.getMaxFrameSize();
+        int maxLength = getMaximumInputFrameLength();
         initialBytesToStrip = config.getInt("initialBytesToStrip", 0);
+        if (initialBytesToStrip < 0) {
+            throw new ConfigurationException("initialBytesToStrip cannot be negative");
+        }
+        maxLength += initialBytesToStrip;
         datagram = new DatagramPacket(new byte[maxLength], maxLength);
     }
 
@@ -82,14 +86,22 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
     public void run() {
         while (isRunningAndEnabled()) {
             try {
+                datagram.setLength(datagram.getData().length);
                 tmSocket.receive(datagram);
                 if (log.isTraceEnabled()) {
                     log.trace("Received datagram of length {}: {}", datagram.getLength(), StringConverter
                             .arrayToHexString(datagram.getData(), datagram.getOffset(), datagram.getLength(), true));
                 }
                 dataIn(1, datagram.getLength());
-                handleFrame(timeService.getHresMissionTime(), datagram.getData(), datagram.getOffset() + initialBytesToStrip,
-                        datagram.getLength());
+                int frameLength = datagram.getLength() - initialBytesToStrip;
+                if (frameLength <= 0) {
+                    log.warn("Received datagram of size {} <= initialBytesToStrip {}; ignored", datagram.getLength(),
+                            initialBytesToStrip);
+                    invalidFrameCount.incrementAndGet();
+                    continue;
+                }
+                handleFrame(timeService.getHresMissionTime(), datagram.getData(),
+                        datagram.getOffset() + initialBytesToStrip, frameLength);
 
             } catch (IOException e) {
                 if (!isRunningAndEnabled()) {

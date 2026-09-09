@@ -2,6 +2,7 @@ package org.yamcs.tctm.ccsds;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Semaphore;
@@ -29,6 +30,7 @@ public class UplinkPacketHandler<T extends UplinkTransferFrame> extends Abstract
     private UplinkFrameFactory<T> frameFactory;
     boolean blockSenderOnQueueFull;
     private Semaphore dataAvailableSemaphore;
+    private TcFrameEncapsulator frameEncapsulator;
 
     public static final CommandOption OPTION_CCSDS_MAP_ID = new CommandOption("ccsdsMapId", "CCSDS MAP ID",
             CommandOptionType.NUMBER).withHelp("Override for the default MAP ID to be used in the CCSDS TC frames");
@@ -90,10 +92,20 @@ public class UplinkPacketHandler<T extends UplinkTransferFrame> extends Abstract
         List<PreparedCommand> l = new ArrayList<>();
         PreparedCommand pc;
         byte mapId = vmp.mapId;
+        Object aggregationKey = null;
 
         while ((pc = commandQueue.peek()) != null) {
             int pcLength = cmdPostProcessor.getBinaryLength(pc);
             if (framingLength + dataLength + pcLength <= vmp.getMaxFrameLength()) {
+                
+                // Flow for this VC. We need to check that all the commands are dispatched by the user with the same flow (either CAN or ETHERNET)
+                Object commandKey = frameEncapsulator == null ? null : frameEncapsulator.getAggregationKey(pc);
+                if (!l.isEmpty() && !Objects.equals(aggregationKey, commandKey)) {
+                    break;
+                }
+                if (l.isEmpty()) {
+                    aggregationKey = commandKey;
+                }
                 if (mapId >= 0) {
                     // MAP service for this VC. We need to check that all the commands are for the same MAP_ID
                     var mapIdOverride = getMapId(pc);
@@ -175,6 +187,11 @@ public class UplinkPacketHandler<T extends UplinkTransferFrame> extends Abstract
     public void setDataAvailableSemaphore(Semaphore dataAvailableSemaphore) {
         this.dataAvailableSemaphore = dataAvailableSemaphore;
 
+    }
+
+    @Override
+    public void setFrameEncapsulator(TcFrameEncapsulator frameEncapsulator) {
+        this.frameEncapsulator = frameEncapsulator;
     }
 
     @Override

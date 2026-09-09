@@ -97,10 +97,11 @@ public class LinkManager {
             var mementoDb = MementoDb.getInstance(instanceName);
             var memento = mementoDb.getObject(MEMENTO_KEY, LinkMemento.class)
                     .orElse(new LinkMemento());
+            var compositionResolver = new DataLinkCompositionResolver(instanceConfig);
 
             List<YConfiguration> linkConfigs = instanceConfig.getConfigList("dataLinks");
             for (YConfiguration linkConfig : linkConfigs) {
-                createDataLink(linkConfig, memento);
+                createDataLink(compositionResolver.resolve(linkConfig), memento);
             }
         } else {
             log.info("No link created because the section dataLinks was not found");

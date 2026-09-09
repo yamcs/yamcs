@@ -37,6 +37,9 @@ public class SimulatorArgs {
     @Parameter(names = "--tc-frame-port", description = "the UDP port where the simulator listens for TC frames")
     public int tcFramePort = 10018;
 
+    @Parameter(names = "--tc-frame-encoding", description = "TC frame UDP encoding: BCH, LDPC64, LDPC256 or RAW")
+    public String tcFrameEncoding = "BCH";
+
     @Parameter(names = "--uslp-tc-frame-port", description = "the UDP port where the simulator listens for USLP frames (0 = disabled)")
     public int uslpTcFramePort = 0;
 
@@ -64,6 +67,24 @@ public class SimulatorArgs {
 
     @Parameter(names = "--type", description = "one of: pus or col")
     public String type = "col";
+
+    @Parameter(names = "--no-tcp-tmtc", description = "disable TCP TM/TC/LOS packet links")
+    public boolean noTcpTmtc;
+
+    @Parameter(names = "--pus-time-type", description = "PUS time encoding type")
+    public String pusTimeType = "CUC";
+
+    @Parameter(names = "--pus-time-epoch", description = "PUS time epoch: SIMULATOR or UNIX")
+    public String pusTimeEpoch = "SIMULATOR";
+
+    @Parameter(names = "--pus-time-pfield", description = "PUS CUC time p-field")
+    public int pusTimePfield = 0x2F;
+
+    @Parameter(names = "--pus-time-pfield-cont", description = "PUS CUC time continuation p-field")
+    public int pusTimePfieldCont = -1;
+
+    @Parameter(names = "--pus-time-implicit-pfield", description = "do not emit the PUS CUC p-field on the wire")
+    public boolean pusTimeImplicitPfield = false;
 
     @Parameter(names = "--los-dir", converter = PathConverter.class)
     public Path losDir = Path.of("losData");

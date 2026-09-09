@@ -67,6 +67,9 @@
 			<IntegerArgumentType name="uint32" signed="false">
 				<IntegerDataEncoding encoding="unsigned" sizeInBits="32" />
 			</IntegerArgumentType>
+			<IntegerArgumentType name="uint64" signed="false">
+				<IntegerDataEncoding encoding="unsigned" sizeInBits="64" />
+			</IntegerArgumentType>
 		</ArgumentTypeSet>
 	</CommandMetaData>
 </SpaceSystem>

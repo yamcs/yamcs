@@ -1,0 +1,517 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem name="PUS21" xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
+	<Header validationStatus="Unknown" version="1.0" date="2026-08-10T00:00:00Z">
+		<NoteSet>
+			<Note>ST[21] Request Sequencing Service. See pus_analysis/pus21.md for the full design
+				rationale. In-scope subtypes: TC[21,1/2/3/4/5/6/8/9/11/13], TM[21,7/10/12/14].</Note>
+			<Note>request_sequence_ID: mission-fixed 16-byte (128-bit) character string -- the spec
+				leaves the length open (Note 3 in pus21.md).</Note>
+			<Note>delay: mission convention is uint32 milliseconds (Note 4 in pus21.md).</Note>
+			<Note>TC[21,1] "entries" / TM[21,12] entries: each entry embeds a complete, self-length-
+				delimited raw TC packet (own CCSDS primary-header length field), exactly the pattern
+				already used by Pus11Service.insertActivities() for TC[11,4] and by TM_19_11 in
+				pus19.xml for its embedded request. On the TC side, tc_packet is an unbounded
+				BinaryArgumentType (no SizeInBits -> encoder writes exactly the bytes supplied, see
+				DataEncodingEncoder.encodeRawBinary()). On the TM side, each entry is decoded via a
+				nested Pus21EmbeddedTcEntry container whose trailing tc_trailer member is sized off
+				the embedded packet's own packet_data_length field it just decoded (C+1 bytes) -- the
+				same ContainerRefEntry/RepeatEntry/DynamicValue machinery already shipped for
+				TM_19_11's ea_def_entry.</Note>
+			<Note>TC[21,2]/TC[21,8] (load by reference): two MetaCommand variants each
+				(_NO_PATH / _WITH_PATH) since XTCE cannot express an optional variable-length field.
+				Path components are length-prefixed binary members (sibling _len argument), the
+				standard ECSS "variable character-string" encoding -- same technique as TM_19_11's
+				request_len/request pair.</Note>
+		</NoteSet>
+	</Header>
+	<TelemetryMetaData>
+		<ParameterTypeSet>
+			<!-- request_sequence_ID: mission-fixed 16-byte (128-bit) character string -->
+			<StringParameterType name="seq_id_type">
+				<StringDataEncoding>
+					<SizeInBits>
+						<Fixed><FixedValue>128</FixedValue></Fixed>
+					</SizeInBits>
+				</StringDataEncoding>
+			</StringParameterType>
+
+			<!-- Table 8-22: sequence execution status -->
+			<EnumeratedParameterType name="seq_exec_status_type">
+				<IntegerDataEncoding sizeInBits="8" />
+				<EnumerationList>
+					<Enumeration value="0" label="inactive" />
+					<Enumeration value="1" label="under_execution" />
+				</EnumerationList>
+			</EnumeratedParameterType>
+
+			<!-- TM[21,7]: fixed-size entries, safe to model as a flat array -->
+			<AggregateParameterType name="seq_status_entry_type">
+				<MemberList>
+					<Member typeRef="seq_id_type" name="seq_id" />
+					<Member typeRef="seq_exec_status_type" name="exec_status" />
+				</MemberList>
+			</AggregateParameterType>
+			<ArrayParameterType arrayTypeRef="seq_status_entry_type" name="seq_status_array_type">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ParameterInstanceRef parameterRef="tm7_num_entries" />
+								<LinearAdjustment intercept="-1" />
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayParameterType>
+
+			<!-- TM[21,14]: flat array of fixed-length seq_id strings -->
+			<ArrayParameterType arrayTypeRef="seq_id_type" name="aborted_seq_ids_type">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ParameterInstanceRef parameterRef="num_aborted" />
+								<LinearAdjustment intercept="-1" />
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayParameterType>
+
+			<!-- TM[21,12]: entries carry a variable-length embedded TC, so they cannot use a flat
+			     ArrayParameterType. Decoded via nested ContainerRefEntry + RepeatEntry
+			     (Pus21EmbeddedTcEntry below), with tc_trailer dynamically sized per entry. -->
+			<BinaryParameterType name="embedded_hdr_prefix_type">
+				<!-- version/type/secheader/apid (2 bytes) + seqflags/seqcount (2 bytes) -->
+				<BinaryDataEncoding>
+					<SizeInBits><FixedValue>32</FixedValue></SizeInBits>
+				</BinaryDataEncoding>
+			</BinaryParameterType>
+			<BinaryParameterType name="embedded_tc_trailer_type">
+				<BinaryDataEncoding>
+					<SizeInBits>
+						<DynamicValue>
+							<!-- packet_data_length (C) parsed a moment earlier in this same entry
+							     instance; total trailer = (C+1) bytes -->
+							<ParameterInstanceRef parameterRef="embedded_packet_data_length" />
+							<LinearAdjustment slope="8" intercept="8" />
+						</DynamicValue>
+					</SizeInBits>
+				</BinaryDataEncoding>
+			</BinaryParameterType>
+
+			<IntegerParameterType signed="false" name="tm12_num_entries_type" baseType="/dt/uint8" />
+		</ParameterTypeSet>
+		<ParameterSet>
+			<Parameter parameterTypeRef="/dt/uint8" name="tm7_num_entries" />
+			<Parameter parameterTypeRef="seq_status_array_type" name="tm7_seq_status_entries" />
+
+			<Parameter parameterTypeRef="seq_id_type" name="tm10_seq_id" />
+			<Parameter parameterTypeRef="/dt/uint16" name="tm10_checksum_value" />
+
+			<Parameter parameterTypeRef="seq_id_type" name="tm12_seq_id" />
+			<Parameter parameterTypeRef="tm12_num_entries_type" name="tm12_num_entries" />
+			<Parameter parameterTypeRef="embedded_hdr_prefix_type" name="embedded_hdr_prefix" />
+			<Parameter parameterTypeRef="/dt/uint16" name="embedded_packet_data_length" />
+			<Parameter parameterTypeRef="embedded_tc_trailer_type" name="embedded_tc_trailer" />
+			<Parameter parameterTypeRef="/dt/uint32" name="tm12_delay" />
+
+			<Parameter parameterTypeRef="/dt/uint8" name="num_aborted" />
+			<Parameter parameterTypeRef="aborted_seq_ids_type" name="aborted_seq_ids" />
+		</ParameterSet>
+		<ContainerSet>
+			<SequenceContainer name="pus21-tm">
+				<EntryList />
+				<BaseContainer containerRef="/PUS/pus-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/type" comparisonOperator="==" value="21" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+
+			<!-- TM[21,7] Request sequence execution status report -->
+			<SequenceContainer name="TM_21_7" shortDescription="TM[21,7] Request sequence execution status report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="tm7_num_entries" />
+					<ArrayParameterRefEntry parameterRef="tm7_seq_status_entries">
+						<IncludeCondition>
+							<Comparison parameterRef="tm7_num_entries" comparisonOperator="&gt;" value="0" />
+						</IncludeCondition>
+					</ArrayParameterRefEntry>
+				</EntryList>
+				<BaseContainer containerRef="pus21-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="7" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+
+			<!-- TM[21,10] Request sequence checksum report -->
+			<SequenceContainer name="TM_21_10" shortDescription="TM[21,10] Request sequence checksum report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="tm10_seq_id" />
+					<ParameterRefEntry parameterRef="tm10_checksum_value" />
+				</EntryList>
+				<BaseContainer containerRef="pus21-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="10" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+
+			<!-- One TM[21,12] entry: embedded TC packet (self-length-delimited via its own
+			     packet_data_length) + delay. Free-standing container, only reached via the
+			     ContainerRefEntry below. -->
+			<SequenceContainer name="Pus21EmbeddedTcEntry">
+				<EntryList>
+					<ParameterRefEntry parameterRef="embedded_hdr_prefix" />
+					<ParameterRefEntry parameterRef="embedded_packet_data_length" />
+					<ParameterRefEntry parameterRef="embedded_tc_trailer" />
+					<ParameterRefEntry parameterRef="tm12_delay" />
+				</EntryList>
+			</SequenceContainer>
+
+			<!-- TM[21,12] Request sequence content report -->
+			<SequenceContainer name="TM_21_12" shortDescription="TM[21,12] Request sequence content report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="tm12_seq_id" />
+					<ParameterRefEntry parameterRef="tm12_num_entries" />
+					<ContainerRefEntry containerRef="Pus21EmbeddedTcEntry">
+						<RepeatEntry>
+							<Count>
+								<DynamicValue>
+									<ParameterInstanceRef parameterRef="tm12_num_entries" />
+								</DynamicValue>
+							</Count>
+						</RepeatEntry>
+					</ContainerRefEntry>
+				</EntryList>
+				<BaseContainer containerRef="pus21-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="12" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+
+			<!-- TM[21,14] Aborted request sequence report -->
+			<SequenceContainer name="TM_21_14" shortDescription="TM[21,14] Aborted request sequence report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="num_aborted" />
+					<ArrayParameterRefEntry parameterRef="aborted_seq_ids">
+						<IncludeCondition>
+							<Comparison parameterRef="num_aborted" comparisonOperator="&gt;" value="0" />
+						</IncludeCondition>
+					</ArrayParameterRefEntry>
+				</EntryList>
+				<BaseContainer containerRef="pus21-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="14" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+		</ContainerSet>
+	</TelemetryMetaData>
+
+	<CommandMetaData>
+		<ArgumentTypeSet>
+			<!-- request_sequence_ID: mission-fixed 16-byte (128-bit) character string -->
+			<StringArgumentType name="seq_id_arg_type">
+				<StringDataEncoding>
+					<SizeInBits>
+						<Fixed><FixedValue>128</FixedValue></Fixed>
+					</SizeInBits>
+				</StringDataEncoding>
+			</StringArgumentType>
+
+			<!-- TC[21,1]: each entry embeds a complete, self-length-delimited raw TC packet.
+			     No SizeInBits at all -> BinaryDataEncoding defaults to FIXED_SIZE, sizeInBits=-1 ->
+			     encoder writes exactly the bytes supplied by the caller, zero framing
+			     (DataEncodingEncoder.encodeRawBinary()). This is what makes the entry
+			     self-length-delimited on the wire instead of relying on an invented sibling length
+			     field; the on-board software (and the simulator emulating it) finds each entry's
+			     boundary by reading the embedded packet's own CCSDS length field. -->
+			<BinaryArgumentType name="tc_packet_arg_type" />
+			<AggregateArgumentType name="seq_entry_type">
+				<MemberList>
+					<Member typeRef="tc_packet_arg_type" name="tc_packet" />
+					<Member typeRef="/dt/uint32" name="delay" />
+				</MemberList>
+			</AggregateArgumentType>
+			<ArrayArgumentType arrayTypeRef="seq_entry_type" name="seq_entry_array_type">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="num_entries" />
+								<LinearAdjustment intercept="-1" />
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+
+			<!-- TC[21,2]/TC[21,8] "_WITH_PATH" variants: length-prefixed variable character-strings
+			     (standard ECSS encoding for a "variable character-string" field), same sibling-length
+			     technique as the embedded TC entries above. -->
+			<BinaryArgumentType name="repo_path_arg_type">
+				<BinaryDataEncoding>
+					<SizeInBits>
+						<DynamicValue>
+							<ArgumentInstanceRef argumentRef="repo_path_len" />
+							<LinearAdjustment slope="8" />
+						</DynamicValue>
+					</SizeInBits>
+				</BinaryDataEncoding>
+			</BinaryArgumentType>
+			<BinaryArgumentType name="file_name_arg_type">
+				<BinaryDataEncoding>
+					<SizeInBits>
+						<DynamicValue>
+							<ArgumentInstanceRef argumentRef="file_name_len" />
+							<LinearAdjustment slope="8" />
+						</DynamicValue>
+					</SizeInBits>
+				</BinaryDataEncoding>
+			</BinaryArgumentType>
+		</ArgumentTypeSet>
+		<MetaCommandSet>
+			<MetaCommand name="pus21-tc" abstract="true">
+				<BaseMetaCommand metaCommandRef="/PUS/pus-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="apid" argumentValue="1" />
+						<ArgumentAssignment argumentName="type" argumentValue="21" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="pus21-tc">
+					<EntryList />
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[21,1] Direct-load a request sequence -->
+			<MetaCommand name="TC_21_1" shortDescription="TC[21,1] Direct-load a request sequence">
+				<BaseMetaCommand metaCommandRef="pus21-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="1" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="seq_id" argumentTypeRef="seq_id_arg_type" />
+					<Argument name="num_entries" argumentTypeRef="/dt/uint8" />
+					<Argument name="entries" argumentTypeRef="seq_entry_array_type" />
+				</ArgumentList>
+				<CommandContainer name="TC_21_1">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="seq_id" />
+						<ArgumentRefEntry argumentRef="num_entries" />
+						<ArgumentRefEntry argumentRef="entries" />
+					</EntryList>
+					<BaseContainer containerRef="pus21-tc" />
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[21,2] Load a request sequence by reference (two variants, see NoteSet) -->
+			<MetaCommand name="TC_21_2_NO_PATH" shortDescription="TC[21,2] Load sequence by reference (no explicit path)">
+				<BaseMetaCommand metaCommandRef="pus21-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="2" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="seq_id" argumentTypeRef="seq_id_arg_type" />
+				</ArgumentList>
+				<CommandContainer name="TC_21_2_NO_PATH">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="seq_id" />
+					</EntryList>
+					<BaseContainer containerRef="pus21-tc" />
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="TC_21_2_WITH_PATH" shortDescription="TC[21,2] Load sequence by reference (explicit repository path + file name)">
+				<BaseMetaCommand metaCommandRef="pus21-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="2" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="seq_id" argumentTypeRef="seq_id_arg_type" />
+					<Argument name="repo_path_len" argumentTypeRef="/dt/uint8" />
+					<Argument name="repo_path" argumentTypeRef="repo_path_arg_type" />
+					<Argument name="file_name_len" argumentTypeRef="/dt/uint8" />
+					<Argument name="file_name" argumentTypeRef="file_name_arg_type" />
+				</ArgumentList>
+				<CommandContainer name="TC_21_2_WITH_PATH">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="seq_id" />
+						<ArgumentRefEntry argumentRef="repo_path_len" />
+						<ArgumentRefEntry argumentRef="repo_path" />
+						<ArgumentRefEntry argumentRef="file_name_len" />
+						<ArgumentRefEntry argumentRef="file_name" />
+					</EntryList>
+					<BaseContainer containerRef="pus21-tc" />
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[21,3] Unload a request sequence -->
+			<MetaCommand name="TC_21_3" shortDescription="TC[21,3] Unload a request sequence">
+				<BaseMetaCommand metaCommandRef="pus21-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="3" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="seq_id" argumentTypeRef="seq_id_arg_type" />
+				</ArgumentList>
+				<CommandContainer name="TC_21_3">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="seq_id" />
+					</EntryList>
+					<BaseContainer containerRef="pus21-tc" />
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[21,4] Activate a request sequence -->
+			<MetaCommand name="TC_21_4" shortDescription="TC[21,4] Activate a request sequence">
+				<BaseMetaCommand metaCommandRef="pus21-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="4" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="seq_id" argumentTypeRef="seq_id_arg_type" />
+				</ArgumentList>
+				<CommandContainer name="TC_21_4">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="seq_id" />
+					</EntryList>
+					<BaseContainer containerRef="pus21-tc" />
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[21,5] Abort a request sequence -->
+			<MetaCommand name="TC_21_5" shortDescription="TC[21,5] Abort a request sequence">
+				<BaseMetaCommand metaCommandRef="pus21-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="5" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="seq_id" argumentTypeRef="seq_id_arg_type" />
+				</ArgumentList>
+				<CommandContainer name="TC_21_5">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="seq_id" />
+					</EntryList>
+					<BaseContainer containerRef="pus21-tc" />
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[21,6] Report execution status of each request sequence (zero payload, triggers TM[21,7]) -->
+			<MetaCommand name="TC_21_6" shortDescription="TC[21,6] Report execution status of each request sequence">
+				<BaseMetaCommand metaCommandRef="pus21-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="6" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="TC_21_6">
+					<EntryList />
+					<BaseContainer containerRef="pus21-tc" />
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[21,8] Load by reference and activate a request sequence (two variants, see NoteSet) -->
+			<MetaCommand name="TC_21_8_NO_PATH" shortDescription="TC[21,8] Load by reference and activate (no explicit path)">
+				<BaseMetaCommand metaCommandRef="pus21-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="8" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="seq_id" argumentTypeRef="seq_id_arg_type" />
+				</ArgumentList>
+				<CommandContainer name="TC_21_8_NO_PATH">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="seq_id" />
+					</EntryList>
+					<BaseContainer containerRef="pus21-tc" />
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="TC_21_8_WITH_PATH" shortDescription="TC[21,8] Load by reference and activate (explicit repository path + file name)">
+				<BaseMetaCommand metaCommandRef="pus21-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="8" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="seq_id" argumentTypeRef="seq_id_arg_type" />
+					<Argument name="repo_path_len" argumentTypeRef="/dt/uint8" />
+					<Argument name="repo_path" argumentTypeRef="repo_path_arg_type" />
+					<Argument name="file_name_len" argumentTypeRef="/dt/uint8" />
+					<Argument name="file_name" argumentTypeRef="file_name_arg_type" />
+				</ArgumentList>
+				<CommandContainer name="TC_21_8_WITH_PATH">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="seq_id" />
+						<ArgumentRefEntry argumentRef="repo_path_len" />
+						<ArgumentRefEntry argumentRef="repo_path" />
+						<ArgumentRefEntry argumentRef="file_name_len" />
+						<ArgumentRefEntry argumentRef="file_name" />
+					</EntryList>
+					<BaseContainer containerRef="pus21-tc" />
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[21,9] Checksum a request sequence -->
+			<MetaCommand name="TC_21_9" shortDescription="TC[21,9] Checksum a request sequence">
+				<BaseMetaCommand metaCommandRef="pus21-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="9" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="seq_id" argumentTypeRef="seq_id_arg_type" />
+				</ArgumentList>
+				<CommandContainer name="TC_21_9">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="seq_id" />
+					</EntryList>
+					<BaseContainer containerRef="pus21-tc" />
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[21,11] Report the content of a request sequence -->
+			<MetaCommand name="TC_21_11" shortDescription="TC[21,11] Report the content of a request sequence">
+				<BaseMetaCommand metaCommandRef="pus21-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="11" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="seq_id" argumentTypeRef="seq_id_arg_type" />
+				</ArgumentList>
+				<CommandContainer name="TC_21_11">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="seq_id" />
+					</EntryList>
+					<BaseContainer containerRef="pus21-tc" />
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[21,13] Abort all request sequences and report (zero payload, triggers TM[21,14]) -->
+			<MetaCommand name="TC_21_13" shortDescription="TC[21,13] Abort all request sequences and report">
+				<BaseMetaCommand metaCommandRef="pus21-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="13" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="TC_21_13">
+					<EntryList />
+					<BaseContainer containerRef="pus21-tc" />
+				</CommandContainer>
+			</MetaCommand>
+		</MetaCommandSet>
+	</CommandMetaData>
+</SpaceSystem>

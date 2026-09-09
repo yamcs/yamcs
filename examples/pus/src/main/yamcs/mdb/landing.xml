@@ -133,8 +133,51 @@
 					</StaticAlarmRanges>
 				</DefaultAlarm>
 			</FloatParameterType>
+			<!-- ================================================================
+			     Enum-chart test parameters (HK struct id 5, TM[3,25] hkid==5).
+			     Driven by Pus3Service.fillEnumTest(), one report per second.
+			     Covers: dense enum incl. ordinal 0, sparse/non-monotonic
+			     ordinals, an enum that periodically emits an unmapped ordinal,
+			     and a boolean. See .claude/enum-chart-plan.md.
+			     ================================================================ -->
+			<EnumeratedParameterType name="EnumTestStateType">
+				<IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+				<EnumerationList>
+					<Enumeration value="0" label="OFF" />
+					<Enumeration value="1" label="ON" />
+					<Enumeration value="2" label="STANDBY" />
+					<Enumeration value="3" label="SAFE" />
+					<Enumeration value="4" label="FAULT" />
+				</EnumerationList>
+			</EnumeratedParameterType>
+			<EnumeratedParameterType name="EnumTestSparseType">
+				<IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+				<EnumerationList>
+					<Enumeration value="0" label="IDLE" />
+					<Enumeration value="3" label="ARMED" />
+					<Enumeration value="7" label="ACTIVE" />
+					<Enumeration value="25" label="DEGRADED" />
+					<Enumeration value="100" label="CRITICAL" />
+					<Enumeration value="200" label="LOST" />
+				</EnumerationList>
+			</EnumeratedParameterType>
+			<EnumeratedParameterType name="EnumTestPartialType">
+				<IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+				<EnumerationList>
+					<Enumeration value="10" label="NOMINAL" />
+					<Enumeration value="20" label="WARNING" />
+					<Enumeration value="30" label="ALARM" />
+				</EnumerationList>
+			</EnumeratedParameterType>
+			<BooleanParameterType name="EnumTestFlagType" oneStringValue="TRUE" zeroStringValue="FALSE">
+				<IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+			</BooleanParameterType>
 		</ParameterTypeSet>
 		<ParameterSet>
+			<Parameter parameterTypeRef="EnumTestStateType" name="EnumTest_State" />
+			<Parameter parameterTypeRef="EnumTestSparseType" name="EnumTest_Sparse" />
+			<Parameter parameterTypeRef="EnumTestPartialType" name="EnumTest_Partial" />
+			<Parameter parameterTypeRef="EnumTestFlagType" name="EnumTest_Flag" />
 			<Parameter parameterTypeRef="/dt/float32" name="ElapsedTime" />
 			<Parameter parameterTypeRef="/dt/float32" name="Longitude" />
 			<Parameter parameterTypeRef="/dt/float32" name="Latitude" />
@@ -503,6 +546,26 @@
 					<RestrictionCriteria>
 						<ComparisonList>
 							<Comparison parameterRef="../PUS/hkid" value="4" />
+						</ComparisonList>
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="EnumTest">
+				<AncillaryDataSet>
+					<AncillaryData name="Yamcs" mimeType="text/plain">UseAsArchivingPartition</AncillaryData>
+				</AncillaryDataSet>
+				<!-- Entries are sequential right after /PUS/hkid (uint32), matching the order
+				     Pus3Service.fillEnumTest() writes them. No explicit bit offsets. -->
+				<EntryList>
+					<ParameterRefEntry parameterRef="EnumTest_State" />
+					<ParameterRefEntry parameterRef="EnumTest_Sparse" />
+					<ParameterRefEntry parameterRef="EnumTest_Partial" />
+					<ParameterRefEntry parameterRef="EnumTest_Flag" />
+				</EntryList>
+				<BaseContainer containerRef="../PUS/hk25">
+					<RestrictionCriteria>
+						<ComparisonList>
+							<Comparison parameterRef="../PUS/hkid" value="5" />
 						</ComparisonList>
 					</RestrictionCriteria>
 				</BaseContainer>

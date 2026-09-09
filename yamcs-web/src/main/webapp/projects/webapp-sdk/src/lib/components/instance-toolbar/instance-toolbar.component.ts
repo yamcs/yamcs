@@ -7,7 +7,7 @@ import {
   input,
   OnDestroy,
 } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatIcon } from '@angular/material/icon';
 import { MatDivider } from '@angular/material/list';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
@@ -94,6 +94,8 @@ export class YaInstanceToolbar extends BaseComponent implements OnDestroy {
   allProcessors$ = new BehaviorSubject<Processor[]>([]);
 
   private connectedSubscription: Subscription;
+  private connectionLostDialogRef?: MatDialogRef<SessionExpiredDialogComponent>;
+  private reconnectGraceTimer?: ReturnType<typeof setTimeout>;
 
   constructor(
     private dialog: MatDialog,
@@ -122,12 +124,36 @@ export class YaInstanceToolbar extends BaseComponent implements OnDestroy {
     this.focusMode$ = this.appearanceService.focusMode$;
 
     this.connectedSubscription = this.connected$.subscribe((connected) => {
-      if (!connected && this.authService.user$.value) {
-        dialog.open(SessionExpiredDialogComponent, {
-          disableClose: true,
-          width: '400px',
-          height: '200px',
-        });
+      if (connected) {
+        // Reconnected on its own (WebSocketClient retries with backoff) -
+        // clear any pending or already-shown "connection lost" dialog.
+        if (this.reconnectGraceTimer) {
+          clearTimeout(this.reconnectGraceTimer);
+          this.reconnectGraceTimer = undefined;
+        }
+        this.connectionLostDialogRef?.close();
+        this.connectionLostDialogRef = undefined;
+      } else if (
+        this.authService.user$.value &&
+        !this.reconnectGraceTimer &&
+        !this.connectionLostDialogRef
+      ) {
+        // Give the WebSocket client a few seconds to auto-reconnect
+        // (e.g. after a brief network blip) before interrupting the
+        // user with a blocking dialog.
+        this.reconnectGraceTimer = setTimeout(() => {
+          this.reconnectGraceTimer = undefined;
+          if (!this.yamcs.yamcsClient.connected$.value) {
+            this.connectionLostDialogRef = dialog.open(
+              SessionExpiredDialogComponent,
+              {
+                disableClose: true,
+                width: '400px',
+                height: '200px',
+              },
+            );
+          }
+        }, 5000);
       }
     });
 
@@ -239,5 +265,8 @@ export class YaInstanceToolbar extends BaseComponent implements OnDestroy {
   ngOnDestroy() {
     this.processorSubscription?.cancel();
     this.connectedSubscription?.unsubscribe();
+    if (this.reconnectGraceTimer) {
+      clearTimeout(this.reconnectGraceTimer);
+    }
   }
 }

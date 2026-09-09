@@ -9,7 +9,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.yamcs.YamcsServer;
@@ -56,7 +58,11 @@ import org.yamcs.utils.ParameterFormatter;
 import org.yamcs.utils.ParameterFormatter.Header;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
+import org.yamcs.xtce.BooleanParameterType;
+import org.yamcs.xtce.EnumeratedParameterType;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.ParameterType;
+import org.yamcs.xtce.ValueEnumeration;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
@@ -540,6 +546,24 @@ public class ParameterValuesApi extends AbstractParameterValuesApi<Context> {
         Downsampler sampler = new Downsampler(start, stop, sampleCount);
         sampler.setUseRawValue(useRawValue);
         sampler.setGapTime(request.hasGapTime() ? request.getGapTime() : 120000);
+
+        // Enum and boolean (engineering) parameters are categorical: switch the sampler to last-value-per-bucket, so
+        // that a bucket spanning two states reports a state that actually occurred instead of an average between them.
+        // Enums additionally need the label->ordinal table, because the columnar retrieval path delivers String labels
+        // where the plot needs numeric ordinals. Booleans arrive as BOOLEAN values on both paths and need no table.
+        // Raw values of an enum or boolean parameter are plain integers and need none of this.
+        if (!useRawValue && pid.getPath() == null) {
+            ParameterType ptype = pid.getParameter().getParameterType();
+            if (ptype instanceof EnumeratedParameterType enumType) {
+                Map<String, Integer> labelToOrdinal = new HashMap<>();
+                for (ValueEnumeration ve : enumType.getValueEnumerationList()) {
+                    labelToOrdinal.put(ve.getLabel(), (int) ve.getValue());
+                }
+                sampler.enableCategoricalMode(labelToOrdinal);
+            } else if (ptype instanceof BooleanParameterType) {
+                sampler.enableCategoricalMode(null);
+            }
+        }
 
         ParameterRetrievalService prs = getParameterRetrievalService(ysi);
         ParameterRetrievalOptions opts = ParameterRetrievalOptions.newBuilder()
