@@ -6,6 +6,7 @@ import java.time.Instant;
 
 import org.junit.jupiter.api.Test;
 import org.yamcs.tctm.ccsds.time.CucTimeDecoder;
+import org.yamcs.utils.ByteSupplier;
 import org.yamcs.utils.StringConverter;
 
 public class CucTimeDecoderTest {
@@ -29,5 +30,18 @@ public class CucTimeDecoderTest {
 
         long rt = ctd.decodeRaw(b, 0);
         assertEquals(0x5B3F555E48B4l, rt);
+    }
+
+    @Test
+    public void testDecodeConsumesAllFractionalBytesEvenWhenClampingPrecision() {
+        // pfield, 4 basic time bytes, 3 fractional time bytes, then a sentinel byte that must remain unread
+        byte[] buf = { 0x2F, 0, 0, 0, 10, 1, 2, 3, (byte) 0xAA };
+        CucTimeDecoder ctd = new CucTimeDecoder(-1);
+        int[] pos = { 0 };
+        ByteSupplier supplier = () -> buf[pos[0]++];
+
+        ctd.decode(supplier);
+
+        assertEquals(8, pos[0]);
     }
 }

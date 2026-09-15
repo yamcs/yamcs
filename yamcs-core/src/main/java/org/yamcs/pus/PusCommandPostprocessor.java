@@ -12,7 +12,9 @@ import org.yamcs.CommandOption.CommandOptionType;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.actions.ActionResult;
 import org.yamcs.commanding.PreparedCommand;
+import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandId;
+import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.tctm.AbstractCommandPostProcessor;
 import org.yamcs.tctm.AbstractPacketPreprocessor;
 import org.yamcs.tctm.CcsdsPacket;
@@ -36,6 +38,22 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
     public static final CommandOption OPTION_SCHEDULE_TIME = new CommandOption("pus11ScheduleAt", "Schedule Time",
             CommandOptionType.TIMESTAMP).withHelp("If set, embeed this command into a PUS 11 SCHEDULE_TC commad");
 
+    /**
+     * Sub-schedule to insert the command into. Only registered (and only written into the TC(11,4)) when the
+     * {@code pus11 -> subScheduleId} block is present in the post-processor configuration.
+     */
+    public static final CommandOption OPTION_SUB_SCHEDULE_ID = new CommandOption("pus11SubScheduleId",
+            "PUS 11 Sub-schedule Id", CommandOptionType.NUMBER)
+                    .withHelp("Sub-schedule to insert the command into when it is scheduled via pus11ScheduleAt");
+
+    /**
+     * Scheduling group to associate the command with. Only registered (and only written into the TC(11,4)) when the
+     * {@code pus11 -> groupId} block is present in the post-processor configuration.
+     */
+    public static final CommandOption OPTION_GROUP_ID = new CommandOption("pus11GroupId",
+            "PUS 11 Scheduling Group Id", CommandOptionType.NUMBER)
+                    .withHelp("Scheduling group to associate the command with when it is scheduled via pus11ScheduleAt");
+
     static {
         YamcsServer.getServer().addCommandOption(OPTION_SCHEDULE_TIME);
     }
@@ -55,6 +73,15 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
      * if it is different than -1 it will be used as the APID for the TC(11,4)
      */
     int pus11Apid = -1;
+
+    // TC(11,4) sub-schedule id field: enabled and sized via the "pus11 -> subScheduleId" config block.
+    // width in bytes (0 = the field is not present in the TC(11,4))
+    int pus11SubScheduleIdBytes = 0;
+    long pus11SubScheduleIdDefault = 0;
+    // TC(11,4) scheduling group id field: enabled and sized via the "pus11 -> groupId" config block.
+    int pus11GroupIdBytes = 0;
+    long pus11GroupIdDefault = 0;
+
     // allow changing the sequence count during runtime
     private ChangeSeqCountAction seqCountAction = new ChangeSeqCountAction();
 
@@ -85,6 +112,37 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
         }
         if (config.containsKey("seqCounterName")) {
             seqFiller = new CcsdsSeqCountFiller(config.getString("seqCounterName"));
+        }
+
+        if (config.containsKey("pus11")) {
+            YConfiguration pus11Config = config.getConfig("pus11");
+            pus11SourceId = pus11Config.getInt("sourceId", pus11SourceId);
+
+            if (pus11Config.containsKey("subScheduleId")) {
+                YConfiguration ssConfig = pus11Config.getConfig("subScheduleId");
+                pus11SubScheduleIdBytes = ssConfig.getInt("bytes", 1);
+                pus11SubScheduleIdDefault = ssConfig.getLong("default", 0);
+                if (pus11SubScheduleIdBytes < 1 || pus11SubScheduleIdBytes > 8) {
+                    throw new ConfigurationException("pus11.subScheduleId.bytes must be between 1 and 8");
+                }
+                addCommandOption(OPTION_SUB_SCHEDULE_ID);
+            }
+            if (pus11Config.containsKey("groupId")) {
+                YConfiguration groupConfig = pus11Config.getConfig("groupId");
+                pus11GroupIdBytes = groupConfig.getInt("bytes", 1);
+                pus11GroupIdDefault = groupConfig.getLong("default", 0);
+                if (pus11GroupIdBytes < 1 || pus11GroupIdBytes > 8) {
+                    throw new ConfigurationException("pus11.groupId.bytes must be between 1 and 8");
+                }
+                addCommandOption(OPTION_GROUP_ID);
+            }
+        }
+    }
+
+    private static void addCommandOption(CommandOption option) {
+        var server = YamcsServer.getServer();
+        if (!server.hasCommandOption(option.getId())) {
+            server.addCommandOption(option);
         }
     }
 
@@ -129,8 +187,10 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
         if (pc.getAttribute("pus11ScheduleAt") != null) {
             try {
                 long scheduleTime = pc.getAttribute("pus11ScheduleAt").getValue().getTimestampValue();
+                long subScheduleId = attributeAsLong(pc, OPTION_SUB_SCHEDULE_ID.getId(), pus11SubScheduleIdDefault);
+                long groupId = attributeAsLong(pc, OPTION_GROUP_ID.getId(), pus11GroupIdDefault);
                 // We have embed the command into a PUS(11,4) insert into schedule TC
-                binary = buildScheduledTc(pc.getCommandId(), scheduleTime, binary);
+                binary = buildScheduledTc(pc.getCommandId(), scheduleTime, subScheduleId, groupId, binary);
             } catch (Exception e) {
                 String msg = "Error building the TC(11,4) command " + e.getMessage();
                 log.warn(msg);
@@ -142,15 +202,16 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
     }
 
 
-    byte[] buildScheduledTc(CommandId cmdId, long scheduleTime, byte[] binary) {
-
+    byte[] buildScheduledTc(CommandId cmdId, long scheduleTime, long subScheduleId, long groupId, byte[] binary) {
 
         // 6 bytes primary header
         // 5 bytes secondary header
-        // 1 byte schedule-id
+        // pus11SubScheduleIdBytes bytes sub-schedule id (0 if sub-schedules not configured)
         // 1 byte N
+        // pus11GroupIdBytes bytes group id (0 if groups not configured)
         // n bytes time
-        int scheduleTcLength = 13 + timeEncoder.getEncodedLength() + binary.length;
+        int scheduleTcLength = 12 + pus11SubScheduleIdBytes + pus11GroupIdBytes
+                + timeEncoder.getEncodedLength() + binary.length;
         if (pus11Crc) {
             scheduleTcLength += 2;
         }
@@ -173,13 +234,17 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
         // source id
         ByteArrayUtils.encodeUnsignedShort(pus11SourceId, scheduleTcPacket, offset);
         offset += 2;
-        // schedule id
-        scheduleTcPacket[offset++] = 1; // TODO scheduleId;
+        // sub-schedule id (only if sub-schedules are configured)
+        offset += encodeUnsigned(subScheduleId, scheduleTcPacket, offset, pus11SubScheduleIdBytes);
         // N (number of commands scheduled)
         scheduleTcPacket[offset++] = 1;
+        // group id of the single activity (only if groups are configured)
+        offset += encodeUnsigned(groupId, scheduleTcPacket, offset, pus11GroupIdBytes);
 
         if (tcoService == null) {
-            offset += timeEncoder.encode(scheduleTime, scheduleTcPacket, offset);
+            // no time correlation: encode the release time against the Unix epoch, which the receiver is
+            // expected to decode with timeEncoding.epoch = UNIX
+            offset += timeEncoder.encode(TimeEncoding.toUnixMillisec(scheduleTime), scheduleTcPacket, offset);
         } else {
             long obt = tcoService.getObt(scheduleTime);
             if (obt == Long.MIN_VALUE) {
@@ -192,8 +257,10 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
 
         int seqCount = seqFiller.fill(scheduleTcPacket); // write sequence count
 
-        commandHistoryPublisher.publish(cmdId, "pus11-apid", apid);
-        commandHistoryPublisher.publish(cmdId, "pus11-ccsds-seqcount", seqCount);
+        commandHistoryPublisher.publish(cmdId, "pus11Apid", apid);
+        commandHistoryPublisher.publish(cmdId, "pus11CcsdsSeqCount", seqCount);
+        // subScheduleId/groupId are not republished here: they are already recorded, correctly typed, as the
+        // pus11SubScheduleId/pus11GroupId command option attributes (set by the operator or defaulted at init()).
 
         if (pus11Crc) {
             int pos = scheduleTcPacket.length - 2;
@@ -201,19 +268,55 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
             log.debug("Appending checkword on position {}: {}", pos, Integer.toHexString(checkword));
             ByteArrayUtils.encodeUnsignedShort(checkword, scheduleTcPacket, pos);
         }
-        commandHistoryPublisher.publish(cmdId, "pus11-binary", scheduleTcPacket);
+        commandHistoryPublisher.publish(cmdId, "pus11Binary", scheduleTcPacket);
 
         return scheduleTcPacket;
     }
 
+    /**
+     * Big-endian encode the {@code nbytes} least significant bytes of {@code value} at {@code offset}. Returns
+     * {@code nbytes} so callers can advance their offset; a {@code nbytes} of 0 is a no-op.
+     */
+    static int encodeUnsigned(long value, byte[] buf, int offset, int nbytes) {
+        for (int i = nbytes - 1; i >= 0; i--) {
+            buf[offset + i] = (byte) (value & 0xFF);
+            value >>>= 8;
+        }
+        return nbytes;
+    }
+
+    private static long attributeAsLong(PreparedCommand pc, String id, long dflt) {
+        CommandHistoryAttribute cha = pc.getAttribute(id);
+        if (cha == null) {
+            return dflt;
+        }
+        Value v = cha.getValue();
+        return switch (v.getType()) {
+        case SINT32 -> v.getSint32Value();
+        case SINT64 -> v.getSint64Value();
+        case UINT32 -> v.getUint32Value() & 0xFFFFFFFFL;
+        case UINT64 -> v.getUint64Value();
+        case DOUBLE -> (long) v.getDoubleValue();
+        case FLOAT -> (long) v.getFloatValue();
+        case STRING -> Long.parseLong(v.getStringValue().trim());
+        default -> dflt;
+        };
+    }
+
     @Override
     public int getBinaryLength(PreparedCommand pc) {
-        byte[] binary = pc.getBinary();
+        int len = pc.getBinary().length;
         if (hasCrc(pc)) {
-            return binary.length + 2;
-        } else {
-            return binary.length;
+            len += 2;
         }
+        if (pc.getAttribute(OPTION_SCHEDULE_TIME.getId()) != null) {
+            // the command is wrapped into a TC(11,4); keep in sync with buildScheduledTc()
+            len += 12 + pus11SubScheduleIdBytes + pus11GroupIdBytes + timeEncoder.getEncodedLength();
+            if (pus11Crc) {
+                len += 2;
+            }
+        }
+        return len;
     }
 
     private boolean hasCrc(PreparedCommand pc) {

@@ -8,13 +8,6 @@ services:
   - class: org.yamcs.parameter.SystemParametersService
     args:
       producers: ['jvm', 'fs']
-  - class: org.yamcs.time.TimeCorrelationService
-    name: tco0
-    args:
-       onboardDelay: 0.02
-       accuracy: 0.5
-       validity: 1.0
-       defaultTof: 0.001
   - class: org.yamcs.ProcessorCreatorService
     args: 
       name: "realtime"
@@ -72,9 +65,8 @@ dataLinks:
            type: CRC-16-CCIIT
         timeEncoding:
            type: CUC
-           epoch: NONE           
-        tcoService: tco0
-    
+           epoch: UNIX
+
   - name: tc_realtime
     class: org.yamcs.tctm.TcpTcDataLink
     stream: tc_realtime
@@ -89,7 +81,17 @@ dataLinks:
         timeEncoding:
             implicitPfield: false
             pfield: 0x2f
-        tcoService: tco0
+        # PUS 11 time-based scheduling: a command issued with the pus11ScheduleAt option is
+        # wrapped into a TC[11,4]. The sub-schedule and scheduling group ids (and their field
+        # widths) are configured here; each enables the matching command option
+        # (pus11SubScheduleId / pus11GroupId). The simulator expects both, 1 byte each.
+        pus11:
+            subScheduleId:
+                bytes: 1
+                default: 1
+            groupId:
+                bytes: 1
+                default: 1
         
 mdb:
   # Configuration of the active loaders

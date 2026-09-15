@@ -10,7 +10,7 @@ Scenario:
   5. schedule again, leave group 5 enabled -> the command is released
   6. read back the group status (TM[11,27]) and the detail report (shows the group id)
 
-Run the example first:  ./run-example.sh pus
+Run the example first:  ./run-example.sh pus-frames
 """
 
 import time
@@ -43,7 +43,7 @@ def schedule_command(cmd_conn, command_name, args, delay_seconds):
 
 if __name__ == "__main__":
     client = YamcsClient("localhost:8090")
-    processor = client.get_processor("pus", "realtime")
+    processor = client.get_processor("pus-frames", "realtime")
     cmd_conn = processor.create_command_connection()
 
     print("Creating scheduling group", GROUP_ID)

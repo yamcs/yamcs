@@ -31,8 +31,11 @@
 						<!-- -1 means the algorithm will find the size -->
 						<FixedValue>-1</FixedValue>
 					</SizeInBits>
-					<FromBinaryTransformAlgorithm name="TimeBinaryDecoder">
-						<AlgorithmText language="java"> org.yamcs.algo.TimeBinaryDecoder({type: CUC, epoch: UNIX}) </AlgorithmText>
+					<FromBinaryTransformAlgorithm name="TimeBinaryDecoder">						
+						<AlgorithmText language="java">
+							<!-- type = CUC, epoch = NONE, timeCorrelationService = tco0-->
+       	   		    		org.yamcs.algo.TimeBinaryDecoder({type: CUC, epoch: NONE, tcoService: tco0})
+       	   	   			</AlgorithmText>
 					</FromBinaryTransformAlgorithm>
 				</BinaryDataEncoding>
 			</Encoding>
@@ -208,7 +211,10 @@
 							<FixedValue>-1</FixedValue>
 						</SizeInBits>
 						<ToBinaryTransformAlgorithm name="TimeBinaryEncoder">						
-							<AlgorithmText language="java"> org.yamcs.algo.TimeBinaryEncoder({type: CUC, epoch: UNIX, pfield: 0x2f, implicitPfield: false}) </AlgorithmText>
+							<AlgorithmText language="java">
+								<!-- type = CUC, epoch = NONE, timeCorrelationService = tco0-->
+       	   		    			org.yamcs.algo.TimeBinaryEncoder({type: CUC, epoch: NONE, tcoService: tco0, pfield: 0x2f, implicitPfield: false})
+       	   	   				</AlgorithmText>
 						</ToBinaryTransformAlgorithm>
 					</BinaryDataEncoding>
 				</Encoding>

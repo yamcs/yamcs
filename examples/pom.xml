@@ -36,6 +36,7 @@
     <module>perftest1</module>
     <module>perftest2</module>
     <module>pus</module>
+    <module>pus-frames</module>
     <module>replication1</module>
     <module>replication2</module>
     <module>replication3</module>

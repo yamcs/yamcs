@@ -14,6 +14,14 @@ public abstract class AbstractSimulator extends AbstractService {
 
     protected abstract void setLosLink(TcpTmTcLink losLink);
 
+    /**
+     * Set the TM frame link. Simulators that support sending their telemetry as CCSDS transfer frames override this and
+     * feed {@link UdpTmFrameLink#queuePacket}. The default is a no-op (packet-only simulator).
+     */
+    public void setTmFrameLink(UdpTmFrameLink tmFrameLink) {
+        // no frame support by default
+    }
+
     public abstract void transmitCfdp(CfdpPacket packet);
 
     public void setCfdpSender(CfdpSender cfdpSender) {

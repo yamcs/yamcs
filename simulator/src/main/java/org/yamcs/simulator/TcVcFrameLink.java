@@ -21,7 +21,8 @@ import org.yamcs.utils.StringConverter;
 public class TcVcFrameLink {
     private static final Logger log = LoggerFactory.getLogger(TcVcFrameLink.class);
     final static CrcCciitCalculator crc = new CrcCciitCalculator();
-    final ColSimulator simulator;
+    final AbstractSimulator simulator;
+    final TcPacketFactory pktFactory;
 
     // FARM parameters
     boolean lockout;
@@ -38,8 +39,10 @@ public class TcVcFrameLink {
     // Optionally, a security association to encrypt/decrypt data on the link
     SdlsSecurityAssociation maybeSdls = null;
 
-    public TcVcFrameLink(ColSimulator simulator, int vcId, SdlsSecurityAssociation maybeSdls) {
+    public TcVcFrameLink(AbstractSimulator simulator, TcPacketFactory pktFactory, int vcId,
+            SdlsSecurityAssociation maybeSdls) {
         this.simulator = simulator;
+        this.pktFactory = pktFactory;
         this.vcId = vcId;
 
         // If we have an encryption key, configure encryption
@@ -161,9 +164,14 @@ public class TcVcFrameLink {
 
     private void processCommand(byte[] data, int offset, int length) {
         ByteBuffer bb = ByteBuffer.wrap(data, offset, length).slice();
-        SimulatorCcsdsPacket packet = (CcsdsPacket.getAPID(bb) == CfdpCcsdsPacket.APID) ? new CfdpCcsdsPacket(bb)
-                : new ColumbusCcsdsPacket(bb);
-
+        SimulatorCcsdsPacket packet;
+        if (CcsdsPacket.getAPID(bb) == CfdpCcsdsPacket.APID) {
+            packet = new CfdpCcsdsPacket(bb);
+        } else {
+            byte[] b = new byte[bb.remaining()];
+            bb.get(b);
+            packet = pktFactory.getPacket(b);
+        }
         simulator.processTc(packet);
     }
 

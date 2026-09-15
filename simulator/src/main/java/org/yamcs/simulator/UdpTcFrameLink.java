@@ -24,7 +24,7 @@ import com.google.common.util.concurrent.AbstractExecutionThreadService;
  *
  */
 public class UdpTcFrameLink extends AbstractExecutionThreadService {
-    final ColSimulator simulator;
+    final AbstractSimulator simulator;
     int port;
     private DatagramSocket socket;
     DatagramPacket datagram;
@@ -35,11 +35,12 @@ public class UdpTcFrameLink extends AbstractExecutionThreadService {
     TcVcFrameLink[] vcHandlers;
     int[] clcw;
 
-    public UdpTcFrameLink(ColSimulator simulator, int port, SdlsSecurityAssociation maybeSdls) {
+    public UdpTcFrameLink(AbstractSimulator simulator, TcPacketFactory pktFactory, int port,
+            SdlsSecurityAssociation maybeSdls) {
         this.simulator = simulator;
         this.port = port;
         datagram = new DatagramPacket(new byte[2048], 2048);
-        vcHandlers = new TcVcFrameLink[] { new TcVcFrameLink(simulator, 0, maybeSdls) };
+        vcHandlers = new TcVcFrameLink[] { new TcVcFrameLink(simulator, pktFactory, 0, maybeSdls) };
         clcw = new int[] { vcHandlers[0].getCLCW() };
     }
 

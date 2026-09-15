@@ -23,6 +23,11 @@ import org.yamcs.utils.StringConverter;
  * 
  */
 public class Pus11Service extends AbstractPusService {
+    // Maximum number of sub-schedules that can be contemporaneously managed (ECSS 6.11.4.5c/6.11.5.1a)
+    static final int MAX_SUBSCHEDULES = 16;
+    // Maximum number of scheduling groups that can be contemporaneously managed (ECSS 6.11.6.1a)
+    static final int MAX_GROUPS = 16;
+
     ScheduledThreadPoolExecutor executor;
 
     int count;
@@ -32,6 +37,10 @@ public class Pus11Service extends AbstractPusService {
 
     // subschedule id -> subschedule status (true = enabled, false = disabled)
     Map<Integer, Boolean> subschStatus = new HashMap<>();
+
+    // scheduling group id -> group status (true = enabled, false = disabled).
+    // Groups only exist after an explicit TC[11,22]; there is no auto-creation.
+    Map<Integer, Boolean> groupStatus = new HashMap<>();
 
     Pus11Service(PusSimulator pusSimulator) {
         super(pusSimulator, 11);
@@ -64,6 +73,10 @@ public class Pus11Service extends AbstractPusService {
             log.info("Reseting the time-based schedule execution");
             enabled = false;
             commands.clear();
+            // ECSS 6.11.4.4c.4: enable all groups (they are kept, only their status is reset)
+            synchronized (groupStatus) {
+                groupStatus.replaceAll((id, status) -> true);
+            }
             ack_completion(tc);
         }
         // TC[11,4] insert activities into the time-based schedule
@@ -97,58 +110,229 @@ public class Pus11Service extends AbstractPusService {
         // TC[11,21] disable time-based sub-schedules
         case 21 -> disableSubschedule(tc);
         // TC[11,22] create time-based scheduling groups
-        case 22 -> nack_start(tc, START_ERR_NOT_IMPLEMENTED);
+        case 22 -> createGroups(tc);
         // TC[11,23] delete time-based scheduling groups
-        case 23 -> nack_start(tc, START_ERR_NOT_IMPLEMENTED);
+        case 23 -> deleteGroups(tc);
         // TC[11,24] enable time-based scheduling groups
-        case 24 -> nack_start(tc, START_ERR_NOT_IMPLEMENTED);
+        case 24 -> enableGroups(tc);
         // TC[11,25] disable time-based scheduling groups
-        case 25 -> nack_start(tc, START_ERR_NOT_IMPLEMENTED);
+        case 25 -> disableGroups(tc);
         // TC[11,26] report the status of each time-based scheduling group
-        case 26 -> nack_start(tc, START_ERR_NOT_IMPLEMENTED);
+        case 26 -> groupStatusReport(tc);
         default -> nack_start(tc, START_ERR_INVALID_PUS_SUBTYPE);
         }
     }
 
     private void insertActivities(PusTcPacket tc) {
-        ack_start(tc);
         ByteBuffer bb = tc.getUserDataBuffer();
         int subschedule = bb.get() & 0xFF;
         int n = bb.get() & 0xFF;
 
         log.info("Received {} command(s) for subschedule {}", n, subschedule);
 
-        var now = PusTime.now();
-
+        // ECSS 6.11.4.5c/d: reject the whole request if it would create a new sub-schedule
+        // beyond the maximum number that can be contemporaneously managed.
         synchronized (subschStatus) {
-            if (!subschStatus.containsKey(subschedule)) {
-                subschStatus.put(subschedule, true);
-            }
-        }
-        PusTime firstReleaseTime = null;
-
-        for (int i = 0; i < n; i++) {
-            PusTime releaseTime = PusTime.read(bb);
-            if (releaseTime.isBefore(now)) {
-                log.warn("Command schedule time {} is before now {}, rejecting command", releaseTime, now);
-                nack_completion(tc, COMPL_ERR_SCHEDULE_TIME_IN_THE_PAST);
+            if (!subschStatus.containsKey(subschedule) && subschStatus.size() >= MAX_SUBSCHEDULES) {
+                log.warn("Rejecting insert request: maximum number of sub-schedules ({}) already reached",
+                        MAX_SUBSCHEDULES);
+                nack_start(tc, START_ERR_MAX_SUBSCHEDULES_REACHED);
                 return;
             }
+        }
 
-            if (firstReleaseTime == null || releaseTime.isBefore(firstReleaseTime)) {
-                firstReleaseTime = releaseTime;
-            }
+        var now = PusTime.now();
+
+        // Parse all activities before applying any change so that a request referencing an
+        // unknown group is rejected as a whole (ECSS 6.11.4.5g.3).
+        List<ScheduledCommand> parsed = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
+            int group = bb.get() & 0xFF;
+            PusTime releaseTime = PusTime.read(bb);
             int length = (bb.getShort(bb.position() + 4) & 0xFFFF) + 7;
             byte[] packet = new byte[length];
             bb.get(packet);
-            log.info("Scheduling command {} at {}", StringConverter.arrayToHexString(packet), releaseTime);
 
-            ScheduledCommand sc = new ScheduledCommand(releaseTime, subschedule, new PusTcPacket(packet));
+            synchronized (groupStatus) {
+                if (!groupStatus.containsKey(group)) {
+                    log.warn("Rejecting insert request: scheduling group {} does not exist", group);
+                    nack_start(tc, START_ERR_UNKNOWN_GROUP);
+                    return;
+                }
+            }
+            parsed.add(new ScheduledCommand(releaseTime, subschedule, group, new PusTcPacket(packet)));
+        }
+
+        ack_start(tc);
+
+        synchronized (subschStatus) {
+            if (!subschStatus.containsKey(subschedule)) {
+                // ECSS 6.11.4.5j.1b: a sub-schedule created as a side effect of an insert starts disabled
+                subschStatus.put(subschedule, false);
+            }
+        }
+
+        for (var sc : parsed) {
+            if (sc.releaseTime.isBefore(now)) {
+                log.warn("Command schedule time {} is before now {}, rejecting command", sc.releaseTime, now);
+                nack_completion(tc, COMPL_ERR_SCHEDULE_TIME_IN_THE_PAST);
+                return;
+            }
+            log.info("Scheduling command {} at {} (subschedule {}, group {})",
+                    StringConverter.arrayToHexString(sc.tc.getBytes()), sc.releaseTime, sc.subschedule, sc.group);
             commands.add(sc);
         }
         scheduleNext();
 
         ack_completion(tc);
+    }
+
+    // ECSS 6.11.6.2.1 - TC[11,22] create time-based scheduling groups.
+    // Note: unlike the standard, which processes the valid instructions and reports the faulty ones,
+    // this simulator rejects the whole request on the first faulty instruction, consistently with
+    // the rest of this service.
+    private void createGroups(PusTcPacket tc) {
+        ByteBuffer bb = tc.getUserDataBuffer();
+        int n = bb.get() & 0xFF;
+        int[] ids = new int[n];
+        boolean[] groupEnabled = new boolean[n];
+
+        synchronized (groupStatus) {
+            for (int i = 0; i < n; i++) {
+                ids[i] = bb.get() & 0xFF;
+                groupEnabled[i] = (bb.get() & 0xFF) != 0;
+                if (groupStatus.containsKey(ids[i])) {
+                    log.warn("Rejecting TC[11,22]: scheduling group {} already exists", ids[i]);
+                    nack_start(tc, START_ERR_GROUP_EXISTS);
+                    return;
+                }
+                if (groupStatus.size() + i >= MAX_GROUPS) {
+                    log.warn("Rejecting TC[11,22]: maximum number of scheduling groups ({}) already reached",
+                            MAX_GROUPS);
+                    nack_start(tc, START_ERR_MAX_GROUPS_REACHED);
+                    return;
+                }
+            }
+            ack_start(tc);
+            for (int i = 0; i < n; i++) {
+                groupStatus.put(ids[i], groupEnabled[i]);
+                log.info("Created scheduling group {} ({})", ids[i], groupEnabled[i] ? "enabled" : "disabled");
+            }
+        }
+        ack_completion(tc);
+    }
+
+    // ECSS 6.11.6.2.2 - TC[11,23] delete time-based scheduling groups.
+    // N == 0 means "delete all groups that have no associated activity".
+    private void deleteGroups(PusTcPacket tc) {
+        ByteBuffer bb = tc.getUserDataBuffer();
+        int n = bb.get() & 0xFF;
+
+        synchronized (groupStatus) {
+            if (n == 0) {
+                ack_start(tc);
+                var it = groupStatus.keySet().iterator();
+                while (it.hasNext()) {
+                    int group = it.next();
+                    if (groupHasActivities(group)) {
+                        log.warn("Not deleting scheduling group {}: it has associated activities", group);
+                    } else {
+                        it.remove();
+                        log.info("Deleted scheduling group {}", group);
+                    }
+                }
+            } else {
+                int[] ids = new int[n];
+                for (int i = 0; i < n; i++) {
+                    ids[i] = bb.get() & 0xFF;
+                    if (!groupStatus.containsKey(ids[i])) {
+                        log.warn("Rejecting TC[11,23]: scheduling group {} does not exist", ids[i]);
+                        nack_start(tc, START_ERR_UNKNOWN_GROUP);
+                        return;
+                    }
+                    if (groupHasActivities(ids[i])) {
+                        log.warn("Rejecting TC[11,23]: scheduling group {} has associated activities", ids[i]);
+                        nack_start(tc, START_ERR_GROUP_HAS_ACTIVITIES);
+                        return;
+                    }
+                }
+                ack_start(tc);
+                for (int id : ids) {
+                    groupStatus.remove(id);
+                    log.info("Deleted scheduling group {}", id);
+                }
+            }
+        }
+        ack_completion(tc);
+    }
+
+    // ECSS 6.11.6.3.1 - TC[11,24] enable time-based scheduling groups
+    private void enableGroups(PusTcPacket tc) {
+        setGroupsStatus(tc, true);
+    }
+
+    // ECSS 6.11.6.3.2 - TC[11,25] disable time-based scheduling groups
+    private void disableGroups(PusTcPacket tc) {
+        setGroupsStatus(tc, false);
+    }
+
+    // N == 0 means "apply to all groups".
+    private void setGroupsStatus(PusTcPacket tc, boolean groupEnabled) {
+        ByteBuffer bb = tc.getUserDataBuffer();
+        int n = bb.get() & 0xFF;
+
+        synchronized (groupStatus) {
+            if (n == 0) {
+                ack_start(tc);
+                groupStatus.replaceAll((id, status) -> groupEnabled);
+                log.info("{} all scheduling groups", groupEnabled ? "Enabled" : "Disabled");
+            } else {
+                int[] ids = new int[n];
+                for (int i = 0; i < n; i++) {
+                    ids[i] = bb.get() & 0xFF;
+                    if (!groupStatus.containsKey(ids[i])) {
+                        log.warn("Rejecting TC[11,{}]: scheduling group {} does not exist",
+                                groupEnabled ? 24 : 25, ids[i]);
+                        nack_start(tc, START_ERR_UNKNOWN_GROUP);
+                        return;
+                    }
+                }
+                ack_start(tc);
+                for (int id : ids) {
+                    groupStatus.put(id, groupEnabled);
+                    log.info("{} scheduling group {}", groupEnabled ? "Enabled" : "Disabled", id);
+                }
+            }
+        }
+        ack_completion(tc);
+    }
+
+    // ECSS 6.11.6.3.3 - TC[11,26] report the status of each time-based scheduling group -> TM[11,27]
+    private void groupStatusReport(PusTcPacket tc) {
+        ack_start(tc);
+
+        synchronized (groupStatus) {
+            var pkt = newPacket(27, 4 + groupStatus.size() * 2);
+            var bb = pkt.getUserDataBuffer();
+
+            bb.putInt(groupStatus.size());
+            for (var me : groupStatus.entrySet()) {
+                bb.put(me.getKey().byteValue());
+                bb.put((byte) (me.getValue() ? 1 : 0));
+            }
+            pusSimulator.transmitRealtimeTM(pkt);
+        }
+
+        ack_completion(tc);
+    }
+
+    private boolean groupHasActivities(int group) {
+        for (var cmd : commands) {
+            if (cmd.group == group) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void deleteByRequestId(PusTcPacket tc) {
@@ -314,11 +498,12 @@ public class Pus11Service extends AbstractPusService {
     }
 
     private void sendSummaryReport(Collection<ScheduledCommand> cmds) {
-        var pkt = newPacket(13, 4 + cmds.size() * 15);
+        var pkt = newPacket(13, 4 + cmds.size() * 16);
         var bb = pkt.getUserDataBuffer();
         bb.putShort((short) cmds.size());
         for (var cmd : cmds) {
             bb.put((byte) cmd.subschedule);
+            bb.put((byte) cmd.group);
             cmd.releaseTime.encode(bb);
             encodeRequestId(bb, cmd.tc);
         }
@@ -336,7 +521,7 @@ public class Pus11Service extends AbstractPusService {
 
             while (iterator.hasNext()) {
                 ScheduledCommand cmd = iterator.next();
-                int cmdSize = 9 + cmd.tc.getLength();
+                int cmdSize = 10 + cmd.tc.getLength();
 
                 if (totalSize + cmdSize > MAX_DETAIL_REPORT_SIZE) {
                     break;
@@ -352,6 +537,7 @@ public class Pus11Service extends AbstractPusService {
             bb.putShort((short) batch.size());
             for (var cmd : batch) {
                 bb.put((byte) cmd.subschedule);
+                bb.put((byte) cmd.group);
                 cmd.releaseTime.encode(bb);
                 bb.put(cmd.tc.getBytes());
             }
@@ -468,6 +654,14 @@ public class Pus11Service extends AbstractPusService {
                         continue;
                     }
                 }
+                synchronized (groupStatus) {
+                    if (!groupStatus.getOrDefault(cmd.group, false)) {
+                        log.warn("Dropping command {} because the scheduling group {} is disabled or deleted",
+                                cmd.tc, cmd.group);
+                        commands.remove();
+                        continue;
+                    }
+                }
                 log.info("Executing command {}", cmd.tc);
                 commands.remove();
                 pusSimulator.processTc(cmd.tc);
@@ -493,12 +687,14 @@ public class Pus11Service extends AbstractPusService {
     static class ScheduledCommand implements Comparable<ScheduledCommand> {
         PusTime releaseTime;
         final int subschedule;
+        final int group;
         final PusTcPacket tc;
 
-        public ScheduledCommand(PusTime releaseTime, int subschedule, PusTcPacket tc) {
+        public ScheduledCommand(PusTime releaseTime, int subschedule, int group, PusTcPacket tc) {
             super();
             this.releaseTime = releaseTime;
             this.subschedule = subschedule;
+            this.group = group;
             this.tc = tc;
         }
 

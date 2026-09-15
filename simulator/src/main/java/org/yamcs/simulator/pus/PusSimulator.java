@@ -21,6 +21,7 @@ import org.yamcs.simulator.PowerHandler;
 import org.yamcs.simulator.RCSHandler;
 import org.yamcs.simulator.SimulatorCcsdsPacket;
 import org.yamcs.simulator.TcpTmTcLink;
+import org.yamcs.simulator.UdpTmFrameLink;
 
 /**
  * PUS (Packet Utilisation Standard) simulator.
@@ -65,6 +66,7 @@ public class PusSimulator extends AbstractSimulator {
 
     ScheduledThreadPoolExecutor executor;
     TcpTmTcLink tmLink;
+    UdpTmFrameLink tmFrameLink;
 
     FlightDataHandler flightDataHandler;
     DHSHandler dhsHandler;
@@ -144,11 +146,24 @@ public class PusSimulator extends AbstractSimulator {
 
     void transmitRealtimeTM(PusTmPacket packet) {
         packet.fillChecksum();
-        tmLink.sendPacket(packet.getBytes());
+        if (tmLink != null) {
+            tmLink.sendPacket(packet.getBytes());
+        }
+        if (tmFrameLink != null) {
+            tmFrameLink.queuePacket(0, packet.getBytes());
+        }
     }
 
     private void sendTimePacket() {
-        tmLink.sendImmediate(new PusTmTimePacket());
+        PusTmTimePacket packet = new PusTmTimePacket();
+        if (tmLink != null) {
+            tmLink.sendImmediate(packet);
+        }
+        if (tmFrameLink != null) {
+            // the ST[9] time packet must travel on a virtual channel so the ground can associate it
+            // with a frame (and its earth reception time) for time correlation
+            tmFrameLink.queuePacket(0, packet.getBytes());
+        }
     }
 
     @Override
@@ -268,6 +283,11 @@ public class PusSimulator extends AbstractSimulator {
     @Override
     protected void setTmLink(TcpTmTcLink tmLink) {
         this.tmLink = tmLink;
+    }
+
+    @Override
+    public void setTmFrameLink(UdpTmFrameLink tmFrameLink) {
+        this.tmFrameLink = tmFrameLink;
     }
 
     @Override

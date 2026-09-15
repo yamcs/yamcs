@@ -285,7 +285,7 @@ public class SimulatorCommander extends ProcessRunner {
             }
         }
 
-        if (simulator instanceof ColSimulator colSimulator) {
+        {
             if (runtimeOptions.tmFrameLength > 0) {
                 // Load a key for encryption/decryption if one was provided
                 final SdlsSecurityAssociation maybeSdlsTm, maybeSdlsTc;
@@ -319,11 +319,12 @@ public class SimulatorCommander extends ProcessRunner {
                     maybeSdlsTc = null;
                 }
 
-                UdpTcFrameLink tcFrameLink = new UdpTcFrameLink(colSimulator, runtimeOptions.tcFramePort, maybeSdlsTc);
+                UdpTcFrameLink tcFrameLink = new UdpTcFrameLink(simulator, pktFactory, runtimeOptions.tcFramePort,
+                        maybeSdlsTc);
 
                 UdpUslpFrameLink uslpFrameLink = null;
-                if (runtimeOptions.uslpTcFramePort > 0) {
-                    uslpFrameLink = new UdpUslpFrameLink(colSimulator, runtimeOptions.uslpTcFramePort);
+                if (runtimeOptions.uslpTcFramePort > 0 && simulator instanceof ColSimulator uslpColSim) {
+                    uslpFrameLink = new UdpUslpFrameLink(uslpColSim, runtimeOptions.uslpTcFramePort);
                     services.add(uslpFrameLink);
                 }
 
@@ -338,9 +339,11 @@ public class SimulatorCommander extends ProcessRunner {
 
                 services.add(tcFrameLink);
                 services.add(frameLink);
-                colSimulator.setTmFrameLink(frameLink);
+                simulator.setTmFrameLink(frameLink);
             }
+        }
 
+        if (simulator instanceof ColSimulator colSimulator) {
             if (runtimeOptions.perfNp > 0) {
                 PerfPacketGenerator ppg = new PerfPacketGenerator(
                         colSimulator,

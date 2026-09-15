@@ -42,18 +42,22 @@ ST[08] function management
 - No support in the simulator.
 
 ST[09] time management
-- The time sent by the simulator is obtained from System.nanoTime() and gives roughly the time since the computer has been started.
-- A standard hardcoded drift is applied.
-- Yamcs uses a time correlation service to correlate the simulator time with the "ground" time. 
-  The time correlation does not know about the drift or how the time is generated.
+- The simulator on-board time is a real Unix-epoch time (host wall clock) with a small hardcoded
+  drift applied. Yamcs decodes it directly (`timeEncoding: {type: CUC, epoch: UNIX}`); this example
+  does not use a time correlation service. See the `pus-frames` example for a setup where the
+  on-board time is correlated against the frame earth-reception time.
 - The time packet is sent every 4 seconds and changing that frequency is not supported.
 
 ST[10] (reserved)
 
 ST[11] time based scheduled. 
  - The Yamcs command post-processor generates the time based scheduled commands based on command attributes.
- - Most TC/TM supported in the simulator
- - A dedicated (web) UI application would be highly beneficial. (Anyone interested in sponsoring its development?)
+   Issue any command with the `pus11ScheduleAt` option set and it is wrapped into a TC[11,4] insert
+   activities request. The `pus11SubScheduleId` and `pus11GroupId` options select the sub-schedule and
+   the scheduling group; their defaults and field widths are configured in the `pus11` block of the
+   command post-processor (see `etc/yamcs.pus.yaml`).
+ - Most TC/TM supported in the simulator, including sub-schedules (TC[11,18..21]) and scheduling
+   groups (TC[11,22..26], TM[11,27]).
 
 ST[12] on-board monitoring
 - Standard Yamcs MDB definitions should suffice. 

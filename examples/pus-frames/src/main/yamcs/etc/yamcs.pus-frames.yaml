@@ -1,0 +1,163 @@
+services:
+  - class: org.yamcs.archive.XtceTmRecorder
+  - class: org.yamcs.archive.ParameterRecorder
+  - class: org.yamcs.archive.AlarmRecorder
+  - class: org.yamcs.archive.EventRecorder
+  - class: org.yamcs.archive.ReplayServer
+  - class: org.yamcs.archive.CcsdsTmIndex
+    args:
+      streams: [tm_realtime]
+  - class: org.yamcs.plists.ParameterListService
+  - class: org.yamcs.parameter.SystemParametersService
+    args:
+      producers: ['jvm', 'fs']
+  # Time correlation: the simulator on-board time is correlated against the earth reception time
+  # of the frame that carries each ST[9] time packet (see the UDP_FRAME_IN link below).
+  - class: org.yamcs.time.TimeCorrelationService
+    name: tco0
+    args:
+       onboardDelay: 0.02
+       accuracy: 0.5
+       validity: 1.0
+       defaultTof: 0.001
+       numSamples: 4
+       # start each run from scratch - the simulator on-board clock restarts when the simulator does
+       saveCoefficients: false
+  - class: org.yamcs.ProcessorCreatorService
+    args:
+      name: "realtime"
+      type: "realtime"
+  - class: org.yamcs.archive.CommandHistoryRecorder
+  - class: org.yamcs.parameterarchive.ParameterArchive
+  - class: org.yamcs.simulator.SimulatorCommander
+    args:
+      type: pus
+      # The PUS simulator sends its telemetry as CCSDS TM transfer frames on UDP and listens for
+      # TC frames (CLTUs) on UDP. There is no TCP tm/tc link in this example.
+      frame:
+        type: TM
+        tmHost: localhost
+        tmPort: 10017
+        tmFrameLength: 1115
+        tmFrameFreq: 10
+  - class: org.yamcs.cfdp.CfdpService
+    name: cfdp0
+    args:
+     sequenceNrLength: 4
+     maxPduSize: 512
+     incomingBucket: "cfdpDown"
+     eofAckTimeout: 3000
+     eofAckLimit: 5
+     sleepBetweenPdus: 1000
+     localEntities:
+       - name: default
+         id: 11
+         bucket: bucket1
+     remoteEntities:
+       - name: default
+         id: 5
+     senderFaultHandlers:
+       AckLimitReached: suspend
+  - class: org.yamcs.pus.PusEventDecoder
+    args:
+        eventIdParameter: /PUS5/event_id
+        eventTemplateFile: etc/events.json
+
+dataLinks:
+  # Receives CCSDS TM transfer frames (CCSDS 132.0-B) over UDP and distributes the packets of
+  # virtual channel 0 to the tm_realtime stream.
+  - name: UDP_FRAME_IN
+    class: org.yamcs.tctm.ccsds.UdpTmFrameLink
+    port: 10017
+    frameType: "TM"
+    spacecraftId: 0xAB
+    frameLength: 1115
+    frameHeaderErrorControlPresent: false
+    insertZoneLength: 0
+    errorDetection: CRC16
+    clcwStream: "clcw"
+    goodFrameStream: "good_frame_stream"
+    badFrameStream: "bad_frame_stream"
+    virtualChannels:
+      - vcId: 0
+        ocfPresent: true
+        service: "PACKET"
+        maxPacketLength: 2048
+        stream: "tm_realtime"
+        packetPreprocessorClassName: org.yamcs.pus.PusPacketPreprocessor
+        packetPreprocessorArgs:
+            errorDetection:
+               type: CRC-16-CCIIT
+            # epoch NONE => the decoded value is a raw on-board time, turned into UTC by the
+            # time correlation service
+            timeEncoding:
+               type: CUC
+               epoch: NONE
+            pktTimeOffset: 13
+            timePktTimeOffset: 7
+            performTimeCorrelation: true
+            goodFrameStream: "good_frame_stream"
+            tcoService: tco0
+
+  # Sends telecommands as COP-1 (FOP-1) TC frames, BCH-encoded CLTUs, over UDP.
+  - name: UDP_FRAME_OUT
+    class: org.yamcs.tctm.ccsds.UdpTcFrameLink
+    host: localhost
+    port: 10018
+    spacecraftId: 0xAB
+    maxFrameLength: 1024
+    cltuEncoding: BCH
+    # the simulator does not derandomize, so keep randomization off
+    errorDetection: CRC16
+    virtualChannels:
+      - vcId: 0
+        service: "PACKET"
+        stream: "tc_realtime"
+        useCop1: true
+        clcwStream: "clcw"
+        initialClcwWait: 10
+        commandPostprocessorClassName: org.yamcs.pus.PusCommandPostprocessor
+        commandPostprocessorArgs:
+            errorDetection:
+                type: CRC-16-CCIIT
+            timeEncoding:
+                implicitPfield: false
+                pfield: 0x2f
+            # with correlation established, the TC[11,4] release time is converted to on-board time
+            tcoService: tco0
+            pus11:
+                subScheduleId:
+                    bytes: 1
+                    default: 1
+                groupId:
+                    bytes: 1
+                    default: 1
+
+mdb:
+  - type: "xtce"
+    spec: "mdb/dt.xml"
+  - type: "xtce"
+    spec: "mdb/pus.xml"
+  - type: "xtce"
+    spec: "mdb/pus5.xml"
+  - type: "xtce"
+    spec: "mdb/pus11.xml"
+  - type: "xtce"
+    spec: "mdb/pus17.xml"
+  - type: "xtce"
+    spec: "mdb/landing.xml"
+
+streamConfig:
+  tm:
+    - name: "tm_realtime"
+      processor: "realtime"
+  invalidTm: "invalid_tm_stream"
+  cmdHist: ["cmdhist_realtime", "cmdhist_dump"]
+  event: ["events_realtime", "events_dump"]
+  param: ["pp_realtime", "sys_param", "proc_param"]
+  parameterAlarm: ["alarms_realtime"]
+  eventAlarm: ["event_alarms_realtime"]
+  tc:
+    - name: "tc_realtime"
+      processor: "realtime"
+  sqlFile: "etc/extra_streams.sql"

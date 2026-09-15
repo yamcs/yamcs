@@ -11,6 +11,12 @@ public abstract class AbstractPusService {
     // start errors
     static final int START_ERR_INVALID_PUS_SUBTYPE = 1;
     static final int START_ERR_NOT_IMPLEMENTED = 2;
+    // ST[11] time-based scheduling start errors
+    static final int START_ERR_MAX_SUBSCHEDULES_REACHED = 3;
+    static final int START_ERR_UNKNOWN_GROUP = 4;
+    static final int START_ERR_MAX_GROUPS_REACHED = 5;
+    static final int START_ERR_GROUP_HAS_ACTIVITIES = 6;
+    static final int START_ERR_GROUP_EXISTS = 7;
 
     // completion errors
     static final int COMPL_ERR_NOT_IMPLEMENTED = 2;

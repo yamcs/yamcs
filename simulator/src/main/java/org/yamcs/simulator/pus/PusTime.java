@@ -3,9 +3,12 @@ package org.yamcs.simulator.pus;
 import java.nio.ByteBuffer;
 
 /**
- * PUS time used by the simulator is 1 byte for the pfield, 4 bytes seconds and 3 bytes sub-second
- * 
- * The time is started at 0 when the simulator starts and drifts with a constant drift
+ * PUS time used by the simulator is 1 byte for the pfield, 4 bytes seconds and 3 bytes sub-second.
+ * <p>
+ * The seconds are counted from the Unix epoch (1970-01-01), so the value is a real on-board time that the ground can
+ * interpret directly (preprocessor {@code timeEncoding: {epoch: UNIX}}) without needing time correlation. It advances
+ * with a small constant drift relative to the host clock to keep the correlation demo in the {@code pus-frames} example
+ * meaningful.
  *
  */
 public class PusTime implements Comparable<PusTime> {
@@ -15,7 +18,9 @@ public class PusTime implements Comparable<PusTime> {
     static final byte TIME_PFIELD = (byte) 0x2F;
 
     static double drift = 1 + 1e-7;
-    static long t0 = System.nanoTime();
+    // host monotonic reference and the wall-clock instant it corresponds to
+    static final long t0 = System.nanoTime();
+    static final long epoch0Nanos = System.currentTimeMillis() * 1_000_000L;
 
     final int seconds;
     // 4 bytes unsigned
@@ -35,13 +40,9 @@ public class PusTime implements Comparable<PusTime> {
     }
 
     public static PusTime now() {
-        long nanos = System.nanoTime() - t0;
+        long nanos = epoch0Nanos + (long) ((System.nanoTime() - t0) * drift);
         int sec = (int) (nanos / NANOS_IN_SEC);
-        double fine = drift * ((nanos % NANOS_IN_SEC) / (double) NANOS_IN_SEC);
-        while (fine > 1) {
-            sec++;
-            fine -= 1;
-        }
+        double fine = (nanos % NANOS_IN_SEC) / (double) NANOS_IN_SEC;
         long fractionalTime = (long) (fine * MAX_FRACTIONAL_PART);
         return new PusTime(sec, fractionalTime);
     }
