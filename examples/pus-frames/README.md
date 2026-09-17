@@ -34,8 +34,8 @@ the correlation.
 ./run-example.sh pus-frames
 ```
 
-Then, once a correlation has been established (watch the events / the `tco0` status), the PUS 11
-scheduling test works the same as in the `pus` example:
+Then, once a correlation has been established (watch the events / the `tco0` status), try the PUS
+11 scheduling test:
 
 ```
 python3 examples/pus-frames/tests/test-pus11.py
@@ -43,7 +43,6 @@ python3 examples/pus-frames/tests/test-pus11.py
 
 ## Notes
 
-- Everything else (the PUS services supported, the MDB, the PUS 11 sub-schedule / scheduling
-  group behaviour) is identical to the [`pus`](../pus) example - see its README.
+- This example demonstrates ST[11] (time-based scheduling). The [`pus`](../pus) example
+  demonstrates ST[22] (position-based scheduling) instead 
 - The simulator sends TM frames at 10 Hz; if it has no data it sends idle frames.
-- There is no TCP tm/tc link in this example; the simulator only talks frames.

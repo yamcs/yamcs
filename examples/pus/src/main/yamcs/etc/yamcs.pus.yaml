@@ -81,18 +81,14 @@ dataLinks:
         timeEncoding:
             implicitPfield: false
             pfield: 0x2f
-        # PUS 11 time-based scheduling: a command issued with the pus11ScheduleAt option is
-        # wrapped into a TC[11,4]. The sub-schedule and scheduling group ids (and their field
-        # widths) are configured here; each enables the matching command option
-        # (pus11SubScheduleId / pus11GroupId). The simulator expects both, 1 byte each.
-        pus11:
+        pus22:
             subScheduleId:
                 bytes: 1
                 default: 1
             groupId:
                 bytes: 1
                 default: 1
-        
+
 mdb:
   # Configuration of the active loaders
   # Valid loaders are: sheet, xtce or fully qualified name of the class
@@ -103,9 +99,9 @@ mdb:
   - type: "xtce"
     spec: "mdb/pus5.xml"
   - type: "xtce"
-    spec: "mdb/pus11.xml"
-  - type: "xtce"
     spec: "mdb/pus17.xml"
+  - type: "xtce"
+    spec: "mdb/pus22.xml"
   - type: "xtce"
     spec: "mdb/landing.xml"
 

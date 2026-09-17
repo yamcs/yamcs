@@ -223,6 +223,10 @@
 			<Parameter parameterTypeRef="engbool" initialValue="False" name="AllowCriticalTC2">
 				<ParameterProperties dataSource="local" />
 			</Parameter>
+			<!-- ST[22] simulated orbit position (not an ECSS-defined report, a simulator convenience -
+			     see PusSimulator.sendHkTm(), hkid=5) -->
+			<Parameter parameterTypeRef="/PUS22/OrbitNumberType" name="OrbitNumber" />
+			<Parameter parameterTypeRef="/PUS22/OrbitAngleType" name="OrbitAngle" />
 		</ParameterSet>
 		<ContainerSet>
 			<SequenceContainer name="FlightData">
@@ -503,6 +507,22 @@
 					<RestrictionCriteria>
 						<ComparisonList>
 							<Comparison parameterRef="../PUS/hkid" value="4" />
+						</ComparisonList>
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="OrbitPosition">
+				<AncillaryDataSet>
+					<AncillaryData name="Yamcs" mimeType="text/plain">UseAsArchivingPartition</AncillaryData>
+				</AncillaryDataSet>
+				<EntryList>
+					<ParameterRefEntry parameterRef="OrbitNumber" />
+					<ParameterRefEntry parameterRef="OrbitAngle" />
+				</EntryList>
+				<BaseContainer containerRef="../PUS/hk25">
+					<RestrictionCriteria>
+						<ComparisonList>
+							<Comparison parameterRef="../PUS/hkid" value="5" />
 						</ComparisonList>
 					</RestrictionCriteria>
 				</BaseContainer>

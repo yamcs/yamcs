@@ -11,7 +11,7 @@ public abstract class AbstractPusService {
     // start errors
     static final int START_ERR_INVALID_PUS_SUBTYPE = 1;
     static final int START_ERR_NOT_IMPLEMENTED = 2;
-    // ST[11] time-based scheduling start errors
+    // scheduling (ST[11] time-based / ST[22] position-based) start errors, shared by both services
     static final int START_ERR_MAX_SUBSCHEDULES_REACHED = 3;
     static final int START_ERR_UNKNOWN_GROUP = 4;
     static final int START_ERR_MAX_GROUPS_REACHED = 5;
@@ -22,6 +22,7 @@ public abstract class AbstractPusService {
     static final int COMPL_ERR_NOT_IMPLEMENTED = 2;
     static final int COMPL_ERR_INVALID_EVENT_ID = 3;
     static final int COMPL_ERR_SCHEDULE_TIME_IN_THE_PAST = 4;
+    static final int COMPL_ERR_SCHEDULE_POSITION_IN_THE_PAST = 5;
 
     protected final Logger log = LoggerFactory.getLogger(this.getClass());
     protected final PusSimulator pusSimulator;

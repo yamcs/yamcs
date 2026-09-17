@@ -50,12 +50,17 @@ ST[09] time management
 
 ST[10] (reserved)
 
-ST[11] time based scheduled. 
+ST[11] time based scheduled.
+ - **Not wired up in this example** - see the `pus-frames` example, which demonstrates ST[11]
+   instead of ST[22] (see below). The simulator itself supports both regardless of which example
+   you run; the two examples were deliberately split one-service-each so their command options
+   (`pus11*` / `pus22*`) don't get interleaved in the same instance's command form (Yamcs does not
+   currently group/sort command options).
  - The Yamcs command post-processor generates the time based scheduled commands based on command attributes.
    Issue any command with the `pus11ScheduleAt` option set and it is wrapped into a TC[11,4] insert
    activities request. The `pus11SubScheduleId` and `pus11GroupId` options select the sub-schedule and
    the scheduling group; their defaults and field widths are configured in the `pus11` block of the
-   command post-processor (see `etc/yamcs.pus.yaml`).
+   command post-processor (see `pus-frames/etc/yamcs.pus-frames.yaml`).
  - Most TC/TM supported in the simulator, including sub-schedules (TC[11,18..21]) and scheduling
    groups (TC[11,22..26], TM[11,27]).
 
@@ -100,8 +105,21 @@ ST[21] request sequencing
 - No support in the simulator.
 
 ST[22] position-based scheduling
-- Not supported. Probably could be implemented similarily with ST[11]
-- No support in the simulator.
+ - **This is the example that demonstrates ST[22]** (ST[11] is demonstrated in `pus-frames`
+   instead - see above). Try it with `examples/pus/tests/test-pus22.py`.
+ - Structurally the same implementation as ST[11] (see above), keyed on a position tag
+   (`orbit_number`, `orbit_angle`) instead of a time. Issue any command with the
+   `pus22OrbitNumber` and `pus22OrbitAngle` (degrees) options set and it is wrapped into a
+   TC[22,4] insert activities request; `pus22SubScheduleId`/`pus22GroupId` select the
+   sub-schedule/group, configured the same way as their `pus11` counterparts.
+ - Sub-schedules, scheduling groups (TC[22,18..21], TC[22,22..26]/TM[22,27]), and `TC[22,28]`
+   "set the orbit number" (applies at the next orbit wrap, ECSS 6.22.6.4) are all supported by
+   the simulator.
+ - The simulator's "orbit" is a simple synthetic clock: `orbit_angle` sweeps 0..360 degrees
+   uniformly over a fixed 90 minute period, `orbit_number` increments
+   on each wrap. It is exposed as telemetry (`OrbitNumber`/`OrbitAngle`, `hkid=5`) so you can see
+   where a scheduled activity's target position is relative to the current one.
+ - Persistent scheduling (ECSS 6.22.5) is not supported - every activity is one-shot, like ST[11].
 
 ST[23] file management 
 - TODO: to augument the existing CFDP support in Yamcs with functionality for showing the list of files on the remote system.

@@ -45,6 +45,14 @@ public class PusCommandPostprocessorTest {
                         "groupId", Map.of("bytes", 1, "default", 4))));
     }
 
+    private static YConfiguration pus22SchedulingConfig() {
+        return YConfiguration.wrap(Map.of(
+                "errorDetection", Map.of("type", "CRC-16-CCIIT"),
+                "pus22", Map.of(
+                        "subScheduleId", Map.of("bytes", 1, "default", 1),
+                        "groupId", Map.of("bytes", 1, "default", 4))));
+    }
+
     /** minimal 16 byte CCSDS TC packet, APID 100 */
     private static byte[] innerCommand() {
         byte[] b = new byte[16];
@@ -164,6 +172,92 @@ public class PusCommandPostprocessorTest {
         // 6 primary + 5 secondary hdr + 1 N + time + inner + 2 crc  (no sub-schedule, no group byte)
         assertEquals(12 + tlen + inner.length + 2, wrapped.length);
         assertEquals(1, wrapped[11] & 0xff); // N right after the 2 byte source id
+    }
+
+    // ---- ST[22] position-based scheduling ----
+
+    @Test
+    public void testPus22OptionsRegisteredWhenConfigured() {
+        newPostprocessor(pus22SchedulingConfig());
+        var server = YamcsServer.getServer();
+        assertTrue(server.hasCommandOption("pus22SubScheduleId"));
+        assertTrue(server.hasCommandOption("pus22GroupId"));
+        // pus22OrbitNumber/pus22OrbitAngle are the base trigger, always registered (mirrors pus11ScheduleAt)
+        assertTrue(server.hasCommandOption("pus22OrbitNumber"));
+        assertTrue(server.hasCommandOption("pus22OrbitAngle"));
+    }
+
+    @Test
+    public void testPus22ScheduledDefaultIds() {
+        var pp = newPostprocessor(pus22SchedulingConfig());
+        byte[] inner = pp.process(pc(innerCommand())); // 18 bytes, with inner CRC
+
+        var pp2 = newPostprocessor(pus22SchedulingConfig());
+        byte[] wrapped = pp2.process(pc(innerCommand(),
+                attr("pus22OrbitNumber", ValueHelper.newValue(42)),
+                attr("pus22OrbitAngle", ValueHelper.newValue(90.0))));
+
+        // 6 primary + 0x2D + type + subtype + 2 src + 1 subsched + 1 N + 1 group + 6 position tag + inner + 2 crc
+        assertEquals(14 + 6 + inner.length + 2, wrapped.length);
+        assertEquals((byte) 0x2d, wrapped[6]);
+        assertEquals(22, wrapped[7]);
+        assertEquals(4, wrapped[8]);
+        assertEquals(0, ByteArrayUtils.decodeUnsignedShort(wrapped, 9)); // source id
+        assertEquals(1, wrapped[11] & 0xff); // sub-schedule id default
+        assertEquals(1, wrapped[12] & 0xff); // N
+        assertEquals(4, wrapped[13] & 0xff); // group id default
+        assertEquals(42, ByteArrayUtils.decodeInt(wrapped, 14)); // orbit number
+        int angleTicks = ByteArrayUtils.decodeUnsignedShort(wrapped, 18);
+        assertEquals(Math.round(90.0 * 65536 / 360.0), angleTicks); // 90 degrees
+        assertArrayEquals(inner, Arrays.copyOfRange(wrapped, 20, 20 + inner.length));
+    }
+
+    @Test
+    public void testPus22ScheduledExplicitIds() {
+        var pp = newPostprocessor(pus22SchedulingConfig());
+
+        byte[] wrapped = newPostprocessor(pus22SchedulingConfig()).process(pc(innerCommand(),
+                attr("pus22OrbitNumber", ValueHelper.newValue(7)),
+                attr("pus22OrbitAngle", ValueHelper.newValue(0.0)),
+                attr("pus22SubScheduleId", ValueHelper.newValue(3)),
+                attr("pus22GroupId", ValueHelper.newValue(9))));
+
+        assertEquals(3, wrapped[11] & 0xff);
+        assertEquals(1, wrapped[12] & 0xff);
+        assertEquals(9, wrapped[13] & 0xff);
+        assertEquals(7, ByteArrayUtils.decodeInt(wrapped, 14));
+        assertEquals(0, ByteArrayUtils.decodeUnsignedShort(wrapped, 18)); // 0 degrees -> tick 0
+    }
+
+    @Test
+    public void testPus22GetBinaryLengthMatchesProcessed() {
+        var pp = newPostprocessor(pus22SchedulingConfig());
+        var plain = pc(innerCommand());
+        assertEquals(pp.process(plain).length, pp.getBinaryLength(plain));
+
+        var scheduled = pc(innerCommand(),
+                attr("pus22OrbitNumber", ValueHelper.newValue(5)),
+                attr("pus22OrbitAngle", ValueHelper.newValue(180.0)),
+                attr("pus22SubScheduleId", ValueHelper.newValue(2)),
+                attr("pus22GroupId", ValueHelper.newValue(9)));
+        assertEquals(pp.process(scheduled).length, pp.getBinaryLength(scheduled));
+    }
+
+    @Test
+    public void testPus22SubScheduleAndGroupIdNotRedundantlyPublished() {
+        var hist = new CapturingCommandHistoryPublisher();
+        var pp = newPostprocessor(pus22SchedulingConfig(), hist);
+
+        pp.process(pc(innerCommand(),
+                attr("pus22OrbitNumber", ValueHelper.newValue(5)),
+                attr("pus22OrbitAngle", ValueHelper.newValue(45.0)),
+                attr("pus22SubScheduleId", ValueHelper.newValue(3)),
+                attr("pus22GroupId", ValueHelper.newValue(7))));
+
+        assertTrue(!hist.attrs.containsKey("pus22-subschedule-id"));
+        assertTrue(!hist.attrs.containsKey("pus22-group-id"));
+        assertTrue(hist.attrs.get("pus22Apid") instanceof Integer);
+        assertTrue(hist.attrs.get("pus22CcsdsSeqCount") instanceof Integer);
     }
 
     private static class DummyCommandHistoryPublisher implements CommandHistoryPublisher {

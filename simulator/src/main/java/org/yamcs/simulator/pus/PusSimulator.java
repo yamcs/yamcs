@@ -38,6 +38,7 @@ import org.yamcs.simulator.UdpTmFrameLink;
  * <li>ST[13] - large packet transfer - TODO</li>
  * <li>ST[15] - on-board storage and retrieval - TODO</li>
  * <li>ST[17] - test</li>
+ * <li>ST[22] - position based schedule</li>
  * <li>ST[23] - file management - TODO</li>
  * 
  * <li>
@@ -77,6 +78,7 @@ public class PusSimulator extends AbstractSimulator {
     Pus5Service pus5Service;
     Pus11Service pus11Service;
     Pus17Service pus17Service;
+    Pus22Service pus22Service;
 
     protected BlockingQueue<PusTcPacket> pendingCommands = new ArrayBlockingQueue<>(100);
 
@@ -90,6 +92,7 @@ public class PusSimulator extends AbstractSimulator {
         pus5Service = new Pus5Service(this);
         pus11Service = new Pus11Service(this);
         pus17Service = new Pus17Service(this);
+        pus22Service = new Pus22Service(this);
     }
 
     @Override
@@ -104,6 +107,7 @@ public class PusSimulator extends AbstractSimulator {
 
         pus5Service.start();
         pus11Service.start();
+        pus22Service.start();
     }
 
     private void sendFlightPacket() {
@@ -138,6 +142,13 @@ public class PusSimulator extends AbstractSimulator {
             buffer = packet.getUserDataBuffer();
             buffer.putInt(4);
             epslvpduHandler.fillPacket(buffer.slice());
+            transmitRealtimeTM(packet);
+
+            // hkid 5: ST[22] simulated orbit position
+            packet = new PusTmPacket(MAIN_APID, 4 + PusPosition.LENGTH_BYTES, PUS_TYPE_HK, 25);
+            buffer = packet.getUserDataBuffer();
+            buffer.putInt(5);
+            pus22Service.currentPosition().encode(buffer);
             transmitRealtimeTM(packet);
         } catch (Exception e) {
             e.printStackTrace();
@@ -248,6 +259,7 @@ public class PusSimulator extends AbstractSimulator {
                 case 5 -> pus5Service.executeTc(commandPacket);
                 case 11 -> pus11Service.executeTc(commandPacket);
                 case 17 -> pus17Service.executeTc(commandPacket);
+                case 22 -> pus22Service.executeTc(commandPacket);
                 case 25 -> {
                     switch (commandPacket.getSubtype()) {
                     case 1 -> switchBatteryOn(commandPacket);

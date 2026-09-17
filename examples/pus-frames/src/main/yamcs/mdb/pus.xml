@@ -22,6 +22,7 @@
 					<Enumeration label="COMPLETION_ERROR_2" value="2" />
 					<Enumeration label="INVALID_EVENT_ID" value="3" />
 					<Enumeration label="SCHEDULE_TIME_IN_THE_PAST" value="4" />
+					<Enumeration label="SCHEDULE_POSITION_IN_THE_PAST" value="5" />
 				</EnumerationList>
 			</EnumeratedParameterType>
 		<AbsoluteTimeParameterType name="PusTimeType">
