@@ -42,6 +42,11 @@ public class AbstractStaxReader implements AutoCloseable {
         factory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
         factory.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
 
+        // XTCE does not use DTDs; disabling them blocks entity-expansion
+        // (Billion Laughs) payloads before they reach the expansion stage
+        factory.setProperty(XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
+        factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
+
         return factory.createXMLEventReader(in);
     }
 
