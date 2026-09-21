@@ -204,6 +204,17 @@ public class ReplicationMaster extends AbstractYamcsService {
     // called at startup, after having scanned all the replication files on disk,
     // the last one will be opened in case it is not full
     private void initCurrentFile() throws IOException, InitException {
+        while (!replFiles.isEmpty()) {
+            long firstTxId = replFiles.lastKey();
+            Path path = getPath(firstTxId);
+            if (!ReplicationFile.isUninitialized(path)) {
+                break;
+            }
+            log.warn("Replication file {} has no header (creation was probably interrupted); deleting it", path);
+            Files.delete(path);
+            replFiles.remove(firstTxId);
+        }
+
         if (replFiles.isEmpty()) {
             openNewFile(null);
         } else { // open last file
