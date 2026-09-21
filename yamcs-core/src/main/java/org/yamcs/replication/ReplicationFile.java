@@ -356,6 +356,32 @@ public class ReplicationFile implements Closeable {
     }
 
     /**
+     * Returns true if the file has no header written: it is empty or its first {@link #MAGIC} bytes are all zero.
+     * <p>
+     * Such a file is left behind when the creation was interrupted before the header could be written.
+     */
+    public static boolean isUninitialized(Path path) throws IOException {
+        if (Files.size(path) == 0) {
+            return true;
+        }
+        try (FileChannel fc = FileChannel.open(path, StandardOpenOption.READ)) {
+            ByteBuffer bb = ByteBuffer.allocate(MAGIC.length);
+            while (bb.hasRemaining()) {
+                if (fc.read(bb) < 0) {
+                    break;
+                }
+            }
+            bb.flip();
+            while (bb.hasRemaining()) {
+                if (bb.get() != 0) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
+    /**
      * Write transaction to the file and returns the transaction id.
      * <p>
      * returns -1 if the transaction could not be written because the file is full.
