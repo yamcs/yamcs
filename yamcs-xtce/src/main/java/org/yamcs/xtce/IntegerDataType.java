@@ -125,23 +125,15 @@ public abstract class IntegerDataType extends NumericDataType {
     @Override
     public Long convertType(Object value) {
         if (value instanceof Number) {
+            if (value instanceof Double || value instanceof Float) {
+                double d = ((Number) value).doubleValue();
+                if (Double.isNaN(d) || d < MIN_LONG_AS_DOUBLE || d >= MAX_LONG_AS_DOUBLE_EXCLUSIVE) {
+                    throw notFitException(value);
+                }
+            }
             long longValue = ((Number) value).longValue();
-            boolean negative = longValue < 0;
-
-            BigInteger bn = BigInteger.valueOf(negative ? -longValue : longValue);
-            int bs = sizeInBits;
-            if (signed) {
-                bs--;
-            }
-            if (bn.bitLength() > bs) {
-                throw new NumberFormatException("Number " + longValue + " does not fit the bit size (" + sizeInBits
-                        + (signed ? "/signed" : "unsigned") + ")");
-            }
-            long x = bn.longValue();
-            if (negative) {
-                x = -x;
-            }
-            return x;
+            checkFits(longValue);
+            return longValue;
         } else if (value instanceof String) {
             String stringValue = (String) value;
             String sv = stringValue.replace("_", "");
@@ -191,9 +183,8 @@ public abstract class IntegerDataType extends NumericDataType {
             if (signed) {
                 bs--;
             }
-            if (bn.bitLength() > bs) {
-                throw new NumberFormatException("Number " + stringValue + " does not fit the bit size (" + sizeInBits
-                        + (signed ? "/signed" : "unsigned") + ")");
+            if (bn.bitLength() > bs && !isSignedMinValue(bn, bs, negative)) {
+                throw notFitException(stringValue);
             }
             long x = bn.longValue();
             if (negative) {
@@ -203,6 +194,45 @@ public abstract class IntegerDataType extends NumericDataType {
         } else {
             throw new IllegalArgumentException("Cannot convert value of type '" + value.getClass() + "'");
         }
+    }
+
+    /**
+     * A negative value whose magnitude is exactly {@code 2^bs} is the smallest representable signed value (e.g. -128
+     * for a signed 8 bit type), and its magnitude needs {@code bs + 1} bits to represent, one more than any
+     * positive value of the same type. That is not an overflow.
+     */
+    private boolean isSignedMinValue(BigInteger bn, int bs, boolean negative) {
+        return signed && negative && bn.bitLength() == bs + 1 && bn.equals(BigInteger.ONE.shiftLeft(bs));
+    }
+
+    // Long.MIN_VALUE (-2^63) is exactly representable as a double; Long.MAX_VALUE (2^63-1) is NOT
+    // (it rounds up to 2^63), so the exclusive upper bound must be 2^63, not (double) Long.MAX_VALUE.
+    private static final double MIN_LONG_AS_DOUBLE = -0x1p63; // -9223372036854775808.0 == Long.MIN_VALUE
+    private static final double MAX_LONG_AS_DOUBLE_EXCLUSIVE = 0x1p63; // 9223372036854775808.0 == 2^63
+
+    private void checkFits(long value) {
+        if (sizeInBits >= 64) {
+            // A signed 64 bit type covers the whole long range; an unsigned 64 bit type reinterprets
+            // the same bit pattern as unsigned, so any long value is representable either way.
+            return;
+        }
+        if (signed) {
+            long max = (1L << (sizeInBits - 1)) - 1;
+            long min = -max - 1;
+            if (value < min || value > max) {
+                throw notFitException(value);
+            }
+        } else {
+            long max = (1L << sizeInBits) - 1;
+            if (value < 0 || value > max) {
+                throw notFitException(value);
+            }
+        }
+    }
+
+    private NumberFormatException notFitException(Object value) {
+        return new NumberFormatException("Number " + value + " does not fit the bit size (" + sizeInBits
+                + (signed ? "/signed" : "unsigned") + ")");
     }
 
     @Override
