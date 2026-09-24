@@ -270,11 +270,11 @@
 									Note that the errorCode is not made mandatory because we want this to run also for the response OK packets.
 									If the subtype.value is 2 we know it was an error so the errorCode has to be there.
 
-									The list here could be reduced to rcvdApid and sentSeq because sentApid is a command argument available right at the beginning
-									and the rcvdSeq is available when the rcvdApid is available.
-
-									sentSeq is coming from the post-processor via command history; if another command has just received an ack, we may get called with it
-									before having our sentSeq available. That is why the sentSeq has to be also mentioned in the list.
+									sentApid and sentSeq both come from the post-processor via command history rather than the
+									command argument: for a pus11ScheduleAt command they carry the TC(11,4) wrapper's request ID,
+									not the embedded command's, because only the wrapper's ACKs arrive inside the CheckWindow
+									(Gap #5). If another command has just received an ack, we may get called with it before
+									having our sentApid/sentSeq available. That is why both have to be mentioned in the list.
 								-->
 								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">sentApid</AncillaryData>
 								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">sentSeq</AncillaryData>
@@ -297,11 +297,10 @@
 								}
 							</AlgorithmText>
 							<InputSet>
-								<!-- the special /yamcs/cmd/arg namespace means that this is the value of an command argument -->
-								<InputParameterInstanceRef parameterRef="/yamcs/cmd/arg/apid" inputName="sentApid" />
-
 								<!-- the special /yamcs/cmdHist/ namespace means that this is an entry in the command history.
-									In this case the command post-processor will send the sequence count generated before sending the command -->
+									The post-processor publishes the APID and sequence count of the request actually sent on the
+									wire - the TC(11,4) wrapper's, for a pus11ScheduleAt command, not the embedded command's. -->
+								<InputParameterInstanceRef parameterRef="/yamcs/cmdHist/ccsds-apid" inputName="sentApid" />
 								<InputParameterInstanceRef parameterRef="/yamcs/cmdHist/ccsds-seqcount" inputName="sentSeq" />
 
 								<!-- the other references are normal TM parameters -->
@@ -321,7 +320,7 @@
 								org.yamcs.pus.Pus1Verifier({stage: 3, template: "{errorCode}"})
 							</AlgorithmText>
 							<InputSet>
-								<InputParameterInstanceRef parameterRef="/yamcs/cmd/arg/apid" inputName="sentApid" />
+								<InputParameterInstanceRef parameterRef="/yamcs/cmdHist/ccsds-apid" inputName="sentApid" />
 								<InputParameterInstanceRef parameterRef="/yamcs/cmdHist/ccsds-seqcount" inputName="sentSeq" />
 								<InputParameterInstanceRef parameterRef="tc-ack-apid" inputName="rcvdApid" />
 								<InputParameterInstanceRef parameterRef="tc-ack-seq" inputName="rcvdSeq" />
@@ -337,7 +336,7 @@
 								org.yamcs.pus.Pus1Verifier({stage: 7, template: "the completion error code is {errorCode}"})
 							</AlgorithmText>
 							<InputSet>
-								<InputParameterInstanceRef parameterRef="/yamcs/cmd/arg/apid" inputName="sentApid" />
+								<InputParameterInstanceRef parameterRef="/yamcs/cmdHist/ccsds-apid" inputName="sentApid" />
 								<InputParameterInstanceRef parameterRef="/yamcs/cmdHist/ccsds-seqcount" inputName="sentSeq" />
 								<InputParameterInstanceRef parameterRef="tc-ack-apid" inputName="rcvdApid" />
 								<InputParameterInstanceRef parameterRef="tc-ack-seq" inputName="rcvdSeq" />

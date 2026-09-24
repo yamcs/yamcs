@@ -53,6 +53,7 @@ ST[10] (reserved)
 ST[11] time based scheduled. 
  - The Yamcs command post-processor generates the time based scheduled commands based on command attributes.
  - Most TC/TM supported in the simulator
+ - The simulator's time-based schedule execution function starts disabled (as per the standard): send `/PUS11/ENABLE_SCHEDULER` before scheduling commands, otherwise they are dropped at their release time.
  - A dedicated (web) UI application would be highly beneficial. (Anyone interested in sponsoring its development?)
 
 ST[12] on-board monitoring
