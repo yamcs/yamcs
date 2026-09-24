@@ -6,9 +6,11 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -19,14 +21,14 @@ import org.yamcs.utils.StringConverter;
  * ST[11] time-based scheduling
  * <p>
  * The time-based scheduling service type provides the capability to command on-board application processes using
- * requests pre­loaded on-board the spacecraft and released at their due time.
+ * requests preloaded on-board the spacecraft and released at their due time.
  * 
  */
 public class Pus11Service extends AbstractPusService {
     ScheduledThreadPoolExecutor executor;
 
-    int count;
-    boolean enabled = true;
+    // time-based schedule execution function status; disabled at start (§6.11.4.3.1.b)
+    boolean enabled = false;
     PriorityQueue<ScheduledCommand> commands = new PriorityQueue<>();
     private ScheduledFuture<?> scheduledFuture;
 
@@ -122,14 +124,11 @@ public class Pus11Service extends AbstractPusService {
 
         var now = pusSimulator.timeEncoding.now();
 
-        synchronized (subschStatus) {
-            if (!subschStatus.containsKey(subschedule)) {
-                subschStatus.put(subschedule, true);
-            }
-        }
-        PusTime firstReleaseTime = null;
-
+        // parse and validate all activities before inserting any, so a rejected TC leaves the schedule untouched
+        List<ScheduledCommand> toInsert = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
+            // group id: always present in TC[11,4] as written by this ground segment; groups are bookkeeping-only here
+            int group = bb.get() & 0xFF;
             PusTime releaseTime = pusSimulator.timeEncoding.read(bb);
             if (releaseTime.isBefore(now)) {
                 log.warn("Command schedule time {} is before now {}, rejecting command", releaseTime, now);
@@ -137,17 +136,17 @@ public class Pus11Service extends AbstractPusService {
                 return;
             }
 
-            if (firstReleaseTime == null || releaseTime.isBefore(firstReleaseTime)) {
-                firstReleaseTime = releaseTime;
-            }
             int length = (bb.getShort(bb.position() + 4) & 0xFFFF) + 7;
             byte[] packet = new byte[length];
             bb.get(packet);
-            log.info("Scheduling command {} at {}", StringConverter.arrayToHexString(packet), releaseTime);
+            log.info("Scheduling command {} at {} (group {})", StringConverter.arrayToHexString(packet), releaseTime, group);
 
-            ScheduledCommand sc = new ScheduledCommand(releaseTime, subschedule, new PusTcPacket(packet));
-            commands.add(sc);
+            toInsert.add(new ScheduledCommand(releaseTime, subschedule, new PusTcPacket(packet)));
         }
+        synchronized (subschStatus) {
+            subschStatus.putIfAbsent(subschedule, true);
+        }
+        commands.addAll(toInsert);
         scheduleNext();
 
         ack_completion(tc);
@@ -177,18 +176,10 @@ public class Pus11Service extends AbstractPusService {
 
         int timeShiftMillis = bb.getInt();
 
-        var toShift = filterById(bb, true);
-
-        if (!toShift.isEmpty()) {
-            for (var cmd : toShift) {
-                cmd.releaseTime = cmd.releaseTime.shiftByMillis(timeShiftMillis);
-                commands.add(cmd);
-                log.info("Time-shifted command {} by {} milliseconds", cmd.tc, timeShiftMillis);
-            }
-            scheduleNext();
+        var toShift = filterById(bb, false);
+        if (timeShift(tc, toShift, timeShiftMillis)) {
+            ack_completion(tc);
         }
-
-        ack_completion(tc);
     }
 
     private void timeShiftByFilter(PusTcPacket tc) {
@@ -197,18 +188,10 @@ public class Pus11Service extends AbstractPusService {
 
         int timeShiftMillis = bb.getInt();
 
-        var toShift = filterByFilter(bb, true);
-
-        if (!toShift.isEmpty()) {
-            for (var cmd : toShift) {
-                cmd.releaseTime = cmd.releaseTime.shiftByMillis(timeShiftMillis);
-                commands.add(cmd);
-                log.info("Time-shifted command {} by {} milliseconds", cmd.tc, timeShiftMillis);
-            }
-            scheduleNext();
+        var toShift = filterByFilter(bb, false);
+        if (timeShift(tc, toShift, timeShiftMillis)) {
+            ack_completion(tc);
         }
-
-        ack_completion(tc);
     }
 
     private void timeShiftAll(PusTcPacket tc) {
@@ -217,18 +200,42 @@ public class Pus11Service extends AbstractPusService {
 
         int timeShiftMillis = bb.getInt();
 
-        List<ScheduledCommand> updatedCommands = new ArrayList<>();
-
-        while (!commands.isEmpty()) {
-            ScheduledCommand cmd = commands.poll(); // Remove the command from the queue
-            cmd.releaseTime = cmd.releaseTime.shiftByMillis(timeShiftMillis); // Shift the command's release time
-            updatedCommands.add(cmd); // Add the updated command to the temporary list
+        if (timeShift(tc, new ArrayList<>(commands), timeShiftMillis)) {
+            ack_completion(tc);
         }
+    }
 
-        commands.addAll(updatedCommands);
+    /**
+     * Shifts the release time of the given (queued) commands. If any of them would end up in the past, the TC is
+     * NACKed and the schedule is left untouched.
+     *
+     * @return true if the commands were shifted, false if the TC was rejected
+     */
+    private boolean timeShift(PusTcPacket tc, Collection<ScheduledCommand> toShift, int timeShiftMillis) {
+        // the same activity may be selected more than once (e.g. repeated request ID)
+        Set<ScheduledCommand> distinct = new LinkedHashSet<>(toShift);
+        var now = pusSimulator.timeEncoding.now();
+        for (var cmd : distinct) {
+            var shifted = cmd.releaseTime.shiftByMillis(timeShiftMillis);
+            if (shifted.isBefore(now)) {
+                log.warn("Time-shifting command {} by {} milliseconds would move it to {} before now {}, rejecting",
+                        cmd.tc, timeShiftMillis, shifted, now);
+                nack_completion(tc, COMPL_ERR_SCHEDULE_TIME_IN_THE_PAST);
+                return false;
+            }
+        }
+        if (distinct.isEmpty()) {
+            return true;
+        }
+        // the release time is the queue ordering key, so the commands have to be taken out before changing it
+        commands.removeAll(distinct);
+        for (var cmd : distinct) {
+            cmd.releaseTime = cmd.releaseTime.shiftByMillis(timeShiftMillis);
+            log.info("Time-shifted command {} by {} milliseconds", cmd.tc, timeShiftMillis);
+        }
+        commands.addAll(distinct);
         scheduleNext();
-
-        ack_completion(tc);
+        return true;
     }
 
     private void scheduleStatusReport(PusTcPacket tc) {
@@ -409,16 +416,21 @@ public class Pus11Service extends AbstractPusService {
 
     private void sendDetailReport(Collection<ScheduledCommand> cmds) {
         Iterator<ScheduledCommand> iterator = cmds.iterator();
+        // command taken from the iterator that did not fit in the previous batch
+        ScheduledCommand carry = null;
 
-        while (iterator.hasNext()) {
+        while (carry != null || iterator.hasNext()) {
             int totalSize = 4;
             List<ScheduledCommand> batch = new ArrayList<>();
 
-            while (iterator.hasNext()) {
-                ScheduledCommand cmd = iterator.next();
+            while (carry != null || iterator.hasNext()) {
+                ScheduledCommand cmd = carry != null ? carry : iterator.next();
+                carry = null;
                 int cmdSize = 1 + pusSimulator.timeEncoding.getEncodedLength() + cmd.tc.getLength();
 
-                if (totalSize + cmdSize > MAX_DETAIL_REPORT_SIZE) {
+                // an oversized command still goes out, alone in its own report
+                if (!batch.isEmpty() && totalSize + cmdSize > MAX_DETAIL_REPORT_SIZE) {
+                    carry = cmd;
                     break;
                 }
 
@@ -540,6 +552,13 @@ public class Pus11Service extends AbstractPusService {
                         cmd.releaseTime, now);
                 commands.remove();
             } else if (c == 0) {
+                // a disabled activity is deleted, not kept, when its release time is reached (§6.11.4.6)
+                if (!enabled) {
+                    log.warn("Dropping command {} because the time-based schedule execution function is disabled",
+                            cmd.tc);
+                    commands.remove();
+                    continue;
+                }
                 synchronized (subschStatus) {
                     if (!subschStatus.getOrDefault(cmd.subschedule, false)) {
                         log.warn("Dropping command {} because the subschedule {} is disabled", cmd.tc,
