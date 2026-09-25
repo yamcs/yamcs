@@ -193,12 +193,12 @@ public class StackExecution extends ActivityExecution {
 
             switch (comparison.operator()) {
             case "eq":
-                if (!stringValue.equals(comparand)) {
+                if (!isEqual(stringValue, comparand)) {
                     return false;
                 }
                 break;
             case "neq":
-                if (stringValue.equals(comparand)) {
+                if (isEqual(stringValue, comparand)) {
                     return false;
                 }
                 break;
@@ -239,6 +239,18 @@ public class StackExecution extends ActivityExecution {
         }
 
         return true;
+    }
+
+    /**
+     * Numbers are compared numerically, so that a comparand such as 1 matches a float value that
+     * stringifies to 1.0. Anything else (enumerations, booleans, strings) is compared as text.
+     */
+    private static boolean isEqual(String stringValue, String comparand) {
+        if (isNumeric(stringValue) && isNumeric(comparand)) {
+            return Double.parseDouble(stringValue) == Double.parseDouble(comparand);
+        } else {
+            return stringValue.equals(comparand);
+        }
     }
 
     public static boolean isNumeric(String str) {
