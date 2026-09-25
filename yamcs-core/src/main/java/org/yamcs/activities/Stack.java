@@ -1,6 +1,7 @@
 package org.yamcs.activities;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
@@ -8,6 +9,7 @@ import org.yamcs.mdb.Mdb;
 import org.yamcs.xtce.MetaCommand;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class Stack {
@@ -125,6 +127,37 @@ public class Stack {
         return stackedVerify;
     }
 
+    private static Object toJava(JsonElement el) throws StackParseException {
+        if (el.isJsonNull()) {
+            return null;
+        } else if (el.isJsonPrimitive()) {
+            var primitive = el.getAsJsonPrimitive();
+            if (primitive.isBoolean()) {
+                return primitive.getAsBoolean();
+            } else if (primitive.isNumber()) {
+                return primitive.getAsNumber();
+            } else if (primitive.isString()) {
+                return primitive.getAsString();
+            } else {
+                throw new StackParseException("Unexpected value type for " + el);
+            }
+        } else if (el.isJsonArray()) {
+            var list = new ArrayList<>();
+            for (var itemEl : el.getAsJsonArray()) {
+                list.add(toJava(itemEl));
+            }
+            return list;
+        } else if (el.isJsonObject()) {
+            var map = new LinkedHashMap<String, Object>();
+            for (var entry : el.getAsJsonObject().entrySet()) {
+                map.put(entry.getKey(), toJava(entry.getValue()));
+            }
+            return map;
+        } else {
+            throw new StackParseException("Unexpected value: " + el);
+        }
+    }
+
     private static StackedCommand parseCommand(Mdb mdb, JsonObject commandObject) throws StackParseException {
         var name = commandObject.get("name").getAsString();
 
@@ -179,26 +212,7 @@ public class Stack {
                     throw new StackParseException(
                             "Argument " + argName + " does not exist in MDB for command " + name);
                 }
-                if (argValue.isJsonNull()) {
-                    command.addAssignment(argInfo, null);
-                } else if (argValue.isJsonPrimitive()) {
-                    var primitive = argValue.getAsJsonPrimitive();
-                    if (primitive.isBoolean()) {
-                        command.addAssignment(argInfo, primitive.getAsBoolean());
-                    } else if (primitive.isNumber()) {
-                        command.addAssignment(argInfo, primitive.getAsNumber());
-                    } else if (primitive.isString()) {
-                        command.addAssignment(argInfo, primitive.getAsString());
-                    } else {
-                        throw new StackParseException("Unexpected value type for " + argValue);
-                    }
-                } else if (argValue.isJsonArray()) {
-                    command.addAssignment(argInfo, argValue.getAsJsonArray().toString());
-                } else if (argValue.isJsonObject()) {
-                    command.addAssignment(argInfo, argValue.getAsJsonObject().toString());
-                } else {
-                    throw new StackParseException("Unexpected value: " + argValue);
-                }
+                command.addAssignment(argInfo, toJava(argValue));
             }
         }
         if (commandObject.has("extraOptions")) {

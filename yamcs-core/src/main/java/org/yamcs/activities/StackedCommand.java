@@ -1,11 +1,14 @@
 package org.yamcs.activities;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.MetaCommand;
+
+import com.google.gson.Gson;
 
 /**
  * Keep track of the lifecycle of a stacked command.
@@ -104,7 +107,7 @@ public class StackedCommand implements Step {
     @Override
     public String toString() {
         var argLine = assignments.entrySet().stream().map(entry -> {
-            return entry.getKey().getName() + "=" + entry.getValue();
+            return entry.getKey().getName() + "=" + formatValue(entry.getValue());
         }).collect(Collectors.joining(", "));
 
         var res = meta.getQualifiedName() + "(" + argLine + ")";
@@ -116,5 +119,13 @@ public class StackedCommand implements Step {
         }
 
         return res;
+    }
+
+    private static Object formatValue(Object value) {
+        if (value instanceof Map || value instanceof List) {
+            return new Gson().toJson(value);
+        } else {
+            return value;
+        }
     }
 }
