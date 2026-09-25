@@ -8,6 +8,7 @@ import org.yamcs.ContainerExtractionResult;
 import org.yamcs.InvalidIdentification;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.xtce.SequenceContainer;
+import org.yamcs.mdb.ContainerProcessingResult;
 import org.yamcs.mdb.Mdb;
 
 
@@ -49,7 +50,7 @@ public class ContainerWithIdRequestHelper implements ContainerConsumer {
     }
         
     @Override
-    public void processContainer(String link, ContainerExtractionResult cer) {
+    public void processContainer(ContainerProcessingResult cpr, ContainerExtractionResult cer) {
         SequenceContainer container = cer.getContainer();
         boolean found = false;
         for(ContainerWithId cwi: subscription) {
