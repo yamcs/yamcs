@@ -113,6 +113,12 @@ export class DyDataSource {
     const loadStart = new Date(start.getTime() - delta);
     const loadStop = new Date(stop.getTime() + delta);
 
+    // Aggregate incoming realtime values at the same resolution
+    // as the archive samples.
+    this.plotBuffer.setBucketSize(
+      (loadStop.getTime() - loadStart.getTime()) / this.resolution,
+    );
+
     const parameters = this.parameters$.value;
     const promises: Promise<any>[] = [];
     for (const parameter of parameters) {
