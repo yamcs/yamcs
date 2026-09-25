@@ -6,7 +6,9 @@ import java.util.List;
 
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.mdb.Mdb;
+import org.yamcs.utils.AggregateUtil;
 import org.yamcs.xtce.MetaCommand;
+import org.yamcs.xtce.PathElement;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -93,10 +95,28 @@ public class Stack {
                 var comparisonObject = comparisonEl.getAsJsonObject();
 
                 var parameterName = comparisonObject.get("parameter").getAsString();
-                var parameter = mdb.getParameter(parameterName);
+
+                PathElement[] path = null;
+                var baseName = parameterName;
+                var aggSep = AggregateUtil.findSeparator(parameterName);
+                if (aggSep > 0) {
+                    baseName = parameterName.substring(0, aggSep);
+                    try {
+                        path = AggregateUtil.parseReference(parameterName.substring(aggSep));
+                    } catch (IllegalArgumentException e) {
+                        throw new StackParseException(
+                                "Invalid array/aggregate path in " + parameterName);
+                    }
+                }
+
+                var parameter = mdb.getParameter(baseName);
                 if (parameter == null) {
                     throw new StackParseException(
                             "Parameter " + parameterName + " does not exist in MDB");
+                }
+                if (path != null && !AggregateUtil.verifyPath(parameter.getParameterType(), path)) {
+                    throw new StackParseException(
+                            "Nonexistent array/aggregate path in " + parameterName);
                 }
 
                 var operator = comparisonObject.get("operator").getAsString();
@@ -113,7 +133,7 @@ public class Stack {
                     throw new StackParseException("Unexpected comparand of class " + jsonValue.getClass());
                 }
 
-                stackedVerify.addComparison(parameter, operator, value);
+                stackedVerify.addComparison(parameter, path, operator, value);
             }
         }
 
