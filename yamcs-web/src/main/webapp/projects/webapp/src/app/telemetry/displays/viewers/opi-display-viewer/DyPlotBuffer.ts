@@ -1,4 +1,4 @@
-import { DySample } from './DySample';
+import { CustomBarsValue, DySample } from './DySample';
 
 export type WatermarkObserver = () => void;
 
@@ -10,12 +10,40 @@ export interface DyPlotData {
 }
 
 /**
+ * Running min/avg/max of the realtime values that fell in one bucket
+ */
+interface BucketStats {
+  min: number;
+  max: number;
+  sum: number;
+  n: number;
+}
+
+/**
+ * Realtime values aggregated per time bucket.
+ * One entry per plotted parameter (null represents a gap).
+ */
+interface RealtimeBucket {
+  start: number; // inclusive
+  stop: number; // exclusive
+  time: Date; // Time of the first value, used for plotting
+  columns: (BucketStats | null)[];
+}
+
+/**
  * Combines archive samples obtained via REST
  * with realtime samples obtained via WebSocket.
  *
  * This class does not care about whether archive samples
  * and realtime values are connected. Both sets are joined
  * and sorted under all conditions.
+ *
+ * Realtime values are downsampled into buckets of the same width as
+ * the archive samples (see {@link setBucketSize}), so that the size of the
+ * realtime buffer, and therefore how often the watermark observer is
+ * triggered to reload the archive samples, depends on the plotted time
+ * range rather than on the update rate of the parameter. Without this,
+ * a 100 Hz parameter would trigger a reload every few seconds.
  */
 export class DyPlotBuffer {
   public dirty = false;
@@ -24,11 +52,15 @@ export class DyPlotBuffer {
 
   private archiveSamples: DySample[] = [];
 
-  private realtimeBuffer: (DySample | undefined)[];
+  private realtimeBuffer: (RealtimeBucket | undefined)[];
   private bufferSize = 500;
   private bufferWatermark = 400;
   private pointer = 0;
   private alreadyWarned = false;
+
+  // Width of a realtime bucket in milliseconds.
+  // Zero (the initial value) disables aggregation.
+  private bucketMs = 0;
 
   constructor(private watermarkObserver: WatermarkObserver) {
     this.realtimeBuffer = Array(this.bufferSize).fill(undefined);
@@ -43,9 +75,46 @@ export class DyPlotBuffer {
     this.valueRange = valueRange;
   }
 
+  /**
+   * Sets the width of the buckets in which incoming realtime values
+   * are aggregated. This should match the bucket width of the
+   * archive samples.
+   */
+  setBucketSize(bucketMs: number) {
+    this.bucketMs = Math.max(0, bucketMs);
+  }
+
   addRealtimeValue(sample: DySample) {
+    const t = sample[0].getTime();
+    const values = sample.slice(1) as CustomBarsValue[];
+
+    const last =
+      this.pointer > 0 ? this.realtimeBuffer[this.pointer - 1] : undefined;
+    if (last && t >= last.start && t < last.stop && canMerge(last, values)) {
+      for (let i = 0; i < values.length; i++) {
+        const stats = last.columns[i];
+        const value = values[i];
+        if (stats && value) {
+          stats.min = Math.min(stats.min, value[0]);
+          stats.max = Math.max(stats.max, value[2]);
+          stats.sum += value[1];
+          stats.n++;
+        }
+      }
+      this.dirty = true;
+      return;
+    }
+
     if (this.pointer < this.bufferSize) {
-      this.realtimeBuffer[this.pointer] = sample;
+      const start = this.bucketMs > 0 ? t - (t % this.bucketMs) : t;
+      this.realtimeBuffer[this.pointer] = {
+        start,
+        stop: start + this.bucketMs,
+        time: sample[0],
+        columns: values.map((value) =>
+          value ? { min: value[0], max: value[2], sum: value[1], n: 1 } : null,
+        ),
+      };
       if (
         this.pointer >= this.bufferWatermark &&
         this.watermarkObserver &&
@@ -69,9 +138,14 @@ export class DyPlotBuffer {
   }
 
   snapshot(): DyPlotData {
-    const realtimeSamples = this.realtimeBuffer.filter(
-      (s) => s !== undefined,
-    ) as DySample[];
+    const realtimeSamples: DySample[] = [];
+    for (let i = 0; i < this.pointer; i++) {
+      const bucket = this.realtimeBuffer[i]!;
+      const columns = bucket.columns.map((stats) =>
+        stats ? [stats.min, stats.sum / stats.n, stats.max] : null,
+      ) as CustomBarsValue[];
+      realtimeSamples.push([bucket.time, ...columns] as DySample);
+    }
 
     // Archive sample data contains [null] points for future data (because of empty buckets)
     // Filter these out so that they don't overlap with incoming realtime.
@@ -89,4 +163,21 @@ export class DyPlotBuffer {
       samples: splicedSamples,
     };
   }
+}
+
+/**
+ * A value can only be merged into a bucket if it does not change
+ * the gap/no-gap status of any column. A gap (null) therefore always
+ * starts a new bucket, and so does the first value after a gap.
+ */
+function canMerge(bucket: RealtimeBucket, values: CustomBarsValue[]) {
+  if (bucket.columns.length !== values.length) {
+    return false;
+  }
+  for (let i = 0; i < values.length; i++) {
+    if ((bucket.columns[i] === null) !== (values[i] === null)) {
+      return false;
+    }
+  }
+  return true;
 }
