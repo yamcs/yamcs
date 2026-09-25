@@ -30,6 +30,7 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.security.User;
+import org.yamcs.utils.AggregateUtil;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.yarch.YarchDatabase;
 
@@ -179,7 +180,15 @@ public class StackExecution extends ActivityExecution {
                 return false;
             }
 
-            var stringValue = pval.getEngValue().toString();
+            var engValue = pval.getEngValue();
+            if (comparison.path() != null) {
+                engValue = AggregateUtil.getMemberValue(engValue, comparison.path());
+                if (engValue == null) {
+                    return false;
+                }
+            }
+
+            var stringValue = engValue.toString();
             var comparand = "" + comparison.value();
 
             switch (comparison.operator()) {
