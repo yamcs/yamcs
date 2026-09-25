@@ -100,7 +100,7 @@ public class ContainerRequestManager implements ContainerListener {
                 continue;
             }
             for (ContainerConsumer subscriber : subscriptions.get(def)) {
-                subscriber.processContainer(cpr.getLink(), result);
+                subscriber.processContainer(cpr, result);
             }
         }
     }
