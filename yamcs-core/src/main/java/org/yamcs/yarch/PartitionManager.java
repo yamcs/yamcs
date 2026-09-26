@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import org.yamcs.time.Instant;
 import org.yamcs.utils.PartitionedTimeInterval;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.TimeInterval;
@@ -213,7 +214,12 @@ public abstract class PartitionManager {
         long time = TimeEncoding.INVALID_INSTANT;
         Object value = null;
         if (partitioningSpec.timeColumn != null) {
-            time = (Long) t.getColumn(partitioningSpec.timeColumn);
+            Object timeObj = t.getColumn(partitioningSpec.timeColumn);
+            if (timeObj instanceof Instant) {
+                time = ((Instant) timeObj).getMillis();
+            } else {
+                time = (Long) timeObj;
+            }
         }
         if (partitioningSpec.valueColumn != null) {
             value = t.getColumn(partitioningSpec.valueColumn);

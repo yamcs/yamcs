@@ -297,7 +297,7 @@ public class XtceTmRecorder extends AbstractYamcsService {
          * @param t
          */
         protected void saveTuple(Tuple t) {
-            long gentime = (Long) t.getColumn(0);
+            long gentime = t.getTimestampColumn(StandardTupleDefinitions.GENTIME_COLUMN);
             byte[] packet = (byte[]) t.getColumn(4);
             int seqCount = (Integer) t.getColumn(1);
 

@@ -8,6 +8,7 @@ import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Commanding.CommandId;
+import org.yamcs.time.Instant;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.Tuple;
@@ -40,7 +41,7 @@ public class StreamCommandHistoryPublisher implements CommandHistoryPublisher {
         td.addColumn(key, DataType.STRING);
 
         Tuple t = new Tuple(td, new Object[] {
-                cmdId.getGenerationTime(),
+                Instant.get(cmdId.getGenerationTime()),
                 cmdId.getOrigin(),
                 cmdId.getSequenceNumber(),
                 cmdId.getCommandName(),
@@ -55,7 +56,7 @@ public class StreamCommandHistoryPublisher implements CommandHistoryPublisher {
         td.addColumn(key, DataType.TIMESTAMP);
 
         Tuple t = new Tuple(td, new Object[] {
-                cmdId.getGenerationTime(),
+                Instant.get(cmdId.getGenerationTime()),
                 cmdId.getOrigin(),
                 cmdId.getSequenceNumber(),
                 cmdId.getCommandName(),
@@ -79,7 +80,7 @@ public class StreamCommandHistoryPublisher implements CommandHistoryPublisher {
         td.addColumn(key, dt);
 
         Tuple t = new Tuple(td, new Object[] {
-                cmdId.getGenerationTime(),
+                Instant.get(cmdId.getGenerationTime()),
                 cmdId.getOrigin(),
                 cmdId.getSequenceNumber(),
                 cmdId.getCommandName(),
@@ -94,7 +95,7 @@ public class StreamCommandHistoryPublisher implements CommandHistoryPublisher {
         TupleDefinition td = StandardTupleDefinitions.TC.copy();
         td.addColumn(key + SUFFIX_STATUS, DataType.STRING);
         td.addColumn(key + SUFFIX_TIME, DataType.TIMESTAMP);
-        List<Object> vals = new ArrayList<>(Arrays.asList(cmdId.getGenerationTime(), cmdId.getOrigin(),
+        List<Object> vals = new ArrayList<>(Arrays.asList(Instant.get(cmdId.getGenerationTime()), cmdId.getOrigin(),
                 cmdId.getSequenceNumber(), cmdId.getCommandName(), state.toString(),
                 time));
 

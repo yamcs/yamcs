@@ -1,0 +1,46 @@
+dataPartitioningByTime: YYYY/MM
+
+services:
+  - class: org.yamcs.archive.XtceTmRecorder
+  - class: org.yamcs.archive.ParameterRecorder
+  - class: org.yamcs.archive.EventRecorder
+  - class: org.yamcs.archive.ReplayServer
+  - class: org.yamcs.parameter.SystemParametersService
+    args:
+      producers: ['jvm', 'fs']
+  - class: org.yamcs.ProcessorCreatorService
+    args:
+      name: "realtime"
+      type: "realtime"
+  - class: org.yamcs.parameterarchive.ParameterArchive
+  - class: org.yamcs.examples.hires.HiresSimulatorCommander
+    args:
+      tmPort: 10015
+
+dataLinks:
+  - name: tm_hires
+    class: org.yamcs.tctm.TcpTmDataLink
+    stream: tm_realtime
+    host: localhost
+    port: 10015
+    initialDelay: 2000
+    packetInputStreamClassName: org.yamcs.tctm.GenericPacketInputStream
+    packetInputStreamArgs:
+      maxPacketLength: 1000
+      lengthFieldOffset: 0
+      lengthFieldLength: 2
+      lengthAdjustment: 2
+      initialBytesToStrip: 2
+    packetPreprocessorClassName: org.yamcs.examples.hires.HiresPacketPreprocessor
+
+mdb:
+  - type: "xtce"
+    spec: "mdb/hires.xml"
+
+streamConfig:
+  tm:
+    - name: "tm_realtime"
+      processor: "realtime"
+  cmdHist: ["cmdhist_realtime"]
+  event: ["events_realtime"]
+  param: ["sys_param", "proc_param"]

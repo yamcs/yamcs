@@ -11,6 +11,7 @@ import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterConsumer;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
+import org.yamcs.time.Instant;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -81,6 +82,9 @@ abstract class AbstractArchiveFiller implements ParameterConsumer {
             long t = entry.getKey();
             BasicParameterList pvList = entry.getValue();
             pvList.sort();
+            // Note: sub-millisecond precision (picos) is not yet preserved in the parameter archive
+            // because the RocksDB merge operator format does not support it.
+            // The millis-based grouping is retained for now.
             processParameters(t, pvList);
             numParams += pvList.size();
         }
