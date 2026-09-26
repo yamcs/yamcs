@@ -57,6 +57,7 @@
 		<module>packet-viewer</module>
 		<module>simulator</module>
 		<module>tests</module>
+		<module>web-tests</module>
 		<module>yamcs-api</module>
 		<module>yamcs-client</module>
 		<module>yamcs-core</module>

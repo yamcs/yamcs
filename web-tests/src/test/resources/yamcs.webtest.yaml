@@ -1,0 +1,30 @@
+mdb:
+  - type: "sheet"
+    spec: "../examples/simulation/src/main/yamcs/mdb/simulator-ccsds.xls"
+    subLoaders:
+      - type: "sheet"
+        spec: "../examples/simulation/src/main/yamcs/mdb/landing.xls"
+
+services:
+  - class: org.yamcs.archive.XtceTmRecorder
+  - class: org.yamcs.archive.ParameterRecorder
+  - class: org.yamcs.archive.EventRecorder
+  - class: org.yamcs.archive.ReplayServer
+  - class: org.yamcs.archive.CommandHistoryRecorder
+  - class: org.yamcs.parameter.SystemParametersService
+  - class: org.yamcs.ProcessorCreatorService
+    args:
+      name: "realtime"
+      type: "realtime"
+
+streamConfig:
+  tm:
+    - name: tm_realtime
+      processor: realtime
+  tc:
+    - name: tc_realtime
+      processor: realtime
+  cmdHist: ["cmdhist_realtime"]
+  event: ["events_realtime"]
+  parameterAlarm: ["alarms_realtime"]
+  param: ["sys_param", "pp_realtime"]
