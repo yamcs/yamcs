@@ -9,6 +9,7 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.RawEngValue;
 import org.yamcs.parameter.Value;
+import org.yamcs.utils.AggregateUtil;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentInstanceRef;
 import org.yamcs.xtce.DataSource;
@@ -284,7 +285,15 @@ public class ProcessingContext {
 
         RawEngValue pv = null;
         if (ref instanceof ParameterInstanceRef) {
-            pv = getParameterInstance((ParameterInstanceRef) ref);
+            ParameterInstanceRef parameterRef = (ParameterInstanceRef) ref;
+            if (parameterRef.getParameter() == null) {
+                throw new XtceProcessingException("Unresolved parameter reference for dynamic integer value: "
+                        + parameterRef.getName());
+            }
+            pv = getParameterInstance(parameterRef);
+            if (pv != null && parameterRef.getMemberPath() != null) {
+                pv = AggregateUtil.extractMember(pv, parameterRef.getMemberPath());
+            }
         } else if (ref instanceof ArgumentInstanceRef) {
             ArgumentInstanceRef argRef = (ArgumentInstanceRef) ref;
             Argument arg = cmdArgs.keySet().stream().filter(a -> a.getName().equals(argRef.getName())).findFirst()

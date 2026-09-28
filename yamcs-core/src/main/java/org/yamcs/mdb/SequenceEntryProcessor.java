@@ -1,5 +1,7 @@
 package org.yamcs.mdb;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -12,12 +14,14 @@ import org.yamcs.parameter.Value;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.AggregateDataType;
+import org.yamcs.xtce.AggregateMemberInstanceRef;
 import org.yamcs.xtce.ArrayDataType;
 import org.yamcs.xtce.ArrayParameterEntry;
 import org.yamcs.xtce.ArrayParameterType;
 import org.yamcs.xtce.BaseDataType;
 import org.yamcs.xtce.ContainerEntry;
 import org.yamcs.xtce.DataEncoding;
+import org.yamcs.xtce.DynamicIntegerValue;
 import org.yamcs.xtce.IndirectParameterRefEntry;
 import org.yamcs.xtce.IntegerValue;
 import org.yamcs.xtce.Member;
@@ -32,6 +36,7 @@ import org.yamcs.xtce.TimeAssociation;
 public class SequenceEntryProcessor {
     static Logger log = LoggerFactory.getLogger(SequenceEntryProcessor.class.getName());
     ContainerProcessingContext pcontext;
+    private final Deque<AggregateWithValue> aggregateStack = new ArrayDeque<>();
 
     SequenceEntryProcessor(ContainerProcessingContext pcontext) {
         this.pcontext = pcontext;
@@ -168,7 +173,7 @@ public class SequenceEntryProcessor {
 
         for (int i = 0; i < size.size(); i++) {
             IntegerValue iv = size.get(i);
-            long ds = pcontext.getIntegerValue(iv);
+            long ds = resolveArraySize(iv);
             if (ds == 0) { // zero size array
                 org.yamcs.protobuf.Yamcs.Value.Type rawValueType;
                 if (elementType instanceof AggregateDataType) {
@@ -210,6 +215,41 @@ public class SequenceEntryProcessor {
             rv.setElementValue(i, rv0);
         }
         return rv;
+    }
+
+    private long resolveArraySize(IntegerValue integerValue) {
+        if (integerValue instanceof DynamicIntegerValue dynamicValue
+                && dynamicValue.getDynamicInstanceRef() instanceof AggregateMemberInstanceRef memberRef) {
+            String memberName = memberRef.getName();
+            for (AggregateWithValue aggregate : aggregateStack) {
+                Member member = aggregate.type().getMember(memberName);
+                if (member == null) {
+                    continue;
+                }
+
+                Value memberValue = aggregate.value().getMemberValue(memberName);
+                if (memberValue == null) {
+                    throw new XtceProcessingException("Array size reference '" + memberName
+                            + "' points to an aggregate member that has not been decoded yet");
+                }
+                if (memberRef.useCalibratedValue()) {
+                    memberValue = pcontext.proccessorData.parameterTypeProcessor.calibrate(
+                            pcontext.result, (ParameterType) member.getType(), memberValue);
+                }
+                try {
+                    return dynamicValue.transform(memberValue.toLong());
+                } catch (UnsupportedOperationException e) {
+                    throw new XtceProcessingException("Aggregate member '" + memberName
+                            + "' used as an array size is not numeric", e);
+                } catch (ArithmeticException e) {
+                    throw new XtceProcessingException("Array size derived from aggregate member '" + memberName
+                            + "' overflows a long", e);
+                }
+            }
+            throw new XtceProcessingException("Cannot find aggregate member '" + memberName
+                    + "' used as an array size");
+        }
+        return pcontext.getIntegerValue(integerValue);
     }
 
     private void extractIndirectParameterRefEntry(IndirectParameterRefEntry se) {
@@ -312,18 +352,25 @@ public class SequenceEntryProcessor {
 
     private Value extractAggregateDataType(AggregateDataType ptype) {
         AggregateValue result = new AggregateValue(ptype.getMemberNames());
+        aggregateStack.push(new AggregateWithValue(ptype, result));
+        try {
+            for (Member m : ptype.getMemberList()) {
+                ParameterType mptype = (ParameterType) m.getType();
+                if (mptype == null) {
+                    throw new XtceProcessingException("Encountered entry for aggregate parameter member'"
+                            + ptype.getName() + "/" + m.getName() + " without a type");
+                }
 
-        for (Member m : ptype.getMemberList()) {
-            ParameterType mptype = (ParameterType) m.getType();
-            if (mptype == null) {
-                throw new XtceProcessingException("Encountered entry for aggregate parameter member'"
-                        + ptype.getName() + "/" + m.getName() + " without a type");
+                Value v = extract(mptype);
+                result.setMemberValue(m.getName(), v);
             }
-
-            Value v = extract(mptype);
-            result.setMemberValue(m.getName(), v);
+        } finally {
+            aggregateStack.pop();
         }
         return result;
+    }
+
+    private static record AggregateWithValue(AggregateDataType type, AggregateValue value) {
     }
 
     private Value extractBaseDataType(BaseDataType ptype) {
