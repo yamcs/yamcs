@@ -490,6 +490,15 @@
     </dl>
   }
 
+  @if (entry.type?.arrayInfo; as arrayInfo) {
+    <div class="section-divider">
+      <mat-divider />
+    </div>
+
+    <h4>Array dimensions</h4>
+    <app-parameter-array-info [arrayInfo]="arrayInfo" />
+  }
+
   @if (entry.type?.engType === "aggregate") {
     <div class="section-divider">
       <mat-divider />

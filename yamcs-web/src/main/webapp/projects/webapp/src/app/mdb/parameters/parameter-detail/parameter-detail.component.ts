@@ -11,6 +11,7 @@ import {
 import { BehaviorSubject } from 'rxjs';
 import { ExpressionComponent } from '../../../shared/expression/expression.component';
 import { MarkdownComponent } from '../../../shared/markdown/markdown.component';
+import { ParameterArrayInfoComponent } from '../../../shared/parameter-array-info/parameter-array-info.component';
 import { ParameterCalibrationComponent } from '../parameter-calibration/parameter-calibration.component';
 
 @Component({
@@ -20,6 +21,7 @@ import { ParameterCalibrationComponent } from '../parameter-calibration/paramete
   imports: [
     ExpressionComponent,
     MarkdownComponent,
+    ParameterArrayInfoComponent,
     ParameterCalibrationComponent,
     WebappSdkModule,
   ],

@@ -138,6 +138,17 @@
   </dd>
 </dl>
 
+@if (ptype$ | async; as ptype) {
+  @if (ptype.arrayInfo; as arrayInfo) {
+    <div class="section-divider">
+      <mat-divider />
+    </div>
+
+    <h4>Array dimensions</h4>
+    <app-parameter-array-info [arrayInfo]="arrayInfo" />
+  }
+}
+
 <div class="section-divider">
   <mat-divider />
 </div>
