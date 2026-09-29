@@ -253,6 +253,13 @@ public class AggrrayBuilder {
                     valueType = v.getType();
                 }
             }
+
+            // Sparse parameter groups contain the union of array elements seen over time. If none of those elements has
+            // a value at the current timestamp, let the parent builder decide whether this is an absent element or an
+            // empty array member.
+            if (values.isEmpty()) {
+                return null;
+            }
             
             for (int i = 0; i < numDim; i++) {
                 int k = i;
@@ -264,6 +271,12 @@ public class AggrrayBuilder {
                 av.setElementValue(me.getKey().array(), me.getValue());
             }
             return av;
+        }
+
+        private ArrayValue buildEmpty() {
+            // The archive stores leaf values, not array dimensions. All-zero dimensions are the only shape that can be
+            // inferred when an array has no values at the current timestamp.
+            return new ArrayValue(new int[numDim], null);
         }
 
         @Override
@@ -295,13 +308,35 @@ public class AggrrayBuilder {
             if (names == null) {
                 names = AggregateMemberNames.get(members.keySet().toArray(new String[0]));
             }
-            AggregateValue av = new AggregateValue(names);
+
+            Map<String, Value> values = new LinkedHashMap<>();
+            boolean hasValue = false;
             for (Map.Entry<String, ValueBuilder> me : members.entrySet()) {
                 Value v = me.getValue().build();
+                values.put(me.getKey(), v);
+                hasValue |= v != null;
+            }
+
+            // An aggregate used as an array element may exist in the builder only because it occurred at another
+            // timestamp in the same sparse parameter group. Returning null allows the enclosing array to omit it.
+            if (!hasValue) {
+                return null;
+            }
+
+            AggregateValue av = new AggregateValue(names);
+            for (Map.Entry<String, Value> me : values.entrySet()) {
+                Value v = me.getValue();
                 if (v == null) {
-                    throw new ParameterArchiveException("No value for member '" + me.getKey() + "'");
+                    ValueBuilder builder = members.get(me.getKey());
+                    if (builder instanceof ArrayValueBuilder arrayBuilder) {
+                        // The aggregate itself exists, so an array member without leaf values represents an empty array.
+                        v = arrayBuilder.buildEmpty();
+                    } else {
+                        // A missing non-array member means the aggregate is genuinely incomplete.
+                        throw new ParameterArchiveException("No value for member '" + me.getKey() + "'");
+                    }
                 }
-                av.setMemberValue(me.getKey(), me.getValue().build());
+                av.setMemberValue(me.getKey(), v);
             }
             return av;
         }
