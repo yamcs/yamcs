@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameterarchive.RealtimeArchiveFiller.DataQueue;
+import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.IntArray;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
@@ -102,6 +103,25 @@ public class DataQueueTest {
         assertEquals(0, sq.getPVSegments(1, true).size());
     }
 
+    @Test
+    public void testMultiParameterSegments() {
+        DataQueue sq = new DataQueue(1, 2, dbWriter, t -> null, fillerLock);
+        sq.addRecord(9, new BasicParameterList(IntArray.wrap(1), getParaList(9)));
+        sq.addRecord(10, new BasicParameterList(IntArray.wrap(1), getParaList(10)));
+        sq.addRecord(11, new BasicParameterList(IntArray.wrap(1), getParaList(11)));
+
+        ParameterId[] pids = { new TestParameterId(1) };
+        List<MultiParameterValueSegment> ascending = sq.getPVSegments(pids, true);
+        assertEquals(2, ascending.size());
+        assertEquals(9, ascending.get(0).getSegmentStart());
+        assertEquals(11, ascending.get(1).getSegmentStart());
+
+        List<MultiParameterValueSegment> descending = sq.getPVSegments(pids, false);
+        assertEquals(2, descending.size());
+        assertEquals(11, descending.get(0).getSegmentStart());
+        assertEquals(9, descending.get(1).getSegmentStart());
+    }
+
     /**
      * Tests that the queue is full when one slot is still open, so that <code>head!=tail</code>.
      */
@@ -154,5 +174,43 @@ public class DataQueueTest {
         pv.setEngValue(ValueUtility.getUint64Value(time));
         pv.setGenerationTime(time);
         return Arrays.asList(pv);
+    }
+
+    private record TestParameterId(int pid) implements ParameterId {
+
+        @Override
+        public Type getRawType() {
+            return Type.UINT64;
+        }
+
+        @Override
+        public Type getEngType() {
+            return Type.UINT64;
+        }
+
+        @Override
+        public int getPid() {
+            return pid;
+        }
+
+        @Override
+        public String getParamFqn() {
+            return "/test/test1";
+        }
+
+        @Override
+        public boolean isSimple() {
+            return true;
+        }
+
+        @Override
+        public boolean hasRawValue() {
+            return false;
+        }
+
+        @Override
+        public IntArray getComponents() {
+            return null;
+        }
     }
 }

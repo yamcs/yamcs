@@ -449,7 +449,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
                     intv.getSegmentsDescending(pids, r);
                 }
             }
-            return null;
+            return r;
         }
 
         /**
