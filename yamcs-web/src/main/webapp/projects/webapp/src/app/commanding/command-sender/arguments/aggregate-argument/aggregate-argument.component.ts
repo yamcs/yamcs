@@ -131,6 +131,13 @@ export class AggregateArgumentComponent implements OnInit {
       } else {
         initialValue = member.initialValue ?? '';
         if (
+          member.type.engType === 'boolean' &&
+          member.initialValue !== undefined
+        ) {
+          initialValue =
+            '' + (member.initialValue === member.type.oneStringValue);
+        }
+        if (
           this.initialValue &&
           this.initialValue.hasOwnProperty(member.name)
         ) {
