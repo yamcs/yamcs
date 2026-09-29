@@ -17,13 +17,13 @@ Packet Viewer for Yamcs.
 
 
 %install
-cd %{name}-%{version}-%{release}
+cd %{_topdir}/BUILD/%{name}-%{version}-%{release}
 
 mkdir -p %{buildroot}
 cp -r opt %{buildroot}
 
-mkdir -p %{buildroot}%{_bindir}
-ln -fs /opt/packet-viewer/bin/packet-viewer.sh %{buildroot}%{_bindir}/packet-viewer
+mkdir -p %{buildroot}/usr/bin
+ln -fs /opt/packet-viewer/bin/packet-viewer.sh %{buildroot}/usr/bin/packet-viewer
 rm %{buildroot}/opt/packet-viewer/bin/*.bat
 
 
@@ -38,4 +38,4 @@ rm %{buildroot}/opt/packet-viewer/bin/*.bat
 
 %dir /opt/packet-viewer/bin
 %attr(755, root, root) /opt/packet-viewer/bin/*
-%{_bindir}/packet-viewer
+/usr/bin/packet-viewer

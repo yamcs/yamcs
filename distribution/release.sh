@@ -46,9 +46,10 @@ prepare_yamcs_maven() {
     # Seed staging with the published metadata, so that Maven merges into it
     # rather than producing metadata with only this version.
     # (For snapshots, the version-level metadata holds the build number.)
-    local patterns=("org/yamcs/*/maven-metadata.xml")
+    # One checksum is enough for Maven to validate the metadata.
+    local patterns=("org/yamcs/*/maven-metadata.xml" "org/yamcs/*/maven-metadata.xml.sha1")
     if [ $snapshot -eq 1 ]; then
-        patterns+=("org/yamcs/*/$pomversion/maven-metadata.xml")
+        patterns+=("org/yamcs/*/$pomversion/maven-metadata.xml" "org/yamcs/*/$pomversion/maven-metadata.xml.sha1")
     fi
     local listing=""
     for pattern in "${patterns[@]}"; do
@@ -172,7 +173,7 @@ mkdir -p "$rpmbuilddir/usr/lib/systemd/system"
 cp -a distribution/systemd/* "$rpmbuilddir/usr/lib/systemd/system"
 cat distribution/rpm/yamcs.spec | sed -e "s/@@VERSION@@/$version/" | sed -e "s/@@RELEASE@@/$release/" > $rpmtopdir/SPECS/yamcs.spec
 
-rpmbuild --define="_topdir $rpmtopdir" -bb "$rpmtopdir/SPECS/yamcs.spec"
+rpmbuild --target x86_64-linux --define="_topdir $rpmtopdir" -bb "$rpmtopdir/SPECS/yamcs.spec"
 
 # Packet Viewer RPM
 cp distribution/target/packet-viewer-$pomversion.tar.gz $yamcshome/distribution/target
@@ -180,7 +181,7 @@ rpmbuilddir="$rpmtopdir/BUILD/packet-viewer-$version-$release"
 mkdir -p "$rpmbuilddir/opt/packet-viewer"
 tar -xzf distribution/target/packet-viewer-$pomversion.tar.gz --strip-components=1 -C "$rpmbuilddir/opt/packet-viewer"
 cat distribution/rpm/packet-viewer.spec | sed -e "s/@@VERSION@@/$version/" | sed -e "s/@@RELEASE@@/$release/" > $rpmtopdir/SPECS/packet-viewer.spec
-rpmbuild --define="_topdir $rpmtopdir" -bb "$rpmtopdir/SPECS/packet-viewer.spec"
+rpmbuild --target noarch-linux --define="_topdir $rpmtopdir" -bb "$rpmtopdir/SPECS/packet-viewer.spec"
 
 cd "$yamcshome"
 mv distribution/target/rpmbuild/RPMS/*/* distribution/target/
