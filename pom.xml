@@ -352,6 +352,20 @@
 		</pluginManagement>
 	</build>
 
+	<repositories>
+		<repository>
+			<id>yamcs</id>
+			<url>https://maven.yamcs.org/releases</url>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>yamcs</id>
+			<url>https://maven.yamcs.org/releases</url>
+		</pluginRepository>
+	</pluginRepositories>
+
 	<distributionManagement>
 		<snapshotRepository>
 			<id>central</id>
