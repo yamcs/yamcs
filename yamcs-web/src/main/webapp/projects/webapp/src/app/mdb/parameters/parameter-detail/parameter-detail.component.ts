@@ -75,4 +75,24 @@ export class ParameterDetailComponent implements OnChanges {
     }
     return alarm.defaultLevel;
   }
+
+  getAggregateType(type?: ParameterType): ParameterType | null {
+    while (type?.arrayInfo) {
+      type = type.arrayInfo.type;
+    }
+    return type?.engType === 'aggregate' ? type : null;
+  }
+
+  getMemberOffset(
+    offset: string | undefined,
+    type: ParameterType | undefined,
+    memberName: string,
+  ): string {
+    let memberOffset = offset || '';
+    while (type?.arrayInfo) {
+      memberOffset += '[0]'.repeat(type.arrayInfo.dimensions.length);
+      type = type.arrayInfo.type;
+    }
+    return `${memberOffset}.${memberName}`;
+  }
 }

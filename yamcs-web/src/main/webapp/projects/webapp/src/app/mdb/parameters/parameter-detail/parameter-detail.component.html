@@ -499,7 +499,7 @@
     <app-parameter-array-info [arrayInfo]="arrayInfo" />
   }
 
-  @if (entry.type?.engType === "aggregate") {
+  @if (getAggregateType(entry.type); as aggregateType) {
     <div class="section-divider">
       <mat-divider />
     </div>
@@ -511,9 +511,9 @@
         <th>Type</th>
         <th>Description</th>
       </tr>
-      @for (member of entry.type?.member; track member) {
+      @for (member of aggregateType.member; track member) {
         <tr>
-          @if ((offset || "") + "." + member.name; as memberOffset) {
+          @if (getMemberOffset(offset, entry.type, member.name); as memberOffset) {
             <td>
               <a
                 [routerLink]="['/mdb/parameters', parameter.qualifiedName + memberOffset]"
