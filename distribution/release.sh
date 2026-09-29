@@ -2,6 +2,108 @@
 set -e
 
 GPG_KEY=yamcs@spaceapplications.com
+MAVEN_BUCKET=${MAVEN_BUCKET:-gs://yamcs-maven}
+
+# Maven does not set <latest> in maven-metadata.xml (neither when creating it,
+# nor when merging into it), so set it to the version just published, and
+# update the checksums.
+set_latest() {
+    local file=$1 version=$2
+    VERSION=$version perl -0pi -e '
+        s#<latest>[^<]*</latest>#<latest>$ENV{VERSION}</latest># or
+        s#(\s*)<versions>#$1<latest>$ENV{VERSION}</latest>$1<versions>#' "$file"
+    for algorithm in md5 sha1 sha256 sha512; do
+        printf '%s' "$(openssl dgst -$algorithm -r "$file" | cut -d' ' -f1)" > "$file.$algorithm"
+    done
+}
+
+prepare_yamcs_maven() {
+    yamcs_maven_repo=releases
+    if [ $snapshot -eq 1 ]; then
+        yamcs_maven_repo=snapshots
+    fi
+    local remote="$MAVEN_BUCKET/$yamcs_maven_repo"
+
+    if [ ! -d "$clonedir/yamcs-web/src/main/webapp/dist/webapp" ]; then
+        echo 'The webapp is not built. Not publishing to maven.yamcs.org' >&2
+        exit 1
+    fi
+
+    # Check before building, as the same build may also publish to Maven Central
+    local existing
+    if [ $snapshot -eq 0 ]; then
+        if existing=$(gcloud storage ls "$remote/org/yamcs/*/$pomversion/" 2>&1); then
+            echo "$pomversion is already published to maven.yamcs.org" >&2
+            exit 1
+        elif [[ $existing != *"matched no objects"* ]]; then
+            echo "$existing" >&2
+            exit 1
+        fi
+    fi
+
+    yamcs_maven_staging=`mktemp -d`
+
+    # Seed staging with the published metadata, so that Maven merges into it
+    # rather than producing metadata with only this version.
+    # (For snapshots, the version-level metadata holds the build number.)
+    local patterns=("org/yamcs/*/maven-metadata.xml")
+    if [ $snapshot -eq 1 ]; then
+        patterns+=("org/yamcs/*/$pomversion/maven-metadata.xml")
+    fi
+    local listing=""
+    for pattern in "${patterns[@]}"; do
+        if ! listing+=$(gcloud storage ls "$remote/$pattern" 2>&1)$'\n'; then
+            if [[ $listing != *"matched no objects"* ]]; then
+                echo "$listing" >&2
+                exit 1
+            fi
+        fi
+    done
+    echo "$listing" | grep "^$remote/" | while read -r url; do
+        local path=${url#$remote/}
+        mkdir -p "$yamcs_maven_staging/`dirname $path`"
+        echo "$url" "$yamcs_maven_staging/$path"
+    done | xargs -r -n 2 -P 8 gcloud storage cp --no-user-output-enabled
+
+    yamcs_maven_goals=(
+        org.apache.maven.plugins:maven-deploy-plugin:3.1.1:deploy
+        -DaltDeploymentRepository=yamcs-maven::file://$yamcs_maven_staging
+        -Daether.checksums.algorithms=SHA-512,SHA-256,SHA-1,MD5
+    )
+}
+
+upload_to_yamcs_maven() {
+    local staging=$yamcs_maven_staging
+    local remote="$MAVEN_BUCKET/$yamcs_maven_repo"
+
+    # Split what was deployed into artifacts and metadata. Metadata of other
+    # artifacts (only there for seeding) is left out.
+    local artifacts=$staging/upload/artifacts
+    local metadata=$staging/upload/metadata
+    for versiondir in `cd $staging && find org -type d -name "$pomversion"`; do
+        local artifactdir=`dirname $versiondir`
+        mkdir -p $artifacts/$artifactdir $metadata/$artifactdir
+        mv $staging/$versiondir $artifacts/$artifactdir/
+        mv $staging/$artifactdir/maven-metadata.xml* $metadata/$artifactdir/
+        set_latest $metadata/$artifactdir/maven-metadata.xml $pomversion
+        if [ $snapshot -eq 1 ]; then
+            mkdir -p $metadata/$versiondir
+            mv $artifacts/$versiondir/maven-metadata.xml* $metadata/$versiondir/
+        fi
+    done
+
+    # Artifacts first, metadata last, so metadata never references
+    # artifacts that are not uploaded yet.
+    gcloud storage cp -r --no-clobber \
+        --cache-control='public, max-age=31536000, immutable' \
+        $artifacts/org "$remote/"
+    gcloud storage cp -r \
+        --cache-control='public, max-age=60' \
+        $metadata/org "$remote/"
+
+    rm -rf $staging
+    echo "Published to https://maven.yamcs.org/$yamcs_maven_repo/org/yamcs/"
+}
 
 cd `dirname $0`/..
 yamcshome=`pwd`
@@ -97,16 +199,40 @@ excluded_modules="!examples,${excluded_modules%,}"
 
 
 if [ $snapshot -eq 0 ]; then
-    read -p "Do you want to stage $pomversion maven artifacts to Maven Central? [y/N] " yesNo
-    if [[ $yesNo == 'y' ]]; then
-        mvn -f $clonedir -Drelease -DskipTests -pl "$excluded_modules" -am deploy
-        echo 'Release the staging repository at https://central.sonatype.com'
-    fi
+    central='Maven Central'
 else
-    read -p "Do you want to publish $pomversion maven artifacts to Sonatype Snapshots? [y/N] " yesNo
-    if [[ $yesNo == 'y' ]]; then
-        mvn -f $clonedir -Drelease -DskipTests -DskipStaging -pl "$excluded_modules" -am deploy
+    central='Sonatype Snapshots'
+fi
+echo "Where do you want to publish $pomversion maven artifacts?"
+echo "  1) $central"
+echo "  2) maven.yamcs.org"
+echo "  3) Both"
+echo "  4) Nowhere"
+while true; do
+    read -p "Choice [4]: " target
+    target=${target:-4}
+    if [[ $target =~ ^[1-4]$ ]]; then
+        break
     fi
+done
+
+yamcs_maven_goals=()
+if [[ $target == 2 || $target == 3 ]]; then
+    prepare_yamcs_maven
+fi
+if [[ $target == 1 || $target == 3 ]]; then
+    if [ $snapshot -eq 0 ]; then
+        mvn -f $clonedir -Drelease -DskipTests -pl "$excluded_modules" -am deploy "${yamcs_maven_goals[@]}"
+        echo 'Release the staging repository at https://central.sonatype.com'
+    else
+        mvn -f $clonedir -Drelease -DskipTests -DskipStaging -pl "$excluded_modules" -am deploy "${yamcs_maven_goals[@]}"
+    fi
+elif [[ $target == 2 ]]; then
+    # Not the deploy phase, which would publish to Maven Central
+    mvn -f $clonedir -Drelease -DskipTests -pl "$excluded_modules" -am verify "${yamcs_maven_goals[@]}"
+fi
+if [[ $target == 2 || $target == 3 ]]; then
+    upload_to_yamcs_maven
 fi
 
 rm -rf $clonedir $rpmtopdir
