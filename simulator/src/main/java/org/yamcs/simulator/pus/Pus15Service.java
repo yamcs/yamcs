@@ -6,30 +6,28 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+
+import org.yamcs.utils.BitBuffer;
 
 /**
  * ST[15] On-Board Storage and Retrieval simulator service. See pus_analysis/pus15.md and
  * pus_simulator_architecture.md for the full design rationale.
  *
  * <p>
- * This is the "core lifecycle" scope: packet store CRUD (create/delete/resize/change-VC/report
- * config), storage enable/disable, status/summary reporting, by-time-range retrieval and open
- * retrieval. The Packet Selection subservice (TC[15,3/4/5/6] and the HK/diagnostic/event filter
- * tables, TC[15,29-40]) is deferred to a follow-up -- see class note below on default storage
- * behaviour in the meantime.
+ * Implements packet store lifecycle and retrieval together with the Packet Selection subservice
+ * (TC[15,3-5]/TM[15,6] and TC[15,29-39]/TM[15,36/38/40]). Application-process identifiers in
+ * packet-selection application and source data are packed 11-bit values.
  *
  * <p>
- * <b>Storage filtering default:</b> since the Packet Selection subservice isn't implemented yet,
- * there is no way to populate an application-process storage-control configuration. Rather than
- * make {@code storage_enabled=true} inert (spec-strict default would store nothing without an
- * explicit filter), this simulator stores <i>all</i> outgoing TM in every storage-enabled store --
- * a pass-all default, mirroring the same usability-over-strict-compliance choice already made for
- * ST[14]'s forwarding gate (see Pus14Service). Once the Packet Selection subservice lands, this
- * default narrows to "nothing until explicitly added" per spec.
+ * <b>Storage filtering default:</b> an empty application-process storage-control configuration
+ * blocks all reports, as required by ECSS-E-ST-70-41C. A storage-enabled packet store therefore
+ * remains empty until configured with TC[15,3].
  *
  * <p>
  * <b>Threading:</b> all background retrieval work runs on {@link PusSimulator#executor}, the same
@@ -47,6 +45,11 @@ public class Pus15Service extends AbstractPusService {
     static final int COMPL_ERR_BTR_ALREADY_ACTIVE = 9;
     static final int COMPL_ERR_NOT_SUSPENDED = 10;
     static final int COMPL_ERR_ACTIVE_RETRIEVAL = 11;
+    static final int COMPL_ERR_REPORT_TOO_LARGE = 12;
+    static final int COMPL_ERR_APID_NOT_IN_CONFIG = 13;
+    static final int COMPL_ERR_SERVICE_NOT_IN_CONFIG = 14;
+    static final int COMPL_ERR_IDENTIFIER_NOT_IN_CONFIG = 15;
+    static final int COMPL_ERR_WILDCARD_CONFLICT = 16;
 
     static final int STORE_TYPE_CIRCULAR = 0;
     static final int STORE_TYPE_BOUNDED = 1;
@@ -68,6 +71,10 @@ public class Pus15Service extends AbstractPusService {
         case 1 -> setStorageEnabled(tc, true);
         // TC[15,2] disable storage function of packet stores
         case 2 -> setStorageEnabled(tc, false);
+        // TC[15,3-5] application-process storage-control configuration
+        case 3 -> addApplicationReportTypes(tc);
+        case 4 -> deleteApplicationReportTypes(tc);
+        case 5 -> reportApplicationConfig(tc);
         // TC[15,9] start by-time-range retrieval
         case 9 -> startBtr(tc);
         // TC[15,11] delete content of packet stores up to specified time
@@ -94,6 +101,16 @@ public class Pus15Service extends AbstractPusService {
         case 25 -> resizeStores(tc);
         // TC[15,28] change virtual channel used by a packet store
         case 28 -> changeVc(tc);
+        // TC[15,29-40] HK, diagnostic and event packet-selection configurations
+        case 29 -> addIdentifierConfig(tc, ConfigKind.HK);
+        case 30 -> deleteIdentifierConfig(tc, ConfigKind.HK);
+        case 31 -> addIdentifierConfig(tc, ConfigKind.DIAGNOSTIC);
+        case 32 -> deleteIdentifierConfig(tc, ConfigKind.DIAGNOSTIC);
+        case 33 -> deleteIdentifierConfig(tc, ConfigKind.EVENT);
+        case 34 -> addIdentifierConfig(tc, ConfigKind.EVENT);
+        case 35 -> reportIdentifierConfig(tc, ConfigKind.HK, 36);
+        case 37 -> reportIdentifierConfig(tc, ConfigKind.DIAGNOSTIC, 38);
+        case 39 -> reportIdentifierConfig(tc, ConfigKind.EVENT, 40);
         default -> {
             log.warn("Unknown ST[15] subtype {}, sending NACK start", tc.getSubtype());
             nack_start(tc, START_ERR_INVALID_PUS_SUBTYPE);
@@ -102,8 +119,7 @@ public class Pus15Service extends AbstractPusService {
     }
 
     /**
-     * Called by {@link PusSimulator#transmitRealtimeTM} for every outgoing TM packet. See class
-     * javadoc for the current pass-all storage default.
+     * Called by {@link PusSimulator#transmitRealtimeTM} for every outgoing TM packet.
      */
     public void submitToStores(PusTmPacket pkt) {
         if (stores.isEmpty()) {
@@ -112,10 +128,382 @@ public class Pus15Service extends AbstractPusService {
         byte[] raw = pkt.getBytes();
         long ts = pusSimulator.timeEncoding.now().millis();
         for (PacketStore s : stores.values()) {
-            if (s.storageEnabled) {
+            if (s.storageEnabled && shouldStore(s, pkt)) {
                 s.append(raw, ts);
             }
         }
+    }
+
+    private boolean shouldStore(PacketStore store, PusTmPacket pkt) {
+        AppProcessSelection app = store.appProcessConfig.get(pkt.getAPID());
+        if (app == null) {
+            return false;
+        }
+        if (!app.services.isEmpty()) {
+            Set<Integer> subtypes = app.services.get(pkt.getType());
+            if (subtypes == null || (!subtypes.isEmpty() && !subtypes.contains(pkt.getSubtype()))) {
+                return false;
+            }
+        }
+
+        if (pkt.getType() == PusSimulator.PUS_TYPE_HK && pkt.getSubtype() == 25) {
+            return identifierAllowed(store.hkConfig, pkt.getAPID(), pkt.getUserDataBuffer().getInt(0));
+        }
+        if (pkt.getType() == PusSimulator.PUS_TYPE_HK && pkt.getSubtype() == 26) {
+            return identifierAllowed(store.diagnosticConfig, pkt.getAPID(), pkt.getUserDataBuffer().getInt(0));
+        }
+        if (pkt.getType() == PusSimulator.PUS_TYPE_EVENT
+                && pkt.getSubtype() >= 1 && pkt.getSubtype() <= 4) {
+            Set<Integer> blocked = store.eventBlockingConfig.get(pkt.getAPID());
+            if (blocked == null) {
+                return true;
+            }
+            if (blocked.isEmpty()) {
+                return false;
+            }
+            int eventId = pkt.getUserDataBuffer().get(0) & 0xFF;
+            return !blocked.contains(eventId);
+        }
+        return true;
+    }
+
+    private static boolean identifierAllowed(Map<Integer, Set<Integer>> config, int apid, int identifier) {
+        Set<Integer> identifiers = config.get(apid);
+        return identifiers != null && (identifiers.isEmpty() || identifiers.contains(identifier));
+    }
+
+    // ---- TC[15,3-5] / TM[15,6]: application-process packet selection ----
+
+    private void addApplicationReportTypes(PusTcPacket tc) {
+        ack_start(tc);
+        BitBuffer bits = PusPackedFields.bitBuffer(tc.getUserDataBuffer());
+        PacketStore store = resolveStore(tc, PusPackedFields.readUnsigned(bits, 16));
+        if (store == null) {
+            return;
+        }
+        int n1 = PusPackedFields.readUnsigned(bits, PusPackedFields.OCTET_BITS);
+        for (int i = 0; i < n1; i++) {
+            int apid = PusPackedFields.readUnsigned(bits, PusPackedFields.APID_BITS);
+            int n2 = PusPackedFields.readUnsigned(bits, PusPackedFields.OCTET_BITS);
+            AppProcessSelection selection = store.appProcessConfig.get(apid);
+            if (n2 == 0) {
+                store.appProcessConfig.put(apid, new AppProcessSelection());
+                continue;
+            }
+            if (selection != null && selection.services.isEmpty()) {
+                log.warn("ST15: APID {} already allows all service types in store {}", apid, store.storeId);
+                nack_completion(tc, COMPL_ERR_WILDCARD_CONFLICT);
+                return;
+            }
+            if (selection == null) {
+                selection = new AppProcessSelection();
+                store.appProcessConfig.put(apid, selection);
+            }
+            for (int j = 0; j < n2; j++) {
+                int service = PusPackedFields.readUnsigned(bits, PusPackedFields.OCTET_BITS);
+                int n3 = PusPackedFields.readUnsigned(bits, PusPackedFields.OCTET_BITS);
+                Set<Integer> subtypes = selection.services.get(service);
+                if (n3 == 0) {
+                    selection.services.put(service, new LinkedHashSet<>());
+                    continue;
+                }
+                if (subtypes != null && subtypes.isEmpty()) {
+                    log.warn("ST15: APID {} service {} already allows all subtypes in store {}",
+                            apid, service, store.storeId);
+                    nack_completion(tc, COMPL_ERR_WILDCARD_CONFLICT);
+                    return;
+                }
+                if (subtypes == null) {
+                    subtypes = new LinkedHashSet<>();
+                    selection.services.put(service, subtypes);
+                }
+                for (int k = 0; k < n3; k++) {
+                    subtypes.add(PusPackedFields.readUnsigned(bits, PusPackedFields.OCTET_BITS));
+                }
+            }
+        }
+        ack_completion(tc);
+    }
+
+    private void deleteApplicationReportTypes(PusTcPacket tc) {
+        ack_start(tc);
+        BitBuffer bits = PusPackedFields.bitBuffer(tc.getUserDataBuffer());
+        PacketStore store = resolveStore(tc, PusPackedFields.readUnsigned(bits, 16));
+        if (store == null) {
+            return;
+        }
+        int n1 = PusPackedFields.readUnsigned(bits, PusPackedFields.OCTET_BITS);
+        if (n1 == 0) {
+            store.appProcessConfig.clear();
+            ack_completion(tc);
+            return;
+        }
+        for (int i = 0; i < n1; i++) {
+            int apid = PusPackedFields.readUnsigned(bits, PusPackedFields.APID_BITS);
+            int n2 = PusPackedFields.readUnsigned(bits, PusPackedFields.OCTET_BITS);
+            AppProcessSelection selection = store.appProcessConfig.get(apid);
+            if (selection == null) {
+                log.warn("ST15: APID {} not in application configuration for store {}", apid, store.storeId);
+                nack_completion(tc, COMPL_ERR_APID_NOT_IN_CONFIG);
+                return;
+            }
+            if (n2 == 0) {
+                store.appProcessConfig.remove(apid);
+                continue;
+            }
+            if (selection.services.isEmpty()) {
+                nack_completion(tc, COMPL_ERR_SERVICE_NOT_IN_CONFIG);
+                return;
+            }
+            for (int j = 0; j < n2; j++) {
+                int service = PusPackedFields.readUnsigned(bits, PusPackedFields.OCTET_BITS);
+                int n3 = PusPackedFields.readUnsigned(bits, PusPackedFields.OCTET_BITS);
+                Set<Integer> subtypes = selection.services.get(service);
+                if (subtypes == null) {
+                    log.warn("ST15: service {} not configured for APID {} in store {}",
+                            service, apid, store.storeId);
+                    nack_completion(tc, COMPL_ERR_SERVICE_NOT_IN_CONFIG);
+                    return;
+                }
+                if (n3 == 0) {
+                    selection.services.remove(service);
+                    continue;
+                }
+                if (subtypes.isEmpty()) {
+                    nack_completion(tc, COMPL_ERR_IDENTIFIER_NOT_IN_CONFIG);
+                    return;
+                }
+                for (int k = 0; k < n3; k++) {
+                    int subtype = PusPackedFields.readUnsigned(bits, PusPackedFields.OCTET_BITS);
+                    if (!subtypes.remove(subtype)) {
+                        log.warn("ST15: subtype {} not configured for APID {} service {} in store {}",
+                                subtype, apid, service, store.storeId);
+                        nack_completion(tc, COMPL_ERR_IDENTIFIER_NOT_IN_CONFIG);
+                        return;
+                    }
+                }
+                if (subtypes.isEmpty()) {
+                    selection.services.remove(service);
+                }
+            }
+            if (selection.services.isEmpty()) {
+                store.appProcessConfig.remove(apid);
+            }
+        }
+        ack_completion(tc);
+    }
+
+    private void reportApplicationConfig(PusTcPacket tc) {
+        ack_start(tc);
+        ByteBuffer bb = tc.getUserDataBuffer();
+        PacketStore store = resolveStore(tc, bb.getShort() & 0xFFFF);
+        if (store == null) {
+            return;
+        }
+        long bitSize = applicationConfigReportBitSize(store);
+        if (!reportFits(bitSize)) {
+            reportTooLarge(tc, 6, bitSize);
+            return;
+        }
+        PusTmPacket pkt = newPacket(6, PusPackedFields.bytesForBits(bitSize));
+        BitBuffer out = PusPackedFields.bitBuffer(pkt.getUserDataBuffer());
+        out.putBits(store.storeId, 16);
+        out.putBits(store.appProcessConfig.size(), PusPackedFields.OCTET_BITS);
+        for (var appEntry : store.appProcessConfig.entrySet()) {
+            out.putBits(appEntry.getKey(), PusPackedFields.APID_BITS);
+            Map<Integer, Set<Integer>> services = appEntry.getValue().services;
+            out.putBits(services.size(), PusPackedFields.OCTET_BITS);
+            for (var serviceEntry : services.entrySet()) {
+                out.putBits(serviceEntry.getKey(), PusPackedFields.OCTET_BITS);
+                out.putBits(serviceEntry.getValue().size(), PusPackedFields.OCTET_BITS);
+                for (int subtype : serviceEntry.getValue()) {
+                    out.putBits(subtype, PusPackedFields.OCTET_BITS);
+                }
+            }
+        }
+        pusSimulator.transmitRealtimeTM(pkt);
+        ack_completion(tc);
+    }
+
+    private long applicationConfigReportBitSize(PacketStore store) {
+        if (store.appProcessConfig.size() > PusPackedFields.MAX_OCTET_COUNT) {
+            return -1;
+        }
+        long bits = 16 + PusPackedFields.OCTET_BITS;
+        for (AppProcessSelection selection : store.appProcessConfig.values()) {
+            if (selection.services.size() > PusPackedFields.MAX_OCTET_COUNT) {
+                return -1;
+            }
+            bits += PusPackedFields.APID_BITS + PusPackedFields.OCTET_BITS;
+            for (Set<Integer> subtypes : selection.services.values()) {
+                if (subtypes.size() > PusPackedFields.MAX_OCTET_COUNT) {
+                    return -1;
+                }
+                bits += 2L * PusPackedFields.OCTET_BITS
+                        + (long) subtypes.size() * PusPackedFields.OCTET_BITS;
+            }
+        }
+        return bits;
+    }
+
+    // ---- TC[15,29-40]: HK, diagnostic and event identifier configurations ----
+
+    private void addIdentifierConfig(PusTcPacket tc, ConfigKind kind) {
+        ack_start(tc);
+        BitBuffer bits = PusPackedFields.bitBuffer(tc.getUserDataBuffer());
+        PacketStore store = resolveStore(tc, PusPackedFields.readUnsigned(bits, 16));
+        if (store == null) {
+            return;
+        }
+        Map<Integer, Set<Integer>> config = identifierConfig(store, kind);
+        int n1 = PusPackedFields.readUnsigned(bits, PusPackedFields.OCTET_BITS);
+        for (int i = 0; i < n1; i++) {
+            int apid = PusPackedFields.readUnsigned(bits, PusPackedFields.APID_BITS);
+            int n2 = PusPackedFields.readUnsigned(bits, PusPackedFields.OCTET_BITS);
+            if (n2 == 0) {
+                config.put(apid, new LinkedHashSet<>());
+                continue;
+            }
+            Set<Integer> identifiers = config.get(apid);
+            if (identifiers != null && identifiers.isEmpty()) {
+                log.warn("ST15: {} configuration for APID {} already has wildcard semantics in store {}",
+                        kind, apid, store.storeId);
+                nack_completion(tc, COMPL_ERR_WILDCARD_CONFLICT);
+                return;
+            }
+            if (identifiers == null) {
+                identifiers = new LinkedHashSet<>();
+                config.put(apid, identifiers);
+            }
+            for (int j = 0; j < n2; j++) {
+                identifiers.add(PusPackedFields.readUnsigned(bits, identifierBits(kind)));
+            }
+        }
+        ack_completion(tc);
+    }
+
+    private void deleteIdentifierConfig(PusTcPacket tc, ConfigKind kind) {
+        ack_start(tc);
+        BitBuffer bits = PusPackedFields.bitBuffer(tc.getUserDataBuffer());
+        PacketStore store = resolveStore(tc, PusPackedFields.readUnsigned(bits, 16));
+        if (store == null) {
+            return;
+        }
+        Map<Integer, Set<Integer>> config = identifierConfig(store, kind);
+        int n1 = PusPackedFields.readUnsigned(bits, PusPackedFields.OCTET_BITS);
+        if (n1 == 0) {
+            config.clear();
+            ack_completion(tc);
+            return;
+        }
+        for (int i = 0; i < n1; i++) {
+            int apid = PusPackedFields.readUnsigned(bits, PusPackedFields.APID_BITS);
+            int n2 = PusPackedFields.readUnsigned(bits, PusPackedFields.OCTET_BITS);
+            Set<Integer> identifiers = config.get(apid);
+            if (identifiers == null) {
+                log.warn("ST15: APID {} not in {} configuration for store {}", apid, kind, store.storeId);
+                nack_completion(tc, COMPL_ERR_APID_NOT_IN_CONFIG);
+                return;
+            }
+            if (n2 == 0) {
+                config.remove(apid);
+                continue;
+            }
+            if (identifiers.isEmpty()) {
+                nack_completion(tc, COMPL_ERR_IDENTIFIER_NOT_IN_CONFIG);
+                return;
+            }
+            for (int j = 0; j < n2; j++) {
+                int identifier = PusPackedFields.readUnsigned(bits, identifierBits(kind));
+                if (!identifiers.remove(identifier)) {
+                    log.warn("ST15: identifier {} not in {} configuration for APID {} store {}",
+                            identifier, kind, apid, store.storeId);
+                    nack_completion(tc, COMPL_ERR_IDENTIFIER_NOT_IN_CONFIG);
+                    return;
+                }
+            }
+            if (identifiers.isEmpty()) {
+                config.remove(apid);
+            }
+        }
+        ack_completion(tc);
+    }
+
+    private void reportIdentifierConfig(PusTcPacket tc, ConfigKind kind, int tmSubtype) {
+        ack_start(tc);
+        ByteBuffer bb = tc.getUserDataBuffer();
+        PacketStore store = resolveStore(tc, bb.getShort() & 0xFFFF);
+        if (store == null) {
+            return;
+        }
+        Map<Integer, Set<Integer>> config = identifierConfig(store, kind);
+        int idBits = identifierBits(kind);
+        long bitSize = identifierConfigReportBitSize(config, idBits);
+        if (!reportFits(bitSize)) {
+            reportTooLarge(tc, tmSubtype, bitSize);
+            return;
+        }
+        PusTmPacket pkt = newPacket(tmSubtype, PusPackedFields.bytesForBits(bitSize));
+        BitBuffer out = PusPackedFields.bitBuffer(pkt.getUserDataBuffer());
+        out.putBits(store.storeId, 16);
+        out.putBits(config.size(), PusPackedFields.OCTET_BITS);
+        for (var entry : config.entrySet()) {
+            out.putBits(entry.getKey(), PusPackedFields.APID_BITS);
+            out.putBits(entry.getValue().size(), PusPackedFields.OCTET_BITS);
+            for (int identifier : entry.getValue()) {
+                out.putBits(identifier, idBits);
+            }
+        }
+        pusSimulator.transmitRealtimeTM(pkt);
+        ack_completion(tc);
+    }
+
+    private long identifierConfigReportBitSize(Map<Integer, Set<Integer>> config, int idBits) {
+        if (config.size() > PusPackedFields.MAX_OCTET_COUNT) {
+            return -1;
+        }
+        long bits = 16 + PusPackedFields.OCTET_BITS;
+        for (Set<Integer> identifiers : config.values()) {
+            if (identifiers.size() > PusPackedFields.MAX_OCTET_COUNT) {
+                return -1;
+            }
+            bits += PusPackedFields.APID_BITS + PusPackedFields.OCTET_BITS
+                    + (long) identifiers.size() * idBits;
+        }
+        return bits;
+    }
+
+    private boolean reportFits(long bitSize) {
+        return bitSize >= 0 && PusPackedFields.bytesForBits(bitSize) <= pusSimulator.maxTmDataSize();
+    }
+
+    private void reportTooLarge(PusTcPacket tc, int tmSubtype, long bitSize) {
+        log.warn("ST15: TM[15,{}] cannot be represented atomically ({} bits)", tmSubtype, bitSize);
+        nack_completion(tc, COMPL_ERR_REPORT_TOO_LARGE);
+    }
+
+    private PacketStore resolveStore(PusTcPacket tc, int storeId) {
+        PacketStore store = stores.get(storeId);
+        if (store == null) {
+            log.warn("ST15: store id={} not found", storeId);
+            nack_completion(tc, COMPL_ERR_STORE_NOT_FOUND);
+        }
+        return store;
+    }
+
+    private static Map<Integer, Set<Integer>> identifierConfig(PacketStore store, ConfigKind kind) {
+        return switch (kind) {
+        case HK -> store.hkConfig;
+        case DIAGNOSTIC -> store.diagnosticConfig;
+        case EVENT -> store.eventBlockingConfig;
+        };
+    }
+
+    private static int identifierBits(ConfigKind kind) {
+        return switch (kind) {
+        case HK, DIAGNOSTIC -> PusPackedFields.STRUCTURE_ID_BITS;
+        case EVENT -> PusPackedFields.EVENT_DEFINITION_ID_BITS;
+        };
     }
 
     // ---- TC[15,1/2]: enable/disable storage ----
@@ -561,6 +949,17 @@ public class Pus15Service extends AbstractPusService {
 
     // ---- State ----
 
+    private enum ConfigKind {
+        HK,
+        DIAGNOSTIC,
+        EVENT
+    }
+
+    private static class AppProcessSelection {
+        // Empty map = all service types; empty subtype set = all subtypes for that service.
+        final Map<Integer, Set<Integer>> services = new LinkedHashMap<>();
+    }
+
     private static class StoredPacket {
         final byte[] raw;
         final long timestamp;
@@ -586,6 +985,11 @@ public class Pus15Service extends AbstractPusService {
         long usedBytes = 0;
         long nextSeq = 0;
         final Deque<StoredPacket> packets = new ArrayDeque<>();
+        final Map<Integer, AppProcessSelection> appProcessConfig = new LinkedHashMap<>();
+        // Empty identifier set = all structures for HK/diagnostic, all events blocked for event config.
+        final Map<Integer, Set<Integer>> hkConfig = new LinkedHashMap<>();
+        final Map<Integer, Set<Integer>> diagnosticConfig = new LinkedHashMap<>();
+        final Map<Integer, Set<Integer>> eventBlockingConfig = new LinkedHashMap<>();
         ScheduledFuture<?> openRetrievalTask;
 
         PacketStore(int storeId, long sizeBytes, int storeType, int vcId) {
