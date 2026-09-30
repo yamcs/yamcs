@@ -6,6 +6,8 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.yamcs.utils.BitBuffer;
+
 /**
  * ST[14] Real-Time Forwarding Control simulator service. See pus_analysis/pus14.md and
  * pus_simulator_architecture.md for the full design rationale.
@@ -13,14 +15,16 @@ import java.util.Set;
  * <p>
  * Emulates the satellite's on-board forwarding control: maintains the Application Process
  * Forward-Control Configuration (APFCC), the HK Forward-Control Configuration and the
- * Diagnostic Forward-Control Configuration in memory, handles the TC[14,x] configuration/dump
- * commands, and exposes {@link #shouldForward(PusTmPacket)} which {@link PusSimulator} consults
- * for every outgoing TM packet.
+ * Diagnostic Forward-Control Configuration and the Event Report Blocking Forward-Control
+ * Configuration in memory, handles the TC[14,x] configuration/dump commands, and exposes
+ * {@link #shouldForward(PusTmPacket)} which {@link PusSimulator} consults for every outgoing TM
+ * packet.
  *
  * <p>
  * HK FCC / Diag FCC are maintained as pure bookkeeping (TC[14,5-12]): this simulator's ST[03] HK
  * reports don't carry structure identifiers and ST[04] diagnostic reports don't exist, so these
  * two tables have no effect on {@link #shouldForward(PusTmPacket)} yet (see pus14.md Gap 6).
+ * Event blocking is active for ST[05] event-report subtypes 1 through 4.
  *
  * <p>
  * Default state is pass-all: an APID with no APFCC entry is forwarded (simulator usability, see
@@ -31,11 +35,21 @@ import java.util.Set;
  */
 public class Pus14Service extends AbstractPusService {
 
+    private static final int APID_BITS = PusPackedFields.APID_BITS;
+    private static final int OCTET_BITS = PusPackedFields.OCTET_BITS;
+    private static final int STRUCTURE_ID_BITS = PusPackedFields.STRUCTURE_ID_BITS;
+    private static final int EVENT_DEFINITION_ID_BITS = PusPackedFields.EVENT_DEFINITION_ID_BITS;
+    private static final int MAX_COUNT = PusPackedFields.MAX_OCTET_COUNT;
+
     // completion errors (see AbstractPusService for the shared ones)
     static final int COMPL_ERR_APID_NOT_IN_APFCC = 5;
     static final int COMPL_ERR_SVC_NOT_IN_APFCD = 6;
     static final int COMPL_ERR_APID_NOT_IN_HK_FCC = 7;
     static final int COMPL_ERR_APID_NOT_IN_DIAG_FCC = 8;
+    static final int COMPL_ERR_APID_NOT_IN_EVENT_FCC = 9;
+    static final int COMPL_ERR_EVENT_ID_NOT_IN_EVENT_FCC = 10;
+    static final int COMPL_ERR_EVENT_FCC_BLOCKS_ALL = 11;
+    static final int COMPL_ERR_REPORT_TOO_LARGE = 12;
 
     // Application Process Forward-Control Configuration: apid -> ApfcDefinition
     private final Map<Integer, ApfcDefinition> apfcc = new LinkedHashMap<>();
@@ -45,6 +59,9 @@ public class Pus14Service extends AbstractPusService {
 
     // Diagnostic Forward-Control Configuration: apid -> set of authorized diag structure ids (null = pass-all)
     private final Map<Integer, Set<Integer>> diagFcc = new LinkedHashMap<>();
+
+    // Event Report Blocking FCC: absent APID = block none, empty set = block all event definitions.
+    private final Map<Integer, Set<Integer>> eventBlockingFcc = new LinkedHashMap<>();
 
     Pus14Service(PusSimulator pusSimulator) {
         super(pusSimulator, 14);
@@ -79,6 +96,12 @@ public class Pus14Service extends AbstractPusService {
         case 10 -> deleteFccEntries(tc, diagFcc, COMPL_ERR_APID_NOT_IN_DIAG_FCC);
         // TC[14,11] report the content of the Diagnostic FCC
         case 11 -> reportFcc(tc, diagFcc, 12);
+        // TC[14,13] delete event definition identifiers from the Event Blocking FCC
+        case 13 -> deleteEventBlockingEntries(tc);
+        // TC[14,14] add event definition identifiers to the Event Blocking FCC
+        case 14 -> addEventBlockingEntries(tc);
+        // TC[14,15] report the content of the Event Blocking FCC
+        case 15 -> reportFcc(tc, eventBlockingFcc, 16, EVENT_DEFINITION_ID_BITS);
         default -> {
             log.warn("Unknown ST[14] subtype {}, sending NACK start", tc.getSubtype());
             nack_start(tc, START_ERR_INVALID_PUS_SUBTYPE);
@@ -90,23 +113,23 @@ public class Pus14Service extends AbstractPusService {
 
     private void addReportTypes(PusTcPacket tc) {
         ack_start(tc);
-        ByteBuffer bb = tc.getUserDataBuffer();
-        int n1 = bb.get() & 0xFF;
+        BitBuffer bits = PusPackedFields.bitBuffer(tc.getUserDataBuffer());
+        int n1 = readUnsigned(bits, OCTET_BITS);
         for (int i = 0; i < n1; i++) {
-            int apid = bb.getShort() & 0xFFFF;
-            int n2 = bb.get() & 0xFF;
+            int apid = readUnsigned(bits, APID_BITS);
+            int n2 = readUnsigned(bits, OCTET_BITS);
             if (n2 == 0) {
                 // N2=0: add all services for this APID
                 apfcc.computeIfAbsent(apid, ApfcDefinition::new);
             } else {
                 ApfcDefinition apfcd = apfcc.computeIfAbsent(apid, ApfcDefinition::new);
                 for (int j = 0; j < n2; j++) {
-                    int svcType = bb.get() & 0xFF;
-                    int n3 = bb.get() & 0xFF;
+                    int svcType = readUnsigned(bits, OCTET_BITS);
+                    int n3 = readUnsigned(bits, OCTET_BITS);
                     // N3=0: add all subtypes of this service type (empty set = pass all)
                     Set<Integer> subtypes = apfcd.serviceSubtypes.computeIfAbsent(svcType, k -> new LinkedHashSet<>());
                     for (int k = 0; k < n3; k++) {
-                        subtypes.add(bb.get() & 0xFF);
+                        subtypes.add(readUnsigned(bits, OCTET_BITS));
                     }
                 }
             }
@@ -117,17 +140,17 @@ public class Pus14Service extends AbstractPusService {
 
     private void deleteReportTypes(PusTcPacket tc) {
         ack_start(tc);
-        ByteBuffer bb = tc.getUserDataBuffer();
-        if (bb.remaining() == 0) {
+        BitBuffer bits = PusPackedFields.bitBuffer(tc.getUserDataBuffer());
+        int n1 = readUnsigned(bits, OCTET_BITS);
+        if (n1 == 0) {
             apfcc.clear();
             log.info("ST14: emptied the entire APFCC");
             ack_completion(tc);
             return;
         }
-        int n1 = bb.get() & 0xFF;
         for (int i = 0; i < n1; i++) {
-            int apid = bb.getShort() & 0xFFFF;
-            int n2 = bb.get() & 0xFF;
+            int apid = readUnsigned(bits, APID_BITS);
+            int n2 = readUnsigned(bits, OCTET_BITS);
             ApfcDefinition apfcd = apfcc.get(apid);
             if (apfcd == null) {
                 log.warn("ST14: APID {} not in APFCC, sending NACK completion", apid);
@@ -140,8 +163,8 @@ public class Pus14Service extends AbstractPusService {
                 continue;
             }
             for (int j = 0; j < n2; j++) {
-                int svcType = bb.get() & 0xFF;
-                int n3 = bb.get() & 0xFF;
+                int svcType = readUnsigned(bits, OCTET_BITS);
+                int n3 = readUnsigned(bits, OCTET_BITS);
                 if (!apfcd.serviceSubtypes.containsKey(svcType)) {
                     log.warn("ST14: service type {} not in APFCD for APID {}, sending NACK completion", svcType, apid);
                     nack_completion(tc, COMPL_ERR_SVC_NOT_IN_APFCD);
@@ -153,7 +176,7 @@ public class Pus14Service extends AbstractPusService {
                 } else {
                     Set<Integer> subtypes = apfcd.serviceSubtypes.get(svcType);
                     for (int k = 0; k < n3; k++) {
-                        subtypes.remove(bb.get() & 0xFF);
+                        subtypes.remove(readUnsigned(bits, OCTET_BITS));
                     }
                     if (subtypes.isEmpty()) {
                         apfcd.serviceSubtypes.remove(svcType);
@@ -169,46 +192,65 @@ public class Pus14Service extends AbstractPusService {
 
     private void reportApfcc(PusTcPacket tc) {
         ack_start(tc);
+        long bitSize = apfcReportBitSize();
+        if (!reportFits(bitSize)) {
+            reportTooLarge(tc, 4, bitSize);
+            return;
+        }
+        PusTmPacket pkt = newPacket(4, PusPackedFields.bytesForBits(bitSize));
+        BitBuffer bits = PusPackedFields.bitBuffer(pkt.getUserDataBuffer());
+        bits.putBits(apfcc.size(), OCTET_BITS);
         for (ApfcDefinition apfcd : apfcc.values()) {
-            sendApfcReport(apfcd);
-        }
-        ack_completion(tc);
-    }
-
-    private void sendApfcReport(ApfcDefinition apfcd) {
-        int size = 2 + 1;
-        for (Set<Integer> subtypes : apfcd.serviceSubtypes.values()) {
-            size += 1 + 1 + subtypes.size();
-        }
-        PusTmPacket pkt = newPacket(4, size);
-        ByteBuffer bb = pkt.getUserDataBuffer();
-        bb.putShort((short) apfcd.apid);
-        bb.put((byte) apfcd.serviceSubtypes.size());
-        for (var entry : apfcd.serviceSubtypes.entrySet()) {
-            bb.put(entry.getKey().byteValue());
-            Set<Integer> subtypes = entry.getValue();
-            bb.put((byte) subtypes.size());
-            for (int subtype : subtypes) {
-                bb.put((byte) subtype);
+            bits.putBits(apfcd.apid, APID_BITS);
+            bits.putBits(apfcd.serviceSubtypes.size(), OCTET_BITS);
+            for (var entry : apfcd.serviceSubtypes.entrySet()) {
+                bits.putBits(entry.getKey(), OCTET_BITS);
+                Set<Integer> subtypes = entry.getValue();
+                bits.putBits(subtypes.size(), OCTET_BITS);
+                for (int subtype : subtypes) {
+                    bits.putBits(subtype, OCTET_BITS);
+                }
             }
         }
         pusSimulator.transmitRealtimeTM(pkt);
+        ack_completion(tc);
+    }
+
+    private long apfcReportBitSize() {
+        if (apfcc.size() > MAX_COUNT) {
+            return -1;
+        }
+        long bitSize = OCTET_BITS;
+        for (ApfcDefinition apfcd : apfcc.values()) {
+            if (apfcd.serviceSubtypes.size() > MAX_COUNT) {
+                return -1;
+            }
+            bitSize += APID_BITS + OCTET_BITS;
+            for (Set<Integer> subtypes : apfcd.serviceSubtypes.values()) {
+                if (subtypes.size() > MAX_COUNT) {
+                    return -1;
+                }
+                bitSize += 2L * OCTET_BITS + (long) subtypes.size() * OCTET_BITS;
+            }
+        }
+        return bitSize;
     }
 
     // ---- TC[14,5/6/7] and TC[14,9/10/11]: HK FCC / Diagnostic FCC (bookkeeping only, see class javadoc) ----
 
     private void addStructIds(ByteBuffer bb, Map<Integer, Set<Integer>> fcc) {
-        int n1 = bb.get() & 0xFF;
+        BitBuffer bits = PusPackedFields.bitBuffer(bb);
+        int n1 = readUnsigned(bits, OCTET_BITS);
         for (int i = 0; i < n1; i++) {
-            int apid = bb.getShort() & 0xFFFF;
-            int nStructs = bb.get() & 0xFF;
+            int apid = readUnsigned(bits, APID_BITS);
+            int nStructs = readUnsigned(bits, OCTET_BITS);
             if (nStructs == 0) {
                 // N_structs=0: authorize all structures for this APID
                 fcc.put(apid, null);
             } else {
                 Set<Integer> structs = fcc.computeIfAbsent(apid, k -> new LinkedHashSet<>());
                 for (int j = 0; j < nStructs; j++) {
-                    structs.add(bb.getShort() & 0xFFFF);
+                    structs.add(readUnsigned(bits, STRUCTURE_ID_BITS));
                 }
             }
         }
@@ -216,16 +258,16 @@ public class Pus14Service extends AbstractPusService {
 
     private void deleteFccEntries(PusTcPacket tc, Map<Integer, Set<Integer>> fcc, int rejectionCode) {
         ack_start(tc);
-        ByteBuffer bb = tc.getUserDataBuffer();
-        if (bb.remaining() == 0) {
+        BitBuffer bits = PusPackedFields.bitBuffer(tc.getUserDataBuffer());
+        int n1 = readUnsigned(bits, OCTET_BITS);
+        if (n1 == 0) {
             fcc.clear();
             ack_completion(tc);
             return;
         }
-        int n1 = bb.get() & 0xFF;
         for (int i = 0; i < n1; i++) {
-            int apid = bb.getShort() & 0xFFFF;
-            int nStructs = bb.get() & 0xFF;
+            int apid = readUnsigned(bits, APID_BITS);
+            int nStructs = readUnsigned(bits, OCTET_BITS);
             if (!fcc.containsKey(apid)) {
                 log.warn("ST14: APID {} not in FCC, sending NACK completion", apid);
                 nack_completion(tc, rejectionCode);
@@ -242,7 +284,7 @@ public class Pus14Service extends AbstractPusService {
                 continue;
             }
             for (int j = 0; j < nStructs; j++) {
-                structs.remove(bb.getShort() & 0xFFFF);
+                structs.remove(readUnsigned(bits, STRUCTURE_ID_BITS));
             }
             if (structs.isEmpty()) {
                 fcc.remove(apid);
@@ -252,25 +294,127 @@ public class Pus14Service extends AbstractPusService {
     }
 
     private void reportFcc(PusTcPacket tc, Map<Integer, Set<Integer>> fcc, int tmSubtype) {
+        reportFcc(tc, fcc, tmSubtype, STRUCTURE_ID_BITS);
+    }
+
+    private void reportFcc(PusTcPacket tc, Map<Integer, Set<Integer>> fcc, int tmSubtype, int idBits) {
         ack_start(tc);
+        long bitSize = fccReportBitSize(fcc, idBits);
+        if (!reportFits(bitSize)) {
+            reportTooLarge(tc, tmSubtype, bitSize);
+            return;
+        }
+        PusTmPacket pkt = newPacket(tmSubtype, PusPackedFields.bytesForBits(bitSize));
+        BitBuffer bits = PusPackedFields.bitBuffer(pkt.getUserDataBuffer());
+        bits.putBits(fcc.size(), OCTET_BITS);
         for (var entry : fcc.entrySet()) {
-            sendFccReport(tmSubtype, entry.getKey(), entry.getValue());
+            bits.putBits(entry.getKey(), APID_BITS);
+            Set<Integer> ids = entry.getValue();
+            int count = ids == null ? 0 : ids.size();
+            bits.putBits(count, OCTET_BITS);
+            if (ids != null) {
+                for (int id : ids) {
+                    bits.putBits(id, idBits);
+                }
+            }
+        }
+        pusSimulator.transmitRealtimeTM(pkt);
+        ack_completion(tc);
+    }
+
+    private long fccReportBitSize(Map<Integer, Set<Integer>> fcc, int idBits) {
+        if (fcc.size() > MAX_COUNT) {
+            return -1;
+        }
+        long bitSize = OCTET_BITS;
+        for (Set<Integer> ids : fcc.values()) {
+            int count = ids == null ? 0 : ids.size();
+            if (count > MAX_COUNT) {
+                return -1;
+            }
+            bitSize += APID_BITS + OCTET_BITS + (long) count * idBits;
+        }
+        return bitSize;
+    }
+
+    // ---- TC[14,13-15] / TM[14,16]: Event Report Blocking FCC ----
+
+    private void addEventBlockingEntries(PusTcPacket tc) {
+        ack_start(tc);
+        BitBuffer bits = PusPackedFields.bitBuffer(tc.getUserDataBuffer());
+        int n1 = readUnsigned(bits, OCTET_BITS);
+        for (int i = 0; i < n1; i++) {
+            int apid = readUnsigned(bits, APID_BITS);
+            int n2 = readUnsigned(bits, OCTET_BITS);
+            if (n2 == 0) {
+                eventBlockingFcc.put(apid, new LinkedHashSet<>());
+                continue;
+            }
+            Set<Integer> blocked = eventBlockingFcc.get(apid);
+            if (blocked != null && blocked.isEmpty()) {
+                log.warn("ST14: event FCC for APID {} already blocks all events", apid);
+                nack_completion(tc, COMPL_ERR_EVENT_FCC_BLOCKS_ALL);
+                return;
+            }
+            if (blocked == null) {
+                blocked = new LinkedHashSet<>();
+                eventBlockingFcc.put(apid, blocked);
+            }
+            for (int j = 0; j < n2; j++) {
+                blocked.add(readUnsigned(bits, EVENT_DEFINITION_ID_BITS));
+            }
         }
         ack_completion(tc);
     }
 
-    private void sendFccReport(int tmSubtype, int apid, Set<Integer> structIds) {
-        int count = structIds == null ? 0 : structIds.size();
-        PusTmPacket pkt = newPacket(tmSubtype, 2 + 1 + count * 2);
-        ByteBuffer bb = pkt.getUserDataBuffer();
-        bb.putShort((short) apid);
-        bb.put((byte) count);
-        if (structIds != null) {
-            for (int sid : structIds) {
-                bb.putShort((short) sid);
+    private void deleteEventBlockingEntries(PusTcPacket tc) {
+        ack_start(tc);
+        BitBuffer bits = PusPackedFields.bitBuffer(tc.getUserDataBuffer());
+        int n1 = readUnsigned(bits, OCTET_BITS);
+        if (n1 == 0) {
+            eventBlockingFcc.clear();
+            ack_completion(tc);
+            return;
+        }
+        for (int i = 0; i < n1; i++) {
+            int apid = readUnsigned(bits, APID_BITS);
+            int n2 = readUnsigned(bits, OCTET_BITS);
+            Set<Integer> blocked = eventBlockingFcc.get(apid);
+            if (blocked == null) {
+                log.warn("ST14: APID {} not in event FCC", apid);
+                nack_completion(tc, COMPL_ERR_APID_NOT_IN_EVENT_FCC);
+                return;
+            }
+            if (n2 == 0) {
+                eventBlockingFcc.remove(apid);
+                continue;
+            }
+            for (int j = 0; j < n2; j++) {
+                int eventId = readUnsigned(bits, EVENT_DEFINITION_ID_BITS);
+                if (!blocked.remove(eventId)) {
+                    log.warn("ST14: event ID {} not in event FCC for APID {}", eventId, apid);
+                    nack_completion(tc, COMPL_ERR_EVENT_ID_NOT_IN_EVENT_FCC);
+                    return;
+                }
+            }
+            if (blocked.isEmpty()) {
+                eventBlockingFcc.remove(apid);
             }
         }
-        pusSimulator.transmitRealtimeTM(pkt);
+        ack_completion(tc);
+    }
+
+    private boolean reportFits(long bitSize) {
+        return bitSize >= 0 && PusPackedFields.bytesForBits(bitSize) <= pusSimulator.maxTmDataSize();
+    }
+
+    private void reportTooLarge(PusTcPacket tc, int tmSubtype, long bitSize) {
+        log.warn("ST14: TM[14,{}] report cannot be represented atomically ({} bits)", tmSubtype, bitSize);
+        nack_completion(tc, COMPL_ERR_REPORT_TOO_LARGE);
+    }
+
+    private static int readUnsigned(BitBuffer bits, int bitCount) {
+        return PusPackedFields.readUnsigned(bits, bitCount);
     }
 
     // ---- Forwarding gate, consulted by PusSimulator.transmitRealtimeTM() for every outgoing TM ----
@@ -285,21 +429,30 @@ public class Pus14Service extends AbstractPusService {
         }
 
         int apid = pkt.getAPID();
-        ApfcDefinition apfcd = apfcc.get(apid);
-        if (apfcd == null) {
-            return true; // pass-all default: no APFCC entry for this APID
+        if (!allowedByApfcc(apid, type, pkt.getSubtype())) {
+            return false;
         }
-        if (apfcd.serviceSubtypes.isEmpty()) {
-            return true; // APID entry exists with no restrictions -> forward all
+        if (type == PusSimulator.PUS_TYPE_EVENT && pkt.getSubtype() >= 1 && pkt.getSubtype() <= 4) {
+            Set<Integer> blocked = eventBlockingFcc.get(apid);
+            if (blocked == null) {
+                return true;
+            }
+            if (blocked.isEmpty()) {
+                return false;
+            }
+            int eventId = pkt.getUserDataBuffer().get(0) & 0xFF;
+            return !blocked.contains(eventId);
+        }
+        return true;
+    }
+
+    private boolean allowedByApfcc(int apid, int type, int subtype) {
+        ApfcDefinition apfcd = apfcc.get(apid);
+        if (apfcd == null || apfcd.serviceSubtypes.isEmpty()) {
+            return true;
         }
         Set<Integer> subtypes = apfcd.serviceSubtypes.get(type);
-        if (subtypes == null) {
-            return false; // service type not authorized for this APID
-        }
-        if (subtypes.isEmpty()) {
-            return true; // all subtypes of this service type are authorized
-        }
-        return subtypes.contains(pkt.getSubtype());
+        return subtypes != null && (subtypes.isEmpty() || subtypes.contains(subtype));
     }
 
     private static class ApfcDefinition {
