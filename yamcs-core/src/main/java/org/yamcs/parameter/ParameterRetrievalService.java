@@ -502,24 +502,31 @@ public class ParameterRetrievalService extends AbstractYamcsService {
 
             var pvListList = opts.noreplay() ? pcache.getAllValues(parameters, start, stop)
                     : pcache.getAllValuesIfCovered(parameters, start, stop);
-            log.debug("pcache returned {} results", pvListList.size());
-            if (opts.ascending()) {
-                pvListList = Lists.reverse(pvListList);
-            }
-            if (!pvListList.isEmpty()) {
+            log.debug("pcache returned {} results", pvListList == null ? 0 : pvListList.size());
+            if (pvListList != null && !pvListList.isEmpty()) {
+                if (opts.ascending()) {
+                    pvListList = Lists.reverse(pvListList);
+                }
                 long t = 0;
                 for (var pvList : pvListList) {
                     var pvidList = new ArrayList<ParameterValueWithId>();
                     for (var pv : pvList) {
                         for (var pid : pidMapping.get(pv.getParameter())) {
+                            // Each requested path is relative to the original aggregate. Do not carry the result of
+                            // one member extraction into the next sibling request.
+                            ParameterValue requestedPv = pv;
                             if (pid.getPath() != null) {
-                                pv = AggregateUtil.extractMember(pv, pid.getPath());
+                                requestedPv = AggregateUtil.extractMember(pv, pid.getPath());
                             }
-                            pvidList.add(new ParameterValueWithId(pv, pid.getId()));
+                            if (requestedPv != null) {
+                                pvidList.add(new ParameterValueWithId(requestedPv, pid.getId()));
+                            }
                         }
                         t = pv.getGenerationTime();
                     }
-                    consumer.accept(pvidList);
+                    if (!pvidList.isEmpty()) {
+                        consumer.accept(pvidList);
+                    }
                 }
                 return new TimeAndCount(t, pvListList.size());
             } // else it means the cache does not cover the requested interval,
@@ -641,10 +648,14 @@ public class ParameterRetrievalService extends AbstractYamcsService {
                             tc.time = Math.min(pv.getGenerationTime(), tc.time);
                         }
                         for (var pid : pids) {
+                            // A replay may contain several requested members of the same aggregate parameter.
+                            ParameterValue requestedPv = pv;
                             if (pid.getPath() != null) {
-                                pv = AggregateUtil.extractMember(pv, pid.getPath());
+                                requestedPv = AggregateUtil.extractMember(pv, pid.getPath());
                             }
-                            pvaluesWithIds.add(new ParameterValueWithId(pv, pid.getId()));
+                            if (requestedPv != null) {
+                                pvaluesWithIds.add(new ParameterValueWithId(requestedPv, pid.getId()));
+                            }
                         }
                     }
                 }
