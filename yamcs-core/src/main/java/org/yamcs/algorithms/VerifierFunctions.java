@@ -57,4 +57,19 @@ public class VerifierFunctions {
     public VerificationResult createResult(boolean success) {
         return new VerificationResult(success, null, null);
     }
+
+    /**
+     * Returns a result indicating this verifier does not apply to this command instance. Resolves the verifier
+     * immediately (instead of waiting for its check window to time out) without affecting the command outcome.
+     */
+    public VerificationResult skip() {
+        return VerificationResult.skip(null);
+    }
+
+    /**
+     * Returns a skip result (see {@link #skip()}) with an explanatory message.
+     */
+    public VerificationResult skip(String message) {
+        return VerificationResult.skip(message);
+    }
 }
