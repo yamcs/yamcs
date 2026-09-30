@@ -342,6 +342,8 @@ public class ParchiveWithSparseGroupsTest extends BaseParchiveTest {
 
         ParameterValue pv0x = getParameterValue(p1, 100, "x0");
         ParameterValue pv0y = getParameterValue(p2, 100, "y0");
+        pv0x.setInvalid();
+        pv0y.setInvalid();
         PGSegment segment = new PGSegment(initialGroup.id, 0);
         segment.addRecord(100, IntArray.wrap(p0x, p0y), Arrays.asList(pv0x, pv0y));
         parchive.writeToArchive(segment);
@@ -366,7 +368,9 @@ public class ParchiveWithSparseGroupsTest extends BaseParchiveTest {
         assertEquals(1, values.size());
         assertEquals(1, values.get(0).size());
 
-        ArrayValue arrayValue = (ArrayValue) values.get(0).getValues().get(0).getEngValue();
+        ParameterValue parameterValue = values.get(0).getValues().get(0);
+        assertTrue(parameterValue.isInvalid());
+        ArrayValue arrayValue = (ArrayValue) parameterValue.getEngValue();
         assertEquals(1, arrayValue.flatLength());
         AggregateValue element = (AggregateValue) arrayValue.getElementValue(0);
         assertEquals("x0", element.getMemberValue("x").getStringValue());

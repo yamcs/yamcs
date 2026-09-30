@@ -2,8 +2,10 @@ package org.yamcs.parameterarchive;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -120,6 +122,22 @@ public class DataQueueTest {
         assertEquals(2, descending.size());
         assertEquals(11, descending.get(0).getSegmentStart());
         assertEquals(9, descending.get(1).getSegmentStart());
+    }
+
+    @Test
+    public void testMultiParameterAscendingSkipsClearedSlot() {
+        DataQueue sq = new DataQueue(1, 1, dbWriter, t -> null, fillerLock);
+        sq.addRecord(9, new BasicParameterList(IntArray.wrap(1), getParaList(9)));
+        sq.addRecord(10, new BasicParameterList(IntArray.wrap(1), getParaList(10)));
+
+        // Model an asynchronous archive write clearing a slot after traversal has selected its starting position.
+        sq.intervals.get(0).segments[0] = null;
+
+        ParameterId[] pids = { new TestParameterId(1) };
+        List<MultiParameterValueSegment> ascending = assertTimeoutPreemptively(Duration.ofSeconds(1),
+                () -> sq.getPVSegments(pids, true));
+        assertEquals(1, ascending.size());
+        assertEquals(10, ascending.get(0).getSegmentStart());
     }
 
     /**
