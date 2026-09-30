@@ -1,5 +1,6 @@
 package org.yamcs.parameterarchive;
 
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -61,6 +62,8 @@ public class AggrrayBuilder {
         IntArray idx = pe.getIndex() == null ? null : IntArray.wrap(pe.getIndex());
         if (idx == null) {
             builder.addMember(pe.getName(), bvb);
+        } else if (isEmptyArrayMarker(pe)) {
+            createOrVerifyArrayMember(builder, pe.getName()).setShapeValue(bvb);
         } else {
             ArrayValueBuilder arrb = createOrVerifyArrayMember(builder, pe.getName());
             arrb.addElement(idx, bvb);
@@ -88,7 +91,11 @@ public class AggrrayBuilder {
         }
 
         IntArray idx = pe0.getIndex() == null ? null : IntArray.wrap(pe0.getIndex());
-        if (idx == null) { // root is an aggregate
+        if (basicArray && isEmptyArrayMarker(pe0)) {
+            ArrayValueBuilder arrayBuilder = createOrVerifyRootArray();
+            arrayBuilder.setShapeValue(getBasicValueBuilder(pid));
+            return null;
+        } else if (idx == null) { // root is an aggregate
             if (rootBuilder == null) {
                 rootBuilder = new AggregateValueBuilder();
             } else {
@@ -114,6 +121,20 @@ public class AggrrayBuilder {
                 return createOrVerifyArrayElement((ArrayValueBuilder) rootBuilder, idx);
             }
         }
+    }
+
+    private ArrayValueBuilder createOrVerifyRootArray() {
+        if (rootBuilder == null) {
+            rootBuilder = new ArrayValueBuilder();
+        } else if (!(rootBuilder instanceof ArrayValueBuilder)) {
+            throw new ParameterArchiveException("parameter is not an array");
+        }
+        return (ArrayValueBuilder) rootBuilder;
+    }
+
+    private boolean isEmptyArrayMarker(PathElement pathElement) {
+        int[] index = pathElement.getIndex();
+        return index != null && index.length == 1 && index[0] == BasicParameterList.EMPTY_ARRAY_MARKER_INDEX;
     }
 
     private AggregateValueBuilder addAndCheckAggrPathElement(AggregateValueBuilder aggb, PathElement pe) {
@@ -217,6 +238,7 @@ public class AggrrayBuilder {
 
     class ArrayValueBuilder implements ValueBuilder {
         Map<IntArray, ValueBuilder> elements = new LinkedHashMap<>();
+        BasicValueBuilder shapeValue;
         int[] dim = null;
         int numDim = -1;
 
@@ -237,12 +259,15 @@ public class AggrrayBuilder {
             return elements.get(idx);
         }
 
+        public void setShapeValue(BasicValueBuilder shapeValue) {
+            if (this.shapeValue != null) {
+                throw new ParameterArchiveException("Duplicate empty array shape value");
+            }
+            this.shapeValue = shapeValue;
+        }
+
         @Override
         public ArrayValue build() {
-            if (dim == null) {
-                dim = new int[numDim];
-            }
-
             Map<IntArray, Value> values = new HashMap<>();
             Type valueType = null;
             
@@ -258,9 +283,13 @@ public class AggrrayBuilder {
             // a value at the current timestamp, let the parent builder decide whether this is an absent element or an
             // empty array member.
             if (values.isEmpty()) {
-                return null;
+                Value value = shapeValue == null ? null : shapeValue.build();
+                return value == null ? null : decodeArrayShape(value);
             }
-            
+
+            if (dim == null) {
+                dim = new int[numDim];
+            }
             for (int i = 0; i < numDim; i++) {
                 int k = i;
                 dim[i] = values.keySet().stream().mapToInt(a -> a.get(k)).max().getAsInt() + 1;
@@ -282,10 +311,25 @@ public class AggrrayBuilder {
         @Override
         public void clear() {
             this.dim = null;
+            if (shapeValue != null) {
+                shapeValue.clear();
+            }
             for (ValueBuilder vb : elements.values()) {
                 vb.clear();
             }
         }
+    }
+
+    private ArrayValue decodeArrayShape(Value value) {
+        ByteBuffer buffer = ByteBuffer.wrap(value.getBinaryValue());
+        int dimensionCount = buffer.getInt();
+        int elementTypeNumber = buffer.getInt();
+        int[] dimensions = new int[dimensionCount];
+        for (int i = 0; i < dimensionCount; i++) {
+            dimensions[i] = buffer.getInt();
+        }
+        Type elementType = elementTypeNumber == -1 ? null : Type.forNumber(elementTypeNumber);
+        return new ArrayValue(dimensions, elementType);
     }
 
     class AggregateValueBuilder implements ValueBuilder {
