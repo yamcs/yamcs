@@ -22,6 +22,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.yamcs.YamcsServer;
+import org.yamcs.parameter.AggregateValue;
+import org.yamcs.parameter.ArrayValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.IntArray;
@@ -328,6 +330,47 @@ public class ParchiveWithSparseGroupsTest extends BaseParchiveTest {
         assertEquals(1, rl0.size());
         checkEquals(c.list.get(0), t1, pva1_0);
         checkEquals(c.list.get(1), t2, pva1_1);
+    }
+
+    @Test
+    public void testArrayComponentsAddedAfterSegmentArchived() throws Exception {
+        openDb("none", true, 0.5);
+
+        int p0x = pidMap.createAndGet("/test/a[0].x", Type.STRING);
+        int p0y = pidMap.createAndGet("/test/a[0].y", Type.STRING);
+        var initialGroup = pgidMap.getGroup(IntArray.wrap(p0x, p0y));
+
+        ParameterValue pv0x = getParameterValue(p1, 100, "x0");
+        ParameterValue pv0y = getParameterValue(p2, 100, "y0");
+        PGSegment segment = new PGSegment(initialGroup.id, 0);
+        segment.addRecord(100, IntArray.wrap(p0x, p0y), Arrays.asList(pv0x, pv0y));
+        parchive.writeToArchive(segment);
+
+        // Extend the group only after the older segment has been written. The new array element has no RocksDB record in
+        // that segment, including no gap record.
+        int p1x = pidMap.createAndGet("/test/a[1].x", Type.STRING);
+        int p1y = pidMap.createAndGet("/test/a[1].y", Type.STRING);
+        var extendedGroup = pgidMap.getGroup(IntArray.wrap(p0x, p0y, p1x, p1y));
+        assertEquals(initialGroup.id, extendedGroup.id);
+
+        int arrayId = pidMap.createAndGetAggrray("/test/a", Type.ARRAY, null,
+                IntArray.wrap(p0x, p0y, p1x, p1y));
+
+        assertArchivedArrayValue(arrayId, extendedGroup.id, true);
+        assertArchivedArrayValue(arrayId, extendedGroup.id, false);
+    }
+
+    private void assertArchivedArrayValue(int arrayId, int parameterGroupId, boolean ascending) throws Exception {
+        List<ParameterIdValueList> values = retrieveMultipleParameters(0, TimeEncoding.POSITIVE_INFINITY,
+                new int[] { arrayId }, new int[] { parameterGroupId }, ascending);
+        assertEquals(1, values.size());
+        assertEquals(1, values.get(0).size());
+
+        ArrayValue arrayValue = (ArrayValue) values.get(0).getValues().get(0).getEngValue();
+        assertEquals(1, arrayValue.flatLength());
+        AggregateValue element = (AggregateValue) arrayValue.getElementValue(0);
+        assertEquals("x0", element.getMemberValue("x").getStringValue());
+        assertEquals("y0", element.getMemberValue("y").getStringValue());
     }
 
     @Test
