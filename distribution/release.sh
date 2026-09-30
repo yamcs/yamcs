@@ -12,8 +12,33 @@ set_latest() {
     VERSION=$version perl -0pi -e '
         s#<latest>[^<]*</latest>#<latest>$ENV{VERSION}</latest># or
         s#(\s*)<versions>#$1<latest>$ENV{VERSION}</latest>$1<versions>#' "$file"
+    write_checksums "$file"
+}
+
+write_checksums() {
+    local file=$1
     for algorithm in md5 sha1 sha256 sha512; do
         printf '%s' "$(openssl dgst -$algorithm -r "$file" | cut -d' ' -f1)" > "$file.$algorithm"
+    done
+}
+
+# The build attaches empty javadoc jars (see empty-javadoc profile). Replace
+# them with the full javadoc jars, left unattached in each module's target/.
+restore_full_javadoc() {
+    local artifacts=$1
+    for jar in `find $artifacts -name '*-javadoc.jar'`; do
+        local artifactId=`basename $(dirname $(dirname $jar))`
+        local full=`ls $clonedir/*/target/$artifactId-$pomversion-javadoc.jar 2>/dev/null | head -1`
+        if [ -z "$full" ]; then
+            echo "No full javadoc found for $artifactId" >&2
+            exit 1
+        fi
+        cp "$full" "$jar"
+        write_checksums "$jar"
+        if [ -f "$jar.asc" ]; then
+            gpg --batch --yes --local-user $GPG_KEY --armor --detach-sign "$jar"
+            write_checksums "$jar.asc"
+        fi
     done
 }
 
@@ -92,6 +117,7 @@ upload_to_yamcs_maven() {
             mv $artifacts/$versiondir/maven-metadata.xml* $metadata/$versiondir/
         fi
     done
+    restore_full_javadoc $artifacts
 
     # Artifacts first, metadata last, so metadata never references
     # artifacts that are not uploaded yet.
@@ -156,7 +182,7 @@ npm run build
 rm -rf node_modules
 cd -
 
-mvn package -Drelease -DskipTests
+mvn package -Drelease -DemptyJavadoc -DskipTests
 
 rpmtopdir="$yamcshome/distribution/target/rpmbuild"
 mkdir -p $rpmtopdir/{RPMS,BUILD,SPECS,tmp}
@@ -223,14 +249,14 @@ if [[ $target == 2 || $target == 3 ]]; then
 fi
 if [[ $target == 1 || $target == 3 ]]; then
     if [ $snapshot -eq 0 ]; then
-        mvn -f $clonedir -Drelease -DskipTests -pl "$excluded_modules" -am deploy "${yamcs_maven_goals[@]}"
+        mvn -f $clonedir -Drelease -DemptyJavadoc -DskipTests -pl "$excluded_modules" -am deploy "${yamcs_maven_goals[@]}"
         echo 'Release the staging repository at https://central.sonatype.com'
     else
-        mvn -f $clonedir -Drelease -DskipTests -DskipStaging -pl "$excluded_modules" -am deploy "${yamcs_maven_goals[@]}"
+        mvn -f $clonedir -Drelease -DemptyJavadoc -DskipTests -DskipStaging -pl "$excluded_modules" -am deploy "${yamcs_maven_goals[@]}"
     fi
 elif [[ $target == 2 ]]; then
     # Not the deploy phase, which would publish to Maven Central
-    mvn -f $clonedir -Drelease -DskipTests -pl "$excluded_modules" -am verify "${yamcs_maven_goals[@]}"
+    mvn -f $clonedir -Drelease -DemptyJavadoc -DskipTests -pl "$excluded_modules" -am verify "${yamcs_maven_goals[@]}"
 fi
 if [[ $target == 2 || $target == 3 ]]; then
     upload_to_yamcs_maven
