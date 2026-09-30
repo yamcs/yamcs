@@ -221,7 +221,7 @@ echo 'All done. Generated assets:'
 ls -lh `find distribution/target -maxdepth 1 -type f`
 echo
 
-excluded_modules=$(cd $clonedir/examples && for d in */; do echo -n "!examples/${d%/},"; done)
+excluded_modules=$(cd $clonedir/examples && for f in */pom.xml; do echo -n "!examples/${f%/pom.xml},"; done)
 excluded_modules="!examples,${excluded_modules%,}"
 
 
