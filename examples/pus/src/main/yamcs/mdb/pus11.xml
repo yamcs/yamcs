@@ -36,8 +36,8 @@
 			<AggregateParameterType name="RequestIdType">
 				<MemberList>
 					<Member typeRef="/PUS/PusSourceIdType" name="source_id"/>
-					<Member typeRef="/dt/uint16" name="apid"/>
-					<Member typeRef="/dt/uint16" name="seq"/>
+					<Member typeRef="/dt/pus_report_apid" name="apid"/>
+					<Member typeRef="/dt/pus_report_seqcount" name="seq"/>
 				</MemberList>
 			</AggregateParameterType>
 			<IntegerParameterType name="GroupIdType" signed="false">
@@ -120,8 +120,8 @@
 			<AggregateArgumentType name="RequestIdType">
 				<MemberList>
 					<Member typeRef="/dt/uint16" name="source_id"/>
-					<Member typeRef="/dt/uint16" name="apid"/>
-					<Member typeRef="/dt/uint16" name="seqcount"/>
+					<Member typeRef="/dt/pus_report_apid" name="apid"/>
+					<Member typeRef="/dt/pus_report_seqcount" name="seqcount"/>
 				</MemberList>
 			</AggregateArgumentType>
 			<ArrayArgumentType arrayTypeRef="RequestIdType" name="RequestArrayType">
@@ -706,8 +706,8 @@
 					<Parameter parameterTypeRef="ScheduleIdType" name="schedule_id"/>
 					<Parameter parameterTypeRef="/PUS/PusTimeType" name="release_time"/>
 					<Parameter parameterTypeRef="/dt/uint16" name="source"/>
-					<Parameter parameterTypeRef="/dt/uint16" name="apid"/>
-					<Parameter parameterTypeRef="/dt/uint16" name="seq"/>
+					<Parameter parameterTypeRef="/dt/pus_report_apid" name="apid"/>
+					<Parameter parameterTypeRef="/dt/pus_report_seqcount" name="seq"/>
 			</ParameterSet>
 			<ContainerSet>
 				<SequenceContainer name="SUMMARY_REPORT_ELEMENT">
