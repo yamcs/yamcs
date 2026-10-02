@@ -48,7 +48,7 @@ public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
     public void init(String instance, String name, YConfiguration config) throws ConfigurationException {
         super.init(instance, name, config);
         port = config.getInt("port");
-        int maxLength = frameHandler.getMaxFrameSize();
+        int maxLength = rawFrameDecoder != null ? rawFrameDecoder.encodedFrameLength() : frameHandler.getMaxFrameSize();
         initialBytesToStrip = config.getInt("initialBytesToStrip", 0);
         datagram = new DatagramPacket(new byte[maxLength], maxLength);
     }
