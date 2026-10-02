@@ -11,6 +11,7 @@ import org.yamcs.cmdhistory.CommandHistoryPublisher.AckStatus;
 import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Pvalue.ParameterData;
+import org.yamcs.time.Instant;
 import org.yamcs.time.TimeService;
 import org.yamcs.tse.api.TseCommandResponse;
 import org.yamcs.tse.api.TseCommanderMessage;
@@ -62,7 +63,8 @@ public class TseDataLinkInboundHandler extends SimpleChannelInboundHandler<TseCo
     }
 
     private void handleParameterData(ParameterData pdata) {
-        long now = timeService.getMissionTime();
+        long nowMillis = timeService.getMissionTime();
+        Instant now = timeService.getHresMissionTime();
 
         TupleDefinition tdef = null;
         String group = null;
@@ -87,10 +89,10 @@ public class TseDataLinkInboundHandler extends SimpleChannelInboundHandler<TseCo
                 cols.add(now);
                 cols.add(group);
                 cols.add(pdata.getSeqNum());
-                cols.add(now);
+                cols.add(nowMillis);
             }
             // Time of TSE Commander may not match mission time
-            pv.setGenerationTime(now);
+            pv.setGenerationTime(nowMillis);
             int idx = tdef.getColumnIndex(qualifiedName);
             if (idx != -1) {
                 log.warn("Duplicate value for {} \nfirst: {}" + "\n second: {} ", qualifiedName, cols.get(idx),

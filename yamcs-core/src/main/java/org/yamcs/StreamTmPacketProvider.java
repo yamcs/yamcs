@@ -10,6 +10,7 @@ import org.yamcs.StreamConfig.StreamConfigEntry;
 import org.yamcs.StreamConfig.TmStreamConfigEntry;
 import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
+import org.yamcs.time.Instant;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
@@ -127,14 +128,14 @@ public class StreamTmPacketProvider extends AbstractProcessorService implements 
         @Override
         public void onTuple(Stream s, Tuple tuple) {
             long rectime = (Long) tuple.getColumn(StandardTupleDefinitions.TM_RECTIME_COLUMN);
-            long gentime = (Long) tuple.getColumn(StandardTupleDefinitions.GENTIME_COLUMN);
+            Instant gentime = tuple.getHresTimestampColumn(StandardTupleDefinitions.GENTIME_COLUMN);
             int seqCount = (Integer) tuple.getColumn(StandardTupleDefinitions.SEQNUM_COLUMN);
             byte[] packet = (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN);
             TmPacket tmPacket = new TmPacket(rectime, gentime, seqCount, packet);
             String link = tuple.getColumn(StandardTupleDefinitions.TM_LINK_COLUMN);
             tmPacket.setLink(link);
 
-            lastPacketTime = gentime;
+            lastPacketTime = gentime.getMillis();
 
             String preferredRootContainerName = tuple.getColumn(StandardTupleDefinitions.TM_ROOT_CONTAINER_COLUMN);
             if (preferredRootContainerName != null) {

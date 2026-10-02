@@ -1,6 +1,7 @@
 package org.yamcs.parameter;
 
 import org.yamcs.commanding.ArgumentValue;
+import org.yamcs.time.Instant;
 import org.yamcs.utils.TimeEncoding;
 
 /**
@@ -12,7 +13,7 @@ import org.yamcs.utils.TimeEncoding;
 public abstract class RawEngValue {
     protected Value rawValue;
     protected Value engValue;
-    protected long generationTime = TimeEncoding.INVALID_INSTANT;
+    protected Instant generationTime = Instant.INVALID_INSTANT;
 
     public RawEngValue() {
     }
@@ -32,7 +33,20 @@ public abstract class RawEngValue {
         return rawValue;
     }
 
+    /**
+     * Returns the generation time in milliseconds.
+     *
+     * @deprecated use {@link #getHresGenerationTime()} for full picosecond resolution
+     */
+    @Deprecated
     public long getGenerationTime() {
+        return generationTime.getMillis();
+    }
+
+    /**
+     * Returns the high resolution generation time with picosecond precision.
+     */
+    public Instant getHresGenerationTime() {
         return generationTime;
     }
 
@@ -40,7 +54,20 @@ public abstract class RawEngValue {
         this.rawValue = rv;
     }
 
+    /**
+     * Sets the generation time from milliseconds (picos will be 0).
+     *
+     * @deprecated use {@link #setGenerationTime(Instant)} for full picosecond resolution
+     */
+    @Deprecated
     public void setGenerationTime(long instant) {
+        generationTime = Instant.get(instant);
+    }
+
+    /**
+     * Sets the generation time with full picosecond resolution.
+     */
+    public void setGenerationTime(Instant instant) {
         generationTime = instant;
     }
 
@@ -130,6 +157,6 @@ public abstract class RawEngValue {
     }
 
     public boolean hasGenerationTime() {
-        return generationTime != TimeEncoding.INVALID_INSTANT;
+        return !generationTime.equals(Instant.INVALID_INSTANT);
     }
 }

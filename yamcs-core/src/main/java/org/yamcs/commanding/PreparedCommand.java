@@ -13,6 +13,7 @@ import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.cmdhistory.protobuf.Cmdhistory.Assignment;
 import org.yamcs.cmdhistory.protobuf.Cmdhistory.AssignmentInfo;
 import org.yamcs.mdb.Mdb;
+import org.yamcs.time.Instant;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.Value;
@@ -197,7 +198,7 @@ public class PreparedCommand {
 
     static public CommandId getCommandId(Tuple t) {
         CommandId cmdId = CommandId.newBuilder()
-                .setGenerationTime((Long) t.getColumn(CNAME_GENTIME))
+                .setGenerationTime(t.getTimestampColumn(CNAME_GENTIME))
                 .setOrigin((String) t.getColumn(CNAME_ORIGIN))
                 .setSequenceNumber((Integer) t.getColumn(CNAME_SEQNUM))
                 .setCommandName((String) t.getColumn(CNAME_CMDNAME))
@@ -208,7 +209,7 @@ public class PreparedCommand {
     public Tuple toTuple() {
         TupleDefinition td = StandardTupleDefinitions.TC.copy();
         ArrayList<Object> al = new ArrayList<>();
-        al.add(id.getGenerationTime());
+        al.add(Instant.get(id.getGenerationTime()));
         al.add(id.getOrigin());
         al.add(id.getSequenceNumber());
         al.add(id.getCommandName());

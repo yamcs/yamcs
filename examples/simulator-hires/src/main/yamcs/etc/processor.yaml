@@ -1,0 +1,16 @@
+realtime:
+  services:
+    - class: org.yamcs.StreamTmPacketProvider
+    - class: org.yamcs.tctm.StreamParameterProvider
+
+Archive:
+  services:
+    - class: org.yamcs.tctm.ReplayService
+
+ParameterArchive:
+  services:
+    - class: org.yamcs.tctm.ReplayService
+
+ArchiveRetrieval:
+  services:
+    - class: org.yamcs.tctm.ReplayService

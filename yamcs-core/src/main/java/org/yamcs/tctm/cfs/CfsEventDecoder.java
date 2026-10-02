@@ -132,7 +132,7 @@ public class CfsEventDecoder extends AbstractYamcsService implements StreamSubsc
 
         if (msgIds.contains(msgId)) {
             long rectime = (Long) t.getColumn(TM_RECTIME_COLUMN);
-            long gentime = (Long) t.getColumn(GENTIME_COLUMN);
+            long gentime = t.getTimestampColumn(GENTIME_COLUMN);
 
             try {
                 processPacket(rectime, gentime, packet);

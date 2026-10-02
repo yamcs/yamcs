@@ -41,7 +41,7 @@ public class StandardTupleDefinitions {
     public static final TupleDefinition TM = new TupleDefinition();
     public static final TupleDefinition INVALID_TM = new TupleDefinition();
     static {
-        TM.addColumn(GENTIME_COLUMN, DataType.TIMESTAMP);
+        TM.addColumn(GENTIME_COLUMN, DataType.HRES_TIMESTAMP);
         TM.addColumn(SEQNUM_COLUMN, DataType.INT);
         // reception or recording time (useful in case we import data from other recordings which provide this)
         TM.addColumn(TM_RECTIME_COLUMN, DataType.TIMESTAMP);
@@ -65,7 +65,7 @@ public class StandardTupleDefinitions {
     public static final TupleDefinition TC = new TupleDefinition();
     // this is the commandId (used as the primary key when recording), other columns are handled dynamically
     static {
-        TC.addColumn(GENTIME_COLUMN, DataType.TIMESTAMP);
+        TC.addColumn(GENTIME_COLUMN, DataType.HRES_TIMESTAMP);
         TC.addColumn(TC_ORIGIN_COLUMN, DataType.STRING);
         TC.addColumn(SEQNUM_COLUMN, DataType.INT);
         TC.addColumn(CMDHIST_TUPLE_COL_CMDNAME, DataType.ENUM);
@@ -75,7 +75,7 @@ public class StandardTupleDefinitions {
     // first columns from the PP tuples
     // the actual values are encoded as separated columns (umi_0x010203040506, value) value is ParameterValue
     static {
-        PARAMETER.addColumn(PARAMETER_COL_GENTIME, DataType.TIMESTAMP); // generation time
+        PARAMETER.addColumn(PARAMETER_COL_GENTIME, DataType.HRES_TIMESTAMP); // generation time
         PARAMETER.addColumn(PARAMETER_COL_GROUP, DataType.ENUM); // group - used for partitioning
                                                                  // (i.e. splitting the archive
                                                                  // in multiple files)
@@ -87,7 +87,7 @@ public class StandardTupleDefinitions {
     public static final TupleDefinition EVENT = new TupleDefinition();
     // this is the commandId (used as the primary key when recording), the rest will be handled dynamically
     static {
-        EVENT.addColumn(GENTIME_COLUMN, DataType.TIMESTAMP);
+        EVENT.addColumn(GENTIME_COLUMN, DataType.HRES_TIMESTAMP);
         EVENT.addColumn(SOURCE_COLUMN, DataType.ENUM);
         EVENT.addColumn(SEQNUM_COLUMN, DataType.INT);
         EVENT.addColumn(BODY_COLUMN, DataType.protobuf(Event.class.getName()));
