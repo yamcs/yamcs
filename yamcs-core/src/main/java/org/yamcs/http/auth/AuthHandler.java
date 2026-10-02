@@ -268,7 +268,7 @@ public class AuthHandler extends BodyHandler {
             qsEncoder.addParam("state", state);
         }
 
-        log.info("Redirecting to " + qsEncoder.toString());
+        log.info("Redirecting to {}", request.getRedirectURI());
         ctx.sendRedirect(qsEncoder.toString());
     }
 

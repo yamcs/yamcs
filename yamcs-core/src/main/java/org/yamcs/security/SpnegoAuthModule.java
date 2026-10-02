@@ -230,8 +230,7 @@ public class SpnegoAuthModule extends HttpHandler implements AuthModule {
             } catch (IllegalArgumentException e) {
                 throw new BadRequestException("Failed to base64 decode the SPNEGO token");
             } catch (GSSException e) {
-                log.warn("Failed to establish context with the SPNEGO token from header '{}': ",
-                        negotiateHeader, e);
+                log.warn("Failed to establish context with the SPNEGO token", e);
                 throw new UnauthorizedException();
             }
         } else {
