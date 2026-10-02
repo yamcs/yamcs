@@ -68,6 +68,11 @@ public class CspPacketPreprocessor extends AbstractPacketPreprocessor {
         var checksumIndicator = CspPacket.getCrcFlag(bytes);
         var corrupted = false;
         if (checksumIndicator) {
+            if (bytes.length < 8) {
+                eventProducer.sendWarning("SHORT_PACKET", "Short packet received, length: " + bytes.length
+                        + "; minimum required length is 8 bytes when the CRC flag is set");
+                return null; // Drop packet
+            }
             int n = packet.length();
             var crc = new CRC32C();
             crc.update(bytes, 4, bytes.length - 4 - 4);
