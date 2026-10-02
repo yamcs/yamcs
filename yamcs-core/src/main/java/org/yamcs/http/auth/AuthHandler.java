@@ -1,5 +1,6 @@
 package org.yamcs.http.auth;
 
+import java.net.URI;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -14,6 +15,7 @@ import org.yamcs.YamcsServer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.BodyHandler;
 import org.yamcs.http.HandlerContext;
+import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.http.HttpServer;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
@@ -132,6 +134,10 @@ public class AuthHandler extends BodyHandler {
     private void handleAuthorize(HandlerContext ctx) {
         ctx.requireMethod(HttpMethod.GET, HttpMethod.POST);
         OpenIDAuthenticationRequest request = new OpenIDAuthenticationRequest(ctx);
+        if (!isValidRedirectUri(request.getRedirectURI())) {
+            sendInvalidRedirectUri(ctx);
+            return;
+        }
         showLoginForm(ctx, request);
     }
 
@@ -140,6 +146,14 @@ public class AuthHandler extends BodyHandler {
         ctx.requireFormEncoding();
 
         LoginRequest request = new LoginRequest(ctx);
+
+        String origin = ctx.getHeader(HttpHeaderNames.ORIGIN);
+        if (!isSameOrigin(request.getRedirectURI(), origin)) {
+            log.info("Rejecting login with redirect_uri '{}' for origin {}", request.getRedirectURI(),
+                    origin != null ? "'" + origin + "'" : "<missing>");
+            sendInvalidRedirectUri(ctx);
+            return;
+        }
 
         AuthenticationToken token = request.getUsernamePasswordToken();
         getSecurityStore().login(token).whenComplete((info, err) -> {
@@ -155,6 +169,52 @@ public class AuthHandler extends BodyHandler {
                 redirectWithCode(ctx, info, request);
             }
         });
+    }
+
+    private static void sendInvalidRedirectUri(HandlerContext ctx) {
+        HttpRequestHandler.sendPlainTextError(ctx.getNettyChannelHandlerContext(), ctx.getNettyHttpRequest(),
+                HttpResponseStatus.BAD_REQUEST, "Invalid redirect_uri");
+    }
+
+    static boolean isValidRedirectUri(String uri) {
+        return parseHttpUri(uri) != null;
+    }
+
+    /**
+     * Returns true if {@code uri} has the same scheme, host and port as {@code origin}.
+     */
+    static boolean isSameOrigin(String uri, String origin) {
+        URI a = parseHttpUri(uri);
+        URI b = parseHttpUri(origin);
+        if (a == null || b == null) {
+            return false;
+        }
+        return a.getScheme().equalsIgnoreCase(b.getScheme())
+                && a.getHost().equalsIgnoreCase(b.getHost())
+                && getPort(a) == getPort(b);
+    }
+
+    private static URI parseHttpUri(String uri) {
+        if (uri == null) {
+            return null;
+        }
+        try {
+            URI parsed = new URI(uri);
+            String scheme = parsed.getScheme();
+            if (!"http".equalsIgnoreCase(scheme) && !"https".equalsIgnoreCase(scheme)) {
+                return null;
+            }
+            return parsed.getHost() != null ? parsed : null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static int getPort(URI uri) {
+        if (uri.getPort() != -1) {
+            return uri.getPort();
+        }
+        return "https".equalsIgnoreCase(uri.getScheme()) ? 443 : 80;
     }
 
     public static AuthInfo createAuthInfo() {
