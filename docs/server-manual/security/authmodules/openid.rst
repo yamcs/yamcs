@@ -43,6 +43,11 @@ endSessionEndpoint (string)
 
     This URL must be accessible by clients.
 
+jwksUri (string)
+    The URL of the JSON Web Key Set of the OpenID server, containing the keys with which the OpenID server signs its tokens. Yamcs uses these keys to verify the Logout Tokens received through `Back-channel Logout`_. If set together with ``issuer``, this value overrides the discovered ``jwks_uri``.
+
+    This URL must be accessible by Yamcs itself.
+
 clientId (string)
     **Required.** An identifier that identifies your Yamcs server installation as a client against the Open ID server. This should be set up using the configuration tools of the Open ID server.
 
@@ -118,6 +123,8 @@ Back-channel Logout
 -------------------
 
 This AuthModule adds an endpoint ``/openid/backchannel-logout`` to Yamcs that may be called by the OpenID server when a user is to be logged out. This is called back-channel because the communication is directly from the Open ID server to Yamcs, rather than via the user agent. If not used, a logout on the Open ID server is only detected when the next token refresh is attempted.
+
+Yamcs only accepts Logout Tokens that are signed by the OpenID server, and that are intended for the configured ``clientId``. The signature is verified with the keys published at the ``jwks_uri`` of the OpenID server. This requires either ``issuer`` (the ``jwks_uri`` is then discovered) or ``jwksUri`` to be configured. Otherwise, all back-channel logout requests are rejected.
 
 
 Note to third-party developers

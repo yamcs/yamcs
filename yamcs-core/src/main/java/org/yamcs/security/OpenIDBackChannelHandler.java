@@ -2,15 +2,20 @@ package org.yamcs.security;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.CACHE_CONTROL;
 import static io.netty.handler.codec.http.HttpHeaderValues.NO_STORE;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
-import org.yamcs.http.BadRequestException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+
+import org.yamcs.YamcsServer;
 import org.yamcs.http.BodyHandler;
 import org.yamcs.http.HandlerContext;
+import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.http.NotFoundException;
-import org.yamcs.http.auth.JwtHelper;
-import org.yamcs.http.auth.JwtHelper.JwtDecodeException;
+import org.yamcs.security.JwksVerifier.JwtVerificationException;
 
 import io.netty.handler.codec.http.DefaultHttpResponse;
 
@@ -42,43 +47,34 @@ public class OpenIDBackChannelHandler extends BodyHandler {
         ctx.requireFormEncoding();
 
         var request = new OpenIDBackChannelLogoutRequest(ctx);
-
         var logoutToken = request.getLogoutToken();
-        try {
-            var claims = JwtHelper.decodeUnverified(logoutToken);
-            var iss = claims.get("iss").getAsString();
 
-            // Either sub or sid has to be present.
-            //
-            // If only sub is present, the logout should impact all
-            // Yamcs sessions for that user identity.
-            //
-            // If both sub and sid are present, the logout should
-            // cover only the Yamcs sessions matching the OpenID sid.
-
-            String sub = null;
-            if (claims.has("sub")) {
-                sub = claims.get("sub").getAsString();
+        // Validation may need to retrieve the signing keys from the OpenID server
+        var executor = YamcsServer.getServer().getThreadPoolExecutor();
+        CompletableFuture.runAsync(() -> {
+            try {
+                authModule.handleLogoutToken(logoutToken);
+            } catch (JwtVerificationException e) {
+                throw new CompletionException(e);
+            }
+        }, executor).whenComplete((result, err) -> {
+            if (err == null) {
+                var response = new DefaultHttpResponse(HTTP_1_1, OK);
+                response.headers().set(CACHE_CONTROL, NO_STORE);
+                ctx.sendResponse(response);
+                return;
             }
 
-            String sid = null;
-            if (claims.has("sid")) {
-                sid = claims.get("sid").getAsString();
-            }
-
-            if (sid != null) {
-                log.debug("Back-channel logout for sid={}", sid);
-                authModule.logoutByOidcSessionId(iss, sid);
+            var cause = (err instanceof CompletionException) ? err.getCause() : err;
+            if (cause instanceof JwtVerificationException) {
+                log.info("Rejecting back-channel logout request: {}", cause.getMessage());
+                HttpRequestHandler.sendPlainTextError(ctx.getNettyChannelHandlerContext(),
+                        ctx.getNettyHttpRequest(), BAD_REQUEST, cause.getMessage());
             } else {
-                log.debug("Back-channel logout for sub={}", sub);
-                authModule.logoutByOidcSubject(iss, sub);
+                log.error("Failed to handle back-channel logout request", cause);
+                HttpRequestHandler.sendPlainTextError(ctx.getNettyChannelHandlerContext(),
+                        ctx.getNettyHttpRequest(), INTERNAL_SERVER_ERROR);
             }
-        } catch (JwtDecodeException e) {
-            throw new BadRequestException(e);
-        }
-
-        var response = new DefaultHttpResponse(HTTP_1_1, OK);
-        response.headers().set(CACHE_CONTROL, NO_STORE);
-        ctx.sendResponse(response);
+        });
     }
 }

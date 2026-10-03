@@ -34,6 +34,7 @@ import org.yamcs.http.HttpServer;
 import org.yamcs.http.auth.JwtHelper;
 import org.yamcs.http.auth.JwtHelper.JwtDecodeException;
 import org.yamcs.logging.Log;
+import org.yamcs.security.JwksVerifier.JwtVerificationException;
 import org.yamcs.security.OpenIDAuthenticationInfo.ExternalClaim;
 import org.yamcs.security.OpenIDAuthenticationInfo.ExternalSession;
 import org.yamcs.security.OpenIDAuthenticationInfo.ExternalSubject;
@@ -54,7 +55,10 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
 
     private static final Log log = new Log(OpenIDAuthModule.class);
     private static final long DISCOVERY_RETRY_INTERVAL = 30_000;
-    private static final int DISCOVERY_TIMEOUT = 10_000;
+    private static final int HTTP_TIMEOUT = 10_000;
+
+    private static final String BACKCHANNEL_LOGOUT_EVENT = "http://schemas.openid.net/event/backchannel-logout";
+    private static final long CLOCK_SKEW = 60; // seconds
 
     private OpenIDBackChannelHandler backChannelHandler;
 
@@ -64,6 +68,7 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
     private String authorizationEndpoint;
     private String tokenEndpoint;
     private String endSessionEndpoint;
+    private String jwksUri;
     private String scope;
 
     private String[] nameAttributes;
@@ -76,6 +81,9 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
     private volatile ProviderMetadata metadata;
     private volatile long lastDiscoveryAttempt;
     private final AtomicBoolean discoveryInProgress = new AtomicBoolean();
+
+    // Verifies tokens signed by the OpenID server (created once the JWKS URI is known)
+    private JwksVerifier jwksVerifier;
 
     // Map external sub and/or sid to Yamcs sessions.
     // This structure allows handling OIDC backchannel logout requests
@@ -100,6 +108,7 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
         spec.addOption("authorizationEndpoint", OptionType.STRING);
         spec.addOption("tokenEndpoint", OptionType.STRING);
         spec.addOption("endSessionEndpoint", OptionType.STRING);
+        spec.addOption("jwksUri", OptionType.STRING);
         spec.addOption("clientId", OptionType.STRING).withRequired(true);
         spec.addOption("clientSecret", OptionType.STRING).withRequired(true).withSecret(true);
         spec.addOption("scope", OptionType.STRING).withDefault("openid profile email");
@@ -120,6 +129,7 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
         authorizationEndpoint = args.getString("authorizationEndpoint", null);
         tokenEndpoint = args.getString("tokenEndpoint", null);
         endSessionEndpoint = args.getString("endSessionEndpoint", null);
+        jwksUri = args.getString("jwksUri", null);
         scope = args.getString("scope");
         clientId = args.getString("clientId");
         clientSecret = args.getString("clientSecret");
@@ -358,6 +368,114 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
     }
 
     /**
+     * Validates a Logout Token received through OpenID Connect Back-Channel Logout, and logs out the matching Yamcs
+     * sessions.
+     */
+    void handleLogoutToken(String logoutToken) throws JwtVerificationException {
+        var verifier = getJwksVerifier();
+        if (verifier == null) {
+            throw new JwtVerificationException("Back-channel logout requires jwksUri or issuer to be configured");
+        }
+
+        var claims = verifier.verify(logoutToken);
+        validateLogoutClaims(claims, issuer, clientId, System.currentTimeMillis() / 1000);
+
+        var iss = claims.get("iss").getAsString();
+        var sid = getStringOrNull(claims, "sid");
+        if (sid != null) {
+            log.debug("Back-channel logout for sid={}", sid);
+            logoutByOidcSessionId(iss, sid);
+        } else {
+            var sub = getStringOrNull(claims, "sub");
+            log.debug("Back-channel logout for sub={}", sub);
+            logoutByOidcSubject(iss, sub);
+        }
+    }
+
+    /**
+     * Validates the claims of a Logout Token, as required by OpenID Connect Back-Channel Logout 1.0, section 2.6.
+     * 
+     * @param now
+     *            current time, in seconds since epoch
+     */
+    static void validateLogoutClaims(JsonObject claims, String issuer, String clientId, long now)
+            throws JwtVerificationException {
+        var iss = getStringOrNull(claims, "iss");
+        if (iss == null) {
+            throw new JwtVerificationException("Missing iss");
+        }
+        if (issuer != null && !issuer.equals(iss)) {
+            throw new JwtVerificationException("Unexpected iss: " + iss);
+        }
+
+        if (!hasAudience(claims, clientId)) {
+            throw new JwtVerificationException("Token is not intended for this client");
+        }
+
+        var exp = getLongOrNull(claims, "exp");
+        if (exp == null) {
+            throw new JwtVerificationException("Missing exp");
+        }
+        if (now > exp + CLOCK_SKEW) {
+            throw new JwtVerificationException("Token expired");
+        }
+        var iat = getLongOrNull(claims, "iat");
+        if (iat == null) {
+            throw new JwtVerificationException("Missing iat");
+        }
+        if (iat > now + CLOCK_SKEW) {
+            throw new JwtVerificationException("Token issued in the future");
+        }
+
+        if (getStringOrNull(claims, "sub") == null && getStringOrNull(claims, "sid") == null) {
+            throw new JwtVerificationException("Missing sub or sid");
+        }
+
+        var events = claims.get("events");
+        if (events == null || !events.isJsonObject() || !events.getAsJsonObject().has(BACKCHANNEL_LOGOUT_EVENT)) {
+            throw new JwtVerificationException("Missing back-channel logout event");
+        }
+
+        if (claims.has("nonce")) {
+            throw new JwtVerificationException("Logout Token must not contain a nonce");
+        }
+    }
+
+    private static boolean hasAudience(JsonObject claims, String clientId) {
+        var aud = claims.get("aud");
+        if (aud == null) {
+            return false;
+        } else if (aud.isJsonArray()) {
+            for (var el : aud.getAsJsonArray()) {
+                if (el.isJsonPrimitive() && clientId.equals(el.getAsString())) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            return aud.isJsonPrimitive() && clientId.equals(aud.getAsString());
+        }
+    }
+
+    private static Long getLongOrNull(JsonObject obj, String key) {
+        var el = obj.get(key);
+        if (el != null && el.isJsonPrimitive() && el.getAsJsonPrimitive().isNumber()) {
+            return el.getAsLong();
+        }
+        return null;
+    }
+
+    private synchronized JwksVerifier getJwksVerifier() {
+        if (jwksVerifier == null) {
+            var uri = getJwksUri();
+            if (uri != null) {
+                jwksVerifier = new JwksVerifier(() -> fetchJson(uri));
+            }
+        }
+        return jwksVerifier;
+    }
+
+    /**
      * Log out all Yamcs sessions for the provided OpenID subject.
      */
     public void logoutByOidcSubject(String iss, String sub) {
@@ -432,6 +550,18 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
     }
 
     /**
+     * Returns the URL of the JSON Web Key Set of the OpenID server, either configured or discovered. Returns null if
+     * not configured, or if discovery has not yet succeeded.
+     */
+    public String getJwksUri() {
+        if (jwksUri != null) {
+            return jwksUri;
+        }
+        var metadata = resolveMetadata();
+        return metadata != null ? metadata.jwksUri() : null;
+    }
+
+    /**
      * Returns the URL where to redirect the browser for ending the session at the OpenID server (RP-Initiated Logout),
      * or null if no end session endpoint is available.
      */
@@ -488,19 +618,8 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
 
     private ProviderMetadata fetchMetadata() {
         var url = discoveryUrl(issuer);
-        HttpURLConnection conn = null;
         try {
-            conn = openConnection(url);
-            conn.setConnectTimeout(DISCOVERY_TIMEOUT);
-            conn.setReadTimeout(DISCOVERY_TIMEOUT);
-
-            int statusCode = conn.getResponseCode();
-            if (statusCode != 200) {
-                log.warn("Failed to retrieve OpenID provider metadata from {}: HTTP {}", url, statusCode);
-                return null;
-            }
-
-            JsonObject response = readJson(conn.getInputStream());
+            JsonObject response = fetchJson(url);
 
             var discoveredIssuer = getStringOrNull(response, "issuer");
             if (!issuer.equals(discoveredIssuer)) {
@@ -512,12 +631,33 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
             var result = new ProviderMetadata(
                     getStringOrNull(response, "authorization_endpoint"),
                     getStringOrNull(response, "token_endpoint"),
-                    getStringOrNull(response, "end_session_endpoint"));
+                    getStringOrNull(response, "end_session_endpoint"),
+                    getStringOrNull(response, "jwks_uri"));
             log.debug("Discovered OpenID provider metadata: {}", result);
             return result;
         } catch (Exception e) {
             log.warn("Failed to retrieve OpenID provider metadata from {}: {}", url, e.toString());
             return null;
+        }
+    }
+
+    /**
+     * Retrieves a JSON document from the OpenID server.
+     */
+    private JsonObject fetchJson(String url) throws IOException {
+        HttpURLConnection conn = null;
+        try {
+            conn = openConnection(url);
+            conn.setConnectTimeout(HTTP_TIMEOUT);
+            conn.setReadTimeout(HTTP_TIMEOUT);
+
+            int statusCode = conn.getResponseCode();
+            if (statusCode != 200) {
+                throw new IOException("HTTP " + statusCode + " from " + url);
+            }
+            return readJson(conn.getInputStream());
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            throw new IOException("Failed to configure HTTPS connection", e);
         } finally {
             if (conn != null) {
                 conn.disconnect();
@@ -590,6 +730,6 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
     }
 
     private record ProviderMetadata(String authorizationEndpoint, String tokenEndpoint,
-            String endSessionEndpoint) {
+            String endSessionEndpoint, String jwksUri) {
     }
 }
