@@ -21,6 +21,10 @@ export interface TokenResponse {
   user: UserInfo;
 }
 
+export interface LogoutResponse {
+  redirectUrl?: string;
+}
+
 export interface InstanceConfig {
   displayBucket: string;
   stackBucket: string;

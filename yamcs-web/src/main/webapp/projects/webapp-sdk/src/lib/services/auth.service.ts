@@ -305,19 +305,49 @@ export class AuthService implements OnDestroy {
     this.yamcsService.yamcsClient.closeWebSocketClient();
 
     if (navigateToLoginPage) {
-      if (this.logoutRedirectUrl) {
-        window.location.href = this.logoutRedirectUrl;
-      } else if (!this.configService.getConfig().disableLoginForm) {
-        const redirectURI = this.buildOpenIDRedirectURI();
-        window.location.href = this.buildRedirector(
-          {
-            clientId: 'yamcs-web',
-            authorizationEndpoint: `${location.protocol}//${location.host}${this.baseHref}auth/authorize`,
-            scope: 'openid',
-          },
-          redirectURI,
-        );
+      this.navigateToLoginPage();
+    }
+  }
+
+  /**
+   * Explicit sign-out by the user. Ends the server-side session, and,
+   * if applicable, the session at the upstream identity provider.
+   */
+  async signOut() {
+    let redirectUrl: string | undefined;
+    const refreshToken = this.getCookie('refresh_token');
+    if (refreshToken) {
+      try {
+        const response =
+          await this.yamcsService.yamcsClient.logout(refreshToken);
+        redirectUrl = response.redirectUrl;
+      } catch (err) {
+        console.warn('Failed to end server-side session', err);
       }
+    }
+
+    this.logout(false);
+
+    if (redirectUrl) {
+      window.location.href = redirectUrl;
+    } else {
+      this.navigateToLoginPage();
+    }
+  }
+
+  private navigateToLoginPage() {
+    if (this.logoutRedirectUrl) {
+      window.location.href = this.logoutRedirectUrl;
+    } else if (!this.configService.getConfig().disableLoginForm) {
+      const redirectURI = this.buildOpenIDRedirectURI();
+      window.location.href = this.buildRedirector(
+        {
+          clientId: 'yamcs-web',
+          authorizationEndpoint: `${location.protocol}//${location.host}${this.baseHref}auth/authorize`,
+          scope: 'openid',
+        },
+        redirectURI,
+      );
     }
   }
 

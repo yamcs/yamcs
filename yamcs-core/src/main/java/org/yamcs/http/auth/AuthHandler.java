@@ -24,6 +24,7 @@ import org.yamcs.http.UnauthorizedException;
 import org.yamcs.http.api.IamApi;
 import org.yamcs.http.auth.TokenStore.RefreshResult;
 import org.yamcs.protobuf.AuthInfo;
+import org.yamcs.protobuf.LogoutResponse;
 import org.yamcs.protobuf.OpenIDConnectInfo;
 import org.yamcs.protobuf.TokenResponse;
 import org.yamcs.security.ApplicationCredentials;
@@ -34,6 +35,7 @@ import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.AuthorizationException;
 import org.yamcs.security.Directory;
 import org.yamcs.security.OpenIDAuthModule;
+import org.yamcs.security.OpenIDAuthenticationInfo;
 import org.yamcs.security.SecurityStore;
 import org.yamcs.security.SessionManager;
 import org.yamcs.security.SpnegoAuthModule;
@@ -115,6 +117,9 @@ public class AuthHandler extends BodyHandler {
             }
         } else if (path.equals("/auth/actions/login")) {
             handleLoginAction(ctx);
+            return;
+        } else if (path.equals("/auth/logout")) {
+            handleLogout(ctx);
             return;
         }
 
@@ -367,6 +372,33 @@ public class AuthHandler extends BodyHandler {
             refreshToken = tokenStore.generateRefreshToken(session);
         }
         sendNewAccessToken(ctx, authenticationInfo, refreshToken);
+    }
+
+    /**
+     * Ends the session associated with the provided refresh token. If the session was established through an OpenID
+     * server that supports RP-Initiated Logout, the response indicates where to redirect the browser to.
+     */
+    private void handleLogout(HandlerContext ctx) {
+        ctx.requirePOST();
+        ctx.requireFormEncoding();
+        String refreshToken = ctx.requireFormParameter("refresh_token");
+
+        var responseb = LogoutResponse.newBuilder();
+        var session = tokenStore.getSession(refreshToken);
+        if (session != null) {
+            var authenticationInfo = session.getAuthenticationInfo();
+            if (authenticationInfo instanceof OpenIDAuthenticationInfo openidInfo
+                    && authenticationInfo.getAuthenticator() instanceof OpenIDAuthModule openidAuthModule) {
+                var redirectUrl = openidAuthModule.buildEndSessionUrl(openidInfo);
+                if (redirectUrl != null) {
+                    responseb.setRedirectUrl(redirectUrl);
+                }
+            }
+
+            tokenStore.revokeRefreshToken(refreshToken);
+            getSecurityStore().getSessionManager().invalidateSession(session.getId());
+        }
+        ctx.sendOK(responseb.build());
     }
 
     private UserSession createSession(HandlerContext ctx, AuthenticationInfo authenticationInfo) {

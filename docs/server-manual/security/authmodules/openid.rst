@@ -29,6 +29,11 @@ tokenEndpoint (string)
 
     This URL must be accessible by Yamcs itself.
 
+endSessionEndpoint (string)
+    The URL of the OpenID server page where to redirect users when they sign out of Yamcs. This corresponds to the ``end_session_endpoint`` of OpenID Connect RP-Initiated Logout. If unset, signing out of Yamcs does not end the session at the OpenID server.
+
+    This URL must be accessible by clients.
+
 clientId (string)
     **Required.** An identifier that identifies your Yamcs server installation as a client against the Open ID server. This should be set up using the configuration tools of the Open ID server.
 
@@ -56,6 +61,16 @@ email (string or string[])
 
 displayName (string or string[])
     The claim that matches with the display name. If multiples are defined, they are tried in order. Default: ``name``.
+
+
+RP-Initiated Logout
+-------------------
+
+If ``endSessionEndpoint`` is configured, a user that signs out of the Yamcs web interface is redirected to the OpenID server so that the session is ended there as well. Yamcs includes the ``id_token_hint``, ``client_id`` and ``post_logout_redirect_uri`` parameters, which allows the OpenID server to end the session without asking the user for confirmation.
+
+The ``post_logout_redirect_uri`` is the root URL of the Yamcs web interface (for example ``http://localhost:8090/``). This URL must be registered as a valid post logout redirect URI at the OpenID server.
+
+For sessions established through this AuthModule, this redirect takes precedence over the ``logoutRedirectUrl`` option of the Yamcs web interface.
 
 
 Back-channel Logout

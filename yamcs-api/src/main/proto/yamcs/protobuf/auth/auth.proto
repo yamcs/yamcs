@@ -40,3 +40,9 @@ message TokenResponse {
   optional string refresh_token = 4;
   optional iam.UserInfo user = 5;
 }
+
+message LogoutResponse {
+  // If set, the client should navigate the browser to this URL to complete
+  // the logout at the upstream identity provider.
+  optional string redirectUrl = 1;
+}

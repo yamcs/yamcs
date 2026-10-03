@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.security.KeyManagementException;
@@ -16,6 +17,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -54,6 +56,7 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
     private String clientSecret;
     private String authorizationEndpoint;
     private String tokenEndpoint;
+    private String endSessionEndpoint;
     private String scope;
 
     private String[] nameAttributes;
@@ -83,6 +86,7 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
         Spec spec = new Spec();
         spec.addOption("authorizationEndpoint", OptionType.STRING).withRequired(true);
         spec.addOption("tokenEndpoint", OptionType.STRING).withRequired(true);
+        spec.addOption("endSessionEndpoint", OptionType.STRING);
         spec.addOption("clientId", OptionType.STRING).withRequired(true);
         spec.addOption("clientSecret", OptionType.STRING).withRequired(true).withSecret(true);
         spec.addOption("scope", OptionType.STRING).withDefault("openid profile email");
@@ -97,6 +101,7 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
     public void init(YConfiguration args) throws InitException {
         authorizationEndpoint = args.getString("authorizationEndpoint");
         tokenEndpoint = args.getString("tokenEndpoint");
+        endSessionEndpoint = args.getString("endSessionEndpoint", null);
         scope = args.getString("scope");
         clientId = args.getString("clientId");
         clientSecret = args.getString("clientSecret");
@@ -362,6 +367,34 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
 
     public String getScope() {
         return scope;
+    }
+
+    public String getEndSessionEndpoint() {
+        return endSessionEndpoint;
+    }
+
+    /**
+     * Returns the URL where to redirect the browser for ending the session at the OpenID server (RP-Initiated Logout),
+     * or null if no {@code endSessionEndpoint} is configured.
+     */
+    public String buildEndSessionUrl(OpenIDAuthenticationInfo info) {
+        if (endSessionEndpoint == null) {
+            return null;
+        }
+
+        var params = new LinkedHashMap<String, String>();
+        if (info.idToken != null) {
+            params.put("id_token_hint", info.idToken);
+        }
+        params.put("client_id", clientId);
+        if (info.redirectUri != null) {
+            // Return to the root of the web application that initiated the login
+            var postLogoutRedirectUri = URI.create(info.redirectUri).resolve(".");
+            params.put("post_logout_redirect_uri", postLogoutRedirectUri.toString());
+        }
+
+        var separator = endSessionEndpoint.contains("?") ? "&" : "?";
+        return endSessionEndpoint + separator + new String(encodeRequestBody(params), UTF_8);
     }
 
     static String generateAuthorizationHeader(String clientId, String clientSecret) {

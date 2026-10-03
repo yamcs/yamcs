@@ -106,6 +106,8 @@ options:
     description:
       - The URL to redirect to after logging out of Yamcs. If unset, users are
         redirected to the built-in login page.
+      - Not used for sessions established through an OpenID AuthModule with
+        an endSessionEndpoint.
     type: STRING
 
   utc:

@@ -226,6 +226,7 @@ import {
   ListServiceAccountsResponse,
   ListThreadsResponse,
   ListTopicsResponse,
+  LogoutResponse,
   ReplicationInfo,
   ReplicationInfoSubscription,
   ResultSet,
@@ -360,6 +361,25 @@ export default class YamcsClient implements HttpHandler {
 
   public clearAccessToken() {
     this.accessToken = undefined;
+  }
+
+  /**
+   * End the session associated with the given refresh token.
+   */
+  async logout(refreshToken: string) {
+    const headers = new Headers();
+    headers.append('Content-Type', 'application/x-www-form-urlencoded');
+    const response = await fetch(`${this.authUrl}/logout`, {
+      method: 'POST',
+      headers,
+      body: `refresh_token=${encodeURIComponent(refreshToken)}`,
+    });
+
+    if (response.status >= 200 && response.status < 300) {
+      return (await response.json()) as LogoutResponse;
+    } else {
+      return Promise.reject(new HttpError(response));
+    }
   }
 
   private async doFetchAccessToken(body: string) {
