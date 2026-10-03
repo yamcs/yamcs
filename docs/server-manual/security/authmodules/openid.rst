@@ -123,45 +123,45 @@ This AuthModule adds an endpoint ``/openid/backchannel-logout`` to Yamcs that ma
 Note to third-party developers
 ------------------------------
 
-This AuthModule implements the conventions for server-side web applications. In other words: the ``id_token`` is retrieved and decoded on Yamcs server only. Before Yamcs can obtain the ``id_token`` it expects to be given some information by the integrating application.
+This AuthModule follows the conventions for server-side web applications: the ``id_token`` is retrieved and decoded by Yamcs only, and never reaches the browser. A browser application that wants users to log in through the OpenID server must obtain an authorization code, and then let Yamcs exchange that code for a Yamcs access token.
 
-The source code of the Yamcs UI serves as the best reference. But generally it works like this:
+The source code of the Yamcs web interface serves as the reference implementation. In short:
 
-#. The browser application retrieves OpenID Connect options on the ``/auth`` endpoint. This includes the ``client_id``, the ``authorizationEndpoint`` and the ``scope``. Other configuration options are reserved for server use.
+#. Retrieve the OpenID Connect options from the ``/auth`` endpoint. The response contains an ``openid`` object with the properties ``clientId``, ``authorizationEndpoint`` and ``scope``. If the ``openid`` object is missing, the OpenID server is currently not available to Yamcs (for example because discovery has not yet succeeded).
 
-#. The browser application uses the ``authorizationEndpoint`` to redirect the browser to a login or consent page of the  upstream OIDC server. The following is an example:
-   
+#. Redirect the browser to the ``authorizationEndpoint``:
+
    .. code-block:: JavaScript
 
-       window.location.href = "https://oidc.example.com" +
-               "?client_id=encodeURIComponent(CLIENT_ID)" +
-               "&state=encodeURIComponent(STATE)" +
+       const { clientId, authorizationEndpoint, scope } = authInfo.openid;
+       window.location.href = authorizationEndpoint +
+               "?client_id=" + encodeURIComponent(clientId) +
+               "&state=" + encodeURIComponent(state) +
                "&response_mode=query" +
                "&response_type=code" +
-               "&scope=openid+email+profile" +
-               "&redirect_uri=encodeURIComponent(REDIRECT_URI)";
-    
-   ``STATE`` can be anything, and is typically used for encoding information about the original request such that when the authentication is done, the user is redirected back to the original attempted route.
+               "&scope=" + encodeURIComponent(scope) +
+               "&redirect_uri=" + encodeURIComponent(redirectUri);
 
-   ``REDIRECT_URI`` is the path where OIDC will redirect back the user after the login or consent is confirmed.
+   ``state`` can be anything. It is typically used to remember the originally requested page, so that the user can be sent back there when the login has completed.
 
-#. When OIDC redirects the user's browser back to REDIRECT_URI, extract the ``code`` and ``state`` from the query params.
+   ``redirectUri`` is the URL where the OpenID server sends the browser back to after the user has logged in. It must be registered as a valid redirect URI at the OpenID server.
 
-#. Use this upstream ``code`` to make an encoded string like this:
+#. When the browser arrives at ``redirectUri``, read the ``code`` and ``state`` query parameters.
+
+#. Wrap the ``code`` in an unsigned JSON Web Token, together with the ``redirectUri``, and prefix it with ``oidc``:
 
    .. code-block:: JavaScript
 
-       var codeForYamcs = "oidc " + JWT;
+       const header = base64url(JSON.stringify({ alg: "none" }));
+       const payload = base64url(JSON.stringify({ code, redirect_uri: redirectUri }));
+       const codeForYamcs = "oidc " + header + "." + payload + ".";
 
-   Here, JWT represent a JSON Web Token that stringifies a payload containing at least these properties:
+   Here ``base64url`` encodes a string using the URL-safe Base64 alphabet, without padding. The token does not need to be signed: Yamcs does not trust its content, but uses the code to retrieve the ``id_token`` directly from the OpenID server.
 
-   .. code-block:: text
+#. Exchange this value for a Yamcs access token by sending a form-encoded ``POST`` request to ``/auth/token`` with ``grant_type=authorization_code`` and ``code=<codeForYamcs>``. The JSON response contains an ``access_token``, its lifetime in seconds (``expires_in``) and a ``refresh_token``.
 
-       {
-         "redirect_uri": REDIRECT_URI,
-         "code": UPSTREAM_CODE,
-       }
+   Yamcs sends the code and the ``redirect_uri`` to the token endpoint of the OpenID server. The OpenID server requires this ``redirect_uri`` to be identical to the one that was used in step 2. Yamcs also uses it for later token refreshes, and to determine where the user returns after logging out of the OpenID server: the parent path of the ``redirect_uri``.
 
-#. The string value of the variable ``codeForYamcs`` can be used against the Yamcs ``/auth`` endpoint using ``grant_type=authorization_code`` for converting it to a standard Yamcs-level access token.
+#. Use the access token with an ``Authorization: Bearer <access_token>`` header. Before it expires, send a ``POST`` request to ``/auth/token`` with ``grant_type=refresh_token`` and ``refresh_token=<refresh_token>`` to obtain a new access token. Each refresh token can be used only once: the response contains a new one.
 
-   In the background what happens is that Yamcs will use the upstream code and exchange it against OIDC for an ``id_token`` which tells Yamcs what the username, email and display name are for the authenticated user. The ``redirect_uri`` property is not actually used anymore, but most OIDC servers will check on this being specified and matching the original ``redirect_uri`` used for obtaining the upstream code.
+#. To log out, send a form-encoded ``POST`` request to ``/auth/logout`` with ``refresh_token=<refresh_token>``. This ends the Yamcs session. If the response contains a ``redirectUrl``, redirect the browser there to also end the session at the OpenID server (see `RP-Initiated Logout`_).
