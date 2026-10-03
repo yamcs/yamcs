@@ -102,6 +102,21 @@ public class RefXtceAlgorithmTest {
     }
 
     @Test
+    public void testAlgorithmNameWithSpace() {
+        // the algorithm "algo with space" would previously fail to evaluate because the
+        // generated script function name was not a valid identifier
+        List<ParameterValue> params = subscribe(mdb.getParameter("/RefXtce/space_algo_result"));
+
+        ByteBuffer buf = ByteBuffer.allocate(6);
+        buf.putFloat(0.5f);
+        buf.putShort((short) 10);
+        mpp.injectPacket(buf.array(), "/RefXtce/packet2");
+
+        assertEquals(1, params.size());
+        assertEquals(1.5f, params.get(0).getEngValue().getFloatValue(), 1e-5);
+    }
+
+    @Test
     public void testFlipFlop() {
         Parameter param11 = mdb.getParameter("/RefXtce/param11");
         List<ParameterValue> params = subscribe(param11);
