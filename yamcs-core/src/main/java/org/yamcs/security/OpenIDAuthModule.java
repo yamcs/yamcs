@@ -5,6 +5,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.HttpURLConnection;
@@ -41,6 +42,7 @@ import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 
 /**
  * AuthModule that identifies users against an external identity provider compliant with OpenID Connect (OIDC).
@@ -140,23 +142,15 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
         String oidcCode = clientInfo.get("code").getAsString();
         String redirectUri = clientInfo.get("redirect_uri").getAsString();
 
+        HttpURLConnection conn = null;
         try {
-            URL url = new URL(tokenEndpoint);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn = openConnection(tokenEndpoint);
 
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 
             var authorizationHeader = generateAuthorizationHeader(clientId, clientSecret);
             conn.setRequestProperty("Authorization", authorizationHeader);
-
-            if (!verifyTls && (conn instanceof HttpsURLConnection)) {
-                try {
-                    HttpsUrlConnectionUtils.makeInsecure((HttpsURLConnection) conn);
-                } catch (NoSuchAlgorithmException | KeyManagementException e) {
-                    throw new AuthenticationException("Failed to configure HTTPS connection", e);
-                }
-            }
 
             Map<String, String> formData = new HashMap<>();
             formData.put("grant_type", "authorization_code");
@@ -172,8 +166,7 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
 
             int statusCode = conn.getResponseCode();
             if (statusCode == 200) {
-                Reader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), UTF_8));
-                JsonObject response = new Gson().fromJson(in, JsonObject.class);
+                JsonObject response = readJson(conn.getInputStream());
 
                 String idToken = response.get("id_token").getAsString();
                 String accessToken = response.get("access_token").getAsString();
@@ -190,12 +183,16 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
                 authInfo.setDisplayName(findAttribute(claims, displayNameAttributes));
                 return authInfo;
             } else {
-                Reader in = new BufferedReader(new InputStreamReader(conn.getErrorStream(), UTF_8));
-                JsonObject response = new Gson().fromJson(in, JsonObject.class);
-                throw new AuthenticationException(response.toString());
+                throw new AuthenticationException(readErrorBody(conn));
             }
-        } catch (IOException | JwtDecodeException e) {
+        } catch (IOException | JwtDecodeException | JsonParseException e) {
             throw new AuthenticationException(e.getMessage(), e);
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            throw new AuthenticationException("Failed to configure HTTPS connection", e);
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
         }
     }
 
@@ -230,19 +227,15 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
     }
 
     private boolean refreshToken(OpenIDAuthenticationInfo info) {
+        HttpURLConnection conn = null;
         try {
-            URL url = new URL(tokenEndpoint);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn = openConnection(tokenEndpoint);
 
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 
             var authorizationHeader = generateAuthorizationHeader(clientId, clientSecret);
             conn.setRequestProperty("Authorization", authorizationHeader);
-
-            if (!verifyTls && (conn instanceof HttpsURLConnection)) {
-                HttpsUrlConnectionUtils.makeInsecure((HttpsURLConnection) conn);
-            }
 
             Map<String, String> formData = new HashMap<>();
             formData.put("grant_type", "refresh_token");
@@ -258,8 +251,7 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
 
             int statusCode = conn.getResponseCode();
             if (statusCode == 200) {
-                Reader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), UTF_8));
-                JsonObject response = new Gson().fromJson(in, JsonObject.class);
+                JsonObject response = readJson(conn.getInputStream());
 
                 info.idToken = response.get("id_token").getAsString();
                 info.accessToken = response.get("access_token").getAsString();
@@ -269,16 +261,19 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
                 var refreshTokenElement = response.get("refresh_token");
                 info.refreshToken = (refreshTokenElement != null) ? refreshTokenElement.getAsString() : null;
             } else {
-                Reader in = new BufferedReader(new InputStreamReader(conn.getErrorStream(), UTF_8));
-                JsonObject response = new Gson().fromJson(in, JsonObject.class);
-                log.error("Received error from identity provider: " + response);
+                log.error("Received error from identity provider: " + readErrorBody(conn));
                 return false;
             }
 
             return true;
-        } catch (IOException | NoSuchAlgorithmException | KeyManagementException | JwtDecodeException e) {
+        } catch (IOException | NoSuchAlgorithmException | KeyManagementException | JwtDecodeException
+                | JsonParseException e) {
             log.error("Failed to refresh", e);
             return false;
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
         }
     }
 
@@ -395,6 +390,38 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
 
         var separator = endSessionEndpoint.contains("?") ? "&" : "?";
         return endSessionEndpoint + separator + new String(encodeRequestBody(params), UTF_8);
+    }
+
+    private static JsonObject readJson(InputStream stream) throws IOException {
+        try (Reader in = new BufferedReader(new InputStreamReader(stream, UTF_8))) {
+            var json = new Gson().fromJson(in, JsonObject.class);
+            if (json == null) {
+                throw new JsonParseException("Empty response");
+            }
+            return json;
+        }
+    }
+
+    /**
+     * Reads the body of an error response, for inclusion in error messages.
+     */
+    private static String readErrorBody(HttpURLConnection conn) throws IOException {
+        var stream = conn.getErrorStream();
+        if (stream == null) {
+            return "HTTP " + conn.getResponseCode();
+        }
+        try (stream) {
+            return "HTTP " + conn.getResponseCode() + ": " + new String(stream.readAllBytes(), UTF_8);
+        }
+    }
+
+    private HttpURLConnection openConnection(String url)
+            throws IOException, NoSuchAlgorithmException, KeyManagementException {
+        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+        if (!verifyTls && (conn instanceof HttpsURLConnection)) {
+            HttpsUrlConnectionUtils.makeInsecure((HttpsURLConnection) conn);
+        }
+        return conn;
     }
 
     static String generateAuthorizationHeader(String clientId, String clientSecret) {
