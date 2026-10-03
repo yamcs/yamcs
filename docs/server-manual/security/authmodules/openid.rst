@@ -19,18 +19,27 @@ Class Name
 Configuration Options
 ---------------------
 
+issuer (string)
+    The Issuer Identifier of the OpenID server, for example ``https://keycloak.example.com/realms/myrealm``. If set, Yamcs retrieves the endpoints of the OpenID server from ``<issuer>/.well-known/openid-configuration`` (OpenID Connect Discovery). The ``issuer`` in that document must exactly match this value.
+
+    This URL must be accessible by Yamcs itself. If the OpenID server cannot be reached during startup, Yamcs logs a warning and retries when needed.
+
 authorizationEndpoint (string)
-    **Required.** The URL of the OpenID server page where to redirect users for authorization and/or consent.
+    The URL of the OpenID server page where to redirect users for authorization and/or consent.
 
     This URL must be accessible by clients.
 
+    **Required** unless ``issuer`` is set. If set together with ``issuer``, this value overrides the discovered endpoint. This is useful when Yamcs and clients reach the OpenID server under a different hostname.
+
 tokenEndpoint (string)
-    **Required.** The URL of the OpenID server page where OAuth2 tokens can be retrieved.
+    The URL of the OpenID server page where OAuth2 tokens can be retrieved.
 
     This URL must be accessible by Yamcs itself.
 
+    **Required** unless ``issuer`` is set. If set together with ``issuer``, this value overrides the discovered endpoint.
+
 endSessionEndpoint (string)
-    The URL of the OpenID server page where to redirect users when they sign out of Yamcs. This corresponds to the ``end_session_endpoint`` of OpenID Connect RP-Initiated Logout. If unset, signing out of Yamcs does not end the session at the OpenID server.
+    The URL of the OpenID server page where to redirect users when they sign out of Yamcs. This corresponds to the ``end_session_endpoint`` of OpenID Connect RP-Initiated Logout. If set together with ``issuer``, this value overrides the discovered endpoint.
 
     This URL must be accessible by clients.
 
@@ -47,7 +56,7 @@ attributes (map)
     Configure how claims are mapped to Yamcs attributes. If unset, Yamcs uses defaults that work out of the box against some common OpenID Connect providers.
 
 verifyTls (boolean)
-    If false, disable TLS and hostname verification when Yamcs uses the token endpoint. Default: true.
+    If false, disable TLS and hostname verification when Yamcs uses the token endpoint, or retrieves the discovery document. Default: true.
 
 
 Attributes sub-configuration
@@ -63,12 +72,44 @@ displayName (string or string[])
     The claim that matches with the display name. If multiples are defined, they are tried in order. Default: ``name``.
 
 
+Examples
+--------
+
+AuthModules are configured in the file :file:`etc/security.yaml`.
+
+With discovery, endpoints are retrieved from the OpenID server:
+
+.. code-block:: yaml
+
+    authModules:
+      - class: org.yamcs.security.OpenIDAuthModule
+        args:
+          issuer: https://keycloak.example.com/realms/myrealm
+          clientId: yamcs
+          clientSecret: changeme
+
+Without discovery, endpoints are configured explicitly:
+
+.. code-block:: yaml
+
+    authModules:
+      - class: org.yamcs.security.OpenIDAuthModule
+        args:
+          authorizationEndpoint: https://keycloak.example.com/realms/myrealm/protocol/openid-connect/auth
+          tokenEndpoint: https://keycloak.example.com/realms/myrealm/protocol/openid-connect/token
+          endSessionEndpoint: https://keycloak.example.com/realms/myrealm/protocol/openid-connect/logout
+          clientId: yamcs
+          clientSecret: changeme
+
+
 RP-Initiated Logout
 -------------------
 
-If ``endSessionEndpoint`` is configured, a user that signs out of the Yamcs web interface is redirected to the OpenID server so that the session is ended there as well. Yamcs includes the ``id_token_hint``, ``client_id`` and ``post_logout_redirect_uri`` parameters, which allows the OpenID server to end the session without asking the user for confirmation.
+If an end session endpoint is configured with ``endSessionEndpoint``, or discovered through ``issuer``, a user that signs out of the Yamcs web interface is redirected to the OpenID server so that the session is ended there as well. Yamcs includes the ``id_token_hint``, ``client_id`` and ``post_logout_redirect_uri`` parameters, which allows the OpenID server to end the session without asking the user for confirmation.
 
 The ``post_logout_redirect_uri`` is the root URL of the Yamcs web interface (for example ``http://localhost:8090/``). This URL must be registered as a valid post logout redirect URI at the OpenID server.
+
+If no end session endpoint is available, signing out of Yamcs does not end the session at the OpenID server.
 
 For sessions established through this AuthModule, this redirect takes precedence over the ``logoutRedirectUrl`` option of the Yamcs web interface.
 

@@ -230,10 +230,13 @@ public class AuthHandler extends BodyHandler {
                 infob.setSpnego(true);
             }
             if (authModule instanceof OpenIDAuthModule) {
+                String authorizationEndpoint = ((OpenIDAuthModule) authModule).getAuthorizationEndpoint();
+                if (authorizationEndpoint == null) { // Discovery failed (already logged)
+                    continue;
+                }
                 OpenIDConnectInfo.Builder openidb = OpenIDConnectInfo.newBuilder();
                 String clientId = ((OpenIDAuthModule) authModule).getClientId();
                 openidb.setClientId(clientId);
-                String authorizationEndpoint = ((OpenIDAuthModule) authModule).getAuthorizationEndpoint();
                 openidb.setAuthorizationEndpoint(authorizationEndpoint);
                 String scope = ((OpenIDAuthModule) authModule).getScope();
                 openidb.setScope(scope);
