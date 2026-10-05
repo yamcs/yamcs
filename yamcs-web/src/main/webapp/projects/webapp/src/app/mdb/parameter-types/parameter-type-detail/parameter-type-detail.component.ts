@@ -7,6 +7,7 @@ import {
 } from '@yamcs/webapp-sdk';
 import { ExpressionComponent } from '../../../shared/expression/expression.component';
 import { MarkdownComponent } from '../../../shared/markdown/markdown.component';
+import { ParameterArrayInfoComponent } from '../../../shared/parameter-array-info/parameter-array-info.component';
 import { ParameterCalibrationComponent } from '../../parameters/parameter-calibration/parameter-calibration.component';
 
 @Component({
@@ -16,6 +17,7 @@ import { ParameterCalibrationComponent } from '../../parameters/parameter-calibr
   imports: [
     ExpressionComponent,
     MarkdownComponent,
+    ParameterArrayInfoComponent,
     ParameterCalibrationComponent,
     WebappSdkModule,
   ],

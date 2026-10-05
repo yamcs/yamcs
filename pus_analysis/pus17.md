@@ -1,7 +1,7 @@
 # PUS ST[17] Test Service — Analysis & Implementation Plan
 
 **Spec reference**: ECSS-E-ST-70-41C §6.17 (requirements) and §8.17 (packet definitions)
-**Required subtypes**: TC[17,1], TM[17,2]
+**Implemented subtypes**: TC[17,1], TM[17,2], TC[17,3], TM[17,4]
 
 ---
 
@@ -29,9 +29,8 @@ TM[17,2].
 
 - **TC[17,1]** — "Perform an are-you-alive connection test" — ground-to-spacecraft
 - **TM[17,2]** — "Are-you-alive connection test report" — spacecraft-to-ground
-
-> The spec also defines TC[17,3] (on-board connection test between two on-board processes) and
-> TM[17,4], but these are **not in scope** for this implementation.
+- **TC[17,3]** — perform an on-board connection test for `target_apid:u11`
+- **TM[17,4]** — echo that same packed 11-bit target APID
 
 ### Ground vs. On-board Responsibility (MCS is ground segment only)
 
@@ -44,7 +43,8 @@ TM[17,2].
 
 **YAMCS/MCS implementation = XTCE only (`pus17.xml`). No Java changes to `yamcs-core` are needed for ST[17].**
 
-The `pus17_simulator.py` described in this document emulates the satellite's on-board behavior (receiving TC[17,1] and replying with TM[17,2]) for ground testing. It is not part of the MCS.
+The actual on-board emulation is the Java `Pus17Service`: it handles both TC[17,1] and TC[17,3]
+and produces TM[17,2] and TM[17,4], respectively. It is not part of the MCS.
 
 ---
 
@@ -243,13 +243,13 @@ def build_tm_17_2() -> bytes:
 | 1 | **None blocking** — fully XTCE-expressible | — | — |
 | 2 | APID assignment | Minor | Choose APID ≠ 200 (ST[20]); recommend APID=170 |
 | 3 | No PUS-1 ACK/NACK in test_yamcs | Minor | Inherent simplified-PUS limitation; not ST[17]-specific |
-| 4 | Subtypes 3/4 out of scope | Info | TC[17,3] adds `uint16 target_apid` arg; TM[17,4] echoes it |
+| 4 | TC[17,3]/TM[17,4] | Implemented | Target APID is packed unsigned 11-bit, with final-octet zero padding only |
 
-**Gap detail for subtypes 3/4 (if ever needed):**
-- TC[17,3]: XTCE adds one `<Argument argumentTypeRef="/dt/uint16" name="target_apid"/>`;
-  CommandContainer adds one `<ArgumentRefEntry argumentRef="target_apid"/>`
-- TM[17,4]: SequenceContainer adds one `<ParameterRefEntry parameterRef="app_process_id"/>`;
-  new Parameter of type `uint16` declared in ParameterSet
+**TC[17,3]/TM[17,4] detail:**
+- TC[17,3] contains one `/dt/pus_report_apid` `target_apid` argument (currently 11 bits).
+- `Pus17Service` accepts every value from 0 through 2047 and emits one TM[17,4].
+- TM[17,4] contains the same `/dt/pus_report_apid` value. At the current 11-bit width, the unused five bits in the final octet are zero;
+  there is no padding between the secondary header and the field.
 
 ---
 
@@ -257,14 +257,15 @@ def build_tm_17_2() -> bytes:
 
 **MCS scope (YAMCS ground)**: XTCE only — `pus17.xml` is sufficient. No Java changes to `yamcs-core` are needed for ST[17].
 
-**Simulator scope (on-board emulation)**: `pus17_simulator.py` emulates the satellite side for ground testing. It is not part of the MCS.
+**Simulator scope (on-board emulation)**: the Java `Pus17Service` emulates the satellite side for
+ground testing. It is not part of the MCS.
 
 ### Two-layer artifact table
 
 | Artifact | Layer | Purpose |
 |---|---|---|
-| `pus17.xml` | **MCS / YAMCS ground** | XTCE definition: encodes TC[17,1] for uplink; decodes TM[17,2] from downlink |
-| `pus17_simulator.py` | **Simulator (on-board emulation)** | Receives TC[17,1], validates it, generates and sends TM[17,2] back to YAMCS |
+| `pus17.xml` | **MCS / YAMCS ground** | Encodes TC[17,1]/TC[17,3] and decodes TM[17,2]/TM[17,4] |
+| `Pus17Service.java` | **Simulator (on-board emulation)** | Handles both connection tests and echoes a valid packed 11-bit target APID |
 
 > **Key finding**: All on-board logic (receiving the TC, validating it, building and sending TM[17,2]) is purely a satellite responsibility. YAMCS/MCS only defines the packet shapes in XTCE — it does not participate in on-board execution. The simulator emulates this satellite behavior for test purposes only.
 
@@ -274,8 +275,10 @@ def build_tm_17_2() -> bytes:
 
 1. **[GROUND]** Add `pus17.xml` to `test_yamcs/src/main/yamcs/mdb/` (modelled on `pus20.xml`)
 2. **[GROUND]** Register it in `yamcs.pus-test.yaml` MDB list
-3. **[Simulator / on-board emulation]** Write `pus17_simulator.py` (~50 lines): TC listener + TM builder
-4. **[GROUND]** Smoke-test: send TC[17,1] from YAMCS UI → confirm TM[17,2] appears in parameter view
+3. **[Simulator / on-board emulation]** Keep `Pus17Service.java` parsing and encoding aligned with
+   the `/dt/pus_report_apid` field in `pus17.xml`
+4. **[GROUND]** Smoke-test TC[17,1]/TM[17,2], then send TC[17,3] with `0x100` and `0x7FF` and verify
+   TM[17,4] echoes the complete values
 
 ST[17] makes an excellent **integration smoke test** for a new YAMCS + simulator setup — if TC[17,1]
 round-trips to TM[17,2], the entire CCSDS framing, XTCE decoding, and UDP link stack is proven.
@@ -513,10 +516,11 @@ Key differences from the reference pseudocode above:
   the command "completed" on its own once TM[17,2] arrives, in addition to the PUS-1 ACK/NACK
   containers.
 - **Invalid subtype is rejected, not ignored**: `Pus17Service.executeTc` sends NACK start with
-  `START_ERR_INVALID_PUS_SUBTYPE` for any subtype other than `1` (the doc's simulator pseudocode
-  silently drops unknown packets instead).
-- **Single application process**: every TC/TM uses `PusSimulator.MAIN_APID = 1`; there is no
-  second process to exercise the APID field's real purpose.
+  `START_ERR_INVALID_PUS_SUBTYPE` for any subtype other than `1` or `3` (the document's historical
+  simulator pseudocode silently drops unknown packets instead).
+- **Loopback target model**: every 11-bit value is treated as a valid simulator target. No second
+  application process is instantiated; TM[17,4] is a protocol echo used to exercise the full APID
+  width, including values above 255.
 
 ### Start the instance
 
@@ -524,23 +528,24 @@ Key differences from the reference pseudocode above:
 mvn -pl simulator,examples/pus -am clean install -DskipTests   # first build only
 mvn -pl examples/pus yamcs:run
 ```
-Web UI: `http://localhost:8090`, instance `pus`. Command lives under `/PUS17/ARE_YOU_ALIVE`.
+Web UI: `http://localhost:8090`, instance `pus`. Commands live under `/PUS17/`.
 
 ### Command reference — valid input
 
 | Command | Subtype | Valid example args |
 |---|---|---|
 | `/PUS17/ARE_YOU_ALIVE` | TC[17,1] | `{}` — no arguments |
+| `/PUS17/ON_BOARD_CONNECTION_TEST` | TC[17,3] | `{"target_apid": 256}` or `{"target_apid": 2047}` |
 
-Any other subtype value cannot be reached through this MetaCommand (only `subtype=1` is wired up),
-so there is no in-UI way to exercise the NACK-start rejection path — that would require crafting a
-raw packet (e.g. via a Python client) with a bad subtype byte.
+Any other subtype value cannot be reached through these MetaCommands, so there is no in-UI way to
+exercise the NACK-start rejection path; that requires a raw packet with a bad subtype byte.
 
 ### TMs to check
 
 | Container | Subtype | Triggered by | Layout |
 |---|---|---|---|
 | `/PUS17/are-you-alive-report` | TM[17,2] | `ARE_YOU_ALIVE` | Empty — PUS-1 header fields only |
+| `/PUS17/on-board-connection-test-report` | TM[17,4] | `ON_BOARD_CONNECTION_TEST` | `target_apid:u11`, followed only by final-octet zero padding |
 
 Also watch the standard PUS-1 verification containers (`/PUS/pus-tc-ack-*`) for ACK start and ACK
 completion, and the command's own "completed" status in the Commanding view once the built-in
@@ -559,6 +564,9 @@ completion, and the command's own "completed" status in the Commanding view once
 5. **Repeat under load** (optional): issue `ARE_YOU_ALIVE` several times back-to-back and confirm
    each gets its own independent ACK/TM/verifier triple with no cross-talk — useful as the baseline
    smoke test before debugging any other PUS service in this simulator.
+6. **Exercise the full target width**: issue `ON_BOARD_CONNECTION_TEST` first with `target_apid=256`
+   and then `target_apid=2047`; confirm each TM[17,4] reports the exact value rather than truncating
+   it to an octet.
 
 ### Caveats specific to this simulator
 

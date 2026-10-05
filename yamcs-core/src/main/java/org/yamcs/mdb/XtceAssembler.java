@@ -48,6 +48,7 @@ import org.yamcs.xtce.AbsoluteTimeArgumentType;
 import org.yamcs.xtce.AbsoluteTimeParameterType;
 import org.yamcs.xtce.AggregateArgumentType;
 import org.yamcs.xtce.AggregateDataType;
+import org.yamcs.xtce.AggregateMemberInstanceRef;
 import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.AlarmRanges;
 import org.yamcs.xtce.Algorithm;
@@ -961,7 +962,14 @@ public class XtceAssembler {
         } else if (iv instanceof DynamicIntegerValue) {
             doc.writeStartElement("DynamicValue");
             DynamicIntegerValue div = (DynamicIntegerValue) iv;
-            writeParameterInstanceRef(doc, ELEM_PARAMETER_INSTANCE_REF, div.getParameterInstanceRef());
+            ParameterOrArgumentRef reference = div.getDynamicInstanceRef();
+            if (reference instanceof AggregateMemberInstanceRef aggregateMemberRef) {
+                writeAggregateMemberInstanceRef(doc, aggregateMemberRef);
+            } else if (reference instanceof ParameterInstanceRef parameterRef) {
+                writeParameterInstanceRef(doc, ELEM_PARAMETER_INSTANCE_REF, parameterRef);
+            } else {
+                throw new IllegalStateException("Unexpected dynamic integer reference " + reference.getClass());
+            }
             doc.writeEndElement();
         }
 
@@ -982,6 +990,18 @@ public class XtceAssembler {
             doc.writeAttribute("instance", Integer.toString(pinstRef.getInstance()));
         }
         if (!pinstRef.useCalibratedValue()) {
+            doc.writeAttribute("useCalibratedValue", "false");
+        }
+        doc.writeEndElement();
+    }
+
+    private void writeAggregateMemberInstanceRef(XMLStreamWriter doc, AggregateMemberInstanceRef memberRef)
+            throws XMLStreamException {
+        doc.writeStartElement(ELEM_PARAMETER_INSTANCE_REF);
+        doc.writeNamespace("yamcs", XtceStaxReader.YAMCS_XTCE_NAMESPACE);
+        doc.writeAttribute(ATTR_PARAMETER_REF, memberRef.getName());
+        doc.writeAttribute("yamcs", XtceStaxReader.YAMCS_XTCE_NAMESPACE, "aggregateMember", "true");
+        if (!memberRef.useCalibratedValue()) {
             doc.writeAttribute("useCalibratedValue", "false");
         }
         doc.writeEndElement();

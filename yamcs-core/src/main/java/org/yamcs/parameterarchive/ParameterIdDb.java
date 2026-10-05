@@ -2,6 +2,7 @@ package org.yamcs.parameterarchive;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -323,16 +324,31 @@ public class ParameterIdDb {
             e1 = e1.nextFqn;
         }
 
-        ParameterId[] r = new ParameterId[n];
+        List<Entry> matches = new ArrayList<>(n);
         e1 = e;
-        int i = 0;
-        while (e1 != null && i < n) {
+        while (e1 != null && matches.size() < n) {
             if (fqn.equals(e1.fqn)) {
-                r[i++] = e1;
+                addOrMergeCompatibleEntry(matches, e1);
             }
             e1 = e1.nextFqn;
         }
-        return r;
+        return matches.toArray(new ParameterId[0]);
+    }
+
+    private void addOrMergeCompatibleEntry(List<Entry> entries, Entry candidate) {
+        if (candidate instanceof AggArrayEntry candidateAggregate) {
+            for (Entry entry : entries) {
+                if (entry.type == candidate.type && entry instanceof AggArrayEntry aggregate
+                        && haveCompatibleComponents(aggregate.components, candidateAggregate.components)) {
+                    // Older archives may contain multiple ids for incomparable array shapes. Their ids carry no
+                    // samples themselves, so one in-memory entry with the component union reconstructs all values.
+                    aggregate.components = IntArray.union(aggregate.components, candidateAggregate.components,
+                            aggregate.components.size() + candidateAggregate.components.size());
+                    return;
+                }
+            }
+        }
+        entries.add(candidate);
     }
 
     /**
@@ -389,8 +405,9 @@ public class ParameterIdDb {
      * Creates (if not already existing) an id for the aggregate or array parameter with the given qualified name and
      * member ids.
      * <p>
-     * If another parameter with the same name exists and the aggArray is either a subset or superset of the members of
-     * the existing parameter, it is considered the same and is returned.
+     * If another parameter with the same name and type has compatible members, it is considered the same and the union
+     * of both component sets is retained. Incomparable component sets are merged only when their differences represent
+     * alternate indices of the same array paths (including empty-array markers).
      * <p>
      * For example an array will have an id for each index of its elements a[0], a[1],.. The aggArray for that parameter
      * will consist of the list of ids corresponding to the value which had the maximum number of elements.
@@ -424,13 +441,14 @@ public class ParameterIdDb {
         } else {
             Entry e = entries[idx];
             while (e != null) {
-                if (paramFqn.equals(e.fqn) && (e instanceof AggArrayEntry agge)) {
-                    int c = IntArray.compare(agge.components, components);
-                    if (c != -1) {
+                if (paramFqn.equals(e.fqn) && e.type == numericType && (e instanceof AggArrayEntry agge)) {
+                    if (haveCompatibleComponents(agge.components, components)) {
                         pid = e.pid;
-                        if (c == 1) {
-                            agge.components = components;
-                            modifyAggArray(pid, paramFqn, numericType, components);
+                        IntArray union = IntArray.union(agge.components, components,
+                                agge.components.size() + components.size());
+                        if (!union.equals(agge.components)) {
+                            agge.components = union;
+                            modifyAggArray(pid, paramFqn, numericType, union);
                         }
                         break;
                     }
@@ -444,6 +462,52 @@ public class ParameterIdDb {
         }
 
         return pid;
+    }
+
+    private boolean haveCompatibleComponents(IntArray existing, IntArray candidate) {
+        if (IntArray.compare(existing, candidate) != -1) {
+            return true;
+        }
+        for (int existingPid : existing) {
+            if (candidate.binarySearch(existingPid) < 0 && !hasCompatibleArrayComponent(existingPid, candidate)) {
+                return false;
+            }
+        }
+        for (int candidatePid : candidate) {
+            if (existing.binarySearch(candidatePid) < 0 && !hasCompatibleArrayComponent(candidatePid, existing)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean hasCompatibleArrayComponent(int pid, IntArray otherComponents) {
+        ParameterId component = getParameterId(pid);
+        String path = normalizeArrayIndexes(component.getParamFqn());
+        boolean marker = isEmptyArrayMarker(component.getParamFqn());
+        for (int otherPid : otherComponents) {
+            ParameterId other = getParameterId(otherPid);
+            String otherPath = normalizeArrayIndexes(other.getParamFqn());
+            boolean otherMarker = isEmptyArrayMarker(other.getParamFqn());
+            if (path.equals(otherPath) && (marker || otherMarker
+                    || (component.getEngType() == other.getEngType()
+                            && component.getRawType() == other.getRawType()))) {
+                return true;
+            }
+            if ((marker && otherPath.startsWith(path + "."))
+                    || (otherMarker && path.startsWith(otherPath + "."))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isEmptyArrayMarker(String fqn) {
+        return fqn.endsWith("[" + BasicParameterList.EMPTY_ARRAY_MARKER_INDEX + "]");
+    }
+
+    private String normalizeArrayIndexes(String fqn) {
+        return fqn.replaceAll("\\[\\d+\\]", "[]");
     }
 
     private int addAggArray(String paramFqn, int numericType, IntArray aggArray) {

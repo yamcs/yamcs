@@ -82,11 +82,7 @@ public class ParameterTypeProcessor {
         Value rawValue = pval.getRawValue();
         Value engValue;
         try {
-            if (requireCalibration(ptype, rawValue)) {
-                engValue = doCalibrate(processingCtx, ptype, rawValue);
-            } else {
-                engValue = pval.getRawValue();
-            }
+            engValue = calibrate(processingCtx, ptype, rawValue);
             pval.setEngValue(engValue);
             if (checkValidityRanges) {
                 doCheckValidity(ptype, pval);
@@ -97,6 +93,14 @@ public class ParameterTypeProcessor {
         } catch (Exception e) {
             log.error("Exception calibrating {}: {}" + pval, e);
             pval.setInvalid();
+        }
+    }
+
+    Value calibrate(ProcessingContext processingCtx, ParameterType ptype, Value rawValue) {
+        if (requireCalibration(ptype, rawValue)) {
+            return doCalibrate(processingCtx, ptype, rawValue);
+        } else {
+            return rawValue;
         }
     }
 

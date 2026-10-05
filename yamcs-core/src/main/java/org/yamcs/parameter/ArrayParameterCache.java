@@ -237,14 +237,18 @@ public class ArrayParameterCache implements ParameterCache {
     public List<List<ParameterValue>> getAllValues(List<Parameter> parameters, long start, long stop) {
         List<ParameterId> pidlist = getParameterIds(parameters);
         List<List<ParameterValue>> result = new ArrayList<>();
-        boolean mergingRequired = false;
+        int numTables = 0;
         for (Map.Entry<SortedIntArray, ParameterValueTable> me : tables.entrySet()) {
-            boolean dataFound = me.getValue().retrieveAll(pidlist, start, stop, result);
-            mergingRequired = mergingRequired || dataFound;
+            // A table represents one exact parameter group. Passing it IDs from another group would resolve those IDs
+            // to unrelated columns via higherBound().
+            List<ParameterId> tablePids = filterParameterIds(pidlist, me.getKey());
+            if (!tablePids.isEmpty() && me.getValue().retrieveAll(tablePids, start, stop, result)) {
+                numTables++;
+            }
         }
         // if values are retrieved from multiple tables, we need to sort them by generation time
         // (in reverse order such that the newest is first)
-        if (mergingRequired) {
+        if (numTables > 1) {
             Collections.sort(result, (pvList1, pvList2) -> Long.compare(pvList2.get(0).getGenerationTime(),
                     pvList1.get(0).getGenerationTime()));
         }
@@ -255,8 +259,44 @@ public class ArrayParameterCache implements ParameterCache {
     }
 
     public List<List<ParameterValue>> getAllValuesIfCovered(List<Parameter> parameters, long start, long stop) {
-        // TODO Auto-generated method stub
-        return null;
+        List<ParameterId> pidlist = getParameterIds(parameters);
+        // A parameter that has never reached this cache cannot be covered, even if other requested parameters are.
+        for (Parameter parameter : parameters) {
+            if (pidMap.get(parameter) == null) {
+                return null;
+            }
+        }
+
+        List<List<ParameterValue>> result = new ArrayList<>();
+        int numTables = 0;
+        for (Map.Entry<SortedIntArray, ParameterValueTable> me : tables.entrySet()) {
+            List<ParameterId> tablePids = filterParameterIds(pidlist, me.getKey());
+            if (tablePids.isEmpty()) {
+                continue;
+            }
+            numTables++;
+            if (!me.getValue().retrieveAllIfCovered(tablePids, start, stop, result)) {
+                return null;
+            }
+        }
+        if (numTables == 0 || result.isEmpty()) {
+            return null;
+        }
+        if (numTables > 1) {
+            Collections.sort(result, (pvList1, pvList2) -> Long.compare(pvList2.get(0).getGenerationTime(),
+                    pvList1.get(0).getGenerationTime()));
+        }
+        return result;
+    }
+
+    private static List<ParameterId> filterParameterIds(List<ParameterId> pidlist, SortedIntArray tablePids) {
+        List<ParameterId> result = new ArrayList<>();
+        for (ParameterId pid : pidlist) {
+            if (tablePids.contains(pid.id)) {
+                result.add(pid);
+            }
+        }
+        return result;
     }
 
     private List<ParameterId> getParameterIds(List<Parameter> pdefList) {
@@ -560,53 +600,64 @@ public class ArrayParameterCache implements ParameterCache {
         public boolean retrieveAll(List<ParameterId> plist, long start, long stop, List<List<ParameterValue>> result) {
             lock.readLock().lock();
             try {
-                // Precompute column bounds for all requested ParameterIds
-                IntArray bounds = new IntArray();
-                for (ParameterId p : plist) {
-                    int col2 = pids.higherBound(p.id);
-                    int col1 = col2;
-                    while (col1 > 0 && pids.get(col1 - 1) == p.id) {
-                        col1--;
-                    }
-                    bounds.add(col1); // Add the lower bound
-                    bounds.add(col2); // Add the upper bound
-                }
-                if (bounds.isEmpty()) {
-                    return false;
-                }
-
-                int _tail = tail;
-                int _head = head;
-                int n = generationTimeColumn.length - 1;
-                int row = _head;
-
-                // Iterate over the rows of the circular buffer
-                do {
-                    row = (row - 1) & n;
-
-                    // Only process rows within the specified time range
-                    if (generationTimeColumn[row] > start && generationTimeColumn[row] <= stop) {
-                        List<ParameterValue> rowValues = new ArrayList<>();
-
-                        // Collect parameter values for all requested ParameterIds in this row
-                        for (int i = 0; i < plist.size(); i++) {
-                            ParameterId p = plist.get(i);
-                            int col1 = bounds.get(i * 2); // Retrieve lower bound
-                            int col2 = bounds.get(i * 2 + 1); // Retrieve upper bound
-
-                            for (int col = col2; col >= col1; col--) {
-                                rowValues.add(getParameterValue(row, col, p));
-                            }
-                        }
-
-                        // Add the collected values for the current row to the result
-                        result.add(rowValues);
-                    }
-                } while (row != _tail);
+                return retrieveAllUnlocked(plist, start, stop, result);
             } finally {
                 lock.readLock().unlock();
             }
-            return true;
+        }
+
+        public boolean retrieveAllIfCovered(List<ParameterId> plist, long start, long stop,
+                List<List<ParameterValue>> result) {
+            lock.readLock().lock();
+            try {
+                // Cache retrieval uses (start, stop], hence start + 1 is the first timestamp that must be present.
+                if (start + 1 < generationTimeColumn[tail]) {
+                    return false;
+                }
+                retrieveAllUnlocked(plist, start, stop, result);
+                return true;
+            } finally {
+                lock.readLock().unlock();
+            }
+        }
+
+        private boolean retrieveAllUnlocked(List<ParameterId> plist, long start, long stop,
+                List<List<ParameterValue>> result) {
+            IntArray bounds = new IntArray();
+            for (ParameterId p : plist) {
+                int col2 = pids.higherBound(p.id);
+                int col1 = col2;
+                while (col1 > 0 && pids.get(col1 - 1) == p.id) {
+                    col1--;
+                }
+                bounds.add(col1);
+                bounds.add(col2);
+            }
+            if (bounds.isEmpty()) {
+                return false;
+            }
+
+            int initialSize = result.size();
+            int _tail = tail;
+            int _head = head;
+            int n = generationTimeColumn.length - 1;
+            int row = _head;
+            do {
+                row = (row - 1) & n;
+                if (generationTimeColumn[row] > start && generationTimeColumn[row] <= stop) {
+                    List<ParameterValue> rowValues = new ArrayList<>();
+                    for (int i = 0; i < plist.size(); i++) {
+                        ParameterId p = plist.get(i);
+                        int col1 = bounds.get(i * 2);
+                        int col2 = bounds.get(i * 2 + 1);
+                        for (int col = col2; col >= col1; col--) {
+                            rowValues.add(getParameterValue(row, col, p));
+                        }
+                    }
+                    result.add(rowValues);
+                }
+            } while (row != _tail);
+            return result.size() > initialSize;
         }
 
         /**

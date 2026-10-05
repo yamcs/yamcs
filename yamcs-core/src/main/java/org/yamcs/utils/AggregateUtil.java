@@ -139,33 +139,18 @@ public class AggregateUtil {
      * @return
      */
     public static <T extends RawEngValue> T extractMember(T rev, PathElement[] path) {
-        Value engValue = rev.getEngValue();
-        Value rawValue = rev.getRawValue();
-        for (PathElement pe : path) {
-            if (pe.getName() != null) {
-                engValue = ((AggregateValue) engValue).getMemberValue(pe.getName());
-                if (rawValue != null) {
-                    rawValue = ((AggregateValue) rawValue).getMemberValue(pe.getName());
-                }
-            }
-            int[] idx = pe.getIndex();
-            if (idx != null) {
-                ArrayValue av = (ArrayValue) engValue;
-                if (!av.hasElement(idx)) {
-                    return null;
-                }
-                engValue = av.getElementValue(idx);
-                if (engValue == null) {
-                    return null;
-                }
-                if (rawValue != null) {
-                    rawValue = ((ArrayValue) rawValue).getElementValue(idx);
-                }
-            }
+        Value sourceEngValue = rev.getEngValue();
+        Value sourceRawValue = rev.getRawValue();
+        Value engValue = extractMemberValue(sourceEngValue, path);
+        Value rawValue = extractMemberValue(sourceRawValue, path);
+        if ((sourceEngValue != null && engValue == null) || (sourceRawValue != null && rawValue == null)) {
+            return null;
         }
         if (rev instanceof ParameterValue) {
             ParameterValue pv = (ParameterValue) rev;
-            PartialParameterValue pv1 = new PartialParameterValue(pv.getParameter(), path);
+            PartialParameterValue pv1 = pv.getParameter() == null
+                    ? new PartialParameterValue(pv.getParameterQualifiedName(), path)
+                    : new PartialParameterValue(pv.getParameter(), path);
             pv1.setEngValue(engValue);
             pv1.setRawValue(rawValue);
             pv1.setGenerationTime(rev.getGenerationTime());
@@ -179,8 +164,35 @@ public class AggregateUtil {
             av1.setEngValue(engValue);
             av1.setRawValue(rawValue);
             av1.setGenerationTime(rev.getGenerationTime());
-            return (T) av;
+            return (T) av1;
         }
+    }
+
+    private static Value extractMemberValue(Value value, PathElement[] path) {
+        Value result = value;
+        for (PathElement pe : path) {
+            if (result == null) {
+                return null;
+            }
+            if (pe.getName() != null) {
+                if (!(result instanceof AggregateValue aggregateValue)) {
+                    return null;
+                }
+                int memberIndex = aggregateValue.getMemberIndex(pe.getName());
+                if (memberIndex == -1) {
+                    return null;
+                }
+                result = aggregateValue.getMemberValue(memberIndex);
+            }
+            int[] idx = pe.getIndex();
+            if (idx != null) {
+                if (!(result instanceof ArrayValue arrayValue) || !arrayValue.hasElement(idx)) {
+                    return null;
+                }
+                result = arrayValue.getElementValue(idx);
+            }
+        }
+        return result;
     }
 
     /**

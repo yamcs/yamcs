@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204"
+        xmlns:yamcs="http://yamcs.org/schema/xtce"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        name="ArrayInArrayTmTest"
+        xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
+    <TelemetryMetaData>
+        <ParameterTypeSet>
+            <IntegerParameterType name="uint8" signed="false">
+                <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+            </IntegerParameterType>
+            <IntegerParameterType name="uint16" signed="false">
+                <IntegerDataEncoding sizeInBits="16" encoding="unsigned"/>
+            </IntegerParameterType>
+            <IntegerParameterType name="uint11" signed="false">
+                <IntegerDataEncoding sizeInBits="11" encoding="unsigned"/>
+            </IntegerParameterType>
+            <IntegerParameterType name="int8" signed="true">
+                <IntegerDataEncoding sizeInBits="8" encoding="twosComplement"/>
+            </IntegerParameterType>
+            <StringParameterType name="string8">
+                <StringDataEncoding encoding="UTF-8">
+                    <SizeInBits>
+                        <Fixed>
+                            <FixedValue>8</FixedValue>
+                        </Fixed>
+                    </SizeInBits>
+                </StringDataEncoding>
+            </StringParameterType>
+            <ArrayParameterType name="inner_array_type" arrayTypeRef="uint16">
+                <DimensionList>
+                    <Dimension>
+                        <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+                        <EndingIndex>
+                            <DynamicValue>
+                                <ParameterInstanceRef parameterRef="inner_array_length"
+                                        yamcs:aggregateMember="true"/>
+                                <LinearAdjustment intercept="-1"/>
+                            </DynamicValue>
+                        </EndingIndex>
+                    </Dimension>
+                </DimensionList>
+            </ArrayParameterType>
+            <AggregateParameterType name="inner_aggregate_type">
+                <MemberList>
+                    <Member name="inner_array_length" typeRef="uint8"/>
+                    <Member name="inner_array" typeRef="inner_array_type"/>
+                </MemberList>
+            </AggregateParameterType>
+            <ArrayParameterType name="outer_array_type" arrayTypeRef="inner_aggregate_type">
+                <DimensionList>
+                    <Dimension>
+                        <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+                        <EndingIndex>
+                            <DynamicValue>
+                                <ParameterInstanceRef parameterRef="outer_array_length"
+                                        yamcs:aggregateMember="true"/>
+                                <LinearAdjustment intercept="-1"/>
+                            </DynamicValue>
+                        </EndingIndex>
+                    </Dimension>
+                </DimensionList>
+            </ArrayParameterType>
+            <AggregateParameterType name="report_type">
+                <MemberList>
+                    <Member name="outer_array_length" typeRef="uint16"/>
+                    <Member name="outer_array" typeRef="outer_array_type"/>
+                </MemberList>
+            </AggregateParameterType>
+            <AggregateParameterType name="late_count_report_type">
+                <MemberList>
+                    <Member name="outer_array" typeRef="outer_array_type"/>
+                    <Member name="outer_array_length" typeRef="uint16"/>
+                </MemberList>
+            </AggregateParameterType>
+            <AggregateParameterType name="count_holder_type">
+                <MemberList>
+                    <Member name="count" typeRef="uint8"/>
+                </MemberList>
+            </AggregateParameterType>
+            <ArrayParameterType name="external_array_type" arrayTypeRef="uint16">
+                <DimensionList>
+                    <Dimension>
+                        <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+                        <EndingIndex>
+                            <DynamicValue>
+                                <ParameterInstanceRef parameterRef="count_holder/count"/>
+                                <LinearAdjustment intercept="-1"/>
+                            </DynamicValue>
+                        </EndingIndex>
+                    </Dimension>
+                </DimensionList>
+            </ArrayParameterType>
+            <ArrayParameterType name="ordinary_array_type" arrayTypeRef="uint8">
+                <DimensionList>
+                    <Dimension>
+                        <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+                        <EndingIndex>
+                            <DynamicValue>
+                                <ParameterInstanceRef parameterRef="external_count"/>
+                                <LinearAdjustment intercept="-1"/>
+                            </DynamicValue>
+                        </EndingIndex>
+                    </Dimension>
+                </DimensionList>
+            </ArrayParameterType>
+            <ArrayParameterType name="negative_array_type" arrayTypeRef="uint8">
+                <DimensionList>
+                    <Dimension>
+                        <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+                        <EndingIndex>
+                            <DynamicValue>
+                                <ParameterInstanceRef parameterRef="negative_count"
+                                        yamcs:aggregateMember="true"/>
+                                <LinearAdjustment intercept="-1"/>
+                            </DynamicValue>
+                        </EndingIndex>
+                    </Dimension>
+                </DimensionList>
+            </ArrayParameterType>
+            <AggregateParameterType name="negative_report_type">
+                <MemberList>
+                    <Member name="negative_count" typeRef="int8"/>
+                    <Member name="values" typeRef="negative_array_type"/>
+                </MemberList>
+            </AggregateParameterType>
+            <ArrayParameterType name="oversized_array_type" arrayTypeRef="uint8">
+                <DimensionList>
+                    <Dimension>
+                        <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+                        <EndingIndex>
+                            <DynamicValue>
+                                <ParameterInstanceRef parameterRef="oversized_count"
+                                        yamcs:aggregateMember="true"/>
+                                <LinearAdjustment intercept="-1"/>
+                            </DynamicValue>
+                        </EndingIndex>
+                    </Dimension>
+                </DimensionList>
+            </ArrayParameterType>
+            <AggregateParameterType name="oversized_report_type">
+                <MemberList>
+                    <Member name="oversized_count" typeRef="uint16"/>
+                    <Member name="values" typeRef="oversized_array_type"/>
+                </MemberList>
+            </AggregateParameterType>
+            <ArrayParameterType name="nonnumeric_array_type" arrayTypeRef="uint8">
+                <DimensionList>
+                    <Dimension>
+                        <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+                        <EndingIndex>
+                            <DynamicValue>
+                                <ParameterInstanceRef parameterRef="nonnumeric_count"
+                                        yamcs:aggregateMember="true"/>
+                                <LinearAdjustment intercept="-1"/>
+                            </DynamicValue>
+                        </EndingIndex>
+                    </Dimension>
+                </DimensionList>
+            </ArrayParameterType>
+            <AggregateParameterType name="nonnumeric_report_type">
+                <MemberList>
+                    <Member name="nonnumeric_count" typeRef="string8"/>
+                    <Member name="values" typeRef="nonnumeric_array_type"/>
+                </MemberList>
+            </AggregateParameterType>
+            <ArrayParameterType name="missing_array_type" arrayTypeRef="uint8">
+                <DimensionList>
+                    <Dimension>
+                        <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+                        <EndingIndex>
+                            <DynamicValue>
+                                <ParameterInstanceRef parameterRef="missing_count"/>
+                                <LinearAdjustment intercept="-1"/>
+                            </DynamicValue>
+                        </EndingIndex>
+                    </Dimension>
+                </DimensionList>
+            </ArrayParameterType>
+            <AggregateParameterType name="missing_report_type">
+                <MemberList>
+                    <Member name="values" typeRef="missing_array_type"/>
+                </MemberList>
+            </AggregateParameterType>
+            <ArrayParameterType name="qualified_array_type" arrayTypeRef="uint8">
+                <DimensionList>
+                    <Dimension>
+                        <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+                        <EndingIndex>
+                            <DynamicValue>
+                                <ParameterInstanceRef parameterRef="/ArrayInArrayTmTest/external_count"/>
+                                <LinearAdjustment intercept="-1"/>
+                            </DynamicValue>
+                        </EndingIndex>
+                    </Dimension>
+                </DimensionList>
+            </ArrayParameterType>
+            <AggregateParameterType name="qualified_report_type">
+                <MemberList>
+                    <Member name="external_count" typeRef="uint8"/>
+                    <Member name="values" typeRef="qualified_array_type"/>
+                </MemberList>
+            </AggregateParameterType>
+            <ArrayParameterType name="subservices_array_type" arrayTypeRef="uint8">
+                <DimensionList>
+                    <Dimension>
+                        <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+                        <EndingIndex>
+                            <DynamicValue>
+                                <ParameterInstanceRef parameterRef="subservice_count"
+                                        yamcs:aggregateMember="true"/>
+                                <LinearAdjustment intercept="-1"/>
+                            </DynamicValue>
+                        </EndingIndex>
+                    </Dimension>
+                </DimensionList>
+            </ArrayParameterType>
+            <AggregateParameterType name="service_aggregate_type">
+                <MemberList>
+                    <Member name="service_type" typeRef="uint8"/>
+                    <Member name="subservice_count" typeRef="uint8"/>
+                    <Member name="subservices" typeRef="subservices_array_type"/>
+                </MemberList>
+            </AggregateParameterType>
+            <ArrayParameterType name="services_array_type" arrayTypeRef="service_aggregate_type">
+                <DimensionList>
+                    <Dimension>
+                        <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+                        <EndingIndex>
+                            <DynamicValue>
+                                <ParameterInstanceRef parameterRef="service_count"
+                                        yamcs:aggregateMember="true"/>
+                                <LinearAdjustment intercept="-1"/>
+                            </DynamicValue>
+                        </EndingIndex>
+                    </Dimension>
+                </DimensionList>
+            </ArrayParameterType>
+            <AggregateParameterType name="apid_report_type">
+                <MemberList>
+                    <Member name="apid" typeRef="uint11"/>
+                    <Member name="service_count" typeRef="uint8"/>
+                    <Member name="services" typeRef="services_array_type"/>
+                </MemberList>
+            </AggregateParameterType>
+            <ArrayParameterType name="apid_reports_array_type" arrayTypeRef="apid_report_type">
+                <DimensionList>
+                    <Dimension>
+                        <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+                        <EndingIndex>
+                            <DynamicValue>
+                                <ParameterInstanceRef parameterRef="n_count"
+                                        yamcs:aggregateMember="true"/>
+                                <LinearAdjustment intercept="-1"/>
+                            </DynamicValue>
+                        </EndingIndex>
+                    </Dimension>
+                </DimensionList>
+            </ArrayParameterType>
+            <AggregateParameterType name="configuration_type">
+                <MemberList>
+                    <Member name="n_count" typeRef="uint8"/>
+                    <Member name="apid_reports" typeRef="apid_reports_array_type"/>
+                </MemberList>
+            </AggregateParameterType>
+        </ParameterTypeSet>
+        <ParameterSet>
+            <!-- This deliberately shadows the report member. Aggregate-local lookup must win. -->
+            <Parameter name="outer_array_length" parameterTypeRef="uint16"/>
+            <Parameter name="external_count" parameterTypeRef="uint8"/>
+            <Parameter name="missing_count" parameterTypeRef="uint8"/>
+            <Parameter name="report" parameterTypeRef="report_type"/>
+            <Parameter name="late_count_report" parameterTypeRef="late_count_report_type"/>
+            <Parameter name="count_holder" parameterTypeRef="count_holder_type"/>
+            <Parameter name="external_array" parameterTypeRef="external_array_type"/>
+            <Parameter name="ordinary_array" parameterTypeRef="ordinary_array_type"/>
+            <Parameter name="negative_report" parameterTypeRef="negative_report_type"/>
+            <Parameter name="oversized_report" parameterTypeRef="oversized_report_type"/>
+            <Parameter name="nonnumeric_report" parameterTypeRef="nonnumeric_report_type"/>
+            <Parameter name="missing_report" parameterTypeRef="missing_report_type"/>
+            <Parameter name="qualified_report" parameterTypeRef="qualified_report_type"/>
+            <Parameter name="configuration" parameterTypeRef="configuration_type"/>
+        </ParameterSet>
+        <ContainerSet>
+            <SequenceContainer name="packet">
+                <EntryList>
+                    <ParameterRefEntry parameterRef="report"/>
+                </EntryList>
+            </SequenceContainer>
+            <SequenceContainer name="late_count_packet">
+                <EntryList>
+                    <ParameterRefEntry parameterRef="late_count_report"/>
+                </EntryList>
+            </SequenceContainer>
+            <SequenceContainer name="external_member_packet">
+                <EntryList>
+                    <ParameterRefEntry parameterRef="count_holder"/>
+                    <ArrayParameterRefEntry parameterRef="external_array"/>
+                </EntryList>
+            </SequenceContainer>
+            <SequenceContainer name="ordinary_parameter_packet">
+                <EntryList>
+                    <ParameterRefEntry parameterRef="external_count"/>
+                    <ArrayParameterRefEntry parameterRef="ordinary_array"/>
+                </EntryList>
+            </SequenceContainer>
+            <SequenceContainer name="negative_count_packet">
+                <EntryList>
+                    <ParameterRefEntry parameterRef="negative_report"/>
+                </EntryList>
+            </SequenceContainer>
+            <SequenceContainer name="oversized_count_packet">
+                <EntryList>
+                    <ParameterRefEntry parameterRef="oversized_report"/>
+                </EntryList>
+            </SequenceContainer>
+            <SequenceContainer name="nonnumeric_count_packet">
+                <EntryList>
+                    <ParameterRefEntry parameterRef="nonnumeric_report"/>
+                </EntryList>
+            </SequenceContainer>
+            <SequenceContainer name="missing_count_packet">
+                <EntryList>
+                    <ParameterRefEntry parameterRef="missing_report"/>
+                </EntryList>
+            </SequenceContainer>
+            <SequenceContainer name="qualified_parameter_packet">
+                <EntryList>
+                    <ParameterRefEntry parameterRef="external_count"/>
+                    <ParameterRefEntry parameterRef="qualified_report"/>
+                </EntryList>
+            </SequenceContainer>
+            <SequenceContainer name="configuration_packet">
+                <EntryList>
+                    <ParameterRefEntry parameterRef="configuration"/>
+                </EntryList>
+            </SequenceContainer>
+        </ContainerSet>
+    </TelemetryMetaData>
+</SpaceSystem>

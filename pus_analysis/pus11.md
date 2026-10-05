@@ -33,7 +33,7 @@ All byte widths in this doc are mission choices of this codebase, not spec value
 | Concept | Meaning (spec ref) |
 |---|---|
 | Scheduled activity | Request + release time + optional sub-schedule ID + optional group ID (§6.11.4.2.a) |
-| Activity identifier | `(source_id, apid, seqcount)` of the **embedded** request, not of the TC[11,4] carrying it (§6.11.4.2.b) |
+| Activity identifier | `(source_id:u16, apid:u11, seqcount:u14)` of the **embedded** request, not of the TC[11,4] carrying it (§6.11.4.2.b). Fields and repeated identifiers are bit-packed without APID or sequence-count padding |
 | Sub-schedule | Optional. Auto-created **disabled** on first insert, auto-deleted when empty (§6.11.1.2, §6.11.4.5.j) |
 | Group | Optional, **independent** of sub-schedules. Created/deleted explicitly, may exist empty (§6.11.1.2, §6.11.6) |
 | Time window type | `0` select all, `1` from–to, `2` from, `3` to; bounds inclusive (Table 8-5, §6.11.10.2.2) |
@@ -316,8 +316,10 @@ The simulator is a permissive stand-in; do not infer on-board behaviour from it.
 - **Report order**: "all"/filter reports iterate `PriorityQueue.iterator()` (heap order); spec requires
   release-time order (§6.11.7.1.c, §6.11.7.2.c).
 - **Empty detail report**: no TM[11,10] at all when the selection is empty.
-- **Report padding**: TM[11,10]/[11,13] reserve 4 bytes for the `uint16` `n`, leaving 2 zero bytes
-  before the CRC (ignored by the decoder).
+- **Report padding**: TM[11,10] reserves 4 bytes for the `uint16` `n`, leaving 2 zero bytes before
+  the CRC (ignored by the decoder). TM[11,13] is sized to its exact bit length
+  (`schedule_id:u8 + group_id:u8 + release_time + source_id:u16 + apid:u11 + seqcount:u14` per
+  entry); only the final octet may contain zero padding.
 - **MDB types**: `CREATE_SCHEDULING_GROUPS.group_status` is `/dt/uint8`, not enumerated (Table 8-4).
 
 ---

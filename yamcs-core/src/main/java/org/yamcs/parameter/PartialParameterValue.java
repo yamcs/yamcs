@@ -16,6 +16,11 @@ public class PartialParameterValue extends ParameterValue {
         super(def);
         this.path = path;
     }
+
+    public PartialParameterValue(String parameterFqn, PathElement[] path) {
+        super(parameterFqn);
+        this.path = path;
+    }
     
     /**
      * The path to the element of the aggregate or array for which the value applies

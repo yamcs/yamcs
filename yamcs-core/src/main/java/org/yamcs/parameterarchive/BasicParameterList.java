@@ -1,5 +1,6 @@
 package org.yamcs.parameterarchive;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -12,6 +13,7 @@ import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.IntArray;
 import org.yamcs.utils.IntHashSet;
+import org.yamcs.utils.ValueUtility;
 
 /**
  * Builds list of parameter id and parameter value.
@@ -29,6 +31,8 @@ import org.yamcs.utils.IntHashSet;
  * 
  */
 class BasicParameterList {
+    static final int EMPTY_ARRAY_MARKER_INDEX = Integer.MAX_VALUE;
+
     final ParameterIdDb parameterIdMap;
     final IntArray idArray;
     // unique parameter ids for this list
@@ -62,15 +66,12 @@ class BasicParameterList {
 
             parameterIdMap.createAndGetAggrray(fqn, engType, rawType, aggrray);
         } else if (pv.getEngValue() instanceof ArrayValue arrv) {
-            // for the moment we have no way to store empty arrays in the parameter archive, so we just skip over
-            if (!arrv.isEmpty()) {
-                IntArray aggrray = new IntArray();
-                add(fqn, pv, aggrray);
-                Type engType = pv.getEngValue().getType();
-                Type rawType = (pv.getRawValue() == null) ? null : pv.getRawValue().getType();
+            IntArray aggrray = new IntArray();
+            add(fqn, pv, aggrray);
+            Type engType = arrv.getType();
+            Type rawType = (pv.getRawValue() == null) ? null : pv.getRawValue().getType();
 
-                parameterIdMap.createAndGetAggrray(fqn, engType, rawType, aggrray);
-            }
+            parameterIdMap.createAndGetAggrray(fqn, engType, rawType, aggrray);
         } else {
             add(fqn, pv, null);
         }
@@ -120,6 +121,26 @@ class BasicParameterList {
         ArrayValue engValue = (ArrayValue) pv.getEngValue();
         ArrayValue rawValue = (ArrayValue) pv.getRawValue();
 
+        if (engValue.isEmpty()) {
+            // Empty arrays have no leaf values. Store their shape at a reserved, practically unreachable array index
+            // so reconstruction can distinguish an existing empty member from a member absent at this timestamp.
+            BasicParameterValue marker = new BasicParameterValue();
+            marker.setStatus(pv.getStatus());
+            marker.setGenerationTime(pv.getGenerationTime());
+            marker.setEngValue(encodeArrayShape(engValue));
+            if (rawValue != null) {
+                marker.setRawValue(encodeArrayShape(rawValue));
+            }
+            String markerName = name + "[" + EMPTY_ARRAY_MARKER_INDEX + "]";
+            int parameterId = parameterIdMap.createAndGet(markerName, Type.BINARY,
+                    rawValue == null ? null : Type.BINARY);
+            doAdd(parameterId, marker);
+            if (aggrray != null) {
+                aggrray.add(parameterId);
+            }
+            return;
+        }
+
         int[] dim = engValue.getDimensions();
         int n = dim.length;
         int[] idx = new int[n];
@@ -147,6 +168,17 @@ class BasicParameterList {
                 idx[k] = 0;
             }
         }
+    }
+
+    private Value encodeArrayShape(ArrayValue value) {
+        int[] dimensions = value.getDimensions();
+        ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES * (dimensions.length + 2));
+        buffer.putInt(dimensions.length);
+        buffer.putInt(value.getElementType() == null ? -1 : value.getElementType().getNumber());
+        for (int dimension : dimensions) {
+            buffer.putInt(dimension);
+        }
+        return ValueUtility.getBinaryValue(buffer.array());
     }
 
     private void doAdd(int pid, BasicParameterValue pv) {

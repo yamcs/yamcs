@@ -66,6 +66,7 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.AbsoluteTimeParameterType;
 import org.yamcs.xtce.AggregateArgumentType;
+import org.yamcs.xtce.AggregateMemberInstanceRef;
 import org.yamcs.xtce.AggregateParameterType;
 import org.yamcs.xtce.AlarmLevels;
 import org.yamcs.xtce.AlarmRanges;
@@ -794,12 +795,14 @@ public class XtceToGpbAssembler {
                     } else if (dim instanceof DynamicIntegerValue) {
                         ParameterDimensionInfo.Builder dimb = ParameterDimensionInfo.newBuilder();
                         DynamicIntegerValue dynamicValue = (DynamicIntegerValue) dim;
-                        ParameterInstanceRef ref = dynamicValue.getParameterInstanceRef();
-                        if (ref != null) {
-                            dimb.setParameter(toParameterInfo(ref.getParameter(), DetailLevel.SUMMARY));
-                            dimb.setSlope(dynamicValue.getSlope());
-                            dimb.setIntercept(dynamicValue.getIntercept());
+                        var ref = dynamicValue.getDynamicInstanceRef();
+                        if (ref instanceof ParameterInstanceRef parameterRef) {
+                            dimb.setParameter(toParameterInfo(parameterRef));
+                        } else if (ref instanceof AggregateMemberInstanceRef memberRef) {
+                            dimb.setAggregateMember(memberRef.getName());
                         }
+                        dimb.setSlope(dynamicValue.getSlope());
+                        dimb.setIntercept(dynamicValue.getIntercept());
                         arrayInfob.addDimensions(dimb);
                     }
                 } else { // XTCE 1.1

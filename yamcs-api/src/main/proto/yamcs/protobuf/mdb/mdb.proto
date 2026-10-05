@@ -501,6 +501,8 @@ message ParameterDimensionInfo {
   optional ParameterInfo parameter = 2;
   optional int64 slope = 3;
   optional int64 intercept = 4;
+  // Lexically scoped aggregate member used to determine this dimension.
+  optional string aggregateMember = 5;
 }
 
 message ArrayInfo {
