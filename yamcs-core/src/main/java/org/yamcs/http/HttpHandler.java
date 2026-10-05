@@ -3,6 +3,7 @@ package org.yamcs.http;
 import static io.netty.handler.codec.http.HttpHeaderNames.AUTHORIZATION;
 import static io.netty.handler.codec.http.HttpHeaderNames.COOKIE;
 
+import java.net.InetSocketAddress;
 import java.util.Base64;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -150,10 +151,16 @@ public abstract class HttpHandler {
             throw new BadRequestException("Malformed username/password (Not separated by colon?)");
         }
 
+        var httpServer = ctx.channel().attr(HttpRequestHandler.CTX_HTTP_SERVER).get();
+        var ip = httpServer.getOriginalHostAddress((InetSocketAddress) ctx.channel().remoteAddress(), req);
+        var authRateLimiter = httpServer.getAuthRateLimiter();
+        authRateLimiter.acquire(ip);
+
         try {
             var securityStore = YamcsServer.getServer().getSecurityStore();
             AuthenticationToken token = new UsernamePasswordToken(parts[0], parts[1].toCharArray());
             AuthenticationInfo authenticationInfo = securityStore.login(token).get();
+            authRateLimiter.release(ip);
             return securityStore.getUserFromCache(authenticationInfo.getUsername());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
