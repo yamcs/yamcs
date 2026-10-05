@@ -1,3 +1,35 @@
+Version 5.13.6 released 30-Sept-2026
+* Important changes:
+    * As of this release Yamcs no longer autocreates an initial 'admin' user. This quirk was removed for security reasons.
+    * Forwarded headers (`X-Forwarded-Proto`, `X-Forwarded-Host`, `X-Forwarded-For`) are now only honored when the request comes from a trusted proxy. By default only localhost (127.0.0.1, ::1) is trusted. If you use a reverse proxy and that reverse proxy runs on a different host or in a different container, add its IP or CIDR range to the new `trustedProxies` option of the `HttpServer` in `etc/yamcs.yaml`:
+
+      ```
+      - class: org.yamcs.http.HttpServer
+        args:
+          trustedProxies: ["10.0.0.5"]
+      ```
+
+      This change was introduced to avoid a rate limit circumvention on the auth endpoints. It also affects everything else that uses the client IP, such as the origin recorded for issued commands (which you would want to be that of the user, not of the reverse proxy).
+* Fixes various issues around scheduled stack execution
+* Set source on PusEventDecoder events #1058
+* Improve plot handling of high-rate data
+* Fix OPI loading issue when using an HTTP context path
+* XTCE: Consider ReturnParmRef in container command verification
+* Fix "bin/yamcsd" launch issue when path contains spaces
+* Allows command verifiers to be skipped in case they are not applicable for a given command
+* Added support for PUS service 22 and improved PUS service 11 support
+* Fix vulnerabilities:
+    * GHSA-p8gv-cph3-5746 Do not autocreate admin user
+    * GHSA-p2wh-wwm7-qh9x Fix ReadTables privilege bypass
+    * GHSA-2fjv-wf3q-7r86 Reject non-protobuf classes in PROTOBUF column types
+    * GHSA-g7f5-wrpj-hx4c Add trustedProxies configuration option
+    * GHSA-wqq5-5w4p-m569 Sanitize YAML for templated instance reconfiguration
+    * GHSA-ch9q-x62h-pg3g Enforce ownership of private saved web queries
+    * GHSA-8h6m-c7cf-4x35 Check privileges on MDB override read endpoints
+
+ 
+
+
 Version 5.13.5 released 31-Aug-2026
 - Move stacks/scripts to top level of navigation
 - Fix cascading link not reconnecting after long upstream downtime

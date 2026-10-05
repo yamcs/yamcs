@@ -76,6 +76,7 @@ import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.YamcsInstance;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.SystemPrivilege;
+import org.yamcs.security.User;
 import org.yamcs.utils.AggregateUtil;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Algorithm.Scope;
@@ -307,10 +308,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
         String instance = InstancesApi.verifyInstance(request.getInstance());
         Mdb mdb = MdbFactory.getInstance(instance);
 
-        Predicate<Parameter> hasPrivilege = p -> {
-            return ctx.user.hasSystemPrivilege(SystemPrivilege.GetMissionDatabase)
-                    || ctx.user.hasParameterPrivilege(ObjectPrivilegeType.ReadParameter, p);
-        };
+        Predicate<Parameter> hasPrivilege = p -> hasReadParameterDefinitionPrivilege(ctx.user, p);
 
         // Establish only the parameters and space-systems that the user is authorised for
         Set<String> allSpaceSystemNames = new HashSet<>();
@@ -423,7 +421,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
         String instance = InstancesApi.verifyInstance(request.getInstance());
 
         Mdb mdb = MdbFactory.getInstance(instance);
-        ParameterWithId match = verifyParameterWithId(ctx, mdb, request.getName());
+        ParameterWithId match = verifyParameterDefinitionWithId(ctx, mdb, request.getName());
 
         ParameterInfo pinfo = XtceToGpbAssembler.toParameterInfo(match, DetailLevel.FULL);
 
@@ -1032,8 +1030,7 @@ public class MdbApi extends AbstractMdbApi<Context> {
         Mdb mdb = MdbFactory.getInstance(instance);
         Algorithm algo = verifyAlgorithm(mdb, request.getName());
 
-        if (!ctx.user.hasSystemPrivilege(SystemPrivilege.GetMissionDatabase) &&
-                !ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadAlgorithm, algo.getQualifiedName())) {
+        if (!hasReadAlgorithmPrivilege(ctx.user, algo)) {
             throw new ForbiddenException("Insufficient privileges");
         }
 
@@ -1086,6 +1083,11 @@ public class MdbApi extends AbstractMdbApi<Context> {
         }
 
         throw new NotFoundException("No such space system");
+    }
+
+    static boolean hasReadAlgorithmPrivilege(User user, Algorithm algo) {
+        return user.hasSystemPrivilege(SystemPrivilege.GetMissionDatabase)
+                || user.hasObjectPrivilege(ObjectPrivilegeType.ReadAlgorithm, algo.getQualifiedName());
     }
 
     static Algorithm verifyAlgorithm(Mdb mdb, String pathName) {
@@ -1213,6 +1215,21 @@ public class MdbApi extends AbstractMdbApi<Context> {
     }
 
     static ParameterWithId verifyParameterWithId(Context ctx, Mdb mdb, String pathName) {
+        return verifyParameterWithId(mdb, pathName,
+                p -> ctx.user.hasParameterPrivilege(ObjectPrivilegeType.ReadParameter, p));
+    }
+
+    static ParameterWithId verifyParameterDefinitionWithId(Context ctx, Mdb mdb, String pathName) {
+        return verifyParameterWithId(mdb, pathName, p -> hasReadParameterDefinitionPrivilege(ctx.user, p));
+    }
+
+    static boolean hasReadParameterDefinitionPrivilege(User user, Parameter parameter) {
+        return user.hasSystemPrivilege(SystemPrivilege.GetMissionDatabase)
+                || user.hasParameterPrivilege(ObjectPrivilegeType.ReadParameter, parameter);
+    }
+
+    private static ParameterWithId verifyParameterWithId(Mdb mdb, String pathName,
+            Predicate<Parameter> hasPrivilege) {
         int aggSep = AggregateUtil.findSeparator(pathName);
 
         PathElement[] aggPath = null;
@@ -1249,7 +1266,10 @@ public class MdbApi extends AbstractMdbApi<Context> {
             throw new NotFoundException("No parameter named " + pathName);
         }
 
-        ctx.checkParameterPrivilege(ObjectPrivilegeType.ReadParameter, p);
+        if (!hasPrivilege.test(p)) {
+            throw new ForbiddenException(
+                    "No " + ObjectPrivilegeType.ReadParameter + " authorization for '" + p.getQualifiedName() + "'");
+        }
 
         if (aggPath != null) {
             if (!AggregateUtil.verifyPath(p.getParameterType(), aggPath)) {

@@ -122,7 +122,9 @@ public class WebApi extends AbstractWebApi<Context> {
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
                 var query = new Query(tuple);
-                queries.add(query);
+                if (isAccessible(ctx, query)) {
+                    queries.add(query);
+                }
             }
 
             @Override
@@ -161,7 +163,7 @@ public class WebApi extends AbstractWebApi<Context> {
     public void updateQuery(Context ctx, UpdateQueryRequest request, Observer<QueryInfo> observer) {
         var instance = InstancesApi.verifyInstance(request.getInstance());
         var db = QueryDb.getInstance(instance);
-        var query = verifyQuery(db, request.getId());
+        var query = verifyQuery(ctx, db, request.getId());
 
         if (request.hasName()) {
             query.setName(request.getName());
@@ -185,7 +187,7 @@ public class WebApi extends AbstractWebApi<Context> {
     public void deleteQuery(Context ctx, DeleteQueryRequest request, Observer<Empty> observer) {
         var instance = InstancesApi.verifyInstance(request.getInstance());
         var db = QueryDb.getInstance(instance);
-        var query = verifyQuery(db, request.getId());
+        var query = verifyQuery(ctx, db, request.getId());
 
         db.delete(query.getId());
         observer.complete(Empty.getDefaultInstance());
@@ -228,13 +230,17 @@ public class WebApi extends AbstractWebApi<Context> {
         return queryb.build();
     }
 
-    public static Query verifyQuery(QueryDb db, String id) {
+    public static Query verifyQuery(Context ctx, QueryDb db, String id) {
         var queryId = verifyId(id);
         var query = db.getById(queryId);
-        if (query == null) {
+        if (query == null || !isAccessible(ctx, query)) {
             throw new NotFoundException("Query not found");
         }
         return query;
+    }
+
+    private static boolean isAccessible(Context ctx, Query query) {
+        return query.getUserId() == null || query.getUserId() == ctx.user.getId();
     }
 
     private static UUID verifyId(String id) {

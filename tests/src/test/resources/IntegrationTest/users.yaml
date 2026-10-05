@@ -8,4 +8,4 @@ operator:
   
 admin:
   password: rootpassword
-  roles: [Administrator, Operator]
+  superuser: true

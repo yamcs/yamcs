@@ -43,6 +43,7 @@ import org.yamcs.simulator.UdpTmFrameLink;
  * <li>ST[19] - event-action</li>
  * <li>ST[20] - on-board parameter management</li>
  * <li>ST[21] - request sequencing</li>
+ * <li>ST[22] - position based schedule</li>
  * <li>ST[23] - file management - TODO</li>
  * 
  * <li>
@@ -93,6 +94,7 @@ public class PusSimulator extends AbstractSimulator {
     Pus19Service pus19Service;
     Pus20Service pus20Service;
     Pus21Service pus21Service;
+    Pus22Service pus22Service;
 
     protected BlockingQueue<PusTcPacket> pendingCommands = new ArrayBlockingQueue<>(100);
 
@@ -122,6 +124,7 @@ public class PusSimulator extends AbstractSimulator {
         pus19Service = new Pus19Service(this);
         pus20Service = new Pus20Service(this);
         pus21Service = new Pus21Service(this);
+        pus22Service = new Pus22Service(this);
     }
 
     @Override
@@ -136,6 +139,7 @@ public class PusSimulator extends AbstractSimulator {
         pus11Service.start();
         pus12Service.start();
         pus13Service.start();
+        pus22Service.start();
     }
 
     void transmitRealtimeTM(PusTmPacket packet) {
@@ -259,6 +263,7 @@ public class PusSimulator extends AbstractSimulator {
                 case 19 -> pus19Service.executeTc(commandPacket);
                 case 20 -> pus20Service.executeTc(commandPacket);
                 case 21 -> pus21Service.executeTc(commandPacket);
+                case 22 -> pus22Service.executeTc(commandPacket);
                 case 25 -> {
                     switch (commandPacket.getSubtype()) {
                     case 1 -> switchBatteryOn(commandPacket);
@@ -301,6 +306,11 @@ public class PusSimulator extends AbstractSimulator {
     }
 
     @Override
+    public void setTmFrameLink(UdpTmFrameLink tmFrameLink) {
+        this.tmFrameLink = tmFrameLink;
+    }
+
+    @Override
     protected void setTm2Link(TcpTmTcLink tm2Link) {
         // ignore only send packets on tmlink
     }
@@ -308,10 +318,6 @@ public class PusSimulator extends AbstractSimulator {
     @Override
     protected void setLosLink(TcpTmTcLink losLink) {
         // ignore only send packets on tmlink
-    }
-
-    public void setTmFrameLink(UdpTmFrameLink tmFrameLink) {
-        this.tmFrameLink = tmFrameLink;
     }
 
     @Override

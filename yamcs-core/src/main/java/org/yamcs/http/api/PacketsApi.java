@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.yamcs.ContainerExtractionResult;
 import org.yamcs.Processor;
 import org.yamcs.ProcessorConfig;
 import org.yamcs.StandardTupleDefinitions;
@@ -29,6 +30,7 @@ import org.yamcs.http.MediaType;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.logging.Log;
+import org.yamcs.mdb.ContainerProcessingResult;
 import org.yamcs.mdb.Mdb;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.mdb.ProcessorData;
@@ -511,21 +513,24 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
             Mdb mdb = MdbFactory.getInstance(instance);
             Processor processor = ProcessingApi.verifyProcessor(instance, request.getProcessor());
             ContainerRequestManager containerRequestManager = processor.getContainerRequestManager();
-            ContainerConsumer containerConsumer = (link, result) -> {
-                var packetName = result.getContainer().getQualifiedName();
-                if (ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadPacket, packetName)) {
-                    var tmb = TmPacketData.newBuilder()
-                            .setId(NamedObjectId.newBuilder().setName(packetName))
-                            .setPacket(ByteString.copyFrom(result.getContainerContent()))
-                            .setSize(result.getContainerContent().length)
-                            .setGenerationTime(TimeEncoding.toProtobufTimestamp(result.getGenerationTime()))
-                            .setReceptionTime(TimeEncoding.toProtobufTimestamp(result.getAcquisitionTime()))
-                            .setSequenceNumber(result.getSeqCount());
-                    if (link != null) {
-                        tmb.setLink(link);
-                    }
+            ContainerConsumer containerConsumer = new ContainerConsumer() {
+                @Override
+                public void processContainer(ContainerProcessingResult cpr, ContainerExtractionResult result) {
+                    var packetName = result.getContainer().getQualifiedName();
+                    if (ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadPacket, packetName)) {
+                        var tmb = TmPacketData.newBuilder()
+                                .setId(NamedObjectId.newBuilder().setName(packetName))
+                                .setPacket(ByteString.copyFrom(result.getContainerContent()))
+                                .setSize(result.getContainerContent().length)
+                                .setGenerationTime(TimeEncoding.toProtobufTimestamp(result.getGenerationTime()))
+                                .setReceptionTime(TimeEncoding.toProtobufTimestamp(result.getAcquisitionTime()))
+                                .setSequenceNumber(result.getSeqCount());
+                        if (cpr.getLink() != null) {
+                            tmb.setLink(cpr.getLink());
+                        }
 
-                    observer.next(tmb.build());
+                        observer.next(tmb.build());
+                    }
                 }
             };
             observer.setCancelHandler(
@@ -615,17 +620,21 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
 
         Processor processor = ProcessingApi.verifyProcessor(instance, request.getProcessor());
         ContainerRequestManager containerRequestManager = processor.getContainerRequestManager();
-        ContainerConsumer containerConsumer = (link, result) -> {
-            if (filter != null && !filter.matches(ContainerFilter.MatchTarget.forDelivery(link, result))) {
-                return;
+        ContainerConsumer containerConsumer = new ContainerConsumer() {
+            @Override
+            public void processContainer(ContainerProcessingResult cpr, ContainerExtractionResult result) {
+                if (filter != null
+                        && !filter.matches(ContainerFilter.MatchTarget.forDelivery(cpr.getLink(), result))) {
+                    return;
+                }
+                var packetb = ContainerData.newBuilder()
+                        .setName(result.getContainer().getQualifiedName())
+                        .setBinary(ByteString.copyFrom(result.getContainerContent()))
+                        .setGenerationTime(TimeEncoding.toProtobufTimestamp(result.getGenerationTime()))
+                        .setReceptionTime(TimeEncoding.toProtobufTimestamp(result.getAcquisitionTime()))
+                        .setSeqCount(result.getSeqCount());
+                observer.next(packetb.build());
             }
-            var packetb = ContainerData.newBuilder()
-                    .setName(result.getContainer().getQualifiedName())
-                    .setBinary(ByteString.copyFrom(result.getContainerContent()))
-                    .setGenerationTime(TimeEncoding.toProtobufTimestamp(result.getGenerationTime()))
-                    .setReceptionTime(TimeEncoding.toProtobufTimestamp(result.getAcquisitionTime()))
-                    .setSeqCount(result.getSeqCount());
-            observer.next(packetb.build());
         };
         observer.setCancelHandler(() -> {
             for (SequenceContainer container : containers) {

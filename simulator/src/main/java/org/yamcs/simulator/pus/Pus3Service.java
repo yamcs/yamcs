@@ -20,8 +20,9 @@ import org.yamcs.simulator.RCSHandler;
  * Manages HK and diagnostic parameter report structures, handles all TC[3,1–44] subtypes,
  * and emits TM[3,10/12/25/26/35/36/41] responses.
  *
- * Pre-registers five predefined HK structures (IDs 0–4) matching the existing
- * FlightData/Power/DHS/RCS/EPS handlers, all enabled by default at their original rates.
+ * Pre-registers predefined HK structures, all enabled by default: IDs 0–4 matching the existing
+ * FlightData/Power/DHS/RCS/EPS handlers at their original rates, 5 for the enum-chart test parameters
+ * and 6 for the ST[22] orbit position.
  *
  * Wire format for struct_id and param_id fields: uint32 (4 bytes), consistent with
  * the existing /PUS/hkid definition in pus.xml and the landing.xml XTCE containers.
@@ -110,6 +111,9 @@ public class Pus3Service extends AbstractPusService {
         // HK struct 5: enum-chart test parameters (see landing.xml "EnumTest" container).
         hkStructures.put(5, new HkStructure(5, 1000, true,
                 bb -> fillEnumTest(bb.slice()), 4));
+        // HK struct 6: ST[22] simulated orbit position (see landing.xml "OrbitPosition" container).
+        hkStructures.put(6, new HkStructure(6, 1000, true,
+                bb -> sim.pus22Service.currentPosition().encode(bb), PusPosition.LENGTH_BYTES));
     }
 
     // Non-monotonic / sparse ordinals for EnumTest_Sparse (must match EnumTestSparseType in landing.xml).

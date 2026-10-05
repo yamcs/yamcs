@@ -405,11 +405,7 @@ public class SimulatorCommander extends ProcessRunner {
 
             services.add(tcFrameLink);
             services.add(frameLink);
-            if (simulator instanceof ColSimulator colSimulator) {
-                colSimulator.setTmFrameLink(frameLink);
-            } else if (simulator instanceof PusSimulator pusSimulator) {
-                pusSimulator.setTmFrameLink(frameLink);
-            }
+            simulator.setTmFrameLink(frameLink);
         }
 
         if (simulator instanceof ColSimulator colSimulator) {

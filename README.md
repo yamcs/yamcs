@@ -1,7 +1,4 @@
-# Yamcs Mission Control ![Maven Central](https://img.shields.io/maven-central/v/org.yamcs/yamcs.svg?label=release)
-
-* Website: https://yamcs.org
-* Mailing list: [Google Groups](https://groups.google.com/group/yamcs/)
+# Yamcs Mission Control ![Release](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fmaven.yamcs.org%2Freleases%2Forg%2Fyamcs%2Fyamcs%2Fmaven-metadata.xml&label=release)
 
 Yamcs is a mission control framework developed in Java. It uses an open-ended architecture that allows tailoring its feature set using yaml configuration files. You can also extend the default feature set by writing custom Java classes.
 

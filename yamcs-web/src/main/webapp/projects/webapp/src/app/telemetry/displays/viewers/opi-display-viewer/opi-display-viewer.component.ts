@@ -40,7 +40,6 @@ const ARGS_PREFIX = 'args.';
         #sandboxFrame
         class="display-sandbox"
         sandbox="allow-scripts allow-modals"
-        src="/opi-display.html"
       ></iframe>
     </div>
   `,
@@ -108,10 +107,12 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
 
   ngAfterViewInit() {
     const iframe = this.sandboxFrame.nativeElement;
+    window.addEventListener('message', this.messageListener);
+
+    iframe.src = this.baseHref + 'opi-display.html';
     iframe.addEventListener('load', () => this.sandboxReadyResolve(), {
       once: true,
     });
-    window.addEventListener('message', this.messageListener);
   }
 
   private handleMessage(event: MessageEvent) {

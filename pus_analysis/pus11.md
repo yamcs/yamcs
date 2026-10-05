@@ -2,6 +2,16 @@
 
 Reference: ECSS-E-ST-70-41C (15 April 2016) — §6.11 (requirements), §8.11 (packet layouts).
 
+> **Note (2026-10-05, upstream 5.13.6+ merge):** the ground side now uses upstream's PUS 11 configuration.
+> The flat `pus11SourceId` / `pus11AckFlags` / `pus11SubscheduleId` / `pus11GroupId` keys below moved into a
+> `pus11:` block (`sourceId`, `ackFlags`, `subScheduleId: {bytes, default}`, `groupId: {bytes, default}`) and
+> are rejected at top level; the sub-schedule and group id fields are only written when configured (Gap #10 no
+> longer "always written"). The command option is `pus11SubScheduleId`; the history keys are `pus11Apid`,
+> `pus11CcsdsSeqCount`, `pus11Binary` (the `pus11-source-id/-subschedule-id/-group-id` keys are no longer
+> published). `pus11Apid`, the CRC default, `ccsds-apid` and `pus11-inner-*` (Gaps #5/#8/#9) are unchanged.
+> The simulator now rejects inserts into scheduling groups that were not created with TC[11,22]. See
+> `docs/server-manual/links/command-postprocessor/pus.rst`.
+
 ## A. Context
 
 ### Scope

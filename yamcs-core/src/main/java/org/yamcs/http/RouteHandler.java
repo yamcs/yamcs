@@ -17,7 +17,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.yamcs.YamcsServer;
 import org.yamcs.api.ExceptionMessage;
 import org.yamcs.http.audit.AuditLog;
 import org.yamcs.logging.Log;
@@ -217,8 +216,6 @@ public class RouteHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
     }
 
     private void createAuditRecord(RouteContext ctx, Message message) {
-        HttpServer httpServer = YamcsServer.getServer().getGlobalService(HttpServer.class);
-
         String format = ctx.getLogFormat();
         Matcher matcher = LOG_PARAM_PATTERN.matcher(format);
         StringBuffer buf = new StringBuffer();
@@ -234,7 +231,7 @@ public class RouteHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
         }
         matcher.appendTail(buf);
 
-        AuditLog auditLog = httpServer.getAuditLog();
+        AuditLog auditLog = ctx.httpServer.getAuditLog();
         auditLog.addRecord(ctx, message, buf.toString());
     }
 }

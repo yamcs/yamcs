@@ -11,14 +11,24 @@ public class VerificationResult {
     public static final VerificationResult FAIL = new VerificationResult(false, null, null);
 
     /**
-     * Overall result of this verifier (success/fail).
+     * Sentinel result indicating that this verifier does not apply to this particular command instance (for example
+     * an algorithm bound to command attributes that are only set when the command is handled in a specific way).
+     * <p>
+     * Unlike an algorithm that simply never produces a result, this resolves the verifier immediately instead of
+     * leaving it pending until its check window times out, and it never applies the verifier's onSuccess/onFail
+     * termination action - a skipped verifier can neither complete nor fail the command.
+     */
+    public static final VerificationResult SKIP = new VerificationResult(true, null, null, true);
+
+    /**
+     * Overall result of this verifier (success/fail). Meaningless when {@link #skip} is true.
      * <p>
      * This impacts the acknowledgment status (green/red).
      */
     public boolean success;
 
     /**
-     * Optional message explaining why the command is successful or not (like an error message).
+     * Optional message explaining why the command is successful, failed, or skipped (like an error message).
      */
     public String message;
 
@@ -32,6 +42,11 @@ public class VerificationResult {
      */
     public Object returnValue;
 
+    /**
+     * If true, this verifier is not applicable to this command instance; see {@link #SKIP}.
+     */
+    public final boolean skip;
+
     public VerificationResult(boolean success) {
         this(success, null, null);
     }
@@ -41,13 +56,26 @@ public class VerificationResult {
     }
 
     public VerificationResult(boolean success, String message, Object returnValue) {
+        this(success, message, returnValue, false);
+    }
+
+    private VerificationResult(boolean success, String message, Object returnValue, boolean skip) {
         this.success = success;
         this.message = message;
         this.returnValue = returnValue;
+        this.skip = skip;
+    }
+
+    /**
+     * Returns a result that skips this verifier for this command instance (see {@link #SKIP}), with an explanatory
+     * message.
+     */
+    public static VerificationResult skip(String message) {
+        return new VerificationResult(true, message, null, true);
     }
 
     @Override
     public String toString() {
-        return success ? "SUCCESS" : "FAILURE";
+        return skip ? "SKIP" : success ? "SUCCESS" : "FAILURE";
     }
 }

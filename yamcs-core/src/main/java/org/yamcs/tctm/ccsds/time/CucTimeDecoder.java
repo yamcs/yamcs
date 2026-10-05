@@ -123,16 +123,19 @@ public class CucTimeDecoder implements TimeDecoder {
         }
         long fineTime = 0;
         if (ftBytes > 0) {
-            if (ftBytes > 2) {// more than 2 bytes not needed for millisecond resolution
-                ftBytes = 2;
-            }
-            int fb = ftBytes;
+            // more than 2 bytes not needed for millisecond resolution, but all ftBytes still have to be
+            // consumed from the stream to keep it in sync with decodeRaw()/encode() (which use the full width)
+            int usedFtBytes = Math.min(ftBytes, 2);
+            int fb = usedFtBytes;
             while (fb > 0) {
                 fineTime = (fineTime << 8) + (0xFF & s.getAsByte());
                 fb--;
             }
-            int shift = ftBytes * 8;
+            int shift = usedFtBytes * 8;
             fineTime = (1000 * fineTime + (1 << shift)) >> shift;
+            for (int i = usedFtBytes; i < ftBytes; i++) {
+                s.getAsByte();
+            }
         }
         if (log.isTraceEnabled()) {
             log.trace("Extracted corseTime={} sec and fineTime={} millis", coarseTime, fineTime);

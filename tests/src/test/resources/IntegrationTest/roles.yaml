@@ -3,23 +3,26 @@ Role1:
   WriteParameter: []
   ReadPacket: ["PP_.*", ".*"]
   Command: [".*INT_ARG_TC.*"]
-  System: ["ControlProcessor", "ControlCommandQueue", "Command", "GetMissionDatabase", "ControlArchiving", "WriteEvents"]
+  System:
+    - Command
+    - ControlArchiving
+    - ControlCommandQueue
+    - ControlProcessor
+    - GetMissionDatabase
+    - WriteEvents
 
 Operator:
   ReadParameter: [".*"]
   WriteParameter: []
   ReadPacket: ["PP_.*", ".*"]
   Command: [".*"]
-  System: ["ControlProcessor", "ModifyCommandHistory", "ControlCommandQueue", "Command", "GetMissionDatabase", 
-"ControlArchiving", "WriteEvents"]
-
-Administrator:
-  ReadParameter: [".*"]
-  WriteParameter: [".*"]
-  ReadPacket: [".*"]
-  Command: [".*"]
-  ChangeCalibrator: [".*"]
-  System: ["ControlProcessor", "ModifyCommandHistory", "ControlCommandQueue", "Command", "GetMissionDatabase", 
-"ControlArchiving", "ControlServices", "ReadTables", "WriteTables",  "WriteEvents", "ChangeMissionDatabase", "CreateInstances"]
+  System:
+    - Command
+    - ControlArchiving
+    - ControlCommandQueue
+    - ControlProcessor
+    - GetMissionDatabase
+    - ModifyCommandHistory
+    - WriteEvents
 
 EmptyRole:

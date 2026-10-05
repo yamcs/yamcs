@@ -15,6 +15,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.container.ContainerConsumer;
 import org.yamcs.container.ContainerRequestManager;
 import org.yamcs.events.EventProducerFactory;
+import org.yamcs.mdb.ContainerProcessingResult;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.mdb.Mdb;
@@ -102,7 +103,7 @@ public class ContainerRequestManagerTest {
         List<SequenceContainer> received = new ArrayList<>();
 
         @Override
-        public void processContainer(String link, ContainerExtractionResult cer) {
+        public void processContainer(ContainerProcessingResult cpr, ContainerExtractionResult cer) {
             received.add(cer.getContainer());
         }
 

@@ -3,6 +3,7 @@ package org.yamcs.xtce;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
@@ -39,6 +40,22 @@ public class IntegerDataTypeTest {
         testParseString(getidt(10, true), "0O77", 7 * 8 + 7, false);
 
         testParseString(getidt(32, false), "3735928559", 3735928559L, false);
+
+        // signed min/max boundaries (two's complement asymmetry)
+        testParseString(getidt(8, true), "-128", -128, false);
+        testParseString(getidt(8, true), "127", 127, false);
+        testParseString(getidt(8, true), "-129", 0, true); // too negative -> exception
+        testParseString(getidt(8, true), "128", 0, true); // too positive -> exception
+
+        testParseString(getidt(16, true), "-32768", -32768, false);
+        testParseString(getidt(16, true), "32767", 32767, false);
+        testParseString(getidt(16, true), "-32769", 0, true);
+        testParseString(getidt(16, true), "32768", 0, true);
+
+        testParseString(getidt(32, true), "-2147483648", -2147483648L, false);
+        testParseString(getidt(32, true), "2147483647", 2147483647L, false);
+        testParseString(getidt(32, true), "-2147483649", 0, true);
+        testParseString(getidt(32, true), "2147483648", 0, true);
     }
 
     private void testParseString(IntegerDataType idt, String stringValue, long expected, boolean exceptionExpected) {
@@ -55,6 +72,57 @@ public class IntegerDataTypeTest {
             assertNull(nfe);
             assertEquals(expected, actual);
         }
+    }
+
+    @Test
+    public void testConvertNumberSignedBoundaries() {
+        assertEquals(-128L, getidt(8, true).convertType(Long.valueOf(-128)));
+        assertEquals(127L, getidt(8, true).convertType(Long.valueOf(127)));
+        assertThrows(NumberFormatException.class, () -> getidt(8, true).convertType(Long.valueOf(-129)));
+        assertThrows(NumberFormatException.class, () -> getidt(8, true).convertType(Long.valueOf(128)));
+
+        assertEquals(-32768L, getidt(16, true).convertType(Long.valueOf(-32768)));
+        assertEquals(32767L, getidt(16, true).convertType(Long.valueOf(32767)));
+        assertThrows(NumberFormatException.class, () -> getidt(16, true).convertType(Long.valueOf(-32769)));
+        assertThrows(NumberFormatException.class, () -> getidt(16, true).convertType(Long.valueOf(32768)));
+
+        assertEquals(-2147483648L, getidt(32, true).convertType(Long.valueOf(-2147483648L)));
+        assertEquals(2147483647L, getidt(32, true).convertType(Long.valueOf(2147483647L)));
+        assertThrows(NumberFormatException.class, () -> getidt(32, true).convertType(Long.valueOf(-2147483649L)));
+        assertThrows(NumberFormatException.class, () -> getidt(32, true).convertType(Long.valueOf(2147483648L)));
+
+        // Long.MIN_VALUE is the signed 64 bit minimum; -Long.MIN_VALUE overflows back to itself, which
+        // a naive magnitude-based check would mishandle.
+        assertEquals(Long.MIN_VALUE, getidt(64, true).convertType(Long.valueOf(Long.MIN_VALUE)));
+        assertEquals(Long.MAX_VALUE, getidt(64, true).convertType(Long.valueOf(Long.MAX_VALUE)));
+        assertEquals(-1L, getidt(64, false).convertType(Long.valueOf(-1L))); // 2^64-1 as unsigned bit pattern
+    }
+
+    @Test
+    public void testConvertNumberDoubleFloat() {
+        // Truncation of in-range Double/Float is a valid "cast" and must keep working.
+        assertEquals(3L, getidt(8, true).convertType(Double.valueOf(3.7)));
+        assertEquals(-3L, getidt(8, true).convertType(Double.valueOf(-3.7)));
+        assertEquals(3L, getidt(8, true).convertType(Float.valueOf(3.7f)));
+
+        // NaN and Infinity must be rejected, not silently coerced to 0 / MAX / MIN.
+        assertThrows(NumberFormatException.class, () -> getidt(64, true).convertType(Double.valueOf(Double.NaN)));
+        assertThrows(NumberFormatException.class,
+                () -> getidt(64, true).convertType(Double.valueOf(Double.POSITIVE_INFINITY)));
+        assertThrows(NumberFormatException.class,
+                () -> getidt(64, true).convertType(Double.valueOf(Double.NEGATIVE_INFINITY)));
+
+        // Magnitude far too large for a long -> must be rejected, not saturated to Long.MAX_VALUE.
+        assertThrows(NumberFormatException.class, () -> getidt(64, true).convertType(Double.valueOf(1e300)));
+        assertThrows(NumberFormatException.class, () -> getidt(64, true).convertType(Double.valueOf(-1e300)));
+
+        // Precise boundary around 2^63: Long.MIN_VALUE is exactly representable and must be accepted;
+        // 2^63 itself (one past Long.MAX_VALUE, since Long.MAX_VALUE is not exactly representable as a
+        // double) must be rejected on both sides.
+        assertEquals(Long.MIN_VALUE, getidt(64, true).convertType(Double.valueOf(-0x1p63))); // -9223372036854775808.0
+        assertThrows(NumberFormatException.class, () -> getidt(64, true).convertType(Double.valueOf(0x1p63))); // 2^63
+        assertThrows(NumberFormatException.class,
+                () -> getidt(64, true).convertType(Double.valueOf(-0x1.0000000000001p63))); // just past -2^63
     }
 
     @Test

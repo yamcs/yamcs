@@ -690,7 +690,7 @@ public class YamcsServer {
         metadata.setTemplateArgs(templateArgs);
         metadata.setTemplateSource(template.getSource());
 
-        String processed = template.process(metadata.getTemplateArgs());
+        String processed = template.processAndSanitizeYaml(metadata.getTemplateArgs());
 
         Path confFile = instanceDefDir.resolve(configFileName(name));
         try (Writer writer = Files.newBufferedWriter(confFile)) {
