@@ -164,7 +164,7 @@ inactivityTimeout (integer)
 eofAckTimeout (integer) 
     Valid for class 2 transfers; the time in milliseconds used by the sender to wait for the EOF PDU acknowledgment. The sender sends the EOF PDU to indicate that it has completed transmitting the file. It expects to receive an acknowledgement indicating the reception of the EOF PDU (not of the file!, the Finished PDU is used for that). The EOF PDU is retransmitted if no acknowledgment has been received in this time.
 
-    Default: ``3000`` (3 seconds).
+    Default: ``5000`` (5 seconds).
 
 eofAckLimit (integer)
     Valid for class 2 transfers; the number of times to retry sending the EOF PDU before declaring a fault. Zero means that only one PDU will be sent (no retry). Negative value means no limit. Default: ``5``.
@@ -172,7 +172,7 @@ eofAckLimit (integer)
 finAckTimeout (integer)
     The time in milliseconds used by the receiver to wait for the FIN PDU acknowledgment. The receiver sends the Finished PDU to indicate that the file has been received or that a fault has been encountered. The receiver expects the sender to acknowledge reception of this PDU and will retransmit the PDU if no acknowledgment has been received in this time.
 
-    Default: ``10000`` (10 seconds)
+    Default: ``5000`` (5 seconds)
 
 finAckLimit (integer)
      The number of times to retry sending the Finished PDU before declaring a fault. Zero means that only one PDU will be sent (no retry). Negative value means no limit. Default: ``5``.
@@ -191,6 +191,15 @@ nakLimit (integer)
     Valid for class 2 transfers; the number of times to send a NAK PDU with no data recovered before declaring a fault. A value of 1 means that one NAK is sent and if no data is recovered within the nakTimeout milliseconds, a fault will be declared. Zero or negative value means no limit. 
 
     Default: ``-1``
+
+checkAckTimeout (integer)
+    Valid for class 1 transfers; if the receiver gets the EOF PDU but the file is not yet complete, it waits for the missing data (which may arrive out of order) and checks again every ``checkAckTimeout`` milliseconds. Default: ``10000``
+
+checkAckLimit (integer)
+    Valid for class 1 transfers; the number of checks done by the receiver (see ``checkAckTimeout``) before declaring a ``CheckLimitReached`` fault. Default: ``5``
+
+ackEofWhileSuspended (boolean)
+    Valid for class 2 transfers; if true, the receiver acknowledges the EOF PDU even while the transfer is suspended. This prevents the sender from reaching its EOF ACK limit while the receiver is suspended. Default: ``true``
  
 
 senderFaultHandlers (map)
@@ -242,7 +251,7 @@ fileListingParserArgs (map)
     Arguments for the FileListingParser used (depends on implementation).
 
 allowConcurrentFileOverwrites (boolean)
-    If this option is true, when starting an upload, the CFDP service verifies if an upload with the same destination filename is ongoing or queued and will raise an error. This is done in order to avoid overwriting the same destination file in case multiple files are uploaded from the yamcs-web. Default: ``true``
+    If this option is false, when starting an upload, the CFDP service verifies if an upload with the same destination filename is ongoing or queued and will raise an error. This is done in order to avoid overwriting the same destination file in case multiple files are uploaded from the yamcs-web. Set it to true to disable this check. Default: ``false``
 
 pendingAfterCompletion (integer)
     Number of milliseconds to keep the incoming transaction in memory after completion. During this time, the newly received EOF PDUs belonging to the transaction are still answered. All the other PDUs belonging to the transaction are ignored. Default: ``600000`` (10 minutes).

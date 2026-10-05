@@ -241,6 +241,9 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
         spec.addOption("nakLimit", OptionType.INTEGER).withDefault(-1);
         spec.addOption("nakTimeout", OptionType.INTEGER).withDefault(5000);
         spec.addOption("immediateNak", OptionType.BOOLEAN).withDefault(true);
+        spec.addOption("checkAckTimeout", OptionType.INTEGER).withDefault(10000);
+        spec.addOption("checkAckLimit", OptionType.INTEGER).withDefault(5);
+        spec.addOption("ackEofWhileSuspended", OptionType.BOOLEAN).withDefault(true);
         spec.addOption("archiveRetrievalLimit", OptionType.INTEGER).withDefault(100);
         spec.addOption("receiverFaultHandlers", OptionType.MAP).withSpec(Spec.ANY);
         spec.addOption("senderFaultHandlers", OptionType.MAP).withSpec(Spec.ANY);
