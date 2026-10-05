@@ -82,11 +82,11 @@ In a flight system, ST[14] filtering happens at the downlink level — the **fli
 
 YAMCS MCS does **not** perform any of this filtering — it only sends TCs to configure the satellite's forwarding rules and decodes the TM dump reports that the satellite returns.
 
-### Architecture Files (to be created)
+### Architecture Files
 
 | Layer | Purpose | Path |
 |-------|---------|------|
-| **Simulator (on-board emulation)** | Java service — APFCC/HK FCC/Diag FCC tables + `shouldForward()` gate | `simulator/src/main/java/org/yamcs/simulator/pus/Pus14Service.java` |
+| **Simulator (on-board emulation)** | Java service — APFCC/HK FCC/Diag FCC/Event Blocking FCC tables + `shouldForward()` gate | `simulator/src/main/java/org/yamcs/simulator/pus/Pus14Service.java` |
 | **Simulator (on-board emulation)** | Register Pus14Service; add `shouldForward()` gate in `transmitRealtimeTM()` | `simulator/src/main/java/org/yamcs/simulator/pus/PusSimulator.java` |
 | **MCS / YAMCS ground** | XTCE MDB (TC encoding + TM decoding) | `examples/pus/src/main/yamcs/mdb/pus14.xml` |
 | **MCS / YAMCS ground** | Add MDB reference | `examples/pus/src/main/yamcs/etc/yamcs.pus.yaml` |
@@ -99,13 +99,26 @@ YAMCS MCS does **not** perform any of this filtering — it only sends TCs to co
 
 | Field | Chosen type | Size |
 |-------|-------------|------|
-| `application_process_id` (APID) | uint11 (fits in uint16) | 2 bytes |
+| `application_process_id` (APID) | uint11 | 11 bits (packed) |
 | `service_type_id` | uint8 | 1 byte |
 | `message_subtype_id` | uint8 | 1 byte |
-| `hk_structure_id` | uint16 | 2 bytes |
-| `diagnostic_structure_id` | uint16 | 2 bytes |
-| `event_definition_id` | uint16 | 2 bytes |
+| `hk_structure_id` | uint8 | 1 byte |
+| `diagnostic_structure_id` | uint8 | 1 byte |
+| `event_definition_id` | uint8 | 1 byte |
 | Counts (N of items) | uint8 | 1 byte |
+
+The Service 14 application/source-data APID is deliberately treated as a packed 11-bit field in
+this implementation. The field that follows it starts immediately at the next bit; there is no
+implicit five-bit pad to make the APID occupy two bytes. Consequently, all remaining fields in the
+same nested entry can be non-byte-aligned. Only the complete application/source-data area is rounded
+up to a whole number of octets, with unused trailing bits left as zero. The simulator therefore uses
+`BitBuffer` for every Service 14 field after the first APID, rather than mixing bit and byte access.
+
+**Cross-service audit (not changed by this Service 14 work)**: 16-bit APID assumptions also appear
+in `pus11.md` (scheduled-command request/report identifiers), `pus15.md` (packet-store filters and
+reports), `pus17.md` (the proposed targeted connection test), and `pus_simulator_architecture.md`
+(an aggregate command example). Those uses need separate service-specific review; this change does
+not silently reinterpret their wire formats.
 
 ---
 
@@ -126,7 +139,7 @@ YAMCS MCS does **not** perform any of this filtering — it only sends TCs to co
 ```
 N1 (uint8)
   repeated N1 times:
-    apid (uint16)
+    apid (uint11, packed)
     N2 (uint8)             ← 0 = "add all services for this APID"
     repeated N2 times:
       service_type (uint8)
@@ -185,7 +198,7 @@ YAMCS supports nested dynamic arrays in TC arguments where each inner array's si
 <!-- APFCD entry: apid + N2 + N2×service_entry -->
 <AggregateArgumentType name="apfcd_entry_type">
     <MemberList>
-        <Member name="apid"          typeRef="/dt/uint16"/>
+        <Member name="apid"          typeRef="/dt/pus_report_apid"/>
         <Member name="N2"            typeRef="/dt/uint8"/>
         <Member name="service_types" typeRef="apfc_service_array_type"/>
     </MemberList>
@@ -228,12 +241,13 @@ YAMCS supports nested dynamic arrays in TC arguments where each inner array's si
 </MetaCommand>
 ```
 
-**Simulator (on-board emulation)** (`case 1 → addReportTypes(bb)`) — emulates satellite-side APFCC update:
+**Simulator (on-board emulation)** (`case 1 → addReportTypes(tc)`) — emulates satellite-side APFCC update. All fields are read from one continuous MSB-first bit stream:
 ```java
-int n1 = bb.get() & 0xFF;
+BitBuffer bits = bitBuffer(tc.getUserDataBuffer());
+int n1 = (int) bits.getBits(8);
 for (int i = 0; i < n1; i++) {
-    int apid = bb.getShort() & 0xFFFF;
-    int n2 = bb.get() & 0xFF;
+    int apid = (int) bits.getBits(11);
+    int n2 = (int) bits.getBits(8);
     if (n2 == 0) {
         // Spec §8.14.2.1c: N2=0 → add all services for this APID
         apfcc.computeIfAbsent(apid, k -> new ApfcDefinition(k));
@@ -241,8 +255,8 @@ for (int i = 0; i < n1; i++) {
     } else {
         ApfcDefinition apfcd = apfcc.computeIfAbsent(apid, k -> new ApfcDefinition(k));
         for (int j = 0; j < n2; j++) {
-            int svcType = bb.get() & 0xFF;
-            int n3 = bb.get() & 0xFF;
+            int svcType = (int) bits.getBits(8);
+            int n3 = (int) bits.getBits(8);
             if (n3 == 0) {
                 // Spec §8.14.2.1d: N3=0 → add all subtypes of this service type
                 apfcd.serviceSubtypes.computeIfAbsent(svcType, k -> new LinkedHashSet<>());
@@ -251,7 +265,7 @@ for (int i = 0; i < n1; i++) {
                 Set<Integer> subtypes = apfcd.serviceSubtypes
                     .computeIfAbsent(svcType, k -> new LinkedHashSet<>());
                 for (int k = 0; k < n3; k++) {
-                    subtypes.add(bb.get() & 0xFF);
+                    subtypes.add((int) bits.getBits(8));
                 }
             }
         }
@@ -312,7 +326,7 @@ The delete-entries variant reuses the same N1/N2/N3 nested argument types define
     </CommandContainer>
 </MetaCommand>
 
-<!-- TC[14,2]b — Empty the entire APFCC (no arguments) -->
+<!-- TC[14,2]b — Empty the entire APFCC (operator-facing no-argument alias) -->
 <MetaCommand name="TC_14_2_EMPTY_APFCC"
              shortDescription="TC[14,2] Empty entire APFC configuration">
     <BaseMetaCommand metaCommandRef="pus14-tc">
@@ -321,7 +335,9 @@ The delete-entries variant reuses the same N1/N2/N3 nested argument types define
         </ArgumentAssignmentList>
     </BaseMetaCommand>
     <CommandContainer name="TC_14_2_EMPTY">
-        <EntryList/>
+        <EntryList>
+            <FixedValueEntry name="N1" binaryValue="00" sizeInBits="8"/>
+        </EntryList>
         <BaseContainer containerRef="pus14-tc"/>
     </CommandContainer>
 </MetaCommand>
@@ -329,24 +345,25 @@ The delete-entries variant reuses the same N1/N2/N3 nested argument types define
 
 **Simulator (on-board emulation)** (`case 2 → deleteReportTypes(bb)`) — emulates satellite-side APFCC deletion:
 ```java
-if (bb.remaining() == 0) {
+BitBuffer bits = bitBuffer(tc.getUserDataBuffer());
+int n1 = (int) bits.getBits(8);
+if (n1 == 0) {
     // Empty-APFCC variant
     apfcc.clear();
     ack_completion(tc);
     return;
 }
-int n1 = bb.get() & 0xFF;
 for (int i = 0; i < n1; i++) {
-    int apid = bb.getShort() & 0xFFFF;
-    int n2 = bb.get() & 0xFF;
+    int apid = (int) bits.getBits(11);
+    int n2 = (int) bits.getBits(8);
     ApfcDefinition apfcd = apfcc.get(apid);
     if (apfcd == null) { nack(tc, 1, 4); return; }  // APID not in APFCC
     if (n2 == 0) {
         apfcc.remove(apid);  // Remove entire APFCD
     } else {
         for (int j = 0; j < n2; j++) {
-            int svcType = bb.get() & 0xFF;
-            int n3 = bb.get() & 0xFF;
+            int svcType = (int) bits.getBits(8);
+            int n3 = (int) bits.getBits(8);
             if (n3 == 0) {
                 apfcd.serviceSubtypes.remove(svcType);  // Remove entire STFCD
                 if (apfcd.serviceSubtypes.isEmpty()) apfcc.remove(apid);
@@ -354,7 +371,7 @@ for (int i = 0; i < n1; i++) {
                 Set<Integer> subtypes = apfcd.serviceSubtypes.get(svcType);
                 if (subtypes == null) { nack(tc, 1, 4); return; }
                 for (int k = 0; k < n3; k++) {
-                    subtypes.remove(bb.get() & 0xFF);
+                    subtypes.remove((int) bits.getBits(8));
                 }
                 if (subtypes.isEmpty()) apfcd.serviceSubtypes.remove(svcType);
                 if (apfcd.serviceSubtypes.isEmpty()) apfcc.remove(apid);
@@ -367,16 +384,20 @@ ack_completion(tc);
 
 **Rejection conditions**: Referenced APID/service/subtype not in APFCC → NACK[1,4] per-instruction.
 
-**Gaps**: The two TC variants (delete-entries and empty-APFCC) cannot be collapsed into one because the empty-APFCC case has no N1 field — a zero-byte payload is the discriminator.
+**Empty configuration**: The empty-APFCC instruction is encoded as the standard one-byte `N1=0`
+payload. The operator-facing `TC_14_2_EMPTY_APFCC` alias has no arguments but inserts that fixed
+octet in its XTCE command container. `TC_14_2_DELETE_ENTRIES` can also express the same wire form
+with `N1=0` and an empty array.
 
 ---
 
 ### TC[14,3] — Report the Content of the Application Process Forward-Control Configuration
 
 **Spec**: §6.14.3.4.3
-**Direction**: **[GROUND → SAT]** — YAMCS MCS encodes and uplinks this TC via XTCE. **[ON-BOARD]** — satellite iterates APFCC and emits one TM[14,4] per APFCD. **[SAT → GROUND]** — TM[14,4] packets downlinked and decoded by YAMCS via XTCE.
+**Direction**: **[GROUND → SAT]** — YAMCS MCS encodes and uplinks this TC via XTCE. **[ON-BOARD]** — satellite emits one TM[14,4] containing all APFCDs. **[SAT → GROUND]** — the report is decoded by YAMCS via XTCE.
 
-**Purpose**: Request a dump of the entire APFCC. No application data — zero-argument TC. Response: one TM[14,4] per APFCD in the table.
+**Purpose**: Request a dump of the entire APFCC. No application data — zero-argument TC. Response:
+one atomic TM[14,4] containing every APFCD in the table.
 
 **Packet layout**: No application data field.
 
@@ -397,7 +418,9 @@ ack_completion(tc);
 </MetaCommand>
 ```
 
-**Simulator (on-board emulation)** (`case 3 → reportApfcc(tc)`): Iterates `apfcc.entries()`; for each APFCD builds and sends one TM[14,4] — emulating satellite-side dump generation.
+**Simulator (on-board emulation)** (`case 3 → reportApfcc(tc)`): Preflights the complete APFCC and
+emits one TM[14,4] containing every APFCD. If the complete report exceeds a count field or the
+simulator TM data limit, it emits no partial report and returns a completion failure.
 
 **Gaps**: None. Standard no-argument TC.
 
@@ -408,17 +431,20 @@ ack_completion(tc);
 **Spec**: §6.14.3.4.3
 **Direction**: **[SAT → GROUND]** — generated on-board in response to TC[14,3]; decoded by YAMCS MCS via XTCE for display only.
 
-**Purpose**: One packet per APFCD (application process). Contains the full hierarchy of service types and subtypes allowed for forwarding.
+**Purpose**: One packet containing every APFCD (application process), with the full hierarchy of
+service types and subtypes allowed for forwarding. `N1=0` reports an empty APFCC.
 
-**Packet structure (per packet)**:
+**Packet structure**:
 ```
-[apid: uint16]
-[N_service_types: uint8]
-  repeated N_service_types times:
-    [service_type_id: uint8]
-    [N_subtypes: uint8]
-      repeated N_subtypes times:
-        [subtype_id: uint8]
+[N1: uint8]
+  repeated N1 times:
+    [apid: uint11, packed]
+    [N_service_types: uint8]
+      repeated N_service_types times:
+        [service_type_id: uint8]
+        [N_subtypes: uint8]
+          repeated N_subtypes times:
+            [subtype_id: uint8]
 ```
 
 **XTCE**: ✅ **Fully implementable** — YAMCS supports nested `ContainerRefEntry` + `RepeatEntry` where the inner count is a parameter decoded within each outer element.
@@ -451,16 +477,28 @@ The mechanism: `ParameterInstanceRef` defaults to `relativeTo = CURRENT_ENTRY_WI
     </EntryList>
 </SequenceContainer>
 
-<!-- Outer TM packet: apid + N_services + N_services×service_element -->
-<SequenceContainer name="TM_14_4" shortDescription="TM[14,4] APFC config content report">
+<!-- One APID group: apid + N_services + N_services×service_element -->
+<SequenceContainer name="apfc_apid_element">
     <EntryList>
         <ParameterRefEntry parameterRef="apfc_apid"/>
         <ParameterRefEntry parameterRef="apfc_N_services"/>
         <ContainerRefEntry containerRef="apfc_service_element">
+            <RepeatEntry><Count><DynamicValue>
+                <ParameterInstanceRef parameterRef="apfc_N_services"/>
+            </DynamicValue></Count></RepeatEntry>
+        </ContainerRefEntry>
+    </EntryList>
+</SequenceContainer>
+
+<!-- Complete report: N1 + N1×APID group -->
+<SequenceContainer name="TM_14_4" shortDescription="TM[14,4] APFC config content report">
+    <EntryList>
+        <ParameterRefEntry parameterRef="apfc_N_apids"/>
+        <ContainerRefEntry containerRef="apfc_apid_element">
             <RepeatEntry>
                 <Count>
                     <DynamicValue>
-                        <ParameterInstanceRef parameterRef="apfc_N_services"/>
+                        <ParameterInstanceRef parameterRef="apfc_N_apids"/>
                     </DynamicValue>
                 </Count>
             </RepeatEntry>
@@ -476,30 +514,36 @@ The mechanism: `ParameterInstanceRef` defaults to `relativeTo = CURRENT_ENTRY_WI
 
 **Note on parameter naming**: `apfc_subtype_id`, `apfc_service_type_id`, and `apfc_N_subtypes` are shared parameters that accumulate multiple values in `tmParams` across repeat iterations. The `getFromEnd(param, 0)` semantic always picks the most recently decoded value, so inner repeat counts are always correct. All extracted values are stored as separate `ParameterValue` instances in the result list.
 
-**Simulator (on-board emulation)** — `sendApfcReport(ApfcDefinition apfcd)` emulates satellite building and downlinking TM[14,4]:
+**Simulator (on-board emulation)** — the payload size includes the outer count and every APID group:
 ```java
-// Compute total size: 2 (apid) + 1 (N_svc) + sum_per_svc(1 svc_id + 1 N_sub + N_sub * 1)
-int size = 3;
-for (StfcDefinition stfc : apfcd.services()) {
-    size += 2 + stfc.subtypes().size();
+long bitSize = 8; // N1
+for (ApfcDefinition apfcd : apfcc.values()) {
+    bitSize += 11 + 8;
+    for (StfcDefinition stfc : apfcd.services()) {
+        bitSize += 8 + 8 + stfc.subtypes().size() * 8L;
+    }
 }
-PusTmPacket pkt = newPacket(4, size);
-ByteBuffer bb = pkt.getUserDataBuffer();
-bb.putShort((short) apfcd.apid());
-bb.put((byte) apfcd.services().size());
-for (StfcDefinition stfc : apfcd.services()) {
-    bb.put((byte) stfc.serviceType());
-    bb.put((byte) stfc.subtypes().size());
-    for (int subtype : stfc.subtypes()) {
-        bb.put((byte) subtype);
+PusTmPacket pkt = newPacket(4, (bitSize + 7) / 8);
+BitBuffer bits = bitBuffer(pkt.getUserDataBuffer());
+bits.putBits(apfcc.size(), 8);
+for (ApfcDefinition apfcd : apfcc.values()) {
+    bits.putBits(apfcd.apid(), 11);
+    bits.putBits(apfcd.services().size(), 8);
+    for (StfcDefinition stfc : apfcd.services()) {
+        bits.putBits(stfc.serviceType(), 8);
+        bits.putBits(stfc.subtypes().size(), 8);
+        for (int subtype : stfc.subtypes()) bits.putBits(subtype, 8);
     }
 }
 pusSimulator.transmitRealtimeTM(pkt);
 ```
 
 **Gaps**:
-- One TM packet per APFCD; if table is large, may generate many packets
 - No XTCE decoding limitation — full 3-level structure is expressible via nested `ContainerRefEntry` repeats
+- The complete configuration is atomic. If it cannot fit one report, the simulator returns
+  `COMPL_ERR_REPORT_TOO_LARGE`; it never splits or truncates the configuration.
+- APID groups are contiguous. Zero padding, if needed, occurs only after the last group at the end
+  of the source-data field.
 
 ---
 
@@ -514,17 +558,17 @@ pusSimulator.transmitRealtimeTM(pkt);
 ```
 N1 (uint8) — number of application process entries
   repeated N1 times:
-    apid (uint16)
+    apid (uint11, packed)
     N_structs (uint8)    ← 0 = "add all HK structures for this APID"
     repeated N_structs times:
-      hk_structure_id (uint16)
+      hk_structure_id (uint8)
 ```
 
 **XTCE**: ✅ **Single MetaCommand** — 2-level nested arrays (N1 outer APIDs, N_structs inner struct IDs per APID), using the same sibling-member array-size reference pattern as TC[14,1].
 
 ```xml
 <!-- Inner: array of N_structs HK structure IDs; N_structs is a sibling member -->
-<ArrayArgumentType name="hk_struct_id_array_type" arrayTypeRef="/dt/uint16">
+<ArrayArgumentType name="hk_struct_id_array_type" arrayTypeRef="/dt/uint8">
     <DimensionList>
         <Dimension>
             <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
@@ -541,7 +585,7 @@ N1 (uint8) — number of application process entries
 <!-- APID entry: apid + N_structs + struct_ids array -->
 <AggregateArgumentType name="hk_apid_entry_type">
     <MemberList>
-        <Member name="apid"       typeRef="/dt/uint16"/>
+        <Member name="apid"       typeRef="/dt/pus_report_apid"/>
         <Member name="N_structs"  typeRef="/dt/uint8"/>
         <Member name="struct_ids" typeRef="hk_struct_id_array_type"/>
     </MemberList>
@@ -583,19 +627,20 @@ N1 (uint8) — number of application process entries
 </MetaCommand>
 ```
 
-**Simulator (on-board emulation)** (`case 5 → addHkStructIds(bb)`) — emulates satellite-side HK FCC update:
+**Simulator (on-board emulation)** (`case 5 → addHkStructIds(bb)`) — emulates satellite-side HK FCC update. The 8-bit structure identifiers remain packed immediately after the preceding fields even when their starting bit is not byte-aligned:
 ```java
-int n1 = bb.get() & 0xFF;
+BitBuffer bits = bitBuffer(bb);
+int n1 = (int) bits.getBits(8);
 for (int i = 0; i < n1; i++) {
-    int apid = bb.getShort() & 0xFFFF;
-    int nStructs = bb.get() & 0xFF;
+    int apid = (int) bits.getBits(11);
+    int nStructs = (int) bits.getBits(8);
     if (nStructs == 0) {
         // N_structs=0: add all HK structures for this APID
         hkFcc.put(apid, null);  // null = pass-all mode
     } else {
         Set<Integer> structs = hkFcc.computeIfAbsent(apid, k -> new LinkedHashSet<>());
         for (int j = 0; j < nStructs; j++) {
-            structs.add(bb.getShort() & 0xFFFF);
+            structs.add((int) bits.getBits(8));
         }
     }
 }
@@ -659,7 +704,9 @@ The delete-entries variant reuses `hk_apid_array_type` from TC[14,5]. The empty-
         </ArgumentAssignmentList>
     </BaseMetaCommand>
     <CommandContainer name="TC_14_6_EMPTY">
-        <EntryList/>
+        <EntryList>
+            <FixedValueEntry name="N1" binaryValue="00" sizeInBits="8"/>
+        </EntryList>
         <BaseContainer containerRef="pus14-tc"/>
     </CommandContainer>
 </MetaCommand>
@@ -667,22 +714,23 @@ The delete-entries variant reuses `hk_apid_array_type` from TC[14,5]. The empty-
 
 **Simulator (on-board emulation)** (`case 6 → deleteHkStructIds(bb)`) — emulates satellite-side HK FCC deletion:
 ```java
-if (bb.remaining() == 0) {
+BitBuffer bits = bitBuffer(tc.getUserDataBuffer());
+int n1 = (int) bits.getBits(8);
+if (n1 == 0) {
     hkFcc.clear();
     ack_completion(tc);
     return;
 }
-int n1 = bb.get() & 0xFF;
 for (int i = 0; i < n1; i++) {
-    int apid = bb.getShort() & 0xFFFF;
-    int nStructs = bb.get() & 0xFF;
+    int apid = (int) bits.getBits(11);
+    int nStructs = (int) bits.getBits(8);
     if (nStructs == 0) {
         hkFcc.remove(apid);  // Delete entire APID entry
     } else {
         Set<Integer> structs = hkFcc.get(apid);
         if (structs == null) { nack(tc, 1, 4); return; }
         for (int j = 0; j < nStructs; j++) {
-            structs.remove(bb.getShort() & 0xFFFF);
+            structs.remove((int) bits.getBits(8));
         }
         if (structs.isEmpty()) hkFcc.remove(apid);
     }
@@ -692,14 +740,15 @@ ack_completion(tc);
 
 **Rejection conditions**: APID not in HK FCC; struct ID not in definition for that APID.
 
-**Gaps**: Two variants needed because the empty-HK-FCC case has no N1 field — zero remaining bytes is the discriminator (same pattern as TC[14,2]).
+**Empty configuration**: Both command variants use the standard `N1` field. The no-argument alias
+inserts `N1=0`; the delete-entries command carries a caller-supplied `N1` and APID array.
 
 ---
 
 ### TC[14,7] — Report the Content of the HK Parameter Report Forward-Control Configuration
 
 **Spec**: §6.14.3.5.3
-**Direction**: **[GROUND → SAT]** — YAMCS MCS encodes and uplinks this TC via XTCE. **[ON-BOARD]** — satellite iterates HK FCC and emits one TM[14,8] per APID. **[SAT → GROUND]** — TM[14,8] packets downlinked and decoded by YAMCS via XTCE.
+**Direction**: **[GROUND → SAT]** — YAMCS MCS encodes and uplinks this TC via XTCE. **[ON-BOARD]** — satellite emits one TM[14,8] containing all HK FCC definitions. **[SAT → GROUND]** — TM[14,8] is decoded by YAMCS via XTCE.
 
 **Purpose**: Request a dump of the HK FCC. No application data. Response: TM[14,8].
 
@@ -717,7 +766,8 @@ ack_completion(tc);
 </MetaCommand>
 ```
 
-**Simulator (on-board emulation)** (`case 7 → reportHkFcc(tc)`): Iterates HK FCC entries; for each APID emits one TM[14,8] — emulating satellite-side dump generation.
+**Simulator (on-board emulation)** (`case 7 → reportFcc(tc, hkFcc, 8)`): Preflights and emits one
+atomic report containing all APID entries.
 
 **Gaps**: None.
 
@@ -728,23 +778,27 @@ ack_completion(tc);
 **Spec**: §6.14.3.5.3
 **Direction**: **[SAT → GROUND]** — generated on-board in response to TC[14,7]; decoded by YAMCS MCS via XTCE for display only.
 
-**Purpose**: One packet per HK FCC entry (per APID). Reports which HK structure identifiers are authorized for forwarding.
+**Purpose**: One packet containing every HK FCC APID definition. `N1=0` reports an empty HK FCC.
 
-**Packet structure (per packet)**:
+**Packet structure**:
 ```
-[apid: uint16]
-[N_structs: uint8]
-  repeated N_structs times:
-    [hk_structure_id: uint16]
-    [subsampling_rate: uint8]  ← optional; omit if subsampling not supported
+[N1: uint8]
+  repeated N1 times:
+    [apid: uint11, packed]
+    [N_structs: uint8]
+      repeated N_structs times:
+        [hk_structure_id: uint8]
+        [subsampling_rate: uint8]  ← optional; omitted by this simulator
 ```
 
-**XTCE**: ✅ **Mostly implementable** — this is a flat 2-level structure (top-level count + array of fixed-size structs). If subsampling is omitted, each entry is a fixed 2-byte `uint16`.
+**XTCE**: ✅ **Fully implementable** — this is an outer APID repeat whose entries contain a
+dynamic array of 8-bit structure identifiers. Each entry can start at a non-byte-aligned bit
+position after the packed APID and count.
 
 ```xml
 <!-- ParameterTypeSet -->
 <IntegerParameterType name="hk_struct_id_type" signed="false">
-  <IntegerDataEncoding sizeInBits="16"/>
+  <IntegerDataEncoding sizeInBits="8"/>
 </IntegerParameterType>
 
 <ArrayParameterType arrayTypeRef="hk_struct_id_type" name="hk_struct_id_array_type">
@@ -762,7 +816,7 @@ ack_completion(tc);
 </ArrayParameterType>
 
 <!-- ContainerSet -->
-<SequenceContainer name="TM_14_8" shortDescription="TM[14,8] HK FCC content report">
+<SequenceContainer name="hk_fcc_apid_element">
   <EntryList>
     <ParameterRefEntry parameterRef="hk_fcc_apid"/>
     <ParameterRefEntry parameterRef="hk_fcc_n_structs"/>
@@ -772,6 +826,17 @@ ack_completion(tc);
       </IncludeCondition>
     </ParameterRefEntry>
   </EntryList>
+</SequenceContainer>
+
+<SequenceContainer name="TM_14_8" shortDescription="TM[14,8] HK FCC content report">
+  <EntryList>
+    <ParameterRefEntry parameterRef="hk_fcc_n_apids"/>
+    <ContainerRefEntry containerRef="hk_fcc_apid_element">
+      <RepeatEntry><Count><DynamicValue>
+        <ParameterInstanceRef parameterRef="hk_fcc_n_apids"/>
+      </DynamicValue></Count></RepeatEntry>
+    </ContainerRefEntry>
+  </EntryList>
   <BaseContainer containerRef="pus14-tm">
     <RestrictionCriteria>
       <Comparison parameterRef="/PUS/subtype" value="8"/>
@@ -780,17 +845,26 @@ ack_completion(tc);
 </SequenceContainer>
 ```
 
-**Simulator (on-board emulation)** — `sendHkFccReport(int apid, List<Integer> structIds)` emulates satellite building and downlinking TM[14,8]:
+**Simulator (on-board emulation)** — one bitstream contains the outer count and every APID group:
 ```java
-PusTmPacket pkt = newPacket(8, 2 + 1 + structIds.size() * 2);
-ByteBuffer bb = pkt.getUserDataBuffer();
-bb.putShort((short) apid);
-bb.put((byte) structIds.size());
-for (int sid : structIds) bb.putShort((short) sid);
+long bitSize = 8;
+for (Set<Integer> structIds : hkFcc.values()) {
+    bitSize += 11 + 8 + structIds.size() * 8L;
+}
+PusTmPacket pkt = newPacket(8, (bitSize + 7) / 8);
+BitBuffer bits = bitBuffer(pkt.getUserDataBuffer());
+bits.putBits(hkFcc.size(), 8);
+for (var entry : hkFcc.entrySet()) {
+    bits.putBits(entry.getKey(), 11);
+    bits.putBits(entry.getValue().size(), 8);
+    for (int sid : entry.getValue()) bits.putBits(sid, 8);
+}
 pusSimulator.transmitRealtimeTM(pkt);
 ```
 
-**Gaps**: If subsampling rates are added later, each entry becomes `uint16 + uint8` (aggregate type) — minor extension.
+**Gaps**: If subsampling rates are added later, each entry becomes `uint8 + uint8` (aggregate type)
+— a minor extension. The entry may start at a non-byte boundary and must remain in the same packed
+bit stream.
 
 ---
 
@@ -801,17 +875,17 @@ pusSimulator.transmitRealtimeTM(pkt);
 
 **Purpose**: Identical structure and semantics to TC[14,5] but for diagnostic parameter reports (ST[04] structures).
 
-**XTCE**: ✅ **Single MetaCommand** — identical N1/N_structs nested array design as TC[14,5], using `diag_apid_array_type` (mirrors `hk_apid_array_type` with `diag_struct_id` uint16 elements). N_structs=0 = add all diagnostic structures for that APID.
+**XTCE**: ✅ **Single MetaCommand** — identical N1/N_structs nested array design as TC[14,5], using `diag_apid_array_type` (mirrors `hk_apid_array_type` with `diag_struct_id` uint8 elements). N_structs=0 = add all diagnostic structures for that APID.
 
 ```xml
 <!-- Reuse same aggregate+array pattern as TC[14,5], renaming types for clarity -->
-<ArrayArgumentType name="diag_struct_id_array_type" arrayTypeRef="/dt/uint16">
+<ArrayArgumentType name="diag_struct_id_array_type" arrayTypeRef="/dt/uint8">
     <!-- same DimensionList as hk_struct_id_array_type, argumentRef="N_structs" -->
     ...
 </ArrayArgumentType>
 <AggregateArgumentType name="diag_apid_entry_type">
     <MemberList>
-        <Member name="apid"       typeRef="/dt/uint16"/>
+        <Member name="apid"       typeRef="/dt/pus_report_apid"/>
         <Member name="N_structs"  typeRef="/dt/uint8"/>
         <Member name="struct_ids" typeRef="diag_struct_id_array_type"/>
     </MemberList>
@@ -836,14 +910,15 @@ pusSimulator.transmitRealtimeTM(pkt);
 
 **Simulator (on-board emulation)** (`case 10 → deleteDiagStructIds(bb)`): Mirror of TC[14,6] handler targeting `diagFcc` — emulates satellite-side Diag FCC deletion.
 
-**Gaps**: Two variants needed for the same reason as TC[14,6]: zero-byte payload is the discriminator for the empty-diag-FCC case.
+**Empty configuration**: The no-argument alias inserts the standard `N1=0` octet. The
+delete-entries command uses the same `N1` field and can also encode an empty configuration request.
 
 ---
 
 ### TC[14,11] — Report the Content of the Diagnostic Parameter Report Forward-Control Configuration
 
 **Spec**: §6.14.3.6.3
-**Direction**: **[GROUND → SAT]** — YAMCS MCS encodes and uplinks this TC via XTCE. **[ON-BOARD]** — satellite iterates Diag FCC and emits one TM[14,12] per APID. **[SAT → GROUND]** — TM[14,12] packets downlinked and decoded by YAMCS via XTCE.
+**Direction**: **[GROUND → SAT]** — YAMCS MCS encodes and uplinks this TC via XTCE. **[ON-BOARD]** — satellite emits one TM[14,12] containing all Diagnostic FCC definitions. **[SAT → GROUND]** — TM[14,12] is decoded by YAMCS via XTCE.
 
 **Purpose**: Identical to TC[14,7] but for diagnostic FCC. No arguments. Response: TM[14,12].
 
@@ -860,7 +935,8 @@ pusSimulator.transmitRealtimeTM(pkt);
 </MetaCommand>
 ```
 
-**Simulator (on-board emulation)** (`case 11 → reportDiagFcc(tc)`): Iterates `diagFcc`; emits TM[14,12] per APID — emulating satellite-side dump generation.
+**Simulator (on-board emulation)** (`case 11 → reportFcc(tc, diagFcc, 12)`): Preflights and emits
+one atomic report containing all APID entries.
 
 **Gaps**: None.
 
@@ -871,37 +947,93 @@ pusSimulator.transmitRealtimeTM(pkt);
 **Spec**: §6.14.3.6.3
 **Direction**: **[SAT → GROUND]** — generated on-board in response to TC[14,11]; decoded by YAMCS MCS via XTCE for display only.
 
-**Purpose**: Identical structure to TM[14,8] but for diagnostic structure identifiers.
+**Purpose**: Identical structure to TM[14,8] but for diagnostic structure identifiers. `N1=0`
+reports an empty Diagnostic FCC.
 
 **Packet structure**:
 ```
-[apid: uint16]
-[N_structs: uint8]
-  repeated N_structs times:
-    [diag_structure_id: uint16]
+[N1: uint8]
+  repeated N1 times:
+    [apid: uint11, packed]
+    [N_structs: uint8]
+      repeated N_structs times:
+        [diag_structure_id: uint8]
 ```
 
-**XTCE**: ✅ **Same as TM[14,8]** — flat 2-level structure, fully expressible using dynamic array with `diag_struct_id_array_type`.
+**XTCE**: ✅ **Same as TM[14,8]** — an outer repeated APID container with an inner dynamic array
+whose size resolves from the most recently decoded `N_structs`.
 
-**Simulator (on-board emulation)**: Mirror of TM[14,8] emitter with subtype=12 and `diagFcc` data — emulates satellite building and downlinking the Diagnostic FCC content report.
+**Simulator (on-board emulation)**: Uses the same atomic packed-bit report builder as TM[14,8],
+with subtype 12 and `diagFcc` as the source table.
 
 **Gaps**: None.
 
 ---
 
+### TC[14,13] — Delete Event Definition Identifiers from the Event Report Blocking FCC
+
+**Spec**: §6.14.3.7.1
+
+**Packet layout**:
+```
+N1 (uint8)
+  repeated N1 times:
+    apid (uint11, packed)
+    N2 (uint8)                 ← 0 = delete the APID blocking definition
+    event_definition_id[N2]   (uint8 each)
+```
+
+`N1=0` empties the complete event-blocking configuration. XTCE exposes a nested-array delete
+command and a no-argument convenience alias that inserts the fixed `N1=0` octet. The simulator
+rejects unknown APIDs and event IDs with distinct completion errors.
+
+### TC[14,14] — Add Event Definition Identifiers to the Event Report Blocking FCC
+
+**Spec**: §6.14.3.7.2
+
+The layout is the same as TC[14,13]. `N2=0` creates an APID definition with no explicit IDs, which
+means block every event definition for that APID. A populated list blocks only the listed event
+IDs. Adding explicit IDs to an existing block-all definition is rejected instead of silently
+narrowing it.
+
+### TC[14,15] / TM[14,16] — Report the Event Report Blocking FCC
+
+**Spec**: §6.14.3.7.3
+
+TC[14,15] has no application data. Its single atomic response is:
+```
+N1 (uint8)
+  repeated N1 times:
+    apid (uint11, packed)
+    N2 (uint8)
+    event_definition_id[N2] (uint8 each)
+```
+
+`N1=0` reports an empty event-blocking configuration; `N2=0` reports a block-all definition for
+the related APID. The MDB decodes it with an outer repeated APID container and a dynamic inner ID
+array. The simulator applies this table only to ST[05] event report subtypes 1–4, after the APFCC
+gate has authorized the packet. It reads the event definition ID from the first source-data octet.
+
+As with TM[14,4], [14,8], and [14,12], a report that cannot fit one packet produces no partial
+TM[14,16] and completes TC[14,15] with `COMPL_ERR_REPORT_TOO_LARGE`.
+
+---
+
 ## c) Gaps & Shortcomings Summary
 
-### Gap 1: TC[14,2] Empty-APFCC Variant — Resolved for TC[14,1], Minor for TC[14,2]
+### Gap 1: Empty-Configuration Command Encoding — Resolved
 
-**Affects**: TC[14,2] only
-**Severity**: Low
-**Effort**: Negligible
+**Affects**: TC[14,2], TC[14,6], TC[14,10], TC[14,13]
+**Severity**: None — fully resolved
 
 TC[14,1] is fully expressible as a **single MetaCommand** using YAMCS's nested dynamic array support (`array-in-array-arg.xml` confirms that `ArgumentInstanceRef` in an `ArrayArgumentType` can reference a sibling member of the containing `AggregateArgumentType`). The N1/N2/N3 structure with N2=0 (all services) and N3=0 (all subtypes) covers all three spec instruction forms in one command.
 
-TC[14,2] requires **two variants**: one for the N1/N2/N3 delete-entries structure (same nested array design as TC[14,1]) and one zero-argument "empty APFCC" command. This is unavoidable because the empty-APFCC case has no N1 field — a zero-byte payload is the discriminator. Two variants is not a functional gap; it is a faithful representation of the spec's two mutually exclusive request forms.
+Every delete request carries `N1`. The empty-table wire form is the single octet `N1=0`. Separate
+no-argument MetaCommands remain as operator conveniences, but each inserts that fixed octet rather
+than producing a zero-byte application-data field.
 
-**Impact**: None for TC[14,1]. TC[14,2] requires two operator-visible commands (`TC_14_2_DELETE_ENTRIES` and `TC_14_2_EMPTY_APFCC`) — standard YAMCS practice for commands with distinct argument structures.
+**Impact**: The delete-entries commands and convenience aliases now encode the same standard wire
+shape for an empty configuration.
 
 ---
 
@@ -911,7 +1043,7 @@ TC[14,2] requires **two variants**: one for the N1/N2/N3 delete-entries structur
 **Severity**: None — fully resolved
 **Effort**: None
 
-TM[14,4]'s 3-level nested structure (APFCDs → STFCDs → RTFCDs) IS fully expressible in XTCE using nested `ContainerRefEntry` + `RepeatEntry` containers. The key mechanism: `ParameterInstanceRef` defaults to `relativeTo = CURRENT_ENTRY_WITHIN_PACKET` (confirmed in `ParameterInstanceRef.java` line 53), which uses `tmParams.getFromEnd(param, 0)` = **most recently decoded value**. Each outer STFCD_ELEMENT iteration decodes a fresh `N_subtypes`; the inner `RepeatEntry` count resolves to that value automatically. No workaround needed.
+TM[14,4]'s 3-level nested structure (APFCDs → STFCDs → RTFCDs) is fully expressible in XTCE using nested `ContainerRefEntry` + `RepeatEntry` containers. The outer repeat is driven by `N1`; each APID entry has its own `N2`, and each service entry has its own `N3`. `ParameterInstanceRef` resolves the most recently decoded count for each nested iteration.
 
 ---
 
@@ -920,18 +1052,20 @@ TM[14,4]'s 3-level nested structure (APFCDs → STFCDs → RTFCDs) IS fully expr
 **Affects**: TC[14,5], TC[14,6], TC[14,9], TC[14,10]
 **Severity**: None — fully resolved
 
-TC[14,5/9] are now single MetaCommands with N1/N_structs 2-level nested arrays (N_structs=0 = "add all structs for this APID"). TC[14,6/10] use 2 variants each (delete-entries + empty-FCC no-arg) for the same reason as TC[14,2]: the empty-FCC case has no N1 field, making zero-byte payload the only discriminator. These 2 variants are spec-faithful, not workarounds.
+TC[14,5/9] use N1/N_structs nested arrays (`N_structs=0` = all structures for that APID).
+TC[14,6/10] retain delete-entries and no-argument convenience commands, with the latter inserting
+the standard `N1=0` octet.
 
 ---
 
-### Gap 4: Forwarding Interceptor Requires Cross-Cutting Simulator Change
+### Gap 4: Forwarding Interceptor — Resolved
 
 **Affects**: Simulator only — all other `Pus*Service` classes (Pus5Service, Pus11Service, etc.)
-**Severity**: High (simulator scope)
-**Effort**: Medium
+**Severity**: None — implemented
 **Layer**: **Simulator (on-board emulation)** — this is entirely within the simulator; no YAMCS MCS or `yamcs-core` changes are needed.
 
-ST[14]'s on-board forwarding filter must be emulated across all outgoing TM packets in the simulator — not just its own. The cleanest implementation is to insert the filter check inside `PusSimulator.transmitRealtimeTM()` to mirror the satellite's downlink gate:
+ST[14]'s on-board forwarding filter is applied centrally inside
+`PusSimulator.transmitRealtimeTM()` so individual services do not need forwarding hooks:
 
 ```java
 public void transmitRealtimeTM(PusTmPacket pkt) {
@@ -942,22 +1076,19 @@ public void transmitRealtimeTM(PusTmPacket pkt) {
 }
 ```
 
-This requires:
-1. `Pus14Service.shouldForward(PusTmPacket pkt)` to read `apid`, `type`, `subtype` from the packet header
-2. A single change to `PusSimulator.transmitRealtimeTM()` — no changes to individual service classes
-
-Initial startup state (no APFCC populated) should default to **pass-all** (for simulator usability) rather than the spec-strict **block-all**. This can be toggled via a config flag.
+`Pus14Service.shouldForward(PusTmPacket)` reads APID/type/subtype from the packet header, applies the
+APFCC, then applies the event-blocking FCC to ST[05] event reports. Initial startup remains
+**pass-all** for simulator usability rather than the standard's strict block-all state.
 
 ---
 
-### Gap 5: No Existing Pus14Service.java
+### Gap 5: Service 14 Simulator Implementation — Resolved
 
 **Affects**: Simulator only — all subtypes
-**Severity**: Medium (simulator scope)
-**Effort**: Medium
+**Severity**: None — implemented
 **Layer**: **Simulator (on-board emulation)** — `Pus14Service.java` is a simulator class emulating satellite-side FCC management. No `yamcs-core` changes are needed.
 
-New `Pus14Service.java` required from scratch. Key data structures:
+`Pus14Service.java` is implemented. Its key data structures are:
 
 ```java
 // Application Process Forward-Control Configuration
@@ -969,15 +1100,18 @@ Map<Integer, Set<Integer>> hkFcc = new LinkedHashMap<>();
 // Diagnostic Forward-Control Configuration
 Map<Integer, Set<Integer>> diagFcc = new LinkedHashMap<>();
 
+// Event Report Blocking Forward-Control Configuration
+Map<Integer, Set<Integer>> eventBlockingFcc = new LinkedHashMap<>();
+
 // Inner class
 class ApfcDefinition {
     int apid;
-    // null STFCDs = "pass all"; empty list = "block all"
+    // Empty map = pass all services; empty subtype set = pass all subtypes of that service.
     Map<Integer, Set<Integer>> serviceSubtypes = new LinkedHashMap<>();
 }
 
 public boolean shouldForward(PusTmPacket pkt) {
-    int apid    = pkt.getApid();
+    int apid    = pkt.getAPID();
     int svcType = pkt.getType();
     int subtype = pkt.getSubtype();
 
@@ -1026,17 +1160,21 @@ The HK and Diagnostic FCC features require that ST[03] (housekeeping) and ST[04]
 | Subtype | Dir | MCS: XTCE Coverage | Simulator Java (on-board emulation) | Effort | Notes |
 |---------|-----|-------------------|-------------------------------------|--------|-------|
 | TC[14,1] | TC | ✅ Single MetaCommand (N1/N2/N3 nested arrays) | ✅ Required (parse TC, update APFCC) | Medium | YAMCS supports sibling-member array size refs; N2=0/N3=0 encode "add all" |
-| TC[14,2] | TC | ✅ 2 variants (delete-entries N1/N2/N3 + empty-APFCC no-arg) | ✅ Required (parse TC, update APFCC) | Medium | Delete entries reuses TC[14,1] nested array types; empty-APFCC is zero-byte discriminator |
-| TC[14,3] | TC | ✅ Full (no args) | ✅ New Pus14Service (iterate APFCC, emit TM[14,4]) | Low | Identical to TC[11,17] pattern |
-| TM[14,4] | TM | ✅ Full (nested container repeats) | ✅ Required (emit from APFCC) | Medium | 3-level nested XTCE structure; `CURRENT_ENTRY_WITHIN_PACKET` getFromEnd(0) picks most-recent N_subtypes per iteration |
+| TC[14,2] | TC | ✅ 2 variants (delete entries or fixed `N1=0` alias) | ✅ Implemented | Medium | Both variants retain the N1 field |
+| TC[14,3] | TC | ✅ Full (no args) | ✅ Implemented | Low | Produces one atomic TM[14,4] |
+| TM[14,4] | TM | ✅ Full (nested container repeats) | ✅ Implemented | Medium | `N1` APID groups, each with nested N2/N3 repeats |
 | TC[14,5] | TC | ✅ Single MetaCommand (N1/N_structs nested) | ✅ Required (parse TC, update HK FCC) | Low | N_structs=0 = add all structs; same sibling-member array-size pattern as TC[14,1] |
-| TC[14,6] | TC | ✅ 2 variants (delete-entries + empty-HK-FCC no-arg) | ✅ Required (parse TC, update HK FCC) | Low | Delete entries reuses hk_apid_array_type; empty-HK-FCC is zero-byte discriminator |
-| TC[14,7] | TC | ✅ Full (no args) | ✅ New Pus14Service (iterate HK FCC, emit TM[14,8]) | Low | Same as TC[14,3] pattern |
-| TM[14,8] | TM | ✅ Full | ✅ Required (emit from HK FCC) | Low | Flat 2-level; dynamic array; fully XTCE-expressible |
+| TC[14,6] | TC | ✅ 2 variants (delete entries or fixed `N1=0` alias) | ✅ Implemented | Low | Both variants retain the N1 field |
+| TC[14,7] | TC | ✅ Full (no args) | ✅ Implemented | Low | Produces one atomic TM[14,8] |
+| TM[14,8] | TM | ✅ Full | ✅ Implemented | Low | `N1` APID groups with uint8 structure-ID arrays |
 | TC[14,9] | TC | ✅ Single MetaCommand (N1/N_structs nested) | ✅ Required (parse TC, update Diag FCC) | Low | Mirror of TC[14,5] for diagnostic FCC; same design |
 | TC[14,10] | TC | ✅ 2 variants (delete-entries + empty-diag-FCC no-arg) | ✅ Required (parse TC, update Diag FCC) | Low | Mirror of TC[14,6] for diagnostic FCC |
-| TC[14,11] | TC | ✅ Full (no args) | ✅ New Pus14Service (iterate Diag FCC, emit TM[14,12]) | Low | Mirror of TC[14,7] |
-| TM[14,12] | TM | ✅ Full | ✅ Required (emit from Diag FCC) | Low | Mirror of TM[14,8] for diagnostic FCC |
+| TC[14,11] | TC | ✅ Full (no args) | ✅ Implemented | Low | Produces one atomic TM[14,12] |
+| TM[14,12] | TM | ✅ Full | ✅ Implemented | Low | `N1` APID groups with uint8 structure-ID arrays |
+| TC[14,13] | TC | ✅ Delete entries + fixed `N1=0` alias | ✅ Implemented | Low | Event IDs are uint8; N2=0 removes an APID definition |
+| TC[14,14] | TC | ✅ N1/N2 nested arrays | ✅ Implemented | Low | N2=0 blocks all events for the APID |
+| TC[14,15] | TC | ✅ Full (no args) | ✅ Implemented | Low | Produces one atomic TM[14,16] |
+| TM[14,16] | TM | ✅ Full | ✅ Implemented | Low | `N1` APID groups with uint8 event-ID arrays |
 
 ### Overall Verdict
 
@@ -1044,22 +1182,22 @@ The HK and Diagnostic FCC features require that ST[03] (housekeeping) and ST[04]
 
 All TC/TM packet structures for ST[14] are fully expressible in XTCE:
 
-1. **All TC commands**: fully expressible as XTCE MetaCommands — single commands for TC[14,1], TC[14,3], TC[14,5], TC[14,7], TC[14,9], TC[14,11]; two variants for TC[14,2], TC[14,6], TC[14,10] (delete-entries + empty-FCC no-arg)
-2. **All TM packets**: fully decodeable in XTCE — including TM[14,4]'s 3-level nested structure via `ContainerRefEntry` nested `RepeatEntry` with `CURRENT_ENTRY_WITHIN_PACKET` semantics
+1. **All TC commands**: fully expressible as XTCE MetaCommands, including TC[14,13–15]. Empty-table convenience commands insert a fixed `N1=0` octet.
+2. **All TM packets**: fully decodeable in XTCE — TM[14,4], [14,8], [14,12], and [14,16] all use an outer `N1`-driven APID repeat.
 3. **YAMCS MCS role**: encode TC packets for uplink; decode TM dump reports from downlink. YAMCS performs no forwarding filtering of its own — that is entirely an on-board responsibility.
 
 **For the simulator (on-board emulation)**: Java implementation is required to emulate the satellite's forwarding control logic:
 
 3. **Forwarding interceptor**: one `PusSimulator.java` edit — inserting `shouldForward()` check inside `transmitRealtimeTM()` — a clean cross-cutting concern, not per-service changes
-4. **New `Pus14Service.java`** — straightforward map/set operations for APFCC/HK FCC/Diag FCC; no timing or periodic tasks needed
+4. **`Pus14Service.java`** — map/set operations for APFCC/HK FCC/Diag FCC/Event Blocking FCC; no timing or periodic tasks needed
 
 **Required artifacts by layer:**
 
 | Layer | Artifact | Purpose |
 |-------|----------|---------|
-| **MCS / YAMCS ground** | `mdb/pus14.xml` | XTCE TC encoding (TC[14,1/2/3/5/6/7/9/10/11]) and TM decoding (TM[14,4/8/12]) |
+| **MCS / YAMCS ground** | `mdb/pus14.xml` | XTCE TC encoding (TC[14,1–3/5–7/9–11/13–15]) and TM decoding (TM[14,4/8/12/16]) |
 | **MCS / YAMCS ground** | `yamcs.pus.yaml` update | Load `mdb/pus14.xml` into the Mission Database |
-| **Simulator (on-board emulation)** | `Pus14Service.java` | Emulates satellite: maintains APFCC/HK FCC/Diag FCC in memory; handles TC execution; emits TM dump reports; provides `shouldForward()` gate |
+| **Simulator (on-board emulation)** | `Pus14Service.java` | Maintains all four FCCs; handles TC execution; emits atomic TM dump reports; provides `shouldForward()` gate |
 | **Simulator (on-board emulation)** | `PusSimulator.java` edit | Register `Pus14Service`; insert `shouldForward()` gate in `transmitRealtimeTM()` to emulate satellite downlink filtering |
 
 > **Key finding**: All forwarding control logic (APFCC/HK FCC/Diag FCC management, `shouldForward()` gate, TC parsing, TM dump generation) lives in the simulator (on-board emulation). YAMCS MCS only encodes outgoing configuration TCs and decodes incoming FCC dump TM reports — both purely via XTCE. Zero changes to `yamcs-core` are required.
@@ -1120,13 +1258,13 @@ If a future requirement added MCS-side filtering (e.g., suppressing certain TM p
 
 ---
 
-## Implementation Files (when building)
+## Implementation Files
 
 | Layer | File | Action |
 |-------|------|--------|
-| **Simulator (on-board emulation)** | `simulator/src/main/java/org/yamcs/simulator/pus/Pus14Service.java` | Create — APFCC/HK FCC/Diag FCC data structures + TC handler + `shouldForward()` — emulates satellite-side forwarding control |
+| **Simulator (on-board emulation)** | `simulator/src/main/java/org/yamcs/simulator/pus/Pus14Service.java` | Implemented — all four FCC data structures, TC handler, atomic reports, and `shouldForward()` |
 | **Simulator (on-board emulation)** | `simulator/src/main/java/org/yamcs/simulator/pus/PusSimulator.java` | Edit — register Pus14Service; add `shouldForward()` gate in `transmitRealtimeTM()` — emulates satellite downlink filtering |
-| **MCS / YAMCS ground** | `examples/pus/src/main/yamcs/mdb/pus14.xml` | Create — XTCE containers + commands (3+4+2+3 MetaCommands, 4 SequenceContainers) — TC encoding and TM decoding only |
+| **MCS / YAMCS ground** | `examples/pus/src/main/yamcs/mdb/pus14.xml` | Implemented — TC[14,1–3/5–7/9–11/13–15] encoding and TM[14,4/8/12/16] decoding |
 | **MCS / YAMCS ground** | `examples/pus/src/main/yamcs/etc/yamcs.pus.yaml` | Edit — add `mdb/pus14.xml` to MDB list |
 
 ### Reference Files
@@ -1140,7 +1278,7 @@ If a future requirement added MCS-side filtering (e.g., suppressing certain TM p
 ## e) Testing Methodology
 
 Reflects the actual implementation: `Pus14Service.java` and
-`examples/pus/src/main/yamcs/mdb/pus14.xml`. Command paths, argument names, and byte layouts below
+`examples/pus/src/main/yamcs/mdb/pus14.xml`. Command paths, argument names, and packed-bit layouts below
 are taken directly from those files, not the pseudocode in section b).
 
 ### e.1 Start the instance
@@ -1174,6 +1312,10 @@ length (same convention as PUS12's `N`/`pmon_ids`).
 | `TC_14_10_DELETE_DIAG_ENTRIES` | TC[14,10] | `{"N1": 1, "apid_entries": [{"apid": 1, "n_structs": 1, "struct_ids": [200]}]}` |
 | `TC_14_10_EMPTY_DIAG_FCC` | TC[14,10] | `{}` (no arguments) |
 | `TC_14_11_REPORT_DIAG_FCC` | TC[14,11] | `{}` (no arguments) |
+| `TC_14_13_DELETE_EVENT_ENTRIES` | TC[14,13] | `{"N1": 1, "apid_entries": [{"apid": 1, "n_events": 1, "event_ids": [2]}]}` |
+| `TC_14_13_EMPTY_EVENT_FCC` | TC[14,13] | `{}` (encodes fixed `N1=0`) |
+| `TC_14_14_ADD_EVENT_ENTRIES` | TC[14,14] | `{"N1": 1, "apid_entries": [{"apid": 1, "n_events": 1, "event_ids": [2]}]}` |
+| `TC_14_15_REPORT_EVENT_FCC` | TC[14,15] | `{}` (no arguments) |
 
 Rejection conditions to exercise (all respond NACK completion, not NACK start — the command is
 accepted then rejected during execution; see the `Pus14Service` completion error codes): deleting/
@@ -1182,18 +1324,20 @@ type not present in that APFCD (`COMPL_ERR_SVC_NOT_IN_APFCD` = 6), deleting an A
 the HK FCC (`COMPL_ERR_APID_NOT_IN_HK_FCC` = 7) or the Diagnostic FCC
 (`COMPL_ERR_APID_NOT_IN_DIAG_FCC` = 8). An unrecognized subtype gets NACK **start**
 (`START_ERR_INVALID_PUS_SUBTYPE`) instead, since the command is rejected before execution begins.
+Event-FCC failures use codes 9–11, and an atomic report that exceeds a count or TM-size limit uses
+`COMPL_ERR_REPORT_TOO_LARGE` = 12.
 
 ### e.3 TMs to check
 
 | Container | Subtype | Triggered by | Layout |
 |---|---|---|---|
-| `/PUS14/TM_14_4` | TM[14,4] | `TC_14_3_REPORT_APFCC` | One packet per APFCD: `apid:u16, n_services:u8`, then `n_services` × `{service_type:u8, n_subtypes:u8, subtypes:u8[n_subtypes]}` |
-| `/PUS14/TM_14_8` | TM[14,8] | `TC_14_7_REPORT_HK_FCC` | One packet per HK FCC APID entry: `apid:u16, n_structs:u8, struct_ids:u16[n_structs]` |
+| `/PUS14/TM_14_4` | TM[14,4] | `TC_14_3_REPORT_APFCC` | `N1:u8`, then N1 × `{apid:u11, n_services:u8, services…}`; all fields are contiguous bits |
+| `/PUS14/TM_14_8` | TM[14,8] | `TC_14_7_REPORT_HK_FCC` | `N1:u8`, then N1 × `{apid:u11, n_structs:u8, struct_ids:u8[n_structs]}` |
 | `/PUS14/TM_14_12` | TM[14,12] | `TC_14_11_REPORT_DIAG_FCC` | Same layout as TM[14,8], for the Diagnostic FCC |
+| `/PUS14/TM_14_16` | TM[14,16] | `TC_14_15_REPORT_EVENT_FCC` | `N1:u8`, then N1 × `{apid:u11, n_events:u8, event_ids:u8[n_events]}` |
 
-If the APFCC/HK FCC/Diag FCC is empty, the corresponding report TC produces **zero** TM packets — no
-"empty table" report is sent, matching `Pus14Service.reportApfcc`/`reportFcc` simply iterating an
-empty map.
+If any configuration is empty, its report TC produces exactly one TM packet whose source data is
+the single octet `N1=0`.
 
 Also watch the standard PUS-1 verification containers (`/PUS/pus-tc-ack-*`) for ACK/NACK
 start/completion of every TC[14,x] above — see e.4 step 4 for why these should never silently
@@ -1207,8 +1351,8 @@ disappear regardless of APFCC configuration.
 2. **Narrow the gate**: send `TC_14_1_ADD_REPORT_TYPES` with the "specific report type" args from
    e.2, authorizing *only* HK reports (type=3/subtype=25) for apid=1. Confirm HK reports keep
    arriving, but events (type=5) and diagnostic reports (type=3/subtype=26) stop.
-3. **Verify the dump**: send `TC_14_3_REPORT_APFCC` and check `/PUS14/TM_14_4` reports back
-   `apid=1, n_services=1, service_type=3, n_subtypes=1, subtypes=[25]`.
+3. **Verify the dump**: add two APID groups, send `TC_14_3_REPORT_APFCC`, and check that one
+   `/PUS14/TM_14_4` reports `N1=2` followed by both packed APID definitions.
 4. **Verify the PUS-1/ST14 exemption**: with the restrictive APFCC from step 2 still active (which
    does *not* authorize type=1 or type=14), confirm ACK/NACK verification reports for every command
    you send, and the `TM_14_4` report itself, still arrive — `shouldForward()` special-cases
@@ -1224,6 +1368,9 @@ disappear regardless of APFCC configuration.
    confirm `/PUS14/TM_14_8` reflects the added struct id — but also confirm actual HK TM
    (type=3/subtype=25) is completely unaffected by this table (see Gap 6): forwarding is gated only
    by the APFCC, never by `hkFcc`/`diagFcc`.
+9. **Event blocking**: add event ID 2 for APID 1 with `TC_14_14_ADD_EVENT_ENTRIES`; confirm event 2
+   stops while event 1 continues, and confirm TM[14,16] reports the definition. Then send
+   `TC_14_13_EMPTY_EVENT_FCC` and confirm both events flow again.
 
 ### e.5 Caveats specific to this simulator
 

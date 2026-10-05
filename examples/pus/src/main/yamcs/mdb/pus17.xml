@@ -3,6 +3,9 @@
 	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
 	<Header validationStatus="Unknown" version="1.0" date="2020-07-01T16:48:10Z" />
 	<TelemetryMetaData>
+		<ParameterSet>
+			<Parameter parameterTypeRef="/dt/pus_report_apid" name="target_apid" />
+		</ParameterSet>
 		<ContainerSet>
 			<SequenceContainer name="pus17-tm">
 				<EntryList/>
@@ -17,6 +20,16 @@
 				<BaseContainer containerRef="pus17-tm">
 					<RestrictionCriteria>
 						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="2" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="on-board-connection-test-report" shortDescription="TM[17,4] on-board connection test report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="target_apid" />
+				</EntryList>
+				<BaseContainer containerRef="pus17-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="4" />
 					</RestrictionCriteria>
 				</BaseContainer>
 			</SequenceContainer>
@@ -51,6 +64,22 @@
 						<CheckWindow timeToStopChecking="PT15S" timeWindowIsRelativeTo="commandRelease"/>
 					</ExecutionVerifier>
 				</VerifierSet>
+			</MetaCommand>
+			<MetaCommand name="ON_BOARD_CONNECTION_TEST" shortDescription="TC[17,3] perform an on-board connection test">
+				<BaseMetaCommand metaCommandRef="pus17-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="3" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="/dt/pus_report_apid" name="target_apid" />
+				</ArgumentList>
+				<CommandContainer name="ON_BOARD_CONNECTION_TEST">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="target_apid" />
+					</EntryList>
+					<BaseContainer containerRef="pus17-tc" />
+				</CommandContainer>
 			</MetaCommand>
 		</MetaCommandSet>
 	</CommandMetaData>

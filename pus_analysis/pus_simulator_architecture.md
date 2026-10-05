@@ -76,7 +76,9 @@
 | ST[02] service (device access) | `simulator/src/main/java/org/yamcs/simulator/pus/Pus2Service.java` |
 | ST[05] service (event reporting) | `simulator/src/main/java/org/yamcs/simulator/pus/Pus5Service.java` |
 | ST[11] service (scheduling) | `simulator/src/main/java/org/yamcs/simulator/pus/Pus11Service.java` |
+| ST[15] service (packet storage) | `simulator/src/main/java/org/yamcs/simulator/pus/Pus15Service.java` |
 | ST[17] service (test) | `simulator/src/main/java/org/yamcs/simulator/pus/Pus17Service.java` |
+| Packed PUS fields | `simulator/src/main/java/org/yamcs/simulator/pus/PusPackedFields.java` |
 | Base PUS MDB | `examples/pus/src/main/yamcs/mdb/pus.xml` |
 | Data types MDB | `examples/pus/src/main/yamcs/mdb/dt.xml` |
 | ST[05] MDB | `examples/pus/src/main/yamcs/mdb/pus5.xml` |
@@ -354,7 +356,7 @@ Pattern for a 3-level `N1 × (apid + N2 × (svc_type + N3 × subtype))` structur
 <!-- Level 1 aggregate: apid + N2 + N2×svc_entry -->
 <AggregateArgumentType name="apid_entry_type">
     <MemberList>
-        <Member name="apid"        typeRef="/dt/uint16"/>
+        <Member name="apid"        typeRef="/dt/pus_report_apid"/>
         <Member name="N2"          typeRef="/dt/uint8"/>
         <Member name="svc_entries" typeRef="svc_array_type"/>
     </MemberList>
@@ -384,7 +386,20 @@ Pattern for a 3-level `N1 × (apid + N2 × (svc_type + N3 × subtype))` structur
 </MetaCommand>
 ```
 
-Key rule: `argumentRef="N3"` inside the `ArrayArgumentType` resolves to the `N3` member of the **enclosing** `AggregateArgumentType`, not a top-level arg. This chains arbitrarily deep. `N2=0` / `N3=0` → zero-length array in YAMCS UI → spec "add all" semantics.
+Key rules:
+
+- `argumentRef="N3"` inside the `ArrayArgumentType` resolves to the `N3` member of the
+  **enclosing** `AggregateArgumentType`, not a top-level argument. This chains arbitrarily deep.
+- PUS service-data APIDs use `/dt/pus_report_apid`, currently an unsigned 11-bit field. Do not
+  round each APID or aggregate member up to an octet: subsequent counts and entries begin at the
+  next bit. Zero padding is permitted only after the final field in the packet source/application
+  data. Changing this representation requires updating both `pus_report_apid` encodings in
+  `dt.xml` and `PusPackedFields.APID_BITS`; CCSDS primary-header APIDs remain `/dt/uint11`.
+- Request-identifier sequence counts use `/dt/pus_report_seqcount`, currently unsigned 14-bit.
+  Changing that representation requires updating both `pus_report_seqcount` encodings in `dt.xml`
+  and `PusPackedFields.SEQCOUNT_BITS`; CCSDS primary-header sequence counts remain `/dt/uint14`.
+- `N2=0` / `N3=0` creates a zero-length array in the YAMCS UI and represents the service-specific
+  whole-parent wildcard where that subservice defines one.
 
 ---
 
@@ -448,10 +463,11 @@ Canonical reference implementation: `TM[14,4]` in `pus14.md` (3-level: APFCD →
 
 ---
 
-## Zero-Payload TC/TM Pattern (ST[17] reference)
+## Zero-Payload TC/TM Pattern (ST[17,1/2] reference)
 
-ST[17] is the canonical example of a service where both TC and TM carry **no application data**.
-Use this as a smoke-test template for a new YAMCS + simulator setup.
+ST[17,1/2] is the canonical example of a request and response that both carry **no application
+data**. TC[17,3] and TM[17,4] are also implemented and carry one packed `target_apid:u11`, with
+only the last five bits of the final octet available for zero padding.
 
 ### Zero-argument MetaCommand (TC[17,1])
 
@@ -701,6 +717,27 @@ Several ST[15] TCs accept either N specific store IDs or "all stores" (empty pay
 - `TC_15_N_all` — no arguments
 
 The simulator disambiguates at runtime by checking remaining payload length after the header. Affected subtypes: 1, 2, 12, 14, 15, 16, 17, 21.
+
+### Packet-Selection Status and Packed Layouts
+
+`Pus15Service` implements the application-process, housekeeping, diagnostic, and event
+packet-selection configurations. New stores follow the ECSS block-all default: enabling storage
+does not capture telemetry until TC[15,3] authorizes the APID/service/subtype. HK and diagnostic
+packets then require their 8-bit structure ID to be authorized; event configuration is a block
+list, where an absent APID permits events, an empty identifier set blocks all events for the APID,
+and a populated set blocks matching 8-bit event IDs.
+
+All selection commands and reports use nested packed fields:
+
+- Application process: `store_id:u16, N1:u8, N1×{apid:u11, N2:u8,
+  N2×{service:u8, N3:u8, N3×subtype:u8}}`.
+- HK, diagnostic, and event: `store_id:u16, N1:u8,
+  N1×{apid:u11, N2:u8, N2×identifier:u8}`.
+
+Each content request emits one atomic report containing every APID group. `N1=0` clears the
+corresponding table on delete commands and is also the complete representation of an empty report.
+Reports that exceed an 8-bit count or `PusSimulator.maxTmDataSize()` are rejected with a completion
+failure; no partial report is sent.
 
 ### CUC Timestamp in Simplified PUS (test_yamcs style)
 

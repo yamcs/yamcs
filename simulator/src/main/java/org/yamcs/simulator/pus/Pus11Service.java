@@ -13,6 +13,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.yamcs.utils.BitBuffer;
 import org.yamcs.utils.StringConverter;
 
 /**
@@ -394,13 +395,19 @@ public class Pus11Service extends AbstractPusService {
     }
 
     private void sendSummaryReport(Collection<ScheduledCommand> cmds) {
-        var pkt = newPacket(13, 4 + cmds.size() * (7 + pusSimulator.timeEncoding.getEncodedLength()));
-        var bb = pkt.getUserDataBuffer();
-        bb.putShort((short) cmds.size());
+        int timeBits = pusSimulator.timeEncoding.getEncodedLength() * PusPackedFields.OCTET_BITS;
+        long entryBits = PusPackedFields.OCTET_BITS + timeBits + 16
+                + PusPackedFields.APID_BITS + PusPackedFields.SEQCOUNT_BITS;
+        long reportBits = 16L + cmds.size() * entryBits;
+        var pkt = newPacket(13, PusPackedFields.bytesForBits(reportBits));
+        BitBuffer bits = PusPackedFields.bitBuffer(pkt.getUserDataBuffer());
+        bits.putBits(cmds.size(), 16);
         for (var cmd : cmds) {
-            bb.put((byte) cmd.subschedule);
-            cmd.releaseTime.encode(bb, pusSimulator.timeEncoding);
-            encodeRequestId(bb, cmd.tc);
+            bits.putBits(cmd.subschedule, PusPackedFields.OCTET_BITS);
+            ByteBuffer encodedTime = ByteBuffer.allocate(pusSimulator.timeEncoding.getEncodedLength());
+            cmd.releaseTime.encode(encodedTime, pusSimulator.timeEncoding);
+            PusPackedFields.putBytes(bits, encodedTime.array());
+            encodeRequestId(bits, cmd.tc);
         }
         pusSimulator.transmitRealtimeTM(pkt);
     }
@@ -442,12 +449,13 @@ public class Pus11Service extends AbstractPusService {
 
     private List<ScheduledCommand> filterById(ByteBuffer bb, boolean remove) {
         List<ScheduledCommand> cmds = new ArrayList<>();
-        int n = bb.getShort() & 0xFFFF;
+        BitBuffer bits = PusPackedFields.bitBuffer(bb);
+        int n = PusPackedFields.readUnsigned(bits, 16);
         log.info("Filtering by {} id filters", n);
         for (int i = 0; i < n; i++) {
-            int sourceId = bb.getShort() & 0xFFFF;
-            int apid = bb.getShort() & 0x07FF;
-            int seqCount = bb.getShort() & 0xFFFF;
+            int sourceId = PusPackedFields.readUnsigned(bits, 16);
+            int apid = PusPackedFields.readUnsigned(bits, PusPackedFields.APID_BITS);
+            int seqCount = PusPackedFields.readUnsigned(bits, PusPackedFields.SEQCOUNT_BITS);
             log.info("Filter by ID source: {}, apid: {}, seqCount: {}", sourceId, apid, seqCount);
             Iterator<ScheduledCommand> it = commands.iterator();
 
@@ -522,10 +530,10 @@ public class Pus11Service extends AbstractPusService {
         return result;
     }
 
-    static void encodeRequestId(ByteBuffer bb, PusTcPacket tc) {
-        bb.putShort((short) tc.getSourceId());
-        bb.putShort((short) tc.getAPID());
-        bb.putShort((short) tc.getSequenceCount());
+    static void encodeRequestId(BitBuffer bits, PusTcPacket tc) {
+        bits.putBits(tc.getSourceId(), 16);
+        bits.putBits(tc.getAPID(), PusPackedFields.APID_BITS);
+        bits.putBits(tc.getSequenceCount(), PusPackedFields.SEQCOUNT_BITS);
     }
 
     private void runSchedule(PusTime now) {

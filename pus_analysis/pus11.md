@@ -19,7 +19,7 @@ PUS Service 11 (Time-based Scheduling) lets ground operators pre-load telecomman
 | **Schedule Queue** | Priority queue ordered by absolute release time |
 | **Subschedule** | Named group of commands (8-bit ID); can be independently enabled/disabled |
 | **Group** | Optional second-level grouping of commands (8-bit ID); enable/disable together |
-| **Request ID** | Unique identifier = `(source_id, apid, seqcount)` of the TC used at insert time |
+| **Request ID** | Unique identifier = `(source_id:u16, apid:u11, seqcount:u14)` of the TC used at insert time; fields and repeated identifiers are bit-packed without APID or sequence-count padding |
 | **Release Time** | Absolute CUC time (8 bytes) when the stored TC shall be executed |
 | **Time Window** | Filter type: `0=all`, `1=from–to`, `2=from`, `3=to` — used for bulk operations |
 
@@ -161,12 +161,14 @@ repeat N times:
 N              (uint16)
 repeat N times:
   source_id    (uint16)
-  apid         (uint16)
-  seqcount     (uint16)
+  apid         (uint11, packed)
+  seqcount     (u14)
 ```
 
 **MDB**: ✅ `DELETE_ACTIVITIES_BY_ID` with `num_requests (uint16)` + `requests[]` array.
-**Java**: ✅ `deleteByRequestId()` → `filterById(bb, true)`.
+**Java**: ✅ `deleteByRequestId()` → `filterById(bb, true)`. `BitBuffer` keeps the next
+`seqcount` and subsequent request identifiers contiguous after the 11-bit APID and 14-bit sequence
+count.
 **Action**: None.
 
 ---
@@ -196,7 +198,7 @@ repeat N:
 time_offset    (relative time, int32 milliseconds)
 N              (uint16)
 repeat N:
-  source_id / apid / seqcount
+  source_id:u16 / apid:u11 / seqcount:u14 (packed)
 ```
 
 **MDB**: ✅ `TIME_SHIFT_ACTIVITIES_BY_ID` — `time_offset_ms (/dt/uint32)` is the first argument, followed by `num_requests` + `requests[]`.
@@ -227,7 +229,7 @@ N subschedule_ids
 ```
 N              (uint16)
 repeat N:
-  source_id / apid / seqcount
+  source_id:u16 / apid:u11 / seqcount:u14 (packed)
 ```
 
 **MDB**: ✅ `GET_DETAIL_REPORT_BY_ID`.
@@ -268,7 +270,7 @@ repeat N:
 ```
 N              (uint16)
 repeat N:
-  source_id / apid / seqcount
+  source_id:u16 / apid:u11 / seqcount:u14 (packed)
 ```
 
 **MDB**: ✅ `GET_SUMMARY_REPORT_BY_ID`.
@@ -286,12 +288,17 @@ repeat N:
   schedule_id  (uint8)
   release_time (PusTime, 8 bytes)
   source_id    (uint16)
-  apid         (uint16)
-  seqcount     (uint16)
+  apid         (uint11, packed)
+  seqcount     (u14)
 ```
 
-**MDB**: ✅ `SUMMARY_REPORT` in `SUMMARY_REPORT` SpaceSystem with `SUMMARY_REPORT_ELEMENT` container repeated N times.
-**Java**: ✅ `sendSummaryReport()` encodes each entry as: subschedule(1) + releaseTime(8) + source(2) + apid(2) + seq(2) = 15 bytes/entry.
+**MDB**: ✅ `SUMMARY_REPORT` in `SUMMARY_REPORT` SpaceSystem with `SUMMARY_REPORT_ELEMENT`
+container repeated N times. The APID and sequence-count parameters use `/dt/pus_report_apid`
+(currently 11 bits) and `/dt/pus_report_seqcount` (currently 14 bits), so each following field and
+entry starts at the next bit rather than at the next octet.
+**Java**: ✅ `sendSummaryReport()` calculates the exact bit length and encodes each entry as
+`schedule_id:u8 + release_time + source_id:u16 + apid:u11 + seqcount:u14`. Only the final report
+octet may contain zero padding.
 **Action**: None.
 
 ---
