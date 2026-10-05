@@ -83,7 +83,7 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
 
         if (dfl != -1) {
             int mindfl = frameHandler.getMinFrameSize();
-            int maxdfl = frameHandler.getMinFrameSize();
+            int maxdfl = frameHandler.getMaxFrameSize();
             if (dfl < mindfl || dfl > maxdfl) {
                 throw new ConfigurationException("Raw frame decoder output frame length " + dfl +
                         " does not match the defined frame length "
@@ -134,6 +134,7 @@ public abstract class AbstractTmFrameLink extends AbstractLink implements Aggreg
                 eventProducer.sendWarning("Error processing frame: size " + length + " longer than maximum allowed "
                         + frameHandler.getMaxFrameSize());
                 errFrameCount++;
+                return;
             }
 
             frameHandler.handleFrame(ert, data, offset, length);
