@@ -17,7 +17,7 @@ Yamcs Mission Control
 
 
 %install
-cd %{name}-%{version}-%{release}
+cd %{_topdir}/BUILD/%{name}-%{version}-%{release}
 
 mkdir -p %{buildroot}
 cp -r opt %{buildroot}

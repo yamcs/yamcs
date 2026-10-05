@@ -85,8 +85,11 @@ public class HandlerContext {
      * @return a url of the form [protocol]://[host]:[port][context]
      */
     public String getRequestBaseURL() {
+        var httpServer = getHttpServer();
+        boolean trustedProxy = httpServer.isTrustedProxy(nettyContext.channel().remoteAddress());
+
         boolean tls = nettyContext.channel().pipeline().get(SslHandler.class) != null;
-        String forwardedProto = nettyRequest.headers().get("x-forwarded-proto");
+        String forwardedProto = trustedProxy ? nettyRequest.headers().get("x-forwarded-proto") : null;
         if ("https".equals(forwardedProto)) {
             tls = true;
         }
@@ -94,7 +97,7 @@ public class HandlerContext {
         String host;
         int port = tls ? 443 : 80;
 
-        String hostURL = nettyRequest.headers().get("x-forwarded-host");
+        String hostURL = trustedProxy ? nettyRequest.headers().get("x-forwarded-host") : null;
         if (hostURL == null) {
             hostURL = nettyRequest.headers().get(HOST);
         }
@@ -121,17 +124,21 @@ public class HandlerContext {
     }
 
     public String getOriginalHostAddress() {
-        var forwardedFor = nettyRequest.headers().get("x-forwarded-for");
-        if (forwardedFor != null) {
-            if (forwardedFor.contains(",")) {
-                return forwardedFor.split(",")[0].trim();
-            } else {
-                return forwardedFor;
+        var address = (InetSocketAddress) nettyContext.channel().remoteAddress();
+
+        var httpServer = getHttpServer();
+        if (httpServer.isTrustedProxy(address)) {
+            var forwardedFor = nettyRequest.headers().get("x-forwarded-for");
+            if (forwardedFor != null) {
+                return httpServer.peelForwardedFor(forwardedFor);
             }
-        } else {
-            var address = (InetSocketAddress) nettyContext.channel().remoteAddress();
-            return address.getAddress().getHostAddress();
         }
+
+        return address.getAddress().getHostAddress();
+    }
+
+    private HttpServer getHttpServer() {
+        return nettyContext.channel().attr(HttpRequestHandler.CTX_HTTP_SERVER).get();
     }
 
     public String getOriginalHostName() {

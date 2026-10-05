@@ -46,7 +46,7 @@
 	</developers>
 
 	<properties>
-		<revision>5.13.6-0.4.1.Pixxel-SNAPSHOT</revision>
+		<revision>5.13.7-0.4.1.Pixxel-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<protobufVersion>4.35.0</protobufVersion>
 		<rocksdbVersion>9.4.0.11</rocksdbVersion>
@@ -382,6 +382,20 @@
 		</pluginManagement>
 	</build>
 
+	<repositories>
+		<repository>
+			<id>yamcs</id>
+			<url>https://maven.yamcs.org/releases</url>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>yamcs</id>
+			<url>https://maven.yamcs.org/releases</url>
+		</pluginRepository>
+	</pluginRepositories>
+
 	<distributionManagement>
 		<snapshotRepository>
 			<id>github</id>
@@ -453,6 +467,73 @@
 							<publishingServerId>central</publishingServerId>
 							<autoPublish>false</autoPublish>
 						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<!-- Attach a README-only javadoc jar instead of the full javadoc,
+			     which is still built in target/, but not attached. -->
+			<id>empty-javadoc</id>
+			<activation>
+				<property>
+					<name>emptyJavadoc</name>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>attach-javadocs</id>
+								<configuration>
+									<attach>false</attach>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>empty-javadoc</id>
+								<phase>prepare-package</phase>
+								<goals>
+									<goal>run</goal>
+								</goals>
+								<configuration>
+									<target xmlns:if="ant:if">
+										<condition property="isJar">
+											<equals arg1="${project.packaging}" arg2="jar" />
+										</condition>
+										<echo if:set="isJar" file="${project.build.directory}/empty-javadoc-content/README.md">Javadoc is available at https://docs.yamcs.org/javadoc/yamcs/latest/
+</echo>
+									</target>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-jar-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>empty-javadoc</id>
+								<phase>package</phase>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+								<configuration>
+									<classifier>javadoc</classifier>
+									<classesDirectory>${project.build.directory}/empty-javadoc-content</classesDirectory>
+									<outputDirectory>${project.build.directory}/empty-javadoc</outputDirectory>
+									<skipIfEmpty>true</skipIfEmpty>
+								</configuration>
+							</execution>
+						</executions>
 					</plugin>
 				</plugins>
 			</build>

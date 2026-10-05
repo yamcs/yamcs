@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.yamcs.utils.AggregateUtil;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.PathElement;
 
 public class StackedVerify implements Step {
 
@@ -12,8 +14,8 @@ public class StackedVerify implements Step {
     private long delay = 0;
     private long timeout = -1;
 
-    public void addComparison(Parameter parameter, String operator, Object value) {
-        condition.add(new VerifyComparison(parameter, operator, value));
+    public void addComparison(Parameter parameter, PathElement[] path, String operator, Object value) {
+        condition.add(new VerifyComparison(parameter, path, operator, value));
     }
 
     public List<VerifyComparison> getCondition() {
@@ -45,12 +47,16 @@ public class StackedVerify implements Step {
 
     public static record VerifyComparison(
             Parameter parameter,
+            PathElement[] path,
             String operator,
             Object value) {
 
         @Override
         public final String toString() {
             var res = parameter.getQualifiedName();
+            if (path != null) {
+                res += AggregateUtil.toString(path);
+            }
             switch (operator) {
             case "eq":
                 res += " = ";

@@ -21,7 +21,7 @@ abstract class Verifier {
     protected ParameterValue returnPv;
 
     enum State {
-        NEW, RUNNING, OK, NOK, TIMEOUT, DISABLED, CANCELLED
+        NEW, RUNNING, OK, NOK, TIMEOUT, DISABLED, CANCELLED, SKIPPED
     };
 
     volatile State state = State.NEW;
@@ -86,6 +86,18 @@ abstract class Verifier {
 
     void finishNOK() {
         finished(false, null);
+    }
+
+    /**
+     * Resolves this verifier as not applicable to this command instance: it does not affect the command outcome
+     * (no onSuccess/onFail termination action is applied) and does not wait for its check window to time out.
+     */
+    void skipped(String message) {
+        if (state != State.RUNNING) {
+            return;
+        }
+        state = State.SKIPPED;
+        cvh.onVerifierFinished(this, message, null);
     }
 
     abstract void doStart();

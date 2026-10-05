@@ -1,10 +1,9 @@
 package org.yamcs.container;
 
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.yamcs.ContainerExtractionResult;
 import org.yamcs.Processor;
@@ -21,8 +20,10 @@ import org.yamcs.mdb.Mdb;
 public class ContainerRequestManager implements ContainerListener {
 
     private Log log;
-    // For each container, all the subscribers
-    private Map<SequenceContainer, Set<ContainerConsumer>> subscriptions = new ConcurrentHashMap<>();
+    // For each container, the subscribers to that specific container.
+    private Map<SequenceContainer, CopyOnWriteArrayList<ContainerConsumer>> subscriptions = new ConcurrentHashMap<>();
+    // Subscribers to all containers
+    private CopyOnWriteArrayList<ContainerConsumer> allSubscribers = new CopyOnWriteArrayList<>();
 
     private XtceTmProcessor tmProcessor;
 
@@ -44,17 +45,19 @@ public class ContainerRequestManager implements ContainerListener {
     }
 
     public synchronized void subscribeAll(ContainerConsumer subscriber) {
-        for (SequenceContainer c : tmProcessor.mdb.getSequenceContainers()) {
-            addSubscription(subscriber, c);
+        if (allSubscribers.addIfAbsent(subscriber)) {
+            for (SequenceContainer c : tmProcessor.mdb.getSequenceContainers()) {
+                tmProcessor.startProviding(c);
+            }
         }
     }
 
     private void addSubscription(ContainerConsumer subscriber, SequenceContainer container) {
-        if (!subscriptions.containsKey(container)) {
-            subscriptions.put(container, new HashSet<ContainerConsumer>());
+        var subscribers = subscriptions.computeIfAbsent(container, k -> new CopyOnWriteArrayList<>());
+        if (subscribers.isEmpty()) {
             tmProcessor.startProviding(container);
         }
-        subscriptions.get(container).add(subscriber);
+        subscribers.addIfAbsent(subscriber);
     }
 
     public synchronized void unsubscribe(ContainerConsumer subscriber, SequenceContainer container) {
@@ -63,7 +66,7 @@ public class ContainerRequestManager implements ContainerListener {
         }
 
         if (subscriptions.containsKey(container)) {
-            Set<ContainerConsumer> subscribers = subscriptions.get(container);
+            List<ContainerConsumer> subscribers = subscriptions.get(container);
             if (subscribers.remove(subscriber)) {
                 if (subscribers.isEmpty()) {
                     // The following call does not do anything (yet)
@@ -78,15 +81,12 @@ public class ContainerRequestManager implements ContainerListener {
         }
     }
 
+    /**
+     * Removes a subscription made with {@link #subscribeAll(ContainerConsumer)}. Subscriptions to individual
+     * containers are not affected.
+     */
     public synchronized void unsubscribeAll(ContainerConsumer subscriber) {
-        for (Entry<SequenceContainer, Set<ContainerConsumer>> entry : subscriptions.entrySet()) {
-            Set<ContainerConsumer> subscribers = entry.getValue();
-            subscribers.remove(subscriber);
-            if (subscribers.isEmpty()) {
-                // The following call does not do anything (yet)
-                tmProcessor.stopProviding(entry.getKey());
-            }
-        }
+        allSubscribers.remove(subscriber);
     }
 
     @Override
@@ -95,12 +95,18 @@ public class ContainerRequestManager implements ContainerListener {
 
         log.trace("Getting update of {} container(s)", results.size());
         for (ContainerExtractionResult result : results) {
-            SequenceContainer def = result.getContainer();
-            if (!subscriptions.containsKey(def)) {
+            for (ContainerConsumer subscriber : allSubscribers) {
+                subscriber.processContainer(cpr, result);
+            }
+            List<ContainerConsumer> subscribers = subscriptions.get(result.getContainer());
+            if (subscribers == null) {
                 continue;
             }
-            for (ContainerConsumer subscriber : subscriptions.get(def)) {
-                subscriber.processContainer(cpr.getLink(), result);
+            for (ContainerConsumer subscriber : subscribers) {
+                // the all subscribers have already received it
+                if (!allSubscribers.contains(subscriber)) {
+                    subscriber.processContainer(cpr, result);
+                }
             }
         }
     }

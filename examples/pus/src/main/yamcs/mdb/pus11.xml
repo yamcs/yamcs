@@ -645,6 +645,7 @@
 			<ParameterSet>
 				<Parameter parameterTypeRef="/dt/uint16" name="n"/>
 				<Parameter parameterTypeRef="ScheduleIdType" name="schedule_id"/>
+				<Parameter parameterTypeRef="GroupIdType" name="group_id"/>
 				<Parameter parameterTypeRef="/PUS/PusTimeType" name="release_time"/>
 				<Parameter parameterTypeRef="/dt/uint11" name="apid"/>
 				<Parameter parameterTypeRef="/dt/uint14" name="seq"/>
@@ -660,6 +661,7 @@
 				<SequenceContainer name="DETAIL_REPORT_ELEMENT" shortDescription="One entry in the detail report">
 					<EntryList>
 						<ParameterRefEntry parameterRef="schedule_id"/>
+						<ParameterRefEntry parameterRef="group_id"/>
 						<ParameterRefEntry parameterRef="release_time"/>
 						<ParameterRefEntry parameterRef="apid">
 							<LocationInContainerInBits><FixedValue>5</FixedValue></LocationInContainerInBits>
@@ -705,6 +707,7 @@
 			<ParameterSet>
 					<Parameter parameterTypeRef="/dt/uint16" name="n"/>
 					<Parameter parameterTypeRef="ScheduleIdType" name="schedule_id"/>
+					<Parameter parameterTypeRef="GroupIdType" name="group_id"/>
 					<Parameter parameterTypeRef="/PUS/PusTimeType" name="release_time"/>
 					<Parameter parameterTypeRef="/dt/uint16" name="source"/>
 					<Parameter parameterTypeRef="/dt/uint16" name="apid"/>
@@ -714,6 +717,7 @@
 				<SequenceContainer name="SUMMARY_REPORT_ELEMENT">
 					<EntryList>
 						<ParameterRefEntry parameterRef="schedule_id"/>
+						<ParameterRefEntry parameterRef="group_id"/>
 						<ParameterRefEntry parameterRef="release_time"/>
 						<ParameterRefEntry parameterRef="source"/>
 						<ParameterRefEntry parameterRef="apid"/>

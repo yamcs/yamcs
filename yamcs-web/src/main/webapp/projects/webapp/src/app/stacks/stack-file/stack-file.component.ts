@@ -924,7 +924,7 @@ export class StackFileComponent implements OnInit, OnDestroy {
               args: {
                 processor: this.yamcs.processor!,
                 bucket: this.bucket,
-                stack: this.filename,
+                stack: this.objectName,
               },
             },
           };

@@ -118,6 +118,12 @@ export class PlotDataSource {
       const loadStart = new Date(start.getTime() - offscreenEdge);
       const loadStop = new Date(stop.getTime());
 
+      // Merge incoming realtime values at the same resolution
+      // as the archive samples.
+      this.plotBuffer.setBucketSize(
+        (loadStop.getTime() - loadStart.getTime()) / this.resolution,
+      );
+
       const traceIds = [...this.traceById.keys()];
       const traceConfigs = [...this.traceById.values()];
       const promises: Promise<any>[] = [];

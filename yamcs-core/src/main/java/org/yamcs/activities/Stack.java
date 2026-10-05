@@ -1,13 +1,17 @@
 package org.yamcs.activities;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.yamcs.cmdhistory.CommandHistoryPublisher;
 import org.yamcs.mdb.Mdb;
+import org.yamcs.utils.AggregateUtil;
 import org.yamcs.xtce.MetaCommand;
+import org.yamcs.xtce.PathElement;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class Stack {
@@ -91,10 +95,28 @@ public class Stack {
                 var comparisonObject = comparisonEl.getAsJsonObject();
 
                 var parameterName = comparisonObject.get("parameter").getAsString();
-                var parameter = mdb.getParameter(parameterName);
+
+                PathElement[] path = null;
+                var baseName = parameterName;
+                var aggSep = AggregateUtil.findSeparator(parameterName);
+                if (aggSep > 0) {
+                    baseName = parameterName.substring(0, aggSep);
+                    try {
+                        path = AggregateUtil.parseReference(parameterName.substring(aggSep));
+                    } catch (IllegalArgumentException e) {
+                        throw new StackParseException(
+                                "Invalid array/aggregate path in " + parameterName);
+                    }
+                }
+
+                var parameter = mdb.getParameter(baseName);
                 if (parameter == null) {
                     throw new StackParseException(
                             "Parameter " + parameterName + " does not exist in MDB");
+                }
+                if (path != null && !AggregateUtil.verifyPath(parameter.getParameterType(), path)) {
+                    throw new StackParseException(
+                            "Nonexistent array/aggregate path in " + parameterName);
                 }
 
                 var operator = comparisonObject.get("operator").getAsString();
@@ -111,7 +133,7 @@ public class Stack {
                     throw new StackParseException("Unexpected comparand of class " + jsonValue.getClass());
                 }
 
-                stackedVerify.addComparison(parameter, operator, value);
+                stackedVerify.addComparison(parameter, path, operator, value);
             }
         }
 
@@ -123,6 +145,37 @@ public class Stack {
         }
 
         return stackedVerify;
+    }
+
+    private static Object toJava(JsonElement el) throws StackParseException {
+        if (el.isJsonNull()) {
+            return null;
+        } else if (el.isJsonPrimitive()) {
+            var primitive = el.getAsJsonPrimitive();
+            if (primitive.isBoolean()) {
+                return primitive.getAsBoolean();
+            } else if (primitive.isNumber()) {
+                return primitive.getAsNumber();
+            } else if (primitive.isString()) {
+                return primitive.getAsString();
+            } else {
+                throw new StackParseException("Unexpected value type for " + el);
+            }
+        } else if (el.isJsonArray()) {
+            var list = new ArrayList<>();
+            for (var itemEl : el.getAsJsonArray()) {
+                list.add(toJava(itemEl));
+            }
+            return list;
+        } else if (el.isJsonObject()) {
+            var map = new LinkedHashMap<String, Object>();
+            for (var entry : el.getAsJsonObject().entrySet()) {
+                map.put(entry.getKey(), toJava(entry.getValue()));
+            }
+            return map;
+        } else {
+            throw new StackParseException("Unexpected value: " + el);
+        }
     }
 
     private static StackedCommand parseCommand(Mdb mdb, JsonObject commandObject) throws StackParseException {
@@ -179,26 +232,7 @@ public class Stack {
                     throw new StackParseException(
                             "Argument " + argName + " does not exist in MDB for command " + name);
                 }
-                if (argValue.isJsonNull()) {
-                    command.addAssignment(argInfo, null);
-                } else if (argValue.isJsonPrimitive()) {
-                    var primitive = argValue.getAsJsonPrimitive();
-                    if (primitive.isBoolean()) {
-                        command.addAssignment(argInfo, primitive.getAsBoolean());
-                    } else if (primitive.isNumber()) {
-                        command.addAssignment(argInfo, primitive.getAsNumber());
-                    } else if (primitive.isString()) {
-                        command.addAssignment(argInfo, primitive.getAsString());
-                    } else {
-                        throw new StackParseException("Unexpected value type for " + argValue);
-                    }
-                } else if (argValue.isJsonArray()) {
-                    command.addAssignment(argInfo, argValue.getAsJsonArray().toString());
-                } else if (argValue.isJsonObject()) {
-                    command.addAssignment(argInfo, argValue.getAsJsonObject().toString());
-                } else {
-                    throw new StackParseException("Unexpected value: " + argValue);
-                }
+                command.addAssignment(argInfo, toJava(argValue));
             }
         }
         if (commandObject.has("extraOptions")) {

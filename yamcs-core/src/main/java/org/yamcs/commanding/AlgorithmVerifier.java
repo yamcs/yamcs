@@ -78,6 +78,10 @@ public class AlgorithmVerifier extends Verifier implements AlgorithmExecListener
             finished((Boolean) result);
         } else if (result instanceof VerificationResult) {
             var verificationResult = (VerificationResult) result;
+            if (verificationResult.skip) {
+                skipped(verificationResult.message);
+                return;
+            }
             if (verificationResult.returnValue != null) {
                 var value = verificationResult.returnValue;
                 returnPv = new ParameterValue(YAMCS_PARAMETER_RETURN_VALUE);

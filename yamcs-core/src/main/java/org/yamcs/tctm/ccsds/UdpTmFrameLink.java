@@ -16,9 +16,6 @@ import org.yamcs.utils.StringConverter;
 /**
  * Receives telemetry fames via UDP. One UDP datagram = one TM frame.
  * 
- * 
- * @author nm
- *
  */
 public class UdpTmFrameLink extends AbstractTmFrameLink implements Runnable {
     protected DatagramSocket tmSocket;
