@@ -1,7 +1,11 @@
 package org.yamcs.pus;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import org.yamcs.CommandOption;
 import org.yamcs.ConfigurationException;
@@ -11,6 +15,7 @@ import org.yamcs.YamcsServer;
 import org.yamcs.CommandOption.CommandOptionType;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.actions.ActionResult;
+import org.yamcs.commanding.ArgumentLocation;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandId;
@@ -25,8 +30,13 @@ import org.yamcs.tctm.LinkAction;
 import org.yamcs.tctm.LinkActionProvider;
 import org.yamcs.tctm.ccsds.time.CucTimeEncoder;
 import org.yamcs.time.TimeCorrelationService;
+import org.yamcs.utils.BitBuffer;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.xtce.AncillaryData;
+import org.yamcs.xtce.BaseDataType;
+import org.yamcs.xtce.BinaryDataEncoding;
+import org.yamcs.xtce.DataType;
 
 import com.google.gson.JsonObject;
 
@@ -137,6 +147,12 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
     int pus22GroupIdBytes = 0;
     long pus22GroupIdDefault = 0;
 
+    /**
+     * If true, a checksum is appended to the TC packets embedded into commands (arguments whose type is annotated with
+     * {@link AncillaryData#KEY_EMBEDDED_TC}, for example the activities of a manually built TC(11,4)).
+     */
+    boolean embeddedTcCrc;
+
     // allow changing the sequence count during runtime
     private ChangeSeqCountAction seqCountAction = new ChangeSeqCountAction();
 
@@ -153,6 +169,10 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
         }
 
         errorDetectionCalculator = AbstractPacketPreprocessor.getErrorDetectionWordCalculator(config);
+        this.embeddedTcCrc = config.getBoolean("embeddedTcCrc", errorDetectionCalculator != null);
+        if (embeddedTcCrc && errorDetectionCalculator == null) {
+            throw new ConfigurationException("embeddedTcCrc requires the errorDetection to be configured");
+        }
         if (config.containsKey("timeEncoding")) {
             timeEncoder = configureTimeEncoding(config.getConfig("timeEncoding"));
         } else {
@@ -242,6 +262,20 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
     public byte[] process(PreparedCommand pc) {
         byte[] binary = pc.getBinary();
 
+        List<EmbeddedTc> embeddedTcs;
+        try {
+            embeddedTcs = findEmbeddedTcs(pc);
+        } catch (IllegalArgumentException e) {
+            failCommand(pc.getCommandId(), e.getMessage());
+            return null;
+        }
+        if (!embeddedTcs.isEmpty()) {
+            binary = processEmbeddedTcs(pc, embeddedTcs, binary);
+            if (binary == null) {
+                return null;
+            }
+        }
+
         boolean hasCrc = hasCrc(pc);
         if (hasCrc) { // 2 extra bytes for the checkword
             binary = Arrays.copyOf(binary, binary.length + 2);
@@ -308,6 +342,146 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
         return binary;
     }
 
+
+    /**
+     * Location in the command binary of a TC packet embedded as the value of an argument annotated with
+     * {@link AncillaryData#KEY_EMBEDDED_TC}.
+     * 
+     * @param path
+     *            the path of the argument value (see {@link PreparedCommand#getArgumentLocations()})
+     * @param offset
+     *            byte offset of the packet
+     * @param length
+     *            length in bytes of the packet
+     * @param sizeTagBitPos
+     *            bit position of the leading size tag (if sizeTagBits &gt; 0)
+     * @param sizeTagBits
+     *            size in bits of the leading size tag; 0 if the encoding does not have a size tag
+     * @param resizable
+     *            true if the encoding allows the packet to grow (to append the checksum)
+     */
+    record EmbeddedTc(String path, int offset, int length, int sizeTagBitPos, int sizeTagBits, boolean resizable) {
+    }
+
+    /**
+     * Finds the argument values annotated with {@link AncillaryData#KEY_EMBEDDED_TC} using the argument locations
+     * recorded when the command was encoded.
+     * 
+     * @return the embedded TCs sorted by offset; empty list if there is none
+     * @throws IllegalArgumentException
+     *             if an embedded TC is not aligned to a byte boundary
+     */
+    static List<EmbeddedTc> findEmbeddedTcs(PreparedCommand pc) {
+        List<ArgumentLocation> locations = pc.getArgumentLocations();
+        if (locations.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<EmbeddedTc> result = null;
+        for (ArgumentLocation loc : locations) {
+            DataType type = pc.getArgumentType(loc.path());
+            if (!(type instanceof BaseDataType bdt) || !bdt.hasAncillaryData(AncillaryData.KEY_EMBEDDED_TC)) {
+                continue;
+            }
+            int sizeTagBits = 0;
+            boolean resizable = false;
+            if (bdt.getEncoding() instanceof BinaryDataEncoding bde) {
+                switch (bde.getType()) {
+                case FIXED_SIZE -> resizable = bde.getSizeInBits() < 0; // negative size: all the bytes of the value
+                case LEADING_SIZE -> {
+                    sizeTagBits = bde.getSizeInBitsOfSizeTag();
+                    resizable = true;
+                }
+                default -> resizable = false;
+                }
+            }
+            int dataBitPos = loc.bitPosition() + sizeTagBits;
+            int dataBits = loc.bitSize() - sizeTagBits;
+            if ((dataBitPos & 7) != 0 || (dataBits & 7) != 0) {
+                throw new IllegalArgumentException("The embedded TC in argument " + loc.path()
+                        + " is not aligned to a byte boundary");
+            }
+            if (result == null) {
+                result = new ArrayList<>();
+            }
+            result.add(new EmbeddedTc(loc.path(), dataBitPos >>> 3, dataBits >>> 3, loc.bitPosition(), sizeTagBits,
+                    resizable));
+        }
+        if (result == null) {
+            return Collections.emptyList();
+        }
+        result.sort(Comparator.comparingInt(EmbeddedTc::offset));
+        return result;
+    }
+
+    /**
+     * Processes the TC packets embedded into the command: each of them gets the CCSDS length and sequence count
+     * filled in and, if {@link #embeddedTcCrc} is set, a checksum appended.
+     * <p>
+     * The sequence counts are allocated in the order of the packets in the command, then the processed packets are
+     * put back into the binary starting from the last one, such that growing a packet (when appending the checksum)
+     * does not change the location of the packets not yet put back.
+     *
+     * @param embeddedTcs
+     *            the embedded TCs sorted by offset
+     * @return the new command binary or null if the command has failed
+     */
+    byte[] processEmbeddedTcs(PreparedCommand pc, List<EmbeddedTc> embeddedTcs, byte[] binary) {
+        CommandId cmdId = pc.getCommandId();
+        int crcLength = embeddedTcCrc ? 2 : 0;
+        List<byte[]> processed = new ArrayList<>(embeddedTcs.size());
+
+        for (EmbeddedTc etc : embeddedTcs) {
+            if (etc.length() < 7 || etc.offset() + etc.length() > binary.length) {
+                failCommand(cmdId, "Invalid embedded TC in argument " + etc.path() + ": length " + etc.length()
+                        + " (a CCSDS packet has at least 7 bytes)");
+                return null;
+            }
+            if (embeddedTcCrc && !etc.resizable()) {
+                failCommand(cmdId, "Cannot append the checksum to the embedded TC in argument " + etc.path()
+                        + ": the argument encoding does not allow its size to change");
+                return null;
+            }
+            byte[] packet = new byte[etc.length() + crcLength];
+            System.arraycopy(binary, etc.offset(), packet, 0, etc.length());
+
+            ByteArrayUtils.encodeUnsignedShort(packet.length - 7, packet, 4); // packet length
+            int seqCount = seqFiller.fill(packet);
+            commandHistoryPublisher.publish(cmdId, CCSDS_SEQCOUNT_PARA_NAME + ":" + etc.path(), seqCount);
+
+            if (embeddedTcCrc) {
+                int pos = packet.length - 2;
+                try {
+                    int checkword = errorDetectionCalculator.compute(packet, 0, pos);
+                    ByteArrayUtils.encodeUnsignedShort(checkword, packet, pos);
+                } catch (IllegalArgumentException e) {
+                    failCommand(cmdId, "Error when computing the checkword of the embedded TC in argument "
+                            + etc.path() + ": " + e.getMessage());
+                    return null;
+                }
+            }
+            processed.add(packet);
+        }
+
+        for (int i = embeddedTcs.size() - 1; i >= 0; i--) {
+            EmbeddedTc etc = embeddedTcs.get(i);
+            byte[] packet = processed.get(i);
+            if (packet.length != etc.length()) {
+                byte[] newBinary = new byte[binary.length + packet.length - etc.length()];
+                System.arraycopy(binary, 0, newBinary, 0, etc.offset());
+                int tailOffset = etc.offset() + etc.length();
+                System.arraycopy(binary, tailOffset, newBinary, etc.offset() + packet.length,
+                        binary.length - tailOffset);
+                binary = newBinary;
+                if (etc.sizeTagBits() > 0) {
+                    BitBuffer bitbuf = new BitBuffer(binary);
+                    bitbuf.setPosition(etc.sizeTagBitPos());
+                    bitbuf.putBits(packet.length, etc.sizeTagBits());
+                }
+            }
+            System.arraycopy(packet, 0, binary, etc.offset(), packet.length);
+        }
+        return binary;
+    }
 
     byte[] buildScheduledTc(CommandId cmdId, long scheduleTime, long subScheduleId, long groupId, byte[] binary) {
 
@@ -501,6 +675,13 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
     @Override
     public int getBinaryLength(PreparedCommand pc) {
         int len = pc.getBinary().length;
+        if (embeddedTcCrc) {
+            try {
+                len += 2 * findEmbeddedTcs(pc).size();
+            } catch (IllegalArgumentException e) {
+                // the command will fail in process()
+            }
+        }
         if (hasCrc(pc)) {
             len += 2;
         }

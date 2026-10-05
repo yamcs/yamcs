@@ -23,12 +23,14 @@ import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.VerifierConfig;
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.utils.AggregateUtil;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.ValueHelper;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.PathElement;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
@@ -433,6 +435,29 @@ public class PreparedCommand {
             }
         }
         return null;
+    }
+
+    /**
+     * Finds the type of the argument value with the given path (see {@link #getArgumentLocations()}), for example
+     * {@code activities[1].tc}.
+     * 
+     * @return the type or null if the meta command is not known or the path cannot be resolved
+     */
+    public org.yamcs.xtce.DataType getArgumentType(String path) {
+        if (metaCommand == null) {
+            return null;
+        }
+        PathElement[] elements = AggregateUtil.parseReference(path);
+        if (elements.length == 0 || elements[0].getName() == null) {
+            return null;
+        }
+        Argument arg = metaCommand.getEffectiveArgument(elements[0].getName());
+        if (arg == null || arg.getArgumentType() == null) {
+            return null;
+        }
+        // the argument name has been consumed, keep only the index (if any) of the first element
+        elements[0] = new PathElement(null, elements[0].getIndex());
+        return AggregateUtil.getMemberType(arg.getArgumentType(), elements);
     }
 
     public void setArgumentLocations(List<ArgumentLocation> argumentLocations) {

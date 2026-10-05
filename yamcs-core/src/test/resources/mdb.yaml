@@ -123,3 +123,8 @@ ArgLocationsTest:
     - type: xtce
       args:
           file: "src/test/resources/xtce/arg-locations.xml"
+
+EmbeddedTcCommandTest:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/embedded-tc.xml"
