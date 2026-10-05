@@ -87,6 +87,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.cors.CorsConfig;
 import io.netty.handler.codec.http.cors.CorsConfigBuilder;
 import io.netty.handler.ipfilter.IpFilterRule;
@@ -144,6 +145,7 @@ public class HttpServer extends AbstractYamcsService {
 
     // Services (may participate in start-stop events)
     private TokenStore tokenStore;
+    private AuthRateLimiter authRateLimiter;
     private AuditLog auditLog;
 
     // Guava manager for sub-services
@@ -260,6 +262,7 @@ public class HttpServer extends AbstractYamcsService {
 
         reverseLookup = config.getBoolean("reverseLookup");
         maxAuthRequestsPerSecond = config.getInt("maxAuthRequestsPerSecond");
+        authRateLimiter = new AuthRateLimiter(maxAuthRequestsPerSecond);
 
         try {
             trustedProxyRules = IpSubnetRuleUtils.parseRules(config.<String> getList("trustedProxies"));
@@ -533,8 +536,26 @@ public class HttpServer extends AbstractYamcsService {
         return IpSubnetRuleUtils.hasUntrustedHop(trustedProxyRules, forwardedForHeader);
     }
 
+    /**
+     * Returns the IP address of the original client. For requests coming from a trusted proxy, this is derived from
+     * the X-Forwarded-For header.
+     */
+    public String getOriginalHostAddress(InetSocketAddress remoteAddress, HttpRequest request) {
+        if (isTrustedProxy(remoteAddress)) {
+            var forwardedFor = request.headers().get("x-forwarded-for");
+            if (forwardedFor != null) {
+                return peelForwardedFor(forwardedFor);
+            }
+        }
+        return remoteAddress.getAddress().getHostAddress();
+    }
+
     public int getMaxAuthRequestsPerSecond() {
         return maxAuthRequestsPerSecond;
+    }
+
+    public AuthRateLimiter getAuthRateLimiter() {
+        return authRateLimiter;
     }
 
     public CorsConfig getCorsConfig() {
