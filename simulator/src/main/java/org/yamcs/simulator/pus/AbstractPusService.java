@@ -17,6 +17,11 @@ public abstract class AbstractPusService {
     static final int START_ERR_MAX_GROUPS_REACHED = 5;
     static final int START_ERR_GROUP_HAS_ACTIVITIES = 6;
     static final int START_ERR_GROUP_EXISTS = 7;
+    // event-action (ST[19]) start errors
+    static final int START_ERR_EVENT_ACTION_EXISTS = 8;
+    static final int START_ERR_UNKNOWN_EVENT_ACTION = 9;
+    static final int START_ERR_EVENT_ACTION_ENABLED = 10;
+    static final int START_ERR_MAX_EVENT_ACTIONS_REACHED = 11;
 
     // completion errors
     static final int COMPL_ERR_NOT_IMPLEMENTED = 2;

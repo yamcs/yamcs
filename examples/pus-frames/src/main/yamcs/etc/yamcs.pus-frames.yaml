@@ -125,6 +125,10 @@ dataLinks:
                 pfield: 0x2f
             # with correlation established, the TC[11,4] release time is converted to on-board time
             tcoService: tco0
+            # process the TC packets embedded in commands (arguments annotated with Yamcs:EmbeddedTc, like the
+            # activities of /PUS11/INSERT_ACTIVITIES or the actions of /PUS19/ADD_EVENT_ACTIONS): fill in their
+            # sequence count and length and append a CRC. The default is true if errorDetection is set.
+            embeddedTcCrc: true
             pus11:
                 subScheduleId:
                     bytes: 1
@@ -144,6 +148,8 @@ mdb:
     spec: "mdb/pus11.xml"
   - type: "xtce"
     spec: "mdb/pus17.xml"
+  - type: "xtce"
+    spec: "mdb/pus19.xml"
   - type: "xtce"
     spec: "mdb/landing.xml"
 
