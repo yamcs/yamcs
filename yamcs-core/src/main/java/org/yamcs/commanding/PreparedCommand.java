@@ -1,6 +1,7 @@
 package org.yamcs.commanding;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -47,6 +48,8 @@ public class PreparedCommand {
 
     List<CommandHistoryAttribute> attributes = new ArrayList<>();
     private Map<Argument, ArgumentValue> argAssignment; // Ordered from top entry to bottom entry
+    // locations of the argument values inside the unprocessed binary, in encoding order
+    private List<ArgumentLocation> argumentLocations = Collections.emptyList();
     private Set<String> userAssignedArgumentNames;
 
     // Verifier-specific configuration options (that override the MDB verifier settings)
@@ -228,6 +231,9 @@ public class PreparedCommand {
                         .build());
             }
         }
+        for (ArgumentLocation loc : argumentLocations) {
+            assignmentb.addLocation(loc.toProto());
+        }
         td.addColumn(CNAME_ASSIGNMENTS, DataType.protobuf("org.yamcs.cmdhistory.protobuf.Cmdhistory$AssignmentInfo"));
         al.add(assignmentb.build());
 
@@ -301,6 +307,13 @@ public class PreparedCommand {
                 ArgumentValue argv = new ArgumentValue(arg);
                 argv.setEngValue(v);
                 pc.argAssignment.put(arg, argv);
+            }
+            if (assignments.getLocationCount() > 0) {
+                List<ArgumentLocation> locations = new ArrayList<>(assignments.getLocationCount());
+                for (var loc : assignments.getLocationList()) {
+                    locations.add(ArgumentLocation.fromProto(loc));
+                }
+                pc.argumentLocations = locations;
             }
         }
         return pc;
@@ -390,6 +403,40 @@ public class PreparedCommand {
 
     public Map<Argument, ArgumentValue> getArgAssignment() {
         return argAssignment;
+    }
+
+    /**
+     * Returns the locations of the argument values inside the binary, as recorded by the command encoder.
+     * <p>
+     * There is one entry for each top level argument, each member of an aggregate and each element of an array (for
+     * example {@code activities}, {@code activities[0]}, {@code activities[0].tc}), in encoding order. Arguments which
+     * are not part of the command container have no location.
+     * <p>
+     * The positions are relative to the unprocessed binary (as produced by the encoder); a command post-processor
+     * changing the size of the binary has to take this into account.
+     * 
+     * @return the list of locations; empty if not available (for example for raw commands)
+     */
+    public List<ArgumentLocation> getArgumentLocations() {
+        return argumentLocations;
+    }
+
+    /**
+     * 
+     * @return the location of the argument value with the given path (see {@link #getArgumentLocations()}) or null
+     *         if not available. If the argument has been encoded multiple times, the first location is returned.
+     */
+    public ArgumentLocation getArgumentLocation(String path) {
+        for (ArgumentLocation loc : argumentLocations) {
+            if (loc.path().equals(path)) {
+                return loc;
+            }
+        }
+        return null;
+    }
+
+    public void setArgumentLocations(List<ArgumentLocation> argumentLocations) {
+        this.argumentLocations = argumentLocations == null ? Collections.emptyList() : argumentLocations;
     }
 
     public void disableTransmissionConstraints(boolean b) {

@@ -118,3 +118,8 @@ ArrayInArrayArgCommandTest:
     - type: xtce
       args:
           file: "src/test/resources/xtce/array-in-array-arg.xml"
+
+ArgLocationsTest:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/arg-locations.xml"

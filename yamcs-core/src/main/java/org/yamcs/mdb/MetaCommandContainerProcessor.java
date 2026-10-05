@@ -3,6 +3,7 @@ package org.yamcs.mdb;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.ErrorInCommand;
+import org.yamcs.commanding.ArgumentLocation;
 import org.yamcs.commanding.ArgumentValue;
 import org.yamcs.parameter.AggregateValue;
 import org.yamcs.parameter.ArrayValue;
@@ -120,10 +121,35 @@ public class MetaCommandContainerProcessor {
         ArgumentType atype = arg.getArgumentType();
         Value rawValue = pcontext.argumentTypeProcessor.decalibrate(atype, engValue);
         argValue.setRawValue(rawValue);
-        encodeRawValue(arg.getName(), atype, rawValue, pcontext);
+        encodeRawValue(arg.getName(), atype, rawValue, pcontext, true);
     }
 
-    private void encodeRawValue(String argName, DataType type, Value rawValue, TcProcessingContext pcontext) {
+    /**
+     * Encodes the raw value according to the type.
+     * <p>
+     * If recordLocation is true, the location of the value (and of each member/element for aggregates/arrays) is
+     * recorded in the context.
+     */
+    private void encodeRawValue(String argName, DataType type, Value rawValue, TcProcessingContext pcontext,
+            boolean recordLocation) {
+        BitBuffer bitbuf = pcontext.bitbuf;
+        int startBitPos = bitbuf.getPosition();
+        int idx = -1;
+        if (recordLocation) {
+            // added before the members/elements, the size is set after encoding
+            idx = pcontext.addArgumentLocation(new ArgumentLocation(argName, startBitPos, 0));
+        }
+
+        doEncodeRawValue(argName, type, rawValue, pcontext, recordLocation);
+
+        if (recordLocation) {
+            pcontext.setArgumentLocation(idx,
+                    new ArgumentLocation(argName, startBitPos, bitbuf.getPosition() - startBitPos));
+        }
+    }
+
+    private void doEncodeRawValue(String argName, DataType type, Value rawValue, TcProcessingContext pcontext,
+            boolean recordLocation) {
         if (type instanceof BaseDataType) {
             DataEncoding encoding = ((BaseDataType) type).getEncoding();
             if (encoding == null) {
@@ -136,7 +162,7 @@ public class MetaCommandContainerProcessor {
             AggregateValue aggRawValue = (AggregateValue) rawValue;
             for (Member aggm : aggtype.getMemberList()) {
                 Value mvalue = aggRawValue.getMemberValue(aggm.getName());
-                encodeRawValue(argName + "." + aggm.getName(), aggm.getType(), mvalue, pcontext);
+                encodeRawValue(argName + "." + aggm.getName(), aggm.getType(), mvalue, pcontext, recordLocation);
             }
         } else if (type instanceof ArrayDataType) {
             ArrayDataType arrtype = (ArrayDataType) type;
@@ -144,7 +170,8 @@ public class MetaCommandContainerProcessor {
             ArrayValue arrayRawValue = (ArrayValue) rawValue;
             for (int i = 0; i < arrayRawValue.flatLength(); i++) {
                 Value valuei = arrayRawValue.getElementValue(i);
-                encodeRawValue(argName + arrayRawValue.flatIndexToString(i), etype, valuei, pcontext);
+                encodeRawValue(argName + arrayRawValue.flatIndexToString(i), etype, valuei, pcontext,
+                        recordLocation);
             }
         } else {
             throw new CommandEncodingException("Arguments or parameters of type " + type + " not supported");
@@ -160,7 +187,7 @@ public class MetaCommandContainerProcessor {
 
         Value rawValue = paraValue; // TBD if this is correct
         ParameterType ptype = para.getParameterType();
-        encodeRawValue(para.getQualifiedName(), ptype, rawValue, pcontext);
+        encodeRawValue(para.getQualifiedName(), ptype, rawValue, pcontext, false);
     }
 
     private void fillInFixedValueEntry(FixedValueEntry fve, TcProcessingContext pcontext) {
