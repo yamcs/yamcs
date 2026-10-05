@@ -114,7 +114,17 @@ indirect-param-ref:
       args:
           file: "../yamcs-xtce/src/test/resources/indirect-param.xml"
 
+time-association:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/time-association.xml"
+
 ArrayInArrayArgCommandTest:
     - type: xtce
       args:
           file: "src/test/resources/xtce/array-in-array-arg.xml"
+
+RepeatEntryCommandTest:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/repeat-entry-cmd.xml"

@@ -156,6 +156,11 @@ export function convertValueToNumber(value: Value) {
       return value.uint64Value!;
     case 'SINT64':
       return value.sint64Value!;
+    case 'ENUMERATED':
+      // Enum values carry the numeric ordinal in sint64Value (stringValue holds the label).
+      return Number(value.sint64Value!);
+    case 'BOOLEAN':
+      return value.booleanValue ? 1 : 0;
     default:
       return null; // Assuming not a number
   }

@@ -64,6 +64,7 @@ public abstract class SequenceEntry implements Serializable, Comparable<Sequence
      * is not included will be treated as if it did not exist in the sequence at all.
      */
     private MatchCriteria includeCondition = null;
+    private TimeAssociation timeAssociation = null;
 
     public SequenceEntry() {
         
@@ -146,5 +147,13 @@ public abstract class SequenceEntry implements Serializable, Comparable<Sequence
     }
     public void setIncludeCondition(MatchCriteria includeCondition) {
         this.includeCondition = includeCondition;
+    }
+
+    public TimeAssociation getTimeAssociation() {
+        return timeAssociation;
+    }
+
+    public void setTimeAssociation(TimeAssociation timeAssociation) {
+        this.timeAssociation = timeAssociation;
     }
 }

@@ -90,6 +90,13 @@ public class YamcsServerInstance extends YamcsInstanceService {
         // Detailed validation on these is done
         // in LinkManager, MdbFactory, StreamInitializer, ActivityService
         spec.addOption("dataLinks", OptionType.LIST).withElementType(OptionType.MAP).withSpec(Spec.ANY);
+
+        Spec dataLinkCompositionSpec = new Spec();
+        dataLinkCompositionSpec.addOption("selectedMode", OptionType.STRING).withRequired(true);
+        dataLinkCompositionSpec.addOption("components", OptionType.MAP).withSpec(Spec.ANY).withRequired(true);
+        dataLinkCompositionSpec.addOption("modes", OptionType.MAP).withSpec(Spec.ANY).withRequired(true);
+        spec.addOption("dataLinkComposition", OptionType.MAP).withSpec(dataLinkCompositionSpec);
+
         spec.addOption("streamConfig", OptionType.MAP).withSpec(Spec.ANY);
         spec.addOption("activities", OptionType.MAP).withSpec(Spec.ANY);
 

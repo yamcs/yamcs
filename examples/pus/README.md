@@ -42,27 +42,25 @@ ST[08] function management
 - No support in the simulator.
 
 ST[09] time management
-- The simulator on-board time is a real Unix-epoch time (host wall clock) with a small hardcoded
-  drift applied. Yamcs decodes it directly (`timeEncoding: {type: CUC, epoch: UNIX}`); this example
-  does not use a time correlation service. See the `pus-frames` example for a setup where the
-  on-board time is correlated against the frame earth-reception time.
+- The time sent by the simulator is obtained from System.nanoTime() and gives roughly the time since the computer has been started.
+- A standard hardcoded drift is applied.
+- Yamcs uses a time correlation service to correlate the simulator time with the "ground" time. 
+  The time correlation does not know about the drift or how the time is generated.
 - The time packet is sent every 4 seconds and changing that frequency is not supported.
 
 ST[10] (reserved)
 
 ST[11] time based scheduled.
- - **Not wired up in this example** - see the `pus-frames` example, which demonstrates ST[11]
-   instead of ST[22] (see below). The simulator itself supports both regardless of which example
-   you run; the two examples were deliberately split one-service-each so their command options
-   (`pus11*` / `pus22*`) don't get interleaved in the same instance's command form (Yamcs does not
-   currently group/sort command options).
  - The Yamcs command post-processor generates the time based scheduled commands based on command attributes.
    Issue any command with the `pus11ScheduleAt` option set and it is wrapped into a TC[11,4] insert
-   activities request. The `pus11SubScheduleId` and `pus11GroupId` options select the sub-schedule and
-   the scheduling group; their defaults and field widths are configured in the `pus11` block of the
-   command post-processor (see `pus-frames/etc/yamcs.pus-frames.yaml`).
+   activities request addressed to `pus11Apid`. The `pus11SubScheduleId` and `pus11GroupId` options select the
+   sub-schedule and the scheduling group; their defaults and field widths are configured in the `pus11` block of
+   the command post-processor (see `etc/yamcs.pus.yaml`).
  - Most TC/TM supported in the simulator, including sub-schedules (TC[11,18..21]) and scheduling
    groups (TC[11,22..26], TM[11,27]).
+ - The simulator's time-based schedule execution function starts disabled (as per the standard): send `/PUS11/ENABLE_SCHEDULER` before scheduling commands, otherwise they are dropped at their release time.
+ - Scheduling groups only exist after an explicit TC[11,22] (`/PUS11/CREATE_SCHEDULING_GROUPS`): an insert referencing an unknown group is rejected. A sub-schedule created by an insert starts disabled (TC[11,20] enables it).
+ - A dedicated (web) UI application would be highly beneficial. (Anyone interested in sponsoring its development?)
 
 ST[12] on-board monitoring
 - Standard Yamcs MDB definitions should suffice. 
@@ -105,8 +103,7 @@ ST[21] request sequencing
 - No support in the simulator.
 
 ST[22] position-based scheduling
- - **This is the example that demonstrates ST[22]** (ST[11] is demonstrated in `pus-frames`
-   instead - see above). Try it with `examples/pus/tests/test-pus22.py`.
+ - Try it with `examples/pus/tests/test-pus22.py`.
  - Structurally the same implementation as ST[11] (see above), keyed on a position tag
    (`orbit_number`, `orbit_angle`) instead of a time. Issue any command with the
    `pus22OrbitNumber` and `pus22OrbitAngle` (degrees) options set and it is wrapped into a
@@ -117,7 +114,7 @@ ST[22] position-based scheduling
    the simulator.
  - The simulator's "orbit" is a simple synthetic clock: `orbit_angle` sweeps 0..360 degrees
    uniformly over a fixed 90 minute period, `orbit_number` increments
-   on each wrap. It is exposed as telemetry (`OrbitNumber`/`OrbitAngle`, `hkid=5`) so you can see
+   on each wrap. It is exposed as telemetry (`OrbitNumber`/`OrbitAngle`, `hkid=6`) so you can see
    where a scheduled activity's target position is relative to the current one.
  - Persistent scheduling (ECSS 6.22.5) is not supported - every activity is one-shot, like ST[11].
 

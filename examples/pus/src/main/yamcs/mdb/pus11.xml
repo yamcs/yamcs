@@ -40,15 +40,14 @@
 					<Member typeRef="/dt/uint16" name="seq"/>
 				</MemberList>
 			</AggregateParameterType>
-
 			<IntegerParameterType name="GroupIdType" signed="false">
 				<IntegerDataEncoding sizeInBits="8"/>
 			</IntegerParameterType>
 			<EnumeratedParameterType name="GroupStatusType">
 				<IntegerDataEncoding sizeInBits="8"/>
 				<EnumerationList>
-					<Enumeration value="0" label="disabled" />
-					<Enumeration value="1" label="enabled" />
+					<Enumeration value="0" label="disabled"/>
+					<Enumeration value="1" label="enabled"/>
 				</EnumerationList>
 			</EnumeratedParameterType>
 			<AggregateParameterType name="GroupStatusElementType">
@@ -61,18 +60,22 @@
 				<DimensionList>
 					<Dimension>
 						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
-						<EndingIndex> <DynamicValue><ParameterInstanceRef parameterRef="group_status_report_n"/><LinearAdjustment intercept="-1"/></DynamicValue></EndingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ParameterInstanceRef parameterRef="group_report_n"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
 					</Dimension>
 				</DimensionList>
 			</ArrayParameterType>
-
 		</ParameterTypeSet>
 		<ParameterSet>
 			<Parameter parameterTypeRef="/dt/uint32" name="status_report_n"/>
 			<Parameter parameterTypeRef="/dt/uint32" name="summary_report_n"/>
 			<Parameter parameterTypeRef="StatusReportType" name="status_report" shortDescription="Contains the status (enable/disable) of the sub-schedules."/>
-			<Parameter parameterTypeRef="/dt/uint32" name="group_status_report_n"/>
-			<Parameter parameterTypeRef="GroupStatusReportType" name="group_status_report" shortDescription="Contains the status (enable/disable) of the scheduling groups."/>
+			<Parameter parameterTypeRef="/dt/uint32" name="group_report_n"/>
+			<Parameter parameterTypeRef="GroupStatusReportType" name="group_report"/>
 		</ParameterSet>
 		<ContainerSet>
 			<SequenceContainer name="pus11-tm">
@@ -96,19 +99,17 @@
 					</RestrictionCriteria>
 				</BaseContainer>
 			</SequenceContainer>
-
 			<SequenceContainer name="GROUP_STATUS_REPORT" shortDescription="TM[11,27] time-based scheduling group status report">
 				<EntryList>
-					<ParameterRefEntry parameterRef="group_status_report_n"/>
-					<ArrayParameterRefEntry parameterRef="group_status_report"/>
+					<ParameterRefEntry parameterRef="group_report_n"/>
+					<ArrayParameterRefEntry parameterRef="group_report"/>
 				</EntryList>
 				<BaseContainer containerRef="pus11-tm">
 					<RestrictionCriteria>
-						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="27" />
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="27"/>
 					</RestrictionCriteria>
 				</BaseContainer>
 			</SequenceContainer>
-
 		</ContainerSet>
 	</TelemetryMetaData>
 	<CommandMetaData>
@@ -154,56 +155,63 @@
 					</Dimension>
 				</DimensionList>
 			</ArrayArgumentType>
-
-			<IntegerArgumentType name="NumGroupsType" baseType="/dt/uint8"/>
-			<IntegerArgumentType name="GroupIdArgType" baseType="/dt/uint8"/>
-			<EnumeratedArgumentType name="GroupStatusArgType">
-				<IntegerDataEncoding sizeInBits="8"/>
-				<EnumerationList>
-					<Enumeration value="0" label="disabled"/>
-					<Enumeration value="1" label="enabled"/>
-				</EnumerationList>
-			</EnumeratedArgumentType>
-			<ArrayArgumentType arrayTypeRef="GroupIdArgType" name="GroupIdArrayType">
-				<DimensionList>
-					<Dimension>
-						<StartingIndex>
-							<FixedValue>0</FixedValue>
-						</StartingIndex>
-						<EndingIndex>
-							<DynamicValue>
-								<ArgumentInstanceRef argumentRef="num_groups" />
-								<LinearAdjustment intercept="-1" />
-							</DynamicValue>
-						</EndingIndex>
-					</Dimension>
-				</DimensionList>
-			</ArrayArgumentType>
-			<AggregateArgumentType name="GroupCreateElementType">
+			<!-- TC[11,4] INSERT_ACTIVITIES types — no SizeInBits: BinaryDataEncoding defaults to FIXED_SIZE with sizeInBits=-1, so the encoder writes out exactly the supplied bytes (unbounded, no uniform-size constraint across entries) -->
+			<BinaryArgumentType name="TcPacketType"/>
+			<AggregateArgumentType name="ActivityEntryType">
 				<MemberList>
-					<Member typeRef="GroupIdArgType" name="group_id"/>
-					<Member typeRef="GroupStatusArgType" name="status"/>
+					<Member name="group_id" typeRef="/dt/uint8" initialValue="0"/>
+					<Member name="release_time" typeRef="/PUS/PusTimeType"/>
+					<Member name="tc_packet" typeRef="TcPacketType"/>
 				</MemberList>
 			</AggregateArgumentType>
-			<ArrayArgumentType arrayTypeRef="GroupCreateElementType" name="GroupCreateArrayType">
+			<ArrayArgumentType arrayTypeRef="ActivityEntryType" name="ActivityArrayType">
 				<DimensionList>
 					<Dimension>
-						<StartingIndex>
-							<FixedValue>0</FixedValue>
-						</StartingIndex>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
 						<EndingIndex>
 							<DynamicValue>
-								<ArgumentInstanceRef argumentRef="num_groups" />
-								<LinearAdjustment intercept="-1" />
+								<ArgumentInstanceRef argumentRef="n"/>
+								<LinearAdjustment intercept="-1"/>
 							</DynamicValue>
 						</EndingIndex>
 					</Dimension>
 				</DimensionList>
 			</ArrayArgumentType>
-			<!-- signed delta used by the time-shift commands, in milliseconds -->
-			<IntegerArgumentType name="TimeShiftMillisType" signed="true">
-				<IntegerDataEncoding sizeInBits="32" encoding="twosComplement"/>
-			</IntegerArgumentType>
+			<!-- TC[11,22–25] group management types -->
+			<IntegerArgumentType name="NumGroupsType" baseType="/dt/uint8"/>
+			<IntegerArgumentType name="GroupIdType" baseType="/dt/uint8"/>
+			<AggregateArgumentType name="GroupElementType">
+				<MemberList>
+					<Member typeRef="GroupIdType" name="group_id"/>
+					<Member typeRef="/dt/uint8" name="group_status"/>
+				</MemberList>
+			</AggregateArgumentType>
+			<ArrayArgumentType arrayTypeRef="GroupElementType" name="GroupArrayType">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="num_groups"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+			<ArrayArgumentType arrayTypeRef="GroupIdType" name="GroupIdArrayType">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="num_groups"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
 		</ArgumentTypeSet>
 		<MetaCommandSet>
 			<MetaCommand name="pus11-tc" abstract="true">
@@ -250,7 +258,26 @@
 					<BaseContainer containerRef="pus11-tc" />
 				</CommandContainer>
 			</MetaCommand>
-			
+			<MetaCommand name="INSERT_ACTIVITIES" shortDescription="TC[11,4] insert activities into the time-based schedule">
+				<BaseMetaCommand metaCommandRef="pus11-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="4"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="/dt/uint8" name="subschedule_id" initialValue="0"/>
+					<Argument argumentTypeRef="/dt/uint8" name="n"/>
+					<Argument argumentTypeRef="ActivityArrayType" name="activities"/>
+				</ArgumentList>
+				<CommandContainer name="INSERT_ACTIVITIES">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="subschedule_id"/>
+						<ArgumentRefEntry argumentRef="n"/>
+						<ArgumentRefEntry argumentRef="activities"/>
+					</EntryList>
+					<BaseContainer containerRef="pus11-tc"/>
+				</CommandContainer>
+			</MetaCommand>
 			<MetaCommand name="DELETE_ACTIVITIES_BY_ID" shortDescription="TC[11,5] delete time-based scheduled activities identified by request identifier">
 				<BaseMetaCommand metaCommandRef="pus11-tc">
 					<ArgumentAssignmentList>
@@ -300,13 +327,13 @@
 					</ArgumentAssignmentList>
 				</BaseMetaCommand>
 				<ArgumentList>
-					<Argument argumentTypeRef="TimeShiftMillisType" name="time_shift_millis"></Argument>
+					<Argument argumentTypeRef="/dt/int32" name="time_offset_ms" shortDescription="Signed time offset in milliseconds; negative values move activities earlier"/>
 					<Argument argumentTypeRef="NumRequestsType" name="num_requests"></Argument>
 					<Argument argumentTypeRef="RequestArrayType" name="requests"></Argument>
 				</ArgumentList>
 				<CommandContainer name="TIME_SHIFT_ACTIVITIES_BY_ID">
 					<EntryList>
-						<ArgumentRefEntry argumentRef="time_shift_millis" />
+						<ArgumentRefEntry argumentRef="time_offset_ms"/>
 						<ArgumentRefEntry argumentRef="num_requests" />
 						<ArgumentRefEntry argumentRef="requests" />
 					</EntryList>
@@ -320,7 +347,7 @@
 					</ArgumentAssignmentList>
 				</BaseMetaCommand>
 				<ArgumentList>
-					<Argument argumentTypeRef="TimeShiftMillisType" name="time_shift_millis"></Argument>
+					<Argument argumentTypeRef="/dt/int32" name="time_offset_ms" shortDescription="Signed time offset in milliseconds; negative values move activities earlier"/>
 					<Argument argumentTypeRef="/PUS/PusTimeType" name="start_time"></Argument>
 					<Argument argumentTypeRef="/PUS/PusTimeType" name="end_time"></Argument>
 					<Argument argumentTypeRef="NumSchedulesType" name="num_schedules"></Argument>
@@ -328,7 +355,7 @@
 				</ArgumentList>
 				<CommandContainer name="TIME_SHIFT_ACTIVITIES_BY_FILTER">
 					<EntryList>
-						<ArgumentRefEntry argumentRef="time_shift_millis" />
+						<ArgumentRefEntry argumentRef="time_offset_ms"/>
 						<FixedValueEntry binaryValue="01" sizeInBits="8" name="filter_type"/>
 						<ArgumentRefEntry argumentRef="start_time" />
 						<ArgumentRefEntry argumentRef="end_time" />
@@ -430,11 +457,11 @@
 					</ArgumentAssignmentList>
 				</BaseMetaCommand>
 				<ArgumentList>
-					<Argument argumentTypeRef="TimeShiftMillisType" name="time_shift_millis"></Argument>
+					<Argument argumentTypeRef="/dt/int32" name="time_offset_ms" shortDescription="Signed time offset in milliseconds; negative values move activities earlier"/>
 				</ArgumentList>
 				<CommandContainer name="TIME_SHIFT_ACTIVITIES">
 					<EntryList>
-						<ArgumentRefEntry argumentRef="time_shift_millis" />
+						<ArgumentRefEntry argumentRef="time_offset_ms"/>
 					</EntryList>
 					<BaseContainer containerRef="pus11-tc" />
 				</CommandContainer>
@@ -513,92 +540,87 @@
 					<BaseContainer containerRef="pus11-tc" />
 				</CommandContainer>
 			</MetaCommand>
-
-			<MetaCommand name="CREATE_GROUPS" shortDescription="TC[11,22] create time-based scheduling groups">
+			<MetaCommand name="CREATE_SCHEDULING_GROUPS" shortDescription="TC[11,22] create time-based scheduling groups">
 				<BaseMetaCommand metaCommandRef="pus11-tc">
 					<ArgumentAssignmentList>
-						<ArgumentAssignment argumentName="subtype" argumentValue="22" />
+						<ArgumentAssignment argumentName="subtype" argumentValue="22"/>
 					</ArgumentAssignmentList>
 				</BaseMetaCommand>
 				<ArgumentList>
-					<Argument argumentTypeRef="NumGroupsType" name="num_groups"></Argument>
-					<Argument argumentTypeRef="GroupCreateArrayType" name="groups"></Argument>
+					<Argument argumentTypeRef="NumGroupsType" name="num_groups"/>
+					<Argument argumentTypeRef="GroupArrayType" name="groups"/>
 				</ArgumentList>
-				<CommandContainer name="CREATE_GROUPS">
+				<CommandContainer name="CREATE_SCHEDULING_GROUPS">
 					<EntryList>
 						<ArgumentRefEntry argumentRef="num_groups"/>
 						<ArgumentRefEntry argumentRef="groups"/>
 					</EntryList>
-					<BaseContainer containerRef="pus11-tc" />
+					<BaseContainer containerRef="pus11-tc"/>
 				</CommandContainer>
 			</MetaCommand>
-
-			<MetaCommand name="DELETE_GROUPS" shortDescription="TC[11,23] delete time-based scheduling groups (num_groups=0 deletes all groups with no activity)">
+			<MetaCommand name="DELETE_SCHEDULING_GROUPS" shortDescription="TC[11,23] delete time-based scheduling groups">
 				<BaseMetaCommand metaCommandRef="pus11-tc">
 					<ArgumentAssignmentList>
-						<ArgumentAssignment argumentName="subtype" argumentValue="23" />
+						<ArgumentAssignment argumentName="subtype" argumentValue="23"/>
 					</ArgumentAssignmentList>
 				</BaseMetaCommand>
 				<ArgumentList>
-					<Argument argumentTypeRef="NumGroupsType" name="num_groups"></Argument>
-					<Argument argumentTypeRef="GroupIdArrayType" name="group_ids"></Argument>
+					<Argument argumentTypeRef="NumGroupsType" name="num_groups"/>
+					<Argument argumentTypeRef="GroupIdArrayType" name="group_ids"/>
 				</ArgumentList>
-				<CommandContainer name="DELETE_GROUPS">
+				<CommandContainer name="DELETE_SCHEDULING_GROUPS">
 					<EntryList>
 						<ArgumentRefEntry argumentRef="num_groups"/>
 						<ArgumentRefEntry argumentRef="group_ids"/>
 					</EntryList>
-					<BaseContainer containerRef="pus11-tc" />
+					<BaseContainer containerRef="pus11-tc"/>
 				</CommandContainer>
 			</MetaCommand>
-
-			<MetaCommand name="ENABLE_GROUPS" shortDescription="TC[11,24] enable time-based scheduling groups (num_groups=0 enables all)">
+			<MetaCommand name="ENABLE_SCHEDULING_GROUPS" shortDescription="TC[11,24] enable time-based scheduling groups">
 				<BaseMetaCommand metaCommandRef="pus11-tc">
 					<ArgumentAssignmentList>
-						<ArgumentAssignment argumentName="subtype" argumentValue="24" />
+						<ArgumentAssignment argumentName="subtype" argumentValue="24"/>
 					</ArgumentAssignmentList>
 				</BaseMetaCommand>
 				<ArgumentList>
-					<Argument argumentTypeRef="NumGroupsType" name="num_groups"></Argument>
-					<Argument argumentTypeRef="GroupIdArrayType" name="group_ids"></Argument>
+					<Argument argumentTypeRef="NumGroupsType" name="num_groups"/>
+					<Argument argumentTypeRef="GroupIdArrayType" name="group_ids"/>
 				</ArgumentList>
-				<CommandContainer name="ENABLE_GROUPS">
+				<CommandContainer name="ENABLE_SCHEDULING_GROUPS">
 					<EntryList>
 						<ArgumentRefEntry argumentRef="num_groups"/>
 						<ArgumentRefEntry argumentRef="group_ids"/>
 					</EntryList>
-					<BaseContainer containerRef="pus11-tc" />
+					<BaseContainer containerRef="pus11-tc"/>
 				</CommandContainer>
 			</MetaCommand>
-
-			<MetaCommand name="DISABLE_GROUPS" shortDescription="TC[11,25] disable time-based scheduling groups (num_groups=0 disables all)">
+			<MetaCommand name="DISABLE_SCHEDULING_GROUPS" shortDescription="TC[11,25] disable time-based scheduling groups">
 				<BaseMetaCommand metaCommandRef="pus11-tc">
 					<ArgumentAssignmentList>
-						<ArgumentAssignment argumentName="subtype" argumentValue="25" />
+						<ArgumentAssignment argumentName="subtype" argumentValue="25"/>
 					</ArgumentAssignmentList>
 				</BaseMetaCommand>
 				<ArgumentList>
-					<Argument argumentTypeRef="NumGroupsType" name="num_groups"></Argument>
-					<Argument argumentTypeRef="GroupIdArrayType" name="group_ids"></Argument>
+					<Argument argumentTypeRef="NumGroupsType" name="num_groups"/>
+					<Argument argumentTypeRef="GroupIdArrayType" name="group_ids"/>
 				</ArgumentList>
-				<CommandContainer name="DISABLE_GROUPS">
+				<CommandContainer name="DISABLE_SCHEDULING_GROUPS">
 					<EntryList>
 						<ArgumentRefEntry argumentRef="num_groups"/>
 						<ArgumentRefEntry argumentRef="group_ids"/>
 					</EntryList>
-					<BaseContainer containerRef="pus11-tc" />
+					<BaseContainer containerRef="pus11-tc"/>
 				</CommandContainer>
 			</MetaCommand>
-
-			<MetaCommand name="GET_GROUP_STATUS" shortDescription="TC[11,26] report the status of each time-based scheduling group">
+			<MetaCommand name="REPORT_GROUP_STATUS" shortDescription="TC[11,26] report the status of each time-based scheduling group">
 				<BaseMetaCommand metaCommandRef="pus11-tc">
 					<ArgumentAssignmentList>
-						<ArgumentAssignment argumentName="subtype" argumentValue="26" />
+						<ArgumentAssignment argumentName="subtype" argumentValue="26"/>
 					</ArgumentAssignmentList>
 				</BaseMetaCommand>
-				<CommandContainer name="GET_GROUP_STATUS">
+				<CommandContainer name="REPORT_GROUP_STATUS">
 					<EntryList/>
-					<BaseContainer containerRef="pus11-tc" />
+					<BaseContainer containerRef="pus11-tc"/>
 				</CommandContainer>
 			</MetaCommand>
 		</MetaCommandSet>

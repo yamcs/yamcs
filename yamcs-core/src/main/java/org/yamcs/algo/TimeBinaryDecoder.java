@@ -16,6 +16,7 @@ import org.yamcs.time.Instant;
 import org.yamcs.time.TimeCorrelationService;
 import org.yamcs.utils.BitBuffer;
 import org.yamcs.utils.ByteSupplier;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.CustomAlgorithm;
 import org.yamcs.xtce.DataEncoding;
@@ -30,6 +31,13 @@ public class TimeBinaryDecoder extends AbstractDataDecoder {
 
     final CucTimeDecoder timeDecoder;
     final protected TimeEpochs timeEpoch;
+
+    // if timeEpoch is CUSTOM, the following two are used
+    // customEpoch is a Yamcs instant if customEpochIncludeLeapSecond = true
+    // and is a unix time if customEpochIncludeLeapSecond=false
+    protected long customEpoch;
+    protected boolean customEpochIncludeLeapSecond;
+
     final TimeCorrelationService tcoService;
     final AlgorithmExecutionContext ctx;
 
@@ -39,16 +47,25 @@ public class TimeBinaryDecoder extends AbstractDataDecoder {
         TimeDecoderType type = yc.getEnum("type", TimeDecoderType.class, TimeDecoderType.CUC);
 
         timeDecoder = switch (type) {
-        case CUC -> {
-            int implicitPField = yc.getInt("implicitPField", -1);
-            int implicitPFieldCont = yc.getInt("implicitPFieldCont", -1);
-            yield new CucTimeDecoder(implicitPField, implicitPFieldCont);
-        }
-        default -> {
-            throw new UnsupportedOperationException("unknown time decoder type " + type);
-        }
+            case CUC -> {
+                int implicitPField = yc.getInt("implicitPField", -1);
+                int implicitPFieldCont = yc.getInt("implicitPFieldCont", -1);
+                yield new CucTimeDecoder(implicitPField, implicitPFieldCont);
+            }
+            default -> {
+                throw new UnsupportedOperationException("unknown time decoder type " + type);
+            }
         };
-        timeEpoch = yc.getEnum("epoch", TimeEpochs.class, TimeEpochs.GPS);
+        timeEpoch = yc.getEnum("epoch", TimeEpochs.class, TimeEpochs.NONE);
+        if (timeEpoch == TimeEpochs.CUSTOM) {
+            customEpochIncludeLeapSecond = yc.getBoolean("timeIncludesLeapSeconds", true);
+            String epochs = yc.getString("epochUTC");
+            customEpoch = TimeEncoding.parse(epochs);
+            if (!customEpochIncludeLeapSecond) {
+                customEpoch = TimeEncoding.toUnixMillisec(customEpoch);
+            }
+        }
+
         if (yc.containsKey("tcoService")) {
             String tcoServiceName = yc.getString("tcoService");
             String yamcsInstance = ctx.getProcessorData().getYamcsInstance();
@@ -63,6 +80,27 @@ public class TimeBinaryDecoder extends AbstractDataDecoder {
         }
     }
 
+    protected long shiftFromEpoch(long t) {
+        switch (timeEpoch) {
+        case GPS:
+            return TimeEncoding.fromGpsMillisec(t);
+        case J2000:
+            return TimeEncoding.fromJ2000Millisec(t);
+        case TAI:
+            return TimeEncoding.fromTaiMillisec(t);
+        case UNIX:
+            return TimeEncoding.fromUnixMillisec(t);
+        case CUSTOM:
+            if (customEpochIncludeLeapSecond) {
+                return customEpoch + t;
+            } else {
+                return TimeEncoding.fromUnixMillisec(customEpoch + t);
+            }
+        default:
+            throw new IllegalStateException("Unknown epoch " + timeEpoch);
+        }
+    }
+
     @Override
     public Value extractRaw(DataEncoding de, ContainerProcessingContext pcontext, BitBuffer buf) {
         var suppl = new ByteSupplier() {
@@ -72,15 +110,22 @@ public class TimeBinaryDecoder extends AbstractDataDecoder {
             }
         };
 
-        long t;
-        if (tcoService != null) {
-            long obt = timeDecoder.decodeRaw(suppl);
-            long genTime = pcontext.getGenerationTime();
-            t = tcoService.getHistoricalTime(Instant.get(genTime), obt).getMillis();
+        long obt;
+        if (timeEpoch == null || timeEpoch == TimeEpochs.NONE) {
+            obt = timeDecoder.decodeRaw(suppl);
+
+            if (tcoService != null) {
+                long pGenTime = pcontext.getGenerationTime();
+                Instant hisTime = tcoService.getHistoricalTime(Instant.get(pGenTime), obt);
+                
+                // FIXME: How to handle this?
+                obt = (hisTime == Instant.INVALID_INSTANT) ? obt: hisTime.getMillis();
+            }
         } else {
-            t = timeDecoder.decode(suppl);
+            obt = timeDecoder.decode(suppl);
+            obt = shiftFromEpoch(obt);
         }
 
-        return ValueUtility.getTimestampValue(t);
+        return ValueUtility.getTimestampValue(obt);
     }
 }

@@ -19,13 +19,24 @@ export type ServerMessage = {
   data: any;
 };
 
+// Reconnect backoff bounds (ms). A dropped WebSocket (tab suspend, wifi
+// blip, brief server restart, ...) should not require a manual page
+// reload to recover from.
+const RECONNECT_MIN_DELAY = 1000;
+const RECONNECT_MAX_DELAY = 30000;
+
 export class WebSocketClient {
   readonly connected$ = new BehaviorSubject<boolean>(false);
 
+  private url: string;
   private webSocket$: WebSocketSubject<{}>; // Unsubscribing from this closes the connection
   private calls: Array<WebSocketCall<any, any>> = [];
 
   private requestSequence = 0;
+
+  private manuallyClosed = false;
+  private reconnectAttempt = 0;
+  private reconnectTimer?: ReturnType<typeof setTimeout>;
 
   constructor(
     apiUrl: string,
@@ -37,15 +48,29 @@ export class WebSocketClient {
       url = 'wss://';
     }
     url += `${currentLocation.host}${apiUrl}/websocket`;
+    this.url = url;
 
+    this.connect();
+  }
+
+  private connect() {
     this.webSocket$ = webSocket({
-      url,
+      url: this.url,
       protocol: 'json',
       closeObserver: {
-        next: () => this.connected$.next(false),
+        next: () => {
+          this.connected$.next(false);
+          this.scheduleReconnect();
+        },
       },
       openObserver: {
-        next: () => this.connected$.next(true),
+        next: () => {
+          this.reconnectAttempt = 0;
+          // The server has no memory of this connection's previous calls.
+          // Re-issue them all before announcing ourselves connected again.
+          this.calls.forEach((call) => call.resubscribe());
+          this.connected$.next(true);
+        },
       },
     });
 
@@ -55,7 +80,26 @@ export class WebSocketClient {
           this.calls.forEach((call) => call.consume(msg));
         }),
       )
-      .subscribe();
+      .subscribe({
+        // Prevent an unhandled-error console dump. closeObserver already
+        // triggers the reconnect attempt for both clean and error closes.
+        error: () => {},
+      });
+  }
+
+  private scheduleReconnect() {
+    if (this.manuallyClosed || this.reconnectTimer) {
+      return;
+    }
+    const delay = Math.min(
+      RECONNECT_MIN_DELAY * 2 ** this.reconnectAttempt,
+      RECONNECT_MAX_DELAY,
+    );
+    this.reconnectAttempt++;
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = undefined;
+      this.connect();
+    }, delay);
   }
 
   /**
@@ -92,7 +136,7 @@ export class WebSocketClient {
     observer: (data: D) => void,
   ) {
     const id = ++this.requestSequence;
-    const call = new WebSocketCall(this, id, type, observer);
+    const call = new WebSocketCall(this, id, type, lowPriority, options, observer);
     call.addFrameLossListener(() => {
       this.frameLossListener.onFrameLoss();
     });
@@ -119,6 +163,11 @@ export class WebSocketClient {
   }
 
   close() {
+    this.manuallyClosed = true;
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = undefined;
+    }
     this.calls.length = 0;
     this.webSocket$.unsubscribe();
   }

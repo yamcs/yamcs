@@ -381,12 +381,22 @@ export interface SequenceEntry {
   locationInBits: number;
   referenceLocation: 'CONTAINER_START' | 'PREVIOUS_ENTRY';
   repeat?: RepeatInfo;
+  timeAssociation?: TimeAssociation;
 
   container?: Container;
   parameter?: Parameter;
   argument?: Argument;
   fixedValue?: FixedValue;
   indirectParameterRef?: IndirectParameterRef;
+}
+
+export interface TimeAssociation {
+  parameter: Parameter;
+  instance?: number;
+  useCalibratedValue?: boolean;
+  interpolateTime?: boolean;
+  offset?: number;
+  unit?: string;
 }
 
 export interface FixedValue {
@@ -404,6 +414,7 @@ export interface RepeatInfo {
   fixedCount: number;
   dynamicCount: Parameter;
   bitsBetween: number;
+  dynamicCountArgument: Argument;
 }
 
 export interface GetParametersOptions {

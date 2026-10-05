@@ -125,6 +125,8 @@ dataLinks:
                 pfield: 0x2f
             # with correlation established, the TC[11,4] release time is converted to on-board time
             tcoService: tco0
+            # APID of the on-board scheduler, required to schedule commands with pus11ScheduleAt
+            pus11Apid: 1
             pus11:
                 subScheduleId:
                     bytes: 1

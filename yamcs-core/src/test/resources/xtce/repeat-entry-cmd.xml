@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="RepeatEntryCommandTest"
+    shortDescription="Test repeated command argument entries" xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
+
+    <CommandMetaData>
+        <ArgumentTypeSet>
+            <IntegerArgumentType name="uint8" sizeInBits="8" signed="false">
+                <IntegerDataEncoding sizeInBits="8" byteOrder="mostSignificantByteFirst" encoding="unsigned" />
+            </IntegerArgumentType>
+        </ArgumentTypeSet>
+        <MetaCommandSet>
+            <MetaCommand name="cmd1">
+                <ArgumentList>
+                    <Argument name="count" argumentTypeRef="uint8" />
+                    <Argument name="value" argumentTypeRef="uint8" />
+                </ArgumentList>
+                <CommandContainer name="cmd1_container">
+                    <EntryList>
+                        <ArgumentRefEntry argumentRef="count" />
+                        <ArgumentRefEntry argumentRef="value">
+                            <RepeatEntry>
+                                <Count>
+                                    <DynamicValue>
+                                        <ArgumentInstanceRef argumentRef="count" />
+                                    </DynamicValue>
+                                </Count>
+                            </RepeatEntry>
+                        </ArgumentRefEntry>
+                    </EntryList>
+                </CommandContainer>
+            </MetaCommand>
+        </MetaCommandSet>
+    </CommandMetaData>
+</SpaceSystem>

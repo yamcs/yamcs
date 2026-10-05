@@ -1,0 +1,6 @@
+supervised:
+  state: blocked
+  minLevel: critical
+
+default:
+  state: enabled

@@ -33,20 +33,31 @@ timeEncoding (map)
     (integer) and ``pfieldCont`` (integer, default ``-1``). If not specified, an implicit CUC
     P-field of ``0x2e`` is used.
 
+    ``epoch`` (one of ``TAI``, ``J2000``, ``UNIX``, ``GPS``, ``CUSTOM`` or ``NONE``, default ``NONE``)
+    is the epoch the release time is encoded against when no ``tcoService`` is configured. ``NONE``
+    encodes the Yamcs internal time. ``CUSTOM`` requires ``epochUTC`` (string) and optionally
+    ``timeIncludesLeapSeconds`` (boolean, default ``true``).
+
 tcoService (string)
     Name of a :abbr:`TCO (Time Correlation)` service. When set, the release time written in the
     ``TC[11,4]`` command is the on-board time obtained from that service instead of the raw UTC
     value.
 
 pus11Crc (boolean)
-    If ``true`` (the default) the generated ``TC[11,4]`` command carries a trailing CRC.
+    If true, a checksum is appended to the generated ``TC[11,4]`` commands. Requires
+    ``errorDetection``. Default: ``true`` if ``errorDetection`` is configured, ``false`` otherwise.
 
 pus11Apid (integer)
-    APID to use for the generated ``TC[11,4]`` command. If ``-1`` (the default) the APID of the
-    wrapped command is reused.
+    APID (0-2047) of the generated ``TC[11,4]`` commands, i.e. the on-board application process
+    hosting the scheduling subservice. Required when scheduling commands (``pus11ScheduleAt``);
+    scheduling a command without it configured fails the command.
 
 pus11 (map)
     Enables the PUS 11 time-based scheduling support. Detailed below.
+
+    Older releases configured the source id, acknowledgement flags, sub-schedule id and group id
+    with the top-level ``pus11SourceId``, ``pus11AckFlags``, ``pus11SubscheduleId`` and
+    ``pus11GroupId`` options. These are rejected; move them into the ``pus11`` block.
 
 
 PUS 11 time-based scheduling
@@ -54,13 +65,14 @@ PUS 11 time-based scheduling
 
 A command issued with the ``pus11ScheduleAt`` command option (a timestamp) is not sent as-is;
 instead it is embedded into a ``TC[11,4] insert activities into the time-based schedule`` request
-that releases it on board at the requested time.
+that releases it on board at the requested time. The ``pus11ScheduleAt`` option is only registered
+when the ``pus11`` map is present.
 
 The ``pus11`` map configures the optional sub-schedule and scheduling group identifiers that are
 written into that request. Each sub-section is independent: when it is present the corresponding
 field is written into the ``TC[11,4]`` command and the matching command option is registered so
 operators can override the value per command; when it is absent neither the field nor the option
-exist.
+exist. A value that does not fit in the configured field width fails the command.
 
 subScheduleId (map)
     ``bytes`` (integer, 1..8, default ``1``): width of the sub-schedule id field.
@@ -73,7 +85,23 @@ groupId (map)
     not set.
 
 sourceId (integer)
-    Source id written in the secondary header of the generated ``TC[11,4]`` command. Default ``0``.
+    Source id (0-65535) written in the secondary header of the generated ``TC[11,4]`` command.
+    Default ``0``.
+
+ackFlags (integer)
+    Acknowledgement flags (0-15) written in the secondary header of the generated ``TC[11,4]``
+    command. Default ``0xD``.
+
+Besides ``pus11Apid``, ``pus11CcsdsSeqCount`` and ``pus11Binary``, the following command history
+attributes are published for a scheduled command:
+
+``ccsds-apid`` / ``ccsds-seqcount``
+    Request ID the PUS 1 verifiers match against. For a scheduled command these carry the
+    ``TC[11,4]`` wrapper's APID and sequence count, since only the wrapper's acknowledgements arrive
+    within the verifiers' check window.
+
+``pus11-inner-apid`` / ``pus11-inner-seqcount``
+    The embedded command's own APID and sequence count.
 
 Example:
 
@@ -83,6 +111,7 @@ Example:
     commandPostprocessorArgs:
         errorDetection:
             type: CRC-16-CCIIT
+        pus11Apid: 1
         pus11:
             subScheduleId: { bytes: 1, default: 1 }
             groupId: { bytes: 1, default: 1 }

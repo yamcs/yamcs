@@ -8,6 +8,13 @@ services:
   - class: org.yamcs.parameter.SystemParametersService
     args:
       producers: ['jvm', 'fs']
+  - class: org.yamcs.time.TimeCorrelationService
+    name: tco0
+    args:
+       onboardDelay: 0.02
+       accuracy: 0.5
+       validity: 1.0
+       defaultTof: 0.001
   - class: org.yamcs.ProcessorCreatorService
     args: 
       name: "realtime"
@@ -65,7 +72,8 @@ dataLinks:
            type: CRC-16-CCIIT
         timeEncoding:
            type: CUC
-           epoch: UNIX
+           epoch: NONE
+        tcoService: tco0
 
   - name: tc_realtime
     class: org.yamcs.tctm.TcpTcDataLink
@@ -81,6 +89,16 @@ dataLinks:
         timeEncoding:
             implicitPfield: false
             pfield: 0x2f
+        tcoService: tco0
+        # APID of the on-board scheduler, required to schedule commands with pus11ScheduleAt
+        pus11Apid: 1
+        pus11:
+            subScheduleId:
+                bytes: 1
+                default: 0
+            groupId:
+                bytes: 1
+                default: 0
         pus22:
             subScheduleId:
                 bytes: 1
@@ -97,9 +115,31 @@ mdb:
   - type: "xtce"
     spec: "mdb/pus.xml"
   - type: "xtce"
+    spec: "mdb/pus2.xml"
+  - type: "xtce"
+    spec: "mdb/pus3.xml"
+  - type: "xtce"
     spec: "mdb/pus5.xml"
   - type: "xtce"
+    spec: "mdb/pus9.xml"
+  - type: "xtce"
+    spec: "mdb/pus11.xml"
+  - type: "xtce"
+    spec: "mdb/pus12.xml"
+  - type: "xtce"
+    spec: "mdb/pus13.xml"
+  - type: "xtce"
+    spec: "mdb/pus14.xml"
+  - type: "xtce"
+    spec: "mdb/pus15.xml"
+  - type: "xtce"
     spec: "mdb/pus17.xml"
+  - type: "xtce"
+    spec: "mdb/pus19.xml"
+  - type: "xtce"
+    spec: "mdb/pus20.xml"
+  - type: "xtce"
+    spec: "mdb/pus21.xml"
   - type: "xtce"
     spec: "mdb/pus22.xml"
   - type: "xtce"

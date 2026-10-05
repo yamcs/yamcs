@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Sample implementation of PUS Service 2 (ST[02]) - Device Access.
+
+	ST[02] distributes commands to / acquires data from on-board devices. Most of its
+	fields are "deduced" by the PUS standard (their type/size is declared per device in the
+	mission database, not fixed by the standard). XTCE cannot express per-device type
+	variation, so this sample fixes a set of mission conventions to make the service concrete
+	and demonstrable end-to-end. See pus_analysis/pus02.md for the full analysis.
+
+	Sample mission conventions used here:
+	 - protocol_specific_data is a fixed 4-byte aggregate {direction, sub_address, word_count}
+	   for every physical device (e.g. a MIL-STD-1553B remote terminal).
+	 - command_data (TC[2,7]) is a fixed 8-byte block for every physical device.
+	 - command_args (TC[2,10]) is a fixed uint32 for every logical device command.
+	 - parameter_value (TM[2,12]) is a fixed uint32 for every logical device parameter
+	   (same "deduced value -> uint32" convention used by ST[20]).
+	 - TM[2,9] data_block is a fixed 4 x uint16 block.
+	 - auxiliary_data (deduced-presence) is never present in this sample.
+	 - All TM[2,*] reports share MAIN_APID; containers are discriminated by subtype only.
+
+	Because every field has a mission-uniform fixed size, all four telecommands use the
+	generic N-instruction array pattern (AggregateArgumentType + ArrayArgumentType with a
+	top-level count argument), confirmed working in Yamcs (see pus11.xml RequestArrayType).
+-->
+<SpaceSystem name="PUS2" xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
+	<Header validationStatus="Unknown" version="1.0" date="2026-06-30T00:00:00Z">
+		<NoteSet>
+			<Note>Sample implementation of PUS2 Device Access (physical and logical device access).</Note>
+		</NoteSet>
+	</Header>
+	<TelemetryMetaData>
+		<ParameterTypeSet>
+			<IntegerParameterType name="TransactionIdType" baseType="/dt/uint16"/>
+			<EnumeratedParameterType name="DataAcqReturnCodeType">
+				<IntegerDataEncoding sizeInBits="8"/>
+				<EnumerationList>
+					<Enumeration value="0" label="SUCCESS"/>
+					<Enumeration value="1" label="TIMEOUT"/>
+					<Enumeration value="2" label="BUS_ERROR"/>
+					<Enumeration value="3" label="INVALID_DATA"/>
+				</EnumerationList>
+			</EnumeratedParameterType>
+			<!-- TM[2,9] data_block: fixed 4 x uint16 acquired data words (mission convention) -->
+			<ArrayParameterType name="DataBlockType" arrayTypeRef="/dt/uint16">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex><FixedValue>3</FixedValue></EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayParameterType>
+		</ParameterTypeSet>
+		<ParameterSet>
+			<Parameter parameterTypeRef="TransactionIdType" name="transaction_id"/>
+			<Parameter parameterTypeRef="DataAcqReturnCodeType" name="data_acq_return_code"/>
+			<Parameter parameterTypeRef="DataBlockType" name="data_block"
+				shortDescription="TM[2,9] acquired data words"/>
+			<Parameter parameterTypeRef="/dt/uint32" name="parameter_value"
+				shortDescription="TM[2,12] acquired logical device parameter value"/>
+		</ParameterSet>
+		<ContainerSet>
+			<SequenceContainer name="pus2-tm">
+				<EntryList/>
+				<BaseContainer containerRef="/PUS/pus-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/type" comparisonOperator="==" value="2"/>
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="PHYSICAL_DEVICE_DATA_REPORT" shortDescription="TM[2,9] physical device data report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="transaction_id"/>
+					<ParameterRefEntry parameterRef="data_acq_return_code"/>
+					<ArrayParameterRefEntry parameterRef="data_block"/>
+				</EntryList>
+				<BaseContainer containerRef="pus2-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="9"/>
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="LOGICAL_DEVICE_DATA_REPORT" shortDescription="TM[2,12] logical device data report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="transaction_id"/>
+					<ParameterRefEntry parameterRef="data_acq_return_code"/>
+					<ParameterRefEntry parameterRef="parameter_value"/>
+				</EntryList>
+				<BaseContainer containerRef="pus2-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="12"/>
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+		</ContainerSet>
+	</TelemetryMetaData>
+	<CommandMetaData>
+		<ArgumentTypeSet>
+			<IntegerArgumentType name="NumInstructionsType" baseType="/dt/uint8"/>
+			<IntegerArgumentType name="DeviceIdType" baseType="/dt/uint8"/>
+
+			<!-- protocol_specific_data: fixed 4-byte mission layout, shared by physical TCs -->
+			<AggregateArgumentType name="ProtocolDataType">
+				<MemberList>
+					<Member typeRef="/dt/uint8" name="direction"/>
+					<Member typeRef="/dt/uint8" name="sub_address"/>
+					<Member typeRef="/dt/uint16" name="word_count"/>
+				</MemberList>
+			</AggregateArgumentType>
+			<!-- command_data: fixed 8-byte mission block (TC[2,7]) -->
+			<BinaryArgumentType name="CommandDataType">
+				<BinaryDataEncoding>
+					<SizeInBits><FixedValue>64</FixedValue></SizeInBits>
+				</BinaryDataEncoding>
+			</BinaryArgumentType>
+
+			<!-- TC[2,7] instruction: physical_device_id + protocol_data + command_data -->
+			<AggregateArgumentType name="PhysicalCmdEntryType">
+				<MemberList>
+					<Member typeRef="DeviceIdType" name="physical_device_id"/>
+					<Member typeRef="ProtocolDataType" name="protocol_data"/>
+					<Member typeRef="CommandDataType" name="command_data"/>
+				</MemberList>
+			</AggregateArgumentType>
+			<ArrayArgumentType arrayTypeRef="PhysicalCmdEntryType" name="PhysicalCmdArrayType">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="n"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+
+			<!-- TC[2,8] instruction: transaction_id + physical_device_id + protocol_data -->
+			<AggregateArgumentType name="PhysicalAcqEntryType">
+				<MemberList>
+					<Member typeRef="/dt/uint16" name="transaction_id"/>
+					<Member typeRef="DeviceIdType" name="physical_device_id"/>
+					<Member typeRef="ProtocolDataType" name="protocol_data"/>
+				</MemberList>
+			</AggregateArgumentType>
+			<ArrayArgumentType arrayTypeRef="PhysicalAcqEntryType" name="PhysicalAcqArrayType">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="n"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+
+			<!-- TC[2,10] instruction: logical_device_id + command_id + command_args -->
+			<AggregateArgumentType name="LogicalCmdEntryType">
+				<MemberList>
+					<Member typeRef="DeviceIdType" name="logical_device_id"/>
+					<Member typeRef="/dt/uint8" name="command_id"/>
+					<Member typeRef="/dt/uint32" name="command_args"/>
+				</MemberList>
+			</AggregateArgumentType>
+			<ArrayArgumentType arrayTypeRef="LogicalCmdEntryType" name="LogicalCmdArrayType">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="n"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+
+			<!-- TC[2,11] instruction: transaction_id + logical_device_id + parameter_id -->
+			<AggregateArgumentType name="LogicalAcqEntryType">
+				<MemberList>
+					<Member typeRef="/dt/uint16" name="transaction_id"/>
+					<Member typeRef="DeviceIdType" name="logical_device_id"/>
+					<Member typeRef="/dt/uint8" name="parameter_id"/>
+				</MemberList>
+			</AggregateArgumentType>
+			<ArrayArgumentType arrayTypeRef="LogicalAcqEntryType" name="LogicalAcqArrayType">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="n"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+		</ArgumentTypeSet>
+		<MetaCommandSet>
+			<MetaCommand name="pus2-tc" abstract="true">
+				<BaseMetaCommand metaCommandRef="/PUS/pus-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="apid" argumentValue="1"/>
+						<ArgumentAssignment argumentName="type" argumentValue="2"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="pus2-tc">
+					<EntryList/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<MetaCommand name="DISTRIBUTE_PHYSICAL_CMDS" shortDescription="TC[2,7] distribute physical device commands">
+				<BaseMetaCommand metaCommandRef="pus2-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="7"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="NumInstructionsType" name="n"/>
+					<Argument argumentTypeRef="PhysicalCmdArrayType" name="instructions"/>
+				</ArgumentList>
+				<CommandContainer name="DISTRIBUTE_PHYSICAL_CMDS">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="n"/>
+						<ArgumentRefEntry argumentRef="instructions"/>
+					</EntryList>
+					<BaseContainer containerRef="pus2-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<MetaCommand name="ACQUIRE_PHYSICAL_DATA" shortDescription="TC[2,8] acquire data from physical devices">
+				<BaseMetaCommand metaCommandRef="pus2-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="8"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="NumInstructionsType" name="n"/>
+					<Argument argumentTypeRef="PhysicalAcqArrayType" name="instructions"/>
+				</ArgumentList>
+				<CommandContainer name="ACQUIRE_PHYSICAL_DATA">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="n"/>
+						<ArgumentRefEntry argumentRef="instructions"/>
+					</EntryList>
+					<BaseContainer containerRef="pus2-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<MetaCommand name="DISTRIBUTE_LOGICAL_CMDS" shortDescription="TC[2,10] distribute logical device commands">
+				<BaseMetaCommand metaCommandRef="pus2-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="10"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="NumInstructionsType" name="n"/>
+					<Argument argumentTypeRef="LogicalCmdArrayType" name="instructions"/>
+				</ArgumentList>
+				<CommandContainer name="DISTRIBUTE_LOGICAL_CMDS">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="n"/>
+						<ArgumentRefEntry argumentRef="instructions"/>
+					</EntryList>
+					<BaseContainer containerRef="pus2-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<MetaCommand name="ACQUIRE_LOGICAL_DATA" shortDescription="TC[2,11] acquire data from logical devices">
+				<BaseMetaCommand metaCommandRef="pus2-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="11"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="NumInstructionsType" name="n"/>
+					<Argument argumentTypeRef="LogicalAcqArrayType" name="instructions"/>
+				</ArgumentList>
+				<CommandContainer name="ACQUIRE_LOGICAL_DATA">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="n"/>
+						<ArgumentRefEntry argumentRef="instructions"/>
+					</EntryList>
+					<BaseContainer containerRef="pus2-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+		</MetaCommandSet>
+	</CommandMetaData>
+</SpaceSystem>
