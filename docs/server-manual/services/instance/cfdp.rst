@@ -142,7 +142,7 @@ maxPduSize (integer)
     The maximum length in bytes of the PDU is used by the sender to determine how to split the file into segments (segment size = PDU size - header size). For the incoming transfers the peer specifies the PDU size. Default ``512``
 
 sleepBetweenPdus (integer)
-    The time in milliseconds used by the sender to wait in between sending two successive PDUs. This together with the PDU determine the uplink data rate. The data rate has to match the maximum uplink speed as well as the receiver expected data rate. No mechanism is implemented for auto-tuning the uplink rate. 
+    The time in milliseconds used by the sender to wait in between sending two successive PDUs. This together with the PDU determine the uplink data rate. The data rate has to match the maximum uplink speed as well as the receiver expected data rate. No mechanism is implemented for auto-tuning the uplink rate. The receiver also uses this value as the minimum time between two PDUs it sends (for example between the EOF ACK and the Finished PDU). Default: ``500``
 
 canChangePduSize (boolean)
     Whether a ``FileTransferOption`` can be used to set a specific transfer's PDU size. Default: ``false``
