@@ -4,15 +4,21 @@ import org.yamcs.InitException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
+import org.yamcs.http.HttpRequestHandler;
+import org.yamcs.logging.Log;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpRequest;
 
 /**
- * AuthModule that identifies users based on an HTTP header property. This can be used when Yamcs is well-protected from
- * spoofing attempts and authentication is done on a reverse proxy, like Apache or Nginx.
+ * AuthModule that identifies users based on an HTTP header property. This can be used when authentication is done on a
+ * reverse proxy, like Apache or Nginx.
+ * <p>
+ * The header is only honored on requests coming from one of the {@code trustedProxies} of the HTTP server.
  */
 public class RemoteUserAuthModule extends AbstractHttpRequestAuthModule {
+
+    private static final Log log = new Log(RemoteUserAuthModule.class);
 
     protected static final String OPTION_HEADER = "header";
 
@@ -36,7 +42,17 @@ public class RemoteUserAuthModule extends AbstractHttpRequestAuthModule {
 
     @Override
     public boolean handles(ChannelHandlerContext ctx, HttpRequest request) {
-        return request.headers().contains(usernameHeader);
+        if (!request.headers().contains(usernameHeader)) {
+            return false;
+        }
+        var remoteAddress = ctx.channel().remoteAddress();
+        var httpServer = ctx.channel().attr(HttpRequestHandler.CTX_HTTP_SERVER).get();
+        if (httpServer == null || !httpServer.isTrustedProxy(remoteAddress)) {
+            log.warn("Ignoring {} header from {}, which is not a configured trusted proxy",
+                    usernameHeader, remoteAddress);
+            return false;
+        }
+        return true;
     }
 
     @Override
