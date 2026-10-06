@@ -95,6 +95,7 @@
 				<xtce:ParameterProperties dataSource="local" persistence="false"/>
 			</xtce:Parameter>
 			<xtce:Parameter name="para_with_subsys_type" parameterTypeRef="subsys1/subsys_ptype1" />
+			<xtce:Parameter name="space_algo_result" parameterTypeRef="float32" />
 		</xtce:ParameterSet>
 		<xtce:ContainerSet>
 			<xtce:SequenceContainer name="packet1">
@@ -183,6 +184,17 @@
 					</xtce:TriggerSet>
 				</xtce:MathOperation>
 			</xtce:MathAlgorithm>
+			<xtce:CustomAlgorithm name="algo with space" shortDescription="regression test: name contains a space">
+				<xtce:AlgorithmText language="JavaScript">
+                    out.value = m1.value * 3
+                </xtce:AlgorithmText>
+				<xtce:InputSet>
+					<xtce:InputParameterInstanceRef parameterRef="param2/m1" inputName="m1" />
+				</xtce:InputSet>
+				<xtce:OutputSet>
+					<xtce:OutputParameterRef parameterRef="space_algo_result" outputName="out" />
+				</xtce:OutputSet>
+			</xtce:CustomAlgorithm>
 			<xtce:CustomAlgorithm name="flipflop">
 				<xtce:AlgorithmText language="JavaScript">
                     if (m1.value >0) { param11.value = true}
