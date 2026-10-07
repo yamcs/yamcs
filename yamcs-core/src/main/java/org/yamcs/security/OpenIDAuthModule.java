@@ -142,8 +142,10 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
         verifyTls = args.getBoolean("verifyTls");
 
         if (issuer != null) {
-            lastDiscoveryAttempt = System.currentTimeMillis();
-            metadata = fetchMetadata();
+            resolveMetadata();
+        } else if (jwksUri == null) {
+            log.warn("Neither issuer nor jwksUri is configured. "
+                    + "Signatures of ID Tokens from the OpenID server will not be verified");
         }
 
         backChannelHandler = new OpenIDBackChannelHandler(this);
@@ -206,13 +208,11 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
 
                 String idToken = response.get("id_token").getAsString();
                 String accessToken = response.get("access_token").getAsString();
-                JsonObject claims = JwtHelper.decodeUnverified(idToken);
-
-                if (issuer != null) {
-                    var iss = claims.has("iss") ? claims.get("iss").getAsString() : null;
-                    if (!issuer.equals(iss)) {
-                        throw new AuthenticationException("Unexpected issuer in ID Token: " + iss);
-                    }
+                JsonObject claims;
+                try {
+                    claims = verifyIdToken(idToken);
+                } catch (JwtVerificationException e) {
+                    throw new AuthenticationException("Invalid ID Token: " + e.getMessage());
                 }
 
                 var refreshTokenElement = response.get("refresh_token");
@@ -302,19 +302,33 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
             if (statusCode == 200) {
                 JsonObject response = readJson(conn.getInputStream());
 
-                info.idToken = response.get("id_token").getAsString();
+                var idToken = response.get("id_token").getAsString();
+                var claims = verifyIdToken(idToken);
+
+                // The refreshed ID Token must be about the same user
+                var issuerSub = new ExternalSubject(claims.get("iss").getAsString(), claims.get("sub").getAsString());
+                if (!issuerSub.equals(info.getIssuerSub())) {
+                    log.error("Failed to refresh: ID Token does not match the original subject");
+                    return false;
+                }
+
+                info.idToken = idToken;
                 info.accessToken = response.get("access_token").getAsString();
-                var claims = JwtHelper.decodeUnverified(info.idToken);
                 info.expiresAt = claims.get("exp").getAsLong() * 1000L;
 
                 var refreshTokenElement = response.get("refresh_token");
-                info.refreshToken = (refreshTokenElement != null) ? refreshTokenElement.getAsString() : null;
+                if (refreshTokenElement != null) {
+                    info.refreshToken = refreshTokenElement.getAsString();
+                }
             } else {
                 log.error("Received error from identity provider: " + readErrorBody(conn));
                 return false;
             }
 
             return true;
+        } catch (JwtVerificationException e) {
+            log.error("Failed to refresh: invalid ID Token: {}", e.getMessage());
+            return false;
         } catch (IOException | NoSuchAlgorithmException | KeyManagementException | JwtDecodeException
                 | JsonParseException e) {
             log.error("Failed to refresh", e);
@@ -368,6 +382,47 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
     }
 
     /**
+     * Verifies the signature of an ID Token, and validates its claims.
+     * <p>
+     * The signature is not verified when neither issuer nor jwksUri is configured. OpenID Connect allows this for ID
+     * Tokens obtained directly from the token endpoint, relying on TLS server authentication instead.
+     */
+    private JsonObject verifyIdToken(String idToken) throws JwtVerificationException, JwtDecodeException {
+        JsonObject claims;
+        var verifier = getJwksVerifier();
+        if (verifier != null) {
+            claims = verifier.verify(idToken);
+        } else if (issuer != null) {
+            throw new JwtVerificationException("JWKS URI of OpenID server is not available");
+        } else {
+            claims = JwtHelper.decodeUnverified(idToken);
+        }
+
+        validateIdTokenClaims(claims, issuer, clientId, System.currentTimeMillis() / 1000);
+        return claims;
+    }
+
+    /**
+     * Validates the claims of an ID Token, as required by OpenID Connect Core 1.0, section 3.1.3.7.
+     * 
+     * @param now
+     *            current time, in seconds since epoch
+     */
+    static void validateIdTokenClaims(JsonObject claims, String issuer, String clientId, long now)
+            throws JwtVerificationException {
+        validateStandardClaims(claims, issuer, clientId, now);
+
+        if (getStringOrNull(claims, "sub") == null) {
+            throw new JwtVerificationException("Missing sub");
+        }
+
+        var azp = getStringOrNull(claims, "azp");
+        if (azp != null && !azp.equals(clientId)) {
+            throw new JwtVerificationException("Unexpected azp: " + azp);
+        }
+    }
+
+    /**
      * Validates a Logout Token received through OpenID Connect Back-Channel Logout, and logs out the matching Yamcs
      * sessions.
      */
@@ -400,6 +455,27 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
      */
     static void validateLogoutClaims(JsonObject claims, String issuer, String clientId, long now)
             throws JwtVerificationException {
+        validateStandardClaims(claims, issuer, clientId, now);
+
+        if (getStringOrNull(claims, "sub") == null && getStringOrNull(claims, "sid") == null) {
+            throw new JwtVerificationException("Missing sub or sid");
+        }
+
+        var events = claims.get("events");
+        if (events == null || !events.isJsonObject() || !events.getAsJsonObject().has(BACKCHANNEL_LOGOUT_EVENT)) {
+            throw new JwtVerificationException("Missing back-channel logout event");
+        }
+
+        if (claims.has("nonce")) {
+            throw new JwtVerificationException("Logout Token must not contain a nonce");
+        }
+    }
+
+    /**
+     * Validates the iss, aud, exp and iat claims that are common to ID Tokens and Logout Tokens.
+     */
+    private static void validateStandardClaims(JsonObject claims, String issuer, String clientId, long now)
+            throws JwtVerificationException {
         var iss = getStringOrNull(claims, "iss");
         if (iss == null) {
             throw new JwtVerificationException("Missing iss");
@@ -425,19 +501,6 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
         }
         if (iat > now + CLOCK_SKEW) {
             throw new JwtVerificationException("Token issued in the future");
-        }
-
-        if (getStringOrNull(claims, "sub") == null && getStringOrNull(claims, "sid") == null) {
-            throw new JwtVerificationException("Missing sub or sid");
-        }
-
-        var events = claims.get("events");
-        if (events == null || !events.isJsonObject() || !events.getAsJsonObject().has(BACKCHANNEL_LOGOUT_EVENT)) {
-            throw new JwtVerificationException("Missing back-channel logout event");
-        }
-
-        if (claims.has("nonce")) {
-            throw new JwtVerificationException("Logout Token must not contain a nonce");
         }
     }
 

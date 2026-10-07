@@ -165,6 +165,55 @@ public class JwksVerifierTest {
         assertInvalid(otherIssuer, now);
     }
 
+    @Test
+    public void testIdTokenClaims() throws Exception {
+        var now = System.currentTimeMillis() / 1000;
+        OpenIDAuthModule.validateIdTokenClaims(idTokenClaims(), "https://idp", "yamcs", now);
+
+        var multipleAudiences = idTokenClaims();
+        var aud = new JsonArray();
+        aud.add("other-client");
+        aud.add("yamcs");
+        multipleAudiences.add("aud", aud);
+        OpenIDAuthModule.validateIdTokenClaims(multipleAudiences, "https://idp", "yamcs", now);
+
+        var otherAudience = idTokenClaims();
+        otherAudience.addProperty("aud", "other-client");
+        assertInvalidIdToken(otherAudience, now);
+
+        var otherAuthorizedParty = idTokenClaims();
+        otherAuthorizedParty.addProperty("azp", "other-client");
+        assertInvalidIdToken(otherAuthorizedParty, now);
+
+        var expired = idTokenClaims();
+        expired.addProperty("exp", now - 3600);
+        assertInvalidIdToken(expired, now);
+
+        var noSubject = idTokenClaims();
+        noSubject.remove("sub");
+        assertInvalidIdToken(noSubject, now);
+
+        var otherIssuer = idTokenClaims();
+        otherIssuer.addProperty("iss", "https://evil");
+        assertInvalidIdToken(otherIssuer, now);
+    }
+
+    private static void assertInvalidIdToken(JsonObject claims, long now) {
+        assertThrows(JwtVerificationException.class,
+                () -> OpenIDAuthModule.validateIdTokenClaims(claims, "https://idp", "yamcs", now));
+    }
+
+    private static JsonObject idTokenClaims() {
+        var now = System.currentTimeMillis() / 1000;
+        var claims = new JsonObject();
+        claims.addProperty("iss", "https://idp");
+        claims.addProperty("aud", "yamcs");
+        claims.addProperty("iat", now);
+        claims.addProperty("exp", now + 300);
+        claims.addProperty("sub", "alice");
+        return claims;
+    }
+
     private static void assertInvalid(JsonObject claims, long now) {
         assertThrows(JwtVerificationException.class,
                 () -> OpenIDAuthModule.validateLogoutClaims(claims, "https://idp", "yamcs", now));
