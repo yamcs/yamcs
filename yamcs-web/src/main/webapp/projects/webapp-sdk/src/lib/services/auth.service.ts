@@ -56,12 +56,19 @@ export class AuthService implements OnDestroy {
      */
     this.yamcsService.yamcsClient.setHttpInterceptor(
       async (next: HttpHandler, url: string, init?: RequestInit) => {
-        let response;
         try {
           // Verify or fetch a token when necessary
           await this.loginAutomatically();
+        } catch (err: any) {
+          throw this.handleRequestFailure(url, err);
+        }
 
-          init = this.modifyRequest(init);
+        // Kept outside the try blocks: an error while preparing the request
+        // is a client bug, and must not be reported as the server being down.
+        init = this.modifyRequest(init);
+
+        let response: Response;
+        try {
           response = await next.handle(url, init);
           if (response.status === 401) {
             // Server must have refused our access token. Attempt to refresh.
@@ -69,13 +76,7 @@ export class AuthService implements OnDestroy {
             await this.loginAutomatically();
           }
         } catch (err: any) {
-          if (err.name === 'TypeError') {
-            // TypeError is how Fetch API reports network or CORS failure
-            this.router.navigate(['/down'], { skipLocationChange: true });
-          } else {
-            this.logout(true);
-          }
-          throw err;
+          throw this.handleRequestFailure(url, err);
         }
 
         if (response.status === 401) {
@@ -109,21 +110,33 @@ export class AuthService implements OnDestroy {
   }
 
   /**
+   * Navigates away after a failed request or login attempt, and returns
+   * the error for rethrowing.
+   */
+  private handleRequestFailure(url: string, err: any) {
+    // Log the cause, because the navigation below hides it from the user
+    console.error(`Request to ${url} failed`, err);
+    if (err.name === 'TypeError') {
+      // TypeError is how Fetch API reports network or CORS failure
+      this.router.navigate(['/down'], { skipLocationChange: true });
+    } else {
+      this.logout(true);
+    }
+    return err;
+  }
+
+  /**
    * Adds an authorization header to an HTTP request.
    */
   private modifyRequest(init?: RequestInit): RequestInit | undefined {
     const accessToken = this.getCookie('access_token');
-    if (accessToken) {
-      if (!init) {
-        init = { headers: new Headers() };
-      } else if (!init.headers) {
-        init.headers = new Headers();
-      }
-      const headers = init.headers as Headers;
-      headers.append('Authorization', `Bearer ${accessToken}`);
+    if (!accessToken) {
+      return init;
     }
 
-    return init;
+    const headers = new Headers(init?.headers);
+    headers.set('Authorization', `Bearer ${accessToken}`);
+    return { ...init, headers };
   }
 
   getUser() {

@@ -2409,13 +2409,9 @@ export default class YamcsClient implements HttpHandler {
 
   async doFetch(url: string, init?: RequestInit) {
     if (this.accessToken) {
-      if (!init) {
-        init = { headers: new Headers() };
-      } else if (!init.headers) {
-        init.headers = new Headers();
-      }
-      const headers = new Headers(init.headers);
-      headers.append('Authorization', `Bearer ${this.accessToken}`);
+      const headers = new Headers(init?.headers);
+      headers.set('Authorization', `Bearer ${this.accessToken}`);
+      init = { ...init, headers };
     }
 
     let response: Response;
