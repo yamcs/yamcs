@@ -10,6 +10,7 @@ import {
   UserInfo,
 } from '../client';
 import { User } from '../User';
+import * as utils from '../utils';
 import { ConfigService } from './config.service';
 import { Synchronizer } from './synchronizer.service';
 import { YamcsService } from './yamcs.service';
@@ -318,7 +319,7 @@ export class AuthService implements OnDestroy {
     this.yamcsService.yamcsClient.closeWebSocketClient();
 
     if (navigateToLoginPage) {
-      this.navigateToLoginPage();
+      this.redirectToLogin();
     }
   }
 
@@ -343,24 +344,48 @@ export class AuthService implements OnDestroy {
 
     if (redirectUrl) {
       window.location.href = redirectUrl;
+    } else if (this.logoutRedirectUrl) {
+      window.location.href = this.logoutRedirectUrl;
     } else {
-      this.navigateToLoginPage();
+      this.redirectToLogin('/');
     }
   }
 
-  private navigateToLoginPage() {
-    if (this.logoutRedirectUrl) {
-      window.location.href = this.logoutRedirectUrl;
+  /**
+   * Navigates the browser to where the user can log in.
+   *
+   * When an OpenID server is configured, this is always the OpenID server.
+   * Else this is the login form, or the logoutRedirectUrl if the login form
+   * is disabled.
+   *
+   * @param next client-side URL to return to after a successful login.
+   * Defaults to the current URL.
+   */
+  redirectToLogin(next = this.router.url) {
+    const openid = this.authInfo.openid;
+    if (openid) {
+      // Let Yamcs redirect to the OpenID server. This works even when the
+      // authorization endpoint was not known when this page was loaded.
+      window.location.href = this.buildRedirector(
+        {
+          ...openid,
+          authorizationEndpoint: `${location.protocol}//${location.host}${this.baseHref}openid/authorize`,
+        },
+        this.buildServerSideOpenIDRedirectURI(),
+        next,
+      );
     } else if (!this.configService.getConfig().disableLoginForm) {
-      const redirectURI = this.buildOpenIDRedirectURI();
       window.location.href = this.buildRedirector(
         {
           clientId: 'yamcs-web',
           authorizationEndpoint: `${location.protocol}//${location.host}${this.baseHref}auth/authorize`,
           scope: 'openid',
         },
-        redirectURI,
+        this.buildOpenIDRedirectURI(),
+        next,
       );
+    } else if (this.logoutRedirectUrl) {
+      window.location.href = this.logoutRedirectUrl;
     }
   }
 
@@ -372,9 +397,19 @@ export class AuthService implements OnDestroy {
     return `${location.protocol}//${location.host}${this.baseHref}oidc-browser-callback`;
   }
 
-  private buildRedirector(openid: OpenIDConnectInfo, redirectURI: string) {
+  private buildRedirector(
+    openid: Required<OpenIDConnectInfo>,
+    redirectURI: string,
+    next: string,
+  ) {
+    // The client-side URL gets passed as state. When the login completes,
+    // we get it back on the callback route, together with a code that we
+    // can exchange for a Yamcs access token.
+    const state = utils.toBase64URL(next);
+
     let url = openid.authorizationEndpoint;
     url += `?client_id=${encodeURIComponent(openid.clientId)}`;
+    url += `&state=${state}`;
     url += '&response_mode=query';
     url += '&response_type=code';
     url += `&scope=${encodeURIComponent(openid.scope)}`;

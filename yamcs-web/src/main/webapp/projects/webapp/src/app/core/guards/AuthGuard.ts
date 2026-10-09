@@ -1,4 +1,3 @@
-import { APP_BASE_HREF } from '@angular/common';
 import { Service, inject } from '@angular/core';
 import {
   ActivatedRouteSnapshot,
@@ -7,13 +6,7 @@ import {
   Router,
   RouterStateSnapshot,
 } from '@angular/router';
-import {
-  AuthService,
-  ConfigService,
-  OpenIDConnectInfo,
-  YamcsService,
-  utils,
-} from '@yamcs/webapp-sdk';
+import { AuthService, YamcsService } from '@yamcs/webapp-sdk';
 
 export const authGuardFn: CanActivateFn = (
   route: ActivatedRouteSnapshot,
@@ -31,17 +24,14 @@ export const authGuardChildFn: CanActivateChildFn = (
 
 @Service()
 class AuthGuard {
-  private baseHref = inject(APP_BASE_HREF);
   private authService = inject(AuthService);
   private yamcs = inject(YamcsService);
   private router = inject(Router);
-  private configService = inject(ConfigService);
 
   async canActivate(
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot,
   ): Promise<boolean> {
-    const authInfo = this.configService.getAuthInfo();
     try {
       await this.authService.loginAutomatically();
       this.yamcs.yamcsClient.prepareWebSocketClient();
@@ -52,31 +42,8 @@ class AuthGuard {
         this.router.navigate(['/down'], { skipLocationChange: true });
         return false;
       } else {
-        if (this.configService.getConfig().logoutRedirectUrl) {
-          this.authService.logout(true /* redirect to external login */);
-        } else {
-          this.authService.logout(false);
-        }
-        if (authInfo.openid) {
-          const redirectURI =
-            this.authService.buildServerSideOpenIDRedirectURI();
-          window.location.href = this.buildRedirector(
-            authInfo.openid,
-            redirectURI,
-            state.url,
-          );
-        } else if (!this.configService.getConfig().disableLoginForm) {
-          const redirectURI = this.authService.buildOpenIDRedirectURI();
-          window.location.href = this.buildRedirector(
-            {
-              clientId: 'yamcs-web',
-              authorizationEndpoint: `${location.protocol}//${location.host}${this.baseHref}auth/authorize`,
-              scope: 'openid',
-            },
-            redirectURI,
-            state.url,
-          );
-        }
+        this.authService.logout(false);
+        this.authService.redirectToLogin(state.url);
         return false;
       }
     }
@@ -87,26 +54,5 @@ class AuthGuard {
     state: RouterStateSnapshot,
   ): Promise<boolean> {
     return this.canActivate(route, state);
-  }
-
-  private buildRedirector(
-    openid: OpenIDConnectInfo,
-    redirectURI: string,
-    next: string,
-  ) {
-    // The current client-side URL gets passed as state
-    // When the whole OIDC setup is done, we will get it back on the /oidc-browser-callback route
-    // together with a code that we can exchange for a valid Yamcs access token.
-    const state = utils.toBase64URL(next);
-
-    let url = openid.authorizationEndpoint;
-    url += `?client_id=${encodeURIComponent(openid.clientId)}`;
-    url += `&state=${state}`;
-    url += '&response_mode=query';
-    url += '&response_type=code';
-    url += `&scope=${encodeURIComponent(openid.scope)}`;
-    url += `&redirect_uri=${encodeURIComponent(redirectURI)}`;
-
-    return url;
   }
 }
