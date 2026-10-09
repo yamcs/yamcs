@@ -134,9 +134,9 @@ This AuthModule follows the conventions for server-side web applications: the ``
 
 The source code of the Yamcs web interface serves as the reference implementation. In short:
 
-#. Retrieve the OpenID Connect options from the ``/auth`` endpoint. The response contains an ``openid`` object with the properties ``clientId``, ``authorizationEndpoint`` and ``scope``. If the ``openid`` object is missing, the OpenID server is currently not available to Yamcs (for example because discovery has not yet succeeded).
+#. Retrieve the OpenID Connect options from the ``/auth`` endpoint. The response contains an ``openid`` object with the properties ``clientId``, ``authorizationEndpoint`` and ``scope``. The ``authorizationEndpoint`` is missing if it is not yet known to Yamcs (for example because discovery has not yet succeeded).
 
-#. Redirect the browser to the ``authorizationEndpoint``:
+#. Redirect the browser to the ``authorizationEndpoint``. Alternatively, redirect to ``/openid/authorize`` on Yamcs, with the same query parameters. Yamcs then redirects the browser to the authorization endpoint, or shows an error page if the OpenID server is not available.
 
    .. code-block:: JavaScript
 

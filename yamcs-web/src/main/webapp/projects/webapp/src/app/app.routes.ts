@@ -5,6 +5,7 @@ import { ExtensionComponent } from './appbase/extension/extension.component';
 import { extensionMatcher } from './appbase/extension/extension.matcher';
 import { ForbiddenComponent } from './appbase/forbidden/forbidden.component';
 import { HomeComponent } from './appbase/home/home.component';
+import { LoginFailedComponent } from './appbase/login-failed/login-failed.component';
 import { NotFoundComponent } from './appbase/not-found/not-found.component';
 import { ProfileComponent } from './appbase/profile/profile.component';
 import { RouteRefreshComponent } from './appbase/route-refresh/route-refresh.component';
@@ -61,6 +62,12 @@ export const APP_ROUTES: Routes = [
       {
         path: 'down',
         component: ServerUnavailableComponent,
+        canActivate: [clearContextGuardFn],
+        data: { hasSidebar: false },
+      },
+      {
+        path: 'login-failed',
+        component: LoginFailedComponent,
         canActivate: [clearContextGuardFn],
         data: { hasSidebar: false },
       },

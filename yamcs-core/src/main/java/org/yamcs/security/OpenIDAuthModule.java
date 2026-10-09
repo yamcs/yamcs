@@ -60,7 +60,7 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
     private static final String BACKCHANNEL_LOGOUT_EVENT = "http://schemas.openid.net/event/backchannel-logout";
     private static final long CLOCK_SKEW = 60; // seconds
 
-    private OpenIDBackChannelHandler backChannelHandler;
+    private OpenIDHandler openidHandler;
 
     private String clientId;
     private String clientSecret;
@@ -148,10 +148,10 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
                     + "Signatures of ID Tokens from the OpenID server will not be verified");
         }
 
-        backChannelHandler = new OpenIDBackChannelHandler(this);
+        openidHandler = new OpenIDHandler(this);
 
         var httpServer = YamcsServer.getServer().getGlobalService(HttpServer.class);
-        httpServer.addRoute("openid", () -> backChannelHandler);
+        httpServer.addRoute("openid", () -> openidHandler);
     }
 
     @Override

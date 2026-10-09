@@ -5,8 +5,10 @@ import static io.netty.handler.codec.http.HttpHeaderValues.NO_STORE;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpResponseStatus.SERVICE_UNAVAILABLE;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
+import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
@@ -18,12 +20,13 @@ import org.yamcs.http.NotFoundException;
 import org.yamcs.security.JwksVerifier.JwtVerificationException;
 
 import io.netty.handler.codec.http.DefaultHttpResponse;
+import io.netty.handler.codec.http.QueryStringDecoder;
 
-public class OpenIDBackChannelHandler extends BodyHandler {
+public class OpenIDHandler extends BodyHandler {
 
     private OpenIDAuthModule authModule;
 
-    public OpenIDBackChannelHandler(OpenIDAuthModule authModule) {
+    public OpenIDHandler(OpenIDAuthModule authModule) {
         this.authModule = authModule;
     }
 
@@ -35,11 +38,44 @@ public class OpenIDBackChannelHandler extends BodyHandler {
     @Override
     public void handle(HandlerContext ctx) {
         var path = ctx.getPathWithoutContext();
-        if (path.equals("/openid/backchannel-logout")) {
+        if (path.equals("/openid/authorize")) {
+            handleAuthorize(ctx);
+            return;
+        } else if (path.equals("/openid/backchannel-logout")) {
             handleBackChannelLogout(ctx);
             return;
         }
         throw new NotFoundException();
+    }
+
+    /**
+     * Redirects the browser to the authorization endpoint of the OpenID server, passing along the query parameters of
+     * the request.
+     * <p>
+     * The endpoint is resolved at request time, so that clients do not need to know it in advance. This allows
+     * recovering once the OpenID server becomes reachable, without requiring clients to reload their configuration.
+     */
+    private void handleAuthorize(HandlerContext ctx) {
+        ctx.requireGET();
+
+        var authorizationEndpoint = authModule.getAuthorizationEndpoint();
+        if (authorizationEndpoint == null) {
+            var vars = new HashMap<String, Object>();
+            vars.put("contextPath", ctx.getContextPath());
+            ctx.render(SERVICE_UNAVAILABLE, "/auth/templates/openid-unavailable.html", vars);
+            return;
+        }
+
+        var rawQuery = new QueryStringDecoder(ctx.getNettyHttpRequest().uri()).rawQuery();
+        ctx.sendRedirect(buildAuthorizationUrl(authorizationEndpoint, rawQuery));
+    }
+
+    private static String buildAuthorizationUrl(String authorizationEndpoint, String rawQuery) {
+        if (rawQuery == null || rawQuery.isEmpty()) {
+            return authorizationEndpoint;
+        }
+        var separator = authorizationEndpoint.contains("?") ? "&" : "?";
+        return authorizationEndpoint + separator + rawQuery;
     }
 
     private void handleBackChannelLogout(HandlerContext ctx) {

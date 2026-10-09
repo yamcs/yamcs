@@ -25,7 +25,9 @@ message OpenIDConnectInfo {
   // The value provided when registering Yamcs against an OpenID server
   optional string clientId = 1;
 
-  // Endpoint for for authentication or consent
+  // Endpoint for for authentication or consent. Unset if the endpoint has not
+  // yet been discovered. Browser clients may instead use the path openid/authorize,
+  // which redirects to this endpoint once known.
   optional string authorizationEndpoint = 2;
 
   // Scope for authorization requests (value to be interpreted by client-side web application) 

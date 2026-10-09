@@ -9,7 +9,7 @@ export interface AuthInfo {
 
 export interface OpenIDConnectInfo {
   clientId: string;
-  authorizationEndpoint: string;
+  authorizationEndpoint?: string;
   scope: string;
 }
 
