@@ -108,7 +108,15 @@ export interface ValidRange {
 
 export interface ArrayInfo {
   type: ParameterType;
-  dimensions: number;
+  dimensions: ParameterDimension[];
+}
+
+export interface ParameterDimension {
+  fixedValue?: string;
+  parameter?: Parameter;
+  aggregateMember?: string;
+  slope?: string;
+  intercept?: string;
 }
 
 export interface Member {

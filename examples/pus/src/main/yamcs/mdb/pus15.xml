@@ -5,15 +5,17 @@
 		<NoteSet>
 			<Note>ST[15] On-Board Storage and Retrieval. See pus_analysis/pus15.md and
 				pus_simulator_architecture.md for the full design rationale.</Note>
-			<Note>Core lifecycle scope only: packet store CRUD (TC[15,20/21/22/23/25/28]), storage
-				enable/disable (TC[15,1/2] + TM[15,19]), summary reporting (TC[15,12] + TM[15,13]),
-				by-time-range retrieval (TC[15,9/17]) and open retrieval (TC[15,14/15/16]). The Packet
-				Selection subservice (TC[15,3/4/5/6] and the HK/diagnostic/event filter tables,
-				TC[15,29-40]) is deferred -- see Pus15Service javadoc for the pass-all storage default
-				used in the meantime. TC[15,24/26/27] are out of scope per pus15.md.</Note>
+			<Note>Packet store lifecycle and retrieval are implemented together with the Packet Selection
+				 subservice (TC[15,3-5]/TM[15,6] and TC[15,29-39]/TM[15,36/38/40]). TC[15,24/26/27] remain out of scope per
+				pus15.md. An empty application-process storage-control configuration blocks all storage.</Note>
+			<Note>Application process identifiers in packet-selection application/source data are packed
+				11-bit values. Nested entries are contiguous; only the final packet octet may be zero-padded.
+				Structure and event definition identifiers are mission-profile uint8 values, and
+				housekeeping/diagnostic subsampling is not supported.</Note>
 			<Note>All packet-store state (stores map, fill tracking, retrieval threads) lives on-board
 				(emulated by Pus15Service in the simulator). This MDB only encodes the TC[15,x]
-				configuration/retrieval commands and decodes the TM[15,13]/[15,19]/[15,23] reports.</Note>
+				configuration/retrieval commands and decodes the lifecycle and packet-selection reports,
+				including TM[15,6]/[15,36]/[15,38]/[15,40].</Note>
 			<Note>Timestamps (TC[15,9] start_time/end_time, TC[15,11] time_limit, TC[15,14] start_time,
 				TM[15,13] oldest_ts/newest_ts/open_retrieval_start_time) are a raw unsigned 64-bit
 				milliseconds value, not a CUC-encoded field -- see pus15.md Gap 1. Pus15Service compares
@@ -131,6 +133,32 @@
 					</Dimension>
 				</DimensionList>
 			</ArrayParameterType>
+
+			<!-- Packet-selection report leaf arrays. APID groups are decoded with nested containers. -->
+			<ArrayParameterType name="app_selection_subtype_array_type" arrayTypeRef="/dt/uint8">
+				<DimensionList><Dimension>
+					<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+					<EndingIndex><DynamicValue><ParameterInstanceRef parameterRef="app_selection_n_subtypes"/><LinearAdjustment intercept="-1"/></DynamicValue></EndingIndex>
+				</Dimension></DimensionList>
+			</ArrayParameterType>
+			<ArrayParameterType name="hk_selection_id_array_type" arrayTypeRef="/dt/uint8">
+				<DimensionList><Dimension>
+					<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+					<EndingIndex><DynamicValue><ParameterInstanceRef parameterRef="hk_selection_n_ids"/><LinearAdjustment intercept="-1"/></DynamicValue></EndingIndex>
+				</Dimension></DimensionList>
+			</ArrayParameterType>
+			<ArrayParameterType name="diag_selection_id_array_type" arrayTypeRef="/dt/uint8">
+				<DimensionList><Dimension>
+					<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+					<EndingIndex><DynamicValue><ParameterInstanceRef parameterRef="diag_selection_n_ids"/><LinearAdjustment intercept="-1"/></DynamicValue></EndingIndex>
+				</Dimension></DimensionList>
+			</ArrayParameterType>
+			<ArrayParameterType name="event_selection_id_array_type" arrayTypeRef="/dt/uint8">
+				<DimensionList><Dimension>
+					<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+					<EndingIndex><DynamicValue><ParameterInstanceRef parameterRef="event_selection_n_ids"/><LinearAdjustment intercept="-1"/></DynamicValue></EndingIndex>
+				</Dimension></DimensionList>
+			</ArrayParameterType>
 		</ParameterTypeSet>
 		<ParameterSet>
 			<Parameter parameterTypeRef="store_count_type" name="store_summary_count" />
@@ -139,6 +167,27 @@
 			<Parameter parameterTypeRef="store_status_array_type" name="store_status_entries" />
 			<Parameter parameterTypeRef="store_count_type" name="store_config_count" />
 			<Parameter parameterTypeRef="store_config_array_type" name="store_config_entries" />
+
+			<Parameter parameterTypeRef="/dt/uint16" name="selection_store_id" />
+			<Parameter parameterTypeRef="/dt/uint8" name="app_selection_n_apids" />
+			<Parameter parameterTypeRef="/dt/pus_report_apid" name="app_selection_apid" />
+			<Parameter parameterTypeRef="/dt/uint8" name="app_selection_n_services" />
+			<Parameter parameterTypeRef="/dt/uint8" name="app_selection_service" />
+			<Parameter parameterTypeRef="/dt/uint8" name="app_selection_n_subtypes" />
+			<Parameter parameterTypeRef="app_selection_subtype_array_type" name="app_selection_subtypes" />
+
+			<Parameter parameterTypeRef="/dt/uint8" name="hk_selection_n_apids" />
+			<Parameter parameterTypeRef="/dt/pus_report_apid" name="hk_selection_apid" />
+			<Parameter parameterTypeRef="/dt/uint8" name="hk_selection_n_ids" />
+			<Parameter parameterTypeRef="hk_selection_id_array_type" name="hk_selection_ids" />
+			<Parameter parameterTypeRef="/dt/uint8" name="diag_selection_n_apids" />
+			<Parameter parameterTypeRef="/dt/pus_report_apid" name="diag_selection_apid" />
+			<Parameter parameterTypeRef="/dt/uint8" name="diag_selection_n_ids" />
+			<Parameter parameterTypeRef="diag_selection_id_array_type" name="diag_selection_ids" />
+			<Parameter parameterTypeRef="/dt/uint8" name="event_selection_n_apids" />
+			<Parameter parameterTypeRef="/dt/pus_report_apid" name="event_selection_apid" />
+			<Parameter parameterTypeRef="/dt/uint8" name="event_selection_n_ids" />
+			<Parameter parameterTypeRef="event_selection_id_array_type" name="event_selection_ids" />
 		</ParameterSet>
 		<ContainerSet>
 			<SequenceContainer name="pus15-tm">
@@ -199,6 +248,85 @@
 						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="23" />
 					</RestrictionCriteria>
 				</BaseContainer>
+			</SequenceContainer>
+
+			<!-- TM[15,6] application-process storage-control configuration -->
+			<SequenceContainer name="app_selection_service_element">
+				<EntryList>
+					<ParameterRefEntry parameterRef="app_selection_service" />
+					<ParameterRefEntry parameterRef="app_selection_n_subtypes" />
+					<ArrayParameterRefEntry parameterRef="app_selection_subtypes">
+						<IncludeCondition><Comparison parameterRef="app_selection_n_subtypes" comparisonOperator="&gt;" value="0" /></IncludeCondition>
+					</ArrayParameterRefEntry>
+				</EntryList>
+			</SequenceContainer>
+			<SequenceContainer name="app_selection_apid_element">
+				<EntryList>
+					<ParameterRefEntry parameterRef="app_selection_apid" />
+					<ParameterRefEntry parameterRef="app_selection_n_services" />
+					<ContainerRefEntry containerRef="app_selection_service_element">
+						<RepeatEntry><Count><DynamicValue><ParameterInstanceRef parameterRef="app_selection_n_services" /></DynamicValue></Count></RepeatEntry>
+					</ContainerRefEntry>
+				</EntryList>
+			</SequenceContainer>
+			<SequenceContainer name="APPLICATION_SELECTION_REPORT" shortDescription="TM[15,6] application-process storage-control configuration content report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="selection_store_id" />
+					<ParameterRefEntry parameterRef="app_selection_n_apids" />
+					<ContainerRefEntry containerRef="app_selection_apid_element">
+						<RepeatEntry><Count><DynamicValue><ParameterInstanceRef parameterRef="app_selection_n_apids" /></DynamicValue></Count></RepeatEntry>
+					</ContainerRefEntry>
+				</EntryList>
+				<BaseContainer containerRef="pus15-tm"><RestrictionCriteria><Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="6" /></RestrictionCriteria></BaseContainer>
+			</SequenceContainer>
+
+			<!-- TM[15,36/38/40] specialized packet-selection configurations -->
+			<SequenceContainer name="hk_selection_apid_element">
+				<EntryList>
+					<ParameterRefEntry parameterRef="hk_selection_apid" />
+					<ParameterRefEntry parameterRef="hk_selection_n_ids" />
+					<ArrayParameterRefEntry parameterRef="hk_selection_ids"><IncludeCondition><Comparison parameterRef="hk_selection_n_ids" comparisonOperator="&gt;" value="0" /></IncludeCondition></ArrayParameterRefEntry>
+				</EntryList>
+			</SequenceContainer>
+			<SequenceContainer name="HK_SELECTION_REPORT" shortDescription="TM[15,36] housekeeping storage-control configuration content report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="selection_store_id" />
+					<ParameterRefEntry parameterRef="hk_selection_n_apids" />
+					<ContainerRefEntry containerRef="hk_selection_apid_element"><RepeatEntry><Count><DynamicValue><ParameterInstanceRef parameterRef="hk_selection_n_apids" /></DynamicValue></Count></RepeatEntry></ContainerRefEntry>
+				</EntryList>
+				<BaseContainer containerRef="pus15-tm"><RestrictionCriteria><Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="36" /></RestrictionCriteria></BaseContainer>
+			</SequenceContainer>
+
+			<SequenceContainer name="diag_selection_apid_element">
+				<EntryList>
+					<ParameterRefEntry parameterRef="diag_selection_apid" />
+					<ParameterRefEntry parameterRef="diag_selection_n_ids" />
+					<ArrayParameterRefEntry parameterRef="diag_selection_ids"><IncludeCondition><Comparison parameterRef="diag_selection_n_ids" comparisonOperator="&gt;" value="0" /></IncludeCondition></ArrayParameterRefEntry>
+				</EntryList>
+			</SequenceContainer>
+			<SequenceContainer name="DIAGNOSTIC_SELECTION_REPORT" shortDescription="TM[15,38] diagnostic storage-control configuration content report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="selection_store_id" />
+					<ParameterRefEntry parameterRef="diag_selection_n_apids" />
+					<ContainerRefEntry containerRef="diag_selection_apid_element"><RepeatEntry><Count><DynamicValue><ParameterInstanceRef parameterRef="diag_selection_n_apids" /></DynamicValue></Count></RepeatEntry></ContainerRefEntry>
+				</EntryList>
+				<BaseContainer containerRef="pus15-tm"><RestrictionCriteria><Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="38" /></RestrictionCriteria></BaseContainer>
+			</SequenceContainer>
+
+			<SequenceContainer name="event_selection_apid_element">
+				<EntryList>
+					<ParameterRefEntry parameterRef="event_selection_apid" />
+					<ParameterRefEntry parameterRef="event_selection_n_ids" />
+					<ArrayParameterRefEntry parameterRef="event_selection_ids"><IncludeCondition><Comparison parameterRef="event_selection_n_ids" comparisonOperator="&gt;" value="0" /></IncludeCondition></ArrayParameterRefEntry>
+				</EntryList>
+			</SequenceContainer>
+			<SequenceContainer name="EVENT_SELECTION_REPORT" shortDescription="TM[15,40] event-blocking storage-control configuration content report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="selection_store_id" />
+					<ParameterRefEntry parameterRef="event_selection_n_apids" />
+					<ContainerRefEntry containerRef="event_selection_apid_element"><RepeatEntry><Count><DynamicValue><ParameterInstanceRef parameterRef="event_selection_n_apids" /></DynamicValue></Count></RepeatEntry></ContainerRefEntry>
+				</EntryList>
+				<BaseContainer containerRef="pus15-tm"><RestrictionCriteria><Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="40" /></RestrictionCriteria></BaseContainer>
 			</SequenceContainer>
 		</ContainerSet>
 	</TelemetryMetaData>
@@ -294,6 +422,61 @@
 					</Dimension>
 				</DimensionList>
 			</ArrayArgumentType>
+
+			<!-- TC[15,3/4] APID -> service -> subtype hierarchy -->
+			<ArrayArgumentType name="app_selection_subtype_arg_array_type" arrayTypeRef="/dt/uint8">
+				<DimensionList><Dimension>
+					<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+					<EndingIndex><DynamicValue><ArgumentInstanceRef argumentRef="n3"/><LinearAdjustment intercept="-1"/></DynamicValue></EndingIndex>
+				</Dimension></DimensionList>
+			</ArrayArgumentType>
+			<AggregateArgumentType name="app_selection_service_arg_type">
+				<MemberList>
+					<Member name="service_type" typeRef="/dt/uint8"/>
+					<Member name="n3" typeRef="/dt/uint8"/>
+					<Member name="subtypes" typeRef="app_selection_subtype_arg_array_type"/>
+				</MemberList>
+			</AggregateArgumentType>
+			<ArrayArgumentType name="app_selection_service_arg_array_type" arrayTypeRef="app_selection_service_arg_type">
+				<DimensionList><Dimension>
+					<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+					<EndingIndex><DynamicValue><ArgumentInstanceRef argumentRef="n2"/><LinearAdjustment intercept="-1"/></DynamicValue></EndingIndex>
+				</Dimension></DimensionList>
+			</ArrayArgumentType>
+			<AggregateArgumentType name="app_selection_apid_arg_type">
+				<MemberList>
+					<Member name="apid" typeRef="/dt/pus_report_apid"/>
+					<Member name="n2" typeRef="/dt/uint8"/>
+					<Member name="services" typeRef="app_selection_service_arg_array_type"/>
+				</MemberList>
+			</AggregateArgumentType>
+			<ArrayArgumentType name="app_selection_apid_arg_array_type" arrayTypeRef="app_selection_apid_arg_type">
+				<DimensionList><Dimension>
+					<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+					<EndingIndex><DynamicValue><ArgumentInstanceRef argumentRef="N1"/><LinearAdjustment intercept="-1"/></DynamicValue></EndingIndex>
+				</Dimension></DimensionList>
+			</ArrayArgumentType>
+
+			<!-- TC[15,29-34] APID -> structure/event identifier hierarchy -->
+			<ArrayArgumentType name="identifier_arg_array_type" arrayTypeRef="/dt/uint8">
+				<DimensionList><Dimension>
+					<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+					<EndingIndex><DynamicValue><ArgumentInstanceRef argumentRef="n2"/><LinearAdjustment intercept="-1"/></DynamicValue></EndingIndex>
+				</Dimension></DimensionList>
+			</ArrayArgumentType>
+			<AggregateArgumentType name="identifier_apid_arg_type">
+				<MemberList>
+					<Member name="apid" typeRef="/dt/pus_report_apid"/>
+					<Member name="n2" typeRef="/dt/uint8"/>
+					<Member name="identifiers" typeRef="identifier_arg_array_type"/>
+				</MemberList>
+			</AggregateArgumentType>
+			<ArrayArgumentType name="identifier_apid_arg_array_type" arrayTypeRef="identifier_apid_arg_type">
+				<DimensionList><Dimension>
+					<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+					<EndingIndex><DynamicValue><ArgumentInstanceRef argumentRef="N1"/><LinearAdjustment intercept="-1"/></DynamicValue></EndingIndex>
+				</Dimension></DimensionList>
+			</ArrayArgumentType>
 		</ArgumentTypeSet>
 		<MetaCommandSet>
 			<MetaCommand name="pus15-tc" abstract="true">
@@ -368,6 +551,36 @@
 					<EntryList/>
 					<BaseContainer containerRef="pus15-tc"/>
 				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[15,3-5] Application-process packet-selection configuration -->
+			<MetaCommand name="TC_15_3_ADD_REPORT_TYPES" shortDescription="TC[15,3] Add application-process report types">
+				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="3"/></ArgumentAssignmentList></BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="store_id" argumentTypeRef="/dt/uint16"/>
+					<Argument name="N1" argumentTypeRef="/dt/uint8"/>
+					<Argument name="apid_entries" argumentTypeRef="app_selection_apid_arg_array_type"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_3"><EntryList><ArgumentRefEntry argumentRef="store_id"/><ArgumentRefEntry argumentRef="N1"/><ArgumentRefEntry argumentRef="apid_entries"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="TC_15_4_DELETE_REPORT_TYPES" shortDescription="TC[15,4] Delete application-process report types">
+				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="4"/></ArgumentAssignmentList></BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="store_id" argumentTypeRef="/dt/uint16"/>
+					<Argument name="N1" argumentTypeRef="/dt/uint8"/>
+					<Argument name="apid_entries" argumentTypeRef="app_selection_apid_arg_array_type"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_4_DELETE"><EntryList><ArgumentRefEntry argumentRef="store_id"/><ArgumentRefEntry argumentRef="N1"/><ArgumentRefEntry argumentRef="apid_entries"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="TC_15_4_EMPTY" shortDescription="TC[15,4] Empty application-process storage-control configuration">
+				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="4"/></ArgumentAssignmentList></BaseMetaCommand>
+				<ArgumentList><Argument name="store_id" argumentTypeRef="/dt/uint16"/></ArgumentList>
+				<CommandContainer name="TC_15_4_EMPTY"><EntryList><ArgumentRefEntry argumentRef="store_id"/><FixedValueEntry name="N1" binaryValue="00" sizeInBits="8"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="TC_15_5_REPORT_APPLICATION_CONFIG" shortDescription="TC[15,5] Request TM[15,6] for one packet store">
+				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="5"/></ArgumentAssignmentList></BaseMetaCommand>
+				<ArgumentList><Argument name="store_id" argumentTypeRef="/dt/uint16"/></ArgumentList>
+				<CommandContainer name="TC_15_5"><EntryList><ArgumentRefEntry argumentRef="store_id"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
 			</MetaCommand>
 
 			<!-- TC[15,9] Start by-time-range retrieval of packet stores -->
@@ -705,6 +918,68 @@
 					</EntryList>
 					<BaseContainer containerRef="pus15-tc"/>
 				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[15,29-40] Specialized packet-selection configurations -->
+			<MetaCommand name="TC_15_29_ADD_HK_STRUCTURES" shortDescription="TC[15,29] Add HK structure identifiers">
+				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="29"/></ArgumentAssignmentList></BaseMetaCommand>
+				<ArgumentList><Argument name="store_id" argumentTypeRef="/dt/uint16"/><Argument name="N1" argumentTypeRef="/dt/uint8"/><Argument name="identifier_entries" argumentTypeRef="identifier_apid_arg_array_type"/></ArgumentList>
+				<CommandContainer name="TC_15_29"><EntryList><ArgumentRefEntry argumentRef="store_id"/><ArgumentRefEntry argumentRef="N1"/><ArgumentRefEntry argumentRef="identifier_entries"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="TC_15_30_DELETE_HK_STRUCTURES" shortDescription="TC[15,30] Delete HK structure identifiers">
+				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="30"/></ArgumentAssignmentList></BaseMetaCommand>
+				<ArgumentList><Argument name="store_id" argumentTypeRef="/dt/uint16"/><Argument name="N1" argumentTypeRef="/dt/uint8"/><Argument name="identifier_entries" argumentTypeRef="identifier_apid_arg_array_type"/></ArgumentList>
+				<CommandContainer name="TC_15_30"><EntryList><ArgumentRefEntry argumentRef="store_id"/><ArgumentRefEntry argumentRef="N1"/><ArgumentRefEntry argumentRef="identifier_entries"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="TC_15_30_EMPTY" shortDescription="TC[15,30] Empty HK storage-control configuration">
+				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="30"/></ArgumentAssignmentList></BaseMetaCommand>
+				<ArgumentList><Argument name="store_id" argumentTypeRef="/dt/uint16"/></ArgumentList>
+				<CommandContainer name="TC_15_30_EMPTY"><EntryList><ArgumentRefEntry argumentRef="store_id"/><FixedValueEntry name="N1" binaryValue="00" sizeInBits="8"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
+			</MetaCommand>
+
+			<MetaCommand name="TC_15_31_ADD_DIAGNOSTIC_STRUCTURES" shortDescription="TC[15,31] Add diagnostic structure identifiers">
+				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="31"/></ArgumentAssignmentList></BaseMetaCommand>
+				<ArgumentList><Argument name="store_id" argumentTypeRef="/dt/uint16"/><Argument name="N1" argumentTypeRef="/dt/uint8"/><Argument name="identifier_entries" argumentTypeRef="identifier_apid_arg_array_type"/></ArgumentList>
+				<CommandContainer name="TC_15_31"><EntryList><ArgumentRefEntry argumentRef="store_id"/><ArgumentRefEntry argumentRef="N1"/><ArgumentRefEntry argumentRef="identifier_entries"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="TC_15_32_DELETE_DIAGNOSTIC_STRUCTURES" shortDescription="TC[15,32] Delete diagnostic structure identifiers">
+				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="32"/></ArgumentAssignmentList></BaseMetaCommand>
+				<ArgumentList><Argument name="store_id" argumentTypeRef="/dt/uint16"/><Argument name="N1" argumentTypeRef="/dt/uint8"/><Argument name="identifier_entries" argumentTypeRef="identifier_apid_arg_array_type"/></ArgumentList>
+				<CommandContainer name="TC_15_32"><EntryList><ArgumentRefEntry argumentRef="store_id"/><ArgumentRefEntry argumentRef="N1"/><ArgumentRefEntry argumentRef="identifier_entries"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="TC_15_32_EMPTY" shortDescription="TC[15,32] Empty diagnostic storage-control configuration">
+				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="32"/></ArgumentAssignmentList></BaseMetaCommand>
+				<ArgumentList><Argument name="store_id" argumentTypeRef="/dt/uint16"/></ArgumentList>
+				<CommandContainer name="TC_15_32_EMPTY"><EntryList><ArgumentRefEntry argumentRef="store_id"/><FixedValueEntry name="N1" binaryValue="00" sizeInBits="8"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
+			</MetaCommand>
+
+			<MetaCommand name="TC_15_33_DELETE_EVENT_BLOCKS" shortDescription="TC[15,33] Delete event blocking identifiers">
+				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="33"/></ArgumentAssignmentList></BaseMetaCommand>
+				<ArgumentList><Argument name="store_id" argumentTypeRef="/dt/uint16"/><Argument name="N1" argumentTypeRef="/dt/uint8"/><Argument name="identifier_entries" argumentTypeRef="identifier_apid_arg_array_type"/></ArgumentList>
+				<CommandContainer name="TC_15_33"><EntryList><ArgumentRefEntry argumentRef="store_id"/><ArgumentRefEntry argumentRef="N1"/><ArgumentRefEntry argumentRef="identifier_entries"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="TC_15_33_EMPTY" shortDescription="TC[15,33] Empty event-blocking storage-control configuration">
+				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="33"/></ArgumentAssignmentList></BaseMetaCommand>
+				<ArgumentList><Argument name="store_id" argumentTypeRef="/dt/uint16"/></ArgumentList>
+				<CommandContainer name="TC_15_33_EMPTY"><EntryList><ArgumentRefEntry argumentRef="store_id"/><FixedValueEntry name="N1" binaryValue="00" sizeInBits="8"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="TC_15_34_ADD_EVENT_BLOCKS" shortDescription="TC[15,34] Add event blocking identifiers">
+				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="34"/></ArgumentAssignmentList></BaseMetaCommand>
+				<ArgumentList><Argument name="store_id" argumentTypeRef="/dt/uint16"/><Argument name="N1" argumentTypeRef="/dt/uint8"/><Argument name="identifier_entries" argumentTypeRef="identifier_apid_arg_array_type"/></ArgumentList>
+				<CommandContainer name="TC_15_34"><EntryList><ArgumentRefEntry argumentRef="store_id"/><ArgumentRefEntry argumentRef="N1"/><ArgumentRefEntry argumentRef="identifier_entries"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
+			</MetaCommand>
+
+			<MetaCommand name="TC_15_35_REPORT_HK_CONFIG" shortDescription="TC[15,35] Request TM[15,36]">
+				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="35"/></ArgumentAssignmentList></BaseMetaCommand>
+				<ArgumentList><Argument name="store_id" argumentTypeRef="/dt/uint16"/></ArgumentList><CommandContainer name="TC_15_35"><EntryList><ArgumentRefEntry argumentRef="store_id"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="TC_15_37_REPORT_DIAGNOSTIC_CONFIG" shortDescription="TC[15,37] Request TM[15,38]">
+				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="37"/></ArgumentAssignmentList></BaseMetaCommand>
+				<ArgumentList><Argument name="store_id" argumentTypeRef="/dt/uint16"/></ArgumentList><CommandContainer name="TC_15_37"><EntryList><ArgumentRefEntry argumentRef="store_id"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="TC_15_39_REPORT_EVENT_CONFIG" shortDescription="TC[15,39] Request TM[15,40]">
+				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="39"/></ArgumentAssignmentList></BaseMetaCommand>
+				<ArgumentList><Argument name="store_id" argumentTypeRef="/dt/uint16"/></ArgumentList><CommandContainer name="TC_15_39"><EntryList><ArgumentRefEntry argumentRef="store_id"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
 			</MetaCommand>
 		</MetaCommandSet>
 	</CommandMetaData>

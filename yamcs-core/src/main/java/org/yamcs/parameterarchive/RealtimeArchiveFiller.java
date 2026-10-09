@@ -449,7 +449,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
                     intv.getSegmentsDescending(pids, r);
                 }
             }
-            return null;
+            return r;
         }
 
         /**
@@ -736,6 +736,9 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
 
                 while (k != tail) {
                     PGSegment seg = segments[k];
+                    // A completed asynchronous write may clear this slot while a retrieval is traversing the queue.
+                    // Always advance before testing the captured slot, as done by the single-parameter traversal.
+                    k = inc(k);
                     if (seg == null) {
                         continue;
                     }
@@ -744,7 +747,6 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
                     if (pvs != null) {
                         r.add(pvs);
                     }
-                    k = inc(k);
                 }
             }
 

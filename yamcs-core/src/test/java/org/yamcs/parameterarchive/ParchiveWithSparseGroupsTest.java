@@ -15,18 +15,30 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
+import org.yamcs.parameter.AggregateValue;
+import org.yamcs.parameter.ArrayValue;
+import org.yamcs.parameter.ParameterRetrievalOptions;
+import org.yamcs.parameter.ParameterRetrievalService;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.ParameterValueWithId;
+import org.yamcs.parameter.ParameterWithId;
+import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.utils.AggregateUtil;
 import org.yamcs.utils.IntArray;
 import org.yamcs.utils.TimeEncoding;
+import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.util.AggregateMemberNames;
 import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 
 public class ParchiveWithSparseGroupsTest extends BaseParchiveTest {
@@ -328,6 +340,179 @@ public class ParchiveWithSparseGroupsTest extends BaseParchiveTest {
         assertEquals(1, rl0.size());
         checkEquals(c.list.get(0), t1, pva1_0);
         checkEquals(c.list.get(1), t2, pva1_1);
+    }
+
+    @Test
+    public void testArrayComponentsAddedAfterSegmentArchived() throws Exception {
+        openDb("none", true, 0.5);
+
+        int p0x = pidMap.createAndGet("/test/a[0].x", Type.STRING);
+        int p0y = pidMap.createAndGet("/test/a[0].y", Type.STRING);
+        var initialGroup = pgidMap.getGroup(IntArray.wrap(p0x, p0y));
+
+        ParameterValue pv0x = getParameterValue(p1, 100, "x0");
+        ParameterValue pv0y = getParameterValue(p2, 100, "y0");
+        pv0x.setInvalid();
+        pv0y.setInvalid();
+        PGSegment segment = new PGSegment(initialGroup.id, 0);
+        segment.addRecord(100, IntArray.wrap(p0x, p0y), Arrays.asList(pv0x, pv0y));
+        parchive.writeToArchive(segment);
+
+        // Extend the group only after the older segment has been written. The new array element has no RocksDB record in
+        // that segment, including no gap record.
+        int p1x = pidMap.createAndGet("/test/a[1].x", Type.STRING);
+        int p1y = pidMap.createAndGet("/test/a[1].y", Type.STRING);
+        var extendedGroup = pgidMap.getGroup(IntArray.wrap(p0x, p0y, p1x, p1y));
+        assertEquals(initialGroup.id, extendedGroup.id);
+
+        int arrayId = pidMap.createAndGetAggrray("/test/a", Type.ARRAY, null,
+                IntArray.wrap(p0x, p0y, p1x, p1y));
+
+        assertArchivedArrayValue(arrayId, extendedGroup.id, true);
+        assertArchivedArrayValue(arrayId, extendedGroup.id, false);
+    }
+
+    @Test
+    public void testNestedEmptyArraysAreArchived() throws Exception {
+        openDb("none", true, 0.1);
+        Parameter configuration = new Parameter("configuration");
+        configuration.setQualifiedName("/test/configuration");
+
+        BasicParameterList outerEmpty = getConfigurationList(configuration, 100, 0, 0, 0);
+        BasicParameterList middleEmpty = getConfigurationList(configuration, 200, 1, 0, 0);
+        BasicParameterList innerEmpty = getConfigurationList(configuration, 300, 1, 1, 0);
+        BasicParameterList populated = getConfigurationList(configuration, 400, 1, 1, 1);
+
+        var group = pgidMap.getGroup(outerEmpty.getPids());
+        assertEquals(group.id, pgidMap.getGroup(middleEmpty.getPids()).id);
+        assertEquals(group.id, pgidMap.getGroup(innerEmpty.getPids()).id);
+        assertEquals(group.id, pgidMap.getGroup(populated.getPids()).id);
+
+        PGSegment segment = new PGSegment(group.id, 0);
+        segment.addRecord(100, outerEmpty.getPids(), outerEmpty.getValues());
+        segment.addRecord(200, middleEmpty.getPids(), middleEmpty.getValues());
+        segment.addRecord(300, innerEmpty.getPids(), innerEmpty.getValues());
+        segment.addRecord(400, populated.getPids(), populated.getValues());
+        parchive.writeToArchive(segment);
+
+        ParameterId[] rootIds = pidMap.get(configuration.getQualifiedName());
+        assertEquals(1, rootIds.length);
+        List<ParameterIdValueList> values = retrieveMultipleParameters(0, TimeEncoding.POSITIVE_INFINITY,
+                new int[] { rootIds[0].getPid() }, new int[] { group.id }, true);
+        assertEquals(4, values.size());
+        assertConfigurationDimensions(values.get(0), 0, 0, 0);
+        assertConfigurationDimensions(values.get(1), 1, 0, 0);
+        assertConfigurationDimensions(values.get(2), 1, 1, 0);
+        assertConfigurationDimensions(values.get(3), 1, 1, 1);
+
+        ParameterRetrievalService retrievalService = new ParameterRetrievalService();
+        retrievalService.init(instance, "retrieval", YConfiguration.emptyConfig());
+        setField(retrievalService, "parchive", parchive);
+        try {
+            ParameterWithId reportsRequest = new ParameterWithId(configuration,
+                    NamedObjectId.newBuilder().setName(configuration.getQualifiedName() + ".reports").build(),
+                    AggregateUtil.parseReference("reports"));
+            ParameterRetrievalOptions options = ParameterRetrievalOptions.newBuilder()
+                    .withStartStop(0, 200)
+                    .withAscending(true)
+                    .withoutReplay(true)
+                    .build();
+            List<ParameterValueWithId> memberValues = new ArrayList<>();
+            retrievalService.retrieveSingle(reportsRequest, options, memberValues::add).get();
+
+            assertEquals(1, memberValues.size());
+            assertEquals(0, ((ArrayValue) memberValues.get(0).getParameterValue().getEngValue()).flatLength());
+
+            List<List<ParameterValueWithId>> multiMemberValues = new ArrayList<>();
+            retrievalService.retrieveMulti(List.of(reportsRequest), options, multiMemberValues::add).get();
+            assertEquals(1, multiMemberValues.size());
+            assertEquals(1, multiMemberValues.get(0).size());
+            assertEquals(0,
+                    ((ArrayValue) multiMemberValues.get(0).get(0).getParameterValue().getEngValue()).flatLength());
+        } finally {
+            ((ExecutorService) getField(retrievalService, "executor")).shutdownNow();
+        }
+    }
+
+    private static void setField(Object target, String name, Object value) throws Exception {
+        var field = target.getClass().getDeclaredField(name);
+        field.setAccessible(true);
+        field.set(target, value);
+    }
+
+    private static Object getField(Object target, String name) throws Exception {
+        var field = target.getClass().getDeclaredField(name);
+        field.setAccessible(true);
+        return field.get(target);
+    }
+
+    private BasicParameterList getConfigurationList(Parameter parameter, long time, int reportCount, int serviceCount,
+            int subserviceCount) {
+        AggregateValue configuration = new AggregateValue(
+                AggregateMemberNames.get(new String[] { "report_count", "reports" }));
+        configuration.setMemberValue("report_count", ValueUtility.getUint32Value(reportCount));
+        ArrayValue reports = new ArrayValue(new int[] { reportCount }, Type.AGGREGATE);
+        if (reportCount > 0) {
+            AggregateValue report = new AggregateValue(
+                    AggregateMemberNames.get(new String[] { "apid", "service_count", "services" }));
+            report.setMemberValue("apid", ValueUtility.getUint32Value(11));
+            report.setMemberValue("service_count", ValueUtility.getUint32Value(serviceCount));
+            ArrayValue services = new ArrayValue(new int[] { serviceCount }, Type.AGGREGATE);
+            if (serviceCount > 0) {
+                AggregateValue service = new AggregateValue(AggregateMemberNames.get(
+                        new String[] { "service_type", "subservice_count", "subservices" }));
+                service.setMemberValue("service_type", ValueUtility.getUint32Value(14));
+                service.setMemberValue("subservice_count", ValueUtility.getUint32Value(subserviceCount));
+                ArrayValue subservices = new ArrayValue(new int[] { subserviceCount }, Type.UINT32);
+                if (subserviceCount > 0) {
+                    subservices.setElementValue(0, ValueUtility.getUint32Value(4));
+                }
+                service.setMemberValue("subservices", subservices);
+                services.setElementValue(0, service);
+            }
+            report.setMemberValue("services", services);
+            reports.setElementValue(0, report);
+        }
+        configuration.setMemberValue("reports", reports);
+
+        ParameterValue pv = new ParameterValue(parameter);
+        pv.setGenerationTime(time);
+        pv.setEngValue(configuration);
+        BasicParameterList list = new BasicParameterList(pidMap);
+        list.add(pv);
+        return list;
+    }
+
+    private void assertConfigurationDimensions(ParameterIdValueList valueList, int reportCount, int serviceCount,
+            int subserviceCount) {
+        AggregateValue configuration = (AggregateValue) valueList.getValues().get(0).getEngValue();
+        ArrayValue reports = (ArrayValue) configuration.getMemberValue("reports");
+        assertEquals(reportCount, reports.flatLength());
+        if (reportCount > 0) {
+            AggregateValue report = (AggregateValue) reports.getElementValue(0);
+            ArrayValue services = (ArrayValue) report.getMemberValue("services");
+            assertEquals(serviceCount, services.flatLength());
+            if (serviceCount > 0) {
+                AggregateValue service = (AggregateValue) services.getElementValue(0);
+                ArrayValue subservices = (ArrayValue) service.getMemberValue("subservices");
+                assertEquals(subserviceCount, subservices.flatLength());
+            }
+        }
+    }
+
+    private void assertArchivedArrayValue(int arrayId, int parameterGroupId, boolean ascending) throws Exception {
+        List<ParameterIdValueList> values = retrieveMultipleParameters(0, TimeEncoding.POSITIVE_INFINITY,
+                new int[] { arrayId }, new int[] { parameterGroupId }, ascending);
+        assertEquals(1, values.size());
+        assertEquals(1, values.get(0).size());
+
+        ParameterValue parameterValue = values.get(0).getValues().get(0);
+        assertTrue(parameterValue.isInvalid());
+        ArrayValue arrayValue = (ArrayValue) parameterValue.getEngValue();
+        assertEquals(1, arrayValue.flatLength());
+        AggregateValue element = (AggregateValue) arrayValue.getElementValue(0);
+        assertEquals("x0", element.getMemberValue("x").getStringValue());
+        assertEquals("y0", element.getMemberValue("y").getStringValue());
     }
 
     @Test

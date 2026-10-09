@@ -26,9 +26,11 @@ import java.util.stream.Stream;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
+import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartDocument;
 import javax.xml.stream.events.StartElement;
 
@@ -64,6 +66,9 @@ public class XtceStaxReader extends AbstractStaxReader {
     // XTCE Schema defined tags, to minimize the mistyping errors
 
     private static final String YAMCS_IGNORE = "_yamcs_ignore";
+    public static final String YAMCS_XTCE_NAMESPACE = "http://yamcs.org/schema/xtce";
+    private static final QName AGGREGATE_MEMBER_ATTRIBUTE =
+            new QName(YAMCS_XTCE_NAMESPACE, "aggregateMember");
 
     public static final DynamicIntegerValue IGNORED_DYNAMIC_VALUE = new DynamicIntegerValue(
             new ParameterInstanceRef(new Parameter(YAMCS_IGNORE)));
@@ -2829,9 +2834,12 @@ public class XtceStaxReader extends AbstractStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(ELEM_PARAMETER_INSTANCE_REF)) {
-                String paramRef = readMandatoryAttribute(ATTR_PARAMETER_REF, xmlEvent.asStartElement());
+                StartElement element = xmlEvent.asStartElement();
+                String paramRef = readMandatoryAttribute(ATTR_PARAMETER_REF, element);
                 if (YAMCS_IGNORE.equals(paramRef)) {
                     v = IGNORED_DYNAMIC_VALUE;
+                } else if (isAggregateMemberReference(element)) {
+                    v = new DynamicIntegerValue(readAggregateMemberInstanceRef());
                 } else {
                     v = new DynamicIntegerValue(readParameterInstanceRef(spaceSystem, null));
                 }
@@ -2854,6 +2862,36 @@ public class XtceStaxReader extends AbstractStaxReader {
                 logUnknown();
             }
         }
+    }
+
+    private AggregateMemberInstanceRef readAggregateMemberInstanceRef() throws XMLStreamException {
+        log.trace(ELEM_PARAMETER_INSTANCE_REF);
+
+        StartElement startElement = checkStartElementPreconditions();
+        String memberName = readMandatoryAttribute(ATTR_PARAMETER_REF, startElement);
+        boolean useCalibrated = readBooleanAttribute(ATTR_USE_CALIBRATED_VALUE, startElement, true);
+        int instance = readIntAttribute(ATTR_INSTANCE, startElement, 0);
+        if (instance != 0) {
+            throw new XMLStreamException("Aggregate member references do not support an instance",
+                    startElement.getLocation());
+        }
+
+        return new AggregateMemberInstanceRef(memberName, useCalibrated);
+    }
+
+    private boolean isAggregateMemberReference(StartElement element) throws XMLStreamException {
+        Attribute attribute = element.getAttributeByName(AGGREGATE_MEMBER_ATTRIBUTE);
+        if (attribute == null) {
+            return false;
+        }
+
+        String value = attribute.getValue();
+        if ("true".equalsIgnoreCase(value) || "1".equals(value)) {
+            return true;
+        } else if ("false".equalsIgnoreCase(value) || "0".equals(value)) {
+            return false;
+        }
+        throw new XMLStreamException("Cannot parse '" + value + "' to boolean", element.getLocation());
     }
 
     private LinearAdjusment readLinearAdjusment() throws XMLStreamException {

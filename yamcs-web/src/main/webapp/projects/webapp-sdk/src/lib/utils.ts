@@ -613,38 +613,37 @@ export function getEntryForOffset(
   parameter: Parameter,
   offset: string,
 ): Parameter | ParameterMember | null {
-  const entry = parameter.name + offset;
-  const parts = entry.split('.');
+  const path = parseParameterPath(offset.split('.'));
+  if (!path) {
+    return null;
+  }
 
   let node: Parameter | ParameterMember = parameter;
-  for (let i = 1; i < parts.length; i++) {
-    let memberNode;
-    const members: ParameterMember[] =
-      getParameterTypeForEntry(node)?.member || [];
-    for (const member of members) {
-      if (member.name === parts[i]) {
-        memberNode = member;
-        break;
+  let ptype = parameter.type;
+  for (const element of path) {
+    if (element.name) {
+      const member = ptype?.member?.find(
+        (candidate) => candidate.name === element.name,
+      );
+      if (!member) {
+        return null;
       }
+      node = member;
+      ptype = member.type;
     }
 
-    if (!memberNode) {
-      return null;
-    } else {
-      node = memberNode;
+    if (element.indices.length) {
+      if (
+        !ptype?.arrayInfo ||
+        ptype.arrayInfo.dimensions.length !== element.indices.length
+      ) {
+        return null;
+      }
+      ptype = ptype.arrayInfo.type;
     }
   }
 
-  return node || null;
-}
-
-function getParameterTypeForEntry(entry: Parameter | ParameterMember) {
-  const entryType = entry.type as ParameterType;
-  if (entryType.arrayInfo) {
-    return entryType.arrayInfo.type;
-  } else {
-    return entry.type;
-  }
+  return node;
 }
 
 export function getParameterTypeForPath(
@@ -665,20 +664,67 @@ export function getParameterTypeForPath(
   if (!path) {
     return parameter.type;
   }
-  let ptype = parameter.type!;
-  for (const segment of path) {
-    if (segment.startsWith('[')) {
-      ptype = ptype.arrayInfo!.type;
-    } else {
-      for (const member of ptype.member || []) {
-        if (member.name === segment) {
-          ptype = member.type as ParameterType;
-          break;
-        }
+
+  const elements = parseParameterPath(path);
+  if (!elements) {
+    return null;
+  }
+
+  let ptype = parameter.type;
+  for (const element of elements) {
+    if (element.name) {
+      const member = ptype?.member?.find(
+        (candidate) => candidate.name === element.name,
+      );
+      if (!member) {
+        return null;
       }
+      ptype = member.type;
+    }
+
+    if (element.indices.length) {
+      if (
+        !ptype?.arrayInfo ||
+        ptype.arrayInfo.dimensions.length !== element.indices.length
+      ) {
+        return null;
+      }
+      ptype = ptype.arrayInfo.type;
     }
   }
   return ptype;
+}
+
+interface ParameterPathElement {
+  name?: string;
+  indices: number[];
+}
+
+/**
+ * Parses the string representation of XTCE PathElement objects. Each path
+ * element may contain an aggregate member name, array indexes, or both.
+ */
+function parseParameterPath(path: string[]): ParameterPathElement[] | null {
+  const result: ParameterPathElement[] = [];
+  for (const segment of path) {
+    if (!segment) {
+      continue;
+    }
+
+    const match = /^([^\[\]]+)?((?:\[\d+\])*)$/.exec(segment);
+    if (!match || (!match[1] && !match[2])) {
+      return null;
+    }
+
+    const indices = Array.from(match[2].matchAll(/\[(\d+)\]/g), (item) =>
+      Number(item[1]),
+    );
+    result.push({
+      name: match[1],
+      indices,
+    });
+  }
+  return result;
 }
 
 export function getUnits(unitSet?: UnitInfo[]): string | null {

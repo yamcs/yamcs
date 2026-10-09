@@ -64,6 +64,31 @@ public class AggregateUtilTest {
     }
 
     @Test
+    public void testExtractMemberFromArchiveValueWithoutParameterDefinition() {
+        Parameter parameter = getAggregateParameter("p");
+        AggregateParameterType type = (AggregateParameterType) parameter.getParameterType();
+        Value value = DataTypeProcessor.getValueForType(type, type.convertType("{ m1: 3, m2: { s1: 5, s2:7}}"));
+
+        ParameterValue archivedValue = new ParameterValue("/test/p");
+        archivedValue.setEngValue(value);
+        ParameterValue member = AggregateUtil.extractMember(archivedValue, AggregateUtil.parseReference("m2.s2"));
+
+        assertEquals("/test/p", member.getParameterQualifiedName());
+        assertEquals(7, member.getEngValue().getSint32Value());
+    }
+
+    @Test
+    public void testExtractMemberFromStatusOnlyArchiveValue() {
+        ParameterValue archivedValue = new ParameterValue("/test/p");
+        archivedValue.setInvalid();
+
+        ParameterValue member = AggregateUtil.extractMember(archivedValue, AggregateUtil.parseReference("m2.s2"));
+
+        assertEquals("/test/p", member.getParameterQualifiedName());
+        assertTrue(member.isInvalid());
+    }
+
+    @Test
     public void testPatchArray() {
         Parameter p = new Parameter("p");
         ArrayParameterType.Builder aptb = new ArrayParameterType.Builder().setNumberOfDimensions(1);

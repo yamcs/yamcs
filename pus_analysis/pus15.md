@@ -1,7 +1,8 @@
 # PUS ST[15] On-Board Storage and Retrieval — Implementation Analysis
 
 **Standard**: ECSS-E-ST-70-41C §6.15 and §8.15  
-**Context**: YAMCS/Pixxel — YAMCS is the **ground-station MCS only**. `pus15_simulator.py` emulates satellite on-board behavior for testing.
+**Context**: YAMCS/Pixxel — YAMCS is the **ground-station MCS only**. The Java
+`Pus15Service` emulates satellite on-board behavior for testing.
 
 ---
 
@@ -387,7 +388,7 @@ Controls *which* incoming TM packets are admitted to each packet store. Three-le
 store_id: uint16
 N1: uint8
   Per APID entry:
-    apid: uint16
+    apid: uint11 (packed)
     N2: uint8   (0 = add all services for this APID)
     Per service type entry:
       svc_type: uint8
@@ -425,24 +426,9 @@ N1: uint8
 </AggregateArgumentType>
 ```
 
-**Simulator (on-board)**:
-```python
-for _ in range(n1):
-    apid = struct.unpack_from(">H", data, offset)[0]; offset += 2
-    n2 = data[offset]; offset += 1
-    if n2 == 0:
-        store.app_process_config.setdefault(apid, {})
-    else:
-        for _ in range(n2):
-            svc_type = data[offset]; offset += 1
-            n3 = data[offset]; offset += 1
-            if n3 == 0:
-                store.app_process_config.setdefault(apid, {})[svc_type] = set()
-            else:
-                s = store.app_process_config.setdefault(apid, {}).setdefault(svc_type, set())
-                for _ in range(n3):
-                    s.add(data[offset]); offset += 1
-```
+**Simulator (on-board)**: ✅ `Pus15Service.addApplicationReportTypes()` parses the hierarchy with
+`BitBuffer`. APIDs, counts, services and subtypes remain contiguous across APID-group boundaries;
+there is no five-bit APID padding.
 
 ---
 
@@ -460,7 +446,8 @@ for _ in range(n1):
 
 **XTCE**: ✅ **Single MetaCommand** — reuses `pkt_sel_apid_array_type` from TC[15,3], service_subtype=4.
 
-**Simulator (on-board)**: Mirror TC[15,3] handler but remove from filter table; cascade-delete empty entries.
+**Simulator (on-board)**: ✅ `deleteApplicationReportTypes()` removes entries and cascade-deletes
+empty parents. `N1=0` clears the application-process configuration for the selected store.
 
 ---
 
@@ -483,7 +470,7 @@ for _ in range(n1):
 store_id: uint16
 N_app_processes: uint8
 Per app process:
-  apid: uint16
+  apid: uint11 (packed)
   N_service_types: uint8
   Per service type:
     svc_type: uint8
@@ -540,7 +527,9 @@ Per app process:
 </SequenceContainer>
 ```
 
-**Simulator (on-board)**: Walk `store.app_process_config`; serialize and emit TM[15,6].
+**Simulator (on-board)**: ✅ Walks the insertion-ordered configuration and emits one atomic
+TM[15,6]. Count overflow or a report exceeding `maxTmDataSize()` produces a completion NACK and no
+partial report.
 
 ---
 
@@ -551,14 +540,14 @@ Per app process:
 **Packet format** (§6.15.4.5.1):
 ```
 store_id: uint16
-N: uint8
-Per entry:
-  apid:            uint16
-  hk_struct_id:    uint16
-  [subsampling_rate: uint8]  (if subsampling supported — include always in test env)
+N1: uint8
+Per APID entry:
+  apid: uint11 (packed)
+  N2: uint8
+  [hk_struct_id: uint8] × N2
 ```
 
-**XTCE**: `AggregateArgumentType HkStructInstrType = {apid, hk_struct_id, subsampling_rate}`; `ArrayArgumentType` of N entries.
+**XTCE**: ✅ Nested APID and identifier arrays. Subsampling is not supported and is omitted.
 
 **Simulator (on-board)**: Add `(apid, hk_struct_id)` to `store.hk_config`.
 
@@ -568,7 +557,8 @@ Per entry:
 
 **Purpose**: Reverse of TC[15,29].
 
-**Packet format**: `store_id` + N × `{apid: uint16, hk_struct_id: uint16}` (no subsampling_rate).
+**Packet format**: Same nested `store_id + N1 × {apid:u11 + N2 × hk_struct_id:u8}` form.
+`N1=0` clears the table; `N2=0` removes the APID definition.
 
 **XTCE**: `AggregateArgumentType HkStructDelInstrType = {apid, hk_struct_id}`; `ArrayArgumentType`.
 
@@ -583,14 +573,14 @@ Per entry:
 **Packet format**:
 ```
 store_id: uint16
-N: uint8
-Per entry:
-  apid:           uint16
-  diag_struct_id: uint16
-  [subsampling_rate: uint8]
+N1: uint8
+Per APID entry:
+  apid: uint11 (packed)
+  N2: uint8
+  [diag_struct_id: uint8] × N2
 ```
 
-**XTCE**: `AggregateArgumentType DiagStructInstrType = {apid, diag_struct_id, subsampling_rate}`; `ArrayArgumentType`.
+**XTCE**: ✅ Reuses the packed APID/identifier hierarchy; subsampling is omitted.
 
 **Simulator (on-board)**: Add to `store.diag_config`.
 
@@ -600,7 +590,7 @@ Per entry:
 
 **Purpose**: Reverse of TC[15,31].
 
-**Packet format**: `store_id` + N × `{apid: uint16, diag_struct_id: uint16}`.
+**Packet format**: Same nested form as TC[15,31]. `N1=0` clears the table and `N2=0` removes one APID.
 
 **XTCE**: `AggregateArgumentType DiagStructDelInstrType = {apid, diag_struct_id}`; `ArrayArgumentType`.
 
@@ -615,8 +605,8 @@ Per entry:
 **Packet format**:
 ```
 store_id: uint16
-N: uint8
-Per entry: apid (uint16) + event_def_id (uint16)
+N1: uint8
+Per APID entry: apid (uint11, packed) + N2 (uint8) + N2 × event_def_id (uint8)
 ```
 
 **XTCE**: `AggregateArgumentType EventDefInstrType = {apid, event_def_id}`; `ArrayArgumentType`.
@@ -656,14 +646,13 @@ Per entry: apid (uint16) + event_def_id (uint16)
 store_id: uint16
 N_app_processes: uint8
 Per app process:
-  apid: uint16
+  apid: uint11 (packed)
   N_hk_structs: uint8
   Per HK struct entry:
-    hk_struct_id:      uint16
-    [subsampling_rate: uint8]  (if subsampling supported)
+    hk_struct_id: uint8
 ```
 
-**XTCE**: ✅ **3-level nested `ContainerRefEntry` + `RepeatEntry`** — same `CURRENT_ENTRY_WITHIN_PACKET` pattern as TM[15,6]. If subsampling is included, the innermost entry is an aggregate `{hk_struct_id, subsampling_rate}` — no additional complexity.
+**XTCE**: ✅ Nested `ContainerRefEntry` + `RepeatEntry`; no subsampling field is emitted.
 
 ---
 
@@ -706,12 +695,16 @@ Per app process:
 store_id: uint16
 N_app_processes: uint8
 Per app process:
-  apid: uint16
+  apid: uint11 (packed)
   N_events: uint8
-  [event_def_id: uint16] × N_events
+  [event_def_id: uint8] × N_events
 ```
 
-**XTCE**: ✅ Same 3-level nested `ContainerRefEntry` + `RepeatEntry` pattern as TM[15,36]. Innermost element: `event_def_id: uint16`.
+**XTCE**: ✅ Same packed APID hierarchy as TM[15,36]. The innermost event identifier is uint8.
+
+All four content reports contain the selected `store_id`, one top-level `N1`, and every APID
+definition in that store. An empty configuration still produces one report with `N1=0`. Only the
+final source-data octet may contain zero padding.
 
 ---
 
@@ -803,13 +796,15 @@ All simulator services call `submit_tm()` instead of sending directly.
 
 ## d) XTCE-Only vs Native Java — Per-Message Table
 
-**YAMCS is ground-station only.** All on-board logic lives in `pus15_simulator.py`. YAMCS MCS encodes uplink TC packets and decodes downlink TM reports — both exclusively via XTCE. **No `yamcs-core` Java is needed for ST[15].**
+**YAMCS is ground-station only.** The on-board behavior is implemented by the Java
+`Pus15Service` in the simulator. YAMCS MCS encodes uplink TC packets and decodes downlink TM
+reports via XTCE; no `yamcs-core` change is needed for ST[15].
 
 | Sub | Message | Direction | XTCE Approach (MCS) | Java in yamcs-core? | XTCE Complexity | Notes |
 |---|---|---|---|---|---|---|
 | 1 | TC[15,1] | Send | Two MetaCommands: `_specific` (N + store_id[]) and `_all` (no args) | **No** | Low | Gap §2 dual-variant |
 | 2 | TC[15,2] | Send | Two MetaCommands: `_specific` and `_all` | **No** | Low | Same pattern as TC[15,1] |
-| 3 | TC[15,3] | Send | Single MetaCommand; 3-level nested `ArrayArgumentType` with sibling-member `ArgumentInstanceRef` | **No** | **High** | store_id + N1×{apid+N2×{svc_type+N3×subtype}}; N=0 → zero-length arrays |
+| 3 | TC[15,3] | Send | Single MetaCommand; 3-level nested `ArrayArgumentType` with sibling-member `ArgumentInstanceRef` | **No** | **High** | `store_id + N1×{apid:u11+N2×{svc_type:u8+N3×subtype:u8}}`; `N1=0` → zero-length array |
 | 4 | TC[15,4] | Send | Single MetaCommand; reuses TC[15,3] nested array types | **No** | **High** | Same wire format as TC[15,3] |
 | 5 | TC[15,5] | Send | Single MetaCommand; `store_id` arg only | **No** | Low | |
 | 6 | TM[15,6] | Receive | 3-level nested `ContainerRefEntry` + `RepeatEntry`; `ParameterInstanceRef` `CURRENT_ENTRY` | **No** | **High** | Proven — same pattern as TM[14,4] |
@@ -834,20 +829,21 @@ All simulator services call `submit_tm()` instead of sending directly.
 | **27** | **TC[15,27]** | — | **OUT OF SCOPE** | — | — | Change store type to bounded; excluded |
 | 28 | TC[15,28] | Send | Single MetaCommand; `store_id (uint16)` + `new_vc_id (uint8)` | **No** | Low | |
 | — | — | — | — | — | — | — |
-| 29 | TC[15,29] | Send | `AggregateArgType HkStructInstrType = {apid, hk_struct_id, subsampling_rate}`; `ArrayArgType` | **No** | Low | |
-| 30 | TC[15,30] | Send | `AggregateArgType HkStructDelInstrType = {apid, hk_struct_id}`; `ArrayArgType` | **No** | Low | |
-| 31 | TC[15,31] | Send | `AggregateArgType DiagStructInstrType = {apid, diag_struct_id, subsampling_rate}`; `ArrayArgType` | **No** | Low | |
-| 32 | TC[15,32] | Send | `AggregateArgType DiagStructDelInstrType = {apid, diag_struct_id}`; `ArrayArgType` | **No** | Low | |
-| 33 | TC[15,33] | Send | `AggregateArgType EventDefInstrType = {apid, event_def_id}`; `ArrayArgType` | **No** | Low | **Delete** from block list (re-enables storage) |
-| 34 | TC[15,34] | Send | `AggregateArgType EventDefInstrType = {apid, event_def_id}`; `ArrayArgType` | **No** | Low | **Add** to block list (prevents storage) |
+| 29 | TC[15,29] | Send | Nested `N1 -> APID:u11 -> N2 -> hk_struct_id:u8` arguments | **No** | Medium | Subsampling is intentionally unsupported |
+| 30 | TC[15,30] | Send | Same nested form as TC[15,29] | **No** | Medium | `N1=0` clears the HK table; `N2=0` selects the whole APID |
+| 31 | TC[15,31] | Send | Nested `N1 -> APID:u11 -> N2 -> diag_struct_id:u8` arguments | **No** | Medium | Subsampling is intentionally unsupported |
+| 32 | TC[15,32] | Send | Same nested form as TC[15,31] | **No** | Medium | `N1=0` clears the diagnostic table; `N2=0` selects the whole APID |
+| 33 | TC[15,33] | Send | Nested `N1 -> APID:u11 -> N2 -> event_def_id:u8` arguments | **No** | Medium | **Delete** from block list; `N1=0` clears it |
+| 34 | TC[15,34] | Send | Same nested form as TC[15,33] | **No** | Medium | **Add** to block list; `N2=0` blocks the whole APID |
 | 35 | TC[15,35] | Send | Single MetaCommand; `store_id` arg only | **No** | Low | |
-| 36 | TM[15,36] | Receive | 3-level nested `ContainerRefEntry` + `RepeatEntry`; `CURRENT_ENTRY` | **No** | **High** | store_id + N_app×{apid+N_hk×{hk_struct_id[+subsampling]}} |
+| 36 | TM[15,36] | Receive | Nested `ContainerRefEntry` + `RepeatEntry`; `CURRENT_ENTRY` | **No** | **High** | `store_id + N1×{apid:u11 + N2×hk_struct_id:u8}` |
 | 37 | TC[15,37] | Send | Single MetaCommand; `store_id` arg only | **No** | Low | |
-| 38 | TM[15,38] | Receive | 3-level nested `ContainerRefEntry` + `RepeatEntry`; `CURRENT_ENTRY` | **No** | **High** | Identical design to TM[15,36] with `diag_struct_id` |
+| 38 | TM[15,38] | Receive | Nested `ContainerRefEntry` + `RepeatEntry`; `CURRENT_ENTRY` | **No** | **High** | Identical design to TM[15,36] with `diag_struct_id:u8` |
 | 39 | TC[15,39] | Send | Single MetaCommand; `store_id` arg only | **No** | Low | |
-| 40 | TM[15,40] | Receive | 3-level nested `ContainerRefEntry` + `RepeatEntry`; `CURRENT_ENTRY` | **No** | Medium | store_id + N_app×{apid+N_evt×event_def_id} |
+| 40 | TM[15,40] | Receive | Nested `ContainerRefEntry` + `RepeatEntry`; `CURRENT_ENTRY` | **No** | Medium | `store_id + N1×{apid:u11 + N2×event_def_id:u8}` |
 
-**All 34 required messages: XTCE only. Java required: 0 of 34.**
+**All required ground message definitions are XTCE-only. The Java simulator implements the
+on-board state and behavior, including packet-selection filtering and atomic reports.**
 
 ---
 
@@ -869,7 +865,7 @@ All simulator services call `submit_tm()` instead of sending directly.
 | **ST[05]** | Partial | **Yes — `PusEventDecoder`** | TM[5,1–4] must be promoted to YAMCS native events; no XTCE mechanism exists for event emission |
 | **ST[11]** | Yes | No (`PusCommandPostprocessor` only) | TC[11,4] wrapping via command extra; all TM are plain containers |
 | **ST[14]** | Yes | No | Forwarding-control logic is on-board; MCS only sends config TCs and decodes FCC dump reports |
-| **ST[15]** | **Yes** | **No** | Packet store lifecycle, TM interception, retrieval threads are on-board; MCS only encodes TCs and decodes status/config TMs |
+| **ST[15]** | **Yes** | **No** | `Pus15Service` supplies on-board behavior in the simulator; MCS only encodes TCs and decodes status/config TMs |
 
 ---
 
@@ -880,7 +876,7 @@ All simulator services call `submit_tm()` instead of sending directly.
 | **MCS / YAMCS ground** | `mdb/pus15.xml` | Create — XTCE TC encoding (all TC[15,x]) and TM decoding (all TM[15,x]) |
 | **MCS / YAMCS ground** | `yamcs.pus-test.yaml` | Update — add `mdb/pus15.xml` to MDB list |
 | **MCS / YAMCS ground** | `mdb/pus_dt.xml` | Update — add `uint64` `IntegerParameterType` + `IntegerArgumentType` (Gap §1) |
-| **Simulator (on-board)** | `simulators/pus15_simulator.py` | Create — `PacketStore`, `PacketStoreManager` TM-bus intercept, storage filter tables (app-process / HK / diag / event), open-retrieval thread, BTR thread, all TM report generation |
+| **Simulator (on-board)** | `simulator/src/main/java/org/yamcs/simulator/pus/Pus15Service.java` | Implements `PacketStore`, TM-bus interception, storage filter tables (application-process / HK / diagnostic / event), retrieval threads, and all report generation |
 
 ### Reference Files
 - `mdb/pus20.xml` — XTCE structure pattern
@@ -892,17 +888,10 @@ All simulator services call `submit_tm()` instead of sending directly.
 
 ## f) Recommended Implementation Sequence
 
-1. **[GROUND]** Add `uint64` to `pus_dt.xml`
-2. **[ON-BOARD sim]** Add `PacketStore` class + `PacketStoreManager` TM-bus wrapper
-3. **[ON-BOARD sim]** TC[15,20/21/22/23] — create/delete/configure stores (static, no threads)
-4. **[ON-BOARD sim]** TC[15,1/2/18/19] — enable/disable storage + status report
-5. **[ON-BOARD sim]** TC[15,3/4/5/6] — app-process storage-control config
-6. **[ON-BOARD sim]** TC[15,12/13] — content summary report
-7. **[ON-BOARD sim]** TC[15,9/17] — BTR start/abort (BTR thread)
-8. **[ON-BOARD sim]** TC[15,14/15/16] — open-retrieval cursor/resume/suspend (open-retrieval thread)
-9. **[ON-BOARD sim]** TC[15,11/25/28] — delete content, resize, change VC
-10. **[ON-BOARD sim]** TC[15,29–40] — HK/diag/event storage-control configs
-11. **[GROUND]** Author `pus15.xml` in parallel — XTCE definitions for all TC argument structures and TM container hierarchies
+The implementation is complete in `Pus15Service.java` and `pus15.xml`. For future changes, keep
+the Java parser/report encoder and the XTCE nested layouts in lockstep, then validate the MDB load
+before exercising lifecycle, application-process selection, specialized HK/diagnostic selection,
+and event blocking in that order.
 
 ---
 
@@ -910,10 +899,10 @@ All simulator services call `submit_tm()` instead of sending directly.
 
 Reflects the actual implementation: `Pus15Service.java` and
 `examples/pus/src/main/yamcs/mdb/pus15.xml`. Command paths, argument names, and byte layouts below
-are taken directly from those files, not the pseudocode in section b). **Scope**: core lifecycle
-only (steps 1-9 of section f) — TC[15,1/2/9/11/12/14/15/16/17/18/20/21/22/25/28] and
-TM[15,13/19/23]. The Packet Selection subservice (TC[15,3/4/5/6], TC[15,29-40]) is not implemented,
-so it has no test coverage here.
+are taken directly from those files, not the pseudocode in section b). The standalone
+`test-pus15.py` walkthrough still covers the older core-lifecycle/pass-all behavior and is not an
+acceptance gate for the now-implemented packet-selection subservice; use the manual selection
+checks below for TC[15,3–5], TC[15,29–35], TC[15,37], and TC[15,39].
 
 ### g.1 Start the instance
 
@@ -940,6 +929,16 @@ corresponding arrays — YAMCS does not infer them from array length (same conve
 | `TC_15_1_ALL` | TC[15,1] | `{}` — enable storage on every store |
 | `TC_15_2_SPECIFIC` | TC[15,2] | `{"N": 1, "store_ids": [100]}` |
 | `TC_15_2_ALL` | TC[15,2] | `{}` |
+| `TC_15_3_ADD_REPORT_TYPES` | TC[15,3] | `{"store_id":100,"N1":1,"apid_entries":[{"apid":1,"n2":1,"services":[{"service_type":3,"n3":1,"subtypes":[25]}]}]}` |
+| `TC_15_4_EMPTY` | TC[15,4] | `{"store_id":100}` — emits the fixed `N1=0` octet and restores the block-all application default |
+| `TC_15_5_REPORT_APPLICATION_CONFIG` | TC[15,5] | `{"store_id":100}` — emits one atomic TM[15,6] |
+| `TC_15_29_ADD_HK_STRUCTURES` | TC[15,29] | `{"store_id":100,"N1":1,"identifier_entries":[{"apid":1,"n2":1,"identifiers":[1]}]}` |
+| `TC_15_30_EMPTY` | TC[15,30] | `{"store_id":100}` — clears the HK table by emitting fixed `N1=0` |
+| `TC_15_31_ADD_DIAGNOSTIC_STRUCTURES` | TC[15,31] | Same argument shape as TC[15,29], with diagnostic structure IDs |
+| `TC_15_32_EMPTY` | TC[15,32] | `{"store_id":100}` — clears the diagnostic table |
+| `TC_15_34_ADD_EVENT_BLOCKS` | TC[15,34] | Same argument shape as TC[15,29], with 8-bit event IDs; `n2=0` blocks all events for the APID |
+| `TC_15_33_EMPTY` | TC[15,33] | `{"store_id":100}` — clears the event-blocking table |
+| `TC_15_35_REPORT_HK_CONFIG` / `TC_15_37_REPORT_DIAGNOSTIC_CONFIG` / `TC_15_39_REPORT_EVENT_CONFIG` | TC[15,35/37/39] | `{"store_id":100}` |
 | `TC_15_18_REPORT_STATUS` | TC[15,18] | `{}` (no arguments) — dumps TM[15,19] for every store |
 | `TC_15_12_SPECIFIC` | TC[15,12] | `{"N": 1, "store_ids": [100]}` — TM[15,13] for store 100 only |
 | `TC_15_12_ALL` | TC[15,12] | `{}` — TM[15,13] for every store |
@@ -978,11 +977,14 @@ execution begins.
 | `/PUS15/STORE_CONFIG_REPORT` | TM[15,23] | `TC_15_22_REPORT_CONFIG` | `N:u8`, then `N` × `{store_id:u16, size_bytes:u32, store_type:u8, vc_id:u8}` |
 | `/PUS15/STORE_STATUS_REPORT` | TM[15,19] | `TC_15_18_REPORT_STATUS` | `N:u8`, then `N` × `{store_id:u16, storage_status:u8, open_retrieval_status:u8, btr_status:u8}` (0/1 enums, see pus15.xml) |
 | `/PUS15/STORE_SUMMARY_REPORT` | TM[15,13] | `TC_15_12_SPECIFIC` / `TC_15_12_ALL` | `N:u8`, then `N` × `{store_id:u16, oldest_ts:u64, newest_ts:u64, open_retrieval_start_time:u64, fill_pct:u8, fill_pct_from_start:u8}` |
+| `/PUS15/APPLICATION_SELECTION_REPORT` | TM[15,6] | `TC_15_5_REPORT_APPLICATION_CONFIG` | `store_id:u16, N1:u8`, then `N1` × `{apid:u11, N2:u8, N2 × {service:u8, N3:u8, N3 × subtype:u8}}` |
+| `/PUS15/HK_SELECTION_REPORT` | TM[15,36] | `TC_15_35_REPORT_HK_CONFIG` | `store_id:u16, N1:u8`, then `N1` × `{apid:u11, N2:u8, N2 × structure_id:u8}` |
+| `/PUS15/DIAGNOSTIC_SELECTION_REPORT` | TM[15,38] | `TC_15_37_REPORT_DIAGNOSTIC_CONFIG` | Same packed form as TM[15,36] |
+| `/PUS15/EVENT_SELECTION_REPORT` | TM[15,40] | `TC_15_39_REPORT_EVENT_CONFIG` | Same packed form as TM[15,36], with `event_definition_id:u8` |
 
 If there are zero stores (config report) or the target list resolves to zero entries, the report is
-still sent with `N=0` and no entries — unlike ST[14]'s dump reports, which send nothing at all when
-the underlying table is empty (compare `Pus15Service.sendStatusReport`/`sendConfigReport`, always
-called with a materialized list, vs `Pus14Service.reportApfcc` iterating a possibly-empty map).
+still sent with `N=0` and no entries. Likewise, each empty packet-selection table produces one
+content report with `N1=0`; ST[14] uses the same one-report empty-table rule.
 
 Also watch the standard PUS-1 verification containers (`/PUS/pus-tc-ack-*`) for ACK/NACK
 start/completion of every TC[15,x] above.
@@ -995,11 +997,11 @@ start/completion of every TC[15,x] above.
 2. **Reject duplicate id**: resend `TC_15_20_CREATE_STORES` reusing `store_id: 100` and confirm NACK
    completion with code 6 (`COMPL_ERR_STORE_ALREADY_EXISTS`); confirm the config report is
    unchanged (still exactly 2 stores).
-3. **Enable storage, watch it fill**: send `TC_15_1_SPECIFIC` for store 100. Wait a couple of
-   seconds (ST[3]'s periodic HK reports are flowing by default), then `TC_15_12_SPECIFIC` for store
-   100 → `STORE_SUMMARY_REPORT` shows `fill_pct > 0` and `oldest_ts <= newest_ts`. This exercises the
-   pass-all storage default (see Note in the MDB header and the `Pus15Service` class javadoc) — no
-   packet-selection filter was configured, yet everything got captured.
+3. **Configure and enable storage**: add ST[3,25] for APID 1 using
+   `TC_15_3_ADD_REPORT_TYPES`, authorize the desired 8-bit HK structure ID with
+   `TC_15_29_ADD_HK_STRUCTURES`, then send `TC_15_1_SPECIFIC` for store 100. Wait a couple of
+   seconds and request `TC_15_12_SPECIFIC`; `STORE_SUMMARY_REPORT` should show `fill_pct > 0` and
+   `oldest_ts <= newest_ts`. A newly-created store without TC[15,3] configuration remains empty.
 4. **Active-store deletion is rejected**: with storage still enabled on store 100, send
    `TC_15_21_SPECIFIC` for store 100 and confirm NACK completion with code 7
    (`COMPL_ERR_STORE_ACTIVE`).
@@ -1030,9 +1032,9 @@ start/completion of every TC[15,x] above.
 
 ### g.5 Caveats specific to this simulator
 
-- **Single fixed APID**: every TC and TM in this simulator uses `MAIN_APID = 1`
-  (`PusSimulator.newPacket`), so the deferred Packet Selection subservice's APID dimension would not
-  be observably exercised even once implemented (same caveat as ST[14], see pus14.md e.5).
+- **Single generated APID**: every normal TC and TM in this simulator uses `MAIN_APID = 1`
+  (`PusSimulator.newPacket`). Packed report encoding and decoding can contain APIDs above 255, but
+  only APID 1 can match the simulator's normally generated telemetry.
 - **Timestamps are elapsed-millis-since-server-start, not wall-clock or CUC**: `Pus15Service` reads
   `pusSimulator.timeEncoding.now().millis()` (an `Epoch.SIMULATOR` clock that starts near zero at
   server boot) for every stored packet, and all wire-visible timestamp fields
@@ -1041,11 +1043,9 @@ start/completion of every TC[15,x] above.
   correlation to compute when testing — a small integer close to the server's uptime in
   milliseconds, or a maximal value like `2**63-1` to mean "everything", are the only inputs that
   make sense.
-- **Pass-all storage default**: since the Packet Selection subservice isn't implemented, any store
-  with `storage_enabled=true` captures *all* outgoing TM, not just a filtered subset — see the
-  `Pus15Service` class javadoc. This makes storage observable/testable now, but is a deliberate
-  deviation from spec-strict behaviour (which would store nothing without an explicit filter) that
-  narrows once TC[15,3/4] land.
+- **Block-all storage default**: enabling an unconfigured store captures no TM. TC[15,3] must first
+  authorize an application process and service/subtype; ST[3] and ST[5] are then additionally
+  subject to their specialized structure or event rules.
 - **Open retrieval replay reuses the original TM containers**: a replayed packet decodes identically
   to its original transmission (same container, same fields) — there's no separate "this came from
   a packet store" wrapper. The only way to distinguish a replay from a live packet in this simulator

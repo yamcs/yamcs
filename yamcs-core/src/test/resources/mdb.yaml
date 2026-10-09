@@ -124,6 +124,16 @@ ArrayInArrayArgCommandTest:
       args:
           file: "src/test/resources/xtce/array-in-array-arg.xml"
 
+ArrayInArrayTmTest:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/array-in-array-tm.xml"
+
+ArrayInArrayTmInvalidTest:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/array-in-array-tm-invalid.xml"
+
 RepeatEntryCommandTest:
     - type: xtce
       args:

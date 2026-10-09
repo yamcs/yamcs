@@ -5,15 +5,17 @@
 		<NoteSet>
 			<Note>ST[14] Real-Time Forwarding Control. See pus_analysis/pus14.md and
 				pus_simulator_architecture.md for the full design rationale.</Note>
-			<Note>All forwarding-control logic (APFCC/HK FCC/Diag FCC tables, the shouldForward() gate,
+			<Note>All forwarding-control logic (APFCC/HK FCC/Diag FCC/Event Blocking FCC tables, the shouldForward() gate,
 				TC parsing, TM dump generation) lives on-board (emulated by Pus14Service in the
 				simulator). This MDB only encodes the TC[14,x] configuration/dump-request commands and
-				decodes the TM[14,4]/[14,8]/[14,12] dump reports -- it performs no filtering of its own.</Note>
+				decodes the TM[14,4]/[14,8]/[14,12]/[14,16] dump reports -- it performs no filtering of its own.</Note>
 			<Note>N2=0 (TC[14,1]/[14,2]) and N_structs=0 (TC[14,5]/[14,6]/[14,9]/[14,10]) mean
 				"all services/structures for this APID" per spec convention; N3=0 means "all subtypes
-				of this service type". TC[14,2]/[14,6]/[14,10] additionally have a zero-argument
-				"empty the whole table" variant, since that request form has no N1 field -- a zero-byte
-				payload is the runtime discriminator (checked in Pus14Service via bb.remaining()==0).</Note>
+				of this service type". The zero-argument empty-table aliases for
+				TC[14,2]/[14,6]/[14,10]/[14,13] encode the standard N1=0 octet.</Note>
+			<Note>Application process identifiers inside ST[14] application/source data are encoded as
+				packed 11-bit enumerated values. Fields that follow an APID therefore need not begin on
+				a byte boundary; no implicit five-bit padding is inserted.</Note>
 			<Note>HK FCC (TC[14,5-8]) and Diagnostic FCC (TC[14,9-12]) are maintained as pure
 				bookkeeping in the simulator: ST[03] HK reports don't carry structure identifiers and
 				ST[04] diagnostic reports don't exist in this simulator, so these two tables have no
@@ -41,7 +43,7 @@
 				</DimensionList>
 			</ArrayParameterType>
 			<!-- Flat array of HK structure ids; dimension from hk_fcc_n_structs -->
-			<ArrayParameterType name="HkFccStructIdsType" arrayTypeRef="/dt/uint16">
+			<ArrayParameterType name="HkFccStructIdsType" arrayTypeRef="/dt/uint8">
 				<DimensionList>
 					<Dimension>
 						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
@@ -55,7 +57,7 @@
 				</DimensionList>
 			</ArrayParameterType>
 			<!-- Flat array of diagnostic structure ids; dimension from diag_fcc_n_structs -->
-			<ArrayParameterType name="DiagFccStructIdsType" arrayTypeRef="/dt/uint16">
+			<ArrayParameterType name="DiagFccStructIdsType" arrayTypeRef="/dt/uint8">
 				<DimensionList>
 					<Dimension>
 						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
@@ -68,24 +70,47 @@
 					</Dimension>
 				</DimensionList>
 			</ArrayParameterType>
+			<!-- Flat array of event definition ids; dimension from event_fcc_n_events -->
+			<ArrayParameterType name="EventFccEventIdsType" arrayTypeRef="/dt/uint8">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ParameterInstanceRef parameterRef="event_fcc_n_events"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayParameterType>
 		</ParameterTypeSet>
 		<ParameterSet>
 			<!-- TM[14,4] APFCC content report -->
-			<Parameter parameterTypeRef="/dt/uint16" name="apfc_apid"/>
+			<Parameter parameterTypeRef="/dt/uint8" name="apfc_n_apids"/>
+			<Parameter parameterTypeRef="/dt/pus_report_apid" name="apfc_apid"/>
 			<Parameter parameterTypeRef="/dt/uint8" name="apfc_n_services"/>
 			<Parameter parameterTypeRef="/dt/uint8" name="apfc_service_type_id"/>
 			<Parameter parameterTypeRef="/dt/uint8" name="apfc_n_subtypes"/>
 			<Parameter parameterTypeRef="ApfcSubtypeIdsType" name="apfc_subtype_ids"/>
 
 			<!-- TM[14,8] HK FCC content report -->
-			<Parameter parameterTypeRef="/dt/uint16" name="hk_fcc_apid"/>
+			<Parameter parameterTypeRef="/dt/uint8" name="hk_fcc_n_apids"/>
+			<Parameter parameterTypeRef="/dt/pus_report_apid" name="hk_fcc_apid"/>
 			<Parameter parameterTypeRef="/dt/uint8" name="hk_fcc_n_structs"/>
 			<Parameter parameterTypeRef="HkFccStructIdsType" name="hk_fcc_struct_ids"/>
 
 			<!-- TM[14,12] Diagnostic FCC content report -->
-			<Parameter parameterTypeRef="/dt/uint16" name="diag_fcc_apid"/>
+			<Parameter parameterTypeRef="/dt/uint8" name="diag_fcc_n_apids"/>
+			<Parameter parameterTypeRef="/dt/pus_report_apid" name="diag_fcc_apid"/>
 			<Parameter parameterTypeRef="/dt/uint8" name="diag_fcc_n_structs"/>
 			<Parameter parameterTypeRef="DiagFccStructIdsType" name="diag_fcc_struct_ids"/>
+
+			<!-- TM[14,16] Event Blocking FCC content report -->
+			<Parameter parameterTypeRef="/dt/uint8" name="event_fcc_n_apids"/>
+			<Parameter parameterTypeRef="/dt/pus_report_apid" name="event_fcc_apid"/>
+			<Parameter parameterTypeRef="/dt/uint8" name="event_fcc_n_events"/>
+			<Parameter parameterTypeRef="EventFccEventIdsType" name="event_fcc_event_ids"/>
 		</ParameterSet>
 		<ContainerSet>
 			<SequenceContainer name="pus14-tm">
@@ -97,7 +122,7 @@
 				</BaseContainer>
 			</SequenceContainer>
 
-			<!-- TM[14,4]: one packet per APFCD (application process) -->
+			<!-- TM[14,4]: one report containing N1 APFCDs (application processes) -->
 			<SequenceContainer name="apfc_service_element" shortDescription="One STFCD entry (service type + its authorized subtypes)">
 				<EntryList>
 					<ParameterRefEntry parameterRef="apfc_service_type_id"/>
@@ -109,7 +134,7 @@
 					</ArrayParameterRefEntry>
 				</EntryList>
 			</SequenceContainer>
-			<SequenceContainer name="TM_14_4" shortDescription="TM[14,4] APFC configuration content report">
+			<SequenceContainer name="apfc_apid_element" shortDescription="One APFCD entry (APID + service definitions)">
 				<EntryList>
 					<ParameterRefEntry parameterRef="apfc_apid"/>
 					<ParameterRefEntry parameterRef="apfc_n_services"/>
@@ -123,6 +148,20 @@
 						</RepeatEntry>
 					</ContainerRefEntry>
 				</EntryList>
+			</SequenceContainer>
+			<SequenceContainer name="TM_14_4" shortDescription="TM[14,4] APFC configuration content report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="apfc_n_apids"/>
+					<ContainerRefEntry containerRef="apfc_apid_element">
+						<RepeatEntry>
+							<Count>
+								<DynamicValue>
+									<ParameterInstanceRef parameterRef="apfc_n_apids"/>
+								</DynamicValue>
+							</Count>
+						</RepeatEntry>
+					</ContainerRefEntry>
+				</EntryList>
 				<BaseContainer containerRef="pus14-tm">
 					<RestrictionCriteria>
 						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="4"/>
@@ -130,8 +169,8 @@
 				</BaseContainer>
 			</SequenceContainer>
 
-			<!-- TM[14,8]: one packet per HK FCC APID entry -->
-			<SequenceContainer name="TM_14_8" shortDescription="TM[14,8] HK FCC content report">
+			<!-- TM[14,8]: one report containing N1 HK FCC APID entries -->
+			<SequenceContainer name="hk_fcc_apid_element" shortDescription="One HK FCC APID entry">
 				<EntryList>
 					<ParameterRefEntry parameterRef="hk_fcc_apid"/>
 					<ParameterRefEntry parameterRef="hk_fcc_n_structs"/>
@@ -141,6 +180,16 @@
 						</IncludeCondition>
 					</ArrayParameterRefEntry>
 				</EntryList>
+			</SequenceContainer>
+			<SequenceContainer name="TM_14_8" shortDescription="TM[14,8] HK FCC content report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="hk_fcc_n_apids"/>
+					<ContainerRefEntry containerRef="hk_fcc_apid_element">
+						<RepeatEntry>
+							<Count><DynamicValue><ParameterInstanceRef parameterRef="hk_fcc_n_apids"/></DynamicValue></Count>
+						</RepeatEntry>
+					</ContainerRefEntry>
+				</EntryList>
 				<BaseContainer containerRef="pus14-tm">
 					<RestrictionCriteria>
 						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="8"/>
@@ -148,8 +197,8 @@
 				</BaseContainer>
 			</SequenceContainer>
 
-			<!-- TM[14,12]: one packet per Diagnostic FCC APID entry -->
-			<SequenceContainer name="TM_14_12" shortDescription="TM[14,12] Diagnostic FCC content report">
+			<!-- TM[14,12]: one report containing N1 Diagnostic FCC APID entries -->
+			<SequenceContainer name="diag_fcc_apid_element" shortDescription="One Diagnostic FCC APID entry">
 				<EntryList>
 					<ParameterRefEntry parameterRef="diag_fcc_apid"/>
 					<ParameterRefEntry parameterRef="diag_fcc_n_structs"/>
@@ -159,9 +208,47 @@
 						</IncludeCondition>
 					</ArrayParameterRefEntry>
 				</EntryList>
+			</SequenceContainer>
+			<SequenceContainer name="TM_14_12" shortDescription="TM[14,12] Diagnostic FCC content report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="diag_fcc_n_apids"/>
+					<ContainerRefEntry containerRef="diag_fcc_apid_element">
+						<RepeatEntry>
+							<Count><DynamicValue><ParameterInstanceRef parameterRef="diag_fcc_n_apids"/></DynamicValue></Count>
+						</RepeatEntry>
+					</ContainerRefEntry>
+				</EntryList>
 				<BaseContainer containerRef="pus14-tm">
 					<RestrictionCriteria>
 						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="12"/>
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+
+			<!-- TM[14,16]: one report containing N1 Event Blocking FCC APID entries -->
+			<SequenceContainer name="event_fcc_apid_element" shortDescription="One Event Blocking FCC APID entry">
+				<EntryList>
+					<ParameterRefEntry parameterRef="event_fcc_apid"/>
+					<ParameterRefEntry parameterRef="event_fcc_n_events"/>
+					<ArrayParameterRefEntry parameterRef="event_fcc_event_ids">
+						<IncludeCondition>
+							<Comparison parameterRef="event_fcc_n_events" comparisonOperator="&gt;" value="0"/>
+						</IncludeCondition>
+					</ArrayParameterRefEntry>
+				</EntryList>
+			</SequenceContainer>
+			<SequenceContainer name="TM_14_16" shortDescription="TM[14,16] Event Blocking FCC content report">
+				<EntryList>
+					<ParameterRefEntry parameterRef="event_fcc_n_apids"/>
+					<ContainerRefEntry containerRef="event_fcc_apid_element">
+						<RepeatEntry>
+							<Count><DynamicValue><ParameterInstanceRef parameterRef="event_fcc_n_apids"/></DynamicValue></Count>
+						</RepeatEntry>
+					</ContainerRefEntry>
+				</EntryList>
+				<BaseContainer containerRef="pus14-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="16"/>
 					</RestrictionCriteria>
 				</BaseContainer>
 			</SequenceContainer>
@@ -209,7 +296,7 @@
 			<!-- Level 1 aggregate: one APFCD entry (apid + n2 + n2 x service_entry) -->
 			<AggregateArgumentType name="ApfcdEntryType">
 				<MemberList>
-					<Member name="apid" typeRef="/dt/uint16"/>
+					<Member name="apid" typeRef="/dt/pus_report_apid"/>
 					<Member name="n2" typeRef="/dt/uint8"/>
 					<Member name="service_types" typeRef="ApfcServiceArrayType"/>
 				</MemberList>
@@ -230,7 +317,7 @@
 			</ArrayArgumentType>
 
 			<!-- ============ HK FCC nested arrays (TC[14,5] / TC[14,6] delete-entries) ============ -->
-			<ArrayArgumentType name="HkStructIdArrayType" arrayTypeRef="/dt/uint16">
+			<ArrayArgumentType name="HkStructIdArrayType" arrayTypeRef="/dt/uint8">
 				<DimensionList>
 					<Dimension>
 						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
@@ -245,7 +332,7 @@
 			</ArrayArgumentType>
 			<AggregateArgumentType name="HkApidEntryType">
 				<MemberList>
-					<Member name="apid" typeRef="/dt/uint16"/>
+					<Member name="apid" typeRef="/dt/pus_report_apid"/>
 					<Member name="n_structs" typeRef="/dt/uint8"/>
 					<Member name="struct_ids" typeRef="HkStructIdArrayType"/>
 				</MemberList>
@@ -265,7 +352,7 @@
 			</ArrayArgumentType>
 
 			<!-- ============ Diagnostic FCC nested arrays (TC[14,9] / TC[14,10] delete-entries) ============ -->
-			<ArrayArgumentType name="DiagStructIdArrayType" arrayTypeRef="/dt/uint16">
+			<ArrayArgumentType name="DiagStructIdArrayType" arrayTypeRef="/dt/uint8">
 				<DimensionList>
 					<Dimension>
 						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
@@ -280,12 +367,47 @@
 			</ArrayArgumentType>
 			<AggregateArgumentType name="DiagApidEntryType">
 				<MemberList>
-					<Member name="apid" typeRef="/dt/uint16"/>
+					<Member name="apid" typeRef="/dt/pus_report_apid"/>
 					<Member name="n_structs" typeRef="/dt/uint8"/>
 					<Member name="struct_ids" typeRef="DiagStructIdArrayType"/>
 				</MemberList>
 			</AggregateArgumentType>
 			<ArrayArgumentType name="DiagApidArrayType" arrayTypeRef="DiagApidEntryType">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="N1"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+
+			<!-- ============ Event Blocking FCC nested arrays (TC[14,13] / TC[14,14]) ============ -->
+			<ArrayArgumentType name="EventDefinitionIdArrayType" arrayTypeRef="/dt/uint8">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="n_events"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+			<AggregateArgumentType name="EventApidEntryType">
+				<MemberList>
+					<Member name="apid" typeRef="/dt/pus_report_apid"/>
+					<Member name="n_events" typeRef="/dt/uint8"/>
+					<Member name="event_ids" typeRef="EventDefinitionIdArrayType"/>
+				</MemberList>
+			</AggregateArgumentType>
+			<ArrayArgumentType name="EventApidArrayType" arrayTypeRef="EventApidEntryType">
 				<DimensionList>
 					<Dimension>
 						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
@@ -360,7 +482,9 @@
 					</ArgumentAssignmentList>
 				</BaseMetaCommand>
 				<CommandContainer name="TC_14_2_EMPTY">
-					<EntryList/>
+					<EntryList>
+						<FixedValueEntry name="N1" binaryValue="00" sizeInBits="8"/>
+					</EntryList>
 					<BaseContainer containerRef="pus14-tc"/>
 				</CommandContainer>
 			</MetaCommand>
@@ -426,7 +550,9 @@
 					</ArgumentAssignmentList>
 				</BaseMetaCommand>
 				<CommandContainer name="TC_14_6_EMPTY">
-					<EntryList/>
+					<EntryList>
+						<FixedValueEntry name="N1" binaryValue="00" sizeInBits="8"/>
+					</EntryList>
 					<BaseContainer containerRef="pus14-tc"/>
 				</CommandContainer>
 			</MetaCommand>
@@ -492,7 +618,9 @@
 					</ArgumentAssignmentList>
 				</BaseMetaCommand>
 				<CommandContainer name="TC_14_10_EMPTY">
-					<EntryList/>
+					<EntryList>
+						<FixedValueEntry name="N1" binaryValue="00" sizeInBits="8"/>
+					</EntryList>
 					<BaseContainer containerRef="pus14-tc"/>
 				</CommandContainer>
 			</MetaCommand>
@@ -505,6 +633,74 @@
 					</ArgumentAssignmentList>
 				</BaseMetaCommand>
 				<CommandContainer name="TC_14_11">
+					<EntryList/>
+					<BaseContainer containerRef="pus14-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[14,13]a Delete event definition identifiers from the Event Blocking FCC -->
+			<MetaCommand name="TC_14_13_DELETE_EVENT_ENTRIES" shortDescription="TC[14,13] Delete event identifiers from Event Blocking FCC">
+				<BaseMetaCommand metaCommandRef="pus14-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="13"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="N1" argumentTypeRef="/dt/uint8"/>
+					<Argument name="apid_entries" argumentTypeRef="EventApidArrayType"/>
+				</ArgumentList>
+				<CommandContainer name="TC_14_13_DELETE">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="N1"/>
+						<ArgumentRefEntry argumentRef="apid_entries"/>
+					</EntryList>
+					<BaseContainer containerRef="pus14-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[14,13]b Empty the entire Event Blocking FCC -->
+			<MetaCommand name="TC_14_13_EMPTY_EVENT_FCC" shortDescription="TC[14,13] Empty Event Blocking FCC">
+				<BaseMetaCommand metaCommandRef="pus14-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="13"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="TC_14_13_EMPTY">
+					<EntryList>
+						<FixedValueEntry name="N1" binaryValue="00" sizeInBits="8"/>
+					</EntryList>
+					<BaseContainer containerRef="pus14-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[14,14] Add event definition identifiers to the Event Blocking FCC -->
+			<MetaCommand name="TC_14_14_ADD_EVENT_ENTRIES" shortDescription="TC[14,14] Add event identifiers to Event Blocking FCC">
+				<BaseMetaCommand metaCommandRef="pus14-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="14"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="N1" argumentTypeRef="/dt/uint8"/>
+					<Argument name="apid_entries" argumentTypeRef="EventApidArrayType"/>
+				</ArgumentList>
+				<CommandContainer name="TC_14_14_ADD">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="N1"/>
+						<ArgumentRefEntry argumentRef="apid_entries"/>
+					</EntryList>
+					<BaseContainer containerRef="pus14-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+
+			<!-- TC[14,15] Report the Event Blocking FCC -->
+			<MetaCommand name="TC_14_15_REPORT_EVENT_FCC" shortDescription="TC[14,15] Report Event Blocking FCC content">
+				<BaseMetaCommand metaCommandRef="pus14-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="15"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="TC_14_15">
 					<EntryList/>
 					<BaseContainer containerRef="pus14-tc"/>
 				</CommandContainer>

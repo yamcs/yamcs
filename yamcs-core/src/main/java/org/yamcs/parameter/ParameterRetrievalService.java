@@ -2,9 +2,9 @@ package org.yamcs.parameter;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -364,15 +364,27 @@ public class ParameterRetrievalService extends AbstractYamcsService {
         ParameterIdDb piddb = parchive.getParameterIdDb();
         String qn = pid.getQualifiedName();
         ParameterId[] pids = piddb.get(qn);
-        if (pids != null) {
+        boolean extractFromRoot = false;
+        if ((pids == null || pids.length == 0) && pid.getPath() != null) {
+            // Intermediate aggregate and array members do not normally have their own archive id. Reconstruct the
+            // enclosing parameter and then apply the same member extraction used by cache and replay retrieval.
+            pids = piddb.get(pid.getParameter().getQualifiedName());
+            extractFromRoot = true;
+        }
+        if (pids != null && pids.length > 0) {
             TimeAndCount tc = new TimeAndCount(TimeEncoding.INVALID_INSTANT, 0);
-            mpvr = new MultipleParameterRequest(opts.start(), opts.stop(), pids, opts.ascending());
+            mpvr = new MultipleParameterRequest(opts.start(), opts.stop(), pids, null, opts.ascending(),
+                    opts.retrieveEngValues(), opts.retrieveRawValues(), opts.retrieveParameterStatus());
             MultiParameterRetrieval mpdr = new MultiParameterRetrieval(parchive, mpvr);
+            boolean shouldExtract = extractFromRoot;
             mpdr.retrieve(pvList -> {
-                tc.count += pvList.size();
-                tc.time = pvList.time();
                 for (var pv : pvList.getValues()) {
-                    consumer.accept(new ParameterValueWithId(pv, pid.id));
+                    ParameterValue requestedPv = shouldExtract ? AggregateUtil.extractMember(pv, pid.getPath()) : pv;
+                    if (requestedPv != null) {
+                        tc.count++;
+                        tc.time = pvList.time();
+                        consumer.accept(new ParameterValueWithId(requestedPv, pid.id));
+                    }
                 }
             });
             return tc;
@@ -439,17 +451,23 @@ public class ParameterRetrievalService extends AbstractYamcsService {
         log.debug("retrieveMultiParameterArchive pid: {}, opts: {}", pidList, opts);
         MultipleParameterRequest mpvr;
         ParameterIdDb piddb = parchive.getParameterIdDb();
-        List<ParameterId> parameterIds = new ArrayList<>();
-        // map between the
+        Map<Integer, ParameterId> parameterIds = new LinkedHashMap<>();
         Map<Integer, List<ParameterWithId>> pidMapping = new HashMap<>();
+        Map<Integer, List<ParameterWithId>> rootPidMapping = new HashMap<>();
 
         for (ParameterWithId pid : pidList) {
             String qn = pid.getQualifiedName();
             ParameterId[] pids = piddb.get(qn);
-            if (pids != null) {
-                parameterIds.addAll(Arrays.asList(pids));
+            boolean extractFromRoot = false;
+            if ((pids == null || pids.length == 0) && pid.getPath() != null) {
+                pids = piddb.get(pid.getParameter().getQualifiedName());
+                extractFromRoot = true;
+            }
+            if (pids != null && pids.length > 0) {
                 for (var paraid : pids) {
-                    pidMapping.computeIfAbsent(paraid.getPid(), k -> new ArrayList<>()).add(pid);
+                    parameterIds.putIfAbsent(paraid.getPid(), paraid);
+                    Map<Integer, List<ParameterWithId>> mapping = extractFromRoot ? rootPidMapping : pidMapping;
+                    mapping.computeIfAbsent(paraid.getPid(), k -> new ArrayList<>()).add(pid);
                 }
             }
         }
@@ -457,22 +475,36 @@ public class ParameterRetrievalService extends AbstractYamcsService {
         if (!parameterIds.isEmpty()) {
             TimeAndCount tc = new TimeAndCount(TimeEncoding.INVALID_INSTANT, 0);
             mpvr = new MultipleParameterRequest(opts.start(), opts.stop(),
-                    parameterIds.toArray(new ParameterId[0]), opts.ascending());
+                    parameterIds.values().toArray(new ParameterId[0]), null, opts.ascending(), opts.retrieveEngValues(),
+                    opts.retrieveRawValues(), opts.retrieveParameterStatus());
             MultiParameterRetrieval mpdr = new MultiParameterRetrieval(parchive, mpvr);
 
             mpdr.retrieve(pvList -> {
-                tc.count += pvList.size();
-                tc.time = pvList.time();
                 List<ParameterValueWithId> pvl = new ArrayList<>();
                 IntArray parchiveIds = pvList.getPids();
                 var x = pvList.getValues();
                 for (int i = 0; i < parchiveIds.size(); i++) {
                     var paraIdList = pidMapping.get(parchiveIds.get(i));
-                    for (var paraId : paraIdList) {
-                        pvl.add(new ParameterValueWithId(x.get(i), paraId.id));
+                    if (paraIdList != null) {
+                        for (var paraId : paraIdList) {
+                            pvl.add(new ParameterValueWithId(x.get(i), paraId.id));
+                        }
+                    }
+                    var rootParaIdList = rootPidMapping.get(parchiveIds.get(i));
+                    if (rootParaIdList != null) {
+                        for (var paraId : rootParaIdList) {
+                            ParameterValue requestedPv = AggregateUtil.extractMember(x.get(i), paraId.getPath());
+                            if (requestedPv != null) {
+                                pvl.add(new ParameterValueWithId(requestedPv, paraId.id));
+                            }
+                        }
                     }
                 }
-                consumer.accept(pvl);
+                if (!pvl.isEmpty()) {
+                    tc.count += pvl.size();
+                    tc.time = pvList.time();
+                    consumer.accept(pvl);
+                }
 
             });
             return tc;
@@ -502,24 +534,31 @@ public class ParameterRetrievalService extends AbstractYamcsService {
 
             var pvListList = opts.noreplay() ? pcache.getAllValues(parameters, start, stop)
                     : pcache.getAllValuesIfCovered(parameters, start, stop);
-            log.debug("pcache returned {} results", pvListList.size());
-            if (opts.ascending()) {
-                pvListList = Lists.reverse(pvListList);
-            }
-            if (!pvListList.isEmpty()) {
+            log.debug("pcache returned {} results", pvListList == null ? 0 : pvListList.size());
+            if (pvListList != null && !pvListList.isEmpty()) {
+                if (opts.ascending()) {
+                    pvListList = Lists.reverse(pvListList);
+                }
                 long t = 0;
                 for (var pvList : pvListList) {
                     var pvidList = new ArrayList<ParameterValueWithId>();
                     for (var pv : pvList) {
                         for (var pid : pidMapping.get(pv.getParameter())) {
+                            // Each requested path is relative to the original aggregate. Do not carry the result of
+                            // one member extraction into the next sibling request.
+                            ParameterValue requestedPv = pv;
                             if (pid.getPath() != null) {
-                                pv = AggregateUtil.extractMember(pv, pid.getPath());
+                                requestedPv = AggregateUtil.extractMember(pv, pid.getPath());
                             }
-                            pvidList.add(new ParameterValueWithId(pv, pid.getId()));
+                            if (requestedPv != null) {
+                                pvidList.add(new ParameterValueWithId(requestedPv, pid.getId()));
+                            }
                         }
                         t = pv.getGenerationTime();
                     }
-                    consumer.accept(pvidList);
+                    if (!pvidList.isEmpty()) {
+                        consumer.accept(pvidList);
+                    }
                 }
                 return new TimeAndCount(t, pvListList.size());
             } // else it means the cache does not cover the requested interval,
@@ -641,10 +680,14 @@ public class ParameterRetrievalService extends AbstractYamcsService {
                             tc.time = Math.min(pv.getGenerationTime(), tc.time);
                         }
                         for (var pid : pids) {
+                            // A replay may contain several requested members of the same aggregate parameter.
+                            ParameterValue requestedPv = pv;
                             if (pid.getPath() != null) {
-                                pv = AggregateUtil.extractMember(pv, pid.getPath());
+                                requestedPv = AggregateUtil.extractMember(pv, pid.getPath());
                             }
-                            pvaluesWithIds.add(new ParameterValueWithId(pv, pid.getId()));
+                            if (requestedPv != null) {
+                                pvaluesWithIds.add(new ParameterValueWithId(requestedPv, pid.getId()));
+                            }
                         }
                     }
                 }

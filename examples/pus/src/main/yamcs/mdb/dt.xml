@@ -17,10 +17,22 @@
 			<IntegerParameterType signed="false" name="uint11">
 				<IntegerDataEncoding encoding="unsigned" sizeInBits="11" />
 			</IntegerParameterType>
+			<!-- APID fields carried in PUS service application/source data. Keep separate from
+			     uint11 because CCSDS primary-header APIDs are always 11 bits. If this width changes,
+			     update the command-side pus_report_apid encoding below to the same value. -->
+			<IntegerParameterType signed="false" name="pus_report_apid">
+				<IntegerDataEncoding encoding="unsigned" sizeInBits="11" />
+			</IntegerParameterType>
 			<IntegerParameterType signed="false" name="uint12">
 				<IntegerDataEncoding encoding="unsigned" sizeInBits="12" />
 			</IntegerParameterType>
 			<IntegerParameterType signed="false" name="uint14">
+				<IntegerDataEncoding encoding="unsigned" sizeInBits="14" />
+			</IntegerParameterType>
+			<!-- Sequence-count fields carried in PUS service request identifiers. Keep separate
+			     from uint14 because the CCSDS primary-header sequence count is always 14 bits. If
+			     this width changes, update the command-side pus_report_seqcount encoding below. -->
+			<IntegerParameterType signed="false" name="pus_report_seqcount">
 				<IntegerDataEncoding encoding="unsigned" sizeInBits="14" />
 			</IntegerParameterType>
 			<IntegerParameterType signed="false" name="uint16">
@@ -60,6 +72,14 @@
 			</IntegerArgumentType>
 			<IntegerArgumentType name="uint11" signed="false">
 				<IntegerDataEncoding encoding="unsigned" sizeInBits="11" />
+			</IntegerArgumentType>
+			<!-- Command-side counterpart of the PUS service-data APID type above. -->
+			<IntegerArgumentType name="pus_report_apid" signed="false">
+				<IntegerDataEncoding encoding="unsigned" sizeInBits="11" />
+			</IntegerArgumentType>
+			<!-- Command-side counterpart of the request-identifier sequence-count type above. -->
+			<IntegerArgumentType name="pus_report_seqcount" signed="false">
+				<IntegerDataEncoding encoding="unsigned" sizeInBits="14" />
 			</IntegerArgumentType>
 			<IntegerArgumentType name="uint16" signed="false">
 				<IntegerDataEncoding encoding="unsigned" sizeInBits="16" />
