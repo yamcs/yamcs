@@ -45,6 +45,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 
 /**
  * AuthModule that identifies users against an external identity provider compliant with OpenID Connect (OIDC).
@@ -321,7 +322,12 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
                     info.refreshToken = refreshTokenElement.getAsString();
                 }
             } else {
-                log.error("Received error from identity provider: " + readErrorBody(conn));
+                var errorBody = readErrorBody(conn);
+                if (isInvalidGrant(errorBody)) {
+                    log.info("Refresh refused by identity provider, session has ended: {}", errorBody);
+                } else {
+                    log.error("Received error from identity provider: " + errorBody);
+                }
                 return false;
             }
 
@@ -748,6 +754,24 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
         }
         try (stream) {
             return "HTTP " + conn.getResponseCode() + ": " + new String(stream.readAllBytes(), UTF_8);
+        }
+    }
+
+    /**
+     * Returns true if the error body of a token response has the error code invalid_grant. For a refresh request, this
+     * means that the refresh token is no longer valid, typically because the session at the OpenID server has ended
+     * (RFC 6749, section 5.2).
+     */
+    private static boolean isInvalidGrant(String errorBody) {
+        var idx = errorBody.indexOf('{');
+        if (idx == -1) {
+            return false;
+        }
+        try {
+            var json = JsonParser.parseString(errorBody.substring(idx));
+            return json.isJsonObject() && "invalid_grant".equals(getStringOrNull(json.getAsJsonObject(), "error"));
+        } catch (JsonParseException e) {
+            return false;
         }
     }
 

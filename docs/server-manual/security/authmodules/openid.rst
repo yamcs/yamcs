@@ -103,6 +103,7 @@ Without discovery, endpoints are configured explicitly:
           authorizationEndpoint: https://keycloak.example.com/realms/myrealm/protocol/openid-connect/auth
           tokenEndpoint: https://keycloak.example.com/realms/myrealm/protocol/openid-connect/token
           endSessionEndpoint: https://keycloak.example.com/realms/myrealm/protocol/openid-connect/logout
+          jwksUri: https://keycloak.example.com/realms/myrealm/protocol/openid-connect/certs
           clientId: yamcs
           clientSecret: changeme
 
@@ -124,7 +125,17 @@ Back-channel Logout
 
 This AuthModule adds an endpoint ``/openid/backchannel-logout`` to Yamcs that may be called by the OpenID server when a user is to be logged out. This is called back-channel because the communication is directly from the Open ID server to Yamcs, rather than via the user agent. If not used, a logout on the Open ID server is only detected when the next token refresh is attempted.
 
-Yamcs only accepts Logout Tokens that are signed by the OpenID server, and that are intended for the configured ``clientId``. The signature is verified with the keys published at the ``jwks_uri`` of the OpenID server. This requires either ``issuer`` (the ``jwks_uri`` is then discovered) or ``jwksUri`` to be configured. Otherwise, all back-channel logout requests are rejected.
+Yamcs only accepts Logout Tokens that are signed by the OpenID server, and that are intended for the configured ``clientId``. The signature is verified with the keys published at the ``jwks_uri`` of the OpenID server. This requires either ``issuer`` (the ``jwks_uri`` is then discovered) or ``jwksUri`` to be configured.
+
+When a session is ended through back-channel logout, the Yamcs web interface shows a signed-out page, from where the user can sign in again.
+
+.. rubric:: Keycloak Example
+
+In the client settings of Keycloak, under *Logout settings*:
+
+* Disable *Front channel logout*. While this option is enabled, Keycloak does not call the back-channel logout URL of the client.
+* Set *Backchannel logout URL* to the URL of the back-channel logout endpoint, for example ``https://yamcs.example.com/openid/backchannel-logout``.
+* Enable *Backchannel logout session required*. Keycloak then includes the session identifier in the Logout Token, so that Yamcs only ends the sessions that belong to the Keycloak session that was logged out.
 
 
 Note to third-party developers
