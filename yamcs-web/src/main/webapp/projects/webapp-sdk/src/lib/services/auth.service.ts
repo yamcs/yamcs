@@ -36,6 +36,11 @@ export class AuthService implements OnDestroy {
   private syncSubscription: Subscription;
   private nextRefresh: Date | null;
 
+  // Set when the session was ended by an explicit sign-out, or by the
+  // server. The resulting navigation is then handled explicitly, rather
+  // than by automatic redirects to the login page.
+  private sessionEnded = false;
+
   // Optional logout page where to redirect the browser after logging out of Yamcs
   // If unset, defaults to a local login page.
   private logoutRedirectUrl?: string;
@@ -45,8 +50,8 @@ export class AuthService implements OnDestroy {
     this.logoutRedirectUrl = this.configService.getConfig().logoutRedirectUrl;
 
     this.yamcsService.sessionEnded$.subscribe((ended) => {
-      if (ended && !this.authInfo.spnego) {
-        this.logout(true);
+      if (ended && !this.authInfo.spnego && !this.sessionEnded) {
+        this.onSessionEnded();
       }
     });
 
@@ -318,7 +323,10 @@ export class AuthService implements OnDestroy {
     // (once it better supports OIDC-like sessions)
     this.yamcsService.yamcsClient.closeWebSocketClient();
 
-    if (navigateToLoginPage) {
+    // Ending the session triggers session-end messages and 401 responses.
+    // These must not compete with the navigation done by signOut, or
+    // navigate away from the signed-out page.
+    if (navigateToLoginPage && !this.sessionEnded) {
       this.redirectToLogin();
     }
   }
@@ -328,6 +336,7 @@ export class AuthService implements OnDestroy {
    * if applicable, the session at the upstream identity provider.
    */
   async signOut() {
+    this.sessionEnded = true;
     let redirectUrl: string | undefined;
     const refreshToken = this.getCookie('refresh_token');
     if (refreshToken) {
@@ -349,6 +358,21 @@ export class AuthService implements OnDestroy {
     } else {
       this.redirectToLogin('/');
     }
+  }
+
+  /**
+   * Handles a session that was ended by the server, for example following
+   * a logout at the OpenID server.
+   *
+   * Rather than redirecting to the login page, the user is asked to sign in
+   * again. An immediate redirect may reach the OpenID server before it has
+   * fully ended its own session, which would log the user back in.
+   */
+  private onSessionEnded() {
+    const next = this.router.url;
+    this.sessionEnded = true;
+    this.logout(false);
+    this.router.navigate(['/signed-out'], { state: { next } });
   }
 
   /**

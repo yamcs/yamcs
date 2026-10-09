@@ -10,6 +10,7 @@ import { NotFoundComponent } from './appbase/not-found/not-found.component';
 import { ProfileComponent } from './appbase/profile/profile.component';
 import { RouteRefreshComponent } from './appbase/route-refresh/route-refresh.component';
 import { ServerUnavailableComponent } from './appbase/server-unavailable/server-unavailable.component';
+import { SignedOutComponent } from './appbase/signed-out/signed-out.component';
 import { attachContextGuardFn } from './core/guards/AttachContextGuard';
 import { authGuardChildFn, authGuardFn } from './core/guards/AuthGuard';
 import { clearContextGuardFn } from './core/guards/ClearContextGuard';
@@ -87,6 +88,12 @@ export const APP_ROUTES: Routes = [
         path: 'route-refresh',
         component: RouteRefreshComponent,
         canActivate: [authGuardFn, clearContextGuardFn],
+        data: { hasSidebar: false },
+      },
+      {
+        path: 'signed-out',
+        component: SignedOutComponent,
+        canActivate: [clearContextGuardFn],
         data: { hasSidebar: false },
       },
       {
