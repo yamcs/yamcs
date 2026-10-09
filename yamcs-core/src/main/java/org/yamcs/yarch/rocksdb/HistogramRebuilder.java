@@ -12,6 +12,7 @@ import java.util.concurrent.ExecutionException;
 import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.time.Instant;
 import org.yamcs.utils.ByteArrayWrapper;
 import org.yamcs.utils.IntArray;
 import org.yamcs.utils.TimeInterval;
@@ -193,7 +194,8 @@ public class HistogramRebuilder {
             Map<ByteArrayWrapper, HistogramSegment> values = new HashMap<>();
 
             void addTuple(Tuple tuple) throws IOException, RocksDBException {
-                long time = (Long) tuple.getColumn(0);
+                Object timeObj = tuple.getColumn(0);
+                long time = timeObj instanceof Instant ? ((Instant) timeObj).getMillis() : (Long) timeObj;
 
                 ColumnSerializer cs = tableDefinition.getColumnSerializer(columnName);
                 byte[] columnv = cs.toByteArray(tuple.getColumn(columnName));

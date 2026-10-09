@@ -18,6 +18,7 @@ import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
 import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.time.Instant;
 import org.yamcs.protobuf.Pvalue;
 import org.yamcs.protobuf.Pvalue.ParameterData;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
@@ -128,7 +129,7 @@ public class UdpParameterDataLink extends AbstractParameterDataLink implements R
             }
 
             for (Entry<Long, List<ParameterValue>> group : valuesByTime.entrySet()) {
-                updateParameters((long) group.getKey(), recgroup, sequenceNumber, group.getValue());
+                updateParameters(Instant.get(group.getKey()), recgroup, sequenceNumber, group.getValue());
             }
         }
     }

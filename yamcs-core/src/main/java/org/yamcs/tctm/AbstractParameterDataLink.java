@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.time.Instant;
 import org.yamcs.utils.DataRateMeter;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.UnitType;
@@ -19,7 +20,7 @@ public abstract class AbstractParameterDataLink extends AbstractLink implements 
     private Parameter parameterRateParameter;
     private ParameterSink parameterSink;
 
-    protected void updateParameters(long gentime, String group, int seqNum, Collection<ParameterValue> params) {
+    protected void updateParameters(Instant gentime, String group, int seqNum, Collection<ParameterValue> params) {
         parameterCount.addAndGet(params.size());
         parameterRateMeter.mark(params.size());
 

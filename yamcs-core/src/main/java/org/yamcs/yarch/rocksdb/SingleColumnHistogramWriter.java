@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.rocksdb.RocksDBException;
 import org.rocksdb.Snapshot;
+import org.yamcs.time.Instant;
 import org.yamcs.yarch.ColumnSerializer;
 import org.yamcs.yarch.Row;
 
@@ -39,7 +40,8 @@ public class SingleColumnHistogramWriter extends HistogramWriter {
             return;
         }
 
-        long time = (Long) row.get(0);
+        Object timeObj = row.get(0);
+        long time = timeObj instanceof Instant ? ((Instant) timeObj).getMillis() : (Long) timeObj;
         ColumnSerializer cs = tableDefinition.getColumnSerializer(columnName);
         byte[] v = cs.toByteArray(row.get(columnName));
         RdbHistogramInfo histo = table.createAndGetHistogram(time, columnName);
