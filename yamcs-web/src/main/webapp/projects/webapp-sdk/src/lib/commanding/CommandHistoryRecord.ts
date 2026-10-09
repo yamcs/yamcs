@@ -44,6 +44,7 @@ export class CommandHistoryRecord {
   completed?: Acknowledgment;
 
   extra: { name: string; value: Value }[] = [];
+  extraByName: { [key: string]: Value } = {};
 
   acksByName: { [key: string]: Acknowledgment } = {};
 
@@ -125,6 +126,7 @@ export class CommandHistoryRecord {
           this.saveAckReturnValue(ackName, attr.value);
         } else {
           this.extra.push({ name: attrName, value: attr.value });
+          this.extraByName[attrName] = attr.value;
         }
       }
     }
