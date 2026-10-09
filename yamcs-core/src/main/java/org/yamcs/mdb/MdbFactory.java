@@ -134,6 +134,9 @@ public class MdbFactory {
         if (loadSerialized) {
             try {
                 mdb = loadSerializedInstance(serializedFile);
+                // Serialized MDBs bypass reference resolution, but may have been cached before lexical aggregate
+                // member validation was introduced.
+                AggregateMemberReferenceValidator.validate(mdb.getRootSpaceSystem());
                 serializedLoaded = true;
             } catch (InvalidClassException e) {
                 log.debug("Cannot load serialized database: " + e.getMessage());
@@ -158,15 +161,7 @@ public class MdbFactory {
 
             rootSs.addSpaceSystem(yamcsSs);
             ReferenceFinder refFinder = new ReferenceFinder(s -> log.warn(s));
-            int n;
-            while ((n = resolveReferences(rootSs, rootSs, refFinder)) > 0) {
-            }
-
-            if (n == 0) {
-                StringBuilder sb = new StringBuilder();
-                collectUnresolvedReferences(rootSs, sb);
-                throw new DatabaseLoadException("Cannot resolve (circular?) references: " + sb.toString());
-            }
+            resolveAndValidateReferences(rootSs, refFinder);
             setQualifiedNames(rootSs, "");
 
             mdb = new Mdb(rootSs, lr.writers);
@@ -195,6 +190,24 @@ public class MdbFactory {
         }
 
         return mdb;
+    }
+
+    /**
+     * Resolves ordinary MDB references to a fixed point before validating references whose meaning depends on their
+     * concrete type use site.
+     */
+    private static void resolveAndValidateReferences(SpaceSystem rootSs, ReferenceFinder refFinder) {
+        int n;
+        while ((n = resolveReferences(rootSs, rootSs, refFinder)) > 0) {
+        }
+
+        if (n == 0) {
+            StringBuilder sb = new StringBuilder();
+            collectUnresolvedReferences(rootSs, sb);
+            throw new DatabaseLoadException("Cannot resolve (circular?) references: " + sb.toString());
+        }
+
+        AggregateMemberReferenceValidator.validate(rootSs);
     }
 
     /* collects a description for all unresolved references into the StringBuffer to raise an error */
