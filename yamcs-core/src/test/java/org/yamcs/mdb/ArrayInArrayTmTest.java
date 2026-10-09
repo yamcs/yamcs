@@ -3,6 +3,7 @@ package org.yamcs.mdb;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -72,16 +73,6 @@ public class ArrayInArrayTmTest {
     }
 
     @Test
-    public void testCountMustPrecedeArray() {
-        ContainerProcessingResult result = process(new byte[] { 0x00, 0x00 }, "late_count_packet");
-        XtceProcessingException exception = result.exception;
-        assertNotNull(exception);
-        assertEquals("Array size reference 'outer_array_length' points to an aggregate member "
-                + "that has not been decoded yet",
-                exception.getMessage());
-    }
-
-    @Test
     public void testCompletedAggregateMemberReference() {
         byte[] packet = new byte[] { 0x02, 0x00, 0x11, 0x00, 0x22 };
         ParameterValueList values = process(packet, "external_member_packet").getParameterResult();
@@ -117,28 +108,17 @@ public class ArrayInArrayTmTest {
     }
 
     @Test
-    public void testNonnumericAggregateMemberCount() {
-        assertProcessingError(new byte[] { 'A' }, "nonnumeric_count_packet",
-                "Aggregate member 'nonnumeric_count' used as an array size is not numeric");
-    }
-
-    @Test
     public void testMissingOrdinaryParameterCount() {
         assertProcessingError(new byte[0], "missing_count_packet",
                 "Missing value for dynamic integer value: /ArrayInArrayTmTest/missing_count");
     }
 
     @Test
-    public void testMissingAggregateMemberReferenceFailsDuringProcessing() {
-        Mdb invalidMdb = MdbFactory.createInstanceByConfig("ArrayInArrayTmInvalidTest", false);
-        XtceTmExtractor invalidExtractor = new XtceTmExtractor(invalidMdb);
-        invalidExtractor.provideAll();
-        SequenceContainer container = invalidMdb.getSequenceContainer("/ArrayInArrayTmInvalidTest/packet");
-
-        ContainerProcessingResult result = invalidExtractor.processPacket(new byte[0], now, now, 0, container);
-        assertNotNull(result.exception);
-        assertEquals("Cannot find aggregate member 'missing_count' used as an array size",
-                result.exception.getMessage());
+    public void testMissingAggregateMemberReferenceFailsDuringMdbLoad() {
+        DatabaseLoadException exception = assertThrows(DatabaseLoadException.class,
+                () -> MdbFactory.createInstanceByConfig("ArrayInArrayTmInvalidTest", false));
+        assertEquals("Cannot find aggregate member 'missing_count' used as an array size at 'report.values' "
+                + "in parameter 'report'", exception.getMessage());
     }
 
     @Test

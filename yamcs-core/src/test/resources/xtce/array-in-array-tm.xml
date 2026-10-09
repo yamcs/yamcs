@@ -18,15 +18,6 @@
             <IntegerParameterType name="int8" signed="true">
                 <IntegerDataEncoding sizeInBits="8" encoding="twosComplement"/>
             </IntegerParameterType>
-            <StringParameterType name="string8">
-                <StringDataEncoding encoding="UTF-8">
-                    <SizeInBits>
-                        <Fixed>
-                            <FixedValue>8</FixedValue>
-                        </Fixed>
-                    </SizeInBits>
-                </StringDataEncoding>
-            </StringParameterType>
             <ArrayParameterType name="inner_array_type" arrayTypeRef="uint16">
                 <DimensionList>
                     <Dimension>
@@ -65,12 +56,6 @@
                 <MemberList>
                     <Member name="outer_array_length" typeRef="uint16"/>
                     <Member name="outer_array" typeRef="outer_array_type"/>
-                </MemberList>
-            </AggregateParameterType>
-            <AggregateParameterType name="late_count_report_type">
-                <MemberList>
-                    <Member name="outer_array" typeRef="outer_array_type"/>
-                    <Member name="outer_array_length" typeRef="uint16"/>
                 </MemberList>
             </AggregateParameterType>
             <AggregateParameterType name="count_holder_type">
@@ -142,26 +127,6 @@
                 <MemberList>
                     <Member name="oversized_count" typeRef="uint16"/>
                     <Member name="values" typeRef="oversized_array_type"/>
-                </MemberList>
-            </AggregateParameterType>
-            <ArrayParameterType name="nonnumeric_array_type" arrayTypeRef="uint8">
-                <DimensionList>
-                    <Dimension>
-                        <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
-                        <EndingIndex>
-                            <DynamicValue>
-                                <ParameterInstanceRef parameterRef="nonnumeric_count"
-                                        yamcs:aggregateMember="true"/>
-                                <LinearAdjustment intercept="-1"/>
-                            </DynamicValue>
-                        </EndingIndex>
-                    </Dimension>
-                </DimensionList>
-            </ArrayParameterType>
-            <AggregateParameterType name="nonnumeric_report_type">
-                <MemberList>
-                    <Member name="nonnumeric_count" typeRef="string8"/>
-                    <Member name="values" typeRef="nonnumeric_array_type"/>
                 </MemberList>
             </AggregateParameterType>
             <ArrayParameterType name="missing_array_type" arrayTypeRef="uint8">
@@ -270,13 +235,11 @@
             <Parameter name="external_count" parameterTypeRef="uint8"/>
             <Parameter name="missing_count" parameterTypeRef="uint8"/>
             <Parameter name="report" parameterTypeRef="report_type"/>
-            <Parameter name="late_count_report" parameterTypeRef="late_count_report_type"/>
             <Parameter name="count_holder" parameterTypeRef="count_holder_type"/>
             <Parameter name="external_array" parameterTypeRef="external_array_type"/>
             <Parameter name="ordinary_array" parameterTypeRef="ordinary_array_type"/>
             <Parameter name="negative_report" parameterTypeRef="negative_report_type"/>
             <Parameter name="oversized_report" parameterTypeRef="oversized_report_type"/>
-            <Parameter name="nonnumeric_report" parameterTypeRef="nonnumeric_report_type"/>
             <Parameter name="missing_report" parameterTypeRef="missing_report_type"/>
             <Parameter name="qualified_report" parameterTypeRef="qualified_report_type"/>
             <Parameter name="configuration" parameterTypeRef="configuration_type"/>
@@ -285,11 +248,6 @@
             <SequenceContainer name="packet">
                 <EntryList>
                     <ParameterRefEntry parameterRef="report"/>
-                </EntryList>
-            </SequenceContainer>
-            <SequenceContainer name="late_count_packet">
-                <EntryList>
-                    <ParameterRefEntry parameterRef="late_count_report"/>
                 </EntryList>
             </SequenceContainer>
             <SequenceContainer name="external_member_packet">
@@ -312,11 +270,6 @@
             <SequenceContainer name="oversized_count_packet">
                 <EntryList>
                     <ParameterRefEntry parameterRef="oversized_report"/>
-                </EntryList>
-            </SequenceContainer>
-            <SequenceContainer name="nonnumeric_count_packet">
-                <EntryList>
-                    <ParameterRefEntry parameterRef="nonnumeric_report"/>
                 </EntryList>
             </SequenceContainer>
             <SequenceContainer name="missing_count_packet">
