@@ -159,6 +159,7 @@
 			<BinaryArgumentType name="TcPacketType"/>
 			<AggregateArgumentType name="ActivityEntryType">
 				<MemberList>
+					<Member name="group_id" typeRef="/dt/uint8" initialValue="0"/>
 					<Member name="release_time" typeRef="/PUS/PusTimeType"/>
 					<Member name="tc_packet" typeRef="TcPacketType"/>
 				</MemberList>
@@ -264,7 +265,7 @@
 					</ArgumentAssignmentList>
 				</BaseMetaCommand>
 				<ArgumentList>
-					<Argument argumentTypeRef="/dt/uint8" name="subschedule_id"/>
+					<Argument argumentTypeRef="/dt/uint8" name="subschedule_id" initialValue="0"/>
 					<Argument argumentTypeRef="/dt/uint8" name="n"/>
 					<Argument argumentTypeRef="ActivityArrayType" name="activities"/>
 				</ArgumentList>
@@ -326,7 +327,7 @@
 					</ArgumentAssignmentList>
 				</BaseMetaCommand>
 				<ArgumentList>
-					<Argument argumentTypeRef="/dt/uint32" name="time_offset_ms"/>
+					<Argument argumentTypeRef="/dt/int32" name="time_offset_ms" shortDescription="Signed time offset in milliseconds; negative values move activities earlier"/>
 					<Argument argumentTypeRef="NumRequestsType" name="num_requests"></Argument>
 					<Argument argumentTypeRef="RequestArrayType" name="requests"></Argument>
 				</ArgumentList>
@@ -346,7 +347,7 @@
 					</ArgumentAssignmentList>
 				</BaseMetaCommand>
 				<ArgumentList>
-					<Argument argumentTypeRef="/dt/uint32" name="time_offset_ms"/>
+					<Argument argumentTypeRef="/dt/int32" name="time_offset_ms" shortDescription="Signed time offset in milliseconds; negative values move activities earlier"/>
 					<Argument argumentTypeRef="/PUS/PusTimeType" name="start_time"></Argument>
 					<Argument argumentTypeRef="/PUS/PusTimeType" name="end_time"></Argument>
 					<Argument argumentTypeRef="NumSchedulesType" name="num_schedules"></Argument>
@@ -456,7 +457,7 @@
 					</ArgumentAssignmentList>
 				</BaseMetaCommand>
 				<ArgumentList>
-					<Argument argumentTypeRef="/dt/uint32" name="time_offset_ms"/>
+					<Argument argumentTypeRef="/dt/int32" name="time_offset_ms" shortDescription="Signed time offset in milliseconds; negative values move activities earlier"/>
 				</ArgumentList>
 				<CommandContainer name="TIME_SHIFT_ACTIVITIES">
 					<EntryList>
@@ -644,6 +645,7 @@
 			<ParameterSet>
 				<Parameter parameterTypeRef="/dt/uint16" name="n"/>
 				<Parameter parameterTypeRef="ScheduleIdType" name="schedule_id"/>
+				<Parameter parameterTypeRef="GroupIdType" name="group_id"/>
 				<Parameter parameterTypeRef="/PUS/PusTimeType" name="release_time"/>
 				<Parameter parameterTypeRef="/dt/uint11" name="apid"/>
 				<Parameter parameterTypeRef="/dt/uint14" name="seq"/>
@@ -659,6 +661,7 @@
 				<SequenceContainer name="DETAIL_REPORT_ELEMENT" shortDescription="One entry in the detail report">
 					<EntryList>
 						<ParameterRefEntry parameterRef="schedule_id"/>
+						<ParameterRefEntry parameterRef="group_id"/>
 						<ParameterRefEntry parameterRef="release_time"/>
 						<ParameterRefEntry parameterRef="apid">
 							<LocationInContainerInBits><FixedValue>5</FixedValue></LocationInContainerInBits>
@@ -704,6 +707,7 @@
 			<ParameterSet>
 					<Parameter parameterTypeRef="/dt/uint16" name="n"/>
 					<Parameter parameterTypeRef="ScheduleIdType" name="schedule_id"/>
+					<Parameter parameterTypeRef="GroupIdType" name="group_id"/>
 					<Parameter parameterTypeRef="/PUS/PusTimeType" name="release_time"/>
 					<Parameter parameterTypeRef="/dt/uint16" name="source"/>
 					<Parameter parameterTypeRef="/dt/pus_report_apid" name="apid"/>
@@ -713,6 +717,7 @@
 				<SequenceContainer name="SUMMARY_REPORT_ELEMENT">
 					<EntryList>
 						<ParameterRefEntry parameterRef="schedule_id"/>
+						<ParameterRefEntry parameterRef="group_id"/>
 						<ParameterRefEntry parameterRef="release_time"/>
 						<ParameterRefEntry parameterRef="source"/>
 						<ParameterRefEntry parameterRef="apid"/>

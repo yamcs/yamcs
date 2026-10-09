@@ -30,6 +30,7 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.security.User;
+import org.yamcs.utils.AggregateUtil;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.yarch.YarchDatabase;
 
@@ -67,6 +68,10 @@ public class StackExecution extends ActivityExecution {
         var histManager = processor.getCommandHistoryManager();
 
         var bytes = bucket.getObjectAsync(stackName).get();
+        if (bytes == null) {
+            throw new IllegalArgumentException(
+                    "No stack named '" + stackName + "' in bucket '" + bucket.getName() + "'");
+        }
         var json = new String(bytes, StandardCharsets.UTF_8);
         var stack = Stack.fromJson(json, mdb);
 
@@ -175,17 +180,25 @@ public class StackExecution extends ActivityExecution {
                 return false;
             }
 
-            var stringValue = pval.getEngValue().toString();
+            var engValue = pval.getEngValue();
+            if (comparison.path() != null) {
+                engValue = AggregateUtil.getMemberValue(engValue, comparison.path());
+                if (engValue == null) {
+                    return false;
+                }
+            }
+
+            var stringValue = engValue.toString();
             var comparand = "" + comparison.value();
 
             switch (comparison.operator()) {
             case "eq":
-                if (!stringValue.equals(comparand)) {
+                if (!isEqual(stringValue, comparand)) {
                     return false;
                 }
                 break;
             case "neq":
-                if (stringValue.equals(comparand)) {
+                if (isEqual(stringValue, comparand)) {
                     return false;
                 }
                 break;
@@ -226,6 +239,18 @@ public class StackExecution extends ActivityExecution {
         }
 
         return true;
+    }
+
+    /**
+     * Numbers are compared numerically, so that a comparand such as 1 matches a float value that
+     * stringifies to 1.0. Anything else (enumerations, booleans, strings) is compared as text.
+     */
+    private static boolean isEqual(String stringValue, String comparand) {
+        if (isNumeric(stringValue) && isNumeric(comparand)) {
+            return Double.parseDouble(stringValue) == Double.parseDouble(comparand);
+        } else {
+            return stringValue.equals(comparand);
+        }
     }
 
     public static boolean isNumeric(String str) {

@@ -15,6 +15,7 @@ import org.yamcs.algorithms.AlgorithmTextListener;
 import org.yamcs.api.Observer;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.Context;
+import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.MethodNotAllowedException;
 import org.yamcs.http.api.XtceToGpbAssembler.DetailLevel;
 import org.yamcs.logging.Log;
@@ -62,6 +63,9 @@ public class MdbOverrideApi extends AbstractMdbOverrideApi<Context> {
         if (l.size() == 1) {
             AlgorithmManager algorithmManager = l.get(0);
             for (CustomAlgorithm algorithm : algorithmManager.getAlgorithmOverrides()) {
+                if (!MdbApi.hasReadAlgorithmPrivilege(ctx.user, algorithm)) {
+                    continue;
+                }
                 var overrideb = MdbOverrideInfo.newBuilder()
                         .setType(OverrideType.ALGORITHM_TEXT)
                         .setAlgorithmTextOverride(toAlgorithmTextOverride(algorithm, algorithm.getAlgorithmText()));
@@ -71,6 +75,9 @@ public class MdbOverrideApi extends AbstractMdbOverrideApi<Context> {
 
         ProcessorData pdata = processor.getProcessorData();
         for (var entry : pdata.getParameterTypeOverrides().entrySet()) {
+            if (!MdbApi.hasReadParameterDefinitionPrivilege(ctx.user, entry.getKey())) {
+                continue;
+            }
             var overrideb = MdbOverrideInfo.newBuilder()
                     .setType(OverrideType.PARAMETER)
                     .setParameterOverride(toParameterOverride(entry.getKey(), entry.getValue()));
@@ -85,7 +92,7 @@ public class MdbOverrideApi extends AbstractMdbOverrideApi<Context> {
             Observer<ParameterOverride> observer) {
         Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
         Mdb mdb = MdbFactory.getInstance(processor.getInstance());
-        Parameter parameter = MdbApi.verifyParameter(ctx, mdb, request.getName());
+        Parameter parameter = MdbApi.verifyParameterDefinitionWithId(ctx, mdb, request.getName()).getParameter();
 
         ProcessorData pdata = processor.getProcessorData();
 
@@ -120,6 +127,9 @@ public class MdbOverrideApi extends AbstractMdbOverrideApi<Context> {
         Processor processor = ProcessingApi.verifyProcessor(request.getInstance(), request.getProcessor());
         Mdb mdb = MdbFactory.getInstance(processor.getInstance());
         Algorithm algorithm = MdbApi.verifyAlgorithm(mdb, request.getName());
+        if (!MdbApi.hasReadAlgorithmPrivilege(ctx.user, algorithm)) {
+            throw new ForbiddenException("Insufficient privileges");
+        }
 
         GetAlgorithmOverridesResponse.Builder responseb = GetAlgorithmOverridesResponse.newBuilder();
 

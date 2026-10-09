@@ -15,8 +15,6 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.zip.CRC32;
 
 import org.yamcs.logging.Log;
@@ -90,8 +88,6 @@ public class ReplicationFile implements Closeable {
     final static int MIN_RECORD_SIZE = 20; // size, instanceId, txId, crc
 
     final Log log;
-
-    ReadWriteLock rwlock = new ReentrantReadWriteLock();
 
     private MappedByteBuffer buf;
     private int lastMetadataTxStart;
@@ -360,6 +356,32 @@ public class ReplicationFile implements Closeable {
     }
 
     /**
+     * Returns true if the file has no header written: it is empty or its first {@link #MAGIC} bytes are all zero.
+     * <p>
+     * Such a file is left behind when the creation was interrupted before the header could be written.
+     */
+    public static boolean isUninitialized(Path path) throws IOException {
+        if (Files.size(path) == 0) {
+            return true;
+        }
+        try (FileChannel fc = FileChannel.open(path, StandardOpenOption.READ)) {
+            ByteBuffer bb = ByteBuffer.allocate(MAGIC.length);
+            while (bb.hasRemaining()) {
+                if (fc.read(bb) < 0) {
+                    break;
+                }
+            }
+            bb.flip();
+            while (bb.hasRemaining()) {
+                if (bb.get() != 0) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
+    /**
      * Write transaction to the file and returns the transaction id.
      * <p>
      * returns -1 if the transaction could not be written because the file is full.
@@ -376,7 +398,6 @@ public class ReplicationFile implements Closeable {
             return -1;
         }
 
-        rwlock.writeLock().lock();
         final int txStartPos = buf.position();
 
         try {
@@ -440,8 +461,6 @@ public class ReplicationFile implements Closeable {
             buf.position(txStartPos);
             log.error("Caught exception when writing the replication file ", e);
             throw e;
-        } finally {
-            rwlock.writeLock().unlock();
         }
     }
 
@@ -538,27 +557,22 @@ public class ReplicationFile implements Closeable {
         if (txNum < 0) {
             throw new IllegalArgumentException(txId + " is smaller than " + hdr1.firstId);
         }
-        rwlock.readLock().lock();
-        try {
 
-            int pos = getPosition(txNum);
-            if (pos < 0) {
-                return null;
-            }
-
-            ByteBuffer buf1 = buf.duplicate().asReadOnlyBuffer();
-            buf1.position(pos);
-            buf1.limit(buf.position());
-            ReplicationTail rfe = new ReplicationTail();
-            rfe.buf = buf1;
-            rfe.nextTxId = getNextTxId();
-            if (fileFull) {
-                rfe.eof = true;
-            }
-            return rfe;
-        } finally {
-            rwlock.readLock().unlock();
+        int pos = getPosition(txNum);
+        if (pos < 0) {
+            return null;
         }
+
+        ByteBuffer buf1 = buf.duplicate().asReadOnlyBuffer();
+        buf1.position(pos);
+        buf1.limit(buf.position());
+        ReplicationTail rfe = new ReplicationTail();
+        rfe.buf = buf1;
+        rfe.nextTxId = getNextTxId();
+        if (fileFull) {
+            rfe.eof = true;
+        }
+        return rfe;
     }
 
     /**
@@ -569,16 +583,11 @@ public class ReplicationFile implements Closeable {
      * @param rfe
      */
     public void getNewData(ReplicationTail rfe) {
-        rwlock.readLock().lock();
-        try {
-            rfe.buf.limit(buf.position());
-            if (fileFull) {
-                rfe.eof = true;
-            }
-            rfe.nextTxId = getNextTxId();
-        } finally {
-            rwlock.readLock().unlock();
+        rfe.buf.limit(buf.position());
+        if (fileFull) {
+            rfe.eof = true;
         }
+        rfe.nextTxId = getNextTxId();
     }
 
     /**
@@ -664,14 +673,9 @@ public class ReplicationFile implements Closeable {
      */
     public void sync() throws IOException {
         if (!readOnly) {
-            rwlock.readLock().lock();
-            try {
-                fc.force(true);
-                hdr2.write();
-                fc.force(true);
-            } finally {
-                rwlock.readLock().unlock();
-            }
+            fc.force(true);
+            hdr2.write();
+            fc.force(true);
         }
     }
 

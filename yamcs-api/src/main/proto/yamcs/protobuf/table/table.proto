@@ -187,6 +187,9 @@ message ReadRowsRequest {
   // - pname = '/YSS/SIMULATOR/FlightData'
   // - gentime > '2023-01-01T00:00:00.000Z'
   // - pname = '/YSS/SIMULATOR/FlightData' and gentime > '2023-01-01T00:00:00.000Z'
+  //
+  // For security reasons, use of this option requires the additional
+  // ControlArchiving privilege.
   optional string query = 4;
 }
 

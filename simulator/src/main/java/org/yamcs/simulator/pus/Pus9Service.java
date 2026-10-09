@@ -59,6 +59,14 @@ public class Pus9Service extends AbstractPusService {
     }
 
     private void sendTimePacket() {
-        pusSimulator.tmLink.sendImmediate(new PusTmTimePacket(rateExponent, pusSimulator.timeEncoding));
+        var packet = new PusTmTimePacket(rateExponent, pusSimulator.timeEncoding);
+        if (pusSimulator.tmLink != null) {
+            pusSimulator.tmLink.sendImmediate(packet);
+        }
+        if (pusSimulator.tmFrameLink != null) {
+            // the ST[9] time packet must travel on a virtual channel so the ground can associate it
+            // with a frame (and its earth reception time) for time correlation
+            pusSimulator.tmFrameLink.queuePacket(0, packet.getBytes());
+        }
     }
 }
