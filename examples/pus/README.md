@@ -63,6 +63,10 @@ ST[11] time based scheduled.
    command post-processor (see `pus-frames/etc/yamcs.pus-frames.yaml`).
  - Most TC/TM supported in the simulator, including sub-schedules (TC[11,18..21]) and scheduling
    groups (TC[11,22..26], TM[11,27]).
+ - Alternatively the TC[11,4] can be built by hand with `/PUS11/INSERT_ACTIVITIES` (wired in
+   `pus-frames`). It takes a list of activities, each with a `group_id`, a `release_time` and a
+   `tc`: the complete TC packet to release, in hex. See "Embedded TC packets" below. Try it with
+   `examples/pus-frames/tests/test-pus11-embedded.py`.
 
 ST[12] on-board monitoring
 - Standard Yamcs MDB definitions should suffice. 
@@ -92,9 +96,53 @@ ST[18] on-board control procedures
 - Standard Yamcs MDB definitions can probably be used for basic functionality. Having a dedicated (web) UI could probably help. 
 - No support in the simulator.
 
-ST[19] eventaction
-- Not supported. Probably could be implemented similarily with ST[11]
-- No support in the simulator.
+ST[19] event-action
+- `mdb/pus19.xml` defines the commands, loaded in both `pus` and `pus-frames`:
+    * TC[19,1] `ADD_EVENT_ACTIONS`: a list of {`event_id`, `tc`}, where `tc` is the complete TC
+      packet to execute, in hex. See "Embedded TC packets" below.
+    * TC[19,2..5] delete, delete all, enable and disable definitions.
+    * TC[19,6] report status, answered by TM[19,7].
+    * TC[19,8..9] enable and disable the event-action function.
+- The simulator supports these TCs. It runs the action of an enabled definition each time the
+  matching ST[5] event is generated (EVENT_1 every 5 seconds, EVENT_2 in the other seconds),
+  provided the function is enabled.
+- Simplifications: a definition is identified by the event id only (no application process id),
+  so there is one action per event, and new definitions start disabled.
+- Try it with `examples/pus-frames/tests/test-pus19-embedded.py`.
+
+Embedded TC packets (used by ST[11], ST[19], and possibly ST[21] and ST[22])
+- Several requests carry complete TC packets, to be executed later on board: TC[11,4]
+  (time-based schedule), TC[22,4] (position-based schedule), TC[19,1] (event-action) and
+  TC[21,1] (request sequence).
+- Mark such an argument by putting the `Yamcs:EmbeddedTc` annotation on its binary type. It is
+  defined once in `mdb/pus.xml` as `/PUS/EmbeddedTcType`:
+  ```xml
+  <BinaryArgumentType name="EmbeddedTcType">
+      <AncillaryDataSet><AncillaryData name="Yamcs:EmbeddedTc"/></AncillaryDataSet>
+      <BinaryDataEncoding><SizeInBits><FixedValue>-1</FixedValue></SizeInBits></BinaryDataEncoding>
+  </BinaryArgumentType>
+  ```
+- For each argument value with this annotation, the `PusCommandPostprocessor`:
+    * fills in the CCSDS length and sequence count of the embedded packet. It also works when
+      the type is used inside a list, e.g. `activities[1].tc`. The packets are handled in the
+      order they appear in the command, so they get increasing sequence counts.
+    * appends the packet's CRC, if the post-processor option `embeddedTcCrc` is set. The option
+      defaults to true when `errorDetection` is configured; `pus-frames` sets it explicitly.
+- The outer command then gets its own sequence count and CRC as usual.
+- So the embedded packet can be entered as the binary of a dry run of the command: zero
+  sequence count and length, no CRC. Both test scripts do exactly that:
+    * call `processor.issue_command(name, args, dry_run=True).binary`
+    * pass the result, in hex, as the `tc` argument
+- The assigned sequence counts appear in the command history as
+  `ccsds-seqcount:<argument path>`, e.g. `ccsds-seqcount:activities[0].tc`.
+- The simulator logs each received embedded packet with its sequence count and whether its CRC
+  is valid.
+- Note that an embedded packet keeps the sequence count it got when it was loaded. Its execution
+  reports, possibly repeated in the case of ST[19], carry that sequence count.
+- The SCOS-2000 MIB loader (yamcs-scos2k) puts the same annotation on the (PTC, PFC) = (12, 1)
+  command parameters.
+- See the PUS command post-processor documentation for the limitations, e.g. the encoding has to
+  allow the size to grow when a CRC is appended.
 
 ST[20] on-board parameter management 
 - TBD if standard Yamcs MDB definitions are enough

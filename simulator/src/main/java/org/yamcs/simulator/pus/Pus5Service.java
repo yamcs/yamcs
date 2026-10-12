@@ -29,6 +29,7 @@ public class Pus5Service extends AbstractPusService {
             bb.putFloat((float) (count + 3.14159265));
 
             pusSimulator.transmitRealtimeTM(packet);
+            pusSimulator.pus19Service.eventReported(1);
         } else if (enabled[1]) {
             // send event2 with subtype (severity level) id
             byte[] msg = ("This is an event with subtype " + id).getBytes(StandardCharsets.UTF_8);
@@ -38,6 +39,7 @@ public class Pus5Service extends AbstractPusService {
             bb.putShort((short) msg.length);
             bb.put(msg);
             pusSimulator.transmitRealtimeTM(packet);
+            pusSimulator.pus19Service.eventReported(2);
         }
         count++;
     }

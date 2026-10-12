@@ -115,6 +115,22 @@ public class NameDescription implements Serializable {
     }
 
     /**
+     * 
+     * @return true if there is at least one ancillary data entry with the given name (case insensitive)
+     */
+    public boolean hasAncillaryData(String name) {
+        if (ancillaryData == null) {
+            return false;
+        }
+        for (AncillaryData ad : ancillaryData) {
+            if (name.equalsIgnoreCase(ad.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Returns the fully qualified name.
      * 
      * @return a name of shape /system/subsys1/subsys2/item

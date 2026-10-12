@@ -48,6 +48,12 @@ pus11Apid (integer)
 pus11 (map)
     Enables the PUS 11 time-based scheduling support. Detailed below.
 
+embeddedTcCrc (boolean)
+    If ``true``, a checksum (computed with the ``errorDetection`` algorithm) is appended to each TC
+    packet embedded into a command, see :ref:`pus-embedded-tc` below. Default: ``true`` if
+    ``errorDetection`` is configured, ``false`` otherwise. Setting it to ``true`` without
+    ``errorDetection`` is a configuration error.
+
 
 PUS 11 time-based scheduling
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -86,6 +92,55 @@ Example:
         pus11:
             subScheduleId: { bytes: 1, default: 1 }
             groupId: { bytes: 1, default: 1 }
+
+
+.. _pus-embedded-tc:
+
+Embedded TC packets
+^^^^^^^^^^^^^^^^^^^
+
+Some commands carry complete TC packets as arguments, for example a manually built
+``TC[11,4] insert activities into the time-based schedule`` or ``TC[22,4]``, where each activity
+is a TC packet. To have these packets processed like top-level commands, annotate the binary
+argument type with the ``Yamcs:EmbeddedTc`` ancillary data:
+
+.. code-block:: xml
+
+    <BinaryArgumentType name="EmbeddedTcType">
+        <AncillaryDataSet>
+            <AncillaryData name="Yamcs:EmbeddedTc"/>
+        </AncillaryDataSet>
+        <BinaryDataEncoding>
+            <SizeInBits><FixedValue>-1</FixedValue></SizeInBits>
+        </BinaryDataEncoding>
+    </BinaryArgumentType>
+
+The postprocessor finds the annotated values using the argument locations recorded when the
+command is encoded. The type can be used for a top-level argument but also as member of an
+aggregate inside an array, such as a list of activities. For each embedded packet, in the order in
+which they appear in the command, the postprocessor:
+
+* fills in the CCSDS packet length;
+* fills in the CCSDS sequence count, using the counter of the embedded packet's APID. The value is
+  published in the command history as ``ccsds-seqcount:<argument path>``, for example
+  ``ccsds-seqcount:activities[1].tc``;
+* if ``embeddedTcCrc`` is set, appends the checksum. The command grows by 2 bytes per embedded
+  packet; the entries following an embedded packet are shifted accordingly.
+
+The embedded packets can thus be entered with zero sequence count and length, and without
+checksum. The outer command gets its length, sequence count and checksum afterwards, as usual.
+
+The SCOS-2000 MIB loader (yamcs-scos2k) annotates the command parameters with
+(PTC, PFC) = (12, 1) this way.
+
+Limitations:
+
+* the embedded packet has to be byte aligned.
+* when the checksum is appended, the binary encoding must allow the size to change: either a size
+  of ``-1`` (all the bytes of the value) or a leading size tag (which is updated). With a fixed size
+  or a dynamic size (given by another argument) the command fails.
+* entries located at an absolute position (``referenceLocation="containerStart"``) after an
+  embedded packet are not shifted.
 
 
 Error Detection sub-configuration

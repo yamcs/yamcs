@@ -33,6 +33,13 @@ public class AncillaryData implements Serializable {
      */
     public static final String KEY_CCSDS_MAP_ID = "Yamcs:CcsdsMapId";
 
+    /**
+     * Used on binary argument types to mark that the value is a complete telecommand packet embedded into the
+     * command (for example the activities of a PUS TC(11,4) or TC(22,4)). The command post-processor may then
+     * process the embedded packet like a top level command (fill in the sequence count, length, checksum).
+     */
+    public static final String KEY_EMBEDDED_TC = "Yamcs:EmbeddedTc";
+
     private static final long serialVersionUID = 1L;
     private static final String DEFAULT_MIME_TYPE = "text/plain";
 

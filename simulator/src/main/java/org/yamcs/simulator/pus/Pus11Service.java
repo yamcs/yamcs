@@ -178,8 +178,9 @@ public class Pus11Service extends AbstractPusService {
                 nack_completion(tc, COMPL_ERR_SCHEDULE_TIME_IN_THE_PAST);
                 return;
             }
-            log.info("Scheduling command {} at {} (subschedule {}, group {})",
-                    StringConverter.arrayToHexString(sc.tc.getBytes()), sc.releaseTime, sc.subschedule, sc.group);
+            log.info("Scheduling command {} at {} (subschedule {}, group {}, seq count {}, CRC {})",
+                    StringConverter.arrayToHexString(sc.tc.getBytes()), sc.releaseTime, sc.subschedule, sc.group,
+                    sc.tc.getSequenceCount(), sc.tc.isChecksumValid() ? "valid" : "INVALID");
             commands.add(sc);
         }
         scheduleNext();

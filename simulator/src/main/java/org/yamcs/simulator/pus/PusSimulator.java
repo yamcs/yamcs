@@ -78,6 +78,7 @@ public class PusSimulator extends AbstractSimulator {
     Pus5Service pus5Service;
     Pus11Service pus11Service;
     Pus17Service pus17Service;
+    Pus19Service pus19Service;
     Pus22Service pus22Service;
 
     protected BlockingQueue<PusTcPacket> pendingCommands = new ArrayBlockingQueue<>(100);
@@ -92,6 +93,7 @@ public class PusSimulator extends AbstractSimulator {
         pus5Service = new Pus5Service(this);
         pus11Service = new Pus11Service(this);
         pus17Service = new Pus17Service(this);
+        pus19Service = new Pus19Service(this);
         pus22Service = new Pus22Service(this);
     }
 
@@ -259,6 +261,7 @@ public class PusSimulator extends AbstractSimulator {
                 case 5 -> pus5Service.executeTc(commandPacket);
                 case 11 -> pus11Service.executeTc(commandPacket);
                 case 17 -> pus17Service.executeTc(commandPacket);
+                case 19 -> pus19Service.executeTc(commandPacket);
                 case 22 -> pus22Service.executeTc(commandPacket);
                 case 25 -> {
                     switch (commandPacket.getSubtype()) {

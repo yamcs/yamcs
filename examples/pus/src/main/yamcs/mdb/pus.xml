@@ -214,6 +214,20 @@
 					</BinaryDataEncoding>
 				</Encoding>
 			</AbsoluteTimeArgumentType>
+			<!-- A complete TC packet embedded into a command (e.g. the activities of TC[11,4] or the actions of
+			     TC[19,1]). The Yamcs:EmbeddedTc annotation makes the PusCommandPostprocessor fill in its sequence
+			     count and length and (if embeddedTcCrc is set) append its CRC. The size is not fixed (-1 = all the
+			     bytes of the value) such that the CRC can be appended. -->
+			<BinaryArgumentType name="EmbeddedTcType">
+				<AncillaryDataSet>
+					<AncillaryData name="Yamcs:EmbeddedTc"/>
+				</AncillaryDataSet>
+				<BinaryDataEncoding>
+					<SizeInBits>
+						<FixedValue>-1</FixedValue>
+					</SizeInBits>
+				</BinaryDataEncoding>
+			</BinaryArgumentType>
 		</ArgumentTypeSet>
 		<MetaCommandSet>
 			<MetaCommand name="pus-tc" abstract="true" shortDescription="Super-container for all PUS telecommand packets">

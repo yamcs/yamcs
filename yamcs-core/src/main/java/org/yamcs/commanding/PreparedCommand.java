@@ -1,6 +1,7 @@
 package org.yamcs.commanding;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -22,12 +23,14 @@ import org.yamcs.protobuf.Commanding.CommandHistoryEntry;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Commanding.VerifierConfig;
 import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.utils.AggregateUtil;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.ValueHelper;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.PathElement;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
@@ -47,6 +50,8 @@ public class PreparedCommand {
 
     List<CommandHistoryAttribute> attributes = new ArrayList<>();
     private Map<Argument, ArgumentValue> argAssignment; // Ordered from top entry to bottom entry
+    // locations of the argument values inside the unprocessed binary, in encoding order
+    private List<ArgumentLocation> argumentLocations = Collections.emptyList();
     private Set<String> userAssignedArgumentNames;
 
     // Verifier-specific configuration options (that override the MDB verifier settings)
@@ -228,6 +233,9 @@ public class PreparedCommand {
                         .build());
             }
         }
+        for (ArgumentLocation loc : argumentLocations) {
+            assignmentb.addLocation(loc.toProto());
+        }
         td.addColumn(CNAME_ASSIGNMENTS, DataType.protobuf("org.yamcs.cmdhistory.protobuf.Cmdhistory$AssignmentInfo"));
         al.add(assignmentb.build());
 
@@ -301,6 +309,13 @@ public class PreparedCommand {
                 ArgumentValue argv = new ArgumentValue(arg);
                 argv.setEngValue(v);
                 pc.argAssignment.put(arg, argv);
+            }
+            if (assignments.getLocationCount() > 0) {
+                List<ArgumentLocation> locations = new ArrayList<>(assignments.getLocationCount());
+                for (var loc : assignments.getLocationList()) {
+                    locations.add(ArgumentLocation.fromProto(loc));
+                }
+                pc.argumentLocations = locations;
             }
         }
         return pc;
@@ -390,6 +405,63 @@ public class PreparedCommand {
 
     public Map<Argument, ArgumentValue> getArgAssignment() {
         return argAssignment;
+    }
+
+    /**
+     * Returns the locations of the argument values inside the binary, as recorded by the command encoder.
+     * <p>
+     * There is one entry for each top level argument, each member of an aggregate and each element of an array (for
+     * example {@code activities}, {@code activities[0]}, {@code activities[0].tc}), in encoding order. Arguments which
+     * are not part of the command container have no location.
+     * <p>
+     * The positions are relative to the unprocessed binary (as produced by the encoder); a command post-processor
+     * changing the size of the binary has to take this into account.
+     * 
+     * @return the list of locations; empty if not available (for example for raw commands)
+     */
+    public List<ArgumentLocation> getArgumentLocations() {
+        return argumentLocations;
+    }
+
+    /**
+     * 
+     * @return the location of the argument value with the given path (see {@link #getArgumentLocations()}) or null
+     *         if not available. If the argument has been encoded multiple times, the first location is returned.
+     */
+    public ArgumentLocation getArgumentLocation(String path) {
+        for (ArgumentLocation loc : argumentLocations) {
+            if (loc.path().equals(path)) {
+                return loc;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Finds the type of the argument value with the given path (see {@link #getArgumentLocations()}), for example
+     * {@code activities[1].tc}.
+     * 
+     * @return the type or null if the meta command is not known or the path cannot be resolved
+     */
+    public org.yamcs.xtce.DataType getArgumentType(String path) {
+        if (metaCommand == null) {
+            return null;
+        }
+        PathElement[] elements = AggregateUtil.parseReference(path);
+        if (elements.length == 0 || elements[0].getName() == null) {
+            return null;
+        }
+        Argument arg = metaCommand.getEffectiveArgument(elements[0].getName());
+        if (arg == null || arg.getArgumentType() == null) {
+            return null;
+        }
+        // the argument name has been consumed, keep only the index (if any) of the first element
+        elements[0] = new PathElement(null, elements[0].getIndex());
+        return AggregateUtil.getMemberType(arg.getArgumentType(), elements);
+    }
+
+    public void setArgumentLocations(List<ArgumentLocation> argumentLocations) {
+        this.argumentLocations = argumentLocations == null ? Collections.emptyList() : argumentLocations;
     }
 
     public void disableTransmissionConstraints(boolean b) {
