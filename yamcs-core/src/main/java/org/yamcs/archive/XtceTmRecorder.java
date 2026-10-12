@@ -79,6 +79,7 @@ public class XtceTmRecorder extends AbstractYamcsService {
     public Spec getSpec() {
         Spec spec = new Spec();
         spec.addOption("streams", OptionType.LIST).withElementType(OptionType.STRING);
+        spec.addOption("receptionTimeIndex", OptionType.BOOLEAN).withDefault(false);
         return spec;
     }
 
@@ -94,14 +95,19 @@ public class XtceTmRecorder extends AbstractYamcsService {
         try {
             if (ydb.getTable(TABLE_NAME) == null) {
                 String query = "create table " + TABLE_NAME + "(" + RECORDED_TM_TUPLE_DEFINITION.getStringDefinition1()
-                        + ", primary key(gentime, seqNum)) histogram(pname) " + partitionBy
+                        + ", primary key(gentime, seqNum)"
+                        + (config.getBoolean("receptionTimeIndex", false) ? ", index(rectime, pname)" : "")
+                        + ") histogram(pname) " + partitionBy
                         + " table_format=compressed,column_family:" + CF_NAME;
                 ydb.execute(query);
             }
+            TmReceptionTimeIndex.start(ydb, config.getBoolean("receptionTimeIndex", false));
             ydb.execute("create stream " + REC_STREAM_NAME + RECORDED_TM_TUPLE_DEFINITION.getStringDefinition());
             ydb.execute("insert into " + TABLE_NAME + " select * from " + REC_STREAM_NAME);
         } catch (ParseException | StreamSqlException e) {
             throw new InitException(e);
+        } catch (Exception e) {
+            throw new InitException("Cannot initialize reception-time index", e);
         }
         mdb = MdbFactory.getInstance(yamcsInstance);
 
