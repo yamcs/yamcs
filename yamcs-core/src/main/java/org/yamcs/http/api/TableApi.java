@@ -601,6 +601,9 @@ public class TableApi extends AbstractTableApi<Context> {
         if (def.hasHistogram()) {
             infob.addAllHistogramColumn(def.getHistogramColumns());
         }
+        if (def.hasSecondaryIndex()) {
+            infob.addAllSecondaryIndexColumn(def.getSecondaryIndex());
+        }
         if (def.hasPartitioning()) {
             PartitioningInfo.Builder partb = PartitioningInfo.newBuilder();
             PartitioningSpec spec = def.getPartitioningSpec();
