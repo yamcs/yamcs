@@ -12,6 +12,7 @@ import org.yamcs.yarch.StreamSubscriber;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
+import org.yamcs.yarch.streamsql.CreateStreamStatement;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 
 public class StreamFactory {
@@ -51,41 +52,39 @@ public class StreamFactory {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
 
         String streamName = "http_stream" + streamCounter.incrementAndGet();
-        String sql = new StringBuilder("create stream ")
-                .append(streamName)
-                .append(" ")
-                .append(table.getTupleDefinition().getStringDefinition())
-                .toString();
-
-        log.debug("Executing: {}", sql);
+        Stream stream = null;
         try {
-            ydb.executeDiscardingResult(sql);
+            // Dynamic column names need not be valid StreamSQL identifiers.
+            ydb.execute(new CreateStreamStatement(streamName, table.getTupleDefinition())).close();
+            stream = ydb.getStream(streamName);
             ydb.executeDiscardingResult(String.format("insert into %s select * from %s", table.getName(), streamName));
         } catch (StreamSqlException | ParseException e) {
+            if (stream != null) {
+                stream.close();
+            }
             throw new InternalServerErrorException(e);
         }
 
-        return ydb.getStream(streamName);
+        return stream;
     }
 
     public static Stream loadStream(String instance, TableDefinition table) {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
 
         String streamName = "http_stream" + streamCounter.incrementAndGet();
-        String sql = new StringBuilder("create stream ")
-                .append(streamName)
-                .append(" ")
-                .append(table.getTupleDefinition().getStringDefinition())
-                .toString();
-
-        log.debug("Executing: {}", sql);
+        Stream stream = null;
         try {
-            ydb.executeDiscardingResult(sql);
+            // Dynamic column names need not be valid StreamSQL identifiers.
+            ydb.execute(new CreateStreamStatement(streamName, table.getTupleDefinition())).close();
+            stream = ydb.getStream(streamName);
             ydb.executeDiscardingResult(String.format("load into %s select * from %s", table.getName(), streamName));
         } catch (StreamSqlException | ParseException e) {
+            if (stream != null) {
+                stream.close();
+            }
             throw new InternalServerErrorException(e);
         }
 
-        return ydb.getStream(streamName);
+        return stream;
     }
 }
