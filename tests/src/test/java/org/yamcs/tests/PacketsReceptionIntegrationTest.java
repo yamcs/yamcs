@@ -20,6 +20,9 @@ import org.yamcs.protobuf.PacketArchiveInfo;
 import org.yamcs.protobuf.PacketTimeBasis;
 import org.yamcs.protobuf.PacketsApiClient;
 import org.yamcs.protobuf.RebuildReceptionTimeIndexRequest;
+import org.yamcs.protobuf.Table.GetTableRequest;
+import org.yamcs.protobuf.Table.TableInfo;
+import org.yamcs.protobuf.TableApiClient;
 import org.yamcs.protobuf.TmPacketData;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.TableWriter.InsertMode;
@@ -43,6 +46,14 @@ public class PacketsReceptionIntegrationTest extends AbstractIntegrationTest {
     private ListPacketsResponse list(ListPacketsRequest request) throws Exception {
         var future = new CompletableFuture<ListPacketsResponse>();
         api().listPackets(null, request, new ResponseObserver<>(future));
+        return future.get(10, TimeUnit.SECONDS);
+    }
+
+    private TableInfo getTmTable() throws Exception {
+        var future = new CompletableFuture<TableInfo>();
+        new TableApiClient(yamcsClient.getMethodHandler()).getTable(null,
+                GetTableRequest.newBuilder().setInstance(yamcsInstance).setName("tm").build(),
+                new ResponseObserver<>(future));
         return future.get(10, TimeUnit.SECONDS);
     }
 
@@ -89,6 +100,9 @@ public class PacketsReceptionIntegrationTest extends AbstractIntegrationTest {
         rebuilding.get(10, TimeUnit.SECONDS);
         TmReceptionTimeIndex.get(YarchDatabase.getInstance(yamcsInstance)).rebuild(false).get(30, TimeUnit.SECONDS);
         assertEquals(PacketArchiveInfo.IndexState.READY, info().getReceptionTimeIndexState());
+        var tmTable = getTmTable();
+        assertEquals(List.of("rectime", "pname"), tmTable.getSecondaryIndexColumnList());
+        assertTrue(tmTable.getScript().contains(", primary key(gentime, seqNum), index(rectime, pname))"));
 
         List<TmPacketData> packets = new ArrayList<>();
         ListPacketsResponse page;
