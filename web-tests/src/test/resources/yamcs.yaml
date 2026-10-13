@@ -1,0 +1,11 @@
+instances:
+  - webtest
+
+services:
+  - class: org.yamcs.http.HttpServer
+    args:
+      port: 9290
+
+dataDir: ${java.io.tmpdir}/yamcs-webtest-data
+
+secretKey: testtest
