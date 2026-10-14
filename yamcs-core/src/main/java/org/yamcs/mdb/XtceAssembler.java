@@ -934,20 +934,27 @@ public class XtceAssembler {
     private void writeDimensionList(XMLStreamWriter doc, List<IntegerValue> size) throws XMLStreamException {
         doc.writeStartElement("DimensionList");
         for (IntegerValue iv : size) {
-            /*
-             * doc.writeStartElement("Dimension");
-             * writeIntegerValue(doc, "StartingIndex", new FixedIntegerValue(0));
-             * writeIntegerValue(doc, "EndingIndex", iv-1);
-             * doc.writeEndElement();
-             */
-
-            // the code above is commented out because we do not have a way to compute the EndIndex as size-1 for
-            // DynamicValues.
-            // The Size element is not part of XSD but it is supported by Yamcs
-            writeIntegerValue(doc, "Size", iv);
+            doc.writeStartElement("Dimension");
+            writeIntegerValue(doc, "StartingIndex", new FixedIntegerValue(0));
+            writeIntegerValue(doc, "EndingIndex", toEndingIndex(iv));
+            doc.writeEndElement();
         }
 
         doc.writeEndElement();
+    }
+
+    private static IntegerValue toEndingIndex(IntegerValue size) {
+        if (size instanceof FixedIntegerValue) {
+            return new FixedIntegerValue(((FixedIntegerValue) size).getValue() - 1);
+        } else if (size instanceof DynamicIntegerValue) {
+            DynamicIntegerValue div = (DynamicIntegerValue) size;
+            DynamicIntegerValue endingIndex = new DynamicIntegerValue(div.getDynamicInstanceRef());
+            endingIndex.setSlope(div.getSlope());
+            endingIndex.setIntercept(div.getIntercept() - 1);
+            return endingIndex;
+        } else {
+            throw new IllegalArgumentException("Unknown type " + size.getClass());
+        }
     }
 
     private void writeIntegerValue(XMLStreamWriter doc, String elementName, IntegerValue iv)
@@ -962,6 +969,16 @@ public class XtceAssembler {
             doc.writeStartElement("DynamicValue");
             DynamicIntegerValue div = (DynamicIntegerValue) iv;
             writeParameterInstanceRef(doc, ELEM_PARAMETER_INSTANCE_REF, div.getParameterInstanceRef());
+            if (div.getSlope() != 1 || div.getIntercept() != 0) {
+                doc.writeStartElement("LinearAdjustment");
+                if (div.getIntercept() != 0) {
+                    doc.writeAttribute("intercept", Long.toString(div.getIntercept()));
+                }
+                if (div.getSlope() != 1) {
+                    doc.writeAttribute("slope", Long.toString(div.getSlope()));
+                }
+                doc.writeEndElement();
+            }
             doc.writeEndElement();
         }
 
