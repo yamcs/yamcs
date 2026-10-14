@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringReader;
 import java.lang.reflect.Field;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
@@ -17,6 +18,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
+
+import javax.xml.XMLConstants;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.SchemaFactory;
 
 import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
@@ -50,6 +55,23 @@ public class XtceAssemblerTest {
     @Test
     public void test2() throws Exception {
         verify("src/test/resources/xtce/ref-xtce.xml");
+    }
+
+    @Test
+    public void testArrays() throws Exception {
+        verify("src/test/resources/xtce/array-tm.xml");
+    }
+
+    @Test
+    public void testDimensionListIsSchemaValid() throws Exception {
+        Mdb mdb = MdbFactory.createInstance(Arrays.asList(YConfiguration.wrap(
+                Map.of("type", "xtce", "spec", "src/test/resources/xtce/array-tm.xml"))), false, false);
+        String xml = new XtceAssembler().toXtce(mdb, "/ArrayTmTest", x -> true);
+
+        SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
+                .newSchema(new File("../yamcs-xtce/SpaceSystemV1.2.xsd"))
+                .newValidator()
+                .validate(new StreamSource(new StringReader(xml)));
     }
 
     private void verify(String filename) throws Exception {
