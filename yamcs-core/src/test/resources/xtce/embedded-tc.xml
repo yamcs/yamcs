@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="EmbeddedTcTest"
+	shortDescription="Test of binary arguments annotated as embedded TC" xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
+
+	<CommandMetaData>
+		<ArgumentTypeSet>
+			<IntegerArgumentType name="uint8">
+				<IntegerDataEncoding sizeInBits="8" />
+			</IntegerArgumentType>
+			<IntegerArgumentType name="uint16">
+				<IntegerDataEncoding sizeInBits="16" />
+			</IntegerArgumentType>
+			<!-- not annotated, should be left alone by the post-processor -->
+			<BinaryArgumentType name="PlainBinaryType">
+				<BinaryDataEncoding>
+					<SizeInBits>
+						<FixedValue>-1</FixedValue>
+					</SizeInBits>
+				</BinaryDataEncoding>
+			</BinaryArgumentType>
+			<BinaryArgumentType name="EmbeddedTcType">
+				<AncillaryDataSet>
+					<AncillaryData name="Yamcs:EmbeddedTc" />
+				</AncillaryDataSet>
+				<BinaryDataEncoding>
+					<SizeInBits>
+						<FixedValue>-1</FixedValue>
+					</SizeInBits>
+				</BinaryDataEncoding>
+			</BinaryArgumentType>
+			<BinaryArgumentType name="EmbeddedTcFixedSizeType">
+				<AncillaryDataSet>
+					<AncillaryData name="Yamcs:EmbeddedTc" />
+				</AncillaryDataSet>
+				<BinaryDataEncoding>
+					<SizeInBits>
+						<FixedValue>128</FixedValue>
+					</SizeInBits>
+				</BinaryDataEncoding>
+			</BinaryArgumentType>
+			<AggregateArgumentType name="ActivityType">
+				<MemberList>
+					<Member name="group_id" typeRef="uint8" />
+					<Member name="tc" typeRef="EmbeddedTcType" />
+				</MemberList>
+			</AggregateArgumentType>
+			<ArrayArgumentType name="ActivityArrayType" arrayTypeRef="ActivityType">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="n" />
+								<LinearAdjustment intercept="-1" />
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+		</ArgumentTypeSet>
+		<MetaCommandSet>
+			<!-- minimal PUS TC header: 6 bytes primary header + 5 bytes secondary header -->
+			<MetaCommand name="tc" abstract="true">
+				<CommandContainer name="tc">
+					<EntryList>
+						<FixedValueEntry binaryValue="1801C0000000" sizeInBits="48" />
+						<FixedValueEntry binaryValue="2D0B040000" sizeInBits="40" />
+					</EntryList>
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="single">
+				<BaseMetaCommand metaCommandRef="tc" />
+				<ArgumentList>
+					<Argument name="x" argumentTypeRef="uint8" />
+					<Argument name="tc" argumentTypeRef="EmbeddedTcType" />
+					<Argument name="y" argumentTypeRef="uint16" />
+				</ArgumentList>
+				<CommandContainer name="single">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="x" />
+						<ArgumentRefEntry argumentRef="tc" />
+						<ArgumentRefEntry argumentRef="y" />
+					</EntryList>
+					<BaseContainer containerRef="tc" />
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="plain">
+				<BaseMetaCommand metaCommandRef="tc" />
+				<ArgumentList>
+					<Argument name="data" argumentTypeRef="PlainBinaryType" />
+				</ArgumentList>
+				<CommandContainer name="plain">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="data" />
+					</EntryList>
+					<BaseContainer containerRef="tc" />
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="fixed">
+				<BaseMetaCommand metaCommandRef="tc" />
+				<ArgumentList>
+					<Argument name="tc" argumentTypeRef="EmbeddedTcFixedSizeType" />
+				</ArgumentList>
+				<CommandContainer name="fixed">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="tc" />
+					</EntryList>
+					<BaseContainer containerRef="tc" />
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="list">
+				<BaseMetaCommand metaCommandRef="tc" />
+				<ArgumentList>
+					<Argument name="n" argumentTypeRef="uint8" />
+					<Argument name="activities" argumentTypeRef="ActivityArrayType" />
+				</ArgumentList>
+				<CommandContainer name="list">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="n" />
+						<ArgumentRefEntry argumentRef="activities" />
+					</EntryList>
+					<BaseContainer containerRef="tc" />
+				</CommandContainer>
+			</MetaCommand>
+		</MetaCommandSet>
+	</CommandMetaData>
+</SpaceSystem>

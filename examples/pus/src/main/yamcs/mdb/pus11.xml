@@ -155,13 +155,15 @@
 					</Dimension>
 				</DimensionList>
 			</ArrayArgumentType>
-			<!-- TC[11,4] INSERT_ACTIVITIES types — no SizeInBits: BinaryDataEncoding defaults to FIXED_SIZE with sizeInBits=-1, so the encoder writes out exactly the supplied bytes (unbounded, no uniform-size constraint across entries) -->
-			<BinaryArgumentType name="TcPacketType"/>
+			<!-- TC[11,4] INSERT_ACTIVITIES types. tc_packet uses /PUS/EmbeddedTcType (FIXED_SIZE -1, annotated
+			     Yamcs:EmbeddedTc): the encoder writes out exactly the supplied bytes and the command post-processor
+			     fills in the embedded packet's sequence count and length and appends its CRC (embeddedTcCrc), so
+			     each activity gets a unique (source_id, apid, seq count) activity ID (ECSS 6.11.4.2.b). -->
 			<AggregateArgumentType name="ActivityEntryType">
 				<MemberList>
 					<Member name="group_id" typeRef="/dt/uint8" initialValue="0"/>
 					<Member name="release_time" typeRef="/PUS/PusTimeType"/>
-					<Member name="tc_packet" typeRef="TcPacketType"/>
+					<Member name="tc_packet" typeRef="/PUS/EmbeddedTcType"/>
 				</MemberList>
 			</AggregateArgumentType>
 			<ArrayArgumentType arrayTypeRef="ActivityEntryType" name="ActivityArrayType">
@@ -259,6 +261,7 @@
 				</CommandContainer>
 			</MetaCommand>
 			<MetaCommand name="INSERT_ACTIVITIES" shortDescription="TC[11,4] insert activities into the time-based schedule">
+				<LongDescription>Manually built TC[11,4]. The tc_packet of each activity is a complete TC packet given in hex (for example the binary obtained from a dry run of the command). Its sequence count, length and CRC are filled in by the command post-processor (the type is annotated with Yamcs:EmbeddedTc); they can be left zero and the CRC can be omitted.</LongDescription>
 				<BaseMetaCommand metaCommandRef="pus11-tc">
 					<ArgumentAssignmentList>
 						<ArgumentAssignment argumentName="subtype" argumentValue="4"/>

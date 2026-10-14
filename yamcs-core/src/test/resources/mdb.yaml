@@ -138,3 +138,13 @@ RepeatEntryCommandTest:
     - type: xtce
       args:
           file: "src/test/resources/xtce/repeat-entry-cmd.xml"
+
+ArgLocationsTest:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/arg-locations.xml"
+
+EmbeddedTcCommandTest:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/embedded-tc.xml"

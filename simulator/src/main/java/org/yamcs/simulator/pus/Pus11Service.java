@@ -182,8 +182,9 @@ public class Pus11Service extends AbstractPusService {
             subschStatus.putIfAbsent(subschedule, false);
         }
         for (var sc : parsed) {
-            log.info("Scheduling command {} at {} (subschedule {}, group {})",
-                    StringConverter.arrayToHexString(sc.tc.getBytes()), sc.releaseTime, sc.subschedule, sc.group);
+            log.info("Scheduling command {} at {} (subschedule {}, group {}, seq count {}, CRC {})",
+                    StringConverter.arrayToHexString(sc.tc.getBytes()), sc.releaseTime, sc.subschedule, sc.group,
+                    sc.tc.getSequenceCount(), sc.tc.isChecksumValid() ? "valid" : "INVALID");
             commands.add(sc);
         }
         scheduleNext();

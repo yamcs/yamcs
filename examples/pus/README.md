@@ -61,6 +61,10 @@ ST[11] time based scheduled.
  - The simulator's time-based schedule execution function starts disabled (as per the standard): send `/PUS11/ENABLE_SCHEDULER` before scheduling commands, otherwise they are dropped at their release time.
  - Scheduling groups only exist after an explicit TC[11,22] (`/PUS11/CREATE_SCHEDULING_GROUPS`): an insert referencing an unknown group is rejected. A sub-schedule created by an insert starts disabled (TC[11,20] enables it).
  - A dedicated (web) UI application would be highly beneficial. (Anyone interested in sponsoring its development?)
+ - Alternatively the TC[11,4] can be built by hand with `/PUS11/INSERT_ACTIVITIES`. It takes a list of
+   activities, each with a `group_id`, a `release_time` and a `tc_packet`: the complete TC packet to
+   release, in hex. See "Embedded TC packets" below. `pus-frames` has its own `pus11.xml` where the
+   member is named `tc`; try it with `examples/pus-frames/tests/test-pus11-embedded.py`.
 
 ST[12] on-board monitoring
 - Standard Yamcs MDB definitions should suffice. 
@@ -90,9 +94,60 @@ ST[18] on-board control procedures
 - Standard Yamcs MDB definitions can probably be used for basic functionality. Having a dedicated (web) UI could probably help. 
 - No support in the simulator.
 
-ST[19] eventaction
-- Not supported. Probably could be implemented similarily with ST[11]
-- No support in the simulator.
+ST[19] event-action
+- `mdb/pus19.xml` defines the commands, loaded in both `pus` and `pus-frames`. A definition is
+  identified by (`app_process_id`, `event_def_id`); the simulator has a single application process
+  (APID 1).
+    * TC[19,1] `TC_19_1_ADD`: a list of {`app_process_id`, `event_def_id`, `request`}, where
+      `request` is the complete TC packet to execute, in hex, with no length prefix (ECSS 8.19.2.1).
+      See "Embedded TC packets" below.
+    * TC[19,2] delete, TC[19,4]/[19,5] enable/disable (`_SPECIFIC` with a list, `_ALL` with no
+      payload). TC[19,3] (delete all) is not implemented; TC[19,2] covers ECSS 6.19.8.2.
+    * TC[19,6] report status, answered by TM[19,7].
+    * TC[19,8..9] enable and disable the event-action function.
+    * TC[19,10] report definitions (N=0 for all), answered by TM[19,11].
+- The simulator supports these TCs. It runs the request of an enabled definition each time the
+  matching ST[5] event is generated (EVENT_1 every 5 seconds, EVENT_2 in the other seconds),
+  provided the function is enabled. New definitions and the function start disabled.
+- Instruction checks follow ECSS 6.19.8: adding over an enabled definition, exceeding 16
+  definitions, deleting an unknown or enabled definition and enabling/disabling an unknown one are
+  rejected per instruction with a failed start of execution (TM[1,4]); the valid instructions of
+  the same request are still executed. Re-adding a disabled definition replaces its request.
+- Try it with `examples/pus-frames/tests/test-pus19-embedded.py`.
+
+Embedded TC packets (used by ST[11], ST[19], and possibly ST[21] and ST[22])
+- Several requests carry complete TC packets, to be executed later on board: TC[11,4]
+  (time-based schedule), TC[22,4] (position-based schedule), TC[19,1] (event-action) and
+  TC[21,1] (request sequence).
+- Mark such an argument by putting the `Yamcs:EmbeddedTc` annotation on its binary type. It is
+  defined once in `mdb/pus.xml` as `/PUS/EmbeddedTcType`:
+  ```xml
+  <BinaryArgumentType name="EmbeddedTcType">
+      <AncillaryDataSet><AncillaryData name="Yamcs:EmbeddedTc"/></AncillaryDataSet>
+      <BinaryDataEncoding><SizeInBits><FixedValue>-1</FixedValue></SizeInBits></BinaryDataEncoding>
+  </BinaryArgumentType>
+  ```
+- For each argument value with this annotation, the `PusCommandPostprocessor`:
+    * fills in the CCSDS length and sequence count of the embedded packet. It also works when
+      the type is used inside a list, e.g. `activities[1].tc_packet`. The packets are handled in the
+      order they appear in the command, so they get increasing sequence counts.
+    * appends the packet's CRC, if the post-processor option `embeddedTcCrc` is set. The option
+      defaults to true when `errorDetection` is configured; `pus-frames` sets it explicitly.
+- The outer command then gets its own sequence count and CRC as usual.
+- So the embedded packet can be entered as the binary of a dry run of the command: zero
+  sequence count and length, no CRC. Both test scripts do exactly that:
+    * call `processor.issue_command(name, args, dry_run=True).binary`
+    * pass the result, in hex, as the `tc` / `request` argument
+- The assigned sequence counts appear in the command history as
+  `ccsds-seqcount:<argument path>`, e.g. `ccsds-seqcount:activities[0].tc_packet`.
+- The simulator logs each received embedded packet with its sequence count and whether its CRC
+  is valid.
+- Note that an embedded packet keeps the sequence count it got when it was loaded. Its execution
+  reports, possibly repeated in the case of ST[19], carry that sequence count.
+- The SCOS-2000 MIB loader (yamcs-scos2k) puts the same annotation on the (PTC, PFC) = (12, 1)
+  command parameters.
+- See the PUS command post-processor documentation for the limitations, e.g. the encoding has to
+  allow the size to grow when a CRC is appended.
 
 ST[20] on-board parameter management 
 - TBD if standard Yamcs MDB definitions are enough
