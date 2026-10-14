@@ -61,7 +61,6 @@ export class StackFileService implements CanActivate {
     private yamcs: YamcsService,
     private messageService: MessageService,
   ) {
-    this.bucket = configService.getStackBucket();
     this.storageClient = yamcs.createStorageClient();
   }
 
@@ -84,6 +83,7 @@ export class StackFileService implements CanActivate {
     // Clear state
     this.entries = [];
 
+    this.bucket = this.configService.getStackBucket();
     this.objectName = route.params['objectName'];
     const format = utils
       .getExtension(utils.getFilename(this.objectName))

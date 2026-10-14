@@ -15,8 +15,6 @@ export const displayFilePageDirtyGuardFn: CanDeactivateFn<
 
 @Injectable()
 export class DisplayFilePageDirtyGuard {
-  private bucket: string;
-
   // TODO this is just a workaround around the fact that our current version
   // of Angular seems to trigger our deactivate guard twice...
   private dialogOpen$ = new BehaviorSubject<boolean>(false);
@@ -25,10 +23,8 @@ export class DisplayFilePageDirtyGuard {
   constructor(
     private dialog: MatDialog,
     private authService: AuthService,
-    configService: ConfigService,
-  ) {
-    this.bucket = configService.getDisplayBucket();
-  }
+    private configService: ConfigService,
+  ) {}
 
   canDeactivate(component: DisplayFileComponent) {
     // Copy the result of the first triggered dialog
@@ -73,8 +69,9 @@ export class DisplayFilePageDirtyGuard {
 
   private mayManageDisplays() {
     const user = this.authService.getUser()!;
+    const bucket = this.configService.getDisplayBucket();
     return (
-      user.hasObjectPrivilege('ManageBucket', this.bucket) ||
+      user.hasObjectPrivilege('ManageBucket', bucket) ||
       user.hasSystemPrivilege('ManageAnyBucket')
     );
   }
