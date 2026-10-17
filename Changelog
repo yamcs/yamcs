@@ -1,3 +1,22 @@
+Version 5.13.7 released 17-Oct-2026
+- OpenID: verify ID tokens against JWKS, support OpenID Connect Discovery and RP-Initiated Logout
+- Escape group filter in LdapAuthModule; do not log authorization codes and SPNEGO tokens
+- Support 10-bit AOS spacecraft id (CCSDS 732.0-B-5)
+- PUS: support embedded TCs in services 11 and 19
+- Algorithms: support aggregate output parameters in script algorithms
+- XTCE: export compliant DimensionList for arrays
+- CFDP: fix option handling (#1172), sender inactivity timer and NPE; sleepBetweenPdu now also applies to the receiver
+- Fix TM frame size handling (#1167); mark/drop short packets in GenericPacketPreprocessor and CSP links; handle malformed cFS event packets
+- Fix ConcurrentModificationException when container verifiers run in parallel
+- Fix WebSocket call cleanup on disconnect and failed subscribe
+- UI: fix stale issues with stacks/displays (#1173), add extra command history attributes to the column chooser, no longer redirect to login when the session ends
+- Fix vulnerabilities:
+    - GHSA-6c5v-fxc6-8qgq Rate-limit all password authentication paths
+    - GHSA-7f2c-pjpc-j33p Only honor RemoteUserAuthModule header from trusted proxies
+    - GHSA-8m48-7crw-xpxm Verify OpenID back-channel logout tokens
+    - GHSA-24cm-2vgv-fjj6 Validate redirect_uri in the built-in login flow
+    - GHSA-g54c-q3q7-gj3m Filter tmstats subscription by ReadPacket privilege
+
 Version 5.13.6 released 30-Sept-2026
 * Important changes:
     * As of this release Yamcs no longer autocreates an initial 'admin' user. This quirk was removed for security reasons.
