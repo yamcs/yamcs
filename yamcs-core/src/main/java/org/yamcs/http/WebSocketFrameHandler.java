@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.RejectedExecutionException;
 
 import org.yamcs.api.Observer;
 import org.yamcs.logging.Log;
@@ -176,9 +177,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
     private void dumpState(ChannelHandlerContext nettyContext) throws IOException {
         State.Builder stateb = State.newBuilder();
         for (TopicContext ctx : contexts) {
-            if (!ctx.isDone() && !ctx.isCancelled()) {
-                stateb.addCalls(ctx.dumpState());
-            }
+            stateb.addCalls(ctx.dumpState());
         }
         writeMessage(nettyContext, "state", stateb.build());
     }
@@ -195,17 +194,20 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         for (TopicContext ctx : new ArrayList<>(contexts)) {
             if (ctx.getId() == callId) {
                 ctx.close();
-                removeContext(ctx);
+                removeContext0(ctx);
             }
         }
     }
 
+    /**
+     * Forgets about a call that has ended. Always deferred to the event loop, because this may be triggered from other
+     * threads, or while iterating over {@link #contexts}.
+     */
     private void removeContext(TopicContext ctx) {
-        var executor = ctx.nettyContext.executor();
-        if (executor.inEventLoop()) {
-            removeContext0(ctx);
-        } else {
-            executor.execute(() -> removeContext0(ctx));
+        try {
+            ctx.nettyContext.executor().execute(() -> removeContext0(ctx));
+        } catch (RejectedExecutionException e) {
+            // Event loop is shutting down, the channel is gone
         }
     }
 
@@ -234,12 +236,17 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
 
         contexts.add(ctx);
 
-        if (ctx.isClientStreaming()) {
-            Observer<Message> clientObserver = topic.callMethod(ctx, observer);
-            clientObserversByCall.put(ctx.getId(), clientObserver);
-            clientObserver.next(apiRequest);
-        } else {
-            topic.callMethod(ctx, apiRequest, observer);
+        try {
+            if (ctx.isClientStreaming()) {
+                Observer<Message> clientObserver = topic.callMethod(ctx, observer);
+                clientObserversByCall.put(ctx.getId(), clientObserver);
+                clientObserver.next(apiRequest);
+            } else {
+                topic.callMethod(ctx, apiRequest, observer);
+            }
+        } catch (HttpException e) {
+            ctx.close();
+            throw e;
         }
 
         observer.sendReply(Reply.newBuilder().setReplyTo(clientMessage.getId()).build());
