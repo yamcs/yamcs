@@ -99,6 +99,11 @@ public class SecurityStore {
         generatePredefinedUsers(config);
         generatePredefinedPrivileges();
 
+        if (!enabled) {
+            log.warn("Security is disabled. All requests are handled without authentication as user '{}'",
+                    guestUser.getName());
+        }
+
         directory = new Directory();
         sessionManager = new SessionManager();
         blockUnknownUsers = config.getBoolean("blockUnknownUsers");
