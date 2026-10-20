@@ -80,9 +80,6 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
-import org.yamcs.yarch.rocksdb.HistogramRebuilder;
-import org.yamcs.yarch.rocksdb.RdbStorageEngine;
-import org.yamcs.yarch.rocksdb.Tablespace;
 import org.yamcs.yarch.streamsql.ResultListener;
 import org.yamcs.yarch.streamsql.StreamSqlException;
 import org.yamcs.yarch.streamsql.StreamSqlStatement;
@@ -892,10 +889,6 @@ public class TableApi extends AbstractTableApi<Context> {
 
         YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(request.getInstance());
         TableDefinition table = verifyTable(ydb, request.getTable());
-        RdbStorageEngine rse = (RdbStorageEngine) ydb.getStorageEngine(table);
-
-        Tablespace tablespace = rse.getTablespace(ydb.getName());
-        HistogramRebuilder rebuilder = new HistogramRebuilder(tablespace, ydb, table.getName());
         TimeInterval interval = new TimeInterval();
         if (request.hasStart()) {
             interval.setStart(TimeEncoding.fromProtobufTimestamp(request.getStart()));
@@ -905,13 +898,16 @@ public class TableApi extends AbstractTableApi<Context> {
         }
 
         try {
-            rebuilder.rebuild(interval).whenComplete((v, e) -> {
+            ydb.getStorageEngine(table).rebuildHistogram(ydb, table, interval).whenComplete((v, e) -> {
                 if (e != null) {
                     observer.completeExceptionally(e);
                 } else {
                     observer.complete(RebuildHistogramResponse.newBuilder().build());
                 }
             });
+        } catch (UnsupportedOperationException | IllegalArgumentException e) {
+            // the storage engine cannot rebuild histograms or the table has no histogram
+            observer.completeExceptionally(new BadRequestException(e.getMessage()));
         } catch (YarchException e) {
             log.warn("Error when executing rebuild request", e);
             observer.completeExceptionally(e);
