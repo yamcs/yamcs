@@ -6,6 +6,7 @@ import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -197,6 +198,13 @@ public class RdbStorageEngine implements StorageEngine {
                     + tblDef.getFormatVersion() + " instead of " + TableDefinition.CURRENT_FORMAT_VERSION
                     + ", please upgrade (use the \"yamcs archive upgrade\" command).");
         }
+    }
+
+    @Override
+    public CompletableFuture<Void> rebuildHistogram(YarchDatabaseInstance ydb, TableDefinition tblDef,
+            TimeInterval interval) throws YarchException {
+        HistogramRebuilder rebuilder = new HistogramRebuilder(getTablespace(ydb, tblDef), ydb, tblDef.getName());
+        return rebuilder.rebuild(interval);
     }
 
     @Override

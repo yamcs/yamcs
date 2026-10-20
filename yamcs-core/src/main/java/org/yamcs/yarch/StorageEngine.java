@@ -1,6 +1,7 @@
 package org.yamcs.yarch;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.TableWriter.InsertMode;
@@ -75,6 +76,20 @@ public interface StorageEngine {
 
     public HistogramIterator getHistogramIterator(YarchDatabaseInstance ydb, TableDefinition tblDef, String columnName,
             TimeInterval interval) throws YarchException;
+
+    /**
+     * Rebuilds the histograms of the table from the table data, for the partitions overlapping the interval (all the
+     * partitions if the interval is unbounded).
+     * 
+     * @return a future completed when the rebuild is finished
+     * @throws UnsupportedOperationException
+     *             if the storage engine cannot rebuild histograms
+     */
+    default CompletableFuture<Void> rebuildHistogram(YarchDatabaseInstance ydb, TableDefinition tblDef,
+            TimeInterval interval) throws YarchException {
+        throw new UnsupportedOperationException("The storage engine " + getClass().getSimpleName()
+                + " does not support rebuilding histograms");
+    }
 
     public BucketDatabase getBucketDatabase(YarchDatabaseInstance yarchDatabaseInstance) throws YarchException;
 
