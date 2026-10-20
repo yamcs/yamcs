@@ -54,3 +54,6 @@ The column names are:
 
 ``long description``
     Long textual description. In Markdown format.
+
+``ancillary data``
+    Newline separated list of ``key=value`` formatted ancillary data for the command.

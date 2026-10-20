@@ -70,3 +70,6 @@ These are the column names:
     Any numbers of namespace columns can be added using the prefix ``namespace:`` followed by the name of a namespace.
 
     This allows associating alternative names to containers.
+
+``ancillary data``
+    Newline separated list of ``key=value`` formatted ancillary data for the container.
