@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.yamcs.ConfigScope;
@@ -319,7 +320,7 @@ public class BucketManager {
     }
 
     /**
-     * Deletes a bucket, including its content.
+     * Deletes an empty bucket.
      * <p>
      * Local RocksDB buckets are deleted from the database. For buckets owned by a bucket provider, the deletion is
      * delegated to that provider.
@@ -327,20 +328,43 @@ public class BucketManager {
      * @throws UnsupportedOperationException
      *             if the bucket cannot be deleted. For example a file system bucket, or a provider bucket whose
      *             provider does not support deleting buckets.
+     * @throws IllegalStateException
+     *             if the bucket still contains objects
      */
     public void deleteBucket(String bucketName) throws IOException {
         synchronized (buckets) {
             var bucket = buckets.get(bucketName);
             var owner = bucketOwners.get(bucketName);
-            if (bucket instanceof RdbBucket) {
-                bucketDatabase.deleteBucket(bucketName);
+            if (bucket instanceof RdbBucket rdbBucket) {
+                // Same lock as putObject/deleteObject, so no object can be added between check and delete
+                synchronized (rdbBucket) {
+                    if (rdbBucket.getProperties().numObjects() > 0) {
+                        throw new IllegalStateException("Bucket '" + bucketName + "' is not empty");
+                    }
+                    bucketDatabase.deleteBucket(bucketName);
+                }
             } else if (owner != null) {
+                if (!isEmpty(bucket)) {
+                    throw new IllegalStateException("Bucket '" + bucketName + "' is not empty");
+                }
                 owner.deleteBucket(bucket);
                 bucketOwners.remove(bucketName);
             } else {
                 throw new UnsupportedOperationException("Bucket " + bucketName + " cannot be deleted");
             }
             buckets.remove(bucketName);
+        }
+    }
+
+    private static boolean isEmpty(Bucket bucket) throws IOException {
+        try {
+            // Not using the properties, because providers may not track the number of objects
+            return bucket.listObjectsAsync().get().isEmpty();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException(e);
+        } catch (ExecutionException e) {
+            throw new IOException(e.getCause());
         }
     }
 

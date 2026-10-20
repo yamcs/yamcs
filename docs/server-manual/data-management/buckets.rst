@@ -99,7 +99,7 @@ type (string)
 createBuckets (boolean)
   If enabled, new buckets are created through this provider instead of in the Yamcs database (RocksDB). This applies to buckets created through the HTTP API, to buckets listed under ``buckets`` that do not yet exist, and to buckets created automatically by Yamcs components (for example the Yamcs Web display and stack buckets). Bucket creation fails if the provider does not support it. At most one provider can have this option enabled. Default: false
 
-The deletion of a provider bucket (for example through the HTTP API) is delegated to the provider that owns it. Deletion fails if the provider does not support it.
+The deletion of a provider bucket (for example through the HTTP API) is delegated to the provider that owns it. Deletion fails if the provider does not support it, or if the bucket is not empty. This also applies to RocksDB buckets: only empty buckets can be deleted.
 
 The ``remote-yamcs`` provider has these additional options:
 
