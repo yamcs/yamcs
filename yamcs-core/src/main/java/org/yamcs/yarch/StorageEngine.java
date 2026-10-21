@@ -3,10 +3,58 @@ package org.yamcs.yarch;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import org.yamcs.ConfigurationException;
+import org.yamcs.Spec;
+import org.yamcs.YConfiguration;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.TableWriter.InsertMode;
 
+/**
+ * A storage engine stores the tables of the Yamcs instances.
+ * <p>
+ * Besides the built-in RocksDB engine, additional engines can be configured in yamcs.yaml:
+ * 
+ * <pre>
+ * storageEngines:
+ *   - rocksdb2
+ *   - name: myengine
+ *     class: org.example.MyStorageEngine
+ *     args:
+ *       ...
+ * </pre>
+ * 
+ * The class needs a public constructor without arguments; the engine is then configured with
+ * {@link #init(String, YConfiguration)}. Engines can also be registered programmatically with
+ * {@link YarchDatabase#addStorageEngine(String, StorageEngine)} before the instances are loaded.
+ */
 public interface StorageEngine {
+    /**
+     * Returns the specification of the {@code args} of the engine configuration in yamcs.yaml. The default
+     * implementation accepts any arguments.
+     */
+    default Spec getSpec() {
+        Spec spec = new Spec();
+        spec.allowUnknownKeys(true);
+        return spec;
+    }
+
+    /**
+     * Called once, before any instance is loaded, for the engines configured in yamcs.yaml.
+     * 
+     * @param name
+     *            the name of the engine as configured (and used in {@code create table ... engine <name>})
+     * @param args
+     *            the {@code args} of the engine configuration, validated against {@link #getSpec()}
+     */
+    default void init(String name, YConfiguration args) throws ConfigurationException {
+    }
+
+    /**
+     * Called when Yamcs shuts down, after all the instances have been stopped.
+     */
+    default void shutdown() {
+    }
+
     /**
      * Loads the table definitions from the disk for all the tables belonging to the instance.
      * <p>

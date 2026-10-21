@@ -3,9 +3,9 @@ package org.yamcs.yarch;
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,7 +18,10 @@ import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 
 import org.yamcs.ConfigurationException;
+import org.yamcs.Spec;
+import org.yamcs.ValidationException;
 import org.yamcs.YConfiguration;
+import org.yamcs.utils.YObjectLoader;
 import org.yamcs.yarch.rocksdb.RdbStorageEngine;
 
 /**
@@ -34,7 +37,7 @@ public class YarchDatabase {
     private static String home;
     static YConfiguration config;
 
-    private static Map<String, StorageEngine> storageEngines = new HashMap<>();
+    private static Map<String, StorageEngine> storageEngines = new LinkedHashMap<>();
     public static final String RDB_ENGINE_NAME = "rocksdb2";
     private static final String DEFAULT_STORAGE_ENGINE = RDB_ENGINE_NAME;
     private static final String defaultStorageEngineName;
@@ -46,29 +49,34 @@ public class YarchDatabase {
             home = dataDir.toString();
         }
 
-        List<String> se;
         if (config.containsKey("storageEngines")) {
-            se = config.getList("storageEngines");
+            List<Object> engineConfs = config.getList("storageEngines");
+            for (int i = 0; i < engineConfs.size(); i++) {
+                Object o = engineConfs.get(i);
+                if (o instanceof String) {
+                    String name = (String) o;
+                    if (!RDB_ENGINE_NAME.equalsIgnoreCase(name)) {
+                        throw new ConfigurationException("Unknown storage engine '" + name
+                                + "'. Engines other than " + RDB_ENGINE_NAME
+                                + " have to be configured with a name and a class");
+                    }
+                    addStorageEngine(RDB_ENGINE_NAME, RdbStorageEngine.getInstance());
+                } else {
+                    loadStorageEngine(config.getConfigListIdx("storageEngines", i));
+                }
+            }
         } else {
-            se = Arrays.asList(RDB_ENGINE_NAME);
+            addStorageEngine(RDB_ENGINE_NAME, RdbStorageEngine.getInstance());
         }
+
         if (config.containsKey("defaultStorageEngine")) {
             defaultStorageEngineName = config.getString("defaultStorageEngine");
-            if (!RDB_ENGINE_NAME.equalsIgnoreCase(defaultStorageEngineName)) {
-                throw new ConfigurationException("Unknown storage engine: " + defaultStorageEngineName);
+            if (!storageEngines.containsKey(defaultStorageEngineName)) {
+                throw new ConfigurationException("Unknown default storage engine '" + defaultStorageEngineName
+                        + "'. Configured engines: " + storageEngines.keySet());
             }
         } else {
             defaultStorageEngineName = DEFAULT_STORAGE_ENGINE;
-        }
-
-        if (se != null) {
-            for (String s : se) {
-                if (RDB_ENGINE_NAME.equalsIgnoreCase(s)) {
-                    storageEngines.put(RDB_ENGINE_NAME, RdbStorageEngine.getInstance());
-                } else {
-                    throw new ConfigurationException("Unknown storage engine '" + se + "'");
-                }
-            }
         }
 
         MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
@@ -80,6 +88,41 @@ public class YarchDatabase {
         }
     }
     static Map<String, YarchDatabaseInstance> databases = new HashMap<>();
+
+    private static void loadStorageEngine(YConfiguration engineConf) {
+        String name = engineConf.getString("name");
+        String className = engineConf.getString("class");
+        StorageEngine engine = YObjectLoader.loadObject(className);
+        YConfiguration args = engineConf.getConfigOrEmpty("args");
+        Spec spec = engine.getSpec();
+        if (spec != null) {
+            try {
+                args = spec.validate(args);
+            } catch (ValidationException e) {
+                throw new ConfigurationException("Invalid configuration for the storage engine '" + name + "': "
+                        + e.getMessage(), e);
+            }
+        }
+        engine.init(name, args);
+        addStorageEngine(name, engine);
+    }
+
+    /**
+     * Registers a storage engine.
+     * <p>
+     * The engines are normally configured in the {@code storageEngines} section of yamcs.yaml; this method can be
+     * used to register an engine programmatically (e.g. in tests). The registration has to be done before the
+     * instances using the engine are loaded because the tables are loaded at instance creation.
+     * 
+     * @throws IllegalArgumentException
+     *             if an engine with the same name is already registered
+     */
+    public static synchronized void addStorageEngine(String name, StorageEngine engine) {
+        if (storageEngines.containsKey(name)) {
+            throw new IllegalArgumentException("A storage engine named '" + name + "' is already registered");
+        }
+        storageEngines.put(name, engine);
+    }
 
     /**
      * 
@@ -144,6 +187,10 @@ public class YarchDatabase {
         return home;
     }
 
+    /**
+     * Returns the default storage engine, used for the tables created without an explicit engine (unless the
+     * instance configures another one) and providing the bucket and protobuf databases and the sequences.
+     */
     public static StorageEngine getDefaultStorageEngine() {
         return storageEngines.get(defaultStorageEngineName);
     }
@@ -162,5 +209,14 @@ public class YarchDatabase {
 
     public static String getDefaultStorageEngineName() {
         return defaultStorageEngineName;
+    }
+
+    /**
+     * Shuts down all the storage engines. Called when Yamcs is stopped, after all the instances have been closed.
+     */
+    public static synchronized void shutdownStorageEngines() {
+        for (StorageEngine engine : storageEngines.values()) {
+            engine.shutdown();
+        }
     }
 }
