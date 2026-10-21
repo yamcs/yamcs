@@ -6,6 +6,7 @@ import java.util.concurrent.CompletableFuture;
 import org.yamcs.ConfigurationException;
 import org.yamcs.Spec;
 import org.yamcs.YConfiguration;
+import org.yamcs.parameterarchive.ParameterArchiveStorage;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.TableWriter.InsertMode;
 
@@ -137,6 +138,23 @@ public interface StorageEngine {
             TimeInterval interval) throws YarchException {
         throw new UnsupportedOperationException("The storage engine " + getClass().getSimpleName()
                 + " does not support rebuilding histograms");
+    }
+
+    /**
+     * Returns the storage of the parameter archive of the instance.
+     * <p>
+     * Called once by the parameter archive service when it is initialized.
+     * 
+     * @param partitioningSchema
+     *            the time partitioning schema to be used if the parameter archive does not exist yet (null for no
+     *            partitioning)
+     * @throws UnsupportedOperationException
+     *             if the storage engine cannot store the parameter archive
+     */
+    default ParameterArchiveStorage getParameterArchiveStorage(YarchDatabaseInstance ydb,
+            TimePartitionSchema partitioningSchema) throws YarchException {
+        throw new UnsupportedOperationException("The storage engine " + getClass().getSimpleName()
+                + " does not support the parameter archive");
     }
 
     public BucketDatabase getBucketDatabase(YarchDatabaseInstance yarchDatabaseInstance) throws YarchException;

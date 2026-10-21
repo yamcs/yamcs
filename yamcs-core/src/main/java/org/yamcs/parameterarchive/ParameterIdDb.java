@@ -1,12 +1,10 @@
 package org.yamcs.parameterarchive;
 
-import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
 
-import org.rocksdb.RocksDBException;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.IntArray;
@@ -34,7 +32,7 @@ public class ParameterIdDb {
     final static float LOAD_FACTOR = 0.7f;
     final static int INITIAL_SIZE = 512;
 
-    final Tablespace tablespace;
+    final ParameterArchiveStorage storage;
     final String yamcsInstance;
 
     private int size = 0;
@@ -52,9 +50,16 @@ public class ParameterIdDb {
 
     private ParameterGroupIdDb pgidMap;
 
-    ParameterIdDb(String yamcsInstance, Tablespace tablespace, boolean sparseGroups, double minGroupOverlap)
-            throws RocksDBException, IOException {
-        this.tablespace = tablespace;
+    /**
+     * Creates a db storing the parameter ids in the RocksDB tablespace (used in tests)
+     */
+    ParameterIdDb(String yamcsInstance, Tablespace tablespace, boolean sparseGroups, double minGroupOverlap) {
+        this(yamcsInstance, new RdbParameterArchiveStorage(yamcsInstance, tablespace), sparseGroups, minGroupOverlap);
+    }
+
+    ParameterIdDb(String yamcsInstance, ParameterArchiveStorage storage, boolean sparseGroups,
+            double minGroupOverlap) {
+        this.storage = storage;
         this.yamcsInstance = yamcsInstance;
 
         entries = new Entry[INITIAL_SIZE];
@@ -66,7 +71,7 @@ public class ParameterIdDb {
         threshold = (int) (LOAD_FACTOR * INITIAL_SIZE);
 
         readDb();
-        pgidMap = new ParameterGroupIdDb(yamcsInstance, tablespace, sparseGroups, minGroupOverlap);
+        pgidMap = new ParameterGroupIdDb(yamcsInstance, storage, sparseGroups, minGroupOverlap);
     }
 
     /**
@@ -198,13 +203,7 @@ public class ParameterIdDb {
     private int addParameterToRocksdb(String paramFqn, int type) {
         TablespaceRecord.Builder trb = TablespaceRecord.newBuilder().setType(TablespaceRecord.Type.PARCHIVE_DATA)
                 .setParameterFqn(paramFqn).setParameterType(type);
-        TablespaceRecord tr;
-        try {
-            tr = tablespace.createMetadataRecord(yamcsInstance, trb);
-            return tr.getTbsIndex();
-        } catch (RocksDBException e) {
-            throw new ParameterArchiveException("Cannot store key for new parameter id", e);
-        }
+        return storage.createRecord(trb).getTbsIndex();
     }
 
     // compose a numeric type from engType and rawType (we assume that no more than 2^15 types will ever exist)
@@ -214,14 +213,13 @@ public class ParameterIdDb {
         return et << 16 | rt;
     }
 
-    private void readDb() throws RocksDBException, IOException {
-        List<TablespaceRecord> trlist = tablespace.filter(TablespaceRecord.Type.PARCHIVE_DATA, yamcsInstance,
-                (trb) -> true);
+    private void readDb() {
+        List<TablespaceRecord> trlist = storage.listRecords(TablespaceRecord.Type.PARCHIVE_DATA);
         if (trlist.isEmpty()) {
             // new database- create a record for the time parameter
             TablespaceRecord.Builder trb = TablespaceRecord.newBuilder().setType(TablespaceRecord.Type.PARCHIVE_DATA)
                     .setParameterFqn(TIME_PARAMETER_FQN);
-            TablespaceRecord tr = tablespace.createMetadataRecord(yamcsInstance, trb);
+            TablespaceRecord tr = storage.createRecord(trb);
             timeParameterId = tr.getTbsIndex();
         } else {
             for (TablespaceRecord tr : trlist) {
@@ -236,8 +234,7 @@ public class ParameterIdDb {
             }
         }
 
-        trlist = tablespace.filter(TablespaceRecord.Type.PARCHIVE_AGGARR_INFO, yamcsInstance,
-                (trb) -> true);
+        trlist = storage.listRecords(TablespaceRecord.Type.PARCHIVE_AGGARR_INFO);
         for (TablespaceRecord tr : trlist) {
             String paraFqn = tr.getParameterFqn();
             int pid = tr.getTbsIndex();
@@ -453,14 +450,7 @@ public class ParameterIdDb {
                 .setNumericType(numericType);
         aggArray.stream().forEach(x -> trb.addMemberId(x));
 
-        TablespaceRecord tr;
-        try {
-            tr = tablespace.createMetadataRecord(yamcsInstance, trb);
-            return tr.getTbsIndex();
-
-        } catch (RocksDBException e) {
-            throw new ParameterArchiveException("Cannot store information for new aggregate/array parameter id", e);
-        }
+        return storage.createRecord(trb).getTbsIndex();
     }
 
     private void modifyAggArray(int pid, String paramFqn, int numericType, IntArray aggArray) {
@@ -471,14 +461,7 @@ public class ParameterIdDb {
                 .setNumericType(numericType);
         aggArray.stream().forEach(x -> trb.addMemberId(x));
 
-        TablespaceRecord tr;
-        try {
-            tr = tablespace.updateRecord(yamcsInstance, trb);
-            tr.getTbsIndex();
-
-        } catch (RocksDBException e) {
-            throw new ParameterArchiveException("Cannot store information for new aggregate/array parameter id", e);
-        }
+        storage.updateRecord(trb);
     }
 
     /**

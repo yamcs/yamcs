@@ -1,10 +1,8 @@
 package org.yamcs.parameterarchive;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.rocksdb.RocksDBException;
 import org.yamcs.Processor;
 import org.yamcs.utils.TimeEncoding;
 
@@ -45,9 +43,9 @@ class BackFillerTask extends AbstractArchiveFiller {
             parameterArchive.writeToArchive(pgSegment);
             long d = System.nanoTime() - t0;
             log.trace("Wrote segment {} to archive in {} millisec", pgSegment, d / 1000_000);
-        } catch (RocksDBException | IOException e) {
+        } catch (ParameterArchiveException e) {
             log.error("Error writing segment to archive", e);
-            throw new ParameterArchiveException("Error writing segment to archive", e);
+            throw e;
         }
         var segEnd = pgSegment.getSegmentEnd();
         if (segEnd <= parameterArchive.maxCoverageEnd()) {
@@ -104,7 +102,7 @@ class BackFillerTask extends AbstractArchiveFiller {
                 pgs.addRecord(t, pvList);
             }
 
-        } catch (RocksDBException e) {
+        } catch (ParameterArchiveException e) {
             log.error("Error writing to the parameter archive", e);
         }
     }
