@@ -44,6 +44,8 @@ import org.yaml.snakeyaml.Yaml;
  */
 public class YarchDatabaseInstance {
     public static String PART_CONF_KEY = "dataPartitioningByTime";
+    public static final String DEFAULT_ENGINE_CONF_KEY = "defaultStorageEngine";
+    public static final String TABLE_ENGINES_CONF_KEY = "tableStorageEngines";
     private static final Logger log = LoggerFactory.getLogger(YarchDatabaseInstance.class.getName());
 
     Map<String, TableDefinition> tables = new HashMap<>();
@@ -54,6 +56,10 @@ public class YarchDatabaseInstance {
 
     final ManagementService managementService;
     TimePartitionSchema timePartitioningSchema;
+    // storage engine for the tables created without an explicit engine; if null, the global default is used
+    String defaultStorageEngineName;
+    // storage engine for specific tables created without an explicit engine
+    Map<String, String> tableStorageEngines = new HashMap<>();
     // yamcs instance name
     private String instanceName;
 
@@ -77,12 +83,65 @@ public class YarchDatabaseInstance {
                     timePartitioningSchema = TimePartitionSchema.getInstance(schema);
                 }
             }
+            if (yconf.containsKey(DEFAULT_ENGINE_CONF_KEY)) {
+                defaultStorageEngineName = checkStorageEngine(yconf.getString(DEFAULT_ENGINE_CONF_KEY));
+            }
+            if (yconf.containsKey(TABLE_ENGINES_CONF_KEY)) {
+                YConfiguration tconf = yconf.getConfig(TABLE_ENGINES_CONF_KEY);
+                for (String tblName : tconf.getKeys()) {
+                    tableStorageEngines.put(tblName, checkStorageEngine(tconf.getString(tblName)));
+                }
+            }
         } else {
             yconf = YConfiguration.getConfiguration("yamcs");
             tablespaceName = instanceName;
         }
         migrateTableDefinitions();
         loadTables();
+    }
+
+    private static String checkStorageEngine(String engineName) throws YarchException {
+        if (YarchDatabase.getStorageEngine(engineName) == null) {
+            throw new YarchException("Unknown storage engine '" + engineName + "'. Configured engines: "
+                    + YarchDatabase.getStorageEngineNames() + ". Check the storageEngines key in yamcs.yaml");
+        }
+        return engineName;
+    }
+
+    /**
+     * Returns the name of the storage engine used for a new table created without specifying the engine.
+     * <p>
+     * This is the engine configured for the table in the {@code tableStorageEngines} section of the instance
+     * configuration, if any, otherwise the {@code defaultStorageEngine} of the instance, if configured, otherwise the
+     * global default storage engine.
+     */
+    public String getStorageEngineName(String tableName) {
+        String engineName = tableStorageEngines.get(tableName);
+        if (engineName == null) {
+            engineName = defaultStorageEngineName;
+        }
+        if (engineName == null) {
+            engineName = YarchDatabase.getDefaultStorageEngineName();
+        }
+        return engineName;
+    }
+
+    /**
+     * Returns true if the instance configuration directs tables to the given storage engine (as instance default
+     * engine or for specific tables), or if it is the global default storage engine.
+     * <p>
+     * Can be used by the storage engines in {@link StorageEngine#loadTables(YarchDatabaseInstance)} to know if the
+     * instance has to be prepared.
+     */
+    public boolean usesStorageEngine(String engineName) {
+        if (defaultStorageEngineName == null) {
+            if (engineName.equals(YarchDatabase.getDefaultStorageEngineName())) {
+                return true;
+            }
+        } else if (engineName.equals(defaultStorageEngineName)) {
+            return true;
+        }
+        return tableStorageEngines.containsValue(engineName);
     }
 
     public PartitionManager getPartitionManager(TableDefinition tblDef) {
@@ -119,6 +178,18 @@ public class YarchDatabaseInstance {
         for (StorageEngine storageEngine : YarchDatabase.getStorageEngines()) {
             List<TableDefinition> list = storageEngine.loadTables(this);
             for (TableDefinition tblDef : list) {
+                String configuredEngine = tableStorageEngines.get(tblDef.getName());
+                if (configuredEngine != null && !configuredEngine.equals(tblDef.getStorageEngineName())) {
+                    log.warn("Instance {}: the table {} is configured for the storage engine {} but it exists in the "
+                            + "storage engine {}; it will continue to be used from there", instanceName,
+                            tblDef.getName(), configuredEngine, tblDef.getStorageEngineName());
+                }
+                TableDefinition existing = tables.get(tblDef.getName());
+                if (existing != null) {
+                    throw new YarchException("Instance " + instanceName + ": the table " + tblDef.getName()
+                            + " exists in both storage engines " + existing.getStorageEngineName() + " and "
+                            + tblDef.getStorageEngineName());
+                }
                 tblDef.setDb(this);
                 managementService.registerTable(instanceName, tblDef);
                 tables.put(tblDef.getName(), tblDef);
@@ -476,6 +547,15 @@ public class YarchDatabaseInstance {
                                 + "This means storing the data corresponding to the time interval in a different RocksDB database");
 
         spec.addOption("tablespace", OptionType.STRING);
+
+        spec.addOption(DEFAULT_ENGINE_CONF_KEY, OptionType.STRING).withDescription(
+                "Storage engine for the tables of this instance created without an explicit engine. "
+                        + "If not specified, the defaultStorageEngine from yamcs.yaml is used.");
+        Spec tableEnginesSpec = new Spec();
+        tableEnginesSpec.allowUnknownKeys(true);
+        spec.addOption(TABLE_ENGINES_CONF_KEY, OptionType.MAP).withSpec(tableEnginesSpec).withDescription(
+                "Storage engine for specific tables (table name -> engine name), used when the tables are created. "
+                        + "Takes precedence over defaultStorageEngine. Existing tables are not moved.");
     }
 
     /**
