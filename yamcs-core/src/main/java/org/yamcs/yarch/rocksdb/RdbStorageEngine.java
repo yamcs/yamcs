@@ -13,6 +13,8 @@ import org.rocksdb.RocksDBException;
 import org.yamcs.YamcsServer;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.SystemParametersService;
+import org.yamcs.parameterarchive.ParameterArchiveStorage;
+import org.yamcs.parameterarchive.RdbParameterArchiveStorage;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.ExecutionContext;
@@ -25,6 +27,7 @@ import org.yamcs.yarch.TableColumnDefinition;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.TableWalker;
 import org.yamcs.yarch.TableWriter.InsertMode;
+import org.yamcs.yarch.TimePartitionSchema;
 import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
@@ -205,6 +208,12 @@ public class RdbStorageEngine implements StorageEngine {
             TimeInterval interval) throws YarchException {
         HistogramRebuilder rebuilder = new HistogramRebuilder(getTablespace(ydb, tblDef), ydb, tblDef.getName());
         return rebuilder.rebuild(interval);
+    }
+
+    @Override
+    public ParameterArchiveStorage getParameterArchiveStorage(YarchDatabaseInstance ydb,
+            TimePartitionSchema partitioningSchema) throws YarchException {
+        return RdbParameterArchiveStorage.open(ydb.getYamcsInstance(), getTablespace(ydb), partitioningSchema);
     }
 
     @Override

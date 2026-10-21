@@ -1,24 +1,17 @@
 package org.yamcs.parameterarchive;
 
-import static org.yamcs.parameterarchive.ParameterArchive.getIntervalEnd;
-import static org.yamcs.parameterarchive.ParameterArchive.getIntervalStart;
-
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
 
-import org.rocksdb.RocksDBException;
-import org.rocksdb.RocksIterator;
 import org.yamcs.parameter.ParameterRetrievalOptions;
-import org.yamcs.parameterarchive.ParameterArchive.Partition;
+import org.yamcs.parameterarchive.ParameterArchiveStorage.ScanRequest;
+import org.yamcs.parameterarchive.ParameterArchiveStorage.SegmentRecord;
+import org.yamcs.parameterarchive.ParameterArchiveStorage.SegmentScanner;
 import org.yamcs.utils.DatabaseCorruptionException;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.SortedIntArray;
-import org.yamcs.yarch.rocksdb.AscendingRangeIterator;
-import org.yamcs.yarch.rocksdb.DbIterator;
-import org.yamcs.yarch.rocksdb.DescendingRangeIterator;
 
 /**
  * Same as {@link SegmentIterator} but provides segments for multiple parameters from the same group in one step.
@@ -33,20 +26,16 @@ public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValu
 
     ParameterArchive parchive;
 
-    List<Partition> partitions;
-
-    // iterates over partitions
-    Iterator<Partition> topIt;
-
-    // iterates over segments in one partition
-    SubIterator subIt;
+    /**
+     * Scans the time segments of the group (first pair) and the segments of the parameters (next pairs). For each
+     * segment start, the time segment comes before the parameter segments.
+     */
+    SegmentScanner scanner;
 
     final boolean ascending, retrieveEngValues, retrieveRawValues, retrieveParameterStatus;
-
     MultiParameterValueSegment curValue;
     final long start, stop;
 
-    // iterates over the segments in the realtime filler
     Iterator<MultiParameterValueSegment> rtIterator;
     final RealtimeArchiveFiller rtfiller;
 
@@ -62,14 +51,23 @@ public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValu
         this.retrieveRawValues = req.retrieveRawValues();
         this.retrieveParameterStatus = req.retrieveParameterStatus();
 
-        partitions = parchive.getPartitions(getIntervalStart(start), getIntervalEnd(stop), req.ascending());
-        topIt = partitions.iterator();
+        int timePid = parchive.getParameterIdDb().getTimeParameterId();
+        int[] spids = new int[pids.length + 1];
+        int[] pgids = new int[pids.length + 1];
+        spids[0] = timePid;
+        pgids[0] = parameterGroupId;
+        for (int i = 0; i < pids.length; i++) {
+            spids[i + 1] = pids[i].getPid();
+            pgids[i + 1] = parameterGroupId;
+        }
+        scanner = parchive.getStorage().scan(new ScanRequest(timePid, spids, pgids, start, stop, ascending,
+                retrieveEngValues || retrieveRawValues, retrieveRawValues, retrieveParameterStatus));
 
         rtfiller = parchive.getRealtimeFiller();
-
         if (rtfiller != null && !ascending) {
             rtIterator = rtfiller.getSegments(pids, parameterGroupId, ascending).iterator();
         }
+
         next();
     }
 
@@ -100,13 +98,9 @@ public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValu
             }
         }
 
-        subIt = getPartitionIterator();
-        if (subIt != null) {
-            curValue = subIt.value();
-            subIt.next();
+        curValue = nextFromArchive();
+        if (curValue != null) {
             return;
-        } else {
-            curValue = null;
         }
 
         // ascending with a realtime filler: retrieve at the end the values from the realtime that are in range
@@ -115,8 +109,8 @@ public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValu
                 rtIterator = rtfiller.getSegments(pids, parameterGroupId, ascending).iterator();
             }
             long lastSegmentTime = curValue == null ? start : curValue.getSegmentEnd();
-            curValue = null;
 
+            curValue = null;
             while (rtIterator.hasNext()) {
                 curValue = rtIterator.next();
                 if (curValue.getSegmentStart() <= stop && curValue.getSegmentEnd() >= lastSegmentTime) {
@@ -131,189 +125,79 @@ public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValu
         }
     }
 
-    private SubIterator getPartitionIterator() {
-        while (subIt == null || !subIt.isValid()) {
-            if (topIt.hasNext()) {
-                Partition p = topIt.next();
-                close(subIt);
-                subIt = new SubIterator(p);
-            } else {
-                close(subIt);
-                return null;
+    /**
+     * Reads from the scanner the time segment and the segments of the parameters having the same segment start.
+     * <p>
+     * Returns null if there is no more data in the archive
+     */
+    private MultiParameterValueSegment nextFromArchive() {
+        try {
+            while (scanner.isValid()) {
+                SegmentRecord rec = scanner.value();
+                scanner.next();
+                if (rec.pairIndex() != 0) {
+                    // parameter segments without a time segment; the parameters are retrieved only for the existing
+                    // time segments
+                    continue;
+                }
+                long segStart = rec.segmentStart();
+                var timeSegment = (SortedTimeSegment) SegmentEncoderDecoder.decode(rec.timeSegment(), segStart);
+                List<ParameterValueSegment> pvSegments = new ArrayList<>(Collections.nCopies(pids.length, null));
+
+                while (scanner.isValid() && scanner.value().segmentStart() == segStart) {
+                    SegmentRecord prec = scanner.value();
+                    scanner.next();
+                    if (prec.pairIndex() > 0) {
+                        pvSegments.set(prec.pairIndex() - 1, toValueSegment(prec, timeSegment));
+                    }
+                }
+                return new MultiParameterValueSegment(pids, timeSegment, pvSegments);
             }
+            return null;
+        } catch (DecodingException e) {
+            throw new DatabaseCorruptionException(e);
         }
-        return subIt;
+    }
+
+    private ParameterValueSegment toValueSegment(SegmentRecord rec, SortedTimeSegment timeSegment)
+            throws DecodingException {
+        long segStart = rec.segmentStart();
+        ValueSegment engValueSegment = null;
+        ValueSegment rawValueSegment = null;
+        ParameterStatusSegment parameterStatusSegment = null;
+        SortedIntArray gaps = null;
+
+        if (rec.engValueSegment() != null) {
+            engValueSegment = (ValueSegment) SegmentEncoderDecoder.decode(rec.engValueSegment(), segStart);
+        }
+        if (rec.rawValueSegment() != null) {
+            rawValueSegment = (ValueSegment) SegmentEncoderDecoder.decode(rec.rawValueSegment(), segStart);
+        }
+        if (rec.parameterStatusSegment() != null) {
+            parameterStatusSegment = (ParameterStatusSegment) SegmentEncoderDecoder
+                    .decode(rec.parameterStatusSegment(), segStart);
+        }
+        if (rec.gaps() != null) {
+            gaps = SegmentEncoderDecoder.decodeGaps(rec.gaps());
+        }
+        if (retrieveRawValues && rawValueSegment == null) {
+            rawValueSegment = engValueSegment;
+        }
+        if (!retrieveEngValues) {
+            engValueSegment = null;
+        }
+        return new ParameterValueSegment(rec.pid(), timeSegment, engValueSegment, rawValueSegment,
+                parameterStatusSegment, gaps);
     }
 
     /**
-     * Close the underlying rocks iterator if not already closed
+     * Close the underlying storage scanner if not already closed
      */
     public void close() {
-        close(subIt);
-    }
-
-    private void close(SubIterator pit) {
-        if (pit != null) {
-            pit.close();
-        }
+        scanner.close();
     }
 
     public int getParameterGroupId() {
         return parameterGroupId;
     }
-
-    class SubIterator {
-        final Partition partition;
-        private SegmentKey currentKey;
-        SegmentEncoderDecoder segmentEncoder = new SegmentEncoderDecoder();
-        SortedTimeSegment currentTimeSegment;
-
-        /**
-         * The dbIterator iterates over the time segments. The other segments (eng value, raw value, status) are
-         * retrieved using another iterator in the {@link #value() function}
-         *
-         */
-        DbIterator dbIterator;
-        boolean valid;
-
-        public SubIterator(Partition partition) {
-            this.partition = partition;
-            RocksIterator iterator;
-            try {
-                iterator = parchive.getIterator(partition);
-            } catch (RocksDBException | IOException e) {
-                throw new ParameterArchiveException("Failed to create iterator", e);
-            }
-
-            int timeParaId = parchive.getParameterIdDb().getTimeParameterId();
-
-            var startk = new SegmentKey(timeParaId, parameterGroupId, ParameterArchive.getIntervalStart(start),
-                    SegmentKey.TYPE_ENG_VALUE);
-            byte[] rangeStart = partition.version == 0 ? startk.encodeV0() : startk.encode();
-            var stopk = new SegmentKey(timeParaId, parameterGroupId, stop, SegmentKey.TYPE_ENG_VALUE);
-            byte[] rangeStop = partition.version == 0 ? stopk.encodeV0() : stopk.encode();
-            if (ascending) {
-                dbIterator = new AscendingRangeIterator(iterator, rangeStart, rangeStop);
-            } else {
-                dbIterator = new DescendingRangeIterator(iterator, rangeStart, rangeStop);
-            }
-            next();
-        }
-
-        public void next() {
-            if (!dbIterator.isValid()) {
-                valid = false;
-                return;
-            }
-            valid = true;
-            currentKey = this.partition.version == 0 ? SegmentKey.decodeV0(dbIterator.key())
-                    : SegmentKey.decode(dbIterator.key());
-            try {
-                currentTimeSegment = (SortedTimeSegment) SegmentEncoderDecoder.decode(dbIterator.value(),
-                        currentKey.segmentStart);
-            } catch (DecodingException e) {
-                throw new DatabaseCorruptionException("Cannot decode time segment", e);
-            }
-
-            if (ascending) {
-                dbIterator.next();
-            } else {
-                dbIterator.prev();
-            }
-        }
-
-        SegmentKey key() {
-            return currentKey;
-        }
-
-        MultiParameterValueSegment value() {
-            if (!valid) {
-                throw new NoSuchElementException();
-            }
-
-            List<ParameterValueSegment> pvSegments = new ArrayList<>(pids.length);
-
-            long segStart = currentKey.segmentStart;
-            try (RocksIterator it = parchive.getIterator(partition)) {
-                for (int i = 0; i < pids.length; i++) {
-                    int pid = pids[i].getPid();
-                    SegmentKey key = new SegmentKey(pid, parameterGroupId, segStart, (byte) 0);
-                    it.seek(partition.version == 0 ? key.encodeV0() : key.encode());
-                    if (!it.isValid()) {
-                        throw new DatabaseCorruptionException(
-                                "Cannot find any record for parameter id " + pid + " at start " + segStart);
-                    }
-                    ValueSegment engValueSegment = null;
-                    ValueSegment rawValueSegment = null;
-                    ParameterStatusSegment parameterStatusSegment = null;
-                    SortedIntArray gaps = null;
-                    boolean found = false;
-                    while (it.isValid()) {
-                        key = partition.version == 0 ? SegmentKey.decodeV0(it.key()) : SegmentKey.decode(it.key());
-                        if (key.parameterId != pid || key.parameterGroupId != parameterGroupId) {
-                            break;
-                        }
-                        byte type = key.type;
-                        if (key.segmentStart != segStart) {
-                            break;
-                        }
-                        found = true;
-                        switch (type) {
-                        case SegmentKey.TYPE_ENG_VALUE:
-                            if (retrieveEngValues || retrieveRawValues) {
-                                engValueSegment = (ValueSegment) SegmentEncoderDecoder.decode(it.value(), segStart);
-                            }
-                            break;
-                        case SegmentKey.TYPE_RAW_VALUE:
-                            if (retrieveRawValues) {
-                                rawValueSegment = (ValueSegment) SegmentEncoderDecoder.decode(it.value(), segStart);
-                            }
-                            break;
-                        case SegmentKey.TYPE_PARAMETER_STATUS:
-                            if (retrieveParameterStatus) {
-                                parameterStatusSegment = (ParameterStatusSegment) SegmentEncoderDecoder.decode(
-                                        it.value(),
-                                        segStart);
-                            }
-                            break;
-                        case SegmentKey.TYPE_GAPS:
-                            gaps = SegmentEncoderDecoder.decodeGaps(it.value());
-                            break;
-                        }
-                        it.next();
-                    }
-                    if (retrieveRawValues && rawValueSegment == null) {
-                        rawValueSegment = engValueSegment;
-                    }
-                    if (!retrieveEngValues) {
-                        engValueSegment = null;
-                    }
-                    if (found) {
-                        pvSegments.add(
-                                new ParameterValueSegment(pid, currentTimeSegment, engValueSegment, rawValueSegment,
-                                        parameterStatusSegment, gaps));
-                    } else {
-                        pvSegments.add(null);
-                    }
-                }
-                MultiParameterValueSegment pvs = new MultiParameterValueSegment(pids, currentTimeSegment, pvSegments);
-                return pvs;
-            } catch (DecodingException e) {
-                throw new DatabaseCorruptionException(e);
-            } catch (RocksDBException | IOException e) {
-                throw new ParameterArchiveException("Failded extracting data from the parameter archive", e);
-            }
-        }
-
-        boolean isValid() {
-            return valid;
-        }
-
-        void close() {
-            if (dbIterator != null) {
-                dbIterator.close();
-            }
-        }
-    }
-
 }
