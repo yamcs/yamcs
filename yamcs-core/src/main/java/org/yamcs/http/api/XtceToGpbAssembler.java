@@ -191,7 +191,8 @@ public class XtceToGpbAssembler {
                     cb.putAncillaryData(data.getName(), toAncillaryDataInfo(data));
                 }
             }
-            cb.setArchivePartition(c.useAsArchivePartition());
+            cb.setUseAsPacketName(c.useAsPacketName());
+            cb.setArchivePartition(c.useAsPacketName());
             if (c.getRateInStream() != null) {
                 cb.setMaxInterval(c.getRateInStream().getMaxInterval());
             }

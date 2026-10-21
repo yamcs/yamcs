@@ -49,9 +49,9 @@ public class XtceTmReplayHandler implements ReplayHandler {
                 throw new YamcsException("Cannot find any sequence container for " + pnoi);
             }
 
-            // go up in the XTCE hierarchy to find a container with the useAsArchivePartition flag set
+            // go up in the XTCE hierarchy to find a container with the useAsPacketName flag set
             while (sc != null) {
-                if (sc.useAsArchivePartition() || sc.getBaseContainer() == null) {
+                if (sc.useAsPacketName() || sc.getBaseContainer() == null) {
                     partitions.add(sc.getQualifiedName());
                     break;
                 }

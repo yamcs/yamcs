@@ -23,9 +23,19 @@ public class AncillaryData implements Serializable {
     public static final String KEY_ALGO_MANDATORY_INPUT = "Yamcs:AlgorithmMandatoryInput";
 
     /**
-     * Used to configure the SequenceContainers to be used to partition the archive data.
-     * The containers will also be used for histogram building (this is the "pname" column in the tm table).
+     * Used to mark the SequenceContainers whose qualified name is used as packet name. The packet name is stored in the
+     * "pname" column of the tm table and is used for the archive histograms, packet statistics and ReadPacket
+     * privileges. See {@link SequenceContainer#useAsPacketName(boolean)}.
      */
+    public static final String PROP_USE_AS_PACKET_NAME = "UseAsPacketName";
+
+    /**
+     * Old name of {@link #PROP_USE_AS_PACKET_NAME}, still recognized when reading. For compatibility with older Yamcs
+     * versions, this is the value written by {@link SequenceContainer#useAsPacketName(boolean)}.
+     * 
+     * @deprecated use {@link #PROP_USE_AS_PACKET_NAME}
+     */
+    @Deprecated
     public static final String PROP_USE_AS_ARCHIVING_PARTITION = "UseAsArchivingPartition";
 
     /**

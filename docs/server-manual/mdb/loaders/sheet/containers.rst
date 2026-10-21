@@ -35,7 +35,7 @@ These are the column names:
     Optional flags.
 
     ``a``
-        Use this container as archive partition. In the Archive Browser this will appear as a line, and it will be more efficient to filter the retrieval on this container.
+        Use the name of this container as packet name. Packets matching this container (and no more specific container having this flag) are archived under this name. In the Archive Browser this will appear as a line.
 
 ``entry``
     A reference to a parameter, or a container without parent.
