@@ -43,7 +43,7 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
  * <p>
  * The main job of this class is to populate the "pname" column of the tm table. The other columns are copied verbatim
  * from the TM input streams. It does that by creating a {@link XtceTmExtractor} and subscribing to all sequence
- * containers having the flag {@link SequenceContainer#useAsArchivePartition()} set. The pname is the qualified name of
+ * containers having the flag {@link SequenceContainer#useAsPacketName()} set. The pname is the qualified name of
  * the most specific (lowest in the XTCE hierarchy) container matching the telemetry packet.
  * 
  * <p>
@@ -246,13 +246,13 @@ public class XtceTmRecorder extends AbstractYamcsService {
             }
         }
 
-        // subscribe all containers that have useAsArchivePartition set
+        // subscribe all containers that have useAsPacketName set
         private void subscribeContainers(SequenceContainer sc) {
             if (sc == null) {
                 return;
             }
 
-            if (sc.useAsArchivePartition()) {
+            if (sc.useAsPacketName()) {
                 tmExtractor.startProviding(sc);
             }
 
@@ -320,7 +320,7 @@ public class XtceTmRecorder extends AbstractYamcsService {
             ContainerProcessingResult cpr = tmExtractor.processPacket(packet, gentime, timeService.getMissionTime(),
                     seqCount, rootSequenceContainer);
 
-            String pname = deriveArchivePartition(cpr);
+            String pname = derivePacketName(cpr);
 
             try {
                 List<?> c = t.getColumns();
@@ -347,30 +347,41 @@ public class XtceTmRecorder extends AbstractYamcsService {
         }
     }
 
-    static public String deriveArchivePartition(ContainerProcessingResult cpr) {
+    /**
+     * Derives the packet name (the value of the pname column) from the result of processing a packet.
+     * <p>
+     * The first container is the root container. We take the name of the most specific one derived directly from the
+     * root, having the {@link SequenceContainer#useAsPacketName()} flag set. If none has the flag set, the name of the
+     * root container is used.
+     */
+    static public String derivePacketName(ContainerProcessingResult cpr) {
         List<ContainerExtractionResult> cerList = cpr.getContainerResult();
         ContainerExtractionResult root = cerList.get(0);
 
         String pname = null;
-        // Derives the archive partition; the first container is the root container.
-        // We take the name of the most specific one derived directly from the root,
-        // with the archive partition flag set
         for (int i = cerList.size() - 1; i >= 0; i--) {
             ContainerExtractionResult cer = cerList.get(i);
             if (cer.isDerivedFromRoot()) {
                 SequenceContainer sc = cer.getContainer();
-                if (sc.useAsArchivePartition()) {
+                if (sc.useAsPacketName()) {
                     pname = sc.getQualifiedName();
                     break;
                 }
             }
         }
-        // if none has the archive partition flag set, we take the name of the root
         if (pname == null) {
             pname = root.getContainer().getQualifiedName();
         }
 
         return pname;
+    }
+
+    /**
+     * @deprecated use {@link #derivePacketName(ContainerProcessingResult)}
+     */
+    @Deprecated
+    static public String deriveArchivePartition(ContainerProcessingResult cpr) {
+        return derivePacketName(cpr);
     }
 
 }

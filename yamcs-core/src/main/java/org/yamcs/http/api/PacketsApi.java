@@ -410,7 +410,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
 
                     var bytes = packet.getPacket().toByteArray();
                     var result = extractor.processPacket(bytes, gentime, gentime, seqNum);
-                    var packetName = XtceTmRecorder.deriveArchivePartition(result);
+                    var packetName = XtceTmRecorder.derivePacketName(result);
                     responseb.setPacketName(packetName);
 
                     for (var pval : result.getParameterResult()) {

@@ -191,9 +191,9 @@ public class BogusSat2Test {
     }
 
     @Test
-    public void testArchivePartition() {
+    public void testPacketName() {
         SequenceContainer seq = mdb.getSequenceContainer("/BogusSAT/SC001/Payload1/IncludedContainer1");
-        assertFalse(seq.useAsArchivePartition());
+        assertFalse(seq.useAsPacketName());
     }
 
     private ContainerProcessingResult processPacket(byte[] buf) {

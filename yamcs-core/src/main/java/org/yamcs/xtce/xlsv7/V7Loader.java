@@ -1295,7 +1295,7 @@ public class V7Loader extends V7LoaderBase {
             if (hasColumn(cells, CN_CONT_FLAGS)) {
                 String flags = getContent(cells, CN_CONT_FLAGS);
                 if (flags.contains("a")) {
-                    container.useAsArchivePartition(true);
+                    container.useAsPacketName(true);
                 }
             }
 
