@@ -35,3 +35,12 @@ Configuration Options
 
 streams (list of strings)
     The streams to record. When unspecified, all ``tm`` streams defined in ``streamConfig`` are recorded.
+
+partitionByPname (boolean)
+    If ``true``, the ``tm`` table is partitioned by ``pname``: the packets of each container are stored separately, and the primary key is ``(gentime, seqNum)`` within each partition. If ``false``, all packets are stored together and ``pname`` is added to the primary key, ``(gentime, seqNum, pname)``. In both cases two packets are considered duplicates (and the second one is not stored) only if they have the same generation time, sequence number and pname.
+
+    Partitioning by pname makes retrievals of a few packet types faster because only their partitions are read. Without it, retrieving all the packets (as done for example by the parameter archive backfilling) is faster, because the data does not have to be merged from many partitions, and the archive does not get fragmented into many small partitions when there are many packet types.
+
+    This option is only used when the ``tm`` table is created. Changing it has no effect on an existing archive.
+
+    Default: ``false``. Versions prior to 5.13.8 always partitioned by pname.

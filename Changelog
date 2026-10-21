@@ -1,3 +1,9 @@
+Version 5.13.8 unreleased
+* Important changes:
+    * The `tm` table created by the XtceTmRecorder is no longer partitioned by `pname` (packet name). Instead, `pname` is added to the primary key, which becomes `(gentime, seqNum, pname)`, so packets are deduplicated exactly as before.
+      As a consequence, retrieving all the packets in a time interval (for example during the parameter archive backfilling) is faster because the data no longer has to be merged from one partition per packet name. Replays or packet retrievals filtering on one or a few packet names are slower, because all the packets in the time interval are read and then filtered.
+      This only applies to newly created archives; existing `tm` tables keep their current definition. The old behaviour can be selected for new archives with the `partitionByPname: true` option of the XtceTmRecorder.
+
 Version 5.13.7 released 17-Oct-2026
 - OpenID: verify ID tokens against JWKS, support OpenID Connect Discovery and RP-Initiated Logout
 - Escape group filter in LdapAuthModule; do not log authorization codes and SPNEGO tokens
