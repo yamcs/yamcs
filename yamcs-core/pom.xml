@@ -194,4 +194,27 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <!-- builds the test jar so that the storage engines implemented outside Yamcs can reuse the tests (e.g. the
+           parameter archive tests). Not active by default to keep it out of the releases; use with mvn install -Ptest-jar -->
+      <id>test-jar</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>test-jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
