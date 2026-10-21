@@ -113,7 +113,7 @@ public class YarchReplay implements StreamSubscriber {
                 log.debug("TM packet replay is requested but the table {} is not available, skipping",
                         XtceTmRecorder.TABLE_NAME);
             } else {
-                handlers.put(ProtoDataType.TM_PACKET, new XtceTmReplayHandler(mdb));
+                handlers.put(ProtoDataType.TM_PACKET, new XtceTmReplayHandler(instance, mdb));
             }
         }
         if (currentRequest.hasPpRequest()) {

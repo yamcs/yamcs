@@ -1,4 +1,9 @@
 services:
+  # used by TmPartitionGroupsIntegrationTest
+  - class: org.yamcs.archive.XtceTmRecorder
+    args:
+      partitionGroups:
+        g1: [/REFMDB/ccsds-default]
   - class: org.yamcs.archive.ParameterRecorder
   - class: org.yamcs.archive.EventRecorder
   - class: org.yamcs.archive.ReplayServer

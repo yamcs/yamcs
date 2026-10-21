@@ -22,12 +22,15 @@ import org.yamcs.yarch.protobuf.Db.ProtoDataType;
  *
  */
 public class XtceTmReplayHandler implements ReplayHandler {
-    Set<String> partitions;
+    // the packet names (pname column) to be retrieved; null means all
+    Set<String> pnames;
+    final String yamcsInstance;
     final Mdb mdb;
     static Logger log = LoggerFactory.getLogger(XtceTmReplayHandler.class);
     ReplayOptions request;
 
-    public XtceTmReplayHandler(Mdb mdb) {
+    public XtceTmReplayHandler(String yamcsInstance, Mdb mdb) {
+        this.yamcsInstance = yamcsInstance;
         this.mdb = mdb;
     }
 
@@ -35,14 +38,14 @@ public class XtceTmReplayHandler implements ReplayHandler {
     public void setRequest(ReplayOptions newRequest) throws YamcsException {
         this.request = newRequest;
         if (newRequest.getPacketRequest().getNameFilterList().isEmpty()) {
-            partitions = null; // retrieve all
+            pnames = null; // retrieve all
             return;
         }
-        partitions = new HashSet<>();
-        addPartitions(newRequest.getPacketRequest().getNameFilterList());
+        pnames = new HashSet<>();
+        addPacketNames(newRequest.getPacketRequest().getNameFilterList());
     }
 
-    private void addPartitions(List<NamedObjectId> pnois) throws YamcsException {
+    private void addPacketNames(List<NamedObjectId> pnois) throws YamcsException {
         for (NamedObjectId pnoi : pnois) {
             SequenceContainer sc = mdb.getSequenceContainer(pnoi);
             if (sc == null) {
@@ -52,7 +55,7 @@ public class XtceTmReplayHandler implements ReplayHandler {
             // go up in the XTCE hierarchy to find a container with the useAsPacketName flag set
             while (sc != null) {
                 if (sc.useAsPacketName() || sc.getBaseContainer() == null) {
-                    partitions.add(sc.getQualifiedName());
+                    pnames.add(sc.getQualifiedName());
                     break;
                 }
                 sc = sc.getBaseContainer();
@@ -64,11 +67,12 @@ public class XtceTmReplayHandler implements ReplayHandler {
     public SqlBuilder getSelectCmd() {
         SqlBuilder sqlb = ReplayHandler.init(XtceTmRecorder.TABLE_NAME, ProtoDataType.TM_PACKET, request);
 
-        if (partitions != null) {
-            if (partitions.isEmpty()) {
+        if (pnames != null) {
+            if (pnames.isEmpty()) {
                 return null;
             }
-            sqlb.whereColIn("pname", partitions);
+            sqlb.whereColIn("pname", pnames);
+            TmPartitionGroups.addGroupFilter(yamcsInstance, sqlb, pnames);
         }
 
         if (request.getPacketRequest().getTmLinksCount() > 0) {

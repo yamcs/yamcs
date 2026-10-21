@@ -1,14 +1,13 @@
 Version 5.13.8 unreleased
 * Important changes:
     * The `tm` table created by the XtceTmRecorder is no longer partitioned by `pname` (packet name). Instead, `pname` is added to the primary key, which becomes `(gentime, seqNum, pname)`, so packets are deduplicated exactly as before.
-      As a consequence, retrieving all the packets in a time interval (for example during the parameter archive backfilling) is faster because the data no longer has to be merged from one partition per packet name. Replays or packet retrievals filtering on one or a few packet names are slower, because all the packets in the time interval are read and then filtered.
       This only applies to newly created archives; existing `tm` tables keep their current definition. The old behaviour can be selected for new archives with the `partitionByPname: true` option of the XtceTmRecorder.
+      Alternatively, the new `partitionGroups` option of the XtceTmRecorder can be used to partition the `tm` table by groups of packets, for example to store rare event packets separately from the frequent housekeeping packets, such that retrieving the event packets does not require reading the whole archive.
     * The XTCE container flag which determines the packet name (the `pname` column of the `tm` table) has been renamed from "archive partition" to "packet name", since it is not necessarily used for partitioning anymore. The old names are still accepted but deprecated:
         * XTCE ancillary data `UseAsArchivingPartition` -> `UseAsPacketName` (both are accepted; for compatibility with older Yamcs versions, the XTCE export still writes `UseAsArchivingPartition`)
         * XTCE loader option `autoTmPartitions` -> `autoPacketNames`
         * processor option `subscribeContainerArchivePartitions` -> `subscribePacketNameContainers`
         * `ContainerInfo.archivePartition` -> `ContainerInfo.useAsPacketName` in the HTTP API
-        * Java: `SequenceContainer.useAsArchivePartition()` -> `useAsPacketName()`, `XtceTmRecorder.deriveArchivePartition()` -> `derivePacketName()`
 
 Version 5.13.7 released 17-Oct-2026
 - OpenID: verify ID tokens against JWKS, support OpenID Connect Discovery and RP-Initiated Logout

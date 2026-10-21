@@ -128,3 +128,8 @@ EmbeddedTcCommandTest:
     - type: xtce
       args:
           file: "src/test/resources/xtce/embedded-tc.xml"
+
+tm-partition-groups:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/tm-partition-groups.xml"

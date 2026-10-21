@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.yamcs.AbstractYamcsService;
@@ -32,6 +33,8 @@ import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
+import org.yamcs.yarch.TableDefinition;
+import org.yamcs.yarch.TimePartitionSchema;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
@@ -70,6 +73,7 @@ public class XtceTmRecorder extends AbstractYamcsService {
             new Object[] { null, null, null, null, null, null, null, null, null });
 
     Mdb mdb;
+    TmPartitionGroups partitionGroups;
 
     private final List<StreamRecorder> recorders = new ArrayList<>();
 
@@ -80,6 +84,10 @@ public class XtceTmRecorder extends AbstractYamcsService {
         Spec spec = new Spec();
         spec.addOption("streams", OptionType.LIST).withElementType(OptionType.STRING);
         spec.addOption("partitionByPname", OptionType.BOOLEAN).withDefault(false);
+        Spec groupsSpec = new Spec();
+        groupsSpec.allowUnknownKeys(true);
+        spec.addOption("partitionGroups", OptionType.MAP).withSpec(groupsSpec);
+        spec.mutuallyExclusive("partitionByPname", "partitionGroups");
         return spec;
     }
 
@@ -90,34 +98,38 @@ public class XtceTmRecorder extends AbstractYamcsService {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         var timePart = ydb.getTimePartitioningSchema(config);
 
+        mdb = MdbFactory.getInstance(yamcsInstance);
+
         // these settings are only used when creating the table; an existing table keeps its definition
         boolean partitionByPname = config.getBoolean("partitionByPname");
-        String primaryKey;
-        String partitionBy;
-        if (partitionByPname) {
-            // the pname is implicitly part of the key by being a partition
-            primaryKey = "primary key(gentime, seqNum)";
-            partitionBy = timePart == null ? "partition by value(pname)"
-                    : "partition by time_and_value(gentime('" + timePart.getName() + "'), pname)";
-        } else {
-            // add the pname to the key to keep the same uniqueness as with the pname partitioning
-            primaryKey = "primary key(gentime, seqNum, pname)";
-            partitionBy = timePart == null ? ""
-                    : "partition by time(gentime('" + timePart.getName() + "'))";
-        }
+        Map<String, List<String>> groupDefinitions = config.containsKey("partitionGroups")
+                ? TmPartitionGroups.parseConfig(config.getConfig("partitionGroups"))
+                : null;
         try {
-            if (ydb.getTable(TABLE_NAME) == null) {
-                String query = "create table " + TABLE_NAME + "(" + RECORDED_TM_TUPLE_DEFINITION.getStringDefinition1()
-                        + ", " + primaryKey + ") histogram(pname) " + partitionBy
+            TableDefinition tblDef = ydb.getTable(TABLE_NAME);
+            if (tblDef == null) {
+                String query = "create table " + TABLE_NAME + "("
+                        + getRecordedTupleDefinition(groupDefinitions != null).getStringDefinition1()
+                        + ", " + getPrimaryKey(partitionByPname) + ") histogram(pname) "
+                        + getPartitionBy(timePart, partitionByPname, groupDefinitions != null)
                         + " table_format=compressed,column_family:" + CF_NAME;
                 ydb.execute(query);
+                tblDef = ydb.getTable(TABLE_NAME);
             }
-            ydb.execute("create stream " + REC_STREAM_NAME + RECORDED_TM_TUPLE_DEFINITION.getStringDefinition());
+            if (TmPartitionGroups.isPartitionedByGroup(tblDef)) {
+                // if the option has been removed from the configuration, everything goes into the default group
+                partitionGroups = new TmPartitionGroups(yamcsInstance, mdb,
+                        groupDefinitions == null ? Map.of() : groupDefinitions);
+            } else if (groupDefinitions != null) {
+                log.warn("The partitionGroups option is ignored because the existing {} table is not partitioned "
+                        + "by group. The option is only used when creating the table.", TABLE_NAME);
+            }
+            ydb.execute("create stream " + REC_STREAM_NAME
+                    + getRecordedTupleDefinition(partitionGroups != null).getStringDefinition());
             ydb.execute("insert into " + TABLE_NAME + " select * from " + REC_STREAM_NAME);
         } catch (ParseException | StreamSqlException e) {
             throw new InitException(e);
         }
-        mdb = MdbFactory.getInstance(yamcsInstance);
 
         StreamConfig sc = StreamConfig.getInstance(yamcsInstance);
         if (config.containsKey("streams")) {
@@ -137,6 +149,44 @@ public class XtceTmRecorder extends AbstractYamcsService {
         }
 
         timeService = YamcsServer.getTimeService(yamcsInstance);
+    }
+
+    private static TupleDefinition getRecordedTupleDefinition(boolean withGroup) {
+        if (!withGroup) {
+            return RECORDED_TM_TUPLE_DEFINITION;
+        }
+        TupleDefinition tdef = RECORDED_TM_TUPLE_DEFINITION.copy();
+        tdef.addColumn(TmPartitionGroups.PGROUP_COLUMN, DataType.ENUM);
+        return tdef;
+    }
+
+    private static String getPrimaryKey(boolean partitionByPname) {
+        if (partitionByPname) {
+            // the pname is implicitly part of the key by being a partition
+            return "primary key(gentime, seqNum)";
+        } else {
+            // add the pname to the key to keep the same uniqueness as with the pname partitioning
+            return "primary key(gentime, seqNum, pname)";
+        }
+    }
+
+    private static String getPartitionBy(TimePartitionSchema timePart, boolean partitionByPname,
+            boolean partitionByGroup) {
+        String valueColumn = partitionByPname ? PNAME_COLUMN
+                : partitionByGroup ? TmPartitionGroups.PGROUP_COLUMN : null;
+        if (valueColumn == null) {
+            return timePart == null ? "" : "partition by time(gentime('" + timePart.getName() + "'))";
+        } else {
+            return timePart == null ? "partition by value(" + valueColumn + ")"
+                    : "partition by time_and_value(gentime('" + timePart.getName() + "'), " + valueColumn + ")";
+        }
+    }
+
+    /**
+     * Returns the partition groups or null if the tm table is not partitioned by group.
+     */
+    public TmPartitionGroups getPartitionGroups() {
+        return partitionGroups;
     }
 
     private void createRecorder(TmStreamConfigEntry streamConf) {
@@ -338,6 +388,10 @@ public class XtceTmRecorder extends AbstractYamcsService {
                 String rootContainer = tp.removeColumn(TM_ROOT_CONTAINER_COLUMN);
                 if (rootContainer != null) {
                     tp.setColumn(PNAME_COLUMN, rootContainer);
+                }
+                if (partitionGroups != null) {
+                    tp.addColumn(TmPartitionGroups.PGROUP_COLUMN, DataType.ENUM,
+                            partitionGroups.getGroup(tp.getColumn(PNAME_COLUMN)));
                 }
 
                 outputStream.emitTuple(tp);
