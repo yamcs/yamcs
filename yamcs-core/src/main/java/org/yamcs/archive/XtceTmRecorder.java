@@ -79,6 +79,7 @@ public class XtceTmRecorder extends AbstractYamcsService {
     public Spec getSpec() {
         Spec spec = new Spec();
         spec.addOption("streams", OptionType.LIST).withElementType(OptionType.STRING);
+        spec.addOption("partitionByPname", OptionType.BOOLEAN).withDefault(false);
         return spec;
     }
 
@@ -89,12 +90,25 @@ public class XtceTmRecorder extends AbstractYamcsService {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         var timePart = ydb.getTimePartitioningSchema(config);
 
-        var partitionBy = timePart == null ? "partition by value(pname)"
-                : "partition by time_and_value(gentime('" + timePart.getName() + "'), pname)";
+        // these settings are only used when creating the table; an existing table keeps its definition
+        boolean partitionByPname = config.getBoolean("partitionByPname");
+        String primaryKey;
+        String partitionBy;
+        if (partitionByPname) {
+            // the pname is implicitly part of the key by being a partition
+            primaryKey = "primary key(gentime, seqNum)";
+            partitionBy = timePart == null ? "partition by value(pname)"
+                    : "partition by time_and_value(gentime('" + timePart.getName() + "'), pname)";
+        } else {
+            // add the pname to the key to keep the same uniqueness as with the pname partitioning
+            primaryKey = "primary key(gentime, seqNum, pname)";
+            partitionBy = timePart == null ? ""
+                    : "partition by time(gentime('" + timePart.getName() + "'))";
+        }
         try {
             if (ydb.getTable(TABLE_NAME) == null) {
                 String query = "create table " + TABLE_NAME + "(" + RECORDED_TM_TUPLE_DEFINITION.getStringDefinition1()
-                        + ", primary key(gentime, seqNum)) histogram(pname) " + partitionBy
+                        + ", " + primaryKey + ") histogram(pname) " + partitionBy
                         + " table_format=compressed,column_family:" + CF_NAME;
                 ydb.execute(query);
             }
