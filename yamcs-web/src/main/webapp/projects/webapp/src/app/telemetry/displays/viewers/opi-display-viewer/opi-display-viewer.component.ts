@@ -75,6 +75,9 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
   private relPrefix = '';
   private absPrefix = '';
 
+  // Resources the sandbox may request through the outer frame
+  private allowedPrefixes: string[] = [];
+
   private currentScale = 1;
 
   // DEFAULT matches Display's own default (respect the display's own
@@ -328,8 +331,22 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
       .catch((err) => this.messageService.showError(err));
   }
 
+  private isAllowedResource(url: string) {
+    let href: string;
+    try {
+      href = new URL(url, window.location.href).href;
+    } catch {
+      return false;
+    }
+    return this.allowedPrefixes.some((prefix) => href.startsWith(prefix));
+  }
+
   private async serveScript(path: string) {
     const url = this.resolveScriptPath(path);
+    if (!this.isAllowedResource(url)) {
+      this.postToSandbox({ type: 'scriptContent', path, content: null });
+      return;
+    }
     try {
       const response = await fetch(url, { credentials: 'same-origin' });
       const content = response.ok ? await response.text() : null;
@@ -340,6 +357,10 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
   }
 
   private async serveImage(url: string) {
+    if (!this.isAllowedResource(url)) {
+      this.postToSandbox({ type: 'imageData', url, dataUrl: null });
+      return;
+    }
     try {
       const response = await fetch(url, { credentials: 'same-origin' });
       if (!response.ok) {
@@ -528,6 +549,9 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
     const idx = objectUrl.lastIndexOf('/') + 1;
     this.relPrefix = objectUrl.substring(0, idx);
     this.absPrefix = this.storageClient.getObjectURL(this.bucket, '');
+    this.allowedPrefixes = [this.absPrefix, this.baseHref + 'media/'].map(
+      (prefix) => new URL(prefix, window.location.href).href,
+    );
 
     const displayArgs: Record<string, string> = {};
     const queryParams = this.route.snapshot.queryParams;
