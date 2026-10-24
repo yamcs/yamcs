@@ -64,6 +64,7 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
 
   private pvNames = new Set<string>();
   private subscriptionDirty = false;
+  private subscribeTimer?: number;
   private syncSubscription: Subscription;
   private historyProviders = new Map<string, OpiDisplayHistoricDataProvider>();
 
@@ -133,6 +134,14 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
           this.pvNames.add(pvName);
         }
         this.subscriptionDirty = true;
+        // A loading display requests its PVs in a burst of messages. Apply
+        // them once the burst is over, rather than on the next sync tick,
+        // so that the display does not sit without values for up to 500 ms.
+        window.clearTimeout(this.subscribeTimer);
+        this.subscribeTimer = window.setTimeout(
+          () => this.updateSubscription(),
+          20,
+        );
         break;
 
       case 'unsubscribe':
@@ -197,6 +206,12 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
 
       case 'displaybackground':
         this.frameInner.nativeElement.style.backgroundColor = msg.color;
+        // Also paint the surrounding container. It outlives this viewer, so
+        // opening another display does not flash the page background while
+        // that display loads.
+        if (this.viewerContainerEl) {
+          this.viewerContainerEl.style.backgroundColor = msg.color;
+        }
         break;
 
       case 'scale':
@@ -651,6 +666,7 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
 
   ngOnDestroy() {
     window.removeEventListener('message', this.messageListener);
+    window.clearTimeout(this.subscribeTimer);
     this.syncSubscription?.unsubscribe();
     this.parameterSubscription?.cancel();
     for (const provider of this.historyProviders.values()) {
