@@ -1,0 +1,2780 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<display typeId="org.csstudio.opibuilder.Display" version="1.0.0">
+  <actions hook="false" hook_all="false" />
+  <auto_scale_widgets>
+    <auto_scale_widgets>false</auto_scale_widgets>
+    <min_width>-1</min_width>
+    <min_height>-1</min_height>
+  </auto_scale_widgets>
+  <auto_zoom_to_fit_all>false</auto_zoom_to_fit_all>
+  <background_color>
+    <color name="YSS Background" red="27" green="31" blue="36" />
+  </background_color>
+  <boy_version>1.8.0</boy_version>
+  <foreground_color>
+    <color name="YSS Text" red="182" green="192" blue="203" />
+  </foreground_color>
+  <grid_space>8</grid_space>
+  <height>800</height>
+  <macros>
+    <include_parent_macros>true</include_parent_macros>
+  </macros>
+  <name>Commanding</name>
+  <rules />
+  <scripts />
+  <show_close_button>true</show_close_button>
+  <show_edit_range>true</show_edit_range>
+  <show_grid>false</show_grid>
+  <show_ruler>true</show_ruler>
+  <snap_to_geometry>true</snap_to_geometry>
+  <widget_type>Display</widget_type>
+  <width>1280</width>
+  <wuid>yss:display</wuid>
+  <x>-1</x>
+  <y>-1</y>
+  <widget typeId="org.csstudio.opibuilder.widgets.linkingContainer" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Header" red="19" green="22" blue="26" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="12" style="0" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text" red="182" green="192" blue="203" />
+    </foreground_color>
+    <group_name />
+    <height>56</height>
+    <macros>
+      <include_parent_macros>true</include_parent_macros>
+    </macros>
+    <name>Header</name>
+    <opi_file>Header.opi</opi_file>
+    <pv_name />
+    <pv_value />
+    <resize_behaviour>2</resize_behaviour>
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <tooltip />
+    <visible>true</visible>
+    <widget_type>Linking Container</widget_type>
+    <width>1280</width>
+    <wuid>yss:471</wuid>
+    <x>0</x>
+    <y>0</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Header" red="19" green="22" blue="26" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="13" style="1" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text Strong" red="236" green="240" blue="244" />
+    </foreground_color>
+    <height>52</height>
+    <horizontal_alignment>1</horizontal_alignment>
+    <name>Active Tab</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>Commanding</text>
+    <tooltip />
+    <transparent>false</transparent>
+    <vertical_alignment>1</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>116</width>
+    <wrap_words>false</wrap_words>
+    <wuid>yss:472</wuid>
+    <x>780</x>
+    <y>0</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Rectangle" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <alpha>255</alpha>
+    <anti_alias>true</anti_alias>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Accent" red="79" green="163" blue="217" />
+    </background_color>
+    <bg_gradient_color>
+      <color name="YSS Accent" red="79" green="163" blue="217" />
+    </bg_gradient_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <fg_gradient_color>
+      <color name="YSS Accent" red="79" green="163" blue="217" />
+    </fg_gradient_color>
+    <fill_level>0.0</fill_level>
+    <font>
+      <fontdata fontName="Liberation Sans" height="12" style="0" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text" red="182" green="192" blue="203" />
+    </foreground_color>
+    <gradient>false</gradient>
+    <height>3</height>
+    <horizontal_fill>true</horizontal_fill>
+    <line_color>
+      <color name="YSS Accent" red="79" green="163" blue="217" />
+    </line_color>
+    <line_style>0</line_style>
+    <line_width>0</line_width>
+    <name>Active Tab Marker</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <tooltip />
+    <transparent>false</transparent>
+    <visible>true</visible>
+    <widget_type>Rectangle</widget_type>
+    <width>76</width>
+    <wuid>yss:473</wuid>
+    <x>800</x>
+    <y>52</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Rectangle" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <alpha>255</alpha>
+    <anti_alias>true</anti_alias>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <bg_gradient_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </bg_gradient_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <fg_gradient_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </fg_gradient_color>
+    <fill_level>0.0</fill_level>
+    <font>
+      <fontdata fontName="Liberation Sans" height="12" style="0" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text" red="182" green="192" blue="203" />
+    </foreground_color>
+    <gradient>false</gradient>
+    <height>352</height>
+    <horizontal_fill>true</horizontal_fill>
+    <line_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </line_color>
+    <line_style>0</line_style>
+    <line_width>1</line_width>
+    <name>Panel_18</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <tooltip />
+    <transparent>false</transparent>
+    <visible>true</visible>
+    <widget_type>Rectangle</widget_type>
+    <width>616</width>
+    <wuid>yss:474</wuid>
+    <x>16</x>
+    <y>72</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="11" style="1" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text Muted" red="128" green="140" blue="154" />
+    </foreground_color>
+    <height>16</height>
+    <horizontal_alignment>0</horizontal_alignment>
+    <name>PanelTitle_18</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>TRANSMISSION CONSTRAINTS</text>
+    <tooltip />
+    <transparent>true</transparent>
+    <vertical_alignment>1</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>592</width>
+    <wrap_words>false</wrap_words>
+    <wuid>yss:475</wuid>
+    <x>28</x>
+    <y>80</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Rectangle" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <alpha>255</alpha>
+    <anti_alias>true</anti_alias>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Field" red="21" green="24" blue="28" />
+    </background_color>
+    <bg_gradient_color>
+      <color name="YSS Field" red="21" green="24" blue="28" />
+    </bg_gradient_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <fg_gradient_color>
+      <color name="YSS Field" red="21" green="24" blue="28" />
+    </fg_gradient_color>
+    <fill_level>0.0</fill_level>
+    <font>
+      <fontdata fontName="Liberation Sans" height="12" style="0" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text" red="182" green="192" blue="203" />
+    </foreground_color>
+    <gradient>false</gradient>
+    <height>132</height>
+    <horizontal_fill>true</horizontal_fill>
+    <line_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </line_color>
+    <line_style>0</line_style>
+    <line_width>1</line_width>
+    <name>CriticalRow_1</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <tooltip />
+    <transparent>false</transparent>
+    <visible>true</visible>
+    <widget_type>Rectangle</widget_type>
+    <width>592</width>
+    <wuid>yss:476</wuid>
+    <x>28</x>
+    <y>104</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Mono" height="14" style="1" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text Strong" red="236" green="240" blue="244" />
+    </foreground_color>
+    <height>18</height>
+    <horizontal_alignment>0</horizontal_alignment>
+    <name>Label_202</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>CRITICAL_TC1</text>
+    <tooltip />
+    <transparent>true</transparent>
+    <vertical_alignment>1</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>300</width>
+    <wrap_words>false</wrap_words>
+    <wuid>yss:477</wuid>
+    <x>44</x>
+    <y>114</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="12" style="0" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text Muted" red="128" green="140" blue="154" />
+    </foreground_color>
+    <height>48</height>
+    <horizontal_alignment>0</horizontal_alignment>
+    <name>Label_203</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>Constraint AllowCriticalTC1 = true, timeout 0 s: rejected immediately while the interlock is SAFE.</text>
+    <tooltip />
+    <transparent>true</transparent>
+    <vertical_alignment>0</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>360</width>
+    <wrap_words>true</wrap_words>
+    <wuid>yss:478</wuid>
+    <x>44</x>
+    <y>136</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="12" style="0" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text" red="182" green="192" blue="203" />
+    </foreground_color>
+    <height>22</height>
+    <horizontal_alignment>0</horizontal_alignment>
+    <name>Label_204</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>Interlock</text>
+    <tooltip />
+    <transparent>true</transparent>
+    <vertical_alignment>1</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>120</width>
+    <wrap_words>false</wrap_words>
+    <wuid>yss:479</wuid>
+    <x>44</x>
+    <y>196</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>1</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="11" style="1" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text Muted" red="128" green="140" blue="154" />
+    </foreground_color>
+    <height>26</height>
+    <horizontal_alignment>1</horizontal_alignment>
+    <name>Label_205</name>
+    <pv_name />
+    <pv_value />
+    <rules>
+      <rule name="text" prop_id="text" out_exp="false">
+        <exp bool_exp="pvStr0 == 'true'">
+          <value>ARMED</value>
+        </exp>
+        <exp bool_exp="true">
+          <value>SAFE</value>
+        </exp>
+        <pv trig="true">/YSS/SIMULATOR/AllowCriticalTC1</pv>
+      </rule>
+      <rule name="color" prop_id="foreground_color" out_exp="false">
+        <exp bool_exp="pvStr0 == 'true'">
+          <value>
+            <color name="YSS Caution" red="224" green="168" blue="79" />
+          </value>
+        </exp>
+        <exp bool_exp="true">
+          <value>
+            <color name="YSS Nominal" red="63" green="178" blue="127" />
+          </value>
+        </exp>
+        <pv trig="true">/YSS/SIMULATOR/AllowCriticalTC1</pv>
+      </rule>
+      <rule name="border" prop_id="border_color" out_exp="false">
+        <exp bool_exp="pvStr0 == 'true'">
+          <value>
+            <color name="YSS Caution" red="224" green="168" blue="79" />
+          </value>
+        </exp>
+        <exp bool_exp="true">
+          <value>
+            <color name="YSS Nominal" red="63" green="178" blue="127" />
+          </value>
+        </exp>
+        <pv trig="true">/YSS/SIMULATOR/AllowCriticalTC1</pv>
+      </rule>
+    </rules>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>—</text>
+    <tooltip />
+    <transparent>true</transparent>
+    <vertical_alignment>1</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>100</width>
+    <wrap_words>false</wrap_words>
+    <wuid>yss:480</wuid>
+    <x>124</x>
+    <y>194</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="true" hook_all="false">
+      <action type="WRITE_PV">
+        <pv_name>/YSS/SIMULATOR/AllowCriticalTC1</pv_name>
+        <value>true</value>
+        <timeout>10</timeout>
+        <confirm_message />
+        <description />
+      </action>
+    </actions>
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>1</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="12" style="1" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Caution" red="224" green="168" blue="79" />
+    </foreground_color>
+    <height>26</height>
+    <horizontal_alignment>1</horizontal_alignment>
+    <name>Button_8</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>ARM</text>
+    <tooltip>Set /YSS/SIMULATOR/AllowCriticalTC1 = true</tooltip>
+    <transparent>false</transparent>
+    <vertical_alignment>1</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>80</width>
+    <wrap_words>false</wrap_words>
+    <wuid>yss:481</wuid>
+    <x>234</x>
+    <y>194</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="true" hook_all="false">
+      <action type="WRITE_PV">
+        <pv_name>/YSS/SIMULATOR/AllowCriticalTC1</pv_name>
+        <value>false</value>
+        <timeout>10</timeout>
+        <confirm_message />
+        <description />
+      </action>
+    </actions>
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>1</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="12" style="1" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text" red="182" green="192" blue="203" />
+    </foreground_color>
+    <height>26</height>
+    <horizontal_alignment>1</horizontal_alignment>
+    <name>Button_9</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>DISARM</text>
+    <tooltip>Set /YSS/SIMULATOR/AllowCriticalTC1 = false</tooltip>
+    <transparent>false</transparent>
+    <vertical_alignment>1</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>80</width>
+    <wrap_words>false</wrap_words>
+    <wuid>yss:482</wuid>
+    <x>320</x>
+    <y>194</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="true" hook_all="false">
+      <action type="RUN_COMMAND">
+        <command>/YSS/SIMULATOR/CRITICAL_TC1</command>
+        <args>
+          <p1>0</p1>
+        </args>
+        <confirm_message>Send CRITICAL_TC1?</confirm_message>
+        <description />
+      </action>
+    </actions>
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Accent" red="79" green="163" blue="217" />
+    </border_color>
+    <border_style>1</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="12" style="1" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text Strong" red="236" green="240" blue="244" />
+    </foreground_color>
+    <height>40</height>
+    <horizontal_alignment>1</horizontal_alignment>
+    <name>Button_10</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>SEND CRITICAL_TC1</text>
+    <tooltip>Issue /YSS/SIMULATOR/CRITICAL_TC1 (p1=0)</tooltip>
+    <transparent>false</transparent>
+    <vertical_alignment>1</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>180</width>
+    <wrap_words>false</wrap_words>
+    <wuid>yss:483</wuid>
+    <x>424</x>
+    <y>154</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Rectangle" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <alpha>255</alpha>
+    <anti_alias>true</anti_alias>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Field" red="21" green="24" blue="28" />
+    </background_color>
+    <bg_gradient_color>
+      <color name="YSS Field" red="21" green="24" blue="28" />
+    </bg_gradient_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <fg_gradient_color>
+      <color name="YSS Field" red="21" green="24" blue="28" />
+    </fg_gradient_color>
+    <fill_level>0.0</fill_level>
+    <font>
+      <fontdata fontName="Liberation Sans" height="12" style="0" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text" red="182" green="192" blue="203" />
+    </foreground_color>
+    <gradient>false</gradient>
+    <height>132</height>
+    <horizontal_fill>true</horizontal_fill>
+    <line_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </line_color>
+    <line_style>0</line_style>
+    <line_width>1</line_width>
+    <name>CriticalRow_2</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <tooltip />
+    <transparent>false</transparent>
+    <visible>true</visible>
+    <widget_type>Rectangle</widget_type>
+    <width>592</width>
+    <wuid>yss:484</wuid>
+    <x>28</x>
+    <y>252</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Mono" height="14" style="1" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text Strong" red="236" green="240" blue="244" />
+    </foreground_color>
+    <height>18</height>
+    <horizontal_alignment>0</horizontal_alignment>
+    <name>Label_206</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>CRITICAL_TC2</text>
+    <tooltip />
+    <transparent>true</transparent>
+    <vertical_alignment>1</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>300</width>
+    <wrap_words>false</wrap_words>
+    <wuid>yss:485</wuid>
+    <x>44</x>
+    <y>262</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="12" style="0" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text Muted" red="128" green="140" blue="154" />
+    </foreground_color>
+    <height>48</height>
+    <horizontal_alignment>0</horizontal_alignment>
+    <name>Label_207</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>Constraint AllowCriticalTC2 = true, timeout 10 s: waits in the queue up to 10 s for the interlock to be ARMED.</text>
+    <tooltip />
+    <transparent>true</transparent>
+    <vertical_alignment>0</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>360</width>
+    <wrap_words>true</wrap_words>
+    <wuid>yss:486</wuid>
+    <x>44</x>
+    <y>284</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="12" style="0" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text" red="182" green="192" blue="203" />
+    </foreground_color>
+    <height>22</height>
+    <horizontal_alignment>0</horizontal_alignment>
+    <name>Label_208</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>Interlock</text>
+    <tooltip />
+    <transparent>true</transparent>
+    <vertical_alignment>1</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>120</width>
+    <wrap_words>false</wrap_words>
+    <wuid>yss:487</wuid>
+    <x>44</x>
+    <y>344</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>1</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="11" style="1" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text Muted" red="128" green="140" blue="154" />
+    </foreground_color>
+    <height>26</height>
+    <horizontal_alignment>1</horizontal_alignment>
+    <name>Label_209</name>
+    <pv_name />
+    <pv_value />
+    <rules>
+      <rule name="text" prop_id="text" out_exp="false">
+        <exp bool_exp="pvStr0 == 'true'">
+          <value>ARMED</value>
+        </exp>
+        <exp bool_exp="true">
+          <value>SAFE</value>
+        </exp>
+        <pv trig="true">/YSS/SIMULATOR/AllowCriticalTC2</pv>
+      </rule>
+      <rule name="color" prop_id="foreground_color" out_exp="false">
+        <exp bool_exp="pvStr0 == 'true'">
+          <value>
+            <color name="YSS Caution" red="224" green="168" blue="79" />
+          </value>
+        </exp>
+        <exp bool_exp="true">
+          <value>
+            <color name="YSS Nominal" red="63" green="178" blue="127" />
+          </value>
+        </exp>
+        <pv trig="true">/YSS/SIMULATOR/AllowCriticalTC2</pv>
+      </rule>
+      <rule name="border" prop_id="border_color" out_exp="false">
+        <exp bool_exp="pvStr0 == 'true'">
+          <value>
+            <color name="YSS Caution" red="224" green="168" blue="79" />
+          </value>
+        </exp>
+        <exp bool_exp="true">
+          <value>
+            <color name="YSS Nominal" red="63" green="178" blue="127" />
+          </value>
+        </exp>
+        <pv trig="true">/YSS/SIMULATOR/AllowCriticalTC2</pv>
+      </rule>
+    </rules>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>—</text>
+    <tooltip />
+    <transparent>true</transparent>
+    <vertical_alignment>1</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>100</width>
+    <wrap_words>false</wrap_words>
+    <wuid>yss:488</wuid>
+    <x>124</x>
+    <y>342</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="true" hook_all="false">
+      <action type="WRITE_PV">
+        <pv_name>/YSS/SIMULATOR/AllowCriticalTC2</pv_name>
+        <value>true</value>
+        <timeout>10</timeout>
+        <confirm_message />
+        <description />
+      </action>
+    </actions>
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>1</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="12" style="1" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Caution" red="224" green="168" blue="79" />
+    </foreground_color>
+    <height>26</height>
+    <horizontal_alignment>1</horizontal_alignment>
+    <name>Button_11</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>ARM</text>
+    <tooltip>Set /YSS/SIMULATOR/AllowCriticalTC2 = true</tooltip>
+    <transparent>false</transparent>
+    <vertical_alignment>1</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>80</width>
+    <wrap_words>false</wrap_words>
+    <wuid>yss:489</wuid>
+    <x>234</x>
+    <y>342</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="true" hook_all="false">
+      <action type="WRITE_PV">
+        <pv_name>/YSS/SIMULATOR/AllowCriticalTC2</pv_name>
+        <value>false</value>
+        <timeout>10</timeout>
+        <confirm_message />
+        <description />
+      </action>
+    </actions>
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>1</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="12" style="1" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text" red="182" green="192" blue="203" />
+    </foreground_color>
+    <height>26</height>
+    <horizontal_alignment>1</horizontal_alignment>
+    <name>Button_12</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>DISARM</text>
+    <tooltip>Set /YSS/SIMULATOR/AllowCriticalTC2 = false</tooltip>
+    <transparent>false</transparent>
+    <vertical_alignment>1</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>80</width>
+    <wrap_words>false</wrap_words>
+    <wuid>yss:490</wuid>
+    <x>320</x>
+    <y>342</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="true" hook_all="false">
+      <action type="RUN_COMMAND">
+        <command>/YSS/SIMULATOR/CRITICAL_TC2</command>
+        <args>
+          <p1>0</p1>
+        </args>
+        <confirm_message>Send CRITICAL_TC2?</confirm_message>
+        <description />
+      </action>
+    </actions>
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Accent" red="79" green="163" blue="217" />
+    </border_color>
+    <border_style>1</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="12" style="1" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text Strong" red="236" green="240" blue="244" />
+    </foreground_color>
+    <height>40</height>
+    <horizontal_alignment>1</horizontal_alignment>
+    <name>Button_13</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>SEND CRITICAL_TC2</text>
+    <tooltip>Issue /YSS/SIMULATOR/CRITICAL_TC2 (p1=0)</tooltip>
+    <transparent>false</transparent>
+    <vertical_alignment>1</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>180</width>
+    <wrap_words>false</wrap_words>
+    <wuid>yss:491</wuid>
+    <x>424</x>
+    <y>302</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Rectangle" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <alpha>255</alpha>
+    <anti_alias>true</anti_alias>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <bg_gradient_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </bg_gradient_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <fg_gradient_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </fg_gradient_color>
+    <fill_level>0.0</fill_level>
+    <font>
+      <fontdata fontName="Liberation Sans" height="12" style="0" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text" red="182" green="192" blue="203" />
+    </foreground_color>
+    <gradient>false</gradient>
+    <height>352</height>
+    <horizontal_fill>true</horizontal_fill>
+    <line_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </line_color>
+    <line_style>0</line_style>
+    <line_width>1</line_width>
+    <name>Panel_19</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <tooltip />
+    <transparent>false</transparent>
+    <visible>true</visible>
+    <widget_type>Rectangle</widget_type>
+    <width>616</width>
+    <wuid>yss:492</wuid>
+    <x>648</x>
+    <y>72</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="11" style="1" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text Muted" red="128" green="140" blue="154" />
+    </foreground_color>
+    <height>16</height>
+    <horizontal_alignment>0</horizontal_alignment>
+    <name>PanelTitle_19</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>LAST COMMAND ACKNOWLEDGEMENT</text>
+    <tooltip />
+    <transparent>true</transparent>
+    <vertical_alignment>1</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>592</width>
+    <wrap_words>false</wrap_words>
+    <wuid>yss:493</wuid>
+    <x>660</x>
+    <y>80</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="12" style="0" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text Muted" red="128" green="140" blue="154" />
+    </foreground_color>
+    <height>32</height>
+    <horizontal_alignment>0</horizontal_alignment>
+    <name>Label_210</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>Every SIM_TC command is verified by MDB algorithms against the acknowledgement packet below (Queued → Started → Complete).</text>
+    <tooltip />
+    <transparent>true</transparent>
+    <vertical_alignment>0</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>584</width>
+    <wrap_words>true</wrap_words>
+    <wuid>yss:494</wuid>
+    <x>664</x>
+    <y>104</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>1</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="11" style="1" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Off" red="74" green="82" blue="92" />
+    </foreground_color>
+    <height>40</height>
+    <horizontal_alignment>1</horizontal_alignment>
+    <name>Stage QUEUED</name>
+    <pv_name />
+    <pv_value />
+    <rules>
+      <rule name="text" prop_id="text" out_exp="false">
+        <exp bool_exp="pvInt0 == 0 &amp;&amp; pvInt1 != 0">
+          <value>QUEUED FAILED</value>
+        </exp>
+        <exp bool_exp="pvInt0 &gt;= 0">
+          <value>QUEUED</value>
+        </exp>
+        <exp bool_exp="true">
+          <value>QUEUED</value>
+        </exp>
+        <pv trig="true">/YSS/SIMULATOR/avc_command_execution_stage</pv>
+        <pv trig="true">/YSS/SIMULATOR/avc_command_result</pv>
+      </rule>
+      <rule name="color" prop_id="foreground_color" out_exp="false">
+        <exp bool_exp="pvInt0 == 0 &amp;&amp; pvInt1 != 0">
+          <value>
+            <color name="YSS Alarm" red="230" green="76" blue="76" />
+          </value>
+        </exp>
+        <exp bool_exp="pvInt0 &gt;= 0">
+          <value>
+            <color name="YSS Nominal" red="63" green="178" blue="127" />
+          </value>
+        </exp>
+        <exp bool_exp="true">
+          <value>
+            <color name="YSS Off" red="74" green="82" blue="92" />
+          </value>
+        </exp>
+        <pv trig="true">/YSS/SIMULATOR/avc_command_execution_stage</pv>
+        <pv trig="true">/YSS/SIMULATOR/avc_command_result</pv>
+      </rule>
+      <rule name="border" prop_id="border_color" out_exp="false">
+        <exp bool_exp="pvInt0 == 0 &amp;&amp; pvInt1 != 0">
+          <value>
+            <color name="YSS Alarm" red="230" green="76" blue="76" />
+          </value>
+        </exp>
+        <exp bool_exp="pvInt0 &gt;= 0">
+          <value>
+            <color name="YSS Nominal" red="63" green="178" blue="127" />
+          </value>
+        </exp>
+        <exp bool_exp="true">
+          <value>
+            <color name="YSS Off" red="74" green="82" blue="92" />
+          </value>
+        </exp>
+        <pv trig="true">/YSS/SIMULATOR/avc_command_execution_stage</pv>
+        <pv trig="true">/YSS/SIMULATOR/avc_command_result</pv>
+      </rule>
+    </rules>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>QUEUED</text>
+    <tooltip />
+    <transparent>true</transparent>
+    <vertical_alignment>1</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>172</width>
+    <wrap_words>false</wrap_words>
+    <wuid>yss:495</wuid>
+    <x>664</x>
+    <y>156</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Rectangle" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <alpha>255</alpha>
+    <anti_alias>true</anti_alias>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Off" red="74" green="82" blue="92" />
+    </background_color>
+    <bg_gradient_color>
+      <color name="YSS Off" red="74" green="82" blue="92" />
+    </bg_gradient_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <fg_gradient_color>
+      <color name="YSS Off" red="74" green="82" blue="92" />
+    </fg_gradient_color>
+    <fill_level>0.0</fill_level>
+    <font>
+      <fontdata fontName="Liberation Sans" height="12" style="0" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text" red="182" green="192" blue="203" />
+    </foreground_color>
+    <gradient>false</gradient>
+    <height>2</height>
+    <horizontal_fill>true</horizontal_fill>
+    <line_color>
+      <color name="YSS Off" red="74" green="82" blue="92" />
+    </line_color>
+    <line_style>0</line_style>
+    <line_width>0</line_width>
+    <name>StageLink_1</name>
+    <pv_name />
+    <pv_value />
+    <rules>
+      <rule name="reached" prop_id="background_color" out_exp="false">
+        <exp bool_exp="pvInt0 &gt;= 1 &amp;&amp; pvInt1 == 0">
+          <value>
+            <color name="YSS Nominal" red="63" green="178" blue="127" />
+          </value>
+        </exp>
+        <pv trig="true">/YSS/SIMULATOR/avc_command_execution_stage</pv>
+        <pv trig="true">/YSS/SIMULATOR/avc_command_result</pv>
+      </rule>
+    </rules>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <tooltip />
+    <transparent>false</transparent>
+    <visible>true</visible>
+    <widget_type>Rectangle</widget_type>
+    <width>20</width>
+    <wuid>yss:496</wuid>
+    <x>836</x>
+    <y>175</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>1</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="11" style="1" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Off" red="74" green="82" blue="92" />
+    </foreground_color>
+    <height>40</height>
+    <horizontal_alignment>1</horizontal_alignment>
+    <name>Stage STARTED</name>
+    <pv_name />
+    <pv_value />
+    <rules>
+      <rule name="text" prop_id="text" out_exp="false">
+        <exp bool_exp="pvInt0 == 1 &amp;&amp; pvInt1 != 0">
+          <value>STARTED FAILED</value>
+        </exp>
+        <exp bool_exp="pvInt0 &gt;= 1">
+          <value>STARTED</value>
+        </exp>
+        <exp bool_exp="true">
+          <value>STARTED</value>
+        </exp>
+        <pv trig="true">/YSS/SIMULATOR/avc_command_execution_stage</pv>
+        <pv trig="true">/YSS/SIMULATOR/avc_command_result</pv>
+      </rule>
+      <rule name="color" prop_id="foreground_color" out_exp="false">
+        <exp bool_exp="pvInt0 == 1 &amp;&amp; pvInt1 != 0">
+          <value>
+            <color name="YSS Alarm" red="230" green="76" blue="76" />
+          </value>
+        </exp>
+        <exp bool_exp="pvInt0 &gt;= 1">
+          <value>
+            <color name="YSS Nominal" red="63" green="178" blue="127" />
+          </value>
+        </exp>
+        <exp bool_exp="true">
+          <value>
+            <color name="YSS Off" red="74" green="82" blue="92" />
+          </value>
+        </exp>
+        <pv trig="true">/YSS/SIMULATOR/avc_command_execution_stage</pv>
+        <pv trig="true">/YSS/SIMULATOR/avc_command_result</pv>
+      </rule>
+      <rule name="border" prop_id="border_color" out_exp="false">
+        <exp bool_exp="pvInt0 == 1 &amp;&amp; pvInt1 != 0">
+          <value>
+            <color name="YSS Alarm" red="230" green="76" blue="76" />
+          </value>
+        </exp>
+        <exp bool_exp="pvInt0 &gt;= 1">
+          <value>
+            <color name="YSS Nominal" red="63" green="178" blue="127" />
+          </value>
+        </exp>
+        <exp bool_exp="true">
+          <value>
+            <color name="YSS Off" red="74" green="82" blue="92" />
+          </value>
+        </exp>
+        <pv trig="true">/YSS/SIMULATOR/avc_command_execution_stage</pv>
+        <pv trig="true">/YSS/SIMULATOR/avc_command_result</pv>
+      </rule>
+    </rules>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>STARTED</text>
+    <tooltip />
+    <transparent>true</transparent>
+    <vertical_alignment>1</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>172</width>
+    <wrap_words>false</wrap_words>
+    <wuid>yss:497</wuid>
+    <x>856</x>
+    <y>156</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Rectangle" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <alpha>255</alpha>
+    <anti_alias>true</anti_alias>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Off" red="74" green="82" blue="92" />
+    </background_color>
+    <bg_gradient_color>
+      <color name="YSS Off" red="74" green="82" blue="92" />
+    </bg_gradient_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <fg_gradient_color>
+      <color name="YSS Off" red="74" green="82" blue="92" />
+    </fg_gradient_color>
+    <fill_level>0.0</fill_level>
+    <font>
+      <fontdata fontName="Liberation Sans" height="12" style="0" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text" red="182" green="192" blue="203" />
+    </foreground_color>
+    <gradient>false</gradient>
+    <height>2</height>
+    <horizontal_fill>true</horizontal_fill>
+    <line_color>
+      <color name="YSS Off" red="74" green="82" blue="92" />
+    </line_color>
+    <line_style>0</line_style>
+    <line_width>0</line_width>
+    <name>StageLink_2</name>
+    <pv_name />
+    <pv_value />
+    <rules>
+      <rule name="reached" prop_id="background_color" out_exp="false">
+        <exp bool_exp="pvInt0 &gt;= 2 &amp;&amp; pvInt1 == 0">
+          <value>
+            <color name="YSS Nominal" red="63" green="178" blue="127" />
+          </value>
+        </exp>
+        <pv trig="true">/YSS/SIMULATOR/avc_command_execution_stage</pv>
+        <pv trig="true">/YSS/SIMULATOR/avc_command_result</pv>
+      </rule>
+    </rules>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <tooltip />
+    <transparent>false</transparent>
+    <visible>true</visible>
+    <widget_type>Rectangle</widget_type>
+    <width>20</width>
+    <wuid>yss:498</wuid>
+    <x>1028</x>
+    <y>175</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>1</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="11" style="1" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Off" red="74" green="82" blue="92" />
+    </foreground_color>
+    <height>40</height>
+    <horizontal_alignment>1</horizontal_alignment>
+    <name>Stage COMPLETE</name>
+    <pv_name />
+    <pv_value />
+    <rules>
+      <rule name="text" prop_id="text" out_exp="false">
+        <exp bool_exp="pvInt0 == 2 &amp;&amp; pvInt1 != 0">
+          <value>COMPLETE FAILED</value>
+        </exp>
+        <exp bool_exp="pvInt0 &gt;= 2">
+          <value>COMPLETE</value>
+        </exp>
+        <exp bool_exp="true">
+          <value>COMPLETE</value>
+        </exp>
+        <pv trig="true">/YSS/SIMULATOR/avc_command_execution_stage</pv>
+        <pv trig="true">/YSS/SIMULATOR/avc_command_result</pv>
+      </rule>
+      <rule name="color" prop_id="foreground_color" out_exp="false">
+        <exp bool_exp="pvInt0 == 2 &amp;&amp; pvInt1 != 0">
+          <value>
+            <color name="YSS Alarm" red="230" green="76" blue="76" />
+          </value>
+        </exp>
+        <exp bool_exp="pvInt0 &gt;= 2">
+          <value>
+            <color name="YSS Nominal" red="63" green="178" blue="127" />
+          </value>
+        </exp>
+        <exp bool_exp="true">
+          <value>
+            <color name="YSS Off" red="74" green="82" blue="92" />
+          </value>
+        </exp>
+        <pv trig="true">/YSS/SIMULATOR/avc_command_execution_stage</pv>
+        <pv trig="true">/YSS/SIMULATOR/avc_command_result</pv>
+      </rule>
+      <rule name="border" prop_id="border_color" out_exp="false">
+        <exp bool_exp="pvInt0 == 2 &amp;&amp; pvInt1 != 0">
+          <value>
+            <color name="YSS Alarm" red="230" green="76" blue="76" />
+          </value>
+        </exp>
+        <exp bool_exp="pvInt0 &gt;= 2">
+          <value>
+            <color name="YSS Nominal" red="63" green="178" blue="127" />
+          </value>
+        </exp>
+        <exp bool_exp="true">
+          <value>
+            <color name="YSS Off" red="74" green="82" blue="92" />
+          </value>
+        </exp>
+        <pv trig="true">/YSS/SIMULATOR/avc_command_execution_stage</pv>
+        <pv trig="true">/YSS/SIMULATOR/avc_command_result</pv>
+      </rule>
+    </rules>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>COMPLETE</text>
+    <tooltip />
+    <transparent>true</transparent>
+    <vertical_alignment>1</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>172</width>
+    <wrap_words>false</wrap_words>
+    <wuid>yss:499</wuid>
+    <x>1048</x>
+    <y>156</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="12" style="0" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text" red="182" green="192" blue="203" />
+    </foreground_color>
+    <height>22</height>
+    <horizontal_alignment>0</horizontal_alignment>
+    <name>Label_211</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>Command packet ID</text>
+    <tooltip />
+    <transparent>true</transparent>
+    <vertical_alignment>1</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>162</width>
+    <wrap_words>false</wrap_words>
+    <wuid>yss:500</wuid>
+    <x>664</x>
+    <y>220</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.TextUpdate" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Field" red="21" green="24" blue="28" />
+    </background_color>
+    <border_alarm_sensitive>true</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Mono" height="13" style="0" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text Strong" red="236" green="240" blue="244" />
+    </foreground_color>
+    <format_type>0</format_type>
+    <height>22</height>
+    <horizontal_alignment>2</horizontal_alignment>
+    <name>Value_87</name>
+    <precision>0</precision>
+    <precision_from_pv>false</precision_from_pv>
+    <pv_name>/YSS/SIMULATOR/avc_command_id</pv_name>
+    <pv_value />
+    <rotation_angle>0.0</rotation_angle>
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_lohi>false</show_lohi>
+    <show_units>false</show_units>
+    <text />
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <transparent>false</transparent>
+    <vertical_alignment>1</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Text Update</widget_type>
+    <width>96</width>
+    <wrap_words>false</wrap_words>
+    <wuid>yss:501</wuid>
+    <x>834</x>
+    <y>220</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="12" style="0" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text" red="182" green="192" blue="203" />
+    </foreground_color>
+    <height>22</height>
+    <horizontal_alignment>0</horizontal_alignment>
+    <name>Label_212</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>Sequence count</text>
+    <tooltip />
+    <transparent>true</transparent>
+    <vertical_alignment>1</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>162</width>
+    <wrap_words>false</wrap_words>
+    <wuid>yss:502</wuid>
+    <x>664</x>
+    <y>248</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.TextUpdate" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Field" red="21" green="24" blue="28" />
+    </background_color>
+    <border_alarm_sensitive>true</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Mono" height="13" style="0" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text Strong" red="236" green="240" blue="244" />
+    </foreground_color>
+    <format_type>0</format_type>
+    <height>22</height>
+    <horizontal_alignment>2</horizontal_alignment>
+    <name>Value_88</name>
+    <precision>0</precision>
+    <precision_from_pv>false</precision_from_pv>
+    <pv_name>/YSS/SIMULATOR/avc_command_seq</pv_name>
+    <pv_value />
+    <rotation_angle>0.0</rotation_angle>
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_lohi>false</show_lohi>
+    <show_units>false</show_units>
+    <text />
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <transparent>false</transparent>
+    <vertical_alignment>1</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Text Update</widget_type>
+    <width>96</width>
+    <wrap_words>false</wrap_words>
+    <wuid>yss:503</wuid>
+    <x>834</x>
+    <y>248</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="12" style="0" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text" red="182" green="192" blue="203" />
+    </foreground_color>
+    <height>22</height>
+    <horizontal_alignment>0</horizontal_alignment>
+    <name>Label_213</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>Result</text>
+    <tooltip />
+    <transparent>true</transparent>
+    <vertical_alignment>1</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>160</width>
+    <wrap_words>false</wrap_words>
+    <wuid>yss:504</wuid>
+    <x>664</x>
+    <y>276</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>1</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="11" style="1" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text Muted" red="128" green="140" blue="154" />
+    </foreground_color>
+    <height>22</height>
+    <horizontal_alignment>1</horizontal_alignment>
+    <name>Label_214</name>
+    <pv_name />
+    <pv_value />
+    <rules>
+      <rule name="text" prop_id="text" out_exp="false">
+        <exp bool_exp="pvInt0 == 0">
+          <value>OK</value>
+        </exp>
+        <exp bool_exp="true">
+          <value>FAILED</value>
+        </exp>
+        <pv trig="true">/YSS/SIMULATOR/avc_command_result</pv>
+      </rule>
+      <rule name="color" prop_id="foreground_color" out_exp="false">
+        <exp bool_exp="pvInt0 == 0">
+          <value>
+            <color name="YSS Nominal" red="63" green="178" blue="127" />
+          </value>
+        </exp>
+        <exp bool_exp="true">
+          <value>
+            <color name="YSS Alarm" red="230" green="76" blue="76" />
+          </value>
+        </exp>
+        <pv trig="true">/YSS/SIMULATOR/avc_command_result</pv>
+      </rule>
+      <rule name="border" prop_id="border_color" out_exp="false">
+        <exp bool_exp="pvInt0 == 0">
+          <value>
+            <color name="YSS Nominal" red="63" green="178" blue="127" />
+          </value>
+        </exp>
+        <exp bool_exp="true">
+          <value>
+            <color name="YSS Alarm" red="230" green="76" blue="76" />
+          </value>
+        </exp>
+        <pv trig="true">/YSS/SIMULATOR/avc_command_result</pv>
+      </rule>
+    </rules>
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>—</text>
+    <tooltip />
+    <transparent>true</transparent>
+    <vertical_alignment>1</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>96</width>
+    <wrap_words>false</wrap_words>
+    <wuid>yss:505</wuid>
+    <x>868</x>
+    <y>276</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="10" style="0" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text Muted" red="128" green="140" blue="154" />
+    </foreground_color>
+    <height>14</height>
+    <horizontal_alignment>0</horizontal_alignment>
+    <name>Label_215</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>TRY IT</text>
+    <tooltip />
+    <transparent>true</transparent>
+    <vertical_alignment>1</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>248</width>
+    <wrap_words>false</wrap_words>
+    <wuid>yss:506</wuid>
+    <x>1000</x>
+    <y>220</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="12" style="0" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text" red="182" green="192" blue="203" />
+    </foreground_color>
+    <height>60</height>
+    <horizontal_alignment>0</horizontal_alignment>
+    <name>Label_216</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>Switch a battery on the Power display, or send a critical command, and watch the stages advance.</text>
+    <tooltip />
+    <transparent>true</transparent>
+    <vertical_alignment>0</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>248</width>
+    <wrap_words>true</wrap_words>
+    <wuid>yss:507</wuid>
+    <x>1000</x>
+    <y>236</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="true" hook_all="false">
+      <action type="OPEN_DISPLAY">
+        <path>Power.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+        </macros>
+        <mode>0</mode>
+        <description />
+      </action>
+    </actions>
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>1</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="12" style="1" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text" red="182" green="192" blue="203" />
+    </foreground_color>
+    <height>30</height>
+    <horizontal_alignment>1</horizontal_alignment>
+    <name>Button_14</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>Open Power</text>
+    <tooltip />
+    <transparent>false</transparent>
+    <vertical_alignment>1</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>120</width>
+    <wrap_words>false</wrap_words>
+    <wuid>yss:508</wuid>
+    <x>1000</x>
+    <y>304</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Rectangle" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <alpha>255</alpha>
+    <anti_alias>true</anti_alias>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <bg_gradient_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </bg_gradient_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <fg_gradient_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </fg_gradient_color>
+    <fill_level>0.0</fill_level>
+    <font>
+      <fontdata fontName="Liberation Sans" height="12" style="0" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text" red="182" green="192" blue="203" />
+    </foreground_color>
+    <gradient>false</gradient>
+    <height>344</height>
+    <horizontal_fill>true</horizontal_fill>
+    <line_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </line_color>
+    <line_style>0</line_style>
+    <line_width>1</line_width>
+    <name>Panel_20</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <tooltip />
+    <transparent>false</transparent>
+    <visible>true</visible>
+    <widget_type>Rectangle</widget_type>
+    <width>616</width>
+    <wuid>yss:509</wuid>
+    <x>16</x>
+    <y>440</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="11" style="1" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text Muted" red="128" green="140" blue="154" />
+    </foreground_color>
+    <height>16</height>
+    <horizontal_alignment>0</horizontal_alignment>
+    <name>PanelTitle_20</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>LOSS-OF-SIGNAL RECORDINGS</text>
+    <tooltip />
+    <transparent>true</transparent>
+    <vertical_alignment>1</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>592</width>
+    <wrap_words>false</wrap_words>
+    <wuid>yss:510</wuid>
+    <x>28</x>
+    <y>448</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="12" style="0" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text Muted" red="128" green="140" blue="154" />
+    </foreground_color>
+    <height>34</height>
+    <horizontal_alignment>0</horizontal_alignment>
+    <name>Label_217</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>During LOS the spacecraft records telemetry on board. LIST_RECORDINGS asks for the list of stored recordings.</text>
+    <tooltip />
+    <transparent>true</transparent>
+    <vertical_alignment>0</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>584</width>
+    <wrap_words>true</wrap_words>
+    <wuid>yss:511</wuid>
+    <x>32</x>
+    <y>472</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="true" hook_all="false">
+      <action type="RUN_COMMAND">
+        <command>/YSS/SIMULATOR/LIST_RECORDINGS</command>
+        <args />
+        <confirm_message />
+        <description />
+      </action>
+    </actions>
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Accent" red="79" green="163" blue="217" />
+    </border_color>
+    <border_style>1</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="12" style="1" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text Strong" red="236" green="240" blue="244" />
+    </foreground_color>
+    <height>34</height>
+    <horizontal_alignment>1</horizontal_alignment>
+    <name>Button_15</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>LIST RECORDINGS</text>
+    <tooltip>Issue /YSS/SIMULATOR/LIST_RECORDINGS</tooltip>
+    <transparent>false</transparent>
+    <vertical_alignment>1</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>180</width>
+    <wrap_words>false</wrap_words>
+    <wuid>yss:512</wuid>
+    <x>32</x>
+    <y>516</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="10" style="0" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text Muted" red="128" green="140" blue="154" />
+    </foreground_color>
+    <height>14</height>
+    <horizontal_alignment>0</horizontal_alignment>
+    <name>Label_218</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>AVAILABLE RECORDINGS</text>
+    <tooltip />
+    <transparent>true</transparent>
+    <vertical_alignment>1</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>200</width>
+    <wrap_words>false</wrap_words>
+    <wuid>yss:513</wuid>
+    <x>32</x>
+    <y>564</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.TextUpdate" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Field" red="21" green="24" blue="28" />
+    </background_color>
+    <border_alarm_sensitive>true</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Mono" height="13" style="0" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text Strong" red="236" green="240" blue="244" />
+    </foreground_color>
+    <format_type>0</format_type>
+    <height>188</height>
+    <horizontal_alignment>0</horizontal_alignment>
+    <name>Value_89</name>
+    <precision>0</precision>
+    <precision_from_pv>false</precision_from_pv>
+    <pv_name>/YSS/SIMULATOR/AvailableRecordingNames</pv_name>
+    <pv_value />
+    <rotation_angle>0.0</rotation_angle>
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_lohi>false</show_lohi>
+    <show_units>false</show_units>
+    <text />
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <transparent>false</transparent>
+    <vertical_alignment>0</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Text Update</widget_type>
+    <width>584</width>
+    <wrap_words>true</wrap_words>
+    <wuid>yss:514</wuid>
+    <x>32</x>
+    <y>580</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Rectangle" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <alpha>255</alpha>
+    <anti_alias>true</anti_alias>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <bg_gradient_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </bg_gradient_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <fg_gradient_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </fg_gradient_color>
+    <fill_level>0.0</fill_level>
+    <font>
+      <fontdata fontName="Liberation Sans" height="12" style="0" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text" red="182" green="192" blue="203" />
+    </foreground_color>
+    <gradient>false</gradient>
+    <height>344</height>
+    <horizontal_fill>true</horizontal_fill>
+    <line_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </line_color>
+    <line_style>0</line_style>
+    <line_width>1</line_width>
+    <name>Panel_21</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <tooltip />
+    <transparent>false</transparent>
+    <visible>true</visible>
+    <widget_type>Rectangle</widget_type>
+    <width>616</width>
+    <wuid>yss:515</wuid>
+    <x>648</x>
+    <y>440</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <auto_size>false</auto_size>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="11" style="1" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text Muted" red="128" green="140" blue="154" />
+    </foreground_color>
+    <height>16</height>
+    <horizontal_alignment>0</horizontal_alignment>
+    <name>PanelTitle_21</name>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_scrollbar>false</show_scrollbar>
+    <text>SECONDARY TM LINK (TM2_REALTIME)</text>
+    <tooltip />
+    <transparent>true</transparent>
+    <vertical_alignment>1</vertical_alignment>
+    <visible>true</visible>
+    <widget_type>Label</widget_type>
+    <width>592</width>
+    <wrap_words>false</wrap_words>
+    <wuid>yss:516</wuid>
+    <x>660</x>
+    <y>448</y>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.xyGraph" version="1.0.0">
+    <actions hook="false" hook_all="false" />
+    <alarm_pulsing>false</alarm_pulsing>
+    <axis_0_auto_scale>true</axis_0_auto_scale>
+    <axis_0_auto_scale_threshold>0.0</axis_0_auto_scale_threshold>
+    <axis_0_axis_color>
+      <color name="YSS Text Muted" red="128" green="140" blue="154" />
+    </axis_0_axis_color>
+    <axis_0_axis_title />
+    <axis_0_dash_grid_line>false</axis_0_dash_grid_line>
+    <axis_0_grid_color>
+      <color name="YSS Grid" red="46" green="53" blue="62" />
+    </axis_0_grid_color>
+    <axis_0_left_bottom_side>true</axis_0_left_bottom_side>
+    <axis_0_log_scale>false</axis_0_log_scale>
+    <axis_0_maximum>100.0</axis_0_maximum>
+    <axis_0_minimum>0.0</axis_0_minimum>
+    <axis_0_scale_font>
+      <fontdata fontName="Liberation Sans" height="10" style="0" pixels="true" />
+    </axis_0_scale_font>
+    <axis_0_scale_format />
+    <axis_0_show_grid>true</axis_0_show_grid>
+    <axis_0_time_format>8</axis_0_time_format>
+    <axis_0_title_font>
+      <fontdata fontName="Liberation Sans" height="10" style="0" pixels="true" />
+    </axis_0_title_font>
+    <axis_0_visible>true</axis_0_visible>
+    <axis_0_y_axis>false</axis_0_y_axis>
+    <axis_1_auto_scale>false</axis_1_auto_scale>
+    <axis_1_auto_scale_threshold>0.0</axis_1_auto_scale_threshold>
+    <axis_1_axis_color>
+      <color name="YSS Text Muted" red="128" green="140" blue="154" />
+    </axis_1_axis_color>
+    <axis_1_axis_title>Value</axis_1_axis_title>
+    <axis_1_dash_grid_line>false</axis_1_dash_grid_line>
+    <axis_1_grid_color>
+      <color name="YSS Grid" red="46" green="53" blue="62" />
+    </axis_1_grid_color>
+    <axis_1_left_bottom_side>true</axis_1_left_bottom_side>
+    <axis_1_log_scale>false</axis_1_log_scale>
+    <axis_1_maximum>1.2</axis_1_maximum>
+    <axis_1_minimum>-1.2</axis_1_minimum>
+    <axis_1_scale_font>
+      <fontdata fontName="Liberation Sans" height="10" style="0" pixels="true" />
+    </axis_1_scale_font>
+    <axis_1_scale_format />
+    <axis_1_show_grid>true</axis_1_show_grid>
+    <axis_1_time_format>0</axis_1_time_format>
+    <axis_1_title_font>
+      <fontdata fontName="Liberation Sans" height="10" style="0" pixels="true" />
+    </axis_1_title_font>
+    <axis_1_visible>true</axis_1_visible>
+    <axis_1_y_axis>true</axis_1_y_axis>
+    <axis_count>2</axis_count>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <background_color>
+      <color name="YSS Panel" red="35" green="41" blue="49" />
+    </background_color>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <border_color>
+      <color name="YSS Panel Border" red="52" green="60" blue="70" />
+    </border_color>
+    <border_style>0</border_style>
+    <border_width>1</border_width>
+    <enabled>true</enabled>
+    <font>
+      <fontdata fontName="Liberation Sans" height="10" style="0" pixels="true" />
+    </font>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <foreground_color>
+      <color name="YSS Text" red="182" green="192" blue="203" />
+    </foreground_color>
+    <height>308</height>
+    <name>Plot_9</name>
+    <plot_area_background_color>
+      <color name="YSS Field" red="21" green="24" blue="28" />
+    </plot_area_background_color>
+    <pv_name />
+    <pv_value />
+    <rules />
+    <scale_options>
+      <width_scalable>true</width_scalable>
+      <height_scalable>true</height_scalable>
+      <keep_wh_ratio>false</keep_wh_ratio>
+    </scale_options>
+    <scripts />
+    <show_legend>true</show_legend>
+    <show_plot_area_border>false</show_plot_area_border>
+    <show_toolbar>false</show_toolbar>
+    <title />
+    <title_font>
+      <fontdata fontName="Liberation Sans" height="11" style="1" pixels="true" />
+    </title_font>
+    <tooltip />
+    <trace_0_anti_alias>true</trace_0_anti_alias>
+    <trace_0_buffer_size>2000</trace_0_buffer_size>
+    <trace_0_concatenate_data>true</trace_0_concatenate_data>
+    <trace_0_line_width>2</trace_0_line_width>
+    <trace_0_name>tm2_double</trace_0_name>
+    <trace_0_plot_mode>0</trace_0_plot_mode>
+    <trace_0_point_size>4</trace_0_point_size>
+    <trace_0_point_style>0</trace_0_point_style>
+    <trace_0_trace_color>
+      <color name="YSS Trace 1" red="79" green="163" blue="217" />
+    </trace_0_trace_color>
+    <trace_0_trace_type>0</trace_0_trace_type>
+    <trace_0_update_delay>100</trace_0_update_delay>
+    <trace_0_update_mode>0</trace_0_update_mode>
+    <trace_0_visible>true</trace_0_visible>
+    <trace_0_x_axis_index>0</trace_0_x_axis_index>
+    <trace_0_x_pv />
+    <trace_0_x_pv_value />
+    <trace_0_y_axis_index>1</trace_0_y_axis_index>
+    <trace_0_y_pv>/YSS/SIMULATOR/tm2_double</trace_0_y_pv>
+    <trace_0_y_pv_value />
+    <trace_count>1</trace_count>
+    <transparent>false</transparent>
+    <trigger_pv />
+    <trigger_pv_value />
+    <visible>true</visible>
+    <widget_type>XY Graph</widget_type>
+    <width>600</width>
+    <wuid>yss:517</wuid>
+    <x>656</x>
+    <y>468</y>
+  </widget>
+</display>
