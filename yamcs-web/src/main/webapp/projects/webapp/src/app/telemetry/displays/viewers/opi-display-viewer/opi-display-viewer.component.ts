@@ -212,11 +212,11 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
         if (!this.historyProviders.has(pvName)) {
           const provider = new OpiDisplayHistoricDataProvider(
             pvName,
-            () =>
+            (samples) =>
               this.postToSandbox({
                 type: 'historySamples',
                 pvName,
-                samples: provider.getSamples(),
+                samples,
               }),
             this.yamcs,
             this.synchronizer,
