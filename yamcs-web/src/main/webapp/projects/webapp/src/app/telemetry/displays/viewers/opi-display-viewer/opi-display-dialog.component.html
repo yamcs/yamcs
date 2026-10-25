@@ -1,0 +1,29 @@
+<h2 mat-dialog-title>{{ data.title }}</h2>
+
+<mat-dialog-content>
+  <p class="message">{{ data.message }}</p>
+  @if (data.kind === "password") {
+    <ya-form [formGroup]="form">
+      <ya-field label="Password">
+        <input
+          type="password"
+          formControlName="password"
+          autocomplete="off"
+          (keydown.enter)="confirm()" />
+      </ya-field>
+    </ya-form>
+    @if (wrongPassword()) {
+      <p class="error">Password error!</p>
+    }
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  @if (data.kind === "password") {
+    <ya-button mat-dialog-close>CANCEL</ya-button>
+    <ya-button appearance="primary" (click)="confirm()">OK</ya-button>
+  } @else {
+    <ya-button mat-dialog-close>NO</ya-button>
+    <ya-button appearance="primary" (click)="confirm()">YES</ya-button>
+  }
+</mat-dialog-actions>
