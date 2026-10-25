@@ -6,6 +6,7 @@ import {
   OnDestroy,
   ViewChild,
 } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlarmSeverity, AutoScaleOverride, Sample } from '@yamcs/opi';
 import {
@@ -25,6 +26,10 @@ import {
 import { Subscription } from 'rxjs';
 import { Viewer } from '../Viewer';
 import { OpiDisplayHistoricDataProvider } from './OpiDisplayHistoricDataProvider';
+import {
+  OpiDisplayDialogComponent,
+  OpiDisplayDialogData,
+} from './opi-display-dialog.component';
 
 // Legacy namespace. New projects should not make use of this.
 const OPS_NAMESPACE = 'MDB:OPS Name';
@@ -97,6 +102,7 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
     @Inject(APP_BASE_HREF) private baseHref: string,
     private configService: ConfigService,
     private formatter: Formatter,
+    private dialog: MatDialog,
   ) {
     this.storageClient = yamcs.createStorageClient();
     this.bucket = configService.getDisplayBucket();
@@ -196,6 +202,15 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
           .catch((err) => this.messageService.showError(err));
         break;
 
+      case 'dialog':
+        this.openDialog(msg.id, {
+          kind: msg.kind,
+          title: msg.title,
+          message: msg.message,
+          password: msg.password,
+        });
+        break;
+
       case 'openwebpage': {
         const url: string = msg.url;
         if (url.startsWith('http://') || url.startsWith('https://')) {
@@ -277,6 +292,17 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
       }
     }
     this.router.navigateByUrl(url);
+  }
+
+  private openDialog(id: number, data: OpiDisplayDialogData) {
+    const dialogRef = this.dialog.open<
+      OpiDisplayDialogComponent,
+      OpiDisplayDialogData,
+      boolean
+    >(OpiDisplayDialogComponent, { width: '400px', data });
+    dialogRef.afterClosed().subscribe((result) => {
+      this.postToSandbox({ type: 'dialogResult', id, result: !!result });
+    });
   }
 
   private openPV(pvName: string) {
