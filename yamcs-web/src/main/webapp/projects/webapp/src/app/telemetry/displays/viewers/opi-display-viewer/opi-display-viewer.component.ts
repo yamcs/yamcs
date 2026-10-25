@@ -160,7 +160,7 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
         break;
 
       case 'opendisplay':
-        this.openDisplay(msg.path, msg.args);
+        this.openDisplay(msg.absolutePath ?? msg.path, msg.args);
         break;
 
       case 'closedisplay':
@@ -185,7 +185,7 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
         break;
 
       case 'runstack':
-        this.runStack(msg.path);
+        this.runStack(msg.path, msg.absolutePath);
         break;
 
       case 'runprocedure':
@@ -300,22 +300,30 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
     }
   }
 
-  private runStack(path: string) {
-    const parts = path.split('/');
-    const resolvedParts: string[] = [];
-    for (const part of parts) {
-      if (part === '.') {
-        // ignore
-      } else if (part === '..') {
-        resolvedParts.pop();
-      } else {
-        resolvedParts.push(part);
+  private runStack(path: string, absolutePath?: string) {
+    let objectName: string | undefined;
+    if (absolutePath) {
+      objectName = absolutePath.substring(1);
+    } else {
+      // Older opi.js versions only send the resolved URL
+      const parts = path.split('/');
+      const resolvedParts: string[] = [];
+      for (const part of parts) {
+        if (part === '.') {
+          // ignore
+        } else if (part === '..') {
+          resolvedParts.pop();
+        } else {
+          resolvedParts.push(part);
+        }
+      }
+      const resolvedPath = resolvedParts.join('/');
+      const bucketRoot = this.storageClient.getObjectURL(this.bucket, '');
+      if (resolvedPath.startsWith(bucketRoot)) {
+        objectName = resolvedPath.slice(bucketRoot.length);
       }
     }
-    const resolvedPath = resolvedParts.join('/');
-    const bucketRoot = this.storageClient.getObjectURL(this.bucket, '');
-    if (resolvedPath.startsWith(bucketRoot)) {
-      const objectName = resolvedPath.slice(bucketRoot.length);
+    if (objectName) {
       this.yamcs.yamcsClient
         .startActivity(this.yamcs.instance!, {
           type: 'STACK',
