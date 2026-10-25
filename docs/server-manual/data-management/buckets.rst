@@ -11,7 +11,7 @@ For filesystem buckets, each bucket represents a directory on disk and the objec
 
 A bucket is limited to 100MB in size and maximum 1000 objects. In addition, the HTTP API imposes a limit of 5MB for each uploaded object. Note that since the filesystem buckets can be changed outside Yamcs (just copying files in a directory) the total size limit or the number of objects limit may be exceeded.
 
-The RocksDB buckets can be created in the configuration or programmatically using the :apidoc:`HTTP API <buckets>`.
+The RocksDB buckets can be created in the configuration or programmatically using the :apidoc:`HTTP API <buckets>`. Alternatively, the creation of new buckets can be delegated to a bucket provider (see ``createBuckets`` below).
 
 
 Buckets
@@ -34,7 +34,7 @@ name (string)
     The name of the bucket. The name must contain only letters, digits or underscores.
 
 path (string)
-    If this option is present the bucket is a filesystem bucket and a directory with the given path will be created if not already existing. If omitted, this bucket will be stored binary in the Yamcs database (RocksDB).
+    If this option is present the bucket is a filesystem bucket and a directory with the given path will be created if not already existing. If omitted, this bucket will be stored binary in the Yamcs database (RocksDB), or created through the bucket provider that has ``createBuckets`` enabled. If a bucket provider already provides a bucket with this name, the options below apply to that bucket.
 
 maxSize (number)
     The maximum allowed size of the bucket in bytes.
@@ -90,6 +90,18 @@ This can be activated by setting the ``bucketProviders`` property in :file:`etc/
 
 Options
 ~~~~~~~
+
+The following options apply to all bucket providers:
+
+type (string)
+  **Required.** The type of bucket provider.
+
+createBuckets (boolean)
+  If enabled, new buckets are created through this provider instead of in the Yamcs database (RocksDB). This applies to buckets created through the HTTP API, to buckets listed under ``buckets`` that do not yet exist, and to buckets created automatically by Yamcs components (for example the Yamcs Web display and stack buckets). Bucket creation fails if the provider does not support it. At most one provider can have this option enabled. Default: false
+
+The deletion of a provider bucket (for example through the HTTP API) is delegated to the provider that owns it. Deletion fails if the provider does not support it.
+
+The ``remote-yamcs`` provider has these additional options:
 
 yamcsUrl (string)
   **Required.** The URL of the remote Yamcs server; The URL has to include http or https.
