@@ -8,6 +8,11 @@ Version 5.13.8 unreleased
         * XTCE loader option `autoTmPartitions` -> `autoPacketNames`
         * processor option `subscribeContainerArchivePartitions` -> `subscribePacketNameContainers`
         * `ContainerInfo.archivePartition` -> `ContainerInfo.useAsPacketName` in the HTTP API
+* Buckets:
+    * Bucket providers can add and remove buckets at runtime through `BucketManager.addBucket` and `BucketManager.removeBucket`.
+    * New `createBuckets` option for a bucket provider in `yamcs.yaml`: new buckets (from the HTTP API, from `buckets` entries and those created automatically, e.g. the Yamcs Web display and stack buckets) are then created through that provider instead of in the local RocksDB database.
+    * The `buckets` entries in `yamcs.yaml` are now processed after the bucket providers, such that they can refer to a provider bucket.
+    * Fix deleted RocksDB buckets still being listed until restart.
 
 Version 5.13.7 released 17-Oct-2026
 - OpenID: verify ID tokens against JWKS, support OpenID Connect Discovery and RP-Initiated Logout
