@@ -5,10 +5,12 @@ import { ExtensionComponent } from './appbase/extension/extension.component';
 import { extensionMatcher } from './appbase/extension/extension.matcher';
 import { ForbiddenComponent } from './appbase/forbidden/forbidden.component';
 import { HomeComponent } from './appbase/home/home.component';
+import { LoginFailedComponent } from './appbase/login-failed/login-failed.component';
 import { NotFoundComponent } from './appbase/not-found/not-found.component';
 import { ProfileComponent } from './appbase/profile/profile.component';
 import { RouteRefreshComponent } from './appbase/route-refresh/route-refresh.component';
 import { ServerUnavailableComponent } from './appbase/server-unavailable/server-unavailable.component';
+import { SignedOutComponent } from './appbase/signed-out/signed-out.component';
 import { attachContextGuardFn } from './core/guards/AttachContextGuard';
 import { authGuardChildFn, authGuardFn } from './core/guards/AuthGuard';
 import { clearContextGuardFn } from './core/guards/ClearContextGuard';
@@ -65,6 +67,12 @@ export const APP_ROUTES: Routes = [
         data: { hasSidebar: false },
       },
       {
+        path: 'login-failed',
+        component: LoginFailedComponent,
+        canActivate: [clearContextGuardFn],
+        data: { hasSidebar: false },
+      },
+      {
         path: 'oidc-browser-callback',
         canActivate: [clearContextGuardFn, serverSideOpenIDCallbackGuardFn],
         children: [],
@@ -80,6 +88,12 @@ export const APP_ROUTES: Routes = [
         path: 'route-refresh',
         component: RouteRefreshComponent,
         canActivate: [authGuardFn, clearContextGuardFn],
+        data: { hasSidebar: false },
+      },
+      {
+        path: 'signed-out',
+        component: SignedOutComponent,
+        canActivate: [clearContextGuardFn],
         data: { hasSidebar: false },
       },
       {

@@ -158,6 +158,27 @@ public class TokenStore extends AbstractHttpService implements SessionListener {
         }
     }
 
+    /**
+     * Returns the session associated with the provided refresh token, without exchanging it.
+     * 
+     * @return the session, or null if the token is unknown.
+     */
+    public synchronized UserSession getSession(String refreshToken) {
+        var hmac = new Hmac(refreshToken);
+        var session = refreshTokens.get(hmac);
+        if (session != null) {
+            return session;
+        }
+
+        // Maybe an old token, follow previous token exchanges
+        RefreshResult candidate = refreshCache.getIfPresent(hmac);
+        while (candidate != null) {
+            session = candidate.session;
+            candidate = refreshCache.getIfPresent(new Hmac(candidate.refreshToken));
+        }
+        return session;
+    }
+
     private void renewSession(UserSession userSession) throws SessionExpiredException {
         sessionManager.renewSession(userSession.getId());
     }

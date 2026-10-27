@@ -67,6 +67,7 @@ import org.yamcs.protobuf.SubscribeParametersData;
 import org.yamcs.protobuf.SubscribeParametersRequest;
 import org.yamcs.protobuf.SubscribeProcessorsRequest;
 import org.yamcs.protobuf.SubscribeTMStatisticsRequest;
+import org.yamcs.protobuf.TmStatistics;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
@@ -450,7 +451,13 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
             @Override
             public void statisticsUpdated(Processor statsProcessor, Statistics stats) {
                 if (statsProcessor.equals(processor)) {
-                    observer.next(stats);
+                    Statistics.Builder filteredb = Statistics.newBuilder(stats).clearTmstats();
+                    for (TmStatistics tmstats : stats.getTmstatsList()) {
+                        if (ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadPacket, tmstats.getQualifiedName())) {
+                            filteredb.addTmstats(tmstats);
+                        }
+                    }
+                    observer.next(filteredb.build());
                 }
             }
         };

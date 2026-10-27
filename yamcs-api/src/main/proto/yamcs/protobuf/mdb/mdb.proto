@@ -801,7 +801,13 @@ message ContainerInfo {
   repeated SequenceEntryInfo entry = 10;
   optional UsedByInfo usedBy = 11;
   map<string, AncillaryDataInfo> ancillaryData = 12;
-  optional bool archivePartition = 14;
+
+  // Deprecated, use ``useAsPacketName``
+  optional bool archivePartition = 14 [deprecated=true];
+
+  // Whether the qualified name of this container is used as packet name
+  // (the name under which matching packets are archived and counted)
+  optional bool useAsPacketName = 15;
 }
 
 message InputParameterInfo {

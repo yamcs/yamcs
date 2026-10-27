@@ -30,33 +30,34 @@ class TableDefinitionSerializer {
 
     static ProtoTableDefinition toProtobuf(TableDefinition def, List<TableColumnDefinition> keyDef,
             List<TableColumnDefinition> valueDef) {
-        ProtoTableDefinition.Builder infob = ProtoTableDefinition.newBuilder();
+        ProtoTableDefinition.Builder tbldefb = ProtoTableDefinition.newBuilder();
 
-        infob.setCompressed(def.isCompressed());
-        infob.setFormatVersion(def.getFormatVersion());
-        infob.setStorageEngine(def.getStorageEngineName());
+        tbldefb.setCompressed(def.isCompressed());
+        tbldefb.setFormatVersion(def.getFormatVersion());
+        tbldefb.setStorageEngine(def.getStorageEngineName());
         if (def.hasHistogram()) {
-            infob.addAllHistogramColumn(def.getHistogramColumns());
+            tbldefb.addAllHistogramColumn(def.getHistogramColumns());
         }
         if (def.hasPartitioning()) {
-            infob.setPartitioningInfo(toProtobuf(def.getPartitioningSpec()));
+            tbldefb.setPartitioningInfo(toProtobuf(def.getPartitioningSpec()));
         }
 
         for (TableColumnDefinition cdef : keyDef) {
-            infob.addKeyColumn(toProtobuf(cdef));
+            tbldefb.addKeyColumn(toProtobuf(cdef));
         }
         for (TableColumnDefinition cdef : valueDef) {
-            infob.addValueColumn(toProtobuf(cdef));
+            tbldefb.addValueColumn(toProtobuf(cdef));
         }
 
         List<String> scndIdx = def.getSecondaryIndex();
         if (scndIdx != null) {
-            infob.addSecondaryIndex(SecondaryIndex.newBuilder().addAllColumnName(scndIdx).build());
+            tbldefb.addSecondaryIndex(SecondaryIndex.newBuilder().addAllColumnName(scndIdx).build());
         }
         if (def.getCfName() != null) {
-            infob.setCfName(def.getCfName());
+            tbldefb.setCfName(def.getCfName());
         }
-        return infob.build();
+        tbldefb.setHistogramVersion(def.getHistogramVersion());
+        return tbldefb.build();
     }
 
     private static PartitioningInfo toProtobuf(PartitioningSpec spec) {
@@ -170,6 +171,13 @@ class TableDefinitionSerializer {
 
         if (protodef.hasCfName()) {
             tdef.setCfName(protodef.getCfName());
+        }
+
+        // Set histogram version: default to 1 for compatibility if not present in protobuf
+        if (protodef.hasHistogramVersion()) {
+            tdef.setHistogramVersion(protodef.getHistogramVersion());
+        } else {
+            tdef.setHistogramVersion(1); // Legacy default for existing tables
         }
 
         return tdef;

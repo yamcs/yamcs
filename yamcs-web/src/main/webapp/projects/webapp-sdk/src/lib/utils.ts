@@ -551,9 +551,10 @@ export function relativizePath(path: string, relto: string) {
   const bSegments = path.split('/');
   let commonSegments: string[] = [];
   for (let i = 0; i < Math.min(aSegments.length, bSegments.length); i++) {
-    if (aSegments[i] === bSegments[i]) {
-      commonSegments.push(aSegments[i]);
+    if (aSegments[i] !== bSegments[i]) {
+      break;
     }
+    commonSegments.push(aSegments[i]);
   }
 
   const commonPrefix = commonSegments.join('/') || '/';

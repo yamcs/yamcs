@@ -15,7 +15,7 @@ The loader is configured in :file:`etc/mdb.yaml` or in the instance configuratio
     - type: "xtce"
       args:
         file: "BogusSAT.xml"
-        autoTmPartitions: true
+        autoPacketNames: true
         #fileset: ["a*.xml", "b.xml"]
         
 **Configuration Options**
@@ -28,19 +28,23 @@ fileset (string or list of strings)
 
    If the ``fileset`` option is used, the ``subLoader`` cannot be used to load child subsystems. This is because it is not possible to specify which subsystem will be the parent of the child.
 
-autoTmPartitions (boolean)
-   If true, Yamcs will automatically mark to be used as archive partitions all containers which do not have a parent.
+autoPacketNames (boolean)
+   If true, Yamcs will automatically use as packet names all the containers (except the root containers) that do not have a parent manually marked as packet name. The packet name is the name under which a packet is archived, shown in the Archive overview and in the packet statistics, and checked against the ``ReadPacket`` privileges.
 
-   If this option is false, the containers can still be manually marked by using the  ancillary data property ``UseAsArchivingPartition``:
+   Containers can be manually marked by using the ancillary data property ``UseAsPacketName``:
 
    .. code-block:: xml
 
         <SequenceContainer>
           ....
           <AncillaryDataSet>
-              <AncillaryData name="Yamcs">UseAsArchivingPartition</AncillaryData>
+              <AncillaryData name="Yamcs">UseAsPacketName</AncillaryData>
            </AncillaryDataSet>
         </SequenceContainer>
+
+   The old value ``UseAsArchivingPartition`` is still recognized, but deprecated. For compatibility with older Yamcs versions, the XTCE export still writes the old value.
+
+   This option was called ``autoTmPartitions`` in older versions; the old name is still accepted, but deprecated.
 
    Default: true
 

@@ -90,7 +90,9 @@ public class CfdpUplinkIntegrationTest {
     }
 
     @AfterEach
-    public void after() {
+    public void after() throws Exception {
+        // make sure no transfer from this test leaks packets into the next one
+        waitAllTransfersFinished();
         client.close();
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         Stream cfdpOut = ydb.getStream("cfdp_out");
@@ -343,14 +345,23 @@ public class CfdpUplinkIntegrationTest {
     }
 
     private void waitTransferFinished(MyFileReceiver rec, long id) throws InterruptedException, ExecutionException {
-        for (int i = 0; i < 10; i++) {
-            Thread.sleep(1000);
+        for (int i = 0; i < 100; i++) {
+            Thread.sleep(200);
             TransferInfo tinfo1 = cfdpClient.getTransfer(id).get();
 
             if (isFinished(tinfo1.getState())
                     && (rec == null || rec.trsf == null || isFinished(rec.trsf.getTransferState()))) {
                 break;
             }
+        }
+    }
+
+    private void waitAllTransfersFinished() throws InterruptedException, ExecutionException {
+        for (int i = 0; i < 100; i++) {
+            if (cfdpClient.listTransfers().get().stream().allMatch(t -> isFinished(t.getState()))) {
+                return;
+            }
+            Thread.sleep(200);
         }
     }
 
@@ -362,7 +373,7 @@ public class CfdpUplinkIntegrationTest {
     private byte[] createObject(String objName, int size) throws Exception {
         byte[] data = new byte[size];
         random.nextBytes(data);
-        outgoingBucket.putObjectAsync(objName, "bla", Collections.emptyMap(), data);
+        outgoingBucket.putObjectAsync(objName, "bla", Collections.emptyMap(), data).get();
 
         return data;
     }

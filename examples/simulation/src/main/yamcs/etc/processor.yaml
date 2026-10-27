@@ -54,7 +54,7 @@ ParameterArchive:
 # we do not want cache in order to extract the minimum data necessary
 ArchiveRetrieval:
   config:
-    subscribeContainerArchivePartitions: false
+    subscribePacketNameContainers: false
   services: 
     - class: org.yamcs.tctm.ReplayService
     - class: org.yamcs.algorithms.AlgorithmManager

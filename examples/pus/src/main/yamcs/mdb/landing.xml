@@ -274,7 +274,7 @@
 		<ContainerSet>
 			<SequenceContainer name="FlightData">
 				<AncillaryDataSet>
-					<AncillaryData name="Yamcs" mimeType="text/plain">UseAsArchivingPartition</AncillaryData>
+					<AncillaryData name="Yamcs" mimeType="text/plain">UseAsPacketName</AncillaryData>
 				</AncillaryDataSet>
 				<EntryList>
 					<ParameterRefEntry parameterRef="ElapsedTime">
@@ -368,7 +368,7 @@
 			</SequenceContainer>
 			<SequenceContainer name="Power">
 				<AncillaryDataSet>
-					<AncillaryData name="Yamcs" mimeType="text/plain">UseAsArchivingPartition</AncillaryData>
+					<AncillaryData name="Yamcs" mimeType="text/plain">UseAsPacketName</AncillaryData>
 				</AncillaryDataSet>
 				<EntryList>
 					<ParameterRefEntry parameterRef="BusStatus">
@@ -447,7 +447,7 @@
 			</SequenceContainer>
 			<SequenceContainer name="DHS">
 				<AncillaryDataSet>
-					<AncillaryData name="Yamcs" mimeType="text/plain">UseAsArchivingPartition</AncillaryData>
+					<AncillaryData name="Yamcs" mimeType="text/plain">UseAsPacketName</AncillaryData>
 				</AncillaryDataSet>
 				<EntryList>
 					<ParameterRefEntry parameterRef="PrimBusVoltage1">
@@ -506,7 +506,7 @@
 			</SequenceContainer>
 			<SequenceContainer name="RCS">
 				<AncillaryDataSet>
-					<AncillaryData name="Yamcs" mimeType="text/plain">UseAsArchivingPartition</AncillaryData>
+					<AncillaryData name="Yamcs" mimeType="text/plain">UseAsPacketName</AncillaryData>
 				</AncillaryDataSet>
 				<EntryList>
 					<ParameterRefEntry parameterRef="H2TankFill" />
@@ -532,7 +532,7 @@
 			</SequenceContainer>
 			<SequenceContainer name="EPS">
 				<AncillaryDataSet>
-					<AncillaryData name="Yamcs" mimeType="text/plain">UseAsArchivingPartition</AncillaryData>
+					<AncillaryData name="Yamcs" mimeType="text/plain">UseAsPacketName</AncillaryData>
 				</AncillaryDataSet>
 				<EntryList>
 					<ParameterRefEntry parameterRef="LVPDUStatus">
@@ -576,7 +576,7 @@
 			</SequenceContainer>
 			<SequenceContainer name="OrbitPosition">
 				<AncillaryDataSet>
-					<AncillaryData name="Yamcs" mimeType="text/plain">UseAsArchivingPartition</AncillaryData>
+					<AncillaryData name="Yamcs" mimeType="text/plain">UseAsPacketName</AncillaryData>
 				</AncillaryDataSet>
 				<EntryList>
 					<ParameterRefEntry parameterRef="OrbitNumber" />

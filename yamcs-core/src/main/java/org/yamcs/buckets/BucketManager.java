@@ -18,6 +18,7 @@ import java.util.ServiceLoader;
 import java.util.stream.Collectors;
 
 import org.yamcs.ConfigScope;
+import org.yamcs.ConfigurationException;
 import org.yamcs.Spec;
 import org.yamcs.Spec.OptionType;
 import org.yamcs.YConfiguration;
@@ -38,7 +39,16 @@ public class BucketManager {
     private final Map<String, Bucket> buckets = new HashMap<>();
 
     private BucketDatabase bucketDatabase; // Local DB buckets
+    // Discovered providers, by type. Used for the configuration spec, and as template for creating a provider
+    // instance for each configured entry.
     private final Map<String, BucketProvider> providers = new HashMap<>(); // External buckets
+
+    // Provider instance that owns each provider bucket. Used for delegating the deletion of buckets.
+    private final Map<String, BucketProvider> bucketOwners = new HashMap<>();
+
+    // Provider instance to which the creation of new buckets is delegated. If null, new buckets are created in the
+    // local database.
+    private BucketProvider creationProvider;
 
     public BucketManager() {
         var yamcs = YamcsServer.getServer();
@@ -70,6 +80,7 @@ public class BucketManager {
         providerSpec.addOption("type", OptionType.STRING)
                 .withRequired(true)
                 .withChoices(providers.keySet());
+        providerSpec.addOption("createBuckets", OptionType.BOOLEAN).withDefault(false);
 
         for (var provider : providers.values()) {
             var condition = providerSpec.when("type", provider.getLocation().name());
@@ -80,6 +91,10 @@ public class BucketManager {
     }
 
     public void loadBuckets() throws IOException {
+        loadBuckets(YamcsServer.getServer().getConfig());
+    }
+
+    void loadBuckets(YConfiguration yconf) throws IOException {
         var yarchDatabase = YarchDatabase.getInstance(YamcsServer.GLOBAL_INSTANCE);
         bucketDatabase = YarchDatabase.getDefaultStorageEngine().getBucketDatabase(yarchDatabase);
 
@@ -87,33 +102,40 @@ public class BucketManager {
             buckets.put(rdbBucket.getName(), rdbBucket);
         }
 
-        var yconf = YamcsServer.getServer().getConfig();
         if (yconf != null) { // Can be null in unit tests
+            // Load the providers first, so that the buckets configured below can refer to provider buckets,
+            // or be created through a provider.
+            if (yconf.containsKey("bucketProviders")) {
+                for (var providerConfig : yconf.getConfigList("bucketProviders")) {
+                    var provider = newProvider(providers.get(providerConfig.getString("type")));
+                    if (providerConfig.getBoolean("createBuckets", false)) {
+                        if (creationProvider != null) {
+                            throw new ConfigurationException(
+                                    "Only one bucket provider can have createBuckets enabled");
+                        }
+                        creationProvider = provider;
+                    }
+                    for (var extraBucket : provider.loadBuckets(providerConfig)) {
+                        addBucket(extraBucket, provider);
+                    }
+                }
+            }
+
             if (yconf.containsKey("buckets")) {
                 var bucketsConfigs = yconf.getConfigList("buckets");
                 for (var config : bucketsConfigs) {
                     loadBucket(config);
                 }
             }
+        }
+    }
 
-            if (yconf.containsKey("bucketProviders")) {
-                for (var providerConfig : yconf.getConfigList("bucketProviders")) {
-                    var provider = providers.get(providerConfig.getString("type"));
-                    var extraBuckets = provider.loadBuckets(providerConfig);
-                    synchronized (buckets) {
-                        for (var extraBucket : extraBuckets) {
-                            var bucket = buckets.get(extraBucket.getName());
-                            if (bucket == null) {
-                                log.info("Adding {} bucket '{}'", extraBucket.getLocation(), extraBucket.getName());
-                                buckets.put(extraBucket.getName(), extraBucket);
-                            } else {
-                                throw new IllegalArgumentException(
-                                        "Bucket " + extraBucket.getName() + " already exists");
-                            }
-                        }
-                    }
-                }
-            }
+    private static BucketProvider newProvider(BucketProvider template) {
+        try {
+            return template.getClass().getDeclaredConstructor().newInstance();
+        } catch (ReflectiveOperationException e) {
+            throw new ConfigurationException(
+                    "Cannot instantiate bucket provider " + template.getClass().getName(), e);
         }
     }
 
@@ -167,14 +189,96 @@ public class BucketManager {
         }
     }
 
+    /**
+     * Creates a new bucket.
+     * <p>
+     * The bucket is created in the local database, unless a bucket provider is configured with
+     * {@code createBuckets: true}, in which case the creation is delegated to that provider.
+     *
+     * @throws IllegalArgumentException
+     *             if a bucket with this name already exists
+     * @throws UnsupportedOperationException
+     *             if the bucket provider does not support creating buckets
+     */
     public Bucket createBucket(String bucketName) throws IOException {
         synchronized (buckets) {
             var bucket = buckets.get(bucketName);
             if (bucket == null) {
-                bucket = bucketDatabase.createBucket(bucketName);
+                if (creationProvider == null) {
+                    bucket = bucketDatabase.createBucket(bucketName);
+                } else {
+                    bucket = creationProvider.createBucket(bucketName);
+                    bucketOwners.put(bucketName, creationProvider);
+                }
                 buckets.put(bucketName, bucket);
             } else {
                 throw new IllegalArgumentException("Bucket " + bucketName + " already exists");
+            }
+            return bucket;
+        }
+    }
+
+    /**
+     * Adds an already existing bucket. This is a transient operation that has to be done on each server restart.
+     * <p>
+     * This method can be used at runtime, for example by a provider that discovers new buckets.
+     * <p>
+     * A bucket added with this method cannot be deleted through {@link #deleteBucket(String)}. Use
+     * {@link #addBucket(Bucket, BucketProvider)} to have the deletion delegated to a provider.
+     *
+     * @throws IllegalArgumentException
+     *             if a bucket with this name already exists
+     */
+    public void addBucket(Bucket bucket) {
+        addBucket(bucket, null);
+    }
+
+    /**
+     * Adds an already existing bucket, owned by a {@link BucketProvider}. This is a transient operation that has to
+     * be done on each server restart.
+     * <p>
+     * This method can be used at runtime, for example by a provider that discovers new buckets.
+     *
+     * @param bucket
+     *            the bucket to add
+     * @param owner
+     *            the provider owning the bucket, to which the deletion of this bucket is delegated. May be null.
+     * @throws IllegalArgumentException
+     *             if a bucket with this name already exists
+     */
+    public void addBucket(Bucket bucket, BucketProvider owner) {
+        synchronized (buckets) {
+            if (buckets.containsKey(bucket.getName())) {
+                throw new IllegalArgumentException("Bucket " + bucket.getName() + " already exists");
+            }
+            log.info("Adding {} bucket '{}'", bucket.getLocation(), bucket.getName());
+            buckets.put(bucket.getName(), bucket);
+            if (owner != null) {
+                bucketOwners.put(bucket.getName(), owner);
+            }
+        }
+    }
+
+    /**
+     * Removes a bucket that was added with {@link #addBucket(Bucket)}, or that was created by a bucket provider. The
+     * bucket content is not touched.
+     * <p>
+     * Components that have kept a reference to the bucket may continue to use it.
+     *
+     * @return the removed bucket, or null if there was no bucket with this name
+     * @throws UnsupportedOperationException
+     *             if the bucket is a local RocksDB bucket. Use {@link #deleteBucket(String)} for those.
+     */
+    public Bucket removeBucket(String bucketName) {
+        synchronized (buckets) {
+            var bucket = buckets.get(bucketName);
+            if (bucket instanceof RdbBucket) {
+                throw new UnsupportedOperationException("Local RocksDB buckets cannot be removed, only deleted");
+            }
+            if (bucket != null) {
+                log.info("Removing {} bucket '{}'", bucket.getLocation(), bucketName);
+                buckets.remove(bucketName);
+                bucketOwners.remove(bucketName);
             }
             return bucket;
         }
@@ -214,12 +318,29 @@ public class BucketManager {
         }
     }
 
+    /**
+     * Deletes a bucket, including its content.
+     * <p>
+     * Local RocksDB buckets are deleted from the database. For buckets owned by a bucket provider, the deletion is
+     * delegated to that provider.
+     *
+     * @throws UnsupportedOperationException
+     *             if the bucket cannot be deleted. For example a file system bucket, or a provider bucket whose
+     *             provider does not support deleting buckets.
+     */
     public void deleteBucket(String bucketName) throws IOException {
-        var bucket = getBucket(bucketName);
-        if (bucket instanceof RdbBucket) {
-            bucketDatabase.deleteBucket(bucketName);
-        } else {
-            throw new UnsupportedOperationException("Only local RocksDB buckets can be deleted");
+        synchronized (buckets) {
+            var bucket = buckets.get(bucketName);
+            var owner = bucketOwners.get(bucketName);
+            if (bucket instanceof RdbBucket) {
+                bucketDatabase.deleteBucket(bucketName);
+            } else if (owner != null) {
+                owner.deleteBucket(bucket);
+                bucketOwners.remove(bucketName);
+            } else {
+                throw new UnsupportedOperationException("Bucket " + bucketName + " cannot be deleted");
+            }
+            buckets.remove(bucketName);
         }
     }
 

@@ -1,13 +1,10 @@
 package org.yamcs.yarch.rocksdb;
 
-import static org.yamcs.yarch.HistogramSegment.segmentStart;
-import static org.yamcs.yarch.rocksdb.RdbHistogramInfo.histoDbKey;
 import static org.yamcs.yarch.rocksdb.RdbStorageEngine.TBS_INDEX_SIZE;
 import static org.yamcs.yarch.rocksdb.RdbStorageEngine.ZERO_BYTES;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Deque;
@@ -21,14 +18,10 @@ import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.HistogramIterator;
 import org.yamcs.yarch.HistogramRecord;
 import org.yamcs.yarch.HistogramSegment;
+import org.yamcs.yarch.HistogramEncoder;
 import org.yamcs.yarch.PartitionManager;
 import org.yamcs.yarch.TableDefinition;
 
-/**
- * 
- * @author nm
- *
- */
 public class RdbHistogramIterator implements HistogramIterator {
 
     private Iterator<PartitionManager.Interval> partitionIterator;
@@ -45,9 +38,11 @@ public class RdbHistogramIterator implements HistogramIterator {
     String colName;
     boolean stopReached = false;
     RdbPartitionManager partMgr;
+    HistogramEncoder encoder;
 
     public RdbHistogramIterator(String yamcsInstance, Tablespace tablespace, TableDefinition tblDef,
             String colName, TimeInterval interval) throws RocksDBException, IOException {
+        this.encoder = HistogramEncoder.createEncoder(tblDef);
         this.interval = interval;
         this.colName = colName;
         this.tablespace = tablespace;
@@ -79,19 +74,16 @@ public class RdbHistogramIterator implements HistogramIterator {
         }
         rdb = tablespace.getRdb(hist.partitionDir, false);
 
-        long segStart = interval.hasStart() ? segmentStart(interval.getStart()) : 0;
-        byte[] dbKeyStart = histoDbKey(hist.tbsIndex, segStart, ZERO_BYTES);
+        long segStart = interval.hasStart() ? encoder.segIndex(encoder.segmentStart(interval.getStart())) : 0;
+        byte[] dbKeyStart = encoder.encodeKey(hist.tbsIndex, segStart, ZERO_BYTES);
 
-        boolean strictEnd;
         byte[] dbKeyStop;
         if (interval.hasEnd()) {
-            strictEnd = false;
             dbKeyStop = ByteArrayUtils.encodeInt(hist.tbsIndex, new byte[12], 0);
-            long segStop = segmentStart(interval.getEnd());
+            long segStop = encoder.segIndex(encoder.segmentStart(interval.getEnd()));
             ByteArrayUtils.encodeLong(segStop, dbKeyStop, TBS_INDEX_SIZE);
         } else {
             dbKeyStop = RdbStorageEngine.dbKey(hist.tbsIndex);
-            strictEnd = false;
         }
         if (segmentIterator != null) {
             segmentIterator.close();
@@ -105,16 +97,18 @@ public class RdbHistogramIterator implements HistogramIterator {
         readNextSegments();
     }
 
-    // reads all the segments with the same sstart time
+    // reads all the segments with the same index, or continues until records are found
     private void readNextSegments() throws IOException {
         if (!segmentIterator.isValid()) {
             readNextPartition();
             return;
         }
-        long sstart = ByteArrayUtils.decodeLong(segmentIterator.key(), RdbStorageEngine.TBS_INDEX_SIZE);
+
+        HistogramSegment segment = encoder.decodeSegment(segmentIterator.key(), segmentIterator.value());
+        long segIndex = segment.segIndex();
 
         while (true) {
-            boolean beyondStop = addRecords(segmentIterator.key(), segmentIterator.value());
+            boolean beyondStop = addRecords(segment);
             if (beyondStop) {
                 stopReached = true;
             }
@@ -124,8 +118,8 @@ public class RdbHistogramIterator implements HistogramIterator {
                 readNextPartition();
                 break;
             }
-            long g = ByteArrayUtils.decodeLong(segmentIterator.key(), RdbStorageEngine.TBS_INDEX_SIZE);
-            if (g != sstart && !records.isEmpty()) {
+            segment = encoder.decodeSegment(segmentIterator.key(), segmentIterator.value());
+            if (segment.segIndex() != segIndex && !records.isEmpty()) {
                 break;
             }
         }
@@ -145,18 +139,13 @@ public class RdbHistogramIterator implements HistogramIterator {
 
     // add all records from this segment into the queue
     // if the stop has been reached add only partially the records, return true
-    private boolean addRecords(byte[] key, byte[] val) {
-        long sstart = ByteArrayUtils.decodeLong(key, RdbStorageEngine.TBS_INDEX_SIZE);
-        byte[] columnv = new byte[key.length - RdbStorageEngine.TBS_INDEX_SIZE - 8];
-        System.arraycopy(key, RdbStorageEngine.TBS_INDEX_SIZE + 8, columnv, 0, columnv.length);
-
-        ByteBuffer vbb = ByteBuffer.wrap(val);
+    private boolean addRecords(HistogramSegment segment) {
         HistogramRecord r = null;
-        while (vbb.hasRemaining()) {
-            long start = sstart * HistogramSegment.GROUPING_FACTOR + vbb.getInt();
 
-            long stop = sstart * HistogramSegment.GROUPING_FACTOR + vbb.getInt();
-            int num = vbb.getShort() & 0xFFFF;
+        for (HistogramSegment.SegRecord record : segment.getRecords()) {
+            long start = encoder.joinTime(segment.segIndex(), record.dstart());
+            long stop = encoder.joinTime(segment.segIndex(), record.dstop());
+
             if ((interval.hasStart()) && (stop <= interval.getStart())) {
                 continue;
             }
@@ -167,10 +156,10 @@ public class RdbHistogramIterator implements HistogramIterator {
                 return true;
             }
             if (r == null) {
-                r = new HistogramRecord(columnv, start, stop, num);
+                r = new HistogramRecord(segment.columnv(), start, stop, record.num());
             } else {
                 records.addLast(r);
-                r = new HistogramRecord(columnv, start, stop, num);
+                r = new HistogramRecord(segment.columnv(), start, stop, record.num());
             }
         }
         if (r != null) {
@@ -183,8 +172,8 @@ public class RdbHistogramIterator implements HistogramIterator {
     public void seek(byte[] columnValue, long time) {
         try {
             records.clear();
-            long sstart = segmentStart(time);
-            interval.setStart(HistogramSegment.GROUPING_FACTOR * sstart);
+            long segmentStartTime = encoder.segmentStart(time);
+            interval.setStart(segmentStartTime);
             partitionIterator = partMgr.intervalIterator(interval);
             if (!partitionIterator.hasNext()) {
                 stopReached = true;
@@ -200,14 +189,13 @@ public class RdbHistogramIterator implements HistogramIterator {
             }
 
             rdb = tablespace.getRdb(hist.partitionDir, false);
-            long segStart = segmentStart(time);
-            byte[] dbKeyStart = histoDbKey(hist.tbsIndex, segStart, columnValue);
+            long startIdx = encoder.segIndex(time);
+            byte[] dbKeyStart = encoder.encodeKey(hist.tbsIndex, startIdx, columnValue);
 
             byte[] dbKeyStop;
             if (interval.hasEnd()) {
-                dbKeyStop = ByteArrayUtils.encodeInt(hist.tbsIndex, new byte[12], 0);
-                long segStop = segmentStart(interval.getEnd());
-                ByteArrayUtils.encodeLong(segStop, dbKeyStop, TBS_INDEX_SIZE);
+                long stopIdx = encoder.segIndex(interval.getEnd());
+                dbKeyStop = encoder.encodeKey(hist.tbsIndex, stopIdx, new byte[] {});
             } else {
                 dbKeyStop = RdbStorageEngine.dbKey(hist.tbsIndex);
             }
@@ -221,17 +209,14 @@ public class RdbHistogramIterator implements HistogramIterator {
             }
 
             // we have to add the first record only partially and only if it starts at the time and value of the seek
-            byte[] key = segmentIterator.key();
-            long sstart1 = ByteArrayUtils.decodeLong(key, TBS_INDEX_SIZE);
-            byte[] columnValue1 = new byte[key.length - TBS_INDEX_SIZE - 8];
-            System.arraycopy(key, TBS_INDEX_SIZE + 8, columnValue1, 0, columnValue1.length);
+            var segment = encoder.decodeSegment(segmentIterator.key(), segmentIterator.value());
 
-            if (sstart1 != sstart || !Arrays.equals(columnValue, columnValue1)) {
+            if (segment.segIndex() != startIdx || !Arrays.equals(columnValue, segment.columnv())) {
                 readNextSegments();
                 return;
             }
 
-            addRecords(segmentIterator.key(), segmentIterator.value());
+            addRecords(segment);
 
             HistogramRecord r;
             while ((r = records.poll()) != null) {

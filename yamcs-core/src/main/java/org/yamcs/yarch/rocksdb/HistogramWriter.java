@@ -1,8 +1,5 @@
 package org.yamcs.yarch.rocksdb;
 
-import static org.yamcs.yarch.HistogramSegment.segmentStart;
-import static org.yamcs.yarch.rocksdb.RdbHistogramInfo.histoDbKey;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -14,6 +11,8 @@ import org.rocksdb.RocksDBException;
 import org.rocksdb.Snapshot;
 import org.yamcs.utils.ByteArrayWrapper;
 import org.yamcs.yarch.HistogramSegment;
+import org.yamcs.yarch.HistogramEncoder;
+import org.yamcs.yarch.HistogramEncoder.SplitTimeResult;
 import org.yamcs.yarch.Row;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.YarchException;
@@ -27,8 +26,6 @@ import org.yamcs.yarch.YarchException;
  * 
  * <p>
  * It does allow concurrent access
- * 
- * @author nm
  *
  */
 public abstract class HistogramWriter {
@@ -87,6 +84,7 @@ public abstract class HistogramWriter {
      */
     class ColumnHistogramWriter {
         final String columnName;
+        final HistogramEncoder encoder;
         int MAX_ENTRIES = 100;
 
         private LinkedHashMap<ByteArrayWrapper, HistogramSegment> segments = new LinkedHashMap<ByteArrayWrapper, HistogramSegment>() {
@@ -97,30 +95,33 @@ public abstract class HistogramWriter {
 
         public ColumnHistogramWriter(String columnName) {
             this.columnName = columnName;
+            this.encoder = HistogramEncoder.createEncoder(tableDefinition);
         }
 
         void addHistogram(long time, byte[] value) {
             RdbHistogramInfo histo;
             try {
-                histo = (RdbHistogramInfo) table.createAndGetHistogram(time, columnName);
+                long segmentStartTime = encoder.segmentStart(time);
+                histo = (RdbHistogramInfo) table.createAndGetHistogram(segmentStartTime, columnName);
                 YRDB rdb = tablespace.getRdb(histo.partitionDir, false);
 
-                long sstart = segmentStart(time);
-                int dtime = (int) (time % HistogramSegment.GROUPING_FACTOR);
-                byte[] histoDbKey = histoDbKey(histo.tbsIndex, sstart, value);
+                SplitTimeResult splitResult = encoder.splitTime(time);
+                byte[] histoDbKey = encoder.encodeKey(histo.tbsIndex, splitResult.segIndex(), value);
                 ByteArrayWrapper hmkey = new ByteArrayWrapper(histoDbKey);
                 
                 HistogramSegment segment = segments.get(hmkey);
                 if (segment == null) {
                     byte[] val = rdb.get(histoDbKey);
                     if (val == null) {
-                        segment = new HistogramSegment(value, sstart);
+                        segment = new HistogramSegment(value, splitResult.segIndex());
                     } else {
-                        segment = new HistogramSegment(value, sstart, val);
+                        List<HistogramSegment.SegRecord> decodedRecords = encoder.decodeValue(val, splitResult.segIndex());
+                        segment = new HistogramSegment(value, splitResult.segIndex(), decodedRecords);
                     }
                 }
-                segment.merge(dtime);
-                rdb.put(histoDbKey, segment.val());
+                segment.merge(splitResult.deltaTime());
+                byte[] encodedValue = encoder.encodeValue(segment);
+                rdb.put(histoDbKey, encodedValue);
 
                 segments.put(hmkey, segment);
             } catch (RocksDBException e) {

@@ -10,6 +10,7 @@ import {
   UserInfo,
 } from '../client';
 import { User } from '../User';
+import * as utils from '../utils';
 import { ConfigService } from './config.service';
 import { Synchronizer } from './synchronizer.service';
 import { YamcsService } from './yamcs.service';
@@ -35,6 +36,11 @@ export class AuthService implements OnDestroy {
   private syncSubscription: Subscription;
   private nextRefresh: Date | null;
 
+  // Set when the session was ended by an explicit sign-out, or by the
+  // server. The resulting navigation is then handled explicitly, rather
+  // than by automatic redirects to the login page.
+  private sessionEnded = false;
+
   // Optional logout page where to redirect the browser after logging out of Yamcs
   // If unset, defaults to a local login page.
   private logoutRedirectUrl?: string;
@@ -44,8 +50,8 @@ export class AuthService implements OnDestroy {
     this.logoutRedirectUrl = this.configService.getConfig().logoutRedirectUrl;
 
     this.yamcsService.sessionEnded$.subscribe((ended) => {
-      if (ended && !this.authInfo.spnego) {
-        this.logout(true);
+      if (ended && !this.authInfo.spnego && !this.sessionEnded) {
+        this.onSessionEnded();
       }
     });
 
@@ -56,12 +62,19 @@ export class AuthService implements OnDestroy {
      */
     this.yamcsService.yamcsClient.setHttpInterceptor(
       async (next: HttpHandler, url: string, init?: RequestInit) => {
-        let response;
         try {
           // Verify or fetch a token when necessary
           await this.loginAutomatically();
+        } catch (err: any) {
+          throw this.handleRequestFailure(url, err);
+        }
 
-          init = this.modifyRequest(init);
+        // Kept outside the try blocks: an error while preparing the request
+        // is a client bug, and must not be reported as the server being down.
+        init = this.modifyRequest(init);
+
+        let response: Response;
+        try {
           response = await next.handle(url, init);
           if (response.status === 401) {
             // Server must have refused our access token. Attempt to refresh.
@@ -69,13 +82,7 @@ export class AuthService implements OnDestroy {
             await this.loginAutomatically();
           }
         } catch (err: any) {
-          if (err.name === 'TypeError') {
-            // TypeError is how Fetch API reports network or CORS failure
-            this.router.navigate(['/down'], { skipLocationChange: true });
-          } else {
-            this.logout(true);
-          }
-          throw err;
+          throw this.handleRequestFailure(url, err);
         }
 
         if (response.status === 401) {
@@ -109,21 +116,33 @@ export class AuthService implements OnDestroy {
   }
 
   /**
+   * Navigates away after a failed request or login attempt, and returns
+   * the error for rethrowing.
+   */
+  private handleRequestFailure(url: string, err: any) {
+    // Log the cause, because the navigation below hides it from the user
+    console.error(`Request to ${url} failed`, err);
+    if (err.name === 'TypeError') {
+      // TypeError is how Fetch API reports network or CORS failure
+      this.router.navigate(['/down'], { skipLocationChange: true });
+    } else {
+      this.logout(true);
+    }
+    return err;
+  }
+
+  /**
    * Adds an authorization header to an HTTP request.
    */
   private modifyRequest(init?: RequestInit): RequestInit | undefined {
     const accessToken = this.getCookie('access_token');
-    if (accessToken) {
-      if (!init) {
-        init = { headers: new Headers() };
-      } else if (!init.headers) {
-        init.headers = new Headers();
-      }
-      const headers = init.headers as Headers;
-      headers.append('Authorization', `Bearer ${accessToken}`);
+    if (!accessToken) {
+      return init;
     }
 
-    return init;
+    const headers = new Headers(init?.headers);
+    headers.set('Authorization', `Bearer ${accessToken}`);
+    return { ...init, headers };
   }
 
   getUser() {
@@ -304,20 +323,93 @@ export class AuthService implements OnDestroy {
     // (once it better supports OIDC-like sessions)
     this.yamcsService.yamcsClient.closeWebSocketClient();
 
-    if (navigateToLoginPage) {
-      if (this.logoutRedirectUrl) {
-        window.location.href = this.logoutRedirectUrl;
-      } else if (!this.configService.getConfig().disableLoginForm) {
-        const redirectURI = this.buildOpenIDRedirectURI();
-        window.location.href = this.buildRedirector(
-          {
-            clientId: 'yamcs-web',
-            authorizationEndpoint: `${location.protocol}//${location.host}${this.baseHref}auth/authorize`,
-            scope: 'openid',
-          },
-          redirectURI,
-        );
+    // Ending the session triggers session-end messages and 401 responses.
+    // These must not compete with the navigation done by signOut, or
+    // navigate away from the signed-out page.
+    if (navigateToLoginPage && !this.sessionEnded) {
+      this.redirectToLogin();
+    }
+  }
+
+  /**
+   * Explicit sign-out by the user. Ends the server-side session, and,
+   * if applicable, the session at the upstream identity provider.
+   */
+  async signOut() {
+    this.sessionEnded = true;
+    let redirectUrl: string | undefined;
+    const refreshToken = this.getCookie('refresh_token');
+    if (refreshToken) {
+      try {
+        const response =
+          await this.yamcsService.yamcsClient.logout(refreshToken);
+        redirectUrl = response.redirectUrl;
+      } catch (err) {
+        console.warn('Failed to end server-side session', err);
       }
+    }
+
+    this.logout(false);
+
+    if (redirectUrl) {
+      window.location.href = redirectUrl;
+    } else if (this.logoutRedirectUrl) {
+      window.location.href = this.logoutRedirectUrl;
+    } else {
+      this.redirectToLogin('/');
+    }
+  }
+
+  /**
+   * Handles a session that was ended by the server, for example following
+   * a logout at the OpenID server.
+   *
+   * Rather than redirecting to the login page, the user is asked to sign in
+   * again. An immediate redirect may reach the OpenID server before it has
+   * fully ended its own session, which would log the user back in.
+   */
+  private onSessionEnded() {
+    const next = this.router.url;
+    this.sessionEnded = true;
+    this.logout(false);
+    this.router.navigate(['/signed-out'], { state: { next } });
+  }
+
+  /**
+   * Navigates the browser to where the user can log in.
+   *
+   * When an OpenID server is configured, this is always the OpenID server.
+   * Else this is the login form, or the logoutRedirectUrl if the login form
+   * is disabled.
+   *
+   * @param next client-side URL to return to after a successful login.
+   * Defaults to the current URL.
+   */
+  redirectToLogin(next = this.router.url) {
+    const openid = this.authInfo.openid;
+    if (openid) {
+      // Let Yamcs redirect to the OpenID server. This works even when the
+      // authorization endpoint was not known when this page was loaded.
+      window.location.href = this.buildRedirector(
+        {
+          ...openid,
+          authorizationEndpoint: `${location.protocol}//${location.host}${this.baseHref}openid/authorize`,
+        },
+        this.buildServerSideOpenIDRedirectURI(),
+        next,
+      );
+    } else if (!this.configService.getConfig().disableLoginForm) {
+      window.location.href = this.buildRedirector(
+        {
+          clientId: 'yamcs-web',
+          authorizationEndpoint: `${location.protocol}//${location.host}${this.baseHref}auth/authorize`,
+          scope: 'openid',
+        },
+        this.buildOpenIDRedirectURI(),
+        next,
+      );
+    } else if (this.logoutRedirectUrl) {
+      window.location.href = this.logoutRedirectUrl;
     }
   }
 
@@ -329,9 +421,19 @@ export class AuthService implements OnDestroy {
     return `${location.protocol}//${location.host}${this.baseHref}oidc-browser-callback`;
   }
 
-  private buildRedirector(openid: OpenIDConnectInfo, redirectURI: string) {
+  private buildRedirector(
+    openid: Required<OpenIDConnectInfo>,
+    redirectURI: string,
+    next: string,
+  ) {
+    // The client-side URL gets passed as state. When the login completes,
+    // we get it back on the callback route, together with a code that we
+    // can exchange for a Yamcs access token.
+    const state = utils.toBase64URL(next);
+
     let url = openid.authorizationEndpoint;
     url += `?client_id=${encodeURIComponent(openid.clientId)}`;
+    url += `&state=${state}`;
     url += '&response_mode=query';
     url += '&response_type=code';
     url += `&scope=${encodeURIComponent(openid.scope)}`;

@@ -290,15 +290,15 @@ public class XmlLoaderTest {
     @Test
     public void testAutoPart() throws XMLStreamException, IOException {
         Mdb mdb = MdbFactory.createInstanceByConfig("BogusSAT2");
-        assertTrue(mdb.getSequenceContainer("/BogusSAT/CCSDSPUSTelemetryPacket").useAsArchivePartition());
-        assertFalse(mdb.getSequenceContainer("/BogusSAT/SC001/ECSS_Service_1_Subservice_1").useAsArchivePartition());
+        assertTrue(mdb.getSequenceContainer("/BogusSAT/CCSDSPUSTelemetryPacket").useAsPacketName());
+        assertFalse(mdb.getSequenceContainer("/BogusSAT/SC001/ECSS_Service_1_Subservice_1").useAsPacketName());
     }
 
     @Test
     public void testNoAutoPart() throws XMLStreamException, IOException {
         Mdb mdb = MdbFactory.createInstanceByConfig("BogusSAT2-noautopart");
         assertFalse(
-                mdb.getSequenceContainer("/BogusSAT/SC001/BusElectronics/SensorHistoryRecord").useAsArchivePartition());
-        assertTrue(mdb.getSequenceContainer("/BogusSAT/CCSDSPUSTelemetryPacket").useAsArchivePartition());
+                mdb.getSequenceContainer("/BogusSAT/SC001/BusElectronics/SensorHistoryRecord").useAsPacketName());
+        assertTrue(mdb.getSequenceContainer("/BogusSAT/CCSDSPUSTelemetryPacket").useAsPacketName());
     }
 }

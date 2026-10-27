@@ -19,6 +19,7 @@ import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.api.HttpBody;
 import org.yamcs.api.Observer;
 import org.yamcs.archive.GPBHelper;
+import org.yamcs.archive.TmPartitionGroups;
 import org.yamcs.archive.TmReceptionTimeIndex;
 import org.yamcs.archive.XtceTmRecorder;
 import org.yamcs.container.ContainerConsumer;
@@ -228,6 +229,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
 
         if (!nameSet.isEmpty()) {
             sqlb.whereColIn("pname", nameSet);
+            TmPartitionGroups.addGroupFilter(instance, sqlb, nameSet);
         }
         if (request.hasLink()) {
             sqlb.where("link = ?", request.getLink());
@@ -300,6 +302,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
         var sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
         if (request.hasPname()) { // Optional due to deprecated API where name is not provided
             sqlb = sqlb.where("pname = ?", request.getPname());
+            TmPartitionGroups.addGroupFilter(instance, sqlb, List.of(request.getPname()));
         }
         sqlb = sqlb.where("gentime = ?", gentime);
         sqlb = sqlb.where("seqNum = ?", seqNum);
@@ -345,6 +348,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
 
         if (request.getNameCount() > 0) {
             sqlb.whereColIn("pname", request.getNameList());
+            TmPartitionGroups.addGroupFilter(instance, sqlb, request.getNameList());
         }
 
         StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
@@ -372,6 +376,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
         var sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
         if (request.hasPname()) { // Optional due to deprecated API where name is not provided
             sqlb = sqlb.where("pname = ?", request.getPname());
+            TmPartitionGroups.addGroupFilter(instance, sqlb, List.of(request.getPname()));
         }
         sqlb = sqlb.where("gentime = ?", gentime);
         sqlb = sqlb.where("seqNum = ?", seqNum);
@@ -418,6 +423,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
         var sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
         if (request.hasPname()) { // Optional due to deprecated API where name is not provided
             sqlb = sqlb.where("pname = ?", request.getPname());
+            TmPartitionGroups.addGroupFilter(instance, sqlb, List.of(request.getPname()));
         }
         sqlb = sqlb.where("gentime = ?", gentime);
         sqlb = sqlb.where("seqNum = ?", seqNum);
@@ -486,7 +492,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
 
                     var bytes = packet.getPacket().toByteArray();
                     var result = extractor.processPacket(bytes, gentime, gentime, seqNum);
-                    var packetName = XtceTmRecorder.deriveArchivePartition(result);
+                    var packetName = XtceTmRecorder.derivePacketName(result);
                     responseb.setPacketName(packetName);
 
                     for (var pval : result.getParameterResult()) {
@@ -562,6 +568,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
 
         if (request.getNameCount() > 0) {
             sqlb.whereColIn("pname", nameSet);
+            TmPartitionGroups.addGroupFilter(instance, sqlb, nameSet);
         }
         if (request.hasLink()) {
             sqlb.where("link = ?", request.getLink());

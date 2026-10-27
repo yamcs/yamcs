@@ -166,7 +166,7 @@ public class MdbFactory {
 
             mdb = new Mdb(rootSs, lr.writers);
 
-            addTmPartitions(rootSs);
+            addAutoPacketNames(rootSs);
 
             // set the root sequence container as the first root sequence container found in the sub-systems.
             for (SpaceSystem ss : rootSs.getSubSystems()) {
@@ -307,23 +307,23 @@ public class MdbFactory {
         return true;
     }
 
-    static private void addTmPartitions(SpaceSystem spaceSystem) {
+    static private void addAutoPacketNames(SpaceSystem spaceSystem) {
         Set<SequenceContainer> scset = new HashSet<>();
-        collectAutoPartition(spaceSystem, scset);
+        collectAutoPacketNames(spaceSystem, scset);
 
         for (SequenceContainer sc : scset) {
-            sc.useAsArchivePartition(true);
+            sc.useAsPacketName(true);
         }
     }
 
-    static void collectAutoPartition(SpaceSystem spaceSystem, Set<SequenceContainer> scset) {
+    static void collectAutoPacketNames(SpaceSystem spaceSystem, Set<SequenceContainer> scset) {
         for (SequenceContainer sc : spaceSystem.getSequenceContainers()) {
-            if (!sc.isAutoPartition()) {
+            if (!sc.isAutoPacketName()) {
                 continue;
             }
             if (sc.getBaseContainer() == null) {
                 // do not set the flag on root containers because:
-                // 1. they will be used anyway as archive partitions if no child matches
+                // 1. they will be used anyway as packet names if no child matches
                 // 2. if they appear as container entries, we do not want to use them
                 continue;
             }
@@ -331,7 +331,7 @@ public class MdbFactory {
             boolean part = true;
             SequenceContainer sc1 = sc;
             while (sc1 != null) {
-                if (sc1.useAsArchivePartition()) {
+                if (sc1.useAsPacketName()) {
                     part = false;
                     break;
                 }
@@ -343,7 +343,7 @@ public class MdbFactory {
         }
 
         for (SpaceSystem ss : spaceSystem.getSubSystems()) {
-            collectAutoPartition(ss, scset);
+            collectAutoPacketNames(ss, scset);
         }
 
     }

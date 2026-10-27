@@ -227,6 +227,7 @@ import {
   ListServiceAccountsResponse,
   ListThreadsResponse,
   ListTopicsResponse,
+  LogoutResponse,
   ReplicationInfo,
   ReplicationInfoSubscription,
   ResultSet,
@@ -361,6 +362,25 @@ export default class YamcsClient implements HttpHandler {
 
   public clearAccessToken() {
     this.accessToken = undefined;
+  }
+
+  /**
+   * End the session associated with the given refresh token.
+   */
+  async logout(refreshToken: string) {
+    const headers = new Headers();
+    headers.append('Content-Type', 'application/x-www-form-urlencoded');
+    const response = await fetch(`${this.authUrl}/logout`, {
+      method: 'POST',
+      headers,
+      body: `refresh_token=${encodeURIComponent(refreshToken)}`,
+    });
+
+    if (response.status >= 200 && response.status < 300) {
+      return (await response.json()) as LogoutResponse;
+    } else {
+      return Promise.reject(new HttpError(response));
+    }
   }
 
   private async doFetchAccessToken(body: string) {
@@ -2405,13 +2425,9 @@ export default class YamcsClient implements HttpHandler {
 
   async doFetch(url: string, init?: RequestInit) {
     if (this.accessToken) {
-      if (!init) {
-        init = { headers: new Headers() };
-      } else if (!init.headers) {
-        init.headers = new Headers();
-      }
-      const headers = new Headers(init.headers);
-      headers.append('Authorization', `Bearer ${this.accessToken}`);
+      const headers = new Headers(init?.headers);
+      headers.set('Authorization', `Bearer ${this.accessToken}`);
+      init = { ...init, headers };
     }
 
     let response: Response;

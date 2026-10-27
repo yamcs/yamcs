@@ -347,7 +347,7 @@
 				<plugin>
 					<groupId>org.yamcs</groupId>
 					<artifactId>yamcs-maven-plugin</artifactId>
-					<version>1.3.7</version>
+					<version>1.3.11</version>
 					<configuration>
 					  <protocVersion>${protobufVersion}</protocVersion>
 					</configuration>

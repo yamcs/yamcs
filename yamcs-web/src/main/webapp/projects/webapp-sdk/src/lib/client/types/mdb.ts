@@ -380,7 +380,11 @@ export interface Container extends NameDescription {
   maxInterval?: number;
   sizeInBits?: number;
   baseContainer?: Container;
+  /**
+   * @deprecated use useAsPacketName
+   */
   archivePartition: boolean;
+  useAsPacketName: boolean;
   restrictionCriteriaExpression?: string;
   entry?: SequenceEntry[];
 }

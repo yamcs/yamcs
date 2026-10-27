@@ -9,7 +9,7 @@ export interface AuthInfo {
 
 export interface OpenIDConnectInfo {
   clientId: string;
-  authorizationEndpoint: string;
+  authorizationEndpoint?: string;
   scope: string;
 }
 
@@ -19,6 +19,10 @@ export interface TokenResponse {
   expires_in: number;
   refresh_token: string;
   user: UserInfo;
+}
+
+export interface LogoutResponse {
+  redirectUrl?: string;
 }
 
 export interface InstanceConfig {

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.yamcs.AbstractYamcsService;
@@ -32,6 +33,8 @@ import org.yamcs.xtce.SequenceContainer;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
 import org.yamcs.yarch.StreamSubscriber;
+import org.yamcs.yarch.TableDefinition;
+import org.yamcs.yarch.TimePartitionSchema;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabase;
@@ -43,7 +46,7 @@ import org.yamcs.yarch.streamsql.StreamSqlException;
  * <p>
  * The main job of this class is to populate the "pname" column of the tm table. The other columns are copied verbatim
  * from the TM input streams. It does that by creating a {@link XtceTmExtractor} and subscribing to all sequence
- * containers having the flag {@link SequenceContainer#useAsArchivePartition()} set. The pname is the qualified name of
+ * containers having the flag {@link SequenceContainer#useAsPacketName()} set. The pname is the qualified name of
  * the most specific (lowest in the XTCE hierarchy) container matching the telemetry packet.
  * 
  * <p>
@@ -70,6 +73,7 @@ public class XtceTmRecorder extends AbstractYamcsService {
             new Object[] { null, null, null, null, null, null, null, null, null });
 
     Mdb mdb;
+    TmPartitionGroups partitionGroups;
 
     private final List<StreamRecorder> recorders = new ArrayList<>();
 
@@ -79,6 +83,11 @@ public class XtceTmRecorder extends AbstractYamcsService {
     public Spec getSpec() {
         Spec spec = new Spec();
         spec.addOption("streams", OptionType.LIST).withElementType(OptionType.STRING);
+        spec.addOption("partitionByPname", OptionType.BOOLEAN).withDefault(false);
+        Spec groupsSpec = new Spec();
+        groupsSpec.allowUnknownKeys(true);
+        spec.addOption("partitionGroups", OptionType.MAP).withSpec(groupsSpec);
+        spec.mutuallyExclusive("partitionByPname", "partitionGroups");
         spec.addOption("receptionTimeIndex", OptionType.BOOLEAN).withDefault(false);
         return spec;
     }
@@ -90,26 +99,44 @@ public class XtceTmRecorder extends AbstractYamcsService {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         var timePart = ydb.getTimePartitioningSchema(config);
 
-        var partitionBy = timePart == null ? "partition by value(pname)"
-                : "partition by time_and_value(gentime('" + timePart.getName() + "'), pname)";
+        mdb = MdbFactory.getInstance(yamcsInstance);
+
+        // these settings are only used when creating the table; an existing table keeps its definition
+        boolean partitionByPname = config.getBoolean("partitionByPname");
+        Map<String, List<String>> groupDefinitions = config.containsKey("partitionGroups")
+                ? TmPartitionGroups.parseConfig(config.getConfig("partitionGroups"))
+                : null;
         try {
-            if (ydb.getTable(TABLE_NAME) == null) {
-                String query = "create table " + TABLE_NAME + "(" + RECORDED_TM_TUPLE_DEFINITION.getStringDefinition1()
-                        + ", primary key(gentime, seqNum)"
+            TableDefinition tblDef = ydb.getTable(TABLE_NAME);
+            if (tblDef == null) {
+                String query = "create table " + TABLE_NAME + "("
+                        + getRecordedTupleDefinition(groupDefinitions != null).getStringDefinition1()
+                        + ", " + getPrimaryKey(partitionByPname) + ") histogram(pname) "
                         + (config.getBoolean("receptionTimeIndex", false) ? ", index(rectime, pname)" : "")
-                        + ") histogram(pname) " + partitionBy
+                        + getPartitionBy(timePart, partitionByPname, groupDefinitions != null)
                         + " table_format=compressed,column_family:" + CF_NAME;
                 ydb.execute(query);
+                tblDef = ydb.getTable(TABLE_NAME);
             }
+            if (TmPartitionGroups.isPartitionedByGroup(tblDef)) {
+                // if the option has been removed from the configuration, everything goes into the default group
+                partitionGroups = new TmPartitionGroups(yamcsInstance, mdb,
+                        groupDefinitions == null ? Map.of() : groupDefinitions);
+            } else if (groupDefinitions != null) {
+                log.warn("The partitionGroups option is ignored because the existing {} table is not partitioned "
+                        + "by group. The option is only used when creating the table.", TABLE_NAME);
+            }
+
             TmReceptionTimeIndex.start(ydb, config.getBoolean("receptionTimeIndex", false));
-            ydb.execute("create stream " + REC_STREAM_NAME + RECORDED_TM_TUPLE_DEFINITION.getStringDefinition());
+
+            ydb.execute("create stream " + REC_STREAM_NAME
+                    + getRecordedTupleDefinition(partitionGroups != null).getStringDefinition());
             ydb.execute("insert into " + TABLE_NAME + " select * from " + REC_STREAM_NAME);
         } catch (ParseException | StreamSqlException e) {
             throw new InitException(e);
         } catch (Exception e) {
             throw new InitException("Cannot initialize reception-time index", e);
         }
-        mdb = MdbFactory.getInstance(yamcsInstance);
 
         StreamConfig sc = StreamConfig.getInstance(yamcsInstance);
         if (config.containsKey("streams")) {
@@ -129,6 +156,44 @@ public class XtceTmRecorder extends AbstractYamcsService {
         }
 
         timeService = YamcsServer.getTimeService(yamcsInstance);
+    }
+
+    private static TupleDefinition getRecordedTupleDefinition(boolean withGroup) {
+        if (!withGroup) {
+            return RECORDED_TM_TUPLE_DEFINITION;
+        }
+        TupleDefinition tdef = RECORDED_TM_TUPLE_DEFINITION.copy();
+        tdef.addColumn(TmPartitionGroups.PGROUP_COLUMN, DataType.ENUM);
+        return tdef;
+    }
+
+    private static String getPrimaryKey(boolean partitionByPname) {
+        if (partitionByPname) {
+            // the pname is implicitly part of the key by being a partition
+            return "primary key(gentime, seqNum)";
+        } else {
+            // add the pname to the key to keep the same uniqueness as with the pname partitioning
+            return "primary key(gentime, seqNum, pname)";
+        }
+    }
+
+    private static String getPartitionBy(TimePartitionSchema timePart, boolean partitionByPname,
+            boolean partitionByGroup) {
+        String valueColumn = partitionByPname ? PNAME_COLUMN
+                : partitionByGroup ? TmPartitionGroups.PGROUP_COLUMN : null;
+        if (valueColumn == null) {
+            return timePart == null ? "" : "partition by time(gentime('" + timePart.getName() + "'))";
+        } else {
+            return timePart == null ? "partition by value(" + valueColumn + ")"
+                    : "partition by time_and_value(gentime('" + timePart.getName() + "'), " + valueColumn + ")";
+        }
+    }
+
+    /**
+     * Returns the partition groups or null if the tm table is not partitioned by group.
+     */
+    public TmPartitionGroups getPartitionGroups() {
+        return partitionGroups;
     }
 
     private void createRecorder(TmStreamConfigEntry streamConf) {
@@ -238,13 +303,13 @@ public class XtceTmRecorder extends AbstractYamcsService {
             }
         }
 
-        // subscribe all containers that have useAsArchivePartition set
+        // subscribe all containers that have useAsPacketName set
         private void subscribeContainers(SequenceContainer sc) {
             if (sc == null) {
                 return;
             }
 
-            if (sc.useAsArchivePartition()) {
+            if (sc.useAsPacketName()) {
                 tmExtractor.startProviding(sc);
             }
 
@@ -312,7 +377,7 @@ public class XtceTmRecorder extends AbstractYamcsService {
             ContainerProcessingResult cpr = tmExtractor.processPacket(packet, gentime, timeService.getMissionTime(),
                     seqCount, rootSequenceContainer);
 
-            String pname = deriveArchivePartition(cpr);
+            String pname = derivePacketName(cpr);
 
             try {
                 List<?> c = t.getColumns();
@@ -331,6 +396,10 @@ public class XtceTmRecorder extends AbstractYamcsService {
                 if (rootContainer != null) {
                     tp.setColumn(PNAME_COLUMN, rootContainer);
                 }
+                if (partitionGroups != null) {
+                    tp.addColumn(TmPartitionGroups.PGROUP_COLUMN, DataType.ENUM,
+                            partitionGroups.getGroup(tp.getColumn(PNAME_COLUMN)));
+                }
 
                 outputStream.emitTuple(tp);
             } catch (Exception e) {
@@ -339,30 +408,41 @@ public class XtceTmRecorder extends AbstractYamcsService {
         }
     }
 
-    static public String deriveArchivePartition(ContainerProcessingResult cpr) {
+    /**
+     * Derives the packet name (the value of the pname column) from the result of processing a packet.
+     * <p>
+     * The first container is the root container. We take the name of the most specific one derived directly from the
+     * root, having the {@link SequenceContainer#useAsPacketName()} flag set. If none has the flag set, the name of the
+     * root container is used.
+     */
+    static public String derivePacketName(ContainerProcessingResult cpr) {
         List<ContainerExtractionResult> cerList = cpr.getContainerResult();
         ContainerExtractionResult root = cerList.get(0);
 
         String pname = null;
-        // Derives the archive partition; the first container is the root container.
-        // We take the name of the most specific one derived directly from the root,
-        // with the archive partition flag set
         for (int i = cerList.size() - 1; i >= 0; i--) {
             ContainerExtractionResult cer = cerList.get(i);
             if (cer.isDerivedFromRoot()) {
                 SequenceContainer sc = cer.getContainer();
-                if (sc.useAsArchivePartition()) {
+                if (sc.useAsPacketName()) {
                     pname = sc.getQualifiedName();
                     break;
                 }
             }
         }
-        // if none has the archive partition flag set, we take the name of the root
         if (pname == null) {
             pname = root.getContainer().getQualifiedName();
         }
 
         return pname;
+    }
+
+    /**
+     * @deprecated use {@link #derivePacketName(ContainerProcessingResult)}
+     */
+    @Deprecated
+    static public String deriveArchivePartition(ContainerProcessingResult cpr) {
+        return derivePacketName(cpr);
     }
 
 }

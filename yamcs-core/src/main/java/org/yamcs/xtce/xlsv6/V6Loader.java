@@ -1024,7 +1024,7 @@ public class V6Loader extends V6LoaderBase {
             if (hasColumn(cells, IDX_CONT_FLAGS)) {
                 String flags = cells[IDX_CONT_FLAGS].getContents();
                 if (flags.contains("a")) {
-                    container.useAsArchivePartition(true);
+                    container.useAsPacketName(true);
                 }
             }
 
@@ -1159,7 +1159,7 @@ public class V6Loader extends V6LoaderBase {
                         // prior to version 5.2 of the format, the second level of containers were used as archive
                         // partitions
                         // TODO: remove when switching to 6.x format
-                        container.useAsArchivePartition(true);
+                        container.useAsPacketName(true);
                     }
                 } else {
                     NameReference nr = new NameReference(parent, Type.SEQUENCE_CONTAINER)
@@ -1168,7 +1168,7 @@ public class V6Loader extends V6LoaderBase {
                                 container.setBaseContainer(sc1);
                                 if ("5.2".compareTo(fileFormatVersion) > 0) {
                                     if (sc1.getBaseContainer() == null) {
-                                        container.useAsArchivePartition(true);
+                                        container.useAsPacketName(true);
                                     }
                                 }
                             });
