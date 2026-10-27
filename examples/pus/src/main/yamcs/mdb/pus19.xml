@@ -10,16 +10,13 @@
 				a single application process (MAIN_APID=1); Pus5Service notifies Pus19Service.onEvent with
 				app_process_id fixed to MAIN_APID whenever it raises an event, so ground-side definitions
 				should always use app_process_id=1.</Note>
-			<Note>Embedded TC packet (TC[19,1] "request" field, TM[19,11] "request" field): unlike the
-				length-prefixed-raw-bytes workaround assumed in pus19.md's "test_yamcs" reference (Gap 1),
-				this MDB expresses the embedded TC as a genuine dynamically-sized binary argument/parameter,
-				sized by a sibling request_len field -- the same validated pattern already used by
-				TC[13,11]/TM[13,3] (see pus13.xml, based on yamcs-core's xtce/VariableBinary.xml test
-				resource) for a single instance, extended here to a per-entry sibling reference inside an
-				array (TC side, confirmed pattern -- see "Nested Dynamic Array Patterns" in
-				pus_simulator_architecture.md) resp. inside a nested RepeatEntry container (TM side, the
-				only pattern YAMCS supports for variable-size repeated TM structures). Ground/test tooling
-				must supply a complete, CRC'd TC packet as the request (same convention as ST[13]/ST[21]).</Note>
+			<Note>Embedded TC packet (TC[19,1] and TM[19,11] "request" field): a complete TC packet with no
+				length prefix, as specified in ECSS-E-ST-70-41C 8.19.2.1. TC side: the request uses
+				/PUS/EmbeddedTcType (annotated Yamcs:EmbeddedTc), so the PusCommandPostprocessor fills in its
+				sequence count and length and appends its CRC (embeddedTcCrc); the request can be entered as
+				the binary of a dry run of the command. TM side: the request size is taken from the embedded
+				packet's own CCSDS packet data length field, read ahead and then decoded as one binary
+				parameter (see ea_def_entry).</Note>
 			<Note>TC[19,4]/TC[19,5] (enable/disable definitions) use the two-MetaCommand "_SPECIFIC"/"_ALL"
 				zero-payload pattern (per spec section 6.19.7.1b), same as ST[15]'s dual-variant TCs.
 				TC[19,10] (report definitions) instead uses the spec's in-band N=0 convention (section
@@ -62,15 +59,15 @@
 			</ArrayParameterType>
 
 			<!-- TM[19,11] definition report: entries carry a variable-length embedded request TC, so
-			     they cannot use a flat ArrayParameterType (stride would be wrong once request_len > 0
-			     on any but the last entry). Decoded instead via nested ContainerRefEntry + RepeatEntry
-			     (see ea_def_entry container below), with request_data dynamically sized per entry. -->
+			     they cannot use a flat ArrayParameterType. Decoded instead via nested ContainerRefEntry +
+			     RepeatEntry (see ea_def_entry container below). The request is a complete TC packet whose
+			     total size is its CCSDS packet data length + 7 bytes. -->
 			<BinaryParameterType name="ea_request_data_type">
 				<BinaryDataEncoding>
 					<SizeInBits>
 						<DynamicValue>
-							<ParameterInstanceRef parameterRef="ea11_request_len" />
-							<LinearAdjustment slope="8" />
+							<ParameterInstanceRef parameterRef="ea11_request_pkt_len" />
+							<LinearAdjustment slope="8" intercept="56" />
 						</DynamicValue>
 					</SizeInBits>
 				</BinaryDataEncoding>
@@ -84,7 +81,8 @@
 			<Parameter parameterTypeRef="/dt/uint16" name="ea11_app_process_id" />
 			<Parameter parameterTypeRef="/dt/uint16" name="ea11_event_def_id" />
 			<Parameter parameterTypeRef="ea_status_type" name="ea11_status" />
-			<Parameter parameterTypeRef="/dt/uint16" name="ea11_request_len" />
+			<Parameter parameterTypeRef="/dt/uint16" name="ea11_request_pkt_len"
+				shortDescription="CCSDS packet data length field of the embedded request (total size - 7)" />
 			<Parameter parameterTypeRef="ea_request_data_type" name="ea11_request_data" />
 		</ParameterSet>
 		<ContainerSet>
@@ -114,16 +112,30 @@
 				</BaseContainer>
 			</SequenceContainer>
 
-			<!-- One TM[19,11] entry: fixed identifier/status fields + the embedded request TC, sized by
-			     the request_len decoded earlier in the same entry (getFromEnd(0) resolution). Free-standing
-			     container (no BaseContainer) only ever reached via the ContainerRefEntry below. -->
+			<!-- One TM[19,11] entry: fixed identifier/status fields + the embedded request TC. The
+			     request's CCSDS packet data length (bytes 4-5 of the request) is read ahead first, then
+			     the position goes back 48 bits to the start of the request, which is decoded in one piece
+			     with the size derived from that length.
+			     LIMITATION: Yamcs resolves a ParameterInstanceRef in a DynamicValue to the first instance in
+			     the packet (PACKET_START_WITHIN_PACKET, instance 0), so every entry's request is sized by the
+			     first entry's length. Reports whose requests all have the same length (or a single entry,
+			     e.g. TC[19,10] for one definition) decode correctly; others fail after the first entry.
+			     Free-standing container (no BaseContainer) only reached via the ContainerRefEntry below. -->
 			<SequenceContainer name="ea_def_entry">
 				<EntryList>
 					<ParameterRefEntry parameterRef="ea11_app_process_id" />
 					<ParameterRefEntry parameterRef="ea11_event_def_id" />
 					<ParameterRefEntry parameterRef="ea11_status" />
-					<ParameterRefEntry parameterRef="ea11_request_len" />
-					<ParameterRefEntry parameterRef="ea11_request_data" />
+					<ParameterRefEntry parameterRef="ea11_request_pkt_len">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>32</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="ea11_request_data">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>-48</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
 				</EntryList>
 			</SequenceContainer>
 
@@ -176,25 +188,14 @@
 				</DimensionList>
 			</ArrayArgumentType>
 
-			<!-- TC[19,1] Add: each entry embeds the raw request TC, dynamically sized by its own
-			     sibling request_len member (same mechanism as TC[13,11]'s part_data_last_arg_type,
-			     applied per-array-element). -->
-			<BinaryArgumentType name="ea_request_arg_type">
-				<BinaryDataEncoding>
-					<SizeInBits>
-						<DynamicValue>
-							<ArgumentInstanceRef argumentRef="request_len" />
-							<LinearAdjustment slope="8" />
-						</DynamicValue>
-					</SizeInBits>
-				</BinaryDataEncoding>
-			</BinaryArgumentType>
+			<!-- TC[19,1] Add: each entry embeds the request TC with no length prefix (ECSS 8.19.2.1).
+			     /PUS/EmbeddedTcType writes exactly the supplied bytes; the post-processor then fills in
+			     the embedded packet's length and sequence count and appends its CRC. -->
 			<AggregateArgumentType name="ea_add_entry_type">
 				<MemberList>
 					<Member typeRef="/dt/uint16" name="app_process_id" />
 					<Member typeRef="/dt/uint16" name="event_def_id" />
-					<Member typeRef="/dt/uint16" name="request_len" />
-					<Member typeRef="ea_request_arg_type" name="request" />
+					<Member typeRef="/PUS/EmbeddedTcType" name="request" />
 				</MemberList>
 			</AggregateArgumentType>
 			<ArrayArgumentType arrayTypeRef="ea_add_entry_type" name="ea_add_array_type">
@@ -226,6 +227,7 @@
 
 			<!-- TC[19,1] Add event-action definitions -->
 			<MetaCommand name="TC_19_1_ADD" shortDescription="TC[19,1] Add event-action definitions">
+				<LongDescription>Each entry's request is a complete TC packet given in hex (for example the binary obtained from a dry run of the command). Its sequence count, length and CRC are filled in by the command post-processor; they can be left zero and the CRC can be omitted. Adding an existing, disabled definition replaces its request; adding over an enabled definition is rejected (ECSS 6.19.8.1).</LongDescription>
 				<BaseMetaCommand metaCommandRef="pus19-tc">
 					<ArgumentAssignmentList>
 						<ArgumentAssignment argumentName="subtype" argumentValue="1" />
@@ -244,7 +246,7 @@
 				</CommandContainer>
 			</MetaCommand>
 
-			<!-- TC[19,2] Delete event-action definitions (must be unknown-free and disabled, §6.19.8.3d) -->
+			<!-- TC[19,2] Delete event-action definitions. Unknown or enabled definitions are rejected per instruction; the valid ones are still deleted (6.19.8.3d-f) -->
 			<MetaCommand name="TC_19_2_DELETE" shortDescription="TC[19,2] Delete event-action definitions">
 				<BaseMetaCommand metaCommandRef="pus19-tc">
 					<ArgumentAssignmentList>

@@ -200,6 +200,29 @@
 					</Dimension>
 				</DimensionList>
 			</ArrayArgumentType>
+			<IntegerArgumentType name="NumActivitiesType" baseType="/dt/uint8"/>
+			<AggregateArgumentType name="ActivityType">
+				<MemberList>
+					<Member typeRef="GroupIdArgType" name="group_id"/>
+					<Member typeRef="/PUS/PusTimeType" name="release_time"/>
+					<Member typeRef="/PUS/EmbeddedTcType" name="tc"/>
+				</MemberList>
+			</AggregateArgumentType>
+			<ArrayArgumentType arrayTypeRef="ActivityType" name="ActivityArrayType">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="num_activities" />
+								<LinearAdjustment intercept="-1" />
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
 			<!-- signed delta used by the time-shift commands, in milliseconds -->
 			<IntegerArgumentType name="TimeShiftMillisType" signed="true">
 				<IntegerDataEncoding sizeInBits="32" encoding="twosComplement"/>
@@ -251,6 +274,28 @@
 				</CommandContainer>
 			</MetaCommand>
 			
+			<MetaCommand name="INSERT_ACTIVITIES" shortDescription="TC[11,4] insert activities into the time-based schedule">
+				<LongDescription>Manually built TC[11,4]. The tc of each activity is a complete TC packet given in hex (for example the binary obtained from a dry run of the command). Its sequence count, length and CRC are filled in by the command post-processor (the type is annotated with Yamcs:EmbeddedTc); they can be left zero and the CRC can be omitted.</LongDescription>
+				<BaseMetaCommand metaCommandRef="pus11-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="4" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument argumentTypeRef="ScheduleIdType" name="sub_schedule_id"></Argument>
+					<Argument argumentTypeRef="NumActivitiesType" name="num_activities"></Argument>
+					<Argument argumentTypeRef="ActivityArrayType" name="activities"></Argument>
+				</ArgumentList>
+				<CommandContainer name="INSERT_ACTIVITIES">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="sub_schedule_id"/>
+						<ArgumentRefEntry argumentRef="num_activities"/>
+						<ArgumentRefEntry argumentRef="activities"/>
+					</EntryList>
+					<BaseContainer containerRef="pus11-tc" />
+				</CommandContainer>
+			</MetaCommand>
+
 			<MetaCommand name="DELETE_ACTIVITIES_BY_ID" shortDescription="TC[11,5] delete time-based scheduled activities identified by request identifier">
 				<BaseMetaCommand metaCommandRef="pus11-tc">
 					<ArgumentAssignmentList>

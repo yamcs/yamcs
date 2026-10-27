@@ -56,7 +56,7 @@ empty-match-criteria:
 xtce-fileset:
     - type: xtce
       args:
-          fileset: ["src/test/resources/xtce/a*.xml", "src/test/resources/xtce/b.xml"]
+          fileset: ["src/test/resources/xtce/a?.xml", "src/test/resources/xtce/b.xml"]
 
 VariableBinaryTest:
     - type: xtce
@@ -138,3 +138,13 @@ RepeatEntryCommandTest:
     - type: xtce
       args:
           file: "src/test/resources/xtce/repeat-entry-cmd.xml"
+
+ArgLocationsTest:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/arg-locations.xml"
+
+EmbeddedTcCommandTest:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/embedded-tc.xml"

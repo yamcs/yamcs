@@ -78,6 +78,18 @@ public class PusTcPacket extends SimulatorCcsdsPacket {
         return bb.slice();
     }
 
+    /**
+     * @return true if the last two bytes of the packet contain a valid CRC of the rest of the packet
+     */
+    public boolean isChecksumValid() {
+        byte[] b = getBytes();
+        if (b.length < 2) {
+            return false;
+        }
+        int crc = crcCalculator.compute(b, 0, b.length - 2);
+        return crc == (((b[b.length - 2] & 0xFF) << 8) | (b[b.length - 1] & 0xFF));
+    }
+
     @Override
     protected void fillChecksum() {
         int crc = crcCalculator.compute(bb.array(), bb.arrayOffset(), bb.capacity() - bb.arrayOffset() - 2);

@@ -86,7 +86,6 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
 
     private PutRequest request;
     private ScheduledFuture<?> pduSendingSchedule;
-    FinishedPacket finishedPacket;
 
     boolean resendMetadata = false;
     boolean eofSent = false;
@@ -334,6 +333,10 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
             return;
         }
         eofTimer.cancel();
+        eofAckReceived = true;
+        if (outTxState == OutTxState.SENDING_DATA) {
+            rescheduleInactivityTimer();
+        }
 
         if (outTxState == OutTxState.CANCELING) {
             complete(reasonForCancellation);
@@ -451,7 +454,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
             failTransfer(conditionCode.toString());
             sendWarnEvent(ETYPE_TRANSFER_FINISHED,
                     "transfer finished with error in " + duration + " seconds: "
-                            + eventMessageSuffix + ", error: " + finishedPacket.getConditionCode());
+                            + eventMessageSuffix + ", error: " + conditionCode);
         }
     }
 
@@ -465,6 +468,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
             suspended = false; // wake up if sleeping
             outTxState = OutTxState.CANCELING;
             changeState(TransferState.CANCELLING);
+            eofAckReceived = false; // the cancel EOF has to be acknowledged again
             sendEof(conditionCode);
             break;
         case CANCELING:
