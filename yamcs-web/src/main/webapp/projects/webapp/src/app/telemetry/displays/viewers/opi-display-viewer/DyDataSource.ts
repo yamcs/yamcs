@@ -7,6 +7,7 @@ import {
   Synchronizer,
   YamcsService,
   utils,
+  Value,
 } from '@yamcs/webapp-sdk';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { DyPlotBuffer, DyPlotData, DyValueRange } from './DyPlotBuffer';
@@ -14,6 +15,25 @@ import { CustomBarsValue, DySample } from './DySample';
 import { NamedParameterType } from './NamedParameterType';
 
 type DySeries = DySample[];
+
+/**
+ * Like utils.convertValueToNumber, but also maps booleans and enumerations,
+ * matching how opi.js converts PV values to numbers (and how Yamcs Studio plots them).
+ */
+function isDiscrete(value: Value) {
+  return value.type === 'BOOLEAN' || value.type === 'ENUMERATED';
+}
+
+function toNumber(value: Value) {
+  switch (value.type) {
+    case 'BOOLEAN':
+      return value.booleanValue ? 1 : 0;
+    case 'ENUMERATED':
+      return Number(value.sint64Value);
+    default:
+      return utils.convertValueToNumber(value);
+  }
+}
 
 export class DyDataSource {
   // If true, load more samples than needed
@@ -46,6 +66,7 @@ export class DyDataSource {
   // Added due to multi-param plots where realtime values are not guaranteed to arrive in the
   // same delivery. Should probably have a server-side solution for this use cause though.
   latestRealtimeValues = new Map<string, CustomBarsValue>();
+  private discreteParameters = new Set<string>();
 
   private idMapping: { [key: number]: NamedObjectId };
 
@@ -224,8 +245,13 @@ export class DyDataSource {
    */
   private processRealtimeDelivery(pvals: ParameterValue[]) {
     for (const pval of pvals) {
+      const id = this.idMapping[pval.numericId];
+      if (isDiscrete(pval.engValue)) {
+        this.discreteParameters.add(id.name);
+      }
+
       let dyValue: CustomBarsValue = null;
-      const value = utils.convertValueToNumber(pval.engValue);
+      const value = toNumber(pval.engValue);
       if (value !== null) {
         if (pval.acquisitionStatus === 'EXPIRED') {
           // We get the last received timestamp.
@@ -236,7 +262,6 @@ export class DyDataSource {
           dyValue = [value, value, value];
         }
       }
-      const id = this.idMapping[pval.numericId];
       this.latestRealtimeValues.set(id.name, dyValue);
     }
 
@@ -248,9 +273,12 @@ export class DyDataSource {
         return this.latestRealtimeValues.get(parameter.qualifiedName) || null;
       },
     );
+    const discrete = this.parameters$.value.map((parameter) =>
+      this.discreteParameters.has(parameter.qualifiedName),
+    );
 
     const sample: any = [t, ...dyValues];
-    this.plotBuffer.addRealtimeValue(sample);
+    this.plotBuffer.addRealtimeValue(sample, discrete);
   }
 
   disconnect() {
@@ -265,7 +293,9 @@ export class DyDataSource {
     for (const sample of samples) {
       const t = new Date();
       t.setTime(Date.parse(sample['time']));
-      if (sample.n > 0) {
+      // Non-numeric parameters (e.g. enumerations) are sampled as NaN
+      // (JSON string "NaN"). Show these as gaps.
+      if (sample.n > 0 && !Number.isNaN(Number(sample['avg']))) {
         const v = sample['avg'];
         const min = sample['min'];
         const max = sample['max'];
