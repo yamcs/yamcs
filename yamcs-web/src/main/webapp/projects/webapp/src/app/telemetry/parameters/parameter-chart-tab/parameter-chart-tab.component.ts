@@ -1,4 +1,5 @@
-import { Overlay } from '@angular/cdk/overlay';
+import { Overlay, OverlayRef } from '@angular/cdk/overlay';
+import { ComponentPortal } from '@angular/cdk/portal';
 import {
   AfterViewInit,
   Component,
@@ -21,8 +22,10 @@ import {
   ViewportChangeEvent,
 } from '@fqqb/timeline';
 import {
+  BackfillingSubscription,
   BaseComponent,
   ConfigService,
+  EnumValue,
   Formatter,
   Parameter,
   utils,
@@ -43,14 +46,26 @@ import { HoveredDateAnnotation } from './HoveredDateAnnotation';
 import { Legend } from './Legend';
 import { LegendComponent } from './legend.component';
 import { PlotBand } from './PlotBand';
+import { PlotDataSource } from './PlotDataSource';
 import { RequestedParameter } from './RequestedParameter';
 import { State, TraceState } from './State';
+import { ParameterChartTooltipComponent } from './tooltip.component';
 import { TraceConfigComponent } from './trace-config.component';
 import { TraceConfig } from './TraceConfig';
 import { TraceForm } from './TraceForm';
 
 const DEFAULT_RANGE = 'PT15M';
 const GRID_COLOR = '#efefef';
+
+/** Minimum content height of a single plot in a stacked layout. */
+const MIN_BAND_HEIGHT = 40;
+
+/**
+ * 'overlay': all traces in one plot, sharing one Y-axis (the classic layout).
+ * 'split': one plot per trace, stacked vertically, each with its own Y-axis,
+ *          all sharing the time axis.
+ */
+export type ChartLayout = 'overlay' | 'split';
 
 export const DEFAULT_COLORS = [
   '#1b73e8',
@@ -94,12 +109,37 @@ export class ParameterChartTabComponent
   sidebarWidth = signal<number>(0);
   resetZoomEnabled = signal<boolean>(false);
 
+  /**
+   * Deliberately not persisted: every page load starts in overlay layout.
+   */
+  chartLayout = signal<ChartLayout>('overlay');
+
+  /**
+   * Top offset (in px, relative to the timeline container) of each plot in a
+   * stacked layout, used to position the per-plot legend chips.
+   */
+  bandOffsets = signal<{ traceId: string; top: number }[]>([]);
+
   legend = new Legend();
 
   private state$ = new BehaviorSubject<State | null>(null);
 
   private timeRuler: TimeRuler;
-  private band: PlotBand;
+
+  // Shared singletons. Bands are cheap and get recreated on layout or order
+  // changes; these are not, so the component owns them.
+  private dataSource: PlotDataSource;
+  private tooltip: ParameterChartTooltipComponent;
+  private tooltipOverlayRef?: OverlayRef;
+  private backfillSubscription?: BackfillingSubscription;
+
+  private bands: PlotBand[] = [];
+  private bandSignature = '';
+
+  private traceConfigById = new Map<string, TraceConfig>();
+  private requestedNameByTraceId = new Map<string, string>();
+  private orderedTraceIds: string[] = [];
+
   readonly gridColor = GRID_COLOR;
 
   private urlUpdate$ = new Subject<void>();
@@ -200,6 +240,7 @@ export class ParameterChartTabComponent
      * or eng-to-raw, which requires a new sample request.
      *
      * This subscription does not handle changes to trace parameters.
+     * It also never rebuilds bands: only their styling is refreshed.
      */
     const formSubscription = this.form.valueChanges.subscribe((fv) => {
       let fetch = false;
@@ -208,7 +249,7 @@ export class ParameterChartTabComponent
         const requestedName = traceForm.parameter!;
         this.legend.setColor(traceId, traceForm.lineColor!);
 
-        const config = this.band.getTrace(traceId);
+        const config = this.traceConfigById.get(traceId);
         if (!config) {
           continue;
         }
@@ -229,17 +270,29 @@ export class ParameterChartTabComponent
         // Whether to fetch a new set of data
         fetch ||= traceForm.valueType! !== config.valueType;
         config.valueType = traceForm.valueType!;
+
+        // Enum labels only apply to the engineering value.
+        config.enumValues = this.resolveEnumValues(
+          config.parameter,
+          config.valueType,
+        );
+
+        this.dataSource?.addOrUpdateTrace(traceId, config);
       }
-      this.band.applyTraceConfigs();
+      for (const band of this.bands) {
+        band.applyTraceConfigs();
+      }
       if (fetch) {
-        this.band.updateWindow(true);
+        this.dataSource?.reloadVisibleRange();
       }
 
       this.loadHLines();
 
-      this.band.centerZero = fv.centerZero ?? false;
-      if (fv.centerZero) {
-        this.band.resetAxisRange();
+      for (const band of this.bands) {
+        band.centerZero = fv.centerZero ?? false;
+        if (fv.centerZero) {
+          band.resetAxisRange();
+        }
       }
     });
     this.subscriptions.push(formSubscription);
@@ -329,22 +382,24 @@ export class ParameterChartTabComponent
     });
     this.timeline.leftSidebar = sidebar;
 
-    const headerBackground = utils.getCssVariable('--y-background-color');
-
-    this.band = new PlotBand(
-      this.timeline,
+    this.dataSource = new PlotDataSource(
       this.yamcs,
       this.synchronizer,
       this.configService,
-      this.overlay,
-      this.legend,
     );
-    this.band.headerBackground = headerBackground;
-    this.band.grid = 'underlay';
-    this.band.gridColor = GRID_COLOR;
-    this.band.axisTickLength = 0;
-    this.band.labelPadding = 4;
-    this.band.addMutationListener(() => this.updateState());
+    this.setupTooltip();
+    this.backfillSubscription =
+      this.yamcs.yamcsClient.createBackfillingSubscription(
+        { instance: this.yamcs.instance! },
+        (update) => {
+          if (update.finished) {
+            this.dataSource.reloadVisibleRange();
+          }
+        },
+      );
+
+    // Creates the (initially empty) band, plus the TimeRuler
+    this.syncBands(true);
 
     if (state?.centerZero !== undefined) {
       this.form.patchValue({ centerZero: state.centerZero });
@@ -358,30 +413,15 @@ export class ParameterChartTabComponent
       });
     }
     if (state?.minimum !== undefined && state.maximum !== undefined) {
-      this.band.setAxisRange(state.minimum, state.maximum);
+      // Y-axis zoom is a single-axis concept, only meaningful in overlay layout
+      this.bands[0]?.setAxisRange(state.minimum, state.maximum);
     }
-
-    this.timeRuler = new TimeRuler(this.timeline);
-    if (this.formatter.utc()) {
-      this.timeRuler.timezone = 'UTC';
-    }
-    this.timeRuler.grid = 'underlay';
-    this.timeRuler.gridColor = GRID_COLOR;
-    this.timeRuler.headerBackground = headerBackground;
-    this.timeRuler.background = headerBackground;
 
     const mouseTracker = new MouseTracker(this.timeline);
     mouseTracker.trackY = true;
     new HoveredDateAnnotation(this.timeline, this.formatter);
 
-    this.resizeObserver = new ResizeObserver(() => {
-      // Expand plot area to cover full height (minus borders and x-axis)
-      this.band.contentHeight =
-        this.timeline.height - this.timeRuler.contentHeight - 1 - 1;
-
-      // Update fill style
-      this.band.onResize();
-    });
+    this.resizeObserver = new ResizeObserver(() => this.layoutBands());
     this.resizeObserver.observe(this.container().nativeElement);
 
     this.timeline.addViewportChangeListener((event) => {
@@ -405,7 +445,7 @@ export class ParameterChartTabComponent
         debounceTime(400),
       )
       .forEach((evt) => {
-        this.band.updateWindow(true /* fetch */);
+        this.updateWindow(true /* fetch */);
       });
 
     this.viewportChange$
@@ -414,7 +454,7 @@ export class ParameterChartTabComponent
         debounceTime(400),
       )
       .forEach((evt) => {
-        this.band.updateWindow(false /* no fetch */);
+        this.updateWindow(false /* no fetch */);
       });
 
     if (!this.range()) {
@@ -440,8 +480,242 @@ export class ParameterChartTabComponent
     this.reloadForm();
   }
 
+  private setupTooltip() {
+    const bodyRef = new ElementRef(document.body);
+    const positionStrategy = this.overlay
+      .position()
+      .flexibleConnectedTo(bodyRef)
+      .withPositions([
+        {
+          originX: 'start',
+          originY: 'top',
+          overlayX: 'start',
+          overlayY: 'top',
+        },
+      ])
+      .withPush(false);
+
+    this.tooltipOverlayRef = this.overlay.create({ positionStrategy });
+    const tooltipPortal = new ComponentPortal(ParameterChartTooltipComponent);
+    this.tooltip = this.tooltipOverlayRef.attach(tooltipPortal).instance;
+  }
+
+  private updateWindow(fetch: boolean) {
+    this.dataSource?.updateWindow(
+      new Date(this.timeline.start),
+      new Date(this.timeline.stop),
+      fetch,
+    );
+  }
+
+  setLayout(layout: ChartLayout) {
+    if (this.chartLayout() !== layout) {
+      this.chartLayout.set(layout);
+      this.syncBands();
+    }
+  }
+
   /**
-   * Reads the form, and applies its state to the PlotBand and Legend.
+   * Aligns the set of plot bands with the current layout and trace order.
+   *
+   * Bands are only recreated when their composition actually changes, since
+   * @fqqb/timeline has no reorder API: the whole stack (including the
+   * TimeRuler, which must stay at the bottom) has to be torn down and
+   * rebuilt in order. Because the data source is shared and its `data$` is a
+   * BehaviorSubject, a rebuild triggers no new requests.
+   */
+  private syncBands(force = false) {
+    if (!this.timeline) {
+      return;
+    }
+
+    let groups: string[][] =
+      this.chartLayout() === 'split'
+        ? this.orderedTraceIds.map((traceId) => [traceId])
+        : [this.orderedTraceIds];
+    if (!groups.length) {
+      // No resolved trace yet: keep one empty plot rather than a blank canvas
+      groups = [[]];
+    }
+
+    const signature = this.chartLayout() + '|' + groups.map((g) => g.join(',')).join(';');
+    if (!force && signature === this.bandSignature) {
+      // Same composition: only the trace configs may have changed.
+      for (let i = 0; i < this.bands.length; i++) {
+        this.bands[i].setTraces(groups[i] ?? [], this.traceConfigById);
+      }
+      this.loadHLines();
+      this.layoutBands();
+      return;
+    }
+    this.bandSignature = signature;
+
+    for (const band of this.bands) {
+      this.timeline.removeChild(band);
+    }
+    this.bands = [];
+    if (this.timeRuler) {
+      this.timeline.removeChild(this.timeRuler);
+    }
+
+    const headerBackground = utils.getCssVariable('--y-background-color');
+    for (const traceIds of groups) {
+      const band = new PlotBand(
+        this.timeline,
+        this.dataSource,
+        this.tooltip,
+        this.legend,
+      );
+      band.headerBackground = headerBackground;
+      band.grid = 'underlay';
+      band.gridColor = GRID_COLOR;
+      band.axisTickLength = 0;
+      band.labelPadding = 4;
+      band.centerZero = this.form.value.centerZero ?? false;
+      band.addMutationListener(() => this.updateState());
+      band.setTraces(traceIds, this.traceConfigById);
+      this.bands.push(band);
+    }
+
+    // Recreated last, so that it renders below every plot
+    this.createTimeRuler(headerBackground);
+
+    this.loadHLines();
+    this.layoutBands();
+  }
+
+  private createTimeRuler(headerBackground: string) {
+    this.timeRuler = new TimeRuler(this.timeline);
+    if (this.formatter.utc()) {
+      this.timeRuler.timezone = 'UTC';
+    }
+    this.timeRuler.grid = 'underlay';
+    this.timeRuler.gridColor = GRID_COLOR;
+    this.timeRuler.headerBackground = headerBackground;
+    this.timeRuler.background = headerBackground;
+    this.timeRuler.label = new Date(this.timeline.start)
+      .toISOString()
+      .substring(0, 10);
+  }
+
+  /**
+   * Divides the available vertical space over the plots, and recomputes the
+   * offsets used to position the per-plot legend chips in a stacked layout.
+   */
+  private layoutBands() {
+    if (!this.bands.length || !this.timeRuler) {
+      return;
+    }
+
+    // One border below each band, plus one above the whole stack
+    const available =
+      this.timeline.height - this.timeRuler.contentHeight - 1 - this.bands.length;
+    const contentHeight = Math.max(
+      MIN_BAND_HEIGHT,
+      Math.floor(available / this.bands.length),
+    );
+
+    const offsets: { traceId: string; top: number }[] = [];
+    let top = 0;
+    for (const band of this.bands) {
+      band.contentHeight = contentHeight;
+
+      // Update fill style
+      band.onResize();
+
+      const traceId = band.getTraceIds()[0];
+      if (traceId) {
+        offsets.push({ traceId, top });
+      }
+      // paddingTop/paddingBottom default to 0, bandBorderWidth to 1
+      top += contentHeight + this.timeline.bandBorderWidth;
+    }
+    this.bandOffsets.set(offsets);
+  }
+
+  private updateLegendValues() {
+    for (const item of this.legend.getItems()) {
+      const band = this.bandForTrace(item.traceId);
+      const rtValue = band?.getParameterValue(item.traceId);
+
+      if (rtValue !== undefined) {
+        item.value.set(band!.getValueLabel(item.traceId, rtValue));
+      } else {
+        item.value.set(null);
+      }
+    }
+  }
+
+  private bandForTrace(traceId: string) {
+    return this.bands.find((band) => band.hasTrace(traceId));
+  }
+
+  /**
+   * Applies horizontal lines to every plot.
+   *
+   * The zero line applies to all plots. Alarm thresholds belong to the
+   * parameter in the URL, so in a stacked layout they are only drawn on the
+   * plot that actually shows that parameter.
+   */
+  private loadHLines() {
+    const zeroLines: HLine[] = [];
+    const { value: fv } = this.form;
+
+    if (fv.showZeroLine) {
+      zeroLines.push({
+        value: 0,
+        lineColor: 'black',
+        lineDash: [4, 3],
+        extendAxisRange: true,
+      });
+    }
+
+    const alarmLines: HLine[] = [];
+    const mainParameter = this.definitionCache.get(this.qualifiedName());
+    if (fv.showAlarmThresholds && mainParameter?.type?.defaultAlarm) {
+      const { defaultAlarm } = mainParameter.type;
+      const ranges = defaultAlarm.staticAlarmRanges || [];
+      for (const range of ranges) {
+        const min = range.minInclusive ?? range.minExclusive;
+        const max = range.maxInclusive ?? range.maxExclusive;
+        if (min !== undefined) {
+          alarmLines.push({
+            value: min,
+            lineColor: this.colorForLevel(range.level) || 'black',
+            lineDash: [4, 3],
+            label: `${range.level.toLowerCase()} low`,
+            labelBackground: this.colorForLevel(range.level) || 'black',
+            labelTextColor: 'white',
+          });
+        }
+        if (max !== undefined) {
+          alarmLines.push({
+            value: max,
+            lineColor: this.colorForLevel(range.level) || 'black',
+            lineDash: [4, 3],
+            label: `${range.level.toLowerCase()} high`,
+            labelBackground: this.colorForLevel(range.level) || 'black',
+            labelTextColor: 'white',
+          });
+        }
+      }
+    }
+
+    for (const band of this.bands) {
+      const showAlarms =
+        this.bands.length === 1 ||
+        band
+          .getTraceIds()
+          .some(
+            (traceId) =>
+              this.requestedNameByTraceId.get(traceId) === this.qualifiedName(),
+          );
+      band.hlines = showAlarms ? [...zeroLines, ...alarmLines] : zeroLines;
+    }
+  }
+
+  /**
+   * Reads the form, and applies its state to the PlotBands and Legend.
    *
    * This operation will re-query MDB definitions and data within the
    * current window.
@@ -486,15 +760,37 @@ export class ParameterChartTabComponent
             : requestedName;
 
         if (parameter) {
+          const valueType = traceState?.valueType ?? 'engineering';
+          const enumValues = this.resolveEnumValues(parameter, valueType);
+          const enumTrace = !!enumValues;
+
+          // Enum traces default to a step line. Keep the plain default when the
+          // user has not touched the control; respect any explicit choice.
+          const lineStyleControl =
+            traceFormsById.get(traceId)!.controls.lineStyle;
+          const useEnumStepDefault =
+            enumTrace &&
+            lineStyleControl.pristine &&
+            lineStyleControl.value === 'straight';
+          const lineStyle = useEnumStepDefault
+            ? 'step'
+            : (traceState?.lineStyle ?? 'straight');
+          if (useEnumStepDefault) {
+            lineStyleControl.setValue('step', { emitEvent: false });
+          }
+
           const trace: TraceConfig = {
             parameter,
             color,
             lineWidth: traceState?.lineWidth ?? 2,
-            lineStyle: traceState?.lineStyle ?? 'straight',
+            lineStyle,
             fill: traceState?.fill ?? false,
-            valueType: traceState?.valueType ?? 'engineering',
+            valueType,
+            enumValues,
           };
-          this.band.addOrUpdateTrace(traceId, trace);
+          this.traceConfigById.set(traceId, trace);
+          this.requestedNameByTraceId.set(traceId, requestedName);
+          this.dataSource.addOrUpdateTrace(traceId, trace);
 
           const units = utils.getUnits(parameter.type?.unitSet);
           this.legend.addItem(traceId, label, color, units, null);
@@ -506,78 +802,20 @@ export class ParameterChartTabComponent
           // Parameter not found.
           //
           // Remove plot line, but do show it in the legend.
-          this.band.removeTrace(traceId);
+          this.traceConfigById.delete(traceId);
+          this.requestedNameByTraceId.delete(traceId);
+          this.dataSource.removeTrace(traceId);
 
           const error = 'Parameter not found';
           this.legend.addItem(traceId, label, color, null, error);
         }
       }
-      this.loadHLines();
       this.applyOrder();
-
-      //this.band.updateWindow(true);
+      this.loadHLines();
     });
 
     this.updateState();
     this.prevRequestedNames = requestedNames;
-  }
-
-  private updateLegendValues() {
-    for (const item of this.legend.getItems()) {
-      const rtValue = this.band.getParameterValue(item.traceId);
-
-      if (rtValue !== undefined) {
-        item.value.set(String(rtValue));
-      } else {
-        item.value.set(null);
-      }
-    }
-  }
-
-  private loadHLines() {
-    const hlines: HLine[] = [];
-    const { value: fv } = this.form;
-
-    if (fv.showZeroLine) {
-      hlines.push({
-        value: 0,
-        lineColor: 'black',
-        lineDash: [4, 3],
-        extendAxisRange: true,
-      });
-    }
-
-    const mainParameter = this.definitionCache.get(this.qualifiedName());
-    if (fv.showAlarmThresholds && mainParameter?.type?.defaultAlarm) {
-      const { defaultAlarm } = mainParameter.type;
-      const ranges = defaultAlarm.staticAlarmRanges || [];
-      for (const range of ranges) {
-        const min = range.minInclusive ?? range.minExclusive;
-        const max = range.maxInclusive ?? range.maxExclusive;
-        if (min !== undefined) {
-          hlines.push({
-            value: min,
-            lineColor: this.colorForLevel(range.level) || 'black',
-            lineDash: [4, 3],
-            label: `${range.level.toLowerCase()} low`,
-            labelBackground: this.colorForLevel(range.level) || 'black',
-            labelTextColor: 'white',
-          });
-        }
-        if (max !== undefined) {
-          hlines.push({
-            value: max,
-            lineColor: this.colorForLevel(range.level) || 'black',
-            lineDash: [4, 3],
-            label: `${range.level.toLowerCase()} high`,
-            labelBackground: this.colorForLevel(range.level) || 'black',
-            labelTextColor: 'white',
-          });
-        }
-      }
-    }
-
-    this.band.hlines = hlines;
   }
 
   loadLatest(range: string) {
@@ -621,7 +859,9 @@ export class ParameterChartTabComponent
   }
 
   autoScale() {
-    this.band.resetAxisRange();
+    for (const band of this.bands) {
+      band.resetAxisRange();
+    }
   }
 
   openDateRangeDialog() {
@@ -643,6 +883,81 @@ export class ParameterChartTabComponent
 
   get traces() {
     return this.form.controls['traces'] as FormArray<FormGroup<TraceForm>>;
+  }
+
+  legendItemFor(traceId: string) {
+    return this.legend.itemsSignal().find((item) => item.traceId === traceId);
+  }
+
+  /**
+   * Enum value↔label table for a trace, shown as a read-only key in the detail
+   * pane. Returns undefined for numeric traces or a trace showing raw values.
+   */
+  enumValuesForTrace(traceForm: FormGroup<TraceForm>) {
+    const traceId = traceForm.value.traceId;
+    return traceId ? this.traceConfigById.get(traceId)?.enumValues : undefined;
+  }
+
+  /**
+   * Ordinal↔label keys for every enum trace on the chart, rendered as an
+   * always-visible overlay next to the plot so the Y-axis ordinals can be read
+   * off against their enumeration labels.
+   */
+  enumKeys(): {
+    traceId: string;
+    name: string;
+    color: string;
+    values: EnumValue[];
+  }[] {
+    const keys: {
+      traceId: string;
+      name: string;
+      color: string;
+      values: EnumValue[];
+    }[] = [];
+    for (const traceForm of this.traces.controls) {
+      const traceId = traceForm.value.traceId;
+      if (!traceId) {
+        continue;
+      }
+      const trace = this.traceConfigById.get(traceId);
+      if (trace?.enumValues?.length) {
+        keys.push({
+          traceId,
+          name: trace.parameter.name,
+          color: trace.color,
+          values: trace.enumValues,
+        });
+      }
+    }
+    return keys;
+  }
+
+  /**
+   * Value↔label table for a categorical engineering trace, used both for the
+   * Y-axis label formatter and the on-chart key. Covers enumerations (ordinals
+   * are serialized as strings by the MDB API, so coerce) and booleans (a
+   * synthetic 0/1 table from the type's zero/one string values). Returns
+   * undefined for a numeric parameter or a trace showing the raw value.
+   */
+  private resolveEnumValues(
+    parameter: Parameter,
+    valueType: string,
+  ): EnumValue[] | undefined {
+    const type = parameter.type;
+    if (valueType !== 'engineering' || !type) {
+      return undefined;
+    }
+    if (type.engType === 'enumeration' && type.enumValues?.length) {
+      return type.enumValues.map((ev) => ({ ...ev, value: Number(ev.value) }));
+    }
+    if (type.engType === 'boolean') {
+      return [
+        { value: 0, label: type.zeroStringValue || 'FALSE' },
+        { value: 1, label: type.oneStringValue || 'TRUE' },
+      ];
+    }
+    return undefined;
   }
 
   /**
@@ -740,16 +1055,24 @@ export class ParameterChartTabComponent
   }
 
   private updateState() {
-    const { customMinimum, customMaximum } = this.band;
+    // Y-axis zoom is a single-axis concept, only tracked for the overlay layout
+    const overlayBand = this.bands.length === 1 ? this.bands[0] : undefined;
+    const customMinimum = overlayBand?.customMinimum;
+    const customMaximum = overlayBand?.customMaximum;
     const hasCustomMinimum = customMinimum !== undefined;
     const hasCustomMaximum = customMaximum !== undefined;
 
-    this.resetZoomEnabled.set(hasCustomMinimum || hasCustomMaximum);
+    this.resetZoomEnabled.set(
+      this.bands.some(
+        (band) =>
+          band.customMinimum !== undefined || band.customMaximum !== undefined,
+      ),
+    );
 
     const { value: fv } = this.form;
     const state: State = {
-      minimum: hasCustomMinimum ? this.band.customMinimum : undefined,
-      maximum: hasCustomMaximum ? this.band.customMaximum : undefined,
+      minimum: hasCustomMinimum ? customMinimum : undefined,
+      maximum: hasCustomMaximum ? customMaximum : undefined,
       centerZero: fv.centerZero!,
       showZeroLine: fv.showZeroLine!,
       showAlarmThresholds: fv.showAlarmThresholds!,
@@ -797,8 +1120,12 @@ export class ParameterChartTabComponent
 
   removeTrace(index: number) {
     const traceForm = this.traces.at(index);
-    this.band.removeTrace(traceForm.value.traceId!);
-    this.legend.removeItem(traceForm.value.traceId!);
+    const traceId = traceForm.value.traceId!;
+
+    this.traceConfigById.delete(traceId);
+    this.requestedNameByTraceId.delete(traceId);
+    this.dataSource?.removeTrace(traceId);
+    this.legend.removeItem(traceId);
 
     this.traces.removeAt(index);
     this.applyOrder();
@@ -822,7 +1149,7 @@ export class ParameterChartTabComponent
 
   /**
    * Use the form array order as the source to reorder
-   * band lines and legend items.
+   * bands, band lines and legend items.
    */
   private applyOrder() {
     let traceIds: string[] = [];
@@ -830,7 +1157,10 @@ export class ParameterChartTabComponent
       traceIds.push(this.traces.at(i).value.traceId!);
     }
 
-    this.band.applyOrder(traceIds);
+    this.orderedTraceIds = traceIds.filter((id) =>
+      this.traceConfigById.has(id),
+    );
+    this.syncBands();
     this.legend.applyOrder(traceIds);
   }
 
@@ -851,6 +1181,9 @@ export class ParameterChartTabComponent
     this.viewportChange$.complete();
     this.urlUpdate$.complete();
     this.subscriptions.forEach((s) => s.unsubscribe());
+    this.tooltipOverlayRef?.dispose();
+    this.backfillSubscription?.cancel();
+    this.dataSource?.disconnect();
     this.timeline?.disconnect();
   }
 }

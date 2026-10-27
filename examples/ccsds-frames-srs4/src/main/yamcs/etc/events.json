@@ -1,0 +1,34 @@
+[ 
+  {
+    "eventId"  : "EVENT_1",
+    "template" : "Event 1: para1={event1_para1} and para2={event1_para2; %3.3f}"
+  },
+  {
+    "eventId"  : "EVENT_2",
+    "template" : "Event 2: msg={event2_msg}"
+  },
+  {
+    "eventId"  : "EVENT_SINE_TEMP_LOW",
+    "template" : "PMON {pmon_event_pmon_id}: sine temp below low limit, value={pmon_event_value_f32; %.2f}"
+  },
+  {
+    "eventId"  : "EVENT_SINE_TEMP_HIGH",
+    "template" : "PMON {pmon_event_pmon_id}: sine temp above high limit, value={pmon_event_value_f32; %.2f}"
+  },
+  {
+    "eventId"  : "EVENT_RANDWALK_LOW",
+    "template" : "PMON {pmon_event_pmon_id}: bus current below low limit, value={pmon_event_value_f32; %.2f}"
+  },
+  {
+    "eventId"  : "EVENT_RANDWALK_HIGH",
+    "template" : "PMON {pmon_event_pmon_id}: bus current above high limit, value={pmon_event_value_f32; %.2f}"
+  },
+  {
+    "eventId"  : "EVENT_BUSVOLT_DELTA_HIGH",
+    "template" : "PMON {pmon_event_pmon_id}: bus voltage delta above high threshold, value={pmon_event_value_f32; %.2f}"
+  },
+  {
+    "eventId"  : "EVENT_MODE_UNEXPECTED",
+    "template" : "PMON {pmon_event_pmon_id}: mode register unexpected value, value={pmon_event_value_u8}"
+  }
+]

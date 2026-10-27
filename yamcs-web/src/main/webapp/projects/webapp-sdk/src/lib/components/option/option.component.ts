@@ -10,4 +10,5 @@ export class YaOption {
   description = input<string>();
   icon = input<string>();
   group = input(false, { transform: booleanAttribute });
+  disabled = input(false, { transform: booleanAttribute });
 }

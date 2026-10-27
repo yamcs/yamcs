@@ -82,6 +82,19 @@
           -
         }
       </dd>
+      <dt>Secondary index</dt>
+      <dd>
+        @if (table.secondaryIndexColumn?.length) {
+          @for (col of table.secondaryIndexColumn; track col; let last = $last) {
+            {{ col }}
+            @if (!last) {
+              <span>,</span>
+            }
+          }
+        } @else {
+          -
+        }
+      </dd>
       <dt>Partition by</dt>
       <dd>{{ (table.partitioningInfo?.type | lowercase) || "-" }}</dd>
       @if (table.partitioningInfo?.timeColumn) {

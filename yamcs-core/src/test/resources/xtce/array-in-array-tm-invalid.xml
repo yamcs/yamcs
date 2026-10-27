@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204"
+        xmlns:yamcs="http://yamcs.org/schema/xtce"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        name="ArrayInArrayTmInvalidTest"
+        xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
+    <TelemetryMetaData>
+        <ParameterTypeSet>
+            <IntegerParameterType name="uint8" signed="false">
+                <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+            </IntegerParameterType>
+            <ArrayParameterType name="values_type" arrayTypeRef="uint8">
+                <DimensionList>
+                    <Dimension>
+                        <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+                        <EndingIndex>
+                            <DynamicValue>
+                                <ParameterInstanceRef parameterRef="missing_count"
+                                        yamcs:aggregateMember="true"/>
+                                <LinearAdjustment intercept="-1"/>
+                            </DynamicValue>
+                        </EndingIndex>
+                    </Dimension>
+                </DimensionList>
+            </ArrayParameterType>
+            <AggregateParameterType name="report_type">
+                <MemberList>
+                    <Member name="values" typeRef="values_type"/>
+                </MemberList>
+            </AggregateParameterType>
+        </ParameterTypeSet>
+        <ParameterSet>
+            <Parameter name="report" parameterTypeRef="report_type"/>
+        </ParameterSet>
+        <ContainerSet>
+            <SequenceContainer name="packet">
+                <EntryList>
+                    <ParameterRefEntry parameterRef="report"/>
+                </EntryList>
+            </SequenceContainer>
+        </ContainerSet>
+    </TelemetryMetaData>
+</SpaceSystem>

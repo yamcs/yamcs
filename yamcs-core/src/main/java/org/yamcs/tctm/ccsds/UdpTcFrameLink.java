@@ -72,6 +72,14 @@ public class UdpTcFrameLink extends AbstractTcFrameLink implements Runnable {
                     log.trace("Outgoing frame data: {}", StringConverter.arrayToHexString(data, true));
                 }
 
+                if (frameEncapsulator != null) {
+                    data = frameEncapsulator.encapsulate(tf);
+
+                    if (log.isTraceEnabled()) {
+                        log.trace("Outgoing encapsulated frame: {}", StringConverter.arrayToHexString(data, true));
+                    }
+                }
+
                 if (cltuGenerator != null) {
                     data = encodeCltu(tf.getVirtualChannelId(), data);
 

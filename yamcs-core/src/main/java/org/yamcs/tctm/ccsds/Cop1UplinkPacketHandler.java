@@ -4,6 +4,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CancellationException;
@@ -91,6 +92,7 @@ public class Cop1UplinkPacketHandler<T extends UplinkTransferFrame> extends Abst
 
     // used to signal to the master channel when data is available on this VC
     private Semaphore dataAvailableSemaphore;
+    private TcFrameEncapsulator frameEncapsulator;
     final ScheduledThreadPoolExecutor executor;
 
     protected ArrayDeque<PreparedCommand> waitQueue = new ArrayDeque<>();
@@ -306,6 +308,7 @@ public class Cop1UplinkPacketHandler<T extends UplinkTransferFrame> extends Abst
         int dataLength = 0;
         List<PreparedCommand> l = new ArrayList<>();
         byte mapId = vmp.mapId;
+        Object aggregationKey = null;
 
         while ((pc = waitQueue.poll()) != null) {
             if (isBypass(pc)) {
@@ -315,6 +318,14 @@ public class Cop1UplinkPacketHandler<T extends UplinkTransferFrame> extends Abst
 
             int pcLength = cmdPostProcessor.getBinaryLength(pc);
             if (framingLength + dataLength + pcLength <= vmp.getMaxFrameLength()) {
+                Object commandKey = frameEncapsulator == null ? null : frameEncapsulator.getAggregationKey(pc);
+                if (!l.isEmpty() && !Objects.equals(aggregationKey, commandKey)) {
+                    waitQueue.addFirst(pc);
+                    break;
+                }
+                if (l.isEmpty()) {
+                    aggregationKey = commandKey;
+                }
                 if (mapId >= 0) {
                     // MAP service for this VC. We need to check that all the commands are for the same MAP_ID
                     var mapIdOverride = UplinkPacketHandler.getMapId(pc);
@@ -1133,6 +1144,11 @@ public class Cop1UplinkPacketHandler<T extends UplinkTransferFrame> extends Abst
     @Override
     public void setDataAvailableSemaphore(Semaphore dataAvailableSemaphore) {
         this.dataAvailableSemaphore = dataAvailableSemaphore;
+    }
+
+    @Override
+    public void setFrameEncapsulator(TcFrameEncapsulator frameEncapsulator) {
+        this.frameEncapsulator = frameEncapsulator;
     }
 
     static class QueuedFrame<T extends UplinkTransferFrame> {

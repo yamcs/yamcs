@@ -108,7 +108,15 @@ export interface ValidRange {
 
 export interface ArrayInfo {
   type: ParameterType;
-  dimensions: number;
+  dimensions: ParameterDimension[];
+}
+
+export interface ParameterDimension {
+  fixedValue?: string;
+  parameter?: Parameter;
+  aggregateMember?: string;
+  slope?: string;
+  intercept?: string;
 }
 
 export interface Member {
@@ -385,12 +393,22 @@ export interface SequenceEntry {
   locationInBits: number;
   referenceLocation: 'CONTAINER_START' | 'PREVIOUS_ENTRY';
   repeat?: RepeatInfo;
+  timeAssociation?: TimeAssociation;
 
   container?: Container;
   parameter?: Parameter;
   argument?: Argument;
   fixedValue?: FixedValue;
   indirectParameterRef?: IndirectParameterRef;
+}
+
+export interface TimeAssociation {
+  parameter: Parameter;
+  instance?: number;
+  useCalibratedValue?: boolean;
+  interpolateTime?: boolean;
+  offset?: number;
+  unit?: string;
 }
 
 export interface FixedValue {
@@ -408,6 +426,7 @@ export interface RepeatInfo {
   fixedCount: number;
   dynamicCount: Parameter;
   bitsBetween: number;
+  dynamicCountArgument: Argument;
 }
 
 export interface GetParametersOptions {

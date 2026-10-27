@@ -16,6 +16,8 @@ export class WebSocketCall<O, D> {
     private client: WebSocketClient,
     private requestId: number,
     private type: string,
+    private lowPriority: boolean,
+    private options: O,
     observer: (data: D) => void,
   ) {
     this.messageListeners.add(observer);
@@ -114,5 +116,22 @@ export class WebSocketCall<O, D> {
   cancel() {
     this.client.cancelCall(this);
     this.frameLossListeners.clear();
+  }
+
+  /**
+   * Re-issues the original subscribe message on a fresh WebSocket
+   * connection. Used after a reconnect, since the server-assigned call
+   * id from the previous connection is no longer valid.
+   */
+  resubscribe() {
+    this._id = undefined;
+    this.seq = 0;
+    this._frameLoss = false;
+    this.client.sendMessage({
+      type: this.type,
+      id: this.requestId,
+      lowPriority: this.lowPriority,
+      options: this.options,
+    });
   }
 }

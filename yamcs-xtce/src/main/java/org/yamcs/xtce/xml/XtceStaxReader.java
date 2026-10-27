@@ -26,9 +26,11 @@ import java.util.stream.Stream;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
+import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartDocument;
 import javax.xml.stream.events.StartElement;
 
@@ -64,6 +66,9 @@ public class XtceStaxReader extends AbstractStaxReader {
     // XTCE Schema defined tags, to minimize the mistyping errors
 
     private static final String YAMCS_IGNORE = "_yamcs_ignore";
+    public static final String YAMCS_XTCE_NAMESPACE = "http://yamcs.org/schema/xtce";
+    private static final QName AGGREGATE_MEMBER_ATTRIBUTE =
+            new QName(YAMCS_XTCE_NAMESPACE, "aggregateMember");
 
     public static final DynamicIntegerValue IGNORED_DYNAMIC_VALUE = new DynamicIntegerValue(
             new ParameterInstanceRef(new Parameter(YAMCS_IGNORE)));
@@ -366,11 +371,30 @@ public class XtceStaxReader extends AbstractStaxReader {
             } else if (isStartElementWithName(ELEM_NOTE_SET)) {
                 skipXtceSection(ELEM_NOTE_SET);
             } else if (isStartElementWithName(ELEM_HISTORY_SET)) {
-                skipXtceSection(ELEM_HISTORY_SET);
+                readHistorySet(spaceSystem);
             } else if (isEndElementWithName(ELEM_HEADER)) {
                 return;
             } else {
                 logUnknown();
+            }
+        }
+    }
+
+    private void readHistorySet(SpaceSystem spaceSystem) throws XMLStreamException {
+        log.trace(ELEM_HISTORY_SET);
+        checkStartElementPreconditions();
+
+        // TODO: How to fetch what is the delimiter is from the XTCE file?
+        String delimiter = ";";
+
+        Header h = spaceSystem.getHeader();
+        while (true) {
+            xmlEvent = xmlEventReader.nextEvent();
+            if (isStartElementWithName(ELEM_HISTORY)) {
+                String his = readStringBetweenTags(ELEM_HISTORY);
+                h.addHistory(History.parse(his, delimiter));
+            } else if (isEndElementWithName(ELEM_HISTORY_SET)) {
+                return;
             }
         }
     }
@@ -2582,6 +2606,8 @@ public class XtceStaxReader extends AbstractStaxReader {
 
             if (isStartElementWithName(ELEM_LOCATION_IN_CONTAINER_IN_BITS)) {
                 readLocationInContainerInBits(indirectParameterRefEntry);
+            } else if (isStartElementWithName(ELEM_TIME_ASSOCIATION)) {
+                indirectParameterRefEntry.setTimeAssociation(readTimeAssociation(spaceSystem));
             } else if (isStartElementWithName(ELEM_PARAMETER_INSTANCE)) {
                 ParameterInstanceRef ref = readParameterInstanceRef(spaceSystem, null);
                 ref.setRelativeTo(InstanceRelativeTo.CURRENT_ENTRY_WITHIN_PACKET);
@@ -2615,6 +2641,8 @@ public class XtceStaxReader extends AbstractStaxReader {
 
             if (isStartElementWithName(ELEM_LOCATION_IN_CONTAINER_IN_BITS)) {
                 readLocationInContainerInBits(parameterEntry);
+            } else if (isStartElementWithName(ELEM_TIME_ASSOCIATION)) {
+                parameterEntry.setTimeAssociation(readTimeAssociation(spaceSystem));
             } else if (isStartElementWithName(ELEM_REPEAT_ENTRY)) {
                 Repeat r = readRepeatEntry(spaceSystem);
                 parameterEntry.setRepeatEntry(r);
@@ -2708,6 +2736,8 @@ public class XtceStaxReader extends AbstractStaxReader {
 
             if (isStartElementWithName(ELEM_LOCATION_IN_CONTAINER_IN_BITS)) {
                 readLocationInContainerInBits(parameterEntry);
+            } else if (isStartElementWithName(ELEM_TIME_ASSOCIATION)) {
+                parameterEntry.setTimeAssociation(readTimeAssociation(spaceSystem));
             } else if (isStartElementWithName(ELEM_REPEAT_ENTRY)) {
                 Repeat r = readRepeatEntry(spaceSystem);
                 parameterEntry.setRepeatEntry(r);
@@ -2746,6 +2776,8 @@ public class XtceStaxReader extends AbstractStaxReader {
 
             if (isStartElementWithName(ELEM_LOCATION_IN_CONTAINER_IN_BITS)) {
                 readLocationInContainerInBits(containerEntry);
+            } else if (isStartElementWithName(ELEM_TIME_ASSOCIATION)) {
+                containerEntry.setTimeAssociation(readTimeAssociation(spaceSystem));
             } else if (isStartElementWithName(ELEM_REPEAT_ENTRY)) {
                 Repeat r = readRepeatEntry(spaceSystem);
                 containerEntry.setRepeatEntry(r);
@@ -2802,9 +2834,12 @@ public class XtceStaxReader extends AbstractStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(ELEM_PARAMETER_INSTANCE_REF)) {
-                String paramRef = readMandatoryAttribute(ATTR_PARAMETER_REF, xmlEvent.asStartElement());
+                StartElement element = xmlEvent.asStartElement();
+                String paramRef = readMandatoryAttribute(ATTR_PARAMETER_REF, element);
                 if (YAMCS_IGNORE.equals(paramRef)) {
                     v = IGNORED_DYNAMIC_VALUE;
+                } else if (isAggregateMemberReference(element)) {
+                    v = new DynamicIntegerValue(readAggregateMemberInstanceRef());
                 } else {
                     v = new DynamicIntegerValue(readParameterInstanceRef(spaceSystem, null));
                 }
@@ -2829,6 +2864,36 @@ public class XtceStaxReader extends AbstractStaxReader {
         }
     }
 
+    private AggregateMemberInstanceRef readAggregateMemberInstanceRef() throws XMLStreamException {
+        log.trace(ELEM_PARAMETER_INSTANCE_REF);
+
+        StartElement startElement = checkStartElementPreconditions();
+        String memberName = readMandatoryAttribute(ATTR_PARAMETER_REF, startElement);
+        boolean useCalibrated = readBooleanAttribute(ATTR_USE_CALIBRATED_VALUE, startElement, true);
+        int instance = readIntAttribute(ATTR_INSTANCE, startElement, 0);
+        if (instance != 0) {
+            throw new XMLStreamException("Aggregate member references do not support an instance",
+                    startElement.getLocation());
+        }
+
+        return new AggregateMemberInstanceRef(memberName, useCalibrated);
+    }
+
+    private boolean isAggregateMemberReference(StartElement element) throws XMLStreamException {
+        Attribute attribute = element.getAttributeByName(AGGREGATE_MEMBER_ATTRIBUTE);
+        if (attribute == null) {
+            return false;
+        }
+
+        String value = attribute.getValue();
+        if ("true".equalsIgnoreCase(value) || "1".equals(value)) {
+            return true;
+        } else if ("false".equalsIgnoreCase(value) || "0".equals(value)) {
+            return false;
+        }
+        throw new XMLStreamException("Cannot parse '" + value + "' to boolean", element.getLocation());
+    }
+
     private LinearAdjusment readLinearAdjusment() throws XMLStreamException {
         log.trace(ELEM_LINEAR_ADJUSTMENT);
         StartElement startElement = checkStartElementPreconditions();
@@ -2846,8 +2911,8 @@ public class XtceStaxReader extends AbstractStaxReader {
         StartElement startElement = checkStartElementPreconditions();
 
         String paramRef = readMandatoryAttribute(ATTR_PARAMETER_REF, startElement);
-        boolean useCalibrated = readBooleanAttribute("useCalibratedValue", startElement, true);
-        int instance = readIntAttribute("instance", startElement, 0);
+        boolean useCalibrated = readBooleanAttribute(ATTR_USE_CALIBRATED_VALUE, startElement, true);
+        int instance = readIntAttribute(ATTR_INSTANCE, startElement, 0);
 
         final ParameterInstanceRef instanceRef = new ParameterInstanceRef(useCalibrated);
         instanceRef.setInstance(instance);
@@ -2862,6 +2927,35 @@ public class XtceStaxReader extends AbstractStaxReader {
         });
 
         return instanceRef;
+    }
+
+    private TimeAssociation readTimeAssociation(SpaceSystem spaceSystem) throws XMLStreamException {
+        log.trace(ELEM_TIME_ASSOCIATION);
+
+        StartElement startElement = checkStartElementPreconditions();
+
+        String paramRef = readMandatoryAttribute(ATTR_PARAMETER_REF, startElement);
+        boolean useCalibrated = readBooleanAttribute(ATTR_USE_CALIBRATED_VALUE, startElement, true);
+        int instance = readIntAttribute(ATTR_INSTANCE, startElement, 0);
+        boolean interpolateTime = readBooleanAttribute(ATTR_INTERPOLATE_TIME, startElement, true);
+        String unitName = readAttribute(ATTR_UNIT, startElement, TimeAssociation.UnitType.SI_SECOND.xtceName());
+        String offsetValue = readAttribute(ATTR_OFFSET, startElement, null);
+
+        TimeAssociation timeAssociation = new TimeAssociation(useCalibrated);
+        timeAssociation.setInstance(instance);
+        timeAssociation.setRelativeTo(InstanceRelativeTo.PACKET_START_WITHIN_PACKET);
+        timeAssociation.setInterpolateTime(interpolateTime);
+        timeAssociation.setUnit(TimeAssociation.UnitType.fromXtceName(unitName));
+        if (offsetValue != null) {
+            timeAssociation.setOffset(Double.valueOf(offsetValue));
+        }
+
+        makeParameterReference(spaceSystem, paramRef, (para, path) -> {
+            timeAssociation.setParameter(para);
+            timeAssociation.setMemberPath(path);
+        });
+
+        return timeAssociation;
     }
 
     private ArgumentInstanceRef readArgumentInstanceRef(SpaceSystem spaceSystem, MetaCommand metaCmd)

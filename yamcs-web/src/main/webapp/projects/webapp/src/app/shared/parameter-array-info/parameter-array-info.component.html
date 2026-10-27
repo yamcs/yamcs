@@ -1,0 +1,53 @@
+<dl class="dl-horizontal">
+  <dt>Element type</dt>
+  <dd>
+    <span class="mono">{{ arrayInfo.type.engType }}</span>
+  </dd>
+</dl>
+
+<table yaDataTable>
+  <tr>
+    <th>Dimension</th>
+    <th>Size source</th>
+    <th>Slope</th>
+    <th>Intercept</th>
+  </tr>
+  @for (dimension of arrayInfo.dimensions; track $index; let i = $index) {
+    <tr>
+      <td>{{ i + 1 }}</td>
+      <td>
+        @if (dimension.fixedValue !== undefined) {
+          Fixed value:
+          <span class="mono">{{ dimension.fixedValue }}</span>
+        } @else if (dimension.aggregateMember !== undefined) {
+          Nearest enclosing aggregate member:
+          <span class="mono">{{ dimension.aggregateMember }}</span>
+        } @else if (dimension.parameter; as parameter) {
+          Parameter:
+          <a
+            [routerLink]="getParameterRoute(parameter)"
+            [queryParams]="{ c: yamcs.context }"
+            class="ya-link mono">
+            {{ parameter.qualifiedName }}
+          </a>
+        } @else {
+          Unspecified
+        }
+      </td>
+      <td>
+        @if (isDynamic(dimension)) {
+          {{ dimension.slope ?? "1" }}
+        } @else {
+          -
+        }
+      </td>
+      <td>
+        @if (isDynamic(dimension)) {
+          {{ dimension.intercept ?? "0" }}
+        } @else {
+          -
+        }
+      </td>
+    </tr>
+  }
+</table>

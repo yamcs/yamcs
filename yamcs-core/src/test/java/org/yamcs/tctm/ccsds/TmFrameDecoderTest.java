@@ -48,6 +48,14 @@ public class TmFrameDecoderTest {
     }
 
     @Test
+    public void testRejectsUnexpectedFrameLength() {
+        TmFrameDecoder tfd = new TmFrameDecoder(getParamsSecHeader());
+        byte[] frame = buildFrameWithSecHeader((byte) 0x09);
+
+        assertThrows(TcTmException.class, () -> tfd.decode(frame, 0, frame.length - 1));
+    }
+
+    @Test
     public void testSecHeaderLengthWithVersionNumberBits() throws TcTmException {
         // CCSDS 132.0-B-3 4.1.3.2.3: the top 2 bits of the first secondary header
         // byte are the version number and must not leak into the length (issue #1125)

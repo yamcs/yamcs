@@ -601,6 +601,9 @@ public class TableApi extends AbstractTableApi<Context> {
         if (def.hasHistogram()) {
             infob.addAllHistogramColumn(def.getHistogramColumns());
         }
+        if (def.hasSecondaryIndex()) {
+            infob.addAllSecondaryIndexColumn(def.getSecondaryIndex());
+        }
         if (def.hasPartitioning()) {
             PartitioningInfo.Builder partb = PartitioningInfo.newBuilder();
             PartitioningSpec spec = def.getPartitioningSpec();
@@ -650,13 +653,17 @@ public class TableApi extends AbstractTableApi<Context> {
                     return colDefString;
                 })
                 .collect(Collectors.joining(", "));
-        scriptb.append("(").append(columnSpec).append(")");
+        scriptb.append("(").append(columnSpec);
 
         List<TableColumnDefinition> keyColumns = def.getKeyDefinition();
         if (!keyColumns.isEmpty()) {
             String keySpec = keyColumns.stream().map(TableColumnDefinition::getName).collect(Collectors.joining(", "));
-            scriptb.append(" primary key(").append(keySpec).append(")");
+            scriptb.append(", primary key(").append(keySpec).append(")");
         }
+        if (def.hasSecondaryIndex()) {
+            scriptb.append(", index(").append(String.join(", ", def.getSecondaryIndex())).append(")");
+        }
+        scriptb.append(")");
 
         scriptb.append(" engine ").append(def.getStorageEngineName());
         if (def.hasHistogram()) {

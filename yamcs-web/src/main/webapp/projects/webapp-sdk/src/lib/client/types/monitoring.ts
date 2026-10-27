@@ -171,6 +171,8 @@ export interface EditReplayProcessorRequest {
 }
 
 export interface GetPacketsOptions {
+  /** Clock used for both bounds and ordering. Defaults to generation time. */
+  timeBasis?: PacketTimeBasis;
   /**
    * Inclusive lower bound
    */
@@ -191,6 +193,16 @@ export interface GetPacketsOptions {
 export interface ListPacketsResponse {
   packets?: Packet[];
   continuationToken?: string;
+}
+
+export type PacketTimeBasis = 'GENERATION_TIME' | 'RECEPTION_TIME';
+
+export interface PacketArchiveInfo {
+  receptionTimeIndexState: 'ABSENT' | 'BUILDING' | 'READY' | 'FAILED';
+  buildRevision?: string;
+  processedRows?: string;
+  missingReceptionTimeRows?: string;
+  failure?: string;
 }
 
 export interface Packet {
@@ -327,6 +339,7 @@ export interface StreamCompletenessIndexOptions {
 }
 
 export interface DownloadPacketsOptions {
+  timeBasis?: PacketTimeBasis;
   /**
    * Inclusive lower bound
    */

@@ -11,6 +11,10 @@
 					<Enumeration label="INVALID_PUS_SUBTYPE" value="1" />
 					<Enumeration label="NOT_IMPLEMENTED" value="2" />
 					<Enumeration label="INVALID_EVENT_ID" value="3" />
+					<Enumeration label="EA_DEF_NOT_FOUND" value="30" />
+					<Enumeration label="EA_DEF_ENABLED" value="31" />
+					<Enumeration label="MAX_EA_DEFS_REACHED" value="32" />
+					<Enumeration label="EA_INVALID_REQUEST" value="33" />
 					<Enumeration label="INVALID_VOLTAGE_NUM" value="100" />
 				</EnumerationList>
 			</EnumeratedParameterType>

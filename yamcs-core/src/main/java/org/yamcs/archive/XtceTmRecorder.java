@@ -88,6 +88,7 @@ public class XtceTmRecorder extends AbstractYamcsService {
         groupsSpec.allowUnknownKeys(true);
         spec.addOption("partitionGroups", OptionType.MAP).withSpec(groupsSpec);
         spec.mutuallyExclusive("partitionByPname", "partitionGroups");
+        spec.addOption("receptionTimeIndex", OptionType.BOOLEAN).withDefault(false);
         return spec;
     }
 
@@ -111,6 +112,7 @@ public class XtceTmRecorder extends AbstractYamcsService {
                 String query = "create table " + TABLE_NAME + "("
                         + getRecordedTupleDefinition(groupDefinitions != null).getStringDefinition1()
                         + ", " + getPrimaryKey(partitionByPname) + ") histogram(pname) "
+                        + (config.getBoolean("receptionTimeIndex", false) ? ", index(rectime, pname)" : "")
                         + getPartitionBy(timePart, partitionByPname, groupDefinitions != null)
                         + " table_format=compressed,column_family:" + CF_NAME;
                 ydb.execute(query);
@@ -124,11 +126,16 @@ public class XtceTmRecorder extends AbstractYamcsService {
                 log.warn("The partitionGroups option is ignored because the existing {} table is not partitioned "
                         + "by group. The option is only used when creating the table.", TABLE_NAME);
             }
+
+            TmReceptionTimeIndex.start(ydb, config.getBoolean("receptionTimeIndex", false));
+
             ydb.execute("create stream " + REC_STREAM_NAME
                     + getRecordedTupleDefinition(partitionGroups != null).getStringDefinition());
             ydb.execute("insert into " + TABLE_NAME + " select * from " + REC_STREAM_NAME);
         } catch (ParseException | StreamSqlException e) {
             throw new InitException(e);
+        } catch (Exception e) {
+            throw new InitException("Cannot initialize reception-time index", e);
         }
 
         StreamConfig sc = StreamConfig.getInstance(yamcsInstance);

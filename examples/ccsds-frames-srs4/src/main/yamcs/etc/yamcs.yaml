@@ -1,0 +1,13 @@
+# System-wide services
+services:
+  - class: org.yamcs.http.HttpServer
+
+instances:
+  - ccsds-frames-srs4
+
+dataDir: yamcs-data
+
+secretKey: "changeme"
+
+yamcs-web:
+  tag: "Example: ccsds-frames-srs4"

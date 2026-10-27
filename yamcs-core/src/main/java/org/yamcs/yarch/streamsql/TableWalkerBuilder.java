@@ -225,6 +225,7 @@ public class TableWalkerBuilder implements FilterableTarget {
             tw = ydb.getStorageEngine(tableDefinition).newSecondaryIndexTableWalker(ydb, tableDefinition, ascending,
                     follow);
             tw.setSecondaryIndexRange(skRange);
+            tw.setPartitionFilter(partitionTimeFilter, partitionValueFilter);
         }
       
         if (pkRange != null) {

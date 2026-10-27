@@ -38,7 +38,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         if (prs == null) {
             var ysi = YamcsServer.getServer().getInstance(yamcsInstance);
             List<ParameterRetrievalService> l = ysi.getServices(ParameterRetrievalService.class);
-            prs = l.get(0);
+            prs = l.getFirst();
         }
         prs.getParameterCache().clear();
         archiveClient = yamcsClient.createArchiveClient(yamcsInstance);
@@ -63,7 +63,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         page.iterator().forEachRemaining(values::add);
 
         assertEquals(100, values.size());
-        pv = values.get(0);
+        pv = values.getFirst();
         engValue = pv.getEngValue();
         assertEquals(0.167291805148, engValue.getFloatValue(), 1e-5);
         assertEquals(2850, pv.getExpireMillis());
@@ -73,7 +73,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         List<Sample> samples = archiveClient.getSamples("/REFMDB/SUBSYS1/FloatPara1_1_2", start, stop).get();
 
         assertEquals(500, samples.size());
-        s0 = samples.get(0);
+        s0 = samples.getFirst();
         assertEquals(0.167291805148, s0.getMin(), 1e-5);
         assertEquals(0.167291805148, s0.getMax(), 1e-5);
         assertEquals(0.167291805148, s0.getAvg(), 1e-5);
@@ -85,7 +85,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
 
         samples = archiveClient.getSamples("/REFMDB/SUBSYS1/FloatPara1_1_2", start, stop).get();
         assertEquals(500, samples.size());
-        s0 = samples.get(0);
+        s0 = samples.getFirst();
         assertEquals(0.167291805148, s0.getMin(), 1e-5);
         assertEquals(0.167291805148, s0.getMax(), 1e-5);
         assertEquals(0.167291805148, s0.getAvg(), 1e-5);
@@ -94,10 +94,11 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         values = new ArrayList<>();
         page.iterator().forEachRemaining(values::add);
         assertEquals(100, values.size());
-        pv = values.get(0);
+        pv = values.getFirst();
         engValue = pv.getEngValue();
         assertEquals(0.167291805148, engValue.getFloatValue(), 1e-5);
-        assertEquals(2850, pv.getExpireMillis());
+        // listValues does not request the parameter status, so it is not read back from the parameter archive
+        assertFalse(pv.hasExpireMillis());
         page = archiveClient.listValues("/REFMDB/SUBSYS1/FloatPara1_1_2", start, stop,
                 ListOptions.limit(10)).get();
         values = new ArrayList<>();
@@ -109,11 +110,11 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         values = new ArrayList<>();
         page.iterator().forEachRemaining(values::add);
         assertEquals(1, values.size());
-        pv = values.get(0);
+        pv = values.getFirst();
 
         assertEquals("2015-01-02T11:00:00Z", Timestamps.toString(pv.getGenerationTime()));
         assertEquals(0.167291805148, pv.getEngValue().getFloatValue(), 1e-5);
-        AcquisitionStatus acqs = values.get(0).getAcquisitionStatus();
+        AcquisitionStatus acqs = values.getFirst().getAcquisitionStatus();
         assertEquals(AcquisitionStatus.ACQUIRED, acqs);
 
         // add some realtime data
@@ -179,13 +180,13 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         List<ParameterValue> values = new ArrayList<>();
         page.iterator().forEachRemaining(values::add);
         assertEquals(20, values.size());
-        ParameterValue pv = values.get(0);
+        ParameterValue pv = values.getFirst();
         Value engValue = pv.getEngValue();
         assertEquals("zero_yep", engValue.getStringValue());
 
         List<Range> ranges = archiveClient.getRanges("/REFMDB/SUBSYS1/EnumerationPara1_1_4", start, stop).get();
         assertEquals(1, ranges.size());
-        Range r0 = ranges.get(0);
+        Range r0 = ranges.getFirst();
         assertEquals(20, r0.getCounts(0));
         assertEquals("zero_yep", r0.getEngValues(0).getStringValue());
     }
@@ -201,7 +202,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         List<Range> ranges = archiveClient.getRanges("/REFMDB/SUBSYS1/FloatPara1_1_2", start, stop).get();
 
         assertEquals(1, ranges.size());
-        Range r0 = ranges.get(0);
+        Range r0 = ranges.getFirst();
         assertEquals(1199, r0.getCount());
         assertEquals(1199, r0.getCounts(0));
         assertEquals(0.167291805148, r0.getEngValues(0).getFloatValue(), 1e-5);
@@ -216,7 +217,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         stop = Instant.parse("2018-01-02T11:00:00Z");
         ranges = archiveClient.getRanges("/REFMDB/SUBSYS1/FloatPara1_1_2", start, stop).get();
         assertEquals(1, ranges.size());
-        r0 = ranges.get(0);
+        r0 = ranges.getFirst();
         assertEquals(7200, r0.getCounts(0));
         assertEquals(0.167291805148, r0.getEngValues(0).getFloatValue(), 1e-5);
 
@@ -225,7 +226,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         ranges = archiveClient.getRanges("/REFMDB/SUBSYS1/FloatPara1_1_2", start, stop).get();
 
         assertEquals(2, ranges.size());
-        r0 = ranges.get(0);
+        r0 = ranges.getFirst();
         assertEquals(7200, r0.getCounts(0));
 
         assertEquals("2018-01-01T10:00:00.000Z",
@@ -247,13 +248,13 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
                 RangeOptions.minimumGap(3601001)).get();
 
         assertEquals(1, ranges.size());
-        r0 = ranges.get(0);
+        r0 = ranges.getFirst();
         assertEquals(7200 + 3600, r0.getCounts(0));
 
         ranges = archiveClient.getRanges("/REFMDB/SUBSYS1/FloatPara1_1_2", start, stop,
-                RangeOptions.minimumRange(4 * 3600000l)).get();
+                RangeOptions.minimumRange(4 * 3600000L)).get();
         assertEquals(1, ranges.size());
-        r0 = ranges.get(0);
+        r0 = ranges.getFirst();
         assertEquals(7200 + 3600, r0.getCounts(0));
 
     }
@@ -277,7 +278,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         page.iterator().forEachRemaining(values::add);
 
         assertEquals(59, values.size());
-        org.yamcs.protobuf.Pvalue.ParameterValue pv = values.get(0);
+        org.yamcs.protobuf.Pvalue.ParameterValue pv = values.getFirst();
         Value engValue = pv.getEngValue();
         assertEquals(packetGenerator.paggr1_member2, engValue.getUint32Value());
         assertFalse(pv.hasExpireMillis());
@@ -293,7 +294,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         page.iterator().forEachRemaining(values::add);
 
         assertEquals(100, values.size());
-        pv = values.get(0);
+        pv = values.getFirst();
         engValue = pv.getEngValue();
         assertEquals(packetGenerator.paggr1_member2, engValue.getUint32Value());
 
@@ -301,7 +302,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         stop = Instant.parse("2019-04-06T02:00:00Z");
         List<Sample> samples = archiveClient.getSamples("/REFMDB/SUBSYS1/aggregate_para1.member3", start, stop).get();
         assertEquals(500, samples.size());
-        Sample s0 = samples.get(0);
+        Sample s0 = samples.getFirst();
         assertEquals(2.72, s0.getAvg(), 1e-5);
     }
 
@@ -319,7 +320,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         page.iterator().forEachRemaining(values::add);
 
         assertEquals(59, values.size());
-        org.yamcs.protobuf.Pvalue.ParameterValue pv = values.get(0);
+        org.yamcs.protobuf.Pvalue.ParameterValue pv = values.getFirst();
         Value engValue = pv.getEngValue();
         assertEquals(10, engValue.getUint32Value());
         assertFalse(pv.hasExpireMillis());
@@ -336,7 +337,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         page.iterator().forEachRemaining(values::add);
 
         assertEquals(100, values.size());
-        pv = values.get(0);
+        pv = values.getFirst();
         assertEquals("2019-04-06T20:00:00Z", Timestamps.toString(pv.getGenerationTime()));
 
         engValue = pv.getEngValue();
@@ -346,7 +347,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         stop = Instant.parse("2019-04-06T22:00:00Z");
         List<Sample> samples = archiveClient.getSamples("/REFMDB/SUBSYS1/array_para1[23].member1", start, stop).get();
         assertEquals(500, samples.size());
-        Sample s0 = samples.get(0);
+        Sample s0 = samples.getFirst();
         assertEquals(23, s0.getAvg(), 1e-5);
     }
 
@@ -364,7 +365,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         page.iterator().forEachRemaining(values::add);
 
         assertEquals(59, values.size());
-        org.yamcs.protobuf.Pvalue.ParameterValue pv = values.get(0);
+        org.yamcs.protobuf.Pvalue.ParameterValue pv = values.getFirst();
         Value engValue = pv.getEngValue().getArrayValue(5).getAggregateValue().getValue(1);
 
         assertEquals(10, engValue.getUint32Value());
@@ -382,7 +383,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         page.iterator().forEachRemaining(values::add);
 
         assertEquals(100, values.size());
-        pv = values.get(0);
+        pv = values.getFirst();
 
         assertEquals("2021-05-17T20:00:00Z", Timestamps.toString(pv.getGenerationTime()));
 
@@ -416,7 +417,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         page.iterator().forEachRemaining(values::add);
 
         assertEquals(60, values.size());
-        org.yamcs.protobuf.Pvalue.ParameterValue pv0 = values.get(0);
+        org.yamcs.protobuf.Pvalue.ParameterValue pv0 = values.getFirst();
         org.yamcs.protobuf.Pvalue.ParameterValue pv1 = values.get(1);
 
         assertEquals("2024-07-05T04:00:30Z", Timestamps.toString(pv0.getGenerationTime()));
@@ -437,7 +438,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         page.iterator().forEachRemaining(values::add);
 
         assertEquals(16, values.size());
-        pv0 = values.get(0);
+        pv0 = values.getFirst();
         pv1 = values.get(1);
 
         assertEquals("2024-07-05T04:00:02Z", Timestamps.toString(pv0.getGenerationTime()));
@@ -455,7 +456,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         page.iterator().forEachRemaining(values::add);
 
         assertEquals(16, values.size());
-        pv0 = values.get(0);
+        pv0 = values.getFirst();
         pv1 = values.get(1);
 
         assertEquals("2024-07-05T04:00:10Z", Timestamps.toString(pv0.getGenerationTime()));
@@ -478,7 +479,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         page.iterator().forEachRemaining(values::add);
 
         assertEquals(60, values.size());
-        org.yamcs.protobuf.Pvalue.ParameterValue pv0 = values.get(0);
+        org.yamcs.protobuf.Pvalue.ParameterValue pv0 = values.getFirst();
         org.yamcs.protobuf.Pvalue.ParameterValue pv1 = values.get(1);
 
         assertEquals("2024-07-05T14:00:30Z", Timestamps.toString(pv0.getGenerationTime()));
@@ -502,7 +503,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         page.iterator().forEachRemaining(values::add);
 
         assertEquals(16, values.size());
-        pv0 = values.get(0);
+        pv0 = values.getFirst();
         pv1 = values.get(1);
 
         assertEquals("2024-07-05T14:00:02Z", Timestamps.toString(pv0.getGenerationTime()));
@@ -523,7 +524,7 @@ public class ParameterArchiveIntegrationTest extends AbstractIntegrationTest {
         page.iterator().forEachRemaining(values::add);
 
         assertEquals(16, values.size());
-        pv0 = values.get(0);
+        pv0 = values.getFirst();
         pv1 = values.get(1);
 
         assertEquals("2024-07-05T14:00:10Z", Timestamps.toString(pv0.getGenerationTime()));

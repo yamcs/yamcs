@@ -41,6 +41,9 @@ public class Pus11ServiceTest {
         sim = new TestSim(dir);
         svc = new Pus11Service(sim);
         svc.start();
+        // the time-based schedule execution function is disabled at start (ECSS 6.11.4.3.1.b)
+        svc.executeTc(simpleTc(1, new byte[0]));
+        sim.tm.clear();
     }
 
     @AfterEach
@@ -66,7 +69,7 @@ public class Pus11ServiceTest {
 
         svc.executeTc(insertTc(1, 2, releaseInMillis(400)));
         // sub-schedule 1 was auto-created disabled (ECSS 6.11.4.5j.1b) -> enable it
-        svc.executeTc(simpleTc(20, new byte[] { 1 }));
+        svc.executeTc(simpleTc(20, new byte[] { 1, 1 }));
 
         Thread.sleep(900);
         assertEquals(1, sim.released.size());
@@ -77,7 +80,7 @@ public class Pus11ServiceTest {
     void disabledGroupWithholdsRelease() throws Exception {
         svc.executeTc(createGroupsTc(new int[] { 3 }, new int[] { 0 })); // group 3 disabled
         svc.executeTc(insertTc(1, 3, releaseInMillis(400)));
-        svc.executeTc(simpleTc(20, new byte[] { 1 })); // enable sub-schedule 1
+        svc.executeTc(simpleTc(20, new byte[] { 1, 1 })); // enable sub-schedule 1
 
         Thread.sleep(900);
         assertTrue(sim.released.isEmpty());
@@ -136,8 +139,8 @@ public class Pus11ServiceTest {
     // ---- helpers ----
 
     private byte[] releaseInMillis(int millis) {
-        ByteBuffer bb = ByteBuffer.allocate(PusTime.LENGTH_BYTES);
-        PusTime.now().shiftByMillis(millis).encode(bb);
+        ByteBuffer bb = ByteBuffer.allocate(sim.timeEncoding.getEncodedLength());
+        sim.timeEncoding.now().shiftByMillis(millis).encode(bb, sim.timeEncoding);
         return bb.array();
     }
 

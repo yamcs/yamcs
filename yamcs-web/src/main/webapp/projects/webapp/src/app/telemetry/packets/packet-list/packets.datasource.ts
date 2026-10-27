@@ -16,6 +16,7 @@ export class PacketsDataSource extends DataSource<Packet> {
 
   packets$ = new BehaviorSubject<Packet[]>([]);
   private buffer: PacketBuffer;
+  private requestGeneration = 0;
 
   loading$ = new BehaviorSubject<boolean>(false);
 
@@ -44,64 +45,96 @@ export class PacketsDataSource extends DataSource<Packet> {
     this.packets$.next(this.buffer.snapshot());
   }
 
-  loadEntries(processorName: string, options: GetPacketsOptions) {
+  async loadEntries(processorName: string, options: GetPacketsOptions) {
+    const generation = ++this.requestGeneration;
+    this.options = { ...options };
+    this.continuationToken = undefined;
+    this.buffer.reset();
+    this.emitPackets();
     this.loading$.next(true);
-    return this.loadPage({
-      ...options,
-      limit: this.pageSize,
-    }).then((packets) => {
-      this.loading$.next(false);
-      this.buffer.reset();
+    try {
+      const page = await this.loadPage({ ...options, limit: this.pageSize });
+      if (generation !== this.requestGeneration) {
+        return false;
+      }
+      this.continuationToken = page.continuationToken;
       this.blockHasMore = false;
-      this.buffer.addArchiveData(packets);
-
-      // Quick emit, don't wait on sync tick
+      this.buffer.addArchiveData(page.packets || []);
       this.emitPackets();
-    });
+      return true;
+    } catch (err) {
+      if (generation === this.requestGeneration) {
+        throw err;
+      }
+      return false;
+    } finally {
+      if (generation === this.requestGeneration) {
+        this.loading$.next(false);
+      }
+    }
+  }
+
+  clear() {
+    ++this.requestGeneration;
+    this.continuationToken = undefined;
+    this.buffer.reset();
+    this.emitPackets();
+    this.loading$.next(false);
   }
 
   hasMore() {
-    return !!this.continuationToken && !this.blockHasMore;
+    return (
+      !!this.continuationToken && !this.blockHasMore && !this.loading$.value
+    );
   }
 
   private loadPage(options: GetPacketsOptions) {
-    return this.yamcs.yamcsClient
-      .getPackets(this.yamcs.instance!, {
-        ...options,
-        fields: [
-          // Everything except the packet binary
-          'id',
-          'generationTime',
-          'earthReceptionTime',
-          'receptionTime',
-          'sequenceNumber',
-          'link',
-          'size',
-        ],
-      })
-      .then((page) => {
-        this.continuationToken = page.continuationToken;
-        return page.packets || [];
-      });
-  }
-
-  async loadMoreData(options: GetPacketsOptions) {
-    if (!this.continuationToken) {
-      return;
-    }
-    return this.loadPage({
+    return this.yamcs.yamcsClient.getPackets(this.yamcs.instance!, {
       ...options,
-      next: this.continuationToken,
-      limit: this.pageSize,
-    }).then((packets) => {
-      this.buffer.addArchiveData(packets);
-
-      // Quick emit, don't wait on sync tick
-      this.emitPackets();
+      fields: [
+        // Everything except the packet binary
+        'id',
+        'generationTime',
+        'earthReceptionTime',
+        'receptionTime',
+        'sequenceNumber',
+        'link',
+        'size',
+      ],
     });
   }
 
+  async loadMoreData() {
+    if (!this.hasMore()) {
+      return;
+    }
+    const generation = this.requestGeneration;
+    this.loading$.next(true);
+    try {
+      const page = await this.loadPage({
+        ...this.options,
+        next: this.continuationToken,
+        limit: this.pageSize,
+      });
+      if (generation !== this.requestGeneration) {
+        return;
+      }
+      this.continuationToken = page.continuationToken;
+      this.buffer.addArchiveData(page.packets || []);
+      this.emitPackets();
+    } catch (err) {
+      if (generation === this.requestGeneration) {
+        throw err;
+      }
+    } finally {
+      if (generation === this.requestGeneration) {
+        this.loading$.next(false);
+      }
+    }
+  }
+
   disconnect() {
+    ++this.requestGeneration;
     this.syncSubscription?.unsubscribe();
     this.packets$.complete();
     this.loading$.complete();
