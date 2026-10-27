@@ -111,8 +111,9 @@ public class XtceTmRecorder extends AbstractYamcsService {
             if (tblDef == null) {
                 String query = "create table " + TABLE_NAME + "("
                         + getRecordedTupleDefinition(groupDefinitions != null).getStringDefinition1()
-                        + ", " + getPrimaryKey(partitionByPname) + ") histogram(pname) "
+                        + ", " + getPrimaryKey(partitionByPname)
                         + (config.getBoolean("receptionTimeIndex", false) ? ", index(rectime, pname)" : "")
+                        + ") histogram(pname) "
                         + getPartitionBy(timePart, partitionByPname, groupDefinitions != null)
                         + " table_format=compressed,column_family:" + CF_NAME;
                 ydb.execute(query);
