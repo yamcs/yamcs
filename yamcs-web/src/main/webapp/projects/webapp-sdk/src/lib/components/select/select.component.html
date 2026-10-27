@@ -22,6 +22,7 @@
     <button
       mat-menu-item
       (click)="writeValue(option.id)"
+      [disabled]="option.disabled"
       [matTooltip]="option.description"
       matTooltipPosition="right">
       <mat-icon [style.visibility]="isSelected(option.id) ? 'visible' : 'hidden'">check</mat-icon>
@@ -35,6 +36,7 @@
     <button
       mat-menu-item
       (click)="writeValue(option.id())"
+      [disabled]="option.disabled()"
       [matTooltip]="option.description()"
       matTooltipPosition="right">
       <mat-icon [style.visibility]="isSelected(option.id()) ? 'visible' : 'hidden'">check</mat-icon>

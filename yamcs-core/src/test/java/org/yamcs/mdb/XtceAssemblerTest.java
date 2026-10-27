@@ -63,6 +63,11 @@ public class XtceAssemblerTest {
     }
 
     @Test
+    public void testAggregateMemberArrayDimensions() throws Exception {
+        verify("src/test/resources/xtce/array-in-array-tm.xml");
+    }
+
+    @Test
     public void testDimensionListIsSchemaValid() throws Exception {
         Mdb mdb = MdbFactory.createInstance(Arrays.asList(YConfiguration.wrap(
                 Map.of("type", "xtce", "spec", "src/test/resources/xtce/array-tm.xml"))), false, false);

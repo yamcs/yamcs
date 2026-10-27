@@ -56,7 +56,7 @@ empty-match-criteria:
 xtce-fileset:
     - type: xtce
       args:
-          fileset: ["src/test/resources/xtce/a*.xml", "src/test/resources/xtce/b.xml"]
+          fileset: ["src/test/resources/xtce/a?.xml", "src/test/resources/xtce/b.xml"]
 
 VariableBinaryTest:
     - type: xtce
@@ -114,10 +114,30 @@ indirect-param-ref:
       args:
           file: "../yamcs-xtce/src/test/resources/indirect-param.xml"
 
+time-association:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/time-association.xml"
+
 ArrayInArrayArgCommandTest:
     - type: xtce
       args:
           file: "src/test/resources/xtce/array-in-array-arg.xml"
+
+ArrayInArrayTmTest:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/array-in-array-tm.xml"
+
+ArrayInArrayTmInvalidTest:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/array-in-array-tm-invalid.xml"
+
+RepeatEntryCommandTest:
+    - type: xtce
+      args:
+          file: "src/test/resources/xtce/repeat-entry-cmd.xml"
 
 ArgLocationsTest:
     - type: xtce

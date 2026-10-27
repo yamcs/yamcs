@@ -91,11 +91,27 @@ public class ParameterIdDbTest {
 
         int p4 = pidDb.createAndGet("/test2/bp4", Value.Type.BOOLEAN);
         int aggp3 = pidDb.createAndGetAggrray("/test2/aggregate1", vt, vt, IntArray.wrap(p1, p4));
-
         assertTrue(aggp1 != aggp3);
+        assertEquals(2, pidDb.get("/test2/aggregate1").length);
+
+        int p5 = pidDb.createAndGet("/test2/bp1", Value.Type.DOUBLE);
+        int aggpWithChangedMemberType = pidDb.createAndGetAggrray("/test2/aggregate1", vt, vt,
+                IntArray.wrap(p5, p2));
+        assertTrue(aggp1 != aggpWithChangedMemberType);
 
         int aggp4 = pidDb.createAndGetAggrray("/test2/aggregate1", vt, vt, IntArray.wrap(p1, p2));
         assertEquals(aggp1, aggp4);
+
+        int a00 = pidDb.createAndGet("/test2/arrayAggregate[0].items[0].value", Value.Type.UINT32);
+        int a01 = pidDb.createAndGet("/test2/arrayAggregate[0].items[1].value", Value.Type.UINT32);
+        int a10 = pidDb.createAndGet("/test2/arrayAggregate[1].items[0].value", Value.Type.UINT32);
+        int a11 = pidDb.createAndGet("/test2/arrayAggregate[1].items[1].value", Value.Type.UINT32);
+        int nested1 = pidDb.createAndGetAggrray("/test2/arrayAggregate", vt, null,
+                IntArray.wrap(a00, a01, a10));
+        int nested2 = pidDb.createAndGetAggrray("/test2/arrayAggregate", vt, null,
+                IntArray.wrap(a00, a10, a11));
+        assertEquals(nested1, nested2);
+        assertEquals(4, pidDb.getParameterId(nested1).getComponents().size());
     }
 
     @Test

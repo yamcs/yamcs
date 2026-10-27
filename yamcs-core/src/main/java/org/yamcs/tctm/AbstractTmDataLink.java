@@ -11,7 +11,6 @@ import org.yamcs.YConfiguration;
 import org.yamcs.cascading.YamcsTmArchiveLink;
 import org.yamcs.cascading.YamcsTmLink;
 import org.yamcs.parameter.ParameterValue;
-import org.yamcs.parameter.SystemParametersProducer;
 import org.yamcs.parameter.SystemParametersService;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.time.SimulationTimeService;
@@ -20,7 +19,7 @@ import org.yamcs.utils.YObjectLoader;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.UnitType;
 
-public abstract class AbstractTmDataLink extends AbstractLink implements TmPacketDataLink, SystemParametersProducer {
+public abstract class AbstractTmDataLink extends AbstractLink implements TmPacketDataLink {
     protected AtomicLong packetCount = new AtomicLong(0);
     DataRateMeter packetRateMeter = new DataRateMeter();
 

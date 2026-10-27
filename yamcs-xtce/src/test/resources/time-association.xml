@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem name="Example"
+  xmlns="https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+  <TelemetryMetaData>
+    <ParameterTypeSet>
+      <AbsoluteTimeParameterType name="time_type">
+        <Encoding scale="0.001" offset="0" units="seconds">
+          <IntegerDataEncoding sizeInBits="64"/>
+        </Encoding>
+        <ReferenceTime>
+          <Epoch>UNIX</Epoch>
+        </ReferenceTime>
+      </AbsoluteTimeParameterType>
+      <IntegerParameterType name="uint32_type">
+        <IntegerDataEncoding sizeInBits="32"/>
+      </IntegerParameterType>
+    </ParameterTypeSet>
+
+    <ParameterSet>
+      <Parameter name="packet_time" parameterTypeRef="time_type"/>
+      <Parameter name="value" parameterTypeRef="uint32_type"/>
+    </ParameterSet>
+
+    <ContainerSet>
+      <SequenceContainer name="packet">
+        <EntryList>
+          <ParameterRefEntry parameterRef="packet_time"/>
+          <ParameterRefEntry parameterRef="value">
+            <TimeAssociation parameterRef="packet_time" instance="0" useCalibratedValue="true"
+                interpolateTime="false" offset="-0.8" unit="si_second"/>
+          </ParameterRefEntry>
+          <ContainerRefEntry containerRef="embedded">
+            <TimeAssociation parameterRef="packet_time" instance="0" useCalibratedValue="true"
+                interpolateTime="false" offset="-600" unit="si_millsecond"/>
+          </ContainerRefEntry>
+        </EntryList>
+      </SequenceContainer>
+      <SequenceContainer name="embedded">
+        <EntryList>
+          <ParameterRefEntry parameterRef="value"/>
+        </EntryList>
+      </SequenceContainer>
+    </ContainerSet>
+  </TelemetryMetaData>
+</SpaceSystem>

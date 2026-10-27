@@ -42,4 +42,11 @@ public interface VcUplinkHandler<T extends UplinkTransferFrame> {
      */
     void setDataAvailableSemaphore(Semaphore dataAvailableSemaphore);
 
+    /**
+     * Supplies an optional outer-frame provider. Implementations which aggregate commands use its aggregation key to
+     * prevent commands requiring different outer routes from sharing one transfer frame.
+     */
+    default void setFrameEncapsulator(TcFrameEncapsulator frameEncapsulator) {
+    }
+
 }

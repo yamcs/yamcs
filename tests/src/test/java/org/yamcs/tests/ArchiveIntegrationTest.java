@@ -453,6 +453,51 @@ public class ArchiveIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    public void testTableLoadAgainWithSpecialColumnNames() throws Exception {
+        String tableName = "table_special_columns";
+        String parameterName = "/yamcs/test-host/processor/name";
+        String seqcountName = "ccsds-seqcount";
+        YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
+        ydb.executeDiscardingResult("create table " + tableName + "(id int, primary key(id))");
+
+        for (int i = 0; i < 2; i++) {
+            TableLoader loader = archiveClient.createTableLoader(tableName);
+            loader.send(Row.newBuilder()
+                    .addColumns(Row.ColumnInfo.newBuilder().setId(0).setName("id").setType("INT"))
+                    .addColumns(Row.ColumnInfo.newBuilder().setId(1).setName(parameterName).setType("STRING"))
+                    .addColumns(Row.ColumnInfo.newBuilder().setId(2).setName(seqcountName).setType("INT"))
+                    .addCells(Cell.newBuilder().setColumnId(0).setData(ByteString.copyFrom(csint.toByteArray(i))))
+                    .addCells(Cell.newBuilder().setColumnId(1)
+                            .setData(ByteString.copyFrom(csstr.toByteArray("processor" + i))))
+                    .addCells(Cell.newBuilder().setColumnId(2)
+                            .setData(ByteString.copyFrom(csint.toByteArray(i + 100))))
+                    .build());
+            assertEquals(1, loader.complete().get().getCount());
+        }
+
+        TableDefinition table = ydb.getTable(tableName);
+        assertEquals(DataType.STRING, table.getColumnDefinition(parameterName).getType());
+        assertEquals(DataType.INT, table.getColumnDefinition(seqcountName).getType());
+        List<Row> rows = new ArrayList<>();
+        archiveClient.dumpTable(tableName, rows::add).get();
+        assertEquals(2, rows.size());
+        Map<Integer, String> columnNames = new HashMap<>();
+        for (int i = 0; i < rows.size(); i++) {
+            Row row = rows.get(i);
+            row.getColumnsList().forEach(c -> columnNames.put(c.getId(), c.getName()));
+            Map<String, Object> values = new HashMap<>();
+            for (Cell cell : row.getCellsList()) {
+                String name = columnNames.get(cell.getColumnId());
+                byte[] data = cell.getData().toByteArray();
+                values.put(name, name.equals(parameterName)
+                        ? csstr.fromByteArray(data, table.getColumnDefinition(name))
+                        : csint.fromByteArray(data, table.getColumnDefinition(name)));
+            }
+            assertEquals(Map.of("id", i, parameterName, "processor" + i, seqcountName, i + 100), values);
+        }
+    }
+
+    @Test
     public void testTokenizedHistoIndex() throws Exception {
         generatePkt13AndPps("2015-02-03T10:00:00", 120);
         generatePkt13AndPps("2015-02-03T10:03:00", 100);

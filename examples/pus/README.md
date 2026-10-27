@@ -42,31 +42,29 @@ ST[08] function management
 - No support in the simulator.
 
 ST[09] time management
-- The simulator on-board time is a real Unix-epoch time (host wall clock) with a small hardcoded
-  drift applied. Yamcs decodes it directly (`timeEncoding: {type: CUC, epoch: UNIX}`); this example
-  does not use a time correlation service. See the `pus-frames` example for a setup where the
-  on-board time is correlated against the frame earth-reception time.
+- The time sent by the simulator is obtained from System.nanoTime() and gives roughly the time since the computer has been started.
+- A standard hardcoded drift is applied.
+- Yamcs uses a time correlation service to correlate the simulator time with the "ground" time. 
+  The time correlation does not know about the drift or how the time is generated.
 - The time packet is sent every 4 seconds and changing that frequency is not supported.
 
 ST[10] (reserved)
 
 ST[11] time based scheduled.
- - **Not wired up in this example** - see the `pus-frames` example, which demonstrates ST[11]
-   instead of ST[22] (see below). The simulator itself supports both regardless of which example
-   you run; the two examples were deliberately split one-service-each so their command options
-   (`pus11*` / `pus22*`) don't get interleaved in the same instance's command form (Yamcs does not
-   currently group/sort command options).
  - The Yamcs command post-processor generates the time based scheduled commands based on command attributes.
    Issue any command with the `pus11ScheduleAt` option set and it is wrapped into a TC[11,4] insert
-   activities request. The `pus11SubScheduleId` and `pus11GroupId` options select the sub-schedule and
-   the scheduling group; their defaults and field widths are configured in the `pus11` block of the
-   command post-processor (see `pus-frames/etc/yamcs.pus-frames.yaml`).
+   activities request addressed to `pus11Apid`. The `pus11SubScheduleId` and `pus11GroupId` options select the
+   sub-schedule and the scheduling group; their defaults and field widths are configured in the `pus11` block of
+   the command post-processor (see `etc/yamcs.pus.yaml`).
  - Most TC/TM supported in the simulator, including sub-schedules (TC[11,18..21]) and scheduling
    groups (TC[11,22..26], TM[11,27]).
- - Alternatively the TC[11,4] can be built by hand with `/PUS11/INSERT_ACTIVITIES` (wired in
-   `pus-frames`). It takes a list of activities, each with a `group_id`, a `release_time` and a
-   `tc`: the complete TC packet to release, in hex. See "Embedded TC packets" below. Try it with
-   `examples/pus-frames/tests/test-pus11-embedded.py`.
+ - The simulator's time-based schedule execution function starts disabled (as per the standard): send `/PUS11/ENABLE_SCHEDULER` before scheduling commands, otherwise they are dropped at their release time.
+ - Scheduling groups only exist after an explicit TC[11,22] (`/PUS11/CREATE_SCHEDULING_GROUPS`): an insert referencing an unknown group is rejected. A sub-schedule created by an insert starts disabled (TC[11,20] enables it).
+ - A dedicated (web) UI application would be highly beneficial. (Anyone interested in sponsoring its development?)
+ - Alternatively the TC[11,4] can be built by hand with `/PUS11/INSERT_ACTIVITIES`. It takes a list of
+   activities, each with a `group_id`, a `release_time` and a `tc_packet`: the complete TC packet to
+   release, in hex. See "Embedded TC packets" below. `pus-frames` has its own `pus11.xml` where the
+   member is named `tc`; try it with `examples/pus-frames/tests/test-pus11-embedded.py`.
 
 ST[12] on-board monitoring
 - Standard Yamcs MDB definitions should suffice. 
@@ -97,17 +95,24 @@ ST[18] on-board control procedures
 - No support in the simulator.
 
 ST[19] event-action
-- `mdb/pus19.xml` defines the commands, loaded in both `pus` and `pus-frames`:
-    * TC[19,1] `ADD_EVENT_ACTIONS`: a list of {`event_id`, `tc`}, where `tc` is the complete TC
-      packet to execute, in hex. See "Embedded TC packets" below.
-    * TC[19,2..5] delete, delete all, enable and disable definitions.
+- `mdb/pus19.xml` defines the commands, loaded in both `pus` and `pus-frames`. A definition is
+  identified by (`app_process_id`, `event_def_id`); the simulator has a single application process
+  (APID 1).
+    * TC[19,1] `TC_19_1_ADD`: a list of {`app_process_id`, `event_def_id`, `request`}, where
+      `request` is the complete TC packet to execute, in hex, with no length prefix (ECSS 8.19.2.1).
+      See "Embedded TC packets" below.
+    * TC[19,2] delete, TC[19,4]/[19,5] enable/disable (`_SPECIFIC` with a list, `_ALL` with no
+      payload). TC[19,3] (delete all) is not implemented; TC[19,2] covers ECSS 6.19.8.2.
     * TC[19,6] report status, answered by TM[19,7].
     * TC[19,8..9] enable and disable the event-action function.
-- The simulator supports these TCs. It runs the action of an enabled definition each time the
+    * TC[19,10] report definitions (N=0 for all), answered by TM[19,11].
+- The simulator supports these TCs. It runs the request of an enabled definition each time the
   matching ST[5] event is generated (EVENT_1 every 5 seconds, EVENT_2 in the other seconds),
-  provided the function is enabled.
-- Simplifications: a definition is identified by the event id only (no application process id),
-  so there is one action per event, and new definitions start disabled.
+  provided the function is enabled. New definitions and the function start disabled.
+- Instruction checks follow ECSS 6.19.8: adding over an enabled definition, exceeding 16
+  definitions, deleting an unknown or enabled definition and enabling/disabling an unknown one are
+  rejected per instruction with a failed start of execution (TM[1,4]); the valid instructions of
+  the same request are still executed. Re-adding a disabled definition replaces its request.
 - Try it with `examples/pus-frames/tests/test-pus19-embedded.py`.
 
 Embedded TC packets (used by ST[11], ST[19], and possibly ST[21] and ST[22])
@@ -124,7 +129,7 @@ Embedded TC packets (used by ST[11], ST[19], and possibly ST[21] and ST[22])
   ```
 - For each argument value with this annotation, the `PusCommandPostprocessor`:
     * fills in the CCSDS length and sequence count of the embedded packet. It also works when
-      the type is used inside a list, e.g. `activities[1].tc`. The packets are handled in the
+      the type is used inside a list, e.g. `activities[1].tc_packet`. The packets are handled in the
       order they appear in the command, so they get increasing sequence counts.
     * appends the packet's CRC, if the post-processor option `embeddedTcCrc` is set. The option
       defaults to true when `errorDetection` is configured; `pus-frames` sets it explicitly.
@@ -132,9 +137,9 @@ Embedded TC packets (used by ST[11], ST[19], and possibly ST[21] and ST[22])
 - So the embedded packet can be entered as the binary of a dry run of the command: zero
   sequence count and length, no CRC. Both test scripts do exactly that:
     * call `processor.issue_command(name, args, dry_run=True).binary`
-    * pass the result, in hex, as the `tc` argument
+    * pass the result, in hex, as the `tc` / `request` argument
 - The assigned sequence counts appear in the command history as
-  `ccsds-seqcount:<argument path>`, e.g. `ccsds-seqcount:activities[0].tc`.
+  `ccsds-seqcount:<argument path>`, e.g. `ccsds-seqcount:activities[0].tc_packet`.
 - The simulator logs each received embedded packet with its sequence count and whether its CRC
   is valid.
 - Note that an embedded packet keeps the sequence count it got when it was loaded. Its execution
@@ -153,8 +158,7 @@ ST[21] request sequencing
 - No support in the simulator.
 
 ST[22] position-based scheduling
- - **This is the example that demonstrates ST[22]** (ST[11] is demonstrated in `pus-frames`
-   instead - see above). Try it with `examples/pus/tests/test-pus22.py`.
+ - Try it with `examples/pus/tests/test-pus22.py`.
  - Structurally the same implementation as ST[11] (see above), keyed on a position tag
    (`orbit_number`, `orbit_angle`) instead of a time. Issue any command with the
    `pus22OrbitNumber` and `pus22OrbitAngle` (degrees) options set and it is wrapped into a
@@ -165,7 +169,7 @@ ST[22] position-based scheduling
    the simulator.
  - The simulator's "orbit" is a simple synthetic clock: `orbit_angle` sweeps 0..360 degrees
    uniformly over a fixed 90 minute period, `orbit_number` increments
-   on each wrap. It is exposed as telemetry (`OrbitNumber`/`OrbitAngle`, `hkid=5`) so you can see
+   on each wrap. It is exposed as telemetry (`OrbitNumber`/`OrbitAngle`, `hkid=6`) so you can see
    where a scheduled activity's target position is relative to the current one.
  - Persistent scheduling (ECSS 6.22.5) is not supported - every activity is one-shot, like ST[11].
 

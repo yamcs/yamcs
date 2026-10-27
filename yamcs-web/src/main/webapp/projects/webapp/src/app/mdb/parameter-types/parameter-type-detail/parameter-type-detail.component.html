@@ -71,6 +71,15 @@
   </dd>
 </dl>
 
+@if (parameterType.arrayInfo; as arrayInfo) {
+  <div class="section-divider">
+    <mat-divider />
+  </div>
+
+  <h4>Array dimensions</h4>
+  <app-parameter-array-info [arrayInfo]="arrayInfo" />
+}
+
 @if (parameterType.usedBy?.length) {
   <div class="section-divider">
     <mat-divider />

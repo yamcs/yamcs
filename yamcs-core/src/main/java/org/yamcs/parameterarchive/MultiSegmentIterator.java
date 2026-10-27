@@ -239,9 +239,11 @@ public class MultiSegmentIterator implements ParchiveIterator<MultiParameterValu
                     int pid = pids[i].getPid();
                     SegmentKey key = new SegmentKey(pid, parameterGroupId, segStart, (byte) 0);
                     it.seek(partition.version == 0 ? key.encodeV0() : key.encode());
+                    // Sparse groups can be extended after older segments have already been written. A newly added
+                    // parameter then has no record in those segments, and seeking past the last key is a normal gap.
                     if (!it.isValid()) {
-                        throw new DatabaseCorruptionException(
-                                "Cannot find any record for parameter id " + pid + " at start " + segStart);
+                        pvSegments.add(null);
+                        continue;
                     }
                     ValueSegment engValueSegment = null;
                     ValueSegment rawValueSegment = null;

@@ -1,0 +1,29 @@
+{
+  "outputStyle": "Concise",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat >/dev/null || true; ROOT=\"$(git rev-parse --show-toplevel 2>/dev/null)\"; [ -n \"$ROOT\" ] || exit 0; CRG=\"$(command -v code-review-graph 2>/dev/null || true)\"; [ -n \"$CRG\" ] || CRG=\"$ROOT/.venv/bin/code-review-graph\"; [ -x \"$CRG\" ] || exit 0; \"$CRG\" update --skip-flows --repo \"$ROOT\" || true",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat >/dev/null || true; ROOT=\"$(git rev-parse --show-toplevel 2>/dev/null)\"; [ -n \"$ROOT\" ] || exit 0; CRG=\"$(command -v code-review-graph 2>/dev/null || true)\"; [ -n \"$CRG\" ] || CRG=\"$ROOT/.venv/bin/code-review-graph\"; [ -x \"$CRG\" ] || exit 0; \"$CRG\" status --repo \"$ROOT\" || true",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

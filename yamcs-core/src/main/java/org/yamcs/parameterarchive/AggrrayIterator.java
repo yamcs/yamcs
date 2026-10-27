@@ -96,6 +96,8 @@ public class AggrrayIterator implements ParameterIterator {
 
         ParameterStatus paramStatus = null;
         boolean foundOne = false;
+        boolean foundEngValue = false;
+        boolean foundRawValue = false;
         if (engBuilder != null) {
             engBuilder.clear();
         }
@@ -106,17 +108,28 @@ public class AggrrayIterator implements ParameterIterator {
         for (int i = 0; i < currentSegment.numParameters(); i++) {
             var pvs = currentSegment.getPvs(i);
             if (pvs != null) {
+                TimedValue componentValue = pvs.getTimedValue(pos);
+                if (componentValue == null) {
+                    continue;
+                }
+                foundOne = true;
+
+                // Aggregate and array components inherit the status of their parent when archived. One available
+                // component is therefore sufficient to restore the status of the reconstructed value.
+                if (req.retrieveParameterStatus() && paramStatus == null) {
+                    paramStatus = componentValue.paramStatus;
+                }
                 if (engBuilder != null) {
-                    Value v = pvs.getEngValue(pos);
+                    Value v = componentValue.engValue;
                     if (v != null) {
-                        foundOne = true;
+                        foundEngValue = true;
                         engBuilder.setValue(members[i], v);
                     }
                 }
                 if (rawBuilder != null) {
-                    Value v = pvs.getRawValue(pos);
+                    Value v = componentValue.rawValue;
                     if (v != null) {
-                        foundOne = true;
+                        foundRawValue = true;
                         rawBuilder.setValue(members[i], v);
                     }
                 }
@@ -126,10 +139,10 @@ public class AggrrayIterator implements ParameterIterator {
             Value engValue = null;
             Value rawValue = null;
 
-            if (engBuilder != null) {
+            if (foundEngValue) {
                 engValue = engBuilder.build();
             }
-            if (rawBuilder != null) {
+            if (foundRawValue) {
                 rawValue = rawBuilder.build();
             }
             currentValue = new TimedValue(t, engValue, rawValue, paramStatus);

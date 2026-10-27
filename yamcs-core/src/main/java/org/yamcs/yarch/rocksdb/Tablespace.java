@@ -601,35 +601,53 @@ public class Tablespace {
                 throw new IllegalArgumentException("Unknown table " + tblDef.getName());
             }
 
-            // remove the secondary index definition and data (if any)
-            for (TablespaceRecord tr : filter(Type.SECONDARY_INDEX, table.yamcsInstance,
-                    tr -> tr.getTableName().equals(tblDef.getName()))) {
-                int tbsIndex = tr.getTbsIndex();
-                log.debug("Removing secondary index {}", tr);
-                removeTbsIndex(Type.SECONDARY_INDEX, tbsIndex);
+            if (table.indexWriter != null) {
+                table.indexWriter.close();
             }
+            table.indexLock.writeLock().lock();
+            try {
+                // remove the secondary index definition and data (if any)
+                for (TablespaceRecord tr : filter(Type.SECONDARY_INDEX, table.yamcsInstance,
+                        tr -> tr.getTableName().equals(tblDef.getName()))) {
+                    int tbsIndex = tr.getTbsIndex();
+                    log.debug("Removing secondary index {}", tr);
+                    removeTbsIndex(Type.SECONDARY_INDEX, tbsIndex);
+                }
 
-            // remove data from partitions
-            for (Partition p : table.partitionManager.getPartitions()) {
-                RdbPartition rdbp = (RdbPartition) p;
+                // remove data and pending operations from partitions
+                for (Partition p : table.partitionManager.getPartitions()) {
+                    RdbPartition rdbp = (RdbPartition) p;
+                    int tbsIndex = rdbp.tbsIndex;
+                    log.debug("Removing tbsIndex {}", tbsIndex);
+                    YRDB db = getRdb(rdbp.dir, false);
+                    try {
+                        var cf = db.getColumnFamilyHandle(table.cfName());
+                        if (cf != null) {
+                            db.getDb().deleteRange(cf, dbKey(tbsIndex), dbKey(tbsIndex + 1));
+                        }
+                        var pending = db.getColumnFamilyHandle(SecondaryIndexWriter.PENDING_CF);
+                        if (pending != null && table.indexWriter != null) {
+                            int indexId = table.indexWriter.getTbsIndex();
+                            db.getDb().deleteRange(pending, dbKey(indexId), dbKey(indexId + 1));
+                        }
+                    } finally {
+                        dispose(db);
+                    }
+                    removeTbsIndex(Type.TABLE_PARTITION, tbsIndex);
+                }
 
-                int tbsIndex = rdbp.tbsIndex;
-                log.debug("Removing tbsIndex {}", tbsIndex);
-                YRDB db = getRdb(rdbp.dir, false);
-                db.getDb().deleteRange(dbKey(tbsIndex), dbKey(tbsIndex + 1));
-                removeTbsIndex(Type.TABLE_PARTITION, tbsIndex);
+                // remove the histogram data (if any)
+                for (TablespaceRecord tr : filter(Type.HISTOGRAM, table.yamcsInstance,
+                        tr -> tr.getTableName().equals(tblDef.getName()))) {
+                    int tbsIndex = tr.getTbsIndex();
+                    log.debug("Removing histogram data {}", tr);
+                    removeTbsIndex(Type.HISTOGRAM, tbsIndex);
+                }
+
+                removeTbsIndex(Type.TABLE_DEFINITION, table.tbsIndex);
+            } finally {
+                table.indexLock.writeLock().unlock();
             }
-
-            // remove the histogram data (if any)
-            for (TablespaceRecord tr : filter(Type.HISTOGRAM, table.yamcsInstance,
-                    tr -> tr.getTableName().equals(tblDef.getName()))) {
-                int tbsIndex = tr.getTbsIndex();
-                log.debug("Removing histogram data {}", tr);
-                removeTbsIndex(Type.HISTOGRAM, tbsIndex);
-            }
-
-            // remove table definition and data from main db
-            removeTbsIndex(Type.TABLE_DEFINITION, table.tbsIndex);
         }
     }
 
@@ -641,6 +659,44 @@ public class Tablespace {
      */
     public RdbTable getTable(TableDefinition tblDef) {
         return tables.get(tblDef);
+    }
+
+    /** Installs a single index without rewriting packet rows. A persisted build gates its readers. */
+    public SecondaryIndexWriter ensureSecondaryIndex(YarchDatabaseInstance ydb, TableDefinition definition,
+            List<String> columns) throws RocksDBException, org.yamcs.yarch.streamsql.StreamSqlException, IOException {
+        RdbTable table = verifyTable(definition);
+        table.indexLock.writeLock().lock();
+        try {
+            if (definition.hasSecondaryIndex()) {
+                if (!columns.equals(definition.getSecondaryIndex())) {
+                    throw new IllegalArgumentException("Table '" + definition.getName()
+                            + "' already has a conflicting secondary index: " + definition.getSecondaryIndex());
+                }
+                return table.indexWriter;
+            }
+            var protoDefinition = TableDefinitionSerializer.toProtobuf(definition,
+                    definition.getKeyDefinition(), definition.getValueDefinition());
+            var validationDefinition = TableDefinitionSerializer.fromProtobuf(protoDefinition);
+            validationDefinition.setSecondaryIndex(columns);
+            var index = SecondaryIndex.newBuilder().addAllColumnName(columns).setManaged(true)
+                    .setState(SecondaryIndex.State.BUILDING).setBuildRevision(1);
+            var record = TablespaceRecord.newBuilder().setType(Type.SECONDARY_INDEX)
+                    .setTableName(definition.getName()).setTbsIndex(getNextTbsIndex()).setSecondaryIndex(index);
+            try (WriteBatch batch = new WriteBatch(); WriteOptions options = new WriteOptions().setSync(true)) {
+                writeToBatch(ydb.getYamcsInstance(), batch, record);
+                var tableRecord = TablespaceRecord.newBuilder().setType(Type.TABLE_DEFINITION)
+                        .setTableName(definition.getName()).setTbsIndex(table.tbsIndex)
+                        .setTableDefinition(protoDefinition.toBuilder().addSecondaryIndex(
+                                SecondaryIndex.newBuilder().addAllColumnName(columns)));
+                writeToBatch(ydb.getYamcsInstance(), batch, tableRecord);
+                mainDb.write(options, batch);
+            }
+            definition.setSecondaryIndex(columns);
+            table.indexWriter = new SecondaryIndexWriter(table, record.build());
+            return table.indexWriter;
+        } finally {
+            table.indexLock.writeLock().unlock();
+        }
     }
 
     /**
@@ -714,6 +770,11 @@ public class Tablespace {
     }
 
     public void close() {
+        for (RdbTable table : tables.values()) {
+            if (table.indexWriter != null) {
+                table.indexWriter.close();
+            }
+        }
         for (TableWalker rrs : walkers.keySet()) {
             rrs.close();
         }

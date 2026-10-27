@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "code-review-graph": {
+      "command": "/Users/nikhil/GSS Workspace/yamcs-Pixxel-fork/.venv/bin/python3.14",
+      "args": [
+        "-m",
+        "code_review_graph",
+        "serve"
+      ],
+      "cwd": "/Users/nikhil/GSS Workspace/yamcs-Pixxel-fork",
+      "type": "stdio"
+    },
+    "idea": {
+      "url": "http://127.0.0.1:64342/stream",
+      "type": "http"
+    }
+  }
+}

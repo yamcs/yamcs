@@ -1,6 +1,7 @@
 package org.yamcs.parameter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.ArrayList;
@@ -130,6 +131,33 @@ public class ArrayParameterCacheTest {
         for (int i = 0; i < 16; i++) {
             TestUtils.checkEquals(expectedPVlist.get(16 - i), pvlist.get(i));
         }
+    }
+
+    @Test
+    public void testMultipleParametersAcrossDifferentTables() {
+        ParameterCacheConfig pcc = new ParameterCacheConfig(true, true, 1000, 4096);
+        ArrayParameterCache pcache = new ArrayParameterCache("test", pcc);
+
+        ParameterValue p1v1 = getStringParameterValue(p1, 10);
+        ParameterValue p2v1 = getFloatParameterValue(p2, 10);
+        pcache.update(List.of(p1v1, p2v1));
+
+        ParameterValue p1v2 = getStringParameterValue(p1, 20);
+        pcache.update(List.of(p1v2));
+
+        List<List<ParameterValue>> rows = pcache.getAllValues(List.of(p1, p2), 0, 30);
+        assertNotNull(rows);
+        assertEquals(2, rows.size());
+        checkEquals(rows.get(0), p1v2);
+        checkEquals(rows.get(1), p1v1, p2v1);
+
+        rows = pcache.getAllValuesIfCovered(List.of(p1, p2), 19, 30);
+        assertNotNull(rows);
+        assertEquals(1, rows.size());
+        checkEquals(rows.get(0), p1v2);
+
+        // The p1-only table starts at 20, so the cache cannot prove that it covers an interval starting at 9.
+        assertNull(pcache.getAllValuesIfCovered(List.of(p1, p2), 9, 30));
     }
 
     @Test

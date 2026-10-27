@@ -501,6 +501,8 @@ message ParameterDimensionInfo {
   optional ParameterInfo parameter = 2;
   optional int64 slope = 3;
   optional int64 intercept = 4;
+  // Lexically scoped aggregate member used to determine this dimension.
+  optional string aggregateMember = 5;
 }
 
 message ArrayInfo {
@@ -730,6 +732,16 @@ message RepeatInfo {
   optional int64 fixedCount = 1;
   optional ParameterInfo dynamicCount = 2;
   optional int32 bitsBetween = 3;
+  optional ArgumentInfo dynamicCountArgument = 4;
+}
+
+message TimeAssociationInfo {
+  optional ParameterInfo parameter = 1;
+  optional int32 instance = 2;
+  optional bool useCalibratedValue = 3;
+  optional bool interpolateTime = 4;
+  optional double offset = 5;
+  optional string unit = 6;
 }
 
 message SequenceEntryInfo {
@@ -750,6 +762,7 @@ message SequenceEntryInfo {
 
   optional RepeatInfo repeat = 5;
   optional IndirectParameterRefInfo indirectParameterRef = 8;
+  optional TimeAssociationInfo timeAssociation = 9;
 }
 
 message FixedValueInfo {
