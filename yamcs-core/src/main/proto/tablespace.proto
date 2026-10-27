@@ -175,6 +175,33 @@ message PartitioningInfo {
 //as of now only a single index on one column is supported
 message SecondaryIndex {
 	repeated string columnName = 1;
+    // Legacy indexes are ready. Managed indexes require a complete backfill before use.
+    optional bool managed = 2 [default = false];
+    enum State {
+        READY = 0;
+        BUILDING = 1;
+        FAILED = 2;
+    }
+    optional State state = 3 [default = READY];
+    optional uint64 buildRevision = 4;
+    optional uint64 processedRows = 5;
+    optional uint64 missingRows = 6;
+    optional string failure = 7;
+    repeated SecondaryIndexCheckpoint checkpoint = 8;
+}
+
+message SecondaryIndexCheckpoint {
+    optional uint32 partitionId = 1;
+    optional bytes lastKey = 2;
+    optional bool complete = 3;
+}
+
+// Written atomically with the source row in a time-partition database.
+message PendingIndexOperation {
+    optional bytes deleteKey = 1;
+    optional bytes putKey = 2;
+    optional bytes putValue = 3;
+    optional string operationId = 4;
 }
 
 message ProtoTableDefinition {

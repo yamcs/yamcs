@@ -26,6 +26,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpRequest;
@@ -42,10 +43,27 @@ public class CallObserver implements Observer<Message> {
 
     private RouteContext ctx;
 
-    private boolean completed;
+    private volatile boolean completed;
 
     public CallObserver(RouteContext ctx) {
         this.ctx = ctx;
+    }
+
+    @Override
+    public boolean isCancelled() {
+        return !ctx.nettyContext.channel().isActive();
+    }
+
+    @Override
+    public void setCancelHandler(Runnable cancelHandler) {
+        ChannelFutureListener listener = future -> {
+            if (!completed) {
+                cancelHandler.run();
+            }
+        };
+        var closeFuture = ctx.nettyContext.channel().closeFuture();
+        closeFuture.addListener(listener);
+        ctx.requestFuture.whenComplete((v, error) -> closeFuture.removeListener(listener));
     }
 
     @Override

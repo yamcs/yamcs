@@ -139,6 +139,7 @@ import {
   GetCommandHistoryOptions,
   GetCompletenessIndexOptions,
   GetPacketsOptions,
+  PacketArchiveInfo,
   GetParameterRangesOptions,
   GetParameterValuesOptions,
   IndexGroup,
@@ -1263,6 +1264,21 @@ export default class YamcsClient implements HttpHandler {
       method: 'POST',
     });
     return (await response.json()) as ListPacketsResponse;
+  }
+
+  async getPacketArchiveInfo(instance: string) {
+    const response = await this.doFetch(
+      `${this.apiUrl}/archive/${instance}/packets:info`,
+    );
+    return (await response.json()) as PacketArchiveInfo;
+  }
+
+  async rebuildReceptionTimeIndex(instance: string) {
+    const response = await this.doFetch(
+      `${this.apiUrl}/archive/${instance}/packets:rebuildReceptionTimeIndex`,
+      { method: 'POST', body: '{}' },
+    );
+    return (await response.json()) as PacketArchiveInfo;
   }
 
   async getEvents(instance: string, options: GetEventsOptions = {}) {

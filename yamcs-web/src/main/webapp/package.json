@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "license": "AGPL-3.0",
   "scripts": {
+    "test:tm-reception": "node --test tests/tm-reception.test.cjs",
     "build": "ng build webapp-sdk && ng build webapp",
     "watch": "ng build webapp-sdk && ng build webapp --watch --configuration development",
     "build-app": "ng build webapp",

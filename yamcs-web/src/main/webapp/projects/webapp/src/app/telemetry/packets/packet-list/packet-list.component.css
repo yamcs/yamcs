@@ -1,5 +1,11 @@
 .ya-filter-bar.query {
   height: unset;
+  flex-wrap: wrap;
+  row-gap: 7px;
+}
+
+.query ya-search-filter2 {
+  min-width: 200px;
 }
 
 .table-wrapper {
