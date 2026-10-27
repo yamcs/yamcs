@@ -240,8 +240,13 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
       case 'historySubscribe': {
         const pvName: string = msg.pvName;
         if (!this.historyProviders.has(pvName)) {
+          let parameter = pvName;
+          if (pvName.startsWith(OPS_DATASOURCE)) {
+            parameter =
+              OPS_NAMESPACE + '/' + pvName.substring(OPS_DATASOURCE.length);
+          }
           const provider = new OpiDisplayHistoricDataProvider(
-            pvName,
+            parameter,
             (samples) =>
               this.postToSandbox({
                 type: 'historySamples',
