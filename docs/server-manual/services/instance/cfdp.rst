@@ -30,12 +30,26 @@ The CFDP transfers can be suspended and resumed. Suspending means that no PDU is
 
 Several peculiarities and limitations of the implementation can be noted:
 
-* The NAK PDUs issued by the Sender always contain the beginning of the file up to filling up the PDU with data. Unless the file is very large and with lots of small gaps, a NAK PDU will contain all the missing data at the given point.
-* The Receiver will overwrite the list of segments to resend with the list received in the latest NAK.
+* The NAK PDUs issued by the Receiver always contain the beginning of the file up to filling up the PDU with data. Unless the file is very large and with lots of small gaps, a NAK PDU will contain all the missing data at the given point.
+* The Sender treats each received NAK PDU as the complete list of missing segments within its scope, see :ref:`cfdp-nak-handling` below.
 * Keep Alive PDU and Prompt PDU are not used.
 * Filestore requests are not supported.
 * Only proxy put requests and directory listing requests are supported, other user operations (proxy, remote status, etc.) as per chapter 6 of the CCSDS 727.0-B-5 are not supported.
 * Remote suspend/resume operations are not supported. Note that local suspend/resume operations are supported; this means that suspending a transfer has to be done concurrently on this service and remotely with a different mechanism (e.g. sending a telecommand).
+
+
+.. _cfdp-nak-handling:
+
+Handling of NAK PDUs by the Sender
+----------------------------------
+
+CCSDS 727.0-B-5 section 4.6.4.2.1 requires the sending entity to "respond to all received NAK PDUs" by retransmitting the requested extents. It does not say what the Sender should do with the segments requested by an earlier NAK that have not been retransmitted yet when a new NAK arrives. On the other hand, section 4.6.4.3.3 b) requires the segment requests of a NAK PDU to identify *all* extents of file data within its scope that have not yet been received.
+
+Yamcs relies on the latter: the segments requested by a NAK PDU replace the pending (not yet retransmitted) segments within the scope of that NAK. Pending segments outside the scope are kept; the ones crossing the scope borders are truncated. For example, if a NAK with scope 0-1000 requests 100-200 and 500-600 and, before these are retransmitted, a NAK with scope 0-800 requesting only 550-560 is received, the Sender will retransmit only 550-560.
+
+Strictly speaking, this deviates from 4.6.4.2.1 because some segments requested by the first NAK are never retransmitted. It is safe because the Receiver does not lose data it has already received: if a segment within the scope of a NAK is not requested, the Receiver had it when it issued that NAK. The benefit is that data which has meanwhile reached the Receiver (e.g. delayed File Data PDUs, or retransmissions triggered by previous NAKs) is not sent again.
+
+The CFDP PDUs do not carry a sequence number that would allow ordering the NAK PDUs of a transaction (the Transaction sequence number in the PDU header is the same for all the PDUs of a transaction). The Sender therefore assumes that the NAK PDUs are received in the order they were issued. If the underlying link reorders them (for example when using multiple ground stations or virtual channels), an older NAK received after a newer one will cause the retransmission of segments already received. This only costs bandwidth: since the older NAK can only request a superset of the segments requested by the newer one within the same scope, no missing data is ever discarded. The Receiver discards the duplicate data, as required by the standard.
 
 
 Usage
