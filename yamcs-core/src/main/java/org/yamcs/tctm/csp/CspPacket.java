@@ -77,7 +77,11 @@ public class CspPacket {
     }
 
     public static void setCrcFlag(byte[] packet, boolean enabled) {
-        packet[3] |= 0x01;
+        if (enabled) {
+            packet[3] |= 0x01;
+        } else {
+            packet[3] &= ~0x01;
+        }
     }
 
     public void setHeader(byte priority, byte source, byte destination, byte destinationPort, byte sourcePort) {
