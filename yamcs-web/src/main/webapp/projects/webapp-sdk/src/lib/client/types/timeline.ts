@@ -98,6 +98,7 @@ export interface SaveTimelineBandRequest {
   description?: string;
   type: TimelineBandType;
   shared: boolean;
+  source?: string;
   tags?: string[];
   properties?: { [key: string]: string };
 }
@@ -108,9 +109,22 @@ export interface TimelineBand {
   shared: boolean;
   name: string;
   description?: string;
+  source?: string;
   tags?: string[];
   properties?: { [key: string]: string };
   username: string;
+}
+
+export interface TimelineSourceCapabilities {
+  readOnly: boolean;
+  hasManualActivities: boolean;
+  hasAutomatedActivities: boolean;
+  hasEventGroups: boolean;
+  hasActivityGroups: boolean;
+}
+
+export interface TimelineSourcesPage {
+  sources: { [key: string]: TimelineSourceCapabilities };
 }
 
 export interface TimelineView {
