@@ -56,7 +56,7 @@ public class CompletedTransfer implements CfdpFileTransfer {
         TDEF.addColumn(COL_TOTAL_SIZE, DataType.LONG);
         TDEF.addColumn(COL_TRANSFERED_SIZE, DataType.LONG);
         TDEF.addColumn(COL_RELIABLE, DataType.BOOLEAN);
-        TDEF.addColumn(COL_TRANSFER_STATE, DataType.STRING);
+        TDEF.addColumn(COL_TRANSFER_STATE, DataType.ENUM);
         TDEF.addColumn(COL_CREATION_TIME, DataType.TIMESTAMP);
         TDEF.addColumn(COL_TRANSFER_TYPE, DataType.STRING);
     }
