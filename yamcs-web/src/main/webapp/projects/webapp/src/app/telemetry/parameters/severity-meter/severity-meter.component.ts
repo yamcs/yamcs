@@ -340,9 +340,9 @@ export class SeverityMeterComponent implements AfterViewInit, OnChanges {
       case 'SINT32':
         return engValue.sint32Value;
       case 'UINT64':
-        return engValue.uint64Value;
+        return Number(engValue.uint64Value);
       case 'SINT64':
-        return engValue.sint64Value;
+        return Number(engValue.sint64Value);
     }
   }
 }
