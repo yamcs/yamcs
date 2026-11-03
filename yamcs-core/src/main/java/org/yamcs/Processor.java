@@ -332,7 +332,14 @@ public class Processor extends AbstractService {
 
     private void awaitIfNecessary(Service service) {
         if (service != null) {
-            service.awaitRunning();
+            try {
+                service.awaitRunning();
+            } catch (IllegalStateException e) {
+                // a short replay may already be finished by the time we get here
+                if (service.state() != State.TERMINATED) {
+                    throw e;
+                }
+            }
         }
     }
 
