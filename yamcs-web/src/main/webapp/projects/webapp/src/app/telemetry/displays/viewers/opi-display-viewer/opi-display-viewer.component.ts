@@ -312,9 +312,9 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
 
   private openPV(pvName: string) {
     if (pvName.startsWith('/')) {
-      this.router.navigateByUrl(
-        `/telemetry/parameters${pvName}/-/summary?c=${this.yamcs.context}`,
-      );
+      this.router.navigate(['/telemetry/parameters' + pvName, '-', 'summary'], {
+        queryParams: { c: this.yamcs.context },
+      });
     } else if (pvName.startsWith(OPS_DATASOURCE)) {
       this.yamcs.yamcsClient
         .getParameterById(this.yamcs.instance!, {
@@ -322,8 +322,9 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
           name: pvName.substring(OPS_DATASOURCE.length),
         })
         .then((response) => {
-          this.router.navigateByUrl(
-            `/telemetry/parameters${response.qualifiedName}/-/summary?c=${this.yamcs.context}`,
+          this.router.navigate(
+            ['/telemetry/parameters' + response.qualifiedName, '-', 'summary'],
+            { queryParams: { c: this.yamcs.context } },
           );
         });
     } else {
