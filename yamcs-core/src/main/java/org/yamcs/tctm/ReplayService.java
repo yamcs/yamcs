@@ -186,6 +186,10 @@ public class ReplayService extends AbstractProcessorService
             log.debug("End signal received");
             notifyStopped();
             processor.stopAsync();
+        } else if (rs.getState() == ReplayState.ERROR) {
+            log.warn("Replay failed: {}", rs.getErrorMessage());
+            notifyFailed(new ProcessorException("Replay failed: " + rs.getErrorMessage()));
+            processor.stopAsync();
         } else {
             processor.notifyStateChange();
         }
@@ -314,10 +318,11 @@ public class ReplayService extends AbstractProcessorService
             return;
         }
 
+        // notify before starting the replay, otherwise the end signal may arrive before we are RUNNING
+        notifyStarted();
         if (originalReplayRequest.isAutostart()) {
             yarchReplay.start();
         }
-        notifyStarted();
     }
 
     @Override
