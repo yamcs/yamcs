@@ -42,6 +42,15 @@ public class MatchCriteriaEvaluatorFactoryTest {
         assertEquals(MatchResult.OK, evaluate(OperatorType.LARGERTHAN, uintPara, floatPara, ctx));
     }
 
+    @Test
+    public void testRefRefExpressionString() {
+        var condition = new Condition(OperatorType.EQUALITY,
+                new ParameterInstanceRef(intParameter("a", false)),
+                new ParameterInstanceRef(floatParameter("c"), false));
+        assertEquals("'/test/a' == 'raw:///test/c'",
+                MatchCriteriaEvaluatorFactory.getEvaluator(condition).toExpressionString());
+    }
+
     private static MatchResult evaluate(OperatorType op, Parameter left, Parameter right, ProcessingContext ctx) {
         var condition = new Condition(op, new ParameterInstanceRef(left), new ParameterInstanceRef(right));
         return MatchCriteriaEvaluatorFactory.getEvaluator(condition).evaluate(ctx);

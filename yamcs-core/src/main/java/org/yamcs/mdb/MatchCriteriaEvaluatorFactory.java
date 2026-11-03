@@ -191,7 +191,7 @@ public class MatchCriteriaEvaluatorFactory {
         public String toExpressionString() {
             return printExpressionReference(leftRef) + " "
                     + comparisonOperator + " "
-                    + printExpressionValue(rightRef);
+                    + printExpressionReference(rightRef);
         }
     }
 
