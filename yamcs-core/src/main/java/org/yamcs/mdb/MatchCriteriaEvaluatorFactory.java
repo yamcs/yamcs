@@ -34,6 +34,7 @@ import org.yamcs.xtce.PathElement;
 import org.yamcs.xtce.util.DataTypeUtil;
 
 import com.google.common.primitives.UnsignedBytes;
+import com.google.common.primitives.UnsignedLong;
 import com.google.common.primitives.UnsignedLongs;
 
 public class MatchCriteriaEvaluatorFactory {
@@ -88,12 +89,10 @@ public class MatchCriteriaEvaluatorFactory {
             if (lValue.evaluator == rValue.evaluator) {
                 result = lValue.evaluator.evaluate(comparisonOperator, lValue, rValue);
             } else {
-                if ((lValue.evaluator == intEvaluator) && (lValue.evaluator == floatEvaluator)) {
-                    lValue.value = (double) ((long) lValue.value);
-                    result = floatEvaluator.evaluate(comparisonOperator, lValue, rValue);
-                } else if ((lValue.evaluator == floatEvaluator) && (lValue.evaluator == intEvaluator)) {
-                    rValue.value = (double) ((long) rValue.value);
-                    result = floatEvaluator.evaluate(comparisonOperator, lValue, rValue);
+                if ((lValue.evaluator == intEvaluator) && (rValue.evaluator == floatEvaluator)) {
+                    result = floatEvaluator.evaluate(comparisonOperator, toFloat(lValue), rValue);
+                } else if ((lValue.evaluator == floatEvaluator) && (rValue.evaluator == intEvaluator)) {
+                    result = floatEvaluator.evaluate(comparisonOperator, lValue, toFloat(rValue));
                 } else {
                     log.error("Comparing values of incompatible types: "
                             + lValue.evaluator.getComparedType()
@@ -102,6 +101,12 @@ public class MatchCriteriaEvaluatorFactory {
             }
 
             return result ? MatchResult.OK : MatchResult.NOK;
+        }
+
+        private static ResolvedValue toFloat(ResolvedValue intValue) {
+            long v = (long) intValue.value;
+            double d = intValue.unsigned ? UnsignedLong.fromLongBits(v).doubleValue() : v;
+            return new ResolvedValue(d, false, floatEvaluator);
         }
 
         static String printExpressionValue(Object value) {
