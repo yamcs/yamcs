@@ -7,6 +7,12 @@
     <textarea formControlName="description" rows="3"></textarea>
   </ya-field>
 
+  @if (sourceOptions().length > 1) {
+    <ya-field label="Source">
+      <ya-select [options]="sourceOptions()" formControlName="source" />
+    </ya-field>
+  }
+
   <ya-field label="Tags">
     <ya-tag-select formControlName="tags" />
   </ya-field>

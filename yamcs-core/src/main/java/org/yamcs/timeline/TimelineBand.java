@@ -135,6 +135,9 @@ public class TimelineBand {
         if (filterQuery != null) {
             b.setFilter(filterQuery);
         }
+        if (source != null) {
+            b.setSource(source);
+        }
         return b.build();
     }
 
