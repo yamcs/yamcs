@@ -260,6 +260,7 @@ import {
   TimelineBandsPage,
   TimelineItem,
   TimelineItemsPage,
+  TimelineSourcesPage,
   TimelineTagsPage,
   TimelineView,
   TimelineViewsPage,
@@ -663,6 +664,12 @@ export default class YamcsClient implements HttpHandler {
     const url = `${this.apiUrl}/audit/records/${instance}`;
     const response = await this.doFetch(url + this.queryString(options));
     return (await response.json()) as AuditRecordsPage;
+  }
+
+  async getTimelineSources(instance: string) {
+    const url = `${this.apiUrl}/timeline/${instance}/sources`;
+    const response = await this.doFetch(url);
+    return (await response.json()) as TimelineSourcesPage;
   }
 
   async getTimelineTags(instance: string) {
