@@ -16,6 +16,7 @@ import java.util.function.IntSupplier;
 import java.util.logging.LogManager;
 import java.util.stream.Collectors;
 
+import org.slf4j.LoggerFactory;
 import org.yamcs.ConfigurationException;
 import org.yamcs.InitException;
 import org.yamcs.ProcessRunner;
@@ -235,13 +236,20 @@ public class SimulatorCommander extends ProcessRunner {
         }
     }
 
+    private static void createDirectory(File dir, String description) {
+        if (!dir.isDirectory() && !dir.mkdirs()) {
+            LoggerFactory.getLogger(SimulatorCommander.class)
+                    .warn("Could not create {} directory {}", description, dir.getAbsolutePath());
+        }
+    }
+
     public static List<Service> createServices(SimulatorArgs runtimeOptions) {
         TcPacketFactory pktFactory;
         AbstractSimulator simulator;
         File losDir = runtimeOptions.losDir.toFile();
-        losDir.mkdirs();
+        createDirectory(losDir, "LOS");
         File dataDir = runtimeOptions.dataDir.toFile();
-        dataDir.mkdirs();
+        createDirectory(dataDir, "data");
 
         if (runtimeOptions.type.equalsIgnoreCase("col")) {
             pktFactory = TcPacketFactory.COL_PACKET_FACTORY;
