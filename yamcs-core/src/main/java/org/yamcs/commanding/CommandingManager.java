@@ -7,10 +7,12 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yamcs.CommandOption;
 import org.yamcs.ErrorInCommand;
 import org.yamcs.Processor;
 import org.yamcs.ValidationException;
 import org.yamcs.YamcsException;
+import org.yamcs.YamcsServer;
 import org.yamcs.cmdhistory.CommandHistoryRequestManager;
 import org.yamcs.management.ManagementService;
 import org.yamcs.mdb.Mdb;
@@ -170,6 +172,17 @@ public class CommandingManager extends AbstractService {
     }
 
     public void releaseCommand(ActiveCommand activeCommand) {
+        // some command options (e.g. onboard scheduling) make the command execute with a potentially large delay, making the verifier time windows meaningless
+        PreparedCommand preparedCommand = activeCommand.getPreparedCommand();
+        for (CommandHistoryAttribute attr : preparedCommand.getAttributes()) {
+            CommandOption option = YamcsServer.getServer().getCommandOption(attr.getName());
+            if (option != null && option.disablesVerifiers()) {
+                log.debug("Disabling verifiers for {} because of the option {}", activeCommand, option.getId());
+                preparedCommand.disableCommandVerifiers(true);
+                break;
+            }
+        }
+
         // start the verifiers
         MetaCommand mc = activeCommand.getMetaCommand();
         if (mc.hasCommandVerifiers(true)) {
