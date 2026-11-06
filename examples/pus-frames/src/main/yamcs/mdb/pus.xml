@@ -289,6 +289,7 @@
 								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">sentSeq</AncillaryData>
 								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">rcvdApid</AncillaryData>
 								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">rcvdSeq</AncillaryData>
+								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">reportType</AncillaryData>
 							</AncillaryDataSet>
 
 							<!--
@@ -297,7 +298,7 @@
 								and the received sequence count with the sent sequence count
 							-->
 							<AlgorithmText language="JavaScript">
-								if(rcvdApid.value == sentApid.value &#38;&#38; rcvdSeq.value == sentSeq.value) {
+								if(reportType.value == 1 &#38;&#38; rcvdApid.value == sentApid.value &#38;&#38; rcvdSeq.value == sentSeq.value) {
 								   if(subtype.value == 1) {
 								       return true;
 								    } else if(subtype.value == 2) {
@@ -315,6 +316,7 @@
 
 								<!-- the other references are normal TM parameters -->
 								<InputParameterInstanceRef parameterRef="subtype" inputName="subtype" />
+								<InputParameterInstanceRef parameterRef="type" inputName="reportType" />
 								<InputParameterInstanceRef parameterRef="tc-ack-apid" inputName="rcvdApid" />
 								<InputParameterInstanceRef parameterRef="tc-ack-seq" inputName="rcvdSeq" />
 								<InputParameterInstanceRef parameterRef="tc-ack-acceptance-failure-code" inputName="errorCode" />
@@ -335,6 +337,7 @@
 								<InputParameterInstanceRef parameterRef="tc-ack-apid" inputName="rcvdApid" />
 								<InputParameterInstanceRef parameterRef="tc-ack-seq" inputName="rcvdSeq" />
 								<InputParameterInstanceRef parameterRef="subtype" inputName="subtype" />
+								<InputParameterInstanceRef parameterRef="type" inputName="reportType" />
 								<InputParameterInstanceRef parameterRef="tc-ack-start-failure-code" inputName="errorCode" />
 							</InputSet>
 						</CustomAlgorithm>
@@ -351,6 +354,7 @@
 								<InputParameterInstanceRef parameterRef="tc-ack-apid" inputName="rcvdApid" />
 								<InputParameterInstanceRef parameterRef="tc-ack-seq" inputName="rcvdSeq" />
 								<InputParameterInstanceRef parameterRef="subtype" inputName="subtype" />
+								<InputParameterInstanceRef parameterRef="type" inputName="reportType" />
 								<InputParameterInstanceRef parameterRef="tc-ack-completion-failure-code" inputName="errorCode" />
 							</InputSet>
 						</CustomAlgorithm>
