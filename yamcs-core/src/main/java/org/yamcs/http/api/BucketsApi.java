@@ -131,7 +131,7 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
         Bucket b = verifyAndGetBucket(bucketName, ctx.user);
         try {
             bucketManager.deleteBucket(b.getName());
-        } catch (UnsupportedOperationException e) {
+        } catch (UnsupportedOperationException | IllegalStateException e) {
             throw new BadRequestException("Cannot delete bucket: " + e.getMessage());
         } catch (IOException e) {
             throw new InternalServerErrorException("Error when deleting bucket: " + e.getMessage(), e);

@@ -326,67 +326,67 @@
 				<EntryList>
 					<ParameterRefEntry parameterRef="BusStatus">
 						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>128</FixedValue>
+							<FixedValue>200</FixedValue>
 						</LocationInContainerInBits>
 					</ParameterRefEntry>
 					<ParameterRefEntry parameterRef="BusVoltage">
 						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>136</FixedValue>
+							<FixedValue>208</FixedValue>
 						</LocationInContainerInBits>
 					</ParameterRefEntry>
 					<ParameterRefEntry parameterRef="BusCurrent">
 						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>144</FixedValue>
+							<FixedValue>216</FixedValue>
 						</LocationInContainerInBits>
 					</ParameterRefEntry>
 					<ParameterRefEntry parameterRef="TotalSystemCurrent">
 						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>152</FixedValue>
+							<FixedValue>224</FixedValue>
 						</LocationInContainerInBits>
 					</ParameterRefEntry>
 					<ParameterRefEntry parameterRef="BatteryVoltage1">
 						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>160</FixedValue>
+							<FixedValue>232</FixedValue>
 						</LocationInContainerInBits>
 					</ParameterRefEntry>
 					<ParameterRefEntry parameterRef="BatteryTemperature1">
 						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>168</FixedValue>
+							<FixedValue>240</FixedValue>
 						</LocationInContainerInBits>
 					</ParameterRefEntry>
 					<ParameterRefEntry parameterRef="BatteryCapacity1">
 						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>176</FixedValue>
+							<FixedValue>248</FixedValue>
 						</LocationInContainerInBits>
 					</ParameterRefEntry>
 					<ParameterRefEntry parameterRef="BatteryVoltage2">
 						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>192</FixedValue>
+							<FixedValue>264</FixedValue>
 						</LocationInContainerInBits>
 					</ParameterRefEntry>
 					<ParameterRefEntry parameterRef="BatteryTemperature2">
 						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>200</FixedValue>
+							<FixedValue>272</FixedValue>
 						</LocationInContainerInBits>
 					</ParameterRefEntry>
 					<ParameterRefEntry parameterRef="BatteryCapacity2">
 						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>208</FixedValue>
+							<FixedValue>280</FixedValue>
 						</LocationInContainerInBits>
 					</ParameterRefEntry>
 					<ParameterRefEntry parameterRef="BatteryVoltage3">
 						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>224</FixedValue>
+							<FixedValue>296</FixedValue>
 						</LocationInContainerInBits>
 					</ParameterRefEntry>
 					<ParameterRefEntry parameterRef="BatteryTemperature3">
 						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>232</FixedValue>
+							<FixedValue>304</FixedValue>
 						</LocationInContainerInBits>
 					</ParameterRefEntry>
 					<ParameterRefEntry parameterRef="BatteryCapacity3">
 						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>240</FixedValue>
+							<FixedValue>312</FixedValue>
 						</LocationInContainerInBits>
 					</ParameterRefEntry>
 				</EntryList>
