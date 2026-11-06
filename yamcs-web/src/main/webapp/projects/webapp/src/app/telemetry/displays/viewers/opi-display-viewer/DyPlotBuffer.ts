@@ -84,7 +84,11 @@ export class DyPlotBuffer {
     this.bucketMs = Math.max(0, bucketMs);
   }
 
-  addRealtimeValue(sample: DySample) {
+  /**
+   * @param discrete per column, whether the value is discrete (enumeration,
+   * boolean). Discrete values are not averaged: a bucket keeps the last value.
+   */
+  addRealtimeValue(sample: DySample, discrete: boolean[] = []) {
     const t = sample[0].getTime();
     const values = sample.slice(1) as CustomBarsValue[];
 
@@ -97,8 +101,13 @@ export class DyPlotBuffer {
         if (stats && value) {
           stats.min = Math.min(stats.min, value[0]);
           stats.max = Math.max(stats.max, value[2]);
-          stats.sum += value[1];
-          stats.n++;
+          if (discrete[i]) {
+            stats.sum = value[1];
+            stats.n = 1;
+          } else {
+            stats.sum += value[1];
+            stats.n++;
+          }
         }
       }
       this.dirty = true;

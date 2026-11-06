@@ -20,7 +20,7 @@ export class OpiDisplayHistoricDataProvider implements HistoricalDataProvider {
 
   constructor(
     pvName: string,
-    private onUpdate: () => void,
+    private onUpdate: (samples: NullablePoint[]) => void,
     private yamcs: YamcsService,
     synchronizer: Synchronizer,
     configService: ConfigService,
@@ -38,7 +38,7 @@ export class OpiDisplayHistoricDataProvider implements HistoricalDataProvider {
 
     this.dataSource.data$.subscribe((data) => {
       this.processSamples(data);
-      this.onUpdate();
+      this.onUpdate(this.getSamples());
     });
 
     // Autoscroll
@@ -49,7 +49,7 @@ export class OpiDisplayHistoricDataProvider implements HistoricalDataProvider {
       this.dataSource.updateWindowOnly(start, stop);
       this.rebuildRenderSamples();
 
-      this.onUpdate();
+      this.onUpdate(this.getSamples());
     });
 
     this.subscriptions.push(sub);

@@ -154,6 +154,37 @@ public class BucketManagerTest {
     }
 
     @Test
+    public void testDeleteNonEmptyLocalBucketRefused() throws Exception {
+        bucketManager.loadBuckets(null);
+
+        var bucket = bucketManager.createBucket(prefix + "local");
+        bucket.putObjectAsync("a", null, Map.of(), new byte[] { 1 }).get();
+        assertThrows(IllegalStateException.class, () -> bucketManager.deleteBucket(prefix + "local"));
+        assertSame(bucket, bucketManager.getBucket(prefix + "local"));
+
+        bucket.deleteObjectAsync("a").get();
+        bucketManager.deleteBucket(prefix + "local");
+        assertNull(bucketManager.getBucket(prefix + "local"));
+    }
+
+    @Test
+    public void testDeleteNonEmptyProviderBucketRefused() throws Exception {
+        var providerConfig = providerConfig(true, true);
+        providerConfig.put("canDelete", true);
+        bucketManager.loadBuckets(serverConfig(providerConfig));
+
+        var bucket = bucketManager.getBucket(prefix + "p1");
+        bucket.putObjectAsync("a", null, Map.of(), new byte[] { 1 }).get();
+        assertThrows(IllegalStateException.class, () -> bucketManager.deleteBucket(prefix + "p1"));
+        assertSame(bucket, bucketManager.getBucket(prefix + "p1"));
+        assertTrue(Files.isDirectory(dir.resolve(prefix + "p1")));
+
+        bucket.deleteObjectAsync("a").get();
+        bucketManager.deleteBucket(prefix + "p1");
+        assertNull(bucketManager.getBucket(prefix + "p1"));
+    }
+
+    @Test
     public void testDeleteThroughProviderUnsupported() throws Exception {
         bucketManager.loadBuckets(serverConfig(providerConfig(false, true)));
 

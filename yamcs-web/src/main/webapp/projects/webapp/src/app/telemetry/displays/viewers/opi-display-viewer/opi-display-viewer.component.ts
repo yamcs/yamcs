@@ -6,6 +6,7 @@ import {
   OnDestroy,
   ViewChild,
 } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlarmSeverity, AutoScaleOverride, Sample } from '@yamcs/opi';
 import {
@@ -25,6 +26,10 @@ import {
 import { Subscription } from 'rxjs';
 import { Viewer } from '../Viewer';
 import { OpiDisplayHistoricDataProvider } from './OpiDisplayHistoricDataProvider';
+import {
+  OpiDisplayDialogComponent,
+  OpiDisplayDialogData,
+} from './opi-display-dialog.component';
 
 // Legacy namespace. New projects should not make use of this.
 const OPS_NAMESPACE = 'MDB:OPS Name';
@@ -64,6 +69,7 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
 
   private pvNames = new Set<string>();
   private subscriptionDirty = false;
+  private subscribeTimer?: number;
   private syncSubscription: Subscription;
   private historyProviders = new Map<string, OpiDisplayHistoricDataProvider>();
 
@@ -74,6 +80,9 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
   // Prefix values for resolving script paths in the outer frame
   private relPrefix = '';
   private absPrefix = '';
+
+  // Resources the sandbox may request through the outer frame
+  private allowedPrefixes: string[] = [];
 
   private currentScale = 1;
 
@@ -93,6 +102,7 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
     @Inject(APP_BASE_HREF) private baseHref: string,
     private configService: ConfigService,
     private formatter: Formatter,
+    private dialog: MatDialog,
   ) {
     this.storageClient = yamcs.createStorageClient();
     this.bucket = configService.getDisplayBucket();
@@ -130,6 +140,14 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
           this.pvNames.add(pvName);
         }
         this.subscriptionDirty = true;
+        // A loading display requests its PVs in a burst of messages. Apply
+        // them once the burst is over, rather than on the next sync tick,
+        // so that the display does not sit without values for up to 500 ms.
+        window.clearTimeout(this.subscribeTimer);
+        this.subscribeTimer = window.setTimeout(
+          () => this.updateSubscription(),
+          20,
+        );
         break;
 
       case 'unsubscribe':
@@ -148,7 +166,7 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
         break;
 
       case 'opendisplay':
-        this.openDisplay(msg.path, msg.args);
+        this.openDisplay(msg.absolutePath ?? msg.path, msg.args);
         break;
 
       case 'closedisplay':
@@ -173,7 +191,7 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
         break;
 
       case 'runstack':
-        this.runStack(msg.path);
+        this.runStack(msg.path, msg.absolutePath);
         break;
 
       case 'runprocedure':
@@ -182,6 +200,15 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
             arguments: msg.args,
           })
           .catch((err) => this.messageService.showError(err));
+        break;
+
+      case 'dialog':
+        this.openDialog(msg.id, {
+          kind: msg.kind,
+          title: msg.title,
+          message: msg.message,
+          password: msg.password,
+        });
         break;
 
       case 'openwebpage': {
@@ -194,6 +221,12 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
 
       case 'displaybackground':
         this.frameInner.nativeElement.style.backgroundColor = msg.color;
+        // Also paint the surrounding container. It outlives this viewer, so
+        // opening another display does not flash the page background while
+        // that display loads.
+        if (this.viewerContainerEl) {
+          this.viewerContainerEl.style.backgroundColor = msg.color;
+        }
         break;
 
       case 'scale':
@@ -207,13 +240,18 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
       case 'historySubscribe': {
         const pvName: string = msg.pvName;
         if (!this.historyProviders.has(pvName)) {
+          let parameter = pvName;
+          if (pvName.startsWith(OPS_DATASOURCE)) {
+            parameter =
+              OPS_NAMESPACE + '/' + pvName.substring(OPS_DATASOURCE.length);
+          }
           const provider = new OpiDisplayHistoricDataProvider(
-            pvName,
-            () =>
+            parameter,
+            (samples) =>
               this.postToSandbox({
                 type: 'historySamples',
                 pvName,
-                samples: provider.getSamples(),
+                samples,
               }),
             this.yamcs,
             this.synchronizer,
@@ -261,6 +299,17 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
     this.router.navigateByUrl(url);
   }
 
+  private openDialog(id: number, data: OpiDisplayDialogData) {
+    const dialogRef = this.dialog.open<
+      OpiDisplayDialogComponent,
+      OpiDisplayDialogData,
+      boolean
+    >(OpiDisplayDialogComponent, { width: '400px', data });
+    dialogRef.afterClosed().subscribe((result) => {
+      this.postToSandbox({ type: 'dialogResult', id, result: !!result });
+    });
+  }
+
   private openPV(pvName: string) {
     if (pvName.startsWith('/')) {
       this.router.navigateByUrl(
@@ -282,22 +331,30 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
     }
   }
 
-  private runStack(path: string) {
-    const parts = path.split('/');
-    const resolvedParts: string[] = [];
-    for (const part of parts) {
-      if (part === '.') {
-        // ignore
-      } else if (part === '..') {
-        resolvedParts.pop();
-      } else {
-        resolvedParts.push(part);
+  private runStack(path: string, absolutePath?: string) {
+    let objectName: string | undefined;
+    if (absolutePath) {
+      objectName = absolutePath.substring(1);
+    } else {
+      // Older opi.js versions only send the resolved URL
+      const parts = path.split('/');
+      const resolvedParts: string[] = [];
+      for (const part of parts) {
+        if (part === '.') {
+          // ignore
+        } else if (part === '..') {
+          resolvedParts.pop();
+        } else {
+          resolvedParts.push(part);
+        }
+      }
+      const resolvedPath = resolvedParts.join('/');
+      const bucketRoot = this.storageClient.getObjectURL(this.bucket, '');
+      if (resolvedPath.startsWith(bucketRoot)) {
+        objectName = resolvedPath.slice(bucketRoot.length);
       }
     }
-    const resolvedPath = resolvedParts.join('/');
-    const bucketRoot = this.storageClient.getObjectURL(this.bucket, '');
-    if (resolvedPath.startsWith(bucketRoot)) {
-      const objectName = resolvedPath.slice(bucketRoot.length);
+    if (objectName) {
       this.yamcs.yamcsClient
         .startActivity(this.yamcs.instance!, {
           type: 'STACK',
@@ -328,8 +385,22 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
       .catch((err) => this.messageService.showError(err));
   }
 
+  private isAllowedResource(url: string) {
+    let href: string;
+    try {
+      href = new URL(url, window.location.href).href;
+    } catch {
+      return false;
+    }
+    return this.allowedPrefixes.some((prefix) => href.startsWith(prefix));
+  }
+
   private async serveScript(path: string) {
     const url = this.resolveScriptPath(path);
+    if (!this.isAllowedResource(url)) {
+      this.postToSandbox({ type: 'scriptContent', path, content: null });
+      return;
+    }
     try {
       const response = await fetch(url, { credentials: 'same-origin' });
       const content = response.ok ? await response.text() : null;
@@ -340,6 +411,10 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
   }
 
   private async serveImage(url: string) {
+    if (!this.isAllowedResource(url)) {
+      this.postToSandbox({ type: 'imageData', url, dataUrl: null });
+      return;
+    }
     try {
       const response = await fetch(url, { credentials: 'same-origin' });
       if (!response.ok) {
@@ -528,6 +603,9 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
     const idx = objectUrl.lastIndexOf('/') + 1;
     this.relPrefix = objectUrl.substring(0, idx);
     this.absPrefix = this.storageClient.getObjectURL(this.bucket, '');
+    this.allowedPrefixes = [this.absPrefix, this.baseHref + 'media/'].map(
+      (prefix) => new URL(prefix, window.location.href).href,
+    );
 
     const displayArgs: Record<string, string> = {};
     const queryParams = this.route.snapshot.queryParams;
@@ -627,6 +705,7 @@ export class OpiDisplayViewerComponent implements Viewer, OnDestroy {
 
   ngOnDestroy() {
     window.removeEventListener('message', this.messageListener);
+    window.clearTimeout(this.subscribeTimer);
     this.syncSubscription?.unsubscribe();
     this.parameterSubscription?.cancel();
     for (const provider of this.historyProviders.values()) {

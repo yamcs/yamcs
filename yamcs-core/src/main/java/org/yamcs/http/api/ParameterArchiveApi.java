@@ -20,6 +20,7 @@ import org.yamcs.parameter.ParameterRetrievalService;
 import org.yamcs.parameterarchive.BackFiller;
 import org.yamcs.parameterarchive.BackFillerListener;
 import org.yamcs.parameterarchive.ParameterArchive;
+import org.yamcs.parameterarchive.ParameterArchiveException;
 import org.yamcs.parameterarchive.ParameterGroupIdDb;
 import org.yamcs.parameterarchive.ParameterId;
 import org.yamcs.parameterarchive.ParameterIdDb;
@@ -314,7 +315,7 @@ public class ParameterArchiveApi extends AbstractParameterArchiveApi<Context> {
         ParameterArchive parchive = getParameterArchive(ysi);
         try {
             parchive.purge();
-        } catch (RocksDBException | InterruptedException | IOException e) {
+        } catch (ParameterArchiveException | InterruptedException e) {
             log.error("Error purging parameter archive", e);
             throw new InternalServerErrorException(e.toString());
         }

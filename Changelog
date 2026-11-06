@@ -1,4 +1,4 @@
-Version 5.13.8 unreleased
+Version 5.13.8 released 31-Oct-2026
 * Important changes:
     * The `tm` table created by the XtceTmRecorder is no longer partitioned by `pname` (packet name). Instead, `pname` is added to the primary key, which becomes `(gentime, seqNum, pname)`, so packets are deduplicated exactly as before.
       This only applies to newly created archives; existing `tm` tables keep their current definition. The old behaviour can be selected for new archives with the `partitionByPname: true` option of the XtceTmRecorder.

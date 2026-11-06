@@ -117,7 +117,13 @@ export class DisplayFileComponent implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    if (this.filename.toLowerCase().endsWith('.opi')) {
+    const isOpi = this.filename.toLowerCase().endsWith('.opi');
+    if (!isOpi) {
+      // Undo any background left by a previously shown OPI display
+      this.viewerContainer.nativeElement.style.backgroundColor = '';
+    }
+
+    if (isOpi) {
       const opiDisplayViewer = this.createViewer(OpiDisplayViewerComponent);
       opiDisplayViewer.setViewerContainerEl(this.viewerContainer.nativeElement);
       const controls = this.createViewerControls(
