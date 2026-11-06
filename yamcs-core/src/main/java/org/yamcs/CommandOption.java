@@ -23,6 +23,7 @@ public class CommandOption {
     private final String verboseName;
     private final CommandOptionType type;
     private String help;
+    private boolean disablesVerifiers;
 
     /**
      * Create a new command option.
@@ -63,6 +64,20 @@ public class CommandOption {
 
     public String getHelp() {
         return help;
+    }
+
+    /**
+     * If set to true, the command verifiers are disabled for commands that are sent with this option set. This is
+     * meant for options that change the command execution such that the verifier time windows make no sense (e.g.
+     * commands that are scheduled for later execution).
+     */
+    public CommandOption withDisablesVerifiers(boolean disablesVerifiers) {
+        this.disablesVerifiers = disablesVerifiers;
+        return this;
+    }
+
+    public boolean disablesVerifiers() {
+        return disablesVerifiers;
     }
 
     /**

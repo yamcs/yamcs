@@ -51,7 +51,10 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
      * forms on links that only support PUS 22 scheduling, or neither).
      */
     public static final CommandOption OPTION_SCHEDULE_TIME = new CommandOption("pus11ScheduleAt", "Schedule Time",
-            CommandOptionType.TIMESTAMP).withHelp("If set, embeed this command into a PUS 11 SCHEDULE_TC commad");
+            CommandOptionType.TIMESTAMP)
+                    .withHelp("If set, embed this command into a PUS 11 SCHEDULE_TC command. "
+                            + "The command verifiers are disabled because the command executes on board at a later time.")
+                    .withDisablesVerifiers(true);
 
     /**
      * Sub-schedule to insert the command into. Only registered (and only written into the TC(11,4)) when the
@@ -84,7 +87,9 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
      */
     public static final CommandOption OPTION_ORBIT_ANGLE = new CommandOption("pus22OrbitAngle",
             "PUS 22 Orbit Angle (deg)", CommandOptionType.NUMBER)
-                    .withHelp("If set (together with pus22OrbitNumber), embed this command into a PUS 22 insert-activities command");
+                    .withHelp("If set (together with pus22OrbitNumber), embed this command into a PUS 22 insert-activities command. "
+                            + "The command verifiers are disabled because the command executes on board at a later time.")
+                    .withDisablesVerifiers(true);
 
     /**
      * Sub-schedule to insert the command into. Only registered (and only written into the TC(22,4)) when the
