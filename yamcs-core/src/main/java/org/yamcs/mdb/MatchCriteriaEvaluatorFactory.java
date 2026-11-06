@@ -285,7 +285,11 @@ public class MatchCriteriaEvaluatorFactory {
 
     static ResolvedValue resolveValue(Object value, DataType type) {
         if (value instanceof Integer) {
-            return new ResolvedValue(((Integer) value).longValue(), isUnsignedIntegerType(type), intEvaluator);
+            // raw values of 32 bit encodings are parsed into an int; widen unsigned ones without sign extension
+            // to be consistent with how UINT32 values are resolved in getResolvedValue
+            boolean unsigned = isUnsignedIntegerType(type);
+            int intValue = (Integer) value;
+            return new ResolvedValue(unsigned ? Integer.toUnsignedLong(intValue) : intValue, unsigned, intEvaluator);
         } else if (value instanceof Long) {
             return new ResolvedValue((Long) value, isUnsignedIntegerType(type), intEvaluator);
         } else if (value instanceof Float) {
