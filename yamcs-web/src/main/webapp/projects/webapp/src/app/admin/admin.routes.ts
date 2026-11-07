@@ -22,7 +22,6 @@ import { TableScriptTabComponent } from './databases/table-script-tab/table-scri
 import { TableComponent } from './databases/table/table.component';
 import { HttpTrafficComponent } from './http-traffic/http-traffic.component';
 import { CreateGroupComponent } from './iam/create-group/create-group.component';
-import { CreateServiceAccountComponent } from './iam/create-service-account/create-service-account.component';
 import { CreateUserComponent } from './iam/create-user/create-user.component';
 import { EditGroupComponent } from './iam/edit-group/edit-group.component';
 import { EditUserComponent } from './iam/edit-user/edit-user.component';
@@ -30,7 +29,6 @@ import { GroupListComponent } from './iam/group-list/group-list.component';
 import { GroupComponent } from './iam/group/group.component';
 import { RoleListComponent } from './iam/role-list/role-list.component';
 import { RoleComponent } from './iam/role/role.component';
-import { ServiceAccountListComponent } from './iam/service-account-list/service-account-list.component';
 import { UserListComponent } from './iam/user-list/user-list.component';
 import { UserComponent } from './iam/user/user.component';
 import { LeapSecondsComponent } from './leap-seconds/leap-seconds.component';
@@ -208,18 +206,6 @@ export const ROUTES: Routes = [
             ],
           },
         ],
-      },
-      {
-        path: 'iam/service-accounts',
-        pathMatch: 'full',
-        component: ServiceAccountListComponent,
-        canActivate: [mayControlAccessGuardFn],
-      },
-      {
-        path: 'iam/service-accounts/create',
-        pathMatch: 'full',
-        component: CreateServiceAccountComponent,
-        canActivate: [mayControlAccessGuardFn],
       },
       {
         path: 'iam/users',
