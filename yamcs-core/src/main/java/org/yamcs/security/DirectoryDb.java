@@ -180,30 +180,6 @@ public class DirectoryDb {
         }
     }
 
-    public ServiceAccount findServiceAccountForApplicationId(String applicationId) {
-        rwlock.readLock().lock();
-        try {
-            var stmt = Query.selectTable(ACCOUNT_TABLE_NAME)
-                    .where(ACCOUNT_CNAME_SERVICE_DETAIL + ".applicationId", applicationId)
-                    .toStatement();
-            var result = ydb.execute(stmt);
-            var accounts = new ArrayList<ServiceAccount>();
-            result.forEachRemaining(tuple -> accounts.add(new ServiceAccount(tuple)));
-            result.close();
-            if (accounts.size() == 1) {
-                return accounts.get(0);
-            } else if (accounts.size() > 1) {
-                throw new RuntimeException("Too many results");
-            } else {
-                return null;
-            }
-        } catch (StreamSqlException e) {
-            throw new RuntimeException(e);
-        } finally {
-            rwlock.readLock().unlock();
-        }
-    }
-
     public void addAccount(Account account) {
         rwlock.writeLock().lock();
         try {

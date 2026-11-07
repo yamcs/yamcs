@@ -85,8 +85,8 @@ ControlAccess
     Allows to control access (users, groups, roles, ...)
 
     This privilege is equivalent to superuser. A user with ControlAccess can grant the superuser attribute to any
-    account, assign any role (including to themselves), change the password of any user, and create service
-    accounts, which can impersonate any user. Only grant it to trusted administrators.
+    account, assign any role (including to themselves), and change the password of any user. Only grant it to
+    trusted administrators.
 
 ReadSystemInfo
     Allows to view system information (:abbr:`OS ( Operating System)`, :abbr:`JVM (Java Virtual Machine)`, threads, replication, ...)
