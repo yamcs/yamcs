@@ -74,6 +74,14 @@ public class TimelineBand {
         return id;
     }
 
+    public boolean isShared() {
+        return shared;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
