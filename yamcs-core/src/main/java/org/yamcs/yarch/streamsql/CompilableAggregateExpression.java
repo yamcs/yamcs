@@ -27,6 +27,7 @@ public abstract class CompilableAggregateExpression extends AggregateExpression 
         String className = "AggregateExpression" + counter.incrementAndGet();
         StringBuilder code = new StringBuilder();
         code.append("package org.yamcs.yarch;\n")
+                .append("import org.yamcs.parameter.ParameterValue;\n")
                 .append("public class " + className + " implements CompiledAggregateExpression {\n");
         aggregateFillCode_Declarations(code);
 
