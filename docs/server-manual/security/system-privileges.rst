@@ -68,8 +68,12 @@ WriteEvents
 WriteTables
     Allows to manually add records to tables.
 
+    Tables of the ``_global`` database are only accessible to superusers.
+
 ReadTables
     Allows to read tables.
+
+    Tables of the ``_global`` database are only accessible to superusers.
 
 ReadTimeline
     Allows to view the timeline.

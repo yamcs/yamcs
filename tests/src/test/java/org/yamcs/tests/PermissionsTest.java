@@ -25,6 +25,7 @@ import org.yamcs.client.archive.ArchiveClient.ListOptions;
 import org.yamcs.client.processor.ProcessorClient;
 import org.yamcs.client.processor.ProcessorClient.GetOptions;
 import org.yamcs.protobuf.Pvalue.ParameterValue;
+import org.yamcs.protobuf.Table.Row;
 import org.yamcs.protobuf.Yamcs.Value;
 import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.utils.ValueHelper;
@@ -147,5 +148,24 @@ public class PermissionsTest extends AbstractIntegrationTest {
                 "testKey1",
                 Value.newBuilder().setType(Type.STRING).setStringValue("testValue1").build())
                 .get();
+    }
+
+    @Test
+    public void testGlobalDatabaseRequiresSuperuser() throws Exception {
+        // testuser has ControlArchiving, but is not a superuser
+        yamcsClient.login("testuser", "password".toCharArray());
+        archiveClient.listRecords("tm").get();
+
+        var globalClient = yamcsClient.createArchiveClient("_global");
+        var e = assertThrows(ExecutionException.class, () -> globalClient.listRecords("account").get());
+        assertEquals("ForbiddenException", ((ClientException) e.getCause()).getDetail().getType());
+
+        var loader = globalClient.createTableLoader("account");
+        loader.send(Row.getDefaultInstance());
+        e = assertThrows(ExecutionException.class, () -> loader.complete().get());
+        assertEquals("ForbiddenException", ((ClientException) e.getCause()).getDetail().getType());
+
+        yamcsClient.login("admin", "rootpassword".toCharArray());
+        globalClient.listRecords("account").get();
     }
 }
