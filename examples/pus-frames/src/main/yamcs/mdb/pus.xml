@@ -265,6 +265,68 @@
                                     This verifier set is using algorithms for verification. Check the pus-xtce-verif.xml for an example of doing almost the same without algorithms, only XTCE.
                                     Using algorithms has the advantage that no Failed verifier is required, any verifier can return false or a value to indicate failure.
                                   -->
+					<!--
+						Verifies that a command scheduled for onboard execution (wrapped in a TC[11,4] or TC[22,4]) has been
+						scheduled successfully: the wrapper TC completes (TM[1,7]) or fails at any stage (TM[1,2], TM[1,4], TM[1,8]).
+						When it succeeds, the command is completed and the other verifiers are skipped because the command will only
+						execute later onboard. The verifier is only used for commands that have one of the scheduling options set
+						(see yamcs.requiresAttribute below); for all other commands it does not exist.
+					-->
+					<ExecutionVerifier name="Scheduled">
+						<AncillaryDataSet>
+							<!-- success completes the command and skips the verifiers which have not finished -->
+							<AncillaryData name="yamcs.onSuccess">SUCCESS</AncillaryData>
+							<AncillaryData name="yamcs.skipOthersOnSuccess">true</AncillaryData>
+							<AncillaryData name="yamcs.requiresAttribute">pus11ScheduleAt</AncillaryData>
+							<AncillaryData name="yamcs.requiresAttribute">pus22OrbitAngle</AncillaryData>
+						</AncillaryDataSet>
+						<CustomAlgorithm name="alg_verif_scheduled" shortDescription="Verify the onboard scheduling">
+							<AncillaryDataSet>
+								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">rcvdApid</AncillaryData>
+								<AncillaryData name="Yamcs:AlgorithmMandatoryInput">rcvdSeq</AncillaryData>
+							</AncillaryDataSet>
+							<AlgorithmText language="JavaScript">
+								var apid = null;
+								var seq = null;
+								// the apid and sequence count of the wrapper TC[11,4] or TC[22,4], set by the command post-processor
+								if (pus11Apid != null &#38;&#38; pus11Seq != null) {
+								    apid = pus11Apid.value;
+								    seq = pus11Seq.value;
+								} else if (pus22Apid != null &#38;&#38; pus22Seq != null) {
+								    apid = pus22Apid.value;
+								    seq = pus22Seq.value;
+								}
+								if (apid != null &#38;&#38; rcvdApid.value == apid &#38;&#38; rcvdSeq.value == seq) {
+								    if (subtype.value == 7) {
+								        // TM[1,7] -- successful completion report of the schedule insertion
+								        return true;
+								    } else if (subtype.value == 2) {
+								        // TM[1,2] -- failed acceptance report: the wrapper TC was rejected
+								        return acceptanceErrorCode.value;
+								    } else if (subtype.value == 4) {
+								        // TM[1,4] -- failed start report: the schedule insertion could not start
+								        return startErrorCode.value;
+								    } else if (subtype.value == 8) {
+								        // TM[1,8] -- failed completion report
+								        return completionErrorCode.value;
+								    }
+								}
+							</AlgorithmText>
+							<InputSet>
+								<InputParameterInstanceRef parameterRef="/yamcs/cmdHist/pus11Apid" inputName="pus11Apid" />
+								<InputParameterInstanceRef parameterRef="/yamcs/cmdHist/pus11CcsdsSeqCount" inputName="pus11Seq" />
+								<InputParameterInstanceRef parameterRef="/yamcs/cmdHist/pus22Apid" inputName="pus22Apid" />
+								<InputParameterInstanceRef parameterRef="/yamcs/cmdHist/pus22CcsdsSeqCount" inputName="pus22Seq" />
+								<InputParameterInstanceRef parameterRef="tc-ack-apid" inputName="rcvdApid" />
+								<InputParameterInstanceRef parameterRef="tc-ack-seq" inputName="rcvdSeq" />
+								<InputParameterInstanceRef parameterRef="subtype" inputName="subtype" />
+								<InputParameterInstanceRef parameterRef="tc-ack-acceptance-failure-code" inputName="acceptanceErrorCode" />
+								<InputParameterInstanceRef parameterRef="tc-ack-start-failure-code" inputName="startErrorCode" />
+								<InputParameterInstanceRef parameterRef="tc-ack-completion-failure-code" inputName="completionErrorCode" />
+							</InputSet>
+						</CustomAlgorithm>
+						<CheckWindow timeToStopChecking="PT15S" timeWindowIsRelativeTo="commandRelease" />
+					</ExecutionVerifier>
 					<ReceivedVerifier name="Accepted" >
 						<CustomAlgorithm name="alg_verif_accepted" shortDescription="Verify the PUS acceptance">
 							<AncillaryDataSet>
