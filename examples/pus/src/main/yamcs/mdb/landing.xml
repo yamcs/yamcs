@@ -133,6 +133,11 @@
 					</StaticAlarmRanges>
 				</DefaultAlarm>
 			</FloatParameterType>
+			<FloatParameterType sizeInBits="32" name="OrbitAngleDeg">
+				<UnitSet>
+					<Unit form="calibrated">deg</Unit>
+				</UnitSet>
+			</FloatParameterType>
 		</ParameterTypeSet>
 		<ParameterSet>
 			<Parameter parameterTypeRef="/dt/float32" name="ElapsedTime" />
@@ -227,6 +232,9 @@
 			     see PusSimulator.sendHkTm(), hkid=5) -->
 			<Parameter parameterTypeRef="/PUS22/OrbitNumberType" name="OrbitNumber" />
 			<Parameter parameterTypeRef="/PUS22/OrbitAngleType" name="OrbitAngle" />
+			<Parameter parameterTypeRef="OrbitAngleDeg" name="OrbitAngleDeg">
+				<ParameterProperties dataSource="derived" persistence="true" />
+			</Parameter>
 		</ParameterSet>
 		<ContainerSet>
 			<SequenceContainer name="FlightData">
@@ -528,6 +536,23 @@
 				</BaseContainer>
 			</SequenceContainer>
 		</ContainerSet>
+		<AlgorithmSet>
+			<CustomAlgorithm name="compute_orbit_angle_deg">
+				<AncillaryDataSet>
+					<AncillaryData name="Yamcs:AlgorithmMandatoryInput">ticks</AncillaryData>
+				</AncillaryDataSet>
+				<AlgorithmText language="JavaScript">deg.value = (ticks.value*360)/65536</AlgorithmText>
+				<InputSet>
+					<InputParameterInstanceRef parameterRef="OrbitAngle" instance="0" inputName="ticks" />
+				</InputSet>
+				<OutputSet>
+					<OutputParameterRef parameterRef="OrbitAngleDeg" outputName="deg" />
+				</OutputSet>
+				<TriggerSet>
+					<OnParameterUpdateTrigger parameterRef="OrbitAngle" />
+				</TriggerSet>
+			</CustomAlgorithm>
+		</AlgorithmSet>
 	</TelemetryMetaData>
 	<CommandMetaData>
 		<ArgumentTypeSet>
