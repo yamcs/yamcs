@@ -44,9 +44,8 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
     final ScheduledThreadPoolExecutor timer;
     final Map<Argument, ArgumentValue> cmdArguments;
     final CommandingManager commandingManager;
-
-    private List<Verifier> verifiers = Collections.synchronizedList(new ArrayList<>());
     private final Log log;
+    private final List<Verifier> verifiers = Collections.synchronizedList(new ArrayList<>());
     AlgorithmExecutionContext algorithmCtx;
 
     public CommandVerificationHandler(CommandingManager commandingManager, ActiveCommand pc) {
@@ -97,9 +96,9 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
                 break;
             case PARAMETER_VALUE_CHANGE:
                 verifier = new ValueChangeVerifier(this, cv);
-                break;
-            default:
-                throw new IllegalStateException("Command verifier of type " + cv.getType() + " not implemented");
+                  break;
+              default:
+                  throw new IllegalStateException("Command verifier of type " + cv.getType() + " not implemented");
             }
 
             CheckWindow checkWindow = cv.getCheckWindow();
@@ -126,7 +125,7 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
      * verifiers for the same stage
      */
     private void collectCmdVerifiers(MetaCommand cmd, List<CommandVerifier> cmdVerifiers,
-            Map<String, VerifierConfig> verifierOverride) {
+                                     Map<String, VerifierConfig> verifierOverride) {
         CommandHistoryPublisher cmdHistPublisher = processor.getCommandHistoryPublisher();
         MetaCommand basecmd = cmd.getBaseMetaCommand();
         if (basecmd != null) {
@@ -134,6 +133,13 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
         }
 
         for (CommandVerifier cv : cmd.getCommandVerifiers(false)) {
+            // A verifier may not be applicable to a command. E.g. a Scheduled verifier may be defined in the MDB,
+            // but is only applicable if the command was an on-board scheduling command, e.g. PUS ST[11]/ST[22].
+            if (!isApplicable(cv)) {
+                log.debug("Not using verifier {} because the command has none of the required attributes {}",
+                        cv.getStage(), cv.getRequiredAttributes());
+                continue;
+            }
             boolean found = false;
             for (CommandVerifier existingv : cmdVerifiers) {
                 if (existingv.getStage().equals(cv.getStage())) {
@@ -159,6 +165,19 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
 
     }
 
+    /**
+     * A verifier with required attributes only applies to commands having at least one of them. E.g. if a command does
+     * not have onboard scheduling attributes, the Scheduled verifier should not be used.
+     */
+    private boolean isApplicable(CommandVerifier cv) {
+        var required = cv.getRequiredAttributes();
+        if (required.isEmpty()) {
+            return true;
+        }
+        PreparedCommand pc = activeCommand.getPreparedCommand();
+        return required.stream().anyMatch(name -> pc.getAttribute(name) != null);
+    }
+
     private CommandVerifier overrideVerifier(CommandVerifier cv, VerifierConfig extraOptions) {
         if (!extraOptions.hasCheckWindow()) { // maybe we should throw an exception here
             return cv;
@@ -175,7 +194,8 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
     private void createAlgorithmContext() {
         AlgorithmManager algMgr = processor.getParameterProcessorManager().getParameterProvider(AlgorithmManager.class);
         if (algMgr == null) {
-            String msg = "Algorithm manager not configured for this processor, cannot run command verification based on algorithms";
+            String msg = "Algorithm manager not configured for this processor, cannot run command verification based " +
+                    "on algorithms";
             log.error(msg);
             throw new ConfigurationException(msg);
         }
@@ -256,6 +276,12 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
         default:
             log.error("Illegal state onVerifierFinished called with state: {}", state);
         }
+        // Sometimes if a verifier succeeds, other verifiers should be skipped. For example, for PUS ST[11]/ST[22]
+        // on-board scheduling commands, the verifiers Accepted/Started/etc. do not make sense.
+        if (state == State.OK && cv.isSkipOthersOnSuccess()) {
+            // has to happen before the command is completed below, otherwise the remaining verifiers get cancelled
+            skipOtherVerifiers(v);
+        }
         if (ta == TerminationAction.SUCCESS) {
             cmdHistPublisher.publishAck(activeCommand.getCommandId(), CommandHistoryPublisher.CommandComplete_KEY,
                     processor.getCurrentTime(), AckStatus.OK, null, returnPv);
@@ -279,6 +305,18 @@ public class CommandVerificationHandler implements CommandHistoryConsumer {
         if (v.nextVerifier != null && (state == State.OK)) {
             CheckWindow cw = v.nextVerifier.cv.getCheckWindow();
             scheduleVerifier(v.nextVerifier, cw.getTimeToStartChecking(), cw.getTimeToStopChecking());
+        }
+    }
+
+    private void skipOtherVerifiers(Verifier finished) {
+        List<Verifier> others;
+        synchronized (verifiers) {
+            others = new ArrayList<>(verifiers);
+        }
+        for (Verifier other : others) {
+            if (other != finished) {
+                other.skipped("Skipped because verifier " + finished.cv.getStage() + " succeeded");
+            }
         }
     }
 
