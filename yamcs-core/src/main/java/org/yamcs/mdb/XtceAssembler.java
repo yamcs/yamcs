@@ -1704,6 +1704,12 @@ public class XtceAssembler {
                 verifier.getOnFail() != null ? verifier.getOnFail().name() : null));
         ancillaryData.add(new AncillaryData("yamcs.onTimeout",
                 verifier.getOnTimeout() != null ? verifier.getOnTimeout().name() : null));
+        if (verifier.isSkipOthersOnSuccess()) {
+            ancillaryData.add(new AncillaryData("yamcs.skipOthersOnSuccess", "true"));
+        }
+        for (String attr : verifier.getRequiredAttributes()) {
+            ancillaryData.add(new AncillaryData("yamcs.requiresAttribute", attr));
+        }
         writeAncillaryData(doc, ancillaryData);
 
         switch (verifier.getType()) {

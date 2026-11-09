@@ -3844,6 +3844,24 @@ public class XtceStaxReader extends AbstractStaxReader {
                         }
                     }
 
+                    List<String> requiredAttributes = new ArrayList<>();
+                    for (var item : ancillaryData) {
+                        if (item.getName().equals("yamcs.requiresAttribute") && item.getValue() != null) {
+                            requiredAttributes.add(item.getValue());
+                        }
+                        if (item.getName().equals("yamcs.skipOthersOnSuccess")) {
+                            cmdVerifier.setSkipOthersOnSuccess(Boolean.parseBoolean(item.getValue()));
+                        }
+                    }
+                    cmdVerifier.setRequiredAttributes(requiredAttributes);
+
+                    if (cmdVerifier.isSkipOthersOnSuccess() && onSuccess == null) {
+                        // the other verifiers would be skipped and nothing would ever finish the command
+                        throw new XMLStreamException("Command verifier '" + stage
+                                + "' has yamcs.skipOthersOnSuccess set but no onSuccess action; "
+                                + "define one with yamcs.onSuccess", xmlEvent.getLocation());
+                    }
+
                     cmdVerifier.setOnSuccess(onSuccess);
                     cmdVerifier.setOnFail(onFail);
                     cmdVerifier.setOnTimeout(onTimeout);

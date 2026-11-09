@@ -406,6 +406,32 @@
 					</xtce:CompleteVerifier>
 				</xtce:VerifierSet>
 			</xtce:MetaCommand>
+			<xtce:MetaCommand name="cmd_with_scheduled_verifier">
+				<xtce:ArgumentList>
+					<xtce:Argument name="arg1" argumentTypeRef="u32" />
+				</xtce:ArgumentList>
+				<xtce:CommandContainer name="cmd_with_scheduled_verifier">
+					<xtce:EntryList>
+						<xtce:ArgumentRefEntry argumentRef="arg1" />
+					</xtce:EntryList>
+				</xtce:CommandContainer>
+				<xtce:VerifierSet>
+					<xtce:ExecutionVerifier name="Scheduled">
+						<xtce:AncillaryDataSet>
+							<xtce:AncillaryData name="yamcs.onSuccess">SUCCESS</xtce:AncillaryData>
+							<xtce:AncillaryData name="yamcs.skipOthersOnSuccess">true</xtce:AncillaryData>
+							<xtce:AncillaryData name="yamcs.requiresAttribute">optA</xtce:AncillaryData>
+							<xtce:AncillaryData name="yamcs.requiresAttribute">optB</xtce:AncillaryData>
+						</xtce:AncillaryDataSet>
+						<xtce:Comparison value="47" parameterRef="local_para1" />
+						<xtce:CheckWindow timeToStopChecking="PT1S" />
+					</xtce:ExecutionVerifier>
+					<xtce:CompleteVerifier>
+						<xtce:Comparison value="48" parameterRef="local_para1" />
+						<xtce:CheckWindow timeToStopChecking="PT1S" />
+					</xtce:CompleteVerifier>
+				</xtce:VerifierSet>
+			</xtce:MetaCommand>
 			<xtce:MetaCommand name="cmd_with_verifier2">
 				<xtce:ArgumentList>
 					<xtce:Argument name="arg1" argumentTypeRef="u32" />
