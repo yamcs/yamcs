@@ -1690,12 +1690,14 @@ public class XtceAssembler {
     }
 
     private void writeCommandVerifier(XMLStreamWriter doc, CommandVerifier verifier) throws XMLStreamException {
-        if (!XTCE_VERIFIER_STAGES.contains(verifier.getStage())) {
-            log.warn("The verifier stage '{}' cannot be mapped to XTCE. Allowed XTCE stages: {}", verifier.getStage(),
-                    XTCE_VERIFIER_STAGES);
-            return;
+        if (XTCE_VERIFIER_STAGES.contains(verifier.getStage())) {
+            doc.writeStartElement(verifier.getStage() + "Verifier");
+        } else {
+            // stages that do not exist in XTCE are written as ExecutionVerifier (which allows multiple instances) with
+            // the stage as name. The termination actions are written below as ancillary data, so they are preserved.
+            doc.writeStartElement("ExecutionVerifier");
+            doc.writeAttribute("name", verifier.getStage());
         }
-        doc.writeStartElement(verifier.getStage() + "Verifier");
 
         var ancillaryData = new ArrayList<AncillaryData>();
         ancillaryData.add(new AncillaryData("yamcs.onSuccess",
