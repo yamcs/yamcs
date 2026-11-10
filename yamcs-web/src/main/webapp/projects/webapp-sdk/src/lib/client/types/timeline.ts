@@ -2,12 +2,16 @@ import { Activity } from './activities';
 
 export interface SaveTimelineItemRequest {
   name: string;
-  start: string;
+  /**
+   * Required, unless predecessors are given (the start is then derived)
+   */
+  start?: string;
   duration: string;
   type: TimelineItemType;
   tags?: string[];
   properties?: { [key: string]: string };
   activityDefinition?: ActivityDefinition;
+  predecessors?: Predecessor[];
   autoStart?: boolean;
 }
 
