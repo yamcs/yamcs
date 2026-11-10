@@ -6,7 +6,7 @@
       <input cdkFocusRegionstart type="text" formControlName="name" style="width: 100%" />
     </ya-field>
 
-    <ya-field label="Planned start">
+    <ya-field label="Planned start" [hint]="hasPredecessors ? '(derived from predecessors)' : ''">
       <ya-date-time-input formControlName="start" />
     </ya-field>
 
