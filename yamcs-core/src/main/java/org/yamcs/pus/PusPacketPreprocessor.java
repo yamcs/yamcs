@@ -114,6 +114,7 @@ public class PusPacketPreprocessor extends CcsdsPacketPreprocessor {
     public PusPacketPreprocessor(String yamcsInstance, YConfiguration config) {
         super(yamcsInstance, config);
         pktTimeOffset = config.getInt("pktTimeOffset", DEFAULT_PKT_TIME_OFFSET);
+        timePktTimeOffset = config.getInt("timePktTimeOffset", DEFAULT_TIME_PACKET_TIME_OFFSET);
         performTimeCorrelation = config.getBoolean("performTimeCorrelation", false);
 
         if (timeDecoder == null) {
@@ -122,7 +123,6 @@ public class PusPacketPreprocessor extends CcsdsPacketPreprocessor {
         }
         if (performTimeCorrelation) {
             ertRecorder = new RateErtRecorder();
-            timePktTimeOffset = config.getInt("timePktTimeOffset", DEFAULT_TIME_PACKET_TIME_OFFSET);
 
             String goodFrameStream = config.getString("goodFrameStream", "good_frames");
             var ydb = YarchDatabase.getInstance(yamcsInstance);
