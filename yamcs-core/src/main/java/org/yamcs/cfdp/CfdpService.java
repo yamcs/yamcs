@@ -969,14 +969,14 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
         if (!allowConcurrentFileOverwrites) {
             if (pendingTransfers.values().stream()
                     .filter(CfdpService::isRunning)
-                    .anyMatch(trsf -> trsf.getRemotePath().equals(absoluteDestinationPath))) {
+                    .anyMatch(trsf -> Objects.equals(absoluteDestinationPath, trsf.getRemotePath()))) {
                 throw new InvalidRequestException(
                         "There is already a transfer ongoing to '" + absoluteDestinationPath
                                 + "' and allowConcurrentFileOverwrites is false");
             }
 
             if (queuedTransfers.stream()
-                    .anyMatch(trsf -> trsf.getRemotePath().equals(absoluteDestinationPath))) {
+                    .anyMatch(trsf -> Objects.equals(absoluteDestinationPath, trsf.getRemotePath()))) {
                 throw new InvalidRequestException(
                         "There is already a transfer queued to '" + absoluteDestinationPath
                                 + "' and allowConcurrentFileOverwrites is false");
