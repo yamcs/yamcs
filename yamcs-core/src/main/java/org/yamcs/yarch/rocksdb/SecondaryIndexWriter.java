@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.WriteBatch;
 import org.yamcs.utils.ByteArray;
@@ -51,11 +52,12 @@ public class SecondaryIndexWriter {
      * this is mysql non-configurable behaviour, postgresql is different by default but configurable.
      * 
      * @param writeBatch
-     * @param tuple
-     * @param dbkey
+     * @param cfh
+     *            the column family of the table in the main tablespace database
+     * @param row
      * @param partition
      */
-    void addTuple(WriteBatch writeBatch, Row row, Partition partition) {
+    void addTuple(WriteBatch writeBatch, ColumnFamilyHandle cfh, Row row, Partition partition) {
         RdbPartition rpart = (RdbPartition) partition;
 
         try (ByteArrayOutputStream baosValue = new ByteArrayOutputStream()) {
@@ -82,7 +84,7 @@ public class SecondaryIndexWriter {
                 byte[] part = rpart.dir.getBytes(StandardCharsets.US_ASCII);
                 dosValue.write(part);
             }
-            writeBatch.put(dbkey, baosValue.toByteArray());
+            writeBatch.put(cfh, dbkey, baosValue.toByteArray());
         } catch (IOException e) {
             throw new IllegalArgumentException("Cannot serialize key from tuple " + row + ": ", e);
         } catch (RocksDBException e) {

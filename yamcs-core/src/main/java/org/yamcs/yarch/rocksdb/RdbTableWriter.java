@@ -278,16 +278,15 @@ public class RdbTableWriter extends TableWriter {
             try (WriteBatch writeBatch = new WriteBatch();
                     WriteOptions writeOpts = new WriteOptions()) {
                 writeBatch.put(cfh, key, value);
-                secondaryIndexWriter.addTuple(writeBatch, row, partition);
+                secondaryIndexWriter.addTuple(writeBatch, cfh, row, partition);
                 rdb.write(writeOpts, writeBatch);
             }
         } else {// secondary index and main data go into different databases, we cannot perform the write in a batch
             rdb.put(cfh, key, value);
-            cfh = tablespace.getRdb().getColumnFamilyHandle(table.cfName());
+            var mainCfh = tablespace.getRdb().createAndGetColumnFamilyHandle(table.cfName());
             try (WriteBatch writeBatch = new WriteBatch();
                     WriteOptions writeOpts = new WriteOptions()) {
-                writeBatch.put(cfh, key, value);
-                secondaryIndexWriter.addTuple(writeBatch, row, partition);
+                secondaryIndexWriter.addTuple(writeBatch, mainCfh, row, partition);
                 tablespace.getRdb().write(writeOpts, writeBatch);
             }
         }

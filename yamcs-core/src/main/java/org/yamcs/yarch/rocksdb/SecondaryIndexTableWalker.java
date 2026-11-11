@@ -115,6 +115,9 @@ public class SecondaryIndexTableWalker implements TableWalker {
         DbRange dbRange = RdbTableWalker.getDbRange(tbsIndex, skRange);
         YRDB rdb = tablespace.getRdb();
         var cfh = rdb.getColumnFamilyHandle(table.cfName());
+        if (cfh == null) { // nothing has been indexed yet
+            return;
+        }
 
         try (ReadOptions readOptions = new ReadOptions();
                 RocksIterator rocksIt = rdb.getDb().newIterator(cfh, readOptions);
