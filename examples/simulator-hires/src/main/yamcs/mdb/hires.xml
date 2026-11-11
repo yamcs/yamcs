@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem name="hires"
+    xmlns="http://www.omg.org/spec/XTCE/20180204"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    shortDescription="Hi-Res Timestamp Simulator MDB">
+
+  <TelemetryMetaData>
+    <ParameterTypeSet>
+      <FloatParameterType name="float32_t" sizeInBits="32">
+        <UnitSet />
+        <FloatDataEncoding sizeInBits="32" />
+      </FloatParameterType>
+
+      <FloatParameterType name="sine_t" sizeInBits="32">
+        <UnitSet>
+          <Unit>V</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="32" />
+      </FloatParameterType>
+
+      <FloatParameterType name="ramp_t" sizeInBits="32">
+        <UnitSet>
+          <Unit>%</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="32" />
+      </FloatParameterType>
+
+      <IntegerParameterType name="uint32_t" sizeInBits="32" signed="false">
+        <UnitSet />
+        <IntegerDataEncoding sizeInBits="32" encoding="unsigned" />
+      </IntegerParameterType>
+    </ParameterTypeSet>
+
+    <ParameterSet>
+      <Parameter parameterTypeRef="sine_t" name="SineWave"
+          shortDescription="Sine wave signal for hires timestamp demo" />
+      <Parameter parameterTypeRef="ramp_t" name="Ramp"
+          shortDescription="Ramp signal cycling 0-100%" />
+      <Parameter parameterTypeRef="float32_t" name="Random"
+          shortDescription="Random value between 0 and 1" />
+      <Parameter parameterTypeRef="uint32_t" name="Counter"
+          shortDescription="Packet sequence counter" />
+    </ParameterSet>
+
+    <ContainerSet>
+      <SequenceContainer name="HiresPacket"
+          shortDescription="Packet from the hi-res simulator">
+        <EntryList>
+          <!--
+            The packet bytes arriving at the MDB container processor
+            have the 2-byte length stripped by GenericPacketInputStream.
+            Remaining layout:
+              0-7:   millis (consumed by preprocessor)
+              8-11:  picos  (consumed by preprocessor)
+              12-15: seqcount (consumed by preprocessor)
+              16-19: SineWave (float)
+              20-23: Ramp (float)
+              24-27: Random (float)
+              28-31: Counter (uint32)
+          -->
+          <ParameterRefEntry parameterRef="SineWave">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>128</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="Ramp">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>160</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="Random">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>192</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ParameterRefEntry parameterRef="Counter">
+            <LocationInContainerInBits referenceLocation="containerStart">
+              <FixedValue>224</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+        </EntryList>
+      </SequenceContainer>
+    </ContainerSet>
+  </TelemetryMetaData>
+</SpaceSystem>

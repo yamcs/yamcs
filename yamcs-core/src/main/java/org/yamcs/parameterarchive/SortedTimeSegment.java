@@ -3,6 +3,7 @@ package org.yamcs.parameterarchive;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
+import org.yamcs.time.Instant;
 import org.yamcs.utils.DecodingException;
 import org.yamcs.utils.SortedIntArray;
 import org.yamcs.utils.TimeEncoding;
@@ -53,13 +54,27 @@ public class SortedTimeSegment extends BaseSegment {
     }
 
     /**
-     * get timestamp at position idx
-     * 
+     * get timestamp at position idx (millisecond precision)
+     *
      * @param idx
      * @return
      */
     public long getTime(int idx) {
         return interval + tsarray.get(idx);
+    }
+
+    /**
+     * Get high-resolution timestamp at position idx.
+     * <p>
+     * Note: sub-millisecond precision (picos) is not yet stored in the parameter archive
+     * because the RocksDB merge operator format does not support it.
+     * Currently returns an Instant with picos=0.
+     *
+     * @param idx
+     * @return
+     */
+    public Instant getHresTime(int idx) {
+        return Instant.get(interval + tsarray.get(idx));
     }
 
     /**

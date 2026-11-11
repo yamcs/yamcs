@@ -12,6 +12,7 @@ import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.YamcsServer;
 import org.yamcs.logging.Log;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.time.Instant;
 import org.yamcs.time.TimeService;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.Stream;
@@ -43,22 +44,22 @@ public class StreamParameterSender {
      * @param params
      */
     public void sendParameters(Collection<ParameterValue> params) {
-        params.stream().collect(Collectors.groupingBy(ParameterValue::getGenerationTime))
+        params.stream().collect(Collectors.groupingBy(ParameterValue::getHresGenerationTime))
                 .forEach((t, l) -> sendParameters(t, l));
     }
 
     // Send the parameters to the stream grouping by group
-    private void sendParameters(long genTime, Collection<ParameterValue> params) {
+    private void sendParameters(Instant genTime, Collection<ParameterValue> params) {
         params.stream().collect(Collectors.groupingBy(pv -> pv.getParameter().getRecordingGroup()))
                 .forEach((g, l) -> sendParameters(genTime, g, l));
     }
 
-    private void sendParameters(long genTime, String group, Collection<ParameterValue> params) {
+    private void sendParameters(Instant genTime, String group, Collection<ParameterValue> params) {
         int seqNum = groupSeq.computeIfAbsent(group, g -> new AtomicInteger()).getAndIncrement();
         updateParameters(genTime, group, seqNum, params);
     }
 
-    public void updateParameters(long gentime, String group, int seqNum, Collection<ParameterValue> params) {
+    public void updateParameters(Instant gentime, String group, int seqNum, Collection<ParameterValue> params) {
         TupleDefinition tdef = StandardTupleDefinitions.PARAMETER.copy();
         List<Object> cols = new ArrayList<>(4 + params.size());
         cols.add(gentime);

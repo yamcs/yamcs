@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.yamcs.logging.Log;
+import org.yamcs.time.Instant;
 import org.yamcs.utils.TimeInterval;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
@@ -65,7 +66,9 @@ public class TableWalkerBuilder implements FilterableTarget {
             addToRange(pkRange, relOp, val);
 
             if (tableDefinition.isPartitionedByTime()) {
-                addPartitionTimeFilter(relOp, (Long) columnValue);
+                long timeMillis = columnValue instanceof Instant
+                        ? ((Instant) columnValue).getMillis() : (Long) columnValue;
+                addPartitionTimeFilter(relOp, timeMillis);
             }
         } else {
             List<String> sidx = tableDefinition.getSecondaryIndex();

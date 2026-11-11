@@ -40,6 +40,7 @@ import org.yamcs.protobuf.ListEventsResponse;
 import org.yamcs.protobuf.StreamEventsRequest;
 import org.yamcs.protobuf.SubscribeEventsRequest;
 import org.yamcs.security.SystemPrivilege;
+import org.yamcs.time.Instant;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.SqlBuilder;
 import org.yamcs.yarch.Stream;
@@ -522,7 +523,13 @@ public class EventsApi extends AbstractEventsApi<Context> {
             evb.setSource(other.getSource());
         }
         if (other.hasGenerationTime()) {
-            evb.setGenerationTime(TimeEncoding.toProtobufTimestamp(other.getGenerationTime()));
+            Instant gentime;
+            if (other.hasGenerationTimePicos()) {
+                gentime = Instant.get(other.getGenerationTime(), other.getGenerationTimePicos());
+            } else {
+                gentime = Instant.get(other.getGenerationTime());
+            }
+            evb.setGenerationTime(TimeEncoding.toProtobufTimestamp(gentime));
         }
         if (other.hasReceptionTime()) {
             evb.setReceptionTime(TimeEncoding.toProtobufTimestamp(other.getReceptionTime()));

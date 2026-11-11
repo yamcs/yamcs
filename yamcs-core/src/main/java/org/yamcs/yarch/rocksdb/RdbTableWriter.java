@@ -13,6 +13,7 @@ import org.rocksdb.WriteOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yamcs.YamcsServer;
+import org.yamcs.time.Instant;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.ColumnDefinition;
 import org.yamcs.yarch.DataType;
@@ -306,7 +307,12 @@ public class RdbTableWriter extends TableWriter {
         long time = TimeEncoding.INVALID_INSTANT;
         Object value = null;
         if (partitioningSpec.timeColumn != null) {
-            time = (Long) t.getColumn(partitioningSpec.timeColumn);
+            Object timeObj = t.getColumn(partitioningSpec.timeColumn);
+            if (timeObj instanceof Instant) {
+                time = ((Instant) timeObj).getMillis();
+            } else {
+                time = (Long) timeObj;
+            }
         }
         if (partitioningSpec.valueColumn != null) {
             value = t.getColumn(partitioningSpec.valueColumn);

@@ -22,6 +22,7 @@ import org.yamcs.client.YamcsClient;
 import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.time.Instant;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.tctm.AbstractTcDataLink;
@@ -335,7 +336,7 @@ public abstract class AbstractIntegrationTest {
             pv5.setGenerationTime(generationTime);
             pv5.setRawUnsignedInteger(1);
 
-            ppListener.updateParameters(generationTime, "IntegrationTest", seqNum, Arrays.asList(pv1, pv2, pv5));
+            ppListener.updateParameters(Instant.get(generationTime), "IntegrationTest", seqNum, Arrays.asList(pv1, pv2, pv5));
 
             // this one should be combined with the two above in the archive as they have the same generation time,
             // group and sequence
@@ -345,7 +346,7 @@ public abstract class AbstractIntegrationTest {
                     .setGenerationTime(TimeEncoding.toProtobufTimestamp(generationTime))
                     .setEngValue(ValueUtility.getDoubleGbpValue(x))
                     .build();
-            ppListener.updateParams(generationTime, "IntegrationTest", seqNum, Arrays.asList(pv3));
+            ppListener.updateParams(Instant.get(generationTime), "IntegrationTest", seqNum, Arrays.asList(pv3));
 
             // mixup some ParameterValue with Protobuf ParameterValue to test compatibility with old yamcs
             org.yamcs.protobuf.Pvalue.ParameterValue pv4 = org.yamcs.protobuf.Pvalue.ParameterValue.newBuilder()
@@ -354,7 +355,7 @@ public abstract class AbstractIntegrationTest {
                     .setGenerationTime(TimeEncoding.toProtobufTimestamp(generationTime + 20))
                     .setEngValue(ValueUtility.getUint32GbpValue(x))
                     .build();
-            ppListener.updateParams(generationTime + 20, "IntegrationTest2", seqNum, Arrays.asList(pv4));
+            ppListener.updateParams(Instant.get(generationTime + 20), "IntegrationTest2", seqNum, Arrays.asList(pv4));
 
             seqNum++;
         }
@@ -370,7 +371,7 @@ public abstract class AbstractIntegrationTest {
         }
 
         public void inject(long generationTime, List<ParameterValue> pvList) {
-            ppListener.updateParameters(generationTime, "test", 0, pvList);
+            ppListener.updateParameters(Instant.get(generationTime), "test", 0, pvList);
         }
     }
 

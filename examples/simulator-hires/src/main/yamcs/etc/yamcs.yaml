@@ -1,0 +1,12 @@
+services:
+  - class: org.yamcs.http.HttpServer
+
+instances:
+  - hires
+
+dataDir: /storage/yamcs-data
+
+secretKey: "changeme"
+
+yamcs-web:
+  tag: "Example: simulator-hires"
