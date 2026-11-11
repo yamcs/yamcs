@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -299,6 +300,70 @@ public class ParameterTest extends AbstractIntegrationTest {
         packetGenerator.generate_PKT1_1();
         values = bulkPvalsFuture.get();
         checkPvals(values, packetGenerator);
+    }
+
+    /**
+     * Some of the requested parameters are received multiple times before the others arrive, so the number of received
+     * values overshoots the number of requested parameters. The request should still complete as soon as all of them
+     * have been received, returning all the received values (the first update after an action may be the interesting
+     * one).
+     * <p>
+     * See https://github.com/yamcs/yamcs/issues/1196
+     */
+    @Test
+    public void testBatchGetFreshWithRepeatedParameters() throws Exception {
+        long timeout = 10000;
+        CompletableFuture<List<ParameterValue>> future = processorClient.getValues(Arrays.asList(
+                "/REFMDB/SUBSYS1/IntegerPara1_1_6",
+                "/REFMDB/SUBSYS1/IntegerPara1_1_7",
+                "/REFMDB/SUBSYS1/LEIntegerPara1_2_1"),
+                GetOptions.fromCache(false),
+                GetOptions.timeout(timeout));
+        Thread.sleep(1000); // wait to make sure that the subscription request has reached the server
+
+        packetGenerator.generate_PKT1_1(); // 2 out of 3 parameters
+        packetGenerator.generate_PKT1_1(); // same 2 again: 4 values received
+        packetGenerator.generate_PKT1_2(); // the last one: 5 values received
+
+        // should complete right away, not when the server timeout expires
+        List<ParameterValue> values = future.get(timeout / 2, TimeUnit.MILLISECONDS);
+        assertParameterNames(values,
+                "/REFMDB/SUBSYS1/IntegerPara1_1_6",
+                "/REFMDB/SUBSYS1/IntegerPara1_1_6",
+                "/REFMDB/SUBSYS1/IntegerPara1_1_7",
+                "/REFMDB/SUBSYS1/IntegerPara1_1_7",
+                "/REFMDB/SUBSYS1/LEIntegerPara1_2_1");
+    }
+
+    /**
+     * The number of received values reaches the number of requested parameters before all of them have been received.
+     * The request should not complete until all parameters have been received.
+     * <p>
+     * See https://github.com/yamcs/yamcs/issues/1196
+     */
+    @Test
+    public void testBatchGetFreshDoesNotCompleteEarly() throws Exception {
+        CompletableFuture<List<ParameterValue>> future = processorClient.getValues(Arrays.asList(
+                "/REFMDB/SUBSYS1/IntegerPara1_1_6",
+                "/REFMDB/SUBSYS1/LEIntegerPara1_2_1"),
+                GetOptions.fromCache(false),
+                GetOptions.timeout(10000));
+        Thread.sleep(1000); // wait to make sure that the subscription request has reached the server
+
+        packetGenerator.generate_PKT1_1(); // 1 out of 2 parameters
+        packetGenerator.generate_PKT1_1(); // same one again: 2 values received
+        packetGenerator.generate_PKT1_2(); // the other one
+
+        List<ParameterValue> values = future.get(5, TimeUnit.SECONDS);
+        assertParameterNames(values,
+                "/REFMDB/SUBSYS1/IntegerPara1_1_6",
+                "/REFMDB/SUBSYS1/IntegerPara1_1_6",
+                "/REFMDB/SUBSYS1/LEIntegerPara1_2_1");
+    }
+
+    private static void assertParameterNames(List<ParameterValue> values, String... expectedNames) {
+        List<String> names = values.stream().map(pv -> pv.getId().getName()).sorted().toList();
+        assertEquals(Arrays.stream(expectedNames).sorted().toList(), names);
     }
 
     @Test
