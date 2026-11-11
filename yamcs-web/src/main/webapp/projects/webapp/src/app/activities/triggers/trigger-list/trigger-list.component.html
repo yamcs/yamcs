@@ -1,0 +1,117 @@
+<ya-instance-page>
+  <ya-instance-toolbar label="Triggers">
+    @if (mayEdit()) {
+      <ya-page-button routerLink="create" [queryParams]="{ c: yamcs.context }" icon="add_circle">
+        Create trigger
+      </ya-page-button>
+    }
+    @if (status(); as status) {
+      <ya-slide-toggle
+        class="kill-switch"
+        [checked]="status.enabled"
+        [disabled]="!mayToggle()"
+        (toggle)="setGlobalEnabled($event)">
+        All triggers {{ status.enabled ? "enabled" : "disabled" }}
+      </ya-slide-toggle>
+    }
+  </ya-instance-toolbar>
+
+  <ya-panel>
+    <app-activities-page-tabs [pendingConfirmations]="status()?.pendingConfirmations ?? 0" />
+
+    @if (status()?.enabled === false) {
+      <ya-warning-message>
+        All triggers are disabled. No trigger fires until they are enabled again.
+      </ya-warning-message>
+    }
+
+    <table mat-table [dataSource]="triggers()" class="ya-data-table expand">
+      <ng-container matColumnDef="enabled">
+        <th mat-header-cell *matHeaderCellDef class="toggle">Enabled</th>
+        <td mat-cell *matCellDef="let trigger" class="toggle">
+          <ya-slide-toggle
+            [checked]="trigger.enabled"
+            [disabled]="!mayToggle()"
+            (toggle)="setEnabled(trigger, $event)" />
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Name</th>
+        <td mat-cell *matCellDef="let trigger">
+          <a [routerLink]="trigger.id" [queryParams]="{ c: yamcs.context }">
+            {{ trigger.name }}
+          </a>
+          @if (trigger.source === "CONFIG") {
+            <span class="badge" matTooltip="Declared in the configuration. Read-only.">config</span>
+          }
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="condition">
+        <th mat-header-cell *matHeaderCellDef>Condition</th>
+        <td mat-cell *matCellDef="let trigger" class="summary">
+          {{ conditionSummary(trigger) }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="activity">
+        <th mat-header-cell *matHeaderCellDef>Activity</th>
+        <td mat-cell *matCellDef="let trigger" class="summary">
+          {{ activitySummary(trigger) }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="lastFired">
+        <th mat-header-cell *matHeaderCellDef>Last fired</th>
+        <td mat-cell *matCellDef="let trigger">
+          {{ (trigger.lastFired | datetime) ?? "-" }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="firingCount">
+        <th mat-header-cell *matHeaderCellDef>Firings</th>
+        <td mat-cell *matCellDef="let trigger">
+          @if (trigger.firingCount) {
+            <a
+              routerLink="/activities/trigger-firings"
+              [queryParams]="{ c: yamcs.context, trigger: trigger.name }">
+              {{ trigger.firingCount }}
+            </a>
+          } @else {
+            0
+          }
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef class="expand"></th>
+        <td mat-cell *matCellDef="let trigger">
+          @if (mayEdit() && trigger.source !== "CONFIG") {
+            <ya-more>
+              <button mat-menu-item [routerLink]="trigger.id" [queryParams]="{ c: yamcs.context }">
+                Edit
+              </button>
+              <button mat-menu-item (click)="deleteTrigger(trigger)">Delete</button>
+            </ya-more>
+          }
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr
+        mat-row
+        *matRowDef="let row; columns: displayedColumns"
+        [class.disabled]="!row.enabled"></tr>
+    </table>
+
+    @if (!triggers().length) {
+      <ya-empty-message headerTitle="No triggers">
+        <p>
+          Triggers start an activity when an alarm occurs, or when a condition on parameters becomes
+          true.
+        </p>
+      </ya-empty-message>
+    }
+  </ya-panel>
+</ya-instance-page>

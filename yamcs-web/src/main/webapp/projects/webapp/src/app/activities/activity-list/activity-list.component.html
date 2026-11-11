@@ -11,6 +11,10 @@
   </ya-instance-toolbar>
 
   <ya-panel>
+    @if (showTriggerTabs) {
+      <app-activities-page-tabs />
+    }
+
     <ya-filter-bar [formGroup]="filterForm">
       <ya-search-filter formControlName="filter" placeholder="Filter by text search" />
       <ya-column-chooser #columnChooser [columns]="columns" preferenceKey="activities" />

@@ -16,7 +16,7 @@ public class ServicesTest extends AbstractIntegrationTest {
         String serviceClass = CommandHistoryRecorder.class.getName();
 
         List<ServiceInfo> services = yamcsClient.listServices(yamcsInstance).get();
-        assertEquals(11, services.size());
+        assertEquals(12, services.size());
 
         ServiceInfo servInfo = services.stream()
                 .filter(si -> serviceClass.equals(si.getClassName()))

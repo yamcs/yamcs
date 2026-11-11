@@ -1,0 +1,205 @@
+syntax="proto2";
+
+package yamcs.protobuf.activities;
+
+option java_package = "org.yamcs.protobuf.activities";
+option java_outer_classname = "TriggersProto";
+option java_multiple_files = true;
+
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+import "yamcs/protobuf/activities/activities.proto";
+import "yamcs/protobuf/alarms/alarms.proto";
+
+// Rule that starts an activity when a monitoring condition occurs
+message TriggerInfo {
+  // Trigger identifier
+  optional string id = 1;
+
+  // Unique name of this trigger
+  optional string name = 2;
+
+  // Optional description
+  optional string description = 3;
+
+  // Whether this trigger is enabled
+  optional bool enabled = 4;
+
+  // Processor that is monitored. Default: ``realtime``
+  optional string processor = 5;
+
+  // User whose privileges are used to start the activity.
+  // Defaults to the user that created or last updated the trigger.
+  optional string runAs = 6;
+
+  // User that created or last updated this trigger
+  optional string owner = 7;
+
+  // Where this trigger was defined
+  optional TriggerSource source = 8;
+
+  // Condition that makes this trigger fire.
+  // Exactly one of alarmCondition or parameterCondition is set.
+  optional AlarmCondition alarmCondition = 9;
+  optional ParameterCondition parameterCondition = 10;
+
+  // Rules that decide whether a firing actually starts an activity
+  optional TriggerPolicy policy = 11;
+
+  // Activity to start. String arguments may contain ${...} placeholders
+  // that are resolved from the firing context.
+  optional ActivityDefinitionInfo activity = 12;
+
+  // Time of the last firing, if any (output only)
+  optional google.protobuf.Timestamp lastFired = 13;
+
+  // Number of firings since server start (output only)
+  optional int32 firingCount = 14;
+}
+
+enum TriggerSource {
+  // Created through the API
+  DATABASE = 1;
+
+  // Declared in the service configuration. Read-only.
+  CONFIG = 2;
+}
+
+message AlarmCondition {
+  enum AlarmType {
+    PARAMETER = 1;
+    EVENT = 2;
+  }
+
+  // Type of alarm. Default: PARAMETER
+  optional AlarmType alarmType = 1;
+
+  // Glob patterns that match the alarm subject. For parameter alarms this is
+  // the qualified parameter name. For event alarms this is ``source/type``.
+  // ``*`` matches any sequence of characters, ``?`` matches one character.
+  // If empty, any alarm of the given type matches.
+  repeated string subjects = 2;
+
+  // Notifications that make the trigger fire.
+  // Default: TRIGGERED, SEVERITY_INCREASED
+  repeated alarms.AlarmNotificationType notifications = 3;
+
+  // Minimum alarm severity. Default: WATCH
+  optional alarms.AlarmSeverity minSeverity = 4;
+
+  // Also fire for shelved alarms. Default: false
+  optional bool includeShelved = 5;
+}
+
+message ParameterCondition {
+  enum Edge {
+    // Fire when the expression changes from false to true
+    RISING = 1;
+
+    // Fire when the expression changes from true to false
+    FALLING = 2;
+
+    // Fire on any change
+    BOTH = 3;
+  }
+
+  // Boolean expression over parameters. For example:
+  // ``/YSS/SIMULATOR/BatteryVoltage2 < 10 && /YSS/SIMULATOR/Mode == "SAFE"``
+  optional string expression = 1;
+
+  // Default: RISING
+  optional Edge edge = 2;
+
+  // Time in milliseconds that the expression must keep the new state before
+  // the trigger fires. Default: 0
+  optional int64 holdTime = 3;
+
+  // Treat values that are not acquired (invalid, expired, not received) as
+  // false. If false, such values leave the state unchanged. Default: true
+  optional bool invalidAsFalse = 4;
+}
+
+message TriggerPolicy {
+  enum Concurrency {
+    // Do not start a new activity while the previous one is running
+    SKIP = 1;
+
+    // Always start a new activity
+    ALLOW = 2;
+
+    // Cancel the running activity, then start a new one
+    CANCEL_PREVIOUS = 3;
+  }
+
+  // Minimum time in milliseconds between two firings. Default: 60000
+  optional int64 cooldown = 1;
+
+  // Default: SKIP
+  optional Concurrency concurrency = 2;
+
+  // Wait for an operator to confirm before starting the activity. Default: false
+  optional bool requireConfirmation = 3;
+
+  // Time in milliseconds after which an unconfirmed firing expires.
+  // Default: 300000
+  optional int64 confirmationTimeout = 4;
+
+  // Maximum number of firings per hour. 0 means unlimited. Default: 0
+  optional int32 maxFiringsPerHour = 5;
+}
+
+enum TriggerFiringOutcome {
+  // The activity was started
+  STARTED = 1;
+
+  // Not started, because the trigger is still in its cooldown period
+  SUPPRESSED_COOLDOWN = 2;
+
+  // Not started, because the previous activity is still running
+  SUPPRESSED_CONCURRENCY = 3;
+
+  // Not started, because the hourly limit was reached
+  SUPPRESSED_RATE = 4;
+
+  // Waiting for an operator to confirm
+  PENDING_CONFIRMATION = 5;
+
+  // Rejected by an operator
+  REJECTED = 6;
+
+  // Not confirmed in time
+  EXPIRED = 7;
+
+  // The activity could not be started
+  FAILED_TO_START = 8;
+}
+
+message TriggerFiringInfo {
+  // Firing identifier
+  optional string id = 1;
+
+  // Trigger identifier
+  optional string triggerId = 2;
+
+  // Trigger name at the time of firing
+  optional string triggerName = 3;
+
+  // Time of the firing
+  optional google.protobuf.Timestamp time = 4;
+
+  // Outcome of this firing
+  optional TriggerFiringOutcome outcome = 5;
+
+  // Information about what caused this firing
+  optional google.protobuf.Struct context = 6;
+
+  // Identifier of the started activity, if any
+  optional string activityId = 7;
+
+  // User that confirmed or rejected the firing
+  optional string decidedBy = 8;
+
+  // Additional information, for example a failure reason
+  optional string message = 9;
+}

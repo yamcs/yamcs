@@ -1,0 +1,386 @@
+<ya-instance-page>
+  <ya-instance-toolbar>
+    <ng-template ya-instance-toolbar-label>
+      <ya-page-icon-button
+        routerLink="/activities/triggers"
+        [queryParams]="{ c: yamcs.context }"
+        icon="arrow_back" />
+      @if (existing(); as existing) {
+        {{ existing.name }}
+      } @else {
+        Create trigger
+      }
+    </ng-template>
+
+    @if (existing(); as existing) {
+      <ya-page-button
+        routerLink="/activities/trigger-firings"
+        [queryParams]="{ c: yamcs.context, trigger: existing.name }"
+        icon="history">
+        Firings
+      </ya-page-button>
+      @if (!readOnly()) {
+        <ya-page-button (clicked)="deleteTrigger()" icon="delete">Delete</ya-page-button>
+      }
+    }
+  </ya-instance-toolbar>
+
+  <ya-form-content>
+    @if (existing()?.source === "CONFIG") {
+      <ya-warning-message>
+        This trigger is declared in the configuration. It can only be enabled or disabled.
+      </ya-warning-message>
+    }
+
+    @if (existing(); as existing) {
+      @if (readOnly()) {
+        <p>
+          <ya-slide-toggle
+            [checked]="existing.enabled"
+            [disabled]="!mayToggle()"
+            (toggle)="setEnabled($event)">
+            Enabled
+          </ya-slide-toggle>
+        </p>
+      }
+      <dl class="dl-horizontal no-lead">
+        <dt>Source</dt>
+        <dd>{{ existing.source }}</dd>
+        <dt>Owner</dt>
+        <dd>{{ existing.owner || "-" }}</dd>
+        <dt>Last fired</dt>
+        <dd>{{ (existing.lastFired | datetime) ?? "-" }}</dd>
+        <dt>Firings</dt>
+        <dd>{{ existing.firingCount ?? 0 }}</dd>
+      </dl>
+    }
+
+    <form [formGroup]="form" novalidate autocomplete="off">
+      <ya-field label="Name" hint="(required)">
+        <input type="text" formControlName="name" />
+      </ya-field>
+
+      <ya-field label="Description">
+        <textarea formControlName="description" rows="2" style="resize: none"></textarea>
+      </ya-field>
+
+      @if (!readOnly()) {
+        <ya-slide-toggle formControlName="enabled">Enabled</ya-slide-toggle>
+      }
+
+      <h3>Condition</h3>
+
+      <ya-field label="Fire on">
+        <ya-select formControlName="conditionMode" [options]="conditionModeOptions" />
+      </ya-field>
+
+      @if (conditionMode() === "ALARM") {
+        <ng-container formGroupName="alarm">
+          <ya-field label="Alarm type">
+            <ya-select formControlName="alarmType" [options]="alarmTypeOptions" />
+          </ya-field>
+
+          <ya-field label="Subjects">
+            <ya-help dialogTitle="Subjects">
+              Glob patterns matched against the alarm subject. For parameter alarms, this is the
+              qualified parameter name. For event alarms, this is
+              <code>source/type</code>
+              .
+              <code>*</code>
+              matches any sequence of characters,
+              <code>?</code>
+              a single character. If no subject is added, any alarm of the selected type matches.
+            </ya-help>
+            @for (subject of subjects(); track $index) {
+              <div class="subject">
+                <span class="mono">{{ subject }}</span>
+                @if (!readOnly()) {
+                  <ya-icon-action icon="close" (click)="removeSubject($index)" />
+                }
+              </div>
+            }
+            @if (!subjects().length) {
+              <div class="hint">Any alarm</div>
+            }
+            @if (!readOnly()) {
+              <div class="subject-add">
+                <input
+                  type="text"
+                  [formControl]="subjectInput"
+                  (keydown.enter)="addSubject(); $event.preventDefault()"
+                  [placeholder]="
+                    alarmType() === 'EVENT' ? 'source/type' : '/qualified/name or pattern'
+                  " />
+                <ya-button (click)="addSubject()">Add</ya-button>
+                @if (alarmType() === "PARAMETER") {
+                  <ya-button (click)="browseSubjectParameter()" icon="search">Browse</ya-button>
+                }
+              </div>
+            }
+          </ya-field>
+
+          <ya-field label="Notifications">
+            <ya-multi-select
+              formControlName="notifications"
+              [options]="notificationOptions"
+              emptyOption="Default (TRIGGERED, SEVERITY_INCREASED)" />
+          </ya-field>
+
+          <ya-field label="Minimum severity">
+            <ya-select formControlName="minSeverity" [options]="severityOptions" />
+          </ya-field>
+
+          <ya-slide-toggle formControlName="includeShelved">Include shelved alarms</ya-slide-toggle>
+        </ng-container>
+      } @else {
+        <ng-container formGroupName="parameter">
+          <ya-field label="Expression" hint="(required)">
+            <ya-help dialogTitle="Expression">
+              <p>Boolean expression over parameters, for example:</p>
+              <pre>
+/YSS/SIMULATOR/BatteryVoltage2 &lt; 10 &amp;&amp; /YSS/SIMULATOR/Mode == "SAFE"</pre>
+              <p>
+                Logical operators:
+                <code>AND</code>
+                (
+                <code>&amp;&amp;</code>
+                ),
+                <code>OR</code>
+                (
+                <code>||</code>
+                ),
+                <code>NOT</code>
+                (
+                <code>!</code>
+                ). Comparisons:
+                <code>==</code>
+                ,
+                <code>!=</code>
+                ,
+                <code>&lt;</code>
+                ,
+                <code>&lt;=</code>
+                ,
+                <code>&gt;</code>
+                ,
+                <code>&gt;=</code>
+                . Add
+                <code>.raw</code>
+                to compare the raw value. Prefix a parameter on the right side with
+                <code>$</code>
+                .
+              </p>
+              <p>The expression is validated by the server when saving.</p>
+            </ya-help>
+            <textarea formControlName="expression" rows="3" class="mono"></textarea>
+            @if (!readOnly()) {
+              <div>
+                <ya-button (click)="insertExpressionParameter()" icon="search">
+                  Insert parameter
+                </ya-button>
+              </div>
+            }
+          </ya-field>
+
+          <ya-field label="Edge">
+            <ya-select formControlName="edge" [options]="edgeOptions" />
+          </ya-field>
+
+          <ya-field label="Hold time (ms)">
+            <input type="number" min="0" formControlName="holdTime" />
+            <span class="hint">
+              The expression must keep its new state for this long before the trigger fires.
+            </span>
+          </ya-field>
+
+          <ya-slide-toggle formControlName="invalidAsFalse">
+            Treat values that are not acquired as false
+          </ya-slide-toggle>
+        </ng-container>
+      }
+
+      <h3>Policy</h3>
+
+      <ng-container formGroupName="policy">
+        <ya-field label="Cooldown (ms)">
+          <input type="number" min="0" formControlName="cooldown" />
+          <span class="hint">
+            {{ policyValue()?.cooldown | millisDuration }} minimum between two firings
+          </span>
+        </ya-field>
+
+        <ya-field label="Concurrency">
+          <ya-select formControlName="concurrency" [options]="concurrencyOptions" />
+          <span class="hint">When the previous activity is still running</span>
+        </ya-field>
+
+        <ya-slide-toggle formControlName="requireConfirmation">
+          Require operator confirmation
+        </ya-slide-toggle>
+
+        @if (policyValue()?.requireConfirmation) {
+          <ya-field label="Confirmation timeout (ms)">
+            <input type="number" min="0" formControlName="confirmationTimeout" />
+            <span class="hint">
+              Unconfirmed firings expire after
+              {{ policyValue()?.confirmationTimeout | millisDuration }}
+            </span>
+          </ya-field>
+        }
+
+        <ya-field label="Maximum firings per hour">
+          <input type="number" min="0" formControlName="maxFiringsPerHour" />
+          <span class="hint">0 means no limit</span>
+        </ya-field>
+      </ng-container>
+
+      <h3>Activity</h3>
+
+      <ng-container formGroupName="activity">
+        <ya-field label="Type" hint="(required)">
+          <ya-select formControlName="type" [options]="activityTypeOptions()" />
+        </ya-field>
+
+        <ya-field label="Label">
+          <input type="text" formControlName="label" placeholder="Default: trigger name" />
+        </ya-field>
+
+        @switch (activityType()) {
+          @case ("COMMAND") {
+            <ya-field label="Command" hint="(required)">
+              <input
+                type="text"
+                formControlName="command"
+                class="mono"
+                placeholder="/qualified/name" />
+            </ya-field>
+            <ya-field label="Command arguments (JSON)">
+              <textarea
+                formControlName="commandArgs"
+                rows="4"
+                class="mono"
+                placeholder='{ "voltage_num": "${value}" }'></textarea>
+            </ya-field>
+          }
+          @case ("SCRIPT") {
+            @if (runnerOptions().length > 1) {
+              <ya-field label="Runner">
+                <ya-select
+                  formControlName="runner"
+                  [options]="runnerOptions()"
+                  (change)="loadScripts()" />
+              </ya-field>
+            }
+            <ya-field label="Script" hint="(required)">
+              <ya-file-picker formControlName="script" [scripts]="scripts()" />
+            </ya-field>
+            <ya-field label="Script arguments">
+              <input type="text" formControlName="scriptArgs" />
+            </ya-field>
+          }
+          @case ("STACK") {
+            <ya-field label="Bucket" hint="(required)">
+              <input type="text" formControlName="bucket" />
+            </ya-field>
+            <ya-field label="Stack" hint="(required)">
+              <input type="text" formControlName="stack" placeholder="path/to/stack.ycs" />
+            </ya-field>
+          }
+          @case ("MANUAL") {
+            <ya-field label="Activity name" hint="(required)">
+              <input type="text" formControlName="manualName" />
+            </ya-field>
+          }
+        }
+
+        <ya-field [label]="isBuiltinType() ? 'Other arguments (JSON)' : 'Arguments (JSON)'">
+          <ya-help dialogTitle="Activity arguments">
+            <p>
+              Arguments as for starting the activity directly. String arguments may contain
+              placeholders such as
+              <code>$&#123;alarm.subject&#125;</code>
+              ,
+              <code>$&#123;value&#125;</code>
+              or
+              <code>$&#123;param:/qualified/name&#125;</code>
+              , resolved when the trigger fires.
+            </p>
+          </ya-help>
+          <textarea formControlName="json" rows="4" class="mono" placeholder="{}"></textarea>
+        </ya-field>
+      </ng-container>
+
+      <h3>Advanced</h3>
+
+      <ya-field label="Processor">
+        <input type="text" formControlName="processor" placeholder="realtime" />
+        <span class="hint">Realtime processor that is monitored</span>
+      </ya-field>
+
+      <ya-field label="Run as">
+        <input type="text" formControlName="runAs" />
+        <span class="hint">
+          User whose privileges start the activity. Default: the user who saves the trigger. Only
+          superusers can set another user.
+        </span>
+      </ya-field>
+    </form>
+
+    @if (saveError(); as saveError) {
+      <ya-warning-message>{{ saveError }}</ya-warning-message>
+    }
+
+    @if (!readOnly()) {
+      <p>&nbsp;</p>
+      <ya-toolbar appearance="bottom">
+        <ya-button routerLink="/activities/triggers" [queryParams]="{ c: yamcs.context }">
+          Cancel
+        </ya-button>
+        <ya-button appearance="primary" (click)="save()" [disabled]="!form.valid">
+          {{ existing() ? "SAVE" : "CREATE" }}
+        </ya-button>
+      </ya-toolbar>
+    }
+
+    <h3>Test</h3>
+    @if (existing()) {
+      <p class="hint">
+        Resolves the activity arguments of the saved trigger against a sample context, without
+        starting anything.
+      </p>
+      <ya-field label="Sample context (JSON)">
+        <textarea [formControl]="testContext" rows="8" class="mono"></textarea>
+      </ya-field>
+      <ya-button (click)="test()" icon="science">Test</ya-button>
+
+      @if (testResult(); as result) {
+        @if (result.error) {
+          <ya-warning-message>{{ result.error }}</ya-warning-message>
+        } @else if (result.activity; as activity) {
+          <div class="test-result">
+            <dl class="dl-horizontal no-lead">
+              <dt>Type</dt>
+              <dd>{{ activity.type }}</dd>
+              @if (activity.label) {
+                <dt>Label</dt>
+                <dd>{{ activity.label }}</dd>
+              }
+              @if (activity.description) {
+                <dt>Description</dt>
+                <dd>{{ activity.description }}</dd>
+              }
+              <dt>Arguments</dt>
+              <dd></dd>
+              @for (kv of activity.args | keyvalue; track kv.key) {
+                <dt>&nbsp;&nbsp;{{ kv.key }}</dt>
+                <dd>{{ kv.value | printObj }}</dd>
+              }
+            </dl>
+          </div>
+        }
+      }
+    } @else {
+      <p class="hint">Save the trigger to test it.</p>
+    }
+  </ya-form-content>
+</ya-instance-page>

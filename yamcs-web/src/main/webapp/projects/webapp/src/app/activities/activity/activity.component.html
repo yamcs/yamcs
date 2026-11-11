@@ -35,6 +35,17 @@
         <br />
         <span class="subtitle">Started {{ activity.start | datetime }}</span>
         <br />
+        @if (activity.origin?.type === "TRIGGER") {
+          <span class="subtitle">
+            Started by trigger
+            <a
+              [routerLink]="['/activities/triggers', activity.origin!.ref]"
+              [queryParams]="{ c: yamcs.context }">
+              {{ activity.origin!.name || activity.origin!.ref }}
+            </a>
+          </span>
+          <br />
+        }
       </div>
       <div class="activity-header-right">
         <app-activity-status [activity]="activity" />

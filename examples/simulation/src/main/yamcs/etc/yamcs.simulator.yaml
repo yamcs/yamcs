@@ -21,6 +21,7 @@ services:
       type: "realtime" 
   - class: org.yamcs.archive.CommandHistoryRecorder
   - class: org.yamcs.timeline.TimelineService
+  - class: org.yamcs.activities.triggers.TriggerService
   - class: org.yamcs.plists.ParameterListService
   - class: org.yamcs.parameterarchive.ParameterArchive
   - class: org.yamcs.simulator.SimulatorCommander

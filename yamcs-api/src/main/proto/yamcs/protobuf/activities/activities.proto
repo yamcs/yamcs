@@ -69,6 +69,21 @@ message ActivityInfo {
 
   // If set, the activity is stopped, but failed
   optional string failureReason = 11;
+
+  // What caused this activity to start. Not set for activities
+  // started directly by a user.
+  optional ActivityOrigin origin = 13;
+}
+
+message ActivityOrigin {
+  // Kind of origin, for example ``TRIGGER``
+  optional string type = 1;
+
+  // Reference to the originating object, for example a trigger identifier
+  optional string ref = 2;
+
+  // Human-readable name of the originating object, for example a trigger name
+  optional string name = 3;
 }
 
 message ExecutorInfo {

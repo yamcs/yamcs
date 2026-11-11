@@ -1,0 +1,14 @@
+.mat-mdc-tab-link {
+  height: 36px;
+  min-width: 0;
+  font-size: 13px;
+}
+
+.pending {
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 8px;
+  background-color: #ffc107;
+  color: #000;
+  font-size: 11px;
+}

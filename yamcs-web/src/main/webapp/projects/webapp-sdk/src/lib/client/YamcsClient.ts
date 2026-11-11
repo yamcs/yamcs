@@ -25,6 +25,19 @@ import {
   SubscribeGlobalActivityStatusRequest,
 } from './types/activities';
 import {
+  GetTriggerFiringsOptions,
+  ListTriggerFiringsResponse,
+  ListTriggersResponse,
+  SaveTriggerRequest,
+  SubscribeTriggerFiringsRequest,
+  TestTriggerRequest,
+  TestTriggerResponse,
+  Trigger,
+  TriggerFiring,
+  TriggerFiringSubscription,
+  TriggerServiceStatus,
+} from './types/triggers';
+import {
   AcknowledgeAlarmOptions,
   Alarm,
   AlarmSubscription,
@@ -1106,6 +1119,17 @@ export default class YamcsClient implements HttpHandler {
   ): ActivityLogSubscription {
     return this.webSocketClient!.createSubscription(
       'activity-log',
+      options,
+      observer,
+    );
+  }
+
+  createTriggerFiringSubscription(
+    options: SubscribeTriggerFiringsRequest,
+    observer: (firing: TriggerFiring) => void,
+  ): TriggerFiringSubscription {
+    return this.webSocketClient!.createSubscription(
+      'trigger-firings',
       options,
       observer,
     );
@@ -2226,6 +2250,114 @@ export default class YamcsClient implements HttpHandler {
     const url = `${this.apiUrl}/activities/${instance}/scripts${qs}`;
     const response = await this.doFetch(url, {});
     return (await response.json()) as ActivityScriptsPage;
+  }
+
+  async getTriggers(instance: string) {
+    const url = `${this.apiUrl}/activities/${instance}/triggers`;
+    const response = await this.doFetch(url);
+    const wrapper = (await response.json()) as ListTriggersResponse;
+    return wrapper.triggers || [];
+  }
+
+  async getTrigger(instance: string, trigger: string) {
+    const url = `${this.apiUrl}/activities/${instance}/triggers/${encodeURIComponent(trigger)}`;
+    const response = await this.doFetch(url);
+    return (await response.json()) as Trigger;
+  }
+
+  async createTrigger(instance: string, options: SaveTriggerRequest) {
+    const url = `${this.apiUrl}/activities/${instance}/triggers`;
+    const body = JSON.stringify(options);
+    const response = await this.doFetch(url, {
+      body,
+      method: 'POST',
+    });
+    return (await response.json()) as Trigger;
+  }
+
+  async updateTrigger(
+    instance: string,
+    id: string,
+    options: SaveTriggerRequest,
+  ) {
+    const url = `${this.apiUrl}/activities/${instance}/triggers/${id}`;
+    const body = JSON.stringify(options);
+    const response = await this.doFetch(url, {
+      body,
+      method: 'PUT',
+    });
+    return (await response.json()) as Trigger;
+  }
+
+  async deleteTrigger(instance: string, trigger: string) {
+    const url = `${this.apiUrl}/activities/${instance}/triggers/${encodeURIComponent(trigger)}`;
+    return await this.doFetch(url, { method: 'DELETE' });
+  }
+
+  async enableTrigger(instance: string, trigger: string) {
+    const url = `${this.apiUrl}/activities/${instance}/triggers/${encodeURIComponent(trigger)}:enable`;
+    const response = await this.doFetch(url, { method: 'POST' });
+    return (await response.json()) as Trigger;
+  }
+
+  async disableTrigger(instance: string, trigger: string) {
+    const url = `${this.apiUrl}/activities/${instance}/triggers/${encodeURIComponent(trigger)}:disable`;
+    const response = await this.doFetch(url, { method: 'POST' });
+    return (await response.json()) as Trigger;
+  }
+
+  async enableAllTriggers(instance: string) {
+    const url = `${this.apiUrl}/activities/${instance}/triggers:enableAll`;
+    const response = await this.doFetch(url, { method: 'POST' });
+    return (await response.json()) as TriggerServiceStatus;
+  }
+
+  async disableAllTriggers(instance: string) {
+    const url = `${this.apiUrl}/activities/${instance}/triggers:disableAll`;
+    const response = await this.doFetch(url, { method: 'POST' });
+    return (await response.json()) as TriggerServiceStatus;
+  }
+
+  async getTriggerServiceStatus(instance: string) {
+    const url = `${this.apiUrl}/activities/${instance}/trigger-status`;
+    const response = await this.doFetch(url);
+    return (await response.json()) as TriggerServiceStatus;
+  }
+
+  async testTrigger(
+    instance: string,
+    trigger: string,
+    options: TestTriggerRequest = {},
+  ) {
+    const url = `${this.apiUrl}/activities/${instance}/triggers/${encodeURIComponent(trigger)}:test`;
+    const body = JSON.stringify(options);
+    const response = await this.doFetch(url, {
+      body,
+      method: 'POST',
+    });
+    return (await response.json()) as TestTriggerResponse;
+  }
+
+  async getTriggerFirings(
+    instance: string,
+    options: GetTriggerFiringsOptions = {},
+  ) {
+    const url = `${this.apiUrl}/activities/${instance}/trigger-firings`;
+    const response = await this.doFetch(url + this.queryString(options));
+    const wrapper = (await response.json()) as ListTriggerFiringsResponse;
+    return wrapper.firings || [];
+  }
+
+  async confirmTriggerFiring(instance: string, firing: string) {
+    const url = `${this.apiUrl}/activities/${instance}/trigger-firings/${firing}:confirm`;
+    const response = await this.doFetch(url, { method: 'POST' });
+    return (await response.json()) as TriggerFiring;
+  }
+
+  async rejectTriggerFiring(instance: string, firing: string) {
+    const url = `${this.apiUrl}/activities/${instance}/trigger-firings/${firing}:reject`;
+    const response = await this.doFetch(url, { method: 'POST' });
+    return (await response.json()) as TriggerFiring;
   }
 
   async getAlgorithms(instance: string, options: GetAlgorithmsOptions = {}) {

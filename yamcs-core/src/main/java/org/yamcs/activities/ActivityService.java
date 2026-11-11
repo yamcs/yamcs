@@ -7,13 +7,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
@@ -53,8 +52,8 @@ public class ActivityService {
 
     private Map<String, ActivityExecutor> executors = new HashMap<>();
     private ConcurrentMap<UUID, OngoingActivity> ongoingActivities = new ConcurrentHashMap<>();
-    private Set<ActivityListener> listeners = new CopyOnWriteArraySet<>();
-    private Set<ActivityLogListener> logListeners = new CopyOnWriteArraySet<>();
+    private List<ActivityListener> listeners = new CopyOnWriteArrayList<>();
+    private List<ActivityLogListener> logListeners = new CopyOnWriteArrayList<>();
 
     private ActivityDb activityDb;
     private ActivityLogDb activityLogDb;

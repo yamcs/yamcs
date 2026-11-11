@@ -18,6 +18,7 @@ import org.yamcs.InstanceMetadata;
 import org.yamcs.Processor;
 import org.yamcs.YamcsServer;
 import org.yamcs.YamcsServerInstance;
+import org.yamcs.activities.triggers.TriggerService;
 import org.yamcs.alarms.AlarmMirrorService;
 import org.yamcs.api.Observer;
 import org.yamcs.archive.CcsdsTmIndex;
@@ -476,6 +477,9 @@ public class InstancesApi extends AbstractInstancesApi<Context> {
         if (!ysi.getServicesWithConfig(TimelineService.class).isEmpty()) {
             instanceb.addCapabilities("timeline");
             instanceb.addCapabilities("activities");
+        }
+        if (!ysi.getServicesWithConfig(TriggerService.class).isEmpty()) {
+            instanceb.addCapabilities("activity-triggers");
         }
         if (!ysi.getServicesWithConfig(ParameterListService.class).isEmpty()) {
             instanceb.addCapabilities("parameter-lists");

@@ -15,6 +15,7 @@ services:
       type: "realtime"
   - class: org.yamcs.archive.CommandHistoryRecorder
   - class: org.yamcs.timeline.TimelineService
+  - class: org.yamcs.activities.triggers.TriggerService
   - class: org.yamcs.parameter.ParameterRetrievalService
     args:
       parameterCache:

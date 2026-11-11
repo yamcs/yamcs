@@ -15,6 +15,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.yamcs.InitException;
 import org.yamcs.logging.Log;
+import org.yamcs.protobuf.activities.ActivityOrigin;
 import org.yamcs.utils.parser.ParseException;
 import org.yamcs.yarch.DataType;
 import org.yamcs.yarch.SqlBuilder;
@@ -44,6 +45,7 @@ public class ActivityDb {
     public static final String CNAME_STOPPED_BY = "stopped_by";
     public static final String CNAME_FAILURE_REASON = "failure_reason";
     public static final String CNAME_LABEL = "label";
+    public static final String CNAME_ORIGIN = "origin";
     static {
         TDEF.addColumn(CNAME_START, DataType.TIMESTAMP);
         TDEF.addColumn(CNAME_SEQ, DataType.INT);
@@ -57,6 +59,7 @@ public class ActivityDb {
         TDEF.addColumn(CNAME_FAILURE_REASON, DataType.STRING);
         TDEF.addColumn(CNAME_STOPPED_BY, DataType.STRING);
         TDEF.addColumn(CNAME_LABEL, DataType.STRING);
+        TDEF.addColumn(CNAME_ORIGIN, DataType.protobuf(ActivityOrigin.class));
     }
 
     private Log log;
