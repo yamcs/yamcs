@@ -15,6 +15,22 @@ export interface Activity {
   stop?: string;
   stoppedBy?: string;
   failureReason?: string;
+  origin?: ActivityOrigin;
+}
+
+export interface ActivityOrigin {
+  /**
+   * Kind of origin, for example TRIGGER
+   */
+  type: string;
+  /**
+   * Reference to the originating object, for example a trigger identifier
+   */
+  ref?: string;
+  /**
+   * Human-readable name of the originating object
+   */
+  name?: string;
 }
 
 export interface ActivitiesPage {
