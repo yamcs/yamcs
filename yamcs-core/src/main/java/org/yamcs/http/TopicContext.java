@@ -41,15 +41,19 @@ public class TopicContext extends Context {
         listeners.add(listener);
     }
 
-    public synchronized boolean cancel(Throwable cause) {
-        if (!cancelled) {
+    public boolean cancel(Throwable cause) {
+        synchronized (this) {
+            if (cancelled) {
+                return false;
+            }
             cancelled = true;
             cancellationCause = cause;
-            listeners.forEach(l -> l.onCancel(cause));
-            return true;
         }
 
-        return false;
+        // Notify outside the lock: listeners call into subscription managers that may be
+        // concurrently delivering to this context.
+        listeners.forEach(l -> l.onCancel(cause));
+        return true;
     }
 
     public Throwable getCancellationCause() {
