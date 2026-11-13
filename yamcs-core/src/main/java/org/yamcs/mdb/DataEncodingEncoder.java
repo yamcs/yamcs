@@ -94,23 +94,33 @@ public class DataEncodingEncoder {
             throw new IllegalArgumentException("Cannot encode values of types " + rawValue.getType() + " to integer");
         }
         int sizeInBits = ide.getSizeInBits();
+        v = toEncodedBits(ide.getEncoding(), v, sizeInBits);
+        pcontext.bitbuf.putBits(v, sizeInBits);
+    }
 
-        switch (ide.getEncoding()) {
+    /**
+     * Converts a signed (or unsigned) long value to the bit pattern used by the given integer encoding on
+     * {@code sizeInBits} bits. The result contains only the lower {@code sizeInBits} bits.
+     */
+    static long toEncodedBits(Encoding encoding, long v, int sizeInBits) {
+        long mask = sizeInBits >= 64 ? -1L : (1L << sizeInBits) - 1;
+        switch (encoding) {
         case TWOS_COMPLEMENT:
-            v = (v << (64 - sizeInBits) >>> (64 - sizeInBits));
-            break;
         case UNSIGNED:
-            break;
+            return v & mask;
         case SIGN_MAGNITUDE:
             if (v < 0) {
-                v = -v;
-                v &= (1 << (64 - sizeInBits));
+                long signBit = 1L << (sizeInBits - 1);
+                return ((-v) & (signBit - 1)) | signBit;
+            } else {
+                return v & mask;
             }
-            break;
+        case ONES_COMPLEMENT:
+            // in ones complement -x is represented as ~x, which in twos complement is -x-1
+            return (v < 0 ? v - 1 : v) & mask;
         default:
-            throw new UnsupportedOperationException("encoding " + ide.getEncoding() + " not implemented");
+            throw new UnsupportedOperationException("encoding " + encoding + " not implemented");
         }
-        pcontext.bitbuf.putBits(v, sizeInBits);
     }
 
     private void encodeRawString(StringDataEncoding sde, Value rawValue) {

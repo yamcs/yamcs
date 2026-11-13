@@ -23,13 +23,21 @@ public class DataEncodingUtils {
     /**
      * converts longValue to a raw Value suitable for data encoding. It truncates (remove the most significants bits)
      * the value to fit.
+     * <p>
+     * For signed encodings (twos complement, ones complement, sign magnitude) the truncated value is sign extended
+     * such that negative values are preserved; the actual bit representation is computed by the encoder.
      */
     static public Value getRawIntegerValue(IntegerDataEncoding ide, long longValue) {
         int sizeInBits = ide.getSizeInBits();
 
-        if (sizeInBits > 0) {// sizeInBits = -1 used for integers with string encoding
+        if (sizeInBits > 0 && sizeInBits < 64) {// sizeInBits = -1 used for integers with string encoding
             // limit the value to the number of defined bits
-            longValue = longValue & (-1l >>> (64 - sizeInBits));
+            int n = 64 - sizeInBits;
+            if (ide.getEncoding() == Encoding.UNSIGNED) {
+                longValue = (longValue << n) >>> n;
+            } else {
+                longValue = (longValue << n) >> n;
+            }
         }
 
         if (sizeInBits > 0 && sizeInBits <= 32) {
