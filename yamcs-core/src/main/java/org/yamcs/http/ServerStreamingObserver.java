@@ -200,7 +200,7 @@ public class ServerStreamingObserver implements Observer<Message> {
         // Set Content-Disposition header so that supporting clients will treat
         // response as a downloadable file
         if (filename != null) {
-            response.headers().set(CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
+            response.headers().set(CONTENT_DISPOSITION, HttpUtils.attachmentDisposition(filename));
         }
         ctx.nettyContext.channel().writeAndFlush(response).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
     }

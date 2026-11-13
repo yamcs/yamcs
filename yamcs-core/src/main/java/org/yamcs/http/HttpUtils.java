@@ -1,5 +1,6 @@
 package org.yamcs.http;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
 import io.netty.buffer.Unpooled;
@@ -76,6 +77,32 @@ public class HttpUtils {
             }
         }
         return sb.toString();
+    }
+
+    /**
+     * Returns a {@code Content-Disposition} header value that marks the response as a download with the given
+     * filename. The filename is included both as an ASCII fallback and as an RFC 5987 encoded parameter.
+     */
+    public static String attachmentDisposition(String filename) {
+        var fallback = new StringBuilder(filename.length());
+        for (int i = 0; i < filename.length(); i++) {
+            char c = filename.charAt(i);
+            fallback.append(c >= 0x20 && c < 0x7f && c != '"' && c != '\\' ? c : '_');
+        }
+
+        var encoded = new StringBuilder();
+        for (byte b : filename.getBytes(StandardCharsets.UTF_8)) {
+            int c = b & 0xff;
+            if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')
+                    || "!#$&+-.^_`|~".indexOf(c) != -1) {
+                encoded.append((char) c);
+            } else {
+                encoded.append('%').append(Character.toUpperCase(Character.forDigit(c >> 4, 16)))
+                        .append(Character.toUpperCase(Character.forDigit(c & 0xf, 16)));
+            }
+        }
+
+        return "attachment; filename=\"" + fallback + "\"; filename*=UTF-8''" + encoded;
     }
 
     private static String removeQueryString(String uri) {

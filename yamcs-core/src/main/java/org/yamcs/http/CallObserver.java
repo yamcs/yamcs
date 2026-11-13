@@ -62,7 +62,7 @@ public class CallObserver implements Observer<Message> {
             httpResponse.headers().set(HttpHeaderNames.CONTENT_LENGTH, buf.readableBytes());
             if (responseBody.hasFilename()) {
                 httpResponse.headers().set(HttpHeaderNames.CONTENT_DISPOSITION,
-                        "attachment; filename=\"" + responseBody.getFilename() + "\"");
+                        HttpUtils.attachmentDisposition(responseBody.getFilename()));
             }
             ctx.addTransferredSize(buf.readableBytes());
             completeRequest(httpResponse);

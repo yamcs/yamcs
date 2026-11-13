@@ -180,8 +180,10 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
                                     ? props.contentType()
                                     : "application/octet-stream";
 
+                            String filename = objName.substring(objName.lastIndexOf('/') + 1);
                             HttpBody body = HttpBody.newBuilder()
                                     .setContentType(contentType)
+                                    .setFilename(filename.isEmpty() ? "download" : filename)
                                     .setData(ByteString.copyFrom(objData))
                                     .build();
 
