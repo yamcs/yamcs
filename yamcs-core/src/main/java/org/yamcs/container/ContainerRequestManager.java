@@ -89,8 +89,9 @@ public class ContainerRequestManager implements ContainerListener {
         allSubscribers.remove(subscriber);
     }
 
+    // Not synchronized: consumers may unsubscribe from another thread while being called
     @Override
-    public synchronized void update(ContainerProcessingResult cpr) {
+    public void update(ContainerProcessingResult cpr) {
         var results = cpr.getContainerResult();
 
         log.trace("Getting update of {} container(s)", results.size());
