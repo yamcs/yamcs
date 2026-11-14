@@ -23,11 +23,11 @@ export interface Value {
   doubleValue?: number;
   floatValue?: number;
   sint32Value?: number;
-  sint64Value?: number;
+  sint64Value?: string;
   stringValue?: string;
   timestampValue?: number;
   uint32Value?: number;
-  uint64Value?: number;
+  uint64Value?: string;
 }
 
 export interface AggregateValue {

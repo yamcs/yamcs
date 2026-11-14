@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -205,39 +204,6 @@ public class Directory {
         db.deleteGroup(group);
     }
 
-    /**
-     * Creates a new service account. The service account is assumed to represent one application only, for which
-     * automatically generated credentials are returned. These may be used to identify as that application, for example
-     * to generate access tokens.
-     */
-    public synchronized ApplicationCredentials addServiceAccount(ServiceAccount service) throws IOException {
-        String serviceName = service.getName();
-        if (db.findAccountByName(serviceName) != null) {
-            throw new IllegalArgumentException("Name '" + serviceName + "' is already taken");
-        }
-        int id = accountIdSequence.incrementAndGet();
-        service.setId(id);
-
-        String applicationId = UUID.randomUUID().toString();
-        String applicationSecret = CryptoUtils.generateRandomPassword(10);
-        String applicationHash = hasher.createHash(applicationSecret.toCharArray());
-        service.setApplicationId(applicationId);
-        service.setApplicationHash(applicationHash);
-
-        log.info("Saving new service account {}", service);
-        db.addAccount(service);
-
-        return new ApplicationCredentials(applicationId, applicationSecret /* not the hash */);
-    }
-
-    public synchronized void deleteServiceAccount(ServiceAccount service) {
-        db.deleteAccount(service);
-    }
-
-    public synchronized void updateApplicationProperties(ServiceAccount service) {
-        db.updateAccount(service);
-    }
-
     private void verifyDirectoryUser(User user) {
         if (user.isBuiltIn()) {
             throw new IllegalArgumentException("Not a directory user");
@@ -287,25 +253,6 @@ public class Directory {
         }
     }
 
-    /**
-     * Validates the provided password against the stored password hash of an application.
-     * <p>
-     * Currently this is only functional for service accounts (which map to one and only one application), but some day
-     * we may also want to support user applications.
-     */
-    public boolean validateApplicationPassword(String applicationId, char[] password) {
-        var account = getAccountForApplication(applicationId);
-        if (account == null) {
-            throw new IllegalArgumentException("No such application");
-        }
-
-        if (account instanceof ServiceAccount) {
-            return hasher.validatePassword(password, ((ServiceAccount) account).getApplicationHash());
-        } else {
-            throw new UnsupportedOperationException();
-        }
-    }
-
     public void changePassword(User user, char[] password) {
         if (user.isExternallyManaged()) {
             throw new IllegalArgumentException("The identity of this user is not managed by Yamcs");
@@ -315,11 +262,6 @@ public class Directory {
             user.setHash(hash);
             db.updateAccount(user);
         }
-    }
-
-    public Account getAccount(String name) {
-        User user = getUser(name);
-        return user != null ? user : getServiceAccount(name);
     }
 
     public User getUser(long id) {
@@ -347,10 +289,6 @@ public class Directory {
                 .collect(Collectors.toList());
     }
 
-    public Account getAccountForApplication(String applicationId) {
-        return db.findServiceAccountForApplicationId(applicationId);
-    }
-
     public Group getGroup(String name) {
         return db.findGroupByName(name);
     }
@@ -362,20 +300,6 @@ public class Directory {
     public List<Group> getGroups(User user) {
         return getGroups().stream()
                 .filter(g -> g.hasMember(user.getId()))
-                .collect(Collectors.toList());
-    }
-
-    public ServiceAccount getServiceAccount(String name) {
-        var account = db.findAccountByName(name);
-        return (account instanceof ServiceAccount)
-                ? (ServiceAccount) account
-                : null;
-    }
-
-    public List<ServiceAccount> getServiceAccounts() {
-        return db.listAccounts().stream()
-                .filter(account -> account instanceof ServiceAccount)
-                .map(account -> (ServiceAccount) account)
                 .collect(Collectors.toList());
     }
 

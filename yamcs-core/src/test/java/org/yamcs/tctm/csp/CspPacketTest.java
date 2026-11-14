@@ -26,6 +26,15 @@ public class CspPacketTest {
     }
 
     @Test
+    public void testSetCrcFlag() {
+        var bytes = new byte[] { 0, 0, 0, (byte) 0x0A };
+        CspPacket.setCrcFlag(bytes, true);
+        assertEquals((byte) 0x0B, bytes[3]);
+        CspPacket.setCrcFlag(bytes, false);
+        assertEquals((byte) 0x0A, bytes[3]);
+    }
+
+    @Test
     public void testFieldsLE() {
         var bytes = new byte[] { (byte) 0x89, (byte) 0x88, (byte) 0x0D, (byte) 0x00 };
 

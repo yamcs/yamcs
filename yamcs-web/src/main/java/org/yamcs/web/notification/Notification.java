@@ -4,7 +4,9 @@ import static java.util.Objects.requireNonNull;
 
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 
+import org.yamcs.security.User;
 import org.yamcs.web.api.NotificationInfo;
 import org.yamcs.web.api.NotificationType;
 
@@ -25,36 +27,48 @@ public class Notification implements Comparable<Notification> {
     private String description;
     private String url;
     private NotificationType type;
+    // Determines which users may see this notification
+    private final Predicate<User> audience;
 
-    private Notification(String instance, String tag, NotificationType type, String title) {
+    private Notification(String instance, String tag, NotificationType type, String title,
+            Predicate<User> audience) {
         this.instance = requireNonNull(instance);
         this.tag = requireNonNull(tag);
         this.type = requireNonNull(type);
         this.title = requireNonNull(title);
+        this.audience = requireNonNull(audience);
 
         // Not mission time. Notifications are global.
         timestamp = Instant.now();
         seq = SEQ.incrementAndGet();
     }
 
-    public static Notification createInfo(String instance, String tag, String title) {
-        return new Notification(instance, tag, NotificationType.INFO, title);
+    public static Notification createInfo(String instance, String tag, String title,
+            Predicate<User> audience) {
+        return new Notification(instance, tag, NotificationType.INFO, title, audience);
     }
 
-    public static Notification createError(String instance, String tag, String title) {
-        return new Notification(instance, tag, NotificationType.ERROR, title);
+    public static Notification createError(String instance, String tag, String title,
+            Predicate<User> audience) {
+        return new Notification(instance, tag, NotificationType.ERROR, title, audience);
     }
 
-    public static Notification createInProgress(String instance, String tag, String title) {
-        return new Notification(instance, tag, NotificationType.IN_PROGRESS, title);
+    public static Notification createInProgress(String instance, String tag, String title,
+            Predicate<User> audience) {
+        return new Notification(instance, tag, NotificationType.IN_PROGRESS, title, audience);
     }
 
-    public static Notification createSuccess(String instance, String tag, String title) {
-        return new Notification(instance, tag, NotificationType.SUCCESS, title);
+    public static Notification createSuccess(String instance, String tag, String title,
+            Predicate<User> audience) {
+        return new Notification(instance, tag, NotificationType.SUCCESS, title, audience);
     }
 
     public String getTag() {
         return tag;
+    }
+
+    public boolean isVisibleTo(User user) {
+        return audience.test(user);
     }
 
     public void setDescription(String description) {

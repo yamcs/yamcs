@@ -68,8 +68,12 @@ WriteEvents
 WriteTables
     Allows to manually add records to tables.
 
+    Tables of the ``_global`` database are only accessible to superusers.
+
 ReadTables
     Allows to read tables.
+
+    Tables of the ``_global`` database are only accessible to superusers.
 
 ReadTimeline
     Allows to view the timeline.
@@ -79,6 +83,10 @@ ControlTimeline
 
 ControlAccess
     Allows to control access (users, groups, roles, ...)
+
+    This privilege is equivalent to superuser. A user with ControlAccess can grant the superuser attribute to any
+    account, assign any role (including to themselves), and change the password of any user. Only grant it to
+    trusted administrators.
 
 ReadSystemInfo
     Allows to view system information (:abbr:`OS ( Operating System)`, :abbr:`JVM (Java Virtual Machine)`, threads, replication, ...)

@@ -27,7 +27,6 @@ import org.yamcs.protobuf.AuthInfo;
 import org.yamcs.protobuf.LogoutResponse;
 import org.yamcs.protobuf.OpenIDConnectInfo;
 import org.yamcs.protobuf.TokenResponse;
-import org.yamcs.security.ApplicationCredentials;
 import org.yamcs.security.AuthModule;
 import org.yamcs.security.AuthenticationException;
 import org.yamcs.security.AuthenticationInfo;
@@ -309,9 +308,6 @@ public class AuthHandler extends BodyHandler {
         case "refresh_token":
             handleTokenRequestWithRefreshToken(ctx);
             break;
-        case "client_credentials":
-            handleTokenRequestWithClientCredentials(ctx);
-            break;
         default:
             throw new BadRequestException("Unsupported grant_type '" + grantType + "'");
         }
@@ -441,42 +437,6 @@ public class AuthHandler extends BodyHandler {
                 throw new UnauthorizedException("Identity became invalid");
             }
             sendNewAccessToken(ctx, result.session.getAuthenticationInfo(), result.refreshToken);
-        }
-    }
-
-    private void handleTokenRequestWithClientCredentials(HandlerContext ctx) {
-        String clientId = null;
-        String clientSecret = null;
-
-        String[] basicAuth = ctx.getBasicCredentials();
-        if (basicAuth != null) {
-            clientId = basicAuth[0];
-            clientSecret = basicAuth[1];
-        } else {
-            clientId = ctx.getFormParameter("client_id");
-            clientSecret = ctx.getFormParameter("client_secret");
-        }
-        if (clientId == null || clientSecret == null) {
-            throw new BadRequestException("Missing client id or secret");
-        }
-
-        ApplicationCredentials token = new ApplicationCredentials(clientId, clientSecret);
-        token.setBecome(ctx.getFormParameter("become"));
-
-        try {
-            AuthenticationInfo authenticationInfo = getSecurityStore().login(token).get();
-            sendNewAccessToken(ctx, authenticationInfo, null /* no refresh needed, client secret is sufficient */);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        } catch (ExecutionException e) {
-            Throwable cause = e.getCause();
-            if (cause instanceof AuthenticationException || cause instanceof AuthorizationException) {
-                log.info("Denying access to '" + clientId + "': " + cause.getMessage());
-                throw new UnauthorizedException();
-            } else {
-                log.error("Unexpected error while attempting user login", cause);
-                throw new InternalServerErrorException(cause);
-            }
         }
     }
 

@@ -167,6 +167,7 @@ public class ReferenceFinder {
                         return new FoundReference(p, aggregateMemberPath);
                     }
                 }
+                ss = null;
                 break;
             }
 

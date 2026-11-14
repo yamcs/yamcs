@@ -55,7 +55,11 @@ public class LosRecorder {
     }
 
     public String[] listRecordings() {
-        return Arrays.asList(dataDir.listFiles()).stream()
+        File[] files = dataDir.listFiles();
+        if (files == null) {
+            return new String[0];
+        }
+        return Arrays.stream(files)
                 .map(File::getName)
                 .toArray(String[]::new);
     }

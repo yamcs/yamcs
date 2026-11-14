@@ -140,36 +140,6 @@ service IamApi {
     };
   }
 
-  // List service accounts
-  rpc ListServiceAccounts(google.protobuf.Empty) returns (ListServiceAccountsResponse) {
-    option (yamcs.api.route) = {
-      get: "/api/service-accounts"
-    };
-  }
-  
-  // Get a service account
-  rpc GetServiceAccount(GetServiceAccountRequest) returns (ServiceAccountInfo) {
-    option (yamcs.api.route) = {
-      get: "/api/service-accounts/{name}"
-    };
-  }
-  
-  // Delete a service account
-  rpc DeleteServiceAccount(DeleteServiceAccountRequest) returns (google.protobuf.Empty) {
-    option (yamcs.api.route) = {
-      delete: "/api/service-accounts/{name}"
-      log: "Service account '{name}' deleted"
-    };
-  }
-  
-  // Create a service account
-  rpc CreateServiceAccount(CreateServiceAccountRequest) returns (CreateServiceAccountResponse) {
-    option (yamcs.api.route) = {
-      post: "/api/service-accounts"
-      body: "*"
-      log: "Service account '{name}' created"
-    };
-  }
 }
 
 message ListUsersResponse {
@@ -190,8 +160,8 @@ message CreateGroupRequest {
   // Usernames of users that should be added as member
   repeated string users = 3;
   
-  // Names of service accounts that should be added as member
-  repeated string serviceAccounts = 4;
+  reserved 4;
+  reserved "serviceAccounts";
 }
 
 message GetGroupRequest {
@@ -207,7 +177,8 @@ message DeleteGroupRequest {
 message UpdateGroupRequest {
   message MemberInfo {
     repeated string users = 1;
-    repeated string serviceAccounts = 2;
+    reserved 2;
+    reserved "serviceAccounts";
   }
   // Group name
   optional string name = 1;
@@ -220,32 +191,6 @@ message UpdateGroupRequest {
   
   // Group members
   optional MemberInfo memberInfo = 4;
-}
-
-message ListServiceAccountsResponse {
-  repeated ServiceAccountInfo serviceAccounts = 1;
-}
-
-message GetServiceAccountRequest {
-  // Service account name
-  optional string name  = 1;
-}
-
-message CreateServiceAccountRequest {
-  // Service account name
-  optional string name = 1;
-}
-
-message CreateServiceAccountResponse {
-  // Service account name
-  optional string name = 1;
-  optional string applicationId = 2;
-  optional string applicationSecret = 3;
-}
-
-message DeleteServiceAccountRequest {
-  // Service account name
-  optional string name = 1;
 }
 
 message GetUserRequest {
@@ -384,31 +329,8 @@ message GroupInfo {
   // Users that are member of this group
   repeated UserInfo users = 3;
   
-  // Service accounts that are member of this group
-  repeated ServiceAccountInfo serviceAccounts = 4;
-}
-
-message ServiceAccountInfo {
-  // Service account name
-  optional string name = 1;
-  
-  // Displayed name
-  optional string displayName = 2;
-  
-  // Whether the account may login
-  optional bool active = 3;
-  
-  // User that created this user account
-  optional UserInfo createdBy = 4;
-  
-  // When this user was created
-  optional google.protobuf.Timestamp creationTime = 5;
-  
-  // When this account was first activated
-  optional google.protobuf.Timestamp confirmationTime = 6;
-  
-  // When this account last logged in
-  optional google.protobuf.Timestamp lastLoginTime = 7;
+  reserved 4;
+  reserved "serviceAccounts";
 }
 
 message ObjectPrivilegeInfo {

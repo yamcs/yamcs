@@ -1,6 +1,7 @@
 package org.yamcs.yarch;
 
 import java.lang.reflect.Method;
+import java.util.regex.Pattern;
 
 import org.yamcs.ConfigurationException;
 
@@ -9,9 +10,16 @@ import com.google.protobuf.MessageLite;
 
 public class ProtobufDataType extends DataType {
 
-private final String className;
+    private static final Pattern CLASS_NAME_PATTERN = Pattern
+            .compile("[A-Za-z_$][A-Za-z0-9_$]*(\\.[A-Za-z_$][A-Za-z0-9_$]*)*");
+
+    private final String className;
+
     protected ProtobufDataType(String className) {
         super(_type.PROTOBUF, PROTOBUF_ID);
+        if (!CLASS_NAME_PATTERN.matcher(className).matches()) {
+            throw new IllegalArgumentException("Invalid protobuf class name '" + className + "'");
+        }
         this.className = className;
     }
     

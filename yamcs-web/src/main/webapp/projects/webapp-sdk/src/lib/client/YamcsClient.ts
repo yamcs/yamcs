@@ -201,8 +201,6 @@ import {
   ClearanceSubscription,
   CompactRocksDbDatabaseRequest,
   CreateGroupRequest,
-  CreateServiceAccountRequest,
-  CreateServiceAccountResponse,
   CreateUserRequest,
   Database,
   EditClearanceRequest,
@@ -223,7 +221,6 @@ import {
   ListDatabasesResponse,
   ListProcessorTypesResponse,
   ListRoutesResponse,
-  ListServiceAccountsResponse,
   ListThreadsResponse,
   ListTopicsResponse,
   LogoutResponse,
@@ -232,7 +229,6 @@ import {
   ResultSet,
   RoleInfo,
   Service,
-  ServiceAccount,
   SystemInfo,
   SystemInfoSubscription,
   ThreadInfo,
@@ -582,35 +578,6 @@ export default class YamcsClient implements HttpHandler {
   async stopService(instance: string, name: string) {
     return this.doFetch(`${this.apiUrl}/services/${instance}/${name}:stop`, {
       method: 'POST',
-    });
-  }
-
-  async getServiceAccounts() {
-    const url = `${this.apiUrl}/service-accounts`;
-    const response = await this.doFetch(url);
-    return (await response.json()) as ListServiceAccountsResponse;
-  }
-
-  async getServiceAccount(name: string) {
-    const url = `${this.apiUrl}/service-accounts/${name}`;
-    const response = await this.doFetch(url);
-    return (await response.json()) as ServiceAccount;
-  }
-
-  async createServiceAccount(options: CreateServiceAccountRequest) {
-    const body = JSON.stringify(options);
-    const url = `${this.apiUrl}/service-accounts`;
-    const response = await this.doFetch(url, {
-      body,
-      method: 'POST',
-    });
-    return (await response.json()) as CreateServiceAccountResponse;
-  }
-
-  async deleteServiceAccount(name: string) {
-    const url = `${this.apiUrl}/service-accounts/${name}`;
-    return await this.doFetch(url, {
-      method: 'DELETE',
     });
   }
 

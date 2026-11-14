@@ -180,8 +180,10 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
                                     ? props.contentType()
                                     : "application/octet-stream";
 
+                            String filename = objName.substring(objName.lastIndexOf('/') + 1);
                             HttpBody body = HttpBody.newBuilder()
                                     .setContentType(contentType)
+                                    .setFilename(filename.isEmpty() ? "download" : filename)
                                     .setData(ByteString.copyFrom(objData))
                                     .build();
 
@@ -403,6 +405,12 @@ public class BucketsApi extends AbstractBucketsApi<Context> {
         }
 
         Path path = Path.of(objName);
+        for (Path segment : path) {
+            var name = segment.toString();
+            if (name.equals(".") || name.equals("..")) {
+                return false;
+            }
+        }
         for (String role : user.getRoles()) {
             for (PathMatcher pattern : bucket.getAccessRules(type).getOrDefault(role, Collections.emptyList())) {
                 if (pattern.matches(path)) {

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.TimeUnit;
@@ -301,7 +302,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
             try {
                 UUID bandId = UUID.fromString(request.getBand());
                 var band = timelineService.getTimelineBandDb().getBand(bandId);
-                if (band == null) {
+                if (band == null || !isAccessible(ctx, band)) {
                     throw new NotFoundException("No such band");
                 }
                 source = band.getSource() != null ? band.getSource()
@@ -490,9 +491,12 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         band.setProperties(request.getPropertiesMap());
         band.setExtra(request.getExtraMap());
 
-        var bandExists = timelineBandDb.getBand(id) != null;
+        var existingBand = timelineBandDb.getBand(id);
+        if (existingBand != null && !isAccessible(ctx, existingBand)) {
+            throw new NotFoundException(MSG_BAND_NOT_FOUND(id.toString()));
+        }
         try {
-            if (bandExists) {
+            if (existingBand != null) {
                 band = timelineBandDb.updateBand(band);
             } else {
                 band = timelineBandDb.addBand(band);
@@ -508,7 +512,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         ctx.checkSystemPrivilege(SystemPrivilege.ReadTimeline);
         TimelineService timelineService = verifyService(request.getInstance());
         UUID uuid = verifyUuid(request.hasId(), request.getId());
-        observer.complete(verifyBand(timelineService, uuid).toProtobuf());
+        observer.complete(verifyBand(ctx, timelineService, uuid).toProtobuf());
     }
 
     @Override
@@ -548,6 +552,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         TimelineBandDb timelineBandDb = timelineService.getTimelineBandDb();
 
         UUID uuid = verifyUuid(request.hasId(), request.getId());
+        verifyBand(ctx, timelineService, uuid);
 
         org.yamcs.timeline.TimelineBand band;
         try {
@@ -588,7 +593,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
             } else {
                 view = timelineViewDb.addView(view);
             }
-            observer.complete(enrichView(timelineService, view));
+            observer.complete(enrichView(ctx, timelineService, view));
         } catch (InvalidRequestException e) {
             throw new BadRequestException(e);
         }
@@ -604,7 +609,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         if (view == null) {
             throw new NotFoundException(MSG_VIEW_NOT_FOUND(request.getId()));
         } else {
-            observer.complete(enrichView(timelineService, view));
+            observer.complete(enrichView(ctx, timelineService, view));
         }
     }
 
@@ -619,7 +624,7 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
 
             @Override
             public void next(org.yamcs.timeline.TimelineView view) {
-                views.add(enrichView(timelineService, view));
+                views.add(enrichView(ctx, timelineService, view));
             }
 
             @Override
@@ -659,13 +664,14 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
         }
     }
 
-    private TimelineView enrichView(TimelineService service, org.yamcs.timeline.TimelineView view) {
+    private static TimelineView enrichView(Context ctx, TimelineService service,
+            org.yamcs.timeline.TimelineView view) {
         TimelineBandDb bandDb = service.getTimelineBandDb();
         TimelineView.Builder b = TimelineView.newBuilder(view.toProtobuf());
         b.clearBands();
         for (UUID bandId : view.getBands()) {
             org.yamcs.timeline.TimelineBand enrichedBand = bandDb.getBand(bandId);
-            if (enrichedBand != null) {
+            if (enrichedBand != null && isAccessible(ctx, enrichedBand)) {
                 b.addBands(enrichedBand.toProtobuf());
             }
         }
@@ -809,12 +815,17 @@ public class TimelineApi extends AbstractTimelineApi<Context> {
 
     // NOTE: the checkSource is to warn users to set a source for the band because in older versions of Yamcs this was
     // not done. The check should disappear in the future.
-    private org.yamcs.timeline.TimelineBand verifyBand(TimelineService timelineService, UUID bandId) {
+    private static org.yamcs.timeline.TimelineBand verifyBand(Context ctx, TimelineService timelineService,
+            UUID bandId) {
         var band = timelineService.getTimelineBandDb().getBand(bandId);
-        if (band == null) {
+        if (band == null || !isAccessible(ctx, band)) {
             throw new NotFoundException(MSG_BAND_NOT_FOUND(bandId.toString()));
         }
         return band;
+    }
+
+    private static boolean isAccessible(Context ctx, org.yamcs.timeline.TimelineBand band) {
+        return band.isShared() || Objects.equals(band.getUsername(), ctx.user.getName());
     }
 
     private ItemProvider verifySource(TimelineService timelineService, String source) {

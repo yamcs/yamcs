@@ -58,7 +58,8 @@ public class JavaExprAlgorithmExecutionFactory implements AlgorithmExecutorFacto
     @Override
     public AlgorithmExecutor makeExecutor(CustomAlgorithm alg, AlgorithmExecutionContext execCtx)
             throws AlgorithmException {
-        String className = alg.getQualifiedName().replace("/", "_");
+        ScriptAlgorithmExecutorFactory.verifyVariableNames(alg);
+        String className = ScriptAlgorithmExecutorFactory.toIdentifier(alg.getQualifiedName());
 
         String code = generateClassCode(className, alg);
         try {

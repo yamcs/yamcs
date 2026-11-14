@@ -96,7 +96,7 @@ public class TableApi extends AbstractTableApi<Context> {
 
     @Override
     public void listStreams(Context ctx, ListStreamsRequest request, Observer<ListStreamsResponse> observer) {
-        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(request.getInstance());
+        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(ctx, request.getInstance());
 
         ListStreamsResponse.Builder responseb = ListStreamsResponse.newBuilder();
         List<Stream> streams = new ArrayList<>(ydb.getStreams());
@@ -115,7 +115,7 @@ public class TableApi extends AbstractTableApi<Context> {
     public void subscribeStreamStatistics(Context ctx, SubscribeStreamStatisticsRequest request,
             Observer<StreamEvent> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
-        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(request.getInstance());
+        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(ctx, request.getInstance());
 
         for (Stream stream : ydb.getStreams()) {
             observer.next(StreamEvent.newBuilder()
@@ -164,7 +164,7 @@ public class TableApi extends AbstractTableApi<Context> {
 
     @Override
     public void getStream(Context ctx, GetStreamRequest request, Observer<StreamInfo> observer) {
-        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(request.getInstance());
+        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(ctx, request.getInstance());
         Stream stream = verifyStream(ctx, ydb, request.getName());
 
         StreamInfo response = toStreamInfo(stream);
@@ -173,7 +173,7 @@ public class TableApi extends AbstractTableApi<Context> {
 
     @Override
     public void subscribeStream(Context ctx, SubscribeStreamRequest request, Observer<StreamData> observer) {
-        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(request.getInstance());
+        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(ctx, request.getInstance());
         Stream stream = verifyStream(ctx, ydb, request.getStream());
 
         StreamSubscriber listener = new StreamSubscriber() {
@@ -198,7 +198,7 @@ public class TableApi extends AbstractTableApi<Context> {
     public void listTables(Context ctx, ListTablesRequest request, Observer<ListTablesResponse> observer) {
         ctx.checkAnyOfSystemPrivileges(SystemPrivilege.ControlArchiving, SystemPrivilege.ReadTables);
 
-        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(request.getInstance());
+        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(ctx, request.getInstance());
 
         ListTablesResponse.Builder responseb = ListTablesResponse.newBuilder();
         List<TableDefinition> defs = new ArrayList<>(ydb.getTableDefinitions());
@@ -213,7 +213,7 @@ public class TableApi extends AbstractTableApi<Context> {
     public void getTable(Context ctx, GetTableRequest request, Observer<TableInfo> observer) {
         ctx.checkAnyOfSystemPrivileges(SystemPrivilege.ControlArchiving, SystemPrivilege.ReadTables);
 
-        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(request.getInstance());
+        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(ctx, request.getInstance());
         TableDefinition table = verifyTable(ydb, request.getName());
 
         TableInfo response = toTableInfo(table);
@@ -224,7 +224,7 @@ public class TableApi extends AbstractTableApi<Context> {
     public void getTableData(Context ctx, GetTableDataRequest request, Observer<TableData> observer) {
         ctx.checkAnyOfSystemPrivileges(SystemPrivilege.ControlArchiving, SystemPrivilege.ReadTables);
 
-        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(request.getInstance());
+        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(ctx, request.getInstance());
         TableDefinition table = verifyTable(ydb, request.getName());
 
         long pos = request.hasPos() ? request.getPos() : 0;
@@ -265,7 +265,7 @@ public class TableApi extends AbstractTableApi<Context> {
     @Override
     public void readRows(Context ctx, ReadRowsRequest request, Observer<Row> observer) {
         ctx.checkAnyOfSystemPrivileges(SystemPrivilege.ControlArchiving, SystemPrivilege.ReadTables);
-        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(request.getInstance());
+        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(ctx, request.getInstance());
 
         TableDefinition table = verifyTable(ydb, request.getTable());
         verifyColumns(request.getColsList());
@@ -300,7 +300,7 @@ public class TableApi extends AbstractTableApi<Context> {
             @Override
             public void next(WriteRowsRequest request) {
                 if (count == 0) {
-                    YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(request.getInstance());
+                    YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(ctx, request.getInstance());
 
                     String tableName = request.getTable();
                     TableDefinition table = ydb.getTable(tableName);
@@ -399,7 +399,7 @@ public class TableApi extends AbstractTableApi<Context> {
     public void executeSql(Context ctx, ExecuteSqlRequest request, Observer<ResultSet> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
 
-        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(request.getInstance());
+        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(ctx, request.getInstance());
         if (request.hasStatement()) {
             try {
                 StreamSqlStatement stmt = ydb.createStatement(request.getStatement());
@@ -448,7 +448,7 @@ public class TableApi extends AbstractTableApi<Context> {
     public void executeStreamingSql(Context ctx, ExecuteSqlRequest request, Observer<ResultSet> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
 
-        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(request.getInstance());
+        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(ctx, request.getInstance());
 
         if (request.hasStatement()) {
             try {
@@ -887,7 +887,7 @@ public class TableApi extends AbstractTableApi<Context> {
             Observer<RebuildHistogramResponse> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
 
-        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(request.getInstance());
+        YarchDatabaseInstance ydb = DatabaseApi.verifyDatabase(ctx, request.getInstance());
         TableDefinition table = verifyTable(ydb, request.getTable());
         TimeInterval interval = new TimeInterval();
         if (request.hasStart()) {

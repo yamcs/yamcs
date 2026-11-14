@@ -18,40 +18,32 @@ import org.yamcs.http.audit.AuditLog;
 import org.yamcs.http.auth.TokenStore;
 import org.yamcs.protobuf.AbstractIamApi;
 import org.yamcs.protobuf.CreateGroupRequest;
-import org.yamcs.protobuf.CreateServiceAccountRequest;
-import org.yamcs.protobuf.CreateServiceAccountResponse;
 import org.yamcs.protobuf.CreateUserRequest;
 import org.yamcs.protobuf.DeleteGroupRequest;
 import org.yamcs.protobuf.DeleteIdentityRequest;
 import org.yamcs.protobuf.DeleteRoleAssignmentRequest;
-import org.yamcs.protobuf.DeleteServiceAccountRequest;
 import org.yamcs.protobuf.DeleteUserRequest;
 import org.yamcs.protobuf.ExternalIdentityInfo;
 import org.yamcs.protobuf.GetGroupRequest;
 import org.yamcs.protobuf.GetRoleRequest;
-import org.yamcs.protobuf.GetServiceAccountRequest;
 import org.yamcs.protobuf.GetUserRequest;
 import org.yamcs.protobuf.GroupInfo;
 import org.yamcs.protobuf.ListGroupsResponse;
 import org.yamcs.protobuf.ListPrivilegesResponse;
 import org.yamcs.protobuf.ListRolesResponse;
-import org.yamcs.protobuf.ListServiceAccountsResponse;
 import org.yamcs.protobuf.ListUsersResponse;
 import org.yamcs.protobuf.Mdb.SignificanceInfo.SignificanceLevelType;
 import org.yamcs.protobuf.ObjectPrivilegeInfo;
 import org.yamcs.protobuf.RoleInfo;
-import org.yamcs.protobuf.ServiceAccountInfo;
 import org.yamcs.protobuf.UpdateGroupRequest;
 import org.yamcs.protobuf.UpdateUserRequest;
 import org.yamcs.protobuf.UserInfo;
-import org.yamcs.security.ApplicationCredentials;
 import org.yamcs.security.Directory;
 import org.yamcs.security.Group;
 import org.yamcs.security.ObjectPrivilege;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.security.Role;
 import org.yamcs.security.SecurityStore;
-import org.yamcs.security.ServiceAccount;
 import org.yamcs.security.SystemPrivilege;
 import org.yamcs.security.User;
 import org.yamcs.utils.TimeEncoding;
@@ -172,6 +164,8 @@ public class IamApi extends AbstractIamApi<Context> {
             if (request.hasPassword()) {
                 directory.changePassword(user, request.getPassword().toCharArray());
             }
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException(e.getMessage());
         } catch (IOException e) {
             throw new InternalServerErrorException(e);
         }
@@ -265,50 +259,6 @@ public class IamApi extends AbstractIamApi<Context> {
     }
 
     @Override
-    public void listServiceAccounts(Context ctx, Empty request, Observer<ListServiceAccountsResponse> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ControlAccess);
-        SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
-        Directory directory = securityStore.getDirectory();
-        List<ServiceAccount> serviceAccounts = directory.getServiceAccounts();
-        Collections.sort(serviceAccounts, (r1, r2) -> r1.getName().compareToIgnoreCase(r2.getName()));
-
-        ListServiceAccountsResponse.Builder responseb = ListServiceAccountsResponse.newBuilder();
-        for (ServiceAccount serviceAccount : serviceAccounts) {
-            ServiceAccountInfo serviceAccountInfo = toServiceAccountInfo(serviceAccount, false, directory);
-            responseb.addServiceAccounts(serviceAccountInfo);
-        }
-        observer.complete(responseb.build());
-    }
-
-    @Override
-    public void getServiceAccount(Context ctx, GetServiceAccountRequest request,
-            Observer<ServiceAccountInfo> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ControlAccess);
-        SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
-        Directory directory = securityStore.getDirectory();
-        String name = request.getName();
-        ServiceAccount serviceAccount = directory.getServiceAccount(name);
-        if (serviceAccount == null) {
-            throw new NotFoundException();
-        }
-        observer.complete(toServiceAccountInfo(serviceAccount, true, directory));
-    }
-
-    @Override
-    public void deleteServiceAccount(Context ctx, DeleteServiceAccountRequest request,
-            Observer<Empty> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ControlAccess);
-        SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
-        Directory directory = securityStore.getDirectory();
-        ServiceAccount serviceAccount = directory.getServiceAccount(request.getName());
-        if (serviceAccount == null) {
-            throw new NotFoundException();
-        }
-        directory.deleteServiceAccount(serviceAccount);
-        observer.complete(Empty.getDefaultInstance());
-    }
-
-    @Override
     public void deleteUser(Context ctx, DeleteUserRequest request, Observer<Empty> observer) {
         ctx.checkSystemPrivilege(SystemPrivilege.ControlAccess);
         SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
@@ -325,35 +275,6 @@ public class IamApi extends AbstractIamApi<Context> {
         } catch (IOException e) {
             observer.completeExceptionally(e);
         }
-    }
-
-    @Override
-    public void createServiceAccount(Context ctx, CreateServiceAccountRequest request,
-            Observer<CreateServiceAccountResponse> observer) {
-        ctx.checkSystemPrivilege(SystemPrivilege.ControlAccess);
-        SecurityStore securityStore = YamcsServer.getServer().getSecurityStore();
-
-        if (!request.hasName()) {
-            throw new BadRequestException("No name was specified");
-        }
-        Directory directory = securityStore.getDirectory();
-        if (directory.getServiceAccount(request.getName()) != null) {
-            throw new BadRequestException("An account named '" + request.getName() + "' already exists");
-        }
-
-        ServiceAccount serviceAccount = new ServiceAccount(request.getName(), ctx.user);
-        ApplicationCredentials credentials;
-        try {
-            credentials = directory.addServiceAccount(serviceAccount);
-        } catch (IOException e) {
-            throw new InternalServerErrorException(e);
-        }
-
-        CreateServiceAccountResponse.Builder responseb = CreateServiceAccountResponse.newBuilder();
-        responseb.setName(serviceAccount.getName());
-        responseb.setApplicationId(credentials.getApplicationId());
-        responseb.setApplicationSecret(credentials.getApplicationSecret());
-        observer.complete(responseb.build());
     }
 
     @Override
@@ -405,10 +326,6 @@ public class IamApi extends AbstractIamApi<Context> {
             long memberId = directory.getUser(username).getId();
             group.addMember(memberId);
         }
-        for (String serviceAccountName : request.getServiceAccountsList()) {
-            long memberId = directory.getServiceAccount(serviceAccountName).getId();
-            group.addMember(memberId);
-        }
 
         directory.addGroup(group);
         observer.complete(toGroupInfo(group, true, directory));
@@ -441,13 +358,14 @@ public class IamApi extends AbstractIamApi<Context> {
         }
         if (request.hasMemberInfo()) {
             Set<Long> memberIds = new HashSet<>();
+            for (long memberId : group.getMembers()) {
+                if (directory.getUser(memberId) == null) { // Legacy service account
+                    memberIds.add(memberId);
+                }
+            }
             for (String username : request.getMemberInfo().getUsersList()) {
                 User user = directory.getUser(username);
                 memberIds.add(user.getId());
-            }
-            for (String serviceAccountName : request.getMemberInfo().getServiceAccountsList()) {
-                ServiceAccount serviceAccount = directory.getServiceAccount(serviceAccountName);
-                memberIds.add(serviceAccount.getId());
             }
             group.setMembers(memberIds);
         }
@@ -560,29 +478,12 @@ public class IamApi extends AbstractIamApi<Context> {
         if (addMembers) {
             for (long memberId : group.getMembers()) {
                 User user = directory.getUser(memberId);
-                UserInfo userInfo = toUserInfo(user, false, directory);
-                groupInfob.addUsers(userInfo);
+                if (user != null) {
+                    groupInfob.addUsers(toUserInfo(user, false, directory));
+                }
             }
         }
         return groupInfob.build();
-    }
-
-    private static ServiceAccountInfo toServiceAccountInfo(ServiceAccount serviceAccount, boolean details,
-            Directory directory) {
-        ServiceAccountInfo.Builder b = ServiceAccountInfo.newBuilder();
-        b.setName(serviceAccount.getName());
-        b.setActive(serviceAccount.isActive());
-        if (serviceAccount.getDisplayName() != null) {
-            b.setDisplayName(serviceAccount.getDisplayName());
-        }
-        if (details) {
-            User createdBy = directory.getUser(serviceAccount.getCreatedBy());
-            if (createdBy != null) {
-                b.setCreatedBy(toUserInfo(createdBy, false, directory));
-                b.setCreationTime(TimeEncoding.toProtobufTimestamp(createdBy.getCreationTime()));
-            }
-        }
-        return b.build();
     }
 
     private static RoleInfo toRoleInfo(Role role) {
