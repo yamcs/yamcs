@@ -5,6 +5,10 @@ import { ActivityDetailsTabComponent } from './activity-details-tab/activity-det
 import { ActivityListComponent } from './activity-list/activity-list.component';
 import { ActivityLogTabComponent } from './activity-log-tab/activity-log-tab.component';
 import { ActivityComponent } from './activity/activity.component';
+import { FiringListComponent } from './triggers/firing-list/firing-list.component';
+import { mayReadTriggersGuardFn } from './triggers/shared/triggers';
+import { TriggerEditComponent } from './triggers/trigger-edit/trigger-edit.component';
+import { TriggerListComponent } from './triggers/trigger-list/trigger-list.component';
 
 export const ROUTES: Routes = [
   {
@@ -17,6 +21,30 @@ export const ROUTES: Routes = [
         path: '',
         pathMatch: 'full',
         component: ActivityListComponent,
+      },
+      {
+        path: 'triggers',
+        canActivate: [mayReadTriggersGuardFn],
+        children: [
+          {
+            path: '',
+            pathMatch: 'full',
+            component: TriggerListComponent,
+          },
+          {
+            path: 'create',
+            component: TriggerEditComponent,
+          },
+          {
+            path: ':trigger',
+            component: TriggerEditComponent,
+          },
+        ],
+      },
+      {
+        path: 'trigger-firings',
+        canActivate: [mayReadTriggersGuardFn],
+        component: FiringListComponent,
       },
       {
         path: ':activityId',

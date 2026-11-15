@@ -20,6 +20,11 @@ import { BehaviorSubject, debounceTime } from 'rxjs';
 import { SetFailedDialogComponent } from '../set-failed-dialog/set-failed-dialog.component';
 import { ActivityDurationComponent } from '../shared/activity-duration.component';
 import { ActivityIconComponent } from '../shared/activity-icon.component';
+import { ActivitiesPageTabsComponent } from '../triggers/shared/activities-page-tabs.component';
+import {
+  hasTriggerService,
+  mayReadTriggers,
+} from '../triggers/shared/triggers';
 import { ActivitiesDataSource } from './activities.datasource';
 
 const defaultInterval = 'NO_LIMIT';
@@ -27,7 +32,12 @@ const defaultInterval = 'NO_LIMIT';
 @Component({
   templateUrl: './activity-list.component.html',
   styleUrl: './activity-list.component.css',
-  imports: [ActivityDurationComponent, ActivityIconComponent, WebappSdkModule],
+  imports: [
+    ActivitiesPageTabsComponent,
+    ActivityDurationComponent,
+    ActivityIconComponent,
+    WebappSdkModule,
+  ],
 })
 export class ActivityListComponent {
   validStart: Date | null;
@@ -88,6 +98,8 @@ export class ActivityListComponent {
 
   tableTrackerFn = (index: number, item: Activity) => item.id;
 
+  showTriggerTabs: boolean;
+
   constructor(
     readonly yamcs: YamcsService,
     private authService: AuthService,
@@ -99,6 +111,9 @@ export class ActivityListComponent {
     private dialog: MatDialog,
   ) {
     title.setTitle('Activities');
+
+    this.showTriggerTabs =
+      hasTriggerService(yamcs) && mayReadTriggers(authService);
 
     yamcs.yamcsClient
       .getExecutors(yamcs.instance!)

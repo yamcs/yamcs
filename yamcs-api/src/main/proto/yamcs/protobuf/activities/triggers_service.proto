@@ -1,0 +1,312 @@
+syntax="proto2";
+
+package yamcs.protobuf.activities;
+
+option java_package = "org.yamcs.protobuf.activities";
+option java_outer_classname = "TriggersServiceProto";
+option java_multiple_files = true;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+import "yamcs/api/annotations.proto";
+import "yamcs/protobuf/activities/activities.proto";
+import "yamcs/protobuf/activities/triggers.proto";
+
+// Start activities automatically when an alarm occurs, or when
+// a condition on parameters becomes true.
+//
+// These methods require the service ``org.yamcs.activities.triggers.TriggerService``
+// to be configured for the instance.
+service ActivityTriggersApi {
+  option (yamcs.api.markdown) = true;
+
+  // List triggers
+  rpc ListTriggers(ListTriggersRequest) returns (ListTriggersResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/activities/{instance}/triggers"
+    };
+  }
+
+  // Get a trigger
+  rpc GetTrigger(GetTriggerRequest) returns (TriggerInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/activities/{instance}/triggers/{trigger}"
+    };
+  }
+
+  // Create a trigger
+  //
+  // Example:
+  // ```json
+  // {
+  //   "name": "battery-critical",
+  //   "enabled": true,
+  //   "alarmCondition": {
+  //     "alarmType": "PARAMETER",
+  //     "subjects": ["/YSS/SIMULATOR/BatteryVoltage*"],
+  //     "minSeverity": "CRITICAL"
+  //   },
+  //   "policy": {
+  //     "cooldown": 600000,
+  //     "requireConfirmation": true
+  //   },
+  //   "activity": {
+  //     "type": "SCRIPT",
+  //     "args": {
+  //       "script": "safe_mode.py",
+  //       "args": ["--reason", "${alarm.subject} ${alarm.severity}"]
+  //     }
+  //   }
+  // }
+  // ```
+  rpc CreateTrigger(CreateTriggerRequest) returns (TriggerInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/activities/{instance}/triggers"
+      body: "trigger"
+    };
+  }
+
+  // Update a trigger
+  //
+  // The provided definition replaces the existing one. The fields
+  // ``id``, ``source``, ``owner``, ``lastFired`` and ``firingCount``
+  // are ignored.
+  rpc UpdateTrigger(UpdateTriggerRequest) returns (TriggerInfo) {
+    option (yamcs.api.route) = {
+      put: "/api/activities/{instance}/triggers/{id}"
+      body: "trigger"
+    };
+  }
+
+  // Delete a trigger
+  rpc DeleteTrigger(DeleteTriggerRequest) returns (google.protobuf.Empty) {
+    option (yamcs.api.route) = {
+      delete: "/api/activities/{instance}/triggers/{trigger}"
+    };
+  }
+
+  // Enable a trigger
+  rpc EnableTrigger(EnableTriggerRequest) returns (TriggerInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/activities/{instance}/triggers/{trigger}:enable"
+    };
+  }
+
+  // Disable a trigger
+  rpc DisableTrigger(DisableTriggerRequest) returns (TriggerInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/activities/{instance}/triggers/{trigger}:disable"
+    };
+  }
+
+  // Resume evaluation of all triggers
+  rpc EnableAllTriggers(EnableAllTriggersRequest) returns (TriggerServiceStatus) {
+    option (yamcs.api.route) = {
+      post: "/api/activities/{instance}/triggers:enableAll"
+    };
+  }
+
+  // Stop evaluation of all triggers (kill switch)
+  //
+  // The enabled state of individual triggers is not modified.
+  rpc DisableAllTriggers(DisableAllTriggersRequest) returns (TriggerServiceStatus) {
+    option (yamcs.api.route) = {
+      post: "/api/activities/{instance}/triggers:disableAll"
+    };
+  }
+
+  // Get the global trigger status
+  rpc GetTriggerServiceStatus(GetTriggerServiceStatusRequest) returns (TriggerServiceStatus) {
+    option (yamcs.api.route) = {
+      get: "/api/activities/{instance}/trigger-status"
+    };
+  }
+
+  // Validate a trigger and resolve its activity arguments against
+  // a sample context, without starting anything
+  rpc TestTrigger(TestTriggerRequest) returns (TestTriggerResponse) {
+    option (yamcs.api.route) = {
+      post: "/api/activities/{instance}/triggers/{trigger}:test"
+      body: "*"
+    };
+  }
+
+  // List trigger firings, most recent first
+  rpc ListTriggerFirings(ListTriggerFiringsRequest) returns (ListTriggerFiringsResponse) {
+    option (yamcs.api.route) = {
+      get: "/api/activities/{instance}/trigger-firings"
+    };
+  }
+
+  // Confirm a firing that is pending confirmation. The activity
+  // is started on behalf of the confirming user.
+  rpc ConfirmTriggerFiring(ConfirmTriggerFiringRequest) returns (TriggerFiringInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/activities/{instance}/trigger-firings/{firing}:confirm"
+    };
+  }
+
+  // Reject a firing that is pending confirmation
+  rpc RejectTriggerFiring(RejectTriggerFiringRequest) returns (TriggerFiringInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/activities/{instance}/trigger-firings/{firing}:reject"
+    };
+  }
+
+  // Receive trigger firings
+  rpc SubscribeTriggerFirings(SubscribeTriggerFiringsRequest) returns (stream TriggerFiringInfo) {
+    option (yamcs.api.websocket) = {
+      topic: "trigger-firings"
+    };
+  }
+}
+
+message ListTriggersRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+}
+
+message ListTriggersResponse {
+  repeated TriggerInfo triggers = 1;
+}
+
+message GetTriggerRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Trigger identifier or name
+  optional string trigger = 2;
+}
+
+message CreateTriggerRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Trigger definition
+  optional TriggerInfo trigger = 2;
+}
+
+message UpdateTriggerRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Trigger identifier
+  optional string id = 2;
+
+  // Trigger definition
+  optional TriggerInfo trigger = 3;
+}
+
+message DeleteTriggerRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Trigger identifier or name
+  optional string trigger = 2;
+}
+
+message EnableTriggerRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Trigger identifier or name
+  optional string trigger = 2;
+}
+
+message DisableTriggerRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Trigger identifier or name
+  optional string trigger = 2;
+}
+
+message EnableAllTriggersRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+}
+
+message DisableAllTriggersRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+}
+
+message GetTriggerServiceStatusRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+}
+
+message TriggerServiceStatus {
+  // False if all triggers are suspended by the kill switch
+  optional bool enabled = 1;
+
+  // Number of firings waiting for confirmation
+  optional int32 pendingConfirmations = 2;
+}
+
+message TestTriggerRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Trigger identifier or name
+  optional string trigger = 2;
+
+  // Context values used to resolve placeholders. For example:
+  // ``{"alarm.subject": "/YSS/SIMULATOR/BatteryVoltage2", "value": 9.7}``
+  optional google.protobuf.Struct context = 3;
+}
+
+message TestTriggerResponse {
+  // Activity that would be started
+  optional ActivityDefinitionInfo activity = 1;
+
+  // Validation problem, if any
+  optional string error = 2;
+}
+
+message ListTriggerFiringsRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Filter on trigger identifier or name
+  optional string trigger = 2;
+
+  // Filter on outcome
+  repeated TriggerFiringOutcome outcome = 3;
+
+  // Inclusive lower bound on the firing time
+  optional google.protobuf.Timestamp start = 4;
+
+  // Exclusive upper bound on the firing time
+  optional google.protobuf.Timestamp stop = 5;
+
+  // Maximum number of results. Default: 100
+  optional int32 limit = 6;
+}
+
+message ListTriggerFiringsResponse {
+  repeated TriggerFiringInfo firings = 1;
+}
+
+message ConfirmTriggerFiringRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Firing identifier
+  optional string firing = 2;
+}
+
+message RejectTriggerFiringRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+
+  // Firing identifier
+  optional string firing = 2;
+}
+
+message SubscribeTriggerFiringsRequest {
+  // Yamcs instance name
+  optional string instance = 1;
+}

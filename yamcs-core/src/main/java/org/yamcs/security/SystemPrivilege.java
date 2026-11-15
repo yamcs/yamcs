@@ -38,6 +38,11 @@ public class SystemPrivilege {
     public static final SystemPrivilege ControlActivities = new SystemPrivilege("ControlActivities");
 
     /**
+     * Allows to create, modify and enable activity triggers
+     */
+    public static final SystemPrivilege ControlActivityTriggers = new SystemPrivilege("ControlActivityTriggers");
+
+    /**
      * Allows to control the state of command queues.
      */
     public static final SystemPrivilege ControlCommandQueue = new SystemPrivilege("ControlCommandQueue");
@@ -76,6 +81,11 @@ public class SystemPrivilege {
      * Allows to read activity state
      */
     public static final SystemPrivilege ReadActivities = new SystemPrivilege("ReadActivities");
+
+    /**
+     * Allows to read activity triggers and their firings
+     */
+    public static final SystemPrivilege ReadActivityTriggers = new SystemPrivilege("ReadActivityTriggers");
 
     /**
      * Allows to read alarm state

@@ -1,0 +1,123 @@
+<ya-instance-page>
+  <ya-instance-toolbar label="Trigger firings" />
+
+  <ya-panel>
+    <app-activities-page-tabs [pendingConfirmations]="pending().length" />
+
+    @if (pending().length) {
+      <h3 class="pending-title">Pending confirmation</h3>
+      <table mat-table [dataSource]="pending()" class="ya-data-table expand pending-table">
+        <ng-container matColumnDef="time">
+          <th mat-header-cell *matHeaderCellDef>Time</th>
+          <td mat-cell *matCellDef="let firing">{{ firing.time | datetime }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="trigger">
+          <th mat-header-cell *matHeaderCellDef>Trigger</th>
+          <td mat-cell *matCellDef="let firing">
+            <a
+              [routerLink]="['/activities/triggers', firing.triggerId]"
+              [queryParams]="{ c: yamcs.context }">
+              {{ firing.triggerName }}
+            </a>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="context">
+          <th mat-header-cell *matHeaderCellDef>Context</th>
+          <td mat-cell *matCellDef="let firing">{{ contextSummary(firing) || "-" }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="expand"></th>
+          <td mat-cell *matCellDef="let firing">
+            @if (mayDecide()) {
+              <ya-button appearance="primary" (click)="confirm(firing)" icon="thumb_up">
+                Approve
+              </ya-button>
+              &nbsp;
+              <ya-button (click)="reject(firing)" icon="thumb_down">Reject</ya-button>
+            }
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="pendingColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: pendingColumns"></tr>
+      </table>
+      <h3>History</h3>
+    }
+
+    <ya-filter-bar [formGroup]="filterForm">
+      <ya-multi-select
+        [options]="outcomeOptions"
+        formControlName="outcome"
+        emptyOption="Any outcome" />
+      @if (filterForm.value.trigger; as trigger) {
+        <ya-button (click)="clearTrigger()" icon="close">Trigger: {{ trigger }}</ya-button>
+      }
+    </ya-filter-bar>
+
+    <table mat-table [dataSource]="firings()" class="ya-data-table expand">
+      <ng-container matColumnDef="time">
+        <th mat-header-cell *matHeaderCellDef>Time</th>
+        <td mat-cell *matCellDef="let firing">{{ firing.time | datetime }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="trigger">
+        <th mat-header-cell *matHeaderCellDef>Trigger</th>
+        <td mat-cell *matCellDef="let firing">
+          <a
+            [routerLink]="['/activities/triggers', firing.triggerId]"
+            [queryParams]="{ c: yamcs.context }">
+            {{ firing.triggerName }}
+          </a>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="outcome">
+        <th mat-header-cell *matHeaderCellDef>Outcome</th>
+        <td
+          mat-cell
+          *matCellDef="let firing"
+          [class.alert]="firing.outcome === 'FAILED_TO_START'"
+          [class.pending]="firing.outcome === 'PENDING_CONFIRMATION'">
+          {{ outcomeLabel(firing.outcome) }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="activity">
+        <th mat-header-cell *matHeaderCellDef>Activity</th>
+        <td mat-cell *matCellDef="let firing" class="mono">
+          @if (firing.activityId) {
+            <a
+              [routerLink]="['/activities', firing.activityId]"
+              [queryParams]="{ c: yamcs.context }">
+              {{ firing.activityId.substring(0, 8) }}
+            </a>
+          } @else {
+            -
+          }
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="decidedBy">
+        <th mat-header-cell *matHeaderCellDef>Decided by</th>
+        <td mat-cell *matCellDef="let firing">{{ firing.decidedBy || "-" }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="message">
+        <th mat-header-cell *matHeaderCellDef class="expand">Message</th>
+        <td mat-cell *matCellDef="let firing">{{ firing.message || "-" }}</td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+
+    @if (!firings().length) {
+      <ya-empty-message headerTitle="No firings" marginTop="20px">
+        <p>No firings match the current filter.</p>
+      </ya-empty-message>
+    }
+  </ya-panel>
+</ya-instance-page>

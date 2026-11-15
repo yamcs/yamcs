@@ -40,3 +40,4 @@ Planned activities are submitted via the UI or API to the Timeline (saved as act
     commands
     stacks
     scripts
+    triggers

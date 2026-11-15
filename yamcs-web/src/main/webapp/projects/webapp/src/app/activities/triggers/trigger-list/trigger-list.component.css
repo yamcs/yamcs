@@ -1,0 +1,23 @@
+.kill-switch {
+  margin-left: 16px;
+}
+
+.badge {
+  margin-left: 6px;
+  padding: 0 6px;
+  border: 1px solid var(--y-border-color, #ccc);
+  border-radius: 8px;
+  font-size: 11px;
+  color: #666;
+}
+
+td.summary {
+  max-width: 280px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+tr.disabled td {
+  color: #999;
+}

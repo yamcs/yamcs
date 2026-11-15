@@ -16,6 +16,25 @@
       </dd>
       <dt>User</dt>
       <dd>{{ activity.startedBy }}</dd>
+      @if (activity.origin; as origin) {
+        <dt>Origin</dt>
+        <dd>
+          @if (origin.type === "TRIGGER") {
+            Started by trigger
+            @if (origin.ref) {
+              <a
+                [routerLink]="['/activities/triggers', origin.ref]"
+                [queryParams]="{ c: yamcs.context }">
+                {{ origin.name || origin.ref }}
+              </a>
+            } @else {
+              {{ origin.name }}
+            }
+          } @else {
+            {{ origin.type }}{{ origin.name ? ": " + origin.name : "" }}
+          }
+        </dd>
+      }
     </dl>
     <div class="section-divider">
       <mat-divider />

@@ -361,6 +361,9 @@ public class ActivitiesApi extends AbstractActivitiesApi<Context> {
         if (activity.getStoppedBy() != null) {
             activityb.setStoppedBy(activity.getStoppedBy());
         }
+        if (activity.getOrigin() != null) {
+            activityb.setOrigin(activity.getOrigin());
+        }
 
         return activityb.build();
     }

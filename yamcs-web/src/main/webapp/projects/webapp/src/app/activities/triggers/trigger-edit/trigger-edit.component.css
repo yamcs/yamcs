@@ -1,0 +1,33 @@
+h3 {
+  margin-top: 2em;
+  font-weight: normal;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.subject {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.subject-add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.subject-add input {
+  flex: 1 1 auto;
+}
+
+.hint {
+  color: #777;
+  font-size: 12px;
+}
+
+.test-result {
+  margin-top: 1em;
+  padding: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
