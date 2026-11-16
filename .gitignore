@@ -16,5 +16,36 @@ server.lock
 
 # Flattened pom.xmls
 .flattened-pom.xml
+
 # Added by code-review-graph
 .code-review-graph/
+
+# Local AI assistants, MCP configuration, and code-review-graph artifacts
+.claude/
+.codex/
+.mcp.json
+.mcp.local.json
+AGENTS.md
+CLAUDE.md
+.code-review-graph/
+/.venv/
+/.github/code-review-graph.instruction.md
+code-review-graph.instruction.md
+.codebuddy
+.gemini
+.cursor
+.kiro
+.qoder
+.cursorrules
+.windsurfrules
+CODEBUDDY.md
+GEMINI.md
+opencode.jsonc
+QODER.md
+.github/instructions
+.claude
+
+# Python related
+venv/
+*.pyc
+__pycache__
