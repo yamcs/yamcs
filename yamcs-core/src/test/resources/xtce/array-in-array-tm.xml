@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204"
-        xmlns:yamcs="http://yamcs.org/schema/xtce"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         name="ArrayInArrayTmTest"
         xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
@@ -19,13 +18,15 @@
                 <IntegerDataEncoding sizeInBits="8" encoding="twosComplement"/>
             </IntegerParameterType>
             <ArrayParameterType name="inner_array_type" arrayTypeRef="uint16">
+                <AncillaryDataSet>
+                    <AncillaryData name="Yamcs:AggregateMember">inner_array_length</AncillaryData>
+                </AncillaryDataSet>
                 <DimensionList>
                     <Dimension>
                         <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
                         <EndingIndex>
                             <DynamicValue>
-                                <ParameterInstanceRef parameterRef="inner_array_length"
-                                        yamcs:aggregateMember="true"/>
+                                <ParameterInstanceRef parameterRef="inner_array_length"/>
                                 <LinearAdjustment intercept="-1"/>
                             </DynamicValue>
                         </EndingIndex>
@@ -39,13 +40,15 @@
                 </MemberList>
             </AggregateParameterType>
             <ArrayParameterType name="outer_array_type" arrayTypeRef="inner_aggregate_type">
+                <AncillaryDataSet>
+                    <AncillaryData name="Yamcs:AggregateMember">outer_array_length</AncillaryData>
+                </AncillaryDataSet>
                 <DimensionList>
                     <Dimension>
                         <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
                         <EndingIndex>
                             <DynamicValue>
-                                <ParameterInstanceRef parameterRef="outer_array_length"
-                                        yamcs:aggregateMember="true"/>
+                                <ParameterInstanceRef parameterRef="outer_array_length"/>
                                 <LinearAdjustment intercept="-1"/>
                             </DynamicValue>
                         </EndingIndex>
@@ -90,13 +93,15 @@
                 </DimensionList>
             </ArrayParameterType>
             <ArrayParameterType name="negative_array_type" arrayTypeRef="uint8">
+                <AncillaryDataSet>
+                    <AncillaryData name="Yamcs:AggregateMember">negative_count</AncillaryData>
+                </AncillaryDataSet>
                 <DimensionList>
                     <Dimension>
                         <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
                         <EndingIndex>
                             <DynamicValue>
-                                <ParameterInstanceRef parameterRef="negative_count"
-                                        yamcs:aggregateMember="true"/>
+                                <ParameterInstanceRef parameterRef="negative_count"/>
                                 <LinearAdjustment intercept="-1"/>
                             </DynamicValue>
                         </EndingIndex>
@@ -110,13 +115,15 @@
                 </MemberList>
             </AggregateParameterType>
             <ArrayParameterType name="oversized_array_type" arrayTypeRef="uint8">
+                <AncillaryDataSet>
+                    <AncillaryData name="Yamcs:AggregateMember">oversized_count</AncillaryData>
+                </AncillaryDataSet>
                 <DimensionList>
                     <Dimension>
                         <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
                         <EndingIndex>
                             <DynamicValue>
-                                <ParameterInstanceRef parameterRef="oversized_count"
-                                        yamcs:aggregateMember="true"/>
+                                <ParameterInstanceRef parameterRef="oversized_count"/>
                                 <LinearAdjustment intercept="-1"/>
                             </DynamicValue>
                         </EndingIndex>
@@ -167,13 +174,15 @@
                 </MemberList>
             </AggregateParameterType>
             <ArrayParameterType name="subservices_array_type" arrayTypeRef="uint8">
+                <AncillaryDataSet>
+                    <AncillaryData name="Yamcs:AggregateMember">subservice_count</AncillaryData>
+                </AncillaryDataSet>
                 <DimensionList>
                     <Dimension>
                         <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
                         <EndingIndex>
                             <DynamicValue>
-                                <ParameterInstanceRef parameterRef="subservice_count"
-                                        yamcs:aggregateMember="true"/>
+                                <ParameterInstanceRef parameterRef="subservice_count"/>
                                 <LinearAdjustment intercept="-1"/>
                             </DynamicValue>
                         </EndingIndex>
@@ -188,13 +197,15 @@
                 </MemberList>
             </AggregateParameterType>
             <ArrayParameterType name="services_array_type" arrayTypeRef="service_aggregate_type">
+                <AncillaryDataSet>
+                    <AncillaryData name="Yamcs:AggregateMember">service_count</AncillaryData>
+                </AncillaryDataSet>
                 <DimensionList>
                     <Dimension>
                         <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
                         <EndingIndex>
                             <DynamicValue>
-                                <ParameterInstanceRef parameterRef="service_count"
-                                        yamcs:aggregateMember="true"/>
+                                <ParameterInstanceRef parameterRef="service_count"/>
                                 <LinearAdjustment intercept="-1"/>
                             </DynamicValue>
                         </EndingIndex>
@@ -209,13 +220,15 @@
                 </MemberList>
             </AggregateParameterType>
             <ArrayParameterType name="apid_reports_array_type" arrayTypeRef="apid_report_type">
+                <AncillaryDataSet>
+                    <AncillaryData name="Yamcs:AggregateMember">n_count</AncillaryData>
+                </AncillaryDataSet>
                 <DimensionList>
                     <Dimension>
                         <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
                         <EndingIndex>
                             <DynamicValue>
-                                <ParameterInstanceRef parameterRef="n_count"
-                                        yamcs:aggregateMember="true"/>
+                                <ParameterInstanceRef parameterRef="n_count"/>
                                 <LinearAdjustment intercept="-1"/>
                             </DynamicValue>
                         </EndingIndex>

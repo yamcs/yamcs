@@ -1,4 +1,4 @@
-Version 5.14.1 released 15-Nov-2026
+Version 5.14.1-0.5.1.Pixxel released 15-Nov-2026
 * Important changes:
     * The experimental service account functionality has been removed. Existing stored service accounts are kept but can no longer be used.
     * Access to the `_global` database through the table API (which holds the user accounts and the global audit log) is now restricted to superusers; the `ReadTables`, `WriteTables` and `ControlArchiving` privileges no longer apply to it.
@@ -27,6 +27,9 @@ Version 5.14.1 released 15-Nov-2026
     - GHSA-2f3q-8v3v-2392 Serve bucket objects as attachments
     - GHSA-wgxx-f8wg-5476 Enforce visibility of private timeline bands
     - GHSA-ppr9-xgww-564p Restrict web notifications to users allowed to see their source
+
+Version 5.14.0-0.5.1.Pixxel released 31-Oct-2026
+- XTCE: aggregate-local array lengths now use AncillaryData named `Yamcs:AggregateMember` on ArrayParameterType. The older `yamcs:aggregateMember` attribute and its compatibility reader, `XtceStaxReader.isAggregateMemberReference()`, are scheduled for deprecation soon. Legacy imports remain supported; exports migrate to ancillary data. No deprecation release or removal date has been set.
 
 Version 5.14.0 released 31-Oct-2026
 * Important changes:
