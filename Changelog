@@ -1,3 +1,6 @@
+Unreleased (Pixxel)
+- XTCE: aggregate-local array lengths now use AncillaryData named `Yamcs:AggregateMember` on ArrayParameterType. The older `yamcs:aggregateMember` attribute and its compatibility reader, `XtceStaxReader.isAggregateMemberReference()`, are scheduled for deprecation soon. Legacy imports remain supported; exports migrate to ancillary data. No deprecation release or removal date has been set.
+
 Version 5.13.8 released 31-Oct-2026
 * Important changes:
     * The `tm` table created by the XtceTmRecorder is no longer partitioned by `pname` (packet name). Instead, `pname` is added to the primary key, which becomes `(gentime, seqNum, pname)`, so packets are deduplicated exactly as before.

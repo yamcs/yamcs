@@ -50,6 +50,14 @@ public class AncillaryData implements Serializable {
      */
     public static final String KEY_EMBEDDED_TC = "Yamcs:EmbeddedTc";
 
+    /**
+     * On an ArrayParameterType, identifies a ParameterInstanceRef in its dimensions as a reference to a
+     * member of the enclosing aggregate. Repeat this entry for each distinct member name.
+     * This is the current format for new definitions and exports. The older {@code yamcs:aggregateMember}
+     * attribute and its compatibility reader are scheduled for deprecation soon; use this metadata instead.
+     */
+    public static final String KEY_AGGREGATE_MEMBER = "Yamcs:AggregateMember";
+
     private static final long serialVersionUID = 1L;
     private static final String DEFAULT_MIME_TYPE = "text/plain";
 

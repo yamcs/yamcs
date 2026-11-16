@@ -491,3 +491,42 @@ In this example, the size of the array is equal to the integer parameter ``numbe
             </Dimension>
         </DimensionList>
     </ArrayParameterType>
+
+.. rubric:: Aggregate-local array lengths (Pixxel extension)
+
+An array inside an aggregate can use an integer member of its enclosing
+aggregate as its size. Put the marker on ``ArrayParameterType``, before
+``DimensionList``:
+
+.. code-block:: xml
+
+    <AncillaryDataSet>
+        <AncillaryData name="Yamcs:AggregateMember">count</AncillaryData>
+    </AncillaryDataSet>
+
+Each entry marks matching ``ParameterInstanceRef parameterRef="count"``
+references in this type's dimensions as aggregate-local. Repeat the entry for
+additional member names. Unmarked references retain ordinary parameter lookup.
+Lookup starts in the nearest enclosing aggregate; the count must already have
+been decoded. Linear adjustment and raw/calibrated selection work as usual.
+
+``AncillaryDataSet`` is allowed on array types in XTCE 1.2 and 1.3, but is not
+allowed inside ``ParameterInstanceRef`` or ``DynamicValue``. This representation
+therefore validates against the standard schemas while retaining Yamcs-specific
+semantics. The old ``yamcs:aggregateMember="true"`` attribute remains readable
+for compatibility; exports use ancillary data, including exports of legacy XML.
+
+.. note::
+
+   The older attribute-based reader, ``XtceStaxReader.isAggregateMemberReference()``,
+   only checks ``yamcs:aggregateMember`` on ``ParameterInstanceRef``. It does not
+   read the current ancillary-data markers. The method and attribute format are
+   scheduled for deprecation soon and remain supported for legacy imports only.
+   No deprecation release or removal date has been set.
+
+   For all new definitions, use ``AncillaryData name="Yamcs:AggregateMember"`` on
+   ``ArrayParameterType``, as shown above. To migrate existing XML, remove the
+   attribute, add an ancillary entry containing the same member name before
+   ``DimensionList``, and keep ``parameterRef``, ``useCalibratedValue`` and
+   ``LinearAdjustment`` unchanged. Exporting a legacy database also performs this
+   format migration. Existing aggregate-local lookup behavior is preserved.

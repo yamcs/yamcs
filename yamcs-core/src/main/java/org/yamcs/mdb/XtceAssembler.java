@@ -23,8 +23,10 @@ import java.io.Writer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import javax.xml.XMLConstants;
@@ -1015,9 +1017,7 @@ public class XtceAssembler {
     private void writeAggregateMemberInstanceRef(XMLStreamWriter doc, AggregateMemberInstanceRef memberRef)
             throws XMLStreamException {
         doc.writeStartElement(ELEM_PARAMETER_INSTANCE_REF);
-        doc.writeNamespace("yamcs", XtceStaxReader.YAMCS_XTCE_NAMESPACE);
         doc.writeAttribute(ATTR_PARAMETER_REF, memberRef.getName());
-        doc.writeAttribute("yamcs", XtceStaxReader.YAMCS_XTCE_NAMESPACE, "aggregateMember", "true");
         if (!memberRef.useCalibratedValue()) {
             doc.writeAttribute("useCalibratedValue", "false");
         }
@@ -1284,7 +1284,24 @@ public class XtceAssembler {
             doc.writeEndElement();
         }
         List<AncillaryData> l = nameDescription.getAncillaryData();
-        if (l != null) {
+        if (nameDescription instanceof ArrayParameterType arrayType && arrayType.getSize() != null) {
+            l = l == null ? new ArrayList<>() : new ArrayList<>(l);
+            // Derive markers from the references, also when exporting legacy or programmatically built types.
+            // Never emit yamcs:aggregateMember: the older attribute format and its compatibility reader
+            // (XtceStaxReader.isAggregateMemberReference) are scheduled for deprecation soon.
+            l.removeIf(data -> AncillaryData.KEY_AGGREGATE_MEMBER.equals(data.getName()));
+            Set<String> members = new LinkedHashSet<>();
+            for (IntegerValue size : arrayType.getSize()) {
+                if (size instanceof DynamicIntegerValue dynamic
+                        && dynamic.getDynamicInstanceRef() instanceof AggregateMemberInstanceRef member) {
+                    members.add(member.getName());
+                }
+            }
+            for (String member : members) {
+                l.add(new AncillaryData(AncillaryData.KEY_AGGREGATE_MEMBER, member));
+            }
+        }
+        if (l != null && !l.isEmpty()) {
             writeAncillaryData(doc, l);
         }
     }

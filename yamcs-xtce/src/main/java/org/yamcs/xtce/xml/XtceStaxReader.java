@@ -66,7 +66,13 @@ public class XtceStaxReader extends AbstractStaxReader {
     // XTCE Schema defined tags, to minimize the mistyping errors
 
     private static final String YAMCS_IGNORE = "_yamcs_ignore";
+    /**
+     * Namespace of the legacy {@code yamcs:aggregateMember} attribute. Retained only for importing older XML;
+     * this attribute-based format and its reader are scheduled for deprecation soon. New definitions should use
+     * {@link AncillaryData#KEY_AGGREGATE_MEMBER} on the enclosing ArrayParameterType.
+     */
     public static final String YAMCS_XTCE_NAMESPACE = "http://yamcs.org/schema/xtce";
+    // Legacy import compatibility only; scheduled for deprecation with isAggregateMemberReference().
     private static final QName AGGREGATE_MEMBER_ATTRIBUTE =
             new QName(YAMCS_XTCE_NAMESPACE, "aggregateMember");
 
@@ -604,12 +610,21 @@ public class XtceStaxReader extends AbstractStaxReader {
         incompleteType.addReference(nr);
         spaceSystem.addUnresolvedReference(nr);
 
+        Set<String> aggregateMembers = new HashSet<>();
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
-            if (isNamedItemProperty()) {
+            if (isStartElementWithName(ELEM_ANCILLARY_DATA_SET)) {
+                List<AncillaryData> data = readAncillaryDataSet();
+                typeBuilder.setAncillaryData(data);
+                for (AncillaryData item : data) {
+                    if (AncillaryData.KEY_AGGREGATE_MEMBER.equals(item.getName())) {
+                        aggregateMembers.add(item.getValue());
+                    }
+                }
+            } else if (isNamedItemProperty()) {
                 readNamedItemProperty(typeBuilder);
             } else if (isStartElementWithName(ELEM_DIMENSION_LIST)) {
-                List<IntegerValue> dimList = readDimensionList(spaceSystem);
+                List<IntegerValue> dimList = readDimensionList(spaceSystem, aggregateMembers);
                 dim = dimList.size();
                 typeBuilder.setSize(dimList);
             } else if (isEndElementWithName(ELEM_ARRAY_PARAMETER_TYPE)) {
@@ -2659,15 +2674,20 @@ public class XtceStaxReader extends AbstractStaxReader {
     }
 
     private List<IntegerValue> readDimensionList(SpaceSystem spaceSystem) throws XMLStreamException {
+        return readDimensionList(spaceSystem, Set.of());
+    }
+
+    private List<IntegerValue> readDimensionList(SpaceSystem spaceSystem, Set<String> aggregateMembers)
+            throws XMLStreamException {
         log.trace(ELEM_DIMENSION_LIST);
         checkStartElementPreconditions();
         List<IntegerValue> l = new ArrayList<>();
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(ELEM_DIMENSION)) {
-                l.add(readDimension(spaceSystem));
+                l.add(readDimension(spaceSystem, aggregateMembers));
             } else if (isStartElementWithName(ELEM_SIZE)) { // FIXME not in XTCE ?
-                l.add(readIntegerValue(spaceSystem));
+                l.add(readIntegerValue(spaceSystem, aggregateMembers));
             } else if (isEndElementWithName(ELEM_DIMENSION_LIST)) {
                 return l;
             } else {
@@ -2678,7 +2698,7 @@ public class XtceStaxReader extends AbstractStaxReader {
 
     // Currently only reads an index range like 0..30 which is interpreted as
     // size: 31.
-    private IntegerValue readDimension(SpaceSystem spaceSystem) throws XMLStreamException {
+    private IntegerValue readDimension(SpaceSystem spaceSystem, Set<String> aggregateMembers) throws XMLStreamException {
         log.trace(ELEM_DIMENSION);
         checkStartElementPreconditions();
 
@@ -2687,7 +2707,7 @@ public class XtceStaxReader extends AbstractStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(ELEM_STARTING_INDEX)) {
-                startingIndex = readIntegerValue(spaceSystem);
+                startingIndex = readIntegerValue(spaceSystem, aggregateMembers);
                 if (!(startingIndex instanceof FixedIntegerValue)
                         || ((FixedIntegerValue) startingIndex).getValue() != 0) {
                     throw new XMLStreamException(
@@ -2695,7 +2715,7 @@ public class XtceStaxReader extends AbstractStaxReader {
                             xmlEvent.getLocation());
                 }
             } else if (isStartElementWithName(ELEM_ENDING_INDEX)) {
-                endingIndex = readIntegerValue(spaceSystem);
+                endingIndex = readIntegerValue(spaceSystem, aggregateMembers);
             } else if (isEndElementWithName(ELEM_DIMENSION)) {
                 if (endingIndex == null) {
                     throw new XMLStreamException(ELEM_ENDING_INDEX + " not specified");
@@ -2806,6 +2826,11 @@ public class XtceStaxReader extends AbstractStaxReader {
     }
 
     private IntegerValue readIntegerValue(SpaceSystem spaceSystem) throws XMLStreamException {
+        return readIntegerValue(spaceSystem, Set.of());
+    }
+
+    private IntegerValue readIntegerValue(SpaceSystem spaceSystem, Set<String> aggregateMembers)
+            throws XMLStreamException {
         String tag = xmlEvent.asStartElement().getName().getLocalPart();
 
         checkStartElementPreconditions();
@@ -2816,7 +2841,7 @@ public class XtceStaxReader extends AbstractStaxReader {
             if (isStartElementWithName(ELEM_FIXED_VALUE)) {
                 v = new FixedIntegerValue(readIntegerValue());
             } else if (isStartElementWithName(ELEM_DYNAMIC_VALUE)) {
-                v = readDynamicValue(spaceSystem);
+                v = readDynamicValue(spaceSystem, aggregateMembers);
             } else if (isEndElementWithName(tag)) {
                 return v;
             } else {
@@ -2826,6 +2851,11 @@ public class XtceStaxReader extends AbstractStaxReader {
     }
 
     private DynamicIntegerValue readDynamicValue(SpaceSystem spaceSystem) throws XMLStreamException {
+        return readDynamicValue(spaceSystem, Set.of());
+    }
+
+    private DynamicIntegerValue readDynamicValue(SpaceSystem spaceSystem, Set<String> aggregateMembers)
+            throws XMLStreamException {
         log.trace(ELEM_DYNAMIC_VALUE);
 
         checkStartElementPreconditions();
@@ -2836,9 +2866,11 @@ public class XtceStaxReader extends AbstractStaxReader {
             if (isStartElementWithName(ELEM_PARAMETER_INSTANCE_REF)) {
                 StartElement element = xmlEvent.asStartElement();
                 String paramRef = readMandatoryAttribute(ATTR_PARAMETER_REF, element);
+                // Ancillary data is the current format. The attribute check is a legacy import fallback
+                // scheduled for deprecation soon; do not use it to identify references in newly generated XML.
                 if (YAMCS_IGNORE.equals(paramRef)) {
                     v = IGNORED_DYNAMIC_VALUE;
-                } else if (isAggregateMemberReference(element)) {
+                } else if (aggregateMembers.contains(paramRef) || isAggregateMemberReference(element)) {
                     v = new DynamicIntegerValue(readAggregateMemberInstanceRef());
                 } else {
                     v = new DynamicIntegerValue(readParameterInstanceRef(spaceSystem, null));
@@ -2879,6 +2911,20 @@ public class XtceStaxReader extends AbstractStaxReader {
         return new AggregateMemberInstanceRef(memberName, useCalibrated);
     }
 
+    /**
+     * Reads the older, attribute-based aggregate member marker ({@code yamcs:aggregateMember}) from a
+     * ParameterInstanceRef. Despite its general name, this method checks only that legacy attribute;
+     * it does not read the current {@link AncillaryData#KEY_AGGREGATE_MEMBER} metadata.
+     *
+     * <p>This compatibility reader and the attribute format are scheduled for deprecation soon. They remain
+     * supported for importing existing databases. New XML must put an AncillaryData entry named
+     * {@code Yamcs:AggregateMember}, with the member name as its text, in the ArrayParameterType's
+     * AncillaryDataSet before DimensionList. The caller reads those markers before trying this fallback.
+     * Unlike the old attribute, that representation is permitted by the XTCE schema.
+     *
+     * <p>No deprecation release or removal date has been set. Exporting imported legacy XML writes the
+     * ancillary-data format, so existing definitions can be migrated by exporting them again.
+     */
     private boolean isAggregateMemberReference(StartElement element) throws XMLStreamException {
         Attribute attribute = element.getAttributeByName(AGGREGATE_MEMBER_ATTRIBUTE);
         if (attribute == null) {

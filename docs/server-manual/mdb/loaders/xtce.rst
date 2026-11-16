@@ -57,6 +57,15 @@ Yamcs does not seek full compliance with XTCE. It only reads the parts that rela
 
 Note that when reading the XML XTCE file Yamcs is on purpose tolerant, it ignores the tags it does not know and it also strives to be backward compatible with XTCE 1.0 and 1.1. Thus the fact that an XML file loads in Yamcs does not mean that is 100% valid. Please use a generic XML validation tool or the `xtcetools <https://gitlab.com/dovereem/xtcetools>`_ project to validate your XML file.
 
+For aggregate-local array lengths (Pixxel extension), the current format uses
+``AncillaryData name="Yamcs:AggregateMember"`` on ``ArrayParameterType``, before
+``DimensionList``. Its text identifies the member referenced by ``parameterRef``.
+The older ``yamcs:aggregateMember`` attribute is accepted only for legacy import
+compatibility. Its reader, ``XtceStaxReader.isAggregateMemberReference()``, and
+the attribute format are scheduled for deprecation soon; no release or removal
+date has been set. New XML and exports should use ancillary data. See
+:doc:`../data-types` for the representation and migration instructions.
+
 The following concepts are *not supported*:
 
 * ``Stream`` - data is assumed to be injected into Yamcs as packets, any stream processing has to be done as part of the data link definition and is not based on XTCE.

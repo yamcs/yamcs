@@ -1,6 +1,8 @@
 package org.yamcs.mdb;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -12,6 +14,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Field;
 import java.nio.ByteOrder;
+import java.nio.file.Files;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -26,6 +29,9 @@ import javax.xml.validation.SchemaFactory;
 import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.xtce.Algorithm;
+import org.yamcs.xtce.AggregateMemberInstanceRef;
+import org.yamcs.xtce.ArrayParameterType;
+import org.yamcs.xtce.DynamicIntegerValue;
 import org.yamcs.xtce.Container;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Parameter;
@@ -65,6 +71,48 @@ public class XtceAssemblerTest {
     @Test
     public void testAggregateMemberArrayDimensions() throws Exception {
         verify("src/test/resources/xtce/array-in-array-tm.xml");
+        verify("src/test/resources/xtce/aggregate-member-ancillary.xml");
+    }
+
+    @Test
+    public void testAggregateMemberDimensionsAreSchemaValid() throws Exception {
+        File fixture = new File("src/test/resources/xtce/aggregate-member-ancillary.xml");
+        var schema = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
+                .newSchema(new File("../yamcs-xtce/SpaceSystemV1.2.xsd"));
+        schema.newValidator().validate(new StreamSource(fixture));
+        Mdb mdb = MdbFactory.createInstance(List.of(YConfiguration.wrap(
+                Map.of("type", "xtce", "spec", fixture.getPath()))), false, false);
+        String xml = new XtceAssembler().toXtce(mdb, "/AggregateMemberAncillaryTest", x -> true);
+        assertFalse(xml.contains("yamcs:aggregateMember"));
+        assertTrue(xml.contains("Yamcs:AggregateMember"));
+        schema.newValidator().validate(new StreamSource(new StringReader(xml)));
+    }
+
+    // Protect legacy import compatibility until the planned deprecation of the attribute reader.
+    // New fixtures use ancillary data; only this migration test deliberately constructs the old attribute.
+    @Test
+    public void testLegacyAggregateMemberAttributeExportsAsAncillaryData() throws Exception {
+        String xml = Files.readString(new File("src/test/resources/xtce/aggregate-member-ancillary.xml").toPath())
+                .replace("<AncillaryData name=\"Yamcs:AggregateMember\">count</AncillaryData>", "")
+                .replace("parameterRef=\"count\"", "parameterRef=\"count\" "
+                        + "xmlns:yamcs=\"http://yamcs.org/schema/xtce\" yamcs:aggregateMember=\"true\"");
+        File legacy = File.createTempFile("legacy-aggregate-member", ".xml");
+        try {
+            Files.writeString(legacy.toPath(), xml);
+            Mdb mdb = MdbFactory.createInstance(List.of(YConfiguration.wrap(
+                    Map.of("type", "xtce", "spec", legacy.getPath()))), false, false);
+            var type = (ArrayParameterType) mdb.getParameterType("/AggregateMemberAncillaryTest/values_type");
+            var size = (DynamicIntegerValue) type.getSize().get(0);
+            assertInstanceOf(AggregateMemberInstanceRef.class, size.getDynamicInstanceRef());
+            String exported = new XtceAssembler().toXtce(mdb, "/AggregateMemberAncillaryTest", x -> true);
+            assertFalse(exported.contains("yamcs:aggregateMember"));
+            assertTrue(exported.contains("Yamcs:AggregateMember"));
+            SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
+                    .newSchema(new File("../yamcs-xtce/SpaceSystemV1.2.xsd"))
+                    .newValidator().validate(new StreamSource(new StringReader(exported)));
+        } finally {
+            legacy.delete();
+        }
     }
 
     @Test
