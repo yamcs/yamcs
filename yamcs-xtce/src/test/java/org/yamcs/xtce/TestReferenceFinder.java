@@ -104,4 +104,19 @@ public class TestReferenceFinder {
         FoundReference fr = ReferenceFinder.findReference(a, new NameReference("b/test", Type.PARAMETER_TYPE));
         assertNull(fr);
     }
+
+    /**
+     * A relative reference into a subsystem that does not (yet) exist must not resolve to an equally named parameter
+     * in the current space system.
+     */
+    @Test
+    public void testMissingSubsystemDoesNotFallBack() {
+        SpaceSystem root = new SpaceSystem("");
+        Parameter p1 = new Parameter("p1");
+        p1.setParameterType(new IntegerParameterType.Builder().setName("test").build());
+        root.addParameter(p1);
+
+        FoundReference fr = ReferenceFinder.findReference(root, new NameReference("a/p1", Type.PARAMETER));
+        assertNull(fr);
+    }
 }

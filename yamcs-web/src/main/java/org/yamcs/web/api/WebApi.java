@@ -206,7 +206,7 @@ public class WebApi extends AbstractWebApi<Context> {
         var notificationManager = plugin.getNotificationManager();
         var responseb = ListNotificationsResponse.newBuilder()
                 .setRuntimeId(NotificationManager.RUNTIME_ID);
-        var notifications = new ArrayList<>(notificationManager.getNotifications());
+        var notifications = new ArrayList<>(notificationManager.getNotifications(ctx.user));
         Collections.reverse(notifications);
         responseb.addAllNotifications(notifications);
         observer.complete(responseb.build());
@@ -216,7 +216,11 @@ public class WebApi extends AbstractWebApi<Context> {
     public void subscribeNotifications(Context ctx, SubscribeNotificationsRequest request,
             Observer<NotificationInfo> observer) {
         var notificationManager = plugin.getNotificationManager();
-        NotificationListener listener = observer::next;
+        NotificationListener listener = notification -> {
+            if (notification.isVisibleTo(ctx.user)) {
+                observer.next(notification.toProto());
+            }
+        };
         observer.setCancelHandler(() -> notificationManager.removeListener(listener));
         notificationManager.addListener(listener);
     }

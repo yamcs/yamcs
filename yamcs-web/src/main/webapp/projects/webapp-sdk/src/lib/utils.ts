@@ -153,7 +153,7 @@ export function convertValueToNumber(value: Value) {
     case 'SINT32':
       return value.sint32Value!;
     case 'UINT64':
-      return value.uint64Value!;
+      return Number(value.uint64Value);
     case 'SINT64':
       return value.sint64Value!;
     case 'ENUMERATED':
@@ -224,9 +224,9 @@ export function convertValue(value: Value) {
     case 'SINT32':
       return value.sint32Value;
     case 'UINT64':
-      return value.uint64Value;
+      return Number(value.uint64Value);
     case 'SINT64':
-      return value.sint64Value;
+      return Number(value.sint64Value);
     case 'BOOLEAN':
       return value.booleanValue;
     case 'TIMESTAMP':

@@ -35,27 +35,6 @@ public class DirectoryAuthModule implements AuthModule {
                     throw new AuthenticationException("Password does not match");
                 }
             }
-        } else if (token instanceof ApplicationCredentials) {
-            String applicationId = ((ApplicationCredentials) token).getApplicationId();
-            String applicationSecret = ((ApplicationCredentials) token).getApplicationSecret();
-            String become = ((ApplicationCredentials) token).getBecome();
-            Account account = directory.getAccountForApplication(applicationId);
-            if (account != null) {
-                if (directory.validateApplicationPassword(applicationId, applicationSecret.toCharArray())) {
-                    if (become == null) {
-                        return new AuthenticationInfo(this, account.getName());
-                    } else { // TODO add a role, currently we assume all applications can do 'become'.
-                        Account becomeAccount = directory.getAccount(become);
-                        if (becomeAccount != null) {
-                            return new AuthenticationInfo(this, become);
-                        } else {
-                            throw new AuthenticationException("Unknown account " + become);
-                        }
-                    }
-                } else {
-                    throw new AuthenticationException("Secret does not match");
-                }
-            }
         }
         return null;
     }

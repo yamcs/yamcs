@@ -16,7 +16,7 @@ public class Criteria {
         this.interval = interval;
     }
 
-    TimeInterval getTimeInterval() {
+    public TimeInterval getTimeInterval() {
         return interval;
     }
 

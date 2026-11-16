@@ -64,6 +64,7 @@ export class EditBandDialogComponent implements OnDestroy {
       name: formValue.name,
       description: formValue.description,
       shared: this.data.band.shared,
+      source: this.data.band.source,
       tags: formValue.tags,
       properties: formValue.properties,
     };

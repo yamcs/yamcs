@@ -102,7 +102,7 @@ public class DataEncodingDecoder {
             boolean negative = ((rv >>> (numBits - 1) & 1L) == 1L);
 
             if (negative) {
-                rv = rv & ((1 << (numBits - 1)) - 1); // remove the sign bit
+                rv = rv & ((1L << (numBits - 1)) - 1); // remove the sign bit
                 rv = -rv;
             }
             break;

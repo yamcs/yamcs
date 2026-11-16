@@ -1,0 +1,22 @@
+<h2 mat-dialog-title>Set Y-axis range</h2>
+
+<mat-dialog-content (keydown.enter)="$event.preventDefault(); apply()">
+  <ya-form [formGroup]="form">
+    <ya-field label="Minimum">
+      <input type="number" formControlName="minimum" />
+    </ya-field>
+
+    <ya-field label="Maximum">
+      <input type="number" formControlName="maximum" />
+    </ya-field>
+  </ya-form>
+
+  @if (form.errors?.axisRange) {
+    <ya-warning-message>Minimum must be less than maximum</ya-warning-message>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <ya-button mat-dialog-close>CANCEL</ya-button>
+  <ya-button appearance="primary" (click)="apply()" [disabled]="!form.valid">OK</ya-button>
+</mat-dialog-actions>

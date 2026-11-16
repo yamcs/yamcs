@@ -60,7 +60,7 @@ public abstract class AggregateExpression extends Expression {
 
     @Override
     public void fillCode_getValueReturn(StringBuilder code) throws StreamSqlException {
-        code.append("col" + colName);
+        code.append("col" + sanitizeName(colName));
     }
 
     @Override
