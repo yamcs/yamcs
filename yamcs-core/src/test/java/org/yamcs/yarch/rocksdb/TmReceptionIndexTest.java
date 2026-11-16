@@ -109,6 +109,32 @@ public class TmReceptionIndexTest extends YarchTestCase {
     }
 
     @Test
+    public void migratesIndexFromDefaultColumnFamily() throws Exception {
+        create(true, true);
+        put(0, 1, base + 10, "a", InsertMode.INSERT);
+        Tuple row = scan(true, null, null, null, null).get(0);
+        int indexId = tablespace.getTable(definition).indexWriter.getTbsIndex();
+        byte[] key = RdbStorageEngine.dbKey(indexId, SecondaryIndexKey.suffix(definition, row));
+        YRDB main = tablespace.getRdb();
+        var cf = main.getColumnFamilyHandle("rt_data");
+        byte[] pointer = main.get(cf, key);
+        assertNotNull(pointer);
+        assertNull(main.get(key));
+
+        // Recreate the storage layout used before indexes followed their table's column family.
+        main.put(key, pointer);
+        main.delete(cf, key);
+        reloadDb();
+        definition = ydb.getTable("tm");
+        tablespace = RdbStorageEngine.getInstance().getTablespace(ydb);
+
+        assertEquals(1, scan(true, null, null, null, null).size());
+        main = tablespace.getRdb();
+        assertNull(main.get(key));
+        assertNotNull(main.get(main.getColumnFamilyHandle("rt_data"), key));
+    }
+
+    @Test
     public void dedupReplacementLoadAndDeletion() throws Exception {
         create(true, true);
         put(0, 1, base + 10, "a", InsertMode.INSERT);

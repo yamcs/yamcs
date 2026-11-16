@@ -42,6 +42,10 @@ import {
   throttleTime,
 } from 'rxjs';
 import { SelectRangeDialogComponent } from '../select-range-dialog/select-range-dialog.component';
+import {
+  AxisRangeDialogComponent,
+  AxisRangeDialogData,
+} from './axis-range-dialog.component';
 import { HoveredDateAnnotation } from './HoveredDateAnnotation';
 import { Legend } from './Legend';
 import { LegendComponent } from './legend.component';
@@ -75,6 +79,18 @@ export const DEFAULT_COLORS = [
   '#7626bb',
   '#e64b19',
 ];
+
+/**
+ * Round an axis bound to a few significant digits relative to
+ * the span of the axis range.
+ */
+function roundForDisplay(value: number, span: number) {
+  if (!(span > 0)) {
+    return value;
+  }
+  const decimals = Math.ceil(-Math.log10(span)) + 3;
+  return Number(value.toFixed(Math.min(Math.max(decimals, 0), 20)));
+}
 
 @Component({
   selector: 'app-parameter-chart-tab',
@@ -296,6 +312,16 @@ export class ParameterChartTabComponent
       }
     });
     this.subscriptions.push(formSubscription);
+
+    const centerZeroSubscription = this.form.controls.centerZero.valueChanges
+      .pipe(distinctUntilChanged())
+      .subscribe((centerZero) => {
+        this.band.centerZero = centerZero ?? false;
+        if (centerZero) {
+          this.band.resetAxisRange();
+        }
+      });
+    this.subscriptions.push(centerZeroSubscription);
     this.readQueryParams();
   }
 
@@ -862,6 +888,27 @@ export class ParameterChartTabComponent
     for (const band of this.bands) {
       band.resetAxisRange();
     }
+  }
+
+  openAxisRangeDialog() {
+    let data: Partial<AxisRangeDialogData> = {};
+    // Undefined until the plot has a range
+    if (this.band.valueForPositionFn) {
+      const min = this.band.visibleMinimum;
+      const max = this.band.visibleMaximum;
+      data = {
+        minimum: roundForDisplay(min, max - min),
+        maximum: roundForDisplay(max, max - min),
+      };
+    }
+    this.dialog
+      .open(AxisRangeDialogComponent, { width: '400px', data })
+      .afterClosed()
+      .subscribe((result?: AxisRangeDialogData) => {
+        if (result) {
+          this.band.setAxisRange(result.minimum, result.maximum);
+        }
+      });
   }
 
   openDateRangeDialog() {

@@ -3,6 +3,8 @@ package org.yamcs.pus;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.yamcs.YConfiguration;
 import org.yamcs.algorithms.AbstractAlgorithmExecutor;
@@ -39,6 +41,12 @@ import org.yamcs.xtce.Parameter;
  * becuase it is converted from a command history attribute)
  * <p>
  * In addition to these 5, other inputs may be used to get values in case of failure.
+ * <p>
+ * An input named <b>reportType</b> must also be given (in any position after the first 5). It is the PUS type of the
+ * incoming packet, with a raw type as unsigned integer. The algorithm returns no result unless the type is 1.
+ * <p>
+ * For backwards compatibility, the reportType input is currently not enforced: if it is missing, a warning is logged
+ * and the type check is skipped. It will become mandatory in a future version.
  * 
  * <p>
  * The algorithm checks the following conditions:
@@ -46,6 +54,7 @@ import org.yamcs.xtce.Parameter;
  * <ul>
  * <li><code>sentApid == rcvdApid</code></li>
  * <li><code>sentSeqCount == rcvdSeqCount</code></li>
+ * <li><code>reportType == 1</code></li>
  * <li>The <code>reportSubType=verificationStage or reportSubType=verificationStage+1</code></li>
  * </ul>
  * <p>
@@ -61,6 +70,10 @@ public class Pus1Verifier extends AbstractAlgorithmExecutor {
 
     private final int verificationStage;
     private final MessageTemplate template;
+    // index of the reportType input or -1 if not present
+    private final int reportTypeIdx;
+    // the executor is created for each command, this is to warn only once per algorithm
+    private static final Set<String> warnedAlgorithms = ConcurrentHashMap.newKeySet();
     public static AlgorithmExecutionResult NO_RESULT = new AlgorithmExecutionResult(Collections.emptyList());
 
     Map<Integer, String> verificationStageToFlagMapping = new HashMap<>();
@@ -85,6 +98,22 @@ public class Pus1Verifier extends AbstractAlgorithmExecutor {
             template = new MessageTemplate(yc.getString("template"));
         } else {
             template = null;
+        }
+
+        int idx = -1;
+        var algInputList = algorithmDef.getInputList();
+        for (int i = 0; i < algInputList.size(); i++) {
+            if ("reportType".equals(algInputList.get(i).getInputName())) {
+                idx = i;
+                break;
+            }
+        }
+        reportTypeIdx = idx;
+        String algName = algorithmDef.getQualifiedName() != null ? algorithmDef.getQualifiedName()
+                : algorithmDef.getName();
+        if (reportTypeIdx < 0 && warnedAlgorithms.add(algName)) {
+            log.warn("PUS1 verifier {} has no reportType input; it will become mandatory in a future version",
+                    algName);
         }
     }
 
@@ -122,6 +151,13 @@ public class Pus1Verifier extends AbstractAlgorithmExecutor {
         if (!ackFlag) {
             return NO_RESULT;
         }
+        if (reportTypeIdx >= 0) {
+            var reportType = inputValues.get(reportTypeIdx);
+            if (reportType == null || reportType.getRawValue().getUint32Value() != 1) {
+                return NO_RESULT;
+            }
+        }
+
         if (sentApid != rcvdApid || sentSeq != rcvdSeq) {
             return NO_RESULT;
         }

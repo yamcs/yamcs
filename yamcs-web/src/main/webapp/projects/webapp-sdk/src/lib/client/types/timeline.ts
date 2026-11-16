@@ -2,12 +2,16 @@ import { Activity } from './activities';
 
 export interface SaveTimelineItemRequest {
   name: string;
-  start: string;
+  /**
+   * Required, unless predecessors are given (the start is then derived)
+   */
+  start?: string;
   duration: string;
   type: TimelineItemType;
   tags?: string[];
   properties?: { [key: string]: string };
   activityDefinition?: ActivityDefinition;
+  predecessors?: Predecessor[];
   autoStart?: boolean;
 }
 
@@ -98,6 +102,7 @@ export interface SaveTimelineBandRequest {
   description?: string;
   type: TimelineBandType;
   shared: boolean;
+  source?: string;
   tags?: string[];
   properties?: { [key: string]: string };
 }
@@ -108,9 +113,22 @@ export interface TimelineBand {
   shared: boolean;
   name: string;
   description?: string;
+  source?: string;
   tags?: string[];
   properties?: { [key: string]: string };
   username: string;
+}
+
+export interface TimelineSourceCapabilities {
+  readOnly: boolean;
+  hasManualActivities: boolean;
+  hasAutomatedActivities: boolean;
+  hasEventGroups: boolean;
+  hasActivityGroups: boolean;
+}
+
+export interface TimelineSourcesPage {
+  sources: { [key: string]: TimelineSourceCapabilities };
 }
 
 export interface TimelineView {

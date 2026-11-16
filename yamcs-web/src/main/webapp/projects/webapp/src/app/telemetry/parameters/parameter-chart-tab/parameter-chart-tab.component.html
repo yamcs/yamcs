@@ -46,12 +46,14 @@
           <tr>
             <td class="property">
               Y-axis zoom
-              <ya-help>Reset vertical zoom to activate automatic zoom</ya-help>
+              <ya-help>
+                Set a fixed vertical range, or reset vertical zoom to activate automatic zoom
+              </ya-help>
             </td>
             <td class="widget">
-              <ya-button (click)="autoScale()" [disabled]="!resetZoomEnabled()">
-                Reset zoom
-              </ya-button>
+              <ya-button (click)="openAxisRangeDialog()">Set range</ya-button>
+              &nbsp;
+              <ya-button (click)="autoScale()" [disabled]="!resetZoomEnabled()">Reset</ya-button>
             </td>
           </tr>
         </table>

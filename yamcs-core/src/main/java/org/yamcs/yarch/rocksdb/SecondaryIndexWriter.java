@@ -84,6 +84,10 @@ public class SecondaryIndexWriter {
         return value.toArray();
     }
 
+    private ColumnFamilyHandle indexColumnFamily() throws RocksDBException {
+        return tablespace.getRdb().createAndGetColumnFamilyHandle(table.cfName());
+    }
+
     /** Caller holds the lifecycle read lock and source-row lock. */
     void write(YRDB db, ColumnFamilyHandle cf, RdbPartition partition,
             byte[] oldRowKey, byte[] newRowKey, byte[] value) throws RocksDBException {
@@ -110,7 +114,7 @@ public class SecondaryIndexWriter {
                     batch.put(cf, newRowKey, value);
                 }
                 if (db == tablespace.getRdb()) {
-                    addOperation(batch, op.build());
+                    addOperation(batch, cf, op.build());
                     db.write(options, batch);
                 } else {
                     var pending = db.createAndGetColumnFamilyHandle(PENDING_CF);
@@ -130,20 +134,53 @@ public class SecondaryIndexWriter {
         }
     }
 
-    private void addOperation(WriteBatch batch, PendingIndexOperation op) throws RocksDBException {
+    private void addOperation(WriteBatch batch, ColumnFamilyHandle cf, PendingIndexOperation op)
+            throws RocksDBException {
         if (op.hasDeleteKey()) {
-            batch.delete(op.getDeleteKey().toByteArray());
+            batch.delete(cf, op.getDeleteKey().toByteArray());
         }
         if (op.hasPutKey()) {
-            batch.put(op.getPutKey().toByteArray(), op.getPutValue().toByteArray());
+            batch.put(cf, op.getPutKey().toByteArray(), op.getPutValue().toByteArray());
         }
     }
 
     private void apply(PendingIndexOperation op) throws RocksDBException {
         try (WriteBatch batch = new WriteBatch(); WriteOptions options = new WriteOptions().setSync(true)) {
-            addOperation(batch, op);
+            addOperation(batch, indexColumnFamily(), op);
             tablespace.getRdb().write(options, batch);
         }
+    }
+
+    /** Move indexes written by older versions to the table's column family before accepting new writes. */
+    private void migrateLegacyIndex() throws RocksDBException {
+        if (YRDB.DEFAULT_CF.equals(table.cfName())) {
+            return;
+        }
+        YRDB main = tablespace.getRdb();
+        byte[] start = RdbStorageEngine.dbKey(getTbsIndex());
+        byte[] end = RdbStorageEngine.dbKey(getTbsIndex() + 1);
+        try (AscendingRangeIterator it = new AscendingRangeIterator(main.newIterator(), start, start)) {
+            if (!it.isValid()) {
+                return;
+            }
+            ColumnFamilyHandle cf = indexColumnFamily();
+            try (WriteBatch batch = new WriteBatch(); WriteOptions options = new WriteOptions().setSync(true)) {
+                int count = 0;
+                while (it.isValid()) {
+                    batch.put(cf, it.key(), it.value());
+                    if (++count == 1000) {
+                        main.write(options, batch);
+                        batch.clear();
+                        count = 0;
+                    }
+                    it.next();
+                }
+                if (count > 0) {
+                    main.write(options, batch);
+                }
+            }
+        }
+        main.getDb().deleteRange(start, end);
     }
 
     private void replayRow(YRDB db, byte[] rowKey) throws RocksDBException {
@@ -169,6 +206,7 @@ public class SecondaryIndexWriter {
         SecondaryIndex info = getInfo();
         try {
             setInfo(info.toBuilder().setState(State.BUILDING));
+            migrateLegacyIndex();
             byte[] prefix = RdbStorageEngine.dbKey(getTbsIndex());
             for (var p : table.partitionManager.getPartitions()) {
                 RdbPartition partition = (RdbPartition) p;
@@ -275,7 +313,8 @@ public class SecondaryIndexWriter {
                 try (WriteBatch batch = new WriteBatch(); WriteOptions options = new WriteOptions().setSync(true)) {
                     TablespaceRecord next = record.toBuilder().setSecondaryIndex(info).build();
                     tablespace.writeToBatch(table.yamcsInstance, batch, next.toBuilder());
-                    batch.deleteRange(RdbStorageEngine.dbKey(getTbsIndex()), RdbStorageEngine.dbKey(getTbsIndex() + 1));
+                    batch.deleteRange(indexColumnFamily(), RdbStorageEngine.dbKey(getTbsIndex()),
+                            RdbStorageEngine.dbKey(getTbsIndex() + 1));
                     tablespace.getRdb().write(options, batch);
                     record = next;
                 }
@@ -330,7 +369,7 @@ public class SecondaryIndexWriter {
                             if (value != null) {
                                 byte[] key = indexKey(rowKey, value);
                                 if (key != null) {
-                                    tablespace.getRdb().put(key, pointer(partition));
+                                    tablespace.getRdb().put(indexColumnFamily(), key, pointer(partition));
                                 }
                                 processed++;
                                 if (key == null) {

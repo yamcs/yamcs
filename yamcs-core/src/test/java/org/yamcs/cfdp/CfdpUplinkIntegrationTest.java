@@ -333,6 +333,10 @@ public class CfdpUplinkIntegrationTest {
 
         TransferInfo tinfo1 = cfdpClient.getTransfer(tinf.getId()).get();
         assertEquals(expectedSenderState, tinfo1.getState());
+        // the finished transfers are listed from the cfdp table
+        var listed = cfdpClient.listTransfers().get().stream().filter(t -> t.getId() == tinf.getId()).toList();
+        assertEquals(1, listed.size());
+        assertEquals(expectedSenderState, listed.get(0).getState());
         if (expectedReceiverState != null) {
             assertEquals(expectedReceiverState, rec.trsf.getTransferState());
 

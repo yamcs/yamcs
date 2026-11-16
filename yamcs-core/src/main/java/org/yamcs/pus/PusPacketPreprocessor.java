@@ -115,7 +115,6 @@ public class PusPacketPreprocessor extends CcsdsPacketPreprocessor {
         super(yamcsInstance, config);
         pktTimeOffset = config.getInt("pktTimeOffset", DEFAULT_PKT_TIME_OFFSET);
         timePktTimeOffset = config.getInt("timePktTimeOffset", DEFAULT_TIME_PACKET_TIME_OFFSET);
-
         performTimeCorrelation = config.getBoolean("performTimeCorrelation", false);
 
         if (timeDecoder == null) {

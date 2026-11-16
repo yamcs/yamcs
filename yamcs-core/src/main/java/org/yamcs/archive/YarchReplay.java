@@ -156,6 +156,7 @@ public class YarchReplay implements StreamSubscriber {
                 log.error("Got exception when creating the stream: ", e);
                 errorString = e.toString();
                 state = ReplayState.ERROR;
+                signalStateChange();
             }
             break;
         case PAUSED:

@@ -288,6 +288,25 @@ public class XmlLoaderTest {
     }
 
     @Test
+    public void testScheduledVerifier() throws XMLStreamException, IOException {
+        Mdb mdb = MdbFactory.createInstanceByConfig("refxtce");
+        MetaCommand mc = mdb.getMetaCommand("/RefXtce/cmd_with_scheduled_verifier");
+        List<CommandVerifier> cvList = mc.getCommandVerifiers(false);
+        assertEquals(2, cvList.size());
+
+        CommandVerifier scheduled = cvList.get(0);
+        assertEquals("Scheduled", scheduled.getStage());
+        assertTrue(scheduled.isSkipOthersOnSuccess());
+        assertEquals(List.of("optA", "optB"), scheduled.getRequiredAttributes());
+        assertEquals(CommandVerifier.TerminationAction.SUCCESS, scheduled.getOnSuccess());
+        assertEquals(CommandVerifier.TerminationAction.FAIL, scheduled.getOnFail());
+
+        CommandVerifier complete = cvList.get(1);
+        assertFalse(complete.isSkipOthersOnSuccess());
+        assertTrue(complete.getRequiredAttributes().isEmpty());
+    }
+
+    @Test
     public void testAutoPart() throws XMLStreamException, IOException {
         Mdb mdb = MdbFactory.createInstanceByConfig("BogusSAT2");
         assertTrue(mdb.getSequenceContainer("/BogusSAT/CCSDSPUSTelemetryPacket").useAsPacketName());

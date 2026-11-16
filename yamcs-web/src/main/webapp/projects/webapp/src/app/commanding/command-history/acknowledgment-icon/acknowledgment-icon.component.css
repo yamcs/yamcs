@@ -23,6 +23,10 @@
   color: lightgrey;
 }
 
+.na {
+  color: lightgrey;
+}
+
 .timeout {
   color: var(--y-error-color);
 }

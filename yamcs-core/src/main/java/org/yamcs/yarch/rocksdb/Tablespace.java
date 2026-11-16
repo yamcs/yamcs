@@ -408,6 +408,14 @@ public class Tablespace {
         }
     }
 
+    /** Deletes data for an index or table partition from the given column family, if it exists. */
+    private void deleteRange(YRDB db, String cfName, int tbsIndex) throws RocksDBException {
+        var cf = db.getColumnFamilyHandle(cfName);
+        if (cf != null) {
+            db.getDb().deleteRange(cf, dbKey(tbsIndex), dbKey(tbsIndex + 1));
+        }
+    }
+
     /**
      * Removes the tbs indices with ALL the associated data from the main db (data might still be present in the
      * partitions)
@@ -611,6 +619,8 @@ public class Tablespace {
                         tr -> tr.getTableName().equals(tblDef.getName()))) {
                     int tbsIndex = tr.getTbsIndex();
                     log.debug("Removing secondary index {}", tr);
+                    deleteRange(mainDb, table.cfName(), tbsIndex);
+                    // removeTbsIndex also clears index entries written to the default CF by older versions.
                     removeTbsIndex(Type.SECONDARY_INDEX, tbsIndex);
                 }
 

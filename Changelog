@@ -1,7 +1,37 @@
-Unreleased (Pixxel)
+Version 5.14.1-0.5.1.Pixxel released 15-Nov-2026
+* Important changes:
+    * The experimental service account functionality has been removed. Existing stored service accounts are kept but can no longer be used.
+    * Access to the `_global` database through the table API (which holds the user accounts and the global audit log) is now restricted to superusers; the `ReadTables`, `WriteTables` and `ControlArchiving` privileges no longer apply to it.
+    * Bucket objects are now served as attachments (`Content-Disposition: attachment`).
+- Commanding: verifiers can be skipped based on MDB ancillary data: `yamcs.requiresAttribute` (only run the verifier for commands having the given attribute) and `yamcs.skipOthersOnSuccess` (do not run the other verifiers if this one succeeds). The web UI shows skipped verifiers with a dedicated icon.
+- PUS: Pus1Verifier has a new `reportType` input to ignore non-PUS1 packets; PusPacketPreprocessor reads `timePktTimeOffset` also when not performing time correlation; the PUS example MDB has scheduled verifiers and the orbit angle in degrees
+- Timeline: support for item bands with external sources; the activity edit dialog keeps the fields it does not edit
+- Web UI: allow setting a manual Y-axis range on the parameter chart; convert 64-bit integer values to numbers; fix URL encoding of parameter links in OPI displays; correctly handle edited but empty command options
+- Fix secondary index not written in the same column family as the data (#1164)
+- Fix retrieval of fresh parameters when waiting for updates (#1196)
+- Fix deadlock in container subscription
+- Fix integer encoding/decoding issues and sign extension of unsigned 32-bit comparison constants
+- Fix comparison of integer and float values in match criteria and quote right-hand references in match criteria expressions
+- Fix relative references into not-yet-parsed subsystems (#1186)
+- Fix algorithms with special characters in their qualified name
+- Fix aggregates over tables with parameter value columns
+- Fix the type of the CFDP `transferState` column
+- Fix CspPacket.setCrcFlag ignoring the enabled argument
+- Fix startup failure on an empty replication file left by an unclean stop
+- Fix the simulator stopping command execution after LIST_RECORDINGS
+- Fix vulnerabilities:
+    - GHSA-q48q-3338-9mwh, GHSA-cp32-fxxm-95fh Avoid RCE through column names and protobuf class names in StreamSQL
+    - GHSA-wcv6-98jm-hjq5 Restrict table API access to the _global database to superusers
+    - GHSA-cf8w-8983-rvx4 Remove experimental service account functionality
+    - GHSA-p4cr-358q-qmjg Refuse dot segments in bucket object names matched against access rules
+    - GHSA-2f3q-8v3v-2392 Serve bucket objects as attachments
+    - GHSA-wgxx-f8wg-5476 Enforce visibility of private timeline bands
+    - GHSA-ppr9-xgww-564p Restrict web notifications to users allowed to see their source
+
+Version 5.14.0-0.5.1.Pixxel released 31-Oct-2026
 - XTCE: aggregate-local array lengths now use AncillaryData named `Yamcs:AggregateMember` on ArrayParameterType. The older `yamcs:aggregateMember` attribute and its compatibility reader, `XtceStaxReader.isAggregateMemberReference()`, are scheduled for deprecation soon. Legacy imports remain supported; exports migrate to ancillary data. No deprecation release or removal date has been set.
 
-Version 5.13.8 released 31-Oct-2026
+Version 5.14.0 released 31-Oct-2026
 * Important changes:
     * The `tm` table created by the XtceTmRecorder is no longer partitioned by `pname` (packet name). Instead, `pname` is added to the primary key, which becomes `(gentime, seqNum, pname)`, so packets are deduplicated exactly as before.
       This only applies to newly created archives; existing `tm` tables keep their current definition. The old behaviour can be selected for new archives with the `partitionByPname: true` option of the XtceTmRecorder.

@@ -109,8 +109,12 @@ public class SecondaryIndexTableWalker implements TableWalker {
             }
             DbRange dbRange = RdbTableWalker.getDbRange(writer.getTbsIndex(), range);
             YRDB main = tablespace.getRdb();
+            var indexCf = main.getColumnFamilyHandle(table.cfName());
+            if (indexCf == null) {
+                return;
+            }
             try (ReadOptions options = new ReadOptions().setTotalOrderSeek(true);
-                    RocksIterator rocksIt = main.getDb().newIterator(options);
+                    RocksIterator rocksIt = main.newIterator(indexCf, options);
                     DbIterator it = ascending ? new AscendingRangeIterator(rocksIt, dbRange)
                             : new DescendingRangeIterator(rocksIt, dbRange)) {
                 while (running && it.isValid()) {

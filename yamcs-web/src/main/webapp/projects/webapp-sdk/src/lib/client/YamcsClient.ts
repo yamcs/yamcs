@@ -202,8 +202,6 @@ import {
   ClearanceSubscription,
   CompactRocksDbDatabaseRequest,
   CreateGroupRequest,
-  CreateServiceAccountRequest,
-  CreateServiceAccountResponse,
   CreateUserRequest,
   Database,
   EditClearanceRequest,
@@ -224,7 +222,6 @@ import {
   ListDatabasesResponse,
   ListProcessorTypesResponse,
   ListRoutesResponse,
-  ListServiceAccountsResponse,
   ListThreadsResponse,
   ListTopicsResponse,
   LogoutResponse,
@@ -233,7 +230,6 @@ import {
   ResultSet,
   RoleInfo,
   Service,
-  ServiceAccount,
   SystemInfo,
   SystemInfoSubscription,
   ThreadInfo,
@@ -261,6 +257,7 @@ import {
   TimelineBandsPage,
   TimelineItem,
   TimelineItemsPage,
+  TimelineSourcesPage,
   TimelineTagsPage,
   TimelineView,
   TimelineViewsPage,
@@ -585,35 +582,6 @@ export default class YamcsClient implements HttpHandler {
     });
   }
 
-  async getServiceAccounts() {
-    const url = `${this.apiUrl}/service-accounts`;
-    const response = await this.doFetch(url);
-    return (await response.json()) as ListServiceAccountsResponse;
-  }
-
-  async getServiceAccount(name: string) {
-    const url = `${this.apiUrl}/service-accounts/${name}`;
-    const response = await this.doFetch(url);
-    return (await response.json()) as ServiceAccount;
-  }
-
-  async createServiceAccount(options: CreateServiceAccountRequest) {
-    const body = JSON.stringify(options);
-    const url = `${this.apiUrl}/service-accounts`;
-    const response = await this.doFetch(url, {
-      body,
-      method: 'POST',
-    });
-    return (await response.json()) as CreateServiceAccountResponse;
-  }
-
-  async deleteServiceAccount(name: string) {
-    const url = `${this.apiUrl}/service-accounts/${name}`;
-    return await this.doFetch(url, {
-      method: 'DELETE',
-    });
-  }
-
   async getTimelineViews(instance: string) {
     const url = `${this.apiUrl}/timeline/${instance}/views`;
     const response = await this.doFetch(url);
@@ -664,6 +632,12 @@ export default class YamcsClient implements HttpHandler {
     const url = `${this.apiUrl}/audit/records/${instance}`;
     const response = await this.doFetch(url + this.queryString(options));
     return (await response.json()) as AuditRecordsPage;
+  }
+
+  async getTimelineSources(instance: string) {
+    const url = `${this.apiUrl}/timeline/${instance}/sources`;
+    const response = await this.doFetch(url);
+    return (await response.json()) as TimelineSourcesPage;
   }
 
   async getTimelineTags(instance: string) {

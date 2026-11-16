@@ -11,11 +11,14 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Predicate;
 
 import org.yamcs.YamcsServerInstance;
 import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
 import org.yamcs.protobuf.ExecutionStatus;
+import org.yamcs.security.SystemPrivilege;
+import org.yamcs.security.User;
 import org.yamcs.timeline.DefaultItemListener;
 import org.yamcs.timeline.ItemListener;
 import org.yamcs.timeline.TimelineActivity;
@@ -41,6 +44,9 @@ public class NotificationManager {
     private static final String TIMELINE_URL = "/timeline";
     private static final String TIMELINE_URL_C = "c";
     private static final String TIMELINE_URL_DATE = "date";
+
+    private static final Predicate<User> TIMELINE_AUDIENCE = user -> user
+            .hasSystemPrivilege(SystemPrivilege.ReadTimeline);
 
     private ConcurrentMap<String, ItemListener> itemListenersByInstance = new ConcurrentHashMap<>();
 
@@ -72,8 +78,12 @@ public class NotificationManager {
         });
     }
 
-    public List<NotificationInfo> getNotifications() {
+    /**
+     * Returns the notifications that are visible to the specified user
+     */
+    public List<NotificationInfo> getNotifications(User user) {
         return tag2notification.asMap().values().stream()
+                .filter(notification -> notification.isVisibleTo(user))
                 .sorted()
                 .map(Notification::toProto)
                 .toList();
@@ -129,23 +139,23 @@ public class NotificationManager {
         var statusChanged = !Objects.equals(status, activity.getPrevStatus());
         Notification notification = null;
         if (statusChanged && status == ExecutionStatus.READY) {
-            notification = createInfo(instance, tag, title);
+            notification = createInfo(instance, tag, title, TIMELINE_AUDIENCE);
             notification.setUrl(url);
             notification.setDescription("This " + type + " is ready for execution");
         } else if (statusChanged && status == ExecutionStatus.FAILED) {
-            notification = createError(instance, tag, title);
+            notification = createError(instance, tag, title, TIMELINE_AUDIENCE);
             notification.setUrl(url);
             notification.setDescription(activity.getFailureReason());
         } else if (statusChanged && status == ExecutionStatus.ABORTED) {
-            notification = createInfo(instance, tag, title);
+            notification = createInfo(instance, tag, title, TIMELINE_AUDIENCE);
             notification.setUrl(url);
             notification.setDescription("This " + type + " was aborted");
         } else if (statusChanged && status == ExecutionStatus.IN_PROGRESS) {
-            notification = createInProgress(instance, tag, title);
+            notification = createInProgress(instance, tag, title, TIMELINE_AUDIENCE);
             notification.setUrl(url);
             notification.setDescription("Executing " + type + "...");
         } else if (statusChanged && status == ExecutionStatus.SUCCEEDED) {
-            notification = createSuccess(instance, tag, title);
+            notification = createSuccess(instance, tag, title, TIMELINE_AUDIENCE);
             notification.setUrl(url);
         }
 
@@ -157,8 +167,8 @@ public class NotificationManager {
             } else {
                 tag2notification.put(notification.getTag(), notification);
             }
-            var proto = notification.toProto();
-            listeners.forEach(l -> l.onNotification(proto));
+            var finalNotification = notification;
+            listeners.forEach(l -> l.onNotification(finalNotification));
         }
     }
 

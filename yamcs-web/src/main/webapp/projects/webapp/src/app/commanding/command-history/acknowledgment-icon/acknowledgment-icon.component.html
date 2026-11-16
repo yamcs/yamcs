@@ -17,6 +17,13 @@
     @case ("DISABLED") {
       <mat-icon [matTooltip]="ack.name! + ': DISABLED'" class="icon16 disabled">block</mat-icon>
     }
+    @case ("NA") {
+      <mat-icon
+        [matTooltip]="ack.name! + ': NA' + (ack.message ? ' (' + ack.message + ')' : '')"
+        class="icon16 na">
+        remove_circle_outline
+      </mat-icon>
+    }
     @case ("TIMEOUT") {
       <mat-icon [matTooltip]="ack.name! + ': TIMEOUT'" class="icon16 timeout">
         highlight_off
