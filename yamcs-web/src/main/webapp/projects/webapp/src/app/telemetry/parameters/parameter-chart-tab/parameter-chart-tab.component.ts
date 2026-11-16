@@ -316,9 +316,11 @@ export class ParameterChartTabComponent
     const centerZeroSubscription = this.form.controls.centerZero.valueChanges
       .pipe(distinctUntilChanged())
       .subscribe((centerZero) => {
-        this.band.centerZero = centerZero ?? false;
-        if (centerZero) {
-          this.band.resetAxisRange();
+        for (const band of this.bands) {
+          band.centerZero = centerZero ?? false;
+          if (centerZero) {
+            band.resetAxisRange();
+          }
         }
       });
     this.subscriptions.push(centerZeroSubscription);
@@ -892,10 +894,11 @@ export class ParameterChartTabComponent
 
   openAxisRangeDialog() {
     let data: Partial<AxisRangeDialogData> = {};
+    const band = this.bands[0];
     // Undefined until the plot has a range
-    if (this.band.valueForPositionFn) {
-      const min = this.band.visibleMinimum;
-      const max = this.band.visibleMaximum;
+    if (band?.valueForPositionFn) {
+      const min = band.visibleMinimum;
+      const max = band.visibleMaximum;
       data = {
         minimum: roundForDisplay(min, max - min),
         maximum: roundForDisplay(max, max - min),
@@ -906,7 +909,9 @@ export class ParameterChartTabComponent
       .afterClosed()
       .subscribe((result?: AxisRangeDialogData) => {
         if (result) {
-          this.band.setAxisRange(result.minimum, result.maximum);
+          for (const band of this.bands) {
+            band.setAxisRange(result.minimum, result.maximum);
+          }
         }
       });
   }

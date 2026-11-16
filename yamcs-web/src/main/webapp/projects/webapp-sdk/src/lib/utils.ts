@@ -142,7 +142,7 @@ export function convertDurationToMillis(isoDuration: string) {
   return millis;
 }
 
-export function convertValueToNumber(value: Value) {
+export function convertValueToNumber(value: Value): number | null {
   switch (value.type) {
     case 'FLOAT':
       return value.floatValue!;
@@ -155,7 +155,7 @@ export function convertValueToNumber(value: Value) {
     case 'UINT64':
       return Number(value.uint64Value);
     case 'SINT64':
-      return value.sint64Value!;
+      return Number(value.sint64Value);
     case 'ENUMERATED':
       // Enum values carry the numeric ordinal in sint64Value (stringValue holds the label).
       return Number(value.sint64Value!);
