@@ -22,9 +22,10 @@ import org.yamcs.commanding.PreparedCommand;
 import org.yamcs.protobuf.Commanding.CommandHistoryAttribute;
 import org.yamcs.protobuf.Commanding.CommandId;
 import org.yamcs.protobuf.Yamcs.Value;
+import org.yamcs.tctm.CcsdsPacket;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
-import org.yamcs.tctm.ccsds.time.CucTimeEncoder;
 import org.yamcs.utils.ByteArrayUtils;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueHelper;
 
 public class PusCommandPostprocessorTest {
@@ -271,45 +272,29 @@ public class PusCommandPostprocessorTest {
         assertTrue(hist.attrs.get("pus22CcsdsSeqCount") instanceof Integer);
     }
 
-    // ---- Pixxel: wrapper fields, request ID republishing (Gap #5/#8), validation ----
+    // Scheduling configuration, history and validation
 
     // APID 1, TC, secondary header present, unsegmented; PUS TC secondary header (17,1), source id 0
     static final String INNER_TC = "1801C00000042D11010000";
 
     @Test
-    public void testBinaryLengthMatchesProcessedLength() {
-        for (boolean crc : new boolean[] { false, true }) {
-            for (boolean scheduled : new boolean[] { false, true }) {
-                var pp = newBarePostprocessor(crc);
-                var pc = newCommand(scheduled);
-
-                int expected = pp.getBinaryLength(pc);
-                byte[] processed = pp.process(pc);
-
-                assertEquals(expected, processed.length, "crc=" + crc + ", scheduled=" + scheduled);
-            }
+    public void testSchedulingDefaultsToInnerApid() {
+        for (int service : new int[] { 11, 22 }) {
+            var pp = newPostprocessor(YConfiguration.emptyConfig());
+            var command = scheduledCommand(service);
+            byte[] result = pp.process(command);
+            assertEquals(1, CcsdsPacket.getAPID(result));
+            assertEquals(service, result[7]);
         }
     }
 
     @Test
-    public void testScheduledCommandFailsWithoutApid() {
-        var pp = newBarePostprocessor(false);
-        pp.pus11Apid = -1; // not configured
-        var pc = newCommand(true);
-
-        var ex = assertThrows(IllegalStateException.class,
-                () -> pp.buildScheduledTc(pc.getCommandId(), 1_000_000L, 1, 1, hexStringToArray(INNER_TC)));
-        assertTrue(ex.getMessage().contains("pus11Apid"),
-                "expected exception message to mention pus11Apid, got: " + ex.getMessage());
-    }
-
-    @Test
     public void testScheduledTcConfiguredFields() {
-        var pp = newBarePostprocessor(true);
-        pp.pus11SourceId = 0x1234;
-        pp.pus11AckFlags = 0x9;
-        pp.pus11SubScheduleIdDefault = 3;
-        pp.pus11GroupIdDefault = 4;
+        var pp = newPostprocessor(YConfiguration.wrap(Map.of(
+                "errorDetection", Map.of("type", "CRC-16-CCIIT"), "pus11Apid", 5,
+                "pus11", Map.of("sourceId", 0x1234, "ackFlags", 9,
+                        "subScheduleId", Map.of("bytes", 1, "default", 3),
+                        "groupId", Map.of("bytes", 1, "default", 4)))));
 
         byte[] processed = pp.process(newCommand(true));
         assertEquals(0x29, processed[6] & 0xFF);
@@ -332,62 +317,154 @@ public class PusCommandPostprocessorTest {
     }
 
     @Test
-    public void testScheduledTcInvalidIdFailsCommand() {
-        for (var invalid : new Value[] { ValueHelper.newValue(256.0), ValueHelper.newValue(-1.0),
-                ValueHelper.newValue(1.5) }) {
-            var pp = new PusCommandPostprocessor() {
-                {
-                    timeService = new org.yamcs.time.SimulationTimeService("test");
-                }
-            };
-            pp.setCommandHistoryPublisher(new DummyCommandHistoryPublisher());
-            pp.timeEncoder = new CucTimeEncoder(0x2e, true);
-            pp.pus11Apid = 5;
-            pp.pus11SubScheduleIdBytes = 1;
-            pp.pus11GroupIdBytes = 1;
-            var pc = newCommand(true);
-            pc.addAttribute(attr(PusCommandPostprocessor.OPTION_GROUP_ID.getId(), invalid));
-            assertNull(pp.process(pc), "group id " + invalid);
+    public void testScheduledHistoryKeepsOriginalAndWrapperSeparate() {
+        for (int service : new int[] { 11, 22 }) {
+            var publisher = new CapturingCommandHistoryPublisher();
+            var pp = newPostprocessor(YConfiguration.wrap(Map.of("pus" + service + "Apid", 5)), publisher);
+            byte[] wrapper = pp.process(scheduledCommand(service));
+            byte[] original = publisher.binaries.get(PreparedCommand.CNAME_BINARY);
+
+            assertEquals(1, publisher.attrs.get("ccsds-apid"));
+            assertEquals(CcsdsPacket.getSequenceCount(original), publisher.attrs.get("ccsds-seqcount"));
+            assertEquals(5, publisher.attrs.get("pus" + service + "Apid"));
+            assertEquals(CcsdsPacket.getSequenceCount(wrapper),
+                    publisher.attrs.get("pus" + service + "CcsdsSeqCount"));
+            assertArrayEquals(wrapper, publisher.binaries.get("pus" + service + "Binary"));
+            assertEquals(java.util.Set.of("ccsds-apid", "ccsds-seqcount", "pus" + service + "Apid",
+                    "pus" + service + "CcsdsSeqCount"), publisher.attrs.keySet());
+            publisher.publishCounts.forEach((key, count) -> assertEquals(1, count, key));
         }
     }
 
     @Test
-    public void testScheduledCommandRepublishesWrapperRequestIdForVerifiers() {
-        var pp = newBarePostprocessor(false);
-        var publisher = new RecordingCommandHistoryPublisher();
-        pp.setCommandHistoryPublisher(publisher);
-
-        pp.process(newCommand(true));
-
-        // The keys the pus.xml verifiers read (ccsds-apid/ccsds-seqcount) must end up carrying the
-        // wrapper's request ID (Gap #5), matching what is separately published as pus11Apid /
-        // pus11CcsdsSeqCount - the inner APID is 1 (see INNER_TC), the wrapper's is pus11Apid (5).
-        assertEquals(5, publisher.intValues.get(PusCommandPostprocessor.CCSDS_APID_PARA_NAME));
-        assertEquals(publisher.intValues.get("pus11Apid"),
-                publisher.intValues.get(PusCommandPostprocessor.CCSDS_APID_PARA_NAME));
-        assertEquals(publisher.intValues.get("pus11CcsdsSeqCount"),
-                publisher.intValues.get(PusCommandPostprocessor.CCSDS_SEQCOUNT_PARA_NAME));
-
-        // The inner command's own request ID must be preserved separately (Gap #8), and must be the
-        // value that was originally published under ccsds-apid/ccsds-seqcount before being
-        // overwritten by the wrapper's.
-        assertEquals(1, publisher.intValues.get(PusCommandPostprocessor.PUS11_INNER_APID_PARA_NAME));
-        assertEquals(publisher.firstIntValues.get(PusCommandPostprocessor.CCSDS_APID_PARA_NAME),
-                publisher.intValues.get(PusCommandPostprocessor.PUS11_INNER_APID_PARA_NAME));
-        assertEquals(publisher.firstIntValues.get(PusCommandPostprocessor.CCSDS_SEQCOUNT_PARA_NAME),
-                publisher.intValues.get(PusCommandPostprocessor.PUS11_INNER_SEQCOUNT_PARA_NAME));
-    }
-
-    @Test
     public void testUnscheduledCommandPublishesInnerApidOnly() {
-        var pp = newBarePostprocessor(false);
-        var publisher = new RecordingCommandHistoryPublisher();
-        pp.setCommandHistoryPublisher(publisher);
+        var publisher = new CapturingCommandHistoryPublisher();
+        var pp = newPostprocessor(YConfiguration.emptyConfig(), publisher);
 
         pp.process(newCommand(false));
 
-        assertEquals(1, publisher.intValues.get(PusCommandPostprocessor.CCSDS_APID_PARA_NAME));
-        assertFalse(publisher.intValues.containsKey(PusCommandPostprocessor.PUS11_INNER_APID_PARA_NAME));
+        assertEquals(1, publisher.attrs.get(PusCommandPostprocessor.CCSDS_APID_PARA_NAME));
+        assertEquals(java.util.Set.of("ccsds-apid", "ccsds-seqcount"), publisher.attrs.keySet());
+    }
+
+    @Test
+    public void testDefaultEpochMatchesUpstreamUnixTime() {
+        long time = TimeEncoding.parse("2026-11-17T00:00:00Z");
+        for (var config : new YConfiguration[] { YConfiguration.emptyConfig(),
+                YConfiguration.wrap(Map.of("timeEncoding", Map.of("pfield", 0x2e))) }) {
+            var pp = newPostprocessor(config);
+            var command = pc(hexStringToArray(INNER_TC), attr("pus11ScheduleAt", ValueHelper.newTimestampValue(time)));
+            byte[] wrapper = pp.process(command);
+            assertEquals(1_794_873_600L, ByteArrayUtils.decodeInt(wrapper, 12) & 0xFFFFFFFFL);
+        }
+    }
+
+    @Test
+    public void testExplicitEpochs() {
+        long time = TimeEncoding.parse("2026-11-17T00:00:00Z");
+        for (String epoch : new String[] { "UNIX", "NONE", "CUSTOM" }) {
+            var encoding = new HashMap<String, Object>();
+            encoding.put("pfield", 0x2e);
+            encoding.put("epoch", epoch);
+            if (epoch.equals("CUSTOM")) {
+                encoding.put("epochUTC", "2026-11-16T00:00:00Z");
+                encoding.put("timeIncludesLeapSeconds", false);
+            }
+            var pp = newPostprocessor(YConfiguration.wrap(Map.of("pus11Apid", 5, "timeEncoding", encoding)));
+            byte[] wrapper = pp.process(pc(hexStringToArray(INNER_TC),
+                    attr("pus11ScheduleAt", ValueHelper.newTimestampValue(time))));
+            long expectedSeconds = switch (epoch) {
+            case "UNIX" -> 1_794_873_600L;
+            case "NONE" -> 1_794_873_637L;
+            default -> 86_400L;
+            };
+            assertEquals(expectedSeconds, ByteArrayUtils.decodeInt(wrapper, 12) & 0xFFFFFFFFL, epoch);
+        }
+    }
+
+    @Test
+    public void testInvalidSchedulingDefaultsRejectedAtInit() {
+        for (String service : new String[] { "pus11", "pus22" }) {
+            for (String field : new String[] { "subScheduleId", "groupId" }) {
+                for (long invalid : new long[] { -1, 256 }) {
+                    assertThrows(ConfigurationException.class, () -> newPostprocessor(YConfiguration.wrap(Map.of(
+                            service, Map.of(field, Map.of("bytes", 1, "default", invalid))))));
+                }
+            }
+        }
+    }
+
+    @Test
+    public void testBothSchedulingModesRejectInvalidIds() {
+        for (int service : new int[] { 11, 22 }) {
+            for (Value invalid : new Value[] { ValueHelper.newValue(-1.0), ValueHelper.newValue(256.0),
+                    ValueHelper.newValue(1.5), ValueHelper.newValue(Double.NaN),
+                    ValueHelper.newValue(Double.POSITIVE_INFINITY), ValueHelper.newValue(true) }) {
+                var pp = newPostprocessor(YConfiguration.wrap(Map.of("pus" + service,
+                        Map.of("groupId", Map.of("bytes", 1)))));
+                var command = scheduledCommand(service);
+                command.addAttribute(attr("pus" + service + "GroupId", invalid));
+                assertNull(pp.process(command), "service=" + service + ", id=" + invalid);
+            }
+        }
+    }
+
+    @Test
+    public void testBothSchedulingModesHonorConfiguredAckFlags() {
+        for (int service : new int[] { 11, 22 }) {
+            var pp = newPostprocessor(YConfiguration.wrap(Map.of("pus" + service, Map.of("ackFlags", 9))));
+            assertEquals(0x29, pp.process(scheduledCommand(service))[6] & 0xFF);
+        }
+    }
+
+    @Test
+    public void testConflictingOrIncompleteScheduleOptionsFail() {
+        var pp = newPostprocessor(YConfiguration.emptyConfig());
+        var both = scheduledCommand(11);
+        both.addAttribute(attr("pus22OrbitAngle", ValueHelper.newValue(90.0)));
+        both.addAttribute(attr("pus22OrbitNumber", ValueHelper.newValue(42)));
+        assertNull(pp.process(both));
+        assertNull(pp.process(pc(hexStringToArray(INNER_TC), attr("pus22OrbitNumber", ValueHelper.newValue(42)))));
+        assertNull(pp.process(pc(hexStringToArray(INNER_TC), attr("pus22OrbitAngle", ValueHelper.newValue(90.0)))));
+    }
+
+    @Test
+    public void testInvalidPositionTagsFail() {
+        for (Value invalid : new Value[] { ValueHelper.newValue(-1.0), ValueHelper.newValue(4_294_967_296L),
+                ValueHelper.newValue(1.5), ValueHelper.newValue(Double.NaN) }) {
+            var pp = newPostprocessor(YConfiguration.emptyConfig());
+            var command = pc(hexStringToArray(INNER_TC), attr("pus22OrbitNumber", invalid),
+                    attr("pus22OrbitAngle", ValueHelper.newValue(90.0)));
+            assertNull(pp.process(command));
+        }
+        var pp = newPostprocessor(YConfiguration.emptyConfig());
+        var command = pc(hexStringToArray(INNER_TC), attr("pus22OrbitNumber", ValueHelper.newValue(42)),
+                attr("pus22OrbitAngle", ValueHelper.newValue(Double.POSITIVE_INFINITY)));
+        assertNull(pp.process(command));
+    }
+
+    @Test
+    public void testWrapperLengthAndChecksumForBothSchedulingModes() {
+        for (int service : new int[] { 11, 22 }) {
+            for (boolean crc : new boolean[] { false, true }) {
+                var pp = newPostprocessor(YConfiguration.wrap(Map.of(
+                        "errorDetection", Map.of("type", "CRC-16-CCIIT"), "pus" + service + "Crc", crc)));
+                var command = scheduledCommand(service);
+                int length = pp.getBinaryLength(command);
+                byte[] wrapper = pp.process(command);
+                assertEquals(length, wrapper.length);
+                assertEquals(length - 7, ByteArrayUtils.decodeUnsignedShort(wrapper, 4));
+                if (crc) {
+                    assertEquals(new CrcCciitCalculator().compute(wrapper, 0, length - 2),
+                            ByteArrayUtils.decodeUnsignedShort(wrapper, length - 2));
+                }
+            }
+        }
+    }
+
+    private static PreparedCommand scheduledCommand(int service) {
+        return service == 11 ? newCommand(true) : pc(hexStringToArray(INNER_TC),
+                attr("pus22OrbitNumber", ValueHelper.newValue(42)), attr("pus22OrbitAngle", ValueHelper.newValue(90.0)));
     }
 
     @Test
@@ -407,21 +484,6 @@ public class PusCommandPostprocessorTest {
         var pp = newPostprocessor(YConfiguration.wrap(Map.of("pus11Apid", 5)));
         assertFalse(pp.pus11Crc);
         assertTrue(newPostprocessor(schedulingConfig()).pus11Crc);
-    }
-
-    /** postprocessor configured by setting its fields: no CRC unless requested, 1 byte sub-schedule and group id */
-    private static PusCommandPostprocessor newBarePostprocessor(boolean crc) {
-        var pp = new PusCommandPostprocessor();
-        pp.setCommandHistoryPublisher(new DummyCommandHistoryPublisher());
-        pp.timeEncoder = new CucTimeEncoder(0x2e, true);
-        pp.pus11Apid = 5; // distinct from the inner command's APID (1), see Gap #9
-        pp.pus11SubScheduleIdBytes = 1;
-        pp.pus11GroupIdBytes = 1;
-        if (crc) {
-            pp.errorDetectionCalculator = new CrcCciitCalculator();
-        }
-        pp.pus11Crc = crc;
-        return pp;
     }
 
     private static PreparedCommand newCommand(boolean scheduled) {
@@ -457,10 +519,13 @@ public class PusCommandPostprocessorTest {
 
     /** records, per key, which publish(...) overload was used and with what value */
     private static class CapturingCommandHistoryPublisher extends DummyCommandHistoryPublisher {
-        final Map<String, Object> attrs = new java.util.HashMap<>();
+        final Map<String, Object> attrs = new HashMap<>();
+        final Map<String, Integer> publishCounts = new HashMap<>();
+        final Map<String, byte[]> binaries = new HashMap<>();
 
         @Override
         public void publish(CommandId cmdId, String key, int value) {
+            publishCounts.merge(key, 1, Integer::sum);
             attrs.put(key, value);
         }
 
@@ -470,17 +535,11 @@ public class PusCommandPostprocessorTest {
             // from the int overload
             attrs.put(key, java.time.Instant.ofEpochMilli(value));
         }
-    }
-
-    /** Records the last and first int value published per key, so tests can check overwrites. */
-    private static class RecordingCommandHistoryPublisher extends DummyCommandHistoryPublisher {
-        final Map<String, Integer> intValues = new HashMap<>();
-        final Map<String, Integer> firstIntValues = new HashMap<>();
 
         @Override
-        public void publish(CommandId cmdId, String key, int value) {
-            firstIntValues.putIfAbsent(key, value);
-            intValues.put(key, value);
+        public void publish(CommandId cmdId, String key, byte[] binary) {
+            publishCounts.merge(key, 1, Integer::sum);
+            binaries.put(key, binary.clone());
         }
     }
 }

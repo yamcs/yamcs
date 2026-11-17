@@ -48,20 +48,10 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
     public static final String CCSDS_APID_PARA_NAME = "ccsds-apid";
 
     /**
-     * Keys the PUS-1 verifiers in {@code pus.xml} read for the request ID they wait for. For a
-     * {@code pus11ScheduleAt} command these are republished with the TC(11,4) wrapper's request ID
-     * (see Gap #5) so the "Accepted"/"Started"/"Complete" ACKs that actually arrive within the
-     * CheckWindow - the wrapper's, not the embedded command's - are the ones matched.
-     */
-    public static final String PUS11_INNER_APID_PARA_NAME = "pus11-inner-apid";
-    public static final String PUS11_INNER_SEQCOUNT_PARA_NAME = "pus11-inner-seqcount";
-
-    /**
      * Top-level PUS 11 keys of older Pixxel releases, now configured in the {@code pus11} block. Rejected so that an
      * old configuration does not silently produce TC(11,4) commands without the sub-schedule and group id fields.
      */
-    private static final String[] LEGACY_PUS11_KEYS = { "pus11SourceId", "pus11AckFlags", "pus11SubscheduleId",
-            "pus11GroupId" };
+    private static final String[] LEGACY_PUS11_KEYS = { "pus11SourceId", "pus11AckFlags", "pus11SubscheduleId", "pus11GroupId" };
 
     /**
      * Only registered when the {@code pus11} block is present in the post-processor configuration - a link that
@@ -69,7 +59,7 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
      * forms on links that only support PUS 22 scheduling, or neither).
      */
     public static final CommandOption OPTION_SCHEDULE_TIME = new CommandOption("pus11ScheduleAt", "Schedule Time",
-            CommandOptionType.TIMESTAMP).withHelp("If set, embeed this command into a PUS 11 SCHEDULE_TC commad");
+            CommandOptionType.TIMESTAMP).withHelp("If set, embed this command into a PUS 11 insert-activities command");
 
     /**
      * Sub-schedule to insert the command into. Only registered (and only written into the TC(11,4)) when the
@@ -130,7 +120,7 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
 
     protected CucTimeEncoder timeEncoder;
     TimeCorrelationService tcoService;
-    TimeEpochs timeEpoch = TimeEpochs.NONE;
+    TimeEpochs timeEpoch = TimeEpochs.UNIX;
     long customEpoch;
     boolean customEpochIncludeLeapSecond;
 
@@ -157,6 +147,7 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
     long pus11GroupIdDefault = 0;
 
     int pus22SourceId = 0;
+    int pus22AckFlags = 0xD;
     /**
      * If true, the generated PUS(22,4) commands will contain a CRC. Requires errorDetection.
      */
@@ -198,12 +189,9 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
         }
 
         errorDetectionCalculator = AbstractPacketPreprocessor.getErrorDetectionWordCalculator(config);
-        this.pus11Crc = getScheduleCrc(config, "pus11Crc");
-        this.pus22Crc = getScheduleCrc(config, "pus22Crc");
-        this.embeddedTcCrc = config.getBoolean("embeddedTcCrc", errorDetectionCalculator != null);
-        if (embeddedTcCrc && errorDetectionCalculator == null) {
-            throw new ConfigurationException("embeddedTcCrc requires the errorDetection to be configured");
-        }
+        this.pus11Crc = getCrc(config, "pus11Crc");
+        this.pus22Crc = getCrc(config, "pus22Crc");
+        this.embeddedTcCrc = getCrc(config, "embeddedTcCrc");
         if (config.containsKey("timeEncoding")) {
             timeEncoder = configureTimeEncoding(config.getConfig("timeEncoding"));
         } else {
@@ -230,20 +218,14 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
 
             if (pus11Config.containsKey("subScheduleId")) {
                 YConfiguration ssConfig = pus11Config.getConfig("subScheduleId");
-                pus11SubScheduleIdBytes = ssConfig.getInt("bytes", 1);
-                pus11SubScheduleIdDefault = ssConfig.getLong("default", 0);
-                if (pus11SubScheduleIdBytes < 1 || pus11SubScheduleIdBytes > 8) {
-                    throw new ConfigurationException("pus11.subScheduleId.bytes must be between 1 and 8");
-                }
+                pus11SubScheduleIdBytes = getIntInRange(ssConfig, "bytes", 1, 1, 8);
+                pus11SubScheduleIdDefault = getIdDefault(ssConfig, pus11SubScheduleIdBytes);
                 addCommandOption(OPTION_SUB_SCHEDULE_ID);
             }
             if (pus11Config.containsKey("groupId")) {
                 YConfiguration groupConfig = pus11Config.getConfig("groupId");
-                pus11GroupIdBytes = groupConfig.getInt("bytes", 1);
-                pus11GroupIdDefault = groupConfig.getLong("default", 0);
-                if (pus11GroupIdBytes < 1 || pus11GroupIdBytes > 8) {
-                    throw new ConfigurationException("pus11.groupId.bytes must be between 1 and 8");
-                }
+                pus11GroupIdBytes = getIntInRange(groupConfig, "bytes", 1, 1, 8);
+                pus11GroupIdDefault = getIdDefault(groupConfig, pus11GroupIdBytes);
                 addCommandOption(OPTION_GROUP_ID);
             }
         }
@@ -251,25 +233,20 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
         if (config.containsKey("pus22")) {
             YConfiguration pus22Config = config.getConfig("pus22");
             pus22SourceId = getIntInRange(pus22Config, "sourceId", pus22SourceId, 0, 0xFFFF);
+            pus22AckFlags = getIntInRange(pus22Config, "ackFlags", pus22AckFlags, 0, 0xF);
             addCommandOption(OPTION_ORBIT_NUMBER);
             addCommandOption(OPTION_ORBIT_ANGLE);
 
             if (pus22Config.containsKey("subScheduleId")) {
                 YConfiguration ssConfig = pus22Config.getConfig("subScheduleId");
-                pus22SubScheduleIdBytes = ssConfig.getInt("bytes", 1);
-                pus22SubScheduleIdDefault = ssConfig.getLong("default", 0);
-                if (pus22SubScheduleIdBytes < 1 || pus22SubScheduleIdBytes > 8) {
-                    throw new ConfigurationException("pus22.subScheduleId.bytes must be between 1 and 8");
-                }
+                pus22SubScheduleIdBytes = getIntInRange(ssConfig, "bytes", 1, 1, 8);
+                pus22SubScheduleIdDefault = getIdDefault(ssConfig, pus22SubScheduleIdBytes);
                 addCommandOption(OPTION_SUB_SCHEDULE_ID_22);
             }
             if (pus22Config.containsKey("groupId")) {
                 YConfiguration groupConfig = pus22Config.getConfig("groupId");
-                pus22GroupIdBytes = groupConfig.getInt("bytes", 1);
-                pus22GroupIdDefault = groupConfig.getLong("default", 0);
-                if (pus22GroupIdBytes < 1 || pus22GroupIdBytes > 8) {
-                    throw new ConfigurationException("pus22.groupId.bytes must be between 1 and 8");
-                }
+                pus22GroupIdBytes = getIntInRange(groupConfig, "bytes", 1, 1, 8);
+                pus22GroupIdDefault = getIdDefault(groupConfig, pus22GroupIdBytes);
                 addCommandOption(OPTION_GROUP_ID_22);
             }
         }
@@ -283,26 +260,22 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
     }
 
     /**
-     * The CRC of a generated TC(11,4)/TC(22,4) defaults to whether errorDetection is configured; enabling it without
+     * The CRC of a wrapper or embedded TC defaults to whether errorDetection is configured; enabling it without
      * errorDetection is a configuration error.
      */
-    private boolean getScheduleCrc(YConfiguration config, String key) {
-        if (config.containsKey(key)) {
-            boolean crc = config.getBoolean(key);
-            if (crc && errorDetectionCalculator == null) {
-                throw new ConfigurationException(key + " is enabled but no errorDetection is configured");
-            }
-            return crc;
-        } else {
-            return errorDetectionCalculator != null;
+    private boolean getCrc(YConfiguration config, String key) {
+        boolean crc = config.getBoolean(key, errorDetectionCalculator != null);
+        if (crc && errorDetectionCalculator == null) {
+            throw new ConfigurationException(key + " requires errorDetection to be configured");
         }
+        return crc;
     }
 
     private CucTimeEncoder configureTimeEncoding(YConfiguration config) {
         boolean implicitPfield = config.getBoolean("implicitPfield", true);
         int pfield1 = config.getInt("pfield");
         int pfield2 = config.getInt("pfieldCont", -1);
-        timeEpoch = config.getEnum("epoch", TimeEpochs.class, TimeEpochs.NONE);
+        timeEpoch = config.getEnum("epoch", TimeEpochs.class, TimeEpochs.UNIX);
         if (timeEpoch == TimeEpochs.CUSTOM) {
             customEpochIncludeLeapSecond = config.getBoolean("timeIncludesLeapSeconds", true);
             String epochs = config.getString("epochUTC");
@@ -318,6 +291,17 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
     @Override
     public byte[] process(PreparedCommand pc) {
         byte[] binary = pc.getBinary();
+        var scheduleTime = pc.getAttribute(OPTION_SCHEDULE_TIME.getId());
+        var orbitNumber = pc.getAttribute(OPTION_ORBIT_NUMBER.getId());
+        var orbitAngle = pc.getAttribute(OPTION_ORBIT_ANGLE.getId());
+        if (scheduleTime != null && (orbitNumber != null || orbitAngle != null)) {
+            failCommand(pc.getCommandId(), "PUS 11 and PUS 22 scheduling options cannot be combined");
+            return null;
+        }
+        if ((orbitNumber == null) != (orbitAngle == null)) {
+            failCommand(pc.getCommandId(), "pus22OrbitNumber and pus22OrbitAngle must be set together");
+            return null;
+        }
 
         List<EmbeddedTc> embeddedTcs;
         try {
@@ -333,7 +317,7 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
             }
         }
 
-        boolean hasCrc = hasCrc(pc);
+        boolean hasCrc = errorDetectionCalculator != null;
         if (hasCrc) { // 2 extra bytes for the checkword
             binary = Arrays.copyOf(binary, binary.length + 2);
         }
@@ -361,37 +345,35 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
         }
         commandHistoryPublisher.publish(pc.getCommandId(), PreparedCommand.CNAME_BINARY, binary);
 
-        if (isScheduled(pc)) {
+        if (scheduleTime != null) {
             try {
-                long scheduleTime = pc.getAttribute(OPTION_SCHEDULE_TIME.getId()).getValue().getTimestampValue();
+                if (scheduleTime.getValue().getType() != Value.Type.TIMESTAMP) {
+                    throw new IllegalArgumentException("pus11ScheduleAt must be a timestamp");
+                }
+                long releaseTime = scheduleTime.getValue().getTimestampValue();
                 long subScheduleId = getIdOption(pc, OPTION_SUB_SCHEDULE_ID, pus11SubScheduleIdDefault,
                         pus11SubScheduleIdBytes);
                 long groupId = getIdOption(pc, OPTION_GROUP_ID, pus11GroupIdDefault, pus11GroupIdBytes);
-                // We have embed the command into a PUS(11,4) insert into schedule TC
-                binary = buildScheduledTc(pc.getCommandId(), scheduleTime, subScheduleId, groupId, binary);
+                binary = buildScheduledTc(pc.getCommandId(), releaseTime, subScheduleId, groupId, binary);
             } catch (Exception e) {
                 String msg = "Error building the TC(11,4) command " + e.getMessage();
                 log.warn(msg);
                 failCommand(pc.getCommandId(), msg);
                 return null;
             }
-        } else if (pc.getAttribute(OPTION_ORBIT_ANGLE.getId()) != null) {
-            if (pc.getAttribute(OPTION_ORBIT_NUMBER.getId()) == null) {
-                String msg = "pus22OrbitNumber is required when pus22OrbitAngle is set";
-                log.warn(msg);
-                failCommand(pc.getCommandId(), msg);
-                return null;
-            }
+        } else if (orbitAngle != null) {
             try {
-                long orbitNumber = attributeAsLong(pc, OPTION_ORBIT_NUMBER.getId(), 0);
+                long orbit = getIdOption(pc, OPTION_ORBIT_NUMBER, 0, 4);
                 double angleDeg = attributeAsDouble(pc, OPTION_ORBIT_ANGLE.getId(), 0);
+                if (!Double.isFinite(angleDeg)) {
+                    throw new IllegalArgumentException("pus22OrbitAngle must be finite");
+                }
                 int angleTicks = (int) Math.floorMod(Math.round(angleDeg * TICKS_PER_ORBIT / 360.0),
                         (long) TICKS_PER_ORBIT);
                 long subScheduleId = getIdOption(pc, OPTION_SUB_SCHEDULE_ID_22, pus22SubScheduleIdDefault,
                         pus22SubScheduleIdBytes);
                 long groupId = getIdOption(pc, OPTION_GROUP_ID_22, pus22GroupIdDefault, pus22GroupIdBytes);
-                // We have embed the command into a PUS(22,4) insert into schedule TC
-                binary = buildScheduledPositionTc(pc.getCommandId(), orbitNumber, angleTicks, subScheduleId, groupId,
+                binary = buildScheduledPositionTc(pc.getCommandId(), orbit, angleTicks, subScheduleId, groupId,
                         binary);
             } catch (Exception e) {
                 String msg = "Error building the TC(22,4) command " + e.getMessage();
@@ -545,15 +527,10 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
     }
 
     byte[] buildScheduledTc(CommandId cmdId, long scheduleTime, long subScheduleId, long groupId, byte[] binary) {
-        // The TC(11,4) has to be addressed to the application process hosting the on-board scheduler, which is in
-        // general not the one of the embedded command (ECSS 6.11.2.2)
-        if (pus11Apid < 0) {
-            throw new IllegalStateException(
-                    "pus11Apid must be configured to schedule commands with " + OPTION_SCHEDULE_TIME.getId());
-        }
-        byte[] scheduleTcPacket = new byte[getScheduledTcOverhead() + binary.length];
+        byte[] scheduleTcPacket = new byte[getScheduleOverhead(pus11SubScheduleIdBytes, pus11GroupIdBytes,
+                timeEncoder.getEncodedLength(), pus11Crc) + binary.length];
         var tc = CcsdsPacket.wrap(scheduleTcPacket);
-        int apid = pus11Apid;
+        int apid = pus11Apid >= 0 ? pus11Apid : CcsdsPacket.getAPID(binary);
         tc.setHeader(apid,
                 /*tmtc*/ 1,
                 /*secondary header present*/1,
@@ -583,7 +560,7 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
         } else {
             long obt = tcoService.getObt(scheduleTime);
             if (obt == Long.MIN_VALUE) {
-                failCommand(cmdId, "Time corelation coefficients not available");
+                failCommand(cmdId, "Time correlation coefficients not available");
                 return null;
             }
             offset += timeEncoder.encodeRaw(obt, scheduleTcPacket, offset);
@@ -592,19 +569,8 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
 
         int seqCount = seqFiller.fill(scheduleTcPacket); // write sequence count
 
-        // The inner command's own request ID, preserved under distinct keys (Gap #8) before the
-        // keys the verifiers read (ccsds-apid/ccsds-seqcount) are overwritten below with the
-        // wrapper's request ID (Gap #5): only the wrapper's ACKs arrive inside the CheckWindow.
-        commandHistoryPublisher.publish(cmdId, PUS11_INNER_APID_PARA_NAME, CcsdsPacket.getAPID(binary));
-        commandHistoryPublisher.publish(cmdId, PUS11_INNER_SEQCOUNT_PARA_NAME, CcsdsPacket.getSequenceCount(binary));
-
-        commandHistoryPublisher.publish(cmdId, CCSDS_APID_PARA_NAME, apid);
-        commandHistoryPublisher.publish(cmdId, CCSDS_SEQCOUNT_PARA_NAME, seqCount);
-
         commandHistoryPublisher.publish(cmdId, "pus11Apid", apid);
         commandHistoryPublisher.publish(cmdId, "pus11CcsdsSeqCount", seqCount);
-        // subScheduleId/groupId are not republished here: they are already recorded, correctly typed, as the
-        // pus11SubScheduleId/pus11GroupId command option attributes (set by the operator or defaulted at init()).
 
         if (pus11Crc) {
             int pos = scheduleTcPacket.length - 2;
@@ -625,18 +591,8 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
     byte[] buildScheduledPositionTc(CommandId cmdId, long orbitNumber, int angleTicks, long subScheduleId,
             long groupId, byte[] binary) {
 
-        // 6 bytes primary header
-        // 5 bytes secondary header
-        // pus22SubScheduleIdBytes bytes sub-schedule id (0 if sub-schedules not configured)
-        // 1 byte N
-        // pus22GroupIdBytes bytes group id (0 if groups not configured)
-        // POSITION_TAG_LENGTH_BYTES bytes position tag (orbit number + angle)
-        int scheduleTcLength = 12 + pus22SubScheduleIdBytes + pus22GroupIdBytes + POSITION_TAG_LENGTH_BYTES
-                + binary.length;
-        if (pus22Crc) {
-            scheduleTcLength += 2;
-        }
-        byte[] scheduleTcPacket = new byte[scheduleTcLength];
+        byte[] scheduleTcPacket = new byte[getScheduleOverhead(pus22SubScheduleIdBytes, pus22GroupIdBytes,
+                POSITION_TAG_LENGTH_BYTES, pus22Crc) + binary.length];
         var tc = CcsdsPacket.wrap(scheduleTcPacket);
         int apid = pus22Apid >= 0 ? pus22Apid : CcsdsPacket.getAPID(binary);
         tc.setHeader(apid,
@@ -647,7 +603,7 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
 
         int offset = 6;
         // 4 bits TC PUS version number = 2, 4 bits = ackflags.
-        scheduleTcPacket[offset++] = ((byte) 0x2D);
+        scheduleTcPacket[offset++] = (byte) (0x20 | pus22AckFlags);
         // type = 22
         scheduleTcPacket[offset++] = 22;
         // subtype = 4
@@ -673,8 +629,6 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
 
         commandHistoryPublisher.publish(cmdId, "pus22Apid", apid);
         commandHistoryPublisher.publish(cmdId, "pus22CcsdsSeqCount", seqCount);
-        // subScheduleId/groupId are not republished here, same reasoning as buildScheduledTc(): they are already
-        // recorded, correctly typed, as the pus22SubScheduleId/pus22GroupId command option attributes.
 
         if (pus22Crc) {
             int pos = scheduleTcPacket.length - 2;
@@ -713,7 +667,7 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
         case DOUBLE -> (long) v.getDoubleValue();
         case FLOAT -> (long) v.getFloatValue();
         case STRING -> Long.parseLong(v.getStringValue().trim());
-        default -> dflt;
+        default -> throw new IllegalArgumentException("Invalid numeric value for " + id + ": " + v.getType());
         };
     }
 
@@ -723,18 +677,33 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
      */
     private static long getIdOption(PreparedCommand pc, CommandOption option, long dflt, int nbytes) {
         CommandHistoryAttribute cha = pc.getAttribute(option.getId());
-        if (cha == null || nbytes == 0) {
+        if (nbytes == 0) {
             return dflt;
         }
-        Value v = cha.getValue();
-        if ((v.getType() == Value.Type.DOUBLE && v.getDoubleValue() != Math.rint(v.getDoubleValue()))
-                || (v.getType() == Value.Type.FLOAT && v.getFloatValue() != Math.rint(v.getFloatValue()))) {
-            throw new IllegalArgumentException("invalid " + option.getId() + " "
-                    + attributeAsDouble(pc, option.getId(), 0) + ", expected an integer");
+        if (cha != null) {
+            Value v = cha.getValue();
+            if (v.getType() == Value.Type.DOUBLE || v.getType() == Value.Type.FLOAT) {
+                double value = attributeAsDouble(pc, option.getId(), 0);
+                if (!Double.isFinite(value) || value != Math.rint(value) || value >= 0x1p63) {
+                    throw new IllegalArgumentException("Invalid " + option.getId() + ": expected an integer");
+                }
+            }
         }
         long id = attributeAsLong(pc, option.getId(), dflt);
+        return checkIdRange(option.getId(), id, nbytes);
+    }
+
+    private static long getIdDefault(YConfiguration config, int nbytes) {
+        try {
+            return checkIdRange("default", config.getLong("default", 0), nbytes);
+        } catch (IllegalArgumentException e) {
+            throw new ConfigurationException(e.getMessage());
+        }
+    }
+
+    private static long checkIdRange(String name, long id, int nbytes) {
         if (id < 0 || (nbytes < 8 && id >= 1L << (8 * nbytes))) {
-            throw new IllegalArgumentException("invalid " + option.getId() + " " + id + ", expected an integer 0-"
+            throw new IllegalArgumentException("Invalid " + name + " " + id + ", expected an integer 0-"
                     + (nbytes < 8 ? (1L << (8 * nbytes)) - 1 : Long.MAX_VALUE));
         }
         return id;
@@ -754,7 +723,7 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
         case UINT32 -> v.getUint32Value() & 0xFFFFFFFFL;
         case UINT64 -> v.getUint64Value();
         case STRING -> Double.parseDouble(v.getStringValue().trim());
-        default -> dflt;
+        default -> throw new IllegalArgumentException("Invalid numeric value for " + id + ": " + v.getType());
         };
     }
 
@@ -768,33 +737,27 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
                 // the command will fail in process()
             }
         }
-        if (hasCrc(pc)) {
+        if (errorDetectionCalculator != null) {
             len += 2;
         }
-        if (isScheduled(pc)) {
+        if (pc.getAttribute(OPTION_SCHEDULE_TIME.getId()) != null) {
             // the command is wrapped into a TC(11,4)
-            len += getScheduledTcOverhead();
+            len += getScheduleOverhead(pus11SubScheduleIdBytes, pus11GroupIdBytes,
+                    timeEncoder.getEncodedLength(), pus11Crc);
         } else if (pc.getAttribute(OPTION_ORBIT_ANGLE.getId()) != null) {
-            // the command is wrapped into a TC(22,4); keep in sync with buildScheduledPositionTc()
-            len += 12 + pus22SubScheduleIdBytes + pus22GroupIdBytes + POSITION_TAG_LENGTH_BYTES;
-            if (pus22Crc) {
-                len += 2;
-            }
+            // the command is wrapped into a TC(22,4)
+            len += getScheduleOverhead(pus22SubScheduleIdBytes, pus22GroupIdBytes,
+                    POSITION_TAG_LENGTH_BYTES, pus22Crc);
         }
         return len;
     }
 
     /**
-     * Number of bytes the TC(11,4) wrapper adds to the embedded command: 6 bytes primary header, 5 bytes secondary
-     * header, the optional sub-schedule id, 1 byte N, the optional group id, the release time and the optional CRC
+     * Wrapper overhead: 6 bytes primary header, 5 bytes secondary header, optional IDs, 1 byte N,
+     * a time or position tag, and the optional CRC.
      */
-    int getScheduledTcOverhead() {
-        return 12 + pus11SubScheduleIdBytes + pus11GroupIdBytes + timeEncoder.getEncodedLength()
-                + (pus11Crc ? 2 : 0);
-    }
-
-    private static boolean isScheduled(PreparedCommand pc) {
-        return pc.getAttribute(OPTION_SCHEDULE_TIME.getId()) != null;
+    private static int getScheduleOverhead(int subScheduleIdBytes, int groupIdBytes, int tagLength, boolean crc) {
+        return 12 + subScheduleIdBytes + groupIdBytes + tagLength + (crc ? 2 : 0);
     }
 
     private long shiftToEpoch(long t) {
@@ -826,10 +789,6 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
             throw new ConfigurationException(key + " must be between " + min + " and " + max + ", got " + value);
         }
         return value;
-    }
-
-    private boolean hasCrc(PreparedCommand pc) {
-        return (errorDetectionCalculator != null);
     }
 
     private class ChangeSeqCountAction extends LinkAction {
