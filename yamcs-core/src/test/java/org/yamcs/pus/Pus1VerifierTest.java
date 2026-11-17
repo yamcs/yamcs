@@ -13,6 +13,9 @@ import org.yamcs.algorithms.AlgorithmExecutionResult;
 import org.yamcs.commanding.VerificationResult;
 import org.yamcs.mdb.ProcessingContext;
 import org.yamcs.parameter.ParameterValue;
+import org.yamcs.parameter.AggregateValue;
+import org.yamcs.parameter.Value;
+import org.yamcs.xtce.util.AggregateMemberNames;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.Algorithm.Scope;
 import org.yamcs.xtce.CustomAlgorithm;
@@ -30,6 +33,62 @@ public class Pus1VerifierTest {
     Parameter rcvdSeq = new Parameter("rcvdSeq");
     Parameter subType = new Parameter("subType");
     Parameter type = new Parameter("type");
+    Parameter optional = new Parameter("optional");
+
+    @Test
+    public void testUnrelatedAggregateIsNotAckFlags() {
+        var verifier = createVerifier(7, true, "errorCode", true);
+        assertVerification(false, run(verifier, pus1ReportWithOptional(8, "detail", ValueUtility.getUint32Value(1))));
+    }
+
+    @Test
+    public void testAckFlagsAreResolvedByNameAfterReportType() {
+        var verifier = createVerifier(7, true, "ackFlags", false);
+        assertSame(Pus1Verifier.NO_RESULT, run(verifier,
+                pus1ReportWithOptional(7, "pus_completion_flag", ValueUtility.getBooleanValue(false))));
+    }
+
+    @Test
+    public void testMissingAckFlagMemberDoesNotThrow() {
+        var verifier = createVerifier(7, true, "ackFlags", true);
+        assertVerification(true, run(verifier,
+                pus1ReportWithOptional(7, "other_flag", ValueUtility.getBooleanValue(true))));
+    }
+
+    @Test
+    public void testNonBooleanAckFlagDoesNotThrow() {
+        var verifier = createVerifier(7, true, "ackFlags", true);
+        assertVerification(true, run(verifier,
+                pus1ReportWithOptional(7, "pus_completion_flag", ValueUtility.getUint32Value(1))));
+    }
+
+    @Test
+    public void testNonAggregateAckFlagsLeaveVerificationEnabled() {
+        var verifier = createVerifier(7, true, "ackFlags", true);
+        for (Value flags : new Value[] { ValueUtility.getBooleanValue(false),
+                ValueUtility.getUint32Value(0), ValueUtility.getStringValue("false") }) {
+            assertVerification(true, run(verifier, reportWithFlags(7, flags)));
+            assertVerification(false, run(verifier, reportWithFlags(8, flags)));
+        }
+    }
+
+    private ParameterValue[] reportWithFlags(int subtype, Value flags) {
+        var pv = new ParameterValue(optional);
+        pv.setEngValue(flags);
+        var report = new ArrayList<>(List.of(pus1Report(subtype)));
+        report.add(pv);
+        return report.toArray(ParameterValue[]::new);
+    }
+
+    private ParameterValue[] pus1ReportWithOptional(int subtype, String member, Value value) {
+        var aggregate = new AggregateValue(AggregateMemberNames.get(new String[] { member }));
+        aggregate.setMemberValue(member, value);
+        var pv = new ParameterValue(optional);
+        pv.setEngValue(aggregate);
+        var report = new ArrayList<>(List.of(pus1Report(subtype)));
+        report.add(pv);
+        return report.toArray(ParameterValue[]::new);
+    }
 
     @Test
     public void testCompletionSuccess() {
@@ -75,6 +134,10 @@ public class Pus1VerifierTest {
     }
 
     private Pus1Verifier createVerifier(int stage, boolean withReportType) {
+        return createVerifier(stage, withReportType, null, false);
+    }
+
+    private Pus1Verifier createVerifier(int stage, boolean withReportType, String optionalName, boolean optionalFirst) {
         var alg = new CustomAlgorithm("pus1-verifier");
         alg.setScope(Scope.COMMAND_VERIFICATION);
         List<InputParameter> inputs = new ArrayList<>();
@@ -83,8 +146,14 @@ public class Pus1VerifierTest {
         inputs.add(new InputParameter(new ParameterInstanceRef(rcvdApid), "rcvdApid"));
         inputs.add(new InputParameter(new ParameterInstanceRef(rcvdSeq), "rcvdSeq"));
         inputs.add(new InputParameter(new ParameterInstanceRef(subType), "reportSubType"));
+        if (optionalName != null && optionalFirst) {
+            inputs.add(new InputParameter(new ParameterInstanceRef(optional), optionalName));
+        }
         if (withReportType) {
             inputs.add(new InputParameter(new ParameterInstanceRef(type), "reportType"));
+        }
+        if (optionalName != null && !optionalFirst) {
+            inputs.add(new InputParameter(new ParameterInstanceRef(optional), optionalName));
         }
         alg.setInputList(inputs);
 

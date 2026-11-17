@@ -47,6 +47,12 @@ import org.yamcs.xtce.Parameter;
  * <p>
  * For backwards compatibility, the reportType input is currently not enforced: if it is missing, a warning is logged
  * and the type check is skipped. It will become mandatory in a future version.
+ * <p>
+ * An optional aggregate input named <b>ackFlags</b> can suppress verification when the boolean member for this
+ * stage is false. Bind it to the command argument using an InputParameterInstanceRef with
+ * parameterRef="/yamcs/cmd/arg/argumentName" and inputName="ackFlags". The argument name is mission-specific;
+ * the input alias is fixed. Missing members, unset values and non-boolean members do not suppress verification.
+ * Non-aggregate inputs do not suppress verification.
  * 
  * <p>
  * The algorithm checks the following conditions:
@@ -72,6 +78,7 @@ public class Pus1Verifier extends AbstractAlgorithmExecutor {
     private final MessageTemplate template;
     // index of the reportType input or -1 if not present
     private final int reportTypeIdx;
+    private final int ackFlagsIdx;
     // the executor is created for each command, this is to warn only once per algorithm
     private static final Set<String> warnedAlgorithms = ConcurrentHashMap.newKeySet();
     public static AlgorithmExecutionResult NO_RESULT = new AlgorithmExecutionResult(Collections.emptyList());
@@ -100,15 +107,8 @@ public class Pus1Verifier extends AbstractAlgorithmExecutor {
             template = null;
         }
 
-        int idx = -1;
-        var algInputList = algorithmDef.getInputList();
-        for (int i = 0; i < algInputList.size(); i++) {
-            if ("reportType".equals(algInputList.get(i).getInputName())) {
-                idx = i;
-                break;
-            }
-        }
-        reportTypeIdx = idx;
+        reportTypeIdx = findInput("reportType");
+        ackFlagsIdx = findInput("ackFlags");
         String algName = algorithmDef.getQualifiedName() != null ? algorithmDef.getQualifiedName()
                 : algorithmDef.getName();
         if (reportTypeIdx < 0 && warnedAlgorithms.add(algName)) {
@@ -133,18 +133,26 @@ public class Pus1Verifier extends AbstractAlgorithmExecutor {
         int rcvdSeq = inputValues.get(3).getRawValue().getUint32Value();
         int reportSubType = inputValues.get(4).getRawValue().getUint32Value();
 
-        // Optional 6th input: an "ackflags" aggregate value, used to skip this stage's verification
-        // when the command's ackflags argument didn't request it (per-bit, keyed by
-        // verificationStageToFlagMapping). Not every MDB wires this - e.g. when ackflags is a plain
-        // integer argument rather than an aggregate (as in this mission's pus-tc), or when the 6th
-        // input slot is used for something else entirely (e.g. an error code, only present on
-        // failure). In that case there is no bit to check, so this stage is always verified.
         boolean ackFlag = true;
-        if (inputValues.size() > 5 && inputValues.get(5) != null
-                && inputValues.get(5).getEngValue() instanceof AggregateValue ackFlags) {
-            var flagValue = ackFlags.getMemberValue(verificationStageToFlagMapping.get(verificationStage));
-            if (flagValue != null) {
-                ackFlag = flagValue.getBooleanValue();
+        if (ackFlagsIdx >= 0 && inputValues.get(ackFlagsIdx) != null) {
+            Value flags = inputValues.get(ackFlagsIdx).getEngValue();
+
+            /*
+            FIXME: Currently only handles the case when ackFlags is an AggregateValue
+            */
+            if (flags instanceof AggregateValue ackFlags) {
+                String member = verificationStageToFlagMapping.get(verificationStage);
+
+                if (member != null) {
+                    try {
+                        Value value = ackFlags.getMemberValue(member);
+                        if (value != null && value.getType() == Type.BOOLEAN) {
+                            ackFlag = value.getBooleanValue();
+                        }
+                    } catch (IllegalArgumentException ignored) {
+                        // Optional stage member is absent; retain normal verification.
+                    }
+                }
             }
         }
 
@@ -192,6 +200,16 @@ public class Pus1Verifier extends AbstractAlgorithmExecutor {
         } else {
             return NO_RESULT;
         }
+    }
+
+    private int findInput(String name) {
+        var inputs = algorithmDef.getInputList();
+        for (int i = 5; i < inputs.size(); i++) {
+            if (name.equals(inputs.get(i).getInputName())) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     /**
