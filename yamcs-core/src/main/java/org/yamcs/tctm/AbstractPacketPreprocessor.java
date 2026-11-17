@@ -11,6 +11,7 @@ import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.logging.Log;
 import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
+import org.yamcs.tctm.ccsds.time.CdsTimeDecoder;
 import org.yamcs.tctm.ccsds.time.CucTimeDecoder;
 import org.yamcs.time.FixedSizeTimeDecoder;
 import org.yamcs.time.Float64TimeDecoder;
@@ -77,7 +78,7 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
     };
 
     public static enum TimeDecoderType {
-        CUC, FIXED, FLOAT64
+        CUC, FIXED, FLOAT64, CDS
     }
 
     protected static final String CONFIG_KEY_ERROR_DETECTION = "errorDetection";
@@ -174,6 +175,9 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
             int implicitPField = c.getInt("implicitPField", -1);
             int implicitPFieldCont = c.getInt("implicitPFieldCont", -1);
             timeDecoder = new CucTimeDecoder(implicitPField, implicitPFieldCont);
+            break;
+        case CDS:
+            timeDecoder = new CdsTimeDecoder(c.getInt("implicitPField", -1));
             break;
         case FIXED:
             int size = c.getInt("size", 8);
