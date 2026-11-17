@@ -91,6 +91,45 @@ implicitPFieldCont (integer)
     This can be used to configure the next octet of the ``pfield`` in case the first bit of the first octet (specified above) is 1.
     
 
+CDS Time Decoder
+----------------
+
+CDS is an abbreviation for CCSDS Day Segmented Time Code, specified in `CCSDS Time Code Formats CCSDS 301.0-B-4 <https://public.ccsds.org/Pubs/301x0b4e1.pdf>`_, Chapter 3.3. The time is encoded as an optional 1 byte ``pfield`` followed by a 2 or 3 bytes day count, a 4 bytes millisecond of day and an optional 2 bytes microsecond of millisecond or 4 bytes picosecond of millisecond. The ``pfield`` specifies the length of the day and submillisecond segments.
+
+For example ``pfield = 0x40`` means a 16 bit day segment without submillisecond segment, making the length of the time in the packet 6 bytes when the ``pfield`` is implicit or 7 bytes when it is part of the packet.
+
+The decoder returns ``day * 86400000 + millisecond of day``, the submillisecond segment is dropped. As for CUC, the epoch bit of the ``pfield`` is ignored and the epoch has to be configured with the ``epoch`` option.
+
+CDS is UTC-based: each day is counted as 86400 seconds and the leap seconds are not included. For the CCSDS recommended epoch of 1-Jan-1958, use:
+
+.. code-block:: yaml
+
+   timeEncoding:
+     type: CDS
+     implicitPField: 0x40
+     epoch: CUSTOM
+     epochUTC: "1958-01-01T00:00:00Z"
+     timeIncludesLeapSeconds: false
+
+If the agency defined epoch is 1-Jan-1970, ``epoch: UNIX`` can be used instead.
+
+During a leap second the millisecond of day goes beyond 86400000; such a time is converted to the first second of the following day.
+
+When the epoch is ``NONE``, the raw time is the number of microseconds computed the same way (picoseconds are truncated to microseconds).
+
+CDS decoder configuration options:
+
+type (string)
+    Set to ``CDS``.
+
+implicitPField (integer)
+    If the ``pfield`` is not encoded in the packet, it can be set by this option.
+
+    A value of ``-1`` means that the ``pfield`` is explicitly provided in the packet.
+
+    Default: ``-1``.
+
+
 FIXED Time Decoder
 ------------------
 
