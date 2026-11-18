@@ -72,12 +72,11 @@ include manual selection checks; no live simulator result is implied by listing 
 mvn -pl simulator,examples/pus -am clean install -DskipTests   # first build only
 mvn -pl examples/pus yamcs:run
 ```
+Web UI: `http://localhost:8090`, instance `pus`. Commands live under `/PUS15/...`, TM containers
+under the same `/PUS15/` subsystem (see g.3). An automated walkthrough of most of this table is in
+`examples/pus/tests/test-pus15.py`.
 
-TC[15,3] adds report types; TC[15,4] deletes them. TC[15,5] carries only
-`packet_store_id` and requests TM[15,6]. `service_type` and the elements of
-`subservices` are plain unsigned integers. The optional outer APID-selection
-block is always present in this mission profile. Zero service/subservice
-counts retain the whole-parent selection meaning defined for the operation.
+### g.2 Command reference — valid inputs
 
 All commands are under `/PUS15/`. `N` count fields must be supplied explicitly alongside their
 corresponding arrays — YAMCS does not infer them from array length (same convention as PUS12's
@@ -120,51 +119,79 @@ corresponding arrays — YAMCS does not infer them from array length (same conve
 | `TC_15_21_SPECIFIC` | TC[15,21] | `{"N": 1, "store_ids": [100]}` — delete only if storage disabled, open retrieval suspended, and BTR disabled |
 | `TC_15_21_ALL` | TC[15,21] | `{}` — delete every store currently eligible, silently skipping active ones |
 
-```text
-packet_store_id:u8
-n_count:u8
-n_count × {
-    apid:u11
-    structure_id_count:u8
-    structure_id_count × {
-        structure_id:enum8
-        subsampling_rate:u8
-    }
-}
-```
+Rejection conditions to exercise (all respond NACK completion, not NACK start — the command is
+accepted then rejected during execution; see the `Pus15Service` completion error codes):
+unknown `store_id` (`COMPL_ERR_STORE_NOT_FOUND` = 5), `TC_15_20_CREATE_STORES` reusing an existing
+id (`COMPL_ERR_STORE_ALREADY_EXISTS` = 6), delete/resize/change-VC on a store that still has
+storage enabled, open retrieval in progress, or BTR enabled (`COMPL_ERR_STORE_ACTIVE` = 7), more
+than 64 total stores (`COMPL_ERR_MAX_STORES_EXCEEDED` = 8), `TC_15_9_START_BTR` on a store with an
+already-active BTR (`COMPL_ERR_BTR_ALREADY_ACTIVE` = 9), `TC_15_14_SPECIFIC` naming a store whose
+open retrieval isn't suspended (`COMPL_ERR_NOT_SUSPENDED` = 10), and `TC_15_11_*` targeting a store
+with an active BTR or open retrieval (`COMPL_ERR_ACTIVE_RETRIEVAL` = 11). An unrecognized subtype
+gets NACK **start** (`START_ERR_INVALID_PUS_SUBTYPE`) instead, since the command is rejected before
+execution begins.
 
-TC[15,30] and TC[15,32] use the same hierarchy but each structure entry
-contains only `structure_id`; a delete entry has no subsampling field.
-TC[15,35] carries one store ID and requests TM[15,36]. TC[15,37] carries one
-store ID and requests TM[15,38]. Subsampling is mandatory in the add requests
-and configuration reports where shown.
+### g.3 TMs to check
 
-### Event blocking selection
+| Container | Subtype | Triggered by | Layout |
+|---|---|---|---|
+| `/PUS15/STORE_CONFIG_REPORT` | TM[15,23] | `TC_15_22_REPORT_CONFIG` | `N:u8`, then `N` × `{store_id:u16, size_bytes:u32, store_type:u8, vc_id:u8}` |
+| `/PUS15/STORE_STATUS_REPORT` | TM[15,19] | `TC_15_18_REPORT_STATUS` | `N:u8`, then `N` × `{store_id:u16, storage_status:u8, open_retrieval_status:u8, btr_status:u8}` (0/1 enums, see pus15.xml) |
+| `/PUS15/STORE_SUMMARY_REPORT` | TM[15,13] | `TC_15_12_SPECIFIC` / `TC_15_12_ALL` | `N:u8`, then `N` × `{store_id:u16, oldest_ts:u64, newest_ts:u64, open_retrieval_start_time:u64, fill_pct:u8, fill_pct_from_start:u8}` |
+| `/PUS15/APPLICATION_SELECTION_REPORT` | TM[15,6] | `TC_15_5_REPORT_APPLICATION_CONFIG` | `store_id:u16, N1:u8`, then `N1` × `{apid:u11, N2:u8, N2 × {service:u8, N3:u8, N3 × subtype:u8}}` |
+| `/PUS15/HK_SELECTION_REPORT` | TM[15,36] | `TC_15_35_REPORT_HK_CONFIG` | `store_id:u16, N1:u8`, then `N1` × `{apid:u11, N2:u8, N2 × structure_id:u8}` |
+| `/PUS15/DIAGNOSTIC_SELECTION_REPORT` | TM[15,38] | `TC_15_37_REPORT_DIAGNOSTIC_CONFIG` | Same packed form as TM[15,36] |
+| `/PUS15/EVENT_SELECTION_REPORT` | TM[15,40] | `TC_15_39_REPORT_EVENT_CONFIG` | Same packed form as TM[15,36], with `event_definition_id:u8` |
 
-TC[15,33], TC[15,34], and TM[15,40] use:
+If there are zero stores (config report) or the target list resolves to zero entries, the report is
+still sent with `N=0` and no entries. Likewise, each empty packet-selection table produces one
+content report with `N1=0`; ST[14] uses the same one-report empty-table rule.
 
-```text
-packet_store_id:u8
-n_count:u8
-n_count × {
-    apid:u11
-    event_count:u8
-    event_count × event_ids:enum8
-}
-```
+Also watch the standard PUS-1 verification containers (`/PUS/pus-tc-ack-*`) for ACK/NACK
+start/completion of every TC[15,x] above.
 
-**TC[15,33] deletes** event identifiers from the blocking configuration;
-**TC[15,34] adds** them. TC[15,39] carries one store ID and requests TM[15,40].
-Event blocking is an on-board selection policy; the XTCE schema represents
-requests and reports and preserves applicable zero-count wildcard selections.
+### g.4 Suggested manual test walkthrough
 
-## XTCE construction
+1. **Create stores**: send `TC_15_20_CREATE_STORES` with the example args from g.2 (store 100
+   circular/200000B, store 200 bounded/5000B). Confirm ACK completion, then
+   `TC_15_22_REPORT_CONFIG` → `STORE_CONFIG_REPORT` shows both with the right type/size/vc.
+2. **Reject duplicate id**: resend `TC_15_20_CREATE_STORES` reusing `store_id: 100` and confirm NACK
+   completion with code 6 (`COMPL_ERR_STORE_ALREADY_EXISTS`); confirm the config report is
+   unchanged (still exactly 2 stores).
+3. **Configure and enable storage**: add ST[3,25] for APID 1 using
+   `TC_15_3_ADD_REPORT_TYPES`, authorize the desired 8-bit HK structure ID with
+   `TC_15_29_ADD_HK_STRUCTURES`, then send `TC_15_1_SPECIFIC` for store 100. Wait a couple of
+   seconds and request `TC_15_12_SPECIFIC`; `STORE_SUMMARY_REPORT` should show `fill_pct > 0` and
+   `oldest_ts <= newest_ts`. A newly-created store without TC[15,3] configuration remains empty.
+4. **Active-store deletion is rejected**: with storage still enabled on store 100, send
+   `TC_15_21_SPECIFIC` for store 100 and confirm NACK completion with code 7
+   (`COMPL_ERR_STORE_ACTIVE`).
+5. **Open retrieval resume/suspend**: disable storage (`TC_15_2_SPECIFIC`), then
+   `TC_15_15_SPECIFIC` for store 100 → `TC_15_18_REPORT_STATUS` shows `open_retrieval_status=1`
+   (in_progress); watch previously-captured packets replay on the TM link (same containers as their
+   original type, e.g. `/PUS3/...` HK reports, now arriving a second time via
+   `PusSimulator.sendStoredPacket`). Then `TC_15_16_SPECIFIC` → status flips back to `0`
+   (suspended), and replay stops.
+6. **Cursor reposition requires suspended**: with store 100 back in `SUSPENDED` state, send
+   `TC_15_14_SPECIFIC` with `start_time: 0` and confirm ACK completion (cursor rewound to the
+   oldest packet). Then resume open retrieval again (`TC_15_15_SPECIFIC`) and confirm every
+   captured packet up to the newest gets replayed once, in order.
+7. **By-time-range retrieval**: send `TC_15_9_START_BTR` for store 100 with the full-range example
+   from g.2. Immediately check `TC_15_18_REPORT_STATUS` → `btr_status=1` (enabled) while packets are
+   still draining (100ms between sends, see `BTR_STEP_DELAY_MS`); after a couple of seconds, status
+   flips back to `0` (disabled) once the backlog is exhausted.
+8. **BTR double-start rejected**: while a BTR is still draining on store 100 (or immediately restart
+   one on a store with plenty of backlog), send a second `TC_15_9_START_BTR` for the same store and
+   confirm NACK completion with code 9 (`COMPL_ERR_BTR_ALREADY_ACTIVE`).
+9. **Resize + VC change**: with store 200 untouched (storage never enabled, so it's inactive), send
+   `TC_15_25_RESIZE_STORES` (`new_size: 8000`) and `TC_15_28_CHANGE_VC` (`new_vc_id: 3`); confirm
+   `TC_15_22_REPORT_CONFIG` reflects both changes.
+10. **Delete content by time, then delete the stores**: send `TC_15_11_SPECIFIC` for store 100 with
+    a far-future `time_limit` and confirm the next `TC_15_12_SPECIFIC` summary shows
+    `fill_pct=0`. Finally send `TC_15_21_ALL` (no args) and confirm `TC_15_22_REPORT_CONFIG` reports
+    zero stores.
 
-Each subtype has an explicit `add_pus_tc_15_<subtype>_command` or
-`add_pus_tm_15_<subtype>_container` function. TC[15,1]'s original interface is
-preserved. Builders use descriptive names, aggregates and counted arrays,
-standard TC verifiers, and the shared header. All TM containers inherit from
-`pus_header.pus_tm_nontime_container` and match service 15 plus their subtype.
+### g.5 Caveats specific to this simulator
 
 - **Single generated APID**: ordinary generated TM in this simulator uses `MAIN_APID = 1`
   (`PusSimulator.newPacket`). Packed report encoding and decoding can contain APIDs above 255, but
