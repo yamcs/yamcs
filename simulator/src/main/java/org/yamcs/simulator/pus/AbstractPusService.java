@@ -22,6 +22,9 @@ public abstract class AbstractPusService {
     static final int START_ERR_UNKNOWN_EVENT_ACTION = 9;
     static final int START_ERR_EVENT_ACTION_ENABLED = 10;
     static final int START_ERR_MAX_EVENT_ACTIONS_REACHED = 11;
+    // parameter management (ST[20]) start errors
+    static final int START_ERR_UNKNOWN_PARAMETER = 12;
+    static final int START_ERR_INVALID_REQUEST = 13;
 
     // completion errors
     static final int COMPL_ERR_NOT_IMPLEMENTED = 2;
@@ -53,6 +56,10 @@ public abstract class AbstractPusService {
 
     public void nack_start(PusTcPacket tc, int code) {
         pusSimulator.transmitRealtimeTM(nack(tc, 4, code));
+    }
+
+    public void nack_start(PusTcPacket tc, int code, byte[] failureData) {
+        pusSimulator.transmitRealtimeTM(nack(tc, 4, code, failureData));
     }
 
     public void ack_completion(PusTcPacket tc) {
