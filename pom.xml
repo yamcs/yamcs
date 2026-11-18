@@ -46,7 +46,7 @@
 	</developers>
 
 	<properties>
-		<revision>5.14.1-0.5.1.Pixxel</revision>
+		<revision>5.14.1-0.6.0.Pixxel-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<protobufVersion>4.35.0</protobufVersion>
 		<rocksdbVersion>9.4.0.12</rocksdbVersion>
