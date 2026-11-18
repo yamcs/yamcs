@@ -219,7 +219,7 @@
 							<FixedValue>-1</FixedValue>
 						</SizeInBits>
 						<ToBinaryTransformAlgorithm name="TimeBinaryEncoder">						
-							<AlgorithmText language="java"> org.yamcs.algo.TimeBinaryEncoder({type: CUC, epoch: UNIX, pfield: 0x2f, implicitPfield: false}) </AlgorithmText>
+							<AlgorithmText language="java"> org.yamcs.algo.TimeBinaryEncoder({type: CUC, epoch: UNIX, pField: 0x2f, implicitPField: false}) </AlgorithmText>
 						</ToBinaryTransformAlgorithm>
 					</BinaryDataEncoding>
 				</Encoding>

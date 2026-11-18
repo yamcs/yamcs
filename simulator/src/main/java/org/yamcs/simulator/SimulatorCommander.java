@@ -83,7 +83,13 @@ public class SimulatorCommander extends ProcessRunner {
         pusTimeEncodingSpec.addOption("pfieldCont", OptionType.INTEGER);
         pusTimeEncodingSpec.addOption("implicitPfield", OptionType.BOOLEAN);
 
+        Spec storageTimeSpec = new Spec();
+        storageTimeSpec.addOption("pField", OptionType.INTEGER);
+        storageTimeSpec.addOption("pFieldCont", OptionType.INTEGER);
+        storageTimeSpec.addOption("epoch", OptionType.STRING);
+
         Spec pusSpec = new Spec();
+        pusSpec.addOption("storageTimeEncoding", OptionType.MAP).withSpec(storageTimeSpec);
         pusSpec.addOption("timeEncoding", OptionType.MAP).withSpec(pusTimeEncodingSpec);
 
         Spec perfTestSpec = new Spec();
@@ -185,6 +191,13 @@ public class SimulatorCommander extends ProcessRunner {
 
         if (config.containsKey("pus")) {
             YConfiguration pusArgs = config.getConfig("pus");
+            if (pusArgs.containsKey("storageTimeEncoding")) {
+                YConfiguration storageTime = pusArgs.getConfig("storageTimeEncoding");
+                cmdl.addAll(Arrays.asList(
+                        "--pus-storage-time-pfield", "" + storageTime.getInt("pField", defaultOptions.pusStorageTimePfield),
+                        "--pus-storage-time-pfield-cont", "" + storageTime.getInt("pFieldCont", defaultOptions.pusStorageTimePfieldCont),
+                        "--pus-storage-time-epoch", storageTime.getString("epoch", defaultOptions.pusStorageTimeEpoch)));
+            }
             if (pusArgs.containsKey("timeEncoding")) {
                 YConfiguration timeEncodingArgs = pusArgs.getConfig("timeEncoding");
                 cmdl.addAll(Arrays.asList(
@@ -313,7 +326,10 @@ public class SimulatorCommander extends ProcessRunner {
                 throw new ConfigurationException("Unsupported PUS time encoding type '" + runtimeOptions.pusTimeType
                         + "'. Only CUC is supported");
             }
-            simulator = new PusSimulator(dataDir, timeEncoding);
+            PusTimeEncoding storageTime = new PusTimeEncoding(runtimeOptions.pusStorageTimePfield,
+                    runtimeOptions.pusStorageTimePfieldCont, true,
+                    Epoch.valueOf(runtimeOptions.pusStorageTimeEpoch.toUpperCase()));
+            simulator = new PusSimulator(dataDir, timeEncoding, storageTime);
         } else {
             throw new ConfigurationException("Unknown simulator type '" + runtimeOptions.type + "'. Use COL or PUS");
         }

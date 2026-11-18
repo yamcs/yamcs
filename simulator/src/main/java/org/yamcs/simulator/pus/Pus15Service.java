@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -51,6 +52,10 @@ public class Pus15Service extends AbstractPusService {
     static final int COMPL_ERR_IDENTIFIER_NOT_IN_CONFIG = 15;
     static final int COMPL_ERR_WILDCARD_CONFLICT = 16;
 
+    static final int COMPL_ERR_INVALID_DATA = 17;
+    // Mission allocation unit: one wire-size unit is 1 KiB (the field remains uint8).
+    static final long SIZE_UNIT_BYTES = 1024;
+
     static final int STORE_TYPE_CIRCULAR = 0;
     static final int STORE_TYPE_BOUNDED = 1;
 
@@ -58,14 +63,28 @@ public class Pus15Service extends AbstractPusService {
     static final long OPEN_RETRIEVAL_POLL_MS = 500;
     static final long BTR_STEP_DELAY_MS = 100;
 
+    private final PusTimeEncoding storageTime;
+    private ScheduledFuture<?> retrievalTask;
+    private int retrievalTicks;
+
     private final Map<Integer, PacketStore> stores = new LinkedHashMap<>();
 
     Pus15Service(PusSimulator pusSimulator) {
         super(pusSimulator, 15);
+        storageTime = pusSimulator.storageTimeEncoding;
     }
 
     @Override
     public void executeTc(PusTcPacket tc) {
+        try {
+            dispatch(tc);
+        } catch (IllegalArgumentException | IndexOutOfBoundsException | java.nio.BufferUnderflowException e) {
+            log.warn("ST15: invalid TC[15,{}] data: {}", tc.getSubtype(), e.toString());
+            nack_completion(tc, COMPL_ERR_INVALID_DATA);
+        }
+    }
+
+    private void dispatch(PusTcPacket tc) {
         switch (tc.getSubtype()) {
         // TC[15,1] enable storage function of packet stores
         case 1 -> setStorageEnabled(tc, true);
@@ -97,6 +116,9 @@ public class Pus15Service extends AbstractPusService {
         case 21 -> deleteStores(tc);
         // TC[15,22] report configuration of each packet store -> TM[15,23]
         case 22 -> reportConfig(tc);
+        case 24 -> copyPackets(tc);
+        case 26 -> changeStoreType(tc, STORE_TYPE_CIRCULAR);
+        case 27 -> changeStoreType(tc, STORE_TYPE_BOUNDED);
         // TC[15,25] resize packet stores
         case 25 -> resizeStores(tc);
         // TC[15,28] change virtual channel used by a packet store
@@ -126,7 +148,7 @@ public class Pus15Service extends AbstractPusService {
             return;
         }
         byte[] raw = pkt.getBytes();
-        long ts = pusSimulator.timeEncoding.now().millis();
+        long ts = storageTime.now().millis();
         for (PacketStore s : stores.values()) {
             if (s.storageEnabled && shouldStore(s, pkt)) {
                 s.append(raw, ts);
@@ -167,17 +189,17 @@ public class Pus15Service extends AbstractPusService {
         return true;
     }
 
-    private static boolean identifierAllowed(Map<Integer, Set<Integer>> config, int apid, int identifier) {
-        Set<Integer> identifiers = config.get(apid);
-        return identifiers != null && (identifiers.isEmpty() || identifiers.contains(identifier));
+    private static boolean identifierAllowed(Map<Integer, PusStructureSelection> config, int apid, int identifier) {
+        PusStructureSelection selection = config.get(apid);
+        return selection != null && selection.accepts(identifier);
     }
 
     // ---- TC[15,3-5] / TM[15,6]: application-process packet selection ----
 
     private void addApplicationReportTypes(PusTcPacket tc) {
         ack_start(tc);
-        BitBuffer bits = PusPackedFields.bitBuffer(tc.getUserDataBuffer());
-        PacketStore store = resolveStore(tc, PusPackedFields.readUnsigned(bits, 16));
+        BitBuffer bits = PusPackedFields.readBuffer(payload(tc));
+        PacketStore store = resolveStore(tc, PusPackedFields.readUnsigned(bits, 8));
         if (store == null) {
             return;
         }
@@ -227,8 +249,8 @@ public class Pus15Service extends AbstractPusService {
 
     private void deleteApplicationReportTypes(PusTcPacket tc) {
         ack_start(tc);
-        BitBuffer bits = PusPackedFields.bitBuffer(tc.getUserDataBuffer());
-        PacketStore store = resolveStore(tc, PusPackedFields.readUnsigned(bits, 16));
+        BitBuffer bits = PusPackedFields.readBuffer(payload(tc));
+        PacketStore store = resolveStore(tc, PusPackedFields.readUnsigned(bits, 8));
         if (store == null) {
             return;
         }
@@ -295,8 +317,8 @@ public class Pus15Service extends AbstractPusService {
 
     private void reportApplicationConfig(PusTcPacket tc) {
         ack_start(tc);
-        ByteBuffer bb = tc.getUserDataBuffer();
-        PacketStore store = resolveStore(tc, bb.getShort() & 0xFFFF);
+        ByteBuffer bb = payload(tc);
+        PacketStore store = resolveStore(tc, bb.get() & 0xFF);
         if (store == null) {
             return;
         }
@@ -307,7 +329,7 @@ public class Pus15Service extends AbstractPusService {
         }
         PusTmPacket pkt = newPacket(6, PusPackedFields.bytesForBits(bitSize));
         BitBuffer out = PusPackedFields.bitBuffer(pkt.getUserDataBuffer());
-        out.putBits(store.storeId, 16);
+        out.putBits(store.storeId, 8);
         out.putBits(store.appProcessConfig.size(), PusPackedFields.OCTET_BITS);
         for (var appEntry : store.appProcessConfig.entrySet()) {
             out.putBits(appEntry.getKey(), PusPackedFields.APID_BITS);
@@ -329,7 +351,7 @@ public class Pus15Service extends AbstractPusService {
         if (store.appProcessConfig.size() > PusPackedFields.MAX_OCTET_COUNT) {
             return -1;
         }
-        long bits = 16 + PusPackedFields.OCTET_BITS;
+        long bits = 8 + PusPackedFields.OCTET_BITS;
         for (AppProcessSelection selection : store.appProcessConfig.values()) {
             if (selection.services.size() > PusPackedFields.MAX_OCTET_COUNT) {
                 return -1;
@@ -349,9 +371,13 @@ public class Pus15Service extends AbstractPusService {
     // ---- TC[15,29-40]: HK, diagnostic and event identifier configurations ----
 
     private void addIdentifierConfig(PusTcPacket tc, ConfigKind kind) {
+        if (kind != ConfigKind.EVENT) {
+            updateStructureConfig(tc, kind, true);
+            return;
+        }
         ack_start(tc);
-        BitBuffer bits = PusPackedFields.bitBuffer(tc.getUserDataBuffer());
-        PacketStore store = resolveStore(tc, PusPackedFields.readUnsigned(bits, 16));
+        BitBuffer bits = PusPackedFields.readBuffer(payload(tc));
+        PacketStore store = resolveStore(tc, PusPackedFields.readUnsigned(bits, 8));
         if (store == null) {
             return;
         }
@@ -383,9 +409,13 @@ public class Pus15Service extends AbstractPusService {
     }
 
     private void deleteIdentifierConfig(PusTcPacket tc, ConfigKind kind) {
+        if (kind != ConfigKind.EVENT) {
+            updateStructureConfig(tc, kind, false);
+            return;
+        }
         ack_start(tc);
-        BitBuffer bits = PusPackedFields.bitBuffer(tc.getUserDataBuffer());
-        PacketStore store = resolveStore(tc, PusPackedFields.readUnsigned(bits, 16));
+        BitBuffer bits = PusPackedFields.readBuffer(payload(tc));
+        PacketStore store = resolveStore(tc, PusPackedFields.readUnsigned(bits, 8));
         if (store == null) {
             return;
         }
@@ -430,9 +460,13 @@ public class Pus15Service extends AbstractPusService {
     }
 
     private void reportIdentifierConfig(PusTcPacket tc, ConfigKind kind, int tmSubtype) {
+        if (kind != ConfigKind.EVENT) {
+            reportStructureConfig(tc, kind, tmSubtype);
+            return;
+        }
         ack_start(tc);
-        ByteBuffer bb = tc.getUserDataBuffer();
-        PacketStore store = resolveStore(tc, bb.getShort() & 0xFFFF);
+        ByteBuffer bb = payload(tc);
+        PacketStore store = resolveStore(tc, bb.get() & 0xFF);
         if (store == null) {
             return;
         }
@@ -445,7 +479,7 @@ public class Pus15Service extends AbstractPusService {
         }
         PusTmPacket pkt = newPacket(tmSubtype, PusPackedFields.bytesForBits(bitSize));
         BitBuffer out = PusPackedFields.bitBuffer(pkt.getUserDataBuffer());
-        out.putBits(store.storeId, 16);
+        out.putBits(store.storeId, 8);
         out.putBits(config.size(), PusPackedFields.OCTET_BITS);
         for (var entry : config.entrySet()) {
             out.putBits(entry.getKey(), PusPackedFields.APID_BITS);
@@ -462,7 +496,7 @@ public class Pus15Service extends AbstractPusService {
         if (config.size() > PusPackedFields.MAX_OCTET_COUNT) {
             return -1;
         }
-        long bits = 16 + PusPackedFields.OCTET_BITS;
+        long bits = 8 + PusPackedFields.OCTET_BITS;
         for (Set<Integer> identifiers : config.values()) {
             if (identifiers.size() > PusPackedFields.MAX_OCTET_COUNT) {
                 return -1;
@@ -493,8 +527,7 @@ public class Pus15Service extends AbstractPusService {
 
     private static Map<Integer, Set<Integer>> identifierConfig(PacketStore store, ConfigKind kind) {
         return switch (kind) {
-        case HK -> store.hkConfig;
-        case DIAGNOSTIC -> store.diagnosticConfig;
+        case HK, DIAGNOSTIC -> throw new IllegalArgumentException("Use structure configuration");
         case EVENT -> store.eventBlockingConfig;
         };
     }
@@ -510,7 +543,7 @@ public class Pus15Service extends AbstractPusService {
 
     private void setStorageEnabled(PusTcPacket tc, boolean enabled) {
         ack_start(tc);
-        List<PacketStore> targets = resolveTargets(tc, tc.getUserDataBuffer(), false);
+        List<PacketStore> targets = resolveTargets(tc, payload(tc), false);
         if (targets == null) {
             return;
         }
@@ -525,14 +558,19 @@ public class Pus15Service extends AbstractPusService {
 
     private void startBtr(PusTcPacket tc) {
         ack_start(tc);
-        ByteBuffer bb = tc.getUserDataBuffer();
+        ByteBuffer bb = payload(tc);
         int n = bb.get() & 0xFF;
         List<PacketStore> targets = new ArrayList<>(n);
         List<long[]> windows = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
-            int id = bb.getShort() & 0xFFFF;
-            long start = bb.getLong();
-            long end = bb.getLong();
+            int id = bb.get() & 0xFF;
+            int priority = bb.get() & 0xFF;
+            long start = storageTime.read(bb).millis();
+            long end = storageTime.read(bb).millis();
+            if (start > end) {
+                nack_completion(tc, COMPL_ERR_INVALID_DATA);
+                return;
+            }
             PacketStore s = stores.get(id);
             if (s == null) {
                 log.warn("ST15: store id={} not found", id);
@@ -545,7 +583,7 @@ public class Pus15Service extends AbstractPusService {
                 return;
             }
             targets.add(s);
-            windows.add(new long[] { start, end });
+            windows.add(new long[] { start, end, priority });
         }
         for (int i = 0; i < targets.size(); i++) {
             PacketStore s = targets.get(i);
@@ -559,33 +597,69 @@ public class Pus15Service extends AbstractPusService {
             }
             log.info("ST15: starting BTR on store id={}, {} packet(s) in window [{},{}]",
                     s.storeId, toSend.size(), w[0], w[1]);
-            runBtrStep(s, toSend, 0);
+            s.btrPriority = (int) w[2];
+            s.btrPackets.clear();
+            s.btrPackets.addAll(toSend);
+            ensureRetrievalTask();
         }
         ack_completion(tc);
     }
 
-    private void runBtrStep(PacketStore s, List<StoredPacket> toSend, int idx) {
-        if (!s.btrEnabled) {
-            return; // aborted via TC[15,17]
+    /** One executor owns all state; higher numeric priorities are sent first each tick. */
+    private void ensureRetrievalTask() {
+        if (retrievalTask == null) {
+            retrievalTask = pusSimulator.executor.scheduleAtFixedRate(this::retrievalTick,
+                    BTR_STEP_DELAY_MS, BTR_STEP_DELAY_MS, TimeUnit.MILLISECONDS);
         }
-        if (idx >= toSend.size()) {
-            s.btrEnabled = false;
-            log.info("ST15: BTR complete on store id={}", s.storeId);
-            return;
+    }
+
+    private void retrievalTick() {
+        boolean openTick = ++retrievalTicks % (OPEN_RETRIEVAL_POLL_MS / BTR_STEP_DELAY_MS) == 0;
+        List<Retrieval> ready = new ArrayList<>();
+        for (PacketStore store : stores.values()) {
+            if (store.btrEnabled) {
+                StoredPacket packet = store.btrPackets.pollFirst();
+                if (packet != null) {
+                    ready.add(new Retrieval(store, packet, store.btrPriority, false));
+                } else {
+                    store.btrEnabled = false;
+                }
+            }
+            if (openTick && store.openRetrievalInProgress) {
+                for (StoredPacket packet : store.packets) {
+                    if (packet.seq > store.openRetrievalLastSentSeq && packet.timestamp >= store.openRetrievalMinimumTime) {
+                        ready.add(new Retrieval(store, packet, store.openPriority, true));
+                        break;
+                    }
+                }
+            }
         }
-        pusSimulator.sendStoredPacket(toSend.get(idx).raw);
-        pusSimulator.executor.schedule(() -> runBtrStep(s, toSend, idx + 1), BTR_STEP_DELAY_MS,
-                TimeUnit.MILLISECONDS);
+        ready.sort(Comparator.comparingInt(Retrieval::priority).reversed());
+        for (Retrieval retrieval : ready) {
+            pusSimulator.sendStoredPacket(retrieval.packet.raw, retrieval.store.vcId);
+            if (retrieval.open) {
+                retrieval.store.openRetrievalLastSentSeq = retrieval.packet.seq;
+                retrieval.store.openRetrievalStartTime = retrieval.packet.timestamp;
+            }
+        }
+        if (stores.values().stream().noneMatch(s -> s.openRetrievalInProgress || s.btrEnabled)) {
+            retrievalTask.cancel(false);
+            retrievalTask = null;
+        }
+    }
+
+    private record Retrieval(PacketStore store, StoredPacket packet, int priority, boolean open) {
     }
 
     private void abortBtr(PusTcPacket tc) {
         ack_start(tc);
-        List<PacketStore> targets = resolveTargets(tc, tc.getUserDataBuffer(), false);
+        List<PacketStore> targets = resolveTargets(tc, payload(tc), false);
         if (targets == null) {
             return;
         }
         for (PacketStore s : targets) {
-            s.btrEnabled = false; // runBtrStep checks this before sending the next packet
+            s.btrEnabled = false;
+            s.btrPackets.clear();
         }
         ack_completion(tc);
     }
@@ -594,8 +668,8 @@ public class Pus15Service extends AbstractPusService {
 
     private void deleteContent(PusTcPacket tc) {
         ack_start(tc);
-        ByteBuffer bb = tc.getUserDataBuffer();
-        long timeLimit = bb.getLong();
+        ByteBuffer bb = payload(tc);
+        long timeLimit = storageTime.read(bb).millis();
         List<PacketStore> targets = resolveTargets(tc, bb, false);
         if (targets == null) {
             return;
@@ -624,8 +698,13 @@ public class Pus15Service extends AbstractPusService {
 
     private void reportSummary(PusTcPacket tc) {
         ack_start(tc);
-        List<PacketStore> targets = resolveTargets(tc, tc.getUserDataBuffer(), false);
+        List<PacketStore> targets = resolveTargets(tc, payload(tc), false);
         if (targets == null) {
+            return;
+        }
+        long size = 1L + targets.size() * (3L + 3L * storageTime.getEncodedLength());
+        if (size > pusSimulator.maxTmDataSize()) {
+            reportTooLarge(tc, 13, size * 8);
             return;
         }
         sendSummaryReport(targets);
@@ -633,24 +712,24 @@ public class Pus15Service extends AbstractPusService {
     }
 
     private void sendSummaryReport(List<PacketStore> targets) {
-        // N(1) + N x { store_id(2), oldest_ts(8), newest_ts(8), open_retrieval_start_time(8), fill_pct(1), fill_pct_from_start(1) }
-        int entrySize = 2 + 8 + 8 + 8 + 1 + 1;
+        // N(1) + N x { store_id(1), oldest_ts(CUC), newest_ts(CUC), open_retrieval_start_time(CUC), fill_pct(1), fill_pct_from_start(1) }
+        int entrySize = 1 + 3 * storageTime.getEncodedLength() + 2;
         PusTmPacket pkt = newPacket(13, 1 + targets.size() * entrySize);
         ByteBuffer bb = pkt.getUserDataBuffer();
         bb.put((byte) targets.size());
         for (PacketStore s : targets) {
-            long oldest = s.packets.isEmpty() ? 0 : s.packets.peekFirst().timestamp;
-            long newest = s.packets.isEmpty() ? 0 : s.packets.peekLast().timestamp;
+            long oldest = s.packets.stream().mapToLong(p -> p.timestamp).min().orElse(0);
+            long newest = s.packets.stream().mapToLong(p -> p.timestamp).max().orElse(0);
             long bytesFromCursor = 0;
             for (StoredPacket p : s.packets) {
-                if (p.seq > s.openRetrievalLastSentSeq) {
+                if (p.seq > s.openRetrievalLastSentSeq && p.timestamp >= s.openRetrievalMinimumTime) {
                     bytesFromCursor += p.raw.length;
                 }
             }
-            bb.putShort((short) s.storeId);
-            bb.putLong(oldest);
-            bb.putLong(newest);
-            bb.putLong(s.openRetrievalStartTime);
+            bb.put((byte) s.storeId);
+            storageTime.encode(new PusTime(oldest), bb);
+            storageTime.encode(new PusTime(newest), bb);
+            storageTime.encode(new PusTime(s.openRetrievalStartTime), bb);
             bb.put((byte) fillPct(s.usedBytes, s.sizeBytes));
             bb.put((byte) fillPct(bytesFromCursor, s.sizeBytes));
         }
@@ -665,65 +744,55 @@ public class Pus15Service extends AbstractPusService {
 
     private void changeOpenRetrievalStartTime(PusTcPacket tc) {
         ack_start(tc);
-        ByteBuffer bb = tc.getUserDataBuffer();
-        long startTime = bb.getLong();
+        ByteBuffer bb = payload(tc);
+        long startTime = storageTime.read(bb).millis();
         List<PacketStore> targets = resolveTargets(tc, bb, true);
         if (targets == null) {
             return;
         }
         for (PacketStore s : targets) {
             s.openRetrievalStartTime = startTime;
-            long lastSeq = -1;
-            for (StoredPacket p : s.packets) {
-                if (p.timestamp < startTime) {
-                    lastSeq = p.seq;
-                } else {
-                    break;
-                }
-            }
-            s.openRetrievalLastSentSeq = lastSeq;
+            s.openRetrievalMinimumTime = startTime;
+            s.openRetrievalLastSentSeq = -1;
         }
         ack_completion(tc);
     }
 
     private void resumeOpenRetrieval(PusTcPacket tc) {
         ack_start(tc);
-        List<PacketStore> targets = resolveTargets(tc, tc.getUserDataBuffer(), false);
-        if (targets == null) {
-            return;
+        ByteBuffer bb = payload(tc);
+        int count = bb.get() & 0xFF;
+        List<PacketStore> targets = new ArrayList<>();
+        List<Integer> priorities = new ArrayList<>();
+        if (count == 0) {
+            targets.addAll(stores.values());
+            for (PacketStore store : targets) {
+                priorities.add(store.openPriority);
+            }
+        } else {
+            for (int i = 0; i < count; i++) {
+                PacketStore store = resolveStore(tc, bb.get() & 0xFF);
+                if (store == null) {
+                    return;
+                }
+                targets.add(store);
+                priorities.add(bb.get() & 0xFF);
+            }
         }
-        for (PacketStore s : targets) {
-            startOpenRetrieval(s);
+        for (int i = 0; i < targets.size(); i++) {
+            PacketStore store = targets.get(i);
+            store.openPriority = priorities.get(i);
+            store.openRetrievalInProgress = true;
+        }
+        if (!targets.isEmpty()) {
+            ensureRetrievalTask();
         }
         ack_completion(tc);
     }
 
-    private void startOpenRetrieval(PacketStore s) {
-        if (s.openRetrievalInProgress) {
-            return;
-        }
-        s.openRetrievalInProgress = true;
-        s.openRetrievalTask = pusSimulator.executor.scheduleAtFixedRate(
-                () -> openRetrievalTick(s), 0, OPEN_RETRIEVAL_POLL_MS, TimeUnit.MILLISECONDS);
-        log.info("ST15: resumed open retrieval on store id={}", s.storeId);
-    }
-
-    private void openRetrievalTick(PacketStore s) {
-        if (!s.openRetrievalInProgress) {
-            return;
-        }
-        for (StoredPacket p : s.packets) {
-            if (p.seq > s.openRetrievalLastSentSeq) {
-                pusSimulator.sendStoredPacket(p.raw);
-                s.openRetrievalLastSentSeq = p.seq;
-                s.openRetrievalStartTime = p.timestamp;
-            }
-        }
-    }
-
     private void suspendOpenRetrieval(PusTcPacket tc) {
         ack_start(tc);
-        List<PacketStore> targets = resolveTargets(tc, tc.getUserDataBuffer(), false);
+        List<PacketStore> targets = resolveTargets(tc, payload(tc), false);
         if (targets == null) {
             return;
         }
@@ -735,10 +804,7 @@ public class Pus15Service extends AbstractPusService {
 
     private void stopOpenRetrieval(PacketStore s) {
         s.openRetrievalInProgress = false;
-        if (s.openRetrievalTask != null) {
-            s.openRetrievalTask.cancel(false);
-            s.openRetrievalTask = null;
-        }
+
     }
 
     // ---- TC[15,18]/TM[15,19]: status report ----
@@ -750,13 +816,13 @@ public class Pus15Service extends AbstractPusService {
     }
 
     private void sendStatusReport(List<PacketStore> targets) {
-        // N(1) + N x { store_id(2), storage_status(1), open_retrieval_status(1), btr_status(1) }
-        int entrySize = 2 + 1 + 1 + 1;
+        // N(1) + N x { store_id(1), storage_status(1), open_retrieval_status(1), btr_status(1) }
+        int entrySize = 4;
         PusTmPacket pkt = newPacket(19, 1 + targets.size() * entrySize);
         ByteBuffer bb = pkt.getUserDataBuffer();
         bb.put((byte) targets.size());
         for (PacketStore s : targets) {
-            bb.putShort((short) s.storeId);
+            bb.put((byte) s.storeId);
             bb.put((byte) (s.storageEnabled ? 1 : 0));
             bb.put((byte) (s.openRetrievalInProgress ? 1 : 0));
             bb.put((byte) (s.btrEnabled ? 1 : 0));
@@ -768,15 +834,15 @@ public class Pus15Service extends AbstractPusService {
 
     private void createStores(PusTcPacket tc) {
         ack_start(tc);
-        ByteBuffer bb = tc.getUserDataBuffer();
+        ByteBuffer bb = payload(tc);
         int n = bb.get() & 0xFF;
         List<PacketStore> pending = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
-            int id = bb.getShort() & 0xFFFF;
-            long size = bb.getInt() & 0xFFFFFFFFL;
+            int id = bb.get() & 0xFF;
+            long size = (bb.get() & 0xFF) * SIZE_UNIT_BYTES;
             int type = bb.get() & 0xFF;
             int vc = bb.get() & 0xFF;
-            if (stores.containsKey(id)) {
+            if (stores.containsKey(id) || pending.stream().anyMatch(s -> s.storeId == id)) {
                 log.warn("ST15: store id={} already exists", id);
                 nack_completion(tc, COMPL_ERR_STORE_ALREADY_EXISTS);
                 return;
@@ -784,6 +850,10 @@ public class Pus15Service extends AbstractPusService {
             if (stores.size() + pending.size() >= MAX_STORES) {
                 log.warn("ST15: max store count ({}) exceeded", MAX_STORES);
                 nack_completion(tc, COMPL_ERR_MAX_STORES_EXCEEDED);
+                return;
+            }
+            if (size == 0 || type > STORE_TYPE_BOUNDED) {
+                nack_completion(tc, COMPL_ERR_INVALID_DATA);
                 return;
             }
             pending.add(new PacketStore(id, size, type, vc));
@@ -799,9 +869,10 @@ public class Pus15Service extends AbstractPusService {
 
     private void deleteStores(PusTcPacket tc) {
         ack_start(tc);
-        ByteBuffer bb = tc.getUserDataBuffer();
+        ByteBuffer bb = payload(tc);
         List<PacketStore> targets;
-        if (bb.remaining() == 0) {
+        if ((bb.get(bb.position()) & 0xFF) == 0) {
+            bb.get();
             targets = new ArrayList<>();
             for (PacketStore s : stores.values()) {
                 if (!s.isActive()) {
@@ -812,7 +883,7 @@ public class Pus15Service extends AbstractPusService {
             int n = bb.get() & 0xFF;
             targets = new ArrayList<>(n);
             for (int i = 0; i < n; i++) {
-                int id = bb.getShort() & 0xFFFF;
+                int id = bb.get() & 0xFF;
                 PacketStore s = stores.get(id);
                 if (s == null) {
                     log.warn("ST15: store id={} not found", id);
@@ -844,31 +915,173 @@ public class Pus15Service extends AbstractPusService {
     }
 
     private void sendConfigReport(List<PacketStore> targets) {
-        // N(1) + N x { store_id(2), size_bytes(4), store_type(1), vc_id(1) }
-        int entrySize = 2 + 4 + 1 + 1;
+        // N(1) + N x { store_id(1), size_units(1), store_type(1), vc_id(1) }
+        int entrySize = 4;
         PusTmPacket pkt = newPacket(23, 1 + targets.size() * entrySize);
         ByteBuffer bb = pkt.getUserDataBuffer();
         bb.put((byte) targets.size());
         for (PacketStore s : targets) {
-            bb.putShort((short) s.storeId);
-            bb.putInt((int) s.sizeBytes);
+            bb.put((byte) s.storeId);
+            bb.put((byte) (s.sizeBytes / SIZE_UNIT_BYTES));
             bb.put((byte) s.storeType);
             bb.put((byte) s.vcId);
         }
         pusSimulator.transmitRealtimeTM(pkt);
     }
 
+    private void copyPackets(PusTcPacket tc) {
+        ack_start(tc);
+        ByteBuffer bb = payload(tc);
+        int selector = bb.get() & 0xFF;
+        if (selector > 2) {
+            nack_completion(tc, COMPL_ERR_INVALID_DATA);
+            return;
+        }
+        long from = selector == 2 ? Long.MIN_VALUE : storageTime.read(bb).millis();
+        long to = selector == 1 ? Long.MAX_VALUE : storageTime.read(bb).millis();
+        PacketStore source = resolveStore(tc, bb.get() & 0xFF);
+        if (source == null) {
+            return;
+        }
+        PacketStore destination = resolveStore(tc, bb.get() & 0xFF);
+        if (destination == null) {
+            return;
+        }
+        if (source == destination || from > to) {
+            nack_completion(tc, COMPL_ERR_INVALID_DATA);
+            return;
+        }
+        // Snapshot preserves the source; copied packets retain their storage time and raw bytes.
+        List<StoredPacket> selected = source.packets.stream()
+                .filter(p -> (selector == 1 ? p.timestamp > from : p.timestamp >= from)
+                        && (selector == 2 ? p.timestamp < to : p.timestamp <= to)).toList();
+        long bytes = selected.stream().mapToLong(p -> p.raw.length).sum();
+        if (selected.stream().anyMatch(packet -> packet.raw.length > destination.sizeBytes)
+                || (destination.storeType == STORE_TYPE_BOUNDED && destination.usedBytes + bytes > destination.sizeBytes)) {
+            nack_completion(tc, COMPL_ERR_INVALID_DATA);
+            return;
+        }
+        for (StoredPacket packet : selected) {
+            destination.append(packet.raw, packet.timestamp);
+        }
+        ack_completion(tc);
+    }
+
+    private void changeStoreType(PusTcPacket tc, int type) {
+        ack_start(tc);
+        PacketStore store = resolveStore(tc, payload(tc).get() & 0xFF);
+        if (store == null) {
+            return;
+        }
+        if (store.isActive()) {
+            nack_completion(tc, COMPL_ERR_STORE_ACTIVE);
+            return;
+        }
+        store.storeType = type;
+        ack_completion(tc);
+    }
+
+    private Map<Integer, PusStructureSelection> structureConfig(PacketStore store, ConfigKind kind) {
+        return kind == ConfigKind.HK ? store.hkConfig : store.diagnosticConfig;
+    }
+
+    private void updateStructureConfig(PusTcPacket tc, ConfigKind kind, boolean add) {
+        ack_start(tc);
+        BitBuffer bits = PusPackedFields.readBuffer(payload(tc));
+        PacketStore store = resolveStore(tc, PusPackedFields.readUnsigned(bits, 8));
+        if (store == null) {
+            return;
+        }
+        Map<Integer, PusStructureSelection> config = structureConfig(store, kind);
+        int count = PusPackedFields.readUnsigned(bits, 8);
+        if (!add && count == 0) {
+            config.clear();
+        }
+        for (int i = 0; i < count; i++) {
+            int apid = PusPackedFields.readUnsigned(bits, 11);
+            int identifiers = PusPackedFields.readUnsigned(bits, 8);
+            PusStructureSelection selection = config.get(apid);
+            if (!add && selection == null) {
+                nack_completion(tc, COMPL_ERR_APID_NOT_IN_CONFIG);
+                return;
+            }
+            if (identifiers == 0) {
+                if (add) {
+                    config.put(apid, new PusStructureSelection());
+                } else {
+                    config.remove(apid);
+                }
+                continue;
+            }
+            if (add && selection == null) {
+                selection = new PusStructureSelection();
+                config.put(apid, selection);
+            } else if (selection.rates.isEmpty()) {
+                nack_completion(tc, COMPL_ERR_WILDCARD_CONFLICT);
+                return;
+            }
+            for (int j = 0; j < identifiers; j++) {
+                int id = PusPackedFields.readUnsigned(bits, 8);
+                if (add) {
+                    selection.setRate(id, PusPackedFields.readUnsigned(bits, 8));
+                } else if (selection.rates.remove(id) == null) {
+                    nack_completion(tc, COMPL_ERR_IDENTIFIER_NOT_IN_CONFIG);
+                    return;
+                }
+            }
+            if (!add && selection.rates.isEmpty()) {
+                config.remove(apid);
+            }
+        }
+        ack_completion(tc);
+    }
+
+    private void reportStructureConfig(PusTcPacket tc, ConfigKind kind, int subtype) {
+        ack_start(tc);
+        PacketStore store = resolveStore(tc, payload(tc).get() & 0xFF);
+        if (store == null) {
+            return;
+        }
+        Map<Integer, PusStructureSelection> config = structureConfig(store, kind);
+        long size = 16;
+        for (PusStructureSelection selection : config.values()) {
+            if (selection.rates.size() > 255) {
+                reportTooLarge(tc, subtype, -1);
+                return;
+            }
+            size += 19 + selection.rates.size() * 16L;
+        }
+        if (config.size() > 255 || !reportFits(size)) {
+            reportTooLarge(tc, subtype, size);
+            return;
+        }
+        PusTmPacket packet = newPacket(subtype, PusPackedFields.bytesForBits(size));
+        BitBuffer bits = PusPackedFields.bitBuffer(packet.getUserDataBuffer());
+        bits.putBits(store.storeId, 8);
+        bits.putBits(config.size(), 8);
+        for (var entry : config.entrySet()) {
+            bits.putBits(entry.getKey(), 11);
+            bits.putBits(entry.getValue().rates.size(), 8);
+            for (var rate : entry.getValue().rates.entrySet()) {
+                bits.putBits(rate.getKey(), 8);
+                bits.putBits(rate.getValue(), 8);
+            }
+        }
+        pusSimulator.transmitRealtimeTM(packet);
+        ack_completion(tc);
+    }
+
     // ---- TC[15,25]: resize packet stores ----
 
     private void resizeStores(PusTcPacket tc) {
         ack_start(tc);
-        ByteBuffer bb = tc.getUserDataBuffer();
+        ByteBuffer bb = payload(tc);
         int n = bb.get() & 0xFF;
         List<PacketStore> targets = new ArrayList<>(n);
         List<Long> sizes = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
-            int id = bb.getShort() & 0xFFFF;
-            long newSize = bb.getInt() & 0xFFFFFFFFL;
+            int id = bb.get() & 0xFF;
+            long newSize = (bb.get() & 0xFF) * SIZE_UNIT_BYTES;
             PacketStore s = stores.get(id);
             if (s == null) {
                 log.warn("ST15: store id={} not found", id);
@@ -878,6 +1091,10 @@ public class Pus15Service extends AbstractPusService {
             if (s.isActive()) {
                 log.warn("ST15: store id={} is active, rejecting resize", id);
                 nack_completion(tc, COMPL_ERR_STORE_ACTIVE);
+                return;
+            }
+            if (newSize == 0 || newSize < s.usedBytes) {
+                nack_completion(tc, COMPL_ERR_INVALID_DATA);
                 return;
             }
             targets.add(s);
@@ -893,8 +1110,8 @@ public class Pus15Service extends AbstractPusService {
 
     private void changeVc(PusTcPacket tc) {
         ack_start(tc);
-        ByteBuffer bb = tc.getUserDataBuffer();
-        int id = bb.getShort() & 0xFFFF;
+        ByteBuffer bb = payload(tc);
+        int id = bb.get() & 0xFF;
         int newVc = bb.get() & 0xFF;
         PacketStore s = stores.get(id);
         if (s == null) {
@@ -911,7 +1128,7 @@ public class Pus15Service extends AbstractPusService {
         ack_completion(tc);
     }
 
-    // ---- Shared "all stores" vs "N specific store ids" resolution (Gap 2 dual-variant TCs) ----
+    // ---- Counted store selection: N=0 selects all eligible stores ----
 
     /**
      * @param requireSuspended when true, "all stores" silently means "all suspended stores", and a
@@ -920,7 +1137,8 @@ public class Pus15Service extends AbstractPusService {
      * @return the resolved target stores, or {@code null} if a NACK completion was already sent.
      */
     private List<PacketStore> resolveTargets(PusTcPacket tc, ByteBuffer bb, boolean requireSuspended) {
-        if (bb.remaining() == 0) {
+        if ((bb.get(bb.position()) & 0xFF) == 0) {
+            bb.get();
             List<PacketStore> all = new ArrayList<>(stores.values());
             if (requireSuspended) {
                 all.removeIf(s -> s.openRetrievalInProgress);
@@ -930,7 +1148,7 @@ public class Pus15Service extends AbstractPusService {
         int n = bb.get() & 0xFF;
         List<PacketStore> targets = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
-            int id = bb.getShort() & 0xFFFF;
+            int id = bb.get() & 0xFF;
             PacketStore s = stores.get(id);
             if (s == null) {
                 log.warn("ST15: store id={} not found", id);
@@ -945,6 +1163,12 @@ public class Pus15Service extends AbstractPusService {
             targets.add(s);
         }
         return targets;
+    }
+
+    private static ByteBuffer payload(PusTcPacket tc) {
+        ByteBuffer data = tc.getUserDataBuffer();
+        data.limit(data.limit() - 2); // Exclude the packet error-control field.
+        return data;
     }
 
     // ---- State ----
@@ -981,16 +1205,19 @@ public class Pus15Service extends AbstractPusService {
         boolean openRetrievalInProgress = false;
         boolean btrEnabled = false;
         long openRetrievalStartTime = 0;
+        long openRetrievalMinimumTime = 0;
         long openRetrievalLastSentSeq = -1;
         long usedBytes = 0;
         long nextSeq = 0;
         final Deque<StoredPacket> packets = new ArrayDeque<>();
         final Map<Integer, AppProcessSelection> appProcessConfig = new LinkedHashMap<>();
         // Empty identifier set = all structures for HK/diagnostic, all events blocked for event config.
-        final Map<Integer, Set<Integer>> hkConfig = new LinkedHashMap<>();
-        final Map<Integer, Set<Integer>> diagnosticConfig = new LinkedHashMap<>();
+        final Map<Integer, PusStructureSelection> hkConfig = new LinkedHashMap<>();
+        final Map<Integer, PusStructureSelection> diagnosticConfig = new LinkedHashMap<>();
         final Map<Integer, Set<Integer>> eventBlockingConfig = new LinkedHashMap<>();
-        ScheduledFuture<?> openRetrievalTask;
+        int openPriority;
+        int btrPriority;
+        final Deque<StoredPacket> btrPackets = new ArrayDeque<>();
 
         PacketStore(int storeId, long sizeBytes, int storeType, int vcId) {
             this.storeId = storeId;
@@ -1000,6 +1227,9 @@ public class Pus15Service extends AbstractPusService {
         }
 
         void append(byte[] raw, long ts) {
+            if (raw.length > sizeBytes) {
+                return; // An oversized packet must not evict existing circular-store content.
+            }
             int size = raw.length;
             if (storeType == STORE_TYPE_CIRCULAR) {
                 while (usedBytes + size > sizeBytes && !packets.isEmpty()) {

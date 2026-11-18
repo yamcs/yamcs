@@ -40,8 +40,8 @@ public class CucTimeDecoder implements TimeDecoder {
             int btBytes = 1 + ((pfield1 >> 2) & 3);
             int ftBytes = pfield1 & 3;
 
-            if ((pfield1 & 0x80) == 1) { // extended pfield
-                btBytes += ((pfield2 >> 6) & 3);
+            if ((pfield1 & 0x80) != 0) { // extended pfield
+                btBytes += ((pfield2 >> 5) & 3);
                 ftBytes += ((pfield2 >> 2) & 7);
             }
 
@@ -100,9 +100,9 @@ public class CucTimeDecoder implements TimeDecoder {
             btBytes = 1 + ((pfield >> 2) & 3);
             ftBytes = pfield & 3;
 
-            if ((pfield >> 7) == 1) { // extended pfield
+            if ((pfield & 0x80) != 0) { // extended pfield
                 int extPfield = 0xFF & s.getAsByte();
-                btBytes += ((extPfield >> 6) & 3);
+                btBytes += ((extPfield >> 5) & 3);
                 ftBytes += ((extPfield >> 2) & 7);
             }
             if (btBytes > 6) {
@@ -132,7 +132,7 @@ public class CucTimeDecoder implements TimeDecoder {
                 fb--;
             }
             int shift = usedFtBytes * 8;
-            fineTime = (1000 * fineTime + (1 << shift)) >> shift;
+            fineTime = (1000 * fineTime + (1 << shift) - 1) >> shift;
             for (int i = usedFtBytes; i < ftBytes; i++) {
                 s.getAsByte();
             }
@@ -157,7 +157,7 @@ public class CucTimeDecoder implements TimeDecoder {
 
             if ((pfield >> 7) == 1) { // extended pfield
                 int extPfield = 0xFF & s.getAsByte();
-                n += ((extPfield >> 6) & 3);
+                n += ((extPfield >> 5) & 3);
                 n += ((extPfield >> 2) & 7);
             }
         } else {

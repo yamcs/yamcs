@@ -32,8 +32,8 @@ public class CucTimeEncoder implements TimeEncoder {
             int btBytes = 1 + ((pfield1 >> 2) & 3);
             int ftBytes = pfield1 & 3;
 
-            if ((pfield1 & 0x80) == 1) {
-                btBytes += ((pfield2 >> 6) & 3);
+            if ((pfield1 & 0x80) != 0) {
+                btBytes += ((pfield2 >> 5) & 3);
                 ftBytes += ((pfield2 >> 2) & 7);
             }
 
@@ -55,6 +55,9 @@ public class CucTimeEncoder implements TimeEncoder {
     public int encode(long time, byte[] buf, int offset) {
         int offset0 = offset;
         long coarseTime = time / 1000;
+        if (time < 0 || (basicTimeBytes < 8 && (coarseTime >>> (basicTimeBytes * 8)) != 0)) {
+            throw new IllegalArgumentException("CUC coarse time does not fit in " + basicTimeBytes + " bytes");
+        }
         long fineTime = 0;
 
         if (pfield1 != -1) {
@@ -87,6 +90,10 @@ public class CucTimeEncoder implements TimeEncoder {
 
     public int encodeRaw(long time, byte[] buf, int offset) {
         int offset0 = offset;
+        int width = basicTimeBytes + fractionalTimeBytes;
+        if (width > 8 || time < 0 || (width < 8 && (time >>> (width * 8)) != 0)) {
+            throw new IllegalArgumentException("Raw onboard time does not fit in " + width + " bytes");
+        }
 
         if (log.isTraceEnabled()) {
             log.trace("Encoding raw time: {}", time);

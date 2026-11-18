@@ -38,7 +38,7 @@ import org.yamcs.simulator.UdpTmFrameLink;
  * <li>ST[12] - on-board monitoring - parameter monitoring subservice</li>
  * <li>ST[13] - large packet transfer</li>
  * <li>ST[14] - real-time forwarding control</li>
- * <li>ST[15] - on-board storage and retrieval - core lifecycle only, see Pus15Service</li>
+ * <li>ST[15] - on-board storage and retrieval - storage, selection, copy and retrieval, see Pus15Service</li>
  * <li>ST[17] - test</li>
  * <li>ST[19] - event-action</li>
  * <li>ST[20] - on-board parameter management</li>
@@ -74,6 +74,7 @@ public class PusSimulator extends AbstractSimulator {
     TcpTmTcLink tmLink;
     UdpTmFrameLink tmFrameLink;
     final PusTimeEncoding timeEncoding;
+    final PusTimeEncoding storageTimeEncoding;
 
     FlightDataHandler flightDataHandler;
     DHSHandler dhsHandler;
@@ -103,7 +104,12 @@ public class PusSimulator extends AbstractSimulator {
     }
 
     public PusSimulator(File dataDir, PusTimeEncoding timeEncoding) {
+        this(dataDir, timeEncoding, PusTimeEncoding.STORAGE);
+    }
+
+    public PusSimulator(File dataDir, PusTimeEncoding timeEncoding, PusTimeEncoding storageTimeEncoding) {
         this.timeEncoding = timeEncoding;
+        this.storageTimeEncoding = storageTimeEncoding;
         powerDataHandler = new PowerHandler();
         rcsHandler = new RCSHandler();
         epslvpduHandler = new EpsLvpduHandler();
@@ -159,11 +165,15 @@ public class PusSimulator extends AbstractSimulator {
      * ST[14]'s forwarding gate must not re-block a dump that ground explicitly requested.
      */
     void sendStoredPacket(byte[] rawPacket) {
+        sendStoredPacket(rawPacket, 0);
+    }
+
+    void sendStoredPacket(byte[] rawPacket, int virtualChannel) {
         if (tmLink != null) {
             tmLink.sendPacket(rawPacket);
         }
         if (tmFrameLink != null) {
-            tmFrameLink.queuePacket(0, rawPacket);
+            tmFrameLink.queuePacket(virtualChannel, rawPacket);
         }
     }
 

@@ -516,6 +516,9 @@ public class ParameterTypeProcessor {
         ParameterType engElementType = (ParameterType) ptype.getElementType();
 
         int fl = rawValue.flatLength();
+        if (fl == 0) {
+            return new ArrayValue(rawValue.getDimensions(), engElementType.getValueType());
+        }
         Value rv = rawValue.getElementValue(0);
         Value ev = doCalibrate(processingCtx, engElementType, rv);
         ArrayValue engValue = new ArrayValue(rawValue.getDimensions(), ev.getType());

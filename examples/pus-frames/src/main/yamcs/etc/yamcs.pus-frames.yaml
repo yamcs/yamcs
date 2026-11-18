@@ -121,8 +121,8 @@ dataLinks:
             errorDetection:
                 type: CRC-16-CCIIT
             timeEncoding:
-                implicitPfield: false
-                pfield: 0x2f
+                implicitPField: false
+                pField: 0x2f
             # with correlation established, the TC[11,4] release time is converted to on-board time
             tcoService: tco0
             # APID of the on-board scheduler, required to schedule commands with pus11ScheduleAt

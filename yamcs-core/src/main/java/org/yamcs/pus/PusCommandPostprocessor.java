@@ -272,9 +272,11 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
     }
 
     private CucTimeEncoder configureTimeEncoding(YConfiguration config) {
-        boolean implicitPfield = config.getBoolean("implicitPfield", true);
-        int pfield1 = config.getInt("pfield");
-        int pfield2 = config.getInt("pfieldCont", -1);
+        boolean implicitPField = config.containsKey("implicitPField")
+                ? config.getBoolean("implicitPField") : config.getBoolean("implicitPfield", true);
+        int pField = config.containsKey("pField") ? config.getInt("pField") : config.getInt("pfield");
+        int pFieldCont = config.containsKey("pFieldCont")
+                ? config.getInt("pFieldCont") : config.getInt("pfieldCont", -1);
         timeEpoch = config.getEnum("epoch", TimeEpochs.class, TimeEpochs.UNIX);
         if (timeEpoch == TimeEpochs.CUSTOM) {
             customEpochIncludeLeapSecond = config.getBoolean("timeIncludesLeapSeconds", true);
@@ -285,7 +287,7 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
             }
         }
 
-        return new CucTimeEncoder(pfield1, pfield2, implicitPfield);
+        return new CucTimeEncoder(pField, pFieldCont, implicitPField);
     }
 
     @Override

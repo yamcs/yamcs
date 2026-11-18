@@ -10,8 +10,13 @@ import org.yamcs.tctm.ccsds.time.CucTimeEncoder;
 public class PusTimeEncoding {
     public enum Epoch {
         SIMULATOR,
-        UNIX
+        UNIX,
+        GPS,
+        TAI,
+        J2000
     }
+
+    public static final PusTimeEncoding STORAGE = new PusTimeEncoding(0x2E, -1, true, Epoch.UNIX);
 
     public static final PusTimeEncoding DEFAULT = new PusTimeEncoding(0x2F, -1, false, Epoch.SIMULATOR);
 
@@ -48,6 +53,14 @@ public class PusTimeEncoding {
     public PusTime now() {
         if (epoch == Epoch.UNIX) {
             return new PusTime(System.currentTimeMillis());
+        } else if (epoch != Epoch.SIMULATOR) {
+            long now = org.yamcs.utils.TimeEncoding.getWallclockTime();
+            return new PusTime(switch (epoch) {
+            case GPS -> org.yamcs.utils.TimeEncoding.toGpsTimeMillisec(now);
+            case TAI -> org.yamcs.utils.TimeEncoding.toTaiMillisec(now);
+            case J2000 -> org.yamcs.utils.TimeEncoding.toJ2000Millisec(now);
+            default -> throw new IllegalStateException("Unsupported epoch " + epoch);
+            });
         } else {
             long nanos = System.nanoTime() - t0;
             long millis = (long) ((nanos / 1_000_000.0) * DRIFT);
@@ -62,6 +75,9 @@ public class PusTimeEncoding {
     }
 
     public PusTime read(ByteBuffer bb) {
+        if (bb.remaining() < getEncodedLength()) {
+            throw new java.nio.BufferUnderflowException();
+        }
         int offset = bb.position();
         long millis = decoder.decode(bb.array(), bb.arrayOffset() + offset);
         bb.position(offset + getEncodedLength());

@@ -71,6 +71,15 @@ public class SimulatorArgs {
     @Parameter(names = "--no-tcp-tmtc", description = "disable TCP TM/TC/LOS packet links")
     public boolean noTcpTmtc;
 
+    @Parameter(names = "--pus-storage-time-pfield", description = "ST15 implicit CUC p-field")
+    public int pusStorageTimePfield = 0x2E;
+
+    @Parameter(names = "--pus-storage-time-pfield-cont", description = "ST15 CUC extension octet")
+    public int pusStorageTimePfieldCont = -1;
+
+    @Parameter(names = "--pus-storage-time-epoch", description = "ST15 CUC epoch")
+    public String pusStorageTimeEpoch = "UNIX";
+
     @Parameter(names = "--pus-time-type", description = "PUS time encoding type")
     public String pusTimeType = "CUC";
 

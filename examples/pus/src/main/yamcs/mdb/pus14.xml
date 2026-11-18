@@ -1,6 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<SpaceSystem name="PUS14" xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
+<?xml version='1.0' encoding='UTF-8'?>
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="PUS14" xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
 	<Header validationStatus="Unknown" version="1.0" date="2026-07-15T00:00:00Z">
 		<NoteSet>
 			<Note>ST[14] Real-Time Forwarding Control. See pus_analysis/pus14.md and
@@ -16,10 +15,7 @@
 			<Note>Application process identifiers inside ST[14] application/source data are encoded as
 				packed 11-bit enumerated values. Fields that follow an APID therefore need not begin on
 				a byte boundary; no implicit five-bit padding is inserted.</Note>
-			<Note>HK FCC (TC[14,5-8]) and Diagnostic FCC (TC[14,9-12]) are maintained as pure
-				bookkeeping in the simulator: ST[03] HK reports don't carry structure identifiers and
-				ST[04] diagnostic reports don't exist in this simulator, so these two tables have no
-				effect on which TM is actually forwarded (see pus14.md Gap 6).</Note>
+			<Note>HK and diagnostic FCCs gate TM[3,25/26], retaining uint16 subsampling rates per selected uint8 structure ID. The simulator ST3 report body still carries its legacy uint32 structure ID.</Note>
 			<Note>Default gate state is pass-all (an APID with no APFCC entry is forwarded), and PUS-1
 				verification reports (type=1) and ST[14]'s own TM (type=14) always bypass the gate --
 				this simulator uses a single fixed APID for all traffic, so a restrictive APFCC entry
@@ -32,7 +28,9 @@
 			<ArrayParameterType name="ApfcSubtypeIdsType" arrayTypeRef="/dt/uint8">
 				<DimensionList>
 					<Dimension>
-						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
 						<EndingIndex>
 							<DynamicValue>
 								<ParameterInstanceRef parameterRef="apfc_n_subtypes"/>
@@ -43,10 +41,12 @@
 				</DimensionList>
 			</ArrayParameterType>
 			<!-- Flat array of HK structure ids; dimension from hk_fcc_n_structs -->
-			<ArrayParameterType name="HkFccStructIdsType" arrayTypeRef="/dt/uint8">
+			<ArrayParameterType name="HkFccStructIdsType" arrayTypeRef="StructureRateType">
 				<DimensionList>
 					<Dimension>
-						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
 						<EndingIndex>
 							<DynamicValue>
 								<ParameterInstanceRef parameterRef="hk_fcc_n_structs"/>
@@ -57,10 +57,12 @@
 				</DimensionList>
 			</ArrayParameterType>
 			<!-- Flat array of diagnostic structure ids; dimension from diag_fcc_n_structs -->
-			<ArrayParameterType name="DiagFccStructIdsType" arrayTypeRef="/dt/uint8">
+			<ArrayParameterType name="DiagFccStructIdsType" arrayTypeRef="StructureRateType">
 				<DimensionList>
 					<Dimension>
-						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
 						<EndingIndex>
 							<DynamicValue>
 								<ParameterInstanceRef parameterRef="diag_fcc_n_structs"/>
@@ -74,7 +76,9 @@
 			<ArrayParameterType name="EventFccEventIdsType" arrayTypeRef="/dt/uint8">
 				<DimensionList>
 					<Dimension>
-						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
 						<EndingIndex>
 							<DynamicValue>
 								<ParameterInstanceRef parameterRef="event_fcc_n_events"/>
@@ -84,6 +88,12 @@
 					</Dimension>
 				</DimensionList>
 			</ArrayParameterType>
+		<AggregateParameterType name="StructureRateType">
+				<MemberList>
+					<Member name="structure_id" typeRef="/dt/uint8"/>
+					<Member name="subsampling_rate" typeRef="/dt/uint16"/>
+				</MemberList>
+			</AggregateParameterType>
 		</ParameterTypeSet>
 		<ParameterSet>
 			<!-- TM[14,4] APFCC content report -->
@@ -186,7 +196,11 @@
 					<ParameterRefEntry parameterRef="hk_fcc_n_apids"/>
 					<ContainerRefEntry containerRef="hk_fcc_apid_element">
 						<RepeatEntry>
-							<Count><DynamicValue><ParameterInstanceRef parameterRef="hk_fcc_n_apids"/></DynamicValue></Count>
+							<Count>
+								<DynamicValue>
+									<ParameterInstanceRef parameterRef="hk_fcc_n_apids"/>
+								</DynamicValue>
+							</Count>
 						</RepeatEntry>
 					</ContainerRefEntry>
 				</EntryList>
@@ -214,7 +228,11 @@
 					<ParameterRefEntry parameterRef="diag_fcc_n_apids"/>
 					<ContainerRefEntry containerRef="diag_fcc_apid_element">
 						<RepeatEntry>
-							<Count><DynamicValue><ParameterInstanceRef parameterRef="diag_fcc_n_apids"/></DynamicValue></Count>
+							<Count>
+								<DynamicValue>
+									<ParameterInstanceRef parameterRef="diag_fcc_n_apids"/>
+								</DynamicValue>
+							</Count>
 						</RepeatEntry>
 					</ContainerRefEntry>
 				</EntryList>
@@ -242,7 +260,11 @@
 					<ParameterRefEntry parameterRef="event_fcc_n_apids"/>
 					<ContainerRefEntry containerRef="event_fcc_apid_element">
 						<RepeatEntry>
-							<Count><DynamicValue><ParameterInstanceRef parameterRef="event_fcc_n_apids"/></DynamicValue></Count>
+							<Count>
+								<DynamicValue>
+									<ParameterInstanceRef parameterRef="event_fcc_n_apids"/>
+								</DynamicValue>
+							</Count>
 						</RepeatEntry>
 					</ContainerRefEntry>
 				</EntryList>
@@ -261,7 +283,9 @@
 			<ArrayArgumentType name="ApfcSubtypeArrayType" arrayTypeRef="/dt/uint8">
 				<DimensionList>
 					<Dimension>
-						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
 						<EndingIndex>
 							<DynamicValue>
 								<ArgumentInstanceRef argumentRef="n3"/>
@@ -283,7 +307,9 @@
 			<ArrayArgumentType name="ApfcServiceArrayType" arrayTypeRef="ApfcServiceEntryType">
 				<DimensionList>
 					<Dimension>
-						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
 						<EndingIndex>
 							<DynamicValue>
 								<ArgumentInstanceRef argumentRef="n2"/>
@@ -305,7 +331,9 @@
 			<ArrayArgumentType name="ApfcdArrayType" arrayTypeRef="ApfcdEntryType">
 				<DimensionList>
 					<Dimension>
-						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
 						<EndingIndex>
 							<DynamicValue>
 								<ArgumentInstanceRef argumentRef="N1"/>
@@ -320,7 +348,9 @@
 			<ArrayArgumentType name="HkStructIdArrayType" arrayTypeRef="/dt/uint8">
 				<DimensionList>
 					<Dimension>
-						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
 						<EndingIndex>
 							<DynamicValue>
 								<ArgumentInstanceRef argumentRef="n_structs"/>
@@ -340,7 +370,9 @@
 			<ArrayArgumentType name="HkApidArrayType" arrayTypeRef="HkApidEntryType">
 				<DimensionList>
 					<Dimension>
-						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
 						<EndingIndex>
 							<DynamicValue>
 								<ArgumentInstanceRef argumentRef="N1"/>
@@ -355,7 +387,9 @@
 			<ArrayArgumentType name="DiagStructIdArrayType" arrayTypeRef="/dt/uint8">
 				<DimensionList>
 					<Dimension>
-						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
 						<EndingIndex>
 							<DynamicValue>
 								<ArgumentInstanceRef argumentRef="n_structs"/>
@@ -375,7 +409,9 @@
 			<ArrayArgumentType name="DiagApidArrayType" arrayTypeRef="DiagApidEntryType">
 				<DimensionList>
 					<Dimension>
-						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
 						<EndingIndex>
 							<DynamicValue>
 								<ArgumentInstanceRef argumentRef="N1"/>
@@ -390,7 +426,9 @@
 			<ArrayArgumentType name="EventDefinitionIdArrayType" arrayTypeRef="/dt/uint8">
 				<DimensionList>
 					<Dimension>
-						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
 						<EndingIndex>
 							<DynamicValue>
 								<ArgumentInstanceRef argumentRef="n_events"/>
@@ -410,7 +448,9 @@
 			<ArrayArgumentType name="EventApidArrayType" arrayTypeRef="EventApidEntryType">
 				<DimensionList>
 					<Dimension>
-						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
 						<EndingIndex>
 							<DynamicValue>
 								<ArgumentInstanceRef argumentRef="N1"/>
@@ -420,7 +460,89 @@
 					</Dimension>
 				</DimensionList>
 			</ArrayArgumentType>
-		</ArgumentTypeSet>
+		<AggregateArgumentType name="StructureRateType">
+				<MemberList>
+					<Member name="structure_id" typeRef="/dt/uint8"/>
+					<Member name="subsampling_rate" typeRef="/dt/uint16"/>
+				</MemberList>
+			</AggregateArgumentType>
+			<ArrayArgumentType name="HkStructureRateArrayType" arrayTypeRef="StructureRateType">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="n_structs"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+			<AggregateArgumentType name="HkStructureRateApidType">
+				<MemberList>
+					<Member name="apid" typeRef="/dt/pus_report_apid"/>
+					<Member name="n_structs" typeRef="/dt/uint8"/>
+					<Member name="struct_ids" typeRef="HkStructureRateArrayType"/>
+				</MemberList>
+			</AggregateArgumentType>
+			<ArrayArgumentType name="HkStructureRateApidArrayType" arrayTypeRef="HkStructureRateApidType">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="N1"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+
+			<ArrayArgumentType name="DiagStructureRateArrayType" arrayTypeRef="StructureRateType">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="n_structs"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+			<AggregateArgumentType name="DiagStructureRateApidType">
+				<MemberList>
+					<Member name="apid" typeRef="/dt/pus_report_apid"/>
+					<Member name="n_structs" typeRef="/dt/uint8"/>
+					<Member name="struct_ids" typeRef="DiagStructureRateArrayType"/>
+				</MemberList>
+			</AggregateArgumentType>
+			<ArrayArgumentType name="DiagStructureRateApidArrayType" arrayTypeRef="DiagStructureRateApidType">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="N1"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+
+			</ArgumentTypeSet>
 		<MetaCommandSet>
 			<MetaCommand name="pus14-tc" abstract="true">
 				<BaseMetaCommand metaCommandRef="/PUS/pus-tc">
@@ -511,7 +633,7 @@
 				</BaseMetaCommand>
 				<ArgumentList>
 					<Argument name="N1" argumentTypeRef="/dt/uint8"/>
-					<Argument name="apid_entries" argumentTypeRef="HkApidArrayType"/>
+					<Argument name="apid_entries" argumentTypeRef="HkStructureRateApidArrayType"/>
 				</ArgumentList>
 				<CommandContainer name="TC_14_5">
 					<EntryList>
@@ -579,7 +701,7 @@
 				</BaseMetaCommand>
 				<ArgumentList>
 					<Argument name="N1" argumentTypeRef="/dt/uint8"/>
-					<Argument name="apid_entries" argumentTypeRef="DiagApidArrayType"/>
+					<Argument name="apid_entries" argumentTypeRef="DiagStructureRateApidArrayType"/>
 				</ArgumentList>
 				<CommandContainer name="TC_14_9">
 					<EntryList>
@@ -659,20 +781,6 @@
 			</MetaCommand>
 
 			<!-- TC[14,13]b Empty the entire Event Blocking FCC -->
-			<MetaCommand name="TC_14_13_EMPTY_EVENT_FCC" shortDescription="TC[14,13] Empty Event Blocking FCC">
-				<BaseMetaCommand metaCommandRef="pus14-tc">
-					<ArgumentAssignmentList>
-						<ArgumentAssignment argumentName="subtype" argumentValue="13"/>
-					</ArgumentAssignmentList>
-				</BaseMetaCommand>
-				<CommandContainer name="TC_14_13_EMPTY">
-					<EntryList>
-						<FixedValueEntry name="N1" binaryValue="00" sizeInBits="8"/>
-					</EntryList>
-					<BaseContainer containerRef="pus14-tc"/>
-				</CommandContainer>
-			</MetaCommand>
-
 			<!-- TC[14,14] Add event definition identifiers to the Event Blocking FCC -->
 			<MetaCommand name="TC_14_14_ADD_EVENT_ENTRIES" shortDescription="TC[14,14] Add event identifiers to Event Blocking FCC">
 				<BaseMetaCommand metaCommandRef="pus14-tc">

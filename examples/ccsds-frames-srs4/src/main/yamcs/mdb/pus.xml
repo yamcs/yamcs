@@ -218,7 +218,7 @@
 						<ToBinaryTransformAlgorithm name="TimeBinaryEncoder">						
 							<AlgorithmText language="java">
 								<!-- type = CUC, epoch = NONE, timeCorrelationService = tco0-->
-       	   		    			org.yamcs.algo.TimeBinaryEncoder({type: CUC, epoch: NONE, tcoService: tco0, pfield: 0x2f, implicitPfield: false})
+						org.yamcs.algo.TimeBinaryEncoder({type: CUC, epoch: NONE, tcoService: tco0, pField: 0x2f, implicitPField: false})
        	   	   				</AlgorithmText>
 						</ToBinaryTransformAlgorithm>
 					</BinaryDataEncoding>

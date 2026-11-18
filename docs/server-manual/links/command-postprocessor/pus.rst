@@ -29,8 +29,8 @@ errorDetection (map)
 
 timeEncoding (map)
     Configures how the release time is encoded in the generated ``TC[11,4]`` command (see the
-    ``pus11`` option below). Sub-keys: ``implicitPfield`` (boolean, default ``true``), ``pfield``
-    (integer) and ``pfieldCont`` (integer, default ``-1``). If not specified, an implicit CUC
+    ``pus11`` option below). Sub-keys: ``implicitPField`` (boolean, default ``true``), ``pField``
+    (integer) and ``pFieldCont`` (integer, default ``-1``). If not specified, an implicit CUC
     P-field of ``0x2e`` is used.
 
     ``epoch`` (one of ``TAI``, ``J2000``, ``UNIX``, ``GPS``, ``CUSTOM`` or ``NONE``, default ``UNIX``)

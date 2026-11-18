@@ -84,8 +84,8 @@ dataLinks:
             errorDetection:
                 type: CRC-16-CCIIT
             timeEncoding:
-                implicitPfield: false
-                pfield: 0x2f
+                implicitPField: false
+                pField: 0x2f
         stream: tc_realtime
         useCop1: false
 

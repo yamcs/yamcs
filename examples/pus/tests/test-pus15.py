@@ -5,33 +5,15 @@ Integration test for PUS ST[15] simulator implementation (Pus15Service).
 Requires the examples/pus instance to be running:
     cd examples/pus && mvn yamcs:run
 
-Covers the "core lifecycle" scope only (see pus_analysis/pus15.md and the Pus15Service
-javadoc): packet store CRUD, storage enable/disable, status/summary/config reporting,
-by-time-range retrieval and open retrieval state transitions. It does NOT verify the
-Packet Selection subservice (TC[15,3/4/5/6], TC[15,29-40]) -- that's out of scope for
-this pass, and per the pass-all storage default, any storage-enabled store captures all
-outgoing TM.
-
-It also does not attempt to independently verify the exact bytes re-transmitted by BTR /
-open retrieval (that would require decoding arbitrary intercepted containers generically);
-it verifies the state machine (status flags, ACK/NACK outcomes) that drives them instead.
-
-Tests:
-    1. TC[15,20] create two stores (circular id=100, bounded id=200) -> TM[15,23] confirms
-    2. TC[15,20] duplicate store_id -> NACK completion
-    3. TC[15,1] enable storage on store 100 -> TM[15,19] reflects storage_status=enabled
-    4. Wait for ST[3] periodic HK traffic to accumulate -> TM[15,13] shows fill_pct > 0
-       and oldest_ts/newest_ts populated (pass-all storage default)
-    5. TC[15,21] delete store 100 while storage enabled -> NACK completion (still active)
-    6. TC[15,2] disable storage, then TC[15,15]/[15,16] resume/suspend open retrieval on
-       store 100 -> TM[15,19] reflects each transition
-    7. TC[15,9] start BTR on store 100 covering everything captured so far -> btr_status
-       goes enabled then (once the retrieval thread finishes) back to disabled
-    8. TC[15,25] resize store 200, TC[15,28] change its VC -> TM[15,23] confirms
-    9. TC[15,11] delete content of store 100 up to "now" -> TM[15,13] fill_pct drops to 0
-    10. TC[15,21] delete both stores (all-eligible variant) -> TM[15,23] reports 0 stores
+Exercises the default ST15 payload profile: uint8 store IDs/capacities/counts,
+implicit CUC pField=46 UNIX time tags, counted N=0 all-store commands and
+mandatory retrieval priorities. Capacity units are 1 KiB. It explicitly configures
+application-process selection before expecting storage (empty means block all).
+The example's legacy TM header remains explicit CUC pField=47 (8 bytes);
+this is independent of the six-byte implicit ST15 payload time tags.
 """
 
+from datetime import datetime, timezone
 import queue
 import struct
 import sys
@@ -87,13 +69,13 @@ def parse_status_report(raw: bytes):
     entries = {}
     off = APP_DATA_OFFSET + 1
     for _ in range(n):
-        store_id, storage_status, open_retrieval_status, btr_status = struct.unpack_from(">HBBB", raw, off)
+        store_id, storage_status, open_retrieval_status, btr_status = struct.unpack_from(">BBBB", raw, off)
         entries[store_id] = {
             "storage_status": storage_status,
             "open_retrieval_status": open_retrieval_status,
             "btr_status": btr_status,
         }
-        off += 5
+        off += 4
     return n, entries
 
 
@@ -102,9 +84,9 @@ def parse_config_report(raw: bytes):
     entries = {}
     off = APP_DATA_OFFSET + 1
     for _ in range(n):
-        store_id, size_bytes, store_type, vc_id = struct.unpack_from(">HIBB", raw, off)
-        entries[store_id] = {"size_bytes": size_bytes, "store_type": store_type, "vc_id": vc_id}
-        off += 8
+        store_id, size_units, store_type, vc_id = struct.unpack_from(">BBBB", raw, off)
+        entries[store_id] = {"size_units": size_units, "store_type": store_type, "vc_id": vc_id}
+        off += 4
     return n, entries
 
 
@@ -113,9 +95,9 @@ def parse_summary_report(raw: bytes):
     entries = {}
     off = APP_DATA_OFFSET + 1
     for _ in range(n):
-        store_id, oldest_ts, newest_ts, open_retrieval_start_time, fill_pct, fill_pct_from_start = (
-            struct.unpack_from(">HQQQBB", raw, off)
-        )
+        store_id = raw[off]
+        oldest_ts, newest_ts, open_retrieval_start_time = [decode_cuc(raw[off + 1 + i * 6:off + 7 + i * 6]) for i in range(3)]
+        fill_pct, fill_pct_from_start = raw[off + 19:off + 21]
         entries[store_id] = {
             "oldest_ts": oldest_ts,
             "newest_ts": newest_ts,
@@ -123,8 +105,18 @@ def parse_summary_report(raw: bytes):
             "fill_pct": fill_pct,
             "fill_pct_from_start": fill_pct_from_start,
         }
-        off += 27
+        off += 21
     return n, entries
+
+
+def decode_cuc(raw: bytes) -> int:
+    seconds = int.from_bytes(raw[:4], "big")
+    fraction = int.from_bytes(raw[4:], "big")
+    return seconds * 1000 + (fraction * 1000 + 65535) // 65536
+
+
+def utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
 
 
 def run_tests():
@@ -183,31 +175,36 @@ def run_tests():
         {
             "N": 2,
             "stores": [
-                {"store_id": STORE_ID_A, "size_bytes": 200000, "store_type": "circular", "vc_id": 0},
-                {"store_id": STORE_ID_B, "size_bytes": 5000, "store_type": "bounded", "vc_id": 1},
+                {"store_id": STORE_ID_A, "size_units": 200, "store_type": "circular", "vc_id": 0},
+                {"store_id": STORE_ID_B, "size_units": 5, "store_type": "bounded", "vc_id": 1},
             ],
         },
     )
     check("TC[15,20] CommandComplete OK", compl.status == "OK", compl.status)
     _, (n, cfg) = query_config()
     check("2 stores configured", n == 2, f"got {n}")
-    check("store 100 is circular, size 200000", cfg.get(STORE_ID_A) == {
-        "size_bytes": 200000, "store_type": STORE_TYPE_CIRCULAR, "vc_id": 0
+    check("store 100 is circular, size 200", cfg.get(STORE_ID_A) == {
+        "size_units": 200, "store_type": STORE_TYPE_CIRCULAR, "vc_id": 0
     }, cfg.get(STORE_ID_A))
-    check("store 200 is bounded, size 5000", cfg.get(STORE_ID_B) == {
-        "size_bytes": 5000, "store_type": STORE_TYPE_BOUNDED, "vc_id": 1
+    check("store 200 is bounded, size 5", cfg.get(STORE_ID_B) == {
+        "size_units": 5, "store_type": STORE_TYPE_BOUNDED, "vc_id": 1
     }, cfg.get(STORE_ID_B))
 
     # ── Test 2: Duplicate create -> rejected ─────────────────────────────
     print("\nTest 2: TC[15,20] duplicate store_id 100 -> NACK completion")
     compl = issue(
         CMD_CREATE_STORES,
-        {"N": 1, "stores": [{"store_id": STORE_ID_A, "size_bytes": 1000, "store_type": "circular", "vc_id": 0}]},
+        {"N": 1, "stores": [{"store_id": STORE_ID_A, "size_units": 1, "store_type": "circular", "vc_id": 0}]},
     )
     check("TC[15,20] rejected (already exists)", compl.status != "OK", compl.status)
 
     # ── Test 3: Enable storage on store 100 ──────────────────────────────
     print("\nTest 3: TC[15,1] enable storage on store 100")
+    compl = issue("/PUS15/TC_15_3_ADD_REPORT_TYPES", {
+        "store_id": STORE_ID_A, "N1": 1,
+        "apid_entries": [{"apid": "1", "n2": 0, "services": []}],
+    })
+    check("TC[15,3] authorize application process", compl.status == "OK", compl.status)
     compl = issue(CMD_ENABLE_STORAGE_SPECIFIC, {"N": 1, "store_ids": [STORE_ID_A]})
     check("TC[15,1] CommandComplete OK", compl.status == "OK", compl.status)
     _, (_, status) = query_status()
@@ -233,7 +230,7 @@ def run_tests():
     print("\nTest 6: TC[15,2] disable storage, TC[15,15]/[15,16] resume/suspend open retrieval")
     compl = issue(CMD_DISABLE_STORAGE_SPECIFIC, {"N": 1, "store_ids": [STORE_ID_A]})
     check("TC[15,2] CommandComplete OK", compl.status == "OK", compl.status)
-    compl = issue(CMD_RESUME_SPECIFIC, {"N": 1, "store_ids": [STORE_ID_A]})
+    compl = issue(CMD_RESUME_SPECIFIC, {"N": 1, "retrieval_entries": [{"store_id": STORE_ID_A, "retrieval_priority": 1}]})
     check("TC[15,15] CommandComplete OK", compl.status == "OK", compl.status)
     _, (_, status) = query_status()
     check("store 100 open_retrieval == in_progress", status[STORE_ID_A]["open_retrieval_status"]
@@ -248,7 +245,7 @@ def run_tests():
     print("\nTest 7: TC[15,9] start BTR on store 100 over the full captured range")
     compl = issue(
         CMD_START_BTR,
-        {"N": 1, "btr_entries": [{"store_id": STORE_ID_A, "start_time": 0, "end_time": 2**63 - 1}]},
+        {"N": 1, "btr_entries": [{"store_id": STORE_ID_A, "retrieval_priority": 1, "start_time": "1970-01-01T00:00:00.000Z", "end_time": utc_now()}]},
     )
     check("TC[15,9] CommandComplete OK", compl.status == "OK", compl.status)
     _, (_, status) = query_status()
@@ -261,21 +258,17 @@ def run_tests():
 
     # ── Test 8: Resize + change VC on store 200 ──────────────────────────
     print("\nTest 8: TC[15,25] resize store 200, TC[15,28] change its VC")
-    compl = issue(CMD_RESIZE, {"N": 1, "resize_entries": [{"store_id": STORE_ID_B, "new_size": 8000}]})
+    compl = issue(CMD_RESIZE, {"N": 1, "resize_entries": [{"store_id": STORE_ID_B, "new_size": 8}]})
     check("TC[15,25] CommandComplete OK", compl.status == "OK", compl.status)
     compl = issue(CMD_CHANGE_VC, {"store_id": STORE_ID_B, "new_vc_id": 3})
     check("TC[15,28] CommandComplete OK", compl.status == "OK", compl.status)
     _, (_, cfg) = query_config()
-    check("store 200 resized to 8000", cfg[STORE_ID_B]["size_bytes"] == 8000, cfg.get(STORE_ID_B))
+    check("store 200 resized to 8", cfg[STORE_ID_B]["size_units"] == 8, cfg.get(STORE_ID_B))
     check("store 200 VC changed to 3", cfg[STORE_ID_B]["vc_id"] == 3, cfg.get(STORE_ID_B))
 
     # ── Test 9: Delete content up to "now" -> fill drops to 0 ───────────
     print("\nTest 9: TC[15,11] delete content of store 100 up to now")
-    # Pus15Service timestamps are elapsed-millis-since-server-start (Epoch.SIMULATOR, see
-    # PusTimeEncoding), not wall-clock time, so any sufficiently large time_limit clears
-    # everything captured so far -- there's no real-time correlation to compute here.
-    far_future_millis = 2**63 - 1
-    compl = issue(CMD_DELETE_CONTENT_SPECIFIC, {"time_limit": far_future_millis, "N": 1, "store_ids": [STORE_ID_A]})
+    compl = issue(CMD_DELETE_CONTENT_SPECIFIC, {"time_limit": utc_now(), "N": 1, "store_ids": [STORE_ID_A]})
     check("TC[15,11] CommandComplete OK", compl.status == "OK", compl.status)
     compl, (_, summary) = query_summary([STORE_ID_A])
     check("store 100 fill_pct == 0 after content delete", summary[STORE_ID_A]["fill_pct"] == 0,

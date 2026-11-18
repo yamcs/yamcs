@@ -21,9 +21,8 @@ import org.yamcs.utils.BitBuffer;
  * packet.
  *
  * <p>
- * HK FCC / Diag FCC are maintained as pure bookkeeping (TC[14,5-12]): this simulator's ST[03] HK
- * reports don't carry structure identifiers and ST[04] diagnostic reports don't exist, so these
- * two tables have no effect on {@link #shouldForward(PusTmPacket)} yet (see pus14.md Gap 6).
+ * HK and diagnostic FCCs gate TM[3,25/26] using per-structure subsampling rates.
+ * Selection identifiers are uint8; ST[3] report bodies retain their existing uint32 identifier.
  * Event blocking is active for ST[05] event-report subtypes 1 through 4.
  *
  * <p>
@@ -50,15 +49,18 @@ public class Pus14Service extends AbstractPusService {
     static final int COMPL_ERR_EVENT_ID_NOT_IN_EVENT_FCC = 10;
     static final int COMPL_ERR_EVENT_FCC_BLOCKS_ALL = 11;
     static final int COMPL_ERR_REPORT_TOO_LARGE = 12;
+    static final int COMPL_ERR_INVALID_DATA = 13;
+    static final int COMPL_ERR_WILDCARD_CONFLICT = 14;
+    static final int SUBSAMPLING_BITS = 16;
 
     // Application Process Forward-Control Configuration: apid -> ApfcDefinition
     private final Map<Integer, ApfcDefinition> apfcc = new LinkedHashMap<>();
 
-    // HK Forward-Control Configuration: apid -> set of authorized hk structure ids (null = pass-all)
-    private final Map<Integer, Set<Integer>> hkFcc = new LinkedHashMap<>();
+    // HK Forward-Control Configuration: APID -> selected structures and uint16 rates.
+    private final Map<Integer, PusStructureSelection> hkFcc = new LinkedHashMap<>();
 
-    // Diagnostic Forward-Control Configuration: apid -> set of authorized diag structure ids (null = pass-all)
-    private final Map<Integer, Set<Integer>> diagFcc = new LinkedHashMap<>();
+    // Diagnostic Forward-Control Configuration: APID -> selected structures and uint16 rates.
+    private final Map<Integer, PusStructureSelection> diagFcc = new LinkedHashMap<>();
 
     // Event Report Blocking FCC: absent APID = block none, empty set = block all event definitions.
     private final Map<Integer, Set<Integer>> eventBlockingFcc = new LinkedHashMap<>();
@@ -69,6 +71,15 @@ public class Pus14Service extends AbstractPusService {
 
     @Override
     public void executeTc(PusTcPacket tc) {
+        try {
+            dispatch(tc);
+        } catch (IllegalArgumentException | IndexOutOfBoundsException | java.nio.BufferUnderflowException e) {
+            log.warn("ST14: invalid TC[14,{}] data: {}", tc.getSubtype(), e.toString());
+            nack_completion(tc, COMPL_ERR_INVALID_DATA);
+        }
+    }
+
+    private void dispatch(PusTcPacket tc) {
         switch (tc.getSubtype()) {
         // TC[14,1] add report types to the APFCC
         case 1 -> addReportTypes(tc);
@@ -79,23 +90,25 @@ public class Pus14Service extends AbstractPusService {
         // TC[14,5] add structure identifiers to the HK FCC
         case 5 -> {
             ack_start(tc);
-            addStructIds(tc.getUserDataBuffer(), hkFcc);
-            ack_completion(tc);
+            if (addStructIds(tc, hkFcc)) {
+                ack_completion(tc);
+            }
         }
         // TC[14,6] delete structure identifiers from the HK FCC (or empty the whole HK FCC)
         case 6 -> deleteFccEntries(tc, hkFcc, COMPL_ERR_APID_NOT_IN_HK_FCC);
         // TC[14,7] report the content of the HK FCC
-        case 7 -> reportFcc(tc, hkFcc, 8);
+        case 7 -> reportStructures(tc, hkFcc, 8);
         // TC[14,9] add structure identifiers to the Diagnostic FCC
         case 9 -> {
             ack_start(tc);
-            addStructIds(tc.getUserDataBuffer(), diagFcc);
-            ack_completion(tc);
+            if (addStructIds(tc, diagFcc)) {
+                ack_completion(tc);
+            }
         }
         // TC[14,10] delete structure identifiers from the Diagnostic FCC (or empty the whole Diagnostic FCC)
         case 10 -> deleteFccEntries(tc, diagFcc, COMPL_ERR_APID_NOT_IN_DIAG_FCC);
         // TC[14,11] report the content of the Diagnostic FCC
-        case 11 -> reportFcc(tc, diagFcc, 12);
+        case 11 -> reportStructures(tc, diagFcc, 12);
         // TC[14,13] delete event definition identifiers from the Event Blocking FCC
         case 13 -> deleteEventBlockingEntries(tc);
         // TC[14,14] add event definition identifiers to the Event Blocking FCC
@@ -113,23 +126,43 @@ public class Pus14Service extends AbstractPusService {
 
     private void addReportTypes(PusTcPacket tc) {
         ack_start(tc);
-        BitBuffer bits = PusPackedFields.bitBuffer(tc.getUserDataBuffer());
+        BitBuffer bits = PusPackedFields.readBuffer(payload(tc));
         int n1 = readUnsigned(bits, OCTET_BITS);
         for (int i = 0; i < n1; i++) {
             int apid = readUnsigned(bits, APID_BITS);
             int n2 = readUnsigned(bits, OCTET_BITS);
             if (n2 == 0) {
                 // N2=0: add all services for this APID
-                apfcc.computeIfAbsent(apid, ApfcDefinition::new);
+                apfcc.put(apid, new ApfcDefinition(apid));
             } else {
-                ApfcDefinition apfcd = apfcc.computeIfAbsent(apid, ApfcDefinition::new);
+                ApfcDefinition apfcd = apfcc.get(apid);
+                if (apfcd != null && apfcd.serviceSubtypes.isEmpty()) {
+                    nack_completion(tc, COMPL_ERR_WILDCARD_CONFLICT);
+                    return;
+                }
+                if (apfcd == null) {
+                    apfcd = new ApfcDefinition(apid);
+                    apfcc.put(apid, apfcd);
+                }
                 for (int j = 0; j < n2; j++) {
                     int svcType = readUnsigned(bits, OCTET_BITS);
                     int n3 = readUnsigned(bits, OCTET_BITS);
                     // N3=0: add all subtypes of this service type (empty set = pass all)
-                    Set<Integer> subtypes = apfcd.serviceSubtypes.computeIfAbsent(svcType, k -> new LinkedHashSet<>());
+                    if (n3 == 0) {
+                        apfcd.serviceSubtypes.put(svcType, new LinkedHashSet<>());
+                        continue;
+                    }
+                    Set<Integer> subtypes = apfcd.serviceSubtypes.get(svcType);
+                    boolean wildcard = subtypes != null && subtypes.isEmpty();
+                    if (subtypes == null) {
+                        subtypes = new LinkedHashSet<>();
+                        apfcd.serviceSubtypes.put(svcType, subtypes);
+                    }
                     for (int k = 0; k < n3; k++) {
-                        subtypes.add(readUnsigned(bits, OCTET_BITS));
+                        int subtype = readUnsigned(bits, OCTET_BITS);
+                        if (!wildcard) {
+                            subtypes.add(subtype);
+                        }
                     }
                 }
             }
@@ -140,7 +173,7 @@ public class Pus14Service extends AbstractPusService {
 
     private void deleteReportTypes(PusTcPacket tc) {
         ack_start(tc);
-        BitBuffer bits = PusPackedFields.bitBuffer(tc.getUserDataBuffer());
+        BitBuffer bits = PusPackedFields.readBuffer(payload(tc));
         int n1 = readUnsigned(bits, OCTET_BITS);
         if (n1 == 0) {
             apfcc.clear();
@@ -175,6 +208,10 @@ public class Pus14Service extends AbstractPusService {
                     apfcd.serviceSubtypes.remove(svcType);
                 } else {
                     Set<Integer> subtypes = apfcd.serviceSubtypes.get(svcType);
+                    if (subtypes.isEmpty()) {
+                        nack_completion(tc, COMPL_ERR_WILDCARD_CONFLICT);
+                        return;
+                    }
                     for (int k = 0; k < n3; k++) {
                         subtypes.remove(readUnsigned(bits, OCTET_BITS));
                     }
@@ -236,65 +273,96 @@ public class Pus14Service extends AbstractPusService {
         return bitSize;
     }
 
-    // ---- TC[14,5/6/7] and TC[14,9/10/11]: HK FCC / Diagnostic FCC (bookkeeping only, see class javadoc) ----
+    // ---- TC[14,5/6/7] and TC[14,9/10/11]: HK FCC / Diagnostic FCC with per-structure subsampling ----
 
-    private void addStructIds(ByteBuffer bb, Map<Integer, Set<Integer>> fcc) {
-        BitBuffer bits = PusPackedFields.bitBuffer(bb);
-        int n1 = readUnsigned(bits, OCTET_BITS);
-        for (int i = 0; i < n1; i++) {
+    private boolean addStructIds(PusTcPacket tc, Map<Integer, PusStructureSelection> fcc) {
+        BitBuffer bits = PusPackedFields.readBuffer(payload(tc));
+        int count = readUnsigned(bits, OCTET_BITS);
+        for (int i = 0; i < count; i++) {
             int apid = readUnsigned(bits, APID_BITS);
-            int nStructs = readUnsigned(bits, OCTET_BITS);
-            if (nStructs == 0) {
-                // N_structs=0: authorize all structures for this APID
-                fcc.put(apid, null);
-            } else {
-                Set<Integer> structs = fcc.computeIfAbsent(apid, k -> new LinkedHashSet<>());
-                for (int j = 0; j < nStructs; j++) {
-                    structs.add(readUnsigned(bits, STRUCTURE_ID_BITS));
-                }
+            int identifiers = readUnsigned(bits, OCTET_BITS);
+            if (identifiers == 0) {
+                fcc.put(apid, new PusStructureSelection());
+                continue;
+            }
+            PusStructureSelection selection = fcc.get(apid);
+            if (selection != null && selection.rates.isEmpty()) {
+                nack_completion(tc, COMPL_ERR_WILDCARD_CONFLICT);
+                return false;
+            }
+            if (selection == null) {
+                selection = new PusStructureSelection();
+                fcc.put(apid, selection);
+            }
+            for (int j = 0; j < identifiers; j++) {
+                int id = readUnsigned(bits, STRUCTURE_ID_BITS);
+                selection.setRate(id, readUnsigned(bits, SUBSAMPLING_BITS));
             }
         }
+        return true;
     }
 
-    private void deleteFccEntries(PusTcPacket tc, Map<Integer, Set<Integer>> fcc, int rejectionCode) {
+    private void deleteFccEntries(PusTcPacket tc, Map<Integer, PusStructureSelection> fcc, int rejectionCode) {
         ack_start(tc);
-        BitBuffer bits = PusPackedFields.bitBuffer(tc.getUserDataBuffer());
-        int n1 = readUnsigned(bits, OCTET_BITS);
-        if (n1 == 0) {
+        BitBuffer bits = PusPackedFields.readBuffer(payload(tc));
+        int count = readUnsigned(bits, OCTET_BITS);
+        if (count == 0) {
             fcc.clear();
-            ack_completion(tc);
-            return;
         }
-        for (int i = 0; i < n1; i++) {
+        for (int i = 0; i < count; i++) {
             int apid = readUnsigned(bits, APID_BITS);
-            int nStructs = readUnsigned(bits, OCTET_BITS);
-            if (!fcc.containsKey(apid)) {
-                log.warn("ST14: APID {} not in FCC, sending NACK completion", apid);
+            int identifiers = readUnsigned(bits, OCTET_BITS);
+            PusStructureSelection selection = fcc.get(apid);
+            if (selection == null) {
                 nack_completion(tc, rejectionCode);
                 return;
             }
-            if (nStructs == 0) {
-                // N_structs=0: remove the entire APID entry
+            if (identifiers == 0) {
                 fcc.remove(apid);
                 continue;
             }
-            Set<Integer> structs = fcc.get(apid);
-            if (structs == null) {
-                // pass-all entry: nothing to remove from an explicit list
-                continue;
+            if (selection.rates.isEmpty()) {
+                nack_completion(tc, rejectionCode);
+                return;
             }
-            for (int j = 0; j < nStructs; j++) {
-                structs.remove(readUnsigned(bits, STRUCTURE_ID_BITS));
+            for (int j = 0; j < identifiers; j++) {
+                int id = readUnsigned(bits, STRUCTURE_ID_BITS);
+                selection.rates.remove(id);
             }
-            if (structs.isEmpty()) {
+            if (selection.rates.isEmpty()) {
                 fcc.remove(apid);
             }
         }
         ack_completion(tc);
     }
 
-    private void reportFcc(PusTcPacket tc, Map<Integer, Set<Integer>> fcc, int tmSubtype) {
-        reportFcc(tc, fcc, tmSubtype, STRUCTURE_ID_BITS);
+    private void reportStructures(PusTcPacket tc, Map<Integer, PusStructureSelection> fcc, int subtype) {
+        ack_start(tc);
+        long size = OCTET_BITS;
+        for (PusStructureSelection selection : fcc.values()) {
+            if (selection.rates.size() > MAX_COUNT) {
+                reportTooLarge(tc, subtype, -1);
+                return;
+            }
+            size += APID_BITS + OCTET_BITS + (long) selection.rates.size() * (STRUCTURE_ID_BITS + SUBSAMPLING_BITS);
+        }
+        if (fcc.size() > MAX_COUNT || !reportFits(size)) {
+            reportTooLarge(tc, subtype, size);
+            return;
+        }
+        PusTmPacket packet = newPacket(subtype, PusPackedFields.bytesForBits(size));
+        BitBuffer bits = PusPackedFields.bitBuffer(packet.getUserDataBuffer());
+        bits.putBits(fcc.size(), OCTET_BITS);
+        for (var entry : fcc.entrySet()) {
+            bits.putBits(entry.getKey(), APID_BITS);
+            bits.putBits(entry.getValue().rates.size(), OCTET_BITS);
+            for (var rate : entry.getValue().rates.entrySet()) {
+                bits.putBits(rate.getKey(), STRUCTURE_ID_BITS);
+                bits.putBits(rate.getValue(), SUBSAMPLING_BITS);
+            }
+        }
+        pusSimulator.transmitRealtimeTM(packet);
+        ack_completion(tc);
     }
 
     private void reportFcc(PusTcPacket tc, Map<Integer, Set<Integer>> fcc, int tmSubtype, int idBits) {
@@ -341,7 +409,7 @@ public class Pus14Service extends AbstractPusService {
 
     private void addEventBlockingEntries(PusTcPacket tc) {
         ack_start(tc);
-        BitBuffer bits = PusPackedFields.bitBuffer(tc.getUserDataBuffer());
+        BitBuffer bits = PusPackedFields.readBuffer(payload(tc));
         int n1 = readUnsigned(bits, OCTET_BITS);
         for (int i = 0; i < n1; i++) {
             int apid = readUnsigned(bits, APID_BITS);
@@ -369,13 +437,9 @@ public class Pus14Service extends AbstractPusService {
 
     private void deleteEventBlockingEntries(PusTcPacket tc) {
         ack_start(tc);
-        BitBuffer bits = PusPackedFields.bitBuffer(tc.getUserDataBuffer());
+        BitBuffer bits = PusPackedFields.readBuffer(payload(tc));
         int n1 = readUnsigned(bits, OCTET_BITS);
-        if (n1 == 0) {
-            eventBlockingFcc.clear();
-            ack_completion(tc);
-            return;
-        }
+        // TC[14,13] defines N2=0 removal for selected APIDs; N1=0 has no all-table meaning.
         for (int i = 0; i < n1; i++) {
             int apid = readUnsigned(bits, APID_BITS);
             int n2 = readUnsigned(bits, OCTET_BITS);
@@ -413,6 +477,12 @@ public class Pus14Service extends AbstractPusService {
         nack_completion(tc, COMPL_ERR_REPORT_TOO_LARGE);
     }
 
+    private static ByteBuffer payload(PusTcPacket tc) {
+        ByteBuffer data = tc.getUserDataBuffer();
+        data.limit(data.limit() - 2);
+        return data;
+    }
+
     private static int readUnsigned(BitBuffer bits, int bitCount) {
         return PusPackedFields.readUnsigned(bits, bitCount);
     }
@@ -431,6 +501,14 @@ public class Pus14Service extends AbstractPusService {
         int apid = pkt.getAPID();
         if (!allowedByApfcc(apid, type, pkt.getSubtype())) {
             return false;
+        }
+        if (type == PusSimulator.PUS_TYPE_HK && (pkt.getSubtype() == 25 || pkt.getSubtype() == 26)) {
+            Map<Integer, PusStructureSelection> config = pkt.getSubtype() == 25 ? hkFcc : diagFcc;
+            PusStructureSelection selection = config.get(apid);
+            // Match the simulator's existing pass-all startup policy until a table is configured.
+            if (!config.isEmpty() && (selection == null || !selection.accepts(pkt.getUserDataBuffer().getInt(0)))) {
+                return false;
+            }
         }
         if (type == PusSimulator.PUS_TYPE_EVENT && pkt.getSubtype() >= 1 && pkt.getSubtype() <= 4) {
             Set<Integer> blocked = eventBlockingFcc.get(apid);

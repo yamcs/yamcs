@@ -156,6 +156,10 @@ public class UdpTmFrameLink extends AbstractScheduledService {
      * @param packet
      */
     public void queuePacket(int vcId, byte[] packet) {
+        if (vcId < 0 || vcId >= builders.length || builders[vcId] == null) {
+            log.warn("dropping packet for unconfigured virtual channel {}", vcId);
+            return;
+        }
         VcBuilder s = builders[vcId];
 
         if (!s.queue.offer(packet)) {

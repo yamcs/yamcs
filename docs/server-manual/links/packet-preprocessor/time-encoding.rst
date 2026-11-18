@@ -59,19 +59,19 @@ CUC Time Decoder
 
 CUC is an abbreviation for CCSDS Unsegmented Time Code. *Unsegmented* means that the entire time field can be seen as a continuous integer counter of the fractional time unit. A segmented time code for example  one which provides days and millisecond of the day and in which a 32 bit field is used to represent the millisecond of the day is not continuous because there are less than :math:`2^{32}` milliseconds in a day.
        
-The time is decoded as specified in `CCSDS Time Code Formats CCSDS 301.0-B-4 <https://public.ccsds.org/Pubs/301x0b4e1.pdf>`_, Chapter 3.2. In short the time is encoded as an optional 1 or 2 bytes ``pfield`` (preamble field) followed by a 1-7 bytes basic time followed by a 0-10 bytes fractional time. The ``pfield`` specifies the length in bytes of the basic and fractional times.
+The time is decoded as specified in `CCSDS Time Code Formats CCSDS 301.0-B-4 <https://public.ccsds.org/Pubs/301x0b4e1.pdf>`_, Chapter 3.2. In short the time is encoded as an optional 1 or 2 bytes ``pField`` (preamble field) followed by a 1-7 bytes basic time followed by a 0-10 bytes fractional time. The ``pField`` specifies the length in bytes of the basic and fractional times.
        
-For example ``pfield = 0x2E`` means that the basic time is encoded on 4 bytes and the fractional time is encoded on 2 bytes, making the length of the time in the packet 6 bytes when the ``pfield`` is implicit or 7 bytes when it is part of the packet.
+For example ``pField = 0x2E`` means that the basic time is encoded on 4 bytes and the fractional time is encoded on 2 bytes, making the length of the time in the packet 6 bytes when the ``pField`` is implicit or 7 bytes when it is part of the packet.
        
-The ``pfield`` contains some information about the epoch used. This information is ignored, the epoch is configured with the ``epoch`` option, as described below.
+The ``pField`` contains some information about the epoch used. This information is ignored, the epoch is configured with the ``epoch`` option, as described below.
 
-The standard allows in principle more than 2 ``pfield`` bytes but this is not supported (a custom time decoder has to be used in this case).
+The standard allows in principle more than 2 ``pField`` bytes but this is not supported (a custom time decoder has to be used in this case).
        
 The CUC decoder can work in two modes depending whether the time decoded is a delta time from a configured epoch or the value of a free running on-board clock.
        
 If the time decoded is a delta time from a configured epoch (epoch is different than ``NONE``), the CUC decoder assumes the basic time unit to be the second and it decodes the time to a delta or pseudo-delta from the epoch. The precision is milliseconds (as all time storage in Yamcs), irrespective of the precision used in the encoded time - this means that at maximum two bytes of fractional time will be used. If the fractional time is 2 bytes (i.e. each fractional unit is :math:`1/2^{16}` seconds) or more, it will be be down-rounded when converted to Yamcs time. The maximum length of supported basic time is 6 bytes; this is because 7 or more bytes cannot be converted to 64 bits milliseconds.
        
-When the decoded time is the value of a free running on-board clock (epoch is ``NONE``), the CUC decoder provides the "raw" time in the unit of the fractional time (without any precision loss). The time is decoded as a big endian value on bn+fn bytes where bt is the number of basic time bytes and fn is the number of fractional time bytes (as read from the ``pfield``). Practically in this case the decoder doesn't make distinction between basic time and fractional time (this works because the time is unsegmented). The value thus obtained is expected to be passed to a :doc:`../../services/instance/time-correlation` which will convert it to an actual time, automatically detecting the unit of the fractional time.
+When the decoded time is the value of a free running on-board clock (epoch is ``NONE``), the CUC decoder provides the "raw" time in the unit of the fractional time (without any precision loss). The time is decoded as a big endian value on bn+fn bytes where bt is the number of basic time bytes and fn is the number of fractional time bytes (as read from the ``pField``). Practically in this case the decoder doesn't make distinction between basic time and fractional time (this works because the time is unsegmented). The value thus obtained is expected to be passed to a :doc:`../../services/instance/time-correlation` which will convert it to an actual time, automatically detecting the unit of the fractional time.
        
 The maximum supported length of the "raw" time is 8 bytes,  if the time is encoded on 9 or more bytes, an exception will be thrown in the ``decodeRaw()`` method.
 
@@ -80,15 +80,15 @@ CUC decoder configuration options:
 type (string)
     Set to ``CUC``.
     
-implicitPField (integer)
-    If the ``pfield`` is not encoded in the packet, it can be set by this option.
+pField (integer)
+    If the ``pField`` is not encoded in the packet, it can be set by this option.
     
-    A value of ``-1`` means that the ``pfield`` is explicitly provided in the packet. 
+    A value of ``-1`` means that the ``pField`` is explicitly provided in the packet.
     
     Default: ``-1``.
     
-implicitPFieldCont (integer)
-    This can be used to configure the next octet of the ``pfield`` in case the first bit of the first octet (specified above) is 1.
+pFieldCont (integer)
+    This can be used to configure the next octet of the ``pField`` in case the first bit of the first octet (specified above) is 1.
     
 
 FIXED Time Decoder

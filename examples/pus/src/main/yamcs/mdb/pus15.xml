@@ -1,87 +1,79 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<SpaceSystem name="PUS15" xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
+<?xml version='1.0' encoding='UTF-8'?>
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="PUS15" xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
 	<Header validationStatus="Unknown" version="1.0" date="2026-07-17T00:00:00Z">
 		<NoteSet>
-			<Note>ST[15] On-Board Storage and Retrieval. See pus_analysis/pus15.md and
-				pus_simulator_architecture.md for the full design rationale.</Note>
-			<Note>Packet store lifecycle and retrieval are implemented together with the Packet Selection
-				 subservice (TC[15,3-5]/TM[15,6] and TC[15,29-39]/TM[15,36/38/40]). TC[15,24/26/27] remain out of scope per
-				pus15.md. An empty application-process storage-control configuration blocks all storage.</Note>
-			<Note>Application process identifiers in packet-selection application/source data are packed
-				11-bit values. Nested entries are contiguous; only the final packet octet may be zero-padded.
-				Structure and event definition identifiers are mission-profile uint8 values, and
-				housekeeping/diagnostic subsampling is not supported.</Note>
-			<Note>All packet-store state (stores map, fill tracking, retrieval threads) lives on-board
-				(emulated by Pus15Service in the simulator). This MDB only encodes the TC[15,x]
-				configuration/retrieval commands and decodes the lifecycle and packet-selection reports,
-				including TM[15,6]/[15,36]/[15,38]/[15,40].</Note>
-			<Note>Timestamps (TC[15,9] start_time/end_time, TC[15,11] time_limit, TC[15,14] start_time,
-				TM[15,13] oldest_ts/newest_ts/open_retrieval_start_time) are a raw unsigned 64-bit
-				milliseconds value, not a CUC-encoded field -- see pus15.md Gap 1. Pus15Service compares
-				these directly against its internal packet-store timestamps (also raw millis).</Note>
-			<Note>Several TCs accept either N specific store ids or "all stores" (zero-byte payload) --
-				XTCE cannot express optional arguments, so each is split into a "_SPECIFIC" and "_ALL"
-				MetaCommand pair (Gap 2). Pus15Service disambiguates at runtime via
-				bb.remaining()==0. Affected subtypes: 1, 2, 12, 14, 15, 16, 17, 21. TC[15,14]'s "all"
-				variant additionally means "all suspended stores" (silently filtered); a store id
-				named explicitly in the "_SPECIFIC" variant that isn't suspended is rejected.</Note>
-			<Note>store_type and vc_id are always included as fixed fields in TC[15,20]/TM[15,23]
-				(mission convention, see pus15.md Gap 4) rather than modelled as optional.</Note>
+			<Note>ST15 Hermes-compatible payload profile: all counts, store IDs, capacities, priorities and virtual channels are uint8; APIDs are packed uint11.</Note>
+			<Note>CUC payload times use implicit pField=46, UNIX epoch, four seconds bytes and two binary fractional bytes. Configure pus.storageTimeEncoding and these MDB time types together if changed.</Note>
+			<Note>Capacity fields are allocation units of 1024 bytes. All standard optional fields are present; HK/diagnostic selection includes uint8 subsampling.</Note>
+			<Note>All-store convenience commands retain a fixed N=0 octet. TC15,11/14 retain their shared leading CUC tag. TC15,24 supports between/after/before; TC15,26/27 change store type.</Note>
 		</NoteSet>
 	</Header>
 	<TelemetryMetaData>
 		<ParameterTypeSet>
+			<AbsoluteTimeParameterType name="storage_time_type">
+				<Encoding units="seconds">
+					<BinaryDataEncoding>
+						<SizeInBits>
+							<FixedValue>48</FixedValue>
+						</SizeInBits>
+						<FromBinaryTransformAlgorithm name="storage_time_from">
+							<AlgorithmText language="Java">org.yamcs.algo.TimeBinaryDecoder({"type": "CUC", "epoch": "UNIX", "pField": 46})</AlgorithmText>
+						</FromBinaryTransformAlgorithm>
+					</BinaryDataEncoding>
+				</Encoding>
+			</AbsoluteTimeParameterType>
 			<EnumeratedParameterType name="storage_status_type">
-				<IntegerDataEncoding sizeInBits="8" />
+				<IntegerDataEncoding sizeInBits="8"/>
 				<EnumerationList>
-					<Enumeration value="0" label="disabled" />
-					<Enumeration value="1" label="enabled" />
+					<Enumeration value="0" label="disabled"/>
+					<Enumeration value="1" label="enabled"/>
 				</EnumerationList>
 			</EnumeratedParameterType>
 			<EnumeratedParameterType name="open_retrieval_status_type">
-				<IntegerDataEncoding sizeInBits="8" />
+				<IntegerDataEncoding sizeInBits="8"/>
 				<EnumerationList>
-					<Enumeration value="0" label="suspended" />
-					<Enumeration value="1" label="in_progress" />
+					<Enumeration value="0" label="suspended"/>
+					<Enumeration value="1" label="in_progress"/>
 				</EnumerationList>
 			</EnumeratedParameterType>
 			<EnumeratedParameterType name="btr_status_type">
-				<IntegerDataEncoding sizeInBits="8" />
+				<IntegerDataEncoding sizeInBits="8"/>
 				<EnumerationList>
-					<Enumeration value="0" label="disabled" />
-					<Enumeration value="1" label="enabled" />
+					<Enumeration value="0" label="disabled"/>
+					<Enumeration value="1" label="enabled"/>
 				</EnumerationList>
 			</EnumeratedParameterType>
 			<EnumeratedParameterType name="store_type_type">
-				<IntegerDataEncoding sizeInBits="8" />
+				<IntegerDataEncoding sizeInBits="8"/>
 				<EnumerationList>
-					<Enumeration value="0" label="circular" />
-					<Enumeration value="1" label="bounded" />
+					<Enumeration value="0" label="circular"/>
+					<Enumeration value="1" label="bounded"/>
 				</EnumerationList>
 			</EnumeratedParameterType>
 
-			<IntegerParameterType name="store_count_type" baseType="/dt/uint8" />
+			<IntegerParameterType name="store_count_type" baseType="/dt/uint8"/>
 
 			<!-- TM[15,13] packet store content summary report -->
 			<AggregateParameterType name="store_summary_entry_type">
 				<MemberList>
-					<Member typeRef="/dt/uint16" name="store_id" />
-					<Member typeRef="/dt/uint64" name="oldest_ts" />
-					<Member typeRef="/dt/uint64" name="newest_ts" />
-					<Member typeRef="/dt/uint64" name="open_retrieval_start_time" />
-					<Member typeRef="/dt/uint8" name="fill_pct" />
-					<Member typeRef="/dt/uint8" name="fill_pct_from_start" />
+					<Member typeRef="/dt/uint8" name="store_id"/>
+					<Member typeRef="storage_time_type" name="oldest_ts"/>
+					<Member typeRef="storage_time_type" name="newest_ts"/>
+					<Member typeRef="storage_time_type" name="open_retrieval_start_time"/>
+					<Member typeRef="/dt/uint8" name="fill_pct"/>
+					<Member typeRef="/dt/uint8" name="fill_pct_from_start"/>
 				</MemberList>
 			</AggregateParameterType>
 			<ArrayParameterType arrayTypeRef="store_summary_entry_type" name="store_summary_array_type">
 				<DimensionList>
 					<Dimension>
-						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
 						<EndingIndex>
 							<DynamicValue>
-								<ParameterInstanceRef parameterRef="store_summary_count" />
-								<LinearAdjustment intercept="-1" />
+								<ParameterInstanceRef parameterRef="store_summary_count"/>
+								<LinearAdjustment intercept="-1"/>
 							</DynamicValue>
 						</EndingIndex>
 					</Dimension>
@@ -91,20 +83,22 @@
 			<!-- TM[15,19] packet store status report -->
 			<AggregateParameterType name="store_status_entry_type">
 				<MemberList>
-					<Member typeRef="/dt/uint16" name="store_id" />
-					<Member typeRef="storage_status_type" name="storage_status" />
-					<Member typeRef="open_retrieval_status_type" name="open_retrieval_status" />
-					<Member typeRef="btr_status_type" name="btr_status" />
+					<Member typeRef="/dt/uint8" name="store_id"/>
+					<Member typeRef="storage_status_type" name="storage_status"/>
+					<Member typeRef="open_retrieval_status_type" name="open_retrieval_status"/>
+					<Member typeRef="btr_status_type" name="btr_status"/>
 				</MemberList>
 			</AggregateParameterType>
 			<ArrayParameterType arrayTypeRef="store_status_entry_type" name="store_status_array_type">
 				<DimensionList>
 					<Dimension>
-						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
 						<EndingIndex>
 							<DynamicValue>
-								<ParameterInstanceRef parameterRef="store_status_count" />
-								<LinearAdjustment intercept="-1" />
+								<ParameterInstanceRef parameterRef="store_status_count"/>
+								<LinearAdjustment intercept="-1"/>
 							</DynamicValue>
 						</EndingIndex>
 					</Dimension>
@@ -114,20 +108,22 @@
 			<!-- TM[15,23] packet store configuration report -->
 			<AggregateParameterType name="store_config_entry_type">
 				<MemberList>
-					<Member typeRef="/dt/uint16" name="store_id" />
-					<Member typeRef="/dt/uint32" name="size_bytes" />
-					<Member typeRef="store_type_type" name="store_type" />
-					<Member typeRef="/dt/uint8" name="vc_id" />
+					<Member typeRef="/dt/uint8" name="store_id"/>
+					<Member typeRef="/dt/uint8" name="size_units"/>
+					<Member typeRef="store_type_type" name="store_type"/>
+					<Member typeRef="/dt/uint8" name="vc_id"/>
 				</MemberList>
 			</AggregateParameterType>
 			<ArrayParameterType arrayTypeRef="store_config_entry_type" name="store_config_array_type">
 				<DimensionList>
 					<Dimension>
-						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
 						<EndingIndex>
 							<DynamicValue>
-								<ParameterInstanceRef parameterRef="store_config_count" />
-								<LinearAdjustment intercept="-1" />
+								<ParameterInstanceRef parameterRef="store_config_count"/>
+								<LinearAdjustment intercept="-1"/>
 							</DynamicValue>
 						</EndingIndex>
 					</Dimension>
@@ -136,58 +132,100 @@
 
 			<!-- Packet-selection report leaf arrays. APID groups are decoded with nested containers. -->
 			<ArrayParameterType name="app_selection_subtype_array_type" arrayTypeRef="/dt/uint8">
-				<DimensionList><Dimension>
-					<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
-					<EndingIndex><DynamicValue><ParameterInstanceRef parameterRef="app_selection_n_subtypes"/><LinearAdjustment intercept="-1"/></DynamicValue></EndingIndex>
-				</Dimension></DimensionList>
+				<DimensionList>
+					<Dimension>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ParameterInstanceRef parameterRef="app_selection_n_subtypes"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
 			</ArrayParameterType>
-			<ArrayParameterType name="hk_selection_id_array_type" arrayTypeRef="/dt/uint8">
-				<DimensionList><Dimension>
-					<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
-					<EndingIndex><DynamicValue><ParameterInstanceRef parameterRef="hk_selection_n_ids"/><LinearAdjustment intercept="-1"/></DynamicValue></EndingIndex>
-				</Dimension></DimensionList>
+			<ArrayParameterType name="hk_selection_id_array_type" arrayTypeRef="structure_rate_type">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ParameterInstanceRef parameterRef="hk_selection_n_ids"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
 			</ArrayParameterType>
-			<ArrayParameterType name="diag_selection_id_array_type" arrayTypeRef="/dt/uint8">
-				<DimensionList><Dimension>
-					<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
-					<EndingIndex><DynamicValue><ParameterInstanceRef parameterRef="diag_selection_n_ids"/><LinearAdjustment intercept="-1"/></DynamicValue></EndingIndex>
-				</Dimension></DimensionList>
+			<ArrayParameterType name="diag_selection_id_array_type" arrayTypeRef="structure_rate_type">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ParameterInstanceRef parameterRef="diag_selection_n_ids"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
 			</ArrayParameterType>
 			<ArrayParameterType name="event_selection_id_array_type" arrayTypeRef="/dt/uint8">
-				<DimensionList><Dimension>
-					<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
-					<EndingIndex><DynamicValue><ParameterInstanceRef parameterRef="event_selection_n_ids"/><LinearAdjustment intercept="-1"/></DynamicValue></EndingIndex>
-				</Dimension></DimensionList>
+				<DimensionList>
+					<Dimension>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ParameterInstanceRef parameterRef="event_selection_n_ids"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
 			</ArrayParameterType>
+		<AggregateParameterType name="structure_rate_type">
+				<MemberList>
+					<Member name="structure_id" typeRef="/dt/uint8"/>
+					<Member name="subsampling_rate" typeRef="/dt/uint8"/>
+				</MemberList>
+			</AggregateParameterType>
 		</ParameterTypeSet>
 		<ParameterSet>
-			<Parameter parameterTypeRef="store_count_type" name="store_summary_count" />
-			<Parameter parameterTypeRef="store_summary_array_type" name="store_summary_entries" />
-			<Parameter parameterTypeRef="store_count_type" name="store_status_count" />
-			<Parameter parameterTypeRef="store_status_array_type" name="store_status_entries" />
-			<Parameter parameterTypeRef="store_count_type" name="store_config_count" />
-			<Parameter parameterTypeRef="store_config_array_type" name="store_config_entries" />
+			<Parameter parameterTypeRef="store_count_type" name="store_summary_count"/>
+			<Parameter parameterTypeRef="store_summary_array_type" name="store_summary_entries"/>
+			<Parameter parameterTypeRef="store_count_type" name="store_status_count"/>
+			<Parameter parameterTypeRef="store_status_array_type" name="store_status_entries"/>
+			<Parameter parameterTypeRef="store_count_type" name="store_config_count"/>
+			<Parameter parameterTypeRef="store_config_array_type" name="store_config_entries"/>
 
-			<Parameter parameterTypeRef="/dt/uint16" name="selection_store_id" />
-			<Parameter parameterTypeRef="/dt/uint8" name="app_selection_n_apids" />
-			<Parameter parameterTypeRef="/dt/pus_report_apid" name="app_selection_apid" />
-			<Parameter parameterTypeRef="/dt/uint8" name="app_selection_n_services" />
-			<Parameter parameterTypeRef="/dt/uint8" name="app_selection_service" />
-			<Parameter parameterTypeRef="/dt/uint8" name="app_selection_n_subtypes" />
-			<Parameter parameterTypeRef="app_selection_subtype_array_type" name="app_selection_subtypes" />
+			<Parameter parameterTypeRef="/dt/uint8" name="selection_store_id"/>
+			<Parameter parameterTypeRef="/dt/uint8" name="app_selection_n_apids"/>
+			<Parameter parameterTypeRef="/dt/pus_report_apid" name="app_selection_apid"/>
+			<Parameter parameterTypeRef="/dt/uint8" name="app_selection_n_services"/>
+			<Parameter parameterTypeRef="/dt/uint8" name="app_selection_service"/>
+			<Parameter parameterTypeRef="/dt/uint8" name="app_selection_n_subtypes"/>
+			<Parameter parameterTypeRef="app_selection_subtype_array_type" name="app_selection_subtypes"/>
 
-			<Parameter parameterTypeRef="/dt/uint8" name="hk_selection_n_apids" />
-			<Parameter parameterTypeRef="/dt/pus_report_apid" name="hk_selection_apid" />
-			<Parameter parameterTypeRef="/dt/uint8" name="hk_selection_n_ids" />
-			<Parameter parameterTypeRef="hk_selection_id_array_type" name="hk_selection_ids" />
-			<Parameter parameterTypeRef="/dt/uint8" name="diag_selection_n_apids" />
-			<Parameter parameterTypeRef="/dt/pus_report_apid" name="diag_selection_apid" />
-			<Parameter parameterTypeRef="/dt/uint8" name="diag_selection_n_ids" />
-			<Parameter parameterTypeRef="diag_selection_id_array_type" name="diag_selection_ids" />
-			<Parameter parameterTypeRef="/dt/uint8" name="event_selection_n_apids" />
-			<Parameter parameterTypeRef="/dt/pus_report_apid" name="event_selection_apid" />
-			<Parameter parameterTypeRef="/dt/uint8" name="event_selection_n_ids" />
-			<Parameter parameterTypeRef="event_selection_id_array_type" name="event_selection_ids" />
+			<Parameter parameterTypeRef="/dt/uint8" name="hk_selection_n_apids"/>
+			<Parameter parameterTypeRef="/dt/pus_report_apid" name="hk_selection_apid"/>
+			<Parameter parameterTypeRef="/dt/uint8" name="hk_selection_n_ids"/>
+			<Parameter parameterTypeRef="hk_selection_id_array_type" name="hk_selection_ids"/>
+			<Parameter parameterTypeRef="/dt/uint8" name="diag_selection_n_apids"/>
+			<Parameter parameterTypeRef="/dt/pus_report_apid" name="diag_selection_apid"/>
+			<Parameter parameterTypeRef="/dt/uint8" name="diag_selection_n_ids"/>
+			<Parameter parameterTypeRef="diag_selection_id_array_type" name="diag_selection_ids"/>
+			<Parameter parameterTypeRef="/dt/uint8" name="event_selection_n_apids"/>
+			<Parameter parameterTypeRef="/dt/pus_report_apid" name="event_selection_apid"/>
+			<Parameter parameterTypeRef="/dt/uint8" name="event_selection_n_ids"/>
+			<Parameter parameterTypeRef="event_selection_id_array_type" name="event_selection_ids"/>
 		</ParameterSet>
 		<ContainerSet>
 			<SequenceContainer name="pus15-tm">
@@ -202,16 +240,16 @@
 			<!-- TM[15,13] Packet store content summary report -->
 			<SequenceContainer name="STORE_SUMMARY_REPORT" shortDescription="TM[15,13] packet store content summary report">
 				<EntryList>
-					<ParameterRefEntry parameterRef="store_summary_count" />
+					<ParameterRefEntry parameterRef="store_summary_count"/>
 					<ArrayParameterRefEntry parameterRef="store_summary_entries">
 						<IncludeCondition>
-							<Comparison parameterRef="store_summary_count" comparisonOperator="&gt;" value="0" />
+							<Comparison parameterRef="store_summary_count" comparisonOperator="&gt;" value="0"/>
 						</IncludeCondition>
 					</ArrayParameterRefEntry>
 				</EntryList>
 				<BaseContainer containerRef="pus15-tm">
 					<RestrictionCriteria>
-						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="13" />
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="13"/>
 					</RestrictionCriteria>
 				</BaseContainer>
 			</SequenceContainer>
@@ -219,16 +257,16 @@
 			<!-- TM[15,19] Packet store status report -->
 			<SequenceContainer name="STORE_STATUS_REPORT" shortDescription="TM[15,19] packet store status report">
 				<EntryList>
-					<ParameterRefEntry parameterRef="store_status_count" />
+					<ParameterRefEntry parameterRef="store_status_count"/>
 					<ArrayParameterRefEntry parameterRef="store_status_entries">
 						<IncludeCondition>
-							<Comparison parameterRef="store_status_count" comparisonOperator="&gt;" value="0" />
+							<Comparison parameterRef="store_status_count" comparisonOperator="&gt;" value="0"/>
 						</IncludeCondition>
 					</ArrayParameterRefEntry>
 				</EntryList>
 				<BaseContainer containerRef="pus15-tm">
 					<RestrictionCriteria>
-						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="19" />
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="19"/>
 					</RestrictionCriteria>
 				</BaseContainer>
 			</SequenceContainer>
@@ -236,16 +274,16 @@
 			<!-- TM[15,23] Packet store configuration report -->
 			<SequenceContainer name="STORE_CONFIG_REPORT" shortDescription="TM[15,23] packet store configuration report">
 				<EntryList>
-					<ParameterRefEntry parameterRef="store_config_count" />
+					<ParameterRefEntry parameterRef="store_config_count"/>
 					<ArrayParameterRefEntry parameterRef="store_config_entries">
 						<IncludeCondition>
-							<Comparison parameterRef="store_config_count" comparisonOperator="&gt;" value="0" />
+							<Comparison parameterRef="store_config_count" comparisonOperator="&gt;" value="0"/>
 						</IncludeCondition>
 					</ArrayParameterRefEntry>
 				</EntryList>
 				<BaseContainer containerRef="pus15-tm">
 					<RestrictionCriteria>
-						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="23" />
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="23"/>
 					</RestrictionCriteria>
 				</BaseContainer>
 			</SequenceContainer>
@@ -253,126 +291,209 @@
 			<!-- TM[15,6] application-process storage-control configuration -->
 			<SequenceContainer name="app_selection_service_element">
 				<EntryList>
-					<ParameterRefEntry parameterRef="app_selection_service" />
-					<ParameterRefEntry parameterRef="app_selection_n_subtypes" />
+					<ParameterRefEntry parameterRef="app_selection_service"/>
+					<ParameterRefEntry parameterRef="app_selection_n_subtypes"/>
 					<ArrayParameterRefEntry parameterRef="app_selection_subtypes">
-						<IncludeCondition><Comparison parameterRef="app_selection_n_subtypes" comparisonOperator="&gt;" value="0" /></IncludeCondition>
+						<IncludeCondition>
+							<Comparison parameterRef="app_selection_n_subtypes" comparisonOperator="&gt;" value="0"/>
+						</IncludeCondition>
 					</ArrayParameterRefEntry>
 				</EntryList>
 			</SequenceContainer>
 			<SequenceContainer name="app_selection_apid_element">
 				<EntryList>
-					<ParameterRefEntry parameterRef="app_selection_apid" />
-					<ParameterRefEntry parameterRef="app_selection_n_services" />
+					<ParameterRefEntry parameterRef="app_selection_apid"/>
+					<ParameterRefEntry parameterRef="app_selection_n_services"/>
 					<ContainerRefEntry containerRef="app_selection_service_element">
-						<RepeatEntry><Count><DynamicValue><ParameterInstanceRef parameterRef="app_selection_n_services" /></DynamicValue></Count></RepeatEntry>
+						<RepeatEntry>
+							<Count>
+								<DynamicValue>
+									<ParameterInstanceRef parameterRef="app_selection_n_services"/>
+								</DynamicValue>
+							</Count>
+						</RepeatEntry>
 					</ContainerRefEntry>
 				</EntryList>
 			</SequenceContainer>
 			<SequenceContainer name="APPLICATION_SELECTION_REPORT" shortDescription="TM[15,6] application-process storage-control configuration content report">
 				<EntryList>
-					<ParameterRefEntry parameterRef="selection_store_id" />
-					<ParameterRefEntry parameterRef="app_selection_n_apids" />
+					<ParameterRefEntry parameterRef="selection_store_id"/>
+					<ParameterRefEntry parameterRef="app_selection_n_apids"/>
 					<ContainerRefEntry containerRef="app_selection_apid_element">
-						<RepeatEntry><Count><DynamicValue><ParameterInstanceRef parameterRef="app_selection_n_apids" /></DynamicValue></Count></RepeatEntry>
+						<RepeatEntry>
+							<Count>
+								<DynamicValue>
+									<ParameterInstanceRef parameterRef="app_selection_n_apids"/>
+								</DynamicValue>
+							</Count>
+						</RepeatEntry>
 					</ContainerRefEntry>
 				</EntryList>
-				<BaseContainer containerRef="pus15-tm"><RestrictionCriteria><Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="6" /></RestrictionCriteria></BaseContainer>
+				<BaseContainer containerRef="pus15-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="6"/>
+					</RestrictionCriteria>
+				</BaseContainer>
 			</SequenceContainer>
 
 			<!-- TM[15,36/38/40] specialized packet-selection configurations -->
 			<SequenceContainer name="hk_selection_apid_element">
 				<EntryList>
-					<ParameterRefEntry parameterRef="hk_selection_apid" />
-					<ParameterRefEntry parameterRef="hk_selection_n_ids" />
-					<ArrayParameterRefEntry parameterRef="hk_selection_ids"><IncludeCondition><Comparison parameterRef="hk_selection_n_ids" comparisonOperator="&gt;" value="0" /></IncludeCondition></ArrayParameterRefEntry>
+					<ParameterRefEntry parameterRef="hk_selection_apid"/>
+					<ParameterRefEntry parameterRef="hk_selection_n_ids"/>
+					<ArrayParameterRefEntry parameterRef="hk_selection_ids">
+						<IncludeCondition>
+							<Comparison parameterRef="hk_selection_n_ids" comparisonOperator="&gt;" value="0"/>
+						</IncludeCondition>
+					</ArrayParameterRefEntry>
 				</EntryList>
 			</SequenceContainer>
 			<SequenceContainer name="HK_SELECTION_REPORT" shortDescription="TM[15,36] housekeeping storage-control configuration content report">
 				<EntryList>
-					<ParameterRefEntry parameterRef="selection_store_id" />
-					<ParameterRefEntry parameterRef="hk_selection_n_apids" />
-					<ContainerRefEntry containerRef="hk_selection_apid_element"><RepeatEntry><Count><DynamicValue><ParameterInstanceRef parameterRef="hk_selection_n_apids" /></DynamicValue></Count></RepeatEntry></ContainerRefEntry>
+					<ParameterRefEntry parameterRef="selection_store_id"/>
+					<ParameterRefEntry parameterRef="hk_selection_n_apids"/>
+					<ContainerRefEntry containerRef="hk_selection_apid_element">
+						<RepeatEntry>
+							<Count>
+								<DynamicValue>
+									<ParameterInstanceRef parameterRef="hk_selection_n_apids"/>
+								</DynamicValue>
+							</Count>
+						</RepeatEntry>
+					</ContainerRefEntry>
 				</EntryList>
-				<BaseContainer containerRef="pus15-tm"><RestrictionCriteria><Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="36" /></RestrictionCriteria></BaseContainer>
+				<BaseContainer containerRef="pus15-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="36"/>
+					</RestrictionCriteria>
+				</BaseContainer>
 			</SequenceContainer>
 
 			<SequenceContainer name="diag_selection_apid_element">
 				<EntryList>
-					<ParameterRefEntry parameterRef="diag_selection_apid" />
-					<ParameterRefEntry parameterRef="diag_selection_n_ids" />
-					<ArrayParameterRefEntry parameterRef="diag_selection_ids"><IncludeCondition><Comparison parameterRef="diag_selection_n_ids" comparisonOperator="&gt;" value="0" /></IncludeCondition></ArrayParameterRefEntry>
+					<ParameterRefEntry parameterRef="diag_selection_apid"/>
+					<ParameterRefEntry parameterRef="diag_selection_n_ids"/>
+					<ArrayParameterRefEntry parameterRef="diag_selection_ids">
+						<IncludeCondition>
+							<Comparison parameterRef="diag_selection_n_ids" comparisonOperator="&gt;" value="0"/>
+						</IncludeCondition>
+					</ArrayParameterRefEntry>
 				</EntryList>
 			</SequenceContainer>
 			<SequenceContainer name="DIAGNOSTIC_SELECTION_REPORT" shortDescription="TM[15,38] diagnostic storage-control configuration content report">
 				<EntryList>
-					<ParameterRefEntry parameterRef="selection_store_id" />
-					<ParameterRefEntry parameterRef="diag_selection_n_apids" />
-					<ContainerRefEntry containerRef="diag_selection_apid_element"><RepeatEntry><Count><DynamicValue><ParameterInstanceRef parameterRef="diag_selection_n_apids" /></DynamicValue></Count></RepeatEntry></ContainerRefEntry>
+					<ParameterRefEntry parameterRef="selection_store_id"/>
+					<ParameterRefEntry parameterRef="diag_selection_n_apids"/>
+					<ContainerRefEntry containerRef="diag_selection_apid_element">
+						<RepeatEntry>
+							<Count>
+								<DynamicValue>
+									<ParameterInstanceRef parameterRef="diag_selection_n_apids"/>
+								</DynamicValue>
+							</Count>
+						</RepeatEntry>
+					</ContainerRefEntry>
 				</EntryList>
-				<BaseContainer containerRef="pus15-tm"><RestrictionCriteria><Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="38" /></RestrictionCriteria></BaseContainer>
+				<BaseContainer containerRef="pus15-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="38"/>
+					</RestrictionCriteria>
+				</BaseContainer>
 			</SequenceContainer>
 
 			<SequenceContainer name="event_selection_apid_element">
 				<EntryList>
-					<ParameterRefEntry parameterRef="event_selection_apid" />
-					<ParameterRefEntry parameterRef="event_selection_n_ids" />
-					<ArrayParameterRefEntry parameterRef="event_selection_ids"><IncludeCondition><Comparison parameterRef="event_selection_n_ids" comparisonOperator="&gt;" value="0" /></IncludeCondition></ArrayParameterRefEntry>
+					<ParameterRefEntry parameterRef="event_selection_apid"/>
+					<ParameterRefEntry parameterRef="event_selection_n_ids"/>
+					<ArrayParameterRefEntry parameterRef="event_selection_ids">
+						<IncludeCondition>
+							<Comparison parameterRef="event_selection_n_ids" comparisonOperator="&gt;" value="0"/>
+						</IncludeCondition>
+					</ArrayParameterRefEntry>
 				</EntryList>
 			</SequenceContainer>
 			<SequenceContainer name="EVENT_SELECTION_REPORT" shortDescription="TM[15,40] event-blocking storage-control configuration content report">
 				<EntryList>
-					<ParameterRefEntry parameterRef="selection_store_id" />
-					<ParameterRefEntry parameterRef="event_selection_n_apids" />
-					<ContainerRefEntry containerRef="event_selection_apid_element"><RepeatEntry><Count><DynamicValue><ParameterInstanceRef parameterRef="event_selection_n_apids" /></DynamicValue></Count></RepeatEntry></ContainerRefEntry>
+					<ParameterRefEntry parameterRef="selection_store_id"/>
+					<ParameterRefEntry parameterRef="event_selection_n_apids"/>
+					<ContainerRefEntry containerRef="event_selection_apid_element">
+						<RepeatEntry>
+							<Count>
+								<DynamicValue>
+									<ParameterInstanceRef parameterRef="event_selection_n_apids"/>
+								</DynamicValue>
+							</Count>
+						</RepeatEntry>
+					</ContainerRefEntry>
 				</EntryList>
-				<BaseContainer containerRef="pus15-tm"><RestrictionCriteria><Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="40" /></RestrictionCriteria></BaseContainer>
+				<BaseContainer containerRef="pus15-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="40"/>
+					</RestrictionCriteria>
+				</BaseContainer>
 			</SequenceContainer>
 		</ContainerSet>
 	</TelemetryMetaData>
 	<CommandMetaData>
 		<ArgumentTypeSet>
+			<AbsoluteTimeArgumentType name="storage_time_type">
+				<Encoding units="seconds">
+					<BinaryDataEncoding>
+						<SizeInBits>
+							<FixedValue>48</FixedValue>
+						</SizeInBits>
+						<ToBinaryTransformAlgorithm name="storage_time_to">
+							<AlgorithmText language="Java">org.yamcs.algo.TimeBinaryEncoder({"type": "CUC", "epoch": "UNIX", "pField": 46, "implicitPField": true})</AlgorithmText>
+						</ToBinaryTransformAlgorithm>
+					</BinaryDataEncoding>
+				</Encoding>
+			</AbsoluteTimeArgumentType>
 			<EnumeratedArgumentType name="store_type_arg_type">
-				<IntegerDataEncoding sizeInBits="8" />
+				<IntegerDataEncoding sizeInBits="8"/>
 				<EnumerationList>
-					<Enumeration value="0" label="circular" />
-					<Enumeration value="1" label="bounded" />
+					<Enumeration value="0" label="circular"/>
+					<Enumeration value="1" label="bounded"/>
 				</EnumerationList>
 			</EnumeratedArgumentType>
 
 			<!-- Reusable "N store ids" array, used by every dual-variant TC's "_SPECIFIC" MetaCommand.
 			     Each such MetaCommand declares its own top-level "N" argument (uint8); the sibling
 			     ArgumentInstanceRef below resolves to that MetaCommand's own N. -->
-			<ArrayArgumentType arrayTypeRef="/dt/uint16" name="store_id_array_type">
+			<ArrayArgumentType arrayTypeRef="/dt/uint8" name="store_id_array_type">
 				<DimensionList>
 					<Dimension>
-						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
 						<EndingIndex>
 							<DynamicValue>
-								<ArgumentInstanceRef argumentRef="N" />
-								<LinearAdjustment intercept="-1" />
+								<ArgumentInstanceRef argumentRef="N"/>
+								<LinearAdjustment intercept="-1"/>
 							</DynamicValue>
 						</EndingIndex>
 					</Dimension>
 				</DimensionList>
 			</ArrayArgumentType>
 
-			<!-- TC[15,9] start by-time-range retrieval -->
+			<!-- TC[15,9] start by-time-range retrieval (priority + CUC window) -->
 			<AggregateArgumentType name="btr_entry_type">
 				<MemberList>
-					<Member typeRef="/dt/uint16" name="store_id" />
-					<Member typeRef="/dt/uint64" name="start_time" />
-					<Member typeRef="/dt/uint64" name="end_time" />
+					<Member typeRef="/dt/uint8" name="store_id"/>
+					<Member name="retrieval_priority" typeRef="/dt/uint8"/>
+					<Member typeRef="storage_time_type" name="start_time"/>
+					<Member typeRef="storage_time_type" name="end_time"/>
 				</MemberList>
 			</AggregateArgumentType>
 			<ArrayArgumentType arrayTypeRef="btr_entry_type" name="btr_entry_array_type">
 				<DimensionList>
 					<Dimension>
-						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
 						<EndingIndex>
 							<DynamicValue>
-								<ArgumentInstanceRef argumentRef="N" />
-								<LinearAdjustment intercept="-1" />
+								<ArgumentInstanceRef argumentRef="N"/>
+								<LinearAdjustment intercept="-1"/>
 							</DynamicValue>
 						</EndingIndex>
 					</Dimension>
@@ -382,20 +503,22 @@
 			<!-- TC[15,20] create packet stores -->
 			<AggregateArgumentType name="create_store_entry_type">
 				<MemberList>
-					<Member typeRef="/dt/uint16" name="store_id" />
-					<Member typeRef="/dt/uint32" name="size_bytes" />
-					<Member typeRef="store_type_arg_type" name="store_type" />
-					<Member typeRef="/dt/uint8" name="vc_id" />
+					<Member typeRef="/dt/uint8" name="store_id"/>
+					<Member typeRef="/dt/uint8" name="size_units"/>
+					<Member typeRef="store_type_arg_type" name="store_type"/>
+					<Member typeRef="/dt/uint8" name="vc_id"/>
 				</MemberList>
 			</AggregateArgumentType>
 			<ArrayArgumentType arrayTypeRef="create_store_entry_type" name="create_store_array_type">
 				<DimensionList>
 					<Dimension>
-						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
 						<EndingIndex>
 							<DynamicValue>
-								<ArgumentInstanceRef argumentRef="N" />
-								<LinearAdjustment intercept="-1" />
+								<ArgumentInstanceRef argumentRef="N"/>
+								<LinearAdjustment intercept="-1"/>
 							</DynamicValue>
 						</EndingIndex>
 					</Dimension>
@@ -405,18 +528,20 @@
 			<!-- TC[15,25] resize packet stores -->
 			<AggregateArgumentType name="resize_entry_type">
 				<MemberList>
-					<Member typeRef="/dt/uint16" name="store_id" />
-					<Member typeRef="/dt/uint32" name="new_size" />
+					<Member typeRef="/dt/uint8" name="store_id"/>
+					<Member typeRef="/dt/uint8" name="new_size"/>
 				</MemberList>
 			</AggregateArgumentType>
 			<ArrayArgumentType arrayTypeRef="resize_entry_type" name="resize_array_type">
 				<DimensionList>
 					<Dimension>
-						<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
 						<EndingIndex>
 							<DynamicValue>
-								<ArgumentInstanceRef argumentRef="N" />
-								<LinearAdjustment intercept="-1" />
+								<ArgumentInstanceRef argumentRef="N"/>
+								<LinearAdjustment intercept="-1"/>
 							</DynamicValue>
 						</EndingIndex>
 					</Dimension>
@@ -425,10 +550,19 @@
 
 			<!-- TC[15,3/4] APID -> service -> subtype hierarchy -->
 			<ArrayArgumentType name="app_selection_subtype_arg_array_type" arrayTypeRef="/dt/uint8">
-				<DimensionList><Dimension>
-					<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
-					<EndingIndex><DynamicValue><ArgumentInstanceRef argumentRef="n3"/><LinearAdjustment intercept="-1"/></DynamicValue></EndingIndex>
-				</Dimension></DimensionList>
+				<DimensionList>
+					<Dimension>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="n3"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
 			</ArrayArgumentType>
 			<AggregateArgumentType name="app_selection_service_arg_type">
 				<MemberList>
@@ -438,10 +572,19 @@
 				</MemberList>
 			</AggregateArgumentType>
 			<ArrayArgumentType name="app_selection_service_arg_array_type" arrayTypeRef="app_selection_service_arg_type">
-				<DimensionList><Dimension>
-					<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
-					<EndingIndex><DynamicValue><ArgumentInstanceRef argumentRef="n2"/><LinearAdjustment intercept="-1"/></DynamicValue></EndingIndex>
-				</Dimension></DimensionList>
+				<DimensionList>
+					<Dimension>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="n2"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
 			</ArrayArgumentType>
 			<AggregateArgumentType name="app_selection_apid_arg_type">
 				<MemberList>
@@ -451,18 +594,36 @@
 				</MemberList>
 			</AggregateArgumentType>
 			<ArrayArgumentType name="app_selection_apid_arg_array_type" arrayTypeRef="app_selection_apid_arg_type">
-				<DimensionList><Dimension>
-					<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
-					<EndingIndex><DynamicValue><ArgumentInstanceRef argumentRef="N1"/><LinearAdjustment intercept="-1"/></DynamicValue></EndingIndex>
-				</Dimension></DimensionList>
+				<DimensionList>
+					<Dimension>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="N1"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
 			</ArrayArgumentType>
 
 			<!-- TC[15,29-34] APID -> structure/event identifier hierarchy -->
 			<ArrayArgumentType name="identifier_arg_array_type" arrayTypeRef="/dt/uint8">
-				<DimensionList><Dimension>
-					<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
-					<EndingIndex><DynamicValue><ArgumentInstanceRef argumentRef="n2"/><LinearAdjustment intercept="-1"/></DynamicValue></EndingIndex>
-				</Dimension></DimensionList>
+				<DimensionList>
+					<Dimension>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="n2"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
 			</ArrayArgumentType>
 			<AggregateArgumentType name="identifier_apid_arg_type">
 				<MemberList>
@@ -472,10 +633,84 @@
 				</MemberList>
 			</AggregateArgumentType>
 			<ArrayArgumentType name="identifier_apid_arg_array_type" arrayTypeRef="identifier_apid_arg_type">
-				<DimensionList><Dimension>
-					<StartingIndex><FixedValue>0</FixedValue></StartingIndex>
-					<EndingIndex><DynamicValue><ArgumentInstanceRef argumentRef="N1"/><LinearAdjustment intercept="-1"/></DynamicValue></EndingIndex>
-				</Dimension></DimensionList>
+				<DimensionList>
+					<Dimension>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="N1"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+		<AggregateArgumentType name="retrieval_entry_type">
+				<MemberList>
+					<Member name="store_id" typeRef="/dt/uint8"/>
+					<Member name="retrieval_priority" typeRef="/dt/uint8"/>
+				</MemberList>
+			</AggregateArgumentType>
+			<ArrayArgumentType arrayTypeRef="retrieval_entry_type" name="retrieval_array_type">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="N"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+
+			<AggregateArgumentType name="structure_rate_type">
+				<MemberList>
+					<Member name="structure_id" typeRef="/dt/uint8"/>
+					<Member name="subsampling_rate" typeRef="/dt/uint8"/>
+				</MemberList>
+			</AggregateArgumentType>
+			<ArrayArgumentType name="structure_rate_array_type" arrayTypeRef="structure_rate_type">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="n2"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
+			</ArrayArgumentType>
+			<AggregateArgumentType name="structure_rate_apid_type">
+				<MemberList>
+					<Member name="apid" typeRef="/dt/pus_report_apid"/>
+					<Member name="n2" typeRef="/dt/uint8"/>
+					<Member name="identifiers" typeRef="structure_rate_array_type"/>
+				</MemberList>
+			</AggregateArgumentType>
+			<ArrayArgumentType name="structure_rate_apid_array_type" arrayTypeRef="structure_rate_apid_type">
+				<DimensionList>
+					<Dimension>
+						<StartingIndex>
+							<FixedValue>0</FixedValue>
+						</StartingIndex>
+						<EndingIndex>
+							<DynamicValue>
+								<ArgumentInstanceRef argumentRef="N1"/>
+								<LinearAdjustment intercept="-1"/>
+							</DynamicValue>
+						</EndingIndex>
+					</Dimension>
+				</DimensionList>
 			</ArrayArgumentType>
 		</ArgumentTypeSet>
 		<MetaCommandSet>
@@ -517,7 +752,9 @@
 					</ArgumentAssignmentList>
 				</BaseMetaCommand>
 				<CommandContainer name="TC_15_1_ALL">
-					<EntryList/>
+					<EntryList>
+						<FixedValueEntry name="N" binaryValue="00" sizeInBits="8"/>
+					</EntryList>
 					<BaseContainer containerRef="pus15-tc"/>
 				</CommandContainer>
 			</MetaCommand>
@@ -548,39 +785,86 @@
 					</ArgumentAssignmentList>
 				</BaseMetaCommand>
 				<CommandContainer name="TC_15_2_ALL">
-					<EntryList/>
+					<EntryList>
+						<FixedValueEntry name="N" binaryValue="00" sizeInBits="8"/>
+					</EntryList>
 					<BaseContainer containerRef="pus15-tc"/>
 				</CommandContainer>
 			</MetaCommand>
 
 			<!-- TC[15,3-5] Application-process packet-selection configuration -->
 			<MetaCommand name="TC_15_3_ADD_REPORT_TYPES" shortDescription="TC[15,3] Add application-process report types">
-				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="3"/></ArgumentAssignmentList></BaseMetaCommand>
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="3"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
 				<ArgumentList>
-					<Argument name="store_id" argumentTypeRef="/dt/uint16"/>
+					<Argument name="store_id" argumentTypeRef="/dt/uint8"/>
 					<Argument name="N1" argumentTypeRef="/dt/uint8"/>
 					<Argument name="apid_entries" argumentTypeRef="app_selection_apid_arg_array_type"/>
 				</ArgumentList>
-				<CommandContainer name="TC_15_3"><EntryList><ArgumentRefEntry argumentRef="store_id"/><ArgumentRefEntry argumentRef="N1"/><ArgumentRefEntry argumentRef="apid_entries"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
+				<CommandContainer name="TC_15_3">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="store_id"/>
+						<ArgumentRefEntry argumentRef="N1"/>
+						<ArgumentRefEntry argumentRef="apid_entries"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
 			</MetaCommand>
 			<MetaCommand name="TC_15_4_DELETE_REPORT_TYPES" shortDescription="TC[15,4] Delete application-process report types">
-				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="4"/></ArgumentAssignmentList></BaseMetaCommand>
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="4"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
 				<ArgumentList>
-					<Argument name="store_id" argumentTypeRef="/dt/uint16"/>
+					<Argument name="store_id" argumentTypeRef="/dt/uint8"/>
 					<Argument name="N1" argumentTypeRef="/dt/uint8"/>
 					<Argument name="apid_entries" argumentTypeRef="app_selection_apid_arg_array_type"/>
 				</ArgumentList>
-				<CommandContainer name="TC_15_4_DELETE"><EntryList><ArgumentRefEntry argumentRef="store_id"/><ArgumentRefEntry argumentRef="N1"/><ArgumentRefEntry argumentRef="apid_entries"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
+				<CommandContainer name="TC_15_4_DELETE">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="store_id"/>
+						<ArgumentRefEntry argumentRef="N1"/>
+						<ArgumentRefEntry argumentRef="apid_entries"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
 			</MetaCommand>
 			<MetaCommand name="TC_15_4_EMPTY" shortDescription="TC[15,4] Empty application-process storage-control configuration">
-				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="4"/></ArgumentAssignmentList></BaseMetaCommand>
-				<ArgumentList><Argument name="store_id" argumentTypeRef="/dt/uint16"/></ArgumentList>
-				<CommandContainer name="TC_15_4_EMPTY"><EntryList><ArgumentRefEntry argumentRef="store_id"/><FixedValueEntry name="N1" binaryValue="00" sizeInBits="8"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="4"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="store_id" argumentTypeRef="/dt/uint8"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_4_EMPTY">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="store_id"/>
+						<FixedValueEntry name="N1" binaryValue="00" sizeInBits="8"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
 			</MetaCommand>
 			<MetaCommand name="TC_15_5_REPORT_APPLICATION_CONFIG" shortDescription="TC[15,5] Request TM[15,6] for one packet store">
-				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="5"/></ArgumentAssignmentList></BaseMetaCommand>
-				<ArgumentList><Argument name="store_id" argumentTypeRef="/dt/uint16"/></ArgumentList>
-				<CommandContainer name="TC_15_5"><EntryList><ArgumentRefEntry argumentRef="store_id"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="5"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="store_id" argumentTypeRef="/dt/uint8"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_5">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="store_id"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
 			</MetaCommand>
 
 			<!-- TC[15,9] Start by-time-range retrieval of packet stores -->
@@ -611,7 +895,7 @@
 					</ArgumentAssignmentList>
 				</BaseMetaCommand>
 				<ArgumentList>
-					<Argument name="time_limit" argumentTypeRef="/dt/uint64"/>
+					<Argument name="time_limit" argumentTypeRef="storage_time_type"/>
 					<Argument name="N" argumentTypeRef="/dt/uint8"/>
 					<Argument name="store_ids" argumentTypeRef="store_id_array_type"/>
 				</ArgumentList>
@@ -631,11 +915,12 @@
 					</ArgumentAssignmentList>
 				</BaseMetaCommand>
 				<ArgumentList>
-					<Argument name="time_limit" argumentTypeRef="/dt/uint64"/>
+					<Argument name="time_limit" argumentTypeRef="storage_time_type"/>
 				</ArgumentList>
 				<CommandContainer name="TC_15_11_ALL">
 					<EntryList>
 						<ArgumentRefEntry argumentRef="time_limit"/>
+					<FixedValueEntry name="N" binaryValue="00" sizeInBits="8"/>
 					</EntryList>
 					<BaseContainer containerRef="pus15-tc"/>
 				</CommandContainer>
@@ -667,7 +952,9 @@
 					</ArgumentAssignmentList>
 				</BaseMetaCommand>
 				<CommandContainer name="TC_15_12_ALL">
-					<EntryList/>
+					<EntryList>
+						<FixedValueEntry name="N" binaryValue="00" sizeInBits="8"/>
+					</EntryList>
 					<BaseContainer containerRef="pus15-tc"/>
 				</CommandContainer>
 			</MetaCommand>
@@ -680,7 +967,7 @@
 					</ArgumentAssignmentList>
 				</BaseMetaCommand>
 				<ArgumentList>
-					<Argument name="start_time" argumentTypeRef="/dt/uint64"/>
+					<Argument name="start_time" argumentTypeRef="storage_time_type"/>
 					<Argument name="N" argumentTypeRef="/dt/uint8"/>
 					<Argument name="store_ids" argumentTypeRef="store_id_array_type"/>
 				</ArgumentList>
@@ -700,11 +987,12 @@
 					</ArgumentAssignmentList>
 				</BaseMetaCommand>
 				<ArgumentList>
-					<Argument name="start_time" argumentTypeRef="/dt/uint64"/>
+					<Argument name="start_time" argumentTypeRef="storage_time_type"/>
 				</ArgumentList>
 				<CommandContainer name="TC_15_14_ALL">
 					<EntryList>
 						<ArgumentRefEntry argumentRef="start_time"/>
+					<FixedValueEntry name="N" binaryValue="00" sizeInBits="8"/>
 					</EntryList>
 					<BaseContainer containerRef="pus15-tc"/>
 				</CommandContainer>
@@ -719,12 +1007,12 @@
 				</BaseMetaCommand>
 				<ArgumentList>
 					<Argument name="N" argumentTypeRef="/dt/uint8"/>
-					<Argument name="store_ids" argumentTypeRef="store_id_array_type"/>
+					<Argument name="retrieval_entries" argumentTypeRef="retrieval_array_type"/>
 				</ArgumentList>
 				<CommandContainer name="TC_15_15_SPECIFIC">
 					<EntryList>
 						<ArgumentRefEntry argumentRef="N"/>
-						<ArgumentRefEntry argumentRef="store_ids"/>
+						<ArgumentRefEntry argumentRef="retrieval_entries"/>
 					</EntryList>
 					<BaseContainer containerRef="pus15-tc"/>
 				</CommandContainer>
@@ -736,7 +1024,9 @@
 					</ArgumentAssignmentList>
 				</BaseMetaCommand>
 				<CommandContainer name="TC_15_15_ALL">
-					<EntryList/>
+					<EntryList>
+						<FixedValueEntry name="N" binaryValue="00" sizeInBits="8"/>
+					</EntryList>
 					<BaseContainer containerRef="pus15-tc"/>
 				</CommandContainer>
 			</MetaCommand>
@@ -767,7 +1057,9 @@
 					</ArgumentAssignmentList>
 				</BaseMetaCommand>
 				<CommandContainer name="TC_15_16_ALL">
-					<EntryList/>
+					<EntryList>
+						<FixedValueEntry name="N" binaryValue="00" sizeInBits="8"/>
+					</EntryList>
 					<BaseContainer containerRef="pus15-tc"/>
 				</CommandContainer>
 			</MetaCommand>
@@ -798,7 +1090,9 @@
 					</ArgumentAssignmentList>
 				</BaseMetaCommand>
 				<CommandContainer name="TC_15_17_ALL">
-					<EntryList/>
+					<EntryList>
+						<FixedValueEntry name="N" binaryValue="00" sizeInBits="8"/>
+					</EntryList>
 					<BaseContainer containerRef="pus15-tc"/>
 				</CommandContainer>
 			</MetaCommand>
@@ -862,7 +1156,9 @@
 					</ArgumentAssignmentList>
 				</BaseMetaCommand>
 				<CommandContainer name="TC_15_21_ALL">
-					<EntryList/>
+					<EntryList>
+						<FixedValueEntry name="N" binaryValue="00" sizeInBits="8"/>
+					</EntryList>
 					<BaseContainer containerRef="pus15-tc"/>
 				</CommandContainer>
 			</MetaCommand>
@@ -908,7 +1204,7 @@
 					</ArgumentAssignmentList>
 				</BaseMetaCommand>
 				<ArgumentList>
-					<Argument name="store_id" argumentTypeRef="/dt/uint16"/>
+					<Argument name="store_id" argumentTypeRef="/dt/uint8"/>
 					<Argument name="new_vc_id" argumentTypeRef="/dt/uint8"/>
 				</ArgumentList>
 				<CommandContainer name="TC_15_28">
@@ -922,64 +1218,323 @@
 
 			<!-- TC[15,29-40] Specialized packet-selection configurations -->
 			<MetaCommand name="TC_15_29_ADD_HK_STRUCTURES" shortDescription="TC[15,29] Add HK structure identifiers">
-				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="29"/></ArgumentAssignmentList></BaseMetaCommand>
-				<ArgumentList><Argument name="store_id" argumentTypeRef="/dt/uint16"/><Argument name="N1" argumentTypeRef="/dt/uint8"/><Argument name="identifier_entries" argumentTypeRef="identifier_apid_arg_array_type"/></ArgumentList>
-				<CommandContainer name="TC_15_29"><EntryList><ArgumentRefEntry argumentRef="store_id"/><ArgumentRefEntry argumentRef="N1"/><ArgumentRefEntry argumentRef="identifier_entries"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="29"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="store_id" argumentTypeRef="/dt/uint8"/>
+					<Argument name="N1" argumentTypeRef="/dt/uint8"/>
+					<Argument name="identifier_entries" argumentTypeRef="structure_rate_apid_array_type"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_29">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="store_id"/>
+						<ArgumentRefEntry argumentRef="N1"/>
+						<ArgumentRefEntry argumentRef="identifier_entries"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
 			</MetaCommand>
 			<MetaCommand name="TC_15_30_DELETE_HK_STRUCTURES" shortDescription="TC[15,30] Delete HK structure identifiers">
-				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="30"/></ArgumentAssignmentList></BaseMetaCommand>
-				<ArgumentList><Argument name="store_id" argumentTypeRef="/dt/uint16"/><Argument name="N1" argumentTypeRef="/dt/uint8"/><Argument name="identifier_entries" argumentTypeRef="identifier_apid_arg_array_type"/></ArgumentList>
-				<CommandContainer name="TC_15_30"><EntryList><ArgumentRefEntry argumentRef="store_id"/><ArgumentRefEntry argumentRef="N1"/><ArgumentRefEntry argumentRef="identifier_entries"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="30"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="store_id" argumentTypeRef="/dt/uint8"/>
+					<Argument name="N1" argumentTypeRef="/dt/uint8"/>
+					<Argument name="identifier_entries" argumentTypeRef="identifier_apid_arg_array_type"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_30">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="store_id"/>
+						<ArgumentRefEntry argumentRef="N1"/>
+						<ArgumentRefEntry argumentRef="identifier_entries"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
 			</MetaCommand>
 			<MetaCommand name="TC_15_30_EMPTY" shortDescription="TC[15,30] Empty HK storage-control configuration">
-				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="30"/></ArgumentAssignmentList></BaseMetaCommand>
-				<ArgumentList><Argument name="store_id" argumentTypeRef="/dt/uint16"/></ArgumentList>
-				<CommandContainer name="TC_15_30_EMPTY"><EntryList><ArgumentRefEntry argumentRef="store_id"/><FixedValueEntry name="N1" binaryValue="00" sizeInBits="8"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="30"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="store_id" argumentTypeRef="/dt/uint8"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_30_EMPTY">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="store_id"/>
+						<FixedValueEntry name="N1" binaryValue="00" sizeInBits="8"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
 			</MetaCommand>
 
 			<MetaCommand name="TC_15_31_ADD_DIAGNOSTIC_STRUCTURES" shortDescription="TC[15,31] Add diagnostic structure identifiers">
-				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="31"/></ArgumentAssignmentList></BaseMetaCommand>
-				<ArgumentList><Argument name="store_id" argumentTypeRef="/dt/uint16"/><Argument name="N1" argumentTypeRef="/dt/uint8"/><Argument name="identifier_entries" argumentTypeRef="identifier_apid_arg_array_type"/></ArgumentList>
-				<CommandContainer name="TC_15_31"><EntryList><ArgumentRefEntry argumentRef="store_id"/><ArgumentRefEntry argumentRef="N1"/><ArgumentRefEntry argumentRef="identifier_entries"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="31"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="store_id" argumentTypeRef="/dt/uint8"/>
+					<Argument name="N1" argumentTypeRef="/dt/uint8"/>
+					<Argument name="identifier_entries" argumentTypeRef="structure_rate_apid_array_type"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_31">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="store_id"/>
+						<ArgumentRefEntry argumentRef="N1"/>
+						<ArgumentRefEntry argumentRef="identifier_entries"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
 			</MetaCommand>
 			<MetaCommand name="TC_15_32_DELETE_DIAGNOSTIC_STRUCTURES" shortDescription="TC[15,32] Delete diagnostic structure identifiers">
-				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="32"/></ArgumentAssignmentList></BaseMetaCommand>
-				<ArgumentList><Argument name="store_id" argumentTypeRef="/dt/uint16"/><Argument name="N1" argumentTypeRef="/dt/uint8"/><Argument name="identifier_entries" argumentTypeRef="identifier_apid_arg_array_type"/></ArgumentList>
-				<CommandContainer name="TC_15_32"><EntryList><ArgumentRefEntry argumentRef="store_id"/><ArgumentRefEntry argumentRef="N1"/><ArgumentRefEntry argumentRef="identifier_entries"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="32"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="store_id" argumentTypeRef="/dt/uint8"/>
+					<Argument name="N1" argumentTypeRef="/dt/uint8"/>
+					<Argument name="identifier_entries" argumentTypeRef="identifier_apid_arg_array_type"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_32">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="store_id"/>
+						<ArgumentRefEntry argumentRef="N1"/>
+						<ArgumentRefEntry argumentRef="identifier_entries"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
 			</MetaCommand>
 			<MetaCommand name="TC_15_32_EMPTY" shortDescription="TC[15,32] Empty diagnostic storage-control configuration">
-				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="32"/></ArgumentAssignmentList></BaseMetaCommand>
-				<ArgumentList><Argument name="store_id" argumentTypeRef="/dt/uint16"/></ArgumentList>
-				<CommandContainer name="TC_15_32_EMPTY"><EntryList><ArgumentRefEntry argumentRef="store_id"/><FixedValueEntry name="N1" binaryValue="00" sizeInBits="8"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="32"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="store_id" argumentTypeRef="/dt/uint8"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_32_EMPTY">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="store_id"/>
+						<FixedValueEntry name="N1" binaryValue="00" sizeInBits="8"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
 			</MetaCommand>
 
 			<MetaCommand name="TC_15_33_DELETE_EVENT_BLOCKS" shortDescription="TC[15,33] Delete event blocking identifiers">
-				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="33"/></ArgumentAssignmentList></BaseMetaCommand>
-				<ArgumentList><Argument name="store_id" argumentTypeRef="/dt/uint16"/><Argument name="N1" argumentTypeRef="/dt/uint8"/><Argument name="identifier_entries" argumentTypeRef="identifier_apid_arg_array_type"/></ArgumentList>
-				<CommandContainer name="TC_15_33"><EntryList><ArgumentRefEntry argumentRef="store_id"/><ArgumentRefEntry argumentRef="N1"/><ArgumentRefEntry argumentRef="identifier_entries"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="33"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="store_id" argumentTypeRef="/dt/uint8"/>
+					<Argument name="N1" argumentTypeRef="/dt/uint8"/>
+					<Argument name="identifier_entries" argumentTypeRef="identifier_apid_arg_array_type"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_33">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="store_id"/>
+						<ArgumentRefEntry argumentRef="N1"/>
+						<ArgumentRefEntry argumentRef="identifier_entries"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
 			</MetaCommand>
 			<MetaCommand name="TC_15_33_EMPTY" shortDescription="TC[15,33] Empty event-blocking storage-control configuration">
-				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="33"/></ArgumentAssignmentList></BaseMetaCommand>
-				<ArgumentList><Argument name="store_id" argumentTypeRef="/dt/uint16"/></ArgumentList>
-				<CommandContainer name="TC_15_33_EMPTY"><EntryList><ArgumentRefEntry argumentRef="store_id"/><FixedValueEntry name="N1" binaryValue="00" sizeInBits="8"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="33"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="store_id" argumentTypeRef="/dt/uint8"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_33_EMPTY">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="store_id"/>
+						<FixedValueEntry name="N1" binaryValue="00" sizeInBits="8"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
 			</MetaCommand>
 			<MetaCommand name="TC_15_34_ADD_EVENT_BLOCKS" shortDescription="TC[15,34] Add event blocking identifiers">
-				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="34"/></ArgumentAssignmentList></BaseMetaCommand>
-				<ArgumentList><Argument name="store_id" argumentTypeRef="/dt/uint16"/><Argument name="N1" argumentTypeRef="/dt/uint8"/><Argument name="identifier_entries" argumentTypeRef="identifier_apid_arg_array_type"/></ArgumentList>
-				<CommandContainer name="TC_15_34"><EntryList><ArgumentRefEntry argumentRef="store_id"/><ArgumentRefEntry argumentRef="N1"/><ArgumentRefEntry argumentRef="identifier_entries"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="34"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="store_id" argumentTypeRef="/dt/uint8"/>
+					<Argument name="N1" argumentTypeRef="/dt/uint8"/>
+					<Argument name="identifier_entries" argumentTypeRef="identifier_apid_arg_array_type"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_34">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="store_id"/>
+						<ArgumentRefEntry argumentRef="N1"/>
+						<ArgumentRefEntry argumentRef="identifier_entries"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
 			</MetaCommand>
 
 			<MetaCommand name="TC_15_35_REPORT_HK_CONFIG" shortDescription="TC[15,35] Request TM[15,36]">
-				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="35"/></ArgumentAssignmentList></BaseMetaCommand>
-				<ArgumentList><Argument name="store_id" argumentTypeRef="/dt/uint16"/></ArgumentList><CommandContainer name="TC_15_35"><EntryList><ArgumentRefEntry argumentRef="store_id"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="35"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="store_id" argumentTypeRef="/dt/uint8"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_35">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="store_id"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
 			</MetaCommand>
 			<MetaCommand name="TC_15_37_REPORT_DIAGNOSTIC_CONFIG" shortDescription="TC[15,37] Request TM[15,38]">
-				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="37"/></ArgumentAssignmentList></BaseMetaCommand>
-				<ArgumentList><Argument name="store_id" argumentTypeRef="/dt/uint16"/></ArgumentList><CommandContainer name="TC_15_37"><EntryList><ArgumentRefEntry argumentRef="store_id"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="37"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="store_id" argumentTypeRef="/dt/uint8"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_37">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="store_id"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
 			</MetaCommand>
 			<MetaCommand name="TC_15_39_REPORT_EVENT_CONFIG" shortDescription="TC[15,39] Request TM[15,40]">
-				<BaseMetaCommand metaCommandRef="pus15-tc"><ArgumentAssignmentList><ArgumentAssignment argumentName="subtype" argumentValue="39"/></ArgumentAssignmentList></BaseMetaCommand>
-				<ArgumentList><Argument name="store_id" argumentTypeRef="/dt/uint16"/></ArgumentList><CommandContainer name="TC_15_39"><EntryList><ArgumentRefEntry argumentRef="store_id"/></EntryList><BaseContainer containerRef="pus15-tc"/></CommandContainer>
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="39"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="store_id" argumentTypeRef="/dt/uint8"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_39">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="store_id"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+		<MetaCommand name="TC_15_24_COPY_BETWEEN">
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="24"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="from_time" argumentTypeRef="storage_time_type"/>
+					<Argument name="to_time" argumentTypeRef="storage_time_type"/>
+					<Argument name="from_store_id" argumentTypeRef="/dt/uint8"/>
+					<Argument name="to_store_id" argumentTypeRef="/dt/uint8"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_24_COPY_BETWEEN">
+					<EntryList>
+						<FixedValueEntry name="time_window_type" binaryValue="00" sizeInBits="8"/>
+						<ArgumentRefEntry argumentRef="from_time"/>
+						<ArgumentRefEntry argumentRef="to_time"/>
+						<ArgumentRefEntry argumentRef="from_store_id"/>
+						<ArgumentRefEntry argumentRef="to_store_id"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="TC_15_24_COPY_AFTER">
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="24"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="from_time" argumentTypeRef="storage_time_type"/>
+					<Argument name="from_store_id" argumentTypeRef="/dt/uint8"/>
+					<Argument name="to_store_id" argumentTypeRef="/dt/uint8"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_24_COPY_AFTER">
+					<EntryList>
+						<FixedValueEntry name="time_window_type" binaryValue="01" sizeInBits="8"/>
+						<ArgumentRefEntry argumentRef="from_time"/>
+						<ArgumentRefEntry argumentRef="from_store_id"/>
+						<ArgumentRefEntry argumentRef="to_store_id"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="TC_15_24_COPY_BEFORE">
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="24"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="to_time" argumentTypeRef="storage_time_type"/>
+					<Argument name="from_store_id" argumentTypeRef="/dt/uint8"/>
+					<Argument name="to_store_id" argumentTypeRef="/dt/uint8"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_24_COPY_BEFORE">
+					<EntryList>
+						<FixedValueEntry name="time_window_type" binaryValue="02" sizeInBits="8"/>
+						<ArgumentRefEntry argumentRef="to_time"/>
+						<ArgumentRefEntry argumentRef="from_store_id"/>
+						<ArgumentRefEntry argumentRef="to_store_id"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="TC_15_26_SET_CIRCULAR">
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="26"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="store_id" argumentTypeRef="/dt/uint8"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_26_SET_CIRCULAR">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="store_id"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="TC_15_27_SET_BOUNDED">
+				<BaseMetaCommand metaCommandRef="pus15-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="27"/>
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="store_id" argumentTypeRef="/dt/uint8"/>
+				</ArgumentList>
+				<CommandContainer name="TC_15_27_SET_BOUNDED">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="store_id"/>
+					</EntryList>
+					<BaseContainer containerRef="pus15-tc"/>
+				</CommandContainer>
 			</MetaCommand>
 		</MetaCommandSet>
 	</CommandMetaData>

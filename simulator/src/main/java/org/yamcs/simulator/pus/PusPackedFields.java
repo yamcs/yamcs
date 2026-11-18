@@ -23,6 +23,12 @@ final class PusPackedFields {
         return new BitBuffer(byteBuffer.array(), byteBuffer.arrayOffset() + byteBuffer.position());
     }
 
+    static BitBuffer readBuffer(ByteBuffer data) {
+        byte[] bytes = new byte[data.remaining()];
+        data.get(bytes);
+        return new BitBuffer(bytes);
+    }
+
     static int readUnsigned(BitBuffer bits, int bitCount) {
         return (int) bits.getBits(bitCount);
     }
