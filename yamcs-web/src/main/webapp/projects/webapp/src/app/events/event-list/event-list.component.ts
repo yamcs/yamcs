@@ -27,7 +27,7 @@ import { EventMessageComponent } from '../event-message/event-message.component'
 import { EventSeverityComponent } from '../event-severity/event-severity.component';
 import { EventsPageTabsComponent } from '../events-page-tabs/events-page-tabs.component';
 import { ExportEventsDialogComponent } from '../export-events-dialog/export-events-dialog.component';
-import { EVENT_COMPLETIONS } from './completions';
+import { eventCompletions } from './completions';
 import { EventsDataSource } from './events.datasource';
 
 const defaultInterval = 'PT1H';
@@ -54,7 +54,7 @@ export class EventListComponent implements OnInit, OnDestroy {
   parseFilterSubscription = input.required<ParseFilterSubscription>();
 
   searchFilter = viewChild.required<YaSearchFilter2>('searchFilter');
-  completions = EVENT_COMPLETIONS;
+  completions = eventCompletions([]);
 
   validStart: Date | null;
   validStop: Date | null;
@@ -120,6 +120,8 @@ export class EventListComponent implements OnInit, OnDestroy {
         }
       }
     }
+
+    this.completions = eventCompletions(this.extraColumns);
 
     yamcs.yamcsClient.getEventSources(yamcs.instance!).then((sources) => {
       for (const source of sources) {

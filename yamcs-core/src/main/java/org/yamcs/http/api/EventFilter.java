@@ -30,6 +30,10 @@ public class EventFilter extends Filter<Tuple> {
         addStringField(FIELD_SOURCE, this::getSource);
         addStringField(FIELD_TYPE, this::getType);
         addNumberField(FIELD_SEQ_NUMBER, this::getSequenceNumber);
+        addPrefixField("extra.", (tuple, field) -> {
+            var event = (Db.Event) tuple.getColumn(BODY_COLUMN);
+            return event.getExtraMap().get(field.substring("extra.".length()));
+        });
         parse();
     }
 

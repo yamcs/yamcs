@@ -53,7 +53,7 @@ export class EventBuffer {
     this.dirty = true;
   }
 
-  snapshot(): Event[] {
+  snapshot(extraKey?: string, direction: 'asc' | 'desc' | '' = ''): Event[] {
     const realtimeEvents = this.realtimeBuffer.filter(
       (s) => s !== undefined,
     ) as Event[];
@@ -67,6 +67,17 @@ export class EventBuffer {
         }
         return res !== 0 ? res : e2.seqNumber - e1.seqNumber;
       });
+    if (extraKey && direction) {
+      splicedEvents.sort((a, b) => {
+        const left = a.extra?.[extraKey];
+        const right = b.extra?.[extraKey];
+        // Missing fields stay last in either direction. Equal values retain
+        // the chronological ordering established above.
+        if (left === undefined) return right === undefined ? 0 : 1;
+        if (right === undefined) return -1;
+        return (direction === 'asc' ? 1 : -1) * left.localeCompare(right);
+      });
+    }
     return splicedEvents;
   }
 

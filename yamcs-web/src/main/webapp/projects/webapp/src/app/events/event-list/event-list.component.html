@@ -98,7 +98,12 @@
           }
         </ya-table-top>
       }
-      <table mat-table [dataSource]="dataSource" class="ya-data-table expand">
+      <table
+        mat-table
+        [dataSource]="dataSource"
+        class="ya-data-table expand"
+        matSort
+        (matSortChange)="dataSource.sortExtra($event.active, $event.direction)">
         <ng-container cdkColumnDef="severity">
           <th mat-header-cell *cdkHeaderCellDef>Severity</th>
           <td mat-cell *cdkCellDef="let row">
@@ -151,7 +156,11 @@
         </ng-container>
         @for (extraColumn of extraColumns; track extraColumn) {
           <ng-container [cdkColumnDef]="extraColumn.id">
-            <th mat-header-cell *cdkHeaderCellDef>
+            <th
+              mat-header-cell
+              *cdkHeaderCellDef
+              [mat-sort-header]="'extra.' + extraColumn.id"
+              matTooltip="Sort loaded events by this field">
               {{ extraColumn.label }}
             </th>
             <td mat-cell *cdkCellDef="let row">
