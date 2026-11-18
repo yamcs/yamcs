@@ -301,7 +301,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
             pv.setExpireMillis(request.getExpiresIn());
         }
         try {
-            mgr.updateParameters(Arrays.asList(pv));
+            mgr.updateParameters(ctx.user, ctx.getClientAddress(), Arrays.asList(pv));
         } catch (IllegalArgumentException e) {
             throw new BadRequestException(e.getMessage());
         }
@@ -436,7 +436,7 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
             DataSource ds = me.getKey();
             SoftwareParameterManager mgr = verifySoftwareParameterManager(processor, ds);
             try {
-                mgr.updateParameters(l);
+                mgr.updateParameters(ctx.user, ctx.getClientAddress(), l);
             } catch (IllegalArgumentException e) {
                 throw new BadRequestException(e.getMessage());
             }

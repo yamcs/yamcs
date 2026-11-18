@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.yamcs.mdb.DataTypeProcessor;
+import org.yamcs.security.User;
 import org.yamcs.utils.AggregateUtil;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterType;
@@ -22,6 +23,20 @@ public interface SoftwareParameterManager {
      * 
      */
     void updateParameters(List<ParameterValue> pvals);
+
+    /**
+     * Called (possibly by the external Yamcs API) with the user that performs the update and the address of the client 
+     * (the origin).
+     * <p>
+     * Managers that act on behalf of the user, for example by sending commands, should override this method such that
+     * the action is equivalent to the user performing it directly, with the same privileges and attribution. This is
+     * used for example for PUS ST[20], where updating an onboard parameter is equivalent to sending a command.
+     * <p>
+     * The default implementation ignores the user and the origin and calls {@link #updateParameters(List)}.
+     */
+    default void updateParameters(User user, String origin, List<ParameterValue> pvals) {
+        updateParameters(pvals);
+    }
 
     /**
      * Called (usually via the external Yamcs API) to pdate the engineering value of a parameter.
