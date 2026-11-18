@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Integration test for PUS ST[05] native YAMCS implementation (Pus5Service).
+Integration test for PUS ST[05] on the spacecraft simulator (Pus5Service).
 
 Requires the examples/pus instance to be running:
     cd examples/pus && mvn yamcs:run
@@ -13,7 +13,7 @@ Tests:
     5. TC[5,5] enable both events in one TC → list is empty again
     6. Idempotency: disable already-disabled event → still OK, count unchanged
 
-TM[5,8] binary layout (from PusCommandReleaser.buildPusTmPacket with pfield=0x2F):
+TM[5,8] binary layout (simulator PusTmPacket with pfield=0x2F):
     [0..5]   6B CCSDS primary header
     [6..12]  7B PUS TM secondary header (version, type, subtype, counter(2), dest(2))
     [13..20] 8B CUC time (1B pfield=0x2F + 4B coarse + 3B fine, pfield not implicit)
@@ -35,7 +35,7 @@ CMD_DISABLE = "/PUS5/DISABLE_REPORT_GENERATION"
 CMD_REPORT  = "/PUS5/REPORT_DISABLED_LIST"
 CONTAINER   = "/PUS5/pus5-disabled-list"
 
-# Byte offset where app data starts in native TM[5,8] packets
+# Byte offset where app data starts in simulator TM[5,8] packets
 # 6B CCSDS + 7B PUS secondary header + 8B CUC time (pfield=0x2F, not implicit)
 APP_DATA_OFFSET = 21
 

@@ -46,7 +46,9 @@ ST[09] time management
 - A standard hardcoded drift is applied.
 - Yamcs uses a time correlation service to correlate the simulator time with the "ground" time. 
   The time correlation does not know about the drift or how the time is generated.
-- The time packet is sent every 4 seconds and changing that frequency is not supported.
+- The simulator sends a time packet every 4 seconds by default. TC[9,1] changes the
+  reporting period to `2^rateExponent` seconds (exponents 0..8); Yamcs sends the
+  command to the simulator rather than applying it locally.
 
 ST[10] (reserved)
 
