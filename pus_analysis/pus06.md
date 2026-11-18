@@ -1,8 +1,18 @@
 # PUS ST[06] Memory Management — Analysis & Implementation Plan
 
 **Spec reference**: ECSS-E-ST-70-41C §6.6 (requirements) and §8.6 (packet definitions)
-**Required subtypes**: TC[6,1], TC[6,2], TC[6,3], TM[6,4], TC[6,5], TM[6,6], TC[6,7], TM[6,8],
+**Proposed subtypes**: TC[6,1], TC[6,2], TC[6,3], TM[6,4], TC[6,5], TM[6,6], TC[6,7], TM[6,8],
 TC[6,9], TM[6,10], TC[6,13], TC[6,14]
+
+**Implementation status (reviewed at `90d4a3d1c`, 2026-11-18): proposal only.**
+`pus6.xml`, `Pus6Service.java`, and its proposed test script are absent. No ST[06] MDB is
+registered in the PUS example. Packet fields and Java snippets below are design proposals,
+not shipped support or verified standard conformance.
+
+The proposed additional length fields require an ICD decision: ST[13]'s shipped last-part
+prefix is example-specific, while ST[19] embeds a self-delimiting TC with no extra length
+prefix. Neither establishes a universal ST[06] wire convention. Keep that distinction when
+implementing the proposal. See the [review findings](README.md).
 
 > **Scope note.** Only the subtypes listed above are in scope. The atomic load (TC[6,11]),
 > abort-all-dumps (TC[6,12]), write-protect (TC[6,15]/[6,16]), check-object-memory-object
@@ -89,7 +99,7 @@ for the required ST[06] subset.** See the feasibility verdict in section (c).
 (TC[6,13], TC[6,14])** — their outcome is reported only through the standard PUS-1 execution
 verification (acceptance + completion). Only the dump and check TCs produce ST[06] data reports.
 
-### Mission conventions (agreed)
+### Proposed mission conventions (require ICD validation)
 
 ST[06] is inherently hardware-specific (memory map, addressing, alignment). These conventions
 fix the free parameters so the wire format is expressible in XTCE and testable in the simulator.
@@ -100,20 +110,17 @@ fix the free parameters so the wire format is expressible in XTCE and testable i
 | M2 | **Raw ops target RAM** (absolute addressing); **object ops target MASS_MEMORY** (base+offset). | Cleanly separates the raw vs structured subservices onto distinct memories. |
 | M3 | **`base` (structured) is `uint16`** = memory-object identifier. | Spec §6.6.4.3 marks `base` as "deduced"; XTCE cannot express per-request type variation. Same resolution ST[20] used for its "deduced" value. |
 | M4 | **Checksumming enabled**; `checksum` is a 16-bit field, **CRC-16/CCITT**. | Spec §6.6.3.1/§6.6.4.1 make checksumming a declared capability. Reuses the ST[21] `pus21.md` CRC convention. |
-| M5 | **4-byte access alignment; `start_address`/`offset`/`length` are `uint32`, multiples of 4.** | §6.6.3.2b absolute addressing + the alignment-rejection rules (§6.6.3.3e/§6.6.3.4f/§6.6.3.5f). |
-| M6 | **Per-instruction data carries a `length:uint16` octet prefix**; `data`/`dumped_data` is a variable binary of `length` octets. `N:uint8` = number of instructions per request. | The "variable octet-string" / "deduced size" fields (§8.6.2 figures) become explicitly length-prefixed — the validated `pus13.xml`/`pus19.xml` pattern (no unverified "trailing binary" behaviour, no zero-padding waste). |
+| M5 | **4-byte access alignment. Addresses/offsets and dump/check request lengths are uint32; load/report data lengths are uint16. All access lengths are multiples of 4.** | §6.6.3.2b absolute addressing + the alignment-rejection rules (§6.6.3.3e/§6.6.3.4f/§6.6.3.5f). |
+| M6 | **Per-instruction data carries a `length:uint16` octet prefix**; `data`/`dumped_data` is a variable binary of `length` octets. `N:uint8` = number of instructions per request. | The "variable octet-string" / "deduced size" fields (§8.6.2 figures) become explicitly length-prefixed — a proposed explicit sizing convention, requiring validation against the mission wire contract. |
 
 ---
 
 ## How the hard XTCE cases are solved (in-repo precedent)
 
-Two structural challenges appear across ST[06]; both already have **validated, shipped**
-solutions in this repository, so **no new `yamcs-core` code is required**.
+Related Yamcs features help express the proposed layout, but this service has not been implemented or validated. The reader now supports per-entry TM lengths as described below; the proposed wire contract still needs validation.
 
 **1. Variable-length data block inside a repeated instruction list (TC side).**
-Load requests are `N × { …, length, data(length octets), checksum }`. A flat `ArrayArgumentType`
-cannot express this (stride would be wrong once any non-last `data` is non-empty). The solved
-pattern is `examples/pus/src/main/yamcs/mdb/pus19.xml` `ea_add_entry_type`:
+Load requests are `N × { …, length, data(length octets), checksum }`. An array of fixed-size records cannot express this; the element must carry a genuinely variable-size binary encoding. A candidate design is a binary argument sized by an enclosing aggregate member:
 
 ```xml
 <BinaryArgumentType name="ld_data_arg_type">          <!-- variable data block -->
@@ -138,11 +145,10 @@ pattern is `examples/pus/src/main/yamcs/mdb/pus19.xml` `ea_add_entry_type`:
 ```
 
 The `argumentRef="length"` resolves to the sibling `length` member of the enclosing aggregate —
-exactly how `pus19.xml` embeds a variable-length request TC per array element.
+as supported by TC aggregate-context lookup. Current ST[19] instead uses the shared annotated `/PUS/EmbeddedTcType`, with no separate request-length prefix.
 
 **2. Variable-length data block inside a repeated report (TM side).**
-Dump reports are `N × { …, length, dumped_data(length octets), checksum }`. The solved pattern is
-`pus19.xml` `ea_def_entry` + `TM_19_11` (and `pus13.xml` `part_data_last_type`): a
+Dump reports are `N × { …, length, dumped_data(length octets), checksum }`. A proposed pattern is a
 `BinaryParameterType` sized by a `length` parameter decoded earlier **in the same entry**, wrapped
 in a `ContainerRefEntry` + `RepeatEntry`:
 
@@ -151,7 +157,7 @@ in a `ContainerRefEntry` + `RepeatEntry`:
     <BinaryDataEncoding>
         <SizeInBits>
             <DynamicValue>
-                <ParameterInstanceRef parameterRef="dmp_length"/>  <!-- getFromEnd(0): latest in this entry -->
+                <ParameterInstanceRef parameterRef="dmp_length"/>  <!-- instance omitted: most recently decoded length -->
                 <LinearAdjustment slope="8"/>
             </DynamicValue>
         </SizeInBits>
@@ -179,9 +185,16 @@ in a `ContainerRefEntry` + `RepeatEntry`:
 </SequenceContainer>
 ```
 
+**TM lookup:** dynamic references without `instance` now use the most recently decoded value,
+so the repeated-container sketch can use a different length per entry. Explicit `instance="0"`
+would instead reuse the first occurrence. This reader behavior is covered by generic binary
+and actual ST[19] regression tests; the proposed ST[06] layout itself remains unimplemented.
+[Aggregate member dimensions](aggregate_member_value.md) are a separate mechanism for arrays
+inside aggregates.
+
 **3. Flat fixed-stride arrays** (dump/check *requests*, and the *checked* reports, whose entries
 carry no variable data) use the simpler `ArrayParameterType`/`ArrayArgumentType` over an aggregate,
-sized by N with an `IncludeCondition` for N=0 — exactly `pus20.xml` `ParamEntriesType` /
+sized by N; TM entries may use `IncludeCondition` for N=0 — exactly `pus20.xml` `ParamEntriesType` /
 `SetParamEntriesType`.
 
 ---
@@ -225,8 +238,7 @@ Shared local types (in `pus6.xml`):
 ```
 
 Byte layouts below assume the full PUS secondary header (as in the running YAMCS+simulator stack):
-`[0..5]` CCSDS primary header, `[6]` service type = 6, `[7]` subtype, then the PUS secondary-header
-fields the base container already extracts, then the application data shown.
+`[0..5]` CCSDS primary header, `[6]` PUS version/acknowledgement field, `[7]` service type = 6, `[8]` subtype. TC source ID occupies bytes 9–10; TC application data starts at byte 11. Ordinary TM has destination/counter/time fields before its source data (byte 21 with the default CUC encoding).
 
 ---
 
@@ -256,7 +268,7 @@ N × {
 [SAT → GROUND] PUS-1 completion ack (OK / failed-execution notification)
 ```
 
-**XTCE**: nested aggregate array + variable binary — the pus19 TC pattern (challenge #1 above).
+**XTCE**: proposed aggregate array + length-sized binary (challenge #1 above).
 **Verdict**: XTCE-only. No dedicated TM (PUS-1 completion only).
 **Simulator**: `writeRaw()` into the RAM byte array; reject → `nack_start`/`nack_completion`.
 
@@ -296,8 +308,8 @@ N × {
 
 **XTCE**: nested `ContainerRefEntry` + `RepeatEntry` with a variable `BinaryParameterType` sized by
 the per-entry `length` — the pus19/pus13 TM pattern (challenge #2 above).
-**Verdict**: XTCE-only.
-**Simulator**: `sendDumpedRawReport()` builds the packet via `newPacket(6, …)`.
+**Verdict**: Candidate XTCE layout; reader supports per-entry length lookup, but this ST[06] layout remains unverified.
+**Simulator proposal**: `sendDumpedRawReport()` builds the packet via `newPacket(6, …)`.
 
 ---
 
@@ -362,7 +374,7 @@ N × { offset : uint32 ; length : uint16 ; data : binary(length) ; checksum : bi
 **Source data**: `memory_id, base:u16, N, N × {offset:u32, length:u16, dumped_data:binary(length), checksum:binary16}`.
 **XTCE**: nested `ContainerRefEntry` + `RepeatEntry` + variable binary (as TM[6,6]), preceded by the
 fixed `base` field.
-**Verdict**: XTCE-only.
+**Verdict**: Candidate XTCE layout; reader supports per-entry length lookup, but this ST[06] layout remains unverified.
 
 ---
 
@@ -402,24 +414,25 @@ Identical shape to TC[6,13]; sets `scrubbingStatus[memory_id] = disabled`.
 | # | Subtypes | Gap | Layer | Resolution |
 |---|---|---|---|---|
 | 1 | 6,1 / 6,3 / 6,4 / 6,7 / 6,8 | **"Deduced" `base` type** — §6.6.4.3 says the base's format depends on the memory object; XTCE cannot express per-request type variation. | MCS (XTCE) | **M3**: fix `base` to `uint16` memory-object id. Document in ICD. Same approach as ST[20]'s deduced value. |
-| 2 | 6,1 / 6,2 / 6,4 / 6,6 | **Variable-length data / dumped-data octet-string repeated N times.** A flat array cannot express per-entry variable stride. | MCS (XTCE) | **M6**: explicit `length:uint16` prefix + variable binary sized `length*8` (validated pus19/pus13 pattern). *Not a workaround* — genuinely variable, no padding. |
+| 2 | 6,1 / 6,2 / 6,4 / 6,6 | **Variable-length data / dumped-data octet-string repeated N times.** Fixed-size records cannot represent variable binary fields without a sizing rule. | MCS (XTCE) | **M6 proposal**: explicit `length:uint16` plus binary sized `length*8`; wire conformity and the complete ST[06] layout remain to be validated; per-entry lookup is supported. |
 | 3 | 6,1 / 6,2 | **"Deduced size" checksum field** — spec's octet-string sizing note. | MCS (XTCE) | **M4**: fix checksum to a 16-bit field (`binary16`), CRC-16/CCITT. |
-| 4 | 6,2 / 6,1 | **Partial / ordered per-instruction execution** (§6.6.3.3g/i, §6.6.4.4g) — process valid instructions in order, abort on the first write/checksum error. Pure on-board logic. | On-board (sim) | Simulator emulates in Java; XTCE only carries the wire format. YAMCS sees the outcome via the PUS-1 completion ack. |
-| 5 | all | **Rejection rules** — invalid memory id, no write/read access, write-protected, misaligned, out-of-bounds, packet exceeds max CCSDS size (§6.6.3.x / §6.6.4.x). | On-board (sim) | Simulator validates and returns PUS-1 `nack_start`/`nack_completion` with an error code. `memory_id` enumeration (M1) additionally gives ground-side MDB safety. |
-| 6 | 6,13 / 6,14 | **Scrubbing mechanism is memory-dependent** (§6.6.6.1.3 NOTE2) — the standard only defines the *status*. | On-board (sim) | Simulator keeps a boolean `scrubbingStatus` per memory; no actual scrubbing emulated. |
+| 4 | 6,2 / 6,1 | **Partial / ordered per-instruction execution** (§6.6.3.3g/i, §6.6.4.4g) — process valid instructions in order, abort on the first write/checksum error. Pure on-board logic. | On-board (sim) | Proposed simulator would emulate in Java; XTCE only carries the wire format. YAMCS sees the outcome via the PUS-1 completion ack. |
+| 5 | all | **Rejection rules** — invalid memory id, no write/read access, write-protected, misaligned, out-of-bounds, packet exceeds max CCSDS size (§6.6.3.x / §6.6.4.x). | On-board (sim) | Proposed simulator would validate and return PUS-1 `nack_start`/`nack_completion` with an error code. `memory_id` enumeration (M1) additionally gives ground-side MDB safety. |
+| 6 | 6,13 / 6,14 | **Scrubbing mechanism is memory-dependent** (§6.6.6.1.3 NOTE2) — the standard only defines the *status*. | On-board (sim) | Proposed simulator would keep a boolean `scrubbingStatus` per memory; no actual scrubbing emulated. |
+
+### Unresolved length-width boundary
+
+The proposal uses uint32 dump/check request lengths but uint16 load/dump-report data lengths.
+Before implementation, define whether requests above 65535 bytes are rejected, split across
+reports, or represented differently. The proposed validation/report-splitting contract is
+incomplete; the differing widths must not be hidden by calling all lengths uint32.
 
 ### Overall feasibility verdict
 
-**YES — the required ST[06] subset is XTCE-only for the MCS. No `yamcs-core` Java changes are
-needed.** This matches ST[20]/ST[13]/ST[19]: YAMCS is the ground station, so it only needs the
-encode/decode contract in the MDB. The two structural challenges (variable-length data blocks;
-deduced `base`) are resolved by documented mission conventions and the **already-shipped**
-pus19/pus13/pus20 XTCE patterns — no new native decoders, verifiers, or postprocessors.
-
-> If YAMCS were ever the *on-board* node (not the case here), the memory store, per-instruction
-> execution, checksumming, and rejection logic would need a native `PusTcHandler` (`Pus6Service`
-> in `yamcs-core`, per `pus_native_arch.md`). For the ground-station scope that logic lives in the
-> **simulator** instead.
+The proposed fixed mission types and TC array patterns are expressible in Yamcs XTCE.
+A claim of complete XTCE-only support is premature: the wire contract, repeated variable-length
+TM sizing, rejection behavior and simulator remain unimplemented/unverified. On-board memory
+logic belongs to the spacecraft or Java simulator, not a ground command interceptor.
 
 ### Two-layer artifact table
 
@@ -467,7 +480,7 @@ pus19/pus13/pus20 XTCE patterns — no new native decoders, verifiers, or postpr
    - **NACK cases**: unknown `memory_id`, misaligned address/length, out-of-bounds, N>1 with mixed
      valid/invalid → correct PUS-1 completion status.
 
-### Verification (per `pus_native_arch.md` §14)
+### Proposed verification after implementation
 
 ```bash
 mvn -pl simulator,examples/pus -am clean install -DskipTests
@@ -475,4 +488,4 @@ mvn -pl examples/pus yamcs:run          # http://localhost:8090, instance "pus"
 python3 examples/pus/tests/test-pus6.py # YAMCS must be running
 ```
 
-*(User verifies manually; the assistant does not self-run builds/tests/the simulator.)*
+These commands are a future checklist; the ST[06] test script does not currently exist. See [build and verification](pus_native_arch.md#build-and-verification) for the existing example.
