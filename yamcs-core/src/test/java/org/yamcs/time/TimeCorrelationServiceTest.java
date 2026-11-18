@@ -1,7 +1,6 @@
 package org.yamcs.time;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -112,11 +111,35 @@ public class TimeCorrelationServiceTest {
     }
 
     @Test
-    public void testUnsortedSample() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            TimeCorrelationService ots = createAndStart(true);
-            ots.addSample(10, Instant.get(1000, 0));
-            ots.addSample(9, Instant.get(0, 0));
-        });
+    public void testOutOfOrderSampleIsIgnored() throws Exception {
+        TimeCorrelationService ots = createAndStart(true);
+        ots.addSample(10, Instant.get(10000, 0));
+        ots.addSample(11, Instant.get(11000, 0));
+        assertEquals(Instant.get(13000, 0), ots.getTime(13));
+
+        ots.addSample(9, Instant.get(9000, 0));
+        ots.addSample(20, Instant.get(5000, 0));
+        assertEquals(Instant.get(13000, 0), ots.getTime(13));
+
+        ots.addSample(12, Instant.get(12000, 0));
+        assertEquals(Instant.get(13000, 0), ots.getTime(13));
+
+        ots.stopAsync().awaitTerminated();
+    }
+
+    @Test
+    public void testOnboardClockReset() throws Exception {
+        TimeCorrelationService ots = createAndStart(true);
+        ots.addSample(100, Instant.get(1000, 0));
+        ots.addSample(101, Instant.get(2000, 0));
+        assertEquals(Instant.get(3000, 0), ots.getTime(102));
+
+        ots.addSample(5, Instant.get(10000, 0));
+        assertEquals(Instant.INVALID_INSTANT, ots.getTime(5));
+
+        ots.addSample(6, Instant.get(11000, 0));
+        assertEquals(Instant.get(12000, 0), ots.getTime(7));
+
+        ots.stopAsync().awaitTerminated();
     }
 }
