@@ -89,7 +89,6 @@ public class PacketDecoder {
                         packet = new byte[] { d0 };
                     }
                     sendToConsumer();
-                    headerOffset = 0;
                 } else {
                     headerOffset++;
                 }
@@ -110,8 +109,6 @@ public class PacketDecoder {
                 length -= n;
                 if (packetOffset == packet.length) {
                     sendToConsumer();
-                    packet = null;
-                    headerOffset = 0;
                 }
             }
         }
@@ -128,11 +125,19 @@ public class PacketDecoder {
         }
     }
 
+    /**
+     * Sends the current packet to the consumer and gets ready for the next one. The state is cleared first: if the
+     * consumer throws, the packet must not be sent again with the next data.
+     */
     private void sendToConsumer() {
-        if (!skipIdlePackets || !isIdle(header)) {
-            consumer.accept(packet);
+        byte[] p = packet;
+        boolean skip = skipIdlePackets && isIdle(header);
+        packet = null;
+        headerOffset = 0;
+        if (skip) {
+            log.trace("skiping idle packet of size {}", p.length);
         } else {
-            log.trace("skiping idle packet of size {}", packet.length);
+            consumer.accept(p);
         }
     }
 
@@ -160,7 +165,6 @@ public class PacketDecoder {
             if (packetLength == headerLength) {
                 packet = ZERO_BYTES;
                 sendToConsumer();
-                headerOffset = 0;
             } else {
                 packet = new byte[packetLength - headerLength];
                 packetOffset = 0;
@@ -170,7 +174,6 @@ public class PacketDecoder {
             System.arraycopy(header, 0, packet, 0, headerLength);
             if (packetLength == headerLength) {
                 sendToConsumer();
-                headerOffset = 0;
             } else {
                 packetOffset = headerLength;
             }

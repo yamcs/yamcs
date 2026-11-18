@@ -264,14 +264,15 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
      * <p>
      * If the coefficients are not yet computed, the sample will be simply added to the sample buffer. If there are
      * enough samples in the buffer, the coefficients will be calculated.
-     * 
-     * 
+     * <p>
+     * A sample older than the previous one (by its earth reception time) is out of order: a warning event is sent and
+     * the sample is ignored. A newer sample with a smaller on-board time means that the on-board clock has been reset:
+     * a warning event is sent, the correlation is reset and starts again from this sample.
+     *
      * @param obt
      *            - On-Board Time
      * @param ert
      *            - Earth Reception Time
-     * @throws IllegalArgumentException
-     *             if the obt or ert are smaller than the ones in the previous sample
      */
     public synchronized void addSample(long obt, Instant ert) {
         double delay = getTof(ert) + onboardDelay;
@@ -279,9 +280,15 @@ public class TimeCorrelationService extends AbstractYamcsService implements Syst
 
         if (!sampleQueue.isEmpty()) {
             Sample last = sampleQueue.getLast();
-            if (obt < last.obt || obi.compareTo(last.obi) < 0) {
-                throw new IllegalArgumentException("Sample (" + obt + ", " + obi + ") is preceeding the previous one ("
-                        + last.obt + ", " + last.obi + ")");
+            if (obi.compareTo(last.obi) < 0) {
+                eventProducer.sendWarning(String.format("Ignoring time correlation sample (%d, %s): "
+                        + "older than the previous one (%d, %s)", obt, obi, last.obt, last.obi));
+                return;
+            }
+            if (obt < last.obt) {
+                eventProducer.sendWarning(String.format("On-board time went backwards from %d to %d, "
+                        + "assuming an on-board clock reset and reseting correlation", last.obt, obt));
+                reset();
             }
         }
         Sample s = new Sample(obt, obi);
