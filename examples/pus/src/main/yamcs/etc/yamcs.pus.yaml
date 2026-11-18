@@ -90,7 +90,7 @@ dataLinks:
             implicitPField: false
             pField: 0x2f
         tcoService: tco0
-        # APID of the on-board scheduler, required to schedule commands with pus11ScheduleAt
+        # APID of the on-board scheduler (defaults to the original command's APID if omitted)
         pus11Apid: 1
         pus11:
             subScheduleId:

@@ -9,7 +9,7 @@ export interface AuthInfo {
 
 export interface OpenIDConnectInfo {
   clientId: string;
-  authorizationEndpoint: string;
+  authorizationEndpoint?: string;
   scope: string;
 }
 
@@ -19,6 +19,10 @@ export interface TokenResponse {
   expires_in: number;
   refresh_token: string;
   user: UserInfo;
+}
+
+export interface LogoutResponse {
+  redirectUrl?: string;
 }
 
 export interface InstanceConfig {
@@ -283,35 +287,14 @@ export interface ExternalIdentity {
   provider: string;
 }
 
-export interface ListServiceAccountsResponse {
-  serviceAccounts: ServiceAccount[];
-}
-
-export interface CreateServiceAccountRequest {
-  name: string;
-}
-
-export interface CreateServiceAccountResponse {
-  name: string;
-  applicationId: string;
-  applicationSecret: string;
-}
-
-export interface ServiceAccount {
-  name: string;
-  active: boolean;
-}
-
 export interface GroupInfo {
   name: string;
   description: string;
   users?: UserInfo[];
-  serviceAccounts?: ServiceAccount[];
 }
 
 export interface GroupMemberInfo {
   users?: string[];
-  serviceAccounts?: string[];
 }
 
 export interface EditGroupRequest {
@@ -401,7 +384,6 @@ export interface CreateGroupRequest {
   name: string;
   description?: string;
   users?: string[];
-  serviceAccounts?: string[];
 }
 
 export interface RocksDbDatabase {

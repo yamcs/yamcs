@@ -46,9 +46,9 @@ public class XtceTmExtractor {
         rootContainer = mdb.getRootSequenceContainer();
         this.pdata = pdata;
         this.options = pdata.getProcessorConfig().getContainerProcessingOptions();
-        if (pdata.getProcessorConfig().subscribeContainerArchivePartitions()) {
+        if (pdata.getProcessorConfig().subscribePacketNameContainers()) {
             for (SequenceContainer sc : mdb.getSequenceContainers()) {
-                if (sc.useAsArchivePartition()) {
+                if (sc.useAsPacketName()) {
                     subscription.addSequenceContainer(sc);
                 }
             }
@@ -130,7 +130,7 @@ public class XtceTmExtractor {
                 ContainerProcessingContext cpc = new ContainerProcessingContext(pdata, buf, result, subscription,
                         options, true);
                 cpc.sequenceContainerProcessor.extract(subscribedContainer);
-                String pname = XtceTmRecorder.deriveArchivePartition(result);
+                String pname = XtceTmRecorder.derivePacketName(result);
                 stats.newPacket(pname, result.getParameterResult().size(), acquisitionTime, generationTime,
                         buf.sizeInBits());
             }

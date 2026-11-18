@@ -13,6 +13,9 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.tctm.TcTmException;
+import org.yamcs.tctm.ccsds.error.AosFrameHeaderErrorCorr;
+import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
+import org.yamcs.utils.ByteArrayUtils;
 
 public class AosFrameDecoderTest {
 
@@ -54,13 +57,48 @@ public class AosFrameDecoderTest {
         });
     }
 
+    @Test
+    public void testScidExtension() throws TcTmException {
+        byte[] data = intToByteArray(AOS_FRAME_01);
+        data[5] |= 0x20; // SCID extension = 0b10
+        ByteArrayUtils.encodeUnsignedShort(new CrcCciitCalculator().compute(data, 0, data.length - 2), data,
+                data.length - 2);
+
+        AosFrameDecoder tfd = new AosFrameDecoder(getParams());
+        AosTransferFrame tf = tfd.decode(data, 0, data.length);
+        assertEquals(0x2AB, tf.getSpacecraftId());
+        assertEquals(1, tf.getVirtualChannelId());
+    }
+
+    @Test
+    public void testScidExtensionWithFhec() throws TcTmException {
+        int gvcid = (1 << 14) | (0xAB << 6) | 1;
+        int signalingField = 0x30; // SCID extension = 0b11
+        byte[] data = new byte[128];
+        ByteArrayUtils.encodeUnsignedShort(gvcid, data, 0);
+        data[5] = (byte) signalingField;
+        ByteArrayUtils.encodeUnsignedShort(AosFrameHeaderErrorCorr.encode(gvcid, signalingField), data, 6);
+        ByteArrayUtils.encodeUnsignedShort(0x7FF, data, 8);
+
+        data[5] ^= 0x10; // corrupt the SCID extension, to be corrected by the FHEC
+
+        AosFrameDecoder tfd = new AosFrameDecoder(getParams("NONE", true));
+        AosTransferFrame tf = tfd.decode(data, 0, data.length);
+        assertEquals(0x3AB, tf.getSpacecraftId());
+        assertEquals(1, tf.getVirtualChannelId());
+    }
+
     AosManagedParameters getParams() {
+        return getParams("CRC16", false);
+    }
+
+    AosManagedParameters getParams(String errorDetection, boolean fhec) {
         Map<String, Object> m = new HashMap<>();
         m.put("spacecraftId", 3);
         m.put("frameLength", 128);
-        m.put("errorDetection", "CRC16");
+        m.put("errorDetection", errorDetection);
         m.put("insertZoneLength", 0);
-        m.put("frameHeaderErrorControlPresent", false);
+        m.put("frameHeaderErrorControlPresent", fhec);
 
         List<Map<String, Object>> vclist = new ArrayList<>();
         m.put("virtualChannels", vclist);

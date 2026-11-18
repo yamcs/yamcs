@@ -144,7 +144,7 @@ class ManagedReplicationFile {
         rwlock.readLock().lock();
         try {
             if (rf == null) {
-                return Files.size(path) >= maxFileSize;
+                return Files.size(path) > maxFileSize;
             } else {
                 return rf.isFull();
             }

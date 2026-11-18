@@ -15,7 +15,7 @@ The loader is configured in :file:`etc/mdb.yaml` or in the instance configuratio
     - type: "xtce"
       args:
         file: "BogusSAT.xml"
-        autoTmPartitions: true
+        autoPacketNames: true
         #fileset: ["a*.xml", "b.xml"]
         
 **Configuration Options**
@@ -28,19 +28,23 @@ fileset (string or list of strings)
 
    If the ``fileset`` option is used, the ``subLoader`` cannot be used to load child subsystems. This is because it is not possible to specify which subsystem will be the parent of the child.
 
-autoTmPartitions (boolean)
-   If true, Yamcs will automatically mark to be used as archive partitions all containers which do not have a parent.
+autoPacketNames (boolean)
+   If true, Yamcs will automatically use as packet names all the containers (except the root containers) that do not have a parent manually marked as packet name. The packet name is the name under which a packet is archived, shown in the Archive overview and in the packet statistics, and checked against the ``ReadPacket`` privileges.
 
-   If this option is false, the containers can still be manually marked by using the  ancillary data property ``UseAsArchivingPartition``:
+   Containers can be manually marked by using the ancillary data property ``UseAsPacketName``:
 
    .. code-block:: xml
 
         <SequenceContainer>
           ....
           <AncillaryDataSet>
-              <AncillaryData name="Yamcs">UseAsArchivingPartition</AncillaryData>
+              <AncillaryData name="Yamcs">UseAsPacketName</AncillaryData>
            </AncillaryDataSet>
         </SequenceContainer>
+
+   The old value ``UseAsArchivingPartition`` is still recognized, but deprecated. For compatibility with older Yamcs versions, the XTCE export still writes the old value.
+
+   This option was called ``autoTmPartitions`` in older versions; the old name is still accepted, but deprecated.
 
    Default: true
 
@@ -52,6 +56,15 @@ Compatibility
 Yamcs does not seek full compliance with XTCE. It only reads the parts that relate to concepts in its internal Mission Database. This chapter presents an overview of the unsupported features and details where the implementation differs from the standard.
 
 Note that when reading the XML XTCE file Yamcs is on purpose tolerant, it ignores the tags it does not know and it also strives to be backward compatible with XTCE 1.0 and 1.1. Thus the fact that an XML file loads in Yamcs does not mean that is 100% valid. Please use a generic XML validation tool or the `xtcetools <https://gitlab.com/dovereem/xtcetools>`_ project to validate your XML file.
+
+For aggregate-local array lengths (Pixxel extension), the current format uses
+``AncillaryData name="Yamcs:AggregateMember"`` on ``ArrayParameterType``, before
+``DimensionList``. Its text identifies the member referenced by ``parameterRef``.
+The older ``yamcs:aggregateMember`` attribute is accepted only for legacy import
+compatibility. Its reader, ``XtceStaxReader.isAggregateMemberReference()``, and
+the attribute format are scheduled for deprecation soon; no release or removal
+date has been set. New XML and exports should use ancillary data. See
+:doc:`../data-types` for the representation and migration instructions.
 
 The following concepts are *not supported*:
 
@@ -91,6 +104,25 @@ The other elements are supported one way or another, exceptions or changes from 
 
 * | StringDataEncoding
   | For variable size strings whose size is encoded in front of the string, Yamcs allows to specify only for command arguments sizeInBitsOfSizeTag = 0. This means that the value of the argument will be inserted without providing the information about its size. The receiver has to know how to derive the size. This has been implemented for compatibility with other systems (e.g. SCOS-2k) which allows this - however it is not allowed by XTCE which enforces sizeInBitsOfSizeTag > 0. 
+
+
+.. rubric:: Dynamic parameter references
+
+Within ``DynamicValue`` (for example a binary length, array dimension or repeat count),
+a ``ParameterInstanceRef`` without an ``instance`` attribute uses the most recently decoded
+occurrence of the parameter in the current packet. This allows repeated entries to have
+different lengths and counts.
+
+An explicit non-negative ``instance`` selects from the beginning of the packet:
+``instance="0"`` selects the first occurrence, ``instance="1"`` the second, and so on.
+The XTCE exporter retains an explicit zero so export and reload preserve that choice.
+Other reference contexts, including algorithm inputs and time associations, retain their
+existing instance-selection rules.
+
+Earlier versions interpreted an omitted ``instance`` in a dynamic value as packet-start
+instance zero. Databases that intentionally depended on that behavior must now specify
+``instance="0"`` explicitly. Serialized MDB caches from before this change are rebuilt
+from their source definitions automatically.
 
 
 .. rubric:: Data Types

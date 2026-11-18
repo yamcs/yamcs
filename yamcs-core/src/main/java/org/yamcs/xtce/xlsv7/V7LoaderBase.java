@@ -46,6 +46,7 @@ public abstract class V7LoaderBase extends BaseSpreadsheetLoader {
     static final String CN_CONT_EXPECTED_INTERVAL = "expected interval";
     static final String CN_CONT_DESCRIPTION = "description";
     static final String CN_CONT_LONG_DESCRIPTION = "long description";
+    static final String CN_CONT_ANCILLARY = "ancillary data";
 
     // columns in the algorithms sheet
     static final String CN_ALGO_NAME = "algorithm name";
@@ -59,6 +60,7 @@ public abstract class V7LoaderBase extends BaseSpreadsheetLoader {
     static final String CN_ALGO_PARA_INSTANCE = "instance";
     static final String CN_ALGO_PARA_NAME = "variable name";
     static final String CN_ALGO_PARA_FLAGS = "flags";
+    static final String CN_ALGO_ANCILLARY = "ancillary data";
 
     // columns in the alarms sheet
     static final String CN_ALARM_PARAM_NAME = "parameter reference";
@@ -89,6 +91,7 @@ public abstract class V7LoaderBase extends BaseSpreadsheetLoader {
     protected static final String CN_CMD_RANGEHIGH = "range high";
     protected static final String CN_CMD_DESCRIPTION = "description";
     protected static final String CN_CMD_LONG_DESCRIPTION = "long description";
+    protected static final String CN_CMD_ANCILLARY = "ancillary data";
 
     // columns in the command options sheet
     protected static final int IDX_CMDOPT_NAME = 0;
@@ -148,6 +151,7 @@ public abstract class V7LoaderBase extends BaseSpreadsheetLoader {
     static final String CN_PARAM_DESCRIPTION = "description";
     static final String CN_PARAM_FLAGS = "flags";
     static final String CN_PARAM_LONG_DESCRIPTION = "long description";
+    static final String CN_PARAM_ANCILLARY = "ancillary data";
 
     protected static final String SHEET_DATATYPES = "DataTypes";
 

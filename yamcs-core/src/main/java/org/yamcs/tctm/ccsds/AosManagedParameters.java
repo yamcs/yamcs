@@ -30,6 +30,9 @@ public class AosManagedParameters extends DownlinkManagedParameters {
 
     public AosManagedParameters(YConfiguration config, String yamcsInstance, String linkName) {
         super(config, yamcsInstance, linkName);
+        if (spacecraftId < 0 || spacecraftId > 0x3FF) {
+            throw new ConfigurationException("Invalid spacecraftId " + spacecraftId + "; AOS allows 0 to 1023");
+        }
         frameLength = config.getInt("frameLength");
         if (frameLength < 8 || frameLength > 0xFFFF) {
             throw new ConfigurationException("Invalid frame length " + frameLength);

@@ -251,7 +251,7 @@ public class LdapAuthModule implements AuthModule {
                     lookup = searchResult.getNameInNamespace();
                 }
                 if (lookup != null) {
-                    filter = groupFilter.replace("{0}", lookup);
+                    filter = groupFilter.replace("{0}", escapeLdapFilter(lookup));
                     for (var groupBaseElement : groupBase) {
                         var answer = ctx.search(groupBaseElement, filter, controls);
                         while (answer.hasMore()) {

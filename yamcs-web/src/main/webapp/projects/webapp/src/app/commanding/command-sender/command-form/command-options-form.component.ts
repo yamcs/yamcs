@@ -69,7 +69,7 @@ export class CommandOptionsForm implements OnInit, OnChanges {
     for (const id in this.formGroup.controls) {
       if (id.startsWith('extra__')) {
         const control = this.formGroup.controls[id];
-        if (control.value !== null) {
+        if (control.value !== null && control.value !== '') {
           const optionId = id.replace('extra__', '');
 
           if (struct) {

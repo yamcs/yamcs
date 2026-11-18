@@ -18,6 +18,7 @@ import org.rocksdb.RocksDBException;
 import org.yamcs.AbstractYamcsService;
 import org.yamcs.InitException;
 import org.yamcs.Processor;
+import org.yamcs.ProcessorException;
 import org.yamcs.ProcessorFactory;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
@@ -39,6 +40,7 @@ import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.PathElement;
 
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.Service.State;
 
 /**
  * Combines retrieval from different sources:
@@ -702,6 +704,11 @@ public class ParameterRetrievalService extends AbstractYamcsService {
         processor.getParameterRequestManager().addRequest(params.keySet(), prmConsumer);
         processor.startAsync();
         processor.awaitTerminated();
+
+        var tmPacketProvider = processor.getTmPacketProvider();
+        if (tmPacketProvider != null && tmPacketProvider.state() == State.FAILED) {
+            throw new ProcessorException("Replay failed", tmPacketProvider.failureCause());
+        }
 
         return tc;
     }

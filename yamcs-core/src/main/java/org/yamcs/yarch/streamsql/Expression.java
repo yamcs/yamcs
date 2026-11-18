@@ -134,16 +134,10 @@ public abstract class Expression {
     protected void fillCode_InputDefVars(Collection<ColumnDefinition> inputs, StringBuilder code) {
         for (ColumnDefinition cd : inputs) {
             String javaColIdentifier = "col" + sanitizeName(cd.getName());
-            DataType dtype = cd.getType();
-            if (dtype.isPrimitiveJavaType()) {
-                code.append("\t\t" + dtype.javaType() + " " + javaColIdentifier +
-                        " =  (" + dtype.javaType() + ")tuple.getColumn(\""
-                        + cd.getName() + "\");\n");
-            } else {
-                code.append("\t\t" + dtype.javaType() + " " + javaColIdentifier +
-                        " =  (" + dtype.javaType() + ")tuple.getColumn(\""
-                        + cd.getName() + "\");\n");
-            }
+            String javaType = cd.getType().javaType();
+            code.append("\t\t" + javaType + " " + javaColIdentifier + " =  (" + javaType + ")tuple.getColumn(\"");
+            ValueExpression.escapeJavaString(cd.getName(), code);
+            code.append("\");\n");
         }
     }
 
@@ -234,7 +228,21 @@ public abstract class Expression {
         return constantValue;
     }
 
+    /**
+     * Converts a column name to a string usable as part of a Java identifier. Characters other than
+     * <code>[A-Za-z0-9_]</code> are encoded as <code>$</code> followed by four hex digits, so that distinct names
+     * always give distinct identifiers.
+     */
     static String sanitizeName(String s) {
-        return s.replace("/", "_").replace("-", "_");
+        StringBuilder sb = new StringBuilder(s.length());
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_') {
+                sb.append(c);
+            } else {
+                sb.append(String.format("$%04x", (int) c));
+            }
+        }
+        return sb.toString();
     }
 }

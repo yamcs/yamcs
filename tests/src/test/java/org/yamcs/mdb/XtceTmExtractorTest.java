@@ -255,7 +255,7 @@ public class XtceTmExtractorTest {
     public void testContainerSubscriptionPKT1_1() throws ConfigurationException {
         RefMdbPacketGenerator tmGenerator = new RefMdbPacketGenerator();
         ProcessorConfig pconf = new ProcessorConfig();
-        pconf.setSubscribeContainerArchivePartitions(false);
+        pconf.setSubscribePacketNameContainers(false);
         ProcessorData pdata = new ProcessorData("XTCEPROC", mdb, pconf);
 
         XtceTmExtractor tmExtractor = new XtceTmExtractor(mdb, pdata);

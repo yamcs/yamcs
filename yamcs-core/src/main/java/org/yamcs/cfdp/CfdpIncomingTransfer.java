@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -79,6 +80,8 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
     EofPacket eofPacket;
     final Timer finTimer;
     Timer checkTimer;
+    // used to delay the first Finished PDU such that it is not sent too close to the previous PDU
+    ScheduledFuture<?> finSendFuture;
 
     FinishedPacket finPacket;
 
@@ -99,6 +102,12 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
      * If true send EOF ACK even when suspended
      */
     final boolean ackEofWhileSuspended;
+
+    /**
+     * Minimum time in millisec between two PDUs sent by the receiver (e.g. between the EOF ACK and the FIN)
+     */
+    final int sleepBetweenPdus;
+    long lastPduSentTime = 0;
 
     int nakCount = 0;
     long lastNakSentTime = 0;
@@ -148,6 +157,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         this.nakLimit = config.getInt("nakLimit", -1);
         this.immediateNak = config.getBoolean("immediateNak", true);
         this.ackEofWhileSuspended = config.getBoolean("ackEofWhileSuspended", true);
+        this.sleepBetweenPdus = config.getInt("sleepBetweenPdus", 500);
         var maxPduSize = config.getInt("maxPduSize", 512);
 
         if (!acknowledged) {
@@ -473,6 +483,28 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
     }
 
     private void sendFin() {
+        cancelFinSendFuture();
+        long delay = lastPduSentTime + sleepBetweenPdus - System.currentTimeMillis();
+        if (delay <= 0) {
+            doSendFin();
+        } else {
+            finSendFuture = executor.schedule(() -> {
+                finSendFuture = null;
+                if (inTxState == InTxState.FIN && !suspended) {
+                    doSendFin();
+                }
+            }, delay, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    private void cancelFinSendFuture() {
+        if (finSendFuture != null) {
+            finSendFuture.cancel(false);
+            finSendFuture = null;
+        }
+    }
+
+    private void doSendFin() {
         sendPacket(finPacket);
 
         finTimer.start(() -> sendPacket(finPacket),
@@ -491,6 +523,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
 
     private void complete(ConditionCode conditionCode) {
         inTxState = InTxState.COMPLETED;
+        cancelFinSendFuture();
         if (!acknowledged) {
             checkTimer.cancel();
         }
@@ -556,6 +589,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         sendInfoEvent(ETYPE_TRANSFER_SUSPENDED, "transfer suspended");
         changeState(TransferState.PAUSED);
         finTimer.cancel();
+        cancelFinSendFuture();
         if (!acknowledged) {
             checkTimer.cancel();
         }
@@ -636,6 +670,12 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         // TODO: source data in metadata
 
         fileSaveHandler.saveFile(incomingDataFile, metadata, originatingTransactionId);
+    }
+
+    @Override
+    protected void sendPacket(CfdpPacket packet) {
+        super.sendPacket(packet);
+        lastPduSentTime = System.currentTimeMillis();
     }
 
     private AckPacket getAckEofPacket(ConditionCode code) {

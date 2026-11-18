@@ -350,6 +350,9 @@ message TableInfo {
   optional string tablespace = 8;
   optional bool compressed = 9;
   optional PartitioningInfo partitioningInfo = 10;
+
+  // Columns in the secondary index, in index order
+  repeated string secondaryIndexColumn = 11;
 }
 
 message PartitioningInfo {

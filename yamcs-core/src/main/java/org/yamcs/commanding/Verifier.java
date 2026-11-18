@@ -93,10 +93,18 @@ abstract class Verifier {
      * (no onSuccess/onFail termination action is applied) and does not wait for its check window to time out.
      */
     void skipped(String message) {
-        if (state != State.RUNNING) {
+        // A verifier can be skipped if it hasn't started yet or is running. In other cases, it has already finished,
+        // so no need to skip.
+        if (state != State.RUNNING && state != State.NEW) {
             return;
         }
+        // A verifier can also be skipped by the handler before it has started (state NEW), e.g. when another verifier
+        // succeeds and makes this one inapplicable. A NEW verifier has nothing to release, a running one does.
+        boolean wasRunning = state == State.RUNNING;
         state = State.SKIPPED;
+        if (wasRunning) {
+            doCancel();
+        }
         cvh.onVerifierFinished(this, message, null);
     }
 

@@ -14,6 +14,8 @@ services:
       eofAckLimit: 1
       finAckTimeout: 500
       finAckLimit: 0
+      # shorter than the time the tests wait for a transfer to finish
+      inactivityTimeout: 3000
   - class: org.yamcs.parameter.ParameterRetrievalService
     args:
       parameterCache:

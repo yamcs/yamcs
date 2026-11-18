@@ -109,18 +109,18 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
 
             // We have this also on info level coupled with the HTTP response status
             // code, but this is on debug for an earlier reporting while debugging issues
-            log.debug("{} {} {}", ctx.channel().id().asShortText(), req.method(), req.uri());
+            log.debug("{} {} {}", ctx.channel().id().asShortText(), req.method(), HttpUtils.redactUri(req.uri()));
 
             try {
                 handleRequest(ctx, req);
             } catch (InternalServerErrorException e) {
-                log.error(req.uri(), e);
+                log.error(HttpUtils.redactUri(req.uri()), e);
                 sendPlainTextError(ctx, req, e.getStatus(), e.getMessage());
             } catch (HttpException e) {
-                log.warn("{}: {}", req.uri(), e.getMessage());
+                log.warn("{}: {}", HttpUtils.redactUri(req.uri()), e.getMessage());
                 sendPlainTextError(ctx, req, e.getStatus(), e.getMessage());
             } catch (Throwable t) {
-                log.error(req.uri(), t);
+                log.error(HttpUtils.redactUri(req.uri()), t);
                 sendPlainTextError(ctx, req, HttpResponseStatus.INTERNAL_SERVER_ERROR);
             }
 
@@ -270,11 +270,13 @@ public class HttpRequestHandler extends ChannelInboundHandlerAdapter {
         boolean keepAlive = HttpUtil.isKeepAlive(req);
 
         if (100 <= status && status < 400) { // Information, Success, or Redirection
-            log.info("{} {} {} {}", ctx.channel().id().asShortText(), req.method(), req.uri(), status);
+            log.info("{} {} {} {}", ctx.channel().id().asShortText(), req.method(), HttpUtils.redactUri(req.uri()),
+                    status);
         } else { // Client error or server error
             keepAlive = false;
             if (req != null) {
-                log.warn("{} {} {} {}", ctx.channel().id().asShortText(), req.method(), req.uri(), status);
+                log.warn("{} {} {} {}", ctx.channel().id().asShortText(), req.method(),
+                        HttpUtils.redactUri(req.uri()), status);
             } else {
                 log.warn("{} malformed or illegal request. Sending back {}", ctx.channel().id().asShortText(), status);
             }

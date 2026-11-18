@@ -61,6 +61,24 @@ public class ConfigTest {
     }
 
     @Test
+    public void testReceiverOptions() throws Exception {
+        String confs = "{"
+                + "   localEntities: [ {name: local12, id: 12}], "
+                + "   remoteEntities: [ {name: remote15, id: 15}], "
+                + "   checkAckTimeout: 2000,"
+                + "   checkAckLimit: 3,"
+                + "   ackEofWhileSuspended: false"
+                + "}";
+
+        YConfiguration conf = new YConfiguration("cfdp", new ByteArrayInputStream(confs.getBytes()), "test");
+        conf = new CfdpService().getSpec().validate(conf);
+
+        assertEquals(2000, conf.getInt("checkAckTimeout"));
+        assertEquals(3, conf.getInt("checkAckLimit"));
+        assertEquals(false, conf.getBoolean("ackEofWhileSuspended"));
+    }
+
+    @Test
     public void testFaultHandler() throws Exception {
         String confs = "{"
                 + "   localEntities: [ {name: local12, id: 12}], "

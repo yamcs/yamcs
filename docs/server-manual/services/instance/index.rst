@@ -25,3 +25,4 @@ Instance Services
     file-listing
     cfs-event-decoder
     alarm-mirror
+    pus-event-decoder

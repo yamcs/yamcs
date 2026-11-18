@@ -533,4 +533,28 @@ public class SpecTest {
             spec.validate(of("foo", 456, "bar", "test"));
         });
     }
+
+    @Test
+    public void testConditionalMergeSpecGroups() throws ValidationException {
+        var spec = new Spec();
+        spec.addOption("type", OptionType.STRING);
+
+        var conditionSpec = new Spec();
+        conditionSpec.addOption("foo", OptionType.STRING);
+        conditionSpec.addOption("bar", OptionType.STRING);
+        conditionSpec.requireTogether("foo", "bar");
+        spec.when("type", "a").mergeSpec(conditionSpec);
+
+        conditionSpec = new Spec();
+        conditionSpec.addOption("foo", OptionType.STRING);
+        conditionSpec.addOption("baz", OptionType.STRING);
+        spec.when("type", "b").mergeSpec(conditionSpec);
+
+        // Groups of a merged spec only apply when its condition is satisfied
+        spec.validate(of("type", "b", "foo", "test", "baz", "test"));
+        assertThrows(ValidationException.class, () -> {
+            spec.validate(of("type", "a", "foo", "test"));
+        });
+        spec.validate(of("type", "a", "foo", "test", "bar", "test"));
+    }
 }

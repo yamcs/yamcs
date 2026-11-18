@@ -64,10 +64,11 @@ recordLocalValues
 maxTcSize (integer)
     The maximum size of a telecommand packet. This value will set the maximum value regardless of the command definition in the Mission Database. There can be commands which have variable size arguments that do not specify a maximum size; this option will practically limit those cases to an overall maximum.
 
-subscribeContainerArchivePartitions (boolean)
-    If set to true (default) the containers declared to be used as archive partition are subscribed by default in the processor. Otherwise the containers are only subscribed when a user subscribes to them or to a parameter contained in them. If alarms are enabled, the subscription to the parameters that can trigger alarms will also cause some container subscriptions.
+subscribePacketNameContainers (boolean)
+    If set to true (default) the containers declared to be used as packet name are subscribed by default in the processor. Otherwise the containers are only subscribed when a user subscribes to them or to a parameter contained in them. If alarms are enabled, the subscription to the parameters that can trigger alarms will also cause some container subscriptions.
     The only reason to switch this option off is for improving the performance when doing a archive retrieval that only extracts a few parameters. It is thus advisable to only configure it for the ArchiveRetrieval processor type.
     Note: the statistics shown on the yamcs-web instance home page contain the containers subscribed inside the currently selected processor. If no container is subscribed, only the root containers will be shown.
+    This option was called ``subscribeContainerArchivePartitions`` in older versions; the old name is still accepted, but deprecated.
 
 persistParameters (boolean)
     If set to true, save the value of the parameters when the processor is closed and restore them when a processor with the same name starts. Only the parameters with the persistence flag set will be saved. By default in XTCE all parameters are set as persistent whereas in the spreadsheet the persistance has to be enabled by specifying the "p" flag.

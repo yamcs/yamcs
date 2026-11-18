@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.yamcs.YamcsServer;
 import org.yamcs.api.Observer;
 import org.yamcs.http.Context;
+import org.yamcs.http.ForbiddenException;
 import org.yamcs.http.NotFoundException;
 import org.yamcs.protobuf.AbstractDatabaseApi;
 import org.yamcs.protobuf.DatabaseInfo;
@@ -26,6 +28,9 @@ public class DatabaseApi extends AbstractDatabaseApi<Context> {
         Collections.sort(databases);
         ListDatabasesResponse.Builder responseb = ListDatabasesResponse.newBuilder();
         for (String database : databases) {
+            if (YamcsServer.GLOBAL_INSTANCE.equals(database) && !ctx.user.isSuperuser()) {
+                continue;
+            }
             YarchDatabaseInstance ydb = YarchDatabase.getInstance(database);
             responseb.addDatabases(toDatabaseInfo(ydb));
         }
@@ -35,7 +40,7 @@ public class DatabaseApi extends AbstractDatabaseApi<Context> {
     @Override
     public void getDatabase(Context ctx, GetDatabaseRequest request, Observer<DatabaseInfo> observer) {
         ctx.checkAnyOfSystemPrivileges(SystemPrivilege.ControlArchiving, SystemPrivilege.ReadTables);
-        YarchDatabaseInstance ydb = verifyDatabase(request.getName());
+        YarchDatabaseInstance ydb = verifyDatabase(ctx, request.getName());
         observer.complete(toDatabaseInfo(ydb));
     }
 
@@ -58,8 +63,11 @@ public class DatabaseApi extends AbstractDatabaseApi<Context> {
         return b.build();
     }
 
-    public static YarchDatabaseInstance verifyDatabase(String name) {
+    public static YarchDatabaseInstance verifyDatabase(Context ctx, String name) {
         String instance = InstancesApi.verifyInstance(name, true);
+        if (YamcsServer.GLOBAL_INSTANCE.equals(instance) && !ctx.user.isSuperuser()) {
+            throw new ForbiddenException("Insufficient privileges");
+        }
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(instance);
         if (ydb == null) {
             throw new NotFoundException("No database named '" + instance + "'");

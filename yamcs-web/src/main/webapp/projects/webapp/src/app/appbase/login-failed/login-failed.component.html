@@ -1,0 +1,21 @@
+<ya-panel>
+  <p>&nbsp;</p>
+  <table style="padding-left: 60px; margin: 0 auto; padding-top: 100px">
+    <tr>
+      <td style="vertical-align: top">
+        <h2>Sign-in failed</h2>
+        <p>Yamcs could not complete the sign-in.</p>
+        @if (message) {
+          <p>{{ message }}</p>
+        }
+        <p>&nbsp;</p>
+        <p>
+          <ya-button appearance="primary" (click)="signIn()">SIGN IN AGAIN</ya-button>
+        </p>
+      </td>
+      <td style="padding-left: 15em; padding-right: 5em">
+        <app-oops />
+      </td>
+    </tr>
+  </table>
+</ya-panel>

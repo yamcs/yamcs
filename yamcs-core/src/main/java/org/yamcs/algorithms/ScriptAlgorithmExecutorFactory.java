@@ -100,7 +100,13 @@ public class ScriptAlgorithmExecutorFactory implements AlgorithmExecutorFactory 
 
     @Override
     public ScriptAlgorithmExecutor makeExecutor(CustomAlgorithm calg, AlgorithmExecutionContext execCtx) {
-        String functionName = calg.getQualifiedName().replace("/", "_");
+        try {
+            verifyVariableNames(calg);
+        } catch (AlgorithmException e) {
+            execCtx.getEventProducer().sendWarning(e.getMessage());
+            throw e;
+        }
+        String functionName = toIdentifier(calg.getQualifiedName());
         String functionScript = generateFunctionCode(functionName, calg);
         log.debug("Evaluating script:\n{}", functionScript);
         try {
@@ -114,6 +120,48 @@ public class ScriptAlgorithmExecutorFactory implements AlgorithmExecutorFactory 
             throw new AlgorithmException(msg);
         }
         return new ScriptAlgorithmExecutor(calg, (Invocable) scriptEngine, functionName, functionScript, execCtx);
+    }
+
+    /**
+     * Converts a name to an identifier valid in JavaScript, Python and Java. Characters other than
+     * <code>[A-Za-z0-9]</code> are encoded as <code>_</code> followed by four hex digits, so that distinct names
+     * always give distinct identifiers.
+     */
+    static String toIdentifier(String name) {
+        StringBuilder sb = new StringBuilder(name.length());
+        for (int i = 0; i < name.length(); i++) {
+            char c = name.charAt(i);
+            if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) {
+                sb.append(c);
+            } else {
+                sb.append(String.format("_%04x", (int) c));
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Checks that the input and output names of the algorithm can be used as variable names in the generated code.
+     */
+    static void verifyVariableNames(CustomAlgorithm algorithmDef) throws AlgorithmException {
+        for (InputParameter inputParameter : algorithmDef.getInputList()) {
+            verifyVariableName(algorithmDef, inputParameter.getEffectiveInputName(), "input");
+        }
+        for (OutputParameter outputParameter : algorithmDef.getOutputList()) {
+            verifyVariableName(algorithmDef, outputParameter.getEffectiveOutputName(), "output");
+        }
+    }
+
+    private static void verifyVariableName(CustomAlgorithm algorithmDef, String name, String kind) {
+        boolean valid = !name.isEmpty();
+        for (int i = 0; i < name.length() && valid; i++) {
+            char c = name.charAt(i);
+            valid = Character.isLetter(c) || c == '_' || c == '$' || (i > 0 && Character.isDigit(c));
+        }
+        if (!valid) {
+            throw new AlgorithmException("Algorithm " + algorithmDef.getQualifiedName() + ": '" + name
+                    + "' is not a valid " + kind + " name, set an explicit " + kind + "Name");
+        }
     }
 
     public static String generateFunctionCode(String functionName, CustomAlgorithm algorithmDef) {

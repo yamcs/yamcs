@@ -5,9 +5,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.security.KeyManagementException;
@@ -16,8 +18,10 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -30,6 +34,7 @@ import org.yamcs.http.HttpServer;
 import org.yamcs.http.auth.JwtHelper;
 import org.yamcs.http.auth.JwtHelper.JwtDecodeException;
 import org.yamcs.logging.Log;
+import org.yamcs.security.JwksVerifier.JwtVerificationException;
 import org.yamcs.security.OpenIDAuthenticationInfo.ExternalClaim;
 import org.yamcs.security.OpenIDAuthenticationInfo.ExternalSession;
 import org.yamcs.security.OpenIDAuthenticationInfo.ExternalSubject;
@@ -39,6 +44,8 @@ import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 
 /**
  * AuthModule that identifies users against an external identity provider compliant with OpenID Connect (OIDC).
@@ -48,12 +55,21 @@ import com.google.gson.JsonObject;
 public class OpenIDAuthModule implements AuthModule, SessionListener {
 
     private static final Log log = new Log(OpenIDAuthModule.class);
-    private OpenIDBackChannelHandler backChannelHandler;
+    private static final long DISCOVERY_RETRY_INTERVAL = 30_000;
+    private static final int HTTP_TIMEOUT = 10_000;
+
+    private static final String BACKCHANNEL_LOGOUT_EVENT = "http://schemas.openid.net/event/backchannel-logout";
+    private static final long CLOCK_SKEW = 60; // seconds
+
+    private OpenIDHandler openidHandler;
 
     private String clientId;
     private String clientSecret;
+    private String issuer;
     private String authorizationEndpoint;
     private String tokenEndpoint;
+    private String endSessionEndpoint;
+    private String jwksUri;
     private String scope;
 
     private String[] nameAttributes;
@@ -61,6 +77,14 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
     private String[] emailAttributes;
 
     private boolean verifyTls;
+
+    // Provider metadata obtained through OpenID Connect Discovery (only if issuer is set)
+    private volatile ProviderMetadata metadata;
+    private volatile long lastDiscoveryAttempt;
+    private final AtomicBoolean discoveryInProgress = new AtomicBoolean();
+
+    // Verifies tokens signed by the OpenID server (created once the JWKS URI is known)
+    private JwksVerifier jwksVerifier;
 
     // Map external sub and/or sid to Yamcs sessions.
     // This structure allows handling OIDC backchannel logout requests
@@ -81,8 +105,11 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
                 .withDefault("name");
 
         Spec spec = new Spec();
-        spec.addOption("authorizationEndpoint", OptionType.STRING).withRequired(true);
-        spec.addOption("tokenEndpoint", OptionType.STRING).withRequired(true);
+        spec.addOption("issuer", OptionType.STRING);
+        spec.addOption("authorizationEndpoint", OptionType.STRING);
+        spec.addOption("tokenEndpoint", OptionType.STRING);
+        spec.addOption("endSessionEndpoint", OptionType.STRING);
+        spec.addOption("jwksUri", OptionType.STRING);
         spec.addOption("clientId", OptionType.STRING).withRequired(true);
         spec.addOption("clientSecret", OptionType.STRING).withRequired(true).withSecret(true);
         spec.addOption("scope", OptionType.STRING).withDefault("openid profile email");
@@ -90,13 +117,20 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
                 .withApplySpecDefaults(true);
         spec.addOption("verifyTls", OptionType.BOOLEAN).withDefault(true);
 
+        // Endpoints are either discovered from the issuer, or configured explicitly
+        spec.requireOneOf("issuer", "authorizationEndpoint");
+        spec.requireOneOf("issuer", "tokenEndpoint");
+
         return spec;
     }
 
     @Override
     public void init(YConfiguration args) throws InitException {
-        authorizationEndpoint = args.getString("authorizationEndpoint");
-        tokenEndpoint = args.getString("tokenEndpoint");
+        issuer = args.getString("issuer", null);
+        authorizationEndpoint = args.getString("authorizationEndpoint", null);
+        tokenEndpoint = args.getString("tokenEndpoint", null);
+        endSessionEndpoint = args.getString("endSessionEndpoint", null);
+        jwksUri = args.getString("jwksUri", null);
         scope = args.getString("scope");
         clientId = args.getString("clientId");
         clientSecret = args.getString("clientSecret");
@@ -108,10 +142,17 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
 
         verifyTls = args.getBoolean("verifyTls");
 
-        backChannelHandler = new OpenIDBackChannelHandler(this);
+        if (issuer != null) {
+            resolveMetadata();
+        } else if (jwksUri == null) {
+            log.warn("Neither issuer nor jwksUri is configured. "
+                    + "Signatures of ID Tokens from the OpenID server will not be verified");
+        }
+
+        openidHandler = new OpenIDHandler(this);
 
         var httpServer = YamcsServer.getServer().getGlobalService(HttpServer.class);
-        httpServer.addRoute("openid", () -> backChannelHandler);
+        httpServer.addRoute("openid", () -> openidHandler);
     }
 
     @Override
@@ -135,23 +176,20 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
         String oidcCode = clientInfo.get("code").getAsString();
         String redirectUri = clientInfo.get("redirect_uri").getAsString();
 
+        var tokenEndpoint = getTokenEndpoint();
+        if (tokenEndpoint == null) {
+            throw new AuthenticationException("Token endpoint of OpenID server is not available");
+        }
+
+        HttpURLConnection conn = null;
         try {
-            URL url = new URL(tokenEndpoint);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn = openConnection(tokenEndpoint);
 
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 
             var authorizationHeader = generateAuthorizationHeader(clientId, clientSecret);
             conn.setRequestProperty("Authorization", authorizationHeader);
-
-            if (!verifyTls && (conn instanceof HttpsURLConnection)) {
-                try {
-                    HttpsUrlConnectionUtils.makeInsecure((HttpsURLConnection) conn);
-                } catch (NoSuchAlgorithmException | KeyManagementException e) {
-                    throw new AuthenticationException("Failed to configure HTTPS connection", e);
-                }
-            }
 
             Map<String, String> formData = new HashMap<>();
             formData.put("grant_type", "authorization_code");
@@ -167,12 +205,16 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
 
             int statusCode = conn.getResponseCode();
             if (statusCode == 200) {
-                Reader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), UTF_8));
-                JsonObject response = new Gson().fromJson(in, JsonObject.class);
+                JsonObject response = readJson(conn.getInputStream());
 
                 String idToken = response.get("id_token").getAsString();
                 String accessToken = response.get("access_token").getAsString();
-                JsonObject claims = JwtHelper.decodeUnverified(idToken);
+                JsonObject claims;
+                try {
+                    claims = verifyIdToken(idToken);
+                } catch (JwtVerificationException e) {
+                    throw new AuthenticationException("Invalid ID Token: " + e.getMessage());
+                }
 
                 var refreshTokenElement = response.get("refresh_token");
                 String refreshToken = (refreshTokenElement != null) ? refreshTokenElement.getAsString() : null;
@@ -185,12 +227,16 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
                 authInfo.setDisplayName(findAttribute(claims, displayNameAttributes));
                 return authInfo;
             } else {
-                Reader in = new BufferedReader(new InputStreamReader(conn.getErrorStream(), UTF_8));
-                JsonObject response = new Gson().fromJson(in, JsonObject.class);
-                throw new AuthenticationException(response.toString());
+                throw new AuthenticationException(readErrorBody(conn));
             }
-        } catch (IOException | JwtDecodeException e) {
+        } catch (IOException | JwtDecodeException | JsonParseException e) {
             throw new AuthenticationException(e.getMessage(), e);
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            throw new AuthenticationException("Failed to configure HTTPS connection", e);
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
         }
     }
 
@@ -225,19 +271,21 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
     }
 
     private boolean refreshToken(OpenIDAuthenticationInfo info) {
+        var tokenEndpoint = getTokenEndpoint();
+        if (tokenEndpoint == null) {
+            log.error("Failed to refresh: token endpoint of OpenID server is not available");
+            return false;
+        }
+
+        HttpURLConnection conn = null;
         try {
-            URL url = new URL(tokenEndpoint);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn = openConnection(tokenEndpoint);
 
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 
             var authorizationHeader = generateAuthorizationHeader(clientId, clientSecret);
             conn.setRequestProperty("Authorization", authorizationHeader);
-
-            if (!verifyTls && (conn instanceof HttpsURLConnection)) {
-                HttpsUrlConnectionUtils.makeInsecure((HttpsURLConnection) conn);
-            }
 
             Map<String, String> formData = new HashMap<>();
             formData.put("grant_type", "refresh_token");
@@ -253,27 +301,48 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
 
             int statusCode = conn.getResponseCode();
             if (statusCode == 200) {
-                Reader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), UTF_8));
-                JsonObject response = new Gson().fromJson(in, JsonObject.class);
+                JsonObject response = readJson(conn.getInputStream());
 
-                info.idToken = response.get("id_token").getAsString();
+                var idToken = response.get("id_token").getAsString();
+                var claims = verifyIdToken(idToken);
+
+                // The refreshed ID Token must be about the same user
+                var issuerSub = new ExternalSubject(claims.get("iss").getAsString(), claims.get("sub").getAsString());
+                if (!issuerSub.equals(info.getIssuerSub())) {
+                    log.error("Failed to refresh: ID Token does not match the original subject");
+                    return false;
+                }
+
+                info.idToken = idToken;
                 info.accessToken = response.get("access_token").getAsString();
-                var claims = JwtHelper.decodeUnverified(info.idToken);
                 info.expiresAt = claims.get("exp").getAsLong() * 1000L;
 
                 var refreshTokenElement = response.get("refresh_token");
-                info.refreshToken = (refreshTokenElement != null) ? refreshTokenElement.getAsString() : null;
+                if (refreshTokenElement != null) {
+                    info.refreshToken = refreshTokenElement.getAsString();
+                }
             } else {
-                Reader in = new BufferedReader(new InputStreamReader(conn.getErrorStream(), UTF_8));
-                JsonObject response = new Gson().fromJson(in, JsonObject.class);
-                log.error("Received error from identity provider: " + response);
+                var errorBody = readErrorBody(conn);
+                if (isInvalidGrant(errorBody)) {
+                    log.info("Refresh refused by identity provider, session has ended: {}", errorBody);
+                } else {
+                    log.error("Received error from identity provider: " + errorBody);
+                }
                 return false;
             }
 
             return true;
-        } catch (IOException | NoSuchAlgorithmException | KeyManagementException | JwtDecodeException e) {
+        } catch (JwtVerificationException e) {
+            log.error("Failed to refresh: invalid ID Token: {}", e.getMessage());
+            return false;
+        } catch (IOException | NoSuchAlgorithmException | KeyManagementException | JwtDecodeException
+                | JsonParseException e) {
             log.error("Failed to refresh", e);
             return false;
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
         }
     }
 
@@ -319,6 +388,163 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
     }
 
     /**
+     * Verifies the signature of an ID Token, and validates its claims.
+     * <p>
+     * The signature is not verified when neither issuer nor jwksUri is configured. OpenID Connect allows this for ID
+     * Tokens obtained directly from the token endpoint, relying on TLS server authentication instead.
+     */
+    private JsonObject verifyIdToken(String idToken) throws JwtVerificationException, JwtDecodeException {
+        JsonObject claims;
+        var verifier = getJwksVerifier();
+        if (verifier != null) {
+            claims = verifier.verify(idToken);
+        } else if (issuer != null) {
+            throw new JwtVerificationException("JWKS URI of OpenID server is not available");
+        } else {
+            claims = JwtHelper.decodeUnverified(idToken);
+        }
+
+        validateIdTokenClaims(claims, issuer, clientId, System.currentTimeMillis() / 1000);
+        return claims;
+    }
+
+    /**
+     * Validates the claims of an ID Token, as required by OpenID Connect Core 1.0, section 3.1.3.7.
+     * 
+     * @param now
+     *            current time, in seconds since epoch
+     */
+    static void validateIdTokenClaims(JsonObject claims, String issuer, String clientId, long now)
+            throws JwtVerificationException {
+        validateStandardClaims(claims, issuer, clientId, now);
+
+        if (getStringOrNull(claims, "sub") == null) {
+            throw new JwtVerificationException("Missing sub");
+        }
+
+        var azp = getStringOrNull(claims, "azp");
+        if (azp != null && !azp.equals(clientId)) {
+            throw new JwtVerificationException("Unexpected azp: " + azp);
+        }
+    }
+
+    /**
+     * Validates a Logout Token received through OpenID Connect Back-Channel Logout, and logs out the matching Yamcs
+     * sessions.
+     */
+    void handleLogoutToken(String logoutToken) throws JwtVerificationException {
+        var verifier = getJwksVerifier();
+        if (verifier == null) {
+            throw new JwtVerificationException("Back-channel logout requires jwksUri or issuer to be configured");
+        }
+
+        var claims = verifier.verify(logoutToken);
+        validateLogoutClaims(claims, issuer, clientId, System.currentTimeMillis() / 1000);
+
+        var iss = claims.get("iss").getAsString();
+        var sid = getStringOrNull(claims, "sid");
+        if (sid != null) {
+            log.debug("Back-channel logout for sid={}", sid);
+            logoutByOidcSessionId(iss, sid);
+        } else {
+            var sub = getStringOrNull(claims, "sub");
+            log.debug("Back-channel logout for sub={}", sub);
+            logoutByOidcSubject(iss, sub);
+        }
+    }
+
+    /**
+     * Validates the claims of a Logout Token, as required by OpenID Connect Back-Channel Logout 1.0, section 2.6.
+     * 
+     * @param now
+     *            current time, in seconds since epoch
+     */
+    static void validateLogoutClaims(JsonObject claims, String issuer, String clientId, long now)
+            throws JwtVerificationException {
+        validateStandardClaims(claims, issuer, clientId, now);
+
+        if (getStringOrNull(claims, "sub") == null && getStringOrNull(claims, "sid") == null) {
+            throw new JwtVerificationException("Missing sub or sid");
+        }
+
+        var events = claims.get("events");
+        if (events == null || !events.isJsonObject() || !events.getAsJsonObject().has(BACKCHANNEL_LOGOUT_EVENT)) {
+            throw new JwtVerificationException("Missing back-channel logout event");
+        }
+
+        if (claims.has("nonce")) {
+            throw new JwtVerificationException("Logout Token must not contain a nonce");
+        }
+    }
+
+    /**
+     * Validates the iss, aud, exp and iat claims that are common to ID Tokens and Logout Tokens.
+     */
+    private static void validateStandardClaims(JsonObject claims, String issuer, String clientId, long now)
+            throws JwtVerificationException {
+        var iss = getStringOrNull(claims, "iss");
+        if (iss == null) {
+            throw new JwtVerificationException("Missing iss");
+        }
+        if (issuer != null && !issuer.equals(iss)) {
+            throw new JwtVerificationException("Unexpected iss: " + iss);
+        }
+
+        if (!hasAudience(claims, clientId)) {
+            throw new JwtVerificationException("Token is not intended for this client");
+        }
+
+        var exp = getLongOrNull(claims, "exp");
+        if (exp == null) {
+            throw new JwtVerificationException("Missing exp");
+        }
+        if (now > exp + CLOCK_SKEW) {
+            throw new JwtVerificationException("Token expired");
+        }
+        var iat = getLongOrNull(claims, "iat");
+        if (iat == null) {
+            throw new JwtVerificationException("Missing iat");
+        }
+        if (iat > now + CLOCK_SKEW) {
+            throw new JwtVerificationException("Token issued in the future");
+        }
+    }
+
+    private static boolean hasAudience(JsonObject claims, String clientId) {
+        var aud = claims.get("aud");
+        if (aud == null) {
+            return false;
+        } else if (aud.isJsonArray()) {
+            for (var el : aud.getAsJsonArray()) {
+                if (el.isJsonPrimitive() && clientId.equals(el.getAsString())) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            return aud.isJsonPrimitive() && clientId.equals(aud.getAsString());
+        }
+    }
+
+    private static Long getLongOrNull(JsonObject obj, String key) {
+        var el = obj.get(key);
+        if (el != null && el.isJsonPrimitive() && el.getAsJsonPrimitive().isNumber()) {
+            return el.getAsLong();
+        }
+        return null;
+    }
+
+    private synchronized JwksVerifier getJwksVerifier() {
+        if (jwksVerifier == null) {
+            var uri = getJwksUri();
+            if (uri != null) {
+                jwksVerifier = new JwksVerifier(() -> fetchJson(uri));
+            }
+        }
+        return jwksVerifier;
+    }
+
+    /**
      * Log out all Yamcs sessions for the provided OpenID subject.
      */
     public void logoutByOidcSubject(String iss, String sub) {
@@ -356,12 +582,216 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
         return clientId;
     }
 
+    /**
+     * Returns the authorization endpoint, either configured or discovered. Returns null if discovery has not yet
+     * succeeded.
+     */
     public String getAuthorizationEndpoint() {
-        return authorizationEndpoint;
+        if (authorizationEndpoint != null) {
+            return authorizationEndpoint;
+        }
+        var metadata = resolveMetadata();
+        return metadata != null ? metadata.authorizationEndpoint() : null;
+    }
+
+    private String getTokenEndpoint() {
+        if (tokenEndpoint != null) {
+            return tokenEndpoint;
+        }
+        var metadata = resolveMetadata();
+        return metadata != null ? metadata.tokenEndpoint() : null;
     }
 
     public String getScope() {
         return scope;
+    }
+
+    /**
+     * Returns the end session endpoint, either configured or discovered. Returns null if the OpenID server does not
+     * support RP-Initiated Logout, or if discovery has not yet succeeded.
+     */
+    public String getEndSessionEndpoint() {
+        if (endSessionEndpoint != null) {
+            return endSessionEndpoint;
+        }
+        var metadata = resolveMetadata();
+        return metadata != null ? metadata.endSessionEndpoint() : null;
+    }
+
+    /**
+     * Returns the URL of the JSON Web Key Set of the OpenID server, either configured or discovered. Returns null if
+     * not configured, or if discovery has not yet succeeded.
+     */
+    public String getJwksUri() {
+        if (jwksUri != null) {
+            return jwksUri;
+        }
+        var metadata = resolveMetadata();
+        return metadata != null ? metadata.jwksUri() : null;
+    }
+
+    /**
+     * Returns the URL where to redirect the browser for ending the session at the OpenID server (RP-Initiated Logout),
+     * or null if no end session endpoint is available.
+     */
+    public String buildEndSessionUrl(OpenIDAuthenticationInfo info) {
+        var endSessionEndpoint = getEndSessionEndpoint();
+        if (endSessionEndpoint == null) {
+            return null;
+        }
+
+        var params = new LinkedHashMap<String, String>();
+        if (info.idToken != null) {
+            params.put("id_token_hint", info.idToken);
+        }
+        params.put("client_id", clientId);
+        if (info.redirectUri != null) {
+            // Return to the root of the web application that initiated the login
+            var postLogoutRedirectUri = URI.create(info.redirectUri).resolve(".");
+            params.put("post_logout_redirect_uri", postLogoutRedirectUri.toString());
+        }
+
+        var separator = endSessionEndpoint.contains("?") ? "&" : "?";
+        return endSessionEndpoint + separator + new String(encodeRequestBody(params), UTF_8);
+    }
+
+    /**
+     * Returns the metadata of the OpenID server, as obtained through OpenID Connect Discovery. Returns null if no
+     * issuer is configured, or if discovery has not yet succeeded. Failed attempts are retried in the background, but
+     * not more often than every {@link #DISCOVERY_RETRY_INTERVAL}.
+     */
+    private ProviderMetadata resolveMetadata() {
+        if (issuer == null || metadata != null) {
+            return metadata;
+        }
+
+        // Retry in the background, callers may be on an I/O thread
+        var now = System.currentTimeMillis();
+        if (now - lastDiscoveryAttempt >= DISCOVERY_RETRY_INTERVAL && discoveryInProgress.compareAndSet(false, true)) {
+            lastDiscoveryAttempt = now;
+            var thread = new Thread(() -> {
+                try {
+                    var result = fetchMetadata();
+                    if (result != null) {
+                        metadata = result;
+                    }
+                } finally {
+                    discoveryInProgress.set(false);
+                }
+            }, "OpenIDDiscovery");
+            thread.setDaemon(true);
+            thread.start();
+        }
+        return metadata;
+    }
+
+    private ProviderMetadata fetchMetadata() {
+        var url = discoveryUrl(issuer);
+        try {
+            JsonObject response = fetchJson(url);
+
+            var discoveredIssuer = getStringOrNull(response, "issuer");
+            if (!issuer.equals(discoveredIssuer)) {
+                log.warn("Ignoring OpenID provider metadata from {}: issuer '{}' does not match '{}'",
+                        url, discoveredIssuer, issuer);
+                return null;
+            }
+
+            var result = new ProviderMetadata(
+                    getStringOrNull(response, "authorization_endpoint"),
+                    getStringOrNull(response, "token_endpoint"),
+                    getStringOrNull(response, "end_session_endpoint"),
+                    getStringOrNull(response, "jwks_uri"));
+            log.debug("Discovered OpenID provider metadata: {}", result);
+            return result;
+        } catch (Exception e) {
+            log.warn("Failed to retrieve OpenID provider metadata from {}: {}", url, e.toString());
+            return null;
+        }
+    }
+
+    /**
+     * Retrieves a JSON document from the OpenID server.
+     */
+    private JsonObject fetchJson(String url) throws IOException {
+        HttpURLConnection conn = null;
+        try {
+            conn = openConnection(url);
+            conn.setConnectTimeout(HTTP_TIMEOUT);
+            conn.setReadTimeout(HTTP_TIMEOUT);
+
+            int statusCode = conn.getResponseCode();
+            if (statusCode != 200) {
+                throw new IOException("HTTP " + statusCode + " from " + url);
+            }
+            return readJson(conn.getInputStream());
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            throw new IOException("Failed to configure HTTPS connection", e);
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
+        }
+    }
+
+    private static JsonObject readJson(InputStream stream) throws IOException {
+        try (Reader in = new BufferedReader(new InputStreamReader(stream, UTF_8))) {
+            var json = new Gson().fromJson(in, JsonObject.class);
+            if (json == null) {
+                throw new JsonParseException("Empty response");
+            }
+            return json;
+        }
+    }
+
+    /**
+     * Reads the body of an error response, for inclusion in error messages.
+     */
+    private static String readErrorBody(HttpURLConnection conn) throws IOException {
+        var stream = conn.getErrorStream();
+        if (stream == null) {
+            return "HTTP " + conn.getResponseCode();
+        }
+        try (stream) {
+            return "HTTP " + conn.getResponseCode() + ": " + new String(stream.readAllBytes(), UTF_8);
+        }
+    }
+
+    /**
+     * Returns true if the error body of a token response has the error code invalid_grant. For a refresh request, this
+     * means that the refresh token is no longer valid, typically because the session at the OpenID server has ended
+     * (RFC 6749, section 5.2).
+     */
+    private static boolean isInvalidGrant(String errorBody) {
+        var idx = errorBody.indexOf('{');
+        if (idx == -1) {
+            return false;
+        }
+        try {
+            var json = JsonParser.parseString(errorBody.substring(idx));
+            return json.isJsonObject() && "invalid_grant".equals(getStringOrNull(json.getAsJsonObject(), "error"));
+        } catch (JsonParseException e) {
+            return false;
+        }
+    }
+
+    private static String getStringOrNull(JsonObject obj, String key) {
+        var el = obj.get(key);
+        return (el != null && el.isJsonPrimitive()) ? el.getAsString() : null;
+    }
+
+    private static String discoveryUrl(String issuer) {
+        var base = issuer.endsWith("/") ? issuer.substring(0, issuer.length() - 1) : issuer;
+        return base + "/.well-known/openid-configuration";
+    }
+
+    private HttpURLConnection openConnection(String url)
+            throws IOException, NoSuchAlgorithmException, KeyManagementException {
+        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+        if (!verifyTls && (conn instanceof HttpsURLConnection)) {
+            HttpsUrlConnectionUtils.makeInsecure((HttpsURLConnection) conn);
+        }
+        return conn;
     }
 
     static String generateAuthorizationHeader(String clientId, String clientSecret) {
@@ -384,5 +814,9 @@ public class OpenIDAuthModule implements AuthModule, SessionListener {
             postData.append(URLEncoder.encode(param.getValue(), UTF_8));
         }
         return postData.toString().getBytes(UTF_8);
+    }
+
+    private record ProviderMetadata(String authorizationEndpoint, String tokenEndpoint,
+            String endSessionEndpoint, String jwksUri) {
     }
 }

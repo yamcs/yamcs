@@ -6,10 +6,21 @@ import "yamcs/protobuf/yamcs.proto";
 
 message AssignmentInfo {
   repeated Assignment assignment = 1;
+  // locations of the argument values inside the encoded command binary
+  repeated ArgumentLocation location = 2;
 }
 
 message Assignment {
   optional string name = 1;
   optional yamcs.protobuf.Value value = 2;
   optional bool userInput = 3;
+}
+
+message ArgumentLocation {
+  // argument name, followed for aggregate members and array elements by the path inside the value
+  optional string path = 1;
+  // position in bits of the encoded value relative to the start of the (unprocessed) command binary
+  optional int32 bitPosition = 2;
+  // size in bits of the encoded value
+  optional int32 bitSize = 3;
 }

@@ -51,10 +51,10 @@ import org.yamcs.xtce.xml.XtceStaxReader;
  * Options:
  * <ul>
  * <li>file: the XML file to be loaded. Can be an absolute path or relative to the server directory. Mandatory.</li>
- * <li>autoTmPartitions: if true (default) all the {@link SequenceContainer} will be automatically set as archive
- * partitions unless they have a parent in the hierarchy that is manually configured for TM partitions. The manual
- * configuration for TM partitions can be achieved using an AncillaryData property with the name Yamcs and the value
- * UseAsArchivingPartition. See {@link SequenceContainer#useAsArchivePartition(boolean)}</li>
+ * <li>autoPacketNames (old name autoTmPartitions): if true (default) all the {@link SequenceContainer} will be
+ * automatically used as packet names unless they have a parent in the hierarchy that is manually configured as packet
+ * name. The manual configuration can be achieved using an AncillaryData property with the name Yamcs and the value
+ * UseAsPacketName. See {@link SequenceContainer#useAsPacketName(boolean)}</li>
  * </ul>
  * 
  * @author mu
@@ -64,7 +64,7 @@ public class XtceLoader implements SpaceSystemLoader {
     private transient XtceStaxReader xtceReader = null;
     private transient List<String> xtceFileNames;
     transient static Logger log = LoggerFactory.getLogger(XtceLoader.class.getName());
-    boolean autoTmPartitions = true;
+    boolean autoPacketNames = true;
     Set<String> excludedContainers;
     private final String configHash;
 
@@ -102,7 +102,12 @@ public class XtceLoader implements SpaceSystemLoader {
             List<String> ec = config.getList("excludeTmContainers");
             excludedContainers = new HashSet<>(ec);
         }
-        autoTmPartitions = config.getBoolean("autoTmPartitions", true);
+        if (config.containsKey("autoPacketNames")) {
+            autoPacketNames = config.getBoolean("autoPacketNames");
+        } else if (config.containsKey("autoTmPartitions")) {
+            log.warn("The XTCE loader option 'autoTmPartitions' is deprecated, use 'autoPacketNames' instead");
+            autoPacketNames = config.getBoolean("autoTmPartitions");
+        }
         configHash = Integer.toUnsignedString(config.toString().hashCode());
     }
 
@@ -178,21 +183,21 @@ public class XtceLoader implements SpaceSystemLoader {
         }
         SpaceSystem spaceSystem = xtceReader.readXmlDocument();
 
-        if (autoTmPartitions) {
-            markAutoPartition(spaceSystem);
+        if (autoPacketNames) {
+            markAutoPacketNames(spaceSystem);
         }
 
         return spaceSystem;
     }
 
-    private void markAutoPartition(SpaceSystem spaceSystem) {
+    private void markAutoPacketNames(SpaceSystem spaceSystem) {
         for (SequenceContainer sc : spaceSystem.getSequenceContainers()) {
-            if (!sc.useAsArchivePartition()) {
-                sc.setAutoPartition(true);
+            if (!sc.useAsPacketName()) {
+                sc.setAutoPacketName(true);
             }
         }
         for (SpaceSystem ss : spaceSystem.getSubSystems()) {
-            markAutoPartition(ss);
+            markAutoPacketNames(ss);
         }
     }
 

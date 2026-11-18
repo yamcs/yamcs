@@ -17,6 +17,8 @@ export class EventsDataSource extends DataSource<Event> {
 
   events$ = new BehaviorSubject<Event[]>([]);
   private eventBuffer: EventBuffer;
+  private extraSortKey?: string;
+  private extraSortDirection: 'asc' | 'desc' | '' = '';
 
   sources$ = new BehaviorSubject<string[]>([]);
 
@@ -52,7 +54,17 @@ export class EventsDataSource extends DataSource<Event> {
   }
 
   private emitEvents() {
-    this.events$.next(this.eventBuffer.snapshot());
+    this.events$.next(
+      this.eventBuffer.snapshot(this.extraSortKey, this.extraSortDirection),
+    );
+  }
+
+  sortExtra(active: string, direction: 'asc' | 'desc' | '') {
+    this.extraSortKey = active.startsWith('extra.')
+      ? active.substring(6)
+      : undefined;
+    this.extraSortDirection = direction;
+    this.emitEvents();
   }
 
   loadEvents(options: GetEventsOptions) {

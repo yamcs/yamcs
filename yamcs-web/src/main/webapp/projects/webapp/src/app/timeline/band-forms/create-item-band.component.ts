@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { outputFromObservable } from '@angular/core/rxjs-interop';
 import {
   UntypedFormBuilder,
@@ -10,6 +10,7 @@ import {
   MessageService,
   SaveTimelineBandRequest,
   WebappSdkModule,
+  YaSelectOption,
   YamcsService,
 } from '@yamcs/webapp-sdk';
 import { map, Observable } from 'rxjs';
@@ -29,6 +30,9 @@ export class CreateItemBandComponent {
 
   form: UntypedFormGroup;
 
+  // The item sources, without "commands" (it has its own band type)
+  sourceOptions = signal<YaSelectOption[]>([]);
+
   constructor(
     formBuilder: UntypedFormBuilder,
     readonly yamcs: YamcsService,
@@ -38,6 +42,7 @@ export class CreateItemBandComponent {
     this.form = formBuilder.group({
       name: ['', [Validators.required]],
       description: '',
+      source: ['rdb', [Validators.required]],
       properties: formBuilder.group({
         frozen: [propertyInfo.frozen.defaultValue, [Validators.required]],
         itemBackgroundColor: [
@@ -93,6 +98,18 @@ export class CreateItemBandComponent {
       }),
       tags: [[], []],
     });
+
+    yamcs.yamcsClient
+      .getTimelineSources(yamcs.instance!)
+      .then((page) => {
+        const sources = Object.keys(page.sources || {})
+          .filter((source) => source !== 'commands')
+          .sort();
+        this.sourceOptions.set(
+          sources.map((source) => ({ id: source, label: source })),
+        );
+      })
+      .catch((err) => this.messageService.showError(err));
   }
 
   private createStatusObservable() {
@@ -110,6 +127,7 @@ export class CreateItemBandComponent {
       description: formValue.description,
       type: 'ITEM_BAND',
       shared: true,
+      source: formValue.source,
       tags: formValue.tags,
       properties: formValue.properties,
     };

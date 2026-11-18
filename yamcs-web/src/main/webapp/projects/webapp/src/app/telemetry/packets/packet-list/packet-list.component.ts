@@ -9,9 +9,10 @@ import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute } from '@angular/router';
 import {
   BaseComponent,
-  DownloadPacketsOptions,
   GetPacketsOptions,
   Packet,
+  PacketArchiveInfo,
+  PacketTimeBasis,
   ParseFilterSubscription,
   utils,
   WebappSdkModule,
@@ -19,7 +20,7 @@ import {
   YaSearchFilter2,
   YaSelectOption,
 } from '@yamcs/webapp-sdk';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { HexComponent } from '../../../shared/hex/hex.component';
 import { CreatePacketQueryDialogComponent } from '../create-packet-query-dialog/create-packet-query-dialog.component';
 import { PacketsPageTabsComponent } from '../packets-page-tabs/packets-page-tabs.component';
@@ -49,6 +50,8 @@ export class PacketListComponent
   interval = input<string>();
   customStart = input<string>();
   customStop = input<string>();
+  timeBasis = input<string>();
+  order = input<string>();
 
   // From resolver
   parseFilterSubscription = input.required<ParseFilterSubscription>();
@@ -82,6 +85,8 @@ export class PacketListComponent
     interval: new FormControl<string | null>(defaultInterval),
     customStart: new FormControl<string | null>(null),
     customStop: new FormControl<string | null>(null),
+    timeBasis: new FormControl<PacketTimeBasis>('GENERATION_TIME'),
+    order: new FormControl<'asc' | 'desc'>('desc'),
   });
 
   dataSource: PacketsDataSource;
@@ -97,6 +102,11 @@ export class PacketListComponent
   ]);
 
   downloadURL$ = new BehaviorSubject<string | null>(null);
+  archiveInfo$ = new BehaviorSubject<PacketArchiveInfo | null>(null);
+  private statusTimer?: ReturnType<typeof setTimeout>;
+  private destroyed = false;
+  private queryGeneration = 0;
+  private subscriptions = new Subscription();
 
   constructor(
     private dialog: MatDialog,
@@ -148,6 +158,15 @@ export class PacketListComponent
 
     this.initializeOptions();
     this.loadData();
+    this.refreshArchiveInfo();
+
+    for (const control of ['timeBasis', 'order']) {
+      this.subscriptions.add(
+        this.filterForm
+          .get(control)!
+          .valueChanges.subscribe(() => this.loadData()),
+      );
+    }
 
     this.filterForm.get('filter')!.valueChanges.forEach((filter) => {
       this.loadData();
@@ -186,6 +205,13 @@ export class PacketListComponent
   }
 
   private initializeOptions() {
+    this.filterForm.patchValue({
+      timeBasis:
+        this.timeBasis() === 'RECEPTION_TIME'
+          ? 'RECEPTION_TIME'
+          : 'GENERATION_TIME',
+      order: this.order() === 'asc' ? 'asc' : 'desc',
+    });
     if (this.filter()) {
       const filter = this.filter()!;
       this.filterForm.get('filter')!.setValue(filter);
@@ -252,10 +278,12 @@ export class PacketListComponent
     this.loadData();
   }
 
-  loadData() {
+  private queryOptions(): GetPacketsOptions {
     const { controls } = this.filterForm;
-    this.updateURL();
-    const options: GetPacketsOptions = {};
+    const options: GetPacketsOptions = {
+      timeBasis: controls['timeBasis'].value,
+      order: controls['order'].value,
+    };
     if (this.validStart) {
       options.start = this.validStart.toISOString();
     }
@@ -275,57 +303,77 @@ export class PacketListComponent
       options.link = link;
     }
 
-    const dlOptions: DownloadPacketsOptions = {};
-    if (this.validStart) {
-      dlOptions.start = this.validStart.toISOString();
-    }
-    if (this.validStop) {
-      dlOptions.stop = this.validStop.toISOString();
-    }
-    if (filter) {
-      dlOptions.filter = filter;
-    }
-    if (name !== 'ANY') {
-      dlOptions.name = name;
-    }
-    if (link !== 'ANY') {
-      dlOptions.link = link;
+    return options;
+  }
+
+  loadData() {
+    const generation = ++this.queryGeneration;
+    this.updateURL();
+    this.downloadURL$.next(null);
+    const options = this.queryOptions();
+    if (
+      options.timeBasis === 'RECEPTION_TIME' &&
+      this.archiveInfo$.value?.receptionTimeIndexState !== 'READY'
+    ) {
+      this.dataSource.clear();
+      return;
     }
 
     this.dataSource
       .loadEntries('realtime', options)
-      .then((packets) => {
+      .then((current) => {
+        if (!current || generation !== this.queryGeneration || this.destroyed) {
+          return;
+        }
         const downloadURL = this.yamcs.yamcsClient.getPacketsDownloadURL(
           this.yamcs.instance!,
-          dlOptions,
+          options,
         );
         this.downloadURL$.next(downloadURL);
       })
-      .catch((err) => this.messageService.showError(err));
+      .catch((err) => {
+        if (!this.destroyed && generation === this.queryGeneration) {
+          this.messageService.showError(err);
+          if (options.timeBasis === 'RECEPTION_TIME') {
+            this.refreshArchiveInfo();
+          }
+        }
+      });
   }
 
   loadMoreData() {
-    const { controls } = this.filterForm;
-    const options: GetPacketsOptions = {};
-    if (this.validStart) {
-      options.start = this.validStart.toISOString();
-    }
-    const filter = controls['filter'].value;
-    if (filter) {
-      options.filter = filter;
-    }
-    const name = controls['name'].value;
-    if (name && name !== 'ANY') {
-      options.name = [name];
-    }
-    const link = controls['link'].value;
-    if (link && link !== 'ANY') {
-      options.link = link;
-    }
-
     this.dataSource
-      .loadMoreData(options)
+      .loadMoreData()
       .catch((err) => this.messageService.showError(err));
+  }
+
+  private refreshArchiveInfo() {
+    clearTimeout(this.statusTimer);
+    this.yamcs.yamcsClient
+      .getPacketArchiveInfo(this.yamcs.instance!)
+      .then((info) => {
+        if (this.destroyed) {
+          return;
+        }
+        const wasReady =
+          this.archiveInfo$.value?.receptionTimeIndexState === 'READY';
+        this.archiveInfo$.next(info);
+        if (
+          !wasReady &&
+          info.receptionTimeIndexState === 'READY' &&
+          this.filterForm.value['timeBasis'] === 'RECEPTION_TIME'
+        ) {
+          this.loadData();
+        }
+        if (info.receptionTimeIndexState === 'BUILDING') {
+          this.statusTimer = setTimeout(() => this.refreshArchiveInfo(), 5000);
+        }
+      })
+      .catch((err) => {
+        if (!this.destroyed) {
+          this.messageService.showError(err);
+        }
+      });
   }
 
   copyHex(packet: Packet) {
@@ -364,6 +412,12 @@ export class PacketListComponent
         name: controls['name'].value === 'ANY' ? null : controls['name'].value,
         link: controls['link'].value === 'ANY' ? null : controls['link'].value,
         interval: this.appliedInterval,
+        timeBasis:
+          controls['timeBasis'].value === 'GENERATION_TIME'
+            ? null
+            : controls['timeBasis'].value,
+        order:
+          controls['order'].value === 'desc' ? null : controls['order'].value,
         customStart:
           this.appliedInterval === 'CUSTOM'
             ? this.filterForm.value['customStart']
@@ -426,11 +480,21 @@ export class PacketListComponent
   }
 
   clearQuery() {
-    this.filterForm.reset({
-      severity: 'INFO',
-      source: [],
-      interval: defaultInterval,
-    });
+    this.filterForm.reset(
+      {
+        filter: null,
+        name: 'ANY',
+        link: 'ANY',
+        interval: defaultInterval,
+        timeBasis: this.filterForm.value['timeBasis'],
+        order: this.filterForm.value['order'],
+      },
+      { emitEvent: false },
+    );
+    this.appliedInterval = defaultInterval;
+    this.validStop = this.yamcs.getMissionTime();
+    this.validStart = utils.subtractDuration(this.validStop, defaultInterval);
+    this.loadData();
   }
 
   openSaveQueryDialog() {
@@ -470,6 +534,10 @@ export class PacketListComponent
   }
 
   ngOnDestroy(): void {
+    this.destroyed = true;
+    ++this.queryGeneration;
+    clearTimeout(this.statusTimer);
+    this.subscriptions.unsubscribe();
     this.parseFilterSubscription().cancel();
   }
 }

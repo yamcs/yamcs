@@ -4,7 +4,7 @@ CCSDS Frame Processing
 This section describes Yamcs support for parts of the following CCSDS specifications:
 
 * TM Space Data Link Protocol `CCSDS 132.0-B-3 <https://public.ccsds.org/Pubs/132x0b3.pdf>`_
-* AOS Space Data Link Protocol `CCSDS 732.0-B-4 <https://public.ccsds.org/Pubs/732x0b4.pdf>`_
+* AOS Space Data Link Protocol `CCSDS 732.0-B-5 <https://public.ccsds.org/Pubs/732x0b5.pdf>`_
 * TC Space Data Link Protocol `CCSDS 232.0-B-4 <https://public.ccsds.org/Pubs/232x0b4e1c1.pdf>`_
 * Unified Space Data Link Protocol `CCSDS 732.1-B-2  <https://public.ccsds.org/Pubs/732x1b3e1.pdf>`_
 * TC Synchronization and Channel Coding `CCSDS 231.0-B-4 <https://public.ccsds.org/Pubs/232x0b4e1c1.pdf>`_
@@ -115,6 +115,7 @@ derandomize (boolean)
 
 spacecraftId (integer)
     **Required.** The expected spacecraft identifier. The spacecraftId is encoded in the frame header. If a frame with a different identifier is received, it is discarded (with a warning log message).
+    For AOS frames, the spacecraftId can have up to 10 bits (0 to 1023): the two high-order bits are taken from the SCID Extension field of the signaling field, as per CCSDS 732.0-B-5.
 
 frameLength (integer)
     The expected frame length. This parameter is mandatory for AOS and TM frames and optional for USLP frames which can have variable length. If a frame is received that does not have this length, it is discarded (with a warning log message).

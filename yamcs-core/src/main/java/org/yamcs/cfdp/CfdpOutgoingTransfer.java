@@ -6,12 +6,8 @@ import static org.yamcs.cfdp.CfdpService.ETYPE_TRANSFER_META;
 import static org.yamcs.cfdp.CfdpService.ETYPE_TRANSFER_RESUMED;
 import static org.yamcs.cfdp.CfdpService.ETYPE_TRANSFER_SUSPENDED;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -72,8 +68,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
     private final int maxDataSize;
     private final int sleepBetweenPdus;
     private final boolean closureRequested;
-    private final List<FileDataPacket> sentFileDataPackets = new ArrayList<>();
-    private Queue<FileDataPacket> toResend;
+    private final MissingSegments toResend = new MissingSegments();
 
     private OutTxState outTxState;
     private long transferred;
@@ -86,7 +81,6 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
 
     private PutRequest request;
     private ScheduledFuture<?> pduSendingSchedule;
-    FinishedPacket finishedPacket;
 
     boolean resendMetadata = false;
     boolean eofSent = false;
@@ -233,17 +227,15 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
                 resendMetadata = false;
             } else {
                 if (offset == request.getFileLength()) {
-                    if (toResend != null && !toResend.isEmpty()) {
-                        FileDataPacket fdp = toResend.poll();
-                        sendPacket(fdp);
+                    SegmentRequest segment = toResend.poll(maxDataSize);
+                    if (segment != null) {
+                        sendPacket(getFileDataPacket(segment.getSegmentStart(), segment.getSegmentEnd()));
                     } else if (!eofSent) {
                         sendEof(ConditionCode.NO_ERROR);
                     }
                 } else {
                     end = Math.min(offset + maxDataSize, request.getFileLength());
-                    FileDataPacket nextPacket = getNextFileDataPacket();
-                    sentFileDataPackets.add(nextPacket);
-                    sendPacket(nextPacket);
+                    sendPacket(getFileDataPacket(offset, end));
                     transferred += (end - offset);
                     offset = end;
                 }
@@ -307,21 +299,30 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
         } else if (packet instanceof FinishedPacket) {
             processFinishedPacket((FinishedPacket) packet);
         } else if (packet instanceof NakPacket) {
-            toResend = new LinkedList<>();
-            for (SegmentRequest segment : ((NakPacket) packet).getSegmentRequests()) {
-                if (segment.isMetadata()) {
-                    resendMetadata = true;
-                } else {
-                    toResend.addAll(sentFileDataPackets.stream()
-                            .filter(x -> segment.isInRange(x.getOffset()))
-                            .collect(Collectors.toList()));
-                }
-            }
+            processNakPacket((NakPacket) packet);
         } else if (packet instanceof KeepAlivePacket) {
             log.info("TXID{} Ignoring Keep Alive PDU: {}", cfdpTransactionId, packet); // Handling not implemented
         } else {
             log.warn("TXID{} unexpected packet {} ", cfdpTransactionId, packet);
         }
+    }
+
+    /**
+     * The NAK gives the complete list of missing segments within its scope, so it replaces any previously requested
+     * segments within that scope.
+     */
+    private void processNakPacket(NakPacket nak) {
+        long fileLength = request.getFileLength();
+        toResend.remove(nak.getScopeStart(), nak.getScopeEnd());
+        for (SegmentRequest segment : nak.getSegmentRequests()) {
+            if (segment.isMetadata()) {
+                resendMetadata = true;
+            } else {
+                toResend.add(Math.min(segment.getSegmentStart(), fileLength),
+                        Math.min(segment.getSegmentEnd(), fileLength));
+            }
+        }
+        log.debug("TXID{} segments to resend: {}", cfdpTransactionId, toResend);
     }
 
     private void processAckPacket(AckPacket ackPacket) {
@@ -334,6 +335,10 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
             return;
         }
         eofTimer.cancel();
+        eofAckReceived = true;
+        if (outTxState == OutTxState.SENDING_DATA) {
+            rescheduleInactivityTimer();
+        }
 
         if (outTxState == OutTxState.CANCELING) {
             complete(reasonForCancellation);
@@ -451,7 +456,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
             failTransfer(conditionCode.toString());
             sendWarnEvent(ETYPE_TRANSFER_FINISHED,
                     "transfer finished with error in " + duration + " seconds: "
-                            + eventMessageSuffix + ", error: " + finishedPacket.getConditionCode());
+                            + eventMessageSuffix + ", error: " + conditionCode);
         }
     }
 
@@ -465,6 +470,7 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
             suspended = false; // wake up if sleeping
             outTxState = OutTxState.CANCELING;
             changeState(TransferState.CANCELLING);
+            eofAckReceived = false; // the cancel EOF has to be acknowledged again
             sendEof(conditionCode);
             break;
         case CANCELING:
@@ -551,9 +557,9 @@ public class CfdpOutgoingTransfer extends OngoingCfdpTransfer {
                 null, directiveHeader);
     }
 
-    private FileDataPacket getNextFileDataPacket() {
-        return new FileDataPacket(Arrays.copyOfRange(request.getFileData(), (int) offset, (int) end),
-                offset, dataHeader);
+    private FileDataPacket getFileDataPacket(long start, long end) {
+        return new FileDataPacket(Arrays.copyOfRange(request.getFileData(), (int) start, (int) end),
+                start, dataHeader);
     }
 
     private AckPacket getAckPacket(ConditionCode code) {

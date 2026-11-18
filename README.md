@@ -9,6 +9,7 @@ To start developing your own Yamcs application, follow our [Getting Started](htt
 
 * Server Manual: https://docs.yamcs.org/yamcs-server-manual/
 * Javadoc: https://docs.yamcs.org/javadoc/yamcs/latest/
+* Pixxel fork: [Release strategy](RELEASE_STRATEGY.md)
 
 
 ## License

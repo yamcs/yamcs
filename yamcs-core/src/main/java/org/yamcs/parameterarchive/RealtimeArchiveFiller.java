@@ -2,7 +2,6 @@ package org.yamcs.parameterarchive;
 
 import static org.yamcs.parameterarchive.ParameterArchive.getInterval;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -15,7 +14,6 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
-import org.rocksdb.RocksDBException;
 import org.yamcs.ConfigurationException;
 import org.yamcs.Processor;
 import org.yamcs.Spec;
@@ -172,7 +170,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
         ParameterGroup pg;
         try {
             pg = parameterGroupIdMap.getGroup(pvList.getPids());
-        } catch (RocksDBException e) {
+        } catch (ParameterArchiveException e) {
             log.error("Error creating parameter group id", e);
             return;
         }
@@ -208,7 +206,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
     private PGSegment readPgSegment(ParameterGroup pg, long interval) {
         try {
             return parameterArchive.readPGsegment(pg, interval);
-        } catch (IOException | RocksDBException e) {
+        } catch (ParameterArchiveException e) {
             log.error("Error reading old data from archive", e);
             return null;
         }
@@ -234,7 +232,7 @@ public class RealtimeArchiveFiller extends AbstractArchiveFiller {
             long d = System.nanoTime() - t0;
             log.debug("Wrote segment {} to archive in {} millisec", pgs, d / 1000_000);
             cf.complete(null);
-        } catch (RocksDBException | IOException e) {
+        } catch (ParameterArchiveException e) {
             log.error("Error writing segment to the parameter archive", e);
             cf.completeExceptionally(e);
         }

@@ -85,7 +85,10 @@ public class GenericPacketPreprocessor extends AbstractPacketPreprocessor {
         byte[] packet = tmPacket.getPacket();
 
         boolean corrupted = false;
-        if (errorDetectionCalculator != null) {
+        if (errorDetectionCalculator != null && packet.length < 2) {
+            eventProducer.sendWarning(ETYPE_CORRUPTED_PACKET, "Packet too short to extract checkword");
+            corrupted = true;
+        } else if (errorDetectionCalculator != null) {
             int computedCheckword;
             try {
                 int n = packet.length;

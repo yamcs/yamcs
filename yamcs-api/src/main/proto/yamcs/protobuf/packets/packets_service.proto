@@ -36,6 +36,21 @@ service PacketsApi {
   }
   
   // Get a packet
+  rpc GetPacketArchiveInfo(GetPacketArchiveInfoRequest) returns (PacketArchiveInfo) {
+    option (yamcs.api.route) = {
+      get: "/api/archive/{instance}/packets:info"
+    };
+  }
+
+  // Starts an online rebuild. Requires ControlArchiving.
+  rpc RebuildReceptionTimeIndex(RebuildReceptionTimeIndexRequest) returns (PacketArchiveInfo) {
+    option (yamcs.api.route) = {
+      post: "/api/archive/{instance}/packets:rebuildReceptionTimeIndex"
+      body: "*"
+    };
+  }
+
+  // Get a packet
   rpc GetPacket(GetPacketRequest) returns (TmPacketData) {
     option (yamcs.api.route) = {
       get: "/api/archive/{instance}/packets/{pname}/{gentime}/{seqnum}"
@@ -154,11 +169,11 @@ message ListPacketsRequest {
   // Continuation token returned by a previous page response.
   optional string next = 6;
   
-  // Filter the lower bound of the packet's generation time. Specify a date
+  // Filter the lower bound of the selected time basis. Specify a date
   // string in ISO 8601 format. This bound is inclusive.
   optional google.protobuf.Timestamp start = 7;
   
-  // Filter the upper bound of the packet's generation time. Specify a date
+  // Filter the upper bound of the selected time basis. Specify a date
   // string in ISO 8601 format. This bound is exclusive.
   optional google.protobuf.Timestamp stop = 8;
 
@@ -174,6 +189,8 @@ message ListPacketsRequest {
   // | `seqNumber` | number      | Filter by archived sequence number |
   // | `size`      | number      | Filter by packet size in bytes     |
   optional string filter = 10;
+  // Applies to both the time bounds and ordering. Default: GENERATION_TIME.
+  optional PacketTimeBasis timeBasis = 11 [default = GENERATION_TIME];
 }
 
 message ListPacketsResponse {
@@ -281,11 +298,11 @@ message ExportPacketsRequest {
   // Yamcs instance name
   optional string instance = 1;
   
-  // Filter the lower bound of the packet's generation time. Specify a date
+  // Filter the lower bound of the selected time basis. Specify a date
   // string in ISO 8601 format. This bound is inclusive.
   optional google.protobuf.Timestamp start = 2;
   
-  // Filter the upper bound of the packet's generation time. Specify a date
+  // Filter the upper bound of the selected time basis. Specify a date
   // string in ISO 8601 format. This bound is exclusive.
   optional google.protobuf.Timestamp stop = 3;
   
@@ -307,6 +324,36 @@ message ExportPacketsRequest {
   // | `seqNumber` | number      | Filter by archived sequence number |
   // | `size`      | number      | Filter by packet size in bytes     |
   optional string filter = 6;
+  optional PacketTimeBasis timeBasis = 7 [default = GENERATION_TIME];
+  // asc or desc. Default: asc, for compatibility with existing bulk exports.
+  optional string order = 8 [default = "asc"];
+}
+
+enum PacketTimeBasis {
+  GENERATION_TIME = 0;
+  RECEPTION_TIME = 1;
+}
+
+message GetPacketArchiveInfoRequest {
+  optional string instance = 1;
+}
+
+message RebuildReceptionTimeIndexRequest {
+  optional string instance = 1;
+}
+
+message PacketArchiveInfo {
+  enum IndexState {
+    ABSENT = 0;
+    BUILDING = 1;
+    READY = 2;
+    FAILED = 3;
+  }
+  optional IndexState receptionTimeIndexState = 1;
+  optional uint64 buildRevision = 2;
+  optional uint64 processedRows = 3;
+  optional uint64 missingReceptionTimeRows = 4;
+  optional string failure = 5;
 }
 
 message SubscribePacketsRequest {

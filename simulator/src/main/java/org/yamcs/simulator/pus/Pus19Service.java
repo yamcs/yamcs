@@ -17,10 +17,10 @@ import java.util.Map;
  *
  * <p>
  * Each definition maps an event system identifier {@code (app_process_id, event_definition_id)} to
- * a stored "request": a complete, CRC'd raw TC packet supplied by ground inside TC[19,1] (mission
- * convention -- see mdb/pus19.xml NoteSet for how the embedded TC is length-prefixed and encoded as
- * a dynamically-sized binary argument, avoiding the raw-XTCE-gap workaround used elsewhere). When a
- * matching ST[05] event fires and both status layers are enabled, the stored bytes are reconstructed
+ * a stored "request": a complete TC packet embedded in TC[19,1] with no length prefix (§8.19.2.1);
+ * its size is taken from its own CCSDS packet data length field. On the ground side the request is
+ * typed /PUS/EmbeddedTcType, so the command post-processor fills in its sequence count and length
+ * and appends its CRC (see mdb/pus19.xml). When a matching ST[05] event fires and both status layers are enabled, the stored bytes are reconstructed
  * into a {@link PusTcPacket} and dispatched via {@link PusSimulator#processTc}, the same mechanism
  * Pus13Service uses for reassembled large commands -- the released request gets its own independent
  * ACK/NACK/completion chain, exactly as if it had arrived from ground.
@@ -30,25 +30,41 @@ import java.util.Map;
  * {@link #onEvent} after transmitting each event TM, since this simulator has a single application
  * process (MAIN_APID). There is no separate EventBus indirection -- a direct call mirrors how
  * Pus14Service/Pus15Service hook into {@link PusSimulator#transmitRealtimeTM}.
+ *
+ * <p>
+ * Instruction rejection (§6.19.8.1e-g, §6.19.8.3d-f, §6.19.9): each rejected instruction is reported
+ * with its own failed start of execution notification (TM[1,4]); the valid instructions of the same
+ * request are still executed and, if there is at least one, the request completes with TM[1,7]. The
+ * successful start of execution (TM[1,3]) is only sent when no instruction was rejected.
+ *
+ * <p>
+ * Verification checks performed on the request of a TC[19,1] instruction (§6.19.8.1d): the embedded
+ * packet's CCSDS length must fit in the remaining data and it must be a telecommand (packet type 1).
+ * The CRC is only logged, like every other TC this simulator receives.
  */
 public class Pus19Service extends AbstractPusService {
 
-    // completion errors (see AbstractPusService for the shared ones)
-    static final int COMPL_ERR_EA_DEF_NOT_FOUND = 5;
-    static final int COMPL_ERR_EA_DEF_ENABLED = 6;
+    // start errors, one TM[1,4] per rejected instruction (see AbstractPusService for the shared ones)
+    static final int START_ERR_EA_DEF_NOT_FOUND = 30;
+    static final int START_ERR_EA_DEF_ENABLED = 31;
+    static final int START_ERR_MAX_EA_DEFS_REACHED = 32;
+    static final int START_ERR_INVALID_REQUEST = 33;
+
+    // maximum number of event-action definitions that can be evaluated contemporaneously (§6.19.8.1e.2)
+    static final int MAX_DEFINITIONS = 16;
 
     private boolean functionEnabled = false;
-    private final Map<Integer, EaDefinition> definitions = new LinkedHashMap<>();
+    final Map<Integer, EaDefinition> definitions = new LinkedHashMap<>();
 
     Pus19Service(PusSimulator pusSimulator) {
         super(pusSimulator, 19);
     }
 
-    private static int key(int appProcessId, int eventDefId) {
+    static int key(int appProcessId, int eventDefId) {
         return (appProcessId << 16) | (eventDefId & 0xFFFF);
     }
 
-    private static class EaDefinition {
+    static class EaDefinition {
         final int appProcessId;
         final int eventDefId;
         boolean enabled = false;
@@ -112,75 +128,113 @@ public class Pus19Service extends AbstractPusService {
     // ---- TC[19,1]: add event-action definitions ----
 
     private void addDefinitions(PusTcPacket tc) {
-        ack_start(tc);
         ByteBuffer bb = tc.getUserDataBuffer();
         int n = bb.get() & 0xFF;
+        List<Integer> rejected = new ArrayList<>();
+        List<Runnable> valid = new ArrayList<>();
         for (int i = 0; i < n; i++) {
             int appPid = bb.getShort() & 0xFFFF;
             int eventId = bb.getShort() & 0xFFFF;
-            int reqLen = bb.getShort() & 0xFFFF;
-            byte[] request = new byte[reqLen];
-            bb.get(request);
+            byte[] request = readRequest(bb);
+            if (request == null) {
+                // the size of the request cannot be determined, so neither can the next instructions
+                log.warn("ST19: invalid request for EA definition ({},{}), rejecting the remaining {} instruction(s)",
+                        appPid, eventId, n - i);
+                for (int k = i; k < n; k++) {
+                    rejected.add(START_ERR_INVALID_REQUEST);
+                }
+                break;
+            }
             int k = key(appPid, eventId);
             EaDefinition existing = definitions.get(k);
-            if (existing != null) {
-                existing.request = request;
-                log.info("ST19: updated EA definition ({},{})", appPid, eventId);
+            if (existing != null && existing.enabled) {
+                log.warn("ST19: EA definition ({},{}) is enabled, rejecting add", appPid, eventId);
+                rejected.add(START_ERR_EA_DEF_ENABLED);
+            } else if (existing == null && definitions.size() >= MAX_DEFINITIONS) {
+                log.warn("ST19: maximum number of EA definitions ({}) reached, rejecting add of ({},{})",
+                        MAX_DEFINITIONS, appPid, eventId);
+                rejected.add(START_ERR_MAX_EA_DEFS_REACHED);
+            } else if (existing != null) {
+                // §6.19.8.1h.2: replace the action of the existing (disabled) definition
+                valid.add(() -> {
+                    existing.request = request;
+                    log.info("ST19: replaced the request of EA definition ({},{}): {}", appPid, eventId,
+                            describe(request));
+                });
             } else {
-                definitions.put(k, new EaDefinition(appPid, eventId, request));
-                log.info("ST19: added EA definition ({},{}), status=disabled", appPid, eventId);
+                // §6.19.8.1h.1: new definitions start disabled; reserve the slot now so that the
+                // maximum is also enforced between instructions of this request
+                EaDefinition def = new EaDefinition(appPid, eventId, request);
+                definitions.put(k, def);
+                valid.add(() -> log.info("ST19: added EA definition ({},{}), status=disabled: {}", appPid,
+                        eventId, describe(request)));
             }
         }
-        ack_completion(tc);
+        finish(tc, rejected, valid);
+    }
+
+    /**
+     * Reads one embedded request TC whose size is given by its own CCSDS packet data length field.
+     *
+     * @return null if the request fails the verification checks
+     */
+    private static byte[] readRequest(ByteBuffer bb) {
+        // the user data buffer ends with the CRC of the TC[19,1] itself, which is not part of the request
+        int available = bb.remaining() - 2;
+        if (available < 7) {
+            return null;
+        }
+        int pos = bb.position();
+        boolean isTc = (bb.get(pos) & 0x10) != 0;
+        int length = (bb.getShort(pos + 4) & 0xFFFF) + 7;
+        if (!isTc || length > available) {
+            return null;
+        }
+        byte[] request = new byte[length];
+        bb.get(request);
+        return request;
+    }
+
+    private static String describe(byte[] request) {
+        PusTcPacket p = new PusTcPacket(request);
+        return String.format("TC[%d,%d] apid=%d seq count=%d CRC %s", p.getType(), p.getSubtype(), p.getAPID(),
+                p.getSequenceCount(), p.isChecksumValid() ? "valid" : "INVALID");
     }
 
     // ---- TC[19,2]: delete event-action definitions ----
 
     private void deleteDefinitions(PusTcPacket tc) {
-        ack_start(tc);
         ByteBuffer bb = tc.getUserDataBuffer();
-        List<EaDefinition> targets = resolveTargets(tc, bb);
-        if (targets == null) {
-            return;
-        }
-        for (EaDefinition def : targets) {
-            if (def.enabled) {
-                log.warn("ST19: EA definition ({},{}) is enabled, rejecting delete", def.appProcessId,
-                        def.eventDefId);
-                nack_completion(tc, COMPL_ERR_EA_DEF_ENABLED);
-                return;
-            }
-        }
-        for (EaDefinition def : targets) {
-            definitions.remove(key(def.appProcessId, def.eventDefId));
-        }
-        log.info("ST19: deleted {} EA definition(s), {} remaining", targets.size(), definitions.size());
-        ack_completion(tc);
-    }
-
-    private List<EaDefinition> resolveTargets(PusTcPacket tc, ByteBuffer bb) {
         int n = bb.get() & 0xFF;
-        List<EaDefinition> targets = new ArrayList<>(n);
+        List<Integer> rejected = new ArrayList<>();
+        List<Runnable> valid = new ArrayList<>();
         for (int i = 0; i < n; i++) {
             int appPid = bb.getShort() & 0xFFFF;
             int eventId = bb.getShort() & 0xFFFF;
             EaDefinition def = definitions.get(key(appPid, eventId));
             if (def == null) {
-                log.warn("ST19: EA definition ({},{}) not found", appPid, eventId);
-                nack_completion(tc, COMPL_ERR_EA_DEF_NOT_FOUND);
-                return null;
+                log.warn("ST19: EA definition ({},{}) not found, rejecting delete", appPid, eventId);
+                rejected.add(START_ERR_EA_DEF_NOT_FOUND);
+            } else if (def.enabled) {
+                log.warn("ST19: EA definition ({},{}) is enabled, rejecting delete", appPid, eventId);
+                rejected.add(START_ERR_EA_DEF_ENABLED);
+            } else {
+                valid.add(() -> {
+                    definitions.remove(key(appPid, eventId));
+                    log.info("ST19: deleted EA definition ({},{}), {} remaining", appPid, eventId,
+                            definitions.size());
+                });
             }
-            targets.add(def);
         }
-        return targets;
+        finish(tc, rejected, valid);
     }
 
     // ---- TC[19,4]/TC[19,5]: enable/disable event-action definitions (specific or all) ----
 
     private void setDefinitionsEnabled(PusTcPacket tc, boolean enabled) {
-        ack_start(tc);
         ByteBuffer bb = tc.getUserDataBuffer();
         if (bb.remaining() == 0) {
+            ack_start(tc);
             for (EaDefinition def : definitions.values()) {
                 def.enabled = enabled;
             }
@@ -189,23 +243,40 @@ public class Pus19Service extends AbstractPusService {
             return;
         }
         int n = bb.get() & 0xFF;
-        boolean anyMissing = false;
+        List<Integer> rejected = new ArrayList<>();
+        List<Runnable> valid = new ArrayList<>();
         for (int i = 0; i < n; i++) {
             int appPid = bb.getShort() & 0xFFFF;
             int eventId = bb.getShort() & 0xFFFF;
             EaDefinition def = definitions.get(key(appPid, eventId));
             if (def == null) {
-                log.warn("ST19: EA definition ({},{}) not found, skipping", appPid, eventId);
-                anyMissing = true;
-                // spec: valid instructions in the same TC shall still be processed
+                log.warn("ST19: EA definition ({},{}) not found, rejecting {}", appPid, eventId,
+                        enabled ? "enable" : "disable");
+                rejected.add(START_ERR_EA_DEF_NOT_FOUND);
                 continue;
             }
-            def.enabled = enabled;
-            log.info("ST19: {} EA definition ({},{})", enabled ? "enabled" : "disabled", appPid, eventId);
+            valid.add(() -> {
+                def.enabled = enabled;
+                log.info("ST19: {} EA definition ({},{})", enabled ? "enabled" : "disabled", appPid, eventId);
+            });
         }
-        if (anyMissing) {
-            nack_completion(tc, COMPL_ERR_EA_DEF_NOT_FOUND);
+        finish(tc, rejected, valid);
+    }
+
+    /**
+     * Reports the outcome of a multi-instruction request: one failed start of execution per rejected
+     * instruction, then the valid instructions are executed regardless of the faulty ones.
+     */
+    private void finish(PusTcPacket tc, List<Integer> rejected, List<Runnable> valid) {
+        if (rejected.isEmpty()) {
+            ack_start(tc);
         } else {
+            for (int code : rejected) {
+                nack_start(tc, code);
+            }
+        }
+        valid.forEach(Runnable::run);
+        if (!valid.isEmpty() || rejected.isEmpty()) {
             ack_completion(tc);
         }
     }
@@ -272,10 +343,10 @@ public class Pus19Service extends AbstractPusService {
 
     private void sendTm19_11(List<EaDefinition> toReport) {
         int n = toReport.size();
-        // N(1) + N x { app_process_id(2), event_def_id(2), ea_status(1), request_len(2), request(var) }
+        // N(1) + N x { app_process_id(2), event_def_id(2), ea_status(1), request(var, no length prefix) }
         int userDataLength = 1;
         for (EaDefinition def : toReport) {
-            userDataLength += 2 + 2 + 1 + 2 + def.request.length;
+            userDataLength += 2 + 2 + 1 + def.request.length;
         }
         PusTmPacket pkt = newPacket(11, userDataLength);
         ByteBuffer bb = pkt.getUserDataBuffer();
@@ -284,7 +355,6 @@ public class Pus19Service extends AbstractPusService {
             bb.putShort((short) def.appProcessId);
             bb.putShort((short) def.eventDefId);
             bb.put((byte) (def.enabled ? 1 : 0));
-            bb.putShort((short) def.request.length);
             bb.put(def.request);
         }
         pusSimulator.transmitRealtimeTM(pkt);

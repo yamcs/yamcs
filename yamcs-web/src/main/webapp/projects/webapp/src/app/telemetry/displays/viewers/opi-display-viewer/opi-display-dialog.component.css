@@ -1,0 +1,7 @@
+.message {
+  white-space: pre-wrap;
+}
+
+.error {
+  color: var(--y-error-color);
+}

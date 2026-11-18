@@ -142,7 +142,7 @@ export function convertDurationToMillis(isoDuration: string) {
   return millis;
 }
 
-export function convertValueToNumber(value: Value) {
+export function convertValueToNumber(value: Value): number | null {
   switch (value.type) {
     case 'FLOAT':
       return value.floatValue!;
@@ -153,9 +153,9 @@ export function convertValueToNumber(value: Value) {
     case 'SINT32':
       return value.sint32Value!;
     case 'UINT64':
-      return value.uint64Value!;
+      return Number(value.uint64Value);
     case 'SINT64':
-      return value.sint64Value!;
+      return Number(value.sint64Value);
     case 'ENUMERATED':
       // Enum values carry the numeric ordinal in sint64Value (stringValue holds the label).
       return Number(value.sint64Value!);
@@ -224,9 +224,9 @@ export function convertValue(value: Value) {
     case 'SINT32':
       return value.sint32Value;
     case 'UINT64':
-      return value.uint64Value;
+      return Number(value.uint64Value);
     case 'SINT64':
-      return value.sint64Value;
+      return Number(value.sint64Value);
     case 'BOOLEAN':
       return value.booleanValue;
     case 'TIMESTAMP':
@@ -551,9 +551,10 @@ export function relativizePath(path: string, relto: string) {
   const bSegments = path.split('/');
   let commonSegments: string[] = [];
   for (let i = 0; i < Math.min(aSegments.length, bSegments.length); i++) {
-    if (aSegments[i] === bSegments[i]) {
-      commonSegments.push(aSegments[i]);
+    if (aSegments[i] !== bSegments[i]) {
+      break;
     }
+    commonSegments.push(aSegments[i]);
   }
 
   const commonPrefix = commonSegments.join('/') || '/';

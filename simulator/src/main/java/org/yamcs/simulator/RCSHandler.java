@@ -33,16 +33,16 @@ public class RCSHandler {
 
                 entry.timestamp = Float.parseFloat(parts[0]);
 
+                // H2 and O2 columns alternate
                 entry.H2TankFill = Float.parseFloat(parts[1]);
-                entry.H2TankTemp = Float.parseFloat(parts[2]);
-                entry.H2TankPressure = Float.parseFloat(parts[3]);
-                entry.H2ValveTemp = Float.parseFloat(parts[4]);
-                entry.H2ValvePressure = Float.parseFloat(parts[5]);
-
-                entry.O2TankFill = Float.parseFloat(parts[6]);
-                entry.O2TankTemp = Float.parseFloat(parts[7]);
-                entry.O2TankPressure = Float.parseFloat(parts[8]);
-                entry.O2ValveTemp = Float.parseFloat(parts[9]);
+                entry.O2TankFill = Float.parseFloat(parts[2]);
+                entry.H2TankTemp = Float.parseFloat(parts[3]);
+                entry.O2TankTemp = Float.parseFloat(parts[4]);
+                entry.H2TankPressure = Float.parseFloat(parts[5]);
+                entry.O2TankPressure = Float.parseFloat(parts[6]);
+                entry.H2ValveTemp = Float.parseFloat(parts[7]);
+                entry.O2ValveTemp = Float.parseFloat(parts[8]);
+                entry.H2ValvePressure = Float.parseFloat(parts[9]);
                 entry.O2ValvePressure = Float.parseFloat(parts[10]);
 
                 entry.TurbineTemp = Float.parseFloat(parts[11]);

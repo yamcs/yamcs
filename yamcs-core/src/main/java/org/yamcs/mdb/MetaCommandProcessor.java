@@ -1,6 +1,7 @@
 package org.yamcs.mdb;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.yamcs.ErrorInCommand;
 import org.yamcs.ProcessorConfig;
+import org.yamcs.commanding.ArgumentLocation;
 import org.yamcs.commanding.ArgumentValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.utils.BitBuffer;
@@ -83,7 +85,7 @@ public class MetaCommandProcessor {
             binary = new byte[length];
             System.arraycopy(bitbuf.array(), 0, binary, 0, length);
         }
-        return new CommandBuildResult(binary, pcontext.getArgValues());
+        return new CommandBuildResult(binary, pcontext.getArgValues(), pcontext.getArgumentLocations());
     }
 
     /**
@@ -175,10 +177,17 @@ public class MetaCommandProcessor {
     static public class CommandBuildResult {
         byte[] cmdPacket;
         Map<Argument, ArgumentValue> args;
+        List<ArgumentLocation> argumentLocations;
 
         public CommandBuildResult(byte[] b, Map<Argument, ArgumentValue> args) {
+            this(b, args, Collections.emptyList());
+        }
+
+        public CommandBuildResult(byte[] b, Map<Argument, ArgumentValue> args,
+                List<ArgumentLocation> argumentLocations) {
             this.cmdPacket = b;
             this.args = args;
+            this.argumentLocations = argumentLocations;
         }
 
         public byte[] getCmdPacket() {
@@ -187,6 +196,15 @@ public class MetaCommandProcessor {
 
         public Map<Argument, ArgumentValue> getArgs() {
             return args;
+        }
+
+        /**
+         * 
+         * @return the locations of the argument values (including aggregate members and array elements) inside the
+         *         command packet, in encoding order
+         */
+        public List<ArgumentLocation> getArgumentLocations() {
+            return argumentLocations;
         }
     }
 }

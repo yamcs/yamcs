@@ -25,4 +25,8 @@ Operator:
     - ModifyCommandHistory
     - WriteEvents
 
+# used by TmPartitionGroupsIntegrationTest
+Pkt11Reader:
+  ReadPacket: [".*/PKT1_1"]
+
 EmptyRole:

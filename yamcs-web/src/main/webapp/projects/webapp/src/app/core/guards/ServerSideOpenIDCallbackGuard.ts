@@ -21,6 +21,14 @@ class ServerSideOpenIDCallbackGuard {
 
     if (!oidcCode) {
       console.error('Unexpected callback. Could not find query param: "code"');
+      this.router.navigate(['/login-failed'], {
+        state: {
+          message:
+            route.queryParamMap.get('error_description') ??
+            route.queryParamMap.get('error'),
+          next: oidcState ? utils.fromBase64URL(oidcState) : undefined,
+        },
+      });
       return false;
     }
 
@@ -33,7 +41,22 @@ class ServerSideOpenIDCallbackGuard {
     });
 
     // Exchange our upstream code for a Yamcs-level access token.
-    await this.authService.loginWithAuthorizationCode(`oidc ${thirdPartyData}`);
+    try {
+      await this.authService.loginWithAuthorizationCode(
+        `oidc ${thirdPartyData}`,
+      );
+    } catch (err: any) {
+      // Do not redirect to the login page automatically. If the login
+      // keeps failing, that would loop.
+      console.error('Failed to exchange authorization code', err);
+      this.router.navigate(['/login-failed'], {
+        state: {
+          message: err?.message,
+          next: oidcState ? utils.fromBase64URL(oidcState) : undefined,
+        },
+      });
+      return false;
+    }
 
     // At this point, everything worked. Yamcs cookies are in place. And we
     // can navigate the user to the original attempted URL.

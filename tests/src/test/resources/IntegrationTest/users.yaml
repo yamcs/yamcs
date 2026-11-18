@@ -2,6 +2,10 @@ testuser:
   password: password
   roles: [Role1, EmptyRole]
   
+pkt11reader:
+  password: password
+  roles: [Pkt11Reader]
+
 operator:
   password: password
   roles: [Operator]

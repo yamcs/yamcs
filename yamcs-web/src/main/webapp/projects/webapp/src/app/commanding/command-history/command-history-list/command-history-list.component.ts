@@ -91,6 +91,7 @@ export class CommandHistoryListComponent
 
   // Added dynamically based on actual commands.
   aliasColumns$ = new BehaviorSubject<YaColumnInfo[]>([]);
+  extraColumns$ = new BehaviorSubject<YaColumnInfo[]>([]);
 
   @ViewChild(YaColumnChooser)
   columnChooser: YaColumnChooser;
@@ -182,6 +183,30 @@ export class CommandHistoryListComponent
         );
         this.columns.splice(insertIdx + 1, 0, ...aliasColumns); // Insert after name column
         this.aliasColumns$.next(aliasColumns);
+        this.columnChooser.recalculate(this.columns);
+      }),
+      this.dataSource.extraNames$.subscribe((extraNames) => {
+        // Reset extra columns
+        for (const extraColumn of this.extraColumns$.value) {
+          const idx = this.columns.indexOf(extraColumn);
+          if (idx !== -1) {
+            this.columns.splice(idx, 1);
+          }
+        }
+        const extraColumns: YaColumnInfo[] = [];
+        for (const name of extraNames) {
+          extraColumns.push({
+            id: 'extra:' + name,
+            label: name,
+            visible: false,
+            group: 'Extra attributes',
+          });
+        }
+        const insertIdx = this.columns.findIndex(
+          (column) => column.id === 'queue',
+        );
+        this.columns.splice(insertIdx + 1, 0, ...extraColumns); // Insert after queue column
+        this.extraColumns$.next(extraColumns);
         this.columnChooser.recalculate(this.columns);
       }),
     );

@@ -6,8 +6,6 @@ import org.yamcs.yarch.DbRange;
 
 /**
  * wrapper around a rocksdb iterator that only supports next() and is restricted to a range.
- * 
- * @author nm
  *
  */
 public class AscendingRangeIterator extends AbstractDbIterator {

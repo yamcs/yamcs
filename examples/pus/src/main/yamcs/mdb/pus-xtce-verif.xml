@@ -160,7 +160,7 @@
 			</SequenceContainer>
 			<SequenceContainer name="hk25">
 				<AncillaryDataSet>
-					<AncillaryData name="Yamcs" mimeType="text/plain">UseAsArchivingPartition</AncillaryData>
+					<AncillaryData name="Yamcs" mimeType="text/plain">UseAsPacketName</AncillaryData>
 				</AncillaryDataSet>
 				<EntryList>
 					<ParameterRefEntry parameterRef="hkid" />

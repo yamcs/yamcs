@@ -1,5 +1,6 @@
 package org.yamcs.yarch.rocksdb;
 
+import static org.yamcs.yarch.rocksdb.RdbStorageEngine.TBS_INDEX_SIZE;
 import static org.yamcs.yarch.rocksdb.RdbStorageEngine.dbKey;
 
 import java.io.IOException;
@@ -8,7 +9,6 @@ import java.util.Arrays;
 
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.RocksDBException;
-import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +25,6 @@ import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
-
-import static org.yamcs.yarch.rocksdb.RdbStorageEngine.TBS_INDEX_SIZE;;
 
 /**
  * table writer for the rocksdb2 engine.
@@ -56,7 +54,6 @@ public class RdbTableWriter extends TableWriter {
     volatile boolean closed = false;
     WriteOptions wopt;
     final HistogramWriter histoWriter;
-    final SecondaryIndexWriter secondaryIndexWriter;
     TableDefinition tableDefinition;
 
     public RdbTableWriter(YarchDatabaseInstance ydb, RdbTable table, InsertMode mode) {
@@ -73,7 +70,6 @@ public class RdbTableWriter extends TableWriter {
             wopt.setDisableWAL(true);
         }
         histoWriter = table.getHistogramWriter();
-        secondaryIndexWriter = table.getSecondaryIndexWriter();
     }
 
     @Override
@@ -92,9 +88,14 @@ public class RdbTableWriter extends TableWriter {
         if (closed) {
             return;
         }
+        table.indexLock.readLock().lock();
+        YRDB rdb = null;
         try {
+            if (closed) {
+                return;
+            }
             RdbPartition partition = getDbPartition(t);
-            YRDB rdb = tablespace.getRdb(partition.dir, false);
+            rdb = tablespace.getRdb(partition.dir, false);
             var cfh = rdb.createAndGetColumnFamilyHandle(table.cfName());
 
             switch (mode) {
@@ -114,11 +115,15 @@ public class RdbTableWriter extends TableWriter {
                 load(rdb, cfh, partition, t);
             }
 
-            tablespace.dispose(rdb);
         } catch (IOException | RocksDBException | YarchException e) {
             log.error("failed to insert a record: ", e);
             YamcsServer.getServer().getCrashHandler(ydb.getYamcsInstance()).handleCrash("Archive",
                     "failed to insert a record in " + table.getName() + ": " + e);
+        } finally {
+            if (rdb != null) {
+                tablespace.dispose(rdb);
+            }
+            table.indexLock.readLock().unlock();
         }
     }
 
@@ -127,7 +132,16 @@ public class RdbTableWriter extends TableWriter {
         Row row = tableDefinition.generateRow(t);
         byte[] k = dbKey(partition.tbsIndex, row.getKey());
         byte[] v = tableDefinition.serializeValue(t, row);
-        db.put(cfh, wopt, k, v);
+        db.lock(k);
+        try {
+            if (table.getSecondaryIndexWriter() == null) {
+                db.put(cfh, wopt, k, v);
+            } else {
+                writeToDb(db, cfh, partition, k, v, row);
+            }
+        } finally {
+            db.unlock(k);
+        }
         return true;
     }
 
@@ -136,15 +150,18 @@ public class RdbTableWriter extends TableWriter {
         Row row = tableDefinition.generateRow(t);
         byte[] k = dbKey(partition.tbsIndex, row.getKey());
 
-        if (rdb.get(cfh, k) != null) {
-            return;
-        }
-        byte[] v = tableDefinition.serializeValue(t, row);
-
-        writeToDb(rdb, cfh, partition, k, v, row);
-
-        if (histoWriter != null) {
-            histoWriter.addHistogram(row);
+        rdb.lock(k);
+        try {
+            if (rdb.get(cfh, k) != null) {
+                return;
+            }
+            byte[] v = tableDefinition.serializeValue(t, row);
+            writeToDb(rdb, cfh, partition, k, v, row);
+            if (histoWriter != null) {
+                histoWriter.addHistogram(row);
+            }
+        } finally {
+            rdb.unlock(k);
         }
     }
 
@@ -155,19 +172,15 @@ public class RdbTableWriter extends TableWriter {
         byte[] k = dbKey(partition.tbsIndex, row.getKey());
         byte[] v = tableDefinition.serializeValue(t, row);
 
-        boolean updated = false;
-
-        if (rdb.get(cfh, k) != null) {
-            updated = true;
-        }
-        writeToDb(rdb, cfh, partition, k, v, row);
-
-        if (histoWriter != null) {
-            if (updated) {
-                // TODO
-            } else {
+        rdb.lock(k);
+        try {
+            boolean updated = rdb.get(cfh, k) != null;
+            writeToDb(rdb, cfh, partition, k, v, row);
+            if (histoWriter != null && !updated) {
                 histoWriter.addHistogram(row);
             }
+        } finally {
+            rdb.unlock(k);
         }
     }
 
@@ -269,28 +282,12 @@ public class RdbTableWriter extends TableWriter {
 
     private void writeToDb(YRDB rdb, ColumnFamilyHandle cfh, RdbPartition partition, byte[] key, byte[] value, Row row)
             throws RocksDBException {
-
+        SecondaryIndexWriter secondaryIndexWriter = table.getSecondaryIndexWriter();
         if (secondaryIndexWriter == null) {
             rdb.put(cfh, key, value);
             return;
         }
-        if (rdb == tablespace.getRdb()) {
-            try (WriteBatch writeBatch = new WriteBatch();
-                    WriteOptions writeOpts = new WriteOptions()) {
-                writeBatch.put(cfh, key, value);
-                secondaryIndexWriter.addTuple(writeBatch, row, partition);
-                rdb.write(writeOpts, writeBatch);
-            }
-        } else {// secondary index and main data go into different databases, we cannot perform the write in a batch
-            rdb.put(cfh, key, value);
-            cfh = tablespace.getRdb().getColumnFamilyHandle(table.cfName());
-            try (WriteBatch writeBatch = new WriteBatch();
-                    WriteOptions writeOpts = new WriteOptions()) {
-                writeBatch.put(cfh, key, value);
-                secondaryIndexWriter.addTuple(writeBatch, row, partition);
-                tablespace.getRdb().write(writeOpts, writeBatch);
-            }
-        }
+        secondaryIndexWriter.write(rdb, cfh, partition, key, key, value);
     }
 
     /**

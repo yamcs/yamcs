@@ -21,6 +21,7 @@ public class ProcessorConfig {
     private static final String CONFIG_KEY_CONTAINERLESS_CMDS = "allowContainerlessCommands";
     private static final String CONFIG_KEY_CHECK_COMMAND_CLEARANCE = "checkCommandClearance";
     private static final String CONFIG_KEY_CHECK_PARAMETER_VALIDITY_RANGES = "checkParameterValidityRanges";
+    private static final String CONFIG_KEY_SUBSCRIBE_PACKET_NAME_CONTAINERS = "subscribePacketNameContainers";
     private static final String CONFIG_KEY_SUBSCRIBE_CONTAINER_ARCHPART = "subscribeContainerArchivePartitions";
     private static final String CONFIG_KEY_PERSIST_PARAMETERS = "persistParameters";
     private static final String CONFIG_KEY_OVERRIDE_ALGORITHMS = "overrideAlgorithmsEnabled";
@@ -41,9 +42,9 @@ public class ProcessorConfig {
     // if true, save at shutdown and load at startup the value of all parameters having the persistent flag set
     boolean persistParameters = false;
 
-    // if set to true, subscribe by default to all containers that have the useAsArchivePartiton flag set
+    // if set to true, subscribe by default to all containers that have the useAsPacketName flag set
     // used to have nice statistics showing the number of each packet received for the realtime and replay processors
-    boolean subscribeContainerArchivePartitions = true;
+    boolean subscribePacketNameContainers = true;
 
     // if positive, the number of days to load the past alarms at startup
     private double alarmLoadDays = 30;
@@ -90,8 +91,12 @@ public class ProcessorConfig {
                     checkCommandClearance = config.getBoolean(key);
                 } else if (CONFIG_KEY_CHECK_PARAMETER_VALIDITY_RANGES.equals(key)) {
                     checkParameterValidityRanges = config.getBoolean(key);
+                } else if (CONFIG_KEY_SUBSCRIBE_PACKET_NAME_CONTAINERS.equals(key)) {
+                    subscribePacketNameContainers = config.getBoolean(key);
                 } else if (CONFIG_KEY_SUBSCRIBE_CONTAINER_ARCHPART.equals(key)) {
-                    subscribeContainerArchivePartitions = config.getBoolean(key);
+                    log.warn("The processor option '{}' is deprecated, use '{}' instead",
+                            CONFIG_KEY_SUBSCRIBE_CONTAINER_ARCHPART, CONFIG_KEY_SUBSCRIBE_PACKET_NAME_CONTAINERS);
+                    subscribePacketNameContainers = config.getBoolean(key);
                 } else if (CONFIG_KEY_PERSIST_PARAMETERS.equals(key)) {
                     persistParameters = config.getBoolean(key);
                 } else if (CONFIG_KEY_OVERRIDE_ALGORITHMS.equals(key)) {
@@ -117,7 +122,8 @@ public class ProcessorConfig {
         spec.addOption(CONFIG_KEY_CONTAINERLESS_CMDS, OptionType.BOOLEAN).withDefault(false);
         spec.addOption(CONFIG_KEY_CHECK_COMMAND_CLEARANCE, OptionType.BOOLEAN).withDefault(false);
         spec.addOption(CONFIG_KEY_CHECK_PARAMETER_VALIDITY_RANGES, OptionType.ANY);
-        spec.addOption(CONFIG_KEY_SUBSCRIBE_CONTAINER_ARCHPART, OptionType.BOOLEAN).withDefault(true);
+        spec.addOption(CONFIG_KEY_SUBSCRIBE_PACKET_NAME_CONTAINERS, OptionType.BOOLEAN).withDefault(true)
+                .withAliases(CONFIG_KEY_SUBSCRIBE_CONTAINER_ARCHPART);
         spec.addOption(CONFIG_KEY_PERSIST_PARAMETERS, OptionType.BOOLEAN).withDefault(false);
         spec.addOption(CONFIG_KEY_OVERRIDE_ALGORITHMS, OptionType.BOOLEAN).withDefault(false);
 
@@ -217,12 +223,31 @@ public class ProcessorConfig {
         return checkParameterValidityRanges;
     }
 
-    public boolean subscribeContainerArchivePartitions() {
-        return subscribeContainerArchivePartitions;
+    /**
+     * Returns whether the containers having the useAsPacketName flag set are subscribed by default.
+     */
+    public boolean subscribePacketNameContainers() {
+        return subscribePacketNameContainers;
     }
 
+    public void setSubscribePacketNameContainers(boolean b) {
+        this.subscribePacketNameContainers = b;
+    }
+
+    /**
+     * @deprecated use {@link #subscribePacketNameContainers()}
+     */
+    @Deprecated
+    public boolean subscribeContainerArchivePartitions() {
+        return subscribePacketNameContainers();
+    }
+
+    /**
+     * @deprecated use {@link #setSubscribePacketNameContainers(boolean)}
+     */
+    @Deprecated
     public void setSubscribeContainerArchivePartitions(boolean b) {
-        this.subscribeContainerArchivePartitions = b;
+        setSubscribePacketNameContainers(b);
     }
 
     /**

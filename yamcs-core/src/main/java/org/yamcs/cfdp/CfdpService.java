@@ -241,6 +241,9 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
         spec.addOption("nakLimit", OptionType.INTEGER).withDefault(-1);
         spec.addOption("nakTimeout", OptionType.INTEGER).withDefault(5000);
         spec.addOption("immediateNak", OptionType.BOOLEAN).withDefault(true);
+        spec.addOption("checkAckTimeout", OptionType.INTEGER).withDefault(10000);
+        spec.addOption("checkAckLimit", OptionType.INTEGER).withDefault(5);
+        spec.addOption("ackEofWhileSuspended", OptionType.BOOLEAN).withDefault(true);
         spec.addOption("archiveRetrievalLimit", OptionType.INTEGER).withDefault(100);
         spec.addOption("receiverFaultHandlers", OptionType.MAP).withSpec(Spec.ANY);
         spec.addOption("senderFaultHandlers", OptionType.MAP).withSpec(Spec.ANY);
@@ -966,14 +969,14 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
         if (!allowConcurrentFileOverwrites) {
             if (pendingTransfers.values().stream()
                     .filter(CfdpService::isRunning)
-                    .anyMatch(trsf -> trsf.getRemotePath().equals(absoluteDestinationPath))) {
+                    .anyMatch(trsf -> Objects.equals(absoluteDestinationPath, trsf.getRemotePath()))) {
                 throw new InvalidRequestException(
                         "There is already a transfer ongoing to '" + absoluteDestinationPath
                                 + "' and allowConcurrentFileOverwrites is false");
             }
 
             if (queuedTransfers.stream()
-                    .anyMatch(trsf -> trsf.getRemotePath().equals(absoluteDestinationPath))) {
+                    .anyMatch(trsf -> Objects.equals(absoluteDestinationPath, trsf.getRemotePath()))) {
                 throw new InvalidRequestException(
                         "There is already a transfer queued to '" + absoluteDestinationPath
                                 + "' and allowConcurrentFileOverwrites is false");

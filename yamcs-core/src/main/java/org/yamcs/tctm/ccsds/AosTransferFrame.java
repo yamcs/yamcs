@@ -5,17 +5,17 @@ import org.yamcs.tctm.ccsds.AosManagedParameters.ServiceType;
 /**
  * AOS Transfer Frame as per
  * CCSDS RECOMMENDED STANDARD FOR AOS SPACE DATA LINK PROTOCOL
- * CCSDS 732.0-B-3 September 2015
+ * CCSDS 732.0-B-5 October 2025
  * 
  * Primary Header is composed of
  * <ul>
  * <li>Transfer frame version number (2 bits) - shall be set to 01</li>
- * <li>Spacecraft id (8 bits)</li>
+ * <li>Spacecraft id (8 bits, extended to 10 bits by the SCID extension)</li>
  * <li>Virtual Channel id (6 bits)</li>
  * <li>Virtual Channel frame count (24 bits)</li>
  * <li>replay flag (1 bit)</li>
  * <li>VC frame count usage flag (1 bit)</li>
- * <li>spare (2 bits)</li>
+ * <li>SCID extension (2 bits) - high-order bits of the spacecraft id</li>
  * <li>VC frame count cycle</li>
  * <li>frame header error control (optional)</li>
  * </ul>

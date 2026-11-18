@@ -9,7 +9,6 @@ import org.yamcs.yarch.PartitioningSpec;
 import org.yamcs.yarch.TableDefinition;
 import org.yamcs.yarch.Tuple;
 import org.yamcs.yarch.TupleDefinition;
-import org.yamcs.yarch.YarchDatabase;
 import org.yamcs.yarch.YarchDatabaseInstance;
 import org.yamcs.yarch.YarchException;
 
@@ -75,7 +74,7 @@ public class CreateTableStatement extends SimpleStreamSqlStatement {
             if (engine != null) {
                 tableDefinition.setStorageEngineName(engine);
             } else {
-                tableDefinition.setStorageEngineName(YarchDatabase.getDefaultStorageEngineName());
+                tableDefinition.setStorageEngineName(ydb.getStorageEngineName(tableName));
             }
 
             for (var tfo : formatOptions) {

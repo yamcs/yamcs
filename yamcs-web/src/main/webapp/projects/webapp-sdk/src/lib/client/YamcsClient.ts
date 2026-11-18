@@ -139,6 +139,7 @@ import {
   GetCommandHistoryOptions,
   GetCompletenessIndexOptions,
   GetPacketsOptions,
+  PacketArchiveInfo,
   GetParameterRangesOptions,
   GetParameterValuesOptions,
   IndexGroup,
@@ -201,8 +202,6 @@ import {
   ClearanceSubscription,
   CompactRocksDbDatabaseRequest,
   CreateGroupRequest,
-  CreateServiceAccountRequest,
-  CreateServiceAccountResponse,
   CreateUserRequest,
   Database,
   EditClearanceRequest,
@@ -223,15 +222,14 @@ import {
   ListDatabasesResponse,
   ListProcessorTypesResponse,
   ListRoutesResponse,
-  ListServiceAccountsResponse,
   ListThreadsResponse,
   ListTopicsResponse,
+  LogoutResponse,
   ReplicationInfo,
   ReplicationInfoSubscription,
   ResultSet,
   RoleInfo,
   Service,
-  ServiceAccount,
   SystemInfo,
   SystemInfoSubscription,
   ThreadInfo,
@@ -259,6 +257,7 @@ import {
   TimelineBandsPage,
   TimelineItem,
   TimelineItemsPage,
+  TimelineSourcesPage,
   TimelineTagsPage,
   TimelineView,
   TimelineViewsPage,
@@ -360,6 +359,25 @@ export default class YamcsClient implements HttpHandler {
 
   public clearAccessToken() {
     this.accessToken = undefined;
+  }
+
+  /**
+   * End the session associated with the given refresh token.
+   */
+  async logout(refreshToken: string) {
+    const headers = new Headers();
+    headers.append('Content-Type', 'application/x-www-form-urlencoded');
+    const response = await fetch(`${this.authUrl}/logout`, {
+      method: 'POST',
+      headers,
+      body: `refresh_token=${encodeURIComponent(refreshToken)}`,
+    });
+
+    if (response.status >= 200 && response.status < 300) {
+      return (await response.json()) as LogoutResponse;
+    } else {
+      return Promise.reject(new HttpError(response));
+    }
   }
 
   private async doFetchAccessToken(body: string) {
@@ -564,35 +582,6 @@ export default class YamcsClient implements HttpHandler {
     });
   }
 
-  async getServiceAccounts() {
-    const url = `${this.apiUrl}/service-accounts`;
-    const response = await this.doFetch(url);
-    return (await response.json()) as ListServiceAccountsResponse;
-  }
-
-  async getServiceAccount(name: string) {
-    const url = `${this.apiUrl}/service-accounts/${name}`;
-    const response = await this.doFetch(url);
-    return (await response.json()) as ServiceAccount;
-  }
-
-  async createServiceAccount(options: CreateServiceAccountRequest) {
-    const body = JSON.stringify(options);
-    const url = `${this.apiUrl}/service-accounts`;
-    const response = await this.doFetch(url, {
-      body,
-      method: 'POST',
-    });
-    return (await response.json()) as CreateServiceAccountResponse;
-  }
-
-  async deleteServiceAccount(name: string) {
-    const url = `${this.apiUrl}/service-accounts/${name}`;
-    return await this.doFetch(url, {
-      method: 'DELETE',
-    });
-  }
-
   async getTimelineViews(instance: string) {
     const url = `${this.apiUrl}/timeline/${instance}/views`;
     const response = await this.doFetch(url);
@@ -643,6 +632,12 @@ export default class YamcsClient implements HttpHandler {
     const url = `${this.apiUrl}/audit/records/${instance}`;
     const response = await this.doFetch(url + this.queryString(options));
     return (await response.json()) as AuditRecordsPage;
+  }
+
+  async getTimelineSources(instance: string) {
+    const url = `${this.apiUrl}/timeline/${instance}/sources`;
+    const response = await this.doFetch(url);
+    return (await response.json()) as TimelineSourcesPage;
   }
 
   async getTimelineTags(instance: string) {
@@ -1263,6 +1258,21 @@ export default class YamcsClient implements HttpHandler {
       method: 'POST',
     });
     return (await response.json()) as ListPacketsResponse;
+  }
+
+  async getPacketArchiveInfo(instance: string) {
+    const response = await this.doFetch(
+      `${this.apiUrl}/archive/${instance}/packets:info`,
+    );
+    return (await response.json()) as PacketArchiveInfo;
+  }
+
+  async rebuildReceptionTimeIndex(instance: string) {
+    const response = await this.doFetch(
+      `${this.apiUrl}/archive/${instance}/packets:rebuildReceptionTimeIndex`,
+      { method: 'POST', body: '{}' },
+    );
+    return (await response.json()) as PacketArchiveInfo;
   }
 
   async getEvents(instance: string, options: GetEventsOptions = {}) {
@@ -2389,13 +2399,9 @@ export default class YamcsClient implements HttpHandler {
 
   async doFetch(url: string, init?: RequestInit) {
     if (this.accessToken) {
-      if (!init) {
-        init = { headers: new Headers() };
-      } else if (!init.headers) {
-        init.headers = new Headers();
-      }
-      const headers = new Headers(init.headers);
-      headers.append('Authorization', `Bearer ${this.accessToken}`);
+      const headers = new Headers(init?.headers);
+      headers.set('Authorization', `Bearer ${this.accessToken}`);
+      init = { ...init, headers };
     }
 
     let response: Response;

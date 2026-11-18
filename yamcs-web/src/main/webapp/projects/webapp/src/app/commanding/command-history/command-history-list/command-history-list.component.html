@@ -198,6 +198,17 @@
             </td>
           </ng-container>
 
+          @for (extraColumn of extraColumns$ | async; track extraColumn) {
+            <ng-container [matColumnDef]="extraColumn.id">
+              <th mat-header-cell *matHeaderCellDef>
+                {{ extraColumn.label }}
+              </th>
+              <td mat-cell *matCellDef="let item">
+                {{ (item.extraByName[extraColumn.label] | value: { maxBytes: 16 }) || "-" }}
+              </td>
+            </ng-container>
+          }
+
           <ng-container matColumnDef="sequenceNumber">
             <th mat-header-cell *matHeaderCellDef>Sequence number</th>
             <td mat-cell *matCellDef="let item">

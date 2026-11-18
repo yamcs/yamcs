@@ -47,7 +47,7 @@ export class ContainerListComponent implements AfterViewInit {
     { id: 'sizeInBits', label: 'Size in bits', visible: true },
     { id: 'baseContainer', label: 'Base Container', visible: true },
     { id: 'restrictionCriteria', label: 'Restriction Criteria', visible: true },
-    { id: 'archivePartition', label: 'Partition' },
+    { id: 'useAsPacketName', label: 'Packet name' },
     { id: 'shortDescription', label: 'Description' },
     { id: 'actions', label: '', alwaysVisible: true },
   ];

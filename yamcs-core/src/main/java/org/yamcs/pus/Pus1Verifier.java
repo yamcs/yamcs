@@ -3,6 +3,8 @@ package org.yamcs.pus;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.yamcs.YConfiguration;
 import org.yamcs.algorithms.AbstractAlgorithmExecutor;
@@ -34,11 +36,25 @@ import org.yamcs.xtce.Parameter;
  * <li><b>rcvdSeqCount</b> - the Sequence Count in the PUS1 report.</li>
  * <li><b>reportSubType</b> - the PUS1 sub-type of the incoming PUS1 report.</li>
  * </ul>
- * The sentApid, rcvdApid, rcvdSeqCount and reportSubType are expected to have a raw type as unsigned integer. The
+ * The sentApid, rcvdApid, rcvdSeqCount and reportSubType are expected to have a raw type as unsigned integer.
+ * APIDs are compared using raw wire values when available; command-history inputs without raw values use their
+ * integer or enumerated engineering value instead. The
  * sentSeqCount is filled in by the post-processor and is expected to be signed 32 bit integer (the reason for that is
  * becuase it is converted from a command history attribute)
  * <p>
  * In addition to these 5, other inputs may be used to get values in case of failure.
+ * <p>
+ * An input named <b>reportType</b> must also be given (in any position after the first 5). It is the PUS type of the
+ * incoming packet, with a raw type as unsigned integer. The algorithm returns no result unless the type is 1.
+ * <p>
+ * For backwards compatibility, the reportType input is currently not enforced: if it is missing, a warning is logged
+ * and the type check is skipped. It will become mandatory in a future version.
+ * <p>
+ * An optional aggregate input named <b>ackFlags</b> can suppress verification when the boolean member for this
+ * stage is false. Bind it to the command argument using an InputParameterInstanceRef with
+ * parameterRef="/yamcs/cmd/arg/argumentName" and inputName="ackFlags". The argument name is mission-specific;
+ * the input alias is fixed. Missing members, unset values and non-boolean members do not suppress verification.
+ * Non-aggregate inputs do not suppress verification.
  * 
  * <p>
  * The algorithm checks the following conditions:
@@ -46,6 +62,7 @@ import org.yamcs.xtce.Parameter;
  * <ul>
  * <li><code>sentApid == rcvdApid</code></li>
  * <li><code>sentSeqCount == rcvdSeqCount</code></li>
+ * <li><code>reportType == 1</code></li>
  * <li>The <code>reportSubType=verificationStage or reportSubType=verificationStage+1</code></li>
  * </ul>
  * <p>
@@ -61,6 +78,11 @@ public class Pus1Verifier extends AbstractAlgorithmExecutor {
 
     private final int verificationStage;
     private final MessageTemplate template;
+    // index of the reportType input or -1 if not present
+    private final int reportTypeIdx;
+    private final int ackFlagsIdx;
+    // the executor is created for each command, this is to warn only once per algorithm
+    private static final Set<String> warnedAlgorithms = ConcurrentHashMap.newKeySet();
     public static AlgorithmExecutionResult NO_RESULT = new AlgorithmExecutionResult(Collections.emptyList());
 
     Map<Integer, String> verificationStageToFlagMapping = new HashMap<>();
@@ -86,6 +108,15 @@ public class Pus1Verifier extends AbstractAlgorithmExecutor {
         } else {
             template = null;
         }
+
+        reportTypeIdx = findInput("reportType");
+        ackFlagsIdx = findInput("ackFlags");
+        String algName = algorithmDef.getQualifiedName() != null ? algorithmDef.getQualifiedName()
+                : algorithmDef.getName();
+        if (reportTypeIdx < 0 && warnedAlgorithms.add(algName)) {
+            log.warn("PUS1 verifier {} has no reportType input; it will become mandatory in a future version",
+                    algName);
+        }
     }
 
     @Override
@@ -96,32 +127,47 @@ public class Pus1Verifier extends AbstractAlgorithmExecutor {
                 return NO_RESULT;
             }
         }
-        long sentApid = apidValue(inputValues.get(0).getEngValue());
+        long sentApid = apidValue(inputValues.get(0));
 
         // the sequence count set by the post-processor has no raw value
         int sentSeq = inputValues.get(1).getEngValue().getSint32Value();
-        long rcvdApid = apidValue(inputValues.get(2).getEngValue());
+        long rcvdApid = apidValue(inputValues.get(2));
         int rcvdSeq = inputValues.get(3).getRawValue().getUint32Value();
         int reportSubType = inputValues.get(4).getRawValue().getUint32Value();
 
-        // Optional 6th input: an "ackflags" aggregate value, used to skip this stage's verification
-        // when the command's ackflags argument didn't request it (per-bit, keyed by
-        // verificationStageToFlagMapping). Not every MDB wires this - e.g. when ackflags is a plain
-        // integer argument rather than an aggregate (as in this mission's pus-tc), or when the 6th
-        // input slot is used for something else entirely (e.g. an error code, only present on
-        // failure). In that case there is no bit to check, so this stage is always verified.
         boolean ackFlag = true;
-        if (inputValues.size() > 5 && inputValues.get(5) != null
-                && inputValues.get(5).getEngValue() instanceof AggregateValue ackFlags) {
-            var flagValue = ackFlags.getMemberValue(verificationStageToFlagMapping.get(verificationStage));
-            if (flagValue != null) {
-                ackFlag = flagValue.getBooleanValue();
+        if (ackFlagsIdx >= 0 && inputValues.get(ackFlagsIdx) != null) {
+            Value flags = inputValues.get(ackFlagsIdx).getEngValue();
+
+            /*
+            FIXME: Currently only handles the case when ackFlags is an AggregateValue
+            */
+            if (flags instanceof AggregateValue ackFlags) {
+                String member = verificationStageToFlagMapping.get(verificationStage);
+
+                if (member != null) {
+                    try {
+                        Value value = ackFlags.getMemberValue(member);
+                        if (value != null && value.getType() == Type.BOOLEAN) {
+                            ackFlag = value.getBooleanValue();
+                        }
+                    } catch (IllegalArgumentException ignored) {
+                        // Optional stage member is absent; retain normal verification.
+                    }
+                }
             }
         }
 
         if (!ackFlag) {
             return NO_RESULT;
         }
+        if (reportTypeIdx >= 0) {
+            var reportType = inputValues.get(reportTypeIdx);
+            if (reportType == null || reportType.getRawValue().getUint32Value() != 1) {
+                return NO_RESULT;
+            }
+        }
+
         if (sentApid != rcvdApid || sentSeq != rcvdSeq) {
             return NO_RESULT;
         }
@@ -158,13 +204,22 @@ public class Pus1Verifier extends AbstractAlgorithmExecutor {
         }
     }
 
+    private int findInput(String name) {
+        var inputs = algorithmDef.getInputList();
+        for (int i = 5; i < inputs.size(); i++) {
+            if (name.equals(inputs.get(i).getInputName())) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     /**
-     * Extracts the numeric APID from an engineering value, regardless of whether the argument/parameter
-     * type is a plain integer (e.g. {@code UINT32}, the common case) or an {@code ENUMERATED} type with a
-     * string label (the case this algorithm originally assumed). Enumerated values carry their own numeric
-     * code alongside the label, so both are compared by that code rather than by string.
+     * Prefer the raw APID so calibration cannot change packet identity. History inputs have no
+     * raw value, so fall back to their integer or enumerated engineering code.
      */
-    private static long apidValue(Value v) {
+    private static long apidValue(RawEngValue input) {
+        Value v = input.getRawValue() != null ? input.getRawValue() : input.getEngValue();
         return v.getType() == Type.ENUMERATED ? v.getSint64Value() : v.toLong();
     }
 }

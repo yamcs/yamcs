@@ -1,5 +1,7 @@
 package org.yamcs.xtce;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -17,6 +19,26 @@ public class TestAncillaryData {
                 .getSubsystem("SC001")
                 .getSubsystem("BusElectronics")
                 .getSequenceContainer("SensorHistoryRecord");
-        assertTrue(seq.useAsArchivePartition());
+        // BogusSAT-1.xml uses the old UseAsArchivingPartition property
+        assertTrue(seq.useAsPacketName());
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    public void testPacketNameProperty() {
+        SequenceContainer seq = new SequenceContainer("test");
+        assertFalse(seq.useAsPacketName());
+        seq.addAncillaryData(new AncillaryData(AncillaryData.KEY_YAMCS, AncillaryData.PROP_USE_AS_PACKET_NAME));
+        assertTrue(seq.useAsPacketName());
+
+        seq.useAsPacketName(false);
+        assertFalse(seq.useAsPacketName());
+        assertTrue(seq.getAncillaryData().isEmpty());
+
+        // the old name is written for compatibility with older Yamcs versions
+        seq.useAsPacketName(true);
+        assertEquals(1, seq.getAncillaryData().size());
+        assertEquals(AncillaryData.PROP_USE_AS_ARCHIVING_PARTITION, seq.getAncillaryData().get(0).getValue());
+        assertTrue(seq.useAsPacketName());
     }
 }

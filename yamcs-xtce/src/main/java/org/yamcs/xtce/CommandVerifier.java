@@ -46,6 +46,21 @@ public class CommandVerifier implements Serializable {
     private TerminationAction onSuccess = null, onFail = null, onTimeout = null;
 
     /**
+     * If true, when this verifier succeeds all the other verifiers of the command which have not finished yet are
+     * skipped. This is used for example for commands scheduled for later onboard execution: once the command has been
+     * scheduled successfully, verifiers of the actual execution (accepted, started, ...) do not apply.
+     */
+    private boolean skipOthersOnSuccess = false;
+
+    /**
+     * If not empty, this verifier only applies to commands that have at least one of these command history
+     * attributes (e.g. command options). For other commands the verifier is not created at all.
+     * For example, a Scheduled verifier should only apply to commands that have onboard scheduling (PUS ST[11] or
+     * ST[22]) options.
+     */
+    private List<String> requiredAttributes = new ArrayList<>();
+
+    /**
      * 
      * Command verification stage. This corresponds to the verifier name from XTCE.
      * 
@@ -91,6 +106,8 @@ public class CommandVerifier implements Serializable {
         this.onFail = cv.onFail;
         this.onTimeout = cv.onTimeout;
         this.matchCriteria = cv.matchCriteria;
+        this.skipOthersOnSuccess = cv.skipOthersOnSuccess;
+        this.requiredAttributes = cv.requiredAttributes;
     }
 
     public String getStage() {
@@ -154,6 +171,22 @@ public class CommandVerifier implements Serializable {
 
     public void setOnSuccess(TerminationAction onSuccess) {
         this.onSuccess = onSuccess;
+    }
+
+    public List<String> getRequiredAttributes() {
+        return requiredAttributes;
+    }
+
+    public void setRequiredAttributes(List<String> requiredAttributes) {
+        this.requiredAttributes = requiredAttributes;
+    }
+
+    public boolean isSkipOthersOnSuccess() {
+        return skipOthersOnSuccess;
+    }
+
+    public void setSkipOthersOnSuccess(boolean skipOthersOnSuccess) {
+        this.skipOthersOnSuccess = skipOthersOnSuccess;
     }
 
     public MatchCriteria getMatchCriteria() {

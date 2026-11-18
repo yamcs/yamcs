@@ -76,6 +76,17 @@
       </app-packets-page-tabs>
 
       <ya-filter-bar [formGroup]="filterForm" class="query" style="margin-top: 16px">
+        <ya-select icon="schedule" formControlName="timeBasis">
+          <ya-option id="GENERATION_TIME" label="Generation time" />
+          <ya-option
+            id="RECEPTION_TIME"
+            label="Reception time"
+            [disabled]="(archiveInfo$ | async)?.receptionTimeIndexState !== 'READY'" />
+        </ya-select>
+        <ya-select icon="sort" formControlName="order">
+          <ya-option id="desc" label="Newest first" />
+          <ya-option id="asc" label="Oldest first" />
+        </ya-select>
         <ya-select icon="access_time" formControlName="interval">
           <ya-option id="PT1H" label="Last hour" />
           <ya-option id="PT6H" label="Last 6 hours" />
@@ -98,6 +109,34 @@
         <ya-select [options]="nameOptions$ | async" formControlName="name" />
         <ya-select [options]="linkOptions$ | async" formControlName="link" />
       </ya-filter-bar>
+
+      @if (archiveInfo$ | async; as info) {
+        @if (info.receptionTimeIndexState === "BUILDING") {
+          <ya-table-top>
+            Reception-time browsing is being prepared. Generation-time browsing is available.
+          </ya-table-top>
+        } @else if (info.receptionTimeIndexState === "FAILED") {
+          <ya-table-top>Reception-time browsing is unavailable: {{ info.failure }}</ya-table-top>
+        } @else if (
+          info.receptionTimeIndexState === "ABSENT" &&
+          filterForm.value["timeBasis"] === "RECEPTION_TIME"
+        ) {
+          <ya-table-top>
+            Reception-time browsing is not enabled for this archive. Select Generation time to
+            browse packets.
+          </ya-table-top>
+        }
+        @if (
+          info.missingReceptionTimeRows &&
+          info.missingReceptionTimeRows !== "0" &&
+          filterForm.value["timeBasis"] === "RECEPTION_TIME"
+        ) {
+          <ya-table-top>
+            {{ info.missingReceptionTimeRows }} historical packets have no reception time and are
+            excluded.
+          </ya-table-top>
+        }
+      }
 
       <ya-table-window [duration]="appliedInterval" [start]="validStart" [stop]="validStop">
         @if (dataSource.loading$ | async) {

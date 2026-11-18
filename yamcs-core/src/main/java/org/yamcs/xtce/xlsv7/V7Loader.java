@@ -44,6 +44,7 @@ import org.yamcs.xtce.AlarmReportType;
 import org.yamcs.xtce.AlarmType;
 import org.yamcs.xtce.Algorithm;
 import org.yamcs.xtce.Algorithm.Scope;
+import org.yamcs.xtce.AncillaryData;
 import org.yamcs.xtce.Argument;
 import org.yamcs.xtce.ArgumentAssignment;
 import org.yamcs.xtce.ArgumentEntry;
@@ -188,9 +189,9 @@ public class V7Loader extends V7LoaderBase {
     final Pattern FIXED_VALUE_PATTERN = Pattern.compile("FixedValue\\((\\d+)\\)");
 
     // Increment major when breaking backward compatibility, increment minor when making backward compatible changes
-    final static String FORMAT_VERSION = "7.3";
+    final static String FORMAT_VERSION = "7.4";
     // Explicitly support these versions (i.e. load without warning)
-    final static String[] FORMAT_VERSIONS_SUPPORTED = new String[] { FORMAT_VERSION, "7.2", "7.1", "7.0" };
+    final static String[] FORMAT_VERSIONS_SUPPORTED = new String[] { FORMAT_VERSION, "7.3", "7.2", "7.1", "7.0" };
     String fileFormatVersion;
     final static String NAME_PATTERN = "[^./:\\[\\] ]+";
     final static Pattern REPEAT_PATTERN = Pattern.compile("(.*)[*](.*)");
@@ -848,6 +849,12 @@ public class V7Loader extends V7LoaderBase {
             if (xas != null) {
                 param.setAliasSet(xas);
             }
+
+            List<AncillaryData> ancillaryDataList = getAncillaryData(cells, CN_PARAM_ANCILLARY);
+            if (!ancillaryDataList.isEmpty()) {
+                param.setAncillaryData(ancillaryDataList);
+            }
+
             spaceSystem.addParameter(param);
         }
     }
@@ -1176,6 +1183,24 @@ public class V7Loader extends V7LoaderBase {
         return xas;
     }
 
+    private List<AncillaryData> getAncillaryData(Cell[] cells, String columnName) {
+        // Handle "ancillary data" column, with one key=value per line
+        List<AncillaryData> ancillaryDataList = new ArrayList<>();
+        if (hasColumn(cells, columnName)) {
+            for (String line : getContent(cells, columnName).split("\\R")) {
+                if (line.isBlank()) {
+                    continue;
+                }
+                String[] keyValue = line.trim().split("=", 2);
+                if (keyValue.length != 2) {
+                    throw new SpreadsheetLoadException(ctx, "Failed to parse ancillary data line '" + line + "'");
+                }
+                ancillaryDataList.add(new AncillaryData(keyValue[0], keyValue[1]));
+            }
+        }
+        return ancillaryDataList;
+    }
+
     boolean isEmpty(Cell cell) {
         return (cell == null) || (cell.getContents().isEmpty());
     }
@@ -1270,13 +1295,18 @@ public class V7Loader extends V7LoaderBase {
             if (hasColumn(cells, CN_CONT_FLAGS)) {
                 String flags = getContent(cells, CN_CONT_FLAGS);
                 if (flags.contains("a")) {
-                    container.useAsArchivePartition(true);
+                    container.useAsPacketName(true);
                 }
             }
 
             XtceAliasSet xas = getAliases(firstRow, cells);
             if (xas != null) {
                 container.setAliasSet(xas);
+            }
+
+            List<AncillaryData> ancillaryDataList = getAncillaryData(cells, CN_CONT_ANCILLARY);
+            if (!ancillaryDataList.isEmpty()) {
+                container.setAncillaryData(ancillaryDataList);
             }
 
             // we mark the start of the command and advance to the next line, to get to the first argument (if there is
@@ -1546,6 +1576,12 @@ public class V7Loader extends V7LoaderBase {
             if (xas != null) {
                 cmd.setAliasSet(xas);
             }
+
+            List<AncillaryData> ancillaryDataList = getAncillaryData(cells, CN_CMD_ANCILLARY);
+            if (!ancillaryDataList.isEmpty()) {
+                cmd.setAncillaryData(ancillaryDataList);
+            }
+
             String flags = getContent(cells, CN_CMD_FLAGS, null);
             if (flags != null && flags.contains("A")) {
                 cmd.setAbstract(true);
@@ -2114,6 +2150,8 @@ public class V7Loader extends V7LoaderBase {
                 longDescription = getContent(cells, CN_ALGO_LONG_DESCRIPTION);
             }
 
+            List<AncillaryData> ancillaryDataList = getAncillaryData(cells, CN_ALGO_ANCILLARY);
+
             // Check that there is not specified by mistake a in/out param already on the same line with the algorithm
             // name
             if (hasColumn(cells, CN_ALGO_PARA_INOUT) || hasColumn(cells, CN_ALGO_PARA_REF)) {
@@ -2135,6 +2173,11 @@ public class V7Loader extends V7LoaderBase {
             if (xas != null) {
                 algorithm.setAliasSet(xas);
             }
+
+            if (!ancillaryDataList.isEmpty()) {
+                algorithm.setAncillaryData(ancillaryDataList);
+            }
+
             algorithm.setLanguage(algorithmLanguage);
             // Replace smart-quotes “ and ” with regular quotes "
             algorithm.setAlgorithmText(algorithmText.replaceAll("[\u201c\u201d]", "\""));

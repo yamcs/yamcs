@@ -121,7 +121,7 @@ public class ColumnExpression extends Expression {
         if (fieldName == null) {
             code.append("col" + sname);
         } else {
-            String varName = "col" + className;
+            String varName = "col" + sanitizeName(className);
             String hasFunction = varName + ".has" + capitalizeFirstLetter(fieldName) + "()";
             String getFunction = varName + ".get" + capitalizeFirstLetter(fieldName) + "()";
             if (fieldDescriptor.getType() == Type.ENUM) {

@@ -19,6 +19,8 @@ import org.yamcs.StandardTupleDefinitions;
 import org.yamcs.api.HttpBody;
 import org.yamcs.api.Observer;
 import org.yamcs.archive.GPBHelper;
+import org.yamcs.archive.TmPartitionGroups;
+import org.yamcs.archive.TmReceptionTimeIndex;
 import org.yamcs.archive.XtceTmRecorder;
 import org.yamcs.container.ContainerConsumer;
 import org.yamcs.container.ContainerRequestManager;
@@ -44,6 +46,10 @@ import org.yamcs.protobuf.ExtractPacketRequest;
 import org.yamcs.protobuf.ExtractPacketResponse;
 import org.yamcs.protobuf.ExtractedParameterValue;
 import org.yamcs.protobuf.GetPacketRequest;
+import org.yamcs.protobuf.GetPacketArchiveInfoRequest;
+import org.yamcs.protobuf.PacketArchiveInfo;
+import org.yamcs.protobuf.PacketTimeBasis;
+import org.yamcs.protobuf.RebuildReceptionTimeIndexRequest;
 import org.yamcs.protobuf.ListPacketNamesRequest;
 import org.yamcs.protobuf.ListPacketNamesResponse;
 import org.yamcs.protobuf.ListPacketsRequest;
@@ -75,6 +81,52 @@ import com.google.protobuf.ByteString;
 public class PacketsApi extends AbstractPacketsApi<Context> {
 
     private static final Log log = new Log(PacketsApi.class);
+
+    @Override
+    public void getPacketArchiveInfo(Context ctx, GetPacketArchiveInfoRequest request,
+            Observer<PacketArchiveInfo> observer) {
+        String instance = InstancesApi.verifyInstance(request.getInstance());
+        observer.complete(archiveInfo(YarchDatabase.getInstance(instance)));
+    }
+
+    @Override
+    public void rebuildReceptionTimeIndex(Context ctx, RebuildReceptionTimeIndexRequest request,
+            Observer<PacketArchiveInfo> observer) {
+        ctx.checkSystemPrivilege(SystemPrivilege.ControlArchiving);
+        String instance = InstancesApi.verifyInstance(request.getInstance());
+        var database = YarchDatabase.getInstance(instance);
+        try {
+            TmReceptionTimeIndex.rebuild(database);
+            observer.complete(archiveInfo(database));
+        } catch (Exception e) {
+            throw new BadRequestException("Cannot provision reception-time index: " + e.getMessage(), e);
+        }
+    }
+
+    private PacketArchiveInfo archiveInfo(YarchDatabaseInstance database) {
+        var index = TmReceptionTimeIndex.get(database);
+        if (index == null || !index.getInfo().getManaged()) {
+            return PacketArchiveInfo.newBuilder().setReceptionTimeIndexState(PacketArchiveInfo.IndexState.ABSENT).build();
+        }
+        var info = index.getInfo();
+        var result = PacketArchiveInfo.newBuilder().setReceptionTimeIndexState(switch (info.getState()) {
+        case READY -> PacketArchiveInfo.IndexState.READY;
+        case BUILDING -> PacketArchiveInfo.IndexState.BUILDING;
+        case FAILED -> PacketArchiveInfo.IndexState.FAILED;
+        }).setBuildRevision(info.getBuildRevision()).setProcessedRows(info.getProcessedRows())
+                .setMissingReceptionTimeRows(info.getMissingRows());
+        if (info.hasFailure()) {
+            result.setFailure(info.getFailure());
+        }
+        return result.build();
+    }
+
+    private TmPacketArchiveQuery receptionQuery(String instance, com.google.protobuf.Timestamp start,
+            com.google.protobuf.Timestamp stop, boolean ascending, Set<String> names, String link, String filter) {
+        return new TmPacketArchiveQuery(YarchDatabase.getInstance(instance),
+                start == null ? null : TimeEncoding.fromProtobufTimestamp(start),
+                stop == null ? null : TimeEncoding.fromProtobufTimestamp(stop), ascending, names, link, filter);
+    }
 
     @Override
     public void listPacketNames(Context ctx, ListPacketNamesRequest request,
@@ -122,6 +174,12 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
 
         Long pos = request.hasPos() ? request.getPos() : null;
         int limit = request.hasLimit() ? request.getLimit() : 100;
+        if (limit <= 0 || (request.hasPos() && request.getPos() < 0)) {
+            throw new BadRequestException("limit must be positive and pos must be nonnegative");
+        }
+        if (request.hasOrder() && !Set.of("asc", "desc").contains(request.getOrder())) {
+            throw new BadRequestException("order must be asc or desc");
+        }
         boolean desc = !request.getOrder().equals("asc");
 
         if (pos != null) {
@@ -136,6 +194,21 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
         if (nameSet.isEmpty()) {
             // No permissions for any packet
             observer.complete(ListPacketsResponse.getDefaultInstance());
+            return;
+        }
+
+        if (request.getTimeBasis() == PacketTimeBasis.RECEPTION_TIME) {
+            var query = receptionQuery(instance, request.hasStart() ? request.getStart() : null,
+                    request.hasStop() ? request.getStop() : null, !desc, nameSet,
+                    request.hasLink() ? request.getLink() : null, request.hasFilter() ? request.getFilter() : null);
+            observer.setCancelHandler(query::close);
+            Thread.startVirtualThread(() -> {
+                try (query) {
+                    observer.complete(query.list(request, observer::isCancelled));
+                } catch (Exception e) {
+                    observer.completeExceptionally(e);
+                }
+            });
             return;
         }
 
@@ -156,6 +229,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
 
         if (!nameSet.isEmpty()) {
             sqlb.whereColIn("pname", nameSet);
+            TmPartitionGroups.addGroupFilter(instance, sqlb, nameSet);
         }
         if (request.hasLink()) {
             sqlb.where("link = ?", request.getLink());
@@ -188,6 +262,10 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
 
             @Override
             public void onTuple(Stream stream, Tuple tuple) {
+                if (observer.isCancelled()) {
+                    stream.close();
+                    return;
+                }
                 if (filter != null && !filter.matches(tuple)) {
                     return;
                 }
@@ -212,7 +290,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
                 }
                 observer.complete(responseb.build());
             }
-        });
+        }, stream -> observer.setCancelHandler(stream::close));
     }
 
     @Override
@@ -224,6 +302,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
         var sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
         if (request.hasPname()) { // Optional due to deprecated API where name is not provided
             sqlb = sqlb.where("pname = ?", request.getPname());
+            TmPartitionGroups.addGroupFilter(instance, sqlb, List.of(request.getPname()));
         }
         sqlb = sqlb.where("gentime = ?", gentime);
         sqlb = sqlb.where("seqNum = ?", seqNum);
@@ -269,6 +348,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
 
         if (request.getNameCount() > 0) {
             sqlb.whereColIn("pname", request.getNameList());
+            TmPartitionGroups.addGroupFilter(instance, sqlb, request.getNameList());
         }
 
         StreamFactory.stream(instance, sqlb.toString(), sqlb.getQueryArguments(), new StreamSubscriber() {
@@ -296,6 +376,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
         var sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
         if (request.hasPname()) { // Optional due to deprecated API where name is not provided
             sqlb = sqlb.where("pname = ?", request.getPname());
+            TmPartitionGroups.addGroupFilter(instance, sqlb, List.of(request.getPname()));
         }
         sqlb = sqlb.where("gentime = ?", gentime);
         sqlb = sqlb.where("seqNum = ?", seqNum);
@@ -342,6 +423,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
         var sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
         if (request.hasPname()) { // Optional due to deprecated API where name is not provided
             sqlb = sqlb.where("pname = ?", request.getPname());
+            TmPartitionGroups.addGroupFilter(instance, sqlb, List.of(request.getPname()));
         }
         sqlb = sqlb.where("gentime = ?", gentime);
         sqlb = sqlb.where("seqNum = ?", seqNum);
@@ -410,7 +492,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
 
                     var bytes = packet.getPacket().toByteArray();
                     var result = extractor.processPacket(bytes, gentime, gentime, seqNum);
-                    var packetName = XtceTmRecorder.deriveArchivePartition(result);
+                    var packetName = XtceTmRecorder.derivePacketName(result);
                     responseb.setPacketName(packetName);
 
                     for (var pval : result.getParameterResult()) {
@@ -443,8 +525,37 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
     public void exportPackets(Context ctx, ExportPacketsRequest request, Observer<HttpBody> observer) {
         String instance = InstancesApi.verifyInstance(request.getInstance());
 
+        if (!Set.of("asc", "desc").contains(request.getOrder())) {
+            throw new BadRequestException("order must be asc or desc");
+        }
+
         Set<String> nameSet = new HashSet<>(request.getNameList());
         ctx.checkObjectPrivileges(ObjectPrivilegeType.ReadPacket, nameSet);
+
+        if (request.getTimeBasis() == PacketTimeBasis.RECEPTION_TIME) {
+            if (nameSet.isEmpty()) {
+                nameSet.addAll(getTmPacketNames(instance, ctx.user));
+            }
+            var query = receptionQuery(instance, request.hasStart() ? request.getStart() : null,
+                    request.hasStop() ? request.getStop() : null, "asc".equals(request.getOrder()), nameSet,
+                    request.hasLink() ? request.getLink() : null, request.hasFilter() ? request.getFilter() : null);
+            observer.setCancelHandler(query::close);
+            observer.next(HttpBody.newBuilder().setContentType(MediaType.OCTET_STREAM.toString())
+                    .setFilename("packets.raw").build());
+            Thread.startVirtualThread(() -> {
+                try (query) {
+                    query.walk(tuple -> {
+                        observer.next(HttpBody.newBuilder().setData(ByteString.copyFrom(
+                                (byte[]) tuple.getColumn(StandardTupleDefinitions.TM_PACKET_COLUMN))).build());
+                        return true;
+                    }, observer::isCancelled);
+                    observer.complete();
+                } catch (Exception e) {
+                    observer.completeExceptionally(e);
+                }
+            });
+            return;
+        }
 
         SqlBuilder sqlb = new SqlBuilder(XtceTmRecorder.TABLE_NAME);
 
@@ -457,10 +568,12 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
 
         if (request.getNameCount() > 0) {
             sqlb.whereColIn("pname", nameSet);
+            TmPartitionGroups.addGroupFilter(instance, sqlb, nameSet);
         }
         if (request.hasLink()) {
             sqlb.where("link = ?", request.getLink());
         }
+        sqlb.descend("desc".equals(request.getOrder()));
         String sql = sqlb.toString();
 
         // Parse the filter before streaming anything, so that a syntax error
@@ -502,7 +615,7 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
             public void streamClosed(Stream stream) {
                 observer.complete();
             }
-        });
+        }, stream -> observer.setCancelHandler(stream::close));
     }
 
     @Override
@@ -681,8 +794,19 @@ public class PacketsApi extends AbstractPacketsApi<Context> {
         }
 
         public static PacketPageToken decode(String encoded) {
-            String decoded = new String(Base64.getUrlDecoder().decode(encoded));
-            return new Gson().fromJson(decoded, PacketPageToken.class);
+            try {
+                if (encoded.length() > 4096) {
+                    throw new IllegalArgumentException();
+                }
+                String decoded = new String(Base64.getUrlDecoder().decode(encoded), java.nio.charset.StandardCharsets.UTF_8);
+                var json = com.google.gson.JsonParser.parseString(decoded).getAsJsonObject();
+                if (!json.has("gentime") || !json.has("seqNum") || json.has("timeBasis")) {
+                    throw new IllegalArgumentException();
+                }
+                return new Gson().fromJson(json, PacketPageToken.class);
+            } catch (RuntimeException e) {
+                throw new BadRequestException("Invalid generation-time continuation token");
+            }
         }
 
         public String encodeAsString() {

@@ -174,10 +174,9 @@ public class Spec {
         return doValidate(new ValidationContext(""), args, "", false);
     }
 
-    private Map<String, Object> doValidate(ValidationContext ctx, Map<String, Object> args, String parent,
-            boolean suppressWarnings)
-            throws ValidationException {
-
+    private void verifyGroups(ValidationContext ctx, Map<String, Object> args, String parent,
+            List<List<String>> requiredOneOfGroups, List<List<String>> mutuallyExclusiveGroups,
+            List<List<String>> requireTogetherGroups) throws ValidationException {
         for (var group : requiredOneOfGroups) {
             if (count(args, group) == 0) {
                 var msg = "One of the following is required: " + group;
@@ -208,6 +207,13 @@ public class Spec {
                 throw new ValidationException(ctx, msg);
             }
         }
+    }
+
+    private Map<String, Object> doValidate(ValidationContext ctx, Map<String, Object> args, String parent,
+            boolean suppressWarnings)
+            throws ValidationException {
+
+        verifyGroups(ctx, args, parent, requiredOneOfGroups, mutuallyExclusiveGroups, requireTogetherGroups);
 
         var satisfiedWhenConditions = whenConditions.stream().filter(whenCondition -> {
             var arg = args.get(whenCondition.key);
@@ -215,6 +221,9 @@ public class Spec {
         }).toList();
 
         for (var whenCondition : satisfiedWhenConditions) {
+            verifyGroups(ctx, args, parent, whenCondition.requiredOneOfGroups,
+                    whenCondition.mutuallyExclusiveGroups, whenCondition.requireTogetherGroups);
+
             var missing = whenCondition.requiredKeys.stream()
                     .filter(key -> !args.containsKey(key))
                     .collect(Collectors.toList());
@@ -573,9 +582,9 @@ public class Spec {
                 var copy = new Option(parentSpec, option);
                 options.put(option.name, copy);
             }
-            parentSpec.requiredOneOfGroups.addAll(spec.requiredOneOfGroups);
-            parentSpec.requireTogetherGroups.addAll(spec.requireTogetherGroups);
-            parentSpec.mutuallyExclusiveGroups.addAll(spec.mutuallyExclusiveGroups);
+            requiredOneOfGroups.addAll(spec.requiredOneOfGroups);
+            requireTogetherGroups.addAll(spec.requireTogetherGroups);
+            mutuallyExclusiveGroups.addAll(spec.mutuallyExclusiveGroups);
             return this;
         }
 

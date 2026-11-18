@@ -1,4 +1,5 @@
 import { Component, input, Input, OnInit } from '@angular/core';
+import { MatDivider } from '@angular/material/divider';
 import { MatIcon } from '@angular/material/icon';
 import {
   MatMenu,
@@ -16,6 +17,17 @@ export interface YaColumnInfo {
   visible?: boolean;
   alwaysVisible?: boolean;
   width?: string;
+
+  /**
+   * If set, the column is listed together with other columns of the
+   * same group, separated by dividers from other menu entries.
+   */
+  group?: string;
+}
+
+interface MenuEntry {
+  column: YaColumnInfo;
+  divider: boolean;
 }
 
 interface StoredColumnInfo {
@@ -27,6 +39,7 @@ interface StoredColumnInfo {
   selector: 'ya-column-chooser',
   templateUrl: './column-chooser.component.html',
   imports: [
+    MatDivider,
     MatMenu,
     MatMenuContent,
     MatMenuItem,
@@ -45,6 +58,8 @@ export class YaColumnChooser implements OnInit {
 
   displayedColumns$ = new BehaviorSubject<string[]>([]);
 
+  menuEntries: MenuEntry[] = [];
+
   constructor(private prefs: Preferences) {}
 
   ngOnInit() {
@@ -53,6 +68,37 @@ export class YaColumnChooser implements OnInit {
 
   recalculate(columns: YaColumnInfo[]) {
     this.columns = columns;
+
+    // Gather grouped columns at the position of the first column of their group
+    const ordered: YaColumnInfo[] = [];
+    const groupColumns = new Map<string, YaColumnInfo[]>();
+    for (const column of columns) {
+      if (column.alwaysVisible) {
+        continue;
+      }
+      if (column.group) {
+        let group = groupColumns.get(column.group);
+        if (!group) {
+          group = [];
+          groupColumns.set(column.group, group);
+          ordered.push(column);
+        }
+        group.push(column);
+      } else {
+        ordered.push(column);
+      }
+    }
+    this.menuEntries = [];
+    for (const column of ordered) {
+      const members = column.group ? groupColumns.get(column.group)! : [column];
+      for (const member of members) {
+        const prev = this.menuEntries[this.menuEntries.length - 1];
+        this.menuEntries.push({
+          column: member,
+          divider: !!prev && prev.column.group !== member.group,
+        });
+      }
+    }
 
     const preferenceKey = this.preferenceKey();
     const storedColumnsById = new Map<string, StoredColumnInfo>();

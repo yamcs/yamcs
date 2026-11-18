@@ -125,19 +125,10 @@ public class HandlerContext {
 
     public String getOriginalHostAddress() {
         var address = (InetSocketAddress) nettyContext.channel().remoteAddress();
-
-        var httpServer = getHttpServer();
-        if (httpServer.isTrustedProxy(address)) {
-            var forwardedFor = nettyRequest.headers().get("x-forwarded-for");
-            if (forwardedFor != null) {
-                return httpServer.peelForwardedFor(forwardedFor);
-            }
-        }
-
-        return address.getAddress().getHostAddress();
+        return getHttpServer().getOriginalHostAddress(address, nettyRequest);
     }
 
-    private HttpServer getHttpServer() {
+    public HttpServer getHttpServer() {
         return nettyContext.channel().attr(HttpRequestHandler.CTX_HTTP_SERVER).get();
     }
 

@@ -16,13 +16,12 @@
 				DataEncodingEncoder.encodeRawBinary()). On the TM side, each entry is decoded via a
 				nested Pus21EmbeddedTcEntry container whose trailing tc_trailer member is sized off
 				the embedded packet's own packet_data_length field it just decoded (C+1 bytes) -- the
-				same ContainerRefEntry/RepeatEntry/DynamicValue machinery already shipped for
-				TM_19_11's ea_def_entry.</Note>
+				same ContainerRefEntry/RepeatEntry/DynamicValue machinery used by TM_19_11's
+				ea_def_entry.</Note>
 			<Note>TC[21,2]/TC[21,8] (load by reference): two MetaCommand variants each
 				(_NO_PATH / _WITH_PATH) since XTCE cannot express an optional variable-length field.
 				Path components are length-prefixed binary members (sibling _len argument), the
-				standard ECSS "variable character-string" encoding -- same technique as TM_19_11's
-				request_len/request pair.</Note>
+				standard ECSS "variable character-string" encoding.</Note>
 		</NoteSet>
 	</Header>
 	<TelemetryMetaData>

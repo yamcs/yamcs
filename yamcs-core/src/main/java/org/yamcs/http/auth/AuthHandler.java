@@ -1,5 +1,6 @@
 package org.yamcs.http.auth;
 
+import java.net.URI;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -8,12 +9,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.YamcsServer;
+import org.yamcs.http.AuthRateLimiter;
 import org.yamcs.http.BadRequestException;
 import org.yamcs.http.BodyHandler;
 import org.yamcs.http.HandlerContext;
+import org.yamcs.http.HttpRequestHandler;
 import org.yamcs.http.HttpServer;
 import org.yamcs.http.InternalServerErrorException;
 import org.yamcs.http.NotFoundException;
@@ -22,9 +24,9 @@ import org.yamcs.http.UnauthorizedException;
 import org.yamcs.http.api.IamApi;
 import org.yamcs.http.auth.TokenStore.RefreshResult;
 import org.yamcs.protobuf.AuthInfo;
+import org.yamcs.protobuf.LogoutResponse;
 import org.yamcs.protobuf.OpenIDConnectInfo;
 import org.yamcs.protobuf.TokenResponse;
-import org.yamcs.security.ApplicationCredentials;
 import org.yamcs.security.AuthModule;
 import org.yamcs.security.AuthenticationException;
 import org.yamcs.security.AuthenticationInfo;
@@ -32,6 +34,7 @@ import org.yamcs.security.AuthenticationToken;
 import org.yamcs.security.AuthorizationException;
 import org.yamcs.security.Directory;
 import org.yamcs.security.OpenIDAuthModule;
+import org.yamcs.security.OpenIDAuthenticationInfo;
 import org.yamcs.security.SecurityStore;
 import org.yamcs.security.SessionManager;
 import org.yamcs.security.SpnegoAuthModule;
@@ -68,17 +71,12 @@ public class AuthHandler extends BodyHandler {
     private static final Cache<String, AuthenticationInfo> CODE_CACHE = CacheBuilder.newBuilder()
             .expireAfterWrite(60, TimeUnit.SECONDS).build();
 
-    // Limit auth requests by IP, expires after 1 min of inactivity
-    private static final Cache<String, IpLimit> IP_LIMIT_CACHE = CacheBuilder.newBuilder()
-            .expireAfterAccess(1, TimeUnit.MINUTES)
-            .build();
-
     private TokenStore tokenStore;
-    private int maxAuthRequestsPerSecond;
+    private AuthRateLimiter authRateLimiter;
 
     public AuthHandler(HttpServer httpServer) {
         tokenStore = httpServer.getTokenStore();
-        maxAuthRequestsPerSecond = httpServer.getMaxAuthRequestsPerSecond();
+        authRateLimiter = httpServer.getAuthRateLimiter();
     }
 
     @Override
@@ -102,7 +100,7 @@ public class AuthHandler extends BodyHandler {
             handleAuthorize(ctx);
             return;
         } else if (path.equals("/auth/token")) {
-            checkRateLimit(ctx);
+            authRateLimiter.acquire(ctx.getOriginalHostAddress());
             handleToken(ctx);
             return;
         } else if (path.equals("/auth/spnego")) {
@@ -113,6 +111,9 @@ public class AuthHandler extends BodyHandler {
             }
         } else if (path.equals("/auth/actions/login")) {
             handleLoginAction(ctx);
+            return;
+        } else if (path.equals("/auth/logout")) {
+            handleLogout(ctx);
             return;
         }
 
@@ -132,6 +133,10 @@ public class AuthHandler extends BodyHandler {
     private void handleAuthorize(HandlerContext ctx) {
         ctx.requireMethod(HttpMethod.GET, HttpMethod.POST);
         OpenIDAuthenticationRequest request = new OpenIDAuthenticationRequest(ctx);
+        if (!isValidRedirectUri(request.getRedirectURI())) {
+            sendInvalidRedirectUri(ctx);
+            return;
+        }
         showLoginForm(ctx, request);
     }
 
@@ -141,20 +146,85 @@ public class AuthHandler extends BodyHandler {
 
         LoginRequest request = new LoginRequest(ctx);
 
+        String origin = ctx.getHeader(HttpHeaderNames.ORIGIN);
+        if (!isSameOrigin(request.getRedirectURI(), origin)) {
+            log.info("Rejecting login with redirect_uri '{}' for origin {}", request.getRedirectURI(),
+                    origin != null ? "'" + origin + "'" : "<missing>");
+            sendInvalidRedirectUri(ctx);
+            return;
+        }
+
+        var ip = ctx.getOriginalHostAddress();
+        try {
+            authRateLimiter.acquire(ip);
+        } catch (TooManyRequestsException e) {
+            log.warn("Denying login attempt for '{}' from {}: {}", request.getUsername(), ip, e.getMessage());
+            showLoginError(ctx, request, HttpResponseStatus.TOO_MANY_REQUESTS,
+                    "Too many login attempts. Try again later.");
+            return;
+        }
+
         AuthenticationToken token = request.getUsernamePasswordToken();
         getSecurityStore().login(token).whenComplete((info, err) -> {
             if (err != null) {
                 if (err instanceof AuthenticationException || err instanceof AuthorizationException) {
                     log.info("Denying access to '" + request.getUsername() + "': " + err.getMessage());
-                    showLoginError(ctx, request, "Invalid username or password");
+                    showLoginError(ctx, request, HttpResponseStatus.OK, "Invalid username or password");
                 } else {
                     log.error("Unexpected error while attempting user login", err);
-                    showLoginError(ctx, request, "Server Error");
+                    showLoginError(ctx, request, HttpResponseStatus.OK, "Server Error");
                 }
             } else {
+                authRateLimiter.release(ip);
                 redirectWithCode(ctx, info, request);
             }
         });
+    }
+
+    private static void sendInvalidRedirectUri(HandlerContext ctx) {
+        HttpRequestHandler.sendPlainTextError(ctx.getNettyChannelHandlerContext(), ctx.getNettyHttpRequest(),
+                HttpResponseStatus.BAD_REQUEST, "Invalid redirect_uri");
+    }
+
+    static boolean isValidRedirectUri(String uri) {
+        return parseHttpUri(uri) != null;
+    }
+
+    /**
+     * Returns true if {@code uri} has the same scheme, host and port as {@code origin}.
+     */
+    static boolean isSameOrigin(String uri, String origin) {
+        URI a = parseHttpUri(uri);
+        URI b = parseHttpUri(origin);
+        if (a == null || b == null) {
+            return false;
+        }
+        return a.getScheme().equalsIgnoreCase(b.getScheme())
+                && a.getHost().equalsIgnoreCase(b.getHost())
+                && getPort(a) == getPort(b);
+    }
+
+    private static URI parseHttpUri(String uri) {
+        if (uri == null) {
+            return null;
+        }
+        try {
+            URI parsed = new URI(uri);
+            String scheme = parsed.getScheme();
+            if (!"http".equalsIgnoreCase(scheme) && !"https".equalsIgnoreCase(scheme)) {
+                return null;
+            }
+            return parsed.getHost() != null ? parsed : null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static int getPort(URI uri) {
+        if (uri.getPort() != -1) {
+            return uri.getPort();
+        }
+        return "https".equalsIgnoreCase(uri.getScheme()) ? 443 : 80;
     }
 
     public static AuthInfo createAuthInfo() {
@@ -169,7 +239,9 @@ public class AuthHandler extends BodyHandler {
                 String clientId = ((OpenIDAuthModule) authModule).getClientId();
                 openidb.setClientId(clientId);
                 String authorizationEndpoint = ((OpenIDAuthModule) authModule).getAuthorizationEndpoint();
-                openidb.setAuthorizationEndpoint(authorizationEndpoint);
+                if (authorizationEndpoint != null) { // Null if discovery has not yet succeeded
+                    openidb.setAuthorizationEndpoint(authorizationEndpoint);
+                }
                 String scope = ((OpenIDAuthModule) authModule).getScope();
                 openidb.setScope(scope);
 
@@ -186,14 +258,15 @@ public class AuthHandler extends BodyHandler {
         ctx.render(HttpResponseStatus.OK, "/auth/templates/authorize.html", vars);
     }
 
-    private void showLoginError(HandlerContext ctx, LoginRequest request, String errorMessage) {
+    private void showLoginError(HandlerContext ctx, LoginRequest request, HttpResponseStatus status,
+            String errorMessage) {
         Map<String, Object> vars = new HashMap<>();
         vars.put("contextPath", ctx.getContextPath());
         vars.put("request", request.getMap());
         if (errorMessage != null) {
             vars.put("errorMessage", errorMessage);
         }
-        ctx.render(HttpResponseStatus.OK, "/auth/templates/authorize.html", vars);
+        ctx.render(status, "/auth/templates/authorize.html", vars);
     }
 
     private void redirectWithCode(HandlerContext ctx, AuthenticationInfo info, LoginRequest request) {
@@ -208,7 +281,7 @@ public class AuthHandler extends BodyHandler {
             qsEncoder.addParam("state", state);
         }
 
-        log.info("Redirecting to " + qsEncoder.toString());
+        log.info("Redirecting to {}", request.getRedirectURI());
         ctx.sendRedirect(qsEncoder.toString());
     }
 
@@ -234,9 +307,6 @@ public class AuthHandler extends BodyHandler {
             break;
         case "refresh_token":
             handleTokenRequestWithRefreshToken(ctx);
-            break;
-        case "client_credentials":
-            handleTokenRequestWithClientCredentials(ctx);
             break;
         default:
             throw new BadRequestException("Unsupported grant_type '" + grantType + "'");
@@ -309,6 +379,33 @@ public class AuthHandler extends BodyHandler {
         sendNewAccessToken(ctx, authenticationInfo, refreshToken);
     }
 
+    /**
+     * Ends the session associated with the provided refresh token. If the session was established through an OpenID
+     * server that supports RP-Initiated Logout, the response indicates where to redirect the browser to.
+     */
+    private void handleLogout(HandlerContext ctx) {
+        ctx.requirePOST();
+        ctx.requireFormEncoding();
+        String refreshToken = ctx.requireFormParameter("refresh_token");
+
+        var responseb = LogoutResponse.newBuilder();
+        var session = tokenStore.getSession(refreshToken);
+        if (session != null) {
+            var authenticationInfo = session.getAuthenticationInfo();
+            if (authenticationInfo instanceof OpenIDAuthenticationInfo openidInfo
+                    && authenticationInfo.getAuthenticator() instanceof OpenIDAuthModule openidAuthModule) {
+                var redirectUrl = openidAuthModule.buildEndSessionUrl(openidInfo);
+                if (redirectUrl != null) {
+                    responseb.setRedirectUrl(redirectUrl);
+                }
+            }
+
+            tokenStore.revokeRefreshToken(refreshToken);
+            getSecurityStore().getSessionManager().invalidateSession(session.getId());
+        }
+        ctx.sendOK(responseb.build());
+    }
+
     private UserSession createSession(HandlerContext ctx, AuthenticationInfo authenticationInfo) {
         String ipAddress = ctx.getOriginalHostAddress();
         String hostname = ctx.getOriginalHostName();
@@ -343,47 +440,12 @@ public class AuthHandler extends BodyHandler {
         }
     }
 
-    private void handleTokenRequestWithClientCredentials(HandlerContext ctx) {
-        String clientId = null;
-        String clientSecret = null;
-
-        String[] basicAuth = ctx.getBasicCredentials();
-        if (basicAuth != null) {
-            clientId = basicAuth[0];
-            clientSecret = basicAuth[1];
-        } else {
-            clientId = ctx.getFormParameter("client_id");
-            clientSecret = ctx.getFormParameter("client_secret");
-        }
-        if (clientId == null || clientSecret == null) {
-            throw new BadRequestException("Missing client id or secret");
-        }
-
-        ApplicationCredentials token = new ApplicationCredentials(clientId, clientSecret);
-        token.setBecome(ctx.getFormParameter("become"));
-
-        try {
-            AuthenticationInfo authenticationInfo = getSecurityStore().login(token).get();
-            sendNewAccessToken(ctx, authenticationInfo, null /* no refresh needed, client secret is sufficient */);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        } catch (ExecutionException e) {
-            Throwable cause = e.getCause();
-            if (cause instanceof AuthenticationException || cause instanceof AuthorizationException) {
-                log.info("Denying access to '" + clientId + "': " + cause.getMessage());
-                throw new UnauthorizedException();
-            } else {
-                log.error("Unexpected error while attempting user login", cause);
-                throw new InternalServerErrorException(cause);
-            }
-        }
-    }
-
     private void sendNewAccessToken(HandlerContext ctx, AuthenticationInfo authenticationInfo, String refreshToken) {
         try {
             User user = getSecurityStore().getUserFromCache(authenticationInfo.getUsername());
             TokenResponse response = generateTokenResponse(user, refreshToken);
             tokenStore.registerAccessToken(response.getAccessToken(), authenticationInfo);
+            authRateLimiter.release(ctx.getOriginalHostAddress());
             ctx.sendOK(response);
         } catch (InvalidKeyException | NoSuchAlgorithmException e) {
             throw new InternalServerErrorException(e);
@@ -419,40 +481,11 @@ public class AuthHandler extends BodyHandler {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 
-    /**
-     * Check request rate per IP, to protect against brute-force login attempts
-     */
-    private void checkRateLimit(HandlerContext ctx) throws TooManyRequestsException {
-        try {
-            var ip = ctx.getOriginalHostAddress();
-            var ipLimit = IP_LIMIT_CACHE.get(ip, () -> new IpLimit());
-            var now = System.currentTimeMillis();
-
-            if (now - ipLimit.timestamp > 1000) { // Reset every second
-                ipLimit.count.set(0);
-                ipLimit.timestamp = now;
-            }
-
-            if (ipLimit.count.incrementAndGet() > maxAuthRequestsPerSecond) {
-                // Send 429
-                throw new TooManyRequestsException("Too many login attempts");
-            }
-        } catch (ExecutionException e) {
-            log.error("Unexpected exception", e);
-            return; // Fallback to allow if cache fails
-        }
-    }
-
     public static SecurityStore getSecurityStore() {
         return YamcsServer.getServer().getSecurityStore();
     }
 
     private static Directory getDirectory() {
         return getSecurityStore().getDirectory();
-    }
-
-    private static class IpLimit {
-        final AtomicInteger count = new AtomicInteger(0);
-        volatile long timestamp = System.currentTimeMillis();
     }
 }

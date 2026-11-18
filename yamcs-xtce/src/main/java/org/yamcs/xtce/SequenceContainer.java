@@ -16,7 +16,7 @@ import static org.yamcs.xtce.AncillaryData.*;
  * The idle pattern is part of any unallocated space in the Container.
  */
 public class SequenceContainer extends Container {
-    private static final long serialVersionUID = 4L;
+    private static final long serialVersionUID = 5L;
 
     List<SequenceEntry> entryList = new ArrayList<>();
 
@@ -25,26 +25,24 @@ public class SequenceContainer extends Container {
     }
 
     /**
-     * Use this container as a partition when archiving (name of the container is used as partitioning key in the tm
-     * table).
+     * Use the qualified name of this container as packet name (stored in the pname column of the tm table).
      * <p>
-     * If this property is set, this container name will be used for storing a certain packet if the packet doesn't
-     * match any inherited container with the property set
+     * If this property is set, this container name will be used as packet name if the packet doesn't match any
+     * inherited container with the property set
      * 
      */
-    private boolean useAsArchivePartition = false;
+    private boolean useAsPacketName = false;
 
     /**
-     * If this is true, the {@link #useAsArchivePartition} flag will be set automatically after all the MDB has been
-     * loaded.
+     * If this is true, the {@link #useAsPacketName} flag will be set automatically after all the MDB has been loaded.
      */
-    private boolean autoPartition = false;
+    private boolean autoPacketName = false;
 
     @Override
     public void addAncillaryData(AncillaryData data) {
         super.addAncillaryData(data);
-        if (isArchivePartition(data)) {
-            this.useAsArchivePartition = true;
+        if (isPacketNameProperty(data)) {
+            this.useAsPacketName = true;
         }
 
     }
@@ -53,15 +51,17 @@ public class SequenceContainer extends Container {
     public void setAncillaryData(List<AncillaryData> ancillaryData) {
         super.setAncillaryData(ancillaryData);
 
-        Optional<?> o = ancillaryData.stream().filter(ad -> isArchivePartition(ad)).findAny();
+        Optional<?> o = ancillaryData.stream().filter(ad -> isPacketNameProperty(ad)).findAny();
         if (o.isPresent()) {
-            this.useAsArchivePartition = true;
+            this.useAsPacketName = true;
         }
     }
 
-    private boolean isArchivePartition(AncillaryData ad) {
+    @SuppressWarnings("deprecation")
+    private boolean isPacketNameProperty(AncillaryData ad) {
         return KEY_YAMCS.equalsIgnoreCase(ad.getName())
-                && PROP_USE_AS_ARCHIVING_PARTITION.equalsIgnoreCase(ad.getValue());
+                && (PROP_USE_AS_PACKET_NAME.equalsIgnoreCase(ad.getValue())
+                        || PROP_USE_AS_ARCHIVING_PARTITION.equalsIgnoreCase(ad.getValue()));
     }
 
     public SequenceContainer getBaseContainer() {
@@ -123,14 +123,14 @@ public class SequenceContainer extends Container {
         return Collections.unmodifiableList(entryList);
     }
 
-    public boolean useAsArchivePartition() {
-        return useAsArchivePartition;
+    public boolean useAsPacketName() {
+        return useAsPacketName;
     }
 
     /**
-     * If set to true, the XtceTmRecorder will set the qualified name of this container as the "pname" (packet
-     * name) column in the tm table. The packet will be then visible in the front page of Yamcs web as well as in the
-     * Archive overview.
+     * If set to true, the qualified name of this container is used as packet name. The XtceTmRecorder stores it in the
+     * "pname" column of the tm table, it appears in the Archive overview and in the packet statistics and it is used
+     * to check the ReadPacket privileges.
      * <p>
      * If the container has a child that matches the packet, and the child also has this flag set, then the name of the
      * child will be used instead (e.g. the name of the most specific packet will be used).
@@ -138,17 +138,39 @@ public class SequenceContainer extends Container {
      * If no container having this flag matches a packet, the name of the root container will be used (even if it does
      * not have the flag set).
      * 
-     * @param useAsArchivePartition
+     * <p>
+     * The flag is stored in the ancillary data using the old {@link AncillaryData#PROP_USE_AS_ARCHIVING_PARTITION}
+     * value such that the exported XTCE files can be read by older Yamcs versions.
+     * 
+     * @param useAsPacketName
      */
-    public void useAsArchivePartition(boolean useAsArchivePartition) {
-        this.useAsArchivePartition = useAsArchivePartition;
+    @SuppressWarnings("deprecation")
+    public void useAsPacketName(boolean useAsPacketName) {
+        this.useAsPacketName = useAsPacketName;
         if (ancillaryData != null) {
-            ancillaryData.removeIf(ad -> isArchivePartition(ad));
+            ancillaryData.removeIf(ad -> isPacketNameProperty(ad));
         }
 
-        if (useAsArchivePartition) {
+        if (useAsPacketName) {
+            // TODO switch to PROP_USE_AS_PACKET_NAME once older versions not recognizing it are no longer in use
             addAncillaryData(new AncillaryData(KEY_YAMCS, PROP_USE_AS_ARCHIVING_PARTITION));
         }
+    }
+
+    /**
+     * @deprecated use {@link #useAsPacketName()}
+     */
+    @Deprecated
+    public boolean useAsArchivePartition() {
+        return useAsPacketName();
+    }
+
+    /**
+     * @deprecated use {@link #useAsPacketName(boolean)}
+     */
+    @Deprecated
+    public void useAsArchivePartition(boolean useAsArchivePartition) {
+        useAsPacketName(useAsArchivePartition);
     }
 
     public void print(PrintStream out) {
@@ -156,7 +178,7 @@ public class SequenceContainer extends Container {
         if (getAliasSet() != null) {
             out.print(", aliases: " + getAliasSet());
         }
-        out.print(", useAsArchivePartition:" + useAsArchivePartition);
+        out.print(", useAsPacketName:" + useAsPacketName);
         if (rate != null) {
             out.print(", rateInStream: " + rate);
         }
@@ -175,12 +197,27 @@ public class SequenceContainer extends Container {
         return "SequenceContainer(name=" + name + ")";
     }
 
+    public boolean isAutoPacketName() {
+        return autoPacketName;
+    }
+
+    public void setAutoPacketName(boolean autoPacketName) {
+        this.autoPacketName = autoPacketName;
+    }
+
+    /**
+     * @deprecated use {@link #isAutoPacketName()}
+     */
+    @Deprecated
     public boolean isAutoPartition() {
-        return autoPartition;
+        return isAutoPacketName();
     }
 
+    /**
+     * @deprecated use {@link #setAutoPacketName(boolean)}
+     */
+    @Deprecated
     public void setAutoPartition(boolean autoPartition) {
-        this.autoPartition = autoPartition;
+        setAutoPacketName(autoPartition);
     }
-
 }

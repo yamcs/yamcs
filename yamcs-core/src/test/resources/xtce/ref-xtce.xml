@@ -95,6 +95,7 @@
 				<xtce:ParameterProperties dataSource="local" persistence="false"/>
 			</xtce:Parameter>
 			<xtce:Parameter name="para_with_subsys_type" parameterTypeRef="subsys1/subsys_ptype1" />
+			<xtce:Parameter name="aggregate_result" parameterTypeRef="aggregate_param_type1" />
 		</xtce:ParameterSet>
 		<xtce:ContainerSet>
 			<xtce:SequenceContainer name="packet1">
@@ -183,6 +184,19 @@
 					</xtce:TriggerSet>
 				</xtce:MathOperation>
 			</xtce:MathAlgorithm>
+			<xtce:CustomAlgorithm name="make_aggregate">
+				<!-- builds an aggregate output value from a JavaScript object -->
+				<xtce:AlgorithmText language="JavaScript">
+                    out.value = {m1: m1.value * 2, m2: m2.value + 1}
+                </xtce:AlgorithmText>
+				<xtce:InputSet>
+					<xtce:InputParameterInstanceRef parameterRef="param2/m1" inputName="m1" />
+					<xtce:InputParameterInstanceRef parameterRef="param2/m2" inputName="m2" />
+				</xtce:InputSet>
+				<xtce:OutputSet>
+					<xtce:OutputParameterRef parameterRef="aggregate_result" outputName="out" />
+				</xtce:OutputSet>
+			</xtce:CustomAlgorithm>
 			<xtce:CustomAlgorithm name="flipflop">
 				<xtce:AlgorithmText language="JavaScript">
                     if (m1.value >0) { param11.value = true}
@@ -389,6 +403,32 @@
 					<xtce:CompleteVerifier>
 						<xtce:Comparison value="47" parameterRef="local_para1" />
 						<xtce:CheckWindow timeToStartChecking="PT0.1S" timeToStopChecking="PT1S" />
+					</xtce:CompleteVerifier>
+				</xtce:VerifierSet>
+			</xtce:MetaCommand>
+			<xtce:MetaCommand name="cmd_with_scheduled_verifier">
+				<xtce:ArgumentList>
+					<xtce:Argument name="arg1" argumentTypeRef="u32" />
+				</xtce:ArgumentList>
+				<xtce:CommandContainer name="cmd_with_scheduled_verifier">
+					<xtce:EntryList>
+						<xtce:ArgumentRefEntry argumentRef="arg1" />
+					</xtce:EntryList>
+				</xtce:CommandContainer>
+				<xtce:VerifierSet>
+					<xtce:ExecutionVerifier name="Scheduled">
+						<xtce:AncillaryDataSet>
+							<xtce:AncillaryData name="yamcs.onSuccess">SUCCESS</xtce:AncillaryData>
+							<xtce:AncillaryData name="yamcs.skipOthersOnSuccess">true</xtce:AncillaryData>
+							<xtce:AncillaryData name="yamcs.requiresAttribute">optA</xtce:AncillaryData>
+							<xtce:AncillaryData name="yamcs.requiresAttribute">optB</xtce:AncillaryData>
+						</xtce:AncillaryDataSet>
+						<xtce:Comparison value="47" parameterRef="local_para1" />
+						<xtce:CheckWindow timeToStopChecking="PT1S" />
+					</xtce:ExecutionVerifier>
+					<xtce:CompleteVerifier>
+						<xtce:Comparison value="48" parameterRef="local_para1" />
+						<xtce:CheckWindow timeToStopChecking="PT1S" />
 					</xtce:CompleteVerifier>
 				</xtce:VerifierSet>
 			</xtce:MetaCommand>

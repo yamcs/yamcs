@@ -11,8 +11,11 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.PartialParameterValue;
 import org.yamcs.parameter.RawEngValue;
 import org.yamcs.parameter.Value;
+import org.yamcs.xtce.AggregateDataType;
 import org.yamcs.xtce.AggregateParameterType;
+import org.yamcs.xtce.ArrayDataType;
 import org.yamcs.xtce.ArrayParameterType;
+import org.yamcs.xtce.DataType;
 import org.yamcs.xtce.Member;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.PathElement;
@@ -99,6 +102,36 @@ public class AggregateUtil {
             }
         }
         return true;
+    }
+
+    /**
+     * Same as {@link #getMemberType(ParameterType, PathElement[])} but works for any data type (including argument
+     * types).
+     * 
+     * @return the type of the member found following the path or null if the path does not exist in the type
+     */
+    public static DataType getMemberType(DataType type, PathElement[] path) {
+        DataType dtype = type;
+        for (PathElement pe : path) {
+            if (pe.getName() != null) {
+                if (!(dtype instanceof AggregateDataType aggrType)) {
+                    return null;
+                }
+                Member m = aggrType.getMember(pe.getName());
+                if (m == null) {
+                    return null;
+                }
+                dtype = m.getType();
+            }
+            if (pe.getIndex() != null) {
+                if (!(dtype instanceof ArrayDataType arrType)
+                        || arrType.getNumberOfDimensions() != pe.getIndex().length) {
+                    return null;
+                }
+                dtype = arrType.getElementType();
+            }
+        }
+        return dtype;
     }
 
     public static ParameterType getMemberType(ParameterType parameterType, PathElement[] path) {

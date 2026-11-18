@@ -2,6 +2,8 @@ package org.yamcs.pus;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,6 +32,7 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Event.EventSeverity;
+import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.pus.MessageTemplate.ParameterValueResolver;
 import org.yamcs.time.TimeService;
 import org.yamcs.xtce.EnumeratedParameterType;
@@ -47,16 +50,16 @@ import org.yaml.snakeyaml.Yaml;
 /**
  * Generates Yamcs events from PUS event packets (PUS service 5).
  * <p>
- * This class reads a JSON configuration file that defines text templates for Yamcs events, each corresponding to a
+ * This class reads a YAML (or JSON) configuration file that defines text templates for Yamcs events, each corresponding to a
  * specific PUS event ID. The configuration file should contain entries in the following format:
  * </p>
  * 
  * <pre>
- * {
+ * [{
  *   "eventId": 1234,
  *   "template": "Event occurred: {parameter_name; format}",
  *   "subsystem": "FSW"
- * }
+ * }]
  * </pre>
  * 
  * <p>
@@ -153,7 +156,7 @@ public class PusEventDecoder extends AbstractYamcsService {
         Spec spec = new Spec();
         spec.addOption("eventIdParameter", OptionType.STRING)
                 .withRequired(true)
-                .withDescription("Enumerated or string parameter that gives "
+                .withDescription("Enumerated or integer parameter that gives "
                         + "the name of the event and will use to determine the template to use");
         spec.addOption("eventTemplateFile", OptionType.STRING).withRequired(true)
                 .withDescription("A file containing the templates for the events.");
@@ -197,6 +200,9 @@ public class PusEventDecoder extends AbstractYamcsService {
     private static String eventIdToString(Value engValue) {
         if (engValue instanceof EnumeratedValue enumeratedValue) {
             return enumeratedValue.getStringValue();
+        }
+        if (engValue.getType() == Type.UINT64) {
+            return Long.toUnsignedString(engValue.getUint64Value());
         }
         return Long.toString(engValue.toLong());
     }
@@ -258,30 +264,34 @@ public class PusEventDecoder extends AbstractYamcsService {
             }
             String eventId = eventIdToString(eventIdValue.getEngValue());
 
-            Smessage smsg = eventFormatter.format(apid, eventId, params);
-            if (smsg == null) {
+            Event ev = formatEvent(apid, eventId, params, subtype, gentime, seqCount);
+            if (ev == null) {
                 log.warn("No template found for message apid={}, eventId={}", apid, eventId);
             } else {
-                String msg = smsg.message;
-                String subsystem = smsg.subsystem;
-
-                Event.Builder evb = Event.newBuilder()
-                        .setType(eventId)
-                        .setSource("APID_" + apid)
-                        .setSeverity(getSeverity(subtype))
-                        .setGenerationTime(gentime)
-                        .setSeqNumber(seqCount)
-                        .setMessage(msg);
-                if (subsystem != null) {
-                    evb.setSource(subsystem);
-                }
-                Event ev = evb.build();
                 TupleDefinition tdef = eventStream.getDefinition();
                 Tuple t = new Tuple(tdef, new Object[] { ev.getGenerationTime(),
                         ev.getSource(), ev.getSeqNumber(), ev });
                 eventStream.emitTuple(t);
             }
         }
+    }
+
+    Event formatEvent(int apid, String eventId, ParameterValueList params, int subtype, long gentime, int seqCount) {
+        Smessage smsg = eventFormatter.format(apid, eventId, params);
+        if (smsg == null) {
+            return null;
+        }
+        Event.Builder evb = Event.newBuilder()
+                .setType(eventId)
+                .setSource("APID_" + apid)
+                .setSeverity(getSeverity(subtype))
+                .setGenerationTime(gentime)
+                .setSeqNumber(seqCount)
+                .setMessage(smsg.message);
+        if (smsg.subsystem != null) {
+            evb.putExtra("subsystem", smsg.subsystem);
+        }
+        return evb.build();
     }
     private record Stemplate(MessageTemplate template, String subsystem) {}
     private record Smessage(String message, String subsystem) {}
@@ -297,10 +307,12 @@ public class PusEventDecoder extends AbstractYamcsService {
 
             var yaml = new Yaml(loaderOptions);
             Object o;
-            try {
-                o = yaml.load(new FileReader(fileName));
+            try (var reader = new FileReader(fileName)) {
+                o = yaml.load(reader);
             } catch (FileNotFoundException e) {
                 throw new ConfigurationException("Cannot find event description file " + fileName);
+            } catch (IOException e) {
+                throw new ConfigurationException("Cannot read event description file " + fileName, e);
             }
             if (!(o instanceof List<?>)) {
                 throw new ConfigurationException("Error in file " + fileName + ": top-level structure must be a list.");
@@ -308,9 +320,23 @@ public class PusEventDecoder extends AbstractYamcsService {
             for (Object o1 : (List<?>) o) {
                 if (o1 instanceof Map<?, ?>) {
                     Map<?, ?> map = (Map<?, ?>) o1;
-                    String eventId = (String) map.get("eventId");
-                    String template = (String) map.get("template");
-                    String subsystem = (String) map.get("subsystem");
+                    Object id = map.get("eventId");
+                    if (!(id instanceof String || id instanceof Integer || id instanceof Long
+                            || id instanceof BigInteger)) {
+                        throw new ConfigurationException("Error in file " + fileName
+                                + ": eventId must be a string or integer.");
+                    }
+                    String eventId = id.toString();
+                    if (!(map.get("template") instanceof String template)) {
+                        throw new ConfigurationException("Error in file " + fileName
+                                + ": template must be a string for eventId " + eventId);
+                    }
+                    Object subsystemValue = map.get("subsystem");
+                    if (subsystemValue != null && !(subsystemValue instanceof String)) {
+                        throw new ConfigurationException("Error in file " + fileName
+                                + ": subsystem must be a string for eventId " + eventId);
+                    }
+                    String subsystem = (String) subsystemValue;
 
                     MessageTemplate pstemplate = new MessageTemplate(template, mdb);
 

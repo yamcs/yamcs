@@ -17,7 +17,7 @@ import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 import org.yamcs.utils.ByteArrayUtils;
 
 /**
- * Decodes frames as per CCSDS 732.0-B-3
+ * Decodes frames as per CCSDS 732.0-B-5
  *
  */
 public class AosFrameDecoder implements TransferFrameDecoder {
@@ -55,6 +55,7 @@ public class AosFrameDecoder implements TransferFrameDecoder {
             }
         }
         int gvcid;
+        int signalingField;
         int dataOffset = offset + 6;
 
         if (aosParams.frameHeaderErrorControlPresent) {
@@ -62,22 +63,26 @@ public class AosFrameDecoder implements TransferFrameDecoder {
                 DecoderResult dr = AosFrameHeaderErrorCorr.decode(ByteArrayUtils.decodeUnsignedShort(data, offset),
                         data[offset + 5], ByteArrayUtils.decodeUnsignedShort(data, offset + 6));
                 gvcid = dr.gvcid;
+                signalingField = dr.signalingField;
             } catch (ReedSolomonException e) {
                 throw new CorruptedFrameException("Failed to Reed-Solomon verify/correct the AOS frame header fields");
             }
             dataOffset += 2;
         } else {
             gvcid = ByteArrayUtils.decodeUnsignedShort(data, offset);
+            signalingField = data[offset + 5] & 0xFF;
         }
 
         int vn = gvcid >> 14;
         if (vn != 1) {
             throw new TcTmException("Invalid AOS frame version number " + vn + "; expected " + 1);
         }
-        int spacecraftId = (gvcid >> 6) & 0xFF;
+        int scidExtension = (signalingField >> 4) & 0x3;
+        int spacecraftId = (scidExtension << 8) | ((gvcid >> 6) & 0xFF);
         int virtualChannelId = gvcid & 0x3F;
 
         AosTransferFrame atf = new AosTransferFrame(data, spacecraftId, virtualChannelId);
+        atf.signalingField = signalingField;
 
         AosVcManagedParameters vmp = aosParams.vcParams.get(virtualChannelId);
         if (vmp == null) {

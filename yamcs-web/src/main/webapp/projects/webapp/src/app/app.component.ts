@@ -159,7 +159,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   }
 
   logout() {
-    this.authService.logout(true);
+    this.authService.signOut();
   }
 
   ngOnDestroy() {

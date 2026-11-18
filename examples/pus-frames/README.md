@@ -41,6 +41,19 @@ Then, once a correlation has been established (watch the events / the `tco0` sta
 python3 examples/pus-frames/tests/test-pus11.py
 ```
 
+The TC packets embedded in commands are demonstrated by:
+- `test-pus11-embedded.py`: a TC[11,4] built by hand (`/PUS11/INSERT_ACTIVITIES`) with a list of
+  activities
+- `test-pus19-embedded.py`: an ST[19] event-action (`/PUS19/ADD_EVENT_ACTIONS`)
+
+Both take the embedded commands from a dry run. See "Embedded TC packets" in the
+[`pus` README](../pus/README.md).
+
+```
+python3 examples/pus-frames/tests/test-pus11-embedded.py
+python3 examples/pus-frames/tests/test-pus19-embedded.py
+```
+
 ## Notes
 
 - This example demonstrates ST[11] (time-based scheduling). The [`pus`](../pus) example

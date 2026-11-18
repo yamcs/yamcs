@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem name="tpg" xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
+	<Header validationStatus="unittest" version="1.0" date="2026-10-21T00:00:00Z" />
+	<TelemetryMetaData>
+		<ParameterTypeSet>
+			<IntegerParameterType name="uint8" signed="false">
+				<IntegerDataEncoding sizeInBits="8" />
+			</IntegerParameterType>
+		</ParameterTypeSet>
+		<ParameterSet>
+			<Parameter parameterTypeRef="uint8" name="type" />
+			<Parameter parameterTypeRef="uint8" name="subtype" />
+		</ParameterSet>
+		<ContainerSet>
+			<SequenceContainer name="pkt">
+				<EntryList>
+					<ParameterRefEntry parameterRef="type" />
+					<ParameterRefEntry parameterRef="subtype" />
+				</EntryList>
+			</SequenceContainer>
+			<SequenceContainer name="hk">
+				<EntryList />
+				<BaseContainer containerRef="pkt">
+					<RestrictionCriteria>
+						<Comparison parameterRef="type" value="1" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="hk1">
+				<EntryList />
+				<BaseContainer containerRef="hk">
+					<RestrictionCriteria>
+						<Comparison parameterRef="subtype" value="1" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="hk2">
+				<EntryList />
+				<BaseContainer containerRef="hk">
+					<RestrictionCriteria>
+						<Comparison parameterRef="subtype" value="2" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="event">
+				<EntryList />
+				<BaseContainer containerRef="pkt">
+					<RestrictionCriteria>
+						<Comparison parameterRef="type" value="2" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="event1">
+				<EntryList />
+				<BaseContainer containerRef="event">
+					<RestrictionCriteria>
+						<Comparison parameterRef="subtype" value="1" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+		</ContainerSet>
+	</TelemetryMetaData>
+</SpaceSystem>

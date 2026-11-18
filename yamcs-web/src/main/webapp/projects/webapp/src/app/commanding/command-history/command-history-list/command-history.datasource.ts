@@ -23,6 +23,7 @@ export class CommandHistoryDataSource extends DataSource<CommandHistoryRecord> {
   public streaming$ = new BehaviorSubject<boolean>(false);
 
   namespaces$ = new BehaviorSubject<string[]>([]);
+  extraNames$ = new BehaviorSubject<string[]>([]);
 
   private realtimeSubscription: CommandSubscription;
   private syncSubscription: Subscription;
@@ -65,9 +66,9 @@ export class CommandHistoryDataSource extends DataSource<CommandHistoryRecord> {
       .then((entries) => {
         this.buffer.reset();
         this.blockHasMore = false;
-        this.buffer.addArchiveData(
-          entries.map((entry) => new CommandHistoryRecord(entry)),
-        );
+        const records = entries.map((entry) => new CommandHistoryRecord(entry));
+        this.updateExtraNames(records);
+        this.buffer.addArchiveData(records);
 
         // Quick emit, don't wait on sync tick
         this.emitCommands();
@@ -104,6 +105,7 @@ export class CommandHistoryDataSource extends DataSource<CommandHistoryRecord> {
       limit: this.pageSize,
     }).then((entries) => {
       const records = entries.map((entry) => new CommandHistoryRecord(entry));
+      this.updateExtraNames(records);
       this.buffer.addArchiveData(records);
 
       // Quick emit, don't wait on sync tick
@@ -122,6 +124,7 @@ export class CommandHistoryDataSource extends DataSource<CommandHistoryRecord> {
         (entry) => {
           if (!this.loading$.getValue()) {
             this.updateNamespaces(entry);
+            this.updateExtraNames([new CommandHistoryRecord(entry)]);
             this.buffer.addRealtimeCommand(entry);
           }
         },
@@ -141,6 +144,23 @@ export class CommandHistoryDataSource extends DataSource<CommandHistoryRecord> {
     }
   }
 
+  private updateExtraNames(records: CommandHistoryRecord[]) {
+    const knownNames = this.extraNames$.value;
+    let changed = false;
+    for (const record of records) {
+      for (const extra of record.extra) {
+        if (knownNames.indexOf(extra.name) === -1) {
+          knownNames.push(extra.name);
+          changed = true;
+        }
+      }
+    }
+    if (changed) {
+      knownNames.sort();
+      this.extraNames$.next([...knownNames]);
+    }
+  }
+
   stopStreaming() {
     this.realtimeSubscription?.cancel();
     this.streaming$.next(false);
@@ -152,6 +172,7 @@ export class CommandHistoryDataSource extends DataSource<CommandHistoryRecord> {
     this.loading$.complete();
     this.streaming$.complete();
     this.namespaces$.complete();
+    this.extraNames$.complete();
   }
 
   isEmpty() {

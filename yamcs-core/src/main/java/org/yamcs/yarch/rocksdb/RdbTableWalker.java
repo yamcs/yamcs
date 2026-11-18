@@ -159,7 +159,9 @@ public class RdbTableWalker extends AbstractTableWalker {
                 return true;
             }
             TableVisitor.Action action = visitor.visit(key, iterator.value());
-            if (writeBatch == null) {
+            if (table.getSecondaryIndexWriter() != null && action.action() != TableVisitor.ActionType.NONE) {
+                table.executeAction(rdb, cfh, table.findPartition(RdbStorageEngine.tbsIndex(dbKey)), dbKey, action);
+            } else if (writeBatch == null) {
                 executeAction(rdb, cfh, action, dbKey);
             } else {
                 executeAction(rdb, cfh, writeBatch, action, dbKey);
@@ -187,7 +189,9 @@ public class RdbTableWalker extends AbstractTableWalker {
             }
 
             TableVisitor.Action action = visitor.visit(key, iterator.value());
-            if (writeBatch == null) {
+            if (table.getSecondaryIndexWriter() != null && action.action() != TableVisitor.ActionType.NONE) {
+                table.executeAction(rdb, cfh, table.findPartition(RdbStorageEngine.tbsIndex(dbKey)), dbKey, action);
+            } else if (writeBatch == null) {
                 executeAction(rdb, cfh, action, dbKey);
             } else {
                 executeAction(rdb, cfh, writeBatch, action, dbKey);

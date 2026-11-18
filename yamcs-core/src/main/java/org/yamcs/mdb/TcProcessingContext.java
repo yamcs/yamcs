@@ -1,10 +1,13 @@
 package org.yamcs.mdb;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.yamcs.commanding.ArgumentLocation;
 import org.yamcs.commanding.ArgumentValue;
 import org.yamcs.parameter.LastValueCache;
 import org.yamcs.parameter.ParameterValue;
@@ -46,6 +49,9 @@ public class TcProcessingContext extends ProcessingContext {
      *
      */
     private final Deque<AggregateWithValue> aggregateStack = new ArrayDeque<>();
+
+    // locations of the argument values in the encoded binary, in encoding order
+    private final List<ArgumentLocation> argumentLocations = new ArrayList<>();
 
     public TcProcessingContext(MetaCommand metaCmd, ProcessorData pdata, Map<Parameter, Value> paramValues,
             BitBuffer bitbuf, int bitPosition, long generationTime) {
@@ -148,6 +154,22 @@ public class TcProcessingContext extends ProcessingContext {
 
     public Argument getArgument(String argName) {
         return metaCmd.getEffectiveArgument(argName);
+    }
+
+    /**
+     * Adds the location to the list and returns its index in the list
+     */
+    int addArgumentLocation(ArgumentLocation location) {
+        argumentLocations.add(location);
+        return argumentLocations.size() - 1;
+    }
+
+    void setArgumentLocation(int idx, ArgumentLocation location) {
+        argumentLocations.set(idx, location);
+    }
+
+    public List<ArgumentLocation> getArgumentLocations() {
+        return argumentLocations;
     }
 
     public int getSize() {

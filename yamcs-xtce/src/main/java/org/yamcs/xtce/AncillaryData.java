@@ -23,15 +23,40 @@ public class AncillaryData implements Serializable {
     public static final String KEY_ALGO_MANDATORY_INPUT = "Yamcs:AlgorithmMandatoryInput";
 
     /**
-     * Used to configure the SequenceContainers to be used to partition the archive data.
-     * The containers will also be used for histogram building (this is the "pname" column in the tm table).
+     * Used to mark the SequenceContainers whose qualified name is used as packet name. The packet name is stored in the
+     * "pname" column of the tm table and is used for the archive histograms, packet statistics and ReadPacket
+     * privileges. See {@link SequenceContainer#useAsPacketName(boolean)}.
      */
+    public static final String PROP_USE_AS_PACKET_NAME = "UseAsPacketName";
+
+    /**
+     * Old name of {@link #PROP_USE_AS_PACKET_NAME}, still recognized when reading. For compatibility with older Yamcs
+     * versions, this is the value written by {@link SequenceContainer#useAsPacketName(boolean)}.
+     * 
+     * @deprecated use {@link #PROP_USE_AS_PACKET_NAME}
+     */
+    @Deprecated
     public static final String PROP_USE_AS_ARCHIVING_PARTITION = "UseAsArchivingPartition";
 
     /**
      * Used to override default CCSDS MAP ID for commands
      */
     public static final String KEY_CCSDS_MAP_ID = "Yamcs:CcsdsMapId";
+
+    /**
+     * Used on binary argument types to mark that the value is a complete telecommand packet embedded into the
+     * command (for example the activities of a PUS TC(11,4) or TC(22,4)). The command post-processor may then
+     * process the embedded packet like a top level command (fill in the sequence count, length, checksum).
+     */
+    public static final String KEY_EMBEDDED_TC = "Yamcs:EmbeddedTc";
+
+    /**
+     * On an ArrayParameterType, identifies a ParameterInstanceRef in its dimensions as a reference to a
+     * member of the enclosing aggregate. Repeat this entry for each distinct member name.
+     * This is the current format for new definitions and exports. The older {@code yamcs:aggregateMember}
+     * attribute and its compatibility reader are scheduled for deprecation soon; use this metadata instead.
+     */
+    public static final String KEY_AGGREGATE_MEMBER = "Yamcs:AggregateMember";
 
     private static final long serialVersionUID = 1L;
     private static final String DEFAULT_MIME_TYPE = "text/plain";

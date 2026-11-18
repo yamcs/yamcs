@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" name="AggregateMemberAncillaryTest">
+    <TelemetryMetaData>
+        <ParameterTypeSet>
+            <IntegerParameterType name="uint8" signed="false">
+                <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+            </IntegerParameterType>
+            <ArrayParameterType name="values_type" arrayTypeRef="uint8">
+                <AncillaryDataSet>
+                    <AncillaryData name="example">preserved</AncillaryData>
+                    <AncillaryData name="Yamcs:AggregateMember">count</AncillaryData>
+                    <AncillaryData name="Yamcs:AggregateMember">other_count</AncillaryData>
+                </AncillaryDataSet>
+                <DimensionList>
+                    <Dimension>
+                        <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+                        <EndingIndex>
+                            <DynamicValue>
+                                <ParameterInstanceRef parameterRef="count" useCalibratedValue="false"/>
+                                <LinearAdjustment slope="2" intercept="-1"/>
+                            </DynamicValue>
+                        </EndingIndex>
+                    </Dimension>
+                    <Dimension>
+                        <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+                        <EndingIndex>
+                            <DynamicValue>
+                                <ParameterInstanceRef parameterRef="other_count"/>
+                                <LinearAdjustment intercept="-1"/>
+                            </DynamicValue>
+                        </EndingIndex>
+                    </Dimension>
+                </DimensionList>
+            </ArrayParameterType>
+            <AggregateParameterType name="report_type">
+                <MemberList>
+                    <Member name="count" typeRef="uint8"/>
+                    <Member name="other_count" typeRef="uint8"/>
+                    <Member name="values" typeRef="values_type"/>
+                </MemberList>
+            </AggregateParameterType>
+        </ParameterTypeSet>
+        <ParameterSet>
+            <Parameter name="report" parameterTypeRef="report_type"/>
+        </ParameterSet>
+    </TelemetryMetaData>
+</SpaceSystem>

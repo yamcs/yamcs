@@ -24,8 +24,8 @@ public class RCSData {
         buffer.putShort((short) O2ValveTemp);
         buffer.putFloat(H2ValvePressure);
         buffer.putFloat(O2ValvePressure);
-        buffer.putShort((short) 0);
-        buffer.putShort((short) 0);
+        buffer.putShort((short) TurbineTemp);
+        buffer.putShort((short) TurbinePressure);
     }
 
     @Override

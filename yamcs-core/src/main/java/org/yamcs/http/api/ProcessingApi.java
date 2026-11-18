@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
@@ -67,6 +69,7 @@ import org.yamcs.protobuf.SubscribeParametersData;
 import org.yamcs.protobuf.SubscribeParametersRequest;
 import org.yamcs.protobuf.SubscribeProcessorsRequest;
 import org.yamcs.protobuf.SubscribeTMStatisticsRequest;
+import org.yamcs.protobuf.TmStatistics;
 import org.yamcs.protobuf.Yamcs.EndAction;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
 import org.yamcs.protobuf.Yamcs.ReplaySpeed;
@@ -450,7 +453,13 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
             @Override
             public void statisticsUpdated(Processor statsProcessor, Statistics stats) {
                 if (statsProcessor.equals(processor)) {
-                    observer.next(stats);
+                    Statistics.Builder filteredb = Statistics.newBuilder(stats).clearTmstats();
+                    for (TmStatistics tmstats : stats.getTmstatsList()) {
+                        if (ctx.user.hasObjectPrivilege(ObjectPrivilegeType.ReadPacket, tmstats.getQualifiedName())) {
+                            filteredb.addTmstats(tmstats);
+                        }
+                    }
+                    observer.next(filteredb.build());
                 }
             }
         };
@@ -559,14 +568,20 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         // same time with some values just coming in and the list expanding.
         List<ParameterValue> pvals = Collections.synchronizedList(new ArrayList<>());
 
+        // ids for which no value has been received yet. All received values are sent, including multiple values for
+        // the same id, because the first update after an action may be the interesting one.
+        Set<NamedObjectId> pending = new HashSet<>(ids);
+
         ParameterWithIdRequestHelper pwirh = new ParameterWithIdRequestHelper(prm, (subscriptionId, params) -> {
-            if (!cf.isDone()) {
+            synchronized (pvals) {
+                if (cf.isDone()) {
+                    return;
+                }
                 for (ParameterValueWithId pvwi : params) {
                     pvals.add(pvwi.toGbpParameterValue());
+                    pending.remove(pvwi.getId());
                 }
-                // TODO: this may not be correct: if we get a parameter multiple times, we stop here before
-                // receiving all parameters
-                if (pvals.size() == ids.size()) {
+                if (pending.isEmpty()) {
                     cf.complete(pvals);
                 }
             }
@@ -580,7 +595,11 @@ public class ProcessingApi extends AbstractProcessingApi<Context> {
         });
 
         ScheduledExecutorService exec = YamcsServer.getServer().getThreadPoolExecutor();
-        exec.schedule(() -> cf.complete(pvals), timeout, TimeUnit.MILLISECONDS);
+        exec.schedule(() -> {
+            synchronized (pvals) {
+                cf.complete(pvals);
+            }
+        }, timeout, TimeUnit.MILLISECONDS);
 
         return cf;
     }

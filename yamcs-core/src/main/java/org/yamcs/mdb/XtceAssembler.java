@@ -23,8 +23,10 @@ import java.io.Writer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import javax.xml.XMLConstants;
@@ -118,6 +120,7 @@ import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
 import org.yamcs.xtce.ParameterInstanceRef;
+import org.yamcs.xtce.ParameterInstanceRef.InstanceRelativeTo;
 import org.yamcs.xtce.ParameterOrArgumentRef;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.ParameterValueChange;
@@ -935,20 +938,27 @@ public class XtceAssembler {
     private void writeDimensionList(XMLStreamWriter doc, List<IntegerValue> size) throws XMLStreamException {
         doc.writeStartElement("DimensionList");
         for (IntegerValue iv : size) {
-            /*
-             * doc.writeStartElement("Dimension");
-             * writeIntegerValue(doc, "StartingIndex", new FixedIntegerValue(0));
-             * writeIntegerValue(doc, "EndingIndex", iv-1);
-             * doc.writeEndElement();
-             */
-
-            // the code above is commented out because we do not have a way to compute the EndIndex as size-1 for
-            // DynamicValues.
-            // The Size element is not part of XSD but it is supported by Yamcs
-            writeIntegerValue(doc, "Size", iv);
+            doc.writeStartElement("Dimension");
+            writeIntegerValue(doc, "StartingIndex", new FixedIntegerValue(0));
+            writeIntegerValue(doc, "EndingIndex", toEndingIndex(iv));
+            doc.writeEndElement();
         }
 
         doc.writeEndElement();
+    }
+
+    private static IntegerValue toEndingIndex(IntegerValue size) {
+        if (size instanceof FixedIntegerValue) {
+            return new FixedIntegerValue(((FixedIntegerValue) size).getValue() - 1);
+        } else if (size instanceof DynamicIntegerValue) {
+            DynamicIntegerValue div = (DynamicIntegerValue) size;
+            DynamicIntegerValue endingIndex = new DynamicIntegerValue(div.getDynamicInstanceRef());
+            endingIndex.setSlope(div.getSlope());
+            endingIndex.setIntercept(div.getIntercept() - 1);
+            return endingIndex;
+        } else {
+            throw new IllegalArgumentException("Unknown type " + size.getClass());
+        }
     }
 
     private void writeIntegerValue(XMLStreamWriter doc, String elementName, IntegerValue iv)
@@ -967,8 +977,25 @@ public class XtceAssembler {
                 writeAggregateMemberInstanceRef(doc, aggregateMemberRef);
             } else if (reference instanceof ParameterInstanceRef parameterRef) {
                 writeParameterInstanceRef(doc, ELEM_PARAMETER_INSTANCE_REF, parameterRef);
+            } else if (reference instanceof ArgumentInstanceRef argumentRef) {
+                doc.writeStartElement("ArgumentInstanceRef");
+                doc.writeAttribute("argumentRef", argumentRef.getName());
+                if (!argumentRef.useCalibratedValue()) {
+                    doc.writeAttribute("useCalibratedValue", "false");
+                }
+                doc.writeEndElement();
             } else {
                 throw new IllegalStateException("Unexpected dynamic integer reference " + reference.getClass());
+            }
+            if (div.getSlope() != 1 || div.getIntercept() != 0) {
+                doc.writeStartElement("LinearAdjustment");
+                if (div.getIntercept() != 0) {
+                    doc.writeAttribute("intercept", Long.toString(div.getIntercept()));
+                }
+                if (div.getSlope() != 1) {
+                    doc.writeAttribute("slope", Long.toString(div.getSlope()));
+                }
+                doc.writeEndElement();
             }
             doc.writeEndElement();
         }
@@ -986,7 +1013,9 @@ public class XtceAssembler {
             throws XMLStreamException {
         doc.writeStartElement(elementName);
         doc.writeAttribute(ATTR_PARAMETER_REF, getNameReference(pinstRef));
-        if (pinstRef.getInstance() != 0) {
+        // DynamicValue references without an instance use current-entry lookup on import.
+        // Preserve an explicit packet-start reference even when its index is zero.
+        if (pinstRef.getInstance() != 0 || pinstRef.getRelativeTo() == InstanceRelativeTo.PACKET_START_WITHIN_PACKET) {
             doc.writeAttribute("instance", Integer.toString(pinstRef.getInstance()));
         }
         if (!pinstRef.useCalibratedValue()) {
@@ -998,9 +1027,7 @@ public class XtceAssembler {
     private void writeAggregateMemberInstanceRef(XMLStreamWriter doc, AggregateMemberInstanceRef memberRef)
             throws XMLStreamException {
         doc.writeStartElement(ELEM_PARAMETER_INSTANCE_REF);
-        doc.writeNamespace("yamcs", XtceStaxReader.YAMCS_XTCE_NAMESPACE);
         doc.writeAttribute(ATTR_PARAMETER_REF, memberRef.getName());
-        doc.writeAttribute("yamcs", XtceStaxReader.YAMCS_XTCE_NAMESPACE, "aggregateMember", "true");
         if (!memberRef.useCalibratedValue()) {
             doc.writeAttribute("useCalibratedValue", "false");
         }
@@ -1216,11 +1243,11 @@ public class XtceAssembler {
             throws XMLStreamException {
         doc.writeStartElement("BinaryDataEncoding");
 
-        doc.writeStartElement(ELEM_SIZE_IN_BITS);
-        doc.writeStartElement("FixedValue");
-        doc.writeCharacters(Integer.toString(encoding.getSizeInBits()));
-        doc.writeEndElement();
-        doc.writeEndElement();// SizeInBits
+        if (encoding.getDynamicSize() != null) {
+            writeIntegerValue(doc, ELEM_SIZE_IN_BITS, encoding.getDynamicSize());
+        } else {
+            writeIntegerValue(doc, ELEM_SIZE_IN_BITS, new FixedIntegerValue(encoding.getSizeInBits()));
+        }
 
         if (encoding.getFromBinaryTransformAlgorithm() != null) {
             writeCustomAlgorithm(doc, (CustomAlgorithm) encoding.getFromBinaryTransformAlgorithm(),
@@ -1267,7 +1294,24 @@ public class XtceAssembler {
             doc.writeEndElement();
         }
         List<AncillaryData> l = nameDescription.getAncillaryData();
-        if (l != null) {
+        if (nameDescription instanceof ArrayParameterType arrayType && arrayType.getSize() != null) {
+            l = l == null ? new ArrayList<>() : new ArrayList<>(l);
+            // Derive markers from the references, also when exporting legacy or programmatically built types.
+            // Never emit yamcs:aggregateMember: the older attribute format and its compatibility reader
+            // (XtceStaxReader.isAggregateMemberReference) are scheduled for deprecation soon.
+            l.removeIf(data -> AncillaryData.KEY_AGGREGATE_MEMBER.equals(data.getName()));
+            Set<String> members = new LinkedHashSet<>();
+            for (IntegerValue size : arrayType.getSize()) {
+                if (size instanceof DynamicIntegerValue dynamic
+                        && dynamic.getDynamicInstanceRef() instanceof AggregateMemberInstanceRef member) {
+                    members.add(member.getName());
+                }
+            }
+            for (String member : members) {
+                l.add(new AncillaryData(AncillaryData.KEY_AGGREGATE_MEMBER, member));
+            }
+        }
+        if (l != null && !l.isEmpty()) {
             writeAncillaryData(doc, l);
         }
     }
@@ -1502,7 +1546,7 @@ public class XtceAssembler {
             doc.writeAttribute(ATTR_PARAMETER_REF, getNameReference(((ParameterEntry) entry).getParameter()));
         } else if (entry instanceof ContainerEntry) {
             doc.writeStartElement("ContainerRefEntry");
-            doc.writeAttribute("containerRef", getNameReference(((ContainerEntry) entry).getContainer()));
+            doc.writeAttribute("containerRef", getNameReference(((ContainerEntry) entry).getRefContainer()));
         } else if (entry instanceof ArgumentEntry) {
             doc.writeStartElement("ArgumentRefEntry");
             doc.writeAttribute("argumentRef", ((ArgumentEntry) entry).getArgument().getName());
@@ -1693,12 +1737,14 @@ public class XtceAssembler {
     }
 
     private void writeCommandVerifier(XMLStreamWriter doc, CommandVerifier verifier) throws XMLStreamException {
-        if (!XTCE_VERIFIER_STAGES.contains(verifier.getStage())) {
-            log.warn("The verifier stage '{}' cannot be mapped to XTCE. Allowed XTCE stages: {}", verifier.getStage(),
-                    XTCE_VERIFIER_STAGES);
-            return;
+        if (XTCE_VERIFIER_STAGES.contains(verifier.getStage())) {
+            doc.writeStartElement(verifier.getStage() + "Verifier");
+        } else {
+            // stages that do not exist in XTCE are written as ExecutionVerifier (which allows multiple instances) with
+            // the stage as name. The termination actions are written below as ancillary data, so they are preserved.
+            doc.writeStartElement("ExecutionVerifier");
+            doc.writeAttribute("name", verifier.getStage());
         }
-        doc.writeStartElement(verifier.getStage() + "Verifier");
 
         var ancillaryData = new ArrayList<AncillaryData>();
         ancillaryData.add(new AncillaryData("yamcs.onSuccess",
@@ -1707,6 +1753,12 @@ public class XtceAssembler {
                 verifier.getOnFail() != null ? verifier.getOnFail().name() : null));
         ancillaryData.add(new AncillaryData("yamcs.onTimeout",
                 verifier.getOnTimeout() != null ? verifier.getOnTimeout().name() : null));
+        if (verifier.isSkipOthersOnSuccess()) {
+            ancillaryData.add(new AncillaryData("yamcs.skipOthersOnSuccess", "true"));
+        }
+        for (String attr : verifier.getRequiredAttributes()) {
+            ancillaryData.add(new AncillaryData("yamcs.requiresAttribute", attr));
+        }
         writeAncillaryData(doc, ancillaryData);
 
         switch (verifier.getType()) {

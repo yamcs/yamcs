@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" name="DynamicParameterReferenceTest">
+    <TelemetryMetaData>
+        <ParameterTypeSet>
+            <IntegerParameterType name="uint8" signed="false">
+                <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+            </IntegerParameterType>
+            <BinaryParameterType name="data_type">
+                <BinaryDataEncoding>
+                    <SizeInBits>
+                        <DynamicValue>
+                            <ParameterInstanceRef parameterRef="count"/>
+                            <LinearAdjustment slope="8"/>
+                        </DynamicValue>
+                    </SizeInBits>
+                </BinaryDataEncoding>
+            </BinaryParameterType>
+            <ArrayParameterType name="values_type" arrayTypeRef="uint8">
+                <DimensionList>
+                    <Dimension>
+                        <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
+                        <EndingIndex>
+                            <DynamicValue>
+                                <ParameterInstanceRef parameterRef="count"/>
+                                <LinearAdjustment intercept="-1"/>
+                            </DynamicValue>
+                        </EndingIndex>
+                    </Dimension>
+                </DimensionList>
+            </ArrayParameterType>
+        </ParameterTypeSet>
+        <ParameterSet>
+            <Parameter name="count" parameterTypeRef="uint8"/>
+            <Parameter name="data" parameterTypeRef="data_type"/>
+            <Parameter name="values" parameterTypeRef="values_type"/>
+            <Parameter name="tail" parameterTypeRef="uint8"/>
+        </ParameterSet>
+        <ContainerSet>
+            <SequenceContainer name="binary_entry">
+                <EntryList>
+                    <ParameterRefEntry parameterRef="count"/>
+                    <ParameterRefEntry parameterRef="data"/>
+                </EntryList>
+            </SequenceContainer>
+            <SequenceContainer name="binary_packet">
+                <EntryList>
+                    <ContainerRefEntry containerRef="binary_entry">
+                        <RepeatEntry><Count><FixedValue>2</FixedValue></Count></RepeatEntry>
+                    </ContainerRefEntry>
+                    <ParameterRefEntry parameterRef="tail"/>
+                </EntryList>
+            </SequenceContainer>
+            <SequenceContainer name="array_entry">
+                <EntryList>
+                    <ParameterRefEntry parameterRef="count"/>
+                    <ArrayParameterRefEntry parameterRef="values"/>
+                </EntryList>
+            </SequenceContainer>
+            <SequenceContainer name="array_packet">
+                <EntryList>
+                    <ContainerRefEntry containerRef="array_entry">
+                        <RepeatEntry><Count><FixedValue>2</FixedValue></Count></RepeatEntry>
+                    </ContainerRefEntry>
+                    <ParameterRefEntry parameterRef="tail"/>
+                </EntryList>
+            </SequenceContainer>
+            <SequenceContainer name="selection_packet">
+                <EntryList>
+                    <ParameterRefEntry parameterRef="count"/>
+                    <ParameterRefEntry parameterRef="count"/>
+                    <ParameterRefEntry parameterRef="data"/>
+                    <ParameterRefEntry parameterRef="tail"/>
+                </EntryList>
+            </SequenceContainer>
+        </ContainerSet>
+    </TelemetryMetaData>
+</SpaceSystem>

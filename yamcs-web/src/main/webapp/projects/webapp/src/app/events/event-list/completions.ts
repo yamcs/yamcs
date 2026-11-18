@@ -132,3 +132,26 @@ export const EVENT_COMPLETIONS: Completion[] = [
     apply: applyLogicalOperator,
   },
 ];
+
+export function eventCompletions(
+  columns: { id: string; label: string }[],
+): Completion[] {
+  return [
+    ...EVENT_COMPLETIONS,
+    ...columns.flatMap((column) => [
+      {
+        label: `extra.${column.id}`,
+        type: 'method',
+        info: `Filter by ${column.label}`,
+        apply: applyString,
+      },
+      {
+        section: 'Exclude events',
+        label: `-extra.${column.id}`,
+        type: 'method',
+        info: `Exclude events based on ${column.label}`,
+        apply: applyString,
+      },
+    ]),
+  ];
+}

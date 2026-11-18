@@ -26,7 +26,7 @@ public class HistogramSegmentTest {
         segment.merge(1);
 
         assertEquals(1, segment.size());
-        assertSegEquals(1, 2000, 3, segment.pps.get(0));
+        assertSegEquals(1, 2000, 3, segment.records.get(0));
 
     }
 
@@ -37,7 +37,7 @@ public class HistogramSegmentTest {
 
         segment.merge((short) 10);
         assertEquals(1, segment.size());
-        assertSegEquals(1, 10, 11, segment.pps.get(0));
+        assertSegEquals(1, 10, 11, segment.records.get(0));
     }
 
     @Test
@@ -47,7 +47,7 @@ public class HistogramSegmentTest {
         segment.merge((short) 1);
 
         assertEquals(1, segment.size());
-        assertSegEquals(1, 10, 11, segment.pps.get(0));
+        assertSegEquals(1, 10, 11, segment.records.get(0));
     }
 
     @Test
@@ -58,7 +58,7 @@ public class HistogramSegmentTest {
         segment.merge((short) 9);
 
         assertEquals(1, segment.size());
-        assertSegEquals(1, 10, 3, segment.pps.get(0));
+        assertSegEquals(1, 10, 3, segment.records.get(0));
     }
 
     @Test
@@ -68,7 +68,7 @@ public class HistogramSegmentTest {
         segment.merge((short) 2);
 
         assertEquals(1, segment.size());
-        assertSegEquals(1, 2, 2, segment.pps.get(0));
+        assertSegEquals(1, 2, 2, segment.records.get(0));
     }
 
     @Test
@@ -78,7 +78,7 @@ public class HistogramSegmentTest {
         segment.merge((short) 11);
 
         assertEquals(1, segment.size());
-        assertSegEquals((short) 1, (short) 11, (short) 11, segment.pps.get(0));
+        assertSegEquals((short) 1, (short) 11, (short) 11, segment.records.get(0));
     }
 
     @Test
@@ -89,7 +89,7 @@ public class HistogramSegmentTest {
         segment.merge((short) 6);
 
         assertEquals(1, segment.size());
-        assertSegEquals((short) 6, (short) 8, (short) 3, segment.pps.get(0));
+        assertSegEquals((short) 6, (short) 8, (short) 3, segment.records.get(0));
     }
 
     @Test
@@ -101,7 +101,7 @@ public class HistogramSegmentTest {
         segment.merge((short) 6);
 
         assertEquals(1, segment.size());
-        assertSegEquals((short) 1, (short) 8, (short) 5, segment.pps.get(0));
+        assertSegEquals((short) 1, (short) 8, (short) 5, segment.records.get(0));
     }
 
     @Test
@@ -110,7 +110,7 @@ public class HistogramSegmentTest {
         segment.merge((short) 11);
 
         assertEquals(1, segment.size());
-        assertSegEquals((short) 11, (short) 11, (short) 1, segment.pps.get(0));
+        assertSegEquals((short) 11, (short) 11, (short) 1, segment.records.get(0));
     }
 
     @Test
@@ -124,9 +124,9 @@ public class HistogramSegmentTest {
 
         assertEquals(3, segment.size());
 
-        assertSegEquals(1000, 5000, (short) 2, segment.pps.get(0));
-        assertSegEquals(11000, 11000, (short) 1, segment.pps.get(1));
-        assertSegEquals(17000, 18000, (short) 2, segment.pps.get(2));
+        assertSegEquals(1000, 5000, (short) 2, segment.records.get(0));
+        assertSegEquals(11000, 11000, (short) 1, segment.records.get(1));
+        assertSegEquals(17000, 18000, (short) 2, segment.records.get(2));
     }
 
     @Test
@@ -140,8 +140,8 @@ public class HistogramSegmentTest {
 
         assertEquals(2, segment.size());
 
-        assertSegEquals(1000, 4000, (short) 4, segment.pps.get(0));
-        assertSegEquals(6000, 8000, (short) 3, segment.pps.get(1));
+        assertSegEquals(1000, 4000, (short) 4, segment.records.get(0));
+        assertSegEquals(6000, 8000, (short) 3, segment.records.get(1));
     }
 
     @Test
@@ -155,8 +155,8 @@ public class HistogramSegmentTest {
 
         assertEquals(2, segment.size());
 
-        assertSegEquals(1000, 4000, (short) 5, segment.pps.get(0));
-        assertSegEquals(7000, 8000, (short) 2, segment.pps.get(1));
+        assertSegEquals(1000, 4000, (short) 5, segment.records.get(0));
+        assertSegEquals(7000, 8000, (short) 2, segment.records.get(1));
     }
 
     private void assertSegEquals(int dstart, int dstop, int num, SegRecord p) {

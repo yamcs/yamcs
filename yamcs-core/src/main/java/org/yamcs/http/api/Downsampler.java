@@ -44,10 +44,10 @@ public class Downsampler implements Consumer<ParameterValueArray> {
     private boolean categorical;
 
     /**
-     * Enum label -&gt; ordinal lookup, only needed by the columnar {@link #accept(ParameterValueArray)} path where the
-     * engineering value arrives as a String label rather than the numeric ordinal. May be null.
+     * Enum label -&gt; plotting coordinate lookup. Applied to both retrieval paths, since the
+     * columnar archive retains labels without the original code within a range. May be null.
      */
-    private Map<String, Integer> enumLabelToOrdinal;
+    private Map<String, ? extends Number> enumLabelToOrdinal;
 
     public Downsampler(long start, long stop) {
         this(start, stop, DEFAULT_SAMPLE_COUNT);
@@ -82,10 +82,10 @@ public class Downsampler implements Consumer<ParameterValueArray> {
 
     /**
      * Switch to categorical (enum) downsampling: last-value-per-bucket instead of averaging. The optional map resolves
-     * enum labels to ordinals for the columnar retrieval path (pass null when ordinals are already available, e.g. row
-     * retrieval or raw values).
+     * enum labels to consistent plotting coordinates on both retrieval paths. Pass null for
+     * booleans or when no label mapping is needed. Numeric coordinates use the sample API's double precision.
      */
-    public void enableCategoricalMode(Map<String, Integer> enumLabelToOrdinal) {
+    public void enableCategoricalMode(Map<String, ? extends Number> enumLabelToOrdinal) {
         this.categorical = true;
         this.enumLabelToOrdinal = enumLabelToOrdinal;
     }
@@ -118,9 +118,9 @@ public class Downsampler implements Consumer<ParameterValueArray> {
             process(gentime, value.getUint64Value(), expireMillis);
             break;
         case ENUMERATED:
-            if (categorical && enumLabelToOrdinal != null
-                    && !enumLabelToOrdinal.containsKey(value.getStringValue())) {
-                process(gentime, Double.NaN, expireMillis);
+            if (categorical && enumLabelToOrdinal != null) {
+                Number ordinal = enumLabelToOrdinal.get(value.getStringValue());
+                process(gentime, ordinal == null ? Double.NaN : ordinal.doubleValue(), expireMillis);
             } else {
                 process(gentime, value.getSint64Value(), expireMillis);
             }
@@ -188,12 +188,14 @@ public class Downsampler implements Consumer<ParameterValueArray> {
                 process(timestamps[i], lv[i], expireMillis);
             }
             break;
+        case STRING:
         case ENUMERATED:
-            // Columnar enum eng-values are String labels, not ordinals. Resolve via the MDB label->ordinal map.
+            // Persisted enum segments return STRING arrays; cache segments may retain ENUMERATED.
+            // Both contain labels, resolved only when an enum label-to-ordinal map is configured.
             for (int i = 0; i < n; i++) {
                 double ordinal = Double.NaN;
                 if (enumLabelToOrdinal != null) {
-                    Integer o = enumLabelToOrdinal.get(va.getValue(i).getStringValue());
+                    Number o = enumLabelToOrdinal.get(va.getValue(i).getStringValue());
                     if (o != null) {
                         ordinal = o.doubleValue();
                     }

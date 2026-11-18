@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="ArgLocationsTest"
+	shortDescription="Test of the argument locations recorded at command encoding" xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
+
+	<CommandMetaData>
+		<ArgumentTypeSet>
+			<IntegerArgumentType name="uint3">
+				<IntegerDataEncoding sizeInBits="3" />
+			</IntegerArgumentType>
+			<IntegerArgumentType name="uint5">
+				<IntegerDataEncoding sizeInBits="5" />
+			</IntegerArgumentType>
+			<IntegerArgumentType name="uint16">
+				<IntegerDataEncoding sizeInBits="16" />
+			</IntegerArgumentType>
+		</ArgumentTypeSet>
+		<MetaCommandSet>
+			<MetaCommand name="base" abstract="true">
+				<ArgumentList>
+					<Argument name="version" argumentTypeRef="uint3" />
+					<Argument name="type" argumentTypeRef="uint5" />
+				</ArgumentList>
+				<CommandContainer name="base">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="version" />
+						<ArgumentRefEntry argumentRef="type" />
+						<FixedValueEntry binaryValue="ABCD" sizeInBits="16" />
+					</EntryList>
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="cmd1">
+				<BaseMetaCommand metaCommandRef="base">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="type" argumentValue="7" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="x" argumentTypeRef="uint3" />
+					<Argument name="y" argumentTypeRef="uint16" />
+				</ArgumentList>
+				<CommandContainer name="cmd1">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="x" />
+						<ArgumentRefEntry argumentRef="y" />
+					</EntryList>
+					<BaseContainer containerRef="base" />
+				</CommandContainer>
+			</MetaCommand>
+		</MetaCommandSet>
+	</CommandMetaData>
+</SpaceSystem>

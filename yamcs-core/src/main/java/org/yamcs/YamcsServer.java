@@ -273,7 +273,7 @@ public class YamcsServer {
         YarchDatabase.removeInstance(GLOBAL_INSTANCE);
 
         // Shutdown database when we're sure no services are using it.
-        RdbStorageEngine.getInstance().shutdown();
+        YarchDatabase.shutdownStorageEngines();
 
         long stopTime = System.nanoTime() - t0;
 
@@ -1250,6 +1250,8 @@ public class YamcsServer {
                 .withDeprecationMessage("use: \"enabled\" property inside the plugin's configuration section instead");
         spec.addOption("archive", OptionType.ANY);
         spec.addOption("rdbConfig", OptionType.ANY);
+        spec.addOption("storageEngines", OptionType.LIST).withElementType(OptionType.ANY);
+        spec.addOption("defaultStorageEngine", OptionType.STRING);
 
         Map<String, Spec> extraSections = getConfigurationSections(ConfigScope.YAMCS);
         extraSections.forEach((key, sectionSpec) -> {

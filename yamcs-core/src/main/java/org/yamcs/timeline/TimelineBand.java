@@ -74,6 +74,14 @@ public class TimelineBand {
         return id;
     }
 
+    public boolean isShared() {
+        return shared;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -134,6 +142,9 @@ public class TimelineBand {
         }
         if (filterQuery != null) {
             b.setFilter(filterQuery);
+        }
+        if (source != null) {
+            b.setSource(source);
         }
         return b.build();
     }

@@ -12,7 +12,7 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpRequest;
 
 /**
- * Contains the authorization state for an identified user or service account.
+ * Contains the authorization state for an identified user.
  */
 public class OAuth2Credentials implements Credentials {
 

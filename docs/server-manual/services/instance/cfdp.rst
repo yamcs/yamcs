@@ -30,12 +30,26 @@ The CFDP transfers can be suspended and resumed. Suspending means that no PDU is
 
 Several peculiarities and limitations of the implementation can be noted:
 
-* The NAK PDUs issued by the Sender always contain the beginning of the file up to filling up the PDU with data. Unless the file is very large and with lots of small gaps, a NAK PDU will contain all the missing data at the given point.
-* The Receiver will overwrite the list of segments to resend with the list received in the latest NAK.
+* The NAK PDUs issued by the Receiver always contain the beginning of the file up to filling up the PDU with data. Unless the file is very large and with lots of small gaps, a NAK PDU will contain all the missing data at the given point.
+* The Sender treats each received NAK PDU as the complete list of missing segments within its scope, see :ref:`cfdp-nak-handling` below.
 * Keep Alive PDU and Prompt PDU are not used.
 * Filestore requests are not supported.
 * Only proxy put requests and directory listing requests are supported, other user operations (proxy, remote status, etc.) as per chapter 6 of the CCSDS 727.0-B-5 are not supported.
 * Remote suspend/resume operations are not supported. Note that local suspend/resume operations are supported; this means that suspending a transfer has to be done concurrently on this service and remotely with a different mechanism (e.g. sending a telecommand).
+
+
+.. _cfdp-nak-handling:
+
+Handling of NAK PDUs by the Sender
+----------------------------------
+
+CCSDS 727.0-B-5 section 4.6.4.2.1 requires the sending entity to "respond to all received NAK PDUs" by retransmitting the requested extents. It does not say what the Sender should do with the segments requested by an earlier NAK that have not been retransmitted yet when a new NAK arrives. On the other hand, section 4.6.4.3.3 b) requires the segment requests of a NAK PDU to identify *all* extents of file data within its scope that have not yet been received.
+
+Yamcs relies on the latter: the segments requested by a NAK PDU replace the pending (not yet retransmitted) segments within the scope of that NAK. Pending segments outside the scope are kept; the ones crossing the scope borders are truncated. For example, if a NAK with scope 0-1000 requests 100-200 and 500-600 and, before these are retransmitted, a NAK with scope 0-800 requesting only 550-560 is received, the Sender will retransmit only 550-560.
+
+Strictly speaking, this deviates from 4.6.4.2.1 because some segments requested by the first NAK are never retransmitted. It is safe because the Receiver does not lose data it has already received: if a segment within the scope of a NAK is not requested, the Receiver had it when it issued that NAK. The benefit is that data which has meanwhile reached the Receiver (e.g. delayed File Data PDUs, or retransmissions triggered by previous NAKs) is not sent again.
+
+The CFDP PDUs do not carry a sequence number that would allow ordering the NAK PDUs of a transaction (the Transaction sequence number in the PDU header is the same for all the PDUs of a transaction). The Sender therefore assumes that the NAK PDUs are received in the order they were issued. If the underlying link reorders them (for example when using multiple ground stations or virtual channels), an older NAK received after a newer one will cause the retransmission of segments already received. This only costs bandwidth: since the older NAK can only request a superset of the segments requested by the newer one within the same scope, no missing data is ever discarded. The Receiver discards the duplicate data, as required by the standard.
 
 
 Usage
@@ -142,7 +156,7 @@ maxPduSize (integer)
     The maximum length in bytes of the PDU is used by the sender to determine how to split the file into segments (segment size = PDU size - header size). For the incoming transfers the peer specifies the PDU size. Default ``512``
 
 sleepBetweenPdus (integer)
-    The time in milliseconds used by the sender to wait in between sending two successive PDUs. This together with the PDU determine the uplink data rate. The data rate has to match the maximum uplink speed as well as the receiver expected data rate. No mechanism is implemented for auto-tuning the uplink rate. 
+    The time in milliseconds used by the sender to wait in between sending two successive PDUs. This together with the PDU determine the uplink data rate. The data rate has to match the maximum uplink speed as well as the receiver expected data rate. No mechanism is implemented for auto-tuning the uplink rate. The receiver also uses this value as the minimum time between two PDUs it sends (for example between the EOF ACK and the Finished PDU). Default: ``500``
 
 canChangePduSize (boolean)
     Whether a ``FileTransferOption`` can be used to set a specific transfer's PDU size. Default: ``false``
@@ -157,14 +171,14 @@ pduDelayPredefinedValues (list)
     List of predefined integer values for the PDU delay option when ``canChangePduDelay`` is ``true``, shown as a dropdown menu in the Yamcs UI.
 
 inactivityTimeout (integer)
-    The time in milliseconds used by both the sender and receiver to check for inactivity. The timer is active on the receiver until EOF has been received and on class 2 sender after EOF has been sent (while waiting for the Finished PDU). If the timer expires, the InactivityDetected event will be triggered and the transaction may be cancelled or suspended (depending on the configuration of the fault handler for InactivityDetected event).
+    The time in milliseconds used by both the sender and receiver to check for inactivity. The timer is active on the receiver until EOF has been received and on class 2 sender after the EOF ACK has been received (while waiting for the Finished PDU). If the timer expires, the InactivityDetected event will be triggered and the transaction may be cancelled or suspended (depending on the configuration of the fault handler for InactivityDetected event).
 
     Default: ``10000`` (10 seconds).
 
 eofAckTimeout (integer) 
     Valid for class 2 transfers; the time in milliseconds used by the sender to wait for the EOF PDU acknowledgment. The sender sends the EOF PDU to indicate that it has completed transmitting the file. It expects to receive an acknowledgement indicating the reception of the EOF PDU (not of the file!, the Finished PDU is used for that). The EOF PDU is retransmitted if no acknowledgment has been received in this time.
 
-    Default: ``3000`` (3 seconds).
+    Default: ``5000`` (5 seconds).
 
 eofAckLimit (integer)
     Valid for class 2 transfers; the number of times to retry sending the EOF PDU before declaring a fault. Zero means that only one PDU will be sent (no retry). Negative value means no limit. Default: ``5``.
@@ -172,7 +186,7 @@ eofAckLimit (integer)
 finAckTimeout (integer)
     The time in milliseconds used by the receiver to wait for the FIN PDU acknowledgment. The receiver sends the Finished PDU to indicate that the file has been received or that a fault has been encountered. The receiver expects the sender to acknowledge reception of this PDU and will retransmit the PDU if no acknowledgment has been received in this time.
 
-    Default: ``10000`` (10 seconds)
+    Default: ``5000`` (5 seconds)
 
 finAckLimit (integer)
      The number of times to retry sending the Finished PDU before declaring a fault. Zero means that only one PDU will be sent (no retry). Negative value means no limit. Default: ``5``.
@@ -191,6 +205,15 @@ nakLimit (integer)
     Valid for class 2 transfers; the number of times to send a NAK PDU with no data recovered before declaring a fault. A value of 1 means that one NAK is sent and if no data is recovered within the nakTimeout milliseconds, a fault will be declared. Zero or negative value means no limit. 
 
     Default: ``-1``
+
+checkAckTimeout (integer)
+    Valid for class 1 transfers; if the receiver gets the EOF PDU but the file is not yet complete, it waits for the missing data (which may arrive out of order) and checks again every ``checkAckTimeout`` milliseconds. Default: ``10000``
+
+checkAckLimit (integer)
+    Valid for class 1 transfers; the number of checks done by the receiver (see ``checkAckTimeout``) before declaring a ``CheckLimitReached`` fault. Default: ``5``
+
+ackEofWhileSuspended (boolean)
+    Valid for class 2 transfers; if true, the receiver acknowledges the EOF PDU even while the transfer is suspended. This prevents the sender from reaching its EOF ACK limit while the receiver is suspended. Default: ``true``
  
 
 senderFaultHandlers (map)
@@ -242,7 +265,7 @@ fileListingParserArgs (map)
     Arguments for the FileListingParser used (depends on implementation).
 
 allowConcurrentFileOverwrites (boolean)
-    If this option is true, when starting an upload, the CFDP service verifies if an upload with the same destination filename is ongoing or queued and will raise an error. This is done in order to avoid overwriting the same destination file in case multiple files are uploaded from the yamcs-web. Default: ``true``
+    If this option is false, when starting an upload, the CFDP service verifies if an upload with the same destination filename is ongoing or queued and will raise an error. This is done in order to avoid overwriting the same destination file in case multiple files are uploaded from the yamcs-web. Set it to true to disable this check. Default: ``false``
 
 pendingAfterCompletion (integer)
     Number of milliseconds to keep the incoming transaction in memory after completion. During this time, the newly received EOF PDUs belonging to the transaction are still answered. All the other PDUs belonging to the transaction are ignored. Default: ``600000`` (10 minutes).

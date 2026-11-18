@@ -8,6 +8,5 @@ Group of administrative pages for managing users and groups.
     :caption: Table of Contents
 
     users
-    service-accounts
     groups
     roles

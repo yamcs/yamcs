@@ -82,6 +82,7 @@ public class CommandingManager extends AbstractService {
 
         Set<String> userAssignedArgumentNames = new HashSet<>(argAssignmentList.keySet());
         pc.setArgAssignment(cbr.getArgs(), userAssignedArgumentNames);
+        pc.setArgumentLocations(cbr.getArgumentLocations());
 
         return pc;
     }

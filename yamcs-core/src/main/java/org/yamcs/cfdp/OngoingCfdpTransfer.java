@@ -56,9 +56,6 @@ public abstract class OngoingCfdpTransfer implements CfdpFileTransfer {
 
     final long inactivityTimeout;
 
-    long maxAckSendFreqNanos;
-    long lastAckSentTime;
-    boolean logAckDrop = true;
 
     // accumulate the errors
     List<String> errors = new ArrayList<>();
@@ -111,7 +108,6 @@ public abstract class OngoingCfdpTransfer implements CfdpFileTransfer {
         this.monitor = monitor;
         this.inactivityTimeout = config.getLong("inactivityTimeout", 10000);
 
-        this.maxAckSendFreqNanos = config.getLong("maxAckSendFreq", 500) * 1_000_000;
         this.faultHandlerActions = faultHandlerActions;
     }
 

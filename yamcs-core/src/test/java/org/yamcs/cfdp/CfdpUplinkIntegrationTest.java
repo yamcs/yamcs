@@ -24,6 +24,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.buckets.Bucket;
 import org.yamcs.cfdp.pdu.CfdpPacket;
+import org.yamcs.cfdp.pdu.ConditionCode;
 import org.yamcs.client.ClientException;
 import org.yamcs.client.YamcsClient;
 import org.yamcs.client.filetransfer.FileTransferClient;
@@ -89,7 +90,9 @@ public class CfdpUplinkIntegrationTest {
     }
 
     @AfterEach
-    public void after() {
+    public void after() throws Exception {
+        // make sure no transfer from this test leaks packets into the next one
+        waitAllTransfersFinished();
         client.close();
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
         Stream cfdpOut = ydb.getStream("cfdp_out");
@@ -193,6 +196,27 @@ public class CfdpUplinkIntegrationTest {
         // this will lose the the 2 EOF
         uploadAndCheck(config, "randomfile6", data, true, Arrays.asList(5, 6), TransferState.FAILED,
                 TransferState.FAILED);
+    }
+
+    @Test
+    public void testClass2NoFinished() throws Exception {
+        byte[] data = createObject("randomfile62", 1000);
+        config.getRoot().put("inactivityTimeout", 1000);
+
+        // the receiver is suspended from the beginning: it acknowledges the EOF but does not send the Finished PDU;
+        // the sender inactivity timer should fail the transfer
+        MyFileReceiver rec = new MyFileReceiver(Collections.emptyList(), config);
+        rec.suspendOnStart = true;
+
+        ObjectId object = ObjectId.of(outgoingBucket.getName(), "randomfile62");
+        TransferInfo tinf = cfdpClient.upload(object, UploadOptions.reliable(true)).get();
+        assertEquals(TransferState.RUNNING, tinf.getState());
+
+        waitTransferFinished(null, tinf.getId());
+
+        TransferInfo tinfo1 = cfdpClient.getTransfer(tinf.getId()).get();
+        assertEquals(TransferState.FAILED, tinfo1.getState());
+        assertEquals(ConditionCode.INACTIVITY_DETECTED.toString(), tinfo1.getFailureReason());
     }
 
     @Test
@@ -309,6 +333,10 @@ public class CfdpUplinkIntegrationTest {
 
         TransferInfo tinfo1 = cfdpClient.getTransfer(tinf.getId()).get();
         assertEquals(expectedSenderState, tinfo1.getState());
+        // the finished transfers are listed from the cfdp table
+        var listed = cfdpClient.listTransfers().get().stream().filter(t -> t.getId() == tinf.getId()).toList();
+        assertEquals(1, listed.size());
+        assertEquals(expectedSenderState, listed.get(0).getState());
         if (expectedReceiverState != null) {
             assertEquals(expectedReceiverState, rec.trsf.getTransferState());
 
@@ -321,13 +349,23 @@ public class CfdpUplinkIntegrationTest {
     }
 
     private void waitTransferFinished(MyFileReceiver rec, long id) throws InterruptedException, ExecutionException {
-        for (int i = 0; i < 10; i++) {
-            Thread.sleep(1000);
+        for (int i = 0; i < 100; i++) {
+            Thread.sleep(200);
             TransferInfo tinfo1 = cfdpClient.getTransfer(id).get();
 
-            if (isFinished(tinfo1.getState()) && (rec.trsf == null || isFinished(rec.trsf.getTransferState()))) {
+            if (isFinished(tinfo1.getState())
+                    && (rec == null || rec.trsf == null || isFinished(rec.trsf.getTransferState()))) {
                 break;
             }
+        }
+    }
+
+    private void waitAllTransfersFinished() throws InterruptedException, ExecutionException {
+        for (int i = 0; i < 100; i++) {
+            if (cfdpClient.listTransfers().get().stream().allMatch(t -> isFinished(t.getState()))) {
+                return;
+            }
+            Thread.sleep(200);
         }
     }
 
@@ -339,7 +377,7 @@ public class CfdpUplinkIntegrationTest {
     private byte[] createObject(String objName, int size) throws Exception {
         byte[] data = new byte[size];
         random.nextBytes(data);
-        outgoingBucket.putObjectAsync(objName, "bla", Collections.emptyMap(), data);
+        outgoingBucket.putObjectAsync(objName, "bla", Collections.emptyMap(), data).get();
 
         return data;
     }
@@ -363,6 +401,7 @@ public class CfdpUplinkIntegrationTest {
         ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
         int tcount = 0;
         final List<Integer> dropPackets;
+        boolean suspendOnStart = false;
 
         MyFileReceiver(List<Integer> dropPackets, YConfiguration config) {
             YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);
@@ -395,6 +434,9 @@ public class CfdpUplinkIntegrationTest {
                         trsf = new CfdpIncomingTransfer("test", 1, TimeEncoding.getWallclockTime(), executor, config,
                                 packet.getHeader(), cfdpIn, fileSaveHandler, eventProducer, MyFileReceiver.this,
                                 Collections.emptyMap());
+                        if (suspendOnStart) {
+                            trsf.suspend();
+                        }
                     }
                     // System.out.println("processing packet "+packet);
                     trsf.processPacket(packet);
