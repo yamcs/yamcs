@@ -36,7 +36,9 @@ import org.yamcs.xtce.Parameter;
  * <li><b>rcvdSeqCount</b> - the Sequence Count in the PUS1 report.</li>
  * <li><b>reportSubType</b> - the PUS1 sub-type of the incoming PUS1 report.</li>
  * </ul>
- * The sentApid, rcvdApid, rcvdSeqCount and reportSubType are expected to have a raw type as unsigned integer. The
+ * The sentApid, rcvdApid, rcvdSeqCount and reportSubType are expected to have a raw type as unsigned integer.
+ * APIDs are compared using raw wire values when available; command-history inputs without raw values use their
+ * integer or enumerated engineering value instead. The
  * sentSeqCount is filled in by the post-processor and is expected to be signed 32 bit integer (the reason for that is
  * becuase it is converted from a command history attribute)
  * <p>
@@ -125,11 +127,11 @@ public class Pus1Verifier extends AbstractAlgorithmExecutor {
                 return NO_RESULT;
             }
         }
-        long sentApid = apidValue(inputValues.get(0).getEngValue());
+        long sentApid = apidValue(inputValues.get(0));
 
         // the sequence count set by the post-processor has no raw value
         int sentSeq = inputValues.get(1).getEngValue().getSint32Value();
-        long rcvdApid = apidValue(inputValues.get(2).getEngValue());
+        long rcvdApid = apidValue(inputValues.get(2));
         int rcvdSeq = inputValues.get(3).getRawValue().getUint32Value();
         int reportSubType = inputValues.get(4).getRawValue().getUint32Value();
 
@@ -213,12 +215,11 @@ public class Pus1Verifier extends AbstractAlgorithmExecutor {
     }
 
     /**
-     * Extracts the numeric APID from an engineering value, regardless of whether the argument/parameter
-     * type is a plain integer (e.g. {@code UINT32}, the common case) or an {@code ENUMERATED} type with a
-     * string label (the case this algorithm originally assumed). Enumerated values carry their own numeric
-     * code alongside the label, so both are compared by that code rather than by string.
+     * Prefer the raw APID so calibration cannot change packet identity. History inputs have no
+     * raw value, so fall back to their integer or enumerated engineering code.
      */
-    private static long apidValue(Value v) {
+    private static long apidValue(RawEngValue input) {
+        Value v = input.getRawValue() != null ? input.getRawValue() : input.getEngValue();
         return v.getType() == Type.ENUMERATED ? v.getSint64Value() : v.toLong();
     }
 }

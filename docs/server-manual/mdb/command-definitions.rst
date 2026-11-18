@@ -24,6 +24,11 @@ inputs: sent APID, sent sequence count, received APID, received sequence count, 
 subtype. Additional inputs are identified by their ``inputName`` and can be ordered freely
 after these five inputs. ``reportType`` identifies the incoming PUS service type.
 
+Sent and received APIDs are compared using their raw wire values when available,
+so calibration does not change packet identity. Inputs without raw values, such
+as command-history attributes, use their integer engineering value or enumeration
+code instead.
+
 To supply an optional acknowledgement-flags aggregate from a command argument, add the
 following entries to the verifier algorithm's ``InputSet``, after the five positional inputs:
 

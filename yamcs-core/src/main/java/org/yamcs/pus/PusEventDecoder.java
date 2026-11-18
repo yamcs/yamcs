@@ -32,6 +32,7 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Event.EventSeverity;
+import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.pus.MessageTemplate.ParameterValueResolver;
 import org.yamcs.time.TimeService;
 import org.yamcs.xtce.EnumeratedParameterType;
@@ -199,6 +200,9 @@ public class PusEventDecoder extends AbstractYamcsService {
     private static String eventIdToString(Value engValue) {
         if (engValue instanceof EnumeratedValue enumeratedValue) {
             return enumeratedValue.getStringValue();
+        }
+        if (engValue.getType() == Type.UINT64) {
+            return Long.toUnsignedString(engValue.getUint64Value());
         }
         return Long.toString(engValue.toLong());
     }

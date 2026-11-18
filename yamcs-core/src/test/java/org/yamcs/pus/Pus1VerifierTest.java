@@ -1,6 +1,7 @@
 package org.yamcs.pus;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -34,6 +35,38 @@ public class Pus1VerifierTest {
     Parameter subType = new Parameter("subType");
     Parameter type = new Parameter("type");
     Parameter optional = new Parameter("optional");
+
+    @Test
+    public void testReceivedApidUsesRawValueBeforeCalibration() {
+        for (Value calibrated : new Value[] { ValueUtility.getUint32Value(101),
+                ValueUtility.getStringValue("PAYLOAD"), ValueUtility.getEnumeratedValue(999, "PAYLOAD") }) {
+            var verifier = createVerifier(7, true);
+            var report = pus1Report(7);
+            report[2].setEngValue(calibrated);
+            assertVerification(true, run(verifier, report));
+        }
+    }
+
+    @Test
+    public void testDifferentWireApidDoesNotMatchEqualEngineeringApid() {
+        var report = pus1Report(7);
+        report[2].setRawUnsignedInteger(APID + 1);
+        assertSame(Pus1Verifier.NO_RESULT, run(createVerifier(7, true), report));
+    }
+
+    @Test
+    public void testSentArgumentApidUsesRawValue() {
+        var sent = uintPv(sentApid, APID);
+        sent.setEngValue(ValueUtility.getStringValue("PAYLOAD"));
+        assertVerification(true, runWithSentApid(createVerifier(7, true), sent, pus1Report(7)));
+    }
+
+    @Test
+    public void testHistoryApidFallsBackToEnumeratedEngineeringValue() {
+        var sent = new ParameterValue(sentApid);
+        sent.setEngValue(ValueUtility.getEnumeratedValue(APID, "PAYLOAD"));
+        assertVerification(true, runWithSentApid(createVerifier(7, true), sent, pus1Report(7)));
+    }
 
     @Test
     public void testUnrelatedAggregateIsNotAckFlags() {
@@ -126,6 +159,7 @@ public class Pus1VerifierTest {
 
     private void assertVerification(boolean success, AlgorithmExecutionResult result) {
         var vr = (VerificationResult) result.getReturnValue();
+        assertNotNull(vr, "Expected a verification result rather than NO_RESULT");
         if (success) {
             assertTrue(vr.success);
         } else {
@@ -172,7 +206,13 @@ public class Pus1VerifierTest {
     }
 
     private AlgorithmExecutionResult run(Pus1Verifier verifier, ParameterValue... tm) {
-        var sentApidPv = uintPv(sentApid, APID);
+        var sentApidPv = new ParameterValue(sentApid);
+        sentApidPv.setEngValue(ValueUtility.getSint32Value(APID));
+        return runWithSentApid(verifier, sentApidPv, tm);
+    }
+
+    private AlgorithmExecutionResult runWithSentApid(Pus1Verifier verifier, ParameterValue sentApidPv,
+            ParameterValue... tm) {
         // the sequence count set by the post-processor has only the engineering value
         var sentSeqPv = new ParameterValue(sentSeq);
         sentSeqPv.setEngValue(ValueUtility.getSint32Value(SEQ));

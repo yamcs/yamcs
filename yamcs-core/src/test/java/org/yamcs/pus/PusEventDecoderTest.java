@@ -16,10 +16,48 @@ import org.yamcs.ConfigurationException;
 import org.yamcs.alarms.EventId;
 import org.yamcs.parameter.ParameterValueList;
 import org.yamcs.protobuf.Event.EventSeverity;
+import org.yamcs.parameter.Value;
+import org.yamcs.utils.ValueUtility;
 
 class PusEventDecoderTest {
     @TempDir
     Path directory;
+
+    @Test
+    void unsigned64DecodedIdsResolveNumericTemplates() throws Exception {
+        var decoder = decoder("""
+                - eventId: 0
+                  template: Zero
+                - eventId: 1234
+                  template: Small
+                - eventId: 9223372036854775808
+                  template: High bit
+                - eventId: 18446744073709551615
+                  template: Maximum
+                """);
+        long[] codes = { 0, 1234, Long.MIN_VALUE, -1L };
+        String[] keys = { "0", "1234", "9223372036854775808", "18446744073709551615" };
+        String[] messages = { "Zero", "Small", "High bit", "Maximum" };
+        for (int i = 0; i < codes.length; i++) {
+            String key = eventId(ValueUtility.getUint64Value(codes[i]));
+            assertEquals(keys[i], key);
+            assertEquals(messages[i], decoder.formatEvent(1, key, new ParameterValueList(), 1, 0, 0).getMessage());
+        }
+    }
+
+    @Test
+    void signedUnsigned32AndEnumeratedIdsKeepTheirMeaning() throws Exception {
+        assertEquals("-1", eventId(ValueUtility.getSint32Value(-1)));
+        assertEquals("-9223372036854775808", eventId(ValueUtility.getSint64Value(Long.MIN_VALUE)));
+        assertEquals("4294967295", eventId(ValueUtility.getUint32Value(-1)));
+        assertEquals("EVENT", eventId(ValueUtility.getEnumeratedValue(1234, "EVENT")));
+    }
+
+    private String eventId(Value value) throws Exception {
+        var method = PusEventDecoder.class.getDeclaredMethod("eventIdToString", Value.class);
+        method.setAccessible(true);
+        return (String) method.invoke(null, value);
+    }
 
     private PusEventDecoder decoder(String yaml) throws Exception {
         Path file = directory.resolve("events.yaml");
