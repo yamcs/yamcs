@@ -116,10 +116,8 @@
 			     request's CCSDS packet data length (bytes 4-5 of the request) is read ahead first, then
 			     the position goes back 48 bits to the start of the request, which is decoded in one piece
 			     with the size derived from that length.
-			     LIMITATION: Yamcs resolves a ParameterInstanceRef in a DynamicValue to the first instance in
-			     the packet (PACKET_START_WITHIN_PACKET, instance 0), so every entry's request is sized by the
-			     first entry's length. Reports whose requests all have the same length (or a single entry,
-			     e.g. TC[19,10] for one definition) decode correctly; others fail after the first entry.
+			     The DynamicValue reference omits instance, so it uses the most recently decoded
+			     ea11_request_pkt_len for each entry, including entries with unequal request lengths.
 			     Free-standing container (no BaseContainer) only reached via the ContainerRefEntry below. -->
 			<SequenceContainer name="ea_def_entry">
 				<EntryList>

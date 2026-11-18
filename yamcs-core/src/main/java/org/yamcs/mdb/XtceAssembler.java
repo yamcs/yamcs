@@ -120,6 +120,7 @@ import org.yamcs.xtce.OutputParameter;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.xtce.ParameterEntry;
 import org.yamcs.xtce.ParameterInstanceRef;
+import org.yamcs.xtce.ParameterInstanceRef.InstanceRelativeTo;
 import org.yamcs.xtce.ParameterOrArgumentRef;
 import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.ParameterValueChange;
@@ -976,6 +977,13 @@ public class XtceAssembler {
                 writeAggregateMemberInstanceRef(doc, aggregateMemberRef);
             } else if (reference instanceof ParameterInstanceRef parameterRef) {
                 writeParameterInstanceRef(doc, ELEM_PARAMETER_INSTANCE_REF, parameterRef);
+            } else if (reference instanceof ArgumentInstanceRef argumentRef) {
+                doc.writeStartElement("ArgumentInstanceRef");
+                doc.writeAttribute("argumentRef", argumentRef.getName());
+                if (!argumentRef.useCalibratedValue()) {
+                    doc.writeAttribute("useCalibratedValue", "false");
+                }
+                doc.writeEndElement();
             } else {
                 throw new IllegalStateException("Unexpected dynamic integer reference " + reference.getClass());
             }
@@ -1005,7 +1013,9 @@ public class XtceAssembler {
             throws XMLStreamException {
         doc.writeStartElement(elementName);
         doc.writeAttribute(ATTR_PARAMETER_REF, getNameReference(pinstRef));
-        if (pinstRef.getInstance() != 0) {
+        // DynamicValue references without an instance use current-entry lookup on import.
+        // Preserve an explicit packet-start reference even when its index is zero.
+        if (pinstRef.getInstance() != 0 || pinstRef.getRelativeTo() == InstanceRelativeTo.PACKET_START_WITHIN_PACKET) {
             doc.writeAttribute("instance", Integer.toString(pinstRef.getInstance()));
         }
         if (!pinstRef.useCalibratedValue()) {
@@ -1233,11 +1243,11 @@ public class XtceAssembler {
             throws XMLStreamException {
         doc.writeStartElement("BinaryDataEncoding");
 
-        doc.writeStartElement(ELEM_SIZE_IN_BITS);
-        doc.writeStartElement("FixedValue");
-        doc.writeCharacters(Integer.toString(encoding.getSizeInBits()));
-        doc.writeEndElement();
-        doc.writeEndElement();// SizeInBits
+        if (encoding.getDynamicSize() != null) {
+            writeIntegerValue(doc, ELEM_SIZE_IN_BITS, encoding.getDynamicSize());
+        } else {
+            writeIntegerValue(doc, ELEM_SIZE_IN_BITS, new FixedIntegerValue(encoding.getSizeInBits()));
+        }
 
         if (encoding.getFromBinaryTransformAlgorithm() != null) {
             writeCustomAlgorithm(doc, (CustomAlgorithm) encoding.getFromBinaryTransformAlgorithm(),
@@ -1536,7 +1546,7 @@ public class XtceAssembler {
             doc.writeAttribute(ATTR_PARAMETER_REF, getNameReference(((ParameterEntry) entry).getParameter()));
         } else if (entry instanceof ContainerEntry) {
             doc.writeStartElement("ContainerRefEntry");
-            doc.writeAttribute("containerRef", getNameReference(((ContainerEntry) entry).getContainer()));
+            doc.writeAttribute("containerRef", getNameReference(((ContainerEntry) entry).getRefContainer()));
         } else if (entry instanceof ArgumentEntry) {
             doc.writeStartElement("ArgumentRefEntry");
             doc.writeAttribute("argumentRef", ((ArgumentEntry) entry).getArgument().getName());

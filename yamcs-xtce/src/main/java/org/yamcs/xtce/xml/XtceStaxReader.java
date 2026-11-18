@@ -2873,7 +2873,13 @@ public class XtceStaxReader extends AbstractStaxReader {
                 } else if (aggregateMembers.contains(paramRef) || isAggregateMemberReference(element)) {
                     v = new DynamicIntegerValue(readAggregateMemberInstanceRef());
                 } else {
-                    v = new DynamicIntegerValue(readParameterInstanceRef(spaceSystem, null));
+                    ParameterInstanceRef reference = readParameterInstanceRef(spaceSystem, null);
+                    // Counts and lengths in repeated entries use the value decoded for that entry.
+                    // An explicit instance retains packet-start indexing, including instance="0".
+                    if (!hasAttribute("instance", element)) {
+                        reference.setRelativeTo(InstanceRelativeTo.CURRENT_ENTRY_WITHIN_PACKET);
+                    }
+                    v = new DynamicIntegerValue(reference);
                 }
             } else if (isStartElementWithName(ELEM_ARGUMENT_INSTANCE_REF)) {
                 v = new DynamicIntegerValue(readArgumentInstanceRef(spaceSystem, null));

@@ -106,6 +106,25 @@ The other elements are supported one way or another, exceptions or changes from 
   | For variable size strings whose size is encoded in front of the string, Yamcs allows to specify only for command arguments sizeInBitsOfSizeTag = 0. This means that the value of the argument will be inserted without providing the information about its size. The receiver has to know how to derive the size. This has been implemented for compatibility with other systems (e.g. SCOS-2k) which allows this - however it is not allowed by XTCE which enforces sizeInBitsOfSizeTag > 0. 
 
 
+.. rubric:: Dynamic parameter references
+
+Within ``DynamicValue`` (for example a binary length, array dimension or repeat count),
+a ``ParameterInstanceRef`` without an ``instance`` attribute uses the most recently decoded
+occurrence of the parameter in the current packet. This allows repeated entries to have
+different lengths and counts.
+
+An explicit non-negative ``instance`` selects from the beginning of the packet:
+``instance="0"`` selects the first occurrence, ``instance="1"`` the second, and so on.
+The XTCE exporter retains an explicit zero so export and reload preserve that choice.
+Other reference contexts, including algorithm inputs and time associations, retain their
+existing instance-selection rules.
+
+Earlier versions interpreted an omitted ``instance`` in a dynamic value as packet-start
+instance zero. Databases that intentionally depended on that behavior must now specify
+``instance="0"`` explicitly. Serialized MDB caches from before this change are rebuilt
+from their source definitions automatically.
+
+
 .. rubric:: Data Types
 
 * | ValidRangeSet
