@@ -74,6 +74,7 @@ import org.yamcs.protobuf.alarms.SubscribeAlarmsRequest;
 import org.yamcs.protobuf.alarms.SubscribeGlobalStatusRequest;
 import org.yamcs.protobuf.alarms.UnshelveAlarmRequest;
 import org.yamcs.security.SystemPrivilege;
+import org.yamcs.time.Instant;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.xtce.Parameter;
 import org.yamcs.yarch.SqlBuilder;
@@ -749,7 +750,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
             ParameterValue pv = (ParameterValue) activeAlarm.getMostSevereValue();
             alarmb.setId(getAlarmId(pv));
             ParameterValue triggerPv = (ParameterValue) activeAlarm.getTriggerValue();
-            Timestamp triggerTime = TimeEncoding.toProtobufTimestamp(triggerPv.getGenerationTime());
+            Timestamp triggerTime = TimeEncoding.toProtobufTimestamp(triggerPv.getHresGenerationTime());
             alarmb.setTriggerTime(triggerTime);
             if (detail) {
                 @SuppressWarnings("unchecked")
@@ -761,7 +762,7 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
             alarmb.setType(AlarmType.EVENT);
             Db.Event ev = (Db.Event) activeAlarm.getMostSevereValue();
             alarmb.setId(getAlarmId(ev));
-            Timestamp triggerTime = TimeEncoding.toProtobufTimestamp(ev.getGenerationTime());
+            Timestamp triggerTime = TimeEncoding.toProtobufTimestamp(getHresGenerationTime(ev));
             alarmb.setTriggerTime(triggerTime);
             if (detail) {
                 @SuppressWarnings("unchecked")
@@ -816,6 +817,14 @@ public class AlarmsApi extends AbstractAlarmsApi<Context> {
         }
         return alarmb.build();
 
+    }
+
+    private static Instant getHresGenerationTime(Db.Event event) {
+        if (event.hasGenerationTimePicos()) {
+            return Instant.get(event.getGenerationTime(), event.getGenerationTimePicos());
+        } else {
+            return Instant.get(event.getGenerationTime());
+        }
     }
 
     private static AlarmSeverity getAlarmSeverity(ActiveAlarm<?> activeAlarm) {

@@ -177,7 +177,7 @@ public class ParameterValue extends BasicParameterValue {
         } else {
             sb.append(paramFqn);
         }
-        sb.append(" genTime: {").append(TimeEncoding.toString(generationTime)).append("}");
+        sb.append(" genTime: {").append(TimeEncoding.toString(generationTime.getMillis())).append("}");
         if (rawValue != null) {
             sb.append(" rawValue: {").append(rawValue.toString()).append("}");
         }
@@ -187,5 +187,5 @@ public class ParameterValue extends BasicParameterValue {
         return sb.toString();
     }
 
-    
+
 }

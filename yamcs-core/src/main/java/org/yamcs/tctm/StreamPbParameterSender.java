@@ -7,6 +7,7 @@ import java.util.List;
 import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Yamcs.NamedObjectId;
+import org.yamcs.time.Instant;
 import org.yamcs.yarch.Stream;
 
 public class StreamPbParameterSender extends StreamParameterSender implements ParameterSink {
@@ -16,7 +17,7 @@ public class StreamPbParameterSender extends StreamParameterSender implements Pa
     }
 
     @Override
-    public void updateParams(long gentime, String group, int seqNum,
+    public void updateParams(Instant gentime, String group, int seqNum,
             Collection<org.yamcs.protobuf.Pvalue.ParameterValue> params) {
         List<ParameterValue> plist = new ArrayList<>(params.size());
         for (org.yamcs.protobuf.Pvalue.ParameterValue pbv : params) {

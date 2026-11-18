@@ -170,7 +170,7 @@ public class CcsdsTmIndex extends AbstractYamcsService implements TmIndexService
      * link preprocessor).
      */
     protected long getTime(Tuple tuple) {
-        return (Long) tuple.getColumn(StandardTupleDefinitions.GENTIME_COLUMN);
+        return tuple.getTimestampColumn(StandardTupleDefinitions.GENTIME_COLUMN);
     }
 
     synchronized void addPacket(short apid, long instant, short seq) throws RocksDBException {

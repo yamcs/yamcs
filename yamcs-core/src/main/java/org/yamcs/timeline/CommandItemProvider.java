@@ -112,7 +112,7 @@ public class CommandItemProvider implements ItemProvider {
     }
 
     private static TimelineEvent toItem(Tuple tuple) {
-        long gentime = (Long) tuple.getColumn(PreparedCommand.CNAME_GENTIME);
+        long gentime = tuple.getTimestampColumn(PreparedCommand.CNAME_GENTIME);
         String origin = (String) tuple.getColumn(PreparedCommand.CNAME_ORIGIN);
         int sequenceNumber = (Integer) tuple.getColumn(PreparedCommand.CNAME_SEQNUM);
         String id = gentime + "-" + origin + "-" + sequenceNumber;
