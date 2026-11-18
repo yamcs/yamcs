@@ -38,6 +38,7 @@ import org.yamcs.simulator.UdpTmFrameLink;
  * <li>ST[13] - large packet transfer - TODO</li>
  * <li>ST[15] - on-board storage and retrieval - TODO</li>
  * <li>ST[17] - test</li>
+ * <li>ST[20] - on-board parameter management (not the parameter definitions)</li>
  * <li>ST[22] - position based schedule</li>
  * <li>ST[23] - file management - TODO</li>
  * 
@@ -79,6 +80,7 @@ public class PusSimulator extends AbstractSimulator {
     Pus11Service pus11Service;
     Pus17Service pus17Service;
     Pus19Service pus19Service;
+    Pus20Service pus20Service;
     Pus22Service pus22Service;
 
     protected BlockingQueue<PusTcPacket> pendingCommands = new ArrayBlockingQueue<>(100);
@@ -94,6 +96,7 @@ public class PusSimulator extends AbstractSimulator {
         pus11Service = new Pus11Service(this);
         pus17Service = new Pus17Service(this);
         pus19Service = new Pus19Service(this);
+        pus20Service = new Pus20Service(this);
         pus22Service = new Pus22Service(this);
     }
 
@@ -262,6 +265,7 @@ public class PusSimulator extends AbstractSimulator {
                 case 11 -> pus11Service.executeTc(commandPacket);
                 case 17 -> pus17Service.executeTc(commandPacket);
                 case 19 -> pus19Service.executeTc(commandPacket);
+                case 20 -> pus20Service.executeTc(commandPacket);
                 case 22 -> pus22Service.executeTc(commandPacket);
                 case 25 -> {
                     switch (commandPacket.getSubtype()) {
@@ -287,11 +291,19 @@ public class PusSimulator extends AbstractSimulator {
     }
 
     public static PusTmPacket nack(PusTcPacket commandPacket, int subtype, int code) {
-        PusTmPacket ackPacket = new PusTmPacket(MAIN_APID, 8, PUS_TYPE_ACK, subtype);
+        return nack(commandPacket, subtype, code, new byte[0]);
+    }
+
+    /**
+     * Failure verification report with failure data (the data of the failure notice) after the failure code
+     */
+    public static PusTmPacket nack(PusTcPacket commandPacket, int subtype, int code, byte[] failureData) {
+        PusTmPacket ackPacket = new PusTmPacket(MAIN_APID, 8 + failureData.length, PUS_TYPE_ACK, subtype);
 
         ByteBuffer bb = ackPacket.getUserDataBuffer();
         bb.put(commandPacket.getBytes(), 0, 4);
         bb.putInt(code);
+        bb.put(failureData);
         return ackPacket;
     }
 
