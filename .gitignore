@@ -26,8 +26,6 @@ server.lock
 .codex/
 .mcp.json
 .mcp.local.json
-AGENTS.md
-CLAUDE.md
 .code-review-graph/
 /.venv/
 /.github/code-review-graph.instruction.md
@@ -39,10 +37,7 @@ code-review-graph.instruction.md
 .qoder
 .cursorrules
 .windsurfrules
-CODEBUDDY.md
-GEMINI.md
 opencode.jsonc
-QODER.md
 .github/instructions
 .claude
 
