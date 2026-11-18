@@ -17,6 +17,7 @@ Each processor is composed of a set of services with varying functionality.
     alarm-reporter
     algorithm-manager
     local-parameter-manager
+    pus-parameter-manager
     replay-service
     stream-parameter-provider
     stream-tc-command-releaser
