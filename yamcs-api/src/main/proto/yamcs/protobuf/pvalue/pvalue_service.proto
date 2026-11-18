@@ -63,6 +63,15 @@ service ParameterValuesApi {
   //
   // This divides the query interval in a number of intervals and returns aggregated
   // statistics (max, min, avg) about each interval.
+  // Engineering enum and boolean values, including aggregate members and array
+  // elements, instead report the last state in each interval as min=max=avg.
+  // Enum labels use their declared numeric code. A range label uses the range
+  // midpoint as a stable plotting coordinate on both live and archived retrieval;
+  // this does not reconstruct the original code within the range. If a label is
+  // declared more than once, the first exact enumeration takes precedence over
+  // ranges, then the first range. Unknown labels produce gaps. Raw samples retain
+  // numeric averaging. Sample coordinates use double precision, so integer codes
+  // above 2^53 may be rounded even though no 32-bit narrowing is performed.
   //
   // This operation is useful when making high-level overviews (such as plots) of a
   // parameter's value over large time intervals without having to retrieve each

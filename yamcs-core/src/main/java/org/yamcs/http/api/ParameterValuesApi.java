@@ -54,6 +54,7 @@ import org.yamcs.protobuf.Yamcs.PacketReplayRequest;
 import org.yamcs.security.ObjectPrivilegeType;
 import org.yamcs.tctm.StreamParameterSender;
 import org.yamcs.time.TimeService;
+import org.yamcs.utils.AggregateUtil;
 import org.yamcs.utils.ParameterFormatter;
 import org.yamcs.utils.ParameterFormatter.Header;
 import org.yamcs.utils.TimeEncoding;
@@ -552,18 +553,7 @@ public class ParameterValuesApi extends AbstractParameterValuesApi<Context> {
         // Enums additionally need the label->ordinal table, because the columnar retrieval path delivers String labels
         // where the plot needs numeric ordinals. Booleans arrive as BOOLEAN values on both paths and need no table.
         // Raw values of an enum or boolean parameter are plain integers and need none of this.
-        if (!useRawValue && pid.getPath() == null) {
-            ParameterType ptype = pid.getParameter().getParameterType();
-            if (ptype instanceof EnumeratedParameterType enumType) {
-                Map<String, Integer> labelToOrdinal = new HashMap<>();
-                for (ValueEnumeration ve : enumType.getValueEnumerationList()) {
-                    labelToOrdinal.put(ve.getLabel(), (int) ve.getValue());
-                }
-                sampler.enableCategoricalMode(labelToOrdinal);
-            } else if (ptype instanceof BooleanParameterType) {
-                sampler.enableCategoricalMode(null);
-            }
-        }
+        configureCategoricalSampling(sampler, pid, useRawValue);
 
         ParameterRetrievalService prs = getParameterRetrievalService(ysi);
         ParameterRetrievalOptions opts = ParameterRetrievalOptions.newBuilder()
@@ -587,6 +577,29 @@ public class ParameterValuesApi extends AbstractParameterValuesApi<Context> {
                     observer.completeExceptionally(new InternalServerErrorException(e.toString()));
                     return null;
                 });
+    }
+
+    static void configureCategoricalSampling(Downsampler sampler, ParameterWithId pid, boolean useRawValue) {
+        if (!useRawValue) {
+            ParameterType ptype = pid.getParameter().getParameterType();
+            if (ptype != null && pid.getPath() != null) {
+                ptype = AggregateUtil.getMemberType(ptype, pid.getPath());
+            }
+            if (ptype instanceof EnumeratedParameterType enumType) {
+                Map<String, Number> labelToOrdinal = new HashMap<>();
+                for (ValueEnumeration ve : enumType.getValueEnumerationList()) {
+                    labelToOrdinal.putIfAbsent(ve.getLabel(), ve.getValue());
+                }
+                for (var range : enumType.getValueEnumerationRangeList()) {
+                    // Archives retain labels, not the original code within a range. Use the
+                    // MDB midpoint as a stable plotting coordinate on every retrieval path.
+                    labelToOrdinal.putIfAbsent(range.getLabel(), range.getOneInRange());
+                }
+                sampler.enableCategoricalMode(labelToOrdinal);
+            } else if (ptype instanceof BooleanParameterType) {
+                sampler.enableCategoricalMode(null);
+            }
+        }
     }
 
     @Override
