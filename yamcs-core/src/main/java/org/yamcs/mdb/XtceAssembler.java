@@ -4,6 +4,7 @@ import static org.yamcs.xtce.xml.Constants.ATTR_ENCODING;
 import static org.yamcs.xtce.xml.Constants.ATTR_INITIAL_VALUE;
 import static org.yamcs.xtce.xml.Constants.ATTR_PARAMETER_REF;
 import static org.yamcs.xtce.xml.Constants.ATTR_SIZE_IN_BITS;
+import static org.yamcs.xtce.xml.Constants.ELEM_ARGUMENT_INSTANCE_REF;
 import static org.yamcs.xtce.xml.Constants.ELEM_COMPARISON_OPERATOR;
 import static org.yamcs.xtce.xml.Constants.ELEM_CONDITION;
 import static org.yamcs.xtce.xml.Constants.ELEM_ENCODING;
@@ -41,6 +42,8 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import org.yamcs.algo.LeadingSizeBinaryDecoder;
+import org.yamcs.algo.LeadingSizeBinaryEncoder;
 import org.yamcs.logging.Log;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.xtce.ANDedConditions;
@@ -914,13 +917,16 @@ public class XtceAssembler {
                 doc.writeAttribute("scale", Double.toString(atype.getScale()));
             }
             if (atype.getOffset() != 0) {
-                doc.writeAttribute("offset", Double.toString(atype.getScale()));
+                doc.writeAttribute("offset", Double.toString(atype.getOffset()));
             }
             writeDataEncoding(doc, atype.getEncoding());
             doc.writeEndElement();// Encoding
         }
 
-        writeReferenceTime(doc, atype.getReferenceTime());
+        ReferenceTime referenceTime = atype.getReferenceTime();
+        if (referenceTime != null) {
+            writeReferenceTime(doc, referenceTime);
+        }
         doc.writeEndElement();// AbsoluteTimeArgumentType
     }
 
@@ -968,7 +974,16 @@ public class XtceAssembler {
         } else if (iv instanceof DynamicIntegerValue) {
             doc.writeStartElement("DynamicValue");
             DynamicIntegerValue div = (DynamicIntegerValue) iv;
-            writeParameterInstanceRef(doc, ELEM_PARAMETER_INSTANCE_REF, div.getParameterInstanceRef());
+            if (div.getDynamicInstanceRef() instanceof ArgumentInstanceRef aref) {
+                doc.writeStartElement(ELEM_ARGUMENT_INSTANCE_REF);
+                doc.writeAttribute("argumentRef", aref.getName());
+                if (!aref.useCalibratedValue()) {
+                    doc.writeAttribute("useCalibratedValue", "false");
+                }
+                doc.writeEndElement();
+            } else {
+                writeParameterInstanceRef(doc, ELEM_PARAMETER_INSTANCE_REF, div.getParameterInstanceRef());
+            }
             if (div.getSlope() != 1 || div.getIntercept() != 0) {
                 doc.writeStartElement("LinearAdjustment");
                 if (div.getIntercept() != 0) {
@@ -1213,22 +1228,54 @@ public class XtceAssembler {
             throws XMLStreamException {
         doc.writeStartElement("BinaryDataEncoding");
 
-        doc.writeStartElement(ELEM_SIZE_IN_BITS);
-        doc.writeStartElement("FixedValue");
-        doc.writeCharacters(Integer.toString(encoding.getSizeInBits()));
-        doc.writeEndElement();
-        doc.writeEndElement();// SizeInBits
+        if (encoding.getType() == BinaryDataEncoding.Type.DYNAMIC && encoding.getDynamicSize() != null) {
+            writeIntegerValue(doc, ELEM_SIZE_IN_BITS, encoding.getDynamicSize());
+        } else if (encoding.getType() == BinaryDataEncoding.Type.LEADING_SIZE) {
+            // XTCE has no leading size for binary data (only for strings). Write it the way it is documented for
+            // XTCE files: an ignored dynamic size and the leading size decoder/encoder algorithms.
+            doc.writeStartElement(ELEM_SIZE_IN_BITS);
+            doc.writeStartElement("DynamicValue");
+            doc.writeStartElement(ELEM_PARAMETER_INSTANCE_REF);
+            doc.writeAttribute(ATTR_PARAMETER_REF, XtceStaxReader.IGNORED_DYNAMIC_VALUE
+                    .getParameterInstanceRef().getParameter().getName());
+            doc.writeEndElement();
+            doc.writeEndElement();// DynamicValue
+            doc.writeEndElement();// SizeInBits
+        } else {
+            doc.writeStartElement(ELEM_SIZE_IN_BITS);
+            doc.writeStartElement("FixedValue");
+            doc.writeCharacters(Integer.toString(encoding.getSizeInBits()));
+            doc.writeEndElement();
+            doc.writeEndElement();// SizeInBits
+        }
 
         if (encoding.getFromBinaryTransformAlgorithm() != null) {
             writeCustomAlgorithm(doc, (CustomAlgorithm) encoding.getFromBinaryTransformAlgorithm(),
                     "FromBinaryTransformAlgorithm", true);
+        } else if (encoding.getType() == BinaryDataEncoding.Type.LEADING_SIZE) {
+            writeLeadingSizeAlgorithm(doc, "FromBinaryTransformAlgorithm", LeadingSizeBinaryDecoder.class,
+                    encoding.getSizeInBitsOfSizeTag());
         }
         if (encoding.getToBinaryTransformAlgorithm() != null) {
             writeCustomAlgorithm(doc, (CustomAlgorithm) encoding.getToBinaryTransformAlgorithm(),
                     "ToBinaryTransformAlgorithm", true);
+        } else if (encoding.getType() == BinaryDataEncoding.Type.LEADING_SIZE) {
+            writeLeadingSizeAlgorithm(doc, "ToBinaryTransformAlgorithm", LeadingSizeBinaryEncoder.class,
+                    encoding.getSizeInBitsOfSizeTag());
         }
 
         doc.writeEndElement();// BinaryDataEncoding
+    }
+
+    private static void writeLeadingSizeAlgorithm(XMLStreamWriter doc, String elementName, Class<?> algorithmClass,
+            int sizeInBitsOfSizeTag) throws XMLStreamException {
+        doc.writeStartElement(elementName);
+        doc.writeAttribute("name", algorithmClass.getSimpleName());
+        doc.writeStartElement("AlgorithmText");
+        doc.writeAttribute("language", "java");
+        doc.writeCharacters(algorithmClass.getName() + "(" + sizeInBitsOfSizeTag + ")");
+        doc.writeEndElement();// AlgorithmText
+        doc.writeEndElement();
     }
 
     private void writeStringParameterType(XMLStreamWriter doc, StringParameterType ptype)

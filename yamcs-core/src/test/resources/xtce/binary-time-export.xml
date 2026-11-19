@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="BinaryTimeExport"
+	shortDescription="Export of binary types with a dynamic size and of absolute time arguments without reference time"
+	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
+	<TelemetryMetaData>
+		<ParameterTypeSet>
+			<IntegerParameterType name="LengthType" signed="false">
+				<IntegerDataEncoding sizeInBits="16" />
+			</IntegerParameterType>
+			<BinaryParameterType name="DynamicBinaryType">
+				<BinaryDataEncoding>
+					<SizeInBits>
+						<DynamicValue>
+							<ParameterInstanceRef parameterRef="length" />
+							<LinearAdjustment slope="8" intercept="-48" />
+						</DynamicValue>
+					</SizeInBits>
+				</BinaryDataEncoding>
+			</BinaryParameterType>
+		</ParameterTypeSet>
+		<ParameterSet>
+			<Parameter name="length" parameterTypeRef="LengthType" />
+			<Parameter name="data" parameterTypeRef="DynamicBinaryType" />
+		</ParameterSet>
+		<ContainerSet>
+			<SequenceContainer name="packet">
+				<EntryList>
+					<ParameterRefEntry parameterRef="length" />
+					<ParameterRefEntry parameterRef="data" />
+				</EntryList>
+			</SequenceContainer>
+		</ContainerSet>
+	</TelemetryMetaData>
+	<CommandMetaData>
+		<ArgumentTypeSet>
+			<IntegerArgumentType name="LengthArgType" signed="false">
+				<IntegerDataEncoding sizeInBits="16" />
+			</IntegerArgumentType>
+			<BinaryArgumentType name="DynamicBinaryArgType">
+				<BinaryDataEncoding>
+					<SizeInBits>
+						<DynamicValue>
+							<ArgumentInstanceRef argumentRef="length" />
+							<LinearAdjustment slope="8" />
+						</DynamicValue>
+					</SizeInBits>
+				</BinaryDataEncoding>
+			</BinaryArgumentType>
+			<AbsoluteTimeArgumentType name="TimeNoReferenceType">
+				<Encoding offset="10">
+					<BinaryDataEncoding>
+						<SizeInBits>
+							<FixedValue>-1</FixedValue>
+						</SizeInBits>
+						<ToBinaryTransformAlgorithm name="TimeBinaryEncoder">
+							<AlgorithmText language="java">org.yamcs.algo.TimeBinaryEncoder({type: CUC, epoch: UNIX})</AlgorithmText>
+						</ToBinaryTransformAlgorithm>
+					</BinaryDataEncoding>
+				</Encoding>
+			</AbsoluteTimeArgumentType>
+		</ArgumentTypeSet>
+		<MetaCommandSet>
+			<MetaCommand name="cmd">
+				<ArgumentList>
+					<Argument name="time" argumentTypeRef="TimeNoReferenceType" />
+					<Argument name="length" argumentTypeRef="LengthArgType" />
+					<Argument name="data" argumentTypeRef="DynamicBinaryArgType" />
+				</ArgumentList>
+				<CommandContainer name="cmd">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="time" />
+						<ArgumentRefEntry argumentRef="length" />
+						<ArgumentRefEntry argumentRef="data" />
+					</EntryList>
+				</CommandContainer>
+			</MetaCommand>
+		</MetaCommandSet>
+	</CommandMetaData>
+</SpaceSystem>
