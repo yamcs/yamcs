@@ -185,8 +185,11 @@ ST[20] on-board parameter management
   (by default; this can be changed in the PusParameterManager config). The edit
   sends a TC[20,3] `SET_PARAMETER_VALUES` command, and is equivalent to sending
   the command from the commanding page: same privilege, queues, verification
-  and command history, attributed to the user. The edited value is not shown as
-  the new value: send TC[20,1] again to see the value on board.
+  and command history, attributed to the user. By default (option
+  `reportAfterSet`), the PusParameterManager then also sends a TC[20,1]
+  `REPORT_PARAMETER_VALUES` for the updated parameters, so the new value shows up
+  right away. Set `reportAfterSet: false` to disable this; the value is then only
+  updated by sending TC[20,1] yourself.
 - Bulk updates: `SET_PARAMETER_VALUES` has one binary argument `instructions`, the application data of
   TC[20,3] in hex: N, then N x (parameter ID, value), the value being big endian with the size of the
   parameter. XTCE cannot type a command argument based on a preceding argument, so Yamcs does not validate
