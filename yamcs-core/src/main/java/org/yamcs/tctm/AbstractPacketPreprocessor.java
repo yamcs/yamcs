@@ -158,6 +158,11 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
                 customEpoch = TimeEncoding.parse(epochs);
                 if (!customEpochIncludeLeapSecond) {
                     customEpoch = TimeEncoding.toUnixMillisec(customEpoch);
+                    if (timeDecoder instanceof CdsTimeDecoder
+                            && Math.floorMod(customEpoch, CdsTimeDecoder.MILLIS_PER_DAY) != 0) {
+                        throw new ConfigurationException(
+                                "The CDS time counts days from the epoch: epochUTC has to be at 00:00:00 UTC");
+                    }
                 }
             }
             log.debug("Using time decoder {}", timeDecoder);
@@ -282,8 +287,12 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
                 tmPacket.setObt(obt);
                 tcoService.timestamp(obt, tmPacket);
             } else {
-                long t = timeDecoder.decode(packet, offset);
-                long gentime = shiftFromEpoch(t);
+                long gentime;
+                if (timeDecoder instanceof CdsTimeDecoder cdsDecoder) {
+                    gentime = cdsToInstant(cdsDecoder.decodeDayTime(packet, offset));
+                } else {
+                    gentime = shiftFromEpoch(timeDecoder.decode(packet, offset));
+                }
                 tmPacket.setGenerationTime(gentime);
                 if (tcoService != null) {
                     tcoService.verify(tmPacket);
@@ -294,6 +303,25 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
             eventProducer.sendWarning("Failed to extract time from packet: " + e);
             tmPacket.setInvalid(true);
         }
+    }
+
+    /**
+     * Converts a CDS day and millisecond of day to a Yamcs instant.
+     * <p>
+     * CDS counts UTC days and the millisecond of day goes up to 86400999 during a leap second (CCSDS 301.0-B-4 Annex
+     * A). The Yamcs instants include the leap seconds, so the time is the start of the day plus the millisecond of
+     * day. A leap second is only accepted on a day that has one, which requires a UTC based epoch.
+     */
+    protected long cdsToInstant(CdsTimeDecoder.DayTime dt) {
+        long dayStart = shiftFromEpoch(dt.day() * CdsTimeDecoder.MILLIS_PER_DAY);
+        if (dt.msOfDay() >= CdsTimeDecoder.MILLIS_PER_DAY) {
+            long dayLength = shiftFromEpoch((dt.day() + 1) * CdsTimeDecoder.MILLIS_PER_DAY) - dayStart;
+            if (dt.msOfDay() >= dayLength) {
+                throw new IllegalArgumentException("Invalid CDS millisecond of day " + dt.msOfDay() + " for day "
+                        + dt.day() + ": that day has no leap second");
+            }
+        }
+        return dayStart + dt.msOfDay();
     }
 
     protected long shiftFromEpoch(long t) {

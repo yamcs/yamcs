@@ -98,9 +98,9 @@ CDS is an abbreviation for CCSDS Day Segmented Time Code, specified in `CCSDS Ti
 
 For example ``pfield = 0x40`` means a 16 bit day segment without submillisecond segment, making the length of the time in the packet 6 bytes when the ``pfield`` is implicit or 7 bytes when it is part of the packet.
 
-The decoder returns ``day * 86400000 + millisecond of day``, the submillisecond segment is dropped. As for CUC, the epoch bit of the ``pfield`` is ignored and the epoch has to be configured with the ``epoch`` option.
+The decoder reads the day and the millisecond of day; the submillisecond segment is dropped. As for CUC, the epoch bit of the ``pfield`` is ignored and the epoch has to be configured with the ``epoch`` option.
 
-CDS is UTC-based: each day is counted as 86400 seconds and the leap seconds are not included. For the CCSDS recommended epoch of 1-Jan-1958, use:
+CDS counts UTC days, so the epoch has to be UTC-based (the leap seconds are not included in the day count). For the CCSDS recommended epoch of 1-Jan-1958, use:
 
 .. code-block:: yaml
 
@@ -113,9 +113,9 @@ CDS is UTC-based: each day is counted as 86400 seconds and the leap seconds are 
 
 If the agency defined epoch is 1-Jan-1970, ``epoch: UNIX`` can be used instead.
 
-During a leap second the millisecond of day goes beyond 86400000; such a time is converted to the first second of the following day.
+During a leap second the millisecond of day goes from 86400000 to 86400999 (CCSDS 301.0-B-4 Annex A). Yamcs converts such a time to 23:59:60.xxx of that day, which requires one of the UTC-based epochs above (with ``epoch: CUSTOM``, ``epochUTC`` has to be at 00:00:00 UTC). A millisecond of day of 86400000 or more on a day without a leap second, or above 86400999 on any day, is a time decoding error: Yamcs sends a warning event and does not set the generation time of the packet.
 
-When the epoch is ``NONE``, the raw time is the number of microseconds computed the same way (picoseconds are truncated to microseconds).
+When the epoch is ``NONE``, the raw time is the number of microseconds, counting each day as 86400 seconds (picoseconds are truncated to microseconds). This count has no room for a leap second, which overlaps the first second of the following day.
 
 CDS decoder configuration options:
 
