@@ -15,8 +15,13 @@ import org.yamcs.utils.ByteSupplier;
  * or 32 bits picoseconds of millisecond)</li>
  * </ul>
  * <p>
- * The {@link #decode(byte[], int)} method returns {@code day * 86400000 + millisecondOfDay}. Because the day count is
- * UTC-based, this value does not include the leap seconds. The submillisecond part is dropped.
+ * CDS counts UTC days. During a leap second the millisecond of day goes from 86400000 to 86400999 (CCSDS 301.0-B-4
+ * Annex A), so the leap second is represented unambiguously. {@link #decodeDayTime(byte[], int)} returns the day and
+ * the millisecond of day; the packet preprocessor uses it to compute the time including the leap seconds.
+ * <p>
+ * The {@link #decode(byte[], int)} method returns {@code day * 86400000 + millisecondOfDay}. This count has no room
+ * for the leap seconds: a time inside a leap second gives the same value as the first second of the following day.
+ * The submillisecond part is dropped.
  * <p>
  * The {@link #decodeRaw(byte[], int)} method returns the number of microseconds computed the same way (picoseconds
  * are truncated to microseconds).
@@ -26,9 +31,24 @@ import org.yamcs.utils.ByteSupplier;
 public class CdsTimeDecoder implements TimeDecoder {
     public static final Log log = new Log(CdsTimeDecoder.class);
 
-    static final long MILLIS_PER_DAY = 86_400_000L;
+    public static final long MILLIS_PER_DAY = 86_400_000L;
+    /**
+     * The largest millisecond of day, reached during a leap second.
+     */
+    public static final long MAX_MILLIS_OF_DAY = MILLIS_PER_DAY + 999;
 
     final int pfield;
+
+    /**
+     * Day and millisecond of day read from a CDS time code.
+     *
+     * @param day
+     *            number of days from the epoch
+     * @param msOfDay
+     *            millisecond of the day, from 86400000 to 86400999 during a leap second
+     */
+    public record DayTime(long day, long msOfDay) {
+    }
 
     /**
      * Constructor for decoder.
@@ -55,17 +75,32 @@ public class CdsTimeDecoder implements TimeDecoder {
     }
 
     /**
-     * Returns the number of milliseconds from the epoch, counting each day as 86400000 milliseconds.
+     * Returns the day and the millisecond of day; the submillisecond part is dropped.
      */
-    public long decode(ByteSupplier s) {
+    public DayTime decodeDayTime(byte[] buf, int offset) {
+        return decodeDayTime(CucTimeDecoder.getSupplier(buf, offset));
+    }
+
+    /**
+     * Returns the day and the millisecond of day; the submillisecond part is dropped.
+     */
+    public DayTime decodeDayTime(ByteSupplier s) {
         int p = getPfield(s);
         long day = readUnsigned(s, dayBytes(p));
-        long msOfDay = readUnsigned(s, 4);
+        long msOfDay = readMsOfDay(s);
         readUnsigned(s, subMillisBytes(p)); // the submillisecond part is not used
         if (log.isTraceEnabled()) {
             log.trace("Extracted day={} msOfDay={}", day, msOfDay);
         }
-        return day * MILLIS_PER_DAY + msOfDay;
+        return new DayTime(day, msOfDay);
+    }
+
+    /**
+     * Returns the number of milliseconds from the epoch, counting each day as 86400000 milliseconds.
+     */
+    public long decode(ByteSupplier s) {
+        DayTime dt = decodeDayTime(s);
+        return dt.day() * MILLIS_PER_DAY + dt.msOfDay();
     }
 
     /**
@@ -74,7 +109,7 @@ public class CdsTimeDecoder implements TimeDecoder {
     public long decodeRaw(ByteSupplier s) {
         int p = getPfield(s);
         long day = readUnsigned(s, dayBytes(p));
-        long msOfDay = readUnsigned(s, 4);
+        long msOfDay = readMsOfDay(s);
         int subBytes = subMillisBytes(p);
         long subMillis = readUnsigned(s, subBytes);
         long usOfMs = subBytes == 4 ? subMillis / 1_000_000 : subMillis;
@@ -115,6 +150,15 @@ public class CdsTimeDecoder implements TimeDecoder {
         case 1 -> 2;
         default -> 4;
         };
+    }
+
+    private static long readMsOfDay(ByteSupplier s) {
+        long msOfDay = readUnsigned(s, 4);
+        if (msOfDay > MAX_MILLIS_OF_DAY) {
+            throw new IllegalArgumentException("Invalid CDS millisecond of day " + msOfDay
+                    + ": the maximum is " + MAX_MILLIS_OF_DAY + ", reached during a leap second");
+        }
+        return msOfDay;
     }
 
     private static long readUnsigned(ByteSupplier s, int n) {

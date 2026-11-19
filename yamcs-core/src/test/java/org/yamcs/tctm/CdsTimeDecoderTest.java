@@ -86,11 +86,26 @@ public class CdsTimeDecoderTest {
     @Test
     public void testLeapSecond() {
         // 2016-12-31T23:59:60.500Z: day 4383 + 17166 = 21549 = 0x542D, ms of day 86400500 = 0x05265DF4
-        // there is no place for the leap second in a count of 86400000 ms days, so it shows as the first second of
-        // the following day
         CdsTimeDecoder ctd = new CdsTimeDecoder(0x40);
         byte[] b = StringConverter.hexStringToArray("542D05265DF4");
+        assertEquals(new CdsTimeDecoder.DayTime(21549, 86_400_500), ctd.decodeDayTime(b, 0));
+        // a count of 86400000 ms days has no place for the leap second, so decode() gives the same value as for
+        // the first second of the following day (the packet preprocessor uses decodeDayTime instead)
         assertEquals("2017-01-01T00:00:00.500Z", toUtc(ctd.decode(b, 0)));
+
+        // the last millisecond of a leap second, 86400999 = 0x05265FE7, is the largest valid value
+        b = StringConverter.hexStringToArray("542D05265FE7");
+        assertEquals(new CdsTimeDecoder.DayTime(21549, 86_400_999), ctd.decodeDayTime(b, 0));
+    }
+
+    @Test
+    public void testInvalidMillisecondOfDay() {
+        // 86401000 = 0x05265FE8 is past the end of a leap second
+        CdsTimeDecoder ctd = new CdsTimeDecoder(0x41);
+        byte[] b = StringConverter.hexStringToArray("542D05265FE80000");
+        assertThrows(IllegalArgumentException.class, () -> ctd.decodeDayTime(b, 0));
+        assertThrows(IllegalArgumentException.class, () -> ctd.decode(b, 0));
+        assertThrows(IllegalArgumentException.class, () -> ctd.decodeRaw(b, 0));
     }
 
     @Test
