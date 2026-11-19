@@ -14,6 +14,7 @@ import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.simulator.AbstractSimulator;
 import org.yamcs.simulator.cfdp.CfdpCcsdsPacket;
 import org.yamcs.simulator.cfdp.CfdpReceiver;
+import org.yamcs.simulator.cfdp.CfdpSender;
 import org.yamcs.simulator.DHSHandler;
 import org.yamcs.simulator.EpsLvpduHandler;
 import org.yamcs.simulator.FlightDataHandler;
@@ -75,6 +76,7 @@ public class PusSimulator extends AbstractSimulator {
     RCSHandler rcsHandler;
     EpsLvpduHandler epslvpduHandler;
     CfdpReceiver cfdpReceiver;
+    private volatile CfdpSender cfdpSender;
     Pus5Service pus5Service;
     Pus11Service pus11Service;
     Pus17Service pus17Service;
@@ -82,6 +84,11 @@ public class PusSimulator extends AbstractSimulator {
     Pus22Service pus22Service;
 
     protected BlockingQueue<PusTcPacket> pendingCommands = new ArrayBlockingQueue<>(100);
+
+    @Override
+    public void setCfdpSender(CfdpSender cfdpSender) {
+        this.cfdpSender = cfdpSender;
+    }
 
     public PusSimulator(File dataDir) {
         powerDataHandler = new PowerHandler();
@@ -205,13 +212,12 @@ public class PusSimulator extends AbstractSimulator {
                 if ((b0 & 0x08) == 0) { // towards receiver
                     cfdpReceiver.processCfdp(tc.getUserDataBuffer());
                 } else {// towards sender
-                    /*if (cfdpSender != null) {
+                    if (cfdpSender != null) {
                         cfdpSender.processCfdp(tc.getUserDataBuffer());
-                    } else {*/
+                    } else {
                         log.warn("Received CFDP packet for sender but have no sender");
-                    // }
+                    }
                 }
-                cfdpReceiver.processCfdp(tc.getUserDataBuffer());
             }
         }
     }
