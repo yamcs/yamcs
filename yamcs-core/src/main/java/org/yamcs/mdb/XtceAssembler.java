@@ -1294,14 +1294,22 @@ public class XtceAssembler {
             doc.writeEndElement();
         }
         List<AncillaryData> l = nameDescription.getAncillaryData();
+        List<IntegerValue> sizes = List.of();
         if (nameDescription instanceof ArrayParameterType arrayType && arrayType.getSize() != null) {
+            sizes = arrayType.getSize();
+        } else if (nameDescription instanceof BinaryParameterType binaryType
+                && binaryType.getEncoding() instanceof BinaryDataEncoding encoding
+                && encoding.getDynamicSize() != null) {
+            sizes = List.of(encoding.getDynamicSize());
+        }
+        if (!sizes.isEmpty()) {
             l = l == null ? new ArrayList<>() : new ArrayList<>(l);
             // Derive markers from the references, also when exporting legacy or programmatically built types.
             // Never emit yamcs:aggregateMember: the older attribute format and its compatibility reader
             // (XtceStaxReader.isAggregateMemberReference) are scheduled for deprecation soon.
             l.removeIf(data -> AncillaryData.KEY_AGGREGATE_MEMBER.equals(data.getName()));
             Set<String> members = new LinkedHashSet<>();
-            for (IntegerValue size : arrayType.getSize()) {
+            for (IntegerValue size : sizes) {
                 if (size instanceof DynamicIntegerValue dynamic
                         && dynamic.getDynamicInstanceRef() instanceof AggregateMemberInstanceRef member) {
                     members.add(member.getName());

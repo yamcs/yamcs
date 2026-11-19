@@ -4,6 +4,7 @@ import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.Value;
 import org.yamcs.protobuf.Pvalue.AcquisitionStatus;
 import org.yamcs.utils.BitBuffer;
+import org.yamcs.xtce.AggregateMemberInstanceRef;
 import org.yamcs.xtce.DynamicIntegerValue;
 import org.yamcs.xtce.FixedIntegerValue;
 import org.yamcs.xtce.IntegerValue;
@@ -82,8 +83,11 @@ public class ContainerProcessingContext {
     public long getIntegerValue(IntegerValue iv) {
         if (iv instanceof FixedIntegerValue) {
             return ((FixedIntegerValue) iv).getValue();
-        } else if (iv instanceof DynamicIntegerValue) {
-            return result.resolveDynamicIntegerValue((DynamicIntegerValue) iv);
+        } else if (iv instanceof DynamicIntegerValue dynamicValue) {
+            if (dynamicValue.getDynamicInstanceRef() instanceof AggregateMemberInstanceRef memberRef) {
+                return sequenceEntryProcessor.resolveAggregateMemberSize(dynamicValue, memberRef);
+            }
+            return result.resolveDynamicIntegerValue(dynamicValue);
         }
 
         throw new UnsupportedOperationException("values of type " + iv + " not implemented");

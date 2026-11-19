@@ -353,7 +353,7 @@ public class DataEncodingDecoder {
     private int getDynamicSizeInBytes(DynamicIntegerValue div, ContainerProcessingContext pcontext) {
         long sizeInBits;
         try {
-            sizeInBits = pcontext.result.resolveDynamicIntegerValue(div);
+            sizeInBits = pcontext.getIntegerValue(div);
         } catch (XtceProcessingException e) {
             throw new ContainerDecodingException(pcontext, e.getMessage());
         }

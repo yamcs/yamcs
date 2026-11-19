@@ -614,13 +614,7 @@ public class XtceStaxReader extends AbstractStaxReader {
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
             if (isStartElementWithName(ELEM_ANCILLARY_DATA_SET)) {
-                List<AncillaryData> data = readAncillaryDataSet();
-                typeBuilder.setAncillaryData(data);
-                for (AncillaryData item : data) {
-                    if (AncillaryData.KEY_AGGREGATE_MEMBER.equals(item.getName())) {
-                        aggregateMembers.add(item.getValue());
-                    }
-                }
+                readAggregateMemberAncillaryData(typeBuilder, aggregateMembers);
             } else if (isNamedItemProperty()) {
                 readNamedItemProperty(typeBuilder);
             } else if (isStartElementWithName(ELEM_DIMENSION_LIST)) {
@@ -1153,14 +1147,17 @@ public class XtceStaxReader extends AbstractStaxReader {
 
         readParameterBaseTypeAttributes(spaceSystem, element, incompleteType);
 
+        Set<String> aggregateMembers = new HashSet<>();
         while (true) {
             xmlEvent = xmlEventReader.nextEvent();
-            if (isNamedItemProperty()) {
+            if (isStartElementWithName(ELEM_ANCILLARY_DATA_SET)) {
+                readAggregateMemberAncillaryData(typeBuilder, aggregateMembers);
+            } else if (isNamedItemProperty()) {
                 readNamedItemProperty(typeBuilder);
             } else if (isStartElementWithName(ELEM_UNIT_SET)) {
                 typeBuilder.addAllUnits(readUnitSet());
             } else if (isStartElementWithName(ELEM_BINARY_DATA_ENCODING)) {
-                typeBuilder.setEncoding(readBinaryDataEncoding(spaceSystem));
+                typeBuilder.setEncoding(readBinaryDataEncoding(spaceSystem, aggregateMembers));
             } else if (isStartElementWithName(ELEM_STRING_DATA_ENCODING)) {
                 typeBuilder.setEncoding(readStringDataEncoding(spaceSystem));
             } else if (isStartElementWithName(ELEM_INTEGER_DATA_ENCODING)) {
@@ -1176,7 +1173,23 @@ public class XtceStaxReader extends AbstractStaxReader {
         }
     }
 
+    private void readAggregateMemberAncillaryData(NameDescription.Builder<?> typeBuilder, Set<String> aggregateMembers)
+            throws XMLStreamException {
+        List<AncillaryData> data = readAncillaryDataSet();
+        typeBuilder.setAncillaryData(data);
+        for (AncillaryData item : data) {
+            if (AncillaryData.KEY_AGGREGATE_MEMBER.equals(item.getName())) {
+                aggregateMembers.add(item.getValue());
+            }
+        }
+    }
+
     private BinaryDataEncoding.Builder readBinaryDataEncoding(SpaceSystem spaceSystem) throws XMLStreamException {
+        return readBinaryDataEncoding(spaceSystem, Set.of());
+    }
+
+    private BinaryDataEncoding.Builder readBinaryDataEncoding(SpaceSystem spaceSystem, Set<String> aggregateMembers)
+            throws XMLStreamException {
         log.trace(ELEM_BINARY_DATA_ENCODING);
         checkStartElementPreconditions();
         String tag = xmlEvent.asStartElement().getName().getLocalPart();
@@ -1187,7 +1200,7 @@ public class XtceStaxReader extends AbstractStaxReader {
             xmlEvent = xmlEventReader.nextEvent();
 
             if (isStartElementWithName(ELEM_SIZE_IN_BITS)) {
-                IntegerValue v = readIntegerValue(spaceSystem);
+                IntegerValue v = readIntegerValue(spaceSystem, aggregateMembers);
                 if (v instanceof FixedIntegerValue) {
                     binaryDataEncoding.setSizeInBits((int) ((FixedIntegerValue) v).getValue());
                 } else if (v instanceof DynamicIntegerValue) {

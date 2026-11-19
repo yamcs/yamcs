@@ -11,6 +11,8 @@ import org.yamcs.protobuf.Yamcs.Value.Type;
 import org.yamcs.xtce.AggregateDataType;
 import org.yamcs.xtce.AggregateMemberInstanceRef;
 import org.yamcs.xtce.ArrayDataType;
+import org.yamcs.xtce.BinaryDataEncoding;
+import org.yamcs.xtce.BinaryParameterType;
 import org.yamcs.xtce.DataType;
 import org.yamcs.xtce.DynamicIntegerValue;
 import org.yamcs.xtce.IntegerDataEncoding;
@@ -21,7 +23,7 @@ import org.yamcs.xtce.ParameterType;
 import org.yamcs.xtce.SpaceSystem;
 
 /**
- * Validates lexical aggregate-member references used as dynamic array dimensions.
+ * Validates lexical aggregate-member references used for telemetry array dimensions and binary sizes.
  * <p>
  * Aggregate member references cannot be resolved to one fixed {@link Member}: a reusable array type may be used under
  * different aggregate types. Validation therefore starts at each parameter and follows every concrete type use site,
@@ -75,6 +77,11 @@ final class AggregateMemberReferenceValidator {
                         aggregateScopes.pop();
                     }
                 }
+            } else if (type instanceof BinaryParameterType binaryType
+                    && binaryType.getEncoding() instanceof BinaryDataEncoding encoding
+                    && encoding.getDynamicSize() != null
+                    && encoding.getDynamicSize().getDynamicInstanceRef() instanceof AggregateMemberInstanceRef ref) {
+                validateReference(ref, aggregateScopes, parameterName, usePath, true);
             }
         } finally {
             activeTypes.remove(type);
@@ -91,14 +98,16 @@ final class AggregateMemberReferenceValidator {
         for (IntegerValue dimension : dimensions) {
             if (dimension instanceof DynamicIntegerValue dynamicValue
                     && dynamicValue.getDynamicInstanceRef() instanceof AggregateMemberInstanceRef memberRef) {
-                validateReference(memberRef, aggregateScopes, parameterName, usePath);
+                validateReference(memberRef, aggregateScopes, parameterName, usePath, false);
             }
         }
     }
 
     private static void validateReference(AggregateMemberInstanceRef memberRef,
-            Deque<AggregateScope> aggregateScopes, String parameterName, String usePath) {
+            Deque<AggregateScope> aggregateScopes, String parameterName, String usePath, boolean binary) {
         String memberName = memberRef.getName();
+        String usage = binary ? "a binary size" : "an array size";
+        String field = binary ? "binary field" : "array";
         for (AggregateScope scope : aggregateScopes) {
             List<Member> members = scope.type().getMemberList();
             for (int i = 0; i < members.size(); i++) {
@@ -110,12 +119,12 @@ final class AggregateMemberReferenceValidator {
                 // Finding the name in the nearest scope shadows matching members in outer aggregates, even when the
                 // nearest member has not yet been decoded.
                 if (i >= scope.availableMemberCount()) {
-                    throw new DatabaseLoadException("Aggregate member '" + memberName + "' used as an array size at '"
-                            + usePath + "' in parameter '" + parameterName + "' must be declared before the array");
+                    throw new DatabaseLoadException("Aggregate member '" + memberName + "' used as " + usage + " at '"
+                            + usePath + "' in parameter '" + parameterName + "' must be declared before the " + field);
                 }
                 if (!isIntegerCompatible(member, memberRef.useCalibratedValue())) {
                     String valueKind = memberRef.useCalibratedValue() ? "calibrated" : "raw";
-                    throw new DatabaseLoadException("Aggregate member '" + memberName + "' used as an array size at '"
+                    throw new DatabaseLoadException("Aggregate member '" + memberName + "' used as " + usage + " at '"
                             + usePath + "' in parameter '" + parameterName + "' has a non-integer " + valueKind
                             + " value");
                 }
@@ -123,7 +132,7 @@ final class AggregateMemberReferenceValidator {
             }
         }
 
-        throw new DatabaseLoadException("Cannot find aggregate member '" + memberName + "' used as an array size at '"
+        throw new DatabaseLoadException("Cannot find aggregate member '" + memberName + "' used as " + usage + " at '"
                 + usePath + "' in parameter '" + parameterName + "'");
     }
 

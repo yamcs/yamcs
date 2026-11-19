@@ -173,7 +173,7 @@ public class SequenceEntryProcessor {
 
         for (int i = 0; i < size.size(); i++) {
             IntegerValue iv = size.get(i);
-            long ds = resolveArraySize(iv);
+            long ds = pcontext.getIntegerValue(iv);
             if (ds == 0) { // zero size array
                 org.yamcs.protobuf.Yamcs.Value.Type rawValueType;
                 if (elementType instanceof AggregateDataType) {
@@ -217,39 +217,34 @@ public class SequenceEntryProcessor {
         return rv;
     }
 
-    private long resolveArraySize(IntegerValue integerValue) {
-        if (integerValue instanceof DynamicIntegerValue dynamicValue
-                && dynamicValue.getDynamicInstanceRef() instanceof AggregateMemberInstanceRef memberRef) {
-            String memberName = memberRef.getName();
-            for (AggregateWithValue aggregate : aggregateStack) {
-                Member member = aggregate.type().getMember(memberName);
-                if (member == null) {
-                    continue;
-                }
-
-                Value memberValue = aggregate.value().getMemberValue(memberName);
-                if (memberValue == null) {
-                    throw new XtceProcessingException("Array size reference '" + memberName
-                            + "' points to an aggregate member that has not been decoded yet");
-                }
-                if (memberRef.useCalibratedValue()) {
-                    memberValue = pcontext.proccessorData.parameterTypeProcessor.calibrate(
-                            pcontext.result, (ParameterType) member.getType(), memberValue);
-                }
-                try {
-                    return dynamicValue.transform(memberValue.toLong());
-                } catch (UnsupportedOperationException e) {
-                    throw new XtceProcessingException("Aggregate member '" + memberName
-                            + "' used as an array size is not numeric", e);
-                } catch (ArithmeticException e) {
-                    throw new XtceProcessingException("Array size derived from aggregate member '" + memberName
-                            + "' overflows a long", e);
-                }
+    long resolveAggregateMemberSize(DynamicIntegerValue dynamicValue, AggregateMemberInstanceRef memberRef) {
+        String memberName = memberRef.getName();
+        for (AggregateWithValue aggregate : aggregateStack) {
+            Member member = aggregate.type().getMember(memberName);
+            if (member == null) {
+                continue;
             }
-            throw new XtceProcessingException("Cannot find aggregate member '" + memberName
-                    + "' used as an array size");
+
+            Value memberValue = aggregate.value().getMemberValue(memberName);
+            if (memberValue == null) {
+                throw new XtceProcessingException("Size reference '" + memberName
+                        + "' points to an aggregate member that has not been decoded yet");
+            }
+            if (memberRef.useCalibratedValue()) {
+                memberValue = pcontext.proccessorData.parameterTypeProcessor.calibrate(
+                        pcontext.result, (ParameterType) member.getType(), memberValue);
+            }
+            try {
+                return dynamicValue.transform(memberValue.toLong());
+            } catch (UnsupportedOperationException e) {
+                throw new XtceProcessingException("Aggregate member '" + memberName
+                        + "' used as a size is not numeric", e);
+            } catch (ArithmeticException e) {
+                throw new XtceProcessingException("Size derived from aggregate member '" + memberName
+                        + "' overflows a long", e);
+            }
         }
-        return pcontext.getIntegerValue(integerValue);
+        throw new XtceProcessingException("Cannot find aggregate member '" + memberName + "' used as a size");
     }
 
     private void extractIndirectParameterRefEntry(IndirectParameterRefEntry se) {
