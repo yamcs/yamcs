@@ -26,6 +26,8 @@ import javax.xml.validation.SchemaFactory;
 import org.junit.jupiter.api.Test;
 import org.yamcs.YConfiguration;
 import org.yamcs.xtce.Algorithm;
+import org.yamcs.xtce.BinaryDataEncoding;
+import org.yamcs.xtce.BinaryParameterType;
 import org.yamcs.xtce.Container;
 import org.yamcs.xtce.MetaCommand;
 import org.yamcs.xtce.Parameter;
@@ -60,6 +62,62 @@ public class XtceAssemblerTest {
     @Test
     public void testArrays() throws Exception {
         verify("src/test/resources/xtce/array-tm.xml");
+    }
+
+    @Test
+    public void testDynamicBinaryAndTimeArgument() throws Exception {
+        verify("src/test/resources/xtce/binary-time-export.xml");
+    }
+
+    @Test
+    public void testDynamicBinaryExport() throws Exception {
+        Mdb mdb = MdbFactory.createInstance(Arrays.asList(YConfiguration.wrap(
+                Map.of("type", "xtce", "spec", "src/test/resources/xtce/binary-time-export.xml"))), false, false);
+        String xml = new XtceAssembler().toXtce(mdb, "/BinaryTimeExport", x -> true);
+
+        assertTrue(xml.contains("<ParameterInstanceRef parameterRef=\"length\""), xml);
+        assertTrue(xml.contains("<LinearAdjustment intercept=\"-48\" slope=\"8\""), xml);
+        assertTrue(xml.contains("<ArgumentInstanceRef argumentRef=\"length\""), xml);
+        assertTrue(xml.contains("<Encoding offset=\"10.0\""), xml);
+    }
+
+    @Test
+    public void testLeadingSizeBinaryExport() throws Exception {
+        Mdb mdb = MdbFactory.createInstance(Arrays.asList(YConfiguration.wrap(
+                Map.of("type", "xtce", "spec", "src/test/resources/xtce/binary-time-export.xml"))), false, false);
+
+        // XTCE files cannot describe a binary leading size, the spreadsheet loaders can
+        SpaceSystem ss = mdb.getSpaceSystem("/BinaryTimeExport");
+        Parameter p = mdb.getParameter("/BinaryTimeExport/data");
+        BinaryParameterType oldType = (BinaryParameterType) p.getParameterType();
+        BinaryParameterType newType = oldType.toBuilder()
+                .setEncoding(new BinaryDataEncoding.Builder()
+                        .setType(BinaryDataEncoding.Type.LEADING_SIZE)
+                        .setSizeInBitsOfSizeTag(8))
+                .build();
+        ss.removeParameterType(oldType);
+        ss.addParameterType(newType);
+        p.setParameterType(newType);
+
+        String xml = new XtceAssembler().toXtce(mdb, "/BinaryTimeExport", x -> true);
+        assertTrue(xml.contains("org.yamcs.algo.LeadingSizeBinaryDecoder(8)"), xml);
+        assertTrue(xml.contains("org.yamcs.algo.LeadingSizeBinaryEncoder(8)"), xml);
+
+        File f = File.createTempFile("leading-size", ".xml");
+        try (FileWriter fw = new FileWriter(f, StandardCharsets.UTF_8)) {
+            fw.write(xml);
+        }
+        try {
+            Mdb mdb2 = MdbFactory.createInstance(Arrays.asList(YConfiguration.wrap(
+                    Map.of("type", "xtce", "spec", f.getAbsolutePath()))), false, false);
+            BinaryDataEncoding encoding = (BinaryDataEncoding) ((BinaryParameterType) mdb2
+                    .getParameter("/BinaryTimeExport/data").getParameterType()).getEncoding();
+            assertNull(encoding.getDynamicSize());
+            assertEquals("LeadingSizeBinaryDecoder", encoding.getFromBinaryTransformAlgorithm().getName());
+            assertEquals("LeadingSizeBinaryEncoder", encoding.getToBinaryTransformAlgorithm().getName());
+        } finally {
+            f.delete();
+        }
     }
 
     @Test
