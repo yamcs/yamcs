@@ -1,5 +1,6 @@
 package org.yamcs.algo;
 
+import java.nio.ByteOrder;
 import java.util.Map;
 
 import org.yamcs.YConfiguration;
@@ -98,27 +99,28 @@ public class TimeBinaryDecoder extends AbstractDataDecoder {
 
     @Override
     public Value extractRaw(DataEncoding de, ContainerProcessingContext pcontext, BitBuffer buf) {
-        var suppl = new ByteSupplier() {
-            @Override
-            public byte getAsByte() {
-                return buf.getByte();
-            }
-        };
+        ByteOrder previousOrder = buf.getByteOrder();
+        buf.setByteOrder(ByteOrder.BIG_ENDIAN);
 
-        long obt;
-        if (tcoService != null) {
-            long raw = timeDecoder.decodeRaw(suppl);
-            Instant time = tcoService.getHistoricalTime(Instant.get(pcontext.getGenerationTime()), raw);
-            if (time == Instant.INVALID_INSTANT) {
-                throw new IllegalStateException("Time correlation coefficients not available");
+        // A CUC field can begin between octets in a packed telemetry record.
+        ByteSupplier suppl = () -> (byte) buf.getBits(Byte.SIZE);
+        try {
+            long obt;
+            if (tcoService != null) {
+                long raw = timeDecoder.decodeRaw(suppl);
+                Instant time = tcoService.getHistoricalTime(Instant.get(pcontext.getGenerationTime()), raw);
+                if (time == Instant.INVALID_INSTANT) {
+                    throw new IllegalStateException("Time correlation coefficients not available");
+                }
+                obt = time.getMillis();
+            } else if (timeEpoch == TimeEpochs.NONE) {
+                obt = timeDecoder.decodeRaw(suppl);
+            } else {
+                obt = shiftFromEpoch(timeDecoder.decode(suppl));
             }
-            obt = time.getMillis();
-        } else if (timeEpoch == TimeEpochs.NONE) {
-            obt = timeDecoder.decodeRaw(suppl);
-        } else {
-            obt = shiftFromEpoch(timeDecoder.decode(suppl));
+            return ValueUtility.getTimestampValue(obt);
+        } finally {
+            buf.setByteOrder(previousOrder);
         }
-
-        return ValueUtility.getTimestampValue(obt);
     }
 }
