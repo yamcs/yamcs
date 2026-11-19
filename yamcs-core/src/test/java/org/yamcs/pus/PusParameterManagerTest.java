@@ -1,8 +1,6 @@
 package org.yamcs.pus;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -18,24 +16,18 @@ import org.yamcs.xtce.FloatDataEncoding;
 import org.yamcs.xtce.FloatParameterType;
 import org.yamcs.xtce.IntegerDataEncoding;
 import org.yamcs.xtce.IntegerParameterType;
-import org.yamcs.xtce.PolynomialCalibrator;
 import org.yamcs.xtce.Parameter;
+import org.yamcs.xtce.PolynomialCalibrator;
 
 public class PusParameterManagerTest {
     static final String NS = "PUS20_Parameter_ID";
     PusParameterManager mgr;
 
-    @BeforeEach
-    void setup() {
-        mgr = new PusParameterManager();
-        mgr.configure(NS, idType(), 8, 8);
-    }
-
     private static EnumeratedParameterType idType() {
         var b = new EnumeratedParameterType.Builder().setName("id_t")
                 .setEncoding(new IntegerDataEncoding.Builder().setSizeInBits(8)
                         .setEncoding(IntegerDataEncoding.Encoding.UNSIGNED));
-        long[] ids = { 1, 2, 3, 4, 5, 6, 10, 11, 258 };
+        long[] ids = {1, 2, 3, 4, 5, 6, 10, 11, 258};
         for (long id : ids) {
             b.addEnumerationValue(id, "P" + id);
         }
@@ -64,6 +56,12 @@ public class PusParameterManagerTest {
         return pv;
     }
 
+    @BeforeEach
+    void setup() {
+        mgr = new PusParameterManager();
+        mgr.configure(NS, idType(), 8, 8);
+    }
+
     @Test
     void integers() {
         var u8 = intParam("u8", 3, 8, IntegerDataEncoding.Encoding.UNSIGNED);
@@ -75,12 +73,12 @@ public class PusParameterManagerTest {
                 pv(u8, ValueUtility.getUint32Value(7)),
                 pv(u32, ValueUtility.getUint32Value(0xFFFFFFFF)),
                 pv(i16, ValueUtility.getSint32Value(-300))));
-        assertArrayEquals(new byte[] {
+        assertArrayEquals(new byte[]{
                 4,
                 1, 0, (byte) 250,
                 3, 7,
                 4, -1, -1, -1, -1,
-                6, (byte) 0xfe, (byte) 0xd4 }, b);
+                6, (byte) 0xfe, (byte) 0xd4}, b);
     }
 
     @Test
@@ -116,7 +114,7 @@ public class PusParameterManagerTest {
         byte[] r = mgr.encodeInstructions(List.of(
                 pv(e, ValueUtility.getStringValue("OFF")),
                 pv(b, ValueUtility.getBooleanValue(true))));
-        assertArrayEquals(new byte[] { 2, 10, 2, 11, 1 }, r);
+        assertArrayEquals(new byte[]{2, 10, 2, 11, 1}, r);
         assertThrows(IllegalArgumentException.class,
                 () -> mgr.encodeInstructions(List.of(pv(e, ValueUtility.getStringValue("XX")))));
     }
@@ -126,7 +124,7 @@ public class PusParameterManagerTest {
         var u8 = intParam("u8", 3, 8, IntegerDataEncoding.Encoding.UNSIGNED);
         byte[] b = mgr.encodeInstructions(List.of(
                 pv(u8, ValueUtility.getUint32Value(1)), pv(u8, ValueUtility.getUint32Value(2))));
-        assertArrayEquals(new byte[] { 1, 3, 2 }, b);
+        assertArrayEquals(new byte[]{1, 3, 2}, b);
     }
 
     @Test
@@ -146,7 +144,7 @@ public class PusParameterManagerTest {
                 () -> mgr.encodeInstructions(List.of(pv(big, ValueUtility.getUint32Value(1)))));
 
         var enc = new IntegerDataEncoding.Builder().setSizeInBits(8).setEncoding(IntegerDataEncoding.Encoding.UNSIGNED)
-                .setDefaultCalibrator(new PolynomialCalibrator(new double[] { 0, 2 }));
+                .setDefaultCalibrator(new PolynomialCalibrator(new double[]{0, 2}));
         var calibrated = param("cal", 4, new IntegerParameterType.Builder().setName("cal_t").setEncoding(enc).build());
         assertThrows(IllegalArgumentException.class,
                 () -> mgr.encodeInstructions(List.of(pv(calibrated, ValueUtility.getUint32Value(1)))));
@@ -157,6 +155,6 @@ public class PusParameterManagerTest {
         mgr.configure(NS, idType(), 16, 16);
         var u8 = intParam("u8", 258, 8, IntegerDataEncoding.Encoding.UNSIGNED);
         byte[] b = mgr.encodeInstructions(List.of(pv(u8, ValueUtility.getUint32Value(9))));
-        assertArrayEquals(new byte[] { 0, 1, 1, 2, 9 }, b);
+        assertArrayEquals(new byte[]{0, 1, 1, 2, 9}, b);
     }
 }

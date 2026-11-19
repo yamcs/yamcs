@@ -49,7 +49,10 @@ import org.yamcs.xtce.ValueEnumeration;
 ///  The value size in TC\[20,3] is deduced from the data encoding of each parameter (i.e., from the MDB).
 ///
 /// The values of the parameters are not changed by the edit; they are updated by the TM\[20,2] parameter value reports
-/// received as a result of TC\[20,1] "report parameter values" commands, sent via the regular commanding flow.
+/// received as a result of TC\[20,1] "report parameter values" commands. If the option `reportAfterSet` is enabled (the
+/// default), such a TC\[20,1] for the updated parameters is sent automatically after the TC\[20,3]. The command is the
+/// MDB command `reportCommand`, which has to have the arguments `num_parameters` (the number of parameters) and
+/// `parameter_ids` (an array of parameter ID enumeration labels).
 ///
 /// The command sent is the MDB command `setCommand`, which has to have a single binary argument `instructions`,
 /// containing the application data: the number of instructions N, followed by N x (parameter ID, value). All the values
@@ -58,9 +61,14 @@ import org.yamcs.xtce.ValueEnumeration;
 /// Limitation: only parameters without calibration and with integer, float, enumerated or boolean types are supported.
 public class PusParameterManager extends AbstractProcessorService implements SoftwareParameterManager {
     static final String ARG_INSTRUCTIONS = "instructions";
+    static final String ARG_NUM_PARAMETERS = "num_parameters";
+    static final String ARG_PARAMETER_IDS = "parameter_ids";
 
     private String aliasNamespace;
     private String setCommand;
+    private String reportCommand;
+    private boolean reportAfterSet;
+    private MetaCommand reportMetaCommand;
     private EnumeratedParameterType parameterIdType;
     private int parameterIdBits;
     private int numberOfInstructionsBits;
@@ -200,6 +208,12 @@ public class PusParameterManager extends AbstractProcessorService implements Sof
         spec.addOption("setCommand", OptionType.STRING).withDefault("/PUS20/SET_PARAMETER_VALUES")
                 .withDescription("The fully qualified name of the TC[20,3] command, having one binary argument "
                         + ARG_INSTRUCTIONS);
+        spec.addOption("reportAfterSet", OptionType.BOOLEAN).withDefault(true)
+                .withDescription("Send a TC[20,1] to report the values of the updated parameters after sending "
+                        + "the TC[20,3], such that the new values are shown right away");
+        spec.addOption("reportCommand", OptionType.STRING).withDefault("/PUS20/REPORT_PARAMETER_VALUES")
+                .withDescription("The fully qualified name of the TC[20,1] command, having the arguments "
+                        + ARG_NUM_PARAMETERS + " and " + ARG_PARAMETER_IDS + ". Only used if reportAfterSet is true");
         spec.addOption("parameterIdBits", OptionType.INTEGER).withDefault(8)
                 .withDescription("Size in bits of the parameter ID in TC[20,3]");
         spec.addOption("numberOfInstructionsBits", OptionType.INTEGER).withDefault(8)
@@ -244,6 +258,14 @@ public class PusParameterManager extends AbstractProcessorService implements Sof
         setMetaCommand = mdb.getMetaCommand(setCommand);
         if (setMetaCommand == null) {
             throw new ConfigurationException("Command " + setCommand + " not found in the MDB");
+        }
+        reportAfterSet = config.getBoolean("reportAfterSet");
+        if (reportAfterSet) {
+            reportCommand = config.getString("reportCommand");
+            reportMetaCommand = mdb.getMetaCommand(reportCommand);
+            if (reportMetaCommand == null) {
+                throw new ConfigurationException("Command " + reportCommand + " not found in the MDB");
+            }
         }
         processor.getParameterProcessorManager().addSoftwareParameterManager(dataSource, this);
     }
@@ -291,6 +313,33 @@ public class PusParameterManager extends AbstractProcessorService implements Sof
             cmdManager.sendCommand(user, pc);
         } catch (YamcsException e) {
             throw new IllegalArgumentException("Cannot build command " + setCommand + ": " + e.getMessage(), e);
+        }
+
+        if (reportAfterSet) {
+            requestReport(user, origin, pvals);
+        }
+    }
+
+    /**
+     * Sends a TC[20,1] for the updated parameters. The set has already been sent, so problems are only logged.
+     */
+    private void requestReport(User user, String origin, List<ParameterValue> pvals) {
+        if (!user.hasObjectPrivilege(ObjectPrivilegeType.Command, reportMetaCommand.getQualifiedName())) {
+            log.warn("Not sending {}: no {} authorization for user {}", reportCommand, ObjectPrivilegeType.Command,
+                    user.getName());
+            return;
+        }
+        try {
+            List<String> labels = pvals.stream()
+                    .map(ParameterValue::getParameter)
+                    .map(p -> p.getAlias(aliasNamespace))
+                    .toList();
+            var cmdManager = processor.getCommandingManager();
+            var pc = cmdManager.buildCommand(reportMetaCommand,
+                    Map.of(ARG_NUM_PARAMETERS, labels.size(), ARG_PARAMETER_IDS, labels), origin, 0, user);
+            cmdManager.sendCommand(user, pc);
+        } catch (YamcsException | IllegalArgumentException e) {
+            log.warn("Cannot send {} to report the updated parameters: {}", reportCommand, e.getMessage());
         }
     }
 
