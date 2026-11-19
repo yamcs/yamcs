@@ -1,45 +1,581 @@
-<SpaceSystem name="PUS20" xmlns="http://www.omg.org/spec/XTCE/20180204"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
-	<Header validationStatus="Unknown" version="1.0" date="2020-07-01T16:48:10Z" />
-	<TelemetryMetaData>
-		<ParameterSet>
-			<Parameter  parameterTypeRef="sss" name="bbb" >
-				<AliasSet>
-					<Alias nameSpace="PARAMETER_HASH" alias="233232" />
-				</AliasSet>
-			</Parameter>
-		</ParameterSet>
-		<ContainerSet>
-			<SequenceContainer name="TM(20,2)_parameter_value_report">
-                <EntryList>
-                    <ParameterRefEntry parameterRef="number_of_parameters" />
-                    <IndirectParameterRefEntry aliasNameSpace="/parameters-dt">
-                        <ParameterInstance parameterRef="parameter_hash"  />
-                    </IndirectParameterRefEntry>
-                </EntryList>
-                <BaseContainer containerRef="/PUS/pus-tm">
-                    <RestrictionCriteria><ComparisonList>
-                        <Comparison parameterRef="/PUS/type" value="20" />
-                        <Comparison parameterRef="/PUS/subtype" value="2" />
-                    </ComparisonList></RestrictionCriteria>
-                </BaseContainer>
-            </SequenceContainer>
-		</ContainerSet>
-	</TelemetryMetaData>
-	<CommandMetaData>
-		<MetaCommandSet>
-			<MetaCommand name="pus20-tc" abstract="true">
-				<BaseMetaCommand metaCommandRef="/PUS/pus-tc">
-					<ArgumentAssignmentList>
-						<ArgumentAssignment argumentName="apid"	argumentValue="1" />
-						<ArgumentAssignment argumentName="type"	argumentValue="20" />
-					</ArgumentAssignmentList>
-				</BaseMetaCommand>
-				<CommandContainer name="pus19-tc">
-					<EntryList />
-				</CommandContainer>
-			</MetaCommand>
-		</MetaCommandSet>
-	</CommandMetaData>
+<?xml version="1.0" ?>
+<!--
+This file was generated with Yamcs PyMDB.
+See https://docs.yamcs.org/pymdb/
+-->
+<SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd" name="PUS20">
+  <TelemetryMetaData>
+    <ParameterTypeSet>
+      <EnumeratedParameterType name="parameter_id">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+        <EnumerationList>
+          <Enumeration value="1" label="HkReportInterval"/>
+          <Enumeration value="2" label="BatteryHeaterSetpoint"/>
+          <Enumeration value="3" label="AdcsMode"/>
+          <Enumeration value="4" label="TmDownlinkRate"/>
+          <Enumeration value="5" label="AdcsControllerGain"/>
+          <Enumeration value="6" label="MagnetometerBiasX"/>
+          <Enumeration value="7" label="PayloadPowerEnabled"/>
+        </EnumerationList>
+      </EnumeratedParameterType>
+      <IntegerParameterType name="parameter_value_report_n" signed="false" sizeInBits="8">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+      </IntegerParameterType>
+      <IntegerParameterType name="start_failure_parameter_id" signed="false" sizeInBits="8">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+      </IntegerParameterType>
+    </ParameterTypeSet>
+    <ParameterSet>
+      <Parameter name="parameter_id" parameterTypeRef="parameter_id" shortDescription="On-board parameter ID">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="parameter_value_report_n" parameterTypeRef="parameter_value_report_n" shortDescription="Number of parameter values in the report">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+      <Parameter name="start_failure_parameter_id" parameterTypeRef="start_failure_parameter_id" shortDescription="ID of the parameter of the instruction that failed to start (TM[1,4], UNKNOWN_PARAMETER)">
+        <ParameterProperties dataSource="telemetered" persistence="true"/>
+      </Parameter>
+    </ParameterSet>
+    <ContainerSet>
+      <SequenceContainer name="PARAMETER_VALUE_REPORT" abstract="false" shortDescription="TM[20,2] parameter value report">
+        <EntryList>
+          <ParameterRefEntry parameterRef="parameter_value_report_n">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <ContainerRefEntry containerRef="parameter_value_notification">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+            <RepeatEntry>
+              <Count>
+                <DynamicValue>
+                  <ParameterInstanceRef parameterRef="parameter_value_report_n"/>
+                </DynamicValue>
+              </Count>
+            </RepeatEntry>
+          </ContainerRefEntry>
+        </EntryList>
+        <BaseContainer containerRef="pus20-tm">
+          <RestrictionCriteria>
+            <BooleanExpression>
+              <Condition>
+                <ParameterInstanceRef parameterRef="/PUS/subtype" useCalibratedValue="true"/>
+                <ComparisonOperator>==</ComparisonOperator>
+                <Value>2</Value>
+              </Condition>
+            </BooleanExpression>
+          </RestrictionCriteria>
+        </BaseContainer>
+      </SequenceContainer>
+      <SequenceContainer name="START_FAILURE_UNKNOWN_PARAMETER" abstract="false" shortDescription="TM[1,4] failed start of execution of a ST[20] instruction with an unknown parameter">
+        <EntryList>
+          <ParameterRefEntry parameterRef="start_failure_parameter_id">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+        </EntryList>
+        <BaseContainer containerRef="/PUS/pus-tc-ack-start-failure">
+          <RestrictionCriteria>
+            <BooleanExpression>
+              <Condition>
+                <ParameterInstanceRef parameterRef="/PUS/tc-ack-start-failure-code" useCalibratedValue="false"/>
+                <ComparisonOperator>==</ComparisonOperator>
+                <Value>12</Value>
+              </Condition>
+            </BooleanExpression>
+          </RestrictionCriteria>
+        </BaseContainer>
+      </SequenceContainer>
+      <SequenceContainer name="parameter_value_notification" abstract="false">
+        <EntryList>
+          <ParameterRefEntry parameterRef="parameter_id">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+          </ParameterRefEntry>
+          <IndirectParameterRefEntry aliasNameSpace="PUS20_Parameter_ID">
+            <LocationInContainerInBits referenceLocation="previousEntry">
+              <FixedValue>0</FixedValue>
+            </LocationInContainerInBits>
+            <ParameterInstance parameterRef="parameter_id"/>
+          </IndirectParameterRefEntry>
+        </EntryList>
+      </SequenceContainer>
+      <SequenceContainer name="pus20-tm" abstract="false">
+        <EntryList/>
+        <BaseContainer containerRef="/PUS/pus-tm">
+          <RestrictionCriteria>
+            <BooleanExpression>
+              <Condition>
+                <ParameterInstanceRef parameterRef="/PUS/type" useCalibratedValue="true"/>
+                <ComparisonOperator>==</ComparisonOperator>
+                <Value>20</Value>
+              </Condition>
+            </BooleanExpression>
+          </RestrictionCriteria>
+        </BaseContainer>
+      </SequenceContainer>
+    </ContainerSet>
+  </TelemetryMetaData>
+  <CommandMetaData>
+    <ArgumentTypeSet>
+      <IntegerArgumentType name="REPORT_PARAMETER_VALUES__num_parameters" signed="false" sizeInBits="8">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+      </IntegerArgumentType>
+      <ArrayArgumentType name="REPORT_PARAMETER_VALUES__parameter_ids" arrayTypeRef="REPORT_PARAMETER_VALUES__parameter_ids__el">
+        <DimensionList>
+          <Dimension>
+            <StartingIndex>
+              <FixedValue>0</FixedValue>
+            </StartingIndex>
+            <EndingIndex>
+              <DynamicValue>
+                <ArgumentInstanceRef argumentRef="num_parameters"/>
+                <LinearAdjustment intercept="-1"/>
+              </DynamicValue>
+            </EndingIndex>
+          </Dimension>
+        </DimensionList>
+      </ArrayArgumentType>
+      <EnumeratedArgumentType name="REPORT_PARAMETER_VALUES__parameter_ids__el">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+        <EnumerationList>
+          <Enumeration value="1" label="HkReportInterval"/>
+          <Enumeration value="2" label="BatteryHeaterSetpoint"/>
+          <Enumeration value="3" label="AdcsMode"/>
+          <Enumeration value="4" label="TmDownlinkRate"/>
+          <Enumeration value="5" label="AdcsControllerGain"/>
+          <Enumeration value="6" label="MagnetometerBiasX"/>
+          <Enumeration value="7" label="PayloadPowerEnabled"/>
+        </EnumerationList>
+      </EnumeratedArgumentType>
+      <EnumeratedArgumentType name="SET_ADCS_CONFIGURATION__AdcsMode">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+        <EnumerationList>
+          <Enumeration value="0" label="SAFE"/>
+          <Enumeration value="1" label="DETUMBLE"/>
+          <Enumeration value="2" label="SUN_POINTING"/>
+          <Enumeration value="3" label="NADIR_POINTING"/>
+        </EnumerationList>
+      </EnumeratedArgumentType>
+      <FloatArgumentType name="SET_ADCS_CONFIGURATION__AdcsControllerGain" sizeInBits="64">
+        <FloatDataEncoding sizeInBits="64" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst"/>
+        <ValidRangeSet validRangeAppliesToCalibrated="true">
+          <ValidRange minInclusive="0.0"/>
+        </ValidRangeSet>
+      </FloatArgumentType>
+      <IntegerArgumentType name="SET_ADCS_CONFIGURATION__MagnetometerBiasX" signed="true" sizeInBits="16">
+        <UnitSet>
+          <Unit form="calibrated">nT</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="mostSignificantByteFirst"/>
+        <ValidRangeSet validRangeAppliesToCalibrated="true">
+          <ValidRange minInclusive="-10000" maxInclusive="10000"/>
+        </ValidRangeSet>
+      </IntegerArgumentType>
+      <IntegerArgumentType name="SET_ALL_PARAMETERS__HkReportInterval" signed="false" sizeInBits="16">
+        <UnitSet>
+          <Unit form="calibrated">ms</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
+        <ValidRangeSet validRangeAppliesToCalibrated="true">
+          <ValidRange minInclusive="100" maxInclusive="60000"/>
+        </ValidRangeSet>
+      </IntegerArgumentType>
+      <FloatArgumentType name="SET_ALL_PARAMETERS__BatteryHeaterSetpoint" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">degC</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst"/>
+        <ValidRangeSet validRangeAppliesToCalibrated="true">
+          <ValidRange minInclusive="-20.0" maxInclusive="40.0"/>
+        </ValidRangeSet>
+      </FloatArgumentType>
+      <EnumeratedArgumentType name="SET_ALL_PARAMETERS__AdcsMode">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+        <EnumerationList>
+          <Enumeration value="0" label="SAFE"/>
+          <Enumeration value="1" label="DETUMBLE"/>
+          <Enumeration value="2" label="SUN_POINTING"/>
+          <Enumeration value="3" label="NADIR_POINTING"/>
+        </EnumerationList>
+      </EnumeratedArgumentType>
+      <IntegerArgumentType name="SET_ALL_PARAMETERS__TmDownlinkRate" signed="false" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">bit/s</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="32" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
+        <ValidRangeSet validRangeAppliesToCalibrated="true">
+          <ValidRange minInclusive="1200" maxInclusive="2000000"/>
+        </ValidRangeSet>
+      </IntegerArgumentType>
+      <FloatArgumentType name="SET_ALL_PARAMETERS__AdcsControllerGain" sizeInBits="64">
+        <FloatDataEncoding sizeInBits="64" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst"/>
+        <ValidRangeSet validRangeAppliesToCalibrated="true">
+          <ValidRange minInclusive="0.0"/>
+        </ValidRangeSet>
+      </FloatArgumentType>
+      <IntegerArgumentType name="SET_ALL_PARAMETERS__MagnetometerBiasX" signed="true" sizeInBits="16">
+        <UnitSet>
+          <Unit form="calibrated">nT</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="twosComplement" byteOrder="mostSignificantByteFirst"/>
+        <ValidRangeSet validRangeAppliesToCalibrated="true">
+          <ValidRange minInclusive="-10000" maxInclusive="10000"/>
+        </ValidRangeSet>
+      </IntegerArgumentType>
+      <BooleanArgumentType name="SET_ALL_PARAMETERS__PayloadPowerEnabled" zeroStringValue="DISABLED" oneStringValue="ENABLED">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+      </BooleanArgumentType>
+      <BinaryArgumentType name="SET_PARAMETER_VALUES__instructions">
+        <BinaryDataEncoding>
+          <SizeInBits>
+            <FixedValue>-1</FixedValue>
+          </SizeInBits>
+        </BinaryDataEncoding>
+      </BinaryArgumentType>
+      <IntegerArgumentType name="SET_TELEMETRY_CONFIGURATION__HkReportInterval" signed="false" sizeInBits="16">
+        <UnitSet>
+          <Unit form="calibrated">ms</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
+        <ValidRangeSet validRangeAppliesToCalibrated="true">
+          <ValidRange minInclusive="100" maxInclusive="60000"/>
+        </ValidRangeSet>
+      </IntegerArgumentType>
+      <IntegerArgumentType name="SET_TELEMETRY_CONFIGURATION__TmDownlinkRate" signed="false" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">bit/s</Unit>
+        </UnitSet>
+        <IntegerDataEncoding sizeInBits="32" encoding="unsigned" byteOrder="mostSignificantByteFirst"/>
+        <ValidRangeSet validRangeAppliesToCalibrated="true">
+          <ValidRange minInclusive="1200" maxInclusive="2000000"/>
+        </ValidRangeSet>
+      </IntegerArgumentType>
+      <FloatArgumentType name="SET_THERMAL_AND_POWER_CONFIGURATION__BatteryHeaterSetpoint" sizeInBits="32">
+        <UnitSet>
+          <Unit form="calibrated">degC</Unit>
+        </UnitSet>
+        <FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst"/>
+        <ValidRangeSet validRangeAppliesToCalibrated="true">
+          <ValidRange minInclusive="-20.0" maxInclusive="40.0"/>
+        </ValidRangeSet>
+      </FloatArgumentType>
+      <BooleanArgumentType name="SET_THERMAL_AND_POWER_CONFIGURATION__PayloadPowerEnabled" zeroStringValue="DISABLED" oneStringValue="ENABLED">
+        <IntegerDataEncoding sizeInBits="8" encoding="unsigned"/>
+      </BooleanArgumentType>
+    </ArgumentTypeSet>
+    <MetaCommandSet>
+      <MetaCommand name="REPORT_PARAMETER_VALUES" abstract="false" shortDescription="TC[20,1] report parameter values">
+        <BaseMetaCommand metaCommandRef="pus20-tc">
+          <ArgumentAssignmentList>
+            <ArgumentAssignment argumentName="subtype" argumentValue="1"/>
+          </ArgumentAssignmentList>
+        </BaseMetaCommand>
+        <ArgumentList>
+          <Argument name="num_parameters" argumentTypeRef="REPORT_PARAMETER_VALUES__num_parameters" shortDescription="Number of parameter IDs"/>
+          <Argument name="parameter_ids" argumentTypeRef="REPORT_PARAMETER_VALUES__parameter_ids"/>
+        </ArgumentList>
+        <CommandContainer name="REPORT_PARAMETER_VALUES">
+          <EntryList>
+            <ArgumentRefEntry argumentRef="num_parameters">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </ArgumentRefEntry>
+            <ArgumentRefEntry argumentRef="parameter_ids">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </ArgumentRefEntry>
+          </EntryList>
+          <BaseContainer containerRef="pus20-tc"/>
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="normal"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="SET_ADCS_CONFIGURATION" abstract="false" shortDescription="TC[20,3] set parameter values: Sets the attitude control mode, the controller gain and the magnetometer bias">
+        <LongDescription>Sets the attitude control mode, the controller gain and the magnetometer bias. Sends one TC[20,3] with 3 instruction(s), one for each of: AdcsMode, AdcsControllerGain, MagnetometerBiasX. All the values are required.</LongDescription>
+        <BaseMetaCommand metaCommandRef="pus20-tc">
+          <ArgumentAssignmentList>
+            <ArgumentAssignment argumentName="subtype" argumentValue="3"/>
+          </ArgumentAssignmentList>
+        </BaseMetaCommand>
+        <ArgumentList>
+          <Argument name="AdcsMode" argumentTypeRef="SET_ADCS_CONFIGURATION__AdcsMode" shortDescription="Attitude control mode"/>
+          <Argument name="AdcsControllerGain" argumentTypeRef="SET_ADCS_CONFIGURATION__AdcsControllerGain" shortDescription="Proportional gain of the attitude control loop"/>
+          <Argument name="MagnetometerBiasX" argumentTypeRef="SET_ADCS_CONFIGURATION__MagnetometerBiasX" shortDescription="Magnetometer X-axis bias"/>
+        </ArgumentList>
+        <CommandContainer name="SET_ADCS_CONFIGURATION">
+          <EntryList>
+            <FixedValueEntry binaryValue="03" sizeInBits="8" name="number_of_instructions">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </FixedValueEntry>
+            <FixedValueEntry binaryValue="03" sizeInBits="8" name="AdcsMode_id">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </FixedValueEntry>
+            <ArgumentRefEntry argumentRef="AdcsMode">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </ArgumentRefEntry>
+            <FixedValueEntry binaryValue="05" sizeInBits="8" name="AdcsControllerGain_id">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </FixedValueEntry>
+            <ArgumentRefEntry argumentRef="AdcsControllerGain">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </ArgumentRefEntry>
+            <FixedValueEntry binaryValue="06" sizeInBits="8" name="MagnetometerBiasX_id">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </FixedValueEntry>
+            <ArgumentRefEntry argumentRef="MagnetometerBiasX">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </ArgumentRefEntry>
+          </EntryList>
+          <BaseContainer containerRef="pus20-tc"/>
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="normal"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="SET_ALL_PARAMETERS" abstract="false" shortDescription="TC[20,3] set parameter values: Sets all the on-board parameters">
+        <LongDescription>Sets all the on-board parameters. Sends one TC[20,3] with 7 instruction(s), one for each of: HkReportInterval, BatteryHeaterSetpoint, AdcsMode, TmDownlinkRate, AdcsControllerGain, MagnetometerBiasX, PayloadPowerEnabled. All the values are required.</LongDescription>
+        <BaseMetaCommand metaCommandRef="pus20-tc">
+          <ArgumentAssignmentList>
+            <ArgumentAssignment argumentName="subtype" argumentValue="3"/>
+          </ArgumentAssignmentList>
+        </BaseMetaCommand>
+        <ArgumentList>
+          <Argument name="HkReportInterval" argumentTypeRef="SET_ALL_PARAMETERS__HkReportInterval" shortDescription="Housekeeping report interval"/>
+          <Argument name="BatteryHeaterSetpoint" argumentTypeRef="SET_ALL_PARAMETERS__BatteryHeaterSetpoint" shortDescription="Battery heater thermostat target temperature"/>
+          <Argument name="AdcsMode" argumentTypeRef="SET_ALL_PARAMETERS__AdcsMode" shortDescription="Attitude control mode"/>
+          <Argument name="TmDownlinkRate" argumentTypeRef="SET_ALL_PARAMETERS__TmDownlinkRate" shortDescription="Telemetry downlink data rate"/>
+          <Argument name="AdcsControllerGain" argumentTypeRef="SET_ALL_PARAMETERS__AdcsControllerGain" shortDescription="Proportional gain of the attitude control loop"/>
+          <Argument name="MagnetometerBiasX" argumentTypeRef="SET_ALL_PARAMETERS__MagnetometerBiasX" shortDescription="Magnetometer X-axis bias"/>
+          <Argument name="PayloadPowerEnabled" argumentTypeRef="SET_ALL_PARAMETERS__PayloadPowerEnabled" shortDescription="Payload power switch"/>
+        </ArgumentList>
+        <CommandContainer name="SET_ALL_PARAMETERS">
+          <EntryList>
+            <FixedValueEntry binaryValue="07" sizeInBits="8" name="number_of_instructions">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </FixedValueEntry>
+            <FixedValueEntry binaryValue="01" sizeInBits="8" name="HkReportInterval_id">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </FixedValueEntry>
+            <ArgumentRefEntry argumentRef="HkReportInterval">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </ArgumentRefEntry>
+            <FixedValueEntry binaryValue="02" sizeInBits="8" name="BatteryHeaterSetpoint_id">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </FixedValueEntry>
+            <ArgumentRefEntry argumentRef="BatteryHeaterSetpoint">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </ArgumentRefEntry>
+            <FixedValueEntry binaryValue="03" sizeInBits="8" name="AdcsMode_id">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </FixedValueEntry>
+            <ArgumentRefEntry argumentRef="AdcsMode">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </ArgumentRefEntry>
+            <FixedValueEntry binaryValue="04" sizeInBits="8" name="TmDownlinkRate_id">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </FixedValueEntry>
+            <ArgumentRefEntry argumentRef="TmDownlinkRate">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </ArgumentRefEntry>
+            <FixedValueEntry binaryValue="05" sizeInBits="8" name="AdcsControllerGain_id">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </FixedValueEntry>
+            <ArgumentRefEntry argumentRef="AdcsControllerGain">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </ArgumentRefEntry>
+            <FixedValueEntry binaryValue="06" sizeInBits="8" name="MagnetometerBiasX_id">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </FixedValueEntry>
+            <ArgumentRefEntry argumentRef="MagnetometerBiasX">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </ArgumentRefEntry>
+            <FixedValueEntry binaryValue="07" sizeInBits="8" name="PayloadPowerEnabled_id">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </FixedValueEntry>
+            <ArgumentRefEntry argumentRef="PayloadPowerEnabled">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </ArgumentRefEntry>
+          </EntryList>
+          <BaseContainer containerRef="pus20-tc"/>
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="normal"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="SET_PARAMETER_VALUES" abstract="false" shortDescription="TC[20,3] set parameter values">
+        <LongDescription>The instructions argument contains the application data of TC[20,3] as hex: N (1 byte) followed by N x (parameter ID (1 byte), value). The value is big endian and has the size of the on-board parameter: 1=HkReportInterval, 2=BatteryHeaterSetpoint, 3=AdcsMode, 4=TmDownlinkRate, 5=AdcsControllerGain, 6=MagnetometerBiasX, 7=PayloadPowerEnabled. The sizes of the parameters are defined in the simulator MDB.</LongDescription>
+        <BaseMetaCommand metaCommandRef="pus20-tc">
+          <ArgumentAssignmentList>
+            <ArgumentAssignment argumentName="subtype" argumentValue="3"/>
+          </ArgumentAssignmentList>
+        </BaseMetaCommand>
+        <ArgumentList>
+          <Argument name="instructions" argumentTypeRef="SET_PARAMETER_VALUES__instructions"/>
+        </ArgumentList>
+        <CommandContainer name="SET_PARAMETER_VALUES">
+          <EntryList>
+            <ArgumentRefEntry argumentRef="instructions">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </ArgumentRefEntry>
+          </EntryList>
+          <BaseContainer containerRef="pus20-tc"/>
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="normal"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="SET_TELEMETRY_CONFIGURATION" abstract="false" shortDescription="TC[20,3] set parameter values: Sets the housekeeping report interval and the telemetry downlink rate">
+        <LongDescription>Sets the housekeeping report interval and the telemetry downlink rate. Sends one TC[20,3] with 2 instruction(s), one for each of: HkReportInterval, TmDownlinkRate. All the values are required.</LongDescription>
+        <BaseMetaCommand metaCommandRef="pus20-tc">
+          <ArgumentAssignmentList>
+            <ArgumentAssignment argumentName="subtype" argumentValue="3"/>
+          </ArgumentAssignmentList>
+        </BaseMetaCommand>
+        <ArgumentList>
+          <Argument name="HkReportInterval" argumentTypeRef="SET_TELEMETRY_CONFIGURATION__HkReportInterval" shortDescription="Housekeeping report interval"/>
+          <Argument name="TmDownlinkRate" argumentTypeRef="SET_TELEMETRY_CONFIGURATION__TmDownlinkRate" shortDescription="Telemetry downlink data rate"/>
+        </ArgumentList>
+        <CommandContainer name="SET_TELEMETRY_CONFIGURATION">
+          <EntryList>
+            <FixedValueEntry binaryValue="02" sizeInBits="8" name="number_of_instructions">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </FixedValueEntry>
+            <FixedValueEntry binaryValue="01" sizeInBits="8" name="HkReportInterval_id">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </FixedValueEntry>
+            <ArgumentRefEntry argumentRef="HkReportInterval">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </ArgumentRefEntry>
+            <FixedValueEntry binaryValue="04" sizeInBits="8" name="TmDownlinkRate_id">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </FixedValueEntry>
+            <ArgumentRefEntry argumentRef="TmDownlinkRate">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </ArgumentRefEntry>
+          </EntryList>
+          <BaseContainer containerRef="pus20-tc"/>
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="normal"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="SET_THERMAL_AND_POWER_CONFIGURATION" abstract="false" shortDescription="TC[20,3] set parameter values: Sets the battery heater setpoint and the payload power switch">
+        <LongDescription>Sets the battery heater setpoint and the payload power switch. Sends one TC[20,3] with 2 instruction(s), one for each of: BatteryHeaterSetpoint, PayloadPowerEnabled. All the values are required.</LongDescription>
+        <BaseMetaCommand metaCommandRef="pus20-tc">
+          <ArgumentAssignmentList>
+            <ArgumentAssignment argumentName="subtype" argumentValue="3"/>
+          </ArgumentAssignmentList>
+        </BaseMetaCommand>
+        <ArgumentList>
+          <Argument name="BatteryHeaterSetpoint" argumentTypeRef="SET_THERMAL_AND_POWER_CONFIGURATION__BatteryHeaterSetpoint" shortDescription="Battery heater thermostat target temperature"/>
+          <Argument name="PayloadPowerEnabled" argumentTypeRef="SET_THERMAL_AND_POWER_CONFIGURATION__PayloadPowerEnabled" shortDescription="Payload power switch"/>
+        </ArgumentList>
+        <CommandContainer name="SET_THERMAL_AND_POWER_CONFIGURATION">
+          <EntryList>
+            <FixedValueEntry binaryValue="02" sizeInBits="8" name="number_of_instructions">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </FixedValueEntry>
+            <FixedValueEntry binaryValue="02" sizeInBits="8" name="BatteryHeaterSetpoint_id">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </FixedValueEntry>
+            <ArgumentRefEntry argumentRef="BatteryHeaterSetpoint">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </ArgumentRefEntry>
+            <FixedValueEntry binaryValue="07" sizeInBits="8" name="PayloadPowerEnabled_id">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </FixedValueEntry>
+            <ArgumentRefEntry argumentRef="PayloadPowerEnabled">
+              <LocationInContainerInBits referenceLocation="previousEntry">
+                <FixedValue>0</FixedValue>
+              </LocationInContainerInBits>
+            </ArgumentRefEntry>
+          </EntryList>
+          <BaseContainer containerRef="pus20-tc"/>
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="normal"/>
+        <VerifierSet/>
+      </MetaCommand>
+      <MetaCommand name="pus20-tc" abstract="true">
+        <BaseMetaCommand metaCommandRef="/PUS/pus-tc">
+          <ArgumentAssignmentList>
+            <ArgumentAssignment argumentName="apid" argumentValue="1"/>
+            <ArgumentAssignment argumentName="type" argumentValue="20"/>
+          </ArgumentAssignmentList>
+        </BaseMetaCommand>
+        <CommandContainer name="pus20-tc">
+          <EntryList/>
+          <BaseContainer containerRef="/PUS/pus-tc"/>
+        </CommandContainer>
+        <DefaultSignificance consequenceLevel="normal"/>
+        <VerifierSet/>
+      </MetaCommand>
+    </MetaCommandSet>
+  </CommandMetaData>
 </SpaceSystem>

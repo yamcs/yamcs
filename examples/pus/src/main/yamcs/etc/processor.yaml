@@ -14,6 +14,14 @@ realtime:
     - class: org.yamcs.algorithms.AlgorithmManager
     # implements provider of parameters from sys_param stream (these are collected and sent on this stream by SystemParametersService)
     - class: org.yamcs.parameter.LocalParameterManager
+    # makes the ST[20] on-board parameters (data source EXTERNAL1) editable: editing a value sends a TC[20,3]
+    - class: org.yamcs.pus.PusParameterManager
+      dataSource: EXTERNAL1
+      aliasNamespace: PUS20_Parameter_ID
+      parameterIdMapping: /PUS20/parameter_id
+      parameterIdBits: 8
+      numberOfInstructionsBits: 8
+      setCommand: /PUS20/SET_PARAMETER_VALUES
   config:
     generateEvents: true #generate events for errors in TM decoding and running algorithms
     subscribeAll: true
@@ -55,4 +63,3 @@ ArchiveRetrieval:
   services: 
     - class: org.yamcs.tctm.ReplayService
     - class: org.yamcs.algorithms.AlgorithmManager
-

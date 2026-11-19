@@ -630,5 +630,130 @@
 			</MetaCommand>
 		</MetaCommandSet>
 	</CommandMetaData>
-	-->
+    <!-- ST[20] on-board parameters, the ones that can be read and changed on board with the PUS parameter management
+         service (see pus20.py and Pus20Service).
+         The size of the value in TM[20,2] and TC[20,3] is deduced from the type of these parameters, matched by the
+         alias in the namespace PUS20_Parameter_ID (the alias is the label of the parameter ID enumeration in pus20.py).
+         The types must match the ones used by the simulator (Pus20Service).
+         The parameters have the data source external1: they have no value until a TC[20,1] is sent, and editing them
+         via the web UI button sends a TC[20,3]. -->
+    <SpaceSystem name="ONBOARD">
+        <TelemetryMetaData>
+            <ParameterTypeSet>
+                <IntegerParameterType name="HkReportIntervalType" signed="false" sizeInBits="16">
+                    <UnitSet>
+                        <Unit>ms</Unit>
+                    </UnitSet>
+                    <IntegerDataEncoding encoding="unsigned" sizeInBits="16"/>
+                </IntegerParameterType>
+                <FloatParameterType name="TemperatureType" sizeInBits="32">
+                    <UnitSet>
+                        <Unit>degC</Unit>
+                    </UnitSet>
+                    <FloatDataEncoding encoding="IEEE754_1985" sizeInBits="32"/>
+                </FloatParameterType>
+                <EnumeratedParameterType name="AdcsModeType">
+                    <IntegerDataEncoding encoding="unsigned" sizeInBits="8"/>
+                    <EnumerationList>
+                        <Enumeration value="0" label="SAFE"/>
+                        <Enumeration value="1" label="DETUMBLE"/>
+                        <Enumeration value="2" label="SUN_POINTING"/>
+                        <Enumeration value="3" label="NADIR_POINTING"/>
+                    </EnumerationList>
+                </EnumeratedParameterType>
+                <IntegerParameterType name="TmDownlinkRateType" signed="false" sizeInBits="32">
+                    <UnitSet>
+                        <Unit>bit/s</Unit>
+                    </UnitSet>
+                    <IntegerDataEncoding encoding="unsigned" sizeInBits="32"/>
+                </IntegerParameterType>
+                <FloatParameterType name="ControllerGainType" sizeInBits="64">
+                    <FloatDataEncoding encoding="IEEE754_1985" sizeInBits="64"/>
+                </FloatParameterType>
+                <IntegerParameterType name="MagneticFieldType" signed="true" sizeInBits="16">
+                    <UnitSet>
+                        <Unit>nT</Unit>
+                    </UnitSet>
+                    <IntegerDataEncoding encoding="twosComplement" sizeInBits="16"/>
+                </IntegerParameterType>
+                <BooleanParameterType name="EnabledType" oneStringValue="ENABLED" zeroStringValue="DISABLED">
+                    <IntegerDataEncoding encoding="unsigned" sizeInBits="8"/>
+                </BooleanParameterType>
+            </ParameterTypeSet>
+            <ParameterSet>
+                <Parameter parameterTypeRef="HkReportIntervalType" name="HkReportInterval"
+                           shortDescription="Housekeeping report interval">
+                    <LongDescription>Period at which the on-board housekeeping service (ST[3]) generates the
+                        housekeeping parameter report. A shorter interval gives more detail but increases the telemetry
+                        volume and the power consumption.
+                    </LongDescription>
+                    <AliasSet>
+                        <Alias nameSpace="PUS20_Parameter_ID" alias="HkReportInterval"/>
+                    </AliasSet>
+                    <ParameterProperties dataSource="external1"/>
+                </Parameter>
+                <Parameter parameterTypeRef="TemperatureType" name="BatteryHeaterSetpoint"
+                           shortDescription="Battery heater thermostat setpoint">
+                    <LongDescription>Target temperature of the battery heater thermostat. The heater is switched on when
+                        the battery is colder than this value and off when it is warmer (with some hysteresis). It keeps
+                        the Li-ion cells warm enough to be charged.
+                    </LongDescription>
+                    <AliasSet>
+                        <Alias nameSpace="PUS20_Parameter_ID" alias="BatteryHeaterSetpoint"/>
+                    </AliasSet>
+                    <ParameterProperties dataSource="external1"/>
+                </Parameter>
+                <Parameter parameterTypeRef="AdcsModeType" name="AdcsMode" shortDescription="Attitude control mode">
+                    <LongDescription>Operating mode of the attitude determination and control system (ADCS): SAFE
+                        (minimum-power safe attitude), DETUMBLE (reduce the angular rate after separation or a tumble),
+                        SUN_POINTING (solar panels towards the Sun) or NADIR_POINTING (payload towards the Earth).
+                    </LongDescription>
+                    <AliasSet>
+                        <Alias nameSpace="PUS20_Parameter_ID" alias="AdcsMode"/>
+                    </AliasSet>
+                    <ParameterProperties dataSource="external1"/>
+                </Parameter>
+                <Parameter parameterTypeRef="TmDownlinkRateType" name="TmDownlinkRate"
+                           shortDescription="Telemetry downlink data rate">
+                    <LongDescription>Data rate of the telemetry downlink transmitter. A lower rate gives a better link
+                        margin at low elevation or long range; a higher rate allows more data per ground station pass.
+                    </LongDescription>
+                    <AliasSet>
+                        <Alias nameSpace="PUS20_Parameter_ID" alias="TmDownlinkRate"/>
+                    </AliasSet>
+                    <ParameterProperties dataSource="external1"/>
+                </Parameter>
+                <Parameter parameterTypeRef="ControllerGainType" name="AdcsControllerGain"
+                           shortDescription="Attitude controller proportional gain">
+                    <LongDescription>Proportional gain of the ADCS attitude control loop (dimensionless). A higher gain
+                        converges faster to the target attitude but is less stable and needs more actuator effort.
+                    </LongDescription>
+                    <AliasSet>
+                        <Alias nameSpace="PUS20_Parameter_ID" alias="AdcsControllerGain"/>
+                    </AliasSet>
+                    <ParameterProperties dataSource="external1"/>
+                </Parameter>
+                <Parameter parameterTypeRef="MagneticFieldType" name="MagnetometerBiasX"
+                           shortDescription="Magnetometer X-axis bias">
+                    <LongDescription>Bias subtracted from the raw reading of the X axis of the magnetometer, to
+                        compensate for the magnetic field generated by the spacecraft itself (calibration value).
+                    </LongDescription>
+                    <AliasSet>
+                        <Alias nameSpace="PUS20_Parameter_ID" alias="MagnetometerBiasX"/>
+                    </AliasSet>
+                    <ParameterProperties dataSource="external1"/>
+                </Parameter>
+                <Parameter parameterTypeRef="EnabledType" name="PayloadPowerEnabled"
+                           shortDescription="Payload power switch">
+                    <LongDescription>Power switch of the payload: ENABLED when the payload is powered, DISABLED when it
+                        is switched off, for example to save power or in safe mode.
+                    </LongDescription>
+                    <AliasSet>
+                        <Alias nameSpace="PUS20_Parameter_ID" alias="PayloadPowerEnabled"/>
+                    </AliasSet>
+                    <ParameterProperties dataSource="external1"/>
+                </Parameter>
+            </ParameterSet>
+        </TelemetryMetaData>
+    </SpaceSystem>
 </SpaceSystem>
