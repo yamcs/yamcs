@@ -44,7 +44,7 @@ CONTAINER_SUMMARY = "/PUS15/STORE_SUMMARY_REPORT"
 CONTAINER_STATUS = "/PUS15/STORE_STATUS_REPORT"
 CONTAINER_CONFIG = "/PUS15/STORE_CONFIG_REPORT"
 
-APP_DATA_OFFSET = 21  # 6B CCSDS + 7B PUS secondary header + 8B CUC time
+APP_DATA_OFFSET = 25  # 6B CCSDS + 7B PUS secondary header + 8B CUC time + 4B spare
 
 STORE_ID_A = 100
 STORE_ID_B = 200
@@ -145,7 +145,8 @@ def run_tests():
     def issue(cmd: str, args: dict, timeout: float = 5.0):
         c = cmd_conn.issue(cmd, args=args)
         c.await_acknowledgment("Acknowledge_Sent", timeout=timeout)
-        return c.await_acknowledgment("CommandComplete", timeout=timeout)
+        c.await_complete(timeout=timeout)
+        return c
 
     def query_status(timeout: float = 5.0):
         while not status_q.empty():
@@ -180,7 +181,7 @@ def run_tests():
             ],
         },
     )
-    check("TC[15,20] CommandComplete OK", compl.status == "OK", compl.status)
+    check("TC[15,20] CommandComplete OK", compl.is_success(), compl.error)
     _, (n, cfg) = query_config()
     check("2 stores configured", n == 2, f"got {n}")
     check("store 100 is circular, size 200", cfg.get(STORE_ID_A) == {
@@ -196,7 +197,7 @@ def run_tests():
         CMD_CREATE_STORES,
         {"N": 1, "stores": [{"store_id": STORE_ID_A, "size_units": 1, "store_type": "circular", "vc_id": 0}]},
     )
-    check("TC[15,20] rejected (already exists)", compl.status != "OK", compl.status)
+    check("TC[15,20] rejected (already exists)", compl.is_failure(), compl.error)
 
     # ── Test 3: Enable storage on store 100 ──────────────────────────────
     print("\nTest 3: TC[15,1] enable storage on store 100")
@@ -204,9 +205,9 @@ def run_tests():
         "store_id": STORE_ID_A, "N1": 1,
         "apid_entries": [{"apid": "1", "n2": 0, "services": []}],
     })
-    check("TC[15,3] authorize application process", compl.status == "OK", compl.status)
+    check("TC[15,3] authorize application process", compl.is_success(), compl.error)
     compl = issue(CMD_ENABLE_STORAGE_SPECIFIC, {"N": 1, "store_ids": [STORE_ID_A]})
-    check("TC[15,1] CommandComplete OK", compl.status == "OK", compl.status)
+    check("TC[15,1] CommandComplete OK", compl.is_success(), compl.error)
     _, (_, status) = query_status()
     check("store 100 storage_status == enabled", status[STORE_ID_A]["storage_status"] == STORAGE_ENABLED,
           status.get(STORE_ID_A))
@@ -215,28 +216,29 @@ def run_tests():
     print("\nTest 4: wait ~1.5s for ST[3] periodic HK traffic, then TC[15,12] summary")
     time.sleep(1.5)
     compl, (n, summary) = query_summary([STORE_ID_A])
-    check("TC[15,12] CommandComplete OK", compl.status == "OK", compl.status)
+    check("TC[15,12] CommandComplete OK", compl.is_success(), compl.error)
     check("summary reports 1 store", n == 1, f"got {n}")
     entry = summary.get(STORE_ID_A, {})
-    check("fill_pct > 0 (captured some TM)", entry.get("fill_pct", 0) > 0, entry)
+    # A nonempty store can report 0% when the used capacity rounds down.
+    check("store 100 captured telemetry", entry.get("oldest_ts", 0) > 0, entry)
     check("oldest_ts <= newest_ts", entry.get("oldest_ts", 1) <= entry.get("newest_ts", 0), entry)
 
     # ── Test 5: Delete while storage still enabled -> rejected ──────────
     print("\nTest 5: TC[15,21] delete store 100 while storage enabled -> NACK completion")
     compl = issue(CMD_DELETE_SPECIFIC, {"N": 1, "store_ids": [STORE_ID_A]})
-    check("TC[15,21] rejected (store active)", compl.status != "OK", compl.status)
+    check("TC[15,21] rejected (store active)", compl.is_failure(), compl.error)
 
     # ── Test 6: Disable storage, exercise open retrieval resume/suspend ─
     print("\nTest 6: TC[15,2] disable storage, TC[15,15]/[15,16] resume/suspend open retrieval")
     compl = issue(CMD_DISABLE_STORAGE_SPECIFIC, {"N": 1, "store_ids": [STORE_ID_A]})
-    check("TC[15,2] CommandComplete OK", compl.status == "OK", compl.status)
+    check("TC[15,2] CommandComplete OK", compl.is_success(), compl.error)
     compl = issue(CMD_RESUME_SPECIFIC, {"N": 1, "retrieval_entries": [{"store_id": STORE_ID_A, "retrieval_priority": 1}]})
-    check("TC[15,15] CommandComplete OK", compl.status == "OK", compl.status)
+    check("TC[15,15] CommandComplete OK", compl.is_success(), compl.error)
     _, (_, status) = query_status()
     check("store 100 open_retrieval == in_progress", status[STORE_ID_A]["open_retrieval_status"]
           == OPEN_RETRIEVAL_IN_PROGRESS, status.get(STORE_ID_A))
     compl = issue(CMD_SUSPEND_SPECIFIC, {"N": 1, "store_ids": [STORE_ID_A]})
-    check("TC[15,16] CommandComplete OK", compl.status == "OK", compl.status)
+    check("TC[15,16] CommandComplete OK", compl.is_success(), compl.error)
     _, (_, status) = query_status()
     check("store 100 open_retrieval == suspended", status[STORE_ID_A]["open_retrieval_status"]
           == OPEN_RETRIEVAL_SUSPENDED, status.get(STORE_ID_A))
@@ -247,7 +249,7 @@ def run_tests():
         CMD_START_BTR,
         {"N": 1, "btr_entries": [{"store_id": STORE_ID_A, "retrieval_priority": 1, "start_time": "1970-01-01T00:00:00.000Z", "end_time": utc_now()}]},
     )
-    check("TC[15,9] CommandComplete OK", compl.status == "OK", compl.status)
+    check("TC[15,9] CommandComplete OK", compl.is_success(), compl.error)
     _, (_, status) = query_status()
     check("store 100 btr_status == enabled (still draining)",
           status[STORE_ID_A]["btr_status"] in (BTR_ENABLED, BTR_DISABLED), status.get(STORE_ID_A))
@@ -259,25 +261,25 @@ def run_tests():
     # ── Test 8: Resize + change VC on store 200 ──────────────────────────
     print("\nTest 8: TC[15,25] resize store 200, TC[15,28] change its VC")
     compl = issue(CMD_RESIZE, {"N": 1, "resize_entries": [{"store_id": STORE_ID_B, "new_size": 8}]})
-    check("TC[15,25] CommandComplete OK", compl.status == "OK", compl.status)
+    check("TC[15,25] CommandComplete OK", compl.is_success(), compl.error)
     compl = issue(CMD_CHANGE_VC, {"store_id": STORE_ID_B, "new_vc_id": 3})
-    check("TC[15,28] CommandComplete OK", compl.status == "OK", compl.status)
+    check("TC[15,28] CommandComplete OK", compl.is_success(), compl.error)
     _, (_, cfg) = query_config()
     check("store 200 resized to 8", cfg[STORE_ID_B]["size_units"] == 8, cfg.get(STORE_ID_B))
     check("store 200 VC changed to 3", cfg[STORE_ID_B]["vc_id"] == 3, cfg.get(STORE_ID_B))
 
-    # ── Test 9: Delete content up to "now" -> fill drops to 0 ───────────
+    # ── Test 9: Delete content up to "now" ──────────────────────────────
     print("\nTest 9: TC[15,11] delete content of store 100 up to now")
     compl = issue(CMD_DELETE_CONTENT_SPECIFIC, {"time_limit": utc_now(), "N": 1, "store_ids": [STORE_ID_A]})
-    check("TC[15,11] CommandComplete OK", compl.status == "OK", compl.status)
+    check("TC[15,11] CommandComplete OK", compl.is_success(), compl.error)
     compl, (_, summary) = query_summary([STORE_ID_A])
-    check("store 100 fill_pct == 0 after content delete", summary[STORE_ID_A]["fill_pct"] == 0,
-          summary.get(STORE_ID_A))
+    entry = summary[STORE_ID_A]
+    check("store 100 has no packets after content delete", entry["oldest_ts"] == entry["newest_ts"] == 0, entry)
 
     # ── Test 10: Delete all eligible stores ──────────────────────────────
     print("\nTest 10: TC[15,21] delete-all (both stores now inactive)")
     compl = issue(CMD_DELETE_ALL, {})
-    check("TC[15,21] (all) CommandComplete OK", compl.status == "OK", compl.status)
+    check("TC[15,21] (all) CommandComplete OK", compl.is_success(), compl.error)
     _, (n, cfg) = query_config()
     check("0 stores remain", n == 0, f"got {n}, {cfg}")
 

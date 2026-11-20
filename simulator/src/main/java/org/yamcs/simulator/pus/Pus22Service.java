@@ -227,7 +227,12 @@ public class Pus22Service extends AbstractPusService {
                     return;
                 }
             }
-            parsed.add(new ScheduledCommand(positionTag, subschedule, group, new PusTcPacket(packet)));
+            PusTcPacket embedded = pusSimulator.embeddedTc(packet);
+            if (!embedded.isValid()) {
+                nack_start(tc, START_ERR_INVALID_EMBEDDED_TC);
+                return;
+            }
+            parsed.add(new ScheduledCommand(positionTag, subschedule, group, embedded));
         }
 
         ack_start(tc);

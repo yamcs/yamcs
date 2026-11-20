@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
@@ -26,6 +27,9 @@ import org.yamcs.ValidationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.security.sdls.SdlsSecurityAssociation;
 import org.yamcs.security.sdls.SdlsSecurityAssociationFactory;
+import org.yamcs.simulator.pus.Pus11ScheduleConfig;
+import org.yamcs.simulator.pus.PusMdbTelemetry;
+import org.yamcs.simulator.pus.PusPacketConfig;
 import org.yamcs.simulator.pus.PusSimulator;
 import org.yamcs.simulator.pus.PusTimeEncoding;
 import org.yamcs.simulator.pus.PusTimeEncoding.Epoch;
@@ -73,6 +77,10 @@ public class SimulatorCommander extends ProcessRunner {
         frameSpec.addOption("tmFrameFreq", OptionType.FLOAT);
         frameSpec.addOption("tcPort", OptionType.INTEGER);
         frameSpec.addOption("tcEncoding", OptionType.STRING);
+        frameSpec.addOption("tcMaxFrameLength", OptionType.INTEGER);
+        frameSpec.addOption("tcErrorDetection", OptionType.STRING).withChoices("CRC16", "NONE");
+        frameSpec.addOption("tmErrorDetection", OptionType.STRING).withChoices("CRC16", "NONE");
+        frameSpec.addOption("tmOcfPresent", OptionType.BOOLEAN);
         frameSpec.addOption("uslpTcPort", OptionType.INTEGER);
         frameSpec.addOption("encryption", OptionType.MAP).withSpec(frameEncryptionSpec);
 
@@ -91,6 +99,31 @@ public class SimulatorCommander extends ProcessRunner {
         Spec pusSpec = new Spec();
         pusSpec.addOption("storageTimeEncoding", OptionType.MAP).withSpec(storageTimeSpec);
         pusSpec.addOption("timeEncoding", OptionType.MAP).withSpec(pusTimeEncodingSpec);
+        pusSpec.addOption("apid", OptionType.INTEGER);
+        pusSpec.addOption("spareBytes", OptionType.INTEGER);
+        pusSpec.addOption("tmPacketCrc", OptionType.BOOLEAN);
+        pusSpec.addOption("tcPacketCrc", OptionType.BOOLEAN);
+        pusSpec.addOption("embeddedTcCrc", OptionType.BOOLEAN);
+        pusSpec.addOption("pus22WrapperCrc", OptionType.BOOLEAN);
+
+        Spec telemetrySpec = new Spec();
+        telemetrySpec.addOption("mdbFile", OptionType.STRING);
+        telemetrySpec.addOption("mdbFiles", OptionType.LIST).withElementType(OptionType.STRING);
+        telemetrySpec.requireOneOf("mdbFile", "mdbFiles");
+        telemetrySpec.mutuallyExclusive("mdbFile", "mdbFiles");
+        telemetrySpec.addOption("housekeepingPeriodMillis", OptionType.INTEGER);
+        telemetrySpec.addOption("eventPeriodMillis", OptionType.INTEGER);
+        pusSpec.addOption("telemetry", OptionType.MAP).withSpec(telemetrySpec);
+
+        Spec pus11IdSpec = new Spec();
+        pus11IdSpec.addOption("bytes", OptionType.INTEGER);
+        pus11IdSpec.addOption("default", OptionType.INTEGER);
+        Spec scheduleSpec = new Spec();
+        scheduleSpec.addOption("wrapperCrc", OptionType.BOOLEAN);
+        scheduleSpec.addOption("implicitPfield", OptionType.BOOLEAN);
+        scheduleSpec.addOption("subScheduleId", OptionType.MAP).withSpec(pus11IdSpec);
+        scheduleSpec.addOption("groupId", OptionType.MAP).withSpec(pus11IdSpec);
+        pusSpec.addOption("pus11", OptionType.MAP).withSpec(scheduleSpec);
 
         Spec perfTestSpec = new Spec();
         perfTestSpec.addOption("numPackets", OptionType.INTEGER);
@@ -158,6 +191,10 @@ public class SimulatorCommander extends ProcessRunner {
             double tmFrameFreq = frameArgs.getDouble("tmFrameFreq", defaultOptions.tmFrameFreq);
             int tcFramePort = frameArgs.getInt("tcPort", defaultOptions.tcFramePort);
             String tcFrameEncoding = frameArgs.getString("tcEncoding", defaultOptions.tcFrameEncoding);
+            int tcMaxFrameLength = frameArgs.getInt("tcMaxFrameLength", defaultOptions.tcMaxFrameLength);
+            String tcFrameErrorDetection = frameArgs.getString("tcErrorDetection", defaultOptions.tcFrameErrorDetection);
+            String tmFrameErrorDetection = frameArgs.getString("tmErrorDetection", defaultOptions.tmFrameErrorDetection);
+            boolean tmOcfPresent = frameArgs.getBoolean("tmOcfPresent", defaultOptions.tmOcfPresent);
 
             if (frameArgs.containsKey("encryption")) {
                 YConfiguration frameEncryption = frameArgs.getConfig("encryption");
@@ -184,6 +221,10 @@ public class SimulatorCommander extends ProcessRunner {
                     "--tm-frame-port", "" + tmFramePort,
                     "--tc-frame-port", "" + tcFramePort,
                     "--tc-frame-encoding", "" + tcFrameEncoding,
+                    "--tc-max-frame-length", "" + tcMaxFrameLength,
+                    "--tc-frame-error-detection", tcFrameErrorDetection,
+                    "--tm-frame-error-detection", tmFrameErrorDetection,
+                    "--tm-ocf-present", "" + tmOcfPresent,
                     "--uslp-tc-frame-port", "" + uslpTcFramePort,
                     "--tm-frame-length", "" + tmFrameSize,
                     "--tm-frame-freq", "" + tmFrameFreq));
@@ -191,6 +232,39 @@ public class SimulatorCommander extends ProcessRunner {
 
         if (config.containsKey("pus")) {
             YConfiguration pusArgs = config.getConfig("pus");
+            boolean tcCrc = pusArgs.getBoolean("tcPacketCrc", defaultOptions.pusTcPacketCrc);
+            cmdl.addAll(List.of("--pus-apid", Integer.toString(pusArgs.getInt("apid", defaultOptions.pusApid)),
+                    "--pus-spare-bytes", Integer.toString(pusArgs.getInt("spareBytes", defaultOptions.pusSpareBytes)),
+                    "--pus-tm-packet-crc", Boolean.toString(pusArgs.getBoolean("tmPacketCrc", defaultOptions.pusTmPacketCrc)),
+                    "--pus-tc-packet-crc", Boolean.toString(tcCrc),
+                    "--pus22-wrapper-crc", Boolean.toString(pusArgs.getBoolean("pus22WrapperCrc", tcCrc)),
+                    "--pus-embedded-tc-crc", Boolean.toString(pusArgs.getBoolean("embeddedTcCrc", tcCrc))));
+            if (pusArgs.containsKey("telemetry")) {
+                YConfiguration telemetry = pusArgs.getConfig("telemetry");
+                List<String> files = telemetry.containsKey("mdbFiles") ? telemetry.getList("mdbFiles")
+                        : List.of(telemetry.getString("mdbFile"));
+                if (files.isEmpty()) {
+                    throw new InitException("pus.telemetry.mdbFiles must contain at least one XTCE file");
+                }
+                for (String file : files) {
+                    cmdl.addAll(List.of("--pus-telemetry-mdb", file));
+                }
+                cmdl.addAll(List.of(
+                        "--pus-housekeeping-period", Integer.toString(telemetry.getInt("housekeepingPeriodMillis",
+                                defaultOptions.pusHousekeepingPeriod)),
+                        "--pus-event-period", Integer.toString(telemetry.getInt("eventPeriodMillis",
+                                defaultOptions.pusEventPeriod))));
+            }
+            if (pusArgs.containsKey("pus11")) {
+                YConfiguration schedule = pusArgs.getConfig("pus11");
+                cmdl.addAll(List.of("--pus11-wrapper-crc", Boolean.toString(schedule.getBoolean("wrapperCrc", tcCrc))));
+                if (schedule.containsKey("implicitPfield")) {
+                    cmdl.addAll(List.of("--pus11-tc-implicit-p-field",
+                            Boolean.toString(schedule.getBoolean("implicitPfield"))));
+                }
+                addPus11IdOptions(cmdl, schedule, "subScheduleId", "subschedule");
+                addPus11IdOptions(cmdl, schedule, "groupId", "group");
+            }
             if (pusArgs.containsKey("storageTimeEncoding")) {
                 YConfiguration storageTime = pusArgs.getConfig("storageTimeEncoding");
                 cmdl.addAll(Arrays.asList(
@@ -297,6 +371,22 @@ public class SimulatorCommander extends ProcessRunner {
         }
     }
 
+    private static boolean frameCrcEnabled(String errorDetection, String option) {
+        return switch (errorDetection.toUpperCase(Locale.ROOT)) {
+        case "CRC16" -> true;
+        case "NONE" -> false;
+        default -> throw new ConfigurationException("Unsupported simulator " + option + " " + errorDetection);
+        };
+    }
+
+    private static void addPus11IdOptions(List<String> args, YConfiguration schedule, String key, String option) {
+        if (schedule.containsKey(key)) {
+            YConfiguration id = schedule.getConfig(key);
+            args.addAll(List.of("--pus11-" + option + "-bytes", Integer.toString(id.getInt("bytes", 1)),
+                    "--pus11-" + option + "-default", Long.toString(id.getLong("default", 0))));
+        }
+    }
+
     public static List<Service> createServices(SimulatorArgs runtimeOptions) {
         TcPacketFactory pktFactory;
         AbstractSimulator simulator;
@@ -316,7 +406,6 @@ public class SimulatorCommander extends ProcessRunner {
             pktFactory = TcPacketFactory.COL_PACKET_FACTORY;
             simulator = new ColSimulator(losDir, dataDir);
         } else if (runtimeOptions.type.equalsIgnoreCase("pus")) {
-            pktFactory = TcPacketFactory.PUS_PACKET_FACTORY;
             PusTimeEncoding timeEncoding = new PusTimeEncoding(
                     runtimeOptions.pusTimePfield,
                     runtimeOptions.pusTimePfieldCont,
@@ -329,7 +418,27 @@ public class SimulatorCommander extends ProcessRunner {
             PusTimeEncoding storageTime = new PusTimeEncoding(runtimeOptions.pusStorageTimePfield,
                     runtimeOptions.pusStorageTimePfieldCont, true,
                     Epoch.valueOf(runtimeOptions.pusStorageTimeEpoch.toUpperCase()));
-            simulator = new PusSimulator(dataDir, timeEncoding, storageTime);
+            boolean tcCrc = runtimeOptions.pusTcPacketCrc;
+            PusPacketConfig packetConfig = new PusPacketConfig(runtimeOptions.pusApid, runtimeOptions.pusSpareBytes,
+                    runtimeOptions.pusTmPacketCrc, tcCrc,
+                    runtimeOptions.pus11WrapperCrc == null ? tcCrc : runtimeOptions.pus11WrapperCrc,
+                    runtimeOptions.pus22WrapperCrc == null ? tcCrc : runtimeOptions.pus22WrapperCrc,
+                    runtimeOptions.pusEmbeddedTcCrc == null ? tcCrc : runtimeOptions.pusEmbeddedTcCrc);
+            PusTimeEncoding scheduleTime = runtimeOptions.pus11TcImplicitPfield == null ? timeEncoding
+                    : new PusTimeEncoding(runtimeOptions.pusTimePfield, runtimeOptions.pusTimePfieldCont,
+                            runtimeOptions.pus11TcImplicitPfield, timeEncoding.epoch());
+            Pus11ScheduleConfig scheduleConfig = new Pus11ScheduleConfig(scheduleTime,
+                    runtimeOptions.pus11SubScheduleBytes, runtimeOptions.pus11SubScheduleDefault,
+                    runtimeOptions.pus11GroupBytes, runtimeOptions.pus11GroupDefault);
+            pktFactory = TcPacketFactory.pusPacketFactory(packetConfig);
+            var telemetryMdbFiles = runtimeOptions.pusTelemetryMdbFiles;
+            PusSimulator pus = new PusSimulator(dataDir, timeEncoding, storageTime, packetConfig, scheduleConfig,
+                    telemetryMdbFiles.isEmpty());
+            if (!telemetryMdbFiles.isEmpty()) {
+                pus.configureMdbTelemetry(PusMdbTelemetry.load(telemetryMdbFiles),
+                        runtimeOptions.pusHousekeepingPeriod, runtimeOptions.pusEventPeriod);
+            }
+            simulator = pus;
         } else {
             throw new ConfigurationException("Unknown simulator type '" + runtimeOptions.type + "'. Use COL or PUS");
         }
@@ -406,9 +515,12 @@ public class SimulatorCommander extends ProcessRunner {
                 maybeSdlsTc = null;
             }
 
-            TcEncoding tcEncoding = TcEncoding.valueOf(runtimeOptions.tcFrameEncoding.toUpperCase());
+            TcEncoding tcEncoding = TcEncoding.valueOf(runtimeOptions.tcFrameEncoding.toUpperCase(Locale.ROOT));
+            boolean tcFrameCrc = frameCrcEnabled(runtimeOptions.tcFrameErrorDetection, "tcErrorDetection");
+            boolean tmFrameCrc = frameCrcEnabled(runtimeOptions.tmFrameErrorDetection, "tmErrorDetection");
+            int expectedScid = simulator instanceof PusSimulator ? runtimeOptions.scid : -1;
             UdpTcFrameLink tcFrameLink = new UdpTcFrameLink(simulator, runtimeOptions.tcFramePort, maybeSdlsTc,
-                    pktFactory, tcEncoding);
+                    pktFactory, tcEncoding, tcFrameCrc, runtimeOptions.tcMaxFrameLength, expectedScid);
 
             UdpUslpFrameLink uslpFrameLink = null;
             if (simulator instanceof ColSimulator colSimulator) {
@@ -425,7 +537,7 @@ public class SimulatorCommander extends ProcessRunner {
             UdpTmFrameLink frameLink = new UdpTmFrameLink(runtimeOptions.scid, runtimeOptions.tmFrameType,
                     runtimeOptions.tmFrameHost, runtimeOptions.tmFramePort, runtimeOptions.tmFrameLength,
                     runtimeOptions.tmFrameFreq,
-                    clcwSupplier, maybeSdlsTm);
+                    clcwSupplier, maybeSdlsTm, runtimeOptions.tmOcfPresent, tmFrameCrc);
 
             services.add(tcFrameLink);
             services.add(frameLink);

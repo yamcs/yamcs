@@ -2,7 +2,7 @@
 <SpaceSystem xmlns="http://www.omg.org/spec/XTCE/20180204" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="PUS15" xsi:schemaLocation="http://www.omg.org/spec/XTCE/20180204 https://www.omg.org/spec/XTCE/20180204/SpaceSystem.xsd">
 	<Header validationStatus="Unknown" version="1.0" date="2026-07-17T00:00:00Z">
 		<NoteSet>
-			<Note>ST15 Hermes-compatible payload profile: all counts, store IDs, capacities, priorities and virtual channels are uint8; APIDs are packed uint11.</Note>
+			<Note>ST15 packet-store payload profile: all counts, store IDs, capacities, priorities and virtual channels are uint8; APIDs are packed uint11.</Note>
 			<Note>CUC payload times use implicit pField=46, UNIX epoch, four seconds bytes and two binary fractional bytes. Configure pus.storageTimeEncoding and these MDB time types together if changed.</Note>
 			<Note>Capacity fields are allocation units of 1024 bytes. All standard optional fields are present; HK/diagnostic selection includes uint8 subsampling.</Note>
 			<Note>All-store convenience commands retain a fixed N=0 octet. TC15,11/14 retain their shared leading CUC tag. TC15,24 supports between/after/before; TC15,26/27 change store type.</Note>
@@ -226,10 +226,19 @@
 			<Parameter parameterTypeRef="/dt/pus_report_apid" name="event_selection_apid"/>
 			<Parameter parameterTypeRef="/dt/uint8" name="event_selection_n_ids"/>
 			<Parameter parameterTypeRef="event_selection_id_array_type" name="event_selection_ids"/>
+			<Parameter parameterTypeRef="/dt/uint16" name="page_number"/>
+			<Parameter parameterTypeRef="/dt/uint16" name="total_pages"/>
 		</ParameterSet>
 		<ContainerSet>
 			<SequenceContainer name="pus15-tm">
-				<EntryList/>
+				<EntryList>
+					<ParameterRefEntry parameterRef="page_number">
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>-32</FixedValue>
+						</LocationInContainerInBits>
+					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="total_pages"/>
+				</EntryList>
 				<BaseContainer containerRef="/PUS/pus-tm">
 					<RestrictionCriteria>
 						<Comparison parameterRef="/PUS/type" comparisonOperator="==" value="15"/>

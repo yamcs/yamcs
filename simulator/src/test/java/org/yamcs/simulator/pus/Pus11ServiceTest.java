@@ -111,7 +111,7 @@ public class Pus11ServiceTest {
             }
         }
         assertNotNull(report);
-        int off = 21; // PusTmPacket.DATA_OFFSET
+        int off = PusTmPacket.DATA_OFFSET;
         assertEquals(2, ByteArrayUtils.decodeInt(report, off));
         // two (id,status) pairs follow
         int a = u8(report, off + 4);
@@ -151,7 +151,9 @@ public class Pus11ServiceTest {
     }
 
     private PusTcPacket insertTc(int subschedule, int group, byte[] encodedTime) {
-        byte[] embedded = new PusTcPacket(1, 1, 0, 17, 1).getBytes();
+        PusTcPacket inner = new PusTcPacket(1, 1, 0, 17, 1);
+        inner.fillChecksum();
+        byte[] embedded = inner.getBytes();
         ByteBuffer ud = ByteBuffer.allocate(2 + 1 + encodedTime.length + embedded.length);
         ud.put((byte) subschedule);
         ud.put((byte) 1); // N
@@ -196,7 +198,7 @@ public class Pus11ServiceTest {
     }
 
     private static int ackCode(byte[] nack) {
-        return ByteArrayUtils.decodeInt(nack, 21 + 4);
+        return Byte.toUnsignedInt(nack[PusTmPacket.DATA_OFFSET + 4]);
     }
 
     static class TestSim extends PusSimulator {

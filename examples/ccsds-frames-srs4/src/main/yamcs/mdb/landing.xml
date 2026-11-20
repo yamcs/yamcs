@@ -230,86 +230,26 @@
 					<AncillaryData name="Yamcs" mimeType="text/plain">UseAsArchivingPartition</AncillaryData>
 				</AncillaryDataSet>
 				<EntryList>
-					<ParameterRefEntry parameterRef="ElapsedTime">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>128</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="Longitude">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>160</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="Latitude">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>192</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="Altitude">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>224</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="ElapsedTime" />
+					<ParameterRefEntry parameterRef="Longitude" />
+					<ParameterRefEntry parameterRef="Latitude" />
+					<ParameterRefEntry parameterRef="Altitude" />
 					<ParameterRefEntry parameterRef="Position">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>160</FixedValue>
+						<LocationInContainerInBits referenceLocation="previousEntry">
+							<FixedValue>-96</FixedValue>
 						</LocationInContainerInBits>
 					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="Heading">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>256</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="Alpha">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>288</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="Beta">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>320</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="TAS">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>352</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="CAS">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>384</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="Mach_Number">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>416</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="Load_factor">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>448</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="SinkRate">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>480</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="Phi">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>512</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="Theta">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>544</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="Psi">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>576</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="Heading" />
+					<ParameterRefEntry parameterRef="Alpha" />
+					<ParameterRefEntry parameterRef="Beta" />
+					<ParameterRefEntry parameterRef="TAS" />
+					<ParameterRefEntry parameterRef="CAS" />
+					<ParameterRefEntry parameterRef="Mach_Number" />
+					<ParameterRefEntry parameterRef="Load_factor" />
+					<ParameterRefEntry parameterRef="SinkRate" />
+					<ParameterRefEntry parameterRef="Phi" />
+					<ParameterRefEntry parameterRef="Theta" />
+					<ParameterRefEntry parameterRef="Psi" />
 				</EntryList>
 				<BaseContainer containerRef="/PUS/hk25">
 					<RestrictionCriteria>
@@ -324,71 +264,19 @@
 					<AncillaryData name="Yamcs" mimeType="text/plain">UseAsArchivingPartition</AncillaryData>
 				</AncillaryDataSet>
 				<EntryList>
-					<ParameterRefEntry parameterRef="BusStatus">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>128</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="BusVoltage">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>136</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="BusCurrent">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>144</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="TotalSystemCurrent">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>152</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="BatteryVoltage1">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>160</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="BatteryTemperature1">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>168</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="BatteryCapacity1">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>176</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="BatteryVoltage2">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>192</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="BatteryTemperature2">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>200</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="BatteryCapacity2">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>208</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="BatteryVoltage3">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>224</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="BatteryTemperature3">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>232</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="BatteryCapacity3">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>240</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="BusStatus" />
+					<ParameterRefEntry parameterRef="BusVoltage" />
+					<ParameterRefEntry parameterRef="BusCurrent" />
+					<ParameterRefEntry parameterRef="TotalSystemCurrent" />
+					<ParameterRefEntry parameterRef="BatteryVoltage1" />
+					<ParameterRefEntry parameterRef="BatteryTemperature1" />
+					<ParameterRefEntry parameterRef="BatteryCapacity1" />
+					<ParameterRefEntry parameterRef="BatteryVoltage2" />
+					<ParameterRefEntry parameterRef="BatteryTemperature2" />
+					<ParameterRefEntry parameterRef="BatteryCapacity2" />
+					<ParameterRefEntry parameterRef="BatteryVoltage3" />
+					<ParameterRefEntry parameterRef="BatteryTemperature3" />
+					<ParameterRefEntry parameterRef="BatteryCapacity3" />
 				</EntryList>
 				<BaseContainer containerRef="../PUS/hk25">
 					<RestrictionCriteria>
@@ -403,51 +291,15 @@
 					<AncillaryData name="Yamcs" mimeType="text/plain">UseAsArchivingPartition</AncillaryData>
 				</AncillaryDataSet>
 				<EntryList>
-					<ParameterRefEntry parameterRef="PrimBusVoltage1">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>128</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="PrimBusCurrent1">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>136</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="PrimBusVoltage2">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>144</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="PrimBusCurrent2">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>152</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="SecBusVoltage2">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>160</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="SecBusCurrent2">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>168</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="SecBusVoltage3">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>176</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="SecBusCurrent3">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>184</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="MemoryRate">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>192</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="PrimBusVoltage1" />
+					<ParameterRefEntry parameterRef="PrimBusCurrent1" />
+					<ParameterRefEntry parameterRef="PrimBusVoltage2" />
+					<ParameterRefEntry parameterRef="PrimBusCurrent2" />
+					<ParameterRefEntry parameterRef="SecBusVoltage2" />
+					<ParameterRefEntry parameterRef="SecBusCurrent2" />
+					<ParameterRefEntry parameterRef="SecBusVoltage3" />
+					<ParameterRefEntry parameterRef="SecBusCurrent3" />
+					<ParameterRefEntry parameterRef="MemoryRate" />
 				</EntryList>
 				<BaseContainer containerRef="../PUS/hk25">
 					<RestrictionCriteria>
@@ -488,16 +340,8 @@
 					<AncillaryData name="Yamcs" mimeType="text/plain">UseAsArchivingPartition</AncillaryData>
 				</AncillaryDataSet>
 				<EntryList>
-					<ParameterRefEntry parameterRef="LVPDUStatus">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>128</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
-					<ParameterRefEntry parameterRef="LVPDUVoltage">
-						<LocationInContainerInBits referenceLocation="containerStart">
-							<FixedValue>136</FixedValue>
-						</LocationInContainerInBits>
-					</ParameterRefEntry>
+					<ParameterRefEntry parameterRef="LVPDUStatus" />
+					<ParameterRefEntry parameterRef="LVPDUVoltage" />
 				</EntryList>
 				<BaseContainer containerRef="../PUS/hk25">
 					<RestrictionCriteria>

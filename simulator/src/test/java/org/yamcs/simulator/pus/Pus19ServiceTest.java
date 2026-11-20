@@ -233,7 +233,9 @@ public class Pus19ServiceTest {
 
     /** a complete TC packet (with CRC), as embedded by the ground after post-processing */
     private static byte[] request(int type, int subtype) {
-        return new PusTcPacket(APID, 1, 0, type, subtype).getBytes();
+        PusTcPacket packet = new PusTcPacket(APID, 1, 0, type, subtype);
+        packet.fillChecksum();
+        return packet.getBytes();
     }
 
     private static PusTcPacket addTc(int eventId, byte[] request) {
@@ -260,7 +262,7 @@ public class Pus19ServiceTest {
         List<Integer> codes = new ArrayList<>();
         for (byte[] p : sim.tm) {
             if (u8(p, 7) == TM_TYPE_ACK && u8(p, 8) == NACK_START) {
-                codes.add(org.yamcs.utils.ByteArrayUtils.decodeInt(p, PusTmPacket.DATA_OFFSET + 4));
+                codes.add(Byte.toUnsignedInt(p[PusTmPacket.DATA_OFFSET + 4]));
             }
         }
         return codes;

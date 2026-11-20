@@ -3,7 +3,6 @@ package org.yamcs.simulator.pus;
 import java.nio.ByteBuffer;
 
 import org.yamcs.simulator.SimulatorCcsdsPacket;
-import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 
 /**
  * PUS time packet APID = 0 no secondary header
@@ -19,7 +18,7 @@ import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
  *
  */
 public class PusTmTimePacket extends SimulatorCcsdsPacket {
-    static final CrcCciitCalculator crcCalculator = new CrcCciitCalculator();
+    private final int crcLength;
 
     public PusTmTimePacket() {
         this(Pus9Service.DEFAULT_RATE_EXPONENT, PusTimeEncoding.DEFAULT);
@@ -30,7 +29,12 @@ public class PusTmTimePacket extends SimulatorCcsdsPacket {
     }
 
     public PusTmTimePacket(int rateExponent, PusTimeEncoding timeEncoding) {
-        super(ByteBuffer.allocate(6 + 1 + timeEncoding.getEncodedLength() + 2));
+        this(rateExponent, timeEncoding, PusPacketConfig.DEFAULT.tmCrc());
+    }
+
+    public PusTmTimePacket(int rateExponent, PusTimeEncoding timeEncoding, boolean crc) {
+        super(ByteBuffer.allocate(7 + timeEncoding.getEncodedLength() + (crc ? 2 : 0)));
+        crcLength = crc ? 2 : 0;
         setHeader(0, 0, 0, 3, getSeq(0));
         bb.position(6);
         bb.put((byte) rateExponent);
@@ -41,19 +45,19 @@ public class PusTmTimePacket extends SimulatorCcsdsPacket {
 
     public PusTmTimePacket(byte[] packet) {
         super(packet);
+        crcLength = 2;
     }
 
     @Override
     public ByteBuffer getUserDataBuffer() {
-        bb.position(6);
-        return bb.slice();
+        return bb.slice(6, bb.capacity() - 6 - crcLength);
     }
 
     @Override
     protected void fillChecksum() {
-        int crc = crcCalculator.compute(bb.array(), bb.arrayOffset(), bb.capacity() - bb.arrayOffset()-2);
-        bb.position(bb.capacity()-2);
-        bb.putShort((short)crc);
+        if (crcLength != 0) {
+            PusTcPacket.writeChecksum(bb);
+        }
     }
 
 }

@@ -23,8 +23,13 @@ import org.yamcs.utils.StringConverter;
 public class TcVcFrameLink {
     private static final Logger log = LoggerFactory.getLogger(TcVcFrameLink.class);
     final static CrcCciitCalculator crc = new CrcCciitCalculator();
+    static final int PRIMARY_HEADER_LENGTH = 5;
+    static final int MAX_FRAME_LENGTH = 1024;
     final AbstractSimulator simulator;
     final TcPacketFactory packetFactory;
+    final int crcBytes;
+    final int maxFrameLength;
+    final int expectedScid;
 
     // FARM parameters
     boolean lockout;
@@ -47,9 +52,23 @@ public class TcVcFrameLink {
 
     public TcVcFrameLink(AbstractSimulator simulator, int vcId, SdlsSecurityAssociation maybeSdls,
             TcPacketFactory packetFactory) {
+        this(simulator, vcId, maybeSdls, packetFactory, true, MAX_FRAME_LENGTH, -1);
+    }
+
+    TcVcFrameLink(AbstractSimulator simulator, int vcId, SdlsSecurityAssociation maybeSdls,
+            TcPacketFactory packetFactory, boolean withCrc, int maxFrameLength, int expectedScid) {
         this.simulator = simulator;
         this.vcId = vcId;
         this.packetFactory = packetFactory;
+        this.crcBytes = withCrc ? 2 : 0;
+        this.maxFrameLength = maxFrameLength;
+        this.expectedScid = expectedScid;
+        if (maxFrameLength < PRIMARY_HEADER_LENGTH + crcBytes || maxFrameLength > MAX_FRAME_LENGTH) {
+            throw new IllegalArgumentException("Invalid TC maximum frame length " + maxFrameLength);
+        }
+        if (expectedScid < -1 || expectedScid > 0x3FF) {
+            throw new IllegalArgumentException("Invalid TC spacecraft identifier " + expectedScid);
+        }
 
         // If we have an encryption key, configure encryption
         if (maybeSdls != null) {
@@ -64,9 +83,12 @@ public class TcVcFrameLink {
     }
 
     void processTcFrame(byte[] data, int offset, int length) {
-
+        if (length < PRIMARY_HEADER_LENGTH) {
+            log.warn("Incomplete TC frame header ({} bytes)", length);
+            return;
+        }
         byte d0 = data[offset];
-        int vn = d0 >>> 6;
+        int vn = (d0 & 0xFF) >>> 6;
 
         boolean bypassFlag = ((d0 >> 5) & 1) == 1;
 
@@ -87,27 +109,33 @@ public class TcVcFrameLink {
             log.warn("Invalid frame version number {} received; expecting 0; ignoring frame", vn);
             return;
         }
-        if (frameLength > length) {
-            log.warn("Bad decoded frame length {}, expected max {}", frameLength, length);
+        if (expectedScid >= 0 && spacecraftId != expectedScid) {
+            log.warn("Ignoring TC frame for spacecraft {} (expected {})", spacecraftId, expectedScid);
             return;
         }
-        int c1 = crc.compute(data, offset, frameLength - 2);
-        int c2 = ByteArrayUtils.decodeShort(data, offset + frameLength - 2) & 0xFFFF;
-        if (c1 != c2) {
-            log.warn("CRC check failed, computed CRC: {}, frame data: {}", Integer.toHexString(c1).toUpperCase(),
-                    StringConverter.arrayToHexString(data, offset, frameLength, true));
+        if (frameLength < PRIMARY_HEADER_LENGTH + crcBytes || frameLength > length || frameLength > maxFrameLength) {
+            log.warn("Invalid TC frame length {} (received {} bytes, configured maximum {})", frameLength, length,
+                    maxFrameLength);
             return;
         }
-        int cmdLength = frameLength - 7;
-        offset += 5;
+        int dataEnd = offset + frameLength - crcBytes;
+        if (crcBytes != 0 && crc.compute(data, offset, frameLength - crcBytes) != ByteArrayUtils.decodeUnsignedShort(data,
+                dataEnd)) {
+            log.warn("CRC check failed for TC frame: {}", StringConverter.arrayToHexString(data, offset, frameLength, true));
+            return;
+        }
+        int headerOffset = offset;
+        offset += PRIMARY_HEADER_LENGTH;
+        int cmdLength = dataEnd - offset;
 
-        // If the link is encrypted, decrypt data
-        if (maybeSdls != null) {
-            // And followed by a security trailer
-            int secTrailerEnd = frameLength - 2; // last 2 bytes of frame are CRC
-            // Try to verify and decrypt it, handle any errors
-            VerificationStatusCode decryptionStatus = maybeSdls.processSecurity(data,
-                    offset - 5, offset, secTrailerEnd, authMask);
+        // COP-1 control frames are sent in the clear.
+        if (maybeSdls != null && !controlCommand) {
+            if (cmdLength < maybeSdls.getOverheadBytes()) {
+                log.warn("TC frame data field is shorter than its security overhead");
+                return;
+            }
+            VerificationStatusCode decryptionStatus = maybeSdls.processSecurity(data, headerOffset, offset, dataEnd,
+                    authMask);
             if (decryptionStatus != VerificationStatusCode.NoFailure) {
                 log.warn("Could not decrypt frame: {}", decryptionStatus);
                 return;
@@ -169,11 +197,31 @@ public class TcVcFrameLink {
     }
 
     private void processCommand(byte[] data, int offset, int length) {
-        ByteBuffer bb = ByteBuffer.wrap(data, offset, length).slice();
-        SimulatorCcsdsPacket packet = (CcsdsPacket.getAPID(bb) == CfdpCcsdsPacket.APID) ? new CfdpCcsdsPacket(bb)
-                : packetFactory.getPacket(Arrays.copyOfRange(data, offset, offset + length));
-
-        simulator.processTc(packet);
+        while (length > 0) {
+            if (length < 6) {
+                log.warn("TC frame data field is too short for a CCSDS packet header ({} bytes)", length);
+                return;
+            }
+            int packetLength = packetFactory.getPacketLength(data, offset, length);
+            if (packetLength > length) {
+                log.warn("TC packet length {} exceeds remaining frame data ({} bytes)", packetLength, length);
+                return;
+            }
+            ByteBuffer bb = ByteBuffer.wrap(data, offset, packetLength).slice();
+            SimulatorCcsdsPacket packet;
+            if (CcsdsPacket.getAPID(bb) == CfdpCcsdsPacket.APID) {
+                packet = new CfdpCcsdsPacket(bb);
+            } else {
+                if (packetLength < packetFactory.getMinLength()) {
+                    log.warn("TC frame data field is too short for the configured packet type ({} bytes)", packetLength);
+                    return;
+                }
+                packet = packetFactory.getPacket(Arrays.copyOfRange(data, offset, offset + packetLength));
+            }
+            simulator.processTc(packet);
+            offset += packetLength;
+            length -= packetLength;
+        }
     }
 
     private void processControlCommand(byte[] data, int offset, int length) {

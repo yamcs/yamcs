@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import org.yamcs.utils.BitBuffer;
 
@@ -169,10 +171,10 @@ public class Pus15Service extends AbstractPusService {
         }
 
         if (pkt.getType() == PusSimulator.PUS_TYPE_HK && pkt.getSubtype() == 25) {
-            return identifierAllowed(store.hkConfig, pkt.getAPID(), pkt.getUserDataBuffer().getInt(0));
+            return identifierAllowed(store.hkConfig, pkt.getAPID(), Pus3Service.reportStructureId(pkt));
         }
         if (pkt.getType() == PusSimulator.PUS_TYPE_HK && pkt.getSubtype() == 26) {
-            return identifierAllowed(store.diagnosticConfig, pkt.getAPID(), pkt.getUserDataBuffer().getInt(0));
+            return identifierAllowed(store.diagnosticConfig, pkt.getAPID(), Pus3Service.reportStructureId(pkt));
         }
         if (pkt.getType() == PusSimulator.PUS_TYPE_EVENT
                 && pkt.getSubtype() >= 1 && pkt.getSubtype() <= 4) {
@@ -322,50 +324,95 @@ public class Pus15Service extends AbstractPusService {
         if (store == null) {
             return;
         }
-        long bitSize = applicationConfigReportBitSize(store);
-        if (!reportFits(bitSize)) {
-            reportTooLarge(tc, 6, bitSize);
-            return;
+        int maxRowBits = pusSimulator.maxTmDataSize() * 8 - 16;
+        List<ReportRow> rows = new ArrayList<>();
+        for (var app : store.appProcessConfig.entrySet()) {
+            int apid = app.getKey();
+            List<ServiceTypes> services = new ArrayList<>();
+            int bits = 19;
+            for (var service : app.getValue().services.entrySet()) {
+                List<Integer> subtypes = List.copyOf(service.getValue());
+                int perService = Math.min(255, (maxRowBits - 35) / 8);
+                if (perService < 1) {
+                    reportTooLarge(tc, 6, 43);
+                    return;
+                }
+                int from = 0;
+                do {
+                    int end = Math.min(from + perService, subtypes.size());
+                    int serviceBits = 16 + (end - from) * 8;
+                    if (services.size() == 255 || bits + serviceBits > maxRowBits || from != 0) {
+                        addApplicationRow(rows, apid, services, bits);
+                        services = new ArrayList<>();
+                        bits = 19;
+                    }
+                    services.add(new ServiceTypes(service.getKey(), subtypes.subList(from, end)));
+                    bits += serviceBits;
+                    from = end;
+                } while (from < subtypes.size());
+            }
+            addApplicationRow(rows, apid, services, bits);
         }
-        PusTmPacket pkt = newPacket(6, PusPackedFields.bytesForBits(bitSize));
-        BitBuffer out = PusPackedFields.bitBuffer(pkt.getUserDataBuffer());
-        out.putBits(store.storeId, 8);
-        out.putBits(store.appProcessConfig.size(), PusPackedFields.OCTET_BITS);
-        for (var appEntry : store.appProcessConfig.entrySet()) {
-            out.putBits(appEntry.getKey(), PusPackedFields.APID_BITS);
-            Map<Integer, Set<Integer>> services = appEntry.getValue().services;
-            out.putBits(services.size(), PusPackedFields.OCTET_BITS);
-            for (var serviceEntry : services.entrySet()) {
-                out.putBits(serviceEntry.getKey(), PusPackedFields.OCTET_BITS);
-                out.putBits(serviceEntry.getValue().size(), PusPackedFields.OCTET_BITS);
-                for (int subtype : serviceEntry.getValue()) {
-                    out.putBits(subtype, PusPackedFields.OCTET_BITS);
+        sendPackedReport(tc, 6, store.storeId, rows);
+    }
+
+    private record ServiceTypes(int service, List<Integer> subtypes) {
+    }
+
+    private static void addApplicationRow(List<ReportRow> rows, int apid, List<ServiceTypes> services, int bits) {
+        rows.add(new ReportRow(apid, bits, out -> {
+            out.putBits(apid, 11);
+            out.putBits(services.size(), 8);
+            for (var service : services) {
+                out.putBits(service.service(), 8);
+                out.putBits(service.subtypes().size(), 8);
+                for (int subtype : service.subtypes()) {
+                    out.putBits(subtype, 8);
                 }
             }
-        }
-        pusSimulator.transmitRealtimeTM(pkt);
+        }));
+    }
+
+    private record ReportRow(int apid, int bits, Consumer<BitBuffer> encode) {
+    }
+
+    private void sendPackedReport(PusTcPacket tc, int subtype, int storeId, List<ReportRow> rows) {
+        List<PusTmPacket> pages = new ArrayList<>();
+        int maxBits = pusSimulator.maxTmDataSize() * 8;
+        int start = 0;
+        do {
+            int size = 16;
+            int end = start;
+            int previousApid = -1;
+            while (end < rows.size() && end - start < 255 && size + rows.get(end).bits() <= maxBits
+                    && rows.get(end).apid() != previousApid) {
+                previousApid = rows.get(end).apid();
+                size += rows.get(end++).bits();
+            }
+            if (end == start && end < rows.size()) {
+                reportTooLarge(tc, subtype, size + rows.get(end).bits());
+                return;
+            }
+            PusTmPacket packet = newPacket(subtype, PusPackedFields.bytesForBits(size));
+            BitBuffer out = PusPackedFields.bitBuffer(packet.getUserDataBuffer());
+            out.putBits(storeId, 8);
+            out.putBits(end - start, 8);
+            for (var row : rows.subList(start, end)) {
+                row.encode().accept(out);
+            }
+            pages.add(packet);
+            start = end;
+        } while (start < rows.size());
+        sendPages(pages);
         ack_completion(tc);
     }
 
-    private long applicationConfigReportBitSize(PacketStore store) {
-        if (store.appProcessConfig.size() > PusPackedFields.MAX_OCTET_COUNT) {
-            return -1;
+    private void sendPages(List<PusTmPacket> pages) {
+        for (int i = 0; i < pages.size(); i++) {
+            PusTmPacket packet = pages.get(i);
+            packet.setPage(i + 1, pages.size());
+            pusSimulator.transmitRealtimeTM(packet);
         }
-        long bits = 8 + PusPackedFields.OCTET_BITS;
-        for (AppProcessSelection selection : store.appProcessConfig.values()) {
-            if (selection.services.size() > PusPackedFields.MAX_OCTET_COUNT) {
-                return -1;
-            }
-            bits += PusPackedFields.APID_BITS + PusPackedFields.OCTET_BITS;
-            for (Set<Integer> subtypes : selection.services.values()) {
-                if (subtypes.size() > PusPackedFields.MAX_OCTET_COUNT) {
-                    return -1;
-                }
-                bits += 2L * PusPackedFields.OCTET_BITS
-                        + (long) subtypes.size() * PusPackedFields.OCTET_BITS;
-            }
-        }
-        return bits;
     }
 
     // ---- TC[15,29-40]: HK, diagnostic and event identifier configurations ----
@@ -472,43 +519,22 @@ public class Pus15Service extends AbstractPusService {
         }
         Map<Integer, Set<Integer>> config = identifierConfig(store, kind);
         int idBits = identifierBits(kind);
-        long bitSize = identifierConfigReportBitSize(config, idBits);
-        if (!reportFits(bitSize)) {
-            reportTooLarge(tc, tmSubtype, bitSize);
-            return;
-        }
-        PusTmPacket pkt = newPacket(tmSubtype, PusPackedFields.bytesForBits(bitSize));
-        BitBuffer out = PusPackedFields.bitBuffer(pkt.getUserDataBuffer());
-        out.putBits(store.storeId, 8);
-        out.putBits(config.size(), PusPackedFields.OCTET_BITS);
+        List<ReportRow> rows = new ArrayList<>();
         for (var entry : config.entrySet()) {
-            out.putBits(entry.getKey(), PusPackedFields.APID_BITS);
-            out.putBits(entry.getValue().size(), PusPackedFields.OCTET_BITS);
-            for (int identifier : entry.getValue()) {
-                out.putBits(identifier, idBits);
+            int apid = entry.getKey();
+            List<Integer> identifiers = List.copyOf(entry.getValue());
+            for (int from = 0; from == 0 || from < identifiers.size(); from += 255) {
+                List<Integer> chunk = identifiers.subList(from, Math.min(from + 255, identifiers.size()));
+                rows.add(new ReportRow(apid, 19 + chunk.size() * idBits, out -> {
+                    out.putBits(apid, 11);
+                    out.putBits(chunk.size(), 8);
+                    for (int identifier : chunk) {
+                        out.putBits(identifier, idBits);
+                    }
+                }));
             }
         }
-        pusSimulator.transmitRealtimeTM(pkt);
-        ack_completion(tc);
-    }
-
-    private long identifierConfigReportBitSize(Map<Integer, Set<Integer>> config, int idBits) {
-        if (config.size() > PusPackedFields.MAX_OCTET_COUNT) {
-            return -1;
-        }
-        long bits = 8 + PusPackedFields.OCTET_BITS;
-        for (Set<Integer> identifiers : config.values()) {
-            if (identifiers.size() > PusPackedFields.MAX_OCTET_COUNT) {
-                return -1;
-            }
-            bits += PusPackedFields.APID_BITS + PusPackedFields.OCTET_BITS
-                    + (long) identifiers.size() * idBits;
-        }
-        return bits;
-    }
-
-    private boolean reportFits(long bitSize) {
-        return bitSize >= 0 && PusPackedFields.bytesForBits(bitSize) <= pusSimulator.maxTmDataSize();
+        sendPackedReport(tc, tmSubtype, store.storeId, rows);
     }
 
     private void reportTooLarge(PusTcPacket tc, int tmSubtype, long bitSize) {
@@ -626,11 +652,9 @@ public class Pus15Service extends AbstractPusService {
                 }
             }
             if (openTick && store.openRetrievalInProgress) {
-                for (StoredPacket packet : store.packets) {
-                    if (packet.seq > store.openRetrievalLastSentSeq && packet.timestamp >= store.openRetrievalMinimumTime) {
-                        ready.add(new Retrieval(store, packet, store.openPriority, true));
-                        break;
-                    }
+                StoredPacket packet = nextOpenPacket(store);
+                if (packet != null) {
+                    ready.add(new Retrieval(store, packet, store.openPriority, true));
                 }
             }
         }
@@ -649,6 +673,42 @@ public class Pus15Service extends AbstractPusService {
     }
 
     private record Retrieval(PacketStore store, StoredPacket packet, int priority, boolean open) {
+    }
+
+    private static StoredPacket nextOpenPacket(PacketStore store) {
+        for (StoredPacket packet : store.packets) {
+            if (packet.seq > store.openRetrievalLastSentSeq && packet.timestamp >= store.openRetrievalMinimumTime) {
+                return packet;
+            }
+        }
+        return null;
+    }
+
+    boolean hasStore(int storeId) {
+        return stores.containsKey(storeId);
+    }
+
+    boolean beginManagedRetrieval(int storeId, Object owner) {
+        PacketStore store = stores.get(storeId);
+        if (store == null || store.openRetrievalInProgress) {
+            return false;
+        }
+        store.openRetrievalOwner = owner;
+        store.openRetrievalInProgress = true;
+        ensureRetrievalTask();
+        return true;
+    }
+
+    boolean managedRetrievalPending(int storeId, Object owner) {
+        PacketStore store = stores.get(storeId);
+        return store != null && store.openRetrievalOwner == owner && nextOpenPacket(store) != null;
+    }
+
+    void endManagedRetrieval(int storeId, Object owner) {
+        PacketStore store = stores.get(storeId);
+        if (store != null && store.openRetrievalOwner == owner) {
+            stopOpenRetrieval(store);
+        }
     }
 
     private void abortBtr(PusTcPacket tc) {
@@ -702,22 +762,13 @@ public class Pus15Service extends AbstractPusService {
         if (targets == null) {
             return;
         }
-        long size = 1L + targets.size() * (3L + 3L * storageTime.getEncodedLength());
-        if (size > pusSimulator.maxTmDataSize()) {
-            reportTooLarge(tc, 13, size * 8);
-            return;
-        }
         sendSummaryReport(targets);
         ack_completion(tc);
     }
 
     private void sendSummaryReport(List<PacketStore> targets) {
-        // N(1) + N x { store_id(1), oldest_ts(CUC), newest_ts(CUC), open_retrieval_start_time(CUC), fill_pct(1), fill_pct_from_start(1) }
-        int entrySize = 1 + 3 * storageTime.getEncodedLength() + 2;
-        PusTmPacket pkt = newPacket(13, 1 + targets.size() * entrySize);
-        ByteBuffer bb = pkt.getUserDataBuffer();
-        bb.put((byte) targets.size());
-        for (PacketStore s : targets) {
+        int entrySize = 3 + 3 * storageTime.getEncodedLength();
+        sendStoreReport(13, targets, entrySize, (bb, s) -> {
             long oldest = s.packets.stream().mapToLong(p -> p.timestamp).min().orElse(0);
             long newest = s.packets.stream().mapToLong(p -> p.timestamp).max().orElse(0);
             long bytesFromCursor = 0;
@@ -732,8 +783,26 @@ public class Pus15Service extends AbstractPusService {
             storageTime.encode(new PusTime(s.openRetrievalStartTime), bb);
             bb.put((byte) fillPct(s.usedBytes, s.sizeBytes));
             bb.put((byte) fillPct(bytesFromCursor, s.sizeBytes));
-        }
-        pusSimulator.transmitRealtimeTM(pkt);
+        });
+    }
+
+    private void sendStoreReport(int subtype, List<PacketStore> stores, int entrySize,
+            BiConsumer<ByteBuffer, PacketStore> encode) {
+        int maxEntries = Math.max(1, Math.min(255, (pusSimulator.maxTmDataSize() - 1) / entrySize));
+        List<PusTmPacket> pages = new ArrayList<>();
+        int from = 0;
+        do {
+            int end = Math.min(from + maxEntries, stores.size());
+            PusTmPacket packet = newPacket(subtype, 1 + (end - from) * entrySize);
+            ByteBuffer out = packet.getUserDataBuffer();
+            out.put((byte) (end - from));
+            for (var store : stores.subList(from, end)) {
+                encode.accept(out, store);
+            }
+            pages.add(packet);
+            from = end;
+        } while (from < stores.size());
+        sendPages(pages);
     }
 
     private static int fillPct(long usedBytes, long capacityBytes) {
@@ -782,6 +851,7 @@ public class Pus15Service extends AbstractPusService {
         for (int i = 0; i < targets.size(); i++) {
             PacketStore store = targets.get(i);
             store.openPriority = priorities.get(i);
+            store.openRetrievalOwner = null;
             store.openRetrievalInProgress = true;
         }
         if (!targets.isEmpty()) {
@@ -804,7 +874,7 @@ public class Pus15Service extends AbstractPusService {
 
     private void stopOpenRetrieval(PacketStore s) {
         s.openRetrievalInProgress = false;
-
+        s.openRetrievalOwner = null;
     }
 
     // ---- TC[15,18]/TM[15,19]: status report ----
@@ -817,17 +887,12 @@ public class Pus15Service extends AbstractPusService {
 
     private void sendStatusReport(List<PacketStore> targets) {
         // N(1) + N x { store_id(1), storage_status(1), open_retrieval_status(1), btr_status(1) }
-        int entrySize = 4;
-        PusTmPacket pkt = newPacket(19, 1 + targets.size() * entrySize);
-        ByteBuffer bb = pkt.getUserDataBuffer();
-        bb.put((byte) targets.size());
-        for (PacketStore s : targets) {
+        sendStoreReport(19, targets, 4, (bb, s) -> {
             bb.put((byte) s.storeId);
             bb.put((byte) (s.storageEnabled ? 1 : 0));
             bb.put((byte) (s.openRetrievalInProgress ? 1 : 0));
             bb.put((byte) (s.btrEnabled ? 1 : 0));
-        }
-        pusSimulator.transmitRealtimeTM(pkt);
+        });
     }
 
     // ---- TC[15,20]: create packet stores ----
@@ -916,17 +981,12 @@ public class Pus15Service extends AbstractPusService {
 
     private void sendConfigReport(List<PacketStore> targets) {
         // N(1) + N x { store_id(1), size_units(1), store_type(1), vc_id(1) }
-        int entrySize = 4;
-        PusTmPacket pkt = newPacket(23, 1 + targets.size() * entrySize);
-        ByteBuffer bb = pkt.getUserDataBuffer();
-        bb.put((byte) targets.size());
-        for (PacketStore s : targets) {
+        sendStoreReport(23, targets, 4, (bb, s) -> {
             bb.put((byte) s.storeId);
             bb.put((byte) (s.sizeBytes / SIZE_UNIT_BYTES));
             bb.put((byte) s.storeType);
             bb.put((byte) s.vcId);
-        }
-        pusSimulator.transmitRealtimeTM(pkt);
+        });
     }
 
     private void copyPackets(PusTcPacket tc) {
@@ -1043,32 +1103,23 @@ public class Pus15Service extends AbstractPusService {
             return;
         }
         Map<Integer, PusStructureSelection> config = structureConfig(store, kind);
-        long size = 16;
-        for (PusStructureSelection selection : config.values()) {
-            if (selection.rates.size() > 255) {
-                reportTooLarge(tc, subtype, -1);
-                return;
-            }
-            size += 19 + selection.rates.size() * 16L;
-        }
-        if (config.size() > 255 || !reportFits(size)) {
-            reportTooLarge(tc, subtype, size);
-            return;
-        }
-        PusTmPacket packet = newPacket(subtype, PusPackedFields.bytesForBits(size));
-        BitBuffer bits = PusPackedFields.bitBuffer(packet.getUserDataBuffer());
-        bits.putBits(store.storeId, 8);
-        bits.putBits(config.size(), 8);
+        List<ReportRow> rows = new ArrayList<>();
         for (var entry : config.entrySet()) {
-            bits.putBits(entry.getKey(), 11);
-            bits.putBits(entry.getValue().rates.size(), 8);
-            for (var rate : entry.getValue().rates.entrySet()) {
-                bits.putBits(rate.getKey(), 8);
-                bits.putBits(rate.getValue(), 8);
+            int apid = entry.getKey();
+            var rates = List.copyOf(entry.getValue().rates.entrySet());
+            for (int from = 0; from == 0 || from < rates.size(); from += 255) {
+                var chunk = rates.subList(from, Math.min(from + 255, rates.size()));
+                rows.add(new ReportRow(apid, 19 + chunk.size() * 16, out -> {
+                    out.putBits(apid, 11);
+                    out.putBits(chunk.size(), 8);
+                    for (var rate : chunk) {
+                        out.putBits(rate.getKey(), 8);
+                        out.putBits(rate.getValue(), 8);
+                    }
+                }));
             }
         }
-        pusSimulator.transmitRealtimeTM(packet);
-        ack_completion(tc);
+        sendPackedReport(tc, subtype, store.storeId, rows);
     }
 
     // ---- TC[15,25]: resize packet stores ----
@@ -1167,7 +1218,6 @@ public class Pus15Service extends AbstractPusService {
 
     private static ByteBuffer payload(PusTcPacket tc) {
         ByteBuffer data = tc.getUserDataBuffer();
-        data.limit(data.limit() - 2); // Exclude the packet error-control field.
         return data;
     }
 
@@ -1203,6 +1253,7 @@ public class Pus15Service extends AbstractPusService {
         int vcId;
         boolean storageEnabled = false;
         boolean openRetrievalInProgress = false;
+        Object openRetrievalOwner;
         boolean btrEnabled = false;
         long openRetrievalStartTime = 0;
         long openRetrievalMinimumTime = 0;

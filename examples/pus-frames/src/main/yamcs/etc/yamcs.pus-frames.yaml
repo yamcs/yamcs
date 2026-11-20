@@ -32,6 +32,10 @@ services:
   - class: org.yamcs.simulator.SimulatorCommander
     args:
       type: pus
+      pus:
+        pus11:
+          subScheduleId: {bytes: 1, default: 1}
+          groupId: {bytes: 1, default: 1}
       # The PUS simulator sends its telemetry as CCSDS TM transfer frames on UDP and listens for
       # TC frames (CLTUs) on UDP. There is no TCP tm/tc link in this example.
       frame:
@@ -118,6 +122,7 @@ dataLinks:
         initialClcwWait: 10
         commandPostprocessorClassName: org.yamcs.pus.PusCommandPostprocessor
         commandPostprocessorArgs:
+            spareBytes: 4
             errorDetection:
                 type: CRC-16-CCIIT
             timeEncoding:

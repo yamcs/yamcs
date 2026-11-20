@@ -1,0 +1,198 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<SpaceSystem name="PUS128" xmlns="http://www.omg.org/spec/XTCE/20180204">
+	<TelemetryMetaData>
+		<ParameterTypeSet>
+			<AggregateParameterType name="tle">
+				<MemberList>
+					<Member name="line1" typeRef="tle__line1" />
+					<Member name="line2" typeRef="tle__line2" />
+				</MemberList>
+			</AggregateParameterType>
+			<StringParameterType name="tle__line1">
+				<StringDataEncoding encoding="US-ASCII">
+					<SizeInBits>
+						<Fixed>
+							<FixedValue>552</FixedValue>
+						</Fixed>
+						<TerminationChar>00</TerminationChar>
+					</SizeInBits>
+				</StringDataEncoding>
+			</StringParameterType>
+			<StringParameterType name="tle__line2">
+				<StringDataEncoding encoding="US-ASCII">
+					<SizeInBits>
+						<Fixed>
+							<FixedValue>552</FixedValue>
+						</Fixed>
+						<TerminationChar>00</TerminationChar>
+					</SizeInBits>
+				</StringDataEncoding>
+			</StringParameterType>
+			<AggregateParameterType name="tle_line1_validity">
+				<MemberList>
+					<Member name="line1_checksum" typeRef="tle_line1_validity__line1_checksum" />
+					<Member name="line1_validity" typeRef="tle_line1_validity__line1_validity" />
+				</MemberList>
+			</AggregateParameterType>
+			<BinaryParameterType name="tle_line1_validity__line1_checksum">
+				<BinaryDataEncoding>
+					<SizeInBits>
+						<FixedValue>8</FixedValue>
+					</SizeInBits>
+				</BinaryDataEncoding>
+			</BinaryParameterType>
+			<BooleanParameterType name="tle_line1_validity__line1_validity" zeroStringValue="False" oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+			<AggregateParameterType name="tle_line2_validity">
+				<MemberList>
+					<Member name="line2_checksum" typeRef="tle_line2_validity__line2_checksum" />
+					<Member name="line2_validity" typeRef="tle_line2_validity__line2_validity" />
+				</MemberList>
+			</AggregateParameterType>
+			<BinaryParameterType name="tle_line2_validity__line2_checksum">
+				<BinaryDataEncoding>
+					<SizeInBits>
+						<FixedValue>8</FixedValue>
+					</SizeInBits>
+				</BinaryDataEncoding>
+			</BinaryParameterType>
+			<BooleanParameterType name="tle_line2_validity__line2_validity" zeroStringValue="False" oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanParameterType>
+		</ParameterTypeSet>
+		<ParameterSet>
+			<Parameter name="tle" parameterTypeRef="tle">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="tle_line1_validity" parameterTypeRef="tle_line1_validity">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+			<Parameter name="tle_line2_validity" parameterTypeRef="tle_line2_validity">
+				<ParameterProperties dataSource="telemetered" persistence="true" />
+			</Parameter>
+		</ParameterSet>
+		<ContainerSet>
+			<SequenceContainer name="pus128-tm" abstract="true">
+				<EntryList />
+				<BaseContainer containerRef="/PUS/pus-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/type" comparisonOperator="==" value="128" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="tle_report" abstract="false" shortDescription="PUS TM[128, 3] container">
+				<AncillaryDataSet>
+					<AncillaryData name="Yamcs">UseAsArchivingPartition</AncillaryData>
+				</AncillaryDataSet>
+				<EntryList>
+					<ParameterRefEntry parameterRef="tle">
+            </ParameterRefEntry>
+				</EntryList>
+				<BaseContainer containerRef="pus128-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="3" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="tle_validity_report" abstract="false" shortDescription="PUS TM[128, 5] container">
+				<AncillaryDataSet>
+					<AncillaryData name="Yamcs">UseAsArchivingPartition</AncillaryData>
+				</AncillaryDataSet>
+				<EntryList>
+					<ParameterRefEntry parameterRef="tle_line1_validity">
+            </ParameterRefEntry>
+					<ParameterRefEntry parameterRef="tle_line2_validity">
+            </ParameterRefEntry>
+				</EntryList>
+				<BaseContainer containerRef="pus128-tm">
+					<RestrictionCriteria>
+						<Comparison parameterRef="/PUS/subtype" comparisonOperator="==" value="5" />
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+		</ContainerSet>
+	</TelemetryMetaData>
+	<CommandMetaData>
+		<ArgumentTypeSet>
+			<AggregateArgumentType name="set_tle__tle">
+				<MemberList>
+					<Member name="line1" typeRef="set_tle__tle__line1" />
+					<Member name="line2" typeRef="set_tle__tle__line2" />
+				</MemberList>
+			</AggregateArgumentType>
+			<StringArgumentType name="set_tle__tle__line1">
+				<StringDataEncoding encoding="US-ASCII">
+					<SizeInBits>
+						<Fixed>
+							<FixedValue>552</FixedValue>
+						</Fixed>
+						<TerminationChar>00</TerminationChar>
+					</SizeInBits>
+				</StringDataEncoding>
+			</StringArgumentType>
+			<StringArgumentType name="set_tle__tle__line2">
+				<StringDataEncoding encoding="US-ASCII">
+					<SizeInBits>
+						<Fixed>
+							<FixedValue>552</FixedValue>
+						</Fixed>
+						<TerminationChar>00</TerminationChar>
+					</SizeInBits>
+				</StringDataEncoding>
+			</StringArgumentType>
+		</ArgumentTypeSet>
+		<MetaCommandSet>
+			<MetaCommand name="pus128-tc" abstract="true">
+				<BaseMetaCommand metaCommandRef="/PUS/pus-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="apid" argumentValue="1" />
+						<ArgumentAssignment argumentName="type" argumentValue="128" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="pus128-tc">
+					<EntryList />
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="request_tle_report" shortDescription="PUS TC[128, 2] command">
+				<BaseMetaCommand metaCommandRef="pus128-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="2" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="request_tle_report">
+					<EntryList />
+					<BaseContainer containerRef="pus128-tc" />
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="set_tle" shortDescription="PUS TC[128, 1] command">
+				<BaseMetaCommand metaCommandRef="pus128-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="1" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="tle" argumentTypeRef="set_tle__tle" />
+				</ArgumentList>
+				<CommandContainer name="set_tle">
+					<EntryList>
+						<ArgumentRefEntry argumentRef="tle">
+              </ArgumentRefEntry>
+					</EntryList>
+					<BaseContainer containerRef="pus128-tc" />
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="validate_tle_checksum" shortDescription="PUS TC[128, 4] command">
+				<BaseMetaCommand metaCommandRef="pus128-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="4" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="validate_tle_checksum">
+					<EntryList />
+					<BaseContainer containerRef="pus128-tc" />
+				</CommandContainer>
+			</MetaCommand>
+		</MetaCommandSet>
+	</CommandMetaData>
+</SpaceSystem>

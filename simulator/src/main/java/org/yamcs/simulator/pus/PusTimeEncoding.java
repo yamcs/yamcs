@@ -50,6 +50,10 @@ public class PusTimeEncoding {
         return encoder.getEncodedLength();
     }
 
+    public Epoch epoch() {
+        return epoch;
+    }
+
     public PusTime now() {
         if (epoch == Epoch.UNIX) {
             return new PusTime(System.currentTimeMillis());

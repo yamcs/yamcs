@@ -94,7 +94,8 @@ public class Pus21Service extends AbstractPusService {
 
     /** Minimal self-contained TC[17,1] "are you alive" ping, used only to seed the demo file. */
     private byte[] buildPingTc() {
-        PusTcPacket ping = new PusTcPacket(PusSimulator.MAIN_APID, 0, 7, 17, 1);
+        PusTcPacket ping = new PusTcPacket(pusSimulator.apid, 0, 7, 17, 1,
+                pusSimulator.packetConfig.spareBytes(), pusSimulator.packetConfig.embeddedTcCrc());
         ping.fillChecksum();
         return ping.getBytes();
     }
@@ -206,10 +207,7 @@ public class Pus21Service extends AbstractPusService {
         }
         String repoPath = DEFAULT_REPO_PATH;
         String fileName = seqId + ".bin";
-        // getUserDataBuffer() runs to the end of the packet, so a bare TC_21_2_NO_PATH (seq_id
-        // only) still has the trailing 2-byte CRC "remaining" here -- only take the WITH_PATH
-        // branch when more than just that CRC trailer is left.
-        if (bb.remaining() > 2) {
+        if (bb.hasRemaining()) {
             int repoLen = bb.get() & 0xFF;
             byte[] repoBytes = new byte[repoLen];
             bb.get(repoBytes);
@@ -282,7 +280,7 @@ public class Pus21Service extends AbstractPusService {
         }
         Entry e = seq.entries.get(seq.nextIndex++);
         try {
-            pusSimulator.processTc(new PusTcPacket(e.rawTc));
+            pusSimulator.processTc(pusSimulator.embeddedTc(e.rawTc));
         } catch (Exception ex) {
             log.warn("ST21: failed to release entry {} of seq '{}'", seq.nextIndex - 1, seq.id, ex);
         }

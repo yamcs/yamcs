@@ -49,6 +49,12 @@ public class UdpTcFrameLink extends AbstractExecutionThreadService {
 
     public UdpTcFrameLink(AbstractSimulator simulator, int port, SdlsSecurityAssociation maybeSdls,
             TcPacketFactory packetFactory, TcEncoding tcEncoding) {
+        this(simulator, port, maybeSdls, packetFactory, tcEncoding, true, TcVcFrameLink.MAX_FRAME_LENGTH, -1);
+    }
+
+    public UdpTcFrameLink(AbstractSimulator simulator, int port, SdlsSecurityAssociation maybeSdls,
+            TcPacketFactory packetFactory, TcEncoding tcEncoding, boolean withCrc, int maxFrameLength,
+            int expectedScid) {
         this.simulator = simulator;
         this.port = port;
         this.tcEncoding = tcEncoding;
@@ -58,7 +64,9 @@ public class UdpTcFrameLink extends AbstractExecutionThreadService {
         case LDPC256 -> Encoding.LDPC256;
         };
         datagram = new DatagramPacket(new byte[2048], 2048);
-        vcHandlers = new TcVcFrameLink[] { new TcVcFrameLink(simulator, 0, maybeSdls, packetFactory) };
+        vcHandlers = new TcVcFrameLink[] {
+                new TcVcFrameLink(simulator, 0, maybeSdls, packetFactory, withCrc, maxFrameLength, expectedScid)
+        };
         clcw = new int[] { vcHandlers[0].getCLCW() };
     }
 
@@ -213,6 +221,10 @@ public class UdpTcFrameLink extends AbstractExecutionThreadService {
     }
 
     private void processTcFrame(byte[] data, int offset, int length) {
+        if (length < TcVcFrameLink.PRIMARY_HEADER_LENGTH) {
+            log.warn("Incomplete TC frame header ({} bytes)", length);
+            return;
+        }
         int vcId = (data[offset + 2] & 0xFF) >> 2;
         TcVcFrameLink vcfl;
         if (vcId >= vcHandlers.length || (vcfl = vcHandlers[vcId]) == null) {

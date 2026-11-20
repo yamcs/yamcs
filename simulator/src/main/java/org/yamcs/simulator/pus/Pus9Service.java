@@ -59,7 +59,7 @@ public class Pus9Service extends AbstractPusService {
     }
 
     private void sendTimePacket() {
-        var packet = new PusTmTimePacket(rateExponent, pusSimulator.timeEncoding);
+        var packet = new PusTmTimePacket(rateExponent, pusSimulator.timeEncoding, pusSimulator.packetConfig.tmCrc());
         if (pusSimulator.tmLink != null) {
             pusSimulator.tmLink.sendImmediate(packet);
         }

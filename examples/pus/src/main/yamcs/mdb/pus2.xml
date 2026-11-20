@@ -11,7 +11,7 @@
 	Sample mission conventions used here:
 	 - protocol_specific_data is a fixed 4-byte aggregate {direction, sub_address, word_count}
 	   for every physical device (e.g. a MIL-STD-1553B remote terminal).
-	 - command_data (TC[2,7]) is a fixed 8-byte block for every physical device.
+	 - command_data (TC[2,7]) is a fixed 4-byte block for every physical device.
 	 - command_args (TC[2,10]) is a fixed uint32 for every logical device command.
 	 - parameter_value (TM[2,12]) is a fixed uint32 for every logical device parameter
 	   (same "deduced value -> uint32" convention used by ST[20]).
@@ -108,17 +108,17 @@
 					<Member typeRef="/dt/uint16" name="word_count"/>
 				</MemberList>
 			</AggregateArgumentType>
-			<!-- command_data: fixed 8-byte mission block (TC[2,7]) -->
+			<!-- command_data: fixed 4-byte mission block (TC[2,7]) -->
 			<BinaryArgumentType name="CommandDataType">
 				<BinaryDataEncoding>
-					<SizeInBits><FixedValue>64</FixedValue></SizeInBits>
+					<SizeInBits><FixedValue>32</FixedValue></SizeInBits>
 				</BinaryDataEncoding>
 			</BinaryArgumentType>
 
 			<!-- TC[2,7] instruction: physical_device_id + protocol_data + command_data -->
 			<AggregateArgumentType name="PhysicalCmdEntryType">
 				<MemberList>
-					<Member typeRef="DeviceIdType" name="physical_device_id"/>
+					<Member typeRef="/dt/uint32" name="physical_device_id"/>
 					<Member typeRef="ProtocolDataType" name="protocol_data"/>
 					<Member typeRef="CommandDataType" name="command_data"/>
 				</MemberList>
@@ -163,7 +163,7 @@
 			<AggregateArgumentType name="LogicalCmdEntryType">
 				<MemberList>
 					<Member typeRef="DeviceIdType" name="logical_device_id"/>
-					<Member typeRef="/dt/uint8" name="command_id"/>
+					<Member typeRef="/dt/uint16" name="command_id"/>
 					<Member typeRef="/dt/uint32" name="command_args"/>
 				</MemberList>
 			</AggregateArgumentType>

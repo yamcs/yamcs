@@ -11,22 +11,44 @@ import java.util.concurrent.TimeUnit;
 
 public class Pus5Service extends AbstractPusService {
     int count;
-    // Map of eventId -> enabled status. Add all mission event IDs here with their initial state.
-    // 10-15 are raised by Pus12Service (PMON limit/expected-value/delta violations).
-    Map<Integer, Boolean> enabled = new HashMap<>(Map.of(
-            1, true, 2, true,
-            10, true, 11, true, 12, true, 13, true, 14, true, 15, true));
+    private final Map<Integer, Map<Integer, Boolean>> enabledByApid = new HashMap<>();
+    private List<PusMdbTelemetry.Report> mdbEvents;
+    private int periodMillis = 1000;
 
     Pus5Service(PusSimulator pusSimulator) {
         super(pusSimulator, 5);
+        // 10 through 15 are report IDs used by the demo parameter-monitoring service.
+        events(pusSimulator.apid).putAll(Map.of(1, true, 2, true,
+                10, true, 11, true, 12, true, 13, true, 14, true, 15, true));
+    }
+
+    private Map<Integer, Boolean> events(int apid) {
+        return enabledByApid.computeIfAbsent(apid, id -> new HashMap<>());
+    }
+
+    void configureMdbEvents(List<PusMdbTelemetry.Report> reports, int periodMillis) {
+        mdbEvents = List.copyOf(reports);
+        this.periodMillis = periodMillis;
+        enabledByApid.clear();
+        for (var report : reports) {
+            events(report.apid()).put(report.id(), true);
+        }
     }
 
     @Override
     public void start() {
-        pusSimulator.executor.scheduleAtFixedRate(this::sendEvent, 0, 1000, TimeUnit.MILLISECONDS);
+        pusSimulator.executor.scheduleAtFixedRate(this::sendEvent, 0, periodMillis, TimeUnit.MILLISECONDS);
     }
 
     public void sendEvent() {
+        if (mdbEvents != null) {
+            if (!mdbEvents.isEmpty()) {
+                var report = mdbEvents.get(Math.floorMod(count++, mdbEvents.size()));
+                emitMdbEvent(report);
+            }
+            return;
+        }
+        Map<Integer, Boolean> enabled = events(pusSimulator.apid);
         var id = count % 5;
         if (id == 0) {
             if (enabled.getOrDefault(1, false)) {
@@ -37,7 +59,7 @@ public class Pus5Service extends AbstractPusService {
                 bb.putShort((short) count);
                 bb.putFloat((float) (count + 3.14159265));
                 pusSimulator.transmitRealtimeTM(packet);
-                pusSimulator.pus19Service.onEvent(PusSimulator.MAIN_APID, 1);
+                notifyServices(pusSimulator.apid, 1);
             }
         } else {
             if (enabled.getOrDefault(2, false)) {
@@ -49,7 +71,7 @@ public class Pus5Service extends AbstractPusService {
                 bb.putShort((short) msg.length);
                 bb.put(msg);
                 pusSimulator.transmitRealtimeTM(packet);
-                pusSimulator.pus19Service.onEvent(PusSimulator.MAIN_APID, 2);
+                notifyServices(pusSimulator.apid, 2);
             }
         }
         count++;
@@ -63,7 +85,12 @@ public class Pus5Service extends AbstractPusService {
      * its stored request -- see {@link Pus19Service#onEvent}.
      */
     public void raiseEvent(int eventId, int subtype, byte[] payload) {
-        if (!enabled.getOrDefault(eventId, false)) {
+        if (mdbEvents != null) {
+            mdbEvents.stream().filter(report -> report.apid() == pusSimulator.apid && report.id() == eventId
+                    && report.subtype() == subtype).findFirst().ifPresent(this::emitMdbEvent);
+            return;
+        }
+        if (!events(pusSimulator.apid).getOrDefault(eventId, false)) {
             return;
         }
         PusTmPacket packet = newPacket(subtype, 1 + payload.length);
@@ -71,7 +98,27 @@ public class Pus5Service extends AbstractPusService {
         bb.put((byte) eventId);
         bb.put(payload);
         pusSimulator.transmitRealtimeTM(packet);
-        pusSimulator.pus19Service.onEvent(PusSimulator.MAIN_APID, eventId);
+        notifyServices(pusSimulator.apid, eventId);
+    }
+
+    private void emitMdbEvent(PusMdbTelemetry.Report report) {
+        if (!events(report.apid()).getOrDefault(report.id(), false)) {
+            return;
+        }
+        byte[] data = report.data();
+        PusTmPacket packet = pusSimulator.newPacketForApid(report.apid(), 5, report.subtype(), data.length);
+        packet.getUserDataBuffer().put(data);
+        pusSimulator.transmitRealtimeTM(packet);
+        notifyServices(report.apid(), report.id());
+    }
+
+    boolean hasEvent(int eventId) {
+        return enabledByApid.values().stream().anyMatch(events -> events.containsKey(eventId));
+    }
+
+    private void notifyServices(int apid, int eventId) {
+        pusSimulator.pus19Service.onEvent(apid, eventId);
+        pusSimulator.pus130Service.onEvent(eventId);
     }
 
     public void executeTc(PusTcPacket tc) {
@@ -90,6 +137,7 @@ public class Pus5Service extends AbstractPusService {
     }
 
     void enableDisableEvents(PusTcPacket tc, boolean enable) {
+        var enabled = events(tc.getAPID());
         ByteBuffer bb = tc.getUserDataBuffer();
         int n = bb.get() & 0xFF;
         boolean anyFailure = false;
@@ -112,12 +160,13 @@ public class Pus5Service extends AbstractPusService {
 
     // TC[5,7] handler — responds with TM[5,8] listing all disabled event IDs
     void sendDisabledList(PusTcPacket tc) {
+        var enabled = events(tc.getAPID());
         List<Integer> disabled = new ArrayList<>();
         for (var entry : enabled.entrySet()) {
             if (!entry.getValue()) disabled.add(entry.getKey());
         }
         disabled.sort(null);
-        PusTmPacket pkt = newPacket(8, 1 + disabled.size());
+        PusTmPacket pkt = pusSimulator.newPacketForApid(tc.getAPID(), 5, 8, 1 + disabled.size());
         ByteBuffer bb = pkt.getUserDataBuffer();
         bb.put((byte) disabled.size());
         for (int id : disabled) bb.put((byte) id);

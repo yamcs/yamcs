@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * Uplink: buffers TC[13,9] (first) / TC[13,10] (intermediate) / TC[13,11] (last) parts, checks
  * sequence continuity and a reception timer, and on successful reassembly dispatches the
- * reconstructed bytes as an embedded PUS TC packet via {@link PusSimulator#processTc}, giving it
+ * reconstructed bytes as an embedded PUS TC packet, giving it
  * its own independent ACK/NACK/completion chain. On timeout or sequence gap, emits TM[13,16].
  */
 public class Pus13Service extends AbstractPusService {
@@ -205,18 +205,16 @@ public class Pus13Service extends AbstractPusService {
         byte[] reconstructed = uplink.buffer.toByteArray();
         uplink = null;
 
-        try {
-            PusTcPacket embedded = new PusTcPacket(reconstructed);
-            log.info("ST13: reconstructed large command, transaction_id={}, size={}, dispatching "
-                    + "embedded TC type={} subtype={}", transactionId, reconstructed.length,
-                    embedded.getType(), embedded.getSubtype());
-            pusSimulator.processTc(embedded);
-            ack_completion(tc);
-        } catch (Exception e) {
-            log.warn("ST13: failed to reconstruct/dispatch large command for transaction_id={}", transactionId, e);
+        PusTcPacket embedded = pusSimulator.embeddedTc(reconstructed);
+        if (!pusSimulator.enqueueTc(embedded)) {
+            log.warn("ST13: rejected reconstructed command for transaction_id={}", transactionId);
             nack_completion(tc, COMPL_ERR_RECONSTRUCTION_FAILED);
             sendAbort(transactionId, FAILURE_INTERNAL_ERROR);
+            return;
         }
+        log.info("ST13: reconstructed large command, transaction_id={}, size={}, queued embedded TC type={} subtype={}",
+                transactionId, reconstructed.length, embedded.getType(), embedded.getSubtype());
+        ack_completion(tc);
     }
 
     private boolean validatePart(PusTcPacket tc, int transactionId, int seqNum) {

@@ -96,12 +96,13 @@ class DynamicParameterReferenceTest {
                 YConfiguration.wrap(Map.of("type", "xtce", "spec", "../examples/pus/src/main/yamcs/mdb/pus.xml")),
                 YConfiguration.wrap(Map.of("type", "xtce", "spec", "../examples/pus/src/main/yamcs/mdb/pus19.xml"))),
                 false, false);
-        byte[] first = { 0x18, 1, (byte) 0xC0, 0, 0, 6, 0x27, 17, 1, 0, 0, 0, 0 };
-        byte[] second = { 0x18, 1, (byte) 0xC0, 1, 0, 9, 0x27, 20, 1, 0, 0, 1, 0x10, 1, 0, 0 };
-        ByteBuffer packet = ByteBuffer.allocate(63);
-        packet.putShort((short) 0x0801).putShort((short) 0xC000).putShort((short) 56);
+        byte[] first = { 0x18, 1, (byte) 0xC0, 0, 0, 10, 0x27, 17, 1, 0, 0, 0, 0, 0, 0, 0, 0 };
+        byte[] second = { 0x18, 1, (byte) 0xC0, 1, 0, 13, 0x27, 20, 1, 0, 0, 0, 0, 0, 0, 1, 0x10, 1, 0, 0 };
+        ByteBuffer packet = ByteBuffer.allocate(75);
+        packet.putShort((short) 0x0801).putShort((short) 0xC000).putShort((short) (packet.capacity() - 7));
         packet.put((byte) 0x21).put((byte) 19).put((byte) 11).putShort((short) 0).putShort((short) 0);
         packet.put((byte) 0x2F).putInt(0).put(new byte[3]);
+        packet.putInt(0); // Four spare bytes follow the time in ordinary TM.
         packet.put((byte) 2);
         packet.putShort((short) 1).putShort((short) 1).put((byte) 0).put(first);
         packet.putShort((short) 1).putShort((short) 2).put((byte) 1).put(second);

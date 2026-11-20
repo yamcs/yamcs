@@ -36,8 +36,8 @@ public class Pus3Service extends AbstractPusService {
     static final int COMPL_ERR_PFRD_ALREADY_EXISTS = 8;
     static final int COMPL_ERR_PFRD_NOT_FOUND = 9;
 
-    private final Map<Integer, HkStructure> hkStructures = new LinkedHashMap<>();
-    private final Map<Integer, HkStructure> diagStructures = new LinkedHashMap<>();
+    private final Map<Integer, Map<Integer, HkStructure>> housekeepingByApid = new LinkedHashMap<>();
+    private final Map<Integer, Map<Integer, HkStructure>> diagnosticsByApid = new LinkedHashMap<>();
     private final Map<Integer, List<PfrdEntry>> pfrdRegistry = new LinkedHashMap<>();
 
     @FunctionalInterface
@@ -46,7 +46,9 @@ public class Pus3Service extends AbstractPusService {
     }
 
     static class HkStructure {
+        final int apid;
         final int structId;
+        long initialDelayMs;
         long collectionIntervalMs;
         boolean periodicEnabled;
         final DataFiller filler;
@@ -55,7 +57,8 @@ public class Pus3Service extends AbstractPusService {
         List<SuperCommSet> superCommSets = new ArrayList<>();
         ScheduledFuture<?> periodicTask;
 
-        HkStructure(int id, long intervalMs, boolean enabled, DataFiller filler, int fillerBytes) {
+        HkStructure(int apid, int id, long intervalMs, boolean enabled, DataFiller filler, int fillerBytes) {
+            this.apid = apid;
             this.structId = id;
             this.collectionIntervalMs = intervalMs;
             this.periodicEnabled = enabled;
@@ -63,8 +66,8 @@ public class Pus3Service extends AbstractPusService {
             this.fillerDataSizeBytes = fillerBytes;
         }
 
-        HkStructure(int id, long intervalMs) {
-            this(id, intervalMs, false, null, 0);
+        HkStructure(int apid, int id, long intervalMs) {
+            this(apid, id, intervalMs, false, null, 0);
         }
     }
 
@@ -96,23 +99,28 @@ public class Pus3Service extends AbstractPusService {
             PowerHandler power,
             DHSHandler dhs,
             RCSHandler rcs,
-            EpsLvpduHandler eps) {
+            EpsLvpduHandler eps,
+            boolean demoHousekeeping) {
         super(sim, 3);
-        hkStructures.put(0, new HkStructure(0, 200, true,
+        if (!demoHousekeeping) {
+            return;
+        }
+        Map<Integer, HkStructure> demoStructures = structures(sim.apid, false);
+        demoStructures.put(0, new HkStructure(sim.apid, 0, 200, true,
                 bb -> flight.fillPacket(bb.slice()), flight.dataSize()));
-        hkStructures.put(1, new HkStructure(1, 1000, true,
+        demoStructures.put(1, new HkStructure(sim.apid, 1, 1000, true,
                 bb -> power.fillPacket(bb.slice()), power.dataSize()));
-        hkStructures.put(2, new HkStructure(2, 1000, true,
+        demoStructures.put(2, new HkStructure(sim.apid, 2, 1000, true,
                 bb -> dhs.fillPacket(bb.slice()), dhs.dataSize()));
-        hkStructures.put(3, new HkStructure(3, 1000, true,
+        demoStructures.put(3, new HkStructure(sim.apid, 3, 1000, true,
                 bb -> rcs.fillPacket(bb.slice()), rcs.dataSize()));
-        hkStructures.put(4, new HkStructure(4, 1000, true,
+        demoStructures.put(4, new HkStructure(sim.apid, 4, 1000, true,
                 bb -> eps.fillPacket(bb.slice()), eps.dataSize()));
         // HK struct 5: enum-chart test parameters (see landing.xml "EnumTest" container).
-        hkStructures.put(5, new HkStructure(5, 1000, true,
+        demoStructures.put(5, new HkStructure(sim.apid, 5, 1000, true,
                 bb -> fillEnumTest(bb.slice()), 4));
         // HK struct 6: ST[22] simulated orbit position (see landing.xml "OrbitPosition" container).
-        hkStructures.put(6, new HkStructure(6, 1000, true,
+        demoStructures.put(6, new HkStructure(sim.apid, 6, 1000, true,
                 bb -> sim.pus22Service.currentPosition().encode(bb), PusPosition.LENGTH_BYTES));
     }
 
@@ -142,18 +150,57 @@ public class Pus3Service extends AbstractPusService {
 
     @Override
     public synchronized void start() {
-        for (HkStructure s : hkStructures.values()) {
-            if (s.periodicEnabled) schedule(s, 25);
+        refreshManagedGeneration();
+    }
+
+    private Map<Integer, HkStructure> structures(int apid, boolean diagnostic) {
+        var reports = diagnostic ? diagnosticsByApid : housekeepingByApid;
+        return reports.computeIfAbsent(apid, id -> new LinkedHashMap<>());
+    }
+
+    synchronized boolean hasStructure(int apid, int structureId, boolean diagnostic) {
+        var reports = diagnostic ? diagnosticsByApid : housekeepingByApid;
+        return reports.getOrDefault(apid, Map.of()).containsKey(structureId);
+    }
+
+    void configureMdbReports(List<PusMdbTelemetry.Report> reports, int periodMillis) {
+        housekeepingByApid.clear();
+        diagnosticsByApid.clear();
+        long interval = (long) periodMillis * reports.size();
+        for (int i = 0; i < reports.size(); i++) {
+            var report = reports.get(i);
+            byte[] data = report.data();
+            var structure = new HkStructure(report.apid(), report.id(), interval, true,
+                    out -> out.put(data, 1, data.length - 1), data.length - 1);
+            structure.initialDelayMs = (long) i * periodMillis;
+            structures(report.apid(), report.subtype() == 26).put(report.id(), structure);
         }
-        for (HkStructure s : diagStructures.values()) {
-            if (s.periodicEnabled) schedule(s, 26);
+    }
+
+    static int reportStructureId(PusTmPacket packet) {
+        return Byte.toUnsignedInt(packet.getUserDataBuffer().get(0));
+    }
+
+    synchronized void refreshManagedGeneration() {
+        housekeepingByApid.values().forEach(registry -> registry.values()
+                .forEach(structure -> updateSchedule(structure, 25)));
+        diagnosticsByApid.values().forEach(registry -> registry.values()
+                .forEach(structure -> updateSchedule(structure, 26)));
+    }
+
+    private void updateSchedule(HkStructure structure, int subtype) {
+        if (!pusSimulator.pus130Service.shouldGenerate(structure.apid, structure.structId, subtype == 26, structure.periodicEnabled)) {
+            cancel(structure);
+        } else if (structure.periodicTask == null) {
+            schedule(structure, subtype);
         }
     }
 
     private void schedule(HkStructure s, int subtype) {
         s.periodicTask = pusSimulator.executor.scheduleAtFixedRate(
                 () -> sendHkReport(s, subtype),
-                0, s.collectionIntervalMs, TimeUnit.MILLISECONDS);
+                s.initialDelayMs, s.collectionIntervalMs, TimeUnit.MILLISECONDS);
+        s.initialDelayMs = 0;
     }
 
     private void cancel(HkStructure s) {
@@ -173,9 +220,9 @@ public class Pus3Service extends AbstractPusService {
                 paramDataSize += sc.paramIds.size() * 4 * sc.repetitionNumber;
             }
         }
-        PusTmPacket pkt = newPacket(subtype, 4 + paramDataSize);
+        PusTmPacket pkt = pusSimulator.newPacketForApid(s.apid, 3, subtype, 1 + paramDataSize);
         ByteBuffer bb = pkt.getUserDataBuffer();
-        bb.putInt(s.structId);
+        bb.put((byte) s.structId);
         if (s.filler != null) {
             s.filler.fill(bb);
         } else {
@@ -220,24 +267,25 @@ public class Pus3Service extends AbstractPusService {
     private void handleCreateStructure(PusTcPacket tc, boolean isDiag) {
         ack_start(tc);
         ByteBuffer bb = tc.getUserDataBuffer();
-        int structId = bb.getInt();
+        int structId = Byte.toUnsignedInt(bb.get());
         long intervalMs = bb.getInt() & 0xFFFFFFFFL;
-        Map<Integer, HkStructure> registry = isDiag ? diagStructures : hkStructures;
+        Map<Integer, HkStructure> registry = structures(tc.getAPID(), isDiag);
         if (registry.containsKey(structId)) {
             nack_completion(tc, COMPL_ERR_STRUCT_ALREADY_EXISTS);
             return;
         }
-        HkStructure s = new HkStructure(structId, intervalMs);
+        HkStructure s = new HkStructure(tc.getAPID(), structId, intervalMs);
         int n1 = bb.get() & 0xFF;
-        for (int i = 0; i < n1; i++) s.simplyParams.add(bb.getInt());
+        for (int i = 0; i < n1; i++) s.simplyParams.add(Short.toUnsignedInt(bb.getShort()));
         int nfa = bb.get() & 0xFF;
         for (int f = 0; f < nfa; f++) {
             SuperCommSet sc = new SuperCommSet(bb.get() & 0xFF);
             int n2 = bb.get() & 0xFF;
-            for (int j = 0; j < n2; j++) sc.paramIds.add(bb.getInt());
+            for (int j = 0; j < n2; j++) sc.paramIds.add(Short.toUnsignedInt(bb.getShort()));
             s.superCommSets.add(sc);
         }
         registry.put(structId, s);
+        updateSchedule(s, isDiag ? 26 : 25);
         log.info("Created {} structure id={} interval={}ms n1={} nfa={}",
                 isDiag ? "diag" : "HK", structId, intervalMs, n1, nfa);
         ack_completion(tc);
@@ -248,10 +296,10 @@ public class Pus3Service extends AbstractPusService {
         ack_start(tc);
         ByteBuffer bb = tc.getUserDataBuffer();
         int n = bb.get() & 0xFF;
-        Map<Integer, HkStructure> registry = isDiag ? diagStructures : hkStructures;
+        Map<Integer, HkStructure> registry = structures(tc.getAPID(), isDiag);
         boolean anyFailure = false;
         for (int i = 0; i < n; i++) {
-            int structId = bb.getInt();
+            int structId = Byte.toUnsignedInt(bb.get());
             HkStructure s = registry.get(structId);
             if (s == null) {
                 log.info("{} structure id={} not found", isDiag ? "Diag" : "HK", structId);
@@ -271,11 +319,11 @@ public class Pus3Service extends AbstractPusService {
         ack_start(tc);
         ByteBuffer bb = tc.getUserDataBuffer();
         int n = bb.get() & 0xFF;
-        Map<Integer, HkStructure> registry = isDiag ? diagStructures : hkStructures;
+        Map<Integer, HkStructure> registry = structures(tc.getAPID(), isDiag);
         int subtype = isDiag ? 26 : 25;
         boolean anyFailure = false;
         for (int i = 0; i < n; i++) {
-            int structId = bb.getInt();
+            int structId = Byte.toUnsignedInt(bb.get());
             HkStructure s = registry.get(structId);
             if (s == null) {
                 log.info("{} structure id={} not found", isDiag ? "Diag" : "HK", structId);
@@ -285,11 +333,11 @@ public class Pus3Service extends AbstractPusService {
             }
             if (enable && !s.periodicEnabled) {
                 s.periodicEnabled = true;
-                schedule(s, subtype);
+                updateSchedule(s, subtype);
                 log.info("Enabled periodic gen for {} struct {}", isDiag ? "diag" : "HK", structId);
             } else if (!enable && s.periodicEnabled) {
                 s.periodicEnabled = false;
-                cancel(s);
+                updateSchedule(s, subtype);
                 log.info("Disabled periodic gen for {} struct {}", isDiag ? "diag" : "HK", structId);
             }
         }
@@ -301,11 +349,11 @@ public class Pus3Service extends AbstractPusService {
         ack_start(tc);
         ByteBuffer bb = tc.getUserDataBuffer();
         int n = bb.get() & 0xFF;
-        Map<Integer, HkStructure> registry = isDiag ? diagStructures : hkStructures;
+        Map<Integer, HkStructure> registry = structures(tc.getAPID(), isDiag);
         int tmSubtype = isDiag ? 12 : 10;
         boolean anyFailure = false;
         for (int i = 0; i < n; i++) {
-            int structId = bb.getInt();
+            int structId = Byte.toUnsignedInt(bb.get());
             HkStructure s = registry.get(structId);
             if (s == null) {
                 log.info("{} structure id={} not found", isDiag ? "Diag" : "HK", structId);
@@ -319,24 +367,24 @@ public class Pus3Service extends AbstractPusService {
     }
 
     private void sendStructureReport(HkStructure s, int subtype) {
-        // struct_id(4) + gen_status(1) + interval(4) + N1(1) + N1×param_id(4) + NFA(1) + NFA×[rep(1)+N2(1)+N2×param_id(4)]
+        // SID, status, interval, simple PIDs, and super-commutated sets. Each PID is 16 bits.
         int n1 = s.simplyParams.size();
         int nfa = s.superCommSets.size();
         int scSize = 0;
-        for (SuperCommSet sc : s.superCommSets) scSize += 2 + sc.paramIds.size() * 4;
-        int payloadSize = 4 + 1 + 4 + 1 + n1 * 4 + 1 + scSize;
-        PusTmPacket pkt = newPacket(subtype, payloadSize);
+        for (SuperCommSet sc : s.superCommSets) scSize += 2 + sc.paramIds.size() * 2;
+        int payloadSize = 1 + 1 + 4 + 1 + n1 * 2 + 1 + scSize;
+        PusTmPacket pkt = pusSimulator.newPacketForApid(s.apid, 3, subtype, payloadSize);
         ByteBuffer bb = pkt.getUserDataBuffer();
-        bb.putInt(s.structId);
-        bb.put((byte) (s.periodicEnabled ? 1 : 0));
+        bb.put((byte) s.structId);
+        bb.put((byte) (s.periodicTask == null ? 0 : 1));
         bb.putInt((int) s.collectionIntervalMs);
         bb.put((byte) n1);
-        for (int p : s.simplyParams) bb.putInt(p);
+        for (int p : s.simplyParams) bb.putShort((short) p);
         bb.put((byte) nfa);
         for (SuperCommSet sc : s.superCommSets) {
             bb.put((byte) sc.repetitionNumber);
             bb.put((byte) sc.paramIds.size());
-            for (int p : sc.paramIds) bb.putInt(p);
+            for (int p : sc.paramIds) bb.putShort((short) p);
         }
         pusSimulator.transmitRealtimeTM(pkt);
     }
@@ -346,11 +394,11 @@ public class Pus3Service extends AbstractPusService {
         ack_start(tc);
         ByteBuffer bb = tc.getUserDataBuffer();
         int n = bb.get() & 0xFF;
-        Map<Integer, HkStructure> registry = isDiag ? diagStructures : hkStructures;
+        Map<Integer, HkStructure> registry = structures(tc.getAPID(), isDiag);
         int subtype = isDiag ? 26 : 25;
         boolean anyFailure = false;
         for (int i = 0; i < n; i++) {
-            int structId = bb.getInt();
+            int structId = Byte.toUnsignedInt(bb.get());
             HkStructure s = registry.get(structId);
             if (s == null) {
                 log.info("{} structure id={} not found", isDiag ? "Diag" : "HK", structId);
@@ -367,24 +415,24 @@ public class Pus3Service extends AbstractPusService {
     private void handleAppendParams(PusTcPacket tc, boolean isDiag) {
         ack_start(tc);
         ByteBuffer bb = tc.getUserDataBuffer();
-        int structId = bb.getInt();
-        Map<Integer, HkStructure> registry = isDiag ? diagStructures : hkStructures;
+        int structId = Byte.toUnsignedInt(bb.get());
+        Map<Integer, HkStructure> registry = structures(tc.getAPID(), isDiag);
         HkStructure s = registry.get(structId);
         if (s == null) {
             nack_completion(tc, COMPL_ERR_STRUCT_NOT_FOUND);
             return;
         }
-        if (s.periodicEnabled) {
+        if (s.periodicTask != null) {
             nack_completion(tc, COMPL_ERR_STRUCT_ENABLED);
             return;
         }
         int n1 = bb.get() & 0xFF;
-        for (int i = 0; i < n1; i++) s.simplyParams.add(bb.getInt());
+        for (int i = 0; i < n1; i++) s.simplyParams.add(Short.toUnsignedInt(bb.getShort()));
         int nfa = bb.get() & 0xFF;
         for (int f = 0; f < nfa; f++) {
             SuperCommSet sc = new SuperCommSet(bb.get() & 0xFF);
             int n2 = bb.get() & 0xFF;
-            for (int j = 0; j < n2; j++) sc.paramIds.add(bb.getInt());
+            for (int j = 0; j < n2; j++) sc.paramIds.add(Short.toUnsignedInt(bb.getShort()));
             s.superCommSets.add(sc);
         }
         log.info("Appended {} simply-comm params and {} sc-sets to {} struct {}",
@@ -397,11 +445,11 @@ public class Pus3Service extends AbstractPusService {
         ack_start(tc);
         ByteBuffer bb = tc.getUserDataBuffer();
         int n = bb.get() & 0xFF;
-        Map<Integer, HkStructure> registry = isDiag ? diagStructures : hkStructures;
+        Map<Integer, HkStructure> registry = structures(tc.getAPID(), isDiag);
         int subtype = isDiag ? 26 : 25;
         boolean anyFailure = false;
         for (int i = 0; i < n; i++) {
-            int structId = bb.getInt();
+            int structId = Byte.toUnsignedInt(bb.get());
             long newIntervalMs = bb.getInt() & 0xFFFFFFFFL;
             HkStructure s = registry.get(structId);
             if (s == null) {
@@ -410,10 +458,9 @@ public class Pus3Service extends AbstractPusService {
                 anyFailure = true;
                 continue;
             }
-            boolean wasEnabled = s.periodicEnabled;
-            if (wasEnabled) cancel(s);
+            cancel(s);
             s.collectionIntervalMs = newIntervalMs;
-            if (wasEnabled) schedule(s, subtype);
+            updateSchedule(s, subtype);
             log.info("Modified collection interval of {} struct {} to {}ms",
                     isDiag ? "diag" : "HK", structId, newIntervalMs);
         }
@@ -425,11 +472,11 @@ public class Pus3Service extends AbstractPusService {
         ack_start(tc);
         ByteBuffer bb = tc.getUserDataBuffer();
         int n = bb.get() & 0xFF;
-        Map<Integer, HkStructure> registry = isDiag ? diagStructures : hkStructures;
+        Map<Integer, HkStructure> registry = structures(tc.getAPID(), isDiag);
         int tmSubtype = isDiag ? 36 : 35;
         List<HkStructure> entries = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
-            int structId = bb.getInt();
+            int structId = Byte.toUnsignedInt(bb.get());
             HkStructure s = registry.get(structId);
             if (s == null) {
                 log.info("{} structure id={} not found", isDiag ? "Diag" : "HK", structId);
@@ -438,13 +485,13 @@ public class Pus3Service extends AbstractPusService {
             }
             entries.add(s);
         }
-        // TM[3,35/36]: N(1) | [struct_id(4) + gen_status(1) + interval(4)] × N
-        PusTmPacket pkt = newPacket(tmSubtype, 1 + entries.size() * 9);
+        // TM[3,35/36]: N(1) | [SID(1) + gen_status(1) + interval(4)] × N
+        PusTmPacket pkt = pusSimulator.newPacketForApid(tc.getAPID(), 3, tmSubtype, 1 + entries.size() * 6);
         ByteBuffer out = pkt.getUserDataBuffer();
         out.put((byte) entries.size());
         for (HkStructure s : entries) {
-            out.putInt(s.structId);
-            out.put((byte) (s.periodicEnabled ? 1 : 0));
+            out.put((byte) s.structId);
+            out.put((byte) (s.periodicTask == null ? 0 : 1));
             out.putInt((int) s.collectionIntervalMs);
         }
         pusSimulator.transmitRealtimeTM(pkt);
@@ -457,10 +504,10 @@ public class Pus3Service extends AbstractPusService {
         ByteBuffer bb = tc.getUserDataBuffer();
         int execFlag = bb.get() & 0xFF;
         if (execFlag == 1) {
-            for (HkStructure s : hkStructures.values()) {
+            for (HkStructure s : structures(tc.getAPID(), false).values()) {
                 if (s.periodicEnabled) { s.periodicEnabled = false; cancel(s); }
             }
-            for (HkStructure s : diagStructures.values()) {
+            for (HkStructure s : structures(tc.getAPID(), true).values()) {
                 if (s.periodicEnabled) { s.periodicEnabled = false; cancel(s); }
             }
             log.info("PFRC exclusive: disabled all HK and diag structures");
@@ -474,17 +521,17 @@ public class Pus3Service extends AbstractPusService {
                 continue;
             }
             for (PfrdEntry e : pfrd) {
-                Map<Integer, HkStructure> registry = (e.reportNature == 0) ? hkStructures : diagStructures;
+                Map<Integer, HkStructure> registry = structures(tc.getAPID(), e.reportNature != 0);
                 int subtype = (e.reportNature == 0) ? 25 : 26;
                 HkStructure s = registry.get(e.reportDefId);
                 if (s == null) continue;
-                boolean wasEnabled = s.periodicEnabled;
-                if (wasEnabled) cancel(s);
+                cancel(s);
                 s.collectionIntervalMs = e.collectionIntervalMs;
                 s.periodicEnabled = (e.periodicStatus == 1);
-                if (s.periodicEnabled) schedule(s, subtype);
+                updateSchedule(s, subtype);
             }
         }
+        refreshManagedGeneration();
         ack_completion(tc);
     }
 
@@ -543,14 +590,14 @@ public class Pus3Service extends AbstractPusService {
     }
 
     private void sendPfrdReport(int pfrdId, List<PfrdEntry> entries) {
-        // TM[3,41]: pfrd_id(4) + N(1) + N × [nature(1) + def_id(4) + status(1) + interval(4)]
-        PusTmPacket pkt = newPacket(41, 4 + 1 + entries.size() * 10);
+        // TM[3,41]: pfrd_id(4) + N(1) + N × [nature(1) + SID(1) + status(1) + interval(4)]
+        PusTmPacket pkt = newPacket(41, 4 + 1 + entries.size() * 7);
         ByteBuffer bb = pkt.getUserDataBuffer();
         bb.putInt(pfrdId);
         bb.put((byte) entries.size());
         for (PfrdEntry e : entries) {
             bb.put((byte) e.reportNature);
-            bb.putInt(e.reportDefId);
+            bb.put((byte) e.reportDefId);
             bb.put((byte) e.periodicStatus);
             bb.putInt((int) e.collectionIntervalMs);
         }
@@ -585,7 +632,7 @@ public class Pus3Service extends AbstractPusService {
         int n = bb.get() & 0xFF;
         for (int i = 0; i < n; i++) {
             int nature = bb.get() & 0xFF;
-            int defId = bb.getInt();
+            int defId = Byte.toUnsignedInt(bb.get());
             pfrd.removeIf(e -> e.reportNature == nature && e.reportDefId == defId);
         }
         log.info("Removed entries from PFRD id={}", pfrdId);
@@ -605,7 +652,7 @@ public class Pus3Service extends AbstractPusService {
         int n = bb.get() & 0xFF;
         for (int i = 0; i < n; i++) {
             int nature = bb.get() & 0xFF;
-            int defId = bb.getInt();
+            int defId = Byte.toUnsignedInt(bb.get());
             int status = bb.get() & 0xFF;
             long intervalMs = bb.getInt() & 0xFFFFFFFFL;
             for (PfrdEntry e : pfrd) {
@@ -619,13 +666,13 @@ public class Pus3Service extends AbstractPusService {
         ack_completion(tc);
     }
 
-    // Parse N entries of the form: nature(1) + def_id(4) + status(1) + interval(4)
+    // Parse N entries of the form: nature(1) + SID(1) + status(1) + interval(4)
     private List<PfrdEntry> parsePfrdEntries(ByteBuffer bb) {
         int n = bb.get() & 0xFF;
         List<PfrdEntry> entries = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
             int nature = bb.get() & 0xFF;
-            int defId = bb.getInt();
+            int defId = Byte.toUnsignedInt(bb.get());
             int status = bb.get() & 0xFF;
             long intervalMs = bb.getInt() & 0xFFFFFFFFL;
             entries.add(new PfrdEntry(nature, defId, status, intervalMs));

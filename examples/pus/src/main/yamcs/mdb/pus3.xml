@@ -3,7 +3,7 @@
     Sample implementation of PUS Service 3 (ST[03]) — Housekeeping.
 
     Wire format conventions (match Pus3Service.java):
-      struct_id / param_id / pfrd_id : uint32  (4 bytes) — consistent with /PUS/hkid uint32
+      struct_id / param_id / pfrd_id : uint8 / uint16 / uint32
       collection_interval            : uint32  (4 bytes, milliseconds)
       count fields (N, N1, NFA …)   : uint8   (1 byte)
       gen_status / report_nature     : uint8   (1 byte, enums)
@@ -41,14 +41,14 @@
                 <IntegerDataEncoding sizeInBits="8"/>
                 <EnumerationList>
                     <Enumeration value="0" label="HK"/>
-                    <Enumeration value="1" DIAG="1" label="DIAG"/>
+                    <Enumeration value="1" label="DIAG"/>
                 </EnumerationList>
             </EnumeratedParameterType>
 
             <!-- TM[3,35/36] gen-props entry: struct_id + gen_status + collection_interval -->
             <AggregateParameterType name="HkGenPropsEntryType">
                 <MemberList>
-                    <Member typeRef="/dt/uint32" name="struct_id"/>
+                    <Member typeRef="/dt/uint8" name="struct_id"/>
                     <Member typeRef="HkGenStatusType" name="gen_status"/>
                     <Member typeRef="/dt/uint32" name="collection_interval"/>
                 </MemberList>
@@ -71,7 +71,7 @@
             <AggregateParameterType name="PfrdTmEntryType">
                 <MemberList>
                     <Member typeRef="ReportNatureType" name="report_nature"/>
-                    <Member typeRef="/dt/uint32" name="report_def_id"/>
+                    <Member typeRef="/dt/uint8" name="report_def_id"/>
                     <Member typeRef="HkGenStatusType" name="gen_status"/>
                     <Member typeRef="/dt/uint32" name="collection_interval"/>
                 </MemberList>
@@ -177,8 +177,8 @@
     <CommandMetaData>
         <ArgumentTypeSet>
             <!-- Simple reusable types -->
-            <IntegerArgumentType name="StructIdType" baseType="/dt/uint32"/>
-            <IntegerArgumentType name="ParamIdType" baseType="/dt/uint32"/>
+            <IntegerArgumentType name="StructIdType" baseType="/dt/uint8"/>
+            <IntegerArgumentType name="ParamIdType" baseType="/dt/uint16"/>
             <IntegerArgumentType name="CollectionIntervalType" baseType="/dt/uint32"/>
             <IntegerArgumentType name="PfrdIdType" baseType="/dt/uint32"/>
 
@@ -938,14 +938,14 @@
          Placed in a sub-system so parameter names are nicely scoped.
 
          Wire layout (Pus3Service.sendStructureReport):
-           struct_id(4) | gen_status(1) | collection_interval(4) | N1(1) |
-           N1 × param_id(4) | NFA(1) | NFA × [rep_num(1) + N2(1) + N2 × param_id(4)]
+           struct_id(1) | gen_status(1) | collection_interval(4) | N1(1) |
+           N1 × param_id(2) | NFA(1) | NFA × [rep_num(1) + N2(1) + N2 × param_id(2)]
          ================================================================ -->
     <SpaceSystem name="STRUCT_REPORT">
         <TelemetryMetaData>
             <ParameterTypeSet>
                 <!-- Array of simply-commuted param IDs; dimension from sr_n1 in outer container -->
-                <ArrayParameterType name="SrSimplyParamIdsType" arrayTypeRef="/dt/uint32">
+                <ArrayParameterType name="SrSimplyParamIdsType" arrayTypeRef="/dt/uint16">
                     <DimensionList>
                         <Dimension>
                             <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
@@ -959,7 +959,7 @@
                     </DimensionList>
                 </ArrayParameterType>
                 <!-- Array of param IDs within one sc-set entry; dimension from sc_n2 (sibling) -->
-                <ArrayParameterType name="ScParamIdsType" arrayTypeRef="/dt/uint32">
+                <ArrayParameterType name="ScParamIdsType" arrayTypeRef="/dt/uint16">
                     <DimensionList>
                         <Dimension>
                             <StartingIndex><FixedValue>0</FixedValue></StartingIndex>
@@ -975,7 +975,7 @@
             </ParameterTypeSet>
 
             <ParameterSet>
-                <Parameter parameterTypeRef="/dt/uint32" name="sr_struct_id"/>
+                <Parameter parameterTypeRef="/dt/uint8" name="sr_struct_id"/>
                 <Parameter parameterTypeRef="/PUS3/HkGenStatusType" name="sr_gen_status"/>
                 <Parameter parameterTypeRef="/dt/uint32" name="sr_collection_interval"/>
                 <Parameter parameterTypeRef="/dt/uint8" name="sr_n1"/>

@@ -479,7 +479,6 @@ public class Pus14Service extends AbstractPusService {
 
     private static ByteBuffer payload(PusTcPacket tc) {
         ByteBuffer data = tc.getUserDataBuffer();
-        data.limit(data.limit() - 2);
         return data;
     }
 
@@ -506,7 +505,7 @@ public class Pus14Service extends AbstractPusService {
             Map<Integer, PusStructureSelection> config = pkt.getSubtype() == 25 ? hkFcc : diagFcc;
             PusStructureSelection selection = config.get(apid);
             // Match the simulator's existing pass-all startup policy until a table is configured.
-            if (!config.isEmpty() && (selection == null || !selection.accepts(pkt.getUserDataBuffer().getInt(0)))) {
+            if (!config.isEmpty() && (selection == null || !selection.accepts(Pus3Service.reportStructureId(pkt)))) {
                 return false;
             }
         }

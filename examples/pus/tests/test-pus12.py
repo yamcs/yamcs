@@ -27,8 +27,8 @@ Tests:
 Byte layout of TM[12,9]/[12,12]/[12,14] (from Pus12Service, same PusTmPacket
 header as TM[5,8] in test-pus5.py: 6B CCSDS + 7B PUS secondary header + 8B CUC
 time, pfield=0x2F not implicit):
-    [0..20]  21B common PUS TM header
-    [21]     N (uint8, entry count)
+    [0..24]  25B common PUS TM header
+    [25]     N (uint8, entry count)
     [22..]   N entries, layout depends on report (see parse_* helpers below)
 
 TM[12,9] entries are variable-length (7B common header + a criteria tail whose
@@ -59,7 +59,7 @@ CONTAINER_DEFS = "/PUS12/PMON_DEFINITION_REPORT"
 CONTAINER_TRANSITIONS = "/PUS12/PMON_TRANSITION_REPORT"
 CONTAINER_STATUS = "/PUS12/PMON_STATUS_REPORT"
 
-APP_DATA_OFFSET = 21  # 6B CCSDS + 7B PUS secondary header + 8B CUC time
+APP_DATA_OFFSET = 25  # 6B CCSDS + 7B PUS secondary header + 8B CUC time + 4B spare
 
 # pmon_id_type / monitored_param_id_type enum labels (pus12.xml)
 PMON_SINE_TEMP_LIMIT = 1
@@ -173,7 +173,8 @@ def run_tests():
     def issue(cmd: str, args: dict, timeout: float = 5.0):
         c = cmd_conn.issue(cmd, args=args)
         c.await_acknowledgment("Acknowledge_Sent", timeout=timeout)
-        return c.await_acknowledgment("CommandComplete", timeout=timeout)
+        c.await_complete(timeout=timeout)
+        return c
 
     def query_status(timeout: float = 5.0):
         while not status_q.empty():
@@ -199,7 +200,7 @@ def run_tests():
     # ── Test 1: Initial state ────────────────────────────────────────────
     print("\nTest 1: Initial state — 4 seed PMONs, all enabled")
     compl, (n, entries) = query_status()
-    check("TC[12,13] CommandComplete OK", compl.status == "OK", compl.status)
+    check("TC[12,13] CommandComplete OK", compl.is_success(), compl.error)
     check("status_count == 4", n == 4, f"got {n}")
     ids = sorted(pid for pid, _ in entries)
     check("pmon_ids == [1,2,3,4]", ids == [1, 2, 3, 4], f"got {ids}")
@@ -212,12 +213,12 @@ def run_tests():
     # ── Test 2: Disable / re-enable PMON 1 ───────────────────────────────
     print("\nTest 2: Disable then re-enable PMON_SINE_TEMP_LIMIT")
     compl = issue(CMD_DISABLE, {"N": 1, "pmon_ids": ["PMON_SINE_TEMP_LIMIT"]})
-    check("TC[12,2] CommandComplete OK", compl.status == "OK", compl.status)
+    check("TC[12,2] CommandComplete OK", compl.is_success(), compl.error)
     _, (_, entries) = query_status()
     status_by_id = dict(entries)
     check("PMON 1 disabled", status_by_id[PMON_SINE_TEMP_LIMIT] == STATUS_DISABLED, status_by_id)
     compl = issue(CMD_ENABLE, {"N": 1, "pmon_ids": ["PMON_SINE_TEMP_LIMIT"]})
-    check("TC[12,1] CommandComplete OK", compl.status == "OK", compl.status)
+    check("TC[12,1] CommandComplete OK", compl.is_success(), compl.error)
     _, (_, entries) = query_status()
     status_by_id = dict(entries)
     check("PMON 1 enabled again", status_by_id[PMON_SINE_TEMP_LIMIT] == STATUS_ENABLED, status_by_id)
@@ -225,7 +226,7 @@ def run_tests():
     # ── Test 3: Report all definitions (N=0) ─────────────────────────────
     print("\nTest 3: TC[12,8] N=0 -> TM[12,9] reports all 4 definitions")
     compl, (n, entries) = query_defs([])
-    check("TC[12,8] CommandComplete OK", compl.status == "OK", compl.status)
+    check("TC[12,8] CommandComplete OK", compl.is_success(), compl.error)
     check("pmon_def_count == 4", n == 4, f"got {n}")
     by_id = {e["pmon_id"]: e for e in entries}
     check("PMON 1 check_type == LIMIT", by_id[1]["check_type"] == CHECK_TYPE_LIMIT, by_id.get(1))
@@ -239,7 +240,7 @@ def run_tests():
     # ── Test 4: Delete while still enabled -> rejected ───────────────────
     print("\nTest 4: TC[12,6] delete PMON 1 while enabled -> NACK completion")
     compl = issue(CMD_DELETE, {"N": 1, "pmon_ids": ["PMON_SINE_TEMP_LIMIT"]})
-    check("TC[12,6] rejected (still enabled)", compl.status != "OK", compl.status)
+    check("TC[12,6] rejected (still enabled)", compl.is_failure(), compl.error)
     _, (n, _) = query_status()
     check("still 4 definitions (nothing deleted)", n == 4, f"got {n}")
 
@@ -247,7 +248,7 @@ def run_tests():
     print("\nTest 5: Disable + delete PMON 1, then TC[12,5] re-add it")
     issue(CMD_DISABLE, {"N": 1, "pmon_ids": ["PMON_SINE_TEMP_LIMIT"]})
     compl = issue(CMD_DELETE, {"N": 1, "pmon_ids": ["PMON_SINE_TEMP_LIMIT"]})
-    check("TC[12,6] CommandComplete OK", compl.status == "OK", compl.status)
+    check("TC[12,6] CommandComplete OK", compl.is_success(), compl.error)
     _, (n, _) = query_status()
     check("3 definitions remain", n == 3, f"got {n}")
 
@@ -264,7 +265,7 @@ def run_tests():
             "high_event_id": 11,
         },
     )
-    check("TC[12,5] CommandComplete OK", compl.status == "OK", compl.status)
+    check("TC[12,5] CommandComplete OK", compl.is_success(), compl.error)
     _, (n, entries) = query_status()
     status_by_id = dict(entries)
     check("4 definitions again", n == 4, f"got {n}")
@@ -274,7 +275,7 @@ def run_tests():
         status_by_id,
     )
     compl = issue(CMD_ENABLE, {"N": 1, "pmon_ids": ["PMON_SINE_TEMP_LIMIT"]})
-    check("re-enable PMON 1 (restore demo state)", compl.status == "OK", compl.status)
+    check("re-enable PMON 1 (restore demo state)", compl.is_success(), compl.error)
 
     # ── Test 6: Duplicate add -> rejected ────────────────────────────────
     print("\nTest 6: TC[12,5] duplicate pmon_id -> NACK completion")
@@ -291,7 +292,7 @@ def run_tests():
             "high_event_id": 13,
         },
     )
-    check("TC[12,5] rejected (already exists)", compl.status != "OK", compl.status)
+    check("TC[12,5] rejected (already exists)", compl.is_failure(), compl.error)
 
     # ── Test 7: Modify with wrong check_type -> rejected ─────────────────
     print("\nTest 7: TC[12,7] MODIFY_PMON_LIMIT_F32 on an EXPECTED_VALUE def -> NACK")
@@ -307,7 +308,7 @@ def run_tests():
             "high_event_id": 15,
         },
     )
-    check("TC[12,7] rejected (check_type mismatch)", compl.status != "OK", compl.status)
+    check("TC[12,7] rejected (check_type mismatch)", compl.is_failure(), compl.error)
 
     # ── Test 8: Modify with wrong param_id -> rejected ───────────────────
     print("\nTest 8: TC[12,7] MODIFY_PMON_LIMIT_F32 with wrong param_id -> NACK")
@@ -323,7 +324,7 @@ def run_tests():
             "high_event_id": 11,
         },
     )
-    check("TC[12,7] rejected (param_id mismatch)", compl.status != "OK", compl.status)
+    check("TC[12,7] rejected (param_id mismatch)", compl.is_failure(), compl.error)
 
     # ── Test 9: Valid modify ──────────────────────────────────────────────
     print("\nTest 9: TC[12,7] valid modify — widen PMON 1's limits")
@@ -339,7 +340,7 @@ def run_tests():
             "high_event_id": 11,
         },
     )
-    check("TC[12,7] CommandComplete OK", compl.status == "OK", compl.status)
+    check("TC[12,7] CommandComplete OK", compl.is_success(), compl.error)
     _, (_, entries) = query_defs(["PMON_SINE_TEMP_LIMIT"])
     check("low_limit updated to -20.0", abs(entries[0]["low_limit"] - (-20.0)) < 1e-3, entries[0]["low_limit"])
     check("high_limit updated to 60.0", abs(entries[0]["high_limit"] - 60.0) < 1e-3, entries[0]["high_limit"])
@@ -357,12 +358,12 @@ def run_tests():
             "high_event_id": 11,
         },
     )
-    check("restore original limits (cleanup)", compl.status == "OK", compl.status)
+    check("restore original limits (cleanup)", compl.is_success(), compl.error)
 
     # ── Test 10: Check-transition report is structurally valid ──────────
     print("\nTest 10: TC[12,11] -> TM[12,12] structurally valid")
     compl, (n, entries) = query_transitions()
-    check("TC[12,11] CommandComplete OK", compl.status == "OK", compl.status)
+    check("TC[12,11] CommandComplete OK", compl.is_success(), compl.error)
     check("transition_count matches parsed entry count", n == len(entries), f"{n} vs {len(entries)}")
 
     # ── Cleanup ──────────────────────────────────────────────────────────

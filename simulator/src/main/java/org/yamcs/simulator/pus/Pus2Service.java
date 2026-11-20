@@ -78,19 +78,16 @@ public class Pus2Service extends AbstractPusService {
 
         // First pass: validate every instruction before executing any (spec §6.2.7.1.2).
         int[] deviceIds = new int[n];
-        byte[][] commandData = new byte[n][];
         for (int i = 0; i < n; i++) {
-            deviceIds[i] = bb.get() & 0xFF;
+            deviceIds[i] = bb.getInt();
             ProtocolData pd = readProtocolData(bb);
-            byte[] cmd = new byte[8];
-            bb.get(cmd);
-            commandData[i] = cmd;
+            long value = Integer.toUnsignedLong(bb.getInt());
             if (!physicalDevices.contains(deviceIds[i])) {
                 log.info("Unknown physical device {}, rejecting TC[2,7]", deviceIds[i]);
                 nack_start(tc, START_ERR_UNKNOWN_PHYSICAL_DEVICE);
                 return;
             }
-            log.debug("TC[2,7] instruction {}: device={}, protocol={}", i, deviceIds[i], pd);
+            log.debug("TC[2,7] instruction {}: device={}, protocol={}, value={}", i, deviceIds[i], pd, value);
         }
 
         ack_start(tc);
@@ -149,7 +146,7 @@ public class Pus2Service extends AbstractPusService {
         long[] commandArgs = new long[n];
         for (int i = 0; i < n; i++) {
             deviceIds[i] = bb.get() & 0xFF;
-            commandIds[i] = bb.get() & 0xFF;
+            commandIds[i] = Short.toUnsignedInt(bb.getShort());
             commandArgs[i] = bb.getInt() & 0xFFFFFFFFL;
             Set<Integer> commands = logicalCommands.get(deviceIds[i]);
             if (commands == null) {

@@ -84,6 +84,7 @@ dataLinks:
     initialDelay: 2000
     commandPostprocessorClassName: org.yamcs.pus.PusCommandPostprocessor
     commandPostprocessorArgs:
+        spareBytes: 4
         errorDetection:
             type: CRC-16-CCIIT
         timeEncoding:
@@ -142,6 +143,12 @@ mdb:
     spec: "mdb/pus21.xml"
   - type: "xtce"
     spec: "mdb/pus22.xml"
+  - type: "xtce"
+    spec: "mdb/pus128.xml"
+  - type: "xtce"
+    spec: "mdb/pus130.xml"
+  - type: "xtce"
+    spec: "mdb/pus131.xml"
   - type: "xtce"
     spec: "mdb/landing.xml"
 

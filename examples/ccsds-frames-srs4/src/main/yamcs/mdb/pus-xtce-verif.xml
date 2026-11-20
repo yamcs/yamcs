@@ -5,13 +5,13 @@
 	<TelemetryMetaData>
 		<ParameterTypeSet>
 			<EnumeratedParameterType name="start-failure-code">
-				<IntegerDataEncoding sizeInBits="32" />
+				<IntegerDataEncoding sizeInBits="8" />
 				<EnumerationList>
 					<Enumeration label="INVALID_VOLTAGE_NUM" value="1" />
 				</EnumerationList>
 			</EnumeratedParameterType>
 			<EnumeratedParameterType name="completion-failure-code">
-				<IntegerDataEncoding sizeInBits="32" />
+				<IntegerDataEncoding sizeInBits="8" />
 				<EnumerationList>
 					<Enumeration label="COMPLETION_ERROR_0" value="0" />
 					<Enumeration label="COMPLETION_ERROR_1" value="1" />
@@ -32,11 +32,13 @@
 			<Parameter parameterTypeRef="/dt/uint8" name="time-type" />
 			<Parameter parameterTypeRef="/dt/uint32" name="obt-coarse" />
 			<Parameter parameterTypeRef="/dt/uint24" name="obt-fine" />
-			<Parameter parameterTypeRef="/dt/uint32" name="hkid" />
+			<Parameter parameterTypeRef="/dt/uint32" name="spare" />
+			<Parameter parameterTypeRef="/dt/uint8" name="hkid" />
 			<Parameter parameterTypeRef="/dt/uint11" name="tc-ack-apid" />
 			<Parameter parameterTypeRef="/dt/uint14" name="tc-ack-seq" />
-			<Parameter parameterTypeRef="/dt/uint32" name="tc-ack-acceptance-failure-code" />
+			<Parameter parameterTypeRef="/dt/uint8" name="tc-ack-acceptance-failure-code" />
 			<Parameter parameterTypeRef="start-failure-code" name="tc-ack-start-failure-code" />
+			<Parameter parameterTypeRef="/dt/uint8" name="tc-ack-progress-failure-code" />
 			<Parameter parameterTypeRef="completion-failure-code" name="tc-ack-completion-failure-code" />
 		</ParameterSet>
 		<ContainerSet>
@@ -84,6 +86,7 @@
 					<ParameterRefEntry parameterRef="time-type" />
 					<ParameterRefEntry parameterRef="obt-coarse" />
 					<ParameterRefEntry parameterRef="obt-fine" />
+					<ParameterRefEntry parameterRef="spare" />
 				</EntryList>
 				<BaseContainer containerRef="ccsds">
 					<RestrictionCriteria>
@@ -133,6 +136,18 @@
 					<RestrictionCriteria>
 						<ComparisonList>
 							<Comparison parameterRef="subtype" comparisonOperator="==" value="4" />
+						</ComparisonList>
+					</RestrictionCriteria>
+				</BaseContainer>
+			</SequenceContainer>
+			<SequenceContainer name="pus-tc-ack-progress-failure">
+				<EntryList>
+					<ParameterRefEntry parameterRef="tc-ack-progress-failure-code" />
+				</EntryList>
+				<BaseContainer containerRef="pus-tc-ack">
+					<RestrictionCriteria>
+						<ComparisonList>
+							<Comparison parameterRef="subtype" comparisonOperator="==" value="6" />
 						</ComparisonList>
 					</RestrictionCriteria>
 				</BaseContainer>
@@ -197,6 +212,7 @@
 						<ArgumentRefEntry argumentRef="type" />
 						<ArgumentRefEntry argumentRef="subtype" />
 						<ArgumentRefEntry argumentRef="source" />
+						<FixedValueEntry name="spare" binaryValue="00000000" sizeInBits="32" />
 					</EntryList>
 				</CommandContainer>
 				<VerifierSet>

@@ -7,6 +7,7 @@ public abstract class AbstractPusService {
     // start errors
     static final int START_ERR_INVALID_PUS_SUBTYPE = 1;
     static final int START_ERR_NOT_IMPLEMENTED = 2;
+    static final int START_ERR_INVALID_EMBEDDED_TC = 8;
     // ST[9] start error
     static final int START_ERR_INVALID_RATE_EXPONENT = 4;
     // scheduling (ST[11] time-based / ST[22] position-based) start errors, shared by both services

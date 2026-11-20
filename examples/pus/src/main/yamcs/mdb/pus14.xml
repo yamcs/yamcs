@@ -15,7 +15,7 @@
 			<Note>Application process identifiers inside ST[14] application/source data are encoded as
 				packed 11-bit enumerated values. Fields that follow an APID therefore need not begin on
 				a byte boundary; no implicit five-bit padding is inserted.</Note>
-			<Note>HK and diagnostic FCCs gate TM[3,25/26], retaining uint16 subsampling rates per selected uint8 structure ID. The simulator ST3 report body still carries its legacy uint32 structure ID.</Note>
+			<Note>HK and diagnostic FCCs gate TM[3,25/26] using uint16 subsampling rates per selected uint8 structure ID.</Note>
 			<Note>Default gate state is pass-all (an APID with no APFCC entry is forwarded), and PUS-1
 				verification reports (type=1) and ST[14]'s own TM (type=14) always bypass the gate --
 				this simulator uses a single fixed APID for all traffic, so a restrictive APFCC entry

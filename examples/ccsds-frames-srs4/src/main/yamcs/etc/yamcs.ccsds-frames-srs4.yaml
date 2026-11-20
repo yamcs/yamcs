@@ -81,11 +81,12 @@ dataLinks:
         service: PACKET
         commandPostprocessorClassName: org.yamcs.pus.PusCommandPostprocessor
         commandPostprocessorArgs:
-            errorDetection:
-                type: CRC-16-CCIIT
-            timeEncoding:
-                implicitPField: false
-                pField: 0x2f
+          spareBytes: 4
+          errorDetection:
+              type: CRC-16-CCIIT
+          timeEncoding:
+              implicitPField: false
+              pField: 0x2f
         stream: tc_realtime
         useCop1: false
 

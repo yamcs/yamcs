@@ -17,7 +17,7 @@ TM[5,8] binary layout (simulator PusTmPacket with pfield=0x2F):
     [0..5]   6B CCSDS primary header
     [6..12]  7B PUS TM secondary header (version, type, subtype, counter(2), dest(2))
     [13..20] 8B CUC time (1B pfield=0x2F + 4B coarse + 3B fine, pfield not implicit)
-    [21]     N  — number of disabled events
+    [25]     N  — number of disabled events
     [22..]   N × uint8 event IDs
 """
 
@@ -36,8 +36,8 @@ CMD_REPORT  = "/PUS5/REPORT_DISABLED_LIST"
 CONTAINER   = "/PUS5/pus5-disabled-list"
 
 # Byte offset where app data starts in simulator TM[5,8] packets
-# 6B CCSDS + 7B PUS secondary header + 8B CUC time (pfield=0x2F, not implicit)
-APP_DATA_OFFSET = 21
+# 6B CCSDS + 7B PUS secondary header + 8B CUC time + 4B spare (pfield=0x2F, not implicit)
+APP_DATA_OFFSET = 25
 
 GREEN = "\033[32m"
 RED   = "\033[31m"
@@ -73,7 +73,7 @@ def run_tests():
             tm58_queue.get_nowait()
         cmd = cmd_conn.issue(CMD_REPORT)
         cmd.await_acknowledgment("Acknowledge_Sent", timeout=timeout)
-        cmd.await_acknowledgment("CommandComplete", timeout=timeout)
+        cmd.await_complete(timeout=timeout)
         raw = tm58_queue.get(timeout=timeout)
         n = raw[APP_DATA_OFFSET]
         ids = list(raw[APP_DATA_OFFSET + 1 : APP_DATA_OFFSET + 1 + n])
@@ -82,12 +82,14 @@ def run_tests():
     def tc_disable(events: list, timeout: float = 5.0):
         cmd = cmd_conn.issue(CMD_DISABLE, args={"N": len(events), "events": events})
         cmd.await_acknowledgment("Acknowledge_Sent", timeout=timeout)
-        return cmd.await_acknowledgment("CommandComplete", timeout=timeout)
+        cmd.await_complete(timeout=timeout)
+        return cmd
 
     def tc_enable(events: list, timeout: float = 5.0):
         cmd = cmd_conn.issue(CMD_ENABLE, args={"N": len(events), "events": events})
         cmd.await_acknowledgment("Acknowledge_Sent", timeout=timeout)
-        return cmd.await_acknowledgment("CommandComplete", timeout=timeout)
+        cmd.await_complete(timeout=timeout)
+        return cmd
 
     # Reset state: ensure all events are enabled before running tests
     tc_enable(["EVENT_1", "EVENT_2"])
@@ -101,7 +103,7 @@ def run_tests():
     # ── Test 2: Disable EVENT_1 ──────────────────────────────────────────
     print("\nTest 2: Disable EVENT_1")
     compl = tc_disable(["EVENT_1"])
-    check("TC[5,6] CommandComplete OK", compl.status == "OK", compl.status)
+    check("TC[5,6] CommandComplete OK", compl.is_success(), compl.error)
     count, ids = query_disabled()
     check("disabled_count == 1", count == 1, f"got {count}")
     check("EVENT_1 (id=1) in disabled list", 1 in ids, f"got {ids}")
@@ -110,7 +112,7 @@ def run_tests():
     # ── Test 3: Re-enable EVENT_1 ────────────────────────────────────────
     print("\nTest 3: Re-enable EVENT_1")
     compl = tc_enable(["EVENT_1"])
-    check("TC[5,5] CommandComplete OK", compl.status == "OK", compl.status)
+    check("TC[5,5] CommandComplete OK", compl.is_success(), compl.error)
     count, ids = query_disabled()
     check("disabled_count == 0", count == 0, f"got {count}")
     check("list empty after re-enable", ids == [], f"got {ids}")
@@ -118,7 +120,7 @@ def run_tests():
     # ── Test 4: Disable both events in one TC ────────────────────────────
     print("\nTest 4: Disable EVENT_1 and EVENT_2 in one TC[5,6]")
     compl = tc_disable(["EVENT_1", "EVENT_2"])
-    check("TC[5,6] CommandComplete OK", compl.status == "OK", compl.status)
+    check("TC[5,6] CommandComplete OK", compl.is_success(), compl.error)
     count, ids = query_disabled()
     check("disabled_count == 2", count == 2, f"got {count}")
     check("EVENT_1 (id=1) in list", 1 in ids, f"got {ids}")
@@ -127,7 +129,7 @@ def run_tests():
     # ── Test 5: Enable both events in one TC ─────────────────────────────
     print("\nTest 5: Enable EVENT_1 and EVENT_2 in one TC[5,5]")
     compl = tc_enable(["EVENT_1", "EVENT_2"])
-    check("TC[5,5] CommandComplete OK", compl.status == "OK", compl.status)
+    check("TC[5,5] CommandComplete OK", compl.is_success(), compl.error)
     count, ids = query_disabled()
     check("disabled_count == 0", count == 0, f"got {count}")
     check("list empty after enabling both", ids == [], f"got {ids}")
@@ -136,7 +138,7 @@ def run_tests():
     print("\nTest 6: Idempotency — disable EVENT_1 twice")
     tc_disable(["EVENT_1"])
     compl = tc_disable(["EVENT_1"])
-    check("second TC[5,6] for same event still OK", compl.status == "OK", compl.status)
+    check("second TC[5,6] for same event still OK", compl.is_success(), compl.error)
     count, ids = query_disabled()
     check("disabled_count still 1 (not doubled)", count == 1, f"got {count}")
     check("EVENT_1 (id=1) in list", 1 in ids, f"got {ids}")

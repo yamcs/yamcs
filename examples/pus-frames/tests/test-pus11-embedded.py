@@ -9,7 +9,7 @@ appends its CRC. The embedded packets are obtained with a dry run, so they have 
 sequence count.
 
 Scenario:
-  1. create scheduling group 1 and enable sub-schedule 1
+  1. enable the scheduler, create scheduling group 1 and enable sub-schedule 1
   2. obtain the binary of SWITCH_VOLTAGE_OFF / SWITCH_VOLTAGE_ON with a dry run
   3. insert both as two activities of one TC[11,4], released 6 and 10 seconds from now
   4. print the sequence counts assigned to the embedded TCs and the binary sent
@@ -17,7 +17,7 @@ Scenario:
 Check the simulator log: each scheduled command is printed with its sequence count and
 "CRC valid"; the voltage 1 goes off and on again when the activities are released.
 
-Run the example first:  ./run-example.sh pus-frames
+Run the example first and wait for time correlation:  ./run-example.sh pus-frames
 """
 
 import time
@@ -39,28 +39,39 @@ def dry_run_binary(processor, command_name, args):
     return processor.issue_command(command_name, args=args, dry_run=True).binary
 
 
+def issue_checked(cmd_conn, name, args=None):
+    command = cmd_conn.issue(name, args=args)
+    command.await_complete(timeout=15)
+    if not command.is_success():
+        raise ValueError(f"{name} failed: {command.error}")
+    return command
+
+
 if __name__ == "__main__":
     client = YamcsClient("localhost:8090")
     processor = client.get_processor("pus-frames", "realtime")
     cmd_conn = processor.create_command_connection()
 
-    print("Creating scheduling group", GROUP_ID, "and enabling sub-schedule", SUB_SCHEDULE_ID)
-    cmd_conn.issue(
+    print("Enabling the scheduler, creating group", GROUP_ID, "and enabling sub-schedule", SUB_SCHEDULE_ID)
+    issue_checked(cmd_conn, "/PUS11/ENABLE_SCHEDULER")
+    issue_checked(
+        cmd_conn,
         "/PUS11/CREATE_GROUPS",
         args={"num_groups": 1, "groups": [{"group_id": GROUP_ID, "status": "enabled"}]},
     )
-    cmd_conn.issue(
+    issue_checked(
+        cmd_conn,
         "/PUS11/ENABLE_SCHEDULE",
         args={"num_schedules": 1, "schedules": [SUB_SCHEDULE_ID]},
     )
-    time.sleep(1)
 
     tc_off = dry_run_binary(processor, "/SIMULATOR/SWITCH_VOLTAGE_OFF", {"voltage_num": 1})
     tc_on = dry_run_binary(processor, "/SIMULATOR/SWITCH_VOLTAGE_ON", {"voltage_num": 1})
     print("dry run SWITCH_VOLTAGE_OFF:", tc_off.hex())
     print("dry run SWITCH_VOLTAGE_ON: ", tc_on.hex())
 
-    command = cmd_conn.issue(
+    command = issue_checked(
+        cmd_conn,
         "/PUS11/INSERT_ACTIVITIES",
         args={
             "sub_schedule_id": SUB_SCHEDULE_ID,
@@ -71,10 +82,6 @@ if __name__ == "__main__":
             ],
         },
     )
-    ack = command.await_acknowledgment("Acknowledge_Sent")
-    if ack.status != "OK":
-        raise ValueError(f"Failed to send the command: {ack.status}")
-
     print("TC[11,4] ccsds-seqcount:", command.attributes.get("ccsds-seqcount"))
     for i in range(2):
         key = f"ccsds-seqcount:activities[{i}].tc"

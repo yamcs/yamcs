@@ -1,0 +1,594 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<SpaceSystem name="PUS131" xmlns="http://www.omg.org/spec/XTCE/20180204">
+	<CommandMetaData>
+		<ArgumentTypeSet>
+			<FloatArgumentType name="insert_downlink_operation_into_schedule__alt" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">m</Unit>
+				</UnitSet>
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst" />
+			</FloatArgumentType>
+			<IntegerArgumentType name="insert_downlink_operation_into_schedule__buffer_duration" signed="false" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">s</Unit>
+				</UnitSet>
+				<IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="mostSignificantByteFirst" />
+			</IntegerArgumentType>
+			<FloatArgumentType name="insert_downlink_operation_into_schedule__lat" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">deg</Unit>
+				</UnitSet>
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst" />
+			</FloatArgumentType>
+			<FloatArgumentType name="insert_downlink_operation_into_schedule__lon" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">deg</Unit>
+				</UnitSet>
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst" />
+			</FloatArgumentType>
+			<IntegerArgumentType name="insert_downlink_operation_into_schedule__radio_config" signed="false" sizeInBits="32" initialValue="0">
+				<IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+			</IntegerArgumentType>
+			<FloatArgumentType name="insert_emergency_imaging_operation_into_schedule__aoi_alt" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">m</Unit>
+				</UnitSet>
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst" />
+			</FloatArgumentType>
+			<FloatArgumentType name="insert_emergency_imaging_operation_into_schedule__aoi_lat" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">deg</Unit>
+				</UnitSet>
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst" />
+			</FloatArgumentType>
+			<FloatArgumentType name="insert_emergency_imaging_operation_into_schedule__aoi_lon" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">deg</Unit>
+				</UnitSet>
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst" />
+			</FloatArgumentType>
+			<IntegerArgumentType name="insert_emergency_imaging_operation_into_schedule__downlink_index" signed="false" sizeInBits="32" initialValue="0">
+				<IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+			</IntegerArgumentType>
+			<BooleanArgumentType name="insert_emergency_imaging_operation_into_schedule__erase_after_downlink" initialValue="False" zeroStringValue="False" oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanArgumentType>
+			<EnumeratedArgumentType name="insert_emergency_imaging_operation_into_schedule__image_type">
+				<IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+				<EnumerationList>
+					<Enumeration value="0" label="LINE_SCAN" />
+					<Enumeration value="1" label="FRAME" />
+				</EnumerationList>
+			</EnumeratedArgumentType>
+			<FloatArgumentType name="insert_emergency_imaging_operation_into_schedule__pitch_angle" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">deg</Unit>
+				</UnitSet>
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst" />
+			</FloatArgumentType>
+			<FloatArgumentType name="insert_emergency_imaging_operation_into_schedule__roll_angle" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">deg</Unit>
+				</UnitSet>
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst" />
+			</FloatArgumentType>
+			<IntegerArgumentType name="insert_emergency_imaging_operation_into_schedule__spare" signed="false" sizeInBits="32" initialValue="0">
+				<IntegerDataEncoding sizeInBits="7" encoding="unsigned" />
+				<ValidRangeSet validRangeAppliesToCalibrated="true">
+					<ValidRange minInclusive="0" maxInclusive="0" />
+				</ValidRangeSet>
+			</IntegerArgumentType>
+			<IntegerArgumentType name="insert_emergency_imaging_operation_into_schedule__trigger_interval" signed="false" sizeInBits="32" initialValue="0">
+				<UnitSet>
+					<Unit form="calibrated">us</Unit>
+				</UnitSet>
+				<IntegerDataEncoding sizeInBits="32" encoding="unsigned" byteOrder="mostSignificantByteFirst" />
+			</IntegerArgumentType>
+			<FloatArgumentType name="insert_imaging_operation_into_schedule__aoi_alt" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">m</Unit>
+				</UnitSet>
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst" />
+			</FloatArgumentType>
+			<FloatArgumentType name="insert_imaging_operation_into_schedule__aoi_lat" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">deg</Unit>
+				</UnitSet>
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst" />
+			</FloatArgumentType>
+			<FloatArgumentType name="insert_imaging_operation_into_schedule__aoi_lon" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">deg</Unit>
+				</UnitSet>
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst" />
+			</FloatArgumentType>
+			<IntegerArgumentType name="insert_imaging_operation_into_schedule__downlink_index" signed="false" sizeInBits="32" initialValue="0">
+				<IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+			</IntegerArgumentType>
+			<BooleanArgumentType name="insert_imaging_operation_into_schedule__erase_after_downlink" initialValue="False" zeroStringValue="False" oneStringValue="True">
+				<IntegerDataEncoding sizeInBits="1" encoding="unsigned" />
+			</BooleanArgumentType>
+			<EnumeratedArgumentType name="insert_imaging_operation_into_schedule__image_type">
+				<IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+				<EnumerationList>
+					<Enumeration value="0" label="LINE_SCAN" />
+					<Enumeration value="1" label="FRAME" />
+				</EnumerationList>
+			</EnumeratedArgumentType>
+			<FloatArgumentType name="insert_imaging_operation_into_schedule__pitch_angle" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">deg</Unit>
+				</UnitSet>
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst" />
+			</FloatArgumentType>
+			<FloatArgumentType name="insert_imaging_operation_into_schedule__roll_angle" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">deg</Unit>
+				</UnitSet>
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst" />
+			</FloatArgumentType>
+			<IntegerArgumentType name="insert_imaging_operation_into_schedule__spare" signed="false" sizeInBits="32" initialValue="0">
+				<IntegerDataEncoding sizeInBits="7" encoding="unsigned" />
+				<ValidRangeSet validRangeAppliesToCalibrated="true">
+					<ValidRange minInclusive="0" maxInclusive="0" />
+				</ValidRangeSet>
+			</IntegerArgumentType>
+			<IntegerArgumentType name="insert_imaging_operation_into_schedule__trigger_interval" signed="false" sizeInBits="32" initialValue="0">
+				<UnitSet>
+					<Unit form="calibrated">us</Unit>
+				</UnitSet>
+				<IntegerDataEncoding sizeInBits="32" encoding="unsigned" byteOrder="mostSignificantByteFirst" />
+			</IntegerArgumentType>
+			<EnumeratedArgumentType name="insert_orbit_control_manual_operation_into_schedule__operating_point" initialValue="DEFAULT">
+				<IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+				<EnumerationList>
+					<Enumeration value="0" label="DEFAULT" />
+					<Enumeration value="1" label="OP_1" />
+					<Enumeration value="2" label="OP_2" />
+					<Enumeration value="3" label="OP_3" />
+					<Enumeration value="4" label="OP_4" />
+				</EnumerationList>
+			</EnumeratedArgumentType>
+			<FloatArgumentType name="insert_orbit_control_manual_operation_into_schedule__pointing_param_x" sizeInBits="32">
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst" />
+			</FloatArgumentType>
+			<FloatArgumentType name="insert_orbit_control_manual_operation_into_schedule__pointing_param_y" sizeInBits="32">
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst" />
+			</FloatArgumentType>
+			<FloatArgumentType name="insert_orbit_control_manual_operation_into_schedule__pointing_param_z" sizeInBits="32">
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst" />
+			</FloatArgumentType>
+			<FloatArgumentType name="insert_pseudo_downlink_operation_into_schedule__alt" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">m</Unit>
+				</UnitSet>
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst" />
+			</FloatArgumentType>
+			<IntegerArgumentType name="insert_pseudo_downlink_operation_into_schedule__buffer_duration" signed="false" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">s</Unit>
+				</UnitSet>
+				<IntegerDataEncoding sizeInBits="16" encoding="unsigned" byteOrder="mostSignificantByteFirst" />
+			</IntegerArgumentType>
+			<FloatArgumentType name="insert_pseudo_downlink_operation_into_schedule__lat" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">deg</Unit>
+				</UnitSet>
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst" />
+			</FloatArgumentType>
+			<FloatArgumentType name="insert_pseudo_downlink_operation_into_schedule__lon" sizeInBits="32">
+				<UnitSet>
+					<Unit form="calibrated">deg</Unit>
+				</UnitSet>
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst" />
+			</FloatArgumentType>
+			<IntegerArgumentType name="insert_pseudo_downlink_operation_into_schedule__radio_config" signed="false" sizeInBits="32" initialValue="0">
+				<IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+			</IntegerArgumentType>
+			<EnumeratedArgumentType name="insert_pseudo_orbit_control_operation_into_schedule__operating_point" initialValue="DEFAULT">
+				<IntegerDataEncoding sizeInBits="8" encoding="unsigned" />
+				<EnumerationList>
+					<Enumeration value="0" label="DEFAULT" />
+					<Enumeration value="1" label="OP_1" />
+					<Enumeration value="2" label="OP_2" />
+					<Enumeration value="3" label="OP_3" />
+					<Enumeration value="4" label="OP_4" />
+				</EnumerationList>
+			</EnumeratedArgumentType>
+			<FloatArgumentType name="insert_pseudo_orbit_control_operation_into_schedule__pointing_param_x" sizeInBits="32">
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst" />
+			</FloatArgumentType>
+			<FloatArgumentType name="insert_pseudo_orbit_control_operation_into_schedule__pointing_param_y" sizeInBits="32">
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst" />
+			</FloatArgumentType>
+			<FloatArgumentType name="insert_pseudo_orbit_control_operation_into_schedule__pointing_param_z" sizeInBits="32">
+				<FloatDataEncoding sizeInBits="32" encoding="IEEE754_1985" byteOrder="mostSignificantByteFirst" />
+			</FloatArgumentType>
+		</ArgumentTypeSet>
+		<MetaCommandSet>
+			<MetaCommand name="pus131-tc" abstract="true">
+				<BaseMetaCommand metaCommandRef="/PUS/pus-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="apid" argumentValue="1" />
+						<ArgumentAssignment argumentName="type" argumentValue="131" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<CommandContainer name="pus131-tc">
+					<EntryList />
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="insert_downlink_operation_into_schedule" shortDescription="PUS TC[131, 4] command | Op Type: Downlink">
+				<LongDescription>Mission-body bit widths are PLACEHOLDERS pending the mission ICD.</LongDescription>
+				<BaseMetaCommand metaCommandRef="pus131-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="4" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="op_id" argumentTypeRef="/dt/uint32" />
+					<Argument name="window_start" argumentTypeRef="/PUS/PusTimeType" />
+					<Argument name="active_start" argumentTypeRef="/PUS/PusTimeType" />
+					<Argument name="active_end" argumentTypeRef="/PUS/PusTimeType" />
+					<Argument name="window_end" argumentTypeRef="/PUS/PusTimeType" />
+					<Argument name="lat" argumentTypeRef="insert_downlink_operation_into_schedule__lat" shortDescription="Latitude">
+						<LongDescription>Latitude, degrees</LongDescription>
+					</Argument>
+					<Argument name="lon" argumentTypeRef="insert_downlink_operation_into_schedule__lon" shortDescription="Longitude">
+						<LongDescription>Longitude, degrees</LongDescription>
+					</Argument>
+					<Argument name="alt" argumentTypeRef="insert_downlink_operation_into_schedule__alt" shortDescription="Altitude">
+						<LongDescription>Altitude, metres</LongDescription>
+					</Argument>
+					<Argument name="buffer_duration" argumentTypeRef="insert_downlink_operation_into_schedule__buffer_duration" shortDescription="Buffer duration" />
+					<Argument name="radio_config" argumentTypeRef="insert_downlink_operation_into_schedule__radio_config" shortDescription="Radio config">
+						<LongDescription>Optional</LongDescription>
+					</Argument>
+				</ArgumentList>
+				<CommandContainer name="insert_downlink_operation_into_schedule">
+					<EntryList>
+						<FixedValueEntry binaryValue="03" sizeInBits="8" name="op_type">
+              </FixedValueEntry>
+						<ArgumentRefEntry argumentRef="op_id">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="window_start">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="active_start">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="active_end">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="window_end">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="lat">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="lon">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="alt">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="buffer_duration">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="radio_config">
+              </ArgumentRefEntry>
+					</EntryList>
+					<BaseContainer containerRef="pus131-tc" />
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="insert_emergency_imaging_operation_into_schedule" shortDescription="PUS TC[131, 4] command | Op Type: Emergency_Imaging">
+				<LongDescription>Mission-body bit widths are PLACEHOLDERS pending the mission ICD.</LongDescription>
+				<BaseMetaCommand metaCommandRef="pus131-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="4" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="op_id" argumentTypeRef="/dt/uint32" />
+					<Argument name="window_start" argumentTypeRef="/PUS/PusTimeType" />
+					<Argument name="active_start" argumentTypeRef="/PUS/PusTimeType" />
+					<Argument name="active_end" argumentTypeRef="/PUS/PusTimeType" />
+					<Argument name="window_end" argumentTypeRef="/PUS/PusTimeType" />
+					<Argument name="aoi_lat" argumentTypeRef="insert_emergency_imaging_operation_into_schedule__aoi_lat" shortDescription="AOI latitude">
+						<LongDescription>Target latitude, degrees (PLACEHOLDER scaling)</LongDescription>
+					</Argument>
+					<Argument name="aoi_lon" argumentTypeRef="insert_emergency_imaging_operation_into_schedule__aoi_lon" shortDescription="AOI longitude">
+						<LongDescription>Target longitude, degrees (PLACEHOLDER scaling)</LongDescription>
+					</Argument>
+					<Argument name="aoi_alt" argumentTypeRef="insert_emergency_imaging_operation_into_schedule__aoi_alt" shortDescription="AOI altitude">
+						<LongDescription>Target altitude, metres</LongDescription>
+					</Argument>
+					<Argument name="roll_angle" argumentTypeRef="insert_emergency_imaging_operation_into_schedule__roll_angle" shortDescription="Roll angle">
+						<LongDescription>Ground fallback roll, degrees (PLACEHOLDER scaling)</LongDescription>
+					</Argument>
+					<Argument name="pitch_angle" argumentTypeRef="insert_emergency_imaging_operation_into_schedule__pitch_angle" shortDescription="Pitch angle">
+						<LongDescription>Ground fallback pitch, degrees (PLACEHOLDER scaling)</LongDescription>
+					</Argument>
+					<Argument name="image_size" argumentTypeRef="/dt/uint16" shortDescription="Image quanta">
+						<LongDescription>Capture duration in quanta (payload controller)</LongDescription>
+					</Argument>
+					<Argument name="image_type" argumentTypeRef="insert_emergency_imaging_operation_into_schedule__image_type" shortDescription="Image type" />
+					<Argument name="band_config" argumentTypeRef="/dt/uint16" shortDescription="Bandset / band config" />
+					<Argument name="trigger_interval" argumentTypeRef="insert_emergency_imaging_operation_into_schedule__trigger_interval" shortDescription="Trigger interval">
+						<LongDescription>Optional; AOCS refines it</LongDescription>
+					</Argument>
+					<Argument name="tdi_stages" argumentTypeRef="/dt/uint8" shortDescription="TDI stages" />
+					<Argument name="downlink_index" argumentTypeRef="insert_emergency_imaging_operation_into_schedule__downlink_index" shortDescription="Downlink index" />
+					<Argument name="erase_after_downlink" argumentTypeRef="insert_emergency_imaging_operation_into_schedule__erase_after_downlink" shortDescription="Erase after downlink" />
+					<Argument name="spare" argumentTypeRef="insert_emergency_imaging_operation_into_schedule__spare" shortDescription="Spare (pad to byte)" />
+				</ArgumentList>
+				<CommandContainer name="insert_emergency_imaging_operation_into_schedule">
+					<EntryList>
+						<FixedValueEntry binaryValue="02" sizeInBits="8" name="op_type">
+              </FixedValueEntry>
+						<ArgumentRefEntry argumentRef="op_id">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="window_start">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="active_start">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="active_end">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="window_end">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="aoi_lat">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="aoi_lon">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="aoi_alt">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="roll_angle">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="pitch_angle">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="image_size">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="image_type">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="band_config">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="trigger_interval">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="tdi_stages">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="downlink_index">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="erase_after_downlink">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="spare">
+              </ArgumentRefEntry>
+					</EntryList>
+					<BaseContainer containerRef="pus131-tc" />
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="insert_imaging_operation_into_schedule" shortDescription="PUS TC[131, 4] command | Op Type: Imaging">
+				<LongDescription>Mission-body bit widths are PLACEHOLDERS pending the mission ICD.</LongDescription>
+				<BaseMetaCommand metaCommandRef="pus131-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="4" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="op_id" argumentTypeRef="/dt/uint32" />
+					<Argument name="window_start" argumentTypeRef="/PUS/PusTimeType" />
+					<Argument name="active_start" argumentTypeRef="/PUS/PusTimeType" />
+					<Argument name="active_end" argumentTypeRef="/PUS/PusTimeType" />
+					<Argument name="window_end" argumentTypeRef="/PUS/PusTimeType" />
+					<Argument name="aoi_lat" argumentTypeRef="insert_imaging_operation_into_schedule__aoi_lat" shortDescription="AOI latitude">
+						<LongDescription>Target latitude, degrees (PLACEHOLDER scaling)</LongDescription>
+					</Argument>
+					<Argument name="aoi_lon" argumentTypeRef="insert_imaging_operation_into_schedule__aoi_lon" shortDescription="AOI longitude">
+						<LongDescription>Target longitude, degrees (PLACEHOLDER scaling)</LongDescription>
+					</Argument>
+					<Argument name="aoi_alt" argumentTypeRef="insert_imaging_operation_into_schedule__aoi_alt" shortDescription="AOI altitude">
+						<LongDescription>Target altitude, metres</LongDescription>
+					</Argument>
+					<Argument name="roll_angle" argumentTypeRef="insert_imaging_operation_into_schedule__roll_angle" shortDescription="Roll angle">
+						<LongDescription>Ground fallback roll, degrees (PLACEHOLDER scaling)</LongDescription>
+					</Argument>
+					<Argument name="pitch_angle" argumentTypeRef="insert_imaging_operation_into_schedule__pitch_angle" shortDescription="Pitch angle">
+						<LongDescription>Ground fallback pitch, degrees (PLACEHOLDER scaling)</LongDescription>
+					</Argument>
+					<Argument name="image_size" argumentTypeRef="/dt/uint16" shortDescription="Image quanta">
+						<LongDescription>Capture duration in quanta (payload controller)</LongDescription>
+					</Argument>
+					<Argument name="image_type" argumentTypeRef="insert_imaging_operation_into_schedule__image_type" shortDescription="Image type" />
+					<Argument name="band_config" argumentTypeRef="/dt/uint16" shortDescription="Bandset / band config" />
+					<Argument name="trigger_interval" argumentTypeRef="insert_imaging_operation_into_schedule__trigger_interval" shortDescription="Trigger interval">
+						<LongDescription>Optional; AOCS refines it</LongDescription>
+					</Argument>
+					<Argument name="tdi_stages" argumentTypeRef="/dt/uint8" shortDescription="TDI stages" />
+					<Argument name="downlink_index" argumentTypeRef="insert_imaging_operation_into_schedule__downlink_index" shortDescription="Downlink index" />
+					<Argument name="erase_after_downlink" argumentTypeRef="insert_imaging_operation_into_schedule__erase_after_downlink" shortDescription="Erase after downlink" />
+					<Argument name="spare" argumentTypeRef="insert_imaging_operation_into_schedule__spare" shortDescription="Spare (pad to byte)" />
+				</ArgumentList>
+				<CommandContainer name="insert_imaging_operation_into_schedule">
+					<EntryList>
+						<FixedValueEntry binaryValue="01" sizeInBits="8" name="op_type">
+              </FixedValueEntry>
+						<ArgumentRefEntry argumentRef="op_id">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="window_start">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="active_start">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="active_end">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="window_end">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="aoi_lat">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="aoi_lon">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="aoi_alt">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="roll_angle">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="pitch_angle">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="image_size">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="image_type">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="band_config">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="trigger_interval">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="tdi_stages">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="downlink_index">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="erase_after_downlink">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="spare">
+              </ArgumentRefEntry>
+					</EntryList>
+					<BaseContainer containerRef="pus131-tc" />
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="insert_orbit_control_manual_operation_into_schedule" shortDescription="PUS TC[131, 4] command | Op Type: Orbit_Control_Manual">
+				<LongDescription>Mission-body bit widths are PLACEHOLDERS pending the mission ICD.</LongDescription>
+				<BaseMetaCommand metaCommandRef="pus131-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="4" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="op_id" argumentTypeRef="/dt/uint32" />
+					<Argument name="window_start" argumentTypeRef="/PUS/PusTimeType" />
+					<Argument name="active_start" argumentTypeRef="/PUS/PusTimeType" />
+					<Argument name="active_end" argumentTypeRef="/PUS/PusTimeType" />
+					<Argument name="window_end" argumentTypeRef="/PUS/PusTimeType" />
+					<Argument name="pointing_param_x" argumentTypeRef="insert_orbit_control_manual_operation_into_schedule__pointing_param_x" shortDescription="Pointing parameter X">
+						<LongDescription>PLACEHOLDER: pointing_params layout is AOCS-defined</LongDescription>
+					</Argument>
+					<Argument name="pointing_param_y" argumentTypeRef="insert_orbit_control_manual_operation_into_schedule__pointing_param_y" shortDescription="Pointing parameter Y" />
+					<Argument name="pointing_param_z" argumentTypeRef="insert_orbit_control_manual_operation_into_schedule__pointing_param_z" shortDescription="Pointing parameter Z" />
+					<Argument name="operating_point" argumentTypeRef="insert_orbit_control_manual_operation_into_schedule__operating_point" shortDescription="Operating point">
+						<LongDescription>Optional; 0 = onboard default (context memory)</LongDescription>
+					</Argument>
+				</ArgumentList>
+				<CommandContainer name="insert_orbit_control_manual_operation_into_schedule">
+					<EntryList>
+						<FixedValueEntry binaryValue="04" sizeInBits="8" name="op_type">
+              </FixedValueEntry>
+						<ArgumentRefEntry argumentRef="op_id">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="window_start">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="active_start">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="active_end">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="window_end">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="pointing_param_x">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="pointing_param_y">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="pointing_param_z">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="operating_point">
+              </ArgumentRefEntry>
+					</EntryList>
+					<BaseContainer containerRef="pus131-tc" />
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="insert_pseudo_downlink_operation_into_schedule" shortDescription="PUS TC[131, 4] command | Op Type: Pseudo_Downlink">
+				<LongDescription>Mission-body bit widths are PLACEHOLDERS pending the mission ICD.</LongDescription>
+				<BaseMetaCommand metaCommandRef="pus131-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="4" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="op_id" argumentTypeRef="/dt/uint32" />
+					<Argument name="window_start" argumentTypeRef="/PUS/PusTimeType" />
+					<Argument name="window_end" argumentTypeRef="/PUS/PusTimeType" />
+					<Argument name="lat" argumentTypeRef="insert_pseudo_downlink_operation_into_schedule__lat" shortDescription="Latitude">
+						<LongDescription>Latitude, degrees</LongDescription>
+					</Argument>
+					<Argument name="lon" argumentTypeRef="insert_pseudo_downlink_operation_into_schedule__lon" shortDescription="Longitude">
+						<LongDescription>Longitude, degrees</LongDescription>
+					</Argument>
+					<Argument name="alt" argumentTypeRef="insert_pseudo_downlink_operation_into_schedule__alt" shortDescription="Altitude">
+						<LongDescription>Altitude, metres</LongDescription>
+					</Argument>
+					<Argument name="buffer_duration" argumentTypeRef="insert_pseudo_downlink_operation_into_schedule__buffer_duration" shortDescription="Buffer duration" />
+					<Argument name="radio_config" argumentTypeRef="insert_pseudo_downlink_operation_into_schedule__radio_config" shortDescription="Radio config">
+						<LongDescription>Optional</LongDescription>
+					</Argument>
+				</ArgumentList>
+				<CommandContainer name="insert_pseudo_downlink_operation_into_schedule">
+					<EntryList>
+						<FixedValueEntry binaryValue="06" sizeInBits="8" name="op_type">
+              </FixedValueEntry>
+						<ArgumentRefEntry argumentRef="op_id">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="window_start">
+              </ArgumentRefEntry>
+						<FixedValueEntry binaryValue="000000000000" sizeInBits="48" name="active_start">
+              </FixedValueEntry>
+						<FixedValueEntry binaryValue="000000000000" sizeInBits="48" name="active_end">
+              </FixedValueEntry>
+						<ArgumentRefEntry argumentRef="window_end">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="lat">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="lon">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="alt">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="buffer_duration">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="radio_config">
+              </ArgumentRefEntry>
+					</EntryList>
+					<BaseContainer containerRef="pus131-tc" />
+				</CommandContainer>
+			</MetaCommand>
+			<MetaCommand name="insert_pseudo_orbit_control_operation_into_schedule" shortDescription="PUS TC[131, 4] command | Op Type: Pseudo_Orbit_Control">
+				<LongDescription>Mission-body bit widths are PLACEHOLDERS pending the mission ICD.</LongDescription>
+				<BaseMetaCommand metaCommandRef="pus131-tc">
+					<ArgumentAssignmentList>
+						<ArgumentAssignment argumentName="subtype" argumentValue="4" />
+					</ArgumentAssignmentList>
+				</BaseMetaCommand>
+				<ArgumentList>
+					<Argument name="op_id" argumentTypeRef="/dt/uint32" />
+					<Argument name="window_start" argumentTypeRef="/PUS/PusTimeType" />
+					<Argument name="window_end" argumentTypeRef="/PUS/PusTimeType" />
+					<Argument name="pointing_param_x" argumentTypeRef="insert_pseudo_orbit_control_operation_into_schedule__pointing_param_x" shortDescription="Pointing parameter X">
+						<LongDescription>PLACEHOLDER: pointing_params layout is AOCS-defined</LongDescription>
+					</Argument>
+					<Argument name="pointing_param_y" argumentTypeRef="insert_pseudo_orbit_control_operation_into_schedule__pointing_param_y" shortDescription="Pointing parameter Y" />
+					<Argument name="pointing_param_z" argumentTypeRef="insert_pseudo_orbit_control_operation_into_schedule__pointing_param_z" shortDescription="Pointing parameter Z" />
+					<Argument name="operating_point" argumentTypeRef="insert_pseudo_orbit_control_operation_into_schedule__operating_point" shortDescription="Operating point">
+						<LongDescription>Optional; 0 = onboard default (context memory)</LongDescription>
+					</Argument>
+				</ArgumentList>
+				<CommandContainer name="insert_pseudo_orbit_control_operation_into_schedule">
+					<EntryList>
+						<FixedValueEntry binaryValue="07" sizeInBits="8" name="op_type">
+              </FixedValueEntry>
+						<ArgumentRefEntry argumentRef="op_id">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="window_start">
+              </ArgumentRefEntry>
+						<FixedValueEntry binaryValue="000000000000" sizeInBits="48" name="active_start">
+              </FixedValueEntry>
+						<FixedValueEntry binaryValue="000000000000" sizeInBits="48" name="active_end">
+              </FixedValueEntry>
+						<ArgumentRefEntry argumentRef="window_end">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="pointing_param_x">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="pointing_param_y">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="pointing_param_z">
+              </ArgumentRefEntry>
+						<ArgumentRefEntry argumentRef="operating_point">
+              </ArgumentRefEntry>
+					</EntryList>
+					<BaseContainer containerRef="pus131-tc" />
+				</CommandContainer>
+			</MetaCommand>
+		</MetaCommandSet>
+	</CommandMetaData>
+</SpaceSystem>

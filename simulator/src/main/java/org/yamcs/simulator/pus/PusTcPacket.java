@@ -24,16 +24,31 @@ import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
  */
 public class PusTcPacket extends SimulatorCcsdsPacket {
     public static final int SH_OFFSET = 6;
-    public static final int DATA_OFFSET = SH_OFFSET + 5;
+    static final int HEADER_LENGTH = SH_OFFSET + 5;
+    public static final int DATA_OFFSET = HEADER_LENGTH + PusPacketConfig.DEFAULT.spareBytes();
 
     static final CrcCciitCalculator crcCalculator = new CrcCciitCalculator();
+    private final int dataOffset;
+    private final int crcLength;
 
     public PusTcPacket(byte[] packet) {
+        this(packet, PusPacketConfig.DEFAULT.spareBytes(), PusPacketConfig.DEFAULT.tcCrc());
+    }
+
+    public PusTcPacket(byte[] packet, int spareBytes, boolean crc) {
         super(packet);
+        dataOffset = HEADER_LENGTH + spareBytes;
+        crcLength = crc ? 2 : 0;
     }
 
     public PusTcPacket(int apid, int userDataLength, int ackFlags, int type, int subtype) {
-        super(ByteBuffer.allocate(getPacketLength(userDataLength)));
+        this(apid, userDataLength, ackFlags, type, subtype, PusPacketConfig.DEFAULT.spareBytes(),
+                PusPacketConfig.DEFAULT.tcCrc());
+    }
+
+    public PusTcPacket(int apid, int userDataLength, int ackFlags, int type, int subtype, int spareBytes,
+            boolean crc) {
+        this(new byte[HEADER_LENGTH + spareBytes + userDataLength + (crc ? 2 : 0)], spareBytes, crc);
         setHeader(apid, 1, 1, 3, getSeq(apid));
 
         bb.position(SH_OFFSET);
@@ -64,37 +79,40 @@ public class PusTcPacket extends SimulatorCcsdsPacket {
         return bb.getShort(SH_OFFSET + 3) & 0xFFFF;
     }
 
-    private static int getPacketLength(int userDataLength) {
-        return DATA_OFFSET + userDataLength + 2;// 2 bytes for the CRC
-    }
-
     public int getAckFlags() {
-        return bb.get(DATA_OFFSET);
+        return bb.get(SH_OFFSET) & 0x0F;
     }
 
     @Override
     public ByteBuffer getUserDataBuffer() {
-        bb.position(DATA_OFFSET);
-        return bb.slice();
+        return bb.slice(dataOffset, bb.capacity() - dataOffset - crcLength);
     }
 
-    /**
-     * @return true if the last two bytes of the packet contain a valid CRC of the rest of the packet
-     */
+    boolean isValid() {
+        return bb.capacity() >= dataOffset + crcLength
+                && (bb.get(0) & 0xF8) == 0x18
+                && (bb.get(SH_OFFSET) >>> 4 & 0xF) == 2
+                && (bb.getShort(4) & 0xFFFF) + 7 == bb.capacity()
+                && isChecksumValid();
+    }
+
     public boolean isChecksumValid() {
-        byte[] b = getBytes();
-        if (b.length < 2) {
-            return false;
-        }
-        int crc = crcCalculator.compute(b, 0, b.length - 2);
-        return crc == (((b[b.length - 2] & 0xFF) << 8) | (b[b.length - 1] & 0xFF));
+        int end = bb.capacity() - crcLength;
+        return crcLength == 0 || (end >= 0
+                && crcCalculator.compute(bb.array(), bb.arrayOffset(), end) == (bb.getShort(end) & 0xFFFF));
     }
 
     @Override
     protected void fillChecksum() {
-        int crc = crcCalculator.compute(bb.array(), bb.arrayOffset(), bb.capacity() - bb.arrayOffset() - 2);
-        bb.position(bb.capacity() - 2);
-        bb.putShort((short) crc);
+        if (crcLength != 0) {
+            writeChecksum(bb);
+        }
+    }
+
+    static void writeChecksum(ByteBuffer packet) {
+        int end = packet.capacity() - 2;
+        int crc = crcCalculator.compute(packet.array(), packet.arrayOffset(), end);
+        packet.putShort(end, (short) crc);
     }
     @Override
     public String toString() {

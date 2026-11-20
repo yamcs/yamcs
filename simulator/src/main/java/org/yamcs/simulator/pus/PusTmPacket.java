@@ -1,11 +1,10 @@
 package org.yamcs.simulator.pus;
 
 import java.nio.ByteBuffer;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yamcs.simulator.SimulatorCcsdsPacket;
-import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
 
 /**
  * TM packets according to PUS standard
@@ -13,7 +12,7 @@ import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
  * 
  * 
  * <pre>
- * Secondary header (16 bytes)
+ * Secondary header
  * 
  *  version number - 4 bits
  *  spacecraft time reference status - 4 bits
@@ -21,7 +20,8 @@ import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
  *  message subtype  - 8 bits
  *  message type counter - 16 bits
  *  destination Id - 16 bits
- *  time - variable size but we use 9 bytes
+ *  time - configurable CUC width
+ *  spare field - four bytes in the current profile
  * </pre>
  * 
  * 
@@ -30,16 +30,24 @@ import org.yamcs.tctm.ccsds.error.CrcCciitCalculator;
  */
 public class PusTmPacket extends SimulatorCcsdsPacket {
     public static final int SH_OFFSET = 6;
-    public static final int DATA_OFFSET = SH_OFFSET + 7 + PusTimeEncoding.DEFAULT.getEncodedLength();
+    private static final int TIME_OFFSET = SH_OFFSET + 7;
+    public static final int DATA_OFFSET = TIME_OFFSET + PusTimeEncoding.DEFAULT.getEncodedLength()
+            + PusPacketConfig.DEFAULT.spareBytes();
 
-    static final CrcCciitCalculator crcCalculator = new CrcCciitCalculator();
-
-    protected static HashMap<Integer, AtomicInteger> countMap = new HashMap<>(2); // destination -> msgCounter
+    private static final ConcurrentHashMap<Integer, AtomicInteger> countMap = new ConcurrentHashMap<>();
     private final int dataOffset;
+    private final int spareBytes;
+    private final int crcLength;
 
     public PusTmPacket(byte[] packet) {
+        this(packet, PusTimeEncoding.DEFAULT, PusPacketConfig.DEFAULT.spareBytes(), PusPacketConfig.DEFAULT.tmCrc());
+    }
+
+    public PusTmPacket(byte[] packet, PusTimeEncoding timeEncoding, int spareBytes, boolean crc) {
         super(packet);
-        dataOffset = DATA_OFFSET;
+        this.spareBytes = spareBytes;
+        this.crcLength = crc ? 2 : 0;
+        dataOffset = TIME_OFFSET + timeEncoding.getEncodedLength() + spareBytes;
     }
 
     public PusTmPacket(int apid, int userDataLength, int type, int subtype) {
@@ -47,8 +55,14 @@ public class PusTmPacket extends SimulatorCcsdsPacket {
     }
 
     public PusTmPacket(int apid, int userDataLength, int type, int subtype, PusTimeEncoding timeEncoding) {
-        super(ByteBuffer.allocate(getPacketLength(userDataLength, timeEncoding)));
-        dataOffset = SH_OFFSET + 7 + timeEncoding.getEncodedLength();
+        this(apid, userDataLength, type, subtype, timeEncoding, PusPacketConfig.DEFAULT.spareBytes(),
+                PusPacketConfig.DEFAULT.tmCrc());
+    }
+
+    public PusTmPacket(int apid, int userDataLength, int type, int subtype, PusTimeEncoding timeEncoding,
+            int spareBytes, boolean crc) {
+        this(new byte[TIME_OFFSET + timeEncoding.getEncodedLength() + spareBytes + userDataLength + (crc ? 2 : 0)],
+                timeEncoding, spareBytes, crc);
         setHeader(apid, 0, 1, 3, getSeq(apid));
         bb.position(SH_OFFSET);
         bb.put((byte) (0x21));
@@ -78,12 +92,14 @@ public class PusTmPacket extends SimulatorCcsdsPacket {
         return bb.get(SH_OFFSET + 2) & 0xFF;
     }
 
-    private static int getPacketLength(int userDataLength) {
-        return getPacketLength(userDataLength, PusTimeEncoding.DEFAULT);
-    }
-
-    private static int getPacketLength(int userDataLength, PusTimeEncoding timeEncoding) {
-        return SH_OFFSET + 7 + timeEncoding.getEncodedLength() + userDataLength + 2;// 2 bytes for the CRC
+    void setPage(int pageNumber, int totalPages) {
+        if (pageNumber < 1 || totalPages < pageNumber || totalPages > 0xFFFF) {
+            throw new IllegalArgumentException("Invalid report page " + pageNumber + " of " + totalPages);
+        }
+        if (spareBytes == 4) {
+            bb.putShort(dataOffset - 4, (short) pageNumber);
+            bb.putShort(dataOffset - 2, (short) totalPages);
+        }
     }
 
     public int getUserDataOffset() {
@@ -92,15 +108,14 @@ public class PusTmPacket extends SimulatorCcsdsPacket {
 
     @Override
     public ByteBuffer getUserDataBuffer() {
-        bb.position(dataOffset);
-        return bb.slice();
+        return bb.slice(dataOffset, bb.capacity() - dataOffset - crcLength);
     }
 
     @Override
     protected void fillChecksum() {
-        int crc = crcCalculator.compute(bb.array(), bb.arrayOffset(), bb.capacity() - bb.arrayOffset() - 2);
-        bb.position(bb.capacity() - 2);
-        bb.putShort((short) crc);
+        if (crcLength != 0) {
+            PusTcPacket.writeChecksum(bb);
+        }
     }
 
     protected static int getCount(int apid) {

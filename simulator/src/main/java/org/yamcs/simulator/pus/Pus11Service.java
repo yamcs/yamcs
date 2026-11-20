@@ -2,9 +2,9 @@ package org.yamcs.simulator.pus;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -39,14 +39,40 @@ public class Pus11Service extends AbstractPusService {
     private ScheduledFuture<?> scheduledFuture;
 
     // subschedule id -> subschedule status (true = enabled, false = disabled)
-    Map<Integer, Boolean> subschStatus = new HashMap<>();
+    Map<Long, Boolean> subschStatus = new HashMap<>();
 
     // scheduling group id -> group status (true = enabled, false = disabled).
     // Groups only exist after an explicit TC[11,22]; there is no auto-creation.
-    Map<Integer, Boolean> groupStatus = new HashMap<>();
+    Map<Long, Boolean> groupStatus = new HashMap<>();
+
+    private final Pus11ScheduleConfig config;
 
     Pus11Service(PusSimulator pusSimulator) {
         super(pusSimulator, 11);
+        config = pusSimulator.scheduleConfig;
+    }
+
+    private static long readId(ByteBuffer data, int width) {
+        long value = 0;
+        for (int i = 0; i < width; i++) {
+            value = (value << 8) | Byte.toUnsignedInt(data.get());
+        }
+        return value;
+    }
+
+    private static void writeId(ByteBuffer data, long value, int width) {
+        for (int i = width - 1; i >= 0; i--) {
+            data.put((byte) (value >>> (i * 8)));
+        }
+    }
+
+    private static Set<Long> readIds(ByteBuffer data, int width) {
+        int count = Byte.toUnsignedInt(data.get());
+        Set<Long> ids = new HashSet<>();
+        for (int i = 0; i < count; i++) {
+            ids.add(readId(data, width));
+        }
+        return ids;
     }
 
     @Override
@@ -128,7 +154,7 @@ public class Pus11Service extends AbstractPusService {
 
     private void insertActivities(PusTcPacket tc) {
         ByteBuffer bb = tc.getUserDataBuffer();
-        int subschedule = bb.get() & 0xFF;
+        long subschedule = readId(bb, config.subScheduleBytes());
         int n = bb.get() & 0xFF;
 
         log.info("Received {} command(s) for subschedule {}", n, subschedule);
@@ -149,13 +175,30 @@ public class Pus11Service extends AbstractPusService {
         // Parse and validate all activities before applying any change, so that a request referencing an
         // unknown group (ECSS 6.11.4.5g.3) or a release time in the past is rejected as a whole and leaves the
         // schedule untouched.
+        if (n == 0) {
+            nack_start(tc, START_ERR_INVALID_EMBEDDED_TC);
+            return;
+        }
         List<ScheduledCommand> parsed = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
-            int group = bb.get() & 0xFF;
-            PusTime releaseTime = pusSimulator.timeEncoding.read(bb);
+            long group = readId(bb, config.groupBytes());
+            PusTime releaseTime = config.tcTime().read(bb);
+            if (bb.remaining() < 7) {
+                nack_start(tc, START_ERR_INVALID_EMBEDDED_TC);
+                return;
+            }
             int length = (bb.getShort(bb.position() + 4) & 0xFFFF) + 7;
+            if (length > bb.remaining()) {
+                nack_start(tc, START_ERR_INVALID_EMBEDDED_TC);
+                return;
+            }
             byte[] packet = new byte[length];
             bb.get(packet);
+            PusTcPacket embedded = pusSimulator.embeddedTc(packet);
+            if (!embedded.isValid()) {
+                nack_start(tc, START_ERR_INVALID_EMBEDDED_TC);
+                return;
+            }
 
             synchronized (groupStatus) {
                 if (!groupStatus.containsKey(group)) {
@@ -164,9 +207,13 @@ public class Pus11Service extends AbstractPusService {
                     return;
                 }
             }
-            parsed.add(new ScheduledCommand(releaseTime, subschedule, group, new PusTcPacket(packet)));
+            parsed.add(new ScheduledCommand(releaseTime, subschedule, group, embedded));
         }
 
+        if (bb.hasRemaining()) {
+            nack_start(tc, START_ERR_INVALID_EMBEDDED_TC);
+            return;
+        }
         ack_start(tc);
 
         for (var sc : parsed) {
@@ -199,14 +246,15 @@ public class Pus11Service extends AbstractPusService {
     private void createGroups(PusTcPacket tc) {
         ByteBuffer bb = tc.getUserDataBuffer();
         int n = bb.get() & 0xFF;
-        int[] ids = new int[n];
+        long[] ids = new long[n];
         boolean[] groupEnabled = new boolean[n];
+        Set<Long> seen = new HashSet<>();
 
         synchronized (groupStatus) {
             for (int i = 0; i < n; i++) {
-                ids[i] = bb.get() & 0xFF;
+                ids[i] = readId(bb, config.groupBytes());
                 groupEnabled[i] = (bb.get() & 0xFF) != 0;
-                if (groupStatus.containsKey(ids[i])) {
+                if (groupStatus.containsKey(ids[i]) || !seen.add(ids[i])) {
                     log.warn("Rejecting TC[11,22]: scheduling group {} already exists", ids[i]);
                     nack_start(tc, START_ERR_GROUP_EXISTS);
                     return;
@@ -238,7 +286,7 @@ public class Pus11Service extends AbstractPusService {
                 ack_start(tc);
                 var it = groupStatus.keySet().iterator();
                 while (it.hasNext()) {
-                    int group = it.next();
+                    long group = it.next();
                     if (groupHasActivities(group)) {
                         log.warn("Not deleting scheduling group {}: it has associated activities", group);
                     } else {
@@ -247,9 +295,9 @@ public class Pus11Service extends AbstractPusService {
                     }
                 }
             } else {
-                int[] ids = new int[n];
+                long[] ids = new long[n];
                 for (int i = 0; i < n; i++) {
-                    ids[i] = bb.get() & 0xFF;
+                    ids[i] = readId(bb, config.groupBytes());
                     if (!groupStatus.containsKey(ids[i])) {
                         log.warn("Rejecting TC[11,23]: scheduling group {} does not exist", ids[i]);
                         nack_start(tc, START_ERR_UNKNOWN_GROUP);
@@ -262,7 +310,7 @@ public class Pus11Service extends AbstractPusService {
                     }
                 }
                 ack_start(tc);
-                for (int id : ids) {
+                for (long id : ids) {
                     groupStatus.remove(id);
                     log.info("Deleted scheduling group {}", id);
                 }
@@ -292,9 +340,9 @@ public class Pus11Service extends AbstractPusService {
                 groupStatus.replaceAll((id, status) -> groupEnabled);
                 log.info("{} all scheduling groups", groupEnabled ? "Enabled" : "Disabled");
             } else {
-                int[] ids = new int[n];
+                long[] ids = new long[n];
                 for (int i = 0; i < n; i++) {
-                    ids[i] = bb.get() & 0xFF;
+                    ids[i] = readId(bb, config.groupBytes());
                     if (!groupStatus.containsKey(ids[i])) {
                         log.warn("Rejecting TC[11,{}]: scheduling group {} does not exist",
                                 groupEnabled ? 24 : 25, ids[i]);
@@ -303,7 +351,7 @@ public class Pus11Service extends AbstractPusService {
                     }
                 }
                 ack_start(tc);
-                for (int id : ids) {
+                for (long id : ids) {
                     groupStatus.put(id, groupEnabled);
                     log.info("{} scheduling group {}", groupEnabled ? "Enabled" : "Disabled", id);
                 }
@@ -317,12 +365,12 @@ public class Pus11Service extends AbstractPusService {
         ack_start(tc);
 
         synchronized (groupStatus) {
-            var pkt = newPacket(27, 4 + groupStatus.size() * 2);
+            var pkt = newPacket(27, 4 + groupStatus.size() * (config.groupBytes() + 1));
             var bb = pkt.getUserDataBuffer();
 
             bb.putInt(groupStatus.size());
             for (var me : groupStatus.entrySet()) {
-                bb.put(me.getKey().byteValue());
+                writeId(bb, me.getKey(), config.groupBytes());
                 bb.put((byte) (me.getValue() ? 1 : 0));
             }
             pusSimulator.transmitRealtimeTM(pkt);
@@ -331,7 +379,7 @@ public class Pus11Service extends AbstractPusService {
         ack_completion(tc);
     }
 
-    private boolean groupHasActivities(int group) {
+    private boolean groupHasActivities(long group) {
         for (var cmd : commands) {
             if (cmd.group == group) {
                 return true;
@@ -430,12 +478,12 @@ public class Pus11Service extends AbstractPusService {
         ack_start(tc);
 
         synchronized (subschStatus) {
-            var pkt = newPacket(19, 4 + subschStatus.size() * 2);
+            var pkt = newPacket(19, 4 + subschStatus.size() * (config.subScheduleBytes() + 1));
             var bb = pkt.getUserDataBuffer();
 
             bb.putInt(subschStatus.size());
             for (var me : subschStatus.entrySet()) {
-                bb.put(me.getKey().byteValue());
+                writeId(bb, me.getKey(), config.subScheduleBytes());
                 bb.put((byte) (me.getValue() ? 1 : 0));
             }
             pusSimulator.transmitRealtimeTM(pkt);
@@ -494,7 +542,7 @@ public class Pus11Service extends AbstractPusService {
         int n = bb.get() & 0xFF;
         synchronized (subschStatus) {
             for (int i = 0; i < n; i++) {
-                int subschedule = bb.get() & 0xFF;
+                long subschedule = readId(bb, config.subScheduleBytes());
                 subschStatus.put(subschedule, true);
                 log.info("Enabled subschedule {}", subschedule);
             }
@@ -508,7 +556,7 @@ public class Pus11Service extends AbstractPusService {
         int n = bb.get() & 0xFF;
         synchronized (subschStatus) {
             for (int i = 0; i < n; i++) {
-                int subschedule = bb.get() & 0xFF;
+                long subschedule = readId(bb, config.subScheduleBytes());
                 subschStatus.put(subschedule, false);
                 log.info("Disabled subschedule {}", subschedule);
             }
@@ -516,67 +564,72 @@ public class Pus11Service extends AbstractPusService {
         ack_completion(tc);
     }
 
-    private void sendSummaryReport(Collection<ScheduledCommand> cmds) {
-        // per activity: sub-schedule id, group id, release time and packed request id
-        int timeBits = pusSimulator.timeEncoding.getEncodedLength() * PusPackedFields.OCTET_BITS;
-        long entryBits = 2 * PusPackedFields.OCTET_BITS + timeBits + 16
-                + PusPackedFields.APID_BITS + PusPackedFields.SEQCOUNT_BITS;
-        long reportBits = 16L + cmds.size() * entryBits;
-        var pkt = newPacket(13, PusPackedFields.bytesForBits(reportBits));
-        BitBuffer bits = PusPackedFields.bitBuffer(pkt.getUserDataBuffer());
-        bits.putBits(cmds.size(), 16);
-        for (var cmd : cmds) {
-            bits.putBits(cmd.subschedule, PusPackedFields.OCTET_BITS);
-            bits.putBits(cmd.group, PusPackedFields.OCTET_BITS);
-            ByteBuffer encodedTime = ByteBuffer.allocate(pusSimulator.timeEncoding.getEncodedLength());
-            cmd.releaseTime.encode(encodedTime, pusSimulator.timeEncoding);
-            PusPackedFields.putBytes(bits, encodedTime.array());
-            encodeRequestId(bits, cmd.tc);
-        }
-        pusSimulator.transmitRealtimeTM(pkt);
-    }
+    private static final int MAX_REPORT_BYTES = 1400;
 
-    private static final int MAX_DETAIL_REPORT_SIZE = 1400;
-
-    private void sendDetailReport(Collection<ScheduledCommand> cmds) {
-        Iterator<ScheduledCommand> iterator = cmds.iterator();
-        // command taken from the iterator that did not fit in the previous batch
-        ScheduledCommand carry = null;
-
-        while (carry != null || iterator.hasNext()) {
-            int totalSize = 4;
-            List<ScheduledCommand> batch = new ArrayList<>();
-
-            while (carry != null || iterator.hasNext()) {
-                ScheduledCommand cmd = carry != null ? carry : iterator.next();
-                carry = null;
-                // sub-schedule id, group id, release time and the command itself
-                int cmdSize = 2 + pusSimulator.timeEncoding.getEncodedLength() + cmd.tc.getLength();
-
-                // an oversized command still goes out, alone in its own report
-                if (!batch.isEmpty() && totalSize + cmdSize > MAX_DETAIL_REPORT_SIZE) {
-                    carry = cmd;
-                    break;
-                }
-
-                batch.add(cmd);
-                totalSize += cmdSize;
+    private void sendSummaryReport(Collection<ScheduledCommand> commands) {
+        List<ScheduledCommand> rows = List.copyOf(commands);
+        var timeEncoding = pusSimulator.timeEncoding;
+        int timeBits = timeEncoding.getEncodedLength() * 8;
+        int entryBits = (config.subScheduleBytes() + config.groupBytes()) * 8 + timeBits
+                + 16 + PusPackedFields.APID_BITS + PusPackedFields.SEQCOUNT_BITS;
+        int rowsPerPage = (MAX_REPORT_BYTES * 8 - 16) / entryBits;
+        int pages = Math.max(1, (rows.size() + rowsPerPage - 1) / rowsPerPage);
+        ByteBuffer encodedTime = ByteBuffer.allocate(timeEncoding.getEncodedLength());
+        for (int page = 0; page < pages; page++) {
+            int begin = page * rowsPerPage;
+            int count = Math.min(rowsPerPage, rows.size() - begin);
+            var packet = newPacket(13, PusPackedFields.bytesForBits(16L + (long) count * entryBits));
+            packet.setPage(page + 1, pages);
+            BitBuffer bits = PusPackedFields.bitBuffer(packet.getUserDataBuffer());
+            bits.putBits(count, 16);
+            for (var cmd : rows.subList(begin, begin + count)) {
+                bits.putBits(cmd.subschedule, config.subScheduleBytes() * 8);
+                bits.putBits(cmd.group, config.groupBytes() * 8);
+                encodedTime.clear();
+                cmd.releaseTime.encode(encodedTime, timeEncoding);
+                PusPackedFields.putBytes(bits, encodedTime.array());
+                encodeRequestId(bits, cmd.tc);
             }
-
-            var pkt = newPacket(10, totalSize);
-            var bb = pkt.getUserDataBuffer();
-
-            bb.putShort((short) batch.size());
-            for (var cmd : batch) {
-                bb.put((byte) cmd.subschedule);
-                bb.put((byte) cmd.group);
-                cmd.releaseTime.encode(bb, pusSimulator.timeEncoding);
-                bb.put(cmd.tc.getBytes());
-            }
-            pusSimulator.transmitRealtimeTM(pkt);
+            pusSimulator.transmitRealtimeTM(packet);
         }
     }
 
+    private void sendDetailReport(Collection<ScheduledCommand> commands) {
+        var timeEncoding = pusSimulator.timeEncoding;
+        int rowHeader = config.subScheduleBytes() + config.groupBytes() + timeEncoding.getEncodedLength();
+        List<List<ScheduledCommand>> pages = new ArrayList<>();
+        List<ScheduledCommand> page = new ArrayList<>();
+        pages.add(page);
+        int size = 1;
+        for (var cmd : commands) {
+            int rowSize = rowHeader + cmd.tc.getLength();
+            if (!page.isEmpty() && (size + rowSize > MAX_REPORT_BYTES || page.size() == 255)) {
+                page = new ArrayList<>();
+                pages.add(page);
+                size = 1;
+            }
+            page.add(cmd);
+            size += rowSize;
+        }
+        for (int i = 0; i < pages.size(); i++) {
+            var rows = pages.get(i);
+            int length = 1 + rows.size() * rowHeader;
+            for (var cmd : rows) {
+                length += cmd.tc.getLength();
+            }
+            var packet = newPacket(10, length);
+            packet.setPage(i + 1, pages.size());
+            ByteBuffer data = packet.getUserDataBuffer();
+            data.put((byte) rows.size());
+            for (var cmd : rows) {
+                writeId(data, cmd.subschedule, config.subScheduleBytes());
+                writeId(data, cmd.group, config.groupBytes());
+                cmd.releaseTime.encode(data, timeEncoding);
+                data.put(cmd.tc.getBytes());
+            }
+            pusSimulator.transmitRealtimeTM(packet);
+        }
+    }
 
     private List<ScheduledCommand> filterById(ByteBuffer bb, boolean remove) {
         List<ScheduledCommand> cmds = new ArrayList<>();
@@ -610,28 +663,25 @@ public class Pus11Service extends AbstractPusService {
         int type = bb.get() & 0xFF; // Type of time window (enumerated)
 
         // First time tag (for "from time tag" types)
-        PusTime timeTag1 = (type == 1 || type == 2) ? pusSimulator.timeEncoding.read(bb) : null;
+        PusTime timeTag1 = (type == 1 || type == 2) ? config.tcTime().read(bb) : null;
         // Second time tag (for "to time tag" types)
-        PusTime timeTag2 = (type == 1 || type == 3) ? pusSimulator.timeEncoding.read(bb) : null;
+        PusTime timeTag2 = (type == 1 || type == 3) ? config.tcTime().read(bb) : null;
 
-        BitSet subschedules = null;
-        // Read the number of sub-schedules
-        int n = bb.get() & 0xFF;
-        if (n > 0) {
-            subschedules = new BitSet();
-            for (int i = 0; i < n; i++) {
-                int subschedule = bb.get() & 0xFF;
-                subschedules.set(subschedule);
-            }
+        Set<Long> subschedules = readIds(bb, config.subScheduleBytes());
+        Set<Long> groups = readIds(bb, config.groupBytes());
+        if (bb.hasRemaining()) {
+            throw new IllegalArgumentException("Unexpected bytes after PUS 11 schedule filter");
         }
-        log.info("Filter start_time: {}, end_time: {}, subschedules: {}", timeTag1, timeTag2, subschedules);
+        log.info("Filter start_time: {}, end_time: {}, subschedules: {}, groups: {}",
+                timeTag1, timeTag2, subschedules, groups);
 
         // Iterate over scheduled commands and remove matching ones
         Iterator<ScheduledCommand> iterator = commands.iterator();
         List<ScheduledCommand> result = new ArrayList<>();
         while (iterator.hasNext()) {
             ScheduledCommand cmd = iterator.next();
-            if (subschedules == null || subschedules.get(cmd.subschedule)) {
+            if ((subschedules.isEmpty() || subschedules.contains(cmd.subschedule))
+                    && (groups.isEmpty() || groups.contains(cmd.group))) {
                 boolean matches = switch (type) {
                 // "select all"
                 case 0 -> true;
@@ -726,11 +776,11 @@ public class Pus11Service extends AbstractPusService {
 
     static class ScheduledCommand implements Comparable<ScheduledCommand> {
         PusTime releaseTime;
-        final int subschedule;
-        final int group;
+        final long subschedule;
+        final long group;
         final PusTcPacket tc;
 
-        public ScheduledCommand(PusTime releaseTime, int subschedule, int group, PusTcPacket tc) {
+        public ScheduledCommand(PusTime releaseTime, long subschedule, long group, PusTcPacket tc) {
             super();
             this.releaseTime = releaseTime;
             this.subschedule = subschedule;

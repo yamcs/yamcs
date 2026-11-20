@@ -40,7 +40,6 @@ import java.util.Map;
  * <p>
  * Verification checks performed on the request of a TC[19,1] instruction (§6.19.8.1d): the embedded
  * packet's CCSDS length must fit in the remaining data and it must be a telecommand (packet type 1).
- * The CRC is only logged, like every other TC this simulator receives.
  */
 public class Pus19Service extends AbstractPusService {
 
@@ -116,7 +115,7 @@ public class Pus19Service extends AbstractPusService {
             return;
         }
         try {
-            PusTcPacket released = new PusTcPacket(def.request);
+            PusTcPacket released = pusSimulator.embeddedTc(def.request);
             log.info("ST19: event ({},{}) fired, releasing stored request TC type={} subtype={}",
                     appProcessId, eventDefId, released.getType(), released.getSubtype());
             pusSimulator.processTc(released);
@@ -178,9 +177,8 @@ public class Pus19Service extends AbstractPusService {
      *
      * @return null if the request fails the verification checks
      */
-    private static byte[] readRequest(ByteBuffer bb) {
-        // the user data buffer ends with the CRC of the TC[19,1] itself, which is not part of the request
-        int available = bb.remaining() - 2;
+    private byte[] readRequest(ByteBuffer bb) {
+        int available = bb.remaining();
         if (available < 7) {
             return null;
         }
@@ -192,11 +190,11 @@ public class Pus19Service extends AbstractPusService {
         }
         byte[] request = new byte[length];
         bb.get(request);
-        return request;
+        return pusSimulator.embeddedTc(request).isValid() ? request : null;
     }
 
-    private static String describe(byte[] request) {
-        PusTcPacket p = new PusTcPacket(request);
+    private String describe(byte[] request) {
+        PusTcPacket p = pusSimulator.embeddedTc(request);
         return String.format("TC[%d,%d] apid=%d seq count=%d CRC %s", p.getType(), p.getSubtype(), p.getAPID(),
                 p.getSequenceCount(), p.isChecksumValid() ? "valid" : "INVALID");
     }
