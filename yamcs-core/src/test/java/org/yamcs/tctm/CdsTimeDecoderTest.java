@@ -93,9 +93,30 @@ public class CdsTimeDecoderTest {
         // the first second of the following day (the packet preprocessor uses decodeDayTime instead)
         assertEquals("2017-01-01T00:00:00.500Z", toUtc(ctd.decode(b, 0)));
 
+        // a free running on-board clock has no leap seconds, so the raw time refuses them
+        byte[] b1 = b;
+        assertThrows(IllegalArgumentException.class, () -> ctd.decodeRaw(b1, 0));
+
         // the last millisecond of a leap second, 86400999 = 0x05265FE7, is the largest valid value
         b = StringConverter.hexStringToArray("542D05265FE7");
         assertEquals(new CdsTimeDecoder.DayTime(21549, 86_400_999), ctd.decodeDayTime(b, 0));
+    }
+
+    @Test
+    public void testInvalidSubmillisecond() {
+        // 999 = 0x03E7 microseconds is the maximum, 1000 = 0x03E8 is invalid
+        CdsTimeDecoder us = new CdsTimeDecoder(0x41);
+        assertEquals(1_909_568_478_284_999L, us.decodeRaw(StringConverter.hexStringToArray("56550282104C03E7"), 0));
+        byte[] b = StringConverter.hexStringToArray("56550282104C03E8");
+        assertThrows(IllegalArgumentException.class, () -> us.decodeRaw(b, 0));
+        assertThrows(IllegalArgumentException.class, () -> us.decodeDayTime(b, 0));
+
+        // 999999999 = 0x3B9AC9FF picoseconds is the maximum, 1000000000 = 0x3B9ACA00 is invalid
+        CdsTimeDecoder ps = new CdsTimeDecoder(0x42);
+        assertEquals(1_909_568_478_284_999L,
+                ps.decodeRaw(StringConverter.hexStringToArray("56550282104C3B9AC9FF"), 0));
+        byte[] b2 = StringConverter.hexStringToArray("56550282104C3B9ACA00");
+        assertThrows(IllegalArgumentException.class, () -> ps.decodeRaw(b2, 0));
     }
 
     @Test

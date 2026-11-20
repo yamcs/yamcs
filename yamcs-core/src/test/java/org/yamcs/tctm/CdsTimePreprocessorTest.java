@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,10 +16,12 @@ import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.tctm.ccsds.time.CdsTimeEncoder;
+import org.yamcs.tctm.cfs.CfsPacketPreprocessor;
 import org.yamcs.utils.StringConverter;
 import org.yamcs.utils.TaiUtcConverter.DateTimeComponents;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.protobuf.Db.Event;
+import org.yaml.snakeyaml.Yaml;
 
 /**
  * Checks the CDS time decoder configured in a packet preprocessor, including the conversion from UTC days to Yamcs
@@ -33,7 +36,11 @@ public class CdsTimePreprocessorTest {
     }
 
     static GenericPacketPreprocessor preprocessor(Map<String, Object> timeEncoding) {
-        Map<String, Object> args = new HashMap<>();
+        return preprocessor(timeEncoding, Map.of());
+    }
+
+    static GenericPacketPreprocessor preprocessor(Map<String, Object> timeEncoding, Map<String, Object> otherArgs) {
+        Map<String, Object> args = new HashMap<>(otherArgs);
         args.put("timestampOffset", 0);
         args.put("seqCountOffset", -1);
         args.put("timeEncoding", timeEncoding);
@@ -42,8 +49,7 @@ public class CdsTimePreprocessorTest {
 
     @Test
     public void test1958Epoch() {
-        var pp = preprocessor(Map.of("type", "CDS", "implicitPField", 0x40,
-                "epoch", "CUSTOM", "epochUTC", "1958-01-01T00:00:00Z", "timeIncludesLeapSeconds", false));
+        var pp = preprocessor1958();
 
         // day 22101, ms of day 42078284 (see CdsTimeDecoderTest)
         byte[] packet = StringConverter.hexStringToArray("56550282104C00000000");
@@ -57,7 +63,7 @@ public class CdsTimePreprocessorTest {
     @Test
     public void testUnixEpoch() {
         // agency defined epoch 1970-01-01 (pfield 0x48), explicit pfield in the packet
-        var pp = preprocessor(Map.of("type", "CDS", "epoch", "UNIX"));
+        var pp = preprocessor(Map.of("type", "CDS", "epochDate", "1970-01-01"));
 
         // 1970-01-01 to 2018-07-06 is 17718 = 0x4536 days
         byte[] packet = StringConverter.hexStringToArray("4845360282104C00000000");
@@ -68,8 +74,15 @@ public class CdsTimePreprocessorTest {
     }
 
     static GenericPacketPreprocessor preprocessor1958() {
-        return preprocessor(Map.of("type", "CDS", "implicitPField", 0x40,
-                "epoch", "CUSTOM", "epochUTC", "1958-01-01T00:00:00Z", "timeIncludesLeapSeconds", false));
+        return preprocessor(Map.of("type", "CDS", "implicitPField", 0x40, "epochDate", "1958-01-01"));
+    }
+
+    @Test
+    public void testEpochDateFromYaml() {
+        // YAML reads an unquoted date as a java.util.Date
+        Map<String, Object> timeEncoding = new Yaml().load("type: CDS\nimplicitPField: 0x40\nepochDate: 1958-01-01");
+        var pp = preprocessor(timeEncoding);
+        assertEquals("2018-07-06T11:41:18.284Z", genTime(pp, "56550282104C"));
     }
 
     static TmPacket process(GenericPacketPreprocessor pp, String hex) {
@@ -102,9 +115,9 @@ public class CdsTimePreprocessorTest {
     }
 
     @Test
-    public void testLeapSecondUnixEpoch() {
+    public void testLeapSecond1970Epoch() {
         // 1970-01-01 to 2016-12-31 is 17166 = 0x430E days
-        var pp = preprocessor(Map.of("type", "CDS", "implicitPField", 0x48, "epoch", "UNIX"));
+        var pp = preprocessor(Map.of("type", "CDS", "implicitPField", 0x48, "epochDate", "1970-01-01"));
         assertEquals("2016-12-31T23:59:60.500Z", genTime(pp, "430E05265DF4"));
     }
 
@@ -124,21 +137,43 @@ public class CdsTimePreprocessorTest {
         assertTimeError(pp, "542C05265C00", "day 21548: that day has no leap second");
         // 86401000 = 0x05265FE8 is never valid
         assertTimeError(pp, "542D05265FE8", "Invalid CDS millisecond of day 86401000");
-        // epochs that include the leap seconds have no leap second days
-        var ppTai = preprocessor(Map.of("type", "CDS", "implicitPField", 0x40, "epoch", "TAI"));
-        assertTimeError(ppTai, "542D05265DF4", "that day has no leap second");
+    }
+
+    static void assertConfigError(Map<String, Object> timeEncoding, String expectedMessage) {
+        var e = assertThrows(ConfigurationException.class, () -> preprocessor(timeEncoding));
+        assertTrue(e.getMessage().contains(expectedMessage), e.getMessage());
     }
 
     @Test
-    public void testEpochNotAtMidnight() {
-        assertThrows(ConfigurationException.class, () -> preprocessor(Map.of("type", "CDS", "implicitPField", 0x40,
-                "epoch", "CUSTOM", "epochUTC", "2000-01-01T12:00:00Z", "timeIncludesLeapSeconds", false)));
+    public void testConfigErrors() {
+        // the generic epoch options do not apply to CDS
+        assertConfigError(Map.of("type", "CDS", "epochDate", "1958-01-01", "epoch", "UNIX"), "'epoch'");
+        assertConfigError(Map.of("type", "CDS", "epoch", "CUSTOM", "epochUTC", "1958-01-01T00:00:00Z",
+                "timeIncludesLeapSeconds", false), "cannot be used with the CDS time decoder");
+        assertConfigError(Map.of("type", "CDS", "epochDate", "1958-01-01", "timeIncludesLeapSeconds", false),
+                "'timeIncludesLeapSeconds'");
+        // no silent default
+        assertConfigError(Map.of("type", "CDS"), "requires the option 'epochDate'");
+        // the raw time needs a time correlation service
+        assertConfigError(Map.of("type", "CDS", "epochDate", "NONE"), "requires a time correlation service");
+        // not a date
+        assertConfigError(Map.of("type", "CDS", "epochDate", "1958-13-01"), "invalid epochDate");
+        assertConfigError(Map.of("type", "CDS", "epochDate", "1958-01-01T00:00:00Z"), "invalid epochDate");
+        assertConfigError(Map.of("type", "CDS", "epochDate", 1958), "invalid epochDate");
+        // an unquoted date and time in the YAML file
+        Map<String, Object> noon = new Yaml().load("type: CDS\nepochDate: 1958-01-01T12:00:00Z");
+        assertConfigError(noon, "epochDate has to be a date without a time");
+
+        // the CFS preprocessor ignores the decoder and would use the generic epoch
+        var e = assertThrows(ConfigurationException.class, () -> new CfsPacketPreprocessor("test", YConfiguration
+                .wrap(Map.of("timeEncoding", Map.of("type", "CDS", "epochDate", "1958-01-01")))));
+        assertTrue(e.getMessage().contains("cannot be CDS"), e.getMessage());
     }
 
     @Test
     public void testRoundTripAroundLeapSeconds() {
         var pp = preprocessor1958();
-        CdsTimeEncoder cte = new CdsTimeEncoder(0x40, true, TimeEncoding.parse("1958-01-01T00:00:00Z"));
+        CdsTimeEncoder cte = new CdsTimeEncoder(0x40, true, LocalDate.of(1958, 1, 1));
         // two leap seconds (end of June and end of December) and a day without one
         long[] starts = { utc(2015, 6, 30, 23, 59, 58, 0), utc(2016, 12, 31, 23, 59, 58, 0),
                 utc(2016, 12, 30, 23, 59, 58, 0) };

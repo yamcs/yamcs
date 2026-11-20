@@ -5,10 +5,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.yamcs.ConfigurationException;
 import org.yamcs.TmPacket;
 import org.yamcs.YConfiguration;
 import org.yamcs.tctm.AbstractPacketPreprocessor;
 import org.yamcs.tctm.CcsdsPacketPreprocessor;
+import org.yamcs.tctm.ccsds.time.CdsTimeDecoder;
 import org.yamcs.utils.ByteArrayUtils;
 import org.yamcs.utils.TimeEncoding;
 
@@ -69,6 +71,10 @@ public class CfsPacketPreprocessor extends CcsdsPacketPreprocessor {
         super(yamcsInstance, config);
         if (!config.containsKey(CONFIG_KEY_TIME_ENCODING)) {
             this.timeEpoch = TimeEpochs.GPS;
+        } else if (timeDecoder instanceof CdsTimeDecoder) {
+            throw new ConfigurationException(
+                    "The CFS packet preprocessor reads the time from the secondary header with a fixed format; "
+                            + "the timeEncoding type cannot be CDS");
         }
     }
 

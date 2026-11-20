@@ -18,6 +18,7 @@ import org.yamcs.utils.TimeEncoding;
  * and millisecond of day 42078284 (0x0282104C).
  */
 public class CdsTimeEncoderTest {
+    static final LocalDate EPOCH_1958 = LocalDate.of(1958, 1, 1);
     static long epoch1958;
     static long t;
     // the same time as raw microseconds: (22101 * 86400000 + 42078284) * 1000
@@ -50,34 +51,34 @@ public class CdsTimeEncoderTest {
 
     @Test
     public void testImplicit() {
-        CdsTimeEncoder cte = new CdsTimeEncoder(0x40, true, epoch1958);
+        CdsTimeEncoder cte = new CdsTimeEncoder(0x40, true, EPOCH_1958);
         assertEquals(6, cte.getEncodedLength());
         assertEquals("56550282104C", encode(cte, t));
     }
 
     @Test
     public void testExplicit() {
-        CdsTimeEncoder cte = new CdsTimeEncoder(0x40, false, epoch1958);
+        CdsTimeEncoder cte = new CdsTimeEncoder(0x40, false, EPOCH_1958);
         assertEquals(7, cte.getEncodedLength());
         assertEquals("4056550282104C", encode(cte, t));
     }
 
     @Test
     public void test24BitDay() {
-        CdsTimeEncoder cte = new CdsTimeEncoder(0x44, false, epoch1958);
+        CdsTimeEncoder cte = new CdsTimeEncoder(0x44, false, EPOCH_1958);
         assertEquals("440056550282104C", encode(cte, t));
     }
 
     @Test
     public void testUnixEpoch() {
         // 1970-01-01 to 2018-07-06 is 17718 = 0x4536 days
-        CdsTimeEncoder cte = new CdsTimeEncoder(0x48, false, TimeEncoding.parse("1970-01-01T00:00:00Z"));
+        CdsTimeEncoder cte = new CdsTimeEncoder(0x48, false, LocalDate.of(1970, 1, 1));
         assertEquals("4845360282104C", encode(cte, t));
     }
 
     @Test
     public void testMicroseconds() {
-        CdsTimeEncoder cte = new CdsTimeEncoder(0x41, true, epoch1958);
+        CdsTimeEncoder cte = new CdsTimeEncoder(0x41, true, EPOCH_1958);
         // the microsecond segment is 0 when encoding an instant
         assertEquals("56550282104C0000", encode(cte, t));
         // raw time is in microseconds: 789 us = 0x0315
@@ -86,7 +87,7 @@ public class CdsTimeEncoderTest {
 
     @Test
     public void testPicoseconds() {
-        CdsTimeEncoder cte = new CdsTimeEncoder(0x42, true, epoch1958);
+        CdsTimeEncoder cte = new CdsTimeEncoder(0x42, true, EPOCH_1958);
         assertEquals("56550282104C00000000", encode(cte, t));
         // 789 us = 789000000 ps = 0x2F072F40
         assertEquals("56550282104C2F072F40", encodeRaw(cte, T_RAW + 789));
@@ -95,7 +96,7 @@ public class CdsTimeEncoderTest {
     @Test
     public void testLeapSecond() {
         // 2016-12-31 is day 21549 = 0x542D since 1958-01-01 and ends with a leap second
-        CdsTimeEncoder cte = new CdsTimeEncoder(0x40, true, epoch1958);
+        CdsTimeEncoder cte = new CdsTimeEncoder(0x40, true, EPOCH_1958);
         // 23:59:59.999: 86399999 = 0x05265BFF
         assertEquals("542D05265BFF", encode(cte, utc(2016, 12, 31, 23, 59, 59, 999)));
         // 23:59:60.000 and 23:59:60.500: 86400000 = 0x05265C00 and 86400500 = 0x05265DF4
@@ -109,7 +110,7 @@ public class CdsTimeEncoderTest {
 
     @Test
     public void testDecoderReadsLeapSecond() {
-        CdsTimeEncoder cte = new CdsTimeEncoder(0x41, false, epoch1958);
+        CdsTimeEncoder cte = new CdsTimeEncoder(0x41, false, EPOCH_1958);
         CdsTimeDecoder ctd = new CdsTimeDecoder(-1);
         byte[] b = new byte[cte.getEncodedLength()];
         cte.encode(utc(2016, 12, 31, 23, 59, 60, 500), b, 0);
@@ -119,7 +120,7 @@ public class CdsTimeEncoderTest {
     @Test
     public void testRoundTripRaw() {
         for (int pfield : new int[] { 0x40, 0x41, 0x42, 0x44, 0x45, 0x46, 0x48 }) {
-            CdsTimeEncoder cte = new CdsTimeEncoder(pfield, false, epoch1958);
+            CdsTimeEncoder cte = new CdsTimeEncoder(pfield, false, EPOCH_1958);
             CdsTimeDecoder ctd = new CdsTimeDecoder(-1);
             byte[] b = new byte[cte.getEncodedLength()];
             long raw = T_RAW + 123;
@@ -130,7 +131,7 @@ public class CdsTimeEncoderTest {
 
     @Test
     public void testOutOfRange() {
-        CdsTimeEncoder cte = new CdsTimeEncoder(0x40, true, epoch1958);
+        CdsTimeEncoder cte = new CdsTimeEncoder(0x40, true, EPOCH_1958);
         byte[] b = new byte[6];
         // the 16 bit day segment holds days 0 to 65535, so day 65536 does not fit
         long day65536 = TimeEncoding.parse(LocalDate.of(1958, 1, 1).plusDays(65536) + "T00:00:00Z");
@@ -147,9 +148,6 @@ public class CdsTimeEncoderTest {
 
     @Test
     public void testInvalidConfig() {
-        assertThrows(IllegalArgumentException.class, () -> new CdsTimeEncoder(0x2E, true, epoch1958));
-        // the epoch has to be the start of a day
-        long noon = TimeEncoding.parse("1958-01-01T12:00:00Z");
-        assertThrows(IllegalArgumentException.class, () -> new CdsTimeEncoder(0x40, true, noon));
+        assertThrows(IllegalArgumentException.class, () -> new CdsTimeEncoder(0x2E, true, EPOCH_1958));
     }
 }

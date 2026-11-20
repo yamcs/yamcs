@@ -1,6 +1,9 @@
 package org.yamcs.tctm;
 
 import java.nio.ByteOrder;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.Date;
 import java.util.Map;
 
 import org.yamcs.ConfigurationException;
@@ -67,7 +70,11 @@ import org.yamcs.utils.TimeEncoding;
  * </pre>
  * 
  * If this option is not configured, the default will be different for each pre-processor.
- * 
+ * <p>
+ * The CDS time decoder ({@code type: CDS}) counts UTC days, so it does not use {@code epoch}, {@code epochUTC} and
+ * {@code timeIncludesLeapSeconds}. It requires instead {@code epochDate}: the date of day 0 (for example
+ * {@code 1958-01-01}), or {@code NONE} for a raw on-board time converted by the time correlation service.
+ *
  * @author nm
  *
  */
@@ -104,6 +111,10 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
     // and is a unix time if customEpochIncludeLeapSecond=false
     protected long customEpoch;
     protected boolean customEpochIncludeLeapSecond;
+
+    // for the CDS time decoder: the epochDate as number of days since 1970-01-01. The timeEpoch is not used with CDS,
+    // except that it is NONE when the epochDate is NONE.
+    protected long cdsEpochDay;
 
     protected TimeDecoder timeDecoder = null;
     protected ByteOrder byteOrder = ByteOrder.BIG_ENDIAN;
@@ -151,23 +162,69 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
         if (!useLocalGenerationTime && config != null && config.containsKey(CONFIG_KEY_TIME_ENCODING)) {
             YConfiguration c = config.getConfig(CONFIG_KEY_TIME_ENCODING);
             timeDecoder = getDecoder(c);
-            timeEpoch = c.getEnum("epoch", TimeEpochs.class, TimeEpochs.GPS);
+            if (timeDecoder instanceof CdsTimeDecoder) {
+                configureCdsEpoch(c, config.containsKey(CONFIG_KEY_TCO_SERVICE));
+            } else {
+                timeEpoch = c.getEnum("epoch", TimeEpochs.class, TimeEpochs.GPS);
+            }
             if (timeEpoch == TimeEpochs.CUSTOM) {
                 customEpochIncludeLeapSecond = c.getBoolean("timeIncludesLeapSeconds", true);
                 String epochs = c.getString("epochUTC");
                 customEpoch = TimeEncoding.parse(epochs);
                 if (!customEpochIncludeLeapSecond) {
                     customEpoch = TimeEncoding.toUnixMillisec(customEpoch);
-                    if (timeDecoder instanceof CdsTimeDecoder
-                            && Math.floorMod(customEpoch, CdsTimeDecoder.MILLIS_PER_DAY) != 0) {
-                        throw new ConfigurationException(
-                                "The CDS time counts days from the epoch: epochUTC has to be at 00:00:00 UTC");
-                    }
                 }
             }
             log.debug("Using time decoder {}", timeDecoder);
         }
 
+    }
+
+    /**
+     * CDS counts UTC days, so the time scale is fixed and only the date of day 0 is configured, with the
+     * {@code epochDate} option. {@code epochDate: NONE} means that the time is a raw on-board count passed to the time
+     * correlation service.
+     */
+    private void configureCdsEpoch(YConfiguration c, boolean hasTcoService) {
+        for (String key : new String[] { "epoch", "epochUTC", "timeIncludesLeapSeconds" }) {
+            if (c.containsKey(key)) {
+                throw new ConfigurationException(c.getPath(), "the option '" + key
+                        + "' cannot be used with the CDS time decoder; use 'epochDate' to set the date of day 0");
+            }
+        }
+        if (!c.containsKey("epochDate")) {
+            throw new ConfigurationException(c.getPath(),
+                    "the CDS time decoder requires the option 'epochDate' (a date such as 1958-01-01, or NONE)");
+        }
+        Object o = c.get("epochDate");
+        if ("NONE".equalsIgnoreCase(String.valueOf(o))) {
+            if (!hasTcoService) {
+                throw new ConfigurationException(c.getPath(),
+                        "'epochDate: NONE' requires a time correlation service, set with the 'tcoService' option");
+            }
+            timeEpoch = TimeEpochs.NONE;
+            return;
+        }
+        LocalDate epochDate;
+        if (o instanceof Date d) {
+            // an unquoted date in the YAML file
+            long millis = d.getTime();
+            if (Math.floorMod(millis, CdsTimeDecoder.MILLIS_PER_DAY) != 0) {
+                throw new ConfigurationException(c.getPath(), "epochDate has to be a date without a time");
+            }
+            epochDate = LocalDate.ofEpochDay(Math.floorDiv(millis, CdsTimeDecoder.MILLIS_PER_DAY));
+        } else if (o instanceof String s) {
+            try {
+                epochDate = LocalDate.parse(s);
+            } catch (DateTimeParseException e) {
+                throw new ConfigurationException(c.getPath(),
+                        "invalid epochDate '" + s + "': expected a date such as 1958-01-01, or NONE");
+            }
+        } else {
+            throw new ConfigurationException(c.getPath(),
+                    "invalid epochDate " + o + ": expected a date such as 1958-01-01, or NONE");
+        }
+        cdsEpochDay = epochDate.toEpochDay();
     }
 
     private TimeDecoder getDecoder(YConfiguration c) {
@@ -282,7 +339,7 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
 
         byte[] packet = tmPacket.getPacket();
         try {
-            if (timeEpoch == null || timeEpoch == TimeEpochs.NONE) {
+            if (isRawTime()) {
                 long obt = timeDecoder.decodeRaw(packet, offset);
                 tmPacket.setObt(obt);
                 tcoService.timestamp(obt, tmPacket);
@@ -306,16 +363,27 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
     }
 
     /**
+     * Returns true if the decoded time is a raw on-board time, to be converted by the time correlation service.
+     */
+    private boolean isRawTime() {
+        if (timeDecoder instanceof CdsTimeDecoder) {
+            return timeEpoch == TimeEpochs.NONE;
+        }
+        return timeEpoch == null || timeEpoch == TimeEpochs.NONE;
+    }
+
+    /**
      * Converts a CDS day and millisecond of day to a Yamcs instant.
      * <p>
-     * CDS counts UTC days and the millisecond of day goes up to 86400999 during a leap second (CCSDS 301.0-B-4 Annex
-     * A). The Yamcs instants include the leap seconds, so the time is the start of the day plus the millisecond of
-     * day. A leap second is only accepted on a day that has one, which requires a UTC based epoch.
+     * CDS counts UTC days from the {@code epochDate} and the millisecond of day goes up to 86400999 during a leap
+     * second (CCSDS 301.0-B-4 Annex A). The Yamcs instants include the leap seconds, so the time is the start of the
+     * day plus the millisecond of day. A leap second is only accepted on a day that has one.
      */
     protected long cdsToInstant(CdsTimeDecoder.DayTime dt) {
-        long dayStart = shiftFromEpoch(dt.day() * CdsTimeDecoder.MILLIS_PER_DAY);
+        long dayStart = TimeEncoding.fromUnixMillisec((cdsEpochDay + dt.day()) * CdsTimeDecoder.MILLIS_PER_DAY);
         if (dt.msOfDay() >= CdsTimeDecoder.MILLIS_PER_DAY) {
-            long dayLength = shiftFromEpoch((dt.day() + 1) * CdsTimeDecoder.MILLIS_PER_DAY) - dayStart;
+            long dayLength = TimeEncoding
+                    .fromUnixMillisec((cdsEpochDay + dt.day() + 1) * CdsTimeDecoder.MILLIS_PER_DAY) - dayStart;
             if (dt.msOfDay() >= dayLength) {
                 throw new IllegalArgumentException("Invalid CDS millisecond of day " + dt.msOfDay() + " for day "
                         + dt.day() + ": that day has no leap second");
