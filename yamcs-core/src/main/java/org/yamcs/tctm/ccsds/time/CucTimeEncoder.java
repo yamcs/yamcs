@@ -32,7 +32,7 @@ public class CucTimeEncoder implements TimeEncoder {
             int btBytes = 1 + ((pfield1 >> 2) & 3);
             int ftBytes = pfield1 & 3;
 
-            if ((pfield1 & 0x80) == 1) {
+            if ((pfield1 & 0x80) != 0) {
                 btBytes += ((pfield2 >> 6) & 3);
                 ftBytes += ((pfield2 >> 2) & 7);
             }

@@ -44,4 +44,18 @@ public class CucTimeDecoderTest {
 
         assertEquals(8, pos[0]);
     }
+
+    @Test
+    public void testImplicitExtendedPfield() {
+        // pfield1 0xAE = 0x2E with extension bit: 4 basic + 2 fractional; pfield2 0x40 adds 1 basic byte
+        CucTimeDecoder ctd = new CucTimeDecoder(0xAE, 0x40);
+        byte[] b = StringConverter.hexStringToArray("005B3F555E48B4");
+        long t = ctd.decode(b, 0);
+        assertEquals("2018-07-06T11:41:18.284Z", Instant.ofEpochMilli(t).toString());
+        assertEquals(0x5B3F555E48B4L, ctd.decodeRaw(b, 0));
+
+        // must match the explicit P-field path
+        CucTimeDecoder explicit = new CucTimeDecoder(-1);
+        assertEquals(t, explicit.decode(StringConverter.hexStringToArray("AE40005B3F555E48B4"), 0));
+    }
 }
