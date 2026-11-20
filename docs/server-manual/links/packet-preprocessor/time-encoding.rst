@@ -33,7 +33,7 @@ Time decoders are responsible for providing a relative time in milliseconds. The
 
 If there is no epoch specified, the time is considered `raw` and the :doc:`../../services/instance/time-correlation` is used for converting the time to an absolute time. This is the case when the on-board time is not synchronized to anything and the time in the packet is the value of an on-board computer clock which is just a counter most likely initialized at 0 when the on-board computer resets. The raw times do not have units, it is up to the time decoder to decide what value to return; the requirement however is to be linearly correlated to the time. The time correlation service will compute the gradient and the offset that can be used to convert the raw value to an absolute time.
 
-There are a few common options for all time decoders:
+There are a few common options for all time decoders except CDS, which uses the ``epochDate`` option instead (see below):
 
 epoch (string)
     Specifies to which epoch the time relates to. Can be one of:
@@ -90,6 +90,48 @@ implicitPField (integer)
 implicitPFieldCont (integer)
     This can be used to configure the next octet of the ``pfield`` in case the first bit of the first octet (specified above) is 1.
     
+
+CDS Time Decoder
+----------------
+
+CDS is an abbreviation for CCSDS Day Segmented Time Code, specified in `CCSDS Time Code Formats CCSDS 301.0-B-4 <https://public.ccsds.org/Pubs/301x0b4e1.pdf>`_, Chapter 3.3. The time is encoded as an optional 1 byte ``pfield`` followed by a 2 or 3 bytes day count, a 4 bytes millisecond of day and an optional 2 bytes microsecond of millisecond or 4 bytes picosecond of millisecond. The ``pfield`` specifies the length of the day and submillisecond segments.
+
+For example ``pfield = 0x40`` means a 16 bit day segment without submillisecond segment, making the length of the time in the packet 6 bytes when the ``pfield`` is implicit or 7 bytes when it is part of the packet.
+
+The decoder reads the day and the millisecond of day; the submillisecond segment is dropped. The epoch bit of the ``pfield`` is ignored.
+
+CDS counts UTC days, so the time scale is fixed and only the date of day 0 has to be configured. For this reason the ``epoch``, ``epochUTC`` and ``timeIncludesLeapSeconds`` options described above cannot be used with CDS; the ``epochDate`` option is used instead. For the CCSDS recommended epoch of 1-Jan-1958:
+
+.. code-block:: yaml
+
+   timeEncoding:
+     type: CDS
+     implicitPField: 0x40
+     epochDate: 1958-01-01
+
+During a leap second the millisecond of day goes from 86400000 to 86400999 (CCSDS 301.0-B-4 Annex A). Yamcs converts such a time to 23:59:60.xxx of that day. A millisecond of day of 86400000 or more on a day without a leap second, or above 86400999 on any day, is a time decoding error: Yamcs sends a warning event and does not set the generation time of the packet.
+
+If a ``tcoService`` is configured together with an ``epochDate``, the time correlation service is used to verify the decoded time, as for the other time decoders.
+
+With ``epochDate: NONE`` the time is the value of a free running on-board clock and the ``tcoService`` option is required. The raw time passed to the time correlation service is the number of microseconds since day 0, counting each day as 86400 seconds (picoseconds are truncated to microseconds). This count has no room for a leap second, so the on-board clock must not include the leap seconds.
+
+CDS decoder configuration options:
+
+type (string)
+    Set to ``CDS``.
+
+implicitPField (integer)
+    If the ``pfield`` is not encoded in the packet, it can be set by this option.
+
+    A value of ``-1`` means that the ``pfield`` is explicitly provided in the packet.
+
+    Default: ``-1``.
+
+epochDate (date or string)
+    **Required.** The date of day 0, for example ``1958-01-01``. Day 0 starts at 00:00:00 UTC on that date.
+
+    ``NONE`` means that the time is a raw on-board time converted by the time correlation service set with the ``tcoService`` option.
+
 
 FIXED Time Decoder
 ------------------
