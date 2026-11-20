@@ -3,6 +3,7 @@ package org.yamcs.mdb;
 import static org.yamcs.mdb.DataEncodingUtils.getRawFloatValue;
 import static org.yamcs.mdb.DataEncodingUtils.getRawIntegerValue;
 
+import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 
 import org.slf4j.Logger;
@@ -261,13 +262,6 @@ public class DataEncodingDecoder {
 
     private Value extractRawBinary(BinaryDataEncoding bde,
             ContainerProcessingContext pcontext) {
-
-        if (buffer.getPosition() % 8 != 0) {
-            throw new XtceProcessingException(
-                    "Binary Parameter that does not start at byte boundary not supported. bitPosition: "
-                            + buffer.getPosition());
-        }
-
         int sizeInBytes;
         switch (bde.getType()) {
         case FIXED_SIZE:
@@ -283,12 +277,25 @@ public class DataEncodingDecoder {
         default: // shouldn't happen
             throw new IllegalStateException();
         }
-        if (sizeInBytes > buffer.remainingBytes()) {
+        long remainingBytes = buffer.remainingBits() / 8;
+        if (sizeInBytes > remainingBytes) {
             throw new IndexOutOfBoundsException("Cannot extract binary parameter of size " + sizeInBytes
-                    + ". Remaining in the buffer: " + buffer.remainingBytes());
+                    + ". Remaining in the buffer: " + remainingBytes);
         }
         byte[] b = new byte[sizeInBytes];
-        buffer.getByteArray(b);
+        if (buffer.getPosition() % 8 == 0) {
+            buffer.getByteArray(b);
+        } else {
+            ByteOrder previousOrder = buffer.getByteOrder();
+            buffer.setByteOrder(ByteOrder.BIG_ENDIAN);
+            try {
+                for (int i = 0; i < b.length; i++) {
+                    b[i] = (byte) buffer.getBits(8);
+                }
+            } finally {
+                buffer.setByteOrder(previousOrder);
+            }
+        }
         return ValueUtility.getBinaryValue(b);
     }
 

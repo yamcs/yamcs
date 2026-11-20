@@ -373,6 +373,11 @@ public class BitBuffer {
         return b.length - offset - (position >> 3);
     }
 
+    /** Returns the number of bits left from the current position. */
+    public long remainingBits() {
+        return (b.length - offset) * 8L - position;
+    }
+
     /**
      * Move the  position by specified number of bits
      * 
