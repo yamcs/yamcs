@@ -37,22 +37,16 @@ public class CdsTimeEncoder implements TimeEncoder {
      *            P-field determining the length of the day and submillisecond segments
      * @param implicitPfield
      *            if true, the P-field is not written in the output
-     * @param epoch
-     *            the Yamcs instant of the start (00:00:00 UTC) of day 0, for example
-     *            {@code TimeEncoding.parse("1958-01-01T00:00:00Z")} for the CCSDS recommended epoch
+     * @param epochDate
+     *            the date of day 0, which starts at 00:00:00 UTC; for example {@code LocalDate.of(1958, 1, 1)} for the
+     *            CCSDS recommended epoch
      */
-    public CdsTimeEncoder(int pfield, boolean implicitPfield, long epoch) {
+    public CdsTimeEncoder(int pfield, boolean implicitPfield, LocalDate epochDate) {
         CdsTimeDecoder.checkPfield(pfield);
         this.dayBytes = CdsTimeDecoder.dayBytes(pfield);
         this.subMillisBytes = CdsTimeDecoder.subMillisBytes(pfield);
         this.pfield = implicitPfield ? -1 : pfield;
-
-        long epochUnix = TimeEncoding.toUnixMillisec(epoch);
-        if (Math.floorMod(epochUnix, MILLIS_PER_DAY) != 0) {
-            throw new IllegalArgumentException(
-                    "The CDS epoch has to be at 00:00:00 UTC; got " + TimeEncoding.toString(epoch));
-        }
-        this.epochDay = Math.floorDiv(epochUnix, MILLIS_PER_DAY);
+        this.epochDay = epochDate.toEpochDay();
     }
 
     /**

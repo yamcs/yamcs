@@ -33,7 +33,7 @@ Time decoders are responsible for providing a relative time in milliseconds. The
 
 If there is no epoch specified, the time is considered `raw` and the :doc:`../../services/instance/time-correlation` is used for converting the time to an absolute time. This is the case when the on-board time is not synchronized to anything and the time in the packet is the value of an on-board computer clock which is just a counter most likely initialized at 0 when the on-board computer resets. The raw times do not have units, it is up to the time decoder to decide what value to return; the requirement however is to be linearly correlated to the time. The time correlation service will compute the gradient and the offset that can be used to convert the raw value to an absolute time.
 
-There are a few common options for all time decoders:
+There are a few common options for all time decoders except CDS, which uses the ``epochDate`` option instead (see below):
 
 epoch (string)
     Specifies to which epoch the time relates to. Can be one of:
@@ -98,24 +98,22 @@ CDS is an abbreviation for CCSDS Day Segmented Time Code, specified in `CCSDS Ti
 
 For example ``pfield = 0x40`` means a 16 bit day segment without submillisecond segment, making the length of the time in the packet 6 bytes when the ``pfield`` is implicit or 7 bytes when it is part of the packet.
 
-The decoder reads the day and the millisecond of day; the submillisecond segment is dropped. As for CUC, the epoch bit of the ``pfield`` is ignored and the epoch has to be configured with the ``epoch`` option.
+The decoder reads the day and the millisecond of day; the submillisecond segment is dropped. The epoch bit of the ``pfield`` is ignored.
 
-CDS counts UTC days, so the epoch has to be UTC-based (the leap seconds are not included in the day count). For the CCSDS recommended epoch of 1-Jan-1958, use:
+CDS counts UTC days, so the time scale is fixed and only the date of day 0 has to be configured. For this reason the ``epoch``, ``epochUTC`` and ``timeIncludesLeapSeconds`` options described above cannot be used with CDS; the ``epochDate`` option is used instead. For the CCSDS recommended epoch of 1-Jan-1958:
 
 .. code-block:: yaml
 
    timeEncoding:
      type: CDS
      implicitPField: 0x40
-     epoch: CUSTOM
-     epochUTC: "1958-01-01T00:00:00Z"
-     timeIncludesLeapSeconds: false
+     epochDate: 1958-01-01
 
-If the agency defined epoch is 1-Jan-1970, ``epoch: UNIX`` can be used instead.
+During a leap second the millisecond of day goes from 86400000 to 86400999 (CCSDS 301.0-B-4 Annex A). Yamcs converts such a time to 23:59:60.xxx of that day. A millisecond of day of 86400000 or more on a day without a leap second, or above 86400999 on any day, is a time decoding error: Yamcs sends a warning event and does not set the generation time of the packet.
 
-During a leap second the millisecond of day goes from 86400000 to 86400999 (CCSDS 301.0-B-4 Annex A). Yamcs converts such a time to 23:59:60.xxx of that day, which requires one of the UTC-based epochs above (with ``epoch: CUSTOM``, ``epochUTC`` has to be at 00:00:00 UTC). A millisecond of day of 86400000 or more on a day without a leap second, or above 86400999 on any day, is a time decoding error: Yamcs sends a warning event and does not set the generation time of the packet.
+If a ``tcoService`` is configured together with an ``epochDate``, the time correlation service is used to verify the decoded time, as for the other time decoders.
 
-When the epoch is ``NONE``, the raw time is the number of microseconds, counting each day as 86400 seconds (picoseconds are truncated to microseconds). This count has no room for a leap second, which overlaps the first second of the following day.
+With ``epochDate: NONE`` the time is the value of a free running on-board clock and the ``tcoService`` option is required. The raw time passed to the time correlation service is the number of microseconds since day 0, counting each day as 86400 seconds (picoseconds are truncated to microseconds). This count has no room for a leap second, so the on-board clock must not include the leap seconds.
 
 CDS decoder configuration options:
 
@@ -128,6 +126,11 @@ implicitPField (integer)
     A value of ``-1`` means that the ``pfield`` is explicitly provided in the packet.
 
     Default: ``-1``.
+
+epochDate (date or string)
+    **Required.** The date of day 0, for example ``1958-01-01``. Day 0 starts at 00:00:00 UTC on that date.
+
+    ``NONE`` means that the time is a raw on-board time converted by the time correlation service set with the ``tcoService`` option.
 
 
 FIXED Time Decoder

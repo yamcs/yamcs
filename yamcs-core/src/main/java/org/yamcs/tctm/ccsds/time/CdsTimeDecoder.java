@@ -24,7 +24,11 @@ import org.yamcs.utils.ByteSupplier;
  * The submillisecond part is dropped.
  * <p>
  * The {@link #decodeRaw(byte[], int)} method returns the number of microseconds computed the same way (picoseconds
- * are truncated to microseconds).
+ * are truncated to microseconds). It is used for a free running on-board clock, which has no leap seconds, so a
+ * millisecond of day of 86400000 or more is refused: it would give the same value as the first second of the
+ * following day, and the count would not be monotonic.
+ * <p>
+ * The submillisecond segment has to be within 0 to 999 microseconds or 0 to 999999999 picoseconds.
  * <p>
  * The epoch bit of the P-field is ignored; the epoch is configured separately.
  */
@@ -88,7 +92,7 @@ public class CdsTimeDecoder implements TimeDecoder {
         int p = getPfield(s);
         long day = readUnsigned(s, dayBytes(p));
         long msOfDay = readMsOfDay(s);
-        readUnsigned(s, subMillisBytes(p)); // the submillisecond part is not used
+        readSubMillis(s, subMillisBytes(p)); // checked but not used
         if (log.isTraceEnabled()) {
             log.trace("Extracted day={} msOfDay={}", day, msOfDay);
         }
@@ -111,8 +115,12 @@ public class CdsTimeDecoder implements TimeDecoder {
         long day = readUnsigned(s, dayBytes(p));
         long msOfDay = readMsOfDay(s);
         int subBytes = subMillisBytes(p);
-        long subMillis = readUnsigned(s, subBytes);
+        long subMillis = readSubMillis(s, subBytes);
         long usOfMs = subBytes == 4 ? subMillis / 1_000_000 : subMillis;
+        if (msOfDay >= MILLIS_PER_DAY) {
+            throw new IllegalArgumentException("Invalid CDS millisecond of day " + msOfDay
+                    + " for a raw on-board time: the on-board clock cannot count leap seconds");
+        }
 
         return (day * MILLIS_PER_DAY + msOfDay) * 1000 + usOfMs;
     }
@@ -159,6 +167,16 @@ public class CdsTimeDecoder implements TimeDecoder {
                     + ": the maximum is " + MAX_MILLIS_OF_DAY + ", reached during a leap second");
         }
         return msOfDay;
+    }
+
+    private static long readSubMillis(ByteSupplier s, int n) {
+        long subMillis = readUnsigned(s, n);
+        long max = n == 2 ? 999 : 999_999_999L;
+        if (n > 0 && subMillis > max) {
+            throw new IllegalArgumentException("Invalid CDS submillisecond " + subMillis + ": the maximum is " + max
+                    + (n == 2 ? " microseconds" : " picoseconds"));
+        }
+        return subMillis;
     }
 
     private static long readUnsigned(ByteSupplier s, int n) {

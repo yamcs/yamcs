@@ -24,7 +24,7 @@ useLocalGenerationTime (boolean)
     If true, packets are timestamped with local mission time rather than the time extracted from the packets. Default: ``false``.
 
 timeEncoding (map)
-    Configure how time is read from the packet. See :doc:`time-encoding`. The ``type`` option is ignored.
+    Configure how time is read from the packet. See :doc:`time-encoding`. The ``type`` option is ignored, except that it cannot be ``CDS``.
     
     If unset, Yamcs defaults to the following configuration:
 
