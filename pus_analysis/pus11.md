@@ -1,6 +1,6 @@
 # PUS ST[11] — Time-based scheduling
 
-Reviewed against commit `90d4a3d1c` on 2026-11-18. Ground scheduling support consists of XTCE
+Ground scheduling support consists of XTCE
 commands/reports and optional TC[11,4] wrapping in `PusCommandPostprocessor`. The on-board
 scheduler is emulated by `simulator/.../Pus11Service.java`.
 
@@ -22,6 +22,7 @@ TC[11,4]. Enable it with a `pus11` map in the link's postprocessor arguments:
 commandPostprocessorClassName: org.yamcs.pus.PusCommandPostprocessor
 commandPostprocessorArgs:
   errorDetection: {type: CRC-16-CCIIT}
+  spareBytes: 4
   timeEncoding: {implicitPfield: false, pfield: 0x2f}
   tcoService: tco0
   pus11Apid: 1
@@ -36,8 +37,9 @@ This matches the example's one-byte sub-schedule/group layout. Each ID block is 
 omit it to omit that field. Configured widths are 1–8 bytes. The matching per-command option
 names are `pus11SubScheduleId` and `pus11GroupId`; capitalization matters. `pus11Apid` is
 optional and falls back to the original command APID. Set it explicitly when the scheduler
-has a dedicated APID. `pus11Crc` defaults to whether `errorDetection` is configured; enabling
-it without a calculator is rejected.
+has a dedicated APID. `pus11Crc` applies to any outer TC[11,4], including one encoded by the
+MDB. `packetCrc` controls ordinary top-level TCs. `embeddedTcCrc` controls the inner TC in
+each path. These checksum options require an `errorDetection` algorithm when enabled.
 
 The former top-level `pus11SourceId`, `pus11AckFlags`, `pus11SubscheduleId`, and `pus11GroupId`
 configuration keys are rejected at initialization. Scheduling options are registered when
@@ -47,13 +49,14 @@ cannot be combined on one command.
 ## Wrapper bytes and history
 
 ```text
-CCSDS primary (6 B) + PUS TC secondary (5 B)
+CCSDS primary (6 B) + PUS TC secondary (5 B) + spare (4 B)
 + optional sub-schedule ID + N:u8=1
 + optional group ID + release time + finalized original TC + optional wrapper CRC
 ```
 
-Overhead is `12 + subScheduleIdBytes + groupIdBytes + encodedTimeLength + crcBytes`.
-With the example's 1-byte IDs, 8-byte CUC and 2-byte CRC it is 24 bytes. The release time
+Overhead is `12 + spareBytes + subScheduleIdBytes + groupIdBytes + encodedTimeLength + crcBytes`.
+The example's 1-byte IDs, 8-byte CUC, and 2-byte CRC give 28 bytes. The default jTYU profile
+uses an implicit 6-byte release time with no wrapper CRC, giving 24 bytes. The release time
 comes from `tcoService.getObt()` when configured, otherwise the configured epoch conversion.
 Unavailable correlation fails the command. The default postprocessor epoch is UNIX.
 
@@ -94,10 +97,12 @@ wrapper ST[01] reports against `pus11Apid`/`pus11CcsdsSeqCount`, then check the 
 reports at release. An autonomous simulator release produces TM acknowledgements; it does not
 create a newly issued ground command automatically.
 
-The filter commands in `pus11.xml` still fix `filter_type=1` (from–to). Broader filter semantics
-in Java do not make other packet layouts available through those MetaCommands. The example
-also uses fixed mission choices for ID widths and CUC time; adapting postprocessor fields
-alone does not update the direct-insert MDB or simulator parser.
+Filter commands carry time bounds selected by the filter type, followed by counted
+sub-schedule and group lists. An empty list selects every ID in its category. TM[11,10]
+uses an 8-bit activity count and carries complete inner TCs. TM[11,13] uses a 16-bit count
+and carries the packed request IDs. Both include one-based pagination in the TM spare field.
+The ST[11] time and identifier widths must agree across the active MDB, simulator, and
+postprocessor.
 
 Several repeated report fields use ordinary XML dynamic references. Their instance policy
 must be checked for differing counts/embedded lengths; see the [aggregate guide](aggregate_member_value.md).

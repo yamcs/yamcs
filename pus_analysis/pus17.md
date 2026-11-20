@@ -1,7 +1,5 @@
 # PUS ST[17] — Connection tests
 
-Reviewed against commit `90d4a3d1c` on 2026-11-18.
-
 | Artifact | Source |
 |---|---|
 | Ground command/report definitions | [pus17.xml](../examples/pus/src/main/yamcs/mdb/pus17.xml) |
@@ -16,12 +14,13 @@ Reviewed against commit `90d4a3d1c` on 2026-11-18.
 | `/PUS17/ON_BOARD_CONNECTION_TEST` (TC[17,3]) | `/PUS17/on-board-connection-test-report` (TM[17,4]) | `target_apid:u11` in each |
 
 Empty service data does not mean an empty packet. The default CRC-enabled TC[17,1] is
-13 bytes: 6-byte CCSDS primary + 5-byte PUS secondary + 2-byte CRC. The default TM[17,2] is
-23 bytes: 6-byte primary + 7 pre-time secondary bytes + 8-byte CUC + 2-byte CRC. Service type
-and subtype are at bytes 7 and 8, not bytes 6 and 7.
+17 bytes in the example: 6-byte CCSDS primary + 5-byte PUS secondary + 4 spare bytes + 2-byte CRC.
+The example TM[17,2] is 27 bytes with its 8-byte CUC and CRC. The jTYU layouts are 15 and
+23 bytes respectively with 6-byte TM CUC and packet CRCs disabled. Service type and subtype
+are at bytes 7 and 8.
 
 Both commands use destination APID 1 in the example MDB. The target of TC[17,3] is a separate
-11-bit service-data field accepting 0–2047. It starts at byte 11 of the TC; the final octet's
+11-bit service-data field accepting 0–2047. It starts at byte 15 of the TC; the final octet's
 unused five bits are zero. TM[17,4] echoes the same packed value. The simulator does not
 instantiate a second application process for this test.
 

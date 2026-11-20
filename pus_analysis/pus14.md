@@ -27,9 +27,10 @@ with `N1=0`. The loaded MDB currently represents nested TM with container repeat
 
 ## Forwarding semantics and limitations
 
-`PusSimulator.transmitRealtimeTM()` fills CRC, submits the packet to ST[15] stores, then checks
-`Pus14Service.shouldForward()`. Blocked real-time TM can therefore still be stored. Retrieval
-replay and APID-zero ST[09] time packets bypass the live forwarding path.
+`PusSimulator.transmitRealtimeTM()` fills the packet CRC when enabled, applies ST[130] storage
+eligibility, submits eligible packets to ST[15], and applies ST[130] and ST[14] forwarding
+controls. Storage eligibility is evaluated before live forwarding. Retrieval replay and
+APID-zero ST[09] time packets use separate send paths.
 
 The simulator always allows ST[01] verification and ST[14]'s own reports. It also allows an
 absent APID entry, unlike the strict missing-definition block behavior described in the
@@ -37,13 +38,9 @@ original PUS research. An APID entry with no service definitions allows all its 
 a defined service with no subtype restrictions allows all its subtypes. Otherwise the
 service/subtype must be listed. Event blocking is applied after APFCC authorization.
 
-HK/diagnostic configuration management is implemented, but those tables are not consulted
-by `shouldForward()`. The previous explanation that HK reports have no structure IDs was
-wrong: ST[03] sends a uint32 `/PUS/hkid`. The ST[14] tables use uint8 structure IDs; connecting
-them requires an explicit mapping/width decision and forwarding integration. Diagnostic
-parameter reports belong to ST[03] (TM[3,26]), not ST[04]. This remains an implementation gap;
-optional-capability wording does not establish that a partially implemented capability is
-conformant.
+The forwarding gate applies the configured housekeeping and diagnostic structure tables to
+TM[3,25] and TM[3,26] respectively. Each report carries an 8-bit structure identifier. With an
+empty structure table, the application-process and event rules determine eligibility.
 
 The original assertion that nested TM aggregate arrays cannot work is obsolete: Yamcs supports
 [Yamcs:AggregateMember array dimensions](aggregate_member_value.md). The current PUS14 MDB
@@ -140,16 +137,16 @@ disappear regardless of APFCC configuration.
    and confirm a NACK completion with code 5 (`COMPL_ERR_APID_NOT_IN_APFCC`).
 7. **Empty the table**: send `TC_14_2_EMPTY_APFCC` (no args) and confirm HK and events both return
    to flowing freely (pass-all default restored).
-8. **HK/Diag FCC is bookkeeping only**: send `TC_14_5_ADD_HK_STRUCTS` then `TC_14_7_REPORT_HK_FCC`,
-   confirm `/PUS14/TM_14_8` reflects the added struct id — but also confirm actual HK TM
-   (type=3/subtype=25) is completely unaffected by this table (see the limitations above): HK forwarding uses APFCC, never `hkFcc`/`diagFcc`; event reports also have event-blocking rules.
+8. **Verify the HK structure filter** by adding a structure with `TC_14_5_ADD_HK_STRUCTS`.
+   Confirm `TC_14_7_REPORT_HK_FCC` reports the entry and that forwarded TM[3,25] matches
+   the configured structure ID and rate.
 9. **Event blocking**: add event ID 2 for APID 1 with `TC_14_14_ADD_EVENT_ENTRIES`; confirm event 2
    stops while event 1 continues, and confirm TM[14,16] reports the definition. Then send
    `TC_14_13_EMPTY_EVENT_FCC` and confirm both events flow again.
 
 ### e.5 Caveats specific to this simulator
 
-- **Single normal report APID**: ordinary generated TM uses `MAIN_APID = 1`
+- **Single normal report APID**: ordinary generated TM uses the configured PUS APID, which is `1` in the example
   (`PusSimulator.newPacket` / the `pus-tc` argument assignment), so in practice every APFCC/HK
   FCC/Diag FCC entry created during testing will have `apid=1`. The per-APID dimension of ST[14] is
   exercised structurally (both the XTCE and the Java support arbitrary APIDs) but not observably
@@ -157,6 +154,3 @@ disappear regardless of APFCC configuration.
 - **TM[9,2] time packets bypass the gate entirely**: `Pus9Service` sends `PusTmTimePacket` via
   `pusSimulator.tmLink.sendImmediate(...)`, not `transmitRealtimeTM()`, so CUC time packets are
   never subject to any APFCC configuration — they keep flowing even under a fully restrictive setup.
-- **HK FCC / Diagnostic FCC don't gate anything yet**: APFCC and event blocking are applied by
-  `shouldForward()`; HK/diagnostic tables are not. TC[14,5-12] maintain real in-memory tables and answer real dump reports, but
-  have no effect on which TM actually reaches the ground until the forwarding gate is explicitly integrated with the applicable structure IDs. ST[03] already carries a uint32 hkid; the ST[14] structure tables use uint8 IDs, so a mapping/width decision is also needed.

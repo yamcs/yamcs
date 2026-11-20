@@ -1,11 +1,9 @@
 # Yamcs PUS analysis — review and navigation
 
-Review date: **2026-11-18**. Source baseline: **`90d4a3d1c`**
-(`pixxel/master`).
-
-These documents describe that source snapshot. Other revisions can differ materially in
-core handler availability, ST[11] history attributes and ST[21] builder support. Relative source
-links open the active checkout; use `git show 90d4a3d1c:<path>` to inspect the reviewed version.
+The guides describe the current PUS simulator and Yamcs ground configuration. The review
+table records earlier findings and links to the active implementation. The packet contract
+and direct jTYU profile are in the [simulator architecture](pus_simulator_architecture.md)
+and [ground architecture](pus_native_arch.md).
 
 This folder documents Yamcs ground behavior, its example XTCE MDBs and its Java spacecraft
 simulator. External deployment assumptions, unrelated MDB-builder examples, private plan
@@ -27,25 +25,22 @@ caches and adds decoding/export regression tests; its status is identified below
 | High | ST[11] examples used rejected top-level configuration and obsolete history-key behavior. | Use the nested `pus11` map, optional ID blocks and correctly cased command options. Generic history identifies the original TC; `pus11Apid`/`pus11CcsdsSeqCount` identify the wrapper in the reviewed baseline. See [ST[11]](pus11.md). | Corrected for baseline |
 | High | ST[19] descriptions alternated between a separate request-length prefix and no prefix; examples supplied an obsolete `request_len` argument. | Current `request` uses `/PUS/EmbeddedTcType` and its own CCSDS length. Rejection is failed start per instruction, codes 30–33; capacity is 16. Annotated nested packets are postprocessed. | Corrected |
 | High | ST[21] claimed a ground embedded-entry builder existed. | `Pus21EmbeddedEntryBuilder` is absent at the baseline. Its `tc_packet_arg_type` is unannotated, so embedded bytes must already be finalized. Generic embedded-TC postprocessing exists but is not enabled for that type. See [ST[21]](pus21.md). | Corrected; convenience/integration gap open |
-| Medium | Packet examples used service/subtype at bytes 6/7, 8-byte empty packets, and ordinary TM offset 22. | Full PUS service/subtype are bytes 7/8. Default TC service data starts at 11, ordinary TM at `13+8=21`. Empty-data TC/TM with CRC total 13/23 bytes. Explicit `0x2F` CUC is 8 bytes, not 7 or 9. | Corrected |
+| Medium | Packet examples used service/subtype at bytes 6/7, 8-byte empty packets, and ordinary TM offset 22. | Full PUS service/subtype are bytes 7/8. With four spare bytes, TC service data starts at 15. Ordinary TM service data starts at 25 in the examples and 23 in jTYU. APID-zero time starts at byte 7. | Corrected |
 | Medium | ST[13] research suggested automatic trailing-binary sizing while the implementation adds a last-part length byte. | MDB and simulator encode `part_len`/`part_len_last` explicitly. That is an example-specific deviation from the research's deduced-size layout, requiring ICD agreement. | Corrected; interoperability decision open |
-| Medium | ST[14] said HK reports lack structure IDs and called diagnostic reporting ST[04]. | ST[03] supplies uint32 `/PUS/hkid`; diagnostic parameter reports are TM[3,26]. ST[14]'s uint8 structure tables are still not used by its forwarding gate. APFCC plus event blocking are used. | Corrected; filtering integration open |
+| Medium | ST[14] said HK reports lack structure IDs and called diagnostic reporting ST[04]. | ST[03] uses uint8 structure IDs. ST[14] consults its HK and diagnostic structure tables for TM[3,25] and TM[3,26] along with APFCC and event rules. | Aligned |
 | Medium | ST[15] sections mixed raw-millisecond timestamps with CUC, a proposed flags byte, missing uint64 types and thread-per-store sketches. | `dt.xml` already contains uint64; current timestamps use simulator milliseconds; no added flags byte; retrieval uses the shared scheduled executor. Empty application-selection tables block storage. | Corrected; mission time convention remains |
 | Medium | ST[12] called the simulator absent and treated TC conditional entries as supported. | Service/registration/event IDs already exist. Three typed add/modify commands are the supported encoder path. TM conditional parameter extraction is a separate feature. | Corrected |
-| Medium | ST[03] described proposed IDs/containers as existing and placed a decoder at the TC offset. | Actual IDs and intervals are uint32, interval unit milliseconds; predefined reports include structures 0–6. No dynamic ground HK schema decoder is shipped. | Corrected; dynamic HK support open |
+| Medium | ST[03] described proposed IDs/containers as existing and placed a decoder at the TC offset. | Structure IDs are uint8, parameter IDs are uint16 and intervals are uint32 milliseconds; predefined reports include structures 0–6. No dynamic ground HK schema decoder is shipped. | Corrected; dynamic HK support open |
 | Medium | ST[20] promised failed-start reports for unknown IDs while its walkthrough expected completion. | Current simulator skips unknown entries, applies valid ones and sends completion; reads omit unknown IDs. | Corrected; standard rejection coverage not established |
 | Medium | ST[06] was presented as already solved using “validated” framing precedents. | No `pus6.xml`/`Pus6Service` exists. Retained as an explicitly unimplemented proposal, with repeated TM sizing and wire conventions unresolved, including uint32 request versus uint16 report lengths. | Corrected; implementation open |
 | Low | Source paths, numerical contents-line tables, deployment-specific recommendations and old standalone transport examples obscured the current implementation. | Replaced obsolete drafts with current source-linked guides and retained useful current command walkthroughs. | Corrected |
 | Low | Native event conversion was described as YAML-only and the verifier service-type input was misnamed. | `PusEventDecoder` accepts YAML/JSON, example `events.json`; verifier alias is `reportType`, not `reportServiceType`. | Corrected |
 
-The aggregate-member feature solves **array dimension lookup**. It does not itself fix a
-repeated binary field's dynamic length, TM schema discovery, or conditional TC encoding.
-Migrating examples requires preserving wire bits and validating heterogeneous counts,
-zero-length arrays, multi-APID values and unequal embedded packet lengths.
+The aggregate-member feature supports array counts and binary lengths from an earlier member of an enclosing aggregate. The generated TM[11,10] MDB uses the inner packet length to size the nested binary field.
 
 ## Document map
 
-| Document | Scope / implementation status at baseline |
+| Document | Scope / implementation status |
 |---|---|
 | [Ground architecture](pus_native_arch.md) | Ground pipeline, configuration, events, verification and embedded TCs |
 | [Simulator architecture](pus_simulator_architecture.md) | Actual Java dispatcher, packet layouts, storage/forwarding order and scheduling |
@@ -58,18 +53,30 @@ zero-length arrays, multi-APID values and unequal embedded packet lengths.
 | [ST[11]](pus11.md) | Ground wrapping and Java on-board scheduler |
 | [ST[12]](pus12.md) | Parameter monitoring sample and live-client checks |
 | [ST[13]](pus13.md) | Fragment transfer, explicit last-part length convention |
-| [ST[14]](pus14.md) | APFCC/event forwarding; HK/diagnostic tables remain bookkeeping |
+| [ST[14]](pus14.md) | APFCC, HK/diagnostic and event forwarding |
 | [ST[15]](pus15.md) | Store lifecycle, selection, retrieval and raw timestamp convention |
 | [ST[17]](pus17.md) | Empty-data connection test and packed target-APID echo |
 | [ST[19]](pus19.md) | Event-action state, embedded TC handling and rejection semantics |
 | [ST[20]](pus20.md) | Fixed uint32 parameter values and unknown-ID behavior |
 | [ST[21]](pus21.md) | Sequence store, seeded file path and embedded construction limits |
+| [ST[128]](pus128.md) | TLE set, report and checksum verification |
+| [ST[130]](pus130.md) | TM modes, overlays and timed pass operations |
+| ST[131] | ST[01] acknowledgements for the exported TC[131,4] commands |
 
 ST[22] and an ST[23] MDB also exist in the repository but had no dedicated analysis page in
 this folder. An XML file's presence alone does not establish that a service is registered or
-its simulator exists. This review does not add new service implementations.
+its simulator exists.
 
-## Evidence and verification
+## Current verification
+
+The Yamcs XTCE loader accepts all three example MDB configurations and the regenerated
+jTYU MDB. The jTYU catalog contains 153 ST[03] and 11 ST[05] simulator templates. Each
+template's generated packet was decoded against the matching typed MDB container. A live
+Yamcs run in direct mode also archived periodic telemetry from multiple APIDs and returned
+TM[130,4] in response to TC[130,3]. The direct UDP check exercised independent frame and
+packet CRC settings, two-byte ST[11] IDs, and rejection of a corrupted scheduling wrapper.
+
+## Earlier review evidence
 
 Source inspection used the reviewed implementation, MDBs and existing regression fixtures.
 The local graph was stale at review start and was not rebuilt or used as behavioral evidence.

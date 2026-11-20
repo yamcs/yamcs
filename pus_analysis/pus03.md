@@ -1,7 +1,7 @@
 # PUS ST[03] — Housekeeping and diagnostic reporting
 
-Reviewed against commit `90d4a3d1c` on 2026-11-18. Yamcs is the ground MCS; collection,
-structure registries, reporting configuration and periodic generation are on board.
+Yamcs encodes structure commands and decodes reports. The simulator owns collection,
+structure registries, reporting configuration, and periodic generation.
 
 ## Current artifacts and coverage
 
@@ -28,18 +28,23 @@ subtypes. “TC[3,1–44]” is a range shorthand, not a statement that every in
 
 ## Mission conventions and predefined reports
 
-Structure IDs, parameter IDs, functional reporting definition IDs and collection intervals
-are **uint32** in this example. Collection intervals are milliseconds. Counts and status
-fields have their own widths in `pus3.xml`; do not infer them from the ID width.
+Structure IDs are unsigned 8-bit values and parameter IDs are unsigned 16-bit values.
+Functional reporting definition IDs and collection intervals are unsigned 32-bit values.
+Collection intervals are expressed in milliseconds. TM[3,10/12] describes the structure
+with its SID, periodic status, collection interval, simple PID list, and super-commutated
+sets. Each super-commutated set carries its own repetition and PID count.
 
-HK source data begins with `/PUS/hkid:u32` at the normal TM source-data offset (21 with default
-CUC time). The earlier proposed dynamic decoder used byte 11 and a uint16 ID; both were
-incorrect for TM. Byte 11 is the TC application-data offset, not the TM offset.
+TM[3,25/26] source data begins with a one-byte SID. In the main example, `/PUS/hkid` is at
+offset 25 from the beginning of the packet, after the explicit CUC time and four spare
+bytes. In jTYU's implicit CUC profile, the source-data offset is 23.
 
 Predefined simulator structures 0–4 correspond to the FlightData, Power, DHS, RCS and EPS
 handlers. Structure 5 carries enum-chart test parameters; structure 6 carries ST[22] orbit
 position. These are the actual example structures, rather than proposed power-bus/ADCS
 structures with a different ID scheme. Their payloads are decoded by the loaded MDB.
+
+[ST[130]](pus130.md) can activate periodic generation for claimed SIDs and apply the active
+telemetry mode. Storage and forwarding rules use the same one-byte SID.
 
 ## Dynamic structure limitation
 

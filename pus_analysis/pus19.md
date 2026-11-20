@@ -78,7 +78,7 @@ instruction was rejected.
 | Invalid embedded request | 33 |
 
 Earlier completion-error codes 5/6 and the claim that definitions are uncapped are obsolete.
-The simulator checks embedded packet length/type; it is not a strict CRC-validation target.
+The simulator checks the embedded packet header and length and validates its CRC when `embeddedTcCrc` is enabled.
 
 ## Manual checks
 

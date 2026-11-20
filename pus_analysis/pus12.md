@@ -79,7 +79,7 @@ modifying with a `param_id` that doesn't match the stored definition (`PARAM_ID_
 
 ### D.4 TMs to check
 
-| Container | Subtype | Triggered by | Layout (after the 21-byte common PUS TM header) |
+| Container | Subtype | Triggered by | Layout (after the 25-byte example PUS TM header) |
 |---|---|---|---|
 | `/PUS12/PMON_DEFINITION_REPORT` | TM[12,9] | TC[12,8] | `count:u8` + count × variable-length entries (see the criteria list below): `pmon_id:u16, param_id:u16, pmon_status:u8, repetition_number:u8, check_type:u8`, then criteria fields gated by `check_type` — no padding, fully decoded per-entry by XTCE (`PMON_ENTRY` container) |
 | `/PUS12/PMON_TRANSITION_REPORT` | TM[12,12] | TC[12,11] | `count:u8` + count × 4B entries: `pmon_id:u16, prev_status:u8, new_status:u8` (flushes and clears `checkTransitionList`) |

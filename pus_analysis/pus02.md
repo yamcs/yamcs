@@ -62,7 +62,7 @@ n = 1
 instructions = [
   { physical_device_id: 1,
     protocol_data: { direction: 0, sub_address: 1, word_count: 4 },
-    command_data: 0x1122334455667788 }   # 8-byte binary
+    command_data: 0x11223344 }   # 4-byte binary
 ]
 ```
 

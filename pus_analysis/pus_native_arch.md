@@ -1,7 +1,6 @@
 # PUS ground architecture in Yamcs
 
-Reviewed against commit `90d4a3d1c` on 2026-11-18. This guide describes the current
-`examples/pus` configuration. Yamcs is the ground MCS; the Java simulator is the test spacecraft.
+This guide describes the PUS packet, frame and direct jTYU configurations. Yamcs is the ground MCS; the Java simulator is the test spacecraft.
 
 ## Deployment and configuration
 
@@ -12,6 +11,33 @@ Operator / API ← Yamcs parameters/events/archive ← TM stream ← TCP TM link
 
 The example runs TCP telemetry on port 10015 and telecommands on port 10025. Transfer-frame
 examples have separate configuration; do not apply packet TCP offsets to a complete transfer frame.
+
+In jTYU, set `SIMULATOR_ENABLED=true`, `OPERATIONAL_MODE=direct`, and `TC_HOST=localhost`
+when the simulator shares the Yamcs host. The direct link composition carries raw CCSDS frames
+over UDP. The SRS4 example supplies the four-byte packet layout for its external endpoint.
+
+| Shared environment settings | jTYU defaults |
+|---|---|
+| `TC_HOST`, `TC_PORT`, `TM_PORT` | Deployment UDP endpoints |
+| `CCSDS_SPACECRAFT_ID`, `CCSDS_TM_FRAME_TYPE`, `CCSDS_TM_FRAME_LENGTH`, `CCSDS_TC_MAX_FRAME_LENGTH` | `1`, `TM`, `980`, `980` |
+| `CCSDS_TC_FRAME_CRC`, `CCSDS_TM_FRAME_CRC`, `CCSDS_TM_OCF_PRESENT` | `CRC16`, `NONE`, `false` |
+| `PUS_TC_PACKET_CRC`, `PUS_TM_PACKET_CRC`, `PUS11_WRAPPER_CRC`, `PUS_EMBEDDED_TC_CRC` | All `false` |
+| `PUS_CUC_EPOCH`, `PUS_CUC_PFIELD`, `PUS_CUC_PFIELD_CONT` | `UNIX`, `46`, `-1` |
+| `PUS_TM_IMPLICIT_PFIELD`, `PUS11_TC_IMPLICIT_PFIELD` | Both `true` |
+| `PUS_S11_APID`, `PUS_SPARE_BYTES` | `16`, `4` |
+| `PUS11_SUBSCHEDULE_ID_BYTES`, `PUS11_SUBSCHEDULE_ID_DEFAULT` | `1`, `0` |
+| `PUS11_GROUP_ID_BYTES`, `PUS11_GROUP_ID_DEFAULT` | `1`, `0` |
+
+The frame flags control the frame trailer. The packet flags control the PUS checksum at the
+top level, inside a scheduling wrapper or inside an annotated embedded argument. A wire-width
+change requires a corresponding XTCE layout. The PUS ID defaults fill omitted command options;
+the simulator reads the resulting IDs on the wire.
+
+The jTYU `pus.telemetry.mdbFile` setting points the simulator at the same XTCE file used by
+Yamcs. It derives ST[03] report layouts and ST[05] event layouts from that file, including
+the originating APID and structure or event ID. `housekeepingPeriodMillis` staggers successive
+reports and `eventPeriodMillis` sets the event cadence. The simulator generates synthetic
+values for the injected layouts. The standalone examples use the landing-demo data source.
 
 | Source | Role |
 |---|---|
@@ -30,7 +56,9 @@ services. The service-specific simulator classes are in `org.yamcs.simulator.pus
 The commanding manager builds a command from a MetaCommand, records it in command history,
 and queues/releases it through `StreamTcCommandReleaser`. The TC stream feeds the configured
 TC link. `PusCommandPostprocessor` finalizes the packet at that link: length, sequence count,
-optional checksum, annotated embedded packets, and optional ST[11]/ST[22] wrappers.
+optional checksum, annotated embedded packets, and optional ST[11]/ST[22] wrappers. Set
+`spareBytes: 4` on the postprocessor to add the reserved field when it generates a wrapper.
+The existing MDB encodes the spare field for commands created directly from XTCE.
 
 `binary`, `ccsds-apid`, and `ccsds-seqcount` identify the postprocessed original command.
 Scheduling adds separate `pus11Binary`/`pus11Apid`/`pus11CcsdsSeqCount` or equivalent `pus22*`

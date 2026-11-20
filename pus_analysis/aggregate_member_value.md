@@ -1,17 +1,14 @@
-# AggregateMemberValue — aggregate-scoped TM array dimensions
-
-Reviewed against Yamcs commit `90d4a3d1c` on 2026-11-18.
+# AggregateMemberValue — aggregate-scoped TM dimensions and binary sizes
 
 ## Names and purpose
 
-“AggregateMemberValue” describes the value used to size an array from a member of the
-aggregate currently being decoded. There is no Java class or XML element named
-`AggregateMemberValue` in this checkout. The actual names are:
+“AggregateMemberValue” describes the value used to size an array or binary field from a member
+of the aggregate currently being decoded. In Yamcs, the relevant XML and Java names are:
 
 | Layer | Name |
 |---|---|
-| XML metadata on `ArrayParameterType` | `AncillaryData name="Yamcs:AggregateMember"` |
-| Dynamic reference in that array's dimensions | `ParameterInstanceRef parameterRef="count"` |
+| XML metadata on `ArrayParameterType` or `BinaryParameterType` | `AncillaryData name="Yamcs:AggregateMember"` |
+| Dynamic reference in `DimensionList` or `SizeInBits` | `ParameterInstanceRef parameterRef="count"` |
 | Parsed Java reference | `org.yamcs.xtce.AggregateMemberInstanceRef` |
 | Dynamic dimension | `org.yamcs.xtce.DynamicIntegerValue` |
 | Extracted aggregate / member value | `org.yamcs.parameter.AggregateValue` / `Value` |
@@ -82,17 +79,17 @@ aggregate, its member, or the `ParameterInstanceRef` itself.
 
 ## Resolution and validation
 
-1. `XtceStaxReader` matches the dimension's `parameterRef` against the marked names and creates
+1. `XtceStaxReader` matches the dynamic size's `parameterRef` against the marked names and creates
    an `AggregateMemberInstanceRef`. An unmarked reference remains an ordinary MDB parameter
    reference; a bare name does not automatically mean a sibling member.
 2. `AggregateMemberReferenceValidator` walks every concrete parameter type use site at MDB
-   load time. A reusable array type must have a valid count in every enclosing context.
+   load time. A reusable type must have a valid size reference in every enclosing context.
 3. `SequenceEntryProcessor` keeps a stack of aggregates during extraction. Lookup starts at
    the innermost aggregate and continues outwards. Each repeated aggregate has its own value,
    so an inner count is resolved again for each element.
 4. The nearest member with that exact name wins. It shadows outer members even if declared
    too late; lookup does not silently fall back to an outer count.
-5. The count member must be declared before the array, and must be integer-compatible in the
+5. The count member must be declared before the dependent field and must be integer-compatible in the
    selected raw/calibrated representation. Missing, late, noninteger, or circular type uses
    fail database loading.
 
@@ -117,10 +114,11 @@ For `{outer_count, entries: [{inner_count, values: [...]}]}`, mark `outer_count`
 aggregate parameter with nested arrays, including empty arrays at either level. See the
 complete [nested TM fixture](../yamcs-core/src/test/resources/xtce/array-in-array-tm.xml).
 
-This convention currently applies to **array dimensions**. It does not make arbitrary
-`BinaryParameterType` sizes or `IncludeCondition` comparisons aggregate-scoped. Repeated binary
-sub-packets may still need containers, length fields, and an explicitly appropriate parameter
-instance policy.
+For binary fields, put the marker on `BinaryParameterType` before `BinaryDataEncoding`, then
+reference the marked member from `SizeInBits`. For example, TM[11,10] can decode each embedded
+TC as a CCSDS header aggregate followed by its own `packet_data`. The CCSDS length word is one
+less than the number of data bytes, so the binary size adjustment uses `slope="8"` and
+`intercept="8"`. The extractor resolves the length separately for each activity.
 
 For an already completed top-level aggregate, a normal reference such as
 `parameterRef="configuration.count"` is a different mechanism: it identifies an MDB parameter
@@ -165,11 +163,12 @@ The former attribute is not the schema-valid representation used by current expo
 | [AggregateMemberReferenceValidator](../yamcs-core/src/main/java/org/yamcs/mdb/AggregateMemberReferenceValidator.java) | Per-use-site validation, ordering, shadowing, integer compatibility |
 | [SequenceEntryProcessor](../yamcs-core/src/main/java/org/yamcs/mdb/SequenceEntryProcessor.java) | Runtime lookup, calibration, dimensions and limits |
 | [ArrayInArrayTmTest](../yamcs-core/src/test/java/org/yamcs/mdb/ArrayInArrayTmTest.java) | Unequal nested counts, zero counts, completed aggregate paths, packed PUS14-shaped hierarchy |
+| [AggregateBinaryTmTest](../yamcs-core/src/test/java/org/yamcs/mdb/AggregateBinaryTmTest.java) | Per-row binary sizes, XTCE export and re-import, and binary extraction after a packed flag |
 | [AggregateMemberReferenceValidatorTest](../yamcs-core/src/test/java/org/yamcs/mdb/AggregateMemberReferenceValidatorTest.java) | Reuse, enclosing scopes, missing/late counts, shadowing, noninteger rejection |
 | [XtceAssemblerTest](../yamcs-core/src/test/java/org/yamcs/mdb/XtceAssemblerTest.java) | Round-trip, schema validity and legacy migration |
 
 Run the existing focused tests from the repository root:
 
 ```bash
-mvn -pl yamcs-core -am -Dtest=ArrayInArrayTmTest,AggregateMemberReferenceValidatorTest,XtceAssemblerTest -Dsurefire.failIfNoSpecifiedTests=false test
+mvn -pl yamcs-core -am -Dtest=ArrayInArrayTmTest,AggregateBinaryTmTest,AggregateMemberReferenceValidatorTest,XtceAssemblerTest -Dsurefire.failIfNoSpecifiedTests=false test
 ```

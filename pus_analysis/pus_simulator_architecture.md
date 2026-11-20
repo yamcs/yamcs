@@ -1,7 +1,6 @@
 # PUS Java simulator architecture
 
-Reviewed against commit `90d4a3d1c` on 2026-11-18. The simulator emulates spacecraft behavior
-for the Yamcs ground example. Ground configuration is described in [pus_native_arch.md](pus_native_arch.md).
+The simulator emulates spacecraft behavior for the Yamcs PUS examples and direct jTYU configuration. Ground configuration is described in [pus_native_arch.md](pus_native_arch.md).
 
 ## Source map and dispatch
 
@@ -15,8 +14,7 @@ for the Yamcs ground example. Ground configuration is described in [pus_native_a
 | [PusTimeEncoding](../simulator/src/main/java/org/yamcs/simulator/pus/PusTimeEncoding.java) | Configurable CUC width, P-field and simulator/UNIX epoch |
 | [PusPackedFields](../simulator/src/main/java/org/yamcs/simulator/pus/PusPackedFields.java) | Packed service-data integer fields |
 
-`PusSimulator` constructs ST[02,03,05,09,11,12,13,14,15,17,19,20,21,22] services. ST[06] is
-still a proposal. Its `doStart()` creates one `ScheduledThreadPoolExecutor(1)`, schedules command
+`PusSimulator` constructs ST[02,03,05,09,11,12,13,14,15,17,19,20,21,22,128,130] services. It acknowledges exported TC[131,4] commands with ST[01] reports. ST[06] is a proposal. Its `doStart()` creates one `ScheduledThreadPoolExecutor(1)`, schedules command
 processing every 200 ms, and starts the services requiring periodic work. Long blocking sleeps
 would delay every service; retrieval and sequence work use cancellable scheduled tasks.
 
@@ -28,23 +26,23 @@ not a universal cross-service enumeration.
 
 ## Packet layouts
 
-Offsets below refer to a CCSDS packet, excluding transport framing. The default explicit
-CUC P-field is `0x2F`: one P-field byte + four coarse bytes + three fine bytes = **8 bytes**.
+Offsets count from the start of the CCSDS packet. The examples use explicit CUC with P-field
+`0x2F` and eight encoded bytes. jTYU uses implicit CUC with P-field `0x2E` and six encoded bytes.
 
-| Packet | Layout | Default application-data offset |
-|---|---|---|
-| PUS TC | 6-byte primary + 5-byte secondary + application data + 2-byte CRC | 11 |
-| Ordinary TM | 6-byte primary + 7-byte pre-time secondary + CUC time + source data + 2-byte CRC | 21 |
-| ST[09] time TM | 6-byte primary + 1-byte rate exponent + CUC time + 2-byte CRC | Time starts at 7; total length 17 |
+| Packet | Layout | Example offset | jTYU offset |
+|---|---|---:|---:|
+| PUS TC | 6-byte primary + 5-byte secondary + 4 spare bytes + service data + optional CRC | 15 | 15 |
+| Ordinary TM | 6-byte primary + 7 fixed secondary bytes + CUC + 4 spare bytes + service data + optional CRC | 25 | 23 |
+| APID-zero time TM | 6-byte primary + 1-byte rate exponent + CUC + optional CRC | Time at 7 | Time at 7 |
 
-Ordinary TM service type/subtype are bytes 7/8. TC service type/subtype are also bytes 7/8;
-byte 6 is the version/acknowledgement field, not the service type. The CCSDS length field is
-`total packet length − 7`. Zero service data still leaves the headers and checksum.
+Ordinary TM and TC service type and subtype are at bytes 7 and 8. CCSDS packet length is the
+total number of bytes minus seven. The spare field follows the TC source ID or TM CUC time.
+ST[11], ST[15], and ST[130] TM use two big-endian unsigned 16-bit pagination fields. The other
+services and TC wrappers put zeros there. The APID-zero time packet uses its own header layout.
 
-Ordinary TM offset is `13 + timeEncoding.getEncodedLength()`. Use the packet's
-`getUserDataOffset()`/`getUserDataBuffer()` with custom time encoding instead of assuming the
-static default `DATA_OFFSET`. Epoch and CUC settings must agree with the ground MDB and link
-preprocessor; `tco0` supplies correlation for the example's arbitrary simulator time.
+The simulator packet buffer methods expose the service data alone. Use `getUserDataOffset()`
+when indexing a TM packet and keep the active MDB in sync with the configured spare width and
+CUC layout. The frame receiver and the packet preprocessor each validate their own checksums.
 
 Service-data APIDs in ST[11,14,15,17] currently use `/dt/pus_report_apid` (11 bits), and request
 sequence counts use `/dt/pus_report_seqcount` (14 bits). Fields are packed without per-field
@@ -55,19 +53,16 @@ service layouts distinct from the fixed 11-bit primary-header APID.
 
 `transmitRealtimeTM()` performs these steps in order:
 
-1. Fill the packet checksum.
-2. Call `pus15Service.submitToStores(packet)` regardless of real-time forwarding permission.
-3. Apply `pus14Service.shouldForward(packet)`.
-4. Send through the configured packet TCP link and/or frame link.
+1. Fill the packet checksum when enabled.
+2. Apply ST[130] storage eligibility and submit eligible packets to ST[15].
+3. Apply both ST[130] transmission eligibility and ST[14] forwarding controls.
+4. Send eligible packets through the configured TCP or frame link.
 
-ST[15] retrieval uses `sendStoredPacket()` and bypasses storage recapture and the ST[14] gate.
-ST[09] uses its own immediate packet/frame path. These exceptions mean a gate inserted in the
-normal TM path does not filter every byte sent by the simulator.
-
-ST[14] permits absent APIDs by default and always permits ST[01] and ST[14] reports. Its HK and
-diagnostic tables are bookkeeping; `shouldForward()` applies APFCC and event blocking. ST[15]
-has a different default: an empty application-process storage configuration blocks storage.
-Enable storage and configure selection before expecting the store to fill.
+ST[15] retrieval and ST[130] packet-store dump slots use `sendStoredPacket()` to replay finalized
+bytes. ST[09] sends directly through the configured link. ST[14] applies application-process,
+housekeeping, diagnostic, and event forwarding controls. An empty ST[15] application-process
+selection table captures no packets. Enable storage and configure selection before expecting
+the store to fill.
 
 ## Nested structures in XTCE
 
@@ -93,6 +88,25 @@ a nested value structure; they are not required for the ordinary repeated-contai
 | ST[15] | Per-store contents and selection, scheduled retrieval |
 | ST[20] | In-memory uint16 ID → uint32 value map |
 | ST[21] | In-memory sequence/file maps and cancellable execution chain |
+| ST[128] | TLE set, report and checksum validation |
+| ST[130] | TM mode, structure eligibility, event overlays and timed pass slots |
+| ST[131] | ST[01] verification for TC[131,4] |
+
+## Flight MDB telemetry
+
+Set `pus.telemetry.mdbFiles` to list the XTCE files the simulator should load together.
+Use the same XTCE inputs as the Yamcs instance's `mdb` configuration. For a single
+file, `pus.telemetry.mdbFile` is also supported. Configure one of these two settings.
+The pacing options are `housekeepingPeriodMillis` and `eventPeriodMillis`.
+
+The simulator registers the fixed-size
+typed TM[3,25/26] reports by APID, subtype and structure ID. A period of 200 ms staggers
+the whole catalog in a cycle, so each of 153 entries repeats approximately every 30.6 seconds.
+ST[03] schedule changes and ST[130] generation controls apply to those registrations.
+TM[5,1–4] rotates through typed events, and ST[05] enable or disable commands act on the
+event IDs for the addressed APID. Emitted events notify ST[19] and ST[130]. The report values
+are synthetic and the service data is laid out using the loaded MDB. The simulator checks the
+MDB source-data offset against the configured CUC and spare-field widths at startup.
 
 ST[19] and ST[21] release stored embedded TCs through `PusSimulator.processTc()`. Those releases
 produce TM verification reports, but do not automatically create independently issued ground

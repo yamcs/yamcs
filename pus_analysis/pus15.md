@@ -40,7 +40,7 @@ New stores have storage disabled, open retrieval suspended and BTR disabled. Ena
 with an empty application-process selection table captures nothing. Configure TC[15,3]
 first; HK/diagnostic structure and event rules further restrict eligible reports.
 
-Normal outgoing TM is checksummed and submitted to stores **before** ST[14] live forwarding.
+Normal outgoing TM is checksummed when configured. ST[130] storage eligibility is applied before submission to ST[15] and before live forwarding.
 There is no separate packet-store manager or UDP forwarding shim. Retrieval uses the shared
 single-thread scheduled executor, not one blocking thread per store. BTR steps are 100 ms;
 open retrieval polls at 500 ms. Replayed packets go through `sendStoredPacket()`, bypassing
@@ -48,8 +48,9 @@ recapture and the live ST[14] gate. APID-zero time packets use another send path
 
 Circular stores can overwrite; bounded stores stop accepting packets at capacity. There is
 a 64-store limit and active-store operations have restrictions. Selection content reports
-TM[15,6/36/38/40] carry one store ID and complete nested configurations, with one empty report
-for an empty table and a failure rather than partial data when a report is too large.
+TM[15,6/36/38/40] carry one store ID and page-sized portions of the nested configuration.
+The four-byte secondary-header field holds a one-based page number and total page count
+as big-endian uint16s. An empty selection emits page 1 of 1.
 
 ## Decoder and test limitations
 
