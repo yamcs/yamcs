@@ -36,4 +36,22 @@ public class CucTimeEncoderTest {
 
         assertEquals("2E5B3F555E48B4", StringConverter.arrayToHexString(bRaw));
     }
+
+    @Test
+    public void testExtendedPfield() {
+        // pfield1 0xAE = 0x2E with extension bit; pfield2 0x40 adds 1 basic time byte -> 5 basic + 2 fractional
+        long t = Instant.parse("2018-07-06T11:41:18.284Z").toEpochMilli();
+
+        CucTimeEncoder implicit = new CucTimeEncoder(0xAE, 0x40, true);
+        assertEquals(7, implicit.getEncodedLength());
+        byte[] b = new byte[7];
+        assertEquals(7, implicit.encode(t, b, 0));
+        assertEquals("005B3F555E48B4", StringConverter.arrayToHexString(b));
+
+        CucTimeEncoder explicit = new CucTimeEncoder(0xAE, 0x40, false);
+        assertEquals(9, explicit.getEncodedLength());
+        byte[] b2 = new byte[9];
+        assertEquals(9, explicit.encode(t, b2, 0));
+        assertEquals("AE40005B3F555E48B4", StringConverter.arrayToHexString(b2));
+    }
 }
