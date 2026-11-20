@@ -172,10 +172,14 @@ public abstract class AbstractPacketPreprocessor implements PacketPreprocessor {
 
         switch (type) {
         case CUC:
-            int pField = c.containsKey("pField") ? c.getInt("pField") : c.getInt("implicitPField", -1);
-            int pFieldCont = c.containsKey("pFieldCont")
-                    ? c.getInt("pFieldCont") : c.getInt("implicitPFieldCont", -1);
-            timeDecoder = new CucTimeDecoder(pField, pFieldCont);
+            if (c.getBoolean("implicitPfield", true)) {
+                int pField = c.containsKey("pField") ? c.getInt("pField") : c.getInt("implicitPField", -1);
+                int pFieldCont = c.containsKey("pFieldCont")
+                        ? c.getInt("pFieldCont") : c.getInt("implicitPFieldCont", -1);
+                timeDecoder = new CucTimeDecoder(pField, pFieldCont);
+            } else {
+                timeDecoder = new CucTimeDecoder(-1);
+            }
             break;
         case FIXED:
             int size = c.getInt("size", 8);

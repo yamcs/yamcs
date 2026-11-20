@@ -124,6 +124,30 @@ public class PusCommandPostprocessorTest {
     }
 
     @Test
+    public void testScheduledSpareAndIndependentPacketChecksums() {
+        var pp = newPostprocessor(YConfiguration.wrap(Map.of(
+                "errorDetection", Map.of("type", "CRC-16-CCIIT"),
+                "spareBytes", 4,
+                "packetCrc", true,
+                "pus11Crc", false,
+                "embeddedTcCrc", false,
+                "timeEncoding", Map.of("pfield", 46),
+                "pus11", Map.of("subScheduleId", Map.of("bytes", 1, "default", 4),
+                        "groupId", Map.of("bytes", 1, "default", 7)))));
+        var prepared = pc(innerCommand(), attr("pus11ScheduleAt", ValueHelper.newTimestampValue(1_000_000_000L)));
+        byte[] wrapped = pp.process(prepared);
+        assertArrayEquals(new byte[] { 0, 0, 0, 0, 4, 1, 7 }, Arrays.copyOfRange(wrapped, 11, 18));
+        assertEquals(40, wrapped.length);
+        assertEquals(9, ByteArrayUtils.decodeUnsignedShort(wrapped, 28));
+        assertEquals(wrapped.length, pp.getBinaryLength(prepared));
+
+        byte[] manual = innerCommand();
+        manual[7] = 11;
+        manual[8] = 4;
+        assertEquals(16, pp.process(pc(manual)).length);
+    }
+
+    @Test
     public void testScheduledExplicitIds() {
         var pp = newPostprocessor(schedulingConfig());
         byte[] inner = pp.process(pc(innerCommand()));

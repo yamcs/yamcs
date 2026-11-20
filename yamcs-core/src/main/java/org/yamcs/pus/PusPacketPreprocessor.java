@@ -113,6 +113,13 @@ public class PusPacketPreprocessor extends CcsdsPacketPreprocessor {
 
     public PusPacketPreprocessor(String yamcsInstance, YConfiguration config) {
         super(yamcsInstance, config);
+        if (config.getBoolean("packetCrc", errorDetectionCalculator != null)) {
+            if (errorDetectionCalculator == null) {
+                throw new ConfigurationException("packetCrc requires errorDetection to be configured");
+            }
+        } else {
+            errorDetectionCalculator = null;
+        }
         pktTimeOffset = config.getInt("pktTimeOffset", DEFAULT_PKT_TIME_OFFSET);
         timePktTimeOffset = config.getInt("timePktTimeOffset", DEFAULT_TIME_PACKET_TIME_OFFSET);
         performTimeCorrelation = config.getBoolean("performTimeCorrelation", false);

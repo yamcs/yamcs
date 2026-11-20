@@ -116,6 +116,8 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
     static final int POSITION_TAG_LENGTH_BYTES = 6; // 4 bytes orbit number + 2 bytes angle ticks
 
     ErrorDetectionWordCalculator errorDetectionCalculator;
+    private boolean packetCrc;
+    private int spareBytes;
     protected CcsdsSeqCountFiller seqFiller = new CcsdsSeqCountFiller();
 
     protected CucTimeEncoder timeEncoder;
@@ -189,9 +191,14 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
         }
 
         errorDetectionCalculator = AbstractPacketPreprocessor.getErrorDetectionWordCalculator(config);
-        this.pus11Crc = getCrc(config, "pus11Crc");
-        this.pus22Crc = getCrc(config, "pus22Crc");
-        this.embeddedTcCrc = getCrc(config, "embeddedTcCrc");
+        this.packetCrc = getCrc(config, "packetCrc", errorDetectionCalculator != null);
+        this.spareBytes = getIntInRange(config, "spareBytes", 0, 0, 4);
+        if (spareBytes != 0 && spareBytes != 4) {
+            throw new ConfigurationException("spareBytes must be 0 or 4");
+        }
+        this.pus11Crc = getCrc(config, "pus11Crc", packetCrc);
+        this.pus22Crc = getCrc(config, "pus22Crc", packetCrc);
+        this.embeddedTcCrc = getCrc(config, "embeddedTcCrc", packetCrc);
         if (config.containsKey("timeEncoding")) {
             timeEncoder = configureTimeEncoding(config.getConfig("timeEncoding"));
         } else {
@@ -260,11 +267,10 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
     }
 
     /**
-     * The CRC of a wrapper or embedded TC defaults to whether errorDetection is configured; enabling it without
-     * errorDetection is a configuration error.
+     * Enable a packet checksum using the configured algorithm.
      */
-    private boolean getCrc(YConfiguration config, String key) {
-        boolean crc = config.getBoolean(key, errorDetectionCalculator != null);
+    private boolean getCrc(YConfiguration config, String key, boolean defaultValue) {
+        boolean crc = config.getBoolean(key, defaultValue);
         if (crc && errorDetectionCalculator == null) {
             throw new ConfigurationException(key + " requires errorDetection to be configured");
         }
@@ -319,7 +325,20 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
             }
         }
 
-        boolean hasCrc = errorDetectionCalculator != null;
+        boolean hasCrc = packetCrc;
+        if (scheduleTime != null || orbitAngle != null) {
+            // Scheduling embeds this command. The wrapper builder applies the outer CRC policy separately.
+            hasCrc = embeddedTcCrc;
+        } else if (binary.length >= 11 && binary[8] == 4) {
+            // The guard requires the 6-byte CCSDS primary header and the 5 fixed PUS TC header bytes.
+            // Byte index 8 is the subtype. Subtype 4 inserts activities when the service at index 7 is 11 or 22.
+            // In those cases, this directly issued packet already is the scheduling wrapper.
+            hasCrc = switch (binary[7]) {
+            case 11 -> pus11Crc;
+            case 22 -> pus22Crc;
+            default -> packetCrc;
+            };
+        }
         if (hasCrc) { // 2 extra bytes for the checkword
             binary = Arrays.copyOf(binary, binary.length + 2);
         }
@@ -386,7 +405,6 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
         }
         return binary;
     }
-
 
     /**
      * Location in the command binary of a TC packet embedded as the value of an argument annotated with
@@ -548,7 +566,7 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
         scheduleTcPacket[offset++] = 4;
         // source id
         ByteArrayUtils.encodeUnsignedShort(pus11SourceId, scheduleTcPacket, offset);
-        offset += 2;
+        offset += 2 + spareBytes;
         // sub-schedule id (only if sub-schedules are configured)
         offset += encodeUnsigned(subScheduleId, scheduleTcPacket, offset, pus11SubScheduleIdBytes);
         // N (number of commands scheduled)
@@ -612,7 +630,7 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
         scheduleTcPacket[offset++] = 4;
         // source id
         ByteArrayUtils.encodeUnsignedShort(pus22SourceId, scheduleTcPacket, offset);
-        offset += 2;
+        offset += 2 + spareBytes;
         // sub-schedule id (only if sub-schedules are configured)
         offset += encodeUnsigned(subScheduleId, scheduleTcPacket, offset, pus22SubScheduleIdBytes);
         // N (number of activities scheduled)
@@ -731,7 +749,8 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
 
     @Override
     public int getBinaryLength(PreparedCommand pc) {
-        int len = pc.getBinary().length;
+        byte[] binary = pc.getBinary();
+        int len = binary.length;
         if (embeddedTcCrc) {
             try {
                 len += 2 * findEmbeddedTcs(pc).size();
@@ -739,14 +758,31 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
                 // the command will fail in process()
             }
         }
-        if (errorDetectionCalculator != null) {
+        boolean schedule = pc.getAttribute(OPTION_SCHEDULE_TIME.getId()) != null;
+        boolean positionSchedule = pc.getAttribute(OPTION_ORBIT_ANGLE.getId()) != null;
+        boolean hasCrc = packetCrc;
+
+        if (schedule || positionSchedule) {
+            // Count the inner command's CRC here. The wrapper's CRC is part of the overhead below.
+            hasCrc = embeddedTcCrc;
+        } else if (binary.length >= 11 && binary[8] == 4) {
+            // The guard requires the 6-byte CCSDS primary header and the 5 fixed PUS TC header bytes.
+            // Byte index 8 is the subtype. Subtype 4 inserts activities when the service at index 7 is 11 or 22.
+            // A directly issued scheduling wrapper has its own CRC setting and no added wrapper overhead.
+            hasCrc = switch (binary[7]) {
+            case 11 -> pus11Crc;
+            case 22 -> pus22Crc;
+            default -> packetCrc;
+            };
+        }
+        if (hasCrc) {
             len += 2;
         }
-        if (pc.getAttribute(OPTION_SCHEDULE_TIME.getId()) != null) {
+        if (schedule) {
             // the command is wrapped into a TC(11,4)
             len += getScheduleOverhead(pus11SubScheduleIdBytes, pus11GroupIdBytes,
                     timeEncoder.getEncodedLength(), pus11Crc);
-        } else if (pc.getAttribute(OPTION_ORBIT_ANGLE.getId()) != null) {
+        } else if (positionSchedule) {
             // the command is wrapped into a TC(22,4)
             len += getScheduleOverhead(pus22SubScheduleIdBytes, pus22GroupIdBytes,
                     POSITION_TAG_LENGTH_BYTES, pus22Crc);
@@ -758,8 +794,8 @@ public class PusCommandPostprocessor extends AbstractCommandPostProcessor {
      * Wrapper overhead: 6 bytes primary header, 5 bytes secondary header, optional IDs, 1 byte N,
      * a time or position tag, and the optional CRC.
      */
-    private static int getScheduleOverhead(int subScheduleIdBytes, int groupIdBytes, int tagLength, boolean crc) {
-        return 12 + subScheduleIdBytes + groupIdBytes + tagLength + (crc ? 2 : 0);
+    private int getScheduleOverhead(int subScheduleIdBytes, int groupIdBytes, int tagLength, boolean crc) {
+        return 12 + spareBytes + subScheduleIdBytes + groupIdBytes + tagLength + (crc ? 2 : 0);
     }
 
     private long shiftToEpoch(long t) {
