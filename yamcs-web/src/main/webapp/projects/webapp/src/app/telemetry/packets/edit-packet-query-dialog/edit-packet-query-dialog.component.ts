@@ -3,6 +3,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {
   MessageService,
+  stringArrayAttribute,
   WebappSdkModule,
   YamcsService,
 } from '@yamcs/webapp-sdk';
@@ -15,7 +16,7 @@ import {
 export class EditPacketQueryDialogComponent {
   form = new FormGroup({
     queryName: new FormControl<string>('', Validators.required),
-    name: new FormControl<string>(''),
+    name: new FormControl<string[]>([], { nonNullable: true }),
     link: new FormControl<string>(''),
     filter: new FormControl<string>(''),
     shared: new FormControl<boolean>(false, Validators.required),
@@ -30,7 +31,7 @@ export class EditPacketQueryDialogComponent {
     const { query } = data;
     this.form.patchValue({
       queryName: query.name,
-      name: query.query.name || 'ANY',
+      name: stringArrayAttribute(query.query.name),
       link: query.query.link || 'ANY',
       filter: query.query.filter || undefined,
       shared: query.shared,
@@ -45,7 +46,7 @@ export class EditPacketQueryDialogComponent {
         name: fv.queryName!,
         shared: fv.shared ?? false,
         query: {
-          name: fv.name !== 'ANY' ? fv.name : undefined,
+          name: fv.name?.length ? fv.name : undefined,
           link: fv.link !== 'ANY' ? fv.link : undefined,
           filter: fv.filter ?? undefined,
         },

@@ -15,7 +15,7 @@ import {
 export class CreatePacketQueryDialogComponent {
   form = new FormGroup({
     queryName: new FormControl<string>('', Validators.required),
-    name: new FormControl<string>(''),
+    name: new FormControl<string[]>([], { nonNullable: true }),
     link: new FormControl<string>(''),
     filter: new FormControl<string>(''),
     shared: new FormControl<boolean>(false, Validators.required),
@@ -41,7 +41,7 @@ export class CreatePacketQueryDialogComponent {
         name: fv.queryName!,
         shared: fv.shared ?? false,
         query: {
-          name: fv.name !== 'ANY' ? fv.name : undefined,
+          name: fv.name?.length ? fv.name : undefined,
           link: fv.link !== 'ANY' ? fv.link : undefined,
           filter: fv.filter ?? undefined,
         },

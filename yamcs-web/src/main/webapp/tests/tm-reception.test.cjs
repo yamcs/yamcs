@@ -4,6 +4,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
 const ts = require("typescript");
+require("@angular/compiler");
 
 // Exercise the real datasource without bootstrapping Angular or adding a test framework.
 function loadSource(filename, dependencies) {
@@ -12,6 +13,7 @@ function loadSource(filename, dependencies) {
     compilerOptions: {
       module: ts.ModuleKind.CommonJS,
       target: ts.ScriptTarget.ES2022,
+      experimentalDecorators: true,
     },
   }).outputText;
   const exports = {};
@@ -30,6 +32,7 @@ const sourceDirectory = path.resolve(
   __dirname,
   "../projects/webapp/src/app/telemetry/packets/packet-list",
 );
+const sdkDirectory = path.resolve(__dirname, "../projects/webapp-sdk/src/lib");
 const buffer = loadSource(path.join(sourceDirectory, "PacketBuffer.ts"), {});
 const { PacketsDataSource } = loadSource(
   path.join(sourceDirectory, "packets.datasource.ts"),
@@ -39,6 +42,94 @@ const { PacketsDataSource } = loadSource(
     "./PacketBuffer": buffer,
   },
 );
+
+const angularCore = {
+  Component: () => (component) => component,
+  Inject: () => () => {},
+};
+
+test("packet name selection carries every name into the query and URL", () => {
+  const { PacketListComponent } = loadSource(
+    path.join(sourceDirectory, "packet-list.component.ts"),
+    {
+      "@angular/core": angularCore,
+      "@yamcs/webapp-sdk": { BaseComponent: class {} },
+      "../../../shared/hex/hex.component": {},
+      "../create-packet-query-dialog/create-packet-query-dialog.component": {},
+      "../packets-page-tabs/packets-page-tabs.component": {},
+      "./completions": {},
+      "./packet-download-link.pipe": {},
+      "./packets.datasource": { PacketsDataSource },
+    },
+  );
+  const names = ["/test/first", "/test/second"];
+  const controls = {
+    name: { value: names },
+    filter: { value: null },
+    link: { value: "ANY" },
+    timeBasis: { value: "GENERATION_TIME" },
+    order: { value: "desc" },
+  };
+  let queryParams;
+  const component = Object.assign(
+    Object.create(PacketListComponent.prototype),
+    {
+      filterForm: { controls },
+      router: {
+        navigate: (_, options) => (queryParams = options.queryParams),
+      },
+    },
+  );
+  assert.deepEqual(component.queryOptions().name, names);
+  component.updateURL();
+  assert.deepEqual(queryParams.name, names);
+
+  controls.name.value = [];
+  assert.equal(component.queryOptions().name, undefined);
+  component.updateURL();
+  assert.equal(queryParams.name, null);
+});
+
+test("editing an older single-name packet query can save multiple names", () => {
+  const { EditPacketQueryDialogComponent } = loadSource(
+    path.join(
+      sourceDirectory,
+      "../edit-packet-query-dialog/edit-packet-query-dialog.component.ts",
+    ),
+    {
+      "@angular/core": angularCore,
+      "@angular/material/dialog": {},
+      "@yamcs/webapp-sdk": loadSource(
+        path.join(sdkDirectory, "transforms.ts"),
+        {},
+      ),
+    },
+  );
+  let saved;
+  const component = new EditPacketQueryDialogComponent(
+    { close() {} },
+    {
+      instance: "test",
+      yamcsClient: {
+        async editQuery(_instance, _resource, _queryId, options) {
+          saved = options.query;
+        },
+      },
+    },
+    {},
+    {
+      query: { id: "q", name: "Packets", query: { name: "/test/first" } },
+    },
+  );
+  assert.deepEqual(Array.from(component.form.controls.name.value), [
+    "/test/first",
+  ]);
+
+  const names = ["/test/first", "/test/second"];
+  component.form.controls.name.setValue(names);
+  component.save();
+  assert.deepEqual(saved.name, names);
+});
 
 function deferred() {
   let resolve;
@@ -73,7 +164,7 @@ test("pagination retains the exact reception-time query, including its stop boun
     order: "asc",
     start: "2024-01-01T00:00:00Z",
     stop: "2024-01-02T00:00:00Z",
-    name: ["a"],
+    name: ["a", "b"],
     link: "link",
     filter: "size > 0",
   };

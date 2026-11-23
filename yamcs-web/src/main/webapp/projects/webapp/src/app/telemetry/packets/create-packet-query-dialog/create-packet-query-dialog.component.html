@@ -10,8 +10,8 @@
       <ya-filter-textarea formControlName="filter" />
     </ya-field>
 
-    <ya-field label="Packet name">
-      <ya-select formControlName="name" [options]="data.nameOptions" emptyOption="Any name" />
+    <ya-field label="Packet names">
+      <ya-multi-select formControlName="name" [options]="data.nameOptions" emptyOption="Any name" />
     </ya-field>
 
     <ya-field label="Link">

@@ -14,6 +14,7 @@ import {
   PacketArchiveInfo,
   PacketTimeBasis,
   ParseFilterSubscription,
+  stringArrayAttribute,
   utils,
   WebappSdkModule,
   YaColumnInfo,
@@ -45,7 +46,7 @@ export class PacketListComponent
   implements OnInit, OnDestroy
 {
   filter = input<string>();
-  name = input<string>();
+  name = input([], { transform: stringArrayAttribute });
   link = input<string>();
   interval = input<string>();
   customStart = input<string>();
@@ -80,7 +81,7 @@ export class PacketListComponent
 
   filterForm = new UntypedFormGroup({
     filter: new FormControl<string | null>(null),
-    name: new UntypedFormControl('ANY'),
+    name: new FormControl<string[]>([], { nonNullable: true }),
     link: new UntypedFormControl('ANY'),
     interval: new FormControl<string | null>(defaultInterval),
     customStart: new FormControl<string | null>(null),
@@ -93,9 +94,7 @@ export class PacketListComponent
 
   detailPacket$ = new BehaviorSubject<Packet | null>(null);
 
-  nameOptions$ = new BehaviorSubject<YaSelectOption[]>([
-    { id: 'ANY', label: 'Any name' },
-  ]);
+  nameOptions$ = new BehaviorSubject<YaSelectOption[]>([]);
 
   linkOptions$ = new BehaviorSubject<YaSelectOption[]>([
     { id: 'ANY', label: 'Any link' },
@@ -121,15 +120,9 @@ export class PacketListComponent
     this.yamcs.yamcsClient
       .getPacketNames(this.yamcs.instance!)
       .then((message) => {
-        for (const name of message.packets || []) {
-          this.nameOptions$.next([
-            ...this.nameOptions$.value,
-            {
-              id: name,
-              label: name,
-            },
-          ]);
-        }
+        this.nameOptions$.next(
+          (message.packets || []).map((name) => ({ id: name, label: name })),
+        );
         for (const name of message.links || []) {
           this.linkOptions$.next([
             ...this.linkOptions$.value,
@@ -160,7 +153,7 @@ export class PacketListComponent
     this.loadData();
     this.refreshArchiveInfo();
 
-    for (const control of ['timeBasis', 'order']) {
+    for (const control of ['timeBasis', 'order', 'name']) {
       this.subscriptions.add(
         this.filterForm
           .get(control)!
@@ -169,10 +162,6 @@ export class PacketListComponent
     }
 
     this.filterForm.get('filter')!.valueChanges.forEach((filter) => {
-      this.loadData();
-    });
-
-    this.filterForm.get('name')!.valueChanges.forEach((name) => {
       this.loadData();
     });
 
@@ -216,10 +205,7 @@ export class PacketListComponent
       const filter = this.filter()!;
       this.filterForm.get('filter')!.setValue(filter);
     }
-    if (this.name()) {
-      const name = this.name()!;
-      this.filterForm.get('name')!.setValue(name);
-    }
+    this.filterForm.get('name')!.setValue(this.name());
     if (this.link()) {
       const link = this.link()!;
       this.filterForm.get('link')!.setValue(link);
@@ -294,9 +280,9 @@ export class PacketListComponent
     if (filter) {
       options.filter = filter;
     }
-    const name = controls['name'].value;
-    if (name !== 'ANY') {
-      options.name = [name];
+    const names = controls['name'].value;
+    if (names.length) {
+      options.name = names;
     }
     const link = controls['link'].value;
     if (link !== 'ANY') {
@@ -404,12 +390,13 @@ export class PacketListComponent
 
   private updateURL() {
     const { controls } = this.filterForm;
+    const names = controls['name'].value;
     this.router.navigate([], {
       replaceUrl: true,
       relativeTo: this.route,
       queryParams: {
         filter: controls['filter'].value || null,
-        name: controls['name'].value === 'ANY' ? null : controls['name'].value,
+        name: names.length ? names : null,
         link: controls['link'].value === 'ANY' ? null : controls['link'].value,
         interval: this.appliedInterval,
         timeBasis:
@@ -483,7 +470,7 @@ export class PacketListComponent
     this.filterForm.reset(
       {
         filter: null,
-        name: 'ANY',
+        name: [],
         link: 'ANY',
         interval: defaultInterval,
         timeBasis: this.filterForm.value['timeBasis'],
@@ -529,7 +516,7 @@ export class PacketListComponent
   isClearQueryEnabled() {
     const fv = this.filterForm.value;
     return (
-      this.searchFilter().empty() || fv.name !== 'ANY' || fv.link !== 'ANY'
+      this.searchFilter().empty() || fv.name.length > 0 || fv.link !== 'ANY'
     );
   }
 

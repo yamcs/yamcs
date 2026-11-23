@@ -106,7 +106,10 @@
           style="flex: 1 1 auto"
           [completions]="completions"
           (typedValue)="parseQuery($event)" />
-        <ya-select [options]="nameOptions$ | async" formControlName="name" />
+        <ya-multi-select
+          [options]="nameOptions$ | async"
+          formControlName="name"
+          emptyOption="Any name" />
         <ya-select [options]="linkOptions$ | async" formControlName="link" />
       </ya-filter-bar>
 

@@ -48,9 +48,8 @@ export class YaMultiSelect implements OnChanges, ControlValueAccessor {
     return this.selected$.value.indexOf(id) !== -1;
   }
 
-  writeValue(value: any) {
-    this.selected$.next(value);
-    this.onChange(value);
+  writeValue(value: string[] | null) {
+    this.selected$.next(value ?? []);
   }
 
   enableOption(event: MouseEvent, id: string) {
@@ -59,6 +58,7 @@ export class YaMultiSelect implements OnChanges, ControlValueAccessor {
       selected.push(id);
     }
     this.writeValue(selected);
+    this.onChange(selected);
 
     event.preventDefault();
     event.stopPropagation();
@@ -72,6 +72,7 @@ export class YaMultiSelect implements OnChanges, ControlValueAccessor {
       selected.splice(idx, 1);
     }
     this.writeValue(selected);
+    this.onChange(selected);
 
     event.preventDefault();
     event.stopPropagation();

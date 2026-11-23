@@ -23,9 +23,7 @@ export class PacketQueryListComponent {
 
   dataSource = new MatTableDataSource<Query>();
 
-  nameOptions$ = new BehaviorSubject<YaSelectOption[]>([
-    { id: 'ANY', label: 'Any name' },
-  ]);
+  nameOptions$ = new BehaviorSubject<YaSelectOption[]>([]);
 
   linkOptions$ = new BehaviorSubject<YaSelectOption[]>([
     { id: 'ANY', label: 'Any link' },
@@ -41,15 +39,9 @@ export class PacketQueryListComponent {
     this.yamcs.yamcsClient
       .getPacketNames(this.yamcs.instance!)
       .then((message) => {
-        for (const name of message.packets || []) {
-          this.nameOptions$.next([
-            ...this.nameOptions$.value,
-            {
-              id: name,
-              label: name,
-            },
-          ]);
-        }
+        this.nameOptions$.next(
+          (message.packets || []).map((name) => ({ id: name, label: name })),
+        );
         for (const name of message.links || []) {
           this.linkOptions$.next([
             ...this.linkOptions$.value,
