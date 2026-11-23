@@ -1,0 +1,173 @@
+<ya-instance-page>
+  <ya-instance-toolbar label="Satellite reports" />
+  <ya-panel>
+    <ya-page-tabs>
+      <a
+        routerLink="/satellite-reports"
+        [queryParams]="scopeParams()"
+        [class.active]="view === 'latest'"
+        [attr.aria-current]="view === 'latest' ? 'page' : null">
+        Latest
+      </a>
+      <a
+        routerLink="/satellite-reports/history"
+        [queryParams]="scopeParams()"
+        [class.active]="view === 'history'"
+        [attr.aria-current]="view === 'history' ? 'page' : null">
+        History
+      </a>
+      <div actions>
+        <ya-button icon="refresh" (click)="refresh()">Refresh</ya-button>
+      </div>
+    </ya-page-tabs>
+
+    @if (view !== "snapshot") {
+      <div class="filters">
+        <label class="field">
+          <span>Report type</span>
+          <select
+            #typeSelect
+            class="ya-input"
+            [disabled]="!groups().length"
+            (change)="selectType(typeSelect.value)">
+            @if (!selected()) {
+              <option value="" disabled selected>Select a report type</option>
+            }
+            @for (group of groups(); track group.service) {
+              <optgroup [label]="'Service ' + group.service">
+                @for (type of group.types; track type.type) {
+                  <option [value]="type.type" [selected]="selected()?.type === type.type">
+                    {{ type.title }} ({{ type.service }},{{ type.subtype }})
+                  </option>
+                }
+              </optgroup>
+            }
+          </select>
+        </label>
+      </div>
+    }
+
+    @if (view === "snapshot") {
+      @if (snapshot.hasValue()) {
+        @let report = snapshot.value();
+        <app-report-snapshot
+          [report]="report"
+          [title]="selected()?.title ?? 'Report ' + report.type"
+          [context]="context()" />
+      } @else if (snapshot.error()) {
+        <p role="alert" class="notice">Could not load this report snapshot.</p>
+      } @else {
+        <p role="status" class="notice">Loading report snapshot…</p>
+      }
+    } @else if (catalog.error()) {
+      <p role="alert" class="notice">Could not load the available report types.</p>
+    } @else if (catalog.isLoading() && !catalog.hasValue()) {
+      <p role="status" class="notice">Loading report types…</p>
+    } @else if (!groups().length) {
+      <p class="notice">No report types are available to you on this instance.</p>
+    } @else if (!selected()) {
+      <p class="notice">
+        The requested report type is unavailable. Select an available report type.
+      </p>
+    } @else if (view === "latest") {
+      @if (latest(); as report) {
+        <app-report-snapshot [report]="report" [title]="selected()!.title" [context]="context()" />
+      } @else {
+        <p class="notice">No received report for this selection.</p>
+      }
+    } @else {
+      <div class="filter-fields history-filters">
+        <label class="field">
+          <span>Time range</span>
+          <select
+            #historyRange
+            class="ya-input"
+            (change)="applyHistoryInterval(historyRange.value)">
+            @for (interval of historyIntervals; track interval.id) {
+              <option [value]="interval.id" [selected]="interval.id === historyInterval()">
+                {{ interval.label }}
+              </option>
+            }
+          </select>
+        </label>
+      </div>
+      @if (historyInterval() === "CUSTOM") {
+        @for (form of [historyDates()]; track form) {
+          <form class="filter-fields history-filters" [formGroup]="form" (ngSubmit)="applyDates()">
+            <div class="field" role="group" aria-labelledby="report-from-label">
+              <span id="report-from-label">From (inclusive)</span>
+              <ya-date-time-input formControlName="start" [showClear]="true" [showMillis]="true" />
+            </div>
+            <div class="field" role="group" aria-labelledby="report-to-label">
+              <span id="report-to-label">To (exclusive)</span>
+              <ya-date-time-input formControlName="stop" [showClear]="true" [showMillis]="true" />
+            </div>
+            <ya-button [disabled]="form.invalid">Apply dates</ya-button>
+          </form>
+        }
+      }
+      @if (invalidHistoryDates()) {
+        <p role="alert" class="notice">Enter valid dates with From earlier than To.</p>
+      } @else if (history.isLoading()) {
+        <p role="status" class="notice">Loading report history…</p>
+      } @else if (history.error()) {
+        <p role="alert" class="notice">Could not load report history.</p>
+      } @else {
+        @let state = historyState();
+        @if (state.reports.length) {
+          <div class="table-scroll" role="region" tabindex="0" aria-label="Report history">
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th scope="col">Report time</th>
+                  <th scope="col">
+                    <span class="field-help" tabindex="0" [matTooltip]="fieldHelp.status">
+                      Status
+                    </span>
+                  </th>
+                  <th scope="col">
+                    <span class="field-help" tabindex="0" [matTooltip]="fieldHelp.receivedPages">
+                      Received pages
+                    </span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (report of state.reports; track report.id) {
+                  <tr>
+                    <td>
+                      <a
+                        [routerLink]="['/satellite-reports/reports', report.id]"
+                        [queryParams]="scopeParams()">
+                        {{ (report.sortTime | datetime) || report.id }}
+                      </a>
+                    </td>
+                    <td>{{ statusLabels[report.status] }}</td>
+                    <td>
+                      {{ report.receivedPages?.length ?? 0 }}
+                      @if (report.expectedPages !== undefined) {
+                        of {{ report.expectedPages }}
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <p class="notice">No report attempts match these filters.</p>
+        }
+        @if (state.error) {
+          <p role="alert" class="notice">Could not load more report attempts.</p>
+        }
+        @if (state.next) {
+          <p>
+            <ya-button [disabled]="state.loading" (click)="loadMore()">
+              {{ state.loading ? "Loading…" : "Load more" }}
+            </ya-button>
+          </p>
+        }
+      }
+    }
+  </ya-panel>
+</ya-instance-page>

@@ -209,6 +209,14 @@ export const APP_ROUTES: Routes = [
             canActivate: [authGuardFn],
           },
           {
+            path: 'satellite-reports',
+            loadChildren: () =>
+              import('./satellite-reports/satellite-reports.routes').then(
+                (m) => m.ROUTES,
+              ),
+            canActivate: [authGuardFn],
+          },
+          {
             path: 'scripts',
             loadChildren: () =>
               import('./scripts/scripts.routes').then((m) => m.ROUTES),

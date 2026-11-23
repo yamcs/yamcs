@@ -1,0 +1,26 @@
+@import "./report-table.css";
+
+.filters,
+.filter-fields {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+
+.filters,
+.history-filters,
+.notice {
+  margin-block: 16px;
+}
+
+.field {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.field select,
+.field input {
+  max-width: 100%;
+}
