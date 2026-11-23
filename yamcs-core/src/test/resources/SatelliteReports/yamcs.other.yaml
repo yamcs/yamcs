@@ -1,0 +1,17 @@
+services:
+  - class: org.yamcs.archive.CommandHistoryRecorder
+  - class: org.yamcs.pus.report.SatelliteReportService
+    args:
+      telemetryStream: tm_realtime
+      commandHistoryStream: cmdhist_realtime
+      responseTimeoutMillis: 500
+
+mdb:
+  - type: xtce
+    spec: src/test/resources/xtce/satellite-report-test.xml
+
+streamConfig:
+  tm:
+    - name: tm_realtime
+      rootContainer: /jTYU/ccsds_space_packet
+  cmdHist: [cmdhist_realtime]

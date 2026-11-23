@@ -32,6 +32,7 @@ import org.yamcs.management.ManagementListener;
 import org.yamcs.management.ManagementService;
 import org.yamcs.mdb.Mdb;
 import org.yamcs.plists.ParameterListService;
+import org.yamcs.pus.report.SatelliteReportService;
 import org.yamcs.protobuf.AbstractInstancesApi;
 import org.yamcs.protobuf.CreateInstanceRequest;
 import org.yamcs.protobuf.GetInstanceRequest;
@@ -482,6 +483,9 @@ public class InstancesApi extends AbstractInstancesApi<Context> {
         }
         if (!ysi.getServicesWithConfig(AlarmMirrorService.class).isEmpty()) {
             instanceb.addCapabilities("alarm-mirror");
+        }
+        if (ysi.getServices(SatelliteReportService.class).stream().anyMatch(service -> service.archive() != null)) {
+            instanceb.addCapabilities(SatelliteReportService.CAPABILITY);
         }
         return instanceb.build();
     }

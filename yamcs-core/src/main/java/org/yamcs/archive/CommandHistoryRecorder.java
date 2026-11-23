@@ -84,6 +84,11 @@ public class CommandHistoryRecorder extends AbstractYamcsService {
         notifyStarted();
     }
 
+    /** Returns whether this running recorder archives the given command-history stream. */
+    public boolean recordsStream(String streamName) {
+        return isRunning() && streamNames.contains(streamName);
+    }
+
     @Override
     protected void doStop() {
         YarchDatabaseInstance ydb = YarchDatabase.getInstance(yamcsInstance);

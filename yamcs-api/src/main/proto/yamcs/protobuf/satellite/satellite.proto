@@ -1,0 +1,160 @@
+syntax = "proto2";
+
+package yamcs.protobuf.satellite;
+
+option java_package = "org.yamcs.protobuf.satellite";
+option java_multiple_files = true;
+
+import "google/protobuf/timestamp.proto";
+import "yamcs/api/annotations.proto";
+import "yamcs/protobuf/yamcs.proto";
+
+service SatelliteReportsApi {
+  // List the configured report types and their latest received snapshots.
+  // Available only on instances configured with the Satellite report service.
+  rpc ListReportTypes(ListReportTypesRequest) returns (ListReportTypesResponse) {
+    option (yamcs.api.route) = { get: "/api/satellite-reports/{instance}/types" offloaded: true };
+  }
+
+  // List archived attempts, newest first. Reuse the same filters with a continuation token.
+  rpc ListReports(ListReportsRequest) returns (ListReportsResponse) {
+    option (yamcs.api.route) = { get: "/api/satellite-reports/{instance}/reports" offloaded: true };
+  }
+
+  // Get an archived report attempt by its stable identifier.
+  rpc GetReport(GetReportRequest) returns (ReportSnapshot) {
+    option (yamcs.api.route) = { get: "/api/satellite-reports/{instance}/reports/{id}" offloaded: true };
+  }
+}
+
+message ListReportTypesRequest {
+  optional string instance = 1;
+  reserved 2;
+  reserved "target";
+}
+
+message ListReportTypesResponse {
+  repeated ReportTypeItem types = 1;
+}
+
+message ReportTypeItem {
+  // Type key in service-subtype form, for example 11-10.
+  optional string type = 1;
+  optional string title = 2;
+  optional uint32 service = 3;
+  optional uint32 subtype = 4;
+  optional ReportSnapshot latest = 5;
+}
+
+message ListReportsRequest {
+  optional string instance = 1;
+  optional string type = 2;
+  reserved 3;
+  reserved "target";
+  // Inclusive start time, compared with the snapshot's sort time.
+  optional google.protobuf.Timestamp start = 4;
+  // Exclusive stop time, compared with the snapshot's sort time.
+  optional google.protobuf.Timestamp stop = 5;
+  // Continuation token from a previous response.
+  optional string next = 6;
+  // Defaults to 50, at most 200.
+  optional uint32 limit = 7;
+}
+
+message ListReportsResponse {
+  repeated ReportSnapshot reports = 1;
+  optional string continuationToken = 2;
+}
+
+message GetReportRequest {
+  optional string instance = 1;
+  optional string id = 2;
+}
+
+enum ReportStatus {
+  COMPLETE = 0;
+  PARTIAL = 1;
+  AMBIGUOUS = 2;
+  NO_RESPONSE = 3;
+}
+
+message ReportSnapshot {
+  optional string id = 1;
+  optional string type = 2;
+  reserved 3;
+  reserved "target";
+  optional ReportStatus status = 4;
+  optional google.protobuf.Timestamp firstReceived = 5;
+  optional google.protobuf.Timestamp lastReceived = 6;
+  // Receipt time of the final required page of a complete report.
+  optional google.protobuf.Timestamp assembledAt = 7;
+  // Archive publication time, after the response window closed.
+  optional google.protobuf.Timestamp finalizedAt = 8;
+  // Latest observed reception time, or request time for an unobserved attempt.
+  optional google.protobuf.Timestamp sortTime = 9;
+  // The known command attempt. On ambiguous results it is a candidate.
+  optional ReportCommand command = 10;
+  optional uint32 expectedPages = 11;
+  repeated uint32 receivedPages = 12;
+  repeated uint32 missingPages = 13;
+  optional uint32 withheldPackets = 14;
+  repeated string issues = 15;
+  // Confidently attributed pages in page-number order.
+  repeated ReportPage pages = 16;
+  // Window opening time from send, verified execution, or the first matched scheduled echo.
+  optional google.protobuf.Timestamp requestedAt = 17;
+  optional google.protobuf.Timestamp responseDeadline = 18;
+  // Identifier used internally to match the spacecraft echo.
+  optional string echo = 19;
+  // Page numbers quarantined after conflicting packets.
+  repeated uint32 rejectedPages = 20;
+  // MDB packet container used to authorize the archived response.
+  optional string packetName = 21;
+}
+
+message ReportPage {
+  reserved 4;
+  reserved "sequence";
+  optional uint32 pageNumber = 1;
+  optional google.protobuf.Timestamp generationTime = 2;
+  optional google.protobuf.Timestamp receptionTime = 3;
+  repeated ReportRow rows = 5;
+  // Application process identifier in the telemetry packet's CCSDS primary header.
+  optional uint32 apid = 6;
+  // Source sequence counter in the telemetry packet's CCSDS primary header.
+  optional uint32 sourceSequenceCount = 7;
+}
+
+message ReportRow {
+  repeated ReportCell cells = 1;
+  // Decoded wire identity for an S11 scheduled activity.
+  optional ScheduledRequestId scheduledRequest = 2;
+  // Linked Yamcs history entry when a unique, authorized match exists.
+  optional ReportCommand scheduledCommand = 3;
+}
+
+message ReportCell {
+  optional string name = 1;
+  optional string label = 2;
+  optional yamcs.protobuf.Value value = 3;
+  optional string unit = 4;
+}
+
+message ScheduledRequestId {
+  optional uint32 sourceId = 1;
+  optional uint32 apid = 2;
+  optional uint32 sequenceCount = 3;
+  optional bytes packet = 4;
+  optional google.protobuf.Timestamp releaseTime = 5;
+}
+
+message ReportCommand {
+  // Yamcs history ID, distinct from the PUS wire request identifier.
+  optional string id = 1;
+  optional string name = 2;
+  repeated ReportCell arguments = 3;
+  // Zero-based embedded TC index in an explicit scheduling command.
+  optional uint32 embeddedIndex = 4;
+  // Coverage established by the request selector, when known.
+  optional string scope = 5;
+}

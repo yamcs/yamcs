@@ -1,0 +1,8 @@
+instances: [reporttest, other, disabled]
+dataDir: ${satelliteReports.testData}
+secretKey: testtest
+services:
+  - class: org.yamcs.http.HttpServer
+    args:
+      address: 127.0.0.1
+      port: ${satelliteReports.testPort}
