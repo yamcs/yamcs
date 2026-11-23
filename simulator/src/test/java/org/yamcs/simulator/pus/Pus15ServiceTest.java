@@ -99,6 +99,53 @@ class Pus15ServiceTest {
         }
     }
 
+    @Test
+    void byteCapacityProfileReportsAndStoresBytes(@TempDir Path dataDir) {
+        List<PusTmPacket> reports = new ArrayList<>();
+        var time = PusTimeEncoding.DEFAULT;
+        var packetConfig = new PusPacketConfig(16, 4, true, true, true, true, true, 1);
+        var simulator = new PusSimulator(dataDir.toFile(), time, PusTimeEncoding.STORAGE, packetConfig,
+                new Pus11ScheduleConfig(time)) {
+            @Override
+            void transmitRealtimeTM(PusTmPacket packet) {
+                if (packet.getType() == 15) {
+                    reports.add(packet);
+                }
+            }
+        };
+        var service = simulator.pus15Service;
+        var create = tc(20, 5);
+        create.getUserDataBuffer().put(new byte[] { 1, 100, 100, 1, 0 });
+        service.executeTc(create);
+
+        var enable = tc(1, 1);
+        enable.getUserDataBuffer().put((byte) 0);
+        service.executeTc(enable);
+        var configure = tc(3, 5);
+        var data = PusPackedFields.bitBuffer(configure.getUserDataBuffer());
+        data.putBits(100, 8);
+        data.putBits(1, 8);
+        data.putBits(16, 11);
+        data.putBits(0, 8);
+        service.executeTc(configure);
+
+        var stored = new PusTmPacket(16, 10, 17, 2);
+        service.submitToStores(stored);
+
+        service.executeTc(tc(22, 0));
+        var summaryRequest = tc(12, 1);
+        summaryRequest.getUserDataBuffer().put((byte) 0);
+        service.executeTc(summaryRequest);
+        assertEquals(2, reports.size());
+        var config = reports.get(0);
+        assertEquals(23, config.getSubtype());
+        assertEquals(100, Byte.toUnsignedInt(config.getUserDataBuffer().get(2)));
+        var summary = reports.get(1);
+        assertEquals(13, summary.getSubtype());
+        assertEquals(stored.getBytes().length,
+                Byte.toUnsignedInt(summary.getUserDataBuffer().get(2 + 3 * PusTimeEncoding.STORAGE.getEncodedLength())));
+    }
+
     private static void addSubtypes(Pus15Service service, int first) {
         PusTcPacket packet = tc(3, 135);
         ByteBuffer payload = packet.getUserDataBuffer();

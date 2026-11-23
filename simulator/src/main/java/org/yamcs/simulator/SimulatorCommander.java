@@ -101,6 +101,7 @@ public class SimulatorCommander extends ProcessRunner {
         pusSpec.addOption("timeEncoding", OptionType.MAP).withSpec(pusTimeEncodingSpec);
         pusSpec.addOption("apid", OptionType.INTEGER);
         pusSpec.addOption("spareBytes", OptionType.INTEGER);
+        pusSpec.addOption("packetStoreSizeUnitBytes", OptionType.INTEGER);
         pusSpec.addOption("tmPacketCrc", OptionType.BOOLEAN);
         pusSpec.addOption("tcPacketCrc", OptionType.BOOLEAN);
         pusSpec.addOption("embeddedTcCrc", OptionType.BOOLEAN);
@@ -235,6 +236,8 @@ public class SimulatorCommander extends ProcessRunner {
             boolean tcCrc = pusArgs.getBoolean("tcPacketCrc", defaultOptions.pusTcPacketCrc);
             cmdl.addAll(List.of("--pus-apid", Integer.toString(pusArgs.getInt("apid", defaultOptions.pusApid)),
                     "--pus-spare-bytes", Integer.toString(pusArgs.getInt("spareBytes", defaultOptions.pusSpareBytes)),
+                    "--pus-packet-store-size-unit-bytes", Integer.toString(
+                            pusArgs.getInt("packetStoreSizeUnitBytes", defaultOptions.pusPacketStoreSizeUnitBytes)),
                     "--pus-tm-packet-crc", Boolean.toString(pusArgs.getBoolean("tmPacketCrc", defaultOptions.pusTmPacketCrc)),
                     "--pus-tc-packet-crc", Boolean.toString(tcCrc),
                     "--pus22-wrapper-crc", Boolean.toString(pusArgs.getBoolean("pus22WrapperCrc", tcCrc)),
@@ -423,7 +426,8 @@ public class SimulatorCommander extends ProcessRunner {
                     runtimeOptions.pusTmPacketCrc, tcCrc,
                     runtimeOptions.pus11WrapperCrc == null ? tcCrc : runtimeOptions.pus11WrapperCrc,
                     runtimeOptions.pus22WrapperCrc == null ? tcCrc : runtimeOptions.pus22WrapperCrc,
-                    runtimeOptions.pusEmbeddedTcCrc == null ? tcCrc : runtimeOptions.pusEmbeddedTcCrc);
+                    runtimeOptions.pusEmbeddedTcCrc == null ? tcCrc : runtimeOptions.pusEmbeddedTcCrc,
+                    runtimeOptions.pusPacketStoreSizeUnitBytes);
             PusTimeEncoding scheduleTime = runtimeOptions.pus11TcImplicitPfield == null ? timeEncoding
                     : new PusTimeEncoding(runtimeOptions.pusTimePfield, runtimeOptions.pusTimePfieldCont,
                             runtimeOptions.pus11TcImplicitPfield, timeEncoding.epoch());

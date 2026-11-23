@@ -4,7 +4,8 @@ import org.yamcs.ConfigurationException;
 
 /** Packet-layer settings shared by the simulator's transport and PUS services. */
 public record PusPacketConfig(int apid, int spareBytes, boolean tmCrc, boolean tcCrc, boolean pus11Crc,
-        boolean pus22Crc, boolean embeddedTcCrc) {
+        boolean pus22Crc, boolean embeddedTcCrc, int packetStoreSizeUnitBytes) {
+    public static final int DEFAULT_PACKET_STORE_SIZE_UNIT_BYTES = 1024;
     public static final PusPacketConfig DEFAULT = new PusPacketConfig(1, 4, true, true, true, true);
 
     public PusPacketConfig {
@@ -14,6 +15,14 @@ public record PusPacketConfig(int apid, int spareBytes, boolean tmCrc, boolean t
         if (spareBytes != 0 && spareBytes != 4) {
             throw new ConfigurationException("PUS spareBytes must be 0 or 4");
         }
+        if (packetStoreSizeUnitBytes < 1) {
+            throw new ConfigurationException("PUS packetStoreSizeUnitBytes must be positive");
+        }
+    }
+
+    public PusPacketConfig(int apid, int spareBytes, boolean tmCrc, boolean tcCrc, boolean pus11Crc,
+            boolean pus22Crc, boolean embeddedTcCrc) {
+        this(apid, spareBytes, tmCrc, tcCrc, pus11Crc, pus22Crc, embeddedTcCrc, DEFAULT_PACKET_STORE_SIZE_UNIT_BYTES);
     }
 
     public PusPacketConfig(int apid, int spareBytes, boolean tmCrc, boolean tcCrc, boolean pus11Crc,
