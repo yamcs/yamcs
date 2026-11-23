@@ -200,6 +200,40 @@ public class ParameterArchiveTest extends BaseParchiveTest {
      */
     @ParameterizedTest
     @ValueSource(strings = { "none", "YYYY", "YYYY/MM" })
+    public void testReadPGsegment(String partitioningSchema) throws Exception {
+        openDb(partitioningSchema);
+
+        ParameterValue pv1_0 = getParameterValue(p1, 100, "blala100", 100);
+        int p1id = pidMap.createAndGet(p1.getQualifiedName(), pv1_0.getEngValue().getType(),
+                pv1_0.getRawValue().getType());
+        var pg1 = pgidMap.getGroup(IntArray.wrap(p1id));
+
+        // nothing stored yet
+        assertNull(parchive.readPGsegment(pg1, 0));
+
+        PGSegment pgSegment1 = new PGSegment(pg1.id, 0);
+        pgSegment1.addRecord(100, pg1.pids, Arrays.asList(pv1_0));
+        pgSegment1.addRecord(200, pg1.pids, Arrays.asList(getParameterValue(p1, 200, "blala200", 200)));
+        parchive.writeToArchive(pgSegment1);
+
+        PGSegment read = parchive.readPGsegment(pg1, 0);
+        assertNotNull(read);
+        assertEquals(2, read.getTimeSegment().size());
+
+        // the next interval of the same group is empty
+        long nextInterval = ParameterArchive.getIntervalEnd(0) + 1;
+        assertNull(parchive.readPGsegment(pg1, nextInterval));
+
+        // another group in the same interval, without data
+        ParameterValue pv2 = getParameterValue(p2, 100, "x", 100);
+        int p2id = pidMap.createAndGet(p2.getQualifiedName(), pv2.getEngValue().getType(),
+                pv2.getRawValue().getType());
+        var pg2 = pgidMap.getGroup(IntArray.wrap(p1id, p2id));
+        assertNull(parchive.readPGsegment(pg2, 0));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "none", "YYYY", "YYYY/MM" })
     public void testRawEqualsEngParameter(String partitioningSchema) throws Exception {
         openDb(partitioningSchema);
 

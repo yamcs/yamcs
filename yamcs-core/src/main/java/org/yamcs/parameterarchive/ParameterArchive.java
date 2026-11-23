@@ -532,8 +532,14 @@ public class ParameterArchive extends AbstractYamcsService {
         if (storage.getVersion(intervalStart) == 0) {
             return null;
         }
-        // the first pair is the time segment, then the parameters of the group, all in the same interval
         int timePid = parameterIdDb.timeParameterId;
+        // Cheap pre-check: a group without a time segment in the interval has no data there. In normal realtime
+        // operation every new interval is empty, and scanning all the parameters of all the groups costs one seek per
+        // parameter (thousands at each interval boundary, on the realtime processing path).
+        if (!hasTimeSegment(pg, intervalStart, timePid)) {
+            return null;
+        }
+        // the first pair is the time segment, then the parameters of the group, all in the same interval
         int n = pg.pids.size();
         int[] pids = new int[n + 1];
         int[] pgids = new int[n + 1];
@@ -577,6 +583,14 @@ public class ParameterArchive extends AbstractYamcsService {
             return null;
         }
         return new PGSegment(pg.id, timeSegment, pvsList);
+    }
+
+    private boolean hasTimeSegment(ParameterGroup pg, long intervalStart, int timePid) {
+        var req = new ScanRequest(timePid, new int[] { timePid }, new int[] { pg.id }, intervalStart, intervalStart,
+                true, false, false, false);
+        try (var scanner = storage.scan(req)) {
+            return scanner.isValid();
+        }
     }
 
     /**
