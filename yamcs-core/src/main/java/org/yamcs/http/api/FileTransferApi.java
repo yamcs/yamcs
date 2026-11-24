@@ -463,9 +463,13 @@ public class FileTransferApi extends AbstractFileTransferApi<Context> {
         TransferInfo.Builder tib = TransferInfo.newBuilder()
                 .setId(transfer.getId())
                 .setState(transfer.getTransferState())
-                .setDirection(transfer.getDirection())
                 .setSizeTransferred(transfer.getTransferredSize())
                 .setReliable(transfer.isReliable());
+
+        // may be null for incomplete records retrieved from the archive
+        if (transfer.getDirection() != null) {
+            tib.setDirection(transfer.getDirection());
+        }
 
         if (transfer.getTotalSize() >= 0) {
             tib.setTotalSize(transfer.getTotalSize());

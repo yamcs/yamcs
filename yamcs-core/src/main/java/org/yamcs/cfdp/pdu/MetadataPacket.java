@@ -20,7 +20,7 @@ public class MetadataPacket extends CfdpPacket implements FileDirective {
     private LV destinationFileName;
     private List<TLV> options;
 
-    public MetadataPacket(boolean closureRequested, ChecksumType checksumType, int fileSize,
+    public MetadataPacket(boolean closureRequested, ChecksumType checksumType, long fileSize,
             String source, String destination, List<TLV> options, CfdpHeader header) {
         super(header);
         if (fileSize == 0 && header.isLargeFile()) {

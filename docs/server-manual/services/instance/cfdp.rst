@@ -52,6 +52,29 @@ Strictly speaking, this deviates from 4.6.4.2.1 because some segments requested 
 The CFDP PDUs do not carry a sequence number that would allow ordering the NAK PDUs of a transaction (the Transaction sequence number in the PDU header is the same for all the PDUs of a transaction). The Sender therefore assumes that the NAK PDUs are received in the order they were issued. If the underlying link reorders them (for example when using multiple ground stations or virtual channels), an older NAK received after a newer one will cause the retransmission of segments already received. This only costs bandwidth: since the older NAK can only request a superset of the segments requested by the newer one within the same scope, no missing data is ever discarded. The Receiver discards the duplicate data, as required by the standard.
 
 
+.. _cfdp-persistence:
+
+Persistence of transfers across restarts
+----------------------------------------
+
+Starting with Yamcs 5.14.2, the incoming files are written as they arrive into temporary files in a per-service transfer directory (``transferDir``, by default :file:`<instance data dir>/cfdp/<serviceName>/`). For each transfer the directory contains:
+
+* :file:`<id>.data` - the (sparse) file being received; each byte is written once, at its offset.
+* :file:`<id>.journal` - a list of (offset, length, CRC32C) records describing the data written.
+* :file:`<id>.state` - the state of the transfer (received Metadata, EOF and Finished PDUs, internal state, suspended flag, target bucket and object name, etc.), replaced atomically at each state transition.
+
+The outgoing files are not kept in memory either. When an upload is requested, only the bucket and object name are remembered (also while the transfer is queued). When the transfer starts, the object is read from the bucket and copied to :file:`<id>.data` in the transfer directory; the File Data PDUs are then read from this file and the checksum is computed by streaming it. Consequently, the object sent is the version found in the bucket when the transfer starts, and modifying or deleting the object afterwards does not affect the transfer. The state of an uplink (:file:`<id>.state`) contains the request, the size and checksum of the data file, the progress, the segments requested by the Receiver in NAK PDUs and not yet retransmitted, the EOF state and the suspended flag. It is saved at each state transition, when a NAK is received and every ``syncInterval`` milliseconds while data is being sent. The queued uploads are saved as well.
+
+When Yamcs is stopped (and ``persistTransfers`` is true), the ongoing transfers remain ``RUNNING`` (or ``PAUSED``) in the transfer list. When Yamcs starts again, the transfers are restored with fresh timers:
+
+* a class 2 downlink which is still receiving data immediately sends a NAK for the missing data, and a downlink waiting for the acknowledgement of the Finished PDU sends the Finished PDU again.
+* an uplink continues sending the data from where it stopped (after a crash, from the last saved position: some data may be sent twice), followed by the retransmission of the segments requested in NAKs; if the EOF was sent but not acknowledged, it is sent again.
+* the queued uploads are queued again and started when possible.
+* the suspended transfers stay suspended.
+
+The persistence makes it possible to continue transfers which span several passes or last several days (deep space, very low bitrate).
+
+
 Usage
 -----
 The service produces PDUs as per CCSDS specification. The PDUs are written/read to/from Yamcs streams. How the PDUs are sent to/from the spacecraft is mission specific.
@@ -271,6 +294,18 @@ pendingAfterCompletion (integer)
     Number of milliseconds to keep the incoming transaction in memory after completion. During this time, the newly received EOF PDUs belonging to the transaction are still answered. All the other PDUs belonging to the transaction are ignored. Default: ``600000`` (10 minutes).
     Consequentially if a new transfer would start with the same id (for example following an on-board computer reboot), the transfer will not be recognized as new before this timer has expired.
 
+
+transferDir (string)
+    Directory where the data and state of the ongoing transfers are stored, see :ref:`cfdp-persistence`. Relative paths are resolved against the instance data directory. Default: :file:`cfdp/<serviceName>` in the instance data directory.
+
+persistTransfers (boolean)
+    If true, the ongoing and queued transfers are saved when Yamcs stops and restored when it starts again. If false, the ongoing transfers are failed when Yamcs stops. Default: ``true``
+
+syncInterval (integer)
+    Interval in milliseconds at which the data received is forced to the disk and the progress of the uplinks is saved. Default: ``1000``
+
+autoResume (boolean)
+    If true, a suspended transfer (by the operator or by a fault handler) is resumed automatically when a PDU for it is received from the remote entity: File Data, EOF or Metadata for downlinks, NAK, ACK or Finished for uplinks. Default: ``false``
 
 checksumType (string)
     The checksum type to use for outgoing transfers. Supported values are ``NULL`` and ``MODULAR``.

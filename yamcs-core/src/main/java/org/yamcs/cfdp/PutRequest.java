@@ -178,15 +178,33 @@ public class PutRequest extends CfdpRequest {
         return metadata;
     }
 
-    public int getFileLength() {
+    /**
+     * @return the length of the file to be sent; for file transfers this is the size known when the request has been
+     *         made, the actual size is determined when the transfer starts.
+     */
+    public long getFileLength() {
         return 0;
     }
 
-    public byte[] getFileData() {
-        return new byte[0];
+    /**
+     * Used when restoring a transfer after a restart
+     */
+    void setHeaderAndMetadata(CfdpHeader header, MetadataPacket metadata) {
+        this.header = header;
+        this.metadata = metadata;
     }
 
-    public long getChecksum() {
-        return 0;
+    /**
+     * Rebuilds a request without file (e.g. messages to user) after a restart.
+     */
+    static PutRequest restore(long destinationCfdpEntityId, CfdpPacket.TransmissionMode transmissionMode,
+            boolean closureRequested, CfdpHeader header, MetadataPacket metadata) {
+        PutRequest pr = new PutRequest(destinationCfdpEntityId);
+        pr.transmissionMode = transmissionMode;
+        pr.closureRequested = closureRequested;
+        pr.messagesToUser = new ArrayList<>();
+        pr.header = header;
+        pr.metadata = metadata;
+        return pr;
     }
 }

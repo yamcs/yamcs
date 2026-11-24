@@ -8,6 +8,8 @@ import static org.yamcs.cfdp.CfdpService.ETYPE_TRANSFER_RESUMED;
 import static org.yamcs.cfdp.CfdpService.ETYPE_TRANSFER_SUSPENDED;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,6 +21,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.yamcs.YConfiguration;
+import org.yamcs.buckets.Bucket;
 import org.yamcs.cfdp.pdu.AckPacket;
 import org.yamcs.cfdp.pdu.AckPacket.FileDirectiveSubtypeCode;
 import org.yamcs.cfdp.pdu.AckPacket.TransactionStatus;
@@ -36,13 +39,20 @@ import org.yamcs.cfdp.pdu.NakPacket;
 import org.yamcs.cfdp.pdu.OriginatingTransactionId;
 import org.yamcs.cfdp.pdu.SegmentRequest;
 import org.yamcs.cfdp.pdu.TLV;
+import org.yamcs.cfdp.protobuf.CfdpHeaderFields;
+import org.yamcs.cfdp.protobuf.IncomingTransferSnapshot;
+import org.yamcs.cfdp.protobuf.SnapshotDirection;
+import org.yamcs.cfdp.protobuf.TransferSnapshot;
 import org.yamcs.events.EventProducer;
 import org.yamcs.filetransfer.FileSaveHandler;
 import org.yamcs.filetransfer.TransferMonitor;
 import org.yamcs.protobuf.TransferDirection;
 import org.yamcs.protobuf.TransferState;
 import org.yamcs.utils.StringConverter;
+import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.Stream;
+
+import com.google.protobuf.ByteString;
 
 public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
     private final FileSaveHandler fileSaveHandler;
@@ -75,7 +85,12 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
 
     private String originalObjectName;
 
-    private DataFile incomingDataFile;
+    private final AbstractDataFile incomingDataFile;
+    // where the transfer is persisted; null if the transfer is not persisted
+    private final CfdpTransferStore store;
+    // set when some state not saved at transitions (e.g. NAK counters) changes
+    private boolean stateDirty = false;
+    private boolean storageReleased = false;
     MetadataPacket metadataPacket;
     EofPacket eofPacket;
     final Timer finTimer;
@@ -131,6 +146,8 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
     boolean needsFinish;
 
     private boolean suspended = false;
+    // if true, resume automatically when receiving a PDU while suspended
+    private final boolean autoResume;
 
     // this will be set if the transfer is cancelled while suspended, either by user request or by EOF
     ConditionCode cancelUponResume;
@@ -143,9 +160,29 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
             YConfiguration config, CfdpHeader hdr, Stream cfdpOut, FileSaveHandler fileSaveHandler,
             EventProducer eventProducer, TransferMonitor monitor,
             Map<ConditionCode, FaultHandlingAction> faultHandlerActions) {
+        this(yamcsInstance, id, creationTime, executor, config, hdr, cfdpOut, fileSaveHandler, eventProducer, monitor,
+                faultHandlerActions, null, new DataFile(-1));
+    }
+
+    /**
+     * Creates a new incoming transfer whose data is stored in the given data file.
+     *
+     * @param store
+     *            if not null, the state of the transfer is persisted in the store such that it can be restored after a
+     *            restart.
+     */
+    public CfdpIncomingTransfer(String yamcsInstance, long id, long creationTime, ScheduledThreadPoolExecutor executor,
+            YConfiguration config, CfdpHeader hdr, Stream cfdpOut, FileSaveHandler fileSaveHandler,
+            EventProducer eventProducer, TransferMonitor monitor,
+            Map<ConditionCode, FaultHandlingAction> faultHandlerActions, CfdpTransferStore store,
+            AbstractDataFile dataFile) {
         super(yamcsInstance, id, creationTime, executor, config, hdr.getTransactionId(), hdr.getDestinationId(),
                 cfdpOut, eventProducer, monitor, faultHandlerActions);
         this.fileSaveHandler = fileSaveHandler;
+        this.store = store;
+        this.incomingDataFile = dataFile;
+        // the state is saved when the first packet is processed
+        this.stateDirty = store != null;
         rescheduleInactivityTimer();
         long finAckTimeout = config.getLong("finAckTimeout", 10000l);
         int finAckLimit = config.getInt("finAckLimit", 5);
@@ -157,6 +194,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         this.nakLimit = config.getInt("nakLimit", -1);
         this.immediateNak = config.getBoolean("immediateNak", true);
         this.ackEofWhileSuspended = config.getBoolean("ackEofWhileSuspended", true);
+        this.autoResume = config.getBoolean("autoResume", false);
         this.sleepBetweenPdus = config.getInt("sleepBetweenPdus", 500);
         var maxPduSize = config.getInt("maxPduSize", 512);
 
@@ -180,7 +218,6 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
 
         this.maxPduDataSize = maxPduSize - directiveHeader.getLength();
         needsFinish = acknowledged;
-        incomingDataFile = new DataFile(-1);
     }
 
     @Override
@@ -226,6 +263,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
             nakCount = 0;
         }
         nakCount++;
+        stateDirty = true;
         if (nakLimit > 0 && nakCount > nakLimit) {
             log.warn("TXID{} NAK limit reached", cfdpTransactionId);
             handleFault(ConditionCode.NAK_LIMIT_REACHED);
@@ -266,6 +304,15 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         } else {
             log.info("TXID{} received unexpected packet {}", cfdpTransactionId, packet);
         }
+        if (stateDirty && inTxState != InTxState.COMPLETED) {
+            // first packet or some state has changed
+            persistState();
+        }
+        if (suspended && autoResume && inTxState != InTxState.COMPLETED) {
+            log.info("TXID{} PDU received from the sender while suspended, resuming (autoResume)",
+                    cfdpTransactionId);
+            resume();
+        }
     }
 
     private void processMetadata(MetadataPacket packet) {
@@ -298,27 +345,10 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
             handleFault(ConditionCode.FILE_SIZE_ERROR);
             return;
         }
-        this.metadataPacket = packet;
-
-        transferType = getTransferType(metadataPacket);
-
-        if (metadataPacket.getOptions() != null) {
-            for (TLV option : metadataPacket.getOptions()) {
-                if (option instanceof OriginatingTransactionId) {
-                    this.originatingTransactionId = ((OriginatingTransactionId) option).toCfdpTransactionId();
-                } else if (option instanceof DirectoryListingResponse) {
-                    this.directoryListingResponse = (DirectoryListingResponse) option;
-                }
-            }
-        }
+        applyMetadata(packet);
 
         needsFinish = acknowledged || packet.closureRequested();
-
-        incomingDataFile.setSize(fileSize);
-
         this.acknowledged = packet.getHeader().isAcknowledged();
-        originalObjectName = !packet.getDestinationFilename().isEmpty() ? packet.getDestinationFilename()
-                : packet.getSourceFilename();
 
         sendInfoEvent(ETYPE_TRANSFER_META, "Received metadata: " + toEventMsg(packet));
 
@@ -341,12 +371,35 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
                 Thread.currentThread().interrupt();
             }
 
+            persistState();
             checkFileComplete();
         } catch (IOException e) {
             handleFault(ConditionCode.FILESTORE_REJECTION);
             log.warn(e.getMessage());
             pushError(e.getMessage());
         }
+    }
+
+    /**
+     * sets the fields derived from the metadata packet
+     */
+    private void applyMetadata(MetadataPacket packet) {
+        this.metadataPacket = packet;
+
+        transferType = getTransferType(metadataPacket);
+
+        if (metadataPacket.getOptions() != null) {
+            for (TLV option : metadataPacket.getOptions()) {
+                if (option instanceof OriginatingTransactionId) {
+                    this.originatingTransactionId = ((OriginatingTransactionId) option).toCfdpTransactionId();
+                } else if (option instanceof DirectoryListingResponse) {
+                    this.directoryListingResponse = (DirectoryListingResponse) option;
+                }
+            }
+        }
+        incomingDataFile.setSize(packet.getFileLength());
+        originalObjectName = !packet.getDestinationFilename().isEmpty() ? packet.getDestinationFilename()
+                : packet.getSourceFilename();
     }
 
     private void processAckPacket(AckPacket ack) {
@@ -374,6 +427,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
             return;
         }
         eofPacket = packet;
+        persistState();
 
         if (eofPacket.getConditionCode() == ConditionCode.NO_ERROR) {
             if (!suspended) {
@@ -420,6 +474,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
                 log.warn("TXID{} {}", cfdpTransactionId, err);
                 pushError(err);
                 handleFault(ConditionCode.FILE_SIZE_ERROR);
+                return;
             }
         } else {
             if (fdp.getEndOffset() > maxFileSize) {
@@ -429,10 +484,18 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
                 pushError(err);
                 log.warn("TXID{} {}", cfdpTransactionId, err);
                 handleFault(ConditionCode.FILE_SIZE_ERROR);
+                return;
             }
         }
 
-        incomingDataFile.addSegment(fdp);
+        try {
+            incomingDataFile.addSegment(fdp);
+        } catch (UncheckedIOException e) {
+            log.error("TXID{} error storing file data", cfdpTransactionId, e);
+            pushError("Error storing file data: " + e.getCause().getMessage());
+            handleFault(ConditionCode.FILESTORE_REJECTION);
+            return;
+        }
         monitor.stateChanged(this);
         checkFileComplete();
     }
@@ -443,18 +506,24 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         if (metadataPacket.getChecksumType() == ChecksumType.NULL
                 || expectedChecksum == incomingDataFile.getModularChecksum()) {
             log.info("TXID{} file completed, checksum OK", cfdpTransactionId);
+            // save the file before changing the state such that if Yamcs is stopped in between,
+            // the file is saved again after restart (instead of being lost)
+            if (!saveFile(false, Collections.emptyList())) {
+                return;
+            }
             if (needsFinish) {
                 finish(ConditionCode.NO_ERROR);
             } else {
                 complete(ConditionCode.NO_ERROR);
             }
-            saveFile(false, Collections.emptyList());
             sendInfoEvent(ETYPE_TRANSFER_FINISHED,
                     " downlink finished and saved in " + getBucketName() + "/" + getObjectName());
         } else {
             log.warn("TXID{} file checksum failure; EOF packet indicates {} while data received has {}",
                     cfdpTransactionId, expectedChecksum, incomingDataFile.getModularChecksum());
-            saveFile(true, Collections.emptyList());
+            if (!saveFile(true, Collections.emptyList())) {
+                return;
+            }
             sendWarnEvent(ETYPE_TRANSFER_FINISHED,
                     " checksum failure; corrupted file saved in " + getBucketName() + "/" + getObjectName());
             handleFault(ConditionCode.FILE_CHECKSUM_FAILURE);
@@ -477,6 +546,8 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         this.inTxState = InTxState.FIN;
         if (code != ConditionCode.NO_ERROR) {
             changeState(TransferState.CANCELLING);
+        } else {
+            persistState();
         }
 
         sendFin();
@@ -587,13 +658,13 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         }
         log.info("TXID{} suspending transfer", cfdpTransactionId);
         sendInfoEvent(ETYPE_TRANSFER_SUSPENDED, "transfer suspended");
+        suspended = true;
         changeState(TransferState.PAUSED);
         finTimer.cancel();
         cancelFinSendFuture();
         if (!acknowledged) {
             checkTimer.cancel();
         }
-        suspended = true;
     }
 
     @Override
@@ -638,6 +709,7 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
             if (needsFinish) {
                 if (suspended) {
                     cancelUponResume = code;
+                    persistState();
                 } else {
                     finish(code);
                 }
@@ -649,27 +721,55 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         }
     }
 
-    private void saveFile(boolean checksumError, List<SegmentRequest> missingSegments) {
+    /**
+     * Saves the file in the bucket.
+     * <p>
+     * This is the only place where the file is read from the temporary storage.
+     *
+     * @return false if the file could not be saved (and the fault has been handled)
+     */
+    /**
+     * Adds to the object metadata where the file comes from, such that an object in the bucket can be traced back to
+     * the CFDP transaction that produced it.
+     */
+    private void addSourceMetadata(Map<String, String> metadata) {
+        metadata.put("cfdpTransactionId", cfdpTransactionId.toString());
+        metadata.put("sourceEntityId", Long.toString(directiveHeader.getSourceId()));
+        metadata.put("destinationEntityId", Long.toString(directiveHeader.getDestinationId()));
+        if (metadataPacket != null && !metadataPacket.getSourceFilename().isEmpty()) {
+            metadata.put("sourceFilename", metadataPacket.getSourceFilename());
+        }
+        if (originatingTransactionId != null) {
+            metadata.put("originatingTransactionId", originatingTransactionId.toString());
+        }
+        metadata.put("transferClass", acknowledged ? "2" : "1");
+        metadata.put("transferStart", TimeEncoding.toString(startTime));
+    }
+
+    private boolean saveFile(boolean checksumError, List<SegmentRequest> missingSegments) {
         if (directoryListingResponse != null) {
             log.debug("TXID{} Ignoring save action for Directory Listing Response", cfdpTransactionId);
-            return;
+            return true;
         }
 
-        Map<String, String> metadata = null;
+        Map<String, String> metadata = new HashMap<>();
         if (!missingSegments.isEmpty()) {
-            metadata = new HashMap<>();
             metadata.put("missingSegments", missingSegments.toString());
         }
         if (checksumError) {
-            if (metadata == null) {
-                metadata = new HashMap<>();
-            }
             metadata.put("checksumError", "true");
         }
+        addSourceMetadata(metadata);
 
-        // TODO: source data in metadata
-
-        fileSaveHandler.saveFile(incomingDataFile, metadata, originatingTransactionId);
+        try {
+            fileSaveHandler.saveFile(incomingDataFile, metadata, originatingTransactionId);
+            return true;
+        } catch (RuntimeException e) {
+            log.error("TXID{} failed to save file", cfdpTransactionId, e);
+            pushError("Failed to save file: " + e.getMessage());
+            handleFault(ConditionCode.FILESTORE_REJECTION);
+            return false;
+        }
     }
 
     @Override
@@ -770,4 +870,257 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         return originatingTransactionId;
     }
 
+
+    // ---------------- persistence ----------------
+
+    @Override
+    protected void changeState(TransferState newState) {
+        super.changeState(newState);
+        persistState();
+    }
+
+    @Override
+    protected void failTransfer(String failureReason) {
+        inTxState = InTxState.COMPLETED;
+        cancelTimers();
+        super.failTransfer(failureReason);
+    }
+
+    private void cancelTimers() {
+        cancelInactivityTimer();
+        finTimer.cancel();
+        cancelFinSendFuture();
+        if (checkTimer != null) {
+            checkTimer.cancel();
+        }
+    }
+
+    /**
+     * Save the state (after flushing the data to disk). The writing is done asynchronously by the store. Does nothing
+     * if the transfer is not persisted.
+     */
+    private void persistState() {
+        if (store == null || storageReleased) {
+            return;
+        }
+        store.saveStateAsync(id, incomingDataFile, snapshot());
+        stateDirty = false;
+    }
+
+    @Override
+    protected void periodicSync() {
+        if (store == null || storageReleased || inTxState == InTxState.COMPLETED) {
+            return;
+        }
+        if (stateDirty) {
+            persistState();
+        } else {
+            store.syncAsync(incomingDataFile);
+        }
+    }
+
+    @Override
+    protected boolean persistOnShutdown() {
+        if (store == null || storageReleased || inTxState == InTxState.COMPLETED) {
+            return false;
+        }
+        cancelTimers();
+        try {
+            store.saveState(id, incomingDataFile, snapshot());
+        } catch (IOException e) {
+            log.error("TXID{} failed to save the transfer state", cfdpTransactionId, e);
+        }
+        incomingDataFile.close();
+        log.info("TXID{} transfer state saved ({}/{} bytes received)", cfdpTransactionId,
+                incomingDataFile.getReceivedSize(), incomingDataFile.getSize());
+        return true;
+    }
+
+    @Override
+    protected void releaseStorage() {
+        if (storageReleased) {
+            return;
+        }
+        storageReleased = true;
+        if (store != null) {
+            store.deleteAsync(id, incomingDataFile);
+        } else {
+            incomingDataFile.delete();
+        }
+    }
+
+    TransferSnapshot snapshot() {
+        var inc = IncomingTransferSnapshot.newBuilder()
+                .setInTxState(IncomingTransferSnapshot.InTxState.valueOf(inTxState.name()))
+                .setSuspended(suspended)
+                .setNeedsFinish(needsFinish)
+                .setNakCount(nakCount)
+                .setLastNakDataSize(lastNakDataSize);
+        if (cancelUponResume != null) {
+            inc.setCancelUponResume(cancelUponResume.getCode());
+        }
+        if (metadataPacket != null) {
+            inc.setMetadataPdu(ByteString.copyFrom(metadataPacket.toByteArray()));
+        }
+        if (eofPacket != null) {
+            inc.setEofPdu(ByteString.copyFrom(eofPacket.toByteArray()));
+        }
+        if (finPacket != null) {
+            inc.setFinishedPdu(ByteString.copyFrom(finPacket.toByteArray()));
+        }
+        if (fileSaveHandler.getBucketName() != null) {
+            inc.setBucket(fileSaveHandler.getBucketName());
+        }
+        if (fileSaveHandler.getObjectName() != null) {
+            inc.setObjectName(fileSaveHandler.getObjectName());
+        }
+        var hdr = CfdpHeaderFields.newBuilder()
+                .setEntityIdLength(directiveHeader.getEntityIdLength())
+                .setSequenceNumberLength(directiveHeader.getSequenceNumberLength())
+                .setSourceId(directiveHeader.getSourceId())
+                .setDestinationId(directiveHeader.getDestinationId())
+                .setSequenceNumber(directiveHeader.getSequenceNumber())
+                .setAcknowledged(directiveHeader.isAcknowledged())
+                .setLargeFile(directiveHeader.isLargeFile());
+
+        return snapshotBuilder(SnapshotDirection.INCOMING, hdr.build()).setIncoming(inc).build();
+    }
+
+    /**
+     * Rebuilds the CFDP header of the transaction (as seen in the PDUs received from the sender) from a snapshot.
+     */
+    static CfdpHeader headerFromSnapshot(TransferSnapshot snapshot) {
+        CfdpHeaderFields h = snapshot.getHeader();
+        return new CfdpHeader(false, false, h.getAcknowledged(), false, h.getEntityIdLength(),
+                h.getSequenceNumberLength(), h.getSourceId(), h.getDestinationId(), h.getSequenceNumber());
+    }
+
+    /**
+     * Restores a transfer from a snapshot. The data file is opened and verified.
+     * <p>
+     * The transfer is not active (no timer is running, no PDU sent) until {@link #resumeAfterRestore()} is called.
+     *
+     * @param bucket
+     *            the bucket where the file will be saved, as resolved before the restart; can be null if the metadata
+     *            has not been received.
+     * @throws IOException
+     *             if the data file cannot be opened
+     * @throws IllegalArgumentException
+     *             if the snapshot is invalid
+     */
+    static CfdpIncomingTransfer restore(String yamcsInstance, TransferSnapshot snapshot,
+            ScheduledThreadPoolExecutor executor, YConfiguration config, Stream cfdpOut,
+            FileSaveHandler fileSaveHandler, Bucket bucket, EventProducer eventProducer, TransferMonitor monitor,
+            Map<ConditionCode, FaultHandlingAction> faultHandlerActions, CfdpTransferStore store)
+            throws IOException {
+        if (snapshot.getDirection() != SnapshotDirection.INCOMING || !snapshot.hasIncoming()
+                || !snapshot.hasHeader()) {
+            throw new IllegalArgumentException("not an incoming transfer snapshot");
+        }
+        var inc = snapshot.getIncoming();
+        MetadataPacket metadata = (MetadataPacket) decodePdu(inc.hasMetadataPdu(), inc.getMetadataPdu(),
+                "metadata");
+        EofPacket eof = (EofPacket) decodePdu(inc.hasEofPdu(), inc.getEofPdu(), "EOF");
+        FinishedPacket fin = (FinishedPacket) decodePdu(inc.hasFinishedPdu(), inc.getFinishedPdu(), "Finished");
+
+        long maxFileSize = config.getLong("maxFileSize", 100 * 1024 * 1024l);
+        long maxEnd = metadata != null ? metadata.getFileLength() : maxFileSize;
+
+        AbstractDataFile dataFile = store.openDataFile(snapshot.getId(), maxEnd);
+        CfdpIncomingTransfer trsf;
+        try {
+            trsf = new CfdpIncomingTransfer(yamcsInstance, snapshot.getId(), snapshot.getCreationTime(), executor,
+                    config, headerFromSnapshot(snapshot), cfdpOut, fileSaveHandler, eventProducer, monitor,
+                    faultHandlerActions, store, dataFile);
+        } catch (RuntimeException e) {
+            dataFile.close();
+            throw e;
+        }
+        // the constructor starts the inactivity timer; it will be restarted if needed in resumeAfterRestore
+        trsf.cancelInactivityTimer();
+        trsf.restoreCommon(snapshot);
+        if (metadata != null) {
+            trsf.applyMetadata(metadata);
+        }
+        trsf.eofPacket = eof;
+        trsf.finPacket = fin;
+        trsf.needsFinish = inc.getNeedsFinish();
+        trsf.suspended = inc.getSuspended();
+        trsf.inTxState = InTxState.valueOf(inc.getInTxState().name());
+        if (inc.hasCancelUponResume()) {
+            trsf.cancelUponResume = ConditionCode.readConditionCode((byte) (inc.getCancelUponResume() << 4));
+        }
+        trsf.nakCount = inc.getNakCount();
+        trsf.lastNakDataSize = inc.getLastNakDataSize();
+        if (inc.hasObjectName() || bucket != null) {
+            fileSaveHandler.restore(bucket, inc.hasObjectName() ? inc.getObjectName() : null);
+        }
+        if (trsf.inTxState == InTxState.FIN && fin == null) {
+            dataFile.close();
+            throw new IllegalArgumentException("FIN state without Finished PDU");
+        }
+        if (trsf.inTxState == InTxState.COMPLETED) {
+            dataFile.close();
+            throw new IllegalArgumentException("transfer already completed");
+        }
+        if (dataFile instanceof DiskDataFile ddf && ddf.getDroppedRecords() > 0) {
+            trsf.log.warn("TXID{} {} bytes of data could not be verified after restart and are considered missing",
+                    trsf.cfdpTransactionId, ddf.getDroppedBytes());
+        }
+        return trsf;
+    }
+
+    private static CfdpPacket decodePdu(boolean present, ByteString bs, String what) {
+        if (!present) {
+            return null;
+        }
+        try {
+            return CfdpPacket.getCFDPPacket(ByteBuffer.wrap(bs.toByteArray()));
+        } catch (RuntimeException e) {
+            throw new IllegalArgumentException("cannot decode the saved " + what + " PDU: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Restarts the timers and sends the PDUs needed to continue a restored transfer. Has to be called on the executor
+     * thread.
+     */
+    void resumeAfterRestore() {
+        log.info("TXID{} restored in state {}/{} {}; {}/{} bytes received", cfdpTransactionId, inTxState, state,
+                suspended ? "(suspended)" : "", incomingDataFile.getReceivedSize(), incomingDataFile.getSize());
+        // save the state (also confirms the journal compaction)
+        persistState();
+        if (suspended) {
+            return;
+        }
+        switch (inTxState) {
+        case RECEIVING_DATA:
+            rescheduleInactivityTimer();
+            if (eofReceived() && metadataReceived()) {
+                if (eofPacket.getConditionCode() != ConditionCode.NO_ERROR) {
+                    // the EOF has been processed before the restart
+                    break;
+                }
+                checkFileComplete();
+                if (!acknowledged && inTxState == InTxState.RECEIVING_DATA) {
+                    checkTimer.start(this::checkFileComplete, () -> {
+                        log.warn("TXID{} check limit reached", cfdpTransactionId);
+                        handleFault(ConditionCode.CHECK_LIMIT_REACHED);
+                    });
+                }
+            } else if (acknowledged) {
+                sendOrScheduleNak();
+            }
+            break;
+        case FIN:
+            sendFin();
+            break;
+        case COMPLETED:
+            break;
+        }
+    }
+
+    AbstractDataFile getDataFile() {
+        return incomingDataFile;
+    }
 }
