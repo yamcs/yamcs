@@ -1,10 +1,17 @@
 package org.yamcs.mdb;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.function.LongToIntFunction;
 
 import org.junit.jupiter.api.Test;
+import org.yamcs.parameter.Value;
+import org.yamcs.protobuf.Yamcs.Value.Type;
+import org.yamcs.utils.ValueUtility;
+import org.yamcs.xtce.FloatParameterType;
+import org.yamcs.xtce.IntegerParameterType;
 
 public class DataTypeProcessorTest {
 
@@ -48,6 +55,81 @@ public class DataTypeProcessorTest {
     public void testSignedSizeInBits() {
         runTests("DataTypeProcessor signed", SIGNED_TESTS,
                 v -> DataTypeProcessor.signedSizeInBits(v));
+    }
+
+    @Test
+    public void testUint32ToUnsigned32() {
+        Value v = DataTypeProcessor.convertEngValueForType(intType(32, false), ValueUtility.getUint32Value(-1));
+        assertEquals(Type.UINT32, v.getType());
+        assertEquals(0xFFFFFFFFL, Integer.toUnsignedLong(v.getUint32Value()));
+    }
+
+    @Test
+    public void testUint32ToSigned64() {
+        Value v = DataTypeProcessor.convertEngValueForType(intType(64, true), ValueUtility.getUint32Value(-1));
+        assertEquals(Type.SINT64, v.getType());
+        assertEquals(0xFFFFFFFFL, v.getSint64Value());
+    }
+
+    @Test
+    public void testUint32ToSigned32OutOfRange() {
+        assertThrows(IllegalArgumentException.class,
+                () -> DataTypeProcessor.convertEngValueForType(intType(32, true), ValueUtility.getUint32Value(-1)));
+    }
+
+    @Test
+    public void testUint32ToUnsigned8() {
+        Value v = DataTypeProcessor.convertEngValueForType(intType(8, false), ValueUtility.getUint32Value(255));
+        assertEquals(255, v.getUint32Value());
+        assertThrows(IllegalArgumentException.class,
+                () -> DataTypeProcessor.convertEngValueForType(intType(8, false), ValueUtility.getUint32Value(256)));
+    }
+
+    @Test
+    public void testUint32ToSigned8() {
+        Value v = DataTypeProcessor.convertEngValueForType(intType(8, true), ValueUtility.getUint32Value(127));
+        assertEquals(127, v.getSint32Value());
+        assertThrows(IllegalArgumentException.class,
+                () -> DataTypeProcessor.convertEngValueForType(intType(8, true), ValueUtility.getUint32Value(128)));
+    }
+
+    @Test
+    public void testUint64ToUnsigned64() {
+        Value v = DataTypeProcessor.convertEngValueForType(intType(64, false), ValueUtility.getUint64Value(-1L));
+        assertEquals(Type.UINT64, v.getType());
+        assertEquals(-1L, v.getUint64Value());
+    }
+
+    @Test
+    public void testUint64ToSigned64() {
+        Value v = DataTypeProcessor.convertEngValueForType(intType(64, true),
+                ValueUtility.getUint64Value(Long.MAX_VALUE));
+        assertEquals(Long.MAX_VALUE, v.getSint64Value());
+        assertThrows(IllegalArgumentException.class,
+                () -> DataTypeProcessor.convertEngValueForType(intType(64, true),
+                        ValueUtility.getUint64Value(Long.MIN_VALUE)));
+    }
+
+    @Test
+    public void testUint64ToUnsigned8() {
+        assertThrows(IllegalArgumentException.class,
+                () -> DataTypeProcessor.convertEngValueForType(intType(8, false), ValueUtility.getUint64Value(256)));
+    }
+
+    @Test
+    public void testUint32ToFloat64() {
+        var type = new FloatParameterType.Builder().setName("f64").setSizeInBits(64).build();
+        Value v = DataTypeProcessor.convertEngValueForType(type, ValueUtility.getUint32Value(-1));
+        assertEquals(Type.DOUBLE, v.getType());
+        assertEquals(4294967295.0, v.getDoubleValue());
+    }
+
+    private static IntegerParameterType intType(int sizeInBits, boolean signed) {
+        return new IntegerParameterType.Builder()
+                .setName((signed ? "s" : "u") + sizeInBits)
+                .setSigned(signed)
+                .setSizeInBits(sizeInBits)
+                .build();
     }
 
     private void runTests(String caption, long[][] tests, LongToIntFunction func) {

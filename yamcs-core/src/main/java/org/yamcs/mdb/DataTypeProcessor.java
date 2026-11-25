@@ -267,7 +267,7 @@ public class DataTypeProcessor {
         case SINT64:
             return ValueUtility.getFloatValue(type.getSizeInBits(), v.getSint64Value());
         case UINT32:
-            return ValueUtility.getFloatValue(type.getSizeInBits(), v.getUint32Value() & Long.MAX_VALUE);
+            return ValueUtility.getFloatValue(type.getSizeInBits(), Integer.toUnsignedLong(v.getUint32Value()));
         case UINT64:
             return ValueUtility.getFloatValue(type.getSizeInBits(), UnsignedLong.toDouble(v.getUint64Value()));
         default:
@@ -311,23 +311,30 @@ public class DataTypeProcessor {
             }
             return ValueUtility.getIntValue(type.getSizeInBits(), type.isSigned(), slongValue);
         case UINT32:
-            int uintValue = v.getUint32Value();
-            if (type.getSizeInBits() < unsignedSizeInBits(uintValue) - 1) {
-                throw new IllegalArgumentException(MSG_CANT_FIT(v, type));
-            }
-            return ValueUtility.getIntValue(type.getSizeInBits(), type.isSigned(), uintValue);
+            return convertUnsignedToIntegerType(type, v, Integer.toUnsignedLong(v.getUint32Value()));
         case UINT64:
-            long ulongValue = v.getUint64Value();
-            if (type.getSizeInBits() < unsignedSizeInBits(ulongValue) - 1) {
-                throw new IllegalArgumentException(MSG_CANT_FIT(v, type));
-            }
-            return ValueUtility.getIntValue(type.getSizeInBits(), type.isSigned(), ulongValue);
+            return convertUnsignedToIntegerType(type, v, v.getUint64Value());
 
         case STRING:
         default:
             throw new IllegalArgumentException(MSG_CANT_CONVERT(v.getType(), type));
 
         }
+    }
+
+    /**
+     * Converts an unsigned value to the given integer type, checking that it fits.
+     *
+     * @param ulongValue
+     *            the value interpreted as an unsigned 64-bit integer
+     */
+    private static Value convertUnsignedToIntegerType(IntegerDataType type, Value v, long ulongValue) {
+        // a signed type needs an extra bit for the sign
+        int requiredBits = unsignedSizeInBits(ulongValue) + (type.isSigned() ? 1 : 0);
+        if (type.getSizeInBits() < requiredBits) {
+            throw new IllegalArgumentException(MSG_CANT_FIT(v, type));
+        }
+        return ValueUtility.getIntValue(type.getSizeInBits(), type.isSigned(), ulongValue);
     }
 
     private static AggregateValue getAggregateValue(AggregateDataType aggregateDataType, Map<String, Object> o) {
