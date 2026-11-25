@@ -1,0 +1,32 @@
+<ya-page-tabs>
+  <a
+    routerLink="/activities"
+    routerLinkActive
+    [routerLinkActiveOptions]="{ matrixParams: 'exact', paths: 'exact', queryParams: 'ignored' }"
+    #rla="routerLinkActive"
+    [class.active]="rla.isActive"
+    [queryParams]="{ c: yamcs.context }">
+    Activities
+  </a>
+  <a
+    routerLink="/activities/triggers"
+    routerLinkActive
+    #rlb="routerLinkActive"
+    [class.active]="rlb.isActive"
+    [queryParams]="{ c: yamcs.context }">
+    Triggers
+  </a>
+  <a
+    routerLink="/activities/trigger-firings"
+    routerLinkActive
+    #rlc="routerLinkActive"
+    [class.active]="rlc.isActive"
+    [queryParams]="{ c: yamcs.context }">
+    Firings
+    @if (pendingConfirmations()) {
+      <span class="pending">{{ pendingConfirmations() }} pending</span>
+    }
+  </a>
+
+  <ng-container actions><ng-content /></ng-container>
+</ya-page-tabs>

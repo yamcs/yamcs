@@ -15,6 +15,74 @@ services:
       type: "realtime"
   - class: org.yamcs.archive.CommandHistoryRecorder
   - class: org.yamcs.timeline.TimelineService
+  - class: org.yamcs.activities.triggers.TriggerService
+    args:
+      # Disabled here, enabled by ActivityTriggerIntegrationTest when needed
+      triggers:
+        - name: event-trigger
+          enabled: false
+          runAs: admin
+          condition:
+            alarm:
+              type: EVENT
+              subjects: IntegrationTest/Trigger-Test-1*
+          policy:
+            cooldown: 0
+            concurrency: ALLOW
+          activity:
+            type: MANUAL
+            args:
+              name: Handle ${event.message} (${alarm.severity})
+        - name: severity-trigger
+          enabled: false
+          condition:
+            alarm:
+              type: EVENT
+              subjects: IntegrationTest/Trigger-Test-2*
+              minSeverity: CRITICAL
+          policy:
+            cooldown: 0
+          activity:
+            type: MANUAL
+            args:
+              name: Stays running
+        - name: confirm-trigger
+          enabled: false
+          condition:
+            alarm:
+              type: EVENT
+              subjects: IntegrationTest/Trigger-Test-3
+          policy:
+            requireConfirmation: true
+          activity:
+            type: MANUAL
+            args:
+              name: Confirmed
+        - name: parameter-trigger
+          enabled: false
+          condition:
+            parameter:
+              expression: /REFMDB/SUBSYS1/LocalPara1 > 10
+          policy:
+            cooldown: 0
+            concurrency: ALLOW
+          activity:
+            type: MANUAL
+            args:
+              name: Value is ${value}
+        - name: killswitch-trigger
+          enabled: false
+          condition:
+            alarm:
+              type: EVENT
+              subjects: IntegrationTest/Trigger-Test-5*
+          policy:
+            cooldown: 0
+            concurrency: ALLOW
+          activity:
+            type: MANUAL
+            args:
+              name: x
   - class: org.yamcs.parameter.ParameterRetrievalService
     args:
       parameterCache:

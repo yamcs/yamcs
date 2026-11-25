@@ -28,6 +28,7 @@ import org.yamcs.api.Api;
 import org.yamcs.api.HttpRoute;
 import org.yamcs.api.WebSocketTopic;
 import org.yamcs.http.api.ActivitiesApi;
+import org.yamcs.http.api.ActivityTriggersApi;
 import org.yamcs.http.api.AlarmsApi;
 import org.yamcs.http.api.AuditApi;
 import org.yamcs.http.api.BucketsApi;
@@ -298,6 +299,7 @@ public class HttpServer extends AbstractYamcsService {
         nThreads = config.getInt("nThreads");
 
         addApi(new ActivitiesApi());
+        addApi(new ActivityTriggersApi());
         addApi(new AlarmsApi(auditLog));
         addApi(new AuditApi(auditLog));
         addApi(new BucketsApi());

@@ -1,0 +1,20 @@
+h3 {
+  margin: 16px 0 8px 0;
+  font-weight: normal;
+}
+
+.pending-title {
+  color: #b77900;
+}
+
+.pending-table {
+  margin-bottom: 16px;
+}
+
+.alert {
+  color: var(--y-error-color) !important;
+}
+
+td.pending {
+  color: #b77900;
+}

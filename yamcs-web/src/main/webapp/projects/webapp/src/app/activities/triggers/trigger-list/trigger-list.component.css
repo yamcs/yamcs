@@ -1,0 +1,14 @@
+.kill-switch {
+  margin-left: 16px;
+}
+
+td.summary {
+  max-width: 280px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+tr.disabled td {
+  color: #999;
+}
