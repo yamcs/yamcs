@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.yamcs.time.Instant;
+
 /**
  * Contains the tuple value (as an array of Columns) together with a pointer to its definition
  * 
@@ -104,8 +106,33 @@ public class Tuple {
         return getColumn(colName);
     }
 
+    /**
+     * Get the value of a timestamp column as millis.
+     * <p>
+     * Handles both TIMESTAMP (Long) and HRES_TIMESTAMP (Instant) columns.
+     *
+     * @deprecated use {@link #getHresTimestampColumn(String)} for full picosecond resolution
+     */
+    @Deprecated
     public long getTimestampColumn(String colName) {
-        return getColumn(colName);
+        Object val = getColumn(colName);
+        if (val instanceof Instant) {
+            return ((Instant) val).getMillis();
+        }
+        return (Long) val;
+    }
+
+    /**
+     * Get the value of a timestamp column as a high resolution Instant.
+     * <p>
+     * Handles both TIMESTAMP (Long) and HRES_TIMESTAMP (Instant) columns.
+     */
+    public Instant getHresTimestampColumn(String colName) {
+        Object val = getColumn(colName);
+        if (val instanceof Instant) {
+            return (Instant) val;
+        }
+        return Instant.get((Long) val);
     }
 
     /**
@@ -190,12 +217,22 @@ public class Tuple {
 
     /**
      * Add a TIMESTAMP column
-     * 
+     *
      * @param colName
      * @param colValue
      */
     public void addTimestampColumn(String colName, long colValue) {
         addColumn(colName, DataType.TIMESTAMP, colValue);
+    }
+
+    /**
+     * Add a HRES_TIMESTAMP column
+     *
+     * @param colName
+     * @param colValue
+     */
+    public void addHresTimestampColumn(String colName, Instant colValue) {
+        addColumn(colName, DataType.HRES_TIMESTAMP, colValue);
     }
 
     /**

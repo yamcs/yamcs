@@ -18,6 +18,7 @@ import org.yamcs.mdb.MdbFactory;
 import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.parameter.SystemParametersService;
+import org.yamcs.time.Instant;
 import org.yamcs.protobuf.Mdb.ParameterInfo;
 import org.yamcs.protobuf.Pvalue;
 import org.yamcs.protobuf.SubscribeParametersRequest;
@@ -220,7 +221,7 @@ public class YamcsParameterLink extends AbstractLink implements ParameterDataLin
 
     private void processParameters(List<Pvalue.ParameterValue> values) {
         // group by time and group (although it's very likely they are already grouped by time)
-        Map<Long, Map<String, List<ParameterValue>>> vmap = new HashMap<>();
+        Map<Instant, Map<String, List<ParameterValue>>> vmap = new HashMap<>();
 
         for (Pvalue.ParameterValue gpv : values) {
             Parameter pdef;
@@ -245,13 +246,13 @@ public class YamcsParameterLink extends AbstractLink implements ParameterDataLin
 
             String group = pdef.getRecordingGroup();
             ParameterValue pv = BasicParameterValue.fromGpb(pdef, gpv);
-            List<ParameterValue> l = vmap.computeIfAbsent(pv.getGenerationTime(), x -> new HashMap<>())
+            List<ParameterValue> l = vmap.computeIfAbsent(pv.getHresGenerationTime(), x -> new HashMap<>())
                     .computeIfAbsent(group, x -> new ArrayList<>());
             l.add(pv);
         }
 
-        for (Map.Entry<Long, Map<String, List<ParameterValue>>> me : vmap.entrySet()) {
-            long gentime = me.getKey();
+        for (Map.Entry<Instant, Map<String, List<ParameterValue>>> me : vmap.entrySet()) {
+            Instant gentime = me.getKey();
             for (Map.Entry<String, List<ParameterValue>> me1 : me.getValue().entrySet()) {
                 paraSink.updateParameters(gentime, me1.getKey(), seqCount, me1.getValue());
                 paraCount.addAndGet(me1.getValue().size());

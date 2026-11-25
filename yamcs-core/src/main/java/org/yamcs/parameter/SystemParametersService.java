@@ -27,6 +27,7 @@ import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.mdb.Mdb;
 import org.yamcs.protobuf.Yamcs;
+import org.yamcs.time.Instant;
 import org.yamcs.time.TimeService;
 import org.yamcs.utils.ValueUtility;
 import org.yamcs.xtce.AggregateParameterType;
@@ -184,7 +185,8 @@ public class SystemParametersService extends AbstractYamcsService implements Run
      */
     @Override
     public void run() {
-        long gentime = timeService.getMissionTime();
+        long gentimeMillis = timeService.getMissionTime();
+        Instant gentime = timeService.getHresMissionTime();
 
         List<ParameterValue> params = new ArrayList<>();
 
@@ -193,7 +195,7 @@ public class SystemParametersService extends AbstractYamcsService implements Run
             if (svp.count >= svp.freq) {
                 svp.count = 0;
                 try {
-                    Collection<ParameterValue> pvc = svp.producer.getSystemParameters(gentime);
+                    Collection<ParameterValue> pvc = svp.producer.getSystemParameters(gentimeMillis);
                     params.addAll(pvc);
                 } catch (Exception e) {
                     log.warn("Error getting parameters from provider {}", svp.producer, e);
@@ -209,7 +211,7 @@ public class SystemParametersService extends AbstractYamcsService implements Run
         cols.add(gentime);
         cols.add(namespace);
         cols.add(seqCount);
-        cols.add(gentime);
+        cols.add(gentimeMillis);
         for (ParameterValue pv : params) {
             if (pv == null) {
                 log.error("Null parameter value encountered, skipping");

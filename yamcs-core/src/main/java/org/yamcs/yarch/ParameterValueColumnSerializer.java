@@ -9,6 +9,7 @@ import org.yamcs.parameter.BasicParameterValue;
 import org.yamcs.parameter.ParameterStatus;
 import org.yamcs.parameter.ParameterValue;
 import org.yamcs.protobuf.Mdb.AlarmLevelType;
+import org.yamcs.time.Instant;
 import org.yamcs.utils.ByteArray;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.utils.ValueUtility;
@@ -96,7 +97,11 @@ public class ParameterValueColumnSerializer implements ColumnSerializer<Paramete
         }
 
         if (gpv.hasGenerationTime()) {
-            pv.setGenerationTime(gpv.getGenerationTime());
+            if (gpv.hasGenerationTimePicos()) {
+                pv.setGenerationTime(Instant.get(gpv.getGenerationTime(), gpv.getGenerationTimePicos()));
+            } else {
+                pv.setGenerationTime(gpv.getGenerationTime());
+            }
         }
         if (gpv.hasMonitoringResult()) {
             pv.setMonitoringResult(gpv.getMonitoringResult());
@@ -114,10 +119,16 @@ public class ParameterValueColumnSerializer implements ColumnSerializer<Paramete
     }
 
     public Db.ParameterValue toProto(ParameterValue pv) {
+        Instant gentime = pv.getHresGenerationTime();
 
         Db.ParameterValue.Builder gpvb = Db.ParameterValue.newBuilder()
                 .setAcqStatus(pv.getAcqStatus())
-                .setGenerationTime(pv.getGenerationTime());
+                .setGenerationTime(gentime.getMillis());
+
+        int picos = gentime.getPicos();
+        if (picos != 0) {
+            gpvb.setGenerationTimePicos(picos);
+        }
 
         if (pv.getAcquisitionTime() != TimeEncoding.INVALID_INSTANT) {
             gpvb.setAcquisitionTime(pv.getAcquisitionTime());

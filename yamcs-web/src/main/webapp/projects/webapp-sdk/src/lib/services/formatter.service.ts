@@ -47,29 +47,54 @@ export class Formatter {
   }
 
   formatDateTime(date: Date | string | number, addTimezone = true): string {
-    if (typeof date === 'string' && !date.endsWith('Z')) {
-      date += 'Z';
+    // If input is a string, extract sub-millisecond fractional seconds.
+    // Protobuf Timestamps arrive as ISO 8601 strings with up to 9
+    // fractional digits (e.g. "2024-01-01T12:34:56.123456789Z").
+    // JavaScript Date only supports millisecond precision, so we
+    // preserve the extra digits and splice them back into the output.
+    let fullFractional: string | null = null;
+    if (typeof date === 'string') {
+      if (!date.endsWith('Z')) {
+        date += 'Z';
+      }
+      const dotIdx = date.lastIndexOf('.');
+      if (dotIdx >= 0) {
+        const zIdx = date.lastIndexOf('Z');
+        const frac = date.substring(dotIdx + 1, zIdx);
+        if (frac.length > 3) {
+          fullFractional = frac;
+        }
+      }
     }
 
+    let formatted: string;
     if (addTimezone) {
       // Note: we do not specify a locale, so that the system locale
       // is used.
       //
       // For example: en-US would not display CEST but GMT+2.
-      return formatInTimeZone(
+      formatted = formatInTimeZone(
         date,
         this.timezone(),
         this.DT_FMT_LONG_TZ,
         FNS_OPTS,
       );
     } else {
-      return formatInTimeZone(
+      formatted = formatInTimeZone(
         date,
         this.timezone(),
         this.DT_FMT_LONG,
         FNS_OPTS,
       );
     }
+
+    // Replace the 3-digit milliseconds with full fractional seconds
+    // when sub-millisecond precision is available.
+    if (fullFractional) {
+      formatted = formatted.replace(/\.(\d{3})(?=\s|$)/, '.' + fullFractional);
+    }
+
+    return formatted;
   }
 
   formatValue(value: Value, options?: FormatValueOptions) {
