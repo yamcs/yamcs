@@ -365,6 +365,48 @@ public class CfdpRestartIntegrationTest {
     }
 
     /**
+     * yamcs/yamcs#956: the EOF is received while the transfer is suspended and some data is missing. The EOF is
+     * acknowledged and not processed again when resent; upon resuming the missing data is requested.
+     */
+    @Test
+    public void testEofWhileSuspendedIncomplete() throws Exception {
+        startService(false);
+        int seq = ++seqNum;
+        byte[] data = randomData(5000);
+        String objName = uniqueName("eof-suspended");
+        CfdpHeader hdr = header(seq, true, true);
+
+        send(new MetadataPacket(false, ChecksumType.MODULAR, data.length, "src7", objName, null, hdr.copy(true)));
+        sendData(hdr, data, 0, 2000);
+        sync();
+        CfdpIncomingTransfer trsf = (CfdpIncomingTransfer) service.getCfdpTransfer(hdr.getTransactionId());
+        service.pause(trsf);
+        waitForState(trsf, TransferState.PAUSED);
+        outPdus.clear();
+
+        EofPacket eof = new EofPacket(ConditionCode.NO_ERROR, ModularChecksumCalculator.calculateChecksum(data),
+                data.length, null, hdr.copy(true));
+        send(eof);
+        AckPacket eofAck = waitFor(AckPacket.class);
+        assertEquals(FileDirectiveCode.EOF, eofAck.getDirectiveCode());
+        Thread.sleep(500);
+        // no NAK while suspended
+        assertNull(outPdus.poll());
+
+        service.resume(trsf);
+        // the sender resends the EOF since it may not have received the ACK
+        send(eof);
+        NakPacket nak = waitFor(NakPacket.class);
+        assertEquals(List.of("2000-5000"), nak.getSegmentRequests().stream().map(SegmentRequest::toString).toList());
+
+        sendData(hdr, data, 2000, data.length);
+        waitFor(FinishedPacket.class);
+        sendFinAck(hdr);
+        waitForState(trsf, TransferState.COMPLETED);
+        assertArrayEquals(data, incomingBucket.getObjectAsync(objName).get());
+    }
+
+    /**
      * A transfer suspended by the inactivity timer and resumed without receiving anything is suspended again by the
      * inactivity timer.
      */

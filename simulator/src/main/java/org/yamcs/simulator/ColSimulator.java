@@ -316,6 +316,9 @@ public class ColSimulator extends AbstractSimulator {
                 case 10:
                     perfTestOnOff(commandPacket);
                     break;
+                case 11:
+                    cfdpSuspendResume(commandPacket);
+                    break;
                 default:
                     log.error("Invalid command packet id: {}", commandPacket.getPacketId());
                 }
@@ -421,6 +424,23 @@ public class ColSimulator extends AbstractSimulator {
                 transmitRealtimeTM(ackPacket(commandPacket, 2, 1));
             }
         }
+    }
+
+    private void cfdpSuspendResume(ColumbusCcsdsPacket commandPacket) {
+        transmitRealtimeTM(ackPacket(commandPacket, 1, 0));
+        CfdpSender sender = cfdpSender;
+        if (sender == null) {
+            log.warn("Received CFDP suspend/resume command but no CFDP transfer has been started");
+            transmitRealtimeTM(ackPacket(commandPacket, 2, 1));
+            return;
+        }
+        int suspend = commandPacket.getUserDataBuffer().get(0);
+        if (suspend == 1) {
+            sender.suspend();
+        } else {
+            sender.resume();
+        }
+        transmitRealtimeTM(ackPacket(commandPacket, 2, 0));
     }
 
     private void perfTestOnOff(ColumbusCcsdsPacket commandPacket) {

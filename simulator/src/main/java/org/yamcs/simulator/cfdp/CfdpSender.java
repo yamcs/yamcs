@@ -29,7 +29,7 @@ public class CfdpSender {
     final static int SEQ_NR_LENGTH = 4;
     final static int EOF_ACK_LIMIT = 5;
 
-    private static final Logger log = LoggerFactory.getLogger(CfdpReceiver.class);
+    private static final Logger log = LoggerFactory.getLogger(CfdpSender.class);
     static AtomicInteger sequenceNumberGenerator = new AtomicInteger();
 
     final AbstractSimulator simulator;
@@ -51,6 +51,11 @@ public class CfdpSender {
 
     private CfdpHeader dataHeader;
     int eofAckCount = 0;
+    boolean eofAcked = false;
+    // when suspended, no Metadata, File Data or EOF PDUs are sent and the EOF retransmission timer is stopped.
+    // Incoming PDUs are still processed (e.g. the NAKed segments are queued to be sent after resuming)
+    boolean suspended = false;
+    boolean finished = false;
 
     private String destinationFileName;
     private List<TLV> metadataOptions;
@@ -102,6 +107,9 @@ public class CfdpSender {
     public void start() {
         hasToSendMetadata = true;
         dataSenderFuture = executor.scheduleAtFixedRate(() -> {
+            if (suspended) {
+                return;
+            }
             if (hasToSendMetadata) {
                 sendMetadata();
                 hasToSendMetadata = false;
@@ -112,6 +120,56 @@ public class CfdpSender {
             }
         }, 0, 100, TimeUnit.MILLISECONDS);
 
+    }
+
+    /**
+     * Suspends the transaction (CCSDS 727.0-B-5 4.6.6.1): stops sending Metadata, File Data and EOF PDUs.
+     */
+    public void suspend() {
+        executor.execute(this::doSuspend);
+    }
+
+    /**
+     * Resumes a suspended transaction: continues sending the data and, if the EOF has been sent but not acknowledged,
+     * restarts sending it.
+     */
+    public void resume() {
+        executor.execute(this::doResume);
+    }
+
+    public boolean isSuspended() {
+        return suspended;
+    }
+
+    private void doSuspend() {
+        if (finished || suspended) {
+            log.info("CFDP transaction {} {}, suspend ignored", cfdpTransactionId,
+                    finished ? "finished" : "already suspended");
+            return;
+        }
+        log.info("CFDP suspending transaction {}", cfdpTransactionId);
+        suspended = true;
+        if (eofSenderFuture != null) {
+            eofSenderFuture.cancel(false);
+        }
+    }
+
+    private void doResume() {
+        if (finished || !suspended) {
+            log.info("CFDP transaction {} {}, resume ignored", cfdpTransactionId,
+                    finished ? "finished" : "not suspended");
+            return;
+        }
+        log.info("CFDP resuming transaction {}", cfdpTransactionId);
+        suspended = false;
+        if (dataFinished && !eofAcked) {
+            startEofSender();
+        }
+    }
+
+    private void startEofSender() {
+        eofAckCount = 0;
+        eofSenderFuture = executor.scheduleAtFixedRate(this::sendEof, 0, 2000, TimeUnit.MILLISECONDS);
     }
 
     public void processCfdp(ByteBuffer buffer) {
@@ -138,6 +196,7 @@ public class CfdpSender {
                 log.error("EOF ACK received but EOF not sent");
             } else {
                 log.info("CFDP received EOF ACK");
+                eofAcked = true;
                 eofSenderFuture.cancel(true);
             }
         } else if (packet instanceof FinishedPacket) {
@@ -154,8 +213,8 @@ public class CfdpSender {
             dataOffset = end;
         }
         if (dataOffset == fileSize) {
-            eofSenderFuture = executor.scheduleAtFixedRate(() -> sendEof(), 0, 2000, TimeUnit.MILLISECONDS);
             dataFinished = true;
+            startEofSender();
         }
     }
 
@@ -170,8 +229,9 @@ public class CfdpSender {
     private void sendEof() {
         eofAckCount++;
         if (eofAckCount >= EOF_ACK_LIMIT) {
-            log.warn("EOF_ACK_LIMIT reached");
-            eofSenderFuture.cancel(false);
+            // fault handler for the positive ACK limit: suspend the transaction; it can be resumed by command
+            log.warn("EOF_ACK_LIMIT reached, suspending the transaction");
+            doSuspend();
         } else {
             log.info("CFDP sending EOF");
             EofPacket eof = new EofPacket(ConditionCode.NO_ERROR, checksum, fileSize, null, directiveHeader);
@@ -182,6 +242,7 @@ public class CfdpSender {
     private void processFinishedPacket(FinishedPacket packet) {
         log.info("CFDP data sending finished; code:{}, data complete: {}", packet.getConditionCode(),
                 packet.isDataComplete());
+        finished = true;
         dataSenderFuture.cancel(true);
         if (eofSenderFuture != null) {
             eofSenderFuture.cancel(true);
@@ -212,6 +273,7 @@ public class CfdpSender {
     }
 
     private void abort() {
+        finished = true;
         dataSenderFuture.cancel(true);
         if (eofSenderFuture != null) {
             eofSenderFuture.cancel(true);
