@@ -246,8 +246,32 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
         executor.schedule(this::sendOrScheduleNak, nakTimeout, TimeUnit.MILLISECONDS);
     }
 
+    /**
+     * Called when the transfer is resumed by the user: sends a NAK even if no gap has been detected yet, requesting
+     * also the data after the last received segment up to the end of the file. This prods the sender to continue a
+     * transfer which has been interrupted (e.g. by a loss of signal) before the EOF was received.
+     */
+    private void sendResumeNak() {
+        if (!eofReceived() && !immediateNak) {
+            return;
+        }
+        if (sendNak(metadataReceived())) {
+            lastNakSentTime = System.currentTimeMillis();
+        }
+        executor.schedule(this::sendOrScheduleNak, nakTimeout, TimeUnit.MILLISECONDS);
+    }
+
     private boolean sendNak() {
-        List<SegmentRequest> missingSegments = incomingDataFile.getMissingChunks(eofReceived() && metadataReceived());
+        return sendNak(eofReceived() && metadataReceived());
+    }
+
+    /**
+     * @param includeEnd
+     *            if true, the segment between the last received data and the end of the file is also requested.
+     *            Requires the metadata (file size) to have been received.
+     */
+    private boolean sendNak(boolean includeEnd) {
+        List<SegmentRequest> missingSegments = incomingDataFile.getMissingChunks(includeEnd);
 
         if (!metadataReceived()) {
             missingSegments.add(0, new SegmentRequest(0, 0));
@@ -688,7 +712,15 @@ public class CfdpIncomingTransfer extends OngoingCfdpTransfer {
 
         sendInfoEvent(ETYPE_TRANSFER_RESUMED, "transfer resumed");
         if (inTxState == InTxState.RECEIVING_DATA) {
-            checkFileComplete();
+            // the inactivity timer has been cancelled when the transfer was suspended; restart it so the transfer
+            // does not stay running indefinitely if nothing is received anymore.
+            // If the file is complete, it is cancelled again when entering the FIN state.
+            rescheduleInactivityTimer();
+            if (incomingDataFile.isComplete() && eofReceived()) {
+                onFileCompleted();
+            } else if (acknowledged) {
+                sendResumeNak();
+            }
         } else if (inTxState == InTxState.FIN) {
             sendFin();
         }

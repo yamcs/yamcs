@@ -133,6 +133,10 @@ public class CfdpRestartIntegrationTest {
     }
 
     static YConfiguration serviceConfig(boolean persist) throws Exception {
+        return serviceConfig(persist, Map.of());
+    }
+
+    static YConfiguration serviceConfig(boolean persist, Map<String, Object> overrides) throws Exception {
         Map<String, Object> m = new HashMap<>();
         m.put("inStream", "cfdp_in");
         m.put("outStream", "cfdp_out");
@@ -146,13 +150,18 @@ public class CfdpRestartIntegrationTest {
         m.put("pendingAfterCompletion", 300);
         m.put("syncInterval", 200);
         m.put("persistTransfers", persist);
+        m.putAll(overrides);
         CfdpService s = new CfdpService();
         return s.getSpec().validate(YConfiguration.wrap(m));
     }
 
     CfdpService startService(boolean persist) throws Exception {
+        return startService(persist, Map.of());
+    }
+
+    CfdpService startService(boolean persist, Map<String, Object> overrides) throws Exception {
         service = new CfdpService();
-        service.init(yamcsInstance, SERVICE_NAME, serviceConfig(persist));
+        service.init(yamcsInstance, SERVICE_NAME, serviceConfig(persist, overrides));
         service.startAsync().awaitRunning();
         return service;
     }
@@ -318,6 +327,78 @@ public class CfdpRestartIntegrationTest {
         sendFinAck(hdr);
         waitForState(trsf2, TransferState.COMPLETED);
         assertArrayEquals(data, incomingBucket.getObjectAsync(restartSuspended).get());
+    }
+
+    /**
+     * A transfer interrupted before the EOF, with no gap in the received data, is resumed by the user: a NAK is sent
+     * requesting the remaining part of the file.
+     */
+    @Test
+    public void testResumeSendsNakForEnd() throws Exception {
+        startService(false);
+        int seq = ++seqNum;
+        byte[] data = randomData(10_000);
+        String objName = uniqueName("resume-nak");
+        CfdpHeader hdr = header(seq, true, true);
+
+        send(new MetadataPacket(false, ChecksumType.MODULAR, data.length, "src5", objName, null, hdr.copy(true)));
+        sendData(hdr, data, 0, 4000);
+        sync();
+        CfdpIncomingTransfer trsf = (CfdpIncomingTransfer) service.getCfdpTransfer(hdr.getTransactionId());
+        service.pause(trsf);
+        waitForState(trsf, TransferState.PAUSED);
+        Thread.sleep(500);
+        // no gap, nothing to request
+        outPdus.clear();
+
+        service.resume(trsf);
+        NakPacket nak = waitFor(NakPacket.class);
+        assertEquals(List.of("4000-10000"), nak.getSegmentRequests().stream().map(SegmentRequest::toString).toList());
+
+        sendData(hdr, data, 4000, data.length);
+        send(new EofPacket(ConditionCode.NO_ERROR, ModularChecksumCalculator.calculateChecksum(data), data.length,
+                null, hdr.copy(true)));
+        waitFor(FinishedPacket.class);
+        sendFinAck(hdr);
+        waitForState(trsf, TransferState.COMPLETED);
+        assertArrayEquals(data, incomingBucket.getObjectAsync(objName).get());
+    }
+
+    /**
+     * A transfer suspended by the inactivity timer and resumed without receiving anything is suspended again by the
+     * inactivity timer.
+     */
+    @Test
+    public void testInactivityTimerRestartedOnResume() throws Exception {
+        startService(false, Map.of("inactivityTimeout", 1000,
+                "receiverFaultHandlers", Map.of("InactivityDetected", "suspend")));
+        int seq = ++seqNum;
+        byte[] data = randomData(5000);
+        String objName = uniqueName("resume-inactivity");
+        CfdpHeader hdr = header(seq, true, true);
+
+        send(new MetadataPacket(false, ChecksumType.MODULAR, data.length, "src6", objName, null, hdr.copy(true)));
+        sendData(hdr, data, 0, 2000);
+        sync();
+        CfdpIncomingTransfer trsf = (CfdpIncomingTransfer) service.getCfdpTransfer(hdr.getTransactionId());
+        waitForState(trsf, TransferState.PAUSED);
+        outPdus.clear();
+
+        service.resume(trsf);
+        NakPacket nak = waitFor(NakPacket.class);
+        assertEquals(List.of("2000-5000"), nak.getSegmentRequests().stream().map(SegmentRequest::toString).toList());
+        waitForState(trsf, TransferState.RUNNING);
+        // nothing received, the inactivity timer suspends the transfer again
+        waitForState(trsf, TransferState.PAUSED);
+
+        service.resume(trsf);
+        sendData(hdr, data, 2000, data.length);
+        send(new EofPacket(ConditionCode.NO_ERROR, ModularChecksumCalculator.calculateChecksum(data), data.length,
+                null, hdr.copy(true)));
+        waitFor(FinishedPacket.class);
+        sendFinAck(hdr);
+        waitForState(trsf, TransferState.COMPLETED);
+        assertArrayEquals(data, incomingBucket.getObjectAsync(objName).get());
     }
 
     @Test
