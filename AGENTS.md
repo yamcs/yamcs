@@ -1,3 +1,29 @@
+## Repository standards
+
+Follow [CONTRIBUTING.md](CONTRIBUTING.md). Its "Hard rules" apply to agents
+too. Before finishing any task:
+
+1. Run the "Validation before merge" steps for what you touched and report
+   the exact commands and results.
+2. Update the docs mapped in the "Docs" section in the same change. If none
+   needed updating, say so in your final message.
+3. Log any assumption you made in `docs/decisions-and-assumptions.md`.
+4. Cite spec clauses in code you write from a standard.
+5. When you open or update a PR, write its description using the template in
+   CONTRIBUTING "Workflow": a 2–5 bullet Summary of what changed and why, then
+   Testing with the exact commands and results. Keep it short and plain; no
+   file-by-file changelog. Don't invent issue or ticket numbers.
+
+Agent-only rules:
+
+- Working files that aren't product docs (scratch plans, manual-test notes,
+  helper scripts, venvs, run logs) go in `.claude/<topic>/` (gitignored), not
+  the system temp dir. Each such folder ignores `venv/` and `logs/`.
+- The code-review-graph CLI is `.venv/bin/code-review-graph` (not on PATH).
+  If the graph was built on another branch, run `.venv/bin/code-review-graph build`.
+- Embeddings are local only (`--embedding-provider local`). This is a
+  proprietary fork: never send code to a cloud embedding provider.
+
 <!-- code-review-graph MCP tools -->
 ## MCP Tools: code-review-graph
 
