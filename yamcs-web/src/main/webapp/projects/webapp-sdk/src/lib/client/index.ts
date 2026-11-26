@@ -23,6 +23,7 @@ export * from './types/system';
 export * from './types/table';
 export * from './types/time';
 export * from './types/timeline';
+export * from './types/triggers';
 export * from './types/web';
 export * from './WebSocketCall';
 export * from './WebSocketClient';

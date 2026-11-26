@@ -5,6 +5,7 @@ import static org.yamcs.activities.ActivityDb.CNAME_DETAIL;
 import static org.yamcs.activities.ActivityDb.CNAME_FAILURE_REASON;
 import static org.yamcs.activities.ActivityDb.CNAME_ID;
 import static org.yamcs.activities.ActivityDb.CNAME_LABEL;
+import static org.yamcs.activities.ActivityDb.CNAME_ORIGIN;
 import static org.yamcs.activities.ActivityDb.CNAME_SEQ;
 import static org.yamcs.activities.ActivityDb.CNAME_START;
 import static org.yamcs.activities.ActivityDb.CNAME_STARTED_BY;
@@ -18,6 +19,7 @@ import java.util.UUID;
 
 import org.yamcs.client.utils.WellKnownTypes;
 import org.yamcs.http.api.GpbWellKnownHelper;
+import org.yamcs.protobuf.activities.ActivityOrigin;
 import org.yamcs.security.User;
 import org.yamcs.utils.TimeEncoding;
 import org.yamcs.yarch.DataType;
@@ -35,6 +37,7 @@ public class Activity implements Comparable<Activity> {
     private final String startedBy;
     private String label;
     private String detail;
+    private ActivityOrigin origin;
 
     private ActivityStatus status = ActivityStatus.RUNNING;
 
@@ -72,6 +75,9 @@ public class Activity implements Comparable<Activity> {
         status = ActivityStatus.valueOf(tuple.getColumn(CNAME_STATUS));
         if (tuple.hasColumn(CNAME_STOP)) {
             stop = tuple.getTimestampColumn(CNAME_STOP);
+        }
+        if (tuple.hasColumn(CNAME_ORIGIN)) {
+            origin = tuple.getColumn(CNAME_ORIGIN);
         }
     }
 
@@ -125,6 +131,17 @@ public class Activity implements Comparable<Activity> {
 
     public void setDetail(String detail) {
         this.detail = detail;
+    }
+
+    /**
+     * What caused this activity to start, or null if it was started directly by a user.
+     */
+    public ActivityOrigin getOrigin() {
+        return origin;
+    }
+
+    public void setOrigin(ActivityOrigin origin) {
+        this.origin = origin;
     }
 
     public long getStop() {
@@ -198,6 +215,7 @@ public class Activity implements Comparable<Activity> {
         }
 
         tuple.addColumn(CNAME_FAILURE_REASON, failureReason);
+        tuple.addColumn(CNAME_ORIGIN, DataType.protobuf(ActivityOrigin.class), origin);
 
         return tuple;
     }
