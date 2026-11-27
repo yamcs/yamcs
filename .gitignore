@@ -29,17 +29,6 @@ server.lock
 CLAUDE.local.md
 .code-review-graph/
 /.venv/
-/.github/code-review-graph.instruction.md
-code-review-graph.instruction.md
-.codebuddy
-.gemini
-.cursor
-.kiro
-.qoder
-.cursorrules
-.windsurfrules
-opencode.jsonc
-.github/instructions
 .claude
 
 # Python related
