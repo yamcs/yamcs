@@ -55,9 +55,6 @@ public class Pus15Service extends AbstractPusService {
     static final int COMPL_ERR_WILDCARD_CONFLICT = 16;
 
     static final int COMPL_ERR_INVALID_DATA = 17;
-    // Mission allocation unit: one wire-size unit is 1 KiB (the field remains uint8).
-    static final long SIZE_UNIT_BYTES = 1024;
-
     static final int STORE_TYPE_CIRCULAR = 0;
     static final int STORE_TYPE_BOUNDED = 1;
 
@@ -66,6 +63,7 @@ public class Pus15Service extends AbstractPusService {
     static final long BTR_STEP_DELAY_MS = 100;
 
     private final PusTimeEncoding storageTime;
+    private final long sizeUnitBytes;
     private ScheduledFuture<?> retrievalTask;
     private int retrievalTicks;
 
@@ -74,6 +72,7 @@ public class Pus15Service extends AbstractPusService {
     Pus15Service(PusSimulator pusSimulator) {
         super(pusSimulator, 15);
         storageTime = pusSimulator.storageTimeEncoding;
+        sizeUnitBytes = pusSimulator.packetConfig.packetStoreSizeUnitBytes();
     }
 
     @Override
@@ -904,7 +903,7 @@ public class Pus15Service extends AbstractPusService {
         List<PacketStore> pending = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
             int id = bb.get() & 0xFF;
-            long size = (bb.get() & 0xFF) * SIZE_UNIT_BYTES;
+            long size = (bb.get() & 0xFF) * sizeUnitBytes;
             int type = bb.get() & 0xFF;
             int vc = bb.get() & 0xFF;
             if (stores.containsKey(id) || pending.stream().anyMatch(s -> s.storeId == id)) {
@@ -983,7 +982,7 @@ public class Pus15Service extends AbstractPusService {
         // N(1) + N x { store_id(1), size_units(1), store_type(1), vc_id(1) }
         sendStoreReport(23, targets, 4, (bb, s) -> {
             bb.put((byte) s.storeId);
-            bb.put((byte) (s.sizeBytes / SIZE_UNIT_BYTES));
+            bb.put((byte) (s.sizeBytes / sizeUnitBytes));
             bb.put((byte) s.storeType);
             bb.put((byte) s.vcId);
         });
@@ -1132,7 +1131,7 @@ public class Pus15Service extends AbstractPusService {
         List<Long> sizes = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
             int id = bb.get() & 0xFF;
-            long newSize = (bb.get() & 0xFF) * SIZE_UNIT_BYTES;
+            long newSize = (bb.get() & 0xFF) * sizeUnitBytes;
             PacketStore s = stores.get(id);
             if (s == null) {
                 log.warn("ST15: store id={} not found", id);

@@ -1,0 +1,43 @@
+:host {
+  color: var(--y-foreground-color);
+}
+
+:host-context(.dark) a:not(ya-page-tabs a) {
+  color: var(--y-accent);
+}
+
+.table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  color: var(--y-table-foreground);
+  background: var(--y-table-background);
+}
+
+.report-table th,
+.report-table td {
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--y-table-border-color);
+  text-align: left;
+  vertical-align: top;
+}
+
+.report-table th {
+  color: var(--y-table-header-foreground);
+  background: var(--y-table-header-background);
+  font-weight: 500;
+}
+
+.report-table tbody tr:hover {
+  background: var(--y-table-hover-background);
+}
+
+.field-help {
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+}

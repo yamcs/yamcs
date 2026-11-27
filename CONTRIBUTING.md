@@ -135,7 +135,8 @@ pure refactors, test-only, or internal changes, and say so in the PR.
   behaviour. `pus_analysis/*.md` document how the code behaves; cite classes
   and methods, not line numbers.
 - Design specs and plans go in `docs/superpowers/{specs,plans}/YYYY-MM-DD-<topic>.md`,
-  with a `## Contents` list kept in sync with the headings.
+  with a `## Contents` list kept in sync with the headings. They are
+  gitignored (local only); put anything others need in the docs above.
 
 **Decisions and assumptions log**: record every assumption made while
 building a feature (field widths, ICD ambiguities, placeholder values) in

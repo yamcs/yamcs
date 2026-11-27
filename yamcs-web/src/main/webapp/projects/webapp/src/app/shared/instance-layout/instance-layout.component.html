@@ -92,6 +92,15 @@
       </ya-sidenav-group>
     }
 
+    @if ((connectionInfo$ | async)?.instance?.capabilities | arrayContains: "satellite-reports") {
+      <ya-sidenav-item
+        activeWhen="/satellite-reports"
+        routerLink="/satellite-reports"
+        [queryParams]="{ c: yamcs.context }"
+        icon="assessment"
+        label="Satellite reports" />
+    }
+
     @if (
       ((connectionInfo$ | async)?.instance?.capabilities | arrayContains: "file-transfer") &&
       showFileTransferItem()

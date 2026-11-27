@@ -4,6 +4,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.yamcs.simulator.pus.PusPacketConfig;
+
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.converters.IParameterSplitter;
 import com.beust.jcommander.converters.PathConverter;
@@ -115,6 +117,9 @@ public class SimulatorArgs {
 
     @Parameter(names = "--pus-spare-bytes")
     public int pusSpareBytes = 4;
+
+    @Parameter(names = "--pus-packet-store-size-unit-bytes", description = "bytes per S15 store capacity unit")
+    public int pusPacketStoreSizeUnitBytes = PusPacketConfig.DEFAULT_PACKET_STORE_SIZE_UNIT_BYTES;
 
     @Parameter(names = "--pus-telemetry-mdb", converter = PathConverter.class, splitter = MdbPathSplitter.class,
             description = "XTCE file for PUS telemetry (repeat for multiple files)")

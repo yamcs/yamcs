@@ -1,6 +1,7 @@
 # PUS ground architecture in Yamcs
 
-This guide describes the PUS packet, frame and direct mission configurations. Yamcs is the ground MCS; the Java simulator is the test spacecraft.
+This guide describes PUS packet links and direct CCSDS frame links in Yamcs. The Java
+simulator provides a spacecraft endpoint for testing.
 
 ## Deployment and configuration
 
@@ -12,11 +13,12 @@ Operator / API ← Yamcs parameters/events/archive ← TM stream ← TCP TM link
 The example runs TCP telemetry on port 10015 and telecommands on port 10025. Transfer-frame
 examples have separate configuration; do not apply packet TCP offsets to a complete transfer frame.
 
-In the mission deployment, set `SIMULATOR_ENABLED=true`, `OPERATIONAL_MODE=direct`, and `TC_HOST=localhost`
+For an instance that reads the environment settings below, set
+`SIMULATOR_ENABLED=true`, `OPERATIONAL_MODE=direct`, and `TC_HOST=localhost`
 when the simulator shares the Yamcs host. The direct link composition carries raw CCSDS frames
 over UDP. The SRS4 example supplies the four-byte packet layout for its external endpoint.
 
-| Shared environment settings | Mission defaults |
+| Shared environment settings | Direct UDP profile example |
 |---|---|
 | `TC_HOST`, `TC_PORT`, `TM_PORT` | Deployment UDP endpoints |
 | `CCSDS_SPACECRAFT_ID`, `CCSDS_TM_FRAME_TYPE`, `CCSDS_TM_FRAME_LENGTH`, `CCSDS_TC_MAX_FRAME_LENGTH` | `1`, `TM`, `980`, `980` |
@@ -33,8 +35,8 @@ top level, inside a scheduling wrapper or inside an annotated embedded argument.
 change requires a corresponding XTCE layout. The PUS ID defaults fill omitted command options;
 the simulator reads the resulting IDs on the wire.
 
-The mission `pus.telemetry.mdbFile` setting points the simulator at the same XTCE file used by
-Yamcs. It derives ST[03] report layouts and ST[05] event layouts from that file, including
+Point the simulator's `pus.telemetry.mdbFiles` setting at the same XTCE files Yamcs loads.
+The simulator derives ST[03] report layouts and ST[05] event layouts from those files, including
 the originating APID and structure or event ID. `housekeepingPeriodMillis` staggers successive
 reports and `eventPeriodMillis` sets the event cadence. The simulator generates synthetic
 values for the injected layouts. The standalone examples use the landing-demo data source.
@@ -50,6 +52,15 @@ values for the injected layouts. The standalone examples use the landing-demo da
 There are no `org.yamcs.pus.PusCommandReleaser`, `PusTcHandler`, `Pus5Service`, or
 `Pus21RequestSequencingService` classes in this checkout. Do not configure them as processor
 services. The service-specific simulator classes are in `org.yamcs.simulator.pus`.
+
+## Satellite report MDB bindings
+
+Satellite Reports resolves its default report containers, pagination parameters, and
+payload parameters in the space system of the configured telemetry root container.
+The service uses the MDB root container when the telemetry stream leaves the root unset.
+Set the fully qualified `container`, `pageNumberParameter`, `totalPagesParameter`,
+and `payloadParameter` values in `reportProfiles` when those definitions live elsewhere.
+Each override is keyed by the telemetry service and subtype, for example `"11-10"`.
 
 ## TC pipeline
 

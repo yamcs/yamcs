@@ -1,0 +1,5 @@
+services: []
+
+mdb:
+  - type: xtce
+    spec: src/test/resources/xtce/satellite-report-test.xml

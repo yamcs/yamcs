@@ -1,0 +1,298 @@
+@let snapshot = report();
+@let data = summary();
+
+<h2>{{ title() }}</h2>
+<dl class="metadata">
+  <div>
+    <dt><span class="field-help" tabindex="0" [matTooltip]="fieldHelp.status">Status</span></dt>
+    <dd class="status" [attr.data-status]="snapshot.status">{{ data.label }}</dd>
+  </div>
+  @if (snapshot.requestedAt) {
+    <div>
+      <dt>
+        <span class="field-help" tabindex="0" [matTooltip]="fieldHelp.requestedAt">
+          Response window opened
+        </span>
+      </dt>
+      <dd>{{ snapshot.requestedAt | datetime }}</dd>
+    </div>
+  }
+  @if (snapshot.responseDeadline) {
+    <div>
+      <dt>
+        <span class="field-help" tabindex="0" [matTooltip]="fieldHelp.responseDeadline">
+          Response deadline
+        </span>
+      </dt>
+      <dd>{{ snapshot.responseDeadline | datetime }}</dd>
+    </div>
+  }
+  @if (snapshot.firstReceived) {
+    <div>
+      <dt>
+        <span class="field-help" tabindex="0" [matTooltip]="fieldHelp.firstReceived">
+          First received
+        </span>
+      </dt>
+      <dd>{{ snapshot.firstReceived | datetime }}</dd>
+    </div>
+  }
+  @if (snapshot.lastReceived) {
+    <div>
+      <dt>
+        <span class="field-help" tabindex="0" [matTooltip]="fieldHelp.lastReceived">
+          Last received
+        </span>
+      </dt>
+      <dd>{{ snapshot.lastReceived | datetime }}</dd>
+    </div>
+  }
+  @if (snapshot.assembledAt) {
+    <div>
+      <dt>
+        <span class="field-help" tabindex="0" [matTooltip]="fieldHelp.assembledAt">Assembled</span>
+      </dt>
+      <dd>{{ snapshot.assembledAt | datetime }}</dd>
+    </div>
+  }
+  @if (snapshot.finalizedAt) {
+    <div>
+      <dt>
+        <span class="field-help" tabindex="0" [matTooltip]="fieldHelp.finalizedAt">Finalized</span>
+      </dt>
+      <dd>{{ snapshot.finalizedAt | datetime }}</dd>
+    </div>
+  }
+  <div>
+    <dt>
+      <span class="field-help" tabindex="0" [matTooltip]="fieldHelp.receivedPages">
+        Received pages
+      </span>
+    </dt>
+    <dd>{{ data.received }} of {{ data.expected ?? "unknown" }}</dd>
+  </div>
+  @if (snapshot.command?.id) {
+    <div>
+      <dt>{{ snapshot.status === "AMBIGUOUS" ? "Candidate request" : "Request command" }}</dt>
+      <dd>
+        <a
+          [routerLink]="['/commanding/history', snapshot.command!.id]"
+          [queryParams]="{ c: context() }">
+          {{ snapshot.command!.name || snapshot.command!.id }}
+        </a>
+      </dd>
+    </div>
+  }
+  @if (snapshot.command?.scope; as scope) {
+    <div>
+      <dt>Request scope</dt>
+      <dd>{{ scope }}</dd>
+    </div>
+  }
+  @if (data.withheld) {
+    <div>
+      <dt>Withheld packets</dt>
+      <dd>{{ data.withheld }}</dd>
+    </div>
+  }
+</dl>
+
+@if (snapshot.status === "PARTIAL") {
+  <p class="notice">This report is incomplete. You can re-request it through Commanding.</p>
+} @else if (snapshot.status === "AMBIGUOUS") {
+  <p class="notice">
+    Yamcs could not determine which request some packets belonged to. The table shows the rows it
+    could attribute.
+  </p>
+} @else if (snapshot.status === "NO_RESPONSE") {
+  <p class="notice">No report response was observed for this request.</p>
+}
+@if (data.missing || data.rejected || snapshot.issues?.length) {
+  <ul class="issues">
+    @if (data.missing) {
+      <li>Missing pages: {{ data.missing }}</li>
+    }
+    @if (data.rejected) {
+      <li>Quarantined pages: {{ data.rejected }}</li>
+    }
+    @for (issue of snapshot.issues; track $index) {
+      <li>{{ issue }}</li>
+    }
+  </ul>
+}
+
+@if (snapshot.pages?.length) {
+  <details class="report-details">
+    <summary class="field-help" [matTooltip]="fieldHelp.packetTimestamps">
+      Packet timestamps
+    </summary>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="Packet timestamps">
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th scope="col">Page</th>
+            <th scope="col">Generation time</th>
+            <th scope="col">Reception time</th>
+            <th scope="col">APID</th>
+            <th scope="col">Source sequence counter</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (page of snapshot.pages; track page.pageNumber) {
+            <tr>
+              <td>{{ page.pageNumber }}</td>
+              <td>{{ (page.generationTime | datetime) ?? "—" }}</td>
+              <td>{{ (page.receptionTime | datetime) ?? "—" }}</td>
+              <td>{{ page.apid ?? "—" }}</td>
+              <td>{{ page.sourceSequenceCount ?? "—" }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </details>
+}
+
+@if (data.rows.length) {
+  <div class="table-scroll" role="region" tabindex="0" aria-label="Report rows">
+    <table class="report-table">
+      <thead>
+        <tr>
+          <th scope="col">Page</th>
+          @for (column of data.columns; track column.name) {
+            <th scope="col">{{ column.label }}</th>
+          }
+          @if (data.hasScheduledCommands) {
+            <th scope="col">Scheduled command</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of data.rows; track $index; let rowIndex = $index) {
+          <tr>
+            <td>{{ row.pageNumber }}</td>
+            @for (column of data.columns; track column.name) {
+              @let cell = row.cells[column.name];
+              <td>
+                <ng-container
+                  *ngTemplateOutlet="
+                    cellValue;
+                    context: {
+                      $implicit: cell?.value,
+                      filename: binaryFilename(column.name, row.pageNumber, rowIndex + 1),
+                    }
+                  " />
+                @if (cell?.unit) {
+                  <span>{{ cell!.unit }}</span>
+                }
+              </td>
+            }
+            @if (data.hasScheduledCommands) {
+              <td>
+                @if (row.scheduledCommand?.id) {
+                  @let command = row.scheduledCommand!;
+                  <a
+                    [routerLink]="['/commanding/history', command.id]"
+                    [queryParams]="{ c: context() }">
+                    {{ command.name || command.id }}
+                  </a>
+                  @if (command.embeddedIndex !== undefined) {
+                    <div>Embedded TC {{ command.embeddedIndex + 1 }}</div>
+                  }
+                } @else {
+                  —
+                }
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+} @else if (snapshot.status === "COMPLETE") {
+  <p>This report contains 0 rows.</p>
+} @else if (snapshot.status !== "NO_RESPONSE") {
+  <p>No confidently attributed rows are available.</p>
+}
+
+<ng-template #cellValue let-value let-filename="filename">
+  @switch (value?.type) {
+    @case ("ARRAY") {
+      @if (value.arrayValue?.length) {
+        <details>
+          <summary>
+            {{ value.arrayValue.length }} {{ value.arrayValue.length === 1 ? "entry" : "entries" }}
+          </summary>
+          <ol class="nested-list">
+            @for (entry of value.arrayValue; track $index) {
+              <li>
+                <ng-container
+                  *ngTemplateOutlet="
+                    cellValue;
+                    context: { $implicit: entry, filename: filename + '-' + ($index + 1) }
+                  " />
+              </li>
+            }
+          </ol>
+        </details>
+      } @else {
+        0 entries
+      }
+    }
+    @case ("AGGREGATE") {
+      @if (value.aggregateValue?.name?.length) {
+        <details>
+          <summary>
+            {{ value.aggregateValue.name.length }}
+            {{ value.aggregateValue.name.length === 1 ? "field" : "fields" }}
+          </summary>
+          <dl class="value-fields">
+            @for (name of value.aggregateValue.name; track $index) {
+              <dt>{{ name }}</dt>
+              <dd>
+                <ng-container
+                  *ngTemplateOutlet="
+                    cellValue;
+                    context: {
+                      $implicit: value.aggregateValue.value[$index],
+                      filename: filename + '-' + name,
+                    }
+                  " />
+              </dd>
+            }
+          </dl>
+        </details>
+      } @else {
+        0 fields
+      }
+    }
+    @case ("BINARY") {
+      @let bytes = value.binaryValue;
+      @if (bytes != null) {
+        <div class="binary-value">
+          <code>{{ (value | value: fullBinary) || "Empty bytes" }}</code>
+          <ya-more icon="more_horiz" [padding]="false">
+            <button mat-menu-item (click)="downloadBinary(bytes, 'hex', filename)">
+              Download hex
+            </button>
+            <button mat-menu-item (click)="downloadBinary(bytes, 'bin', filename)">
+              Download binary
+            </button>
+          </ya-more>
+        </div>
+      } @else {
+        —
+      }
+    }
+    @case ("TIMESTAMP") {
+      @if (canFormatTimestamp(value.stringValue)) {
+        {{ value.stringValue | datetime }}
+      } @else {
+        {{ value.stringValue ?? "—" }}
+      }
+    }
+    @default {
+      {{ (value | value) ?? "—" }}
+    }
+  }
+</ng-template>

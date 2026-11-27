@@ -1,0 +1,85 @@
+@import "./report-table.css";
+
+.metadata {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin-block: 12px 16px;
+}
+
+.metadata div {
+  min-width: 0;
+}
+
+.metadata dt {
+  color: var(--y-hint-foreground);
+}
+
+.metadata dd,
+.value-fields dd {
+  margin: 0;
+  color: var(--y-attr-content-foreground-color);
+  overflow-wrap: anywhere;
+}
+
+.status {
+  font-weight: 500;
+}
+
+.status[data-status] {
+  border-inline-start: 3px solid var(--y-hint-foreground);
+  padding-inline-start: 6px;
+}
+
+.status[data-status="COMPLETE"] {
+  border-inline-start-color: var(--y-success-color);
+}
+
+.status[data-status="PARTIAL"],
+.status[data-status="AMBIGUOUS"] {
+  border-inline-start-color: var(--y-warning-color);
+}
+
+.notice {
+  font-weight: 500;
+}
+
+.report-details {
+  margin-block: 12px;
+}
+
+summary {
+  cursor: pointer;
+}
+
+.value-fields {
+  margin-block: 4px;
+  margin-inline-start: 10px;
+}
+
+.value-fields dt {
+  color: var(--y-attr-label-foreground-color);
+  font-weight: 500;
+}
+
+.value-fields dd {
+  margin-block-end: 4px;
+}
+
+.nested-list {
+  margin: 4px 0;
+  padding-inline-start: 24px;
+}
+
+code {
+  display: block;
+  min-width: 160px;
+  max-width: 44ch;
+  overflow-wrap: anywhere;
+}
+
+.binary-value {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}

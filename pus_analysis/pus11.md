@@ -55,8 +55,8 @@ CCSDS primary (6 B) + PUS TC secondary (5 B) + spare (4 B)
 ```
 
 Overhead is `12 + spareBytes + subScheduleIdBytes + groupIdBytes + encodedTimeLength + crcBytes`.
-The example's 1-byte IDs, 8-byte CUC, and 2-byte CRC give 28 bytes. The default mission profile
-uses an implicit 6-byte release time with no wrapper CRC, giving 24 bytes. The release time
+The example's 1-byte IDs, 8-byte CUC, and 2-byte CRC give 28 bytes. With the same IDs,
+a six-byte implicit release time and a disabled wrapper CRC give 24 bytes. The release time
 comes from `tcoService.getObt()` when configured, otherwise the configured epoch conversion.
 Unavailable correlation fails the command. The default postprocessor epoch is UNIX.
 

@@ -1,0 +1,23 @@
+services:
+  - class: org.yamcs.archive.CommandHistoryRecorder
+  - class: org.yamcs.pus.report.SatelliteReportService
+    args:
+      telemetryStream: tm_realtime
+      commandHistoryStream: cmdhist_realtime
+      responseTimeoutMillis: 500
+      callbackReorderMillis: 160
+      scheduledExecutionAck: Verifier_OriginalExecution
+      correlation:
+        "15-23":
+          telemetryParameter: /SatelliteReportTest/pus_destination_id
+          commandHistoryAttribute: fixtureRequestId
+
+mdb:
+  - type: xtce
+    spec: src/test/resources/xtce/satellite-report-test.xml
+
+streamConfig:
+  tm:
+    - name: tm_realtime
+      rootContainer: /SatelliteReportTest/ccsds_space_packet
+  cmdHist: [cmdhist_realtime]

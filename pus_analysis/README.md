@@ -2,7 +2,7 @@
 
 The guides describe the current PUS simulator and Yamcs ground configuration. The review
 table records earlier findings and links to the active implementation. The packet contract
-and direct mission profile are in the [simulator architecture](pus_simulator_architecture.md)
+and direct UDP profile are in the [simulator architecture](pus_simulator_architecture.md)
 and [ground architecture](pus_native_arch.md).
 
 This folder documents Yamcs ground behavior, its example XTCE MDBs and its Java spacecraft
@@ -25,7 +25,7 @@ caches and adds decoding/export regression tests; its status is identified below
 | High | ST[11] examples used rejected top-level configuration and obsolete history-key behavior. | Use the nested `pus11` map, optional ID blocks and correctly cased command options. Generic history identifies the original TC; `pus11Apid`/`pus11CcsdsSeqCount` identify the wrapper in the reviewed baseline. See [ST[11]](pus11.md). | Corrected for baseline |
 | High | ST[19] descriptions alternated between a separate request-length prefix and no prefix; examples supplied an obsolete `request_len` argument. | Current `request` uses `/PUS/EmbeddedTcType` and its own CCSDS length. Rejection is failed start per instruction, codes 30–33; capacity is 16. Annotated nested packets are postprocessed. | Corrected |
 | High | ST[21] claimed a ground embedded-entry builder existed. | `Pus21EmbeddedEntryBuilder` is absent at the baseline. Its `tc_packet_arg_type` is unannotated, so embedded bytes must already be finalized. Generic embedded-TC postprocessing exists but is not enabled for that type. See [ST[21]](pus21.md). | Corrected; convenience/integration gap open |
-| Medium | Packet examples used service/subtype at bytes 6/7, 8-byte empty packets, and ordinary TM offset 22. | Full PUS service/subtype are bytes 7/8. With four spare bytes, TC service data starts at 15. Ordinary TM service data starts at 25 in the examples and 23 in the mission profile. APID-zero time starts at byte 7. | Corrected |
+| Medium | Packet examples used service/subtype at bytes 6/7, 8-byte empty packets, and ordinary TM offset 22. | Full PUS service/subtype are bytes 7/8. With four spare bytes, TC service data starts at 15. Ordinary TM service data starts at 25 with the explicit CUC example and 23 with the six-byte implicit CUC profile. APID-zero time starts at byte 7. | Corrected |
 | Medium | ST[13] research suggested automatic trailing-binary sizing while the implementation adds a last-part length byte. | MDB and simulator encode `part_len`/`part_len_last` explicitly. That is an example-specific deviation from the research's deduced-size layout, requiring ICD agreement. | Corrected; interoperability decision open |
 | Medium | ST[14] said HK reports lack structure IDs and called diagnostic reporting ST[04]. | ST[03] uses uint8 structure IDs. ST[14] consults its HK and diagnostic structure tables for TM[3,25] and TM[3,26] along with APFCC and event rules. | Aligned |
 | Medium | ST[15] sections mixed raw-millisecond timestamps with CUC, a proposed flags byte, missing uint64 types and thread-per-store sketches. | `dt.xml` already contains uint64; current timestamps use simulator milliseconds; no added flags byte; retrieval uses the shared scheduled executor. Empty application-selection tables block storage. | Corrected; mission time convention remains |
@@ -69,10 +69,9 @@ its simulator exists.
 
 ## Current verification
 
-The Yamcs XTCE loader accepts all three example MDB configurations and the regenerated
-mission MDB. The mission catalog contains 153 ST[03] and 11 ST[05] simulator templates. Each
-template's generated packet was decoded against the matching typed MDB container. A live
-Yamcs run in direct mode also archived periodic telemetry from multiple APIDs and returned
+The Yamcs XTCE loader accepts all three example MDB configurations and a generated MDB
+using the direct UDP profile. The generated ST[03] and ST[05] simulator packets were decoded
+against their matching typed MDB containers. A live Yamcs run in direct mode also archived periodic telemetry from multiple APIDs and returned
 TM[130,4] in response to TC[130,3]. The direct UDP check exercised independent frame and
 packet CRC settings, two-byte ST[11] IDs, and rejection of a corrupted scheduling wrapper.
 
