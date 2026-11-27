@@ -41,7 +41,6 @@ import com.google.protobuf.ByteString;
 
 /** Extracts and normalizes one PUS report page at a time using the instance MDB. */
 final class ReportDecoder {
-    private static final String JTYU = "/jTYU/";
     private static final int PUS_SERVICE_OFFSET = 7;
     private static final int PUS_SUBTYPE_OFFSET = 8;
     private static final int PUS_TC_SOURCE_ID_OFFSET = 9;
@@ -117,11 +116,13 @@ final class ReportDecoder {
         config.setSubscribePacketNameContainers(false);
         extractor = new XtceTmExtractor(mdb, new ProcessorData(instance, "SatelliteReports", mdb, config));
 
+        String spaceSystem = this.root.getSubsystemName();
+        String defaultPrefix = spaceSystem.endsWith("/") ? spaceSystem : spaceSystem + "/";
         var overrides = args.getConfigOrEmpty("reportProfiles");
         var correlations = args.getConfigOrEmpty("correlation");
         for (Definition definition : DEFINITIONS) {
             String type = definition.type();
-            Binding binding = bind(mdb, definition, overrides.getConfigOrEmpty(type),
+            Binding binding = bind(mdb, definition, defaultPrefix, overrides.getConfigOrEmpty(type),
                     correlations.containsKey(type) ? correlations.getConfig(type) : null);
             bindings.put(type, binding);
             for (int subtype : definition.requestSubtypes()) {
@@ -222,16 +223,17 @@ final class ReportDecoder {
         return Double.isFinite(value) ? "decimal:" + Double.toHexString(value == 0 ? 0 : value) : null;
     }
 
-    private static Binding bind(Mdb mdb, Definition definition, YConfiguration overrides, YConfiguration correlation) {
+    private static Binding bind(Mdb mdb, Definition definition, String defaultPrefix, YConfiguration overrides,
+            YConfiguration correlation) {
         validateKeys(overrides, Set.of("container", "pageNumberParameter", "totalPagesParameter", "payloadParameter"));
-        String containerName = overrides.getString("container", JTYU + definition.containerName());
+        String containerName = overrides.getString("container", defaultPrefix + definition.containerName());
         SequenceContainer container = mdb.getSequenceContainer(containerName);
         if (container == null || !containerName.equals(container.getQualifiedName())) {
             throw new ConfigurationException("Satellite report " + definition.type() + " has no MDB container "
                     + containerName);
         }
 
-        String paginationPrefix = JTYU + "spare_s" + definition.service();
+        String paginationPrefix = defaultPrefix + "spare_s" + definition.service();
         Parameter page = resolve(mdb, container, overrides.getString("pageNumberParameter",
                 paginationPrefix + "_page_number"));
         Parameter total = resolve(mdb, container, overrides.getString("totalPagesParameter",
@@ -242,7 +244,8 @@ final class ReportDecoder {
             throw invalidField(container, page.getQualifiedName(), "page number and total page count must be distinct");
         }
 
-        Parameter payload = resolve(mdb, container, overrides.getString("payloadParameter", JTYU + definition.payload()));
+        Parameter payload = resolve(mdb, container,
+                overrides.getString("payloadParameter", defaultPrefix + definition.payload()));
         DataType rowType = payload.getParameterType();
         if (definition.shape().arrayMember != null) {
             String member = definition.shape().arrayMember;

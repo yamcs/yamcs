@@ -36,7 +36,7 @@ sets. Each super-commutated set carries its own repetition and PID count.
 
 TM[3,25/26] source data begins with a one-byte SID. In the main example, `/PUS/hkid` is at
 offset 25 from the beginning of the packet, after the explicit CUC time and four spare
-bytes. In jTYU's implicit CUC profile, the source-data offset is 23.
+bytes. With a six-byte implicit CUC, the source-data offset is 23.
 
 Predefined simulator structures 0–4 correspond to the FlightData, Power, DHS, RCS and EPS
 handlers. Structure 5 carries enum-chart test parameters; structure 6 carries ST[22] orbit

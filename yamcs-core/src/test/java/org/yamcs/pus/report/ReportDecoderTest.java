@@ -42,8 +42,15 @@ class ReportDecoderTest {
         YConfiguration.setupTest(null);
         TimeEncoding.setUp();
         mdb = loadFixture();
-        root = mdb.getSequenceContainer("/jTYU/ccsds_space_packet");
+        root = mdb.getSequenceContainer("/SatelliteReportTest/ccsds_space_packet");
         decoder = new ReportDecoder("test", mdb, root, YConfiguration.emptyConfig());
+    }
+
+    @Test
+    void resolvesDefaultBindingsFromTheMdbRoot() {
+        var decoderWithDefaultRoot = new ReportDecoder("test", mdb, null, YConfiguration.emptyConfig());
+        assertEquals(root.getSubsystemName() + "/time_based_schedule_detail_report",
+                decoderWithDefaultRoot.profile("11-10").containerName());
     }
 
     @Test
@@ -173,7 +180,7 @@ class ReportDecoderTest {
     @Test
     void validatesEchoMembershipAndComparesTypedValues() {
         var args = YConfiguration.wrap(Map.of("correlation", Map.of("11-27",
-                Map.of("telemetryParameter", "/jTYU/pus_destination_id", "commandArgument", "request_id"))));
+                Map.of("telemetryParameter", "/SatelliteReportTest/pus_destination_id", "commandArgument", "request_id"))));
         var echoDecoder = new ReportDecoder("test", mdb, root, args);
         byte[] packet = packet(11, 27, 1, 1, 0, 32);
         ByteArrayUtils.encodeUnsignedShort(32769, packet, 11);
@@ -186,7 +193,7 @@ class ReportDecoderTest {
                 Value.newBuilder().setType(Value.Type.STRING).setStringValue("32769").build())));
 
         var unrelated = YConfiguration.wrap(Map.of("correlation", Map.of("11-27",
-                Map.of("telemetryParameter", "/jTYU/subschedule_count", "commandArgument", "request_id"))));
+                Map.of("telemetryParameter", "/SatelliteReportTest/subschedule_count", "commandArgument", "request_id"))));
         assertThrows(ConfigurationException.class, () -> new ReportDecoder("test", mdb, root, unrelated));
 
         var incomplete = YConfiguration.wrap(Map.of("correlation", Map.of("11-27", Map.of())));
@@ -197,13 +204,13 @@ class ReportDecoderTest {
     @Test
     void validatesCriticalPayloadFieldTypesAtStartup() throws Exception {
         var incompatibleMdb = loadFixture();
-        var payload = incompatibleMdb.getParameter("/jTYU/pass_state_report");
+        var payload = incompatibleMdb.getParameter("/SatelliteReportTest/pass_state_report");
         var aggregateType = (AggregateParameterType) payload.getParameterType();
         aggregateType.getMember("dump_active_flag").setDataType(aggregateType.getMember("n_count").getType());
-        var configuredRoot = incompatibleMdb.getSequenceContainer("/jTYU/ccsds_space_packet");
+        var configuredRoot = incompatibleMdb.getSequenceContainer("/SatelliteReportTest/ccsds_space_packet");
         var exception = assertThrows(ConfigurationException.class,
                 () -> new ReportDecoder("test", incompatibleMdb, configuredRoot, YConfiguration.emptyConfig()));
-        assertTrue(exception.getMessage().contains("/jTYU/pass_state_report.dump_active_flag"));
+        assertTrue(exception.getMessage().contains("/SatelliteReportTest/pass_state_report.dump_active_flag"));
     }
 
     private static Mdb loadFixture() throws Exception {

@@ -113,7 +113,7 @@ class SatelliteReportServiceIntegrationTest {
             assertEquals(new JsonPrimitive(16), firstPage.get("apid"));
             assertEquals(new JsonPrimitive(11), firstPage.get("sourceSequenceCount"));
             assertFalse(firstPage.has("sequence"));
-            assertEquals("/jTYU/report", completed.getAsJsonObject("command").get("name").getAsString());
+            assertEquals("/SatelliteReportTest/report", completed.getAsJsonObject("command").get("name").getAsString());
             assertTrue(completed.has("assembledAt"));
             assertFalse(completed.has("target"));
             assertEquals(completed, json(client, reports + "/" + completed.get("id").getAsString()));
@@ -173,7 +173,7 @@ class SatelliteReportServiceIntegrationTest {
     private static PreparedCommand request(StreamCommandHistoryPublisher history, long time, int sequence,
             int service, int subtype) {
         var command = new PreparedCommand(CommandId.newBuilder().setGenerationTime(time)
-                .setOrigin("satellite-integration").setSequenceNumber(sequence).setCommandName("/jTYU/report").build());
+                .setOrigin("satellite-integration").setSequenceNumber(sequence).setCommandName("/SatelliteReportTest/report").build());
         var bytes = new byte[15];
         ByteBuffer.wrap(bytes).putShort(0, (short) 0x1810).putShort(2, (short) (0xc000 | sequence))
                 .putShort(4, (short) (bytes.length - 7));

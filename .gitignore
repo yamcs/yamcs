@@ -45,3 +45,5 @@ opencode.jsonc
 venv/
 *.pyc
 __pycache__
+
+superpowers/

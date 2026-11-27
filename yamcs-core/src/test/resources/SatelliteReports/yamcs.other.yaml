@@ -13,5 +13,5 @@ mdb:
 streamConfig:
   tm:
     - name: tm_realtime
-      rootContainer: /jTYU/ccsds_space_packet
+      rootContainer: /SatelliteReportTest/ccsds_space_packet
   cmdHist: [cmdhist_realtime]
