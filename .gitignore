@@ -27,7 +27,6 @@ server.lock
 .mcp.json
 .mcp.local.json
 CLAUDE.local.md
-AGENTS.local.md
 .code-review-graph/
 /.venv/
 /.github/code-review-graph.instruction.md
