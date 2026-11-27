@@ -21,6 +21,9 @@ Agent-only rules:
   the system temp dir. Each such folder ignores `venv/` and `logs/`.
 - The code-review-graph CLI is `.venv/bin/code-review-graph` (not on PATH).
   If the graph was built on another branch, run `.venv/bin/code-review-graph build`.
+- Mission-specific names (mission, MDB tooling, private repos) live only in
+  `CLAUDE.local.md` (gitignored, per developer). Read it if present. Tracked
+  files, commits, and PRs use generic terms ("the mission", "mission profile").
 - Embeddings are local only (`--embedding-provider local`). This is a
   proprietary fork: never send code to a cloud embedding provider.
 

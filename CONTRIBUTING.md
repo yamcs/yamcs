@@ -88,13 +88,13 @@ These are the only non-negotiables:
 - Test wire formats at byte level, with a comment citing the spec clause.
 
 **Test MDBs are temporary.** The MDBs under `examples/` and `tests/` are
-currently AI-generated. They will soon be replaced by Hermes-generated MDBs
-for consistency. Until then:
+currently AI-generated. They will soon be replaced by MDBs generated with the
+mission tooling, for consistency. Until then:
 - Don't treat them as a source of mission truth (APIDs, field widths, service
   subtypes). Check the mission ICD instead.
 - Keep edits to them minimal and limited to what a test needs. Don't build
   features around their quirks.
-- When the Hermes MDBs land, port tests to them and delete the AI-generated
+- When the generated MDBs land, port tests to them and delete the AI-generated
   ones rather than keeping both.
 
 | Kind | Location | Name |
@@ -135,7 +135,8 @@ pure refactors, test-only, or internal changes, and say so in the PR.
   behaviour. `pus_analysis/*.md` document how the code behaves; cite classes
   and methods, not line numbers.
 - Design specs and plans go in `docs/superpowers/{specs,plans}/YYYY-MM-DD-<topic>.md`,
-  with a `## Contents` list kept in sync with the headings.
+  with a `## Contents` list kept in sync with the headings. They are
+  gitignored (local only); put anything others need in the docs above.
 
 **Decisions and assumptions log**: record every assumption made while
 building a feature (field widths, ICD ambiguities, placeholder values) in
@@ -149,7 +150,7 @@ real answer arrives, update the status and fix what it affects.
 - Code implementing a rule from a standard cites document and clause:
   `// ECSS-E-ST-70-41C §6.11.4.2: <rule>`. Mark intentional deviations with
   `// DEVIATION (<doc> §<clause>): <why>`.
-- Mission ICDs, requirements, and PRDs live in the `gss-jtyu-prd` repo and
+- Mission ICDs, requirements, and PRDs live in a separate mission repo and
   change often. Re-read the relevant file before relying on it; don't trust
   older summaries.
 - When porting an upstream fix, mention the upstream PR or commit in the commit
