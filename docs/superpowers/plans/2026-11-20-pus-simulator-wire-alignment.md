@@ -8,11 +8,11 @@
 
 ## Constraints
 
-Leave the work uncommitted. The refreshed mission MDB is a reference. Use the ST[130] design document for behavioral rules. Run jTYU simulation in `OPERATIONAL_MODE=direct` on raw frames. Retain the external SRS4 example and the existing COL transport behavior. Verify byte-level behavior with focused tests and run the affected modules before delivery.
+Leave the work uncommitted. The refreshed mission MDB is a reference. Use the ST[130] design document for behavioral rules. Run the mission simulation in `OPERATIONAL_MODE=direct` on raw frames. Retain the external SRS4 example and the existing COL transport behavior. Verify byte-level behavior with focused tests and run the affected modules before delivery.
 
 ## 1. Packet and command processing
 
-- [ ] Add tests for an ordinary TC at offset 15, ordinary jTYU TM at offset 23, APID-zero TM at offset 7, two 16-bit pagination fields, and a nested TC whose CRC policy differs from the enclosing packet.
+- [ ] Add tests for an ordinary TC at offset 15, ordinary mission-profile TM at offset 23, APID-zero TM at offset 7, two 16-bit pagination fields, and a nested TC whose CRC policy differs from the enclosing packet.
 - [ ] Implement packet settings in `PusTcPacket`, `PusTmPacket`, `PusTmTimePacket`, `PusSimulator`, and `SimulatorCommander`. Use the settings from TCP and UDP packet factories and for nested ST[11], ST[13], ST[19], ST[21], and ST[22] TCs. Reject truncation or an invalid configured CRC before execution.
 - [ ] In `PusCommandPostprocessor`, add spare bytes to both wrappers, apply the same TC[11,4] CRC selection to manual and automatic commands, and encode the original command using the embedded CRC selection when wrapping it. Verify both code paths with different top-level and embedded CRC settings.
 - [ ] In `Pus11Service`, use the configured TC time format for release times and filters, configured byte widths for identifiers, and the TM time format for reports. Paginate ST[11] and ST[15] reports and compare field widths and ordering with the generated MDB. Run the PUS packet, scheduling, and command postprocessor tests.

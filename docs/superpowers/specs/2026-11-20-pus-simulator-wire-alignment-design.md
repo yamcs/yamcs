@@ -2,7 +2,7 @@
 
 ## Scope
 
-Make the Yamcs PUS simulator exchange packets that the current XTCE adapters describe. The jTYU mission will use its `direct` composition and raw CCSDS frames over UDP when `SIMULATOR_ENABLED=true`. Update the PUS examples, the overlapping MDB definitions in `ccsds-frames-srs4`, and `pus_analysis`. Implement ST[128] and ST[130] and return ST[01] verification for the exported ST[131] commands. CFDP simulation is outside this change.
+Make the Yamcs PUS simulator exchange packets that the current XTCE adapters describe. The mission deployment will use its `direct` composition and raw CCSDS frames over UDP when `SIMULATOR_ENABLED=true`. Update the PUS examples, the overlapping MDB definitions in `ccsds-frames-srs4`, and `pus_analysis`. Implement ST[128] and ST[130] and return ST[01] verification for the exported ST[131] commands. CFDP simulation is outside this change.
 
 ## Approaches
 
@@ -13,13 +13,13 @@ Reconcile the checked-in MDBs in place. This preserves the example command paths
 - Put four spare bytes after source ID in TC and after CUC time in ordinary TM. Zero-fill the field for ordinary services and TC wrappers. Write page number and total pages as big-endian unsigned 16-bit values for ST[11], ST[15], and ST[130] TM. Leave the APID-zero time report layout intact. Protect the spare bytes with the packet CRC when enabled.
 - Apply the profile to both TCP and UDP simulator input, generated ST[11] and ST[22] wrappers, and nested PUS TCs used by scheduling, event actions, sequences, and large-packet transfer. Keep header length, CCSDS length, application data boundaries, and checksum length consistent. Use the ST[11] wrapper CRC setting for every outer TC[11,4], since the wire format is identical for an MDB-encoded command and an automatically generated wrapper. Use the configured embedded TC CRC rule whenever either path carries an inner PUS TC. Use the ordinary TC packet CRC setting for other top-level commands unless an applicable scheduling-wrapper setting overrides it.
 - Support `NONE` and `CRC16` for simulator CCSDS TM and TC frame error detection. Calculate trailer positions using the configured CRC and TM OCF settings for idle and data frames. Preserve the existing example transport profiles and the COL simulator behavior. The SRS4 example remains an external endpoint example.
-- Route the jTYU simulator through `OPERATIONAL_MODE=direct` only. Share the existing direct link composition with the enabled simulator and use raw TC frames. Preserve the external spacecraft mode used for SRS4.
+- Route the mission simulator through `OPERATIONAL_MODE=direct` only. Share the existing direct link composition with the enabled simulator and use raw TC frames. Preserve the external spacecraft mode used for SRS4.
 
 ## Shared configuration
 
 Use the same environment settings in the mission ground links and simulator service args where both consume a value. Add the tracked mission `.env.example` defaults. Yamcs examples keep standalone defaults suitable for their own MDB and transport.
 
-| Environment setting | jTYU default |
+| Environment setting | Mission default |
 |---|---|
 | `TM_PORT`, `TC_PORT`, `TC_HOST` | Existing deployment values. In simulator mode, the ground TC destination is the simulator. |
 | `CCSDS_SPACECRAFT_ID`, `CCSDS_TM_FRAME_TYPE` | `1`, `TM` |
@@ -32,7 +32,7 @@ Use the same environment settings in the mission ground links and simulator serv
 | `PUS11_SUBSCHEDULE_ID_BYTES`, `PUS11_SUBSCHEDULE_ID_DEFAULT` | `1`, `0` |
 | `PUS11_GROUP_ID_BYTES`, `PUS11_GROUP_ID_DEFAULT` | `1`, `0` |
 
-Use implicit CUC by default for both MDB-encoded and generated TC[11,4]. Give schedule TC time its own encoding configuration so it can differ from TM. Share the configured ST[11] identifier widths and fallback defaults with the wrapper builder and the simulator. Group and sub-schedule IDs explicitly supplied by a command take precedence over configured defaults. Validate identifier ranges against their widths. Creating and enabling a group still uses the corresponding ST[11] commands. Changing a setting that affects a fixed XTCE field requires a matching MDB. For jTYU the expected ordinary TC application-data offset is 15 and the ordinary TM offset is 23. The preprocessing time offsets are 13 for ordinary TM and 7 for APID-zero time packets.
+Use implicit CUC by default for both MDB-encoded and generated TC[11,4]. Give schedule TC time its own encoding configuration so it can differ from TM. Share the configured ST[11] identifier widths and fallback defaults with the wrapper builder and the simulator. Group and sub-schedule IDs explicitly supplied by a command take precedence over configured defaults. Validate identifier ranges against their widths. Creating and enabling a group still uses the corresponding ST[11] commands. Changing a setting that affects a fixed XTCE field requires a matching MDB. For the mission profile the expected ordinary TC application-data offset is 15 and the ordinary TM offset is 23. The preprocessing time offsets are 13 for ordinary TM and 7 for APID-zero time packets.
 
 ## MDB and service behavior
 
@@ -45,4 +45,4 @@ Use implicit CUC by default for both MDB-encoded and generated TC[11,4]. Give sc
 
 ## Verification
 
-Use byte-level checks for TM and TC offsets, zero spare fields, pagination, APID-zero time, per-layer CRC behavior and rejection, and idle and data frame layouts. Verify ordinary TCs and TC[11,4] built by the MDB and by the ground scheduling option against the same simulator profile, including multi-byte identifiers and embedded CRC settings. Create and enable the group and sub-schedule in the round trip before testing command execution. Load all changed example MDBs and verify that representative commands encode and emitted reports decode. Exercise each new service through dispatch and exercise state changes, reports, and invalid requests. Run the existing PUS simulator and postprocessor tests and a live direct-frame round trip with a jTYU-compatible profile. Use the updated example MDB for manual ST[11] command verification. The mission’s current generated MDB needs a release export with the new ST[11] definitions before its command catalog can offer those same manual commands.
+Use byte-level checks for TM and TC offsets, zero spare fields, pagination, APID-zero time, per-layer CRC behavior and rejection, and idle and data frame layouts. Verify ordinary TCs and TC[11,4] built by the MDB and by the ground scheduling option against the same simulator profile, including multi-byte identifiers and embedded CRC settings. Create and enable the group and sub-schedule in the round trip before testing command execution. Load all changed example MDBs and verify that representative commands encode and emitted reports decode. Exercise each new service through dispatch and exercise state changes, reports, and invalid requests. Run the existing PUS simulator and postprocessor tests and a live direct-frame round trip with a mission-compatible profile. Use the updated example MDB for manual ST[11] command verification. The mission’s current generated MDB needs a release export with the new ST[11] definitions before its command catalog can offer those same manual commands.

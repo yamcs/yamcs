@@ -15,7 +15,7 @@
 
 Empty service data does not mean an empty packet. The default CRC-enabled TC[17,1] is
 17 bytes in the example: 6-byte CCSDS primary + 5-byte PUS secondary + 4 spare bytes + 2-byte CRC.
-The example TM[17,2] is 27 bytes with its 8-byte CUC and CRC. The jTYU layouts are 15 and
+The example TM[17,2] is 27 bytes with its 8-byte CUC and CRC. The mission-profile layouts are 15 and
 23 bytes respectively with 6-byte TM CUC and packet CRCs disabled. Service type and subtype
 are at bytes 7 and 8.
 

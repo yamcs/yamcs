@@ -1,6 +1,6 @@
 # PUS Java simulator architecture
 
-The simulator emulates spacecraft behavior for the Yamcs PUS examples and direct jTYU configuration. Ground configuration is described in [pus_native_arch.md](pus_native_arch.md).
+The simulator emulates spacecraft behavior for the Yamcs PUS examples and direct mission configuration. Ground configuration is described in [pus_native_arch.md](pus_native_arch.md).
 
 ## Source map and dispatch
 
@@ -27,9 +27,9 @@ not a universal cross-service enumeration.
 ## Packet layouts
 
 Offsets count from the start of the CCSDS packet. The examples use explicit CUC with P-field
-`0x2F` and eight encoded bytes. jTYU uses implicit CUC with P-field `0x2E` and six encoded bytes.
+`0x2F` and eight encoded bytes. The mission profile uses implicit CUC with P-field `0x2E` and six encoded bytes.
 
-| Packet | Layout | Example offset | jTYU offset |
+| Packet | Layout | Example offset | Mission offset |
 |---|---|---:|---:|
 | PUS TC | 6-byte primary + 5-byte secondary + 4 spare bytes + service data + optional CRC | 15 | 15 |
 | Ordinary TM | 6-byte primary + 7 fixed secondary bytes + CUC + 4 spare bytes + service data + optional CRC | 25 | 23 |
