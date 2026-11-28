@@ -6,6 +6,7 @@ import static org.yamcs.cfdp.CompletedTransfer.COL_TRANSFER_STATE;
 import static org.yamcs.cfdp.CompletedTransfer.TDEF;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -18,10 +19,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -34,6 +37,7 @@ import org.yamcs.ValidationException;
 import org.yamcs.YConfiguration;
 import org.yamcs.YamcsServer;
 import org.yamcs.buckets.Bucket;
+import org.yamcs.buckets.ObjectProperties;
 import org.yamcs.cfdp.OngoingCfdpTransfer.FaultHandlingAction;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 import org.yamcs.cfdp.pdu.ConditionCode;
@@ -48,6 +52,7 @@ import org.yamcs.cfdp.pdu.ProxyClosureRequest;
 import org.yamcs.cfdp.pdu.ProxyPutRequest;
 import org.yamcs.cfdp.pdu.ProxyTransmissionMode;
 import org.yamcs.cfdp.pdu.TLV;
+import org.yamcs.cfdp.protobuf.TransferSnapshot;
 import org.yamcs.events.EventProducer;
 import org.yamcs.events.EventProducerFactory;
 import org.yamcs.filetransfer.AbstractFileTransferService;
@@ -108,6 +113,8 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
     static final String ETYPE_FIN_LIMIT_REACHED = "FIN_LIMIT_REACHED";
     static final String ETYPE_NO_LARGE_FILE = "LARGE_FILES_NOT_SUPPORTED";
     static final String ETYPE_PDU_DECODING_ERROR = "PDU_DECODING_ERROR";
+    static final String ETYPE_TRANSFER_RESTORED = "TRANSFER_RESTORED";
+    static final String ETYPE_TRANSFER_STORAGE_ERROR = "TRANSFER_STORAGE_ERROR";
 
     static final String BUCKET_OPT = "bucket";
 
@@ -171,6 +178,12 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
     private List<Integer> pduDelayPredefinedValues;
 
     private Stream dbStream;
+
+    // persistence of transfers across restarts
+    CfdpTransferStore store;
+    boolean persistTransfers;
+    long syncInterval;
+    private ScheduledFuture<?> syncFuture;
 
     private Stream fileListStream;
 
@@ -272,6 +285,18 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
                         + "it, but some receivers reject filenames that don't match their own naming convention -- "
                         + "override this to a name they accept.");
         spec.addOption("checksumType", OptionType.STRING).withDefault("MODULAR");
+        spec.addOption("transferDir", OptionType.STRING)
+                .withDescription("Directory where the data and state of the ongoing transfers are stored. "
+                        + "Relative paths are resolved against the instance data directory. "
+                        + "Default: <instance data dir>/cfdp/<serviceName>");
+        spec.addOption("persistTransfers", OptionType.BOOLEAN).withDefault(true)
+                .withDescription("If true, the ongoing transfers are saved when Yamcs stops and restored when it "
+                        + "starts again. If false, the ongoing transfers are failed when Yamcs stops.");
+        spec.addOption("syncInterval", OptionType.INTEGER).withDefault(1000)
+                .withDescription("Interval in milliseconds at which the received data is flushed to disk.");
+        spec.addOption("autoResume", OptionType.BOOLEAN).withDefault(false)
+                .withDescription("If true, a suspended transfer is automatically resumed when a PDU for it is "
+                        + "received from the remote entity.");
 
         return spec;
     }
@@ -368,6 +393,21 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
         }
         setupRecording(ydb);
         setupFileListTable(ydb);
+
+        persistTransfers = config.getBoolean("persistTransfers", true);
+        syncInterval = config.getLong("syncInterval", 1000);
+        Path instanceDir = Path.of(ydb.getRoot());
+        Path transferDir;
+        if (config.containsKey("transferDir")) {
+            transferDir = instanceDir.resolve(config.getString("transferDir"));
+        } else {
+            transferDir = instanceDir.resolve("cfdp").resolve(serviceName);
+        }
+        try {
+            store = new CfdpTransferStore(transferDir);
+        } catch (IOException e) {
+            throw new InitException("Cannot create the CFDP transfer directory " + transferDir, e);
+        }
     }
 
     private Map<ConditionCode, FaultHandlingAction> readFaultHandlers(Map<String, String> map) {
@@ -627,14 +667,14 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
             Bucket bucket, Integer customPduSize, Integer customPduDelay) {
         CfdpOutgoingTransfer transfer = new CfdpOutgoingTransfer(yamcsInstance, initiatorEntityId, seqNum, creationTime,
                 executor, request, cfdpOut, config, bucket, customPduSize, customPduDelay, eventProducer, this,
-                senderFaultHandlers);
+                senderFaultHandlers, store, persistTransfers);
 
         dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
 
         stateChanged(transfer);
         pendingTransfers.put(transfer.getTransactionId(), transfer);
 
-        if (request.getFileLength() > 0) {
+        if (request instanceof FilePutRequest) {
             eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
                     "Starting new CFDP upload TXID[" + transfer.getTransactionId() + "] " + transfer.getObjectName()
                             + " -> " + transfer.getRemotePath());
@@ -648,6 +688,41 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
         }
         transfer.start();
         return transfer;
+    }
+
+    private void enqueue(QueuedCfdpOutgoingTransfer transfer) {
+        dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
+        queuedTransfers.add(transfer);
+        if (persistTransfers) {
+            store.saveStateAsync(transfer.getId(), null, queuedSnapshot(transfer));
+        }
+        transferListeners.forEach(l -> l.stateChanged(transfer));
+
+        executor.submit(this::tryStartQueuedTransfer);
+    }
+
+    private TransferSnapshot queuedSnapshot(QueuedCfdpOutgoingTransfer trsf) {
+        PutRequest request = trsf.getPutRequest();
+        var out = CfdpOutgoingTransfer.requestSnapshot(trsf.getInitiatorEntityId(), request, trsf.getBucket(),
+                trsf.getCustomPduSize(), trsf.getCustomPduDelay());
+        var hdr = org.yamcs.cfdp.protobuf.CfdpHeaderFields.newBuilder()
+                .setEntityIdLength(config.getInt("entityIdLength"))
+                .setSequenceNumberLength(config.getInt("sequenceNrLength"))
+                .setSourceId(trsf.getInitiatorEntityId())
+                .setDestinationId(request.getDestinationCfdpEntityId())
+                .setAcknowledged(request.isAcknowledged());
+        return TransferSnapshot.newBuilder()
+                .setFormatVersion(1)
+                .setId(trsf.getId())
+                .setDirection(org.yamcs.cfdp.protobuf.SnapshotDirection.OUTGOING)
+                .setCreationTime(trsf.getCreationTime())
+                .setSnapshotTime(System.currentTimeMillis())
+                .setTransferState(TransferState.QUEUED.name())
+                .setHeader(hdr)
+                .setAcknowledged(request.isAcknowledged())
+                .setTransferType(trsf.getTransferType())
+                .setOutgoing(out)
+                .build();
     }
 
     // called when queueConcurrentUploads = true, will start a queued transfer if no other transfer is running
@@ -744,6 +819,9 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
             } else {
                 transfer = instantiateIncomingTransaction(packet);
                 if (transfer != null) {
+                    eventProducer.sendInfo(ETYPE_TRANSFER_STARTED, "Starting new CFDP downlink TXID["
+                            + transfer.getTransactionId() + "] " + getRemoteEntity(id.getInitiatorEntity()) + " -> "
+                            + getLocalEntity(packet.getHeader().getDestinationId()));
                     pendingTransfers.put(transfer.getTransactionId(), transfer);
                     OngoingCfdpTransfer t1 = transfer;
                     executor.submit(() -> dbStream.emitTuple(CompletedTransfer.toInitialTuple(t1)));
@@ -789,25 +867,41 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
             return null;
         }
 
-        eventProducer.sendInfo(ETYPE_TRANSFER_STARTED,
-                "Starting new CFDP downlink TXID[" + txId + "] " + remoteEntity + " -> " + localEntity);
-
-        Bucket bucket = defaultIncomingBucket;
-
-        if (localEntity.bucket != null) {
-            bucket = localEntity.bucket;
-        } else if (remoteEntity.bucket != null) {
-            bucket = remoteEntity.bucket;
-        }
 
         long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
 
-        final FileSaveHandler fileSaveHandler = new FileSaveHandler(yamcsInstance, bucket, fileDownloadRequests,
+        final FileSaveHandler fileSaveHandler = newFileSaveHandler(getIncomingBucket(remoteEntity, localEntity));
+
+        long id = idSeq.next();
+        DiskDataFile dataFile;
+        try {
+            dataFile = store.createDataFile(id);
+        } catch (IOException e) {
+            log.error("Cannot create data file for transfer {}", id, e);
+            eventProducer.sendWarning(ETYPE_TRANSFER_STORAGE_ERROR,
+                    "Cannot create the temporary file for CFDP downlink TXID[" + txId + "]: " + e.getMessage()
+                            + "; dropping packet");
+            return null;
+        }
+        return new CfdpIncomingTransfer(yamcsInstance, id, creationTime, executor, config, packet.getHeader(),
+                cfdpOut, fileSaveHandler, eventProducer, this, receiverFaultHandlers,
+                persistTransfers ? store : null, dataFile);
+    }
+
+    private Bucket getIncomingBucket(EntityConf remoteEntity, EntityConf localEntity) {
+        if (localEntity.bucket != null) {
+            return localEntity.bucket;
+        } else if (remoteEntity.bucket != null) {
+            return remoteEntity.bucket;
+        } else {
+            return defaultIncomingBucket;
+        }
+    }
+
+    private FileSaveHandler newFileSaveHandler(Bucket bucket) {
+        return new FileSaveHandler(yamcsInstance, bucket, fileDownloadRequests,
                 allowRemoteProvidedBucket, allowRemoteProvidedSubdirectory, allowDownloadOverwrites,
                 maxExistingFileRenames);
-
-        return new CfdpIncomingTransfer(yamcsInstance, idSeq.next(), creationTime, executor, config, packet.getHeader(),
-                cfdpOut, fileSaveHandler, eventProducer, this, receiverFaultHandlers);
     }
 
     public EntityConf getRemoteEntity(long entityId) {
@@ -877,19 +971,199 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
 
     @Override
     protected void doStart() {
+        restoreTransfers();
+        if (syncInterval > 0) {
+            syncFuture = executor.scheduleWithFixedDelay(this::syncTransfers, syncInterval, syncInterval,
+                    TimeUnit.MILLISECONDS);
+        }
         cfdpIn.addSubscriber(this);
         notifyStarted();
     }
 
-    @Override
-    protected void doStop() {
+    private void syncTransfers() {
         for (OngoingCfdpTransfer trsf : pendingTransfers.values()) {
-            if (trsf.state == TransferState.RUNNING || trsf.state == TransferState.PAUSED) {
-                trsf.failTransfer("service shutdown");
+            try {
+                trsf.periodicSync();
+            } catch (Exception e) {
+                log.error("Error syncing transfer {}", trsf.getTransactionId(), e);
             }
         }
-        executor.shutdown();
+    }
+
+    /**
+     * Restores the transfers saved in the transfer directory (at the previous stop or before a crash).
+     * <p>
+     * The transfers which cannot be restored are marked as failed in the database and their files are removed.
+     */
+    void restoreTransfers() {
+        SortedSet<Long> ids;
+        try {
+            ids = store.listTransferIds();
+        } catch (IOException e) {
+            log.error("Cannot list the transfer directory {}", store.getDirectory(), e);
+            return;
+        }
+        for (long id : ids) {
+            TransferSnapshot snapshot;
+            try {
+                snapshot = store.readState(id);
+            } catch (IOException e) {
+                failUnrestorableTransfer(id, "cannot read the saved state: " + e.getMessage());
+                continue;
+            }
+            if (snapshot == null) {
+                log.info("Removing the files of transfer {} which has no saved state", id);
+                store.delete(id);
+                continue;
+            }
+            if (isFinished(snapshot)) {
+                log.debug("Removing the files of the finished transfer {}", id);
+                store.delete(id);
+                continue;
+            }
+            if (!persistTransfers) {
+                failUnrestorableTransfer(id, "Yamcs has been restarted (persistTransfers is disabled)");
+                continue;
+            }
+            try {
+                if (TransferState.QUEUED.name().equals(snapshot.getTransferState())) {
+                    QueuedCfdpOutgoingTransfer qtrsf = restoreQueuedTransfer(snapshot);
+                    queuedTransfers.add(qtrsf);
+                    transferListeners.forEach(l -> l.stateChanged(qtrsf));
+                    log.info("Restored queued transfer {} ({})", id, qtrsf.getObjectName());
+                    continue;
+                }
+                OngoingCfdpTransfer trsf = switch (snapshot.getDirection()) {
+                case INCOMING -> restoreIncomingTransfer(snapshot);
+                case OUTGOING -> restoreOutgoingTransfer(snapshot);
+                default -> throw new IllegalArgumentException(
+                        "restoring " + snapshot.getDirection() + " transfers is not supported");
+                };
+                if (pendingTransfers.containsKey(trsf.getTransactionId())) {
+                    throw new IllegalArgumentException("duplicate transaction id " + trsf.getTransactionId());
+                }
+                pendingTransfers.put(trsf.getTransactionId(), trsf);
+                stateChanged(trsf);
+                eventProducer.sendInfo(ETYPE_TRANSFER_RESTORED, "Restored CFDP " + trsf.getDirection()
+                        + " TXID[" + trsf.getTransactionId() + "] after restart (" + trsf.getTransferredSize()
+                        + " bytes " + (trsf instanceof CfdpIncomingTransfer ? "received" : "sent") + ")");
+                if (trsf instanceof CfdpIncomingTransfer incTrsf) {
+                    executor.execute(incTrsf::resumeAfterRestore);
+                } else if (trsf instanceof CfdpOutgoingTransfer outTrsf) {
+                    executor.execute(outTrsf::resumeAfterRestore);
+                }
+            } catch (Exception e) {
+                log.warn("Failed to restore transfer {}", id, e);
+                failUnrestorableTransfer(id, e.getMessage());
+            }
+        }
+        if (!queuedTransfers.isEmpty()) {
+            executor.execute(this::tryStartQueuedTransfer);
+        }
+    }
+
+    private static boolean isFinished(TransferSnapshot snapshot) {
+        String st = snapshot.getTransferState();
+        return TransferState.COMPLETED.name().equals(st) || TransferState.FAILED.name().equals(st)
+                || (snapshot.hasIncoming() && snapshot.getIncoming()
+                        .getInTxState() == org.yamcs.cfdp.protobuf.IncomingTransferSnapshot.InTxState.COMPLETED)
+                || (snapshot.hasOutgoing() && snapshot.getOutgoing()
+                        .getOutTxState() == org.yamcs.cfdp.protobuf.OutgoingTransferSnapshot.OutTxState.COMPLETED);
+    }
+
+    private Bucket getSnapshotBucket(TransferSnapshot snapshot) throws IOException {
+        var out = snapshot.getOutgoing();
+        if (!out.hasBucket()) {
+            return null;
+        }
+        Bucket bucket = YamcsServer.getServer().getBucketManager().getBucket(out.getBucket());
+        if (bucket == null) {
+            throw new IllegalArgumentException("bucket '" + out.getBucket() + "' does not exist anymore");
+        }
+        return bucket;
+    }
+
+    private CfdpOutgoingTransfer restoreOutgoingTransfer(TransferSnapshot snapshot) throws IOException {
+        if (!snapshot.hasOutgoing()) {
+            throw new IllegalArgumentException("not an outgoing transfer snapshot");
+        }
+        return CfdpOutgoingTransfer.restore(yamcsInstance, snapshot, executor, config, cfdpOut,
+                getSnapshotBucket(snapshot), eventProducer, this, senderFaultHandlers, store);
+    }
+
+    private QueuedCfdpOutgoingTransfer restoreQueuedTransfer(TransferSnapshot snapshot) throws IOException {
+        if (!snapshot.hasOutgoing()) {
+            throw new IllegalArgumentException("not an outgoing transfer snapshot");
+        }
+        var out = snapshot.getOutgoing();
+        Bucket bucket = getSnapshotBucket(snapshot);
+        PutRequest request = CfdpOutgoingTransfer.restoreRequest(snapshot, bucket);
+        return new QueuedCfdpOutgoingTransfer(out.getSourceId(), snapshot.getId(), snapshot.getCreationTime(),
+                request, bucket, out.hasCustomPduSize() ? out.getCustomPduSize() : null,
+                out.hasCustomPduDelay() ? out.getCustomPduDelay() : null);
+    }
+
+    private CfdpIncomingTransfer restoreIncomingTransfer(TransferSnapshot snapshot) throws IOException {
+        var hdr = snapshot.getHeader();
+        EntityConf remoteEntity = getRemoteEntity(hdr.getSourceId());
+        if (remoteEntity == null) {
+            throw new IllegalArgumentException("unknown remote entity id " + hdr.getSourceId());
+        }
+        EntityConf localEntity = getLocalEntity(hdr.getDestinationId());
+        if (localEntity == null) {
+            throw new IllegalArgumentException("unknown local entity id " + hdr.getDestinationId());
+        }
+        Bucket bucket = null;
+        var inc = snapshot.getIncoming();
+        if (inc.hasBucket()) {
+            bucket = YamcsServer.getServer().getBucketManager().getBucket(inc.getBucket());
+            if (bucket == null) {
+                throw new IllegalArgumentException("bucket '" + inc.getBucket() + "' does not exist anymore");
+            }
+        }
+        FileSaveHandler fileSaveHandler = newFileSaveHandler(getIncomingBucket(remoteEntity, localEntity));
+        return CfdpIncomingTransfer.restore(yamcsInstance, snapshot, executor, config, cfdpOut, fileSaveHandler,
+                bucket, eventProducer, this, receiverFaultHandlers, store);
+    }
+
+    private void failUnrestorableTransfer(long id, String reason) {
+        String msg = "Transfer could not be restored after restart: " + reason;
+        eventProducer.sendWarning(ETYPE_TRANSFER_RESTORED, "CFDP transfer id=" + id + ": " + msg);
+        dbStream.emitTuple(CompletedTransfer.toFailedTuple(id, msg));
+        store.delete(id);
+    }
+
+    @Override
+    protected void doStop() {
         cfdpIn.removeSubscriber(this);
+        if (syncFuture != null) {
+            syncFuture.cancel(false);
+        }
+        try {
+            executor.submit(() -> {
+                for (OngoingCfdpTransfer trsf : pendingTransfers.values()) {
+                    try {
+                        if (persistTransfers) {
+                            if (isRunning(trsf)) {
+                                if (trsf.persistOnShutdown()) {
+                                    continue;
+                                }
+                                trsf.failTransfer("service shutdown");
+                            }
+                        } else if (trsf.state == TransferState.RUNNING || trsf.state == TransferState.PAUSED) {
+                            trsf.failTransfer("service shutdown");
+                        }
+                        trsf.releaseStorage();
+                    } catch (Exception e) {
+                        log.error("Error stopping transfer {}", trsf.getTransactionId(), e);
+                    }
+                }
+            }).get(60, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("Error stopping the ongoing transfers", e);
+        }
+        executor.shutdownNow();
+        store.close();
         notifyStopped();
     }
 
@@ -914,8 +1188,11 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
 
             if (cfdpTransfer instanceof OngoingCfdpTransfer) {
                 // keep it in pending for a while such that PDUs from remote entity can still be answered
-                executor.schedule(() -> pendingTransfers.remove(cfdpTransfer.getTransactionId()),
-                        pendingAfterCompletion, TimeUnit.MILLISECONDS);
+                OngoingCfdpTransfer ongoing = (OngoingCfdpTransfer) cfdpTransfer;
+                executor.schedule(() -> {
+                    pendingTransfers.remove(cfdpTransfer.getTransactionId(), ongoing);
+                    ongoing.releaseStorage();
+                }, pendingAfterCompletion, TimeUnit.MILLISECONDS);
 
                 if (cfdpTransfer instanceof CfdpIncomingTransfer) {
                     CfdpIncomingTransfer incomingTransfer = (CfdpIncomingTransfer) cfdpTransfer;
@@ -953,16 +1230,17 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
     @Override
     public synchronized CfdpFileTransfer startUpload(String source, Bucket bucket, String objectName,
             String destination, final String destinationPath, TransferOptions options) throws IOException {
-        byte[] objData;
+        // only check that the object exists and get its size; the data is read when the transfer starts
+        ObjectProperties objProps;
         try {
-            objData = bucket.getObjectAsync(objectName).get();
+            objProps = bucket.findObjectAsync(objectName).get();
         } catch (ExecutionException e) {
             throw new RuntimeException(e.getCause());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return null;
         }
-        if (objData == null) {
+        if (objProps == null) {
             throw new InvalidRequestException("No object named '" + objectName + "' in bucket " + bucket.getName());
         }
         String absoluteDestinationPath = getAbsoluteDestinationPath(destinationPath, objectName);
@@ -999,7 +1277,8 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
 
         FilePutRequest request = new FilePutRequest(sourceId, destinationId, objectName, absoluteDestinationPath,
                 booleanOptions.get(OVERWRITE_OPTION), booleanOptions.get(RELIABLE_OPTION),
-                booleanOptions.get(CLOSURE_OPTION), booleanOptions.get(CREATE_PATH_OPTION), bucket, objData);
+                booleanOptions.get(CLOSURE_OPTION), booleanOptions.get(CREATE_PATH_OPTION), bucket,
+                objProps.size());
         long creationTime = YamcsServer.getTimeService(yamcsInstance).getMissionTime();
 
         Double pduSize = optionValues.doubleOptions.get(PDU_SIZE_OPTION);
@@ -1012,11 +1291,7 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
             QueuedCfdpOutgoingTransfer transfer = new QueuedCfdpOutgoingTransfer(sourceId, idSeq.next(), creationTime,
                     request, bucket, pduSize != null ? pduSize.intValue() : null,
                     pduDelay != null ? pduDelay.intValue() : null);
-            dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
-            queuedTransfers.add(transfer);
-            transferListeners.forEach(l -> l.stateChanged(transfer));
-
-            executor.submit(this::tryStartQueuedTransfer);
+            enqueue(transfer);
             return transfer;
         }
 
@@ -1082,11 +1357,7 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
                     transactionId.getSequenceNumber(),
                     creationTime, request, bucket, pduSize != null ? pduSize.intValue() : null,
                     pduDelay != null ? pduDelay.intValue() : null);
-            dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
-            queuedTransfers.add(transfer);
-            transferListeners.forEach(l -> l.stateChanged(transfer));
-
-            executor.submit(this::tryStartQueuedTransfer);
+            enqueue(transfer);
             return transfer;
         }
     }
@@ -1134,11 +1405,7 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
                     transactionId.getSequenceNumber(),
                     creationTime, request, null, pduSize != null ? pduSize.intValue() : null,
                     pduDelay != null ? pduDelay.intValue() : null);
-            dbStream.emitTuple(CompletedTransfer.toInitialTuple(transfer));
-            queuedTransfers.add(transfer);
-            transferListeners.forEach(l -> l.stateChanged(transfer));
-
-            executor.submit(this::tryStartQueuedTransfer);
+            enqueue(transfer);
         }
     }
 
@@ -1315,6 +1582,9 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
         } else if (transfer instanceof QueuedCfdpOutgoingTransfer) {
             QueuedCfdpOutgoingTransfer trsf = (QueuedCfdpOutgoingTransfer) transfer;
             if (queuedTransfers.remove(trsf)) {
+                if (persistTransfers) {
+                    store.deleteAsync(trsf.getId(), null);
+                }
                 trsf.setTransferState(TransferState.FAILED);
                 trsf.setFailureReason("Cancelled while queued");
                 stateChanged(trsf);
@@ -1391,7 +1661,9 @@ public class CfdpService extends AbstractFileTransferService implements StreamSu
      * Called from unit tests to abort all transactions
      */
     void abortAll() {
+        pendingTransfers.values().forEach(OngoingCfdpTransfer::releaseStorage);
         pendingTransfers.clear();
+        queuedTransfers.forEach(q -> store.deleteAsync(q.getId(), null));
         queuedTransfers.clear();
     }
 }

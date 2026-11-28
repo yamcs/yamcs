@@ -62,6 +62,10 @@ public class EofPacket extends CfdpPacket implements FileDirective {
         return this.fileChecksum;
     }
 
+    public long getFileLength() {
+        return this.fileSize;
+    }
+
     @Override
     public FileDirectiveCode getFileDirectiveCode() {
         return FileDirectiveCode.EOF;

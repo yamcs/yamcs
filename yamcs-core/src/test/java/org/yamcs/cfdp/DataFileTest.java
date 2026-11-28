@@ -58,7 +58,7 @@ public class DataFileTest {
         DataFile df = new DataFile(n);
         df.addSegment(getSegment(0, 3));
         df.addSegment(getSegment(1, 3));
-        assertEquals(1, df.dataFileSegments.size());
+        assertEquals(1, df.segments.count());
         
         List<SegmentRequest> lmissing = df.getMissingChunks();
         assertEquals(1, lmissing.size());
@@ -161,8 +161,8 @@ public class DataFileTest {
     private void verify(DataFile df) {
         byte[] data1 = df.getData();
 
-        for (DataFile.Segment dfs : df.dataFileSegments) {
-            for (int i = (int) dfs.start; i < dfs.end; i++) {
+        for (SegmentTracker.Segment dfs : df.segments.segments()) {
+            for (int i = (int) dfs.start(); i < dfs.end(); i++) {
                 assertEquals(data[i], data1[i]);
             }
         }

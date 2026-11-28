@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
@@ -295,17 +296,28 @@ public class CfdpDownlinkIntegrationTest {
         List<TransferInfo> l = cfdpClient.listTransfers().get();
         assertEquals(100, l.size());
 
-        for (TransferInfo tinfo : l) {
-            cfdpClient.cancel(tinfo.getId()).get();
-        }
+        // send the cancel requests in parallel; the FIN ACK timeout is short (500ms) and sending them sequentially may
+        // take longer than that
+        CompletableFuture.allOf(l.stream()
+                .map(tinfo -> cfdpClient.cancel(tinfo.getId()))
+                .toArray(CompletableFuture[]::new)).get();
 
         l = cfdpClient.listTransfers().get();
         for (TransferInfo tinfo : l) {
-            assertEquals(TransferState.CANCELLING, tinfo.getState());
+            // the transfer may already have failed if the FIN ACK timeout expired
+            assertTrue(tinfo.getState() == TransferState.CANCELLING || tinfo.getState() == TransferState.FAILED,
+                    "unexpected state " + tinfo.getState());
+            assertTrue(tinfo.getFailureReason().contains("Cancel request received"));
         }
-        Thread.sleep(1000);
 
-        l = cfdpClient.listTransfers().get();
+        // wait for all transfers to fail (the FIN PDU is never acknowledged)
+        long deadline = System.currentTimeMillis() + 5000;
+        do {
+            Thread.sleep(100);
+            l = cfdpClient.listTransfers().get();
+        } while (System.currentTimeMillis() < deadline
+                && l.stream().anyMatch(tinfo -> tinfo.getState() != TransferState.FAILED));
+
         for (TransferInfo tinfo : l) {
             assertEquals(TransferState.FAILED, tinfo.getState());
         }
@@ -333,6 +345,13 @@ public class CfdpDownlinkIntegrationTest {
         if (expectedReceiverState == TransferState.COMPLETED) {
             byte[] recdata = incomingBucket.getObjectAsync(tinfo.getObjectName()).get();
             assertArrayEquals(data, recdata);
+
+            var objMetadata = incomingBucket.findObjectAsync(tinfo.getObjectName()).get().metadata();
+            assertEquals(sender.trsf.getTransactionId().toString(), objMetadata.get("cfdpTransactionId"));
+            assertEquals(Long.toString(sender.trsf.getTransactionId().getInitiatorEntity()),
+                    objMetadata.get("sourceEntityId"));
+            assertEquals(objName, objMetadata.get("sourceFilename"));
+            assertEquals(reliable ? "2" : "1", objMetadata.get("transferClass"));
         }
         assertFalse(sender.trsf.eofTimer.isActive());
     }
@@ -391,11 +410,12 @@ public class CfdpDownlinkIntegrationTest {
             EventProducer eventProducer = EventProducerFactory.getEventProducer();
             eventProducer.setSource("unit-test");
             FilePutRequest putRequest = new FilePutRequest(15, 12, objName, objName, false, reliable, false, false,
-                    incomingBucket, data);
+                    incomingBucket, data.length);
 
             trsf = new CfdpOutgoingTransfer(yamcsInstance, putRequest.getSourceId(), seqNum,
                     TimeEncoding.getWallclockTime(),
                     myExecutor, putRequest, cfdpIn, config, null, null, null, eventProducer, this, null);
+            trsf.setSource(OutgoingFileSource.ofBytes(data));
 
             cfdpOut.addSubscriber((stream, tuple) -> {
                 tcount++;

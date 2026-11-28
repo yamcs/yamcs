@@ -280,6 +280,10 @@ public class CfdpUplinkIntegrationTest {
         TransferInfo tinfo = cfdpClient.upload(object, UploadOptions.reliable(true)).get();
         assertEquals(data.length, tinfo.getTotalSize());
 
+        // the file is copied to the transfer directory before the first PDU is sent
+        for (int i = 0; i < 100 && receiver.trsf == null; i++) {
+            Thread.sleep(10);
+        }
         cfdpClient.pause(tinfo.getId()).get();
         int tCount = receiver.tcount;
 

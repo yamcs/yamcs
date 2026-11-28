@@ -9,7 +9,7 @@ import java.util.concurrent.ExecutionException;
 import org.yamcs.YamcsServer;
 import org.yamcs.buckets.Bucket;
 import org.yamcs.cfdp.CfdpTransactionId;
-import org.yamcs.cfdp.DataFile;
+import org.yamcs.cfdp.AbstractDataFile;
 import org.yamcs.cfdp.FileDownloadRequests;
 import org.yamcs.logging.Log;
 
@@ -41,14 +41,14 @@ public class FileSaveHandler {
         this(yamcsInstance, defaultBucket, null, false, false, false, 1000);
     }
 
-    public void saveFile(String objectName, DataFile file, Map<String, String> metadata,
+    public void saveFile(String objectName, AbstractDataFile file, Map<String, String> metadata,
             CfdpTransactionId originatingTransactionId)
             throws FileAlreadyExistsException {
         setObjectName(objectName);
         saveFile(file, metadata, originatingTransactionId);
     }
 
-    public void saveFile(DataFile file, Map<String, String> metadata, CfdpTransactionId originatingTransactionId) {
+    public void saveFile(AbstractDataFile file, Map<String, String> metadata, CfdpTransactionId originatingTransactionId) {
         if (objectName == null) {
             log.warn("File name not set, not saving");
             return;
@@ -58,6 +58,8 @@ public class FileSaveHandler {
         }
 
         try {
+            // TODO: the bucket API supports only whole-object writes; when partial/streaming writes are available,
+            // the file should be streamed to the bucket instead of being loaded in memory.
             bucket.putObjectAsync(this.objectName, null, metadata, file.getData()).get();
         } catch (ExecutionException e) {
             throw new UncheckedIOException(new IOException("Cannot save incoming file in bucket: " + objectName
@@ -142,6 +144,14 @@ public class FileSaveHandler {
 
     public String getObjectName() {
         return objectName;
+    }
+
+    /**
+     * Restore the bucket and object name as resolved before a restart; no checks or renames are performed.
+     */
+    public void restore(Bucket bucket, String objectName) {
+        this.bucket = bucket;
+        this.objectName = objectName;
     }
 
     public void setBucket(Bucket bucket) {

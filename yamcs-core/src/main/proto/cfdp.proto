@@ -1,0 +1,148 @@
+syntax = "proto2";
+
+package yamcs.cfdp;
+
+option java_package = "org.yamcs.cfdp.protobuf";
+option java_outer_classname = "CfdpPersistenceProto";
+option java_multiple_files = true;
+
+// Internal (not part of the API) messages used by the CFDP service to persist ongoing transfers across restarts.
+//
+// One TransferSnapshot is stored per transaction in <transferDir>/<id>.state. It is written atomically
+// (tmp file + fsync + rename) on state transitions, periodically while it changes and when the service stops.
+// The file data itself is stored in <id>.data / <id>.journal (see DiskDataFile).
+
+enum SnapshotDirection {
+  INCOMING = 1; // the remote entity sends a file to Yamcs (downlink)
+  OUTGOING = 2; // Yamcs sends a file to the remote entity (uplink)
+}
+
+// Fields of the CFDP PDU header which identify the transaction and are reused for the PDUs we send back.
+message CfdpHeaderFields {
+  optional uint32 entityIdLength = 1;
+  optional uint32 sequenceNumberLength = 2;
+  optional uint64 sourceId = 3;
+  optional uint64 destinationId = 4;
+  optional uint64 sequenceNumber = 5;
+  optional bool acknowledged = 6;
+  optional bool largeFile = 7;
+}
+
+message TransferSnapshot {
+  // incremented if the format changes in an incompatible way
+  optional uint32 formatVersion = 1;
+
+  // unique transfer id (database sequence); also the base name of the files in the transfer directory
+  optional int64 id = 2;
+  optional SnapshotDirection direction = 3;
+
+  // yamcs (mission) time when the transfer was created/started
+  optional int64 creationTime = 4;
+  optional int64 startTime = 5;
+  // wallclock time (Java millis) when the transfer started
+  optional int64 wallclockStartTime = 6;
+  // wallclock time (Java millis) when this snapshot has been taken
+  optional int64 snapshotTime = 7;
+
+  // the org.yamcs.protobuf.TransferState name (RUNNING, PAUSED, CANCELLING, COMPLETED, FAILED)
+  optional string transferState = 8;
+  optional CfdpHeaderFields header = 9;
+  optional bool acknowledged = 10;
+  optional string transferType = 11;
+  repeated string errors = 12;
+
+  oneof details {
+    IncomingTransferSnapshot incoming = 20;
+    OutgoingTransferSnapshot outgoing = 21;
+  }
+}
+
+message IncomingTransferSnapshot {
+  enum InTxState {
+    RECEIVING_DATA = 1;
+    FIN = 2;
+    COMPLETED = 3;
+  }
+  optional InTxState inTxState = 1;
+  optional bool suspended = 2;
+  // condition code (numeric value) to cancel with when the transfer is resumed
+  optional uint32 cancelUponResume = 3;
+  optional bool needsFinish = 4;
+
+  // raw PDUs (including header)
+  optional bytes metadataPdu = 5;
+  optional bytes eofPdu = 6;
+  optional bytes finishedPdu = 7;
+
+  // where the file will be saved; resolved when the metadata is received
+  optional string bucket = 8;
+  optional string objectName = 9;
+
+  // NAK bookkeeping
+  optional uint32 nakCount = 10;
+  optional int64 lastNakDataSize = 11;
+}
+
+// A segment [start, end) of the file
+message FileSegment {
+  optional int64 start = 1;
+  optional int64 end = 2;
+}
+
+// Outgoing (uplink) transfer.
+//
+// Queued transfers (not yet started) are also saved, with TransferSnapshot.transferState = QUEUED and no data file.
+//
+// The file to be sent is copied from the bucket to <id>.data when the transfer starts; fileSize and fileChecksum
+// are set after the copy has been written and synced. At restore, the data file size and checksum are verified
+// against them.
+message OutgoingTransferSnapshot {
+  enum OutTxState {
+    START = 1;
+    SENDING_DATA = 2;
+    CANCELING = 3;
+    COMPLETED = 4;
+  }
+  optional OutTxState outTxState = 1;
+
+  // Put.request
+  optional uint64 sourceId = 2;
+  optional uint64 destinationId = 3;
+  optional string sourceFileName = 4;
+  optional string destinationFileName = 5;
+  optional bool overwrite = 6;
+  optional bool createPath = 7;
+  optional bool closureRequested = 8;
+  // true if this was a file transfer (FilePutRequest), false for a metadata only transfer (e.g. messages to user)
+  optional bool fileTransfer = 9;
+  // the header given in the request, if any (used for the messages to user transfers)
+  optional CfdpHeaderFields requestHeader = 10;
+  optional uint32 customPduSize = 11;
+  optional uint32 customPduDelay = 12;
+
+  // source of the file
+  optional string bucket = 13;
+  optional string objectName = 14;
+
+  // size and modular checksum of the data file; set once the data file has been prepared
+  optional int64 fileSize = 15;
+  optional uint32 fileChecksum = 16;
+
+  // progress
+  optional int64 offset = 17;
+  optional int64 transferred = 18;
+  repeated FileSegment toResend = 19;
+  optional bool resendMetadata = 20;
+  optional bool eofSent = 21;
+  optional bool eofAckReceived = 22;
+  optional bool suspended = 23;
+  // condition code (numeric value)
+  optional uint32 reasonForCancellation = 24;
+
+  // raw PDUs (including header)
+  optional bytes metadataPdu = 25;
+  optional bytes eofPdu = 26;
+
+  // the size of the object when the request was made (used for display while queued)
+  optional int64 requestedFileLength = 27;
+}

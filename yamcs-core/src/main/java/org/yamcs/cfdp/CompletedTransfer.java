@@ -206,6 +206,18 @@ public class CompletedTransfer implements CfdpFileTransfer {
         return t;
     }
 
+    /**
+     * Tuple used to mark as failed a transfer for which we have no other information than the id
+     */
+    static Tuple toFailedTuple(long id, String failureReason) {
+        Tuple t = new Tuple();
+        t.addColumn(COL_ID, id);
+        t.addColumn(COL_SERVER_ID, SERVER_ID);
+        t.addEnumColumn(COL_TRANSFER_STATE, TransferState.FAILED.name());
+        t.addColumn(COL_FAILURE_REASON, failureReason);
+        return t;
+    }
+
     @Override
     public boolean pausable() {
         return false;

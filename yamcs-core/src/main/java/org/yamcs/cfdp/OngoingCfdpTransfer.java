@@ -24,6 +24,9 @@ import org.yamcs.cfdp.pdu.ProxyPutResponse;
 import org.yamcs.cfdp.pdu.ProxyTransmissionMode;
 import org.yamcs.cfdp.pdu.ReservedMessageToUser;
 import org.yamcs.cfdp.pdu.TLV;
+import org.yamcs.cfdp.protobuf.CfdpHeaderFields;
+import org.yamcs.cfdp.protobuf.SnapshotDirection;
+import org.yamcs.cfdp.protobuf.TransferSnapshot;
 import org.yamcs.events.EventProducer;
 import org.yamcs.filetransfer.TransferMonitor;
 import org.yamcs.logging.Log;
@@ -40,8 +43,8 @@ public abstract class OngoingCfdpTransfer implements CfdpFileTransfer {
     protected final EventProducer eventProducer;
     protected boolean acknowledged = false;
     protected final Log log;
-    protected final long startTime;
-    protected final long wallclockStartTime;
+    protected long startTime;
+    protected long wallclockStartTime;
     protected final long creationTime;
 
     protected String transferType = PredefinedTransferTypes.UNKNOWN.toString();
@@ -346,5 +349,68 @@ public abstract class OngoingCfdpTransfer implements CfdpFileTransfer {
     @Override
     public long getCreationTime() {
         return creationTime;
+    }
+
+    // ---- persistence hooks; the transfers not supporting persistence keep the defaults ----
+
+    /**
+     * Called periodically (every {@code syncInterval}) on the executor thread to flush the data and state to stable
+     * storage.
+     */
+    protected void periodicSync() {
+    }
+
+    /**
+     * Called on the executor thread when the service stops with persistence enabled.
+     * <p>
+     * If the transfer supports persistence, it should stop its timers, save its state and data to stable storage,
+     * release the resources and return true. Otherwise return false (and the transfer will be failed).
+     */
+    protected boolean persistOnShutdown() {
+        return false;
+    }
+
+    /**
+     * Called on the executor thread when the transfer is not needed anymore (some time after completion or failure) to
+     * delete the persisted data.
+     */
+    protected void releaseStorage() {
+    }
+
+    /**
+     * Creates a snapshot builder filled with the information common to all transfers
+     */
+    protected TransferSnapshot.Builder snapshotBuilder(SnapshotDirection direction, CfdpHeaderFields header) {
+        return TransferSnapshot.newBuilder()
+                .setFormatVersion(1)
+                .setId(id)
+                .setDirection(direction)
+                .setCreationTime(creationTime)
+                .setStartTime(startTime)
+                .setWallclockStartTime(wallclockStartTime)
+                .setSnapshotTime(System.currentTimeMillis())
+                .setTransferState(state.name())
+                .setHeader(header)
+                .setAcknowledged(acknowledged)
+                .setTransferType(transferType)
+                .addAllErrors(errors);
+    }
+
+    /**
+     * Restores the fields common to all transfers from the snapshot
+     */
+    protected void restoreCommon(TransferSnapshot snapshot) {
+        this.startTime = snapshot.getStartTime();
+        this.wallclockStartTime = snapshot.getWallclockStartTime();
+        this.acknowledged = snapshot.getAcknowledged();
+        if (snapshot.hasTransferType()) {
+            this.transferType = snapshot.getTransferType();
+        }
+        this.errors.addAll(snapshot.getErrorsList());
+        try {
+            this.state = TransferState.valueOf(snapshot.getTransferState());
+        } catch (IllegalArgumentException e) {
+            this.state = TransferState.RUNNING;
+        }
     }
 }

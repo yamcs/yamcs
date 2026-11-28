@@ -4,19 +4,26 @@ import org.yamcs.buckets.Bucket;
 import org.yamcs.cfdp.pdu.CfdpPacket;
 
 /**
- * A Put.request is a primitive that requests data delivery from a source to a destination
+ * A Put.request is a primitive that requests data delivery from a source to a destination.
+ * <p>
+ * The request only references the object to be sent (bucket and object name); the data is read from the bucket when
+ * the transfer starts.
  */
 public class FilePutRequest extends PutRequest {
     private long sourceId;
-    private byte[] fileData;
     private Bucket bucket;
     private boolean overwrite;
     private boolean createpath;
-    private long checksum;
+    private long fileLength;
 
+    /**
+     * @param fileLength
+     *            the size of the object at the time of the request (it is shown for queued transfers); the transfer
+     *            uses the size of the object read when it starts.
+     */
     public FilePutRequest(long sourceId, long destinationCfdpEntityId, String sourceFileName,
             String destinationFileName, boolean overwrite, boolean acknowledged, boolean closureRequested,
-            boolean createpath, Bucket b, byte[] data) {
+            boolean createpath, Bucket b, long fileLength) {
         super(destinationCfdpEntityId, sourceFileName, destinationFileName, null, null,
                 null,
                 acknowledged ? CfdpPacket.TransmissionMode.ACKNOWLEDGED : CfdpPacket.TransmissionMode.UNACKNOWLEDGED,
@@ -25,8 +32,7 @@ public class FilePutRequest extends PutRequest {
         this.overwrite = overwrite;
         this.createpath = createpath;
         this.bucket = b;
-        this.fileData = data;
-        this.checksum = ModularChecksumCalculator.calculateChecksum(data);
+        this.fileLength = fileLength;
     }
 
     public long getSourceId() {
@@ -34,18 +40,8 @@ public class FilePutRequest extends PutRequest {
     }
 
     @Override
-    public int getFileLength() {
-        return fileData.length;
-    }
-
-    @Override
-    public long getChecksum() {
-        return this.checksum;
-    }
-
-    @Override
-    public byte[] getFileData() {
-        return fileData;
+    public long getFileLength() {
+        return fileLength;
     }
 
     public Bucket getBucket() {
